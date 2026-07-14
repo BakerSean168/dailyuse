@@ -11,6 +11,7 @@ export { default as ConversationSidebar } from './ConversationSidebar.vue';
 export { default as BusinessPanel } from './BusinessPanel.vue';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary.vue';
 export { default as GlobalComposer } from './GlobalComposer.vue';
+export { default as StandaloneSettingsLayout } from './StandaloneSettingsLayout.vue';
 export { default as ShellHomeRoute } from './shell-home-route';
 
 export {
@@ -18,7 +19,23 @@ export {
   MAX_BUSINESS_TABS,
   type BusinessTab,
   type ShellLayout,
+  type ShellLayoutReason,
   type ShellModule,
 } from './useAppShellStore';
 
-export { useShellRouterSync, moduleForPath, MODULE_TITLE_KEYS } from './useShellRouterSync';
+export {
+  useShellRouterSync,
+  moduleForPath,
+  isStandaloneSettingsPath,
+  resolveEntryLayout,
+  MODULE_TITLE_KEYS,
+  AUTO_FOCUS_VIEWPORT,
+} from './useShellRouterSync';
+
+export {
+  computePanelGeometry,
+  panelWidthFromPointer,
+  PANEL_MIN,
+  PANEL_MAX_CAP,
+  CHAT_MIN,
+} from './panelGeometry';

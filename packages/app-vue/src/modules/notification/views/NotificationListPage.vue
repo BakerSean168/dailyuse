@@ -1,7 +1,12 @@
 <template>
-  <div class="h-full" data-testid="notification-center">
-    <ListPageShell :title="t('notification.title')" :description="countLabel">
-      <template #actions>
+  <div class="flex h-full min-h-0 flex-col overflow-hidden" data-testid="notification-center">
+    <!-- 面板内容头：不复读 Tab「通知」标题，只保留未读计数与主操作 -->
+    <header
+      class="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-border px-3"
+      data-testid="notification-panel-header"
+    >
+      <p class="truncate text-xs text-muted-foreground">{{ countLabel }}</p>
+      <div class="flex shrink-0 items-center gap-2">
         <Badge v-if="unreadCount > 0" variant="destructive" class="text-xs">
           {{ t('notification.filter.unreadBadge', { count: unreadCount }) }}
         </Badge>
@@ -16,32 +21,32 @@
           <CheckCheck class="mr-2 h-4 w-4" />
           {{ t('notification.action.markAllRead') }}
         </Button>
-      </template>
+      </div>
+    </header>
 
-      <template #filter>
-        <FilterBar>
-          <template #tabs>
-            <div class="flex items-center gap-1">
-              <Button
-                v-for="tab in filterTabs"
-                :key="tab.value"
-                :data-testid="`notification-filter-${tab.value}`"
-                variant="ghost"
-                size="sm"
-                :class="[
-                  'h-7 px-3 text-muted-foreground hover:text-foreground',
-                  selectedFilter === tab.value ? 'bg-secondary font-medium text-foreground' : '',
-                ]"
-                @click="selectedFilter = tab.value"
-              >
-                {{ tab.label }}
-              </Button>
-            </div>
-          </template>
-        </FilterBar>
+    <FilterBar class="!px-3">
+      <template #tabs>
+        <div class="flex items-center gap-1">
+          <Button
+            v-for="tab in filterTabs"
+            :key="tab.value"
+            :data-testid="`notification-filter-${tab.value}`"
+            variant="ghost"
+            size="sm"
+            :class="[
+              'h-7 px-3 text-muted-foreground hover:text-foreground',
+              selectedFilter === tab.value ? 'bg-secondary font-medium text-foreground' : '',
+            ]"
+            @click="selectedFilter = tab.value"
+          >
+            {{ tab.label }}
+          </Button>
+        </div>
       </template>
+    </FilterBar>
 
-      <!-- 信箱是读列表：max-w-4xl（§11-3） -->
+    <!-- 信箱是读列表：max-w-4xl（§11-3） -->
+    <div class="min-h-0 flex-1 overflow-y-auto p-3">
       <div class="mx-auto max-w-4xl">
         <!-- 加载 = 行骨架（§0.3 禁整页 spinner） -->
         <div v-if="isLoading" class="space-y-3 py-2" data-testid="notification-list-skeleton">
@@ -83,7 +88,7 @@
           />
         </div>
       </div>
-    </ListPageShell>
+    </div>
   </div>
 </template>
 
@@ -93,7 +98,6 @@ import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { Bell, CheckCheck } from '@lucide/vue';
 import { Badge, Button, Skeleton } from '@dailyuse/ui-vue-shadcn';
-import ListPageShell from '../../../components/shared/ListPageShell.vue';
 import FilterBar from '../../../components/shared/FilterBar.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import NotificationList from '../components/NotificationList.vue';

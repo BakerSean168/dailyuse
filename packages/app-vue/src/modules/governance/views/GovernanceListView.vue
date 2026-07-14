@@ -1,16 +1,19 @@
 <template>
-  <div class="h-full" data-testid="governance-list-view">
-    <ListPageShell :title="t('governance.list.title')" :description="countLabel">
-      <template #actions>
-        <Button size="sm" data-testid="governance-new-rule" @click="goToEditor">
-          <Plus class="mr-1.5 h-4 w-4" />
-          {{ t('governance.list.newRule') }}
-        </Button>
-      </template>
+  <div class="flex h-full min-h-0 flex-col overflow-hidden" data-testid="governance-list-view">
+    <!-- 面板内容头：Note/规范分区，不复读页面级标题壳 -->
+    <header
+      class="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-border px-3"
+      data-testid="governance-panel-header"
+    >
+      <p class="truncate text-xs text-muted-foreground">{{ countLabel }}</p>
+      <Button size="sm" class="h-8" data-testid="governance-new-rule" @click="goToEditor">
+        <Plus class="mr-1.5 h-4 w-4" />
+        {{ t('governance.list.newRule') }}
+      </Button>
+    </header>
 
-      <!-- FilterBar：搜索优先 + 状态/严重度/标签下拉（§12-5 双排按钮组收敛为下拉） -->
-      <template #filter>
-        <FilterBar>
+    <!-- FilterBar：搜索优先 + 状态/严重度/标签下拉 -->
+    <FilterBar class="!px-3">
           <template #tabs>
             <div class="w-64">
               <GovernanceSearchBar v-model="searchQuery" @search="onSearch" />
@@ -98,9 +101,9 @@
               {{ t('governance.list.clearFilter') }}
             </Button>
           </template>
-        </FilterBar>
-      </template>
+    </FilterBar>
 
+    <div class="min-h-0 flex-1 overflow-y-auto p-3">
       <div class="mx-auto max-w-4xl space-y-4">
         <!-- 错误：inline Alert + 重试 -->
         <Alert v-if="error" variant="destructive">
@@ -179,7 +182,7 @@
           </Button>
         </div>
       </div>
-    </ListPageShell>
+    </div>
   </div>
 </template>
 
@@ -200,7 +203,6 @@ import {
   DropdownMenuTrigger,
   Skeleton,
 } from '@dailyuse/ui-vue-shadcn';
-import ListPageShell from '../../../components/shared/ListPageShell.vue';
 import FilterBar from '../../../components/shared/FilterBar.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGovernance } from '../composables/useGovernance';

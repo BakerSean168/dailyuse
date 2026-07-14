@@ -21,7 +21,6 @@ import {
   ListTodo,
   Maximize2,
   Minimize2,
-  Settings,
   Target,
   X,
 } from '@lucide/vue';
@@ -40,7 +39,8 @@ const emit = defineEmits<{
   (e: 'close-tab', id: string): void;
   (e: 'close-panel'): void;
   (e: 'toggle-focus'): void;
-  (e: 'start-resize', event: MouseEvent): void;
+  (e: 'start-resize', event: PointerEvent): void;
+  (e: 'reset-width'): void;
 }>();
 
 const { t } = useI18n();
@@ -72,7 +72,6 @@ const moduleIcons: Record<ShellModule, Component> = {
   reminder: AlarmClock,
   notification: Bell,
   schedule: Calendar,
-  setting: Settings,
 };
 
 const isFocused = computed(() => props.layout === 'focus');
@@ -143,8 +142,11 @@ const isFocused = computed(() => props.layout === 'focus');
     <!-- 拖宽把手（split 态左边缘；focus 态满屏不需要） -->
     <div
       v-if="!isFocused"
-      class="absolute left-0 top-0 h-full w-[3px] cursor-col-resize bg-transparent transition-colors hover:bg-primary/40"
-      @mousedown="emit('start-resize', $event)"
+      data-testid="business-panel-resizer"
+      class="absolute left-0 top-0 h-full w-2 -translate-x-1/2 cursor-col-resize bg-transparent transition-colors hover:bg-primary/40"
+      title="Drag to resize · double-click to reset"
+      @pointerdown="emit('start-resize', $event)"
+      @dblclick.stop="emit('reset-width')"
     />
   </section>
 </template>

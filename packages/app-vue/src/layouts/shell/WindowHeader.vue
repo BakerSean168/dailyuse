@@ -7,7 +7,7 @@
  * - 中：模块胶囊 ×5（图标 + 计数角标；点击出预览浮层，浮层内「进入」开面板）
  * - 右：日程"当前时段"胶囊 · [桌面端] 最小化/最大化/关闭
  *
- * 胶囊渲染 + 点击出预览浮层；notification 胶囊挂 NotificationCapsulePreview（V2 §6.5）；
+ * 胶囊渲染 + 点击出预览浮层；goal/task/note/reminder/notification 均挂专用 Preview（§10）；
  * 桌面窗控复用既有 useDesktopWindowControls（apps/desktop 已落地 IPC）。
  * 交互逻辑不接业务数据，只 emit 给 AppShell。
  *
@@ -31,6 +31,10 @@ import { MODULE_CAPSULES_KEY } from '../../di/keys';
 import { defaultModuleCapsules } from '../../di/navigation';
 import type { ModuleCapsule } from '../../di/types';
 import NotificationCapsulePreview from '../../modules/notification/components/NotificationCapsulePreview.vue';
+import GoalCapsulePreview from './previews/GoalCapsulePreview.vue';
+import TaskCapsulePreview from './previews/TaskCapsulePreview.vue';
+import NoteCapsulePreview from './previews/NoteCapsulePreview.vue';
+import ReminderCapsulePreview from './previews/ReminderCapsulePreview.vue';
 
 interface WindowControlsState {
   isMaximized: boolean;
@@ -40,12 +44,16 @@ interface WindowControlsState {
 }
 
 const props = defineProps<{
+  /** workspace = 业务壳顶栏；settings = 独立设置场景（隐藏胶囊/日程）。 */
+  mode?: 'workspace' | 'settings';
   /** 侧栏是否已折叠（控制折叠按钮图标）。 */
   sidebarCollapsed: boolean;
   /** 当前激活的模块 id（胶囊高亮）。 */
   activeModule: string | null;
   /** 未读通知数（notification 胶囊角标）。S1 由 AppShell 注入。 */
   unreadCount?: number;
+  /** 其它模块角标（goal/task/note/reminder），由 AppShell 可选注入。 */
+  badgeCounts?: Partial<Record<string, number>>;
   /** 日程"当前时段"文案；空则显示空态。S1 由 AppShell 注入。 */
   scheduleLabel?: string | null;
   /** 是否桌面环境（渲染窗控 + 拖拽区）。 */
@@ -96,7 +104,11 @@ function closePreview(): void {
 
 function badgeFor(capsule: ModuleCapsule): number {
   if (capsule.badgeSource === 'notification.unread') return props.unreadCount ?? 0;
-  return 0;
+  if (capsule.badgeSource && props.badgeCounts && capsule.badgeSource in props.badgeCounts) {
+    return props.badgeCounts[capsule.badgeSource] ?? 0;
+  }
+  // fallback: module id key
+  return props.badgeCounts?.[capsule.id] ?? 0;
 }
 
 function onDocumentPointerDown(event: MouseEvent): void {
@@ -130,6 +142,7 @@ onBeforeUnmount(() => {
     <!-- 左：侧栏折叠 + 前进后退 -->
     <div class="flex shrink-0 items-center gap-2 no-drag">
       <button
+        v-if="props.mode !== 'settings'"
         type="button"
         class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         :title="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
@@ -158,8 +171,10 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- 中：模块胶囊 ×5 -->
-    <nav class="flex items-center gap-1.5 no-drag" :aria-label="t('shell.moduleNav')">
+    <!-- 中：模块胶囊 ×5（设置场景隐藏） -->
+    <nav
+      v-if="props.mode !== 'settings'"
+      class="flex items-center gap-1.5 no-drag" :aria-label="t('shell.moduleNav')">
       <div v-for="capsule in capsules" :key="capsule.id" class="relative">
         <button
           type="button"
@@ -182,16 +197,36 @@ onBeforeUnmount(() => {
           </span>
         </button>
 
-        <!-- 预览浮层：notification 走铃铛弹层能力，其余模块保留摘要占位 + 进入 -->
+        <!-- 预览浮层：各模块 Preview 懒挂载；Escape / 外部点击关闭 -->
         <div
           v-if="previewOpenId === capsule.id"
-          class="absolute left-1/2 z-50 mt-2 w-64 -translate-x-1/2 rounded-xl border border-border bg-popover p-3.5 text-popover-foreground shadow-2xl"
+          class="absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 rounded-xl border border-border bg-popover p-3.5 text-popover-foreground shadow-2xl"
           role="dialog"
           :data-testid="`capsule-preview-${capsule.id}`"
         >
           <NotificationCapsulePreview
             v-if="capsule.id === 'notification'"
             @view-all="enterModule(capsule.id)"
+          />
+          <GoalCapsulePreview
+            v-else-if="capsule.id === 'goal'"
+            @view-all="enterModule(capsule.id)"
+            @select="enterModule(capsule.id)"
+          />
+          <TaskCapsulePreview
+            v-else-if="capsule.id === 'task'"
+            @view-all="enterModule(capsule.id)"
+            @select="enterModule(capsule.id)"
+          />
+          <NoteCapsulePreview
+            v-else-if="capsule.id === 'note'"
+            @view-all="enterModule(capsule.id)"
+            @select="enterModule(capsule.id)"
+          />
+          <ReminderCapsulePreview
+            v-else-if="capsule.id === 'reminder'"
+            @view-all="enterModule(capsule.id)"
+            @select="enterModule(capsule.id)"
           />
           <template v-else>
             <p class="mb-2 border-b border-border/40 pb-1 text-xs font-bold">
@@ -216,6 +251,7 @@ onBeforeUnmount(() => {
     <!-- 右：日程胶囊 + 桌面窗控 -->
     <div class="flex shrink-0 items-center gap-3 no-drag">
       <button
+        v-if="props.mode !== 'settings'"
         type="button"
         class="flex items-center gap-1.5 rounded-full border border-border/40 bg-muted/40 px-2.5 py-1 font-mono text-[10px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
         :title="t('shell.openSchedule')"
@@ -267,3 +303,4 @@ onBeforeUnmount(() => {
   -webkit-app-region: no-drag;
 }
 </style>
+

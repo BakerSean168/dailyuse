@@ -3,14 +3,20 @@
  * ConversationSidebar (UI 重构 V2 壳)
  *
  * 左侧栏 = 纯 AI 会话列表（V2 §5 决策 #4，无 Projects 树、无业务对象）。
- * 结构：品牌 + 搜索 → 「新对话」→ 会话列表（按时间分组）→ 底部头像 + 帮助。
+ * 结构：品牌 + 搜索 → 「新对话」→ 会话列表（按时间分组）→ 底部账户菜单 + 帮助菜单。
  *
- * S0 骨架：布局 + 交互 emit + 拖宽把手；会话数据由 AppShell 透传（S1 接
- * useAIChatView 的会话列表）。分组"今天/近 7 天/更早"的时区边界属 V2 §11
- * 待细化，S0 只按父组件给的已分组结构渲染。
+ * 账户入口（诊断修订 §9）：头像打开账户菜单，不再直达 Settings。
+ * 帮助入口独立，不跳转设置。
  */
 import { useI18n } from 'vue-i18n';
 import { HelpCircle, Search, SquarePen, X } from '@lucide/vue';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@dailyuse/ui-vue-shadcn';
 import { APP_NAME_ZH } from '@dailyuse/assets';
 
 interface ConversationEntry {
@@ -24,13 +30,15 @@ interface ConversationGroup {
   items: ConversationEntry[];
 }
 
-defineProps<{
+const props = defineProps<{
   groups: ConversationGroup[];
   activeConversationId: string | null;
   userName?: string;
+  /** 是否已登录（影响账户菜单：退出 vs 登录）。 */
+  isAuthenticated?: boolean;
   /** 会话列表加载中。 */
   loading?: boolean;
-  /** 桌面端顶部留出拖拽/窗控空间的高度补偿（S1 决定，S0 预留 prop）。 */
+  /** 桌面端顶部留出拖拽/窗控空间的高度补偿。 */
   isDesktop?: boolean;
 }>();
 
@@ -40,15 +48,21 @@ const emit = defineEmits<{
   (e: 'delete-conversation', id: string): void;
   (e: 'open-search'): void;
   (e: 'open-settings'): void;
+  (e: 'open-account'): void;
+  (e: 'open-login'): void;
+  (e: 'logout'): void;
   (e: 'open-help'): void;
   (e: 'start-resize', event: MouseEvent): void;
 }>();
 
 const { t } = useI18n();
+
+const displayName = () => props.userName || t('shell.guest');
 </script>
 
 <template>
   <aside
+    data-testid="conversation-sidebar"
     class="conversation-sidebar relative flex h-full flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
   >
     <!-- 头：品牌 + 搜索 -->
@@ -120,32 +134,92 @@ const { t } = useI18n();
       </div>
     </nav>
 
-    <!-- 底：头像 + 帮助 -->
+    <!-- 底：账户菜单 + 帮助菜单 -->
     <div
       class="flex h-[52px] shrink-0 items-center justify-between border-t border-sidebar-border/40 px-3.5"
     >
-      <button
-        type="button"
-        data-testid="shell-open-settings"
-        class="flex min-w-0 items-center gap-2.5 rounded p-1 transition-colors hover:bg-sidebar-accent"
-        :title="t('nav.settings')"
-        @click="emit('open-settings')"
-      >
-        <span
-          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground"
-        >
-          {{ (userName || '?').slice(0, 1).toUpperCase() }}
-        </span>
-        <span class="truncate text-xs font-semibold">{{ userName || t('shell.guest') }}</span>
-      </button>
-      <button
-        type="button"
-        class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-        :title="t('shell.help')"
-        @click="emit('open-help')"
-      >
-        <HelpCircle class="h-4 w-4" />
-      </button>
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <button
+            type="button"
+            data-testid="shell-account-menu"
+            class="flex min-w-0 items-center gap-2.5 rounded p-1 transition-colors hover:bg-sidebar-accent"
+            :title="t('shell.account.menu')"
+          >
+            <span
+              class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground"
+            >
+              {{ displayName().slice(0, 1).toUpperCase() }}
+            </span>
+            <span class="truncate text-xs font-semibold">{{ displayName() }}</span>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side="top" class="w-52">
+          <div class="px-2 py-1.5">
+            <p class="truncate text-sm font-medium">{{ displayName() }}</p>
+            <p class="text-[11px] text-muted-foreground">
+              {{
+                isAuthenticated ? t('shell.account.signedIn') : t('shell.account.guestIdentity')
+              }}
+            </p>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem data-testid="shell-open-account" @click="emit('open-account')">
+            {{ t('shell.account.accountAndPrivacy') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem data-testid="shell-open-settings" @click="emit('open-settings')">
+            {{ t('shell.account.settings') }}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            v-if="isAuthenticated"
+            data-testid="shell-logout"
+            class="text-destructive focus:text-destructive"
+            @click="emit('logout')"
+          >
+            {{ t('shell.account.logout') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            v-else
+            data-testid="shell-open-login"
+            @click="emit('open-login')"
+          >
+            {{ t('shell.account.loginOrRegister') }}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <button
+            type="button"
+            data-testid="shell-help-menu"
+            class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+            :title="t('shell.help')"
+          >
+            <HelpCircle class="h-4 w-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" side="top" class="w-52">
+          <DropdownMenuItem disabled data-testid="shell-help-shortcuts">
+            {{ t('shell.helpMenu.shortcuts') }}
+            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled data-testid="shell-help-guide">
+            {{ t('shell.helpMenu.guide') }}
+            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled data-testid="shell-help-feedback">
+            {{ t('shell.helpMenu.feedback') }}
+            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem disabled data-testid="shell-help-about">
+            {{ t('shell.helpMenu.about') }}
+            <span class="ml-auto text-[10px] text-muted-foreground">{{ t('shell.helpMenu.soon') }}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
 
     <!-- 拖宽把手 -->

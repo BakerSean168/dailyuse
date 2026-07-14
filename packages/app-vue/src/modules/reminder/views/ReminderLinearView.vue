@@ -21,9 +21,9 @@
       data-testid="reminder-group-sidebar"
     >
       <div class="flex h-14 items-center border-b p-4">
-        <div class="flex items-center gap-2 font-semibold">
-          <BellRing class="h-5 w-5 text-primary" />
-          <span>{{ t('reminder.title') }}</span>
+        <div class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <BellRing class="h-4 w-4 text-primary" />
+          <span>{{ t('reminder.linear.allReminders') }}</span>
         </div>
 
         <div class="ml-auto flex items-center gap-1">

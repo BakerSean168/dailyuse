@@ -873,6 +873,7 @@ onMounted(() => {
           <Button
             variant="link"
             class="h-auto px-0 py-0 text-white/[0.46] hover:text-white/[0.78]"
+            data-testid="guest-mode-button"
             @click="enterGuestMode"
           >
             访客模式

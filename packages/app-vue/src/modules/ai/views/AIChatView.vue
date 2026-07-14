@@ -192,7 +192,25 @@
         </div>
       </div>
 
+      <Teleport v-if="shellComposerMount" :to="shellComposerMount">
+        <AIFooterComposer
+          ref="composerRef"
+          v-model="chatMessage"
+          :loading="chatLoading"
+          :can-send="canSendMessage"
+          :tool-button-label="currentToolButtonLabel"
+          :model-groups="modelGroups"
+          :selected-model-key="selectedModelKey"
+          :density="composerDensity"
+          @send="handleSendChat"
+          @stop="stopGenerating"
+          @start-conversation="startNewConversation"
+          @select-model="selectModel"
+          @open-settings="openSettings"
+        />
+      </Teleport>
       <AIFooterComposer
+        v-else
         ref="composerRef"
         v-model="chatMessage"
         :loading="chatLoading"
@@ -200,6 +218,7 @@
         :tool-button-label="currentToolButtonLabel"
         :model-groups="modelGroups"
         :selected-model-key="selectedModelKey"
+        :density="composerDensity"
         @send="handleSendChat"
         @stop="stopGenerating"
         @start-conversation="startNewConversation"
@@ -274,7 +293,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Menu, PanelRightOpen, Plus } from '@lucide/vue';
@@ -291,6 +310,8 @@ import UpcomingRemindersWidget from '../../reminder/components/widgets/UpcomingR
 import GoalProgressWidget from '../../goal/components/widgets/GoalProgressWidget.vue';
 import { useDashboard } from '../../dashboard/composables/useDashboard';
 import { useAppShellStore } from '../../../layouts/shell/useAppShellStore';
+import { SHELL_COMPOSER_DENSITY_KEY, SHELL_COMPOSER_MOUNT_KEY } from '../../../di/keys';
+import type { ComposerDensity } from '../../../layouts/shell/panelGeometry';
 import { useAIChatView } from '../composables/useAIChatView';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
 
@@ -310,9 +331,22 @@ const router = useRouter();
 withDefaults(
   defineProps<{
     hideConversationSidebar?: boolean;
+    /**
+     * Legacy focus strip mode: hide messages/sidebar and keep only the in-tree
+     * composer. When the shell provides SHELL_COMPOSER_MOUNT_KEY, AppShell hides
+     * the whole AI column in focus instead and this flag stays false.
+     */
     composerOnly?: boolean;
   }>(),
   { hideConversationSidebar: false, composerOnly: false },
+);
+
+/** Shell teleport host for GlobalComposer; null in standalone/unit mounts. */
+const shellComposerMountRef = inject(SHELL_COMPOSER_MOUNT_KEY, null);
+const shellComposerDensityRef = inject(SHELL_COMPOSER_DENSITY_KEY, null);
+const shellComposerMount = computed(() => shellComposerMountRef?.value ?? null);
+const composerDensity = computed<ComposerDensity>(
+  () => shellComposerDensityRef?.value ?? 'comfortable',
 );
 
 const messagePanelRef = ref<{ viewport?: HTMLElement | null } | null>(null);
@@ -678,3 +712,4 @@ defineExpose({
   loadConversationList,
 });
 </script>
+

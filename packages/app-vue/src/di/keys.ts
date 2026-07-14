@@ -6,7 +6,7 @@
  * app-vue 中的 composables 通过 inject(KEY) 获取服务。
  */
 
-import type { InjectionKey } from 'vue';
+import type { InjectionKey, Ref, ShallowRef } from 'vue';
 import type {
   IAccountService,
   IAuthService,
@@ -65,3 +65,13 @@ export interface DesktopBridge {
 }
 
 export const DESKTOP_BRIDGE_KEY: InjectionKey<DesktopBridge> = Symbol('DesktopBridge');
+
+/** Shell-owned Global Composer teleport mount (HTMLElement). */
+export const SHELL_COMPOSER_MOUNT_KEY: InjectionKey<ShallowRef<HTMLElement | null>> =
+  Symbol('ShellComposerMount');
+
+/** Shell-owned Global Composer density token. */
+export const SHELL_COMPOSER_DENSITY_KEY: InjectionKey<Ref<'comfortable' | 'compact' | 'icon'>> =
+  Symbol('ShellComposerDensity');
+
+

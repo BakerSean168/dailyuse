@@ -5,8 +5,7 @@
       class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
     >
       <div class="flex items-center gap-4">
-        <h1 class="text-lg font-medium text-foreground">{{ t('schedule.dashboard.title') }}</h1>
-        <Separator orientation="vertical" class="h-4" />
+        <!-- Tab 已表达模块名；此处只保留视图切换，避免同义标题重复（§7.1） -->
         <!-- 宽档：日/周/月切换；窄档（split）只渲日视图（V2 §6.3 / §7） -->
         <div v-if="!isNarrow" class="flex items-center gap-1" data-testid="schedule-view-tabs">
           <Button
@@ -105,7 +104,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { CalendarDays, Calendar, CalendarRange, Plus } from '@lucide/vue';
-import { Button, Separator } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@dailyuse/ui-vue-shadcn';
 import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
 import DayViewCalendar from '../components/DayViewCalendar.vue';
 import WeekViewCalendar from '../components/WeekViewCalendar.vue';

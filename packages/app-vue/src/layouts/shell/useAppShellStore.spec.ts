@@ -12,6 +12,7 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.tabs).toHaveLength(0);
     expect(store.isChatOnly).toBe(true);
     expect(store.activeTab).toBeUndefined();
+    expect(store.layoutReason).toBe('default');
   });
 
   it('capsule intent reuses the existing module tab and updates its route', () => {
@@ -79,6 +80,46 @@ describe('useAppShellStore (V2 shell tabs)', () => {
 
     expect(store.closeTab(a.tabId)).toBeNull();
     expect(store.isChatOnly).toBe(true);
+    expect(store.layout).toBe('split');
+    expect(store.layoutReason).toBe('default');
+  });
+
+  it('toggleFocus records user layout reason', () => {
+    const store = useAppShellStore();
+    store.toggleFocus();
+    expect(store.layout).toBe('focus');
+    expect(store.layoutReason).toBe('user');
+    store.toggleFocus();
+    expect(store.layout).toBe('split');
+    expect(store.layoutReason).toBe('user');
+  });
+
+  it('sanitizeLegacyTabs drops setting module tabs from persisted state', () => {
+    const store = useAppShellStore();
+    store.tabs = [
+      {
+        id: 'tab-setting-legacy',
+        module: 'setting' as never,
+        route: '/settings',
+        title: 'Settings',
+        lastActiveAt: Date.now(),
+      },
+      {
+        id: 'tab-goal-1',
+        module: 'goal',
+        route: '/goals',
+        title: 'Goals',
+        lastActiveAt: Date.now(),
+      },
+    ];
+    store.activeTabId = 'tab-setting-legacy';
+    store.layout = 'focus';
+
+    store.sanitizeLegacyTabs();
+
+    expect(store.tabs).toHaveLength(1);
+    expect(store.tabs[0]!.module).toBe('goal');
+    expect(store.activeTabId).toBe('tab-goal-1');
   });
 
   it('keepAliveInclude mirrors the open tab ids', () => {
@@ -86,5 +127,22 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     const a = store.openTab({ module: 'goal', route: '/goals', title: 'G', intent: 'deeplink' });
     const b = store.openTab({ module: 'task', route: '/tasks', title: 'T', intent: 'deeplink' });
     expect(store.keepAliveInclude).toEqual([a.tabId, b.tabId]);
+  });
+
+  it('resolvePanelWidth clamps for render without mutating preferred width', () => {
+    const store = useAppShellStore();
+    store.setPanelWidth(760);
+    // 1200 viewport, 260 sidebar => max = min(760, 940-420)=520
+    const effective = store.resolvePanelWidth(1200, 260);
+    expect(effective).toBeLessThanOrEqual(520);
+    expect(store.panelWidth).toBe(760);
+  });
+
+  it('clampPanelWidthToViewport alias also preserves preferred width', () => {
+    const store = useAppShellStore();
+    store.setPanelWidth(700);
+    const effective = store.clampPanelWidthToViewport(1000, 260);
+    expect(effective).toBeLessThanOrEqual(700);
+    expect(store.panelWidth).toBe(700);
   });
 });

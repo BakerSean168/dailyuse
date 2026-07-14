@@ -4,15 +4,13 @@
  *
  * 10 个平铺 Tab 重组为 6 组：
  *   外观与语言 / AI / 通知与提醒 / 账户与隐私（账户中心迁入）/ 数据 / 高级
- * 面板两档（V2 §7）：
- *   - 窄档（split）：顶部分组横向 tabs
- *   - 宽档（focus）：左侧垂直分组导航（w-48）+ 右侧内容 max-w-3xl
+ * 窄窗口（<1024）顶部分组 tabs；宽窗口左侧垂直分组导航 + 右侧内容 max-w-3xl。
  * `?tab=` 查询参数为分组深链契约（/account/center redirect 依赖）。
  * `settings-tab-{value}` testid 保留（appearance / notifications 被 e2e 锚定）。
- * 进入 Settings 默认 focus 由 shell `shouldOpenInFocus('setting')` 承担。
+ * 作为 AppShell STATE D 独立场景渲染，不进 BusinessPanel。
  */
 
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Loader2 } from '@lucide/vue';
@@ -33,7 +31,6 @@ import { useUserSetting } from '../composables/useUserSetting';
 import { useDataPortability } from '../composables/useDataPortability';
 import { applyThemeMode } from '../composables';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
-import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import type { AppLocale } from '../../../plugins/i18n';
 import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
 import { inject } from 'vue';
@@ -44,8 +41,19 @@ const route = useRoute();
 const router = useRouter();
 const presentationStore = usePresentationPreferenceStore();
 const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
-// 面板两档（V2 §7）：窄档顶部分组横向 tabs，宽档恢复左侧垂直分组导航。
-const { isNarrow } = usePanelWidth();
+// 独立设置场景：窄窗口用顶部分组 tabs；宽窗口用左侧垂直导航。
+const SETTINGS_NARROW_VIEWPORT = 1024;
+const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : SETTINGS_NARROW_VIEWPORT);
+const isNarrow = computed(() => viewportWidth.value < SETTINGS_NARROW_VIEWPORT);
+
+function onViewportResize(): void {
+  viewportWidth.value = window.innerWidth;
+}
+
+onBeforeUnmount(() => {
+  if (typeof window === 'undefined') return;
+  window.removeEventListener('resize', onViewportResize);
+});
 
 const {
   userSetting,
@@ -336,6 +344,9 @@ watch(
 );
 
 onMounted(async () => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', onViewportResize);
+  }
   await loadSettings();
   hydrateFromStore();
 });

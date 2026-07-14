@@ -151,6 +151,15 @@ export default {
     moduleNav: 'Module navigation',
     enterModule: 'Enter',
     previewPlaceholder: 'Preview coming soon.',
+    preview: {
+      goalEmpty: 'No active goals',
+      taskEmpty: 'No tasks scheduled today',
+      taskAllDone: 'All done for today',
+      noteEmpty: 'No recent notes',
+      noteResource: 'Note',
+      reminderEmpty: 'No remaining reminders today',
+      allDay: 'All day',
+    },
     openSchedule: 'Open schedule',
     aiWorkspacePlaceholder: 'AI workspace (pending wiring)',
     schedule: {
@@ -181,6 +190,26 @@ export default {
     composer: {
       placeholder: 'Message Zhixing AI…',
       send: 'Send',
+    },
+    settings: {
+      returnToApp: 'Back to app',
+      sceneTitle: 'Settings',
+    },
+    account: {
+      menu: 'Account menu',
+      signedIn: 'Signed in',
+      guestIdentity: 'Guest',
+      accountAndPrivacy: 'Account & privacy',
+      settings: 'Settings',
+      logout: 'Sign out',
+      loginOrRegister: 'Sign in / Register',
+    },
+    helpMenu: {
+      shortcuts: 'Keyboard shortcuts',
+      guide: 'User guide',
+      feedback: 'Send feedback',
+      about: 'About',
+      soon: 'Soon',
     },
   },
 

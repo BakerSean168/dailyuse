@@ -17,28 +17,41 @@
  * - 会话侧栏消费 AIChatView defineExpose 的会话状态（单一 chat session）；
  * - 桌面窗控走 useDesktopWindowControls（Web 端不渲染，V2 决策 #6）。
  */
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
 import { inject } from 'vue';
 import { MODULE_CAPSULES_KEY } from '../../di/keys';
 import { defaultModuleCapsules } from '../../di/navigation';
 import { useAppShellStore, MAX_BUSINESS_TABS, type ShellModule } from './useAppShellStore';
-import { useShellRouterSync } from './useShellRouterSync';
+import { useShellRouterSync, AUTO_FOCUS_VIEWPORT } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
 import { useNotification } from '../../modules/notification/composables/useNotification';
+import { useDashboard } from '../../modules/dashboard/composables/useDashboard';
 import { formatScheduleCapsuleLabel, useCalendarView } from '../../modules/schedule/composables/useCalendarView';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
+import { useAuth } from '../../modules/authentication/composables/useAuth';
 import AIChatView from '../../modules/ai/views/AIChatView.vue';
 import type { ConversationSummary } from '../../modules/ai/composables/types';
 import WindowHeader from './WindowHeader.vue';
 import ConversationSidebar from './ConversationSidebar.vue';
 import BusinessPanel from './BusinessPanel.vue';
 import PanelErrorBoundary from './PanelErrorBoundary.vue';
+import GlobalComposer from './GlobalComposer.vue';
+import StandaloneSettingsLayout from './StandaloneSettingsLayout.vue';
+import {
+  COMPOSER_BOTTOM_GAP,
+  computePanelGeometry,
+  panelWidthFromPointer,
+  resolveComposerDensity,
+  type ComposerDensity,
+} from './panelGeometry';
+import { SHELL_COMPOSER_DENSITY_KEY, SHELL_COMPOSER_MOUNT_KEY } from '../../di/keys';
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 const store = useAppShellStore();
 const { tabs, activeTabId, activeTab, isChatOnly, layout, sidebarCollapsed, sidebarWidth, panelWidth } =
   storeToRefs(store);
@@ -54,6 +67,16 @@ const isMac =
 
 const capsules = inject(MODULE_CAPSULES_KEY, defaultModuleCapsules) ?? defaultModuleCapsules;
 
+const shellScene = computed<'workspace' | 'settings'>(() => {
+  if (route.meta.shellScene === 'settings' || route.path === '/settings' || route.path.startsWith('/settings/') || route.path.startsWith('/account')) {
+    return 'settings';
+  }
+  return 'workspace';
+});
+
+const isSettingsScene = computed(() => shellScene.value === 'settings');
+
+
 /** STATE A/B/C 派生（§1.1）。 */
 const shellState = computed<'chat' | 'split' | 'focus'>(() => {
   if (isChatOnly.value) return 'chat';
@@ -65,10 +88,56 @@ const showSidebar = computed(() => shellState.value !== 'focus' && !sidebarColla
 /** 业务面板仅在有 Tab（B/C 态）时渲染。 */
 const showPanel = computed(() => shellState.value !== 'chat');
 /** 当前激活模块 id（胶囊高亮）。 */
-const activeModule = computed<string | null>(() => activeTab.value?.module ?? null);
+const activeModule = computed<string | null>(() => (isSettingsScene.value ? null : activeTab.value?.module ?? null));
 
 // ── AI 常驻层（单实例；会话侧栏数据经 defineExpose 上浮） ──
 const aiRef = ref<InstanceType<typeof AIChatView> | null>(null);
+
+// ── Global Composer host (§8)：壳拥有布局，AIChatView Teleport 真实输入 ──
+const shellComposerMount = shallowRef<HTMLElement | null>(null);
+const shellComposerDensity = ref<ComposerDensity>('comfortable');
+const composerHeight = ref(0);
+const workspaceMainRef = ref<HTMLElement | null>(null);
+const aiColumnRef = ref<HTMLElement | null>(null);
+const workspaceMainWidth = ref(0);
+const aiColumnWidth = ref(0);
+provide(SHELL_COMPOSER_MOUNT_KEY, shellComposerMount);
+provide(SHELL_COMPOSER_DENSITY_KEY, shellComposerDensity);
+
+const composerMode = computed(() => (shellState.value === 'focus' ? 'floating' : 'inline'));
+const composerHostWidth = computed(() =>
+  composerMode.value === 'floating' ? workspaceMainWidth.value : aiColumnWidth.value,
+);
+const focusComposerPad = computed(() => {
+  if (shellState.value !== 'focus') return 0;
+  return Math.max(composerHeight.value, 56) + COMPOSER_BOTTOM_GAP;
+});
+
+function onComposerHeightChange(height: number) {
+  composerHeight.value = height;
+}
+
+function measureComposerHosts() {
+  if (typeof window === 'undefined') return;
+  workspaceMainWidth.value = workspaceMainRef.value?.clientWidth ?? 0;
+  aiColumnWidth.value = aiColumnRef.value?.clientWidth ?? 0;
+  shellComposerDensity.value = resolveComposerDensity(
+    composerHostWidth.value || workspaceMainWidth.value,
+    composerMode.value,
+  );
+}
+
+let hostResizeObserver: ResizeObserver | null = null;
+
+function bindHostResizeObserver() {
+  hostResizeObserver?.disconnect();
+  hostResizeObserver = null;
+  if (typeof ResizeObserver === 'undefined') return;
+  hostResizeObserver = new ResizeObserver(() => measureComposerHosts());
+  if (workspaceMainRef.value) hostResizeObserver.observe(workspaceMainRef.value);
+  if (aiColumnRef.value) hostResizeObserver.observe(aiColumnRef.value);
+  measureComposerHosts();
+}
 
 const conversations = computed<ConversationSummary[]>(
   () => (aiRef.value?.conversationList ?? []) as ConversationSummary[],
@@ -135,8 +204,9 @@ async function handleNewConversation() {
   await sync.goHome();
 }
 
-// ── 用户名（侧栏底部头像，→ 设置面板） ──
+// ── 用户 / 账户入口（侧栏底部菜单，§9） ──
 const authStore = useAuthenticationStore();
+const { isAuthenticated, logout } = useAuth();
 const userName = computed<string | undefined>(() => {
   const identifier = authStore.currentIdentity?.identifiers?.[0] as
     | { value?: string }
@@ -146,6 +216,12 @@ const userName = computed<string | undefined>(() => {
 
 // ── 通知未读角标（SSE 启动钩子推流，胶囊消费；V2 §8-7） ──
 const notification = useNotification();
+const dashboard = useDashboard();
+const badgeCounts = computed<Record<string, number>>(() => ({
+  goal: dashboard.stats.value.activeGoals ?? 0,
+  task: dashboard.stats.value.activeTasks ?? 0,
+  reminder: dashboard.stats.value.upcomingReminders ?? 0,
+}));
 
 // 日程胶囊实时文案（V2 §2 / §6.3）：当前时段或下一事件，每分钟刷新。
 const calendarView = useCalendarView();
@@ -161,6 +237,7 @@ const windowControls = useDesktopWindowControls();
 
 onMounted(() => {
   void notification.refreshStats();
+  void dashboard.fetchDashboard();
   if (isDesktop) windowControls.startListening();
   void calendarView.ensureTodayLoaded(scheduleNowMs.value);
   scheduleTickTimer = setInterval(() => {
@@ -189,16 +266,121 @@ function startSidebarResize(e: MouseEvent) {
   window.addEventListener('mouseup', up);
 }
 
-function startPanelResize(e: MouseEvent) {
-  e.preventDefault();
-  const move = (ev: MouseEvent) => store.setPanelWidth(window.innerWidth - ev.clientX);
-  const up = () => {
-    window.removeEventListener('mousemove', move);
-    window.removeEventListener('mouseup', up);
-  };
-  window.addEventListener('mousemove', move);
-  window.addEventListener('mouseup', up);
+function occupiedSidebarWidth(): number {
+  return showSidebar.value ? sidebarWidth.value : 0;
 }
+
+/** 分栏态会占用的侧栏宽度（不受 focus 隐藏影响，避免 canSplit 抖动）。 */
+function prospectiveSidebarOccupied(): number {
+  return sidebarCollapsed.value ? 0 : sidebarWidth.value;
+}
+
+function effectivePanelWidth(): number {
+  if (typeof window === 'undefined') return panelWidth.value;
+  return store.resolvePanelWidth(window.innerWidth, occupiedSidebarWidth());
+}
+
+/**
+ * 视口/侧栏变化：
+ * - 不回写用户偏好宽度（由 effectivePanelWidth 即时 clamp）
+ * - viewport 触发的 focus 可在空间恢复后回到 split；user focus 保持
+ */
+function onViewportGeometryChange(): void {
+  if (typeof window === 'undefined') return;
+  if (store.isChatOnly) return;
+
+  const geo = computePanelGeometry({
+    viewportWidth: window.innerWidth,
+    sidebarOccupiedWidth: prospectiveSidebarOccupied(),
+  });
+  // 窄视口或几何上无法保 CHAT_MIN+PANEL_MIN 时强制 viewport focus（§6.2）。
+  const shouldFocus = window.innerWidth < AUTO_FOCUS_VIEWPORT || !geo.canSplit;
+
+  if (shouldFocus) {
+    if (store.layout !== 'focus') {
+      store.setLayout('focus', 'viewport');
+    }
+    return;
+  }
+
+  if (store.layout === 'focus' && store.layoutReason === 'viewport') {
+    store.setLayout('split', 'default');
+  }
+}
+
+function startPanelResize(e: PointerEvent) {
+  e.preventDefault();
+  const captureTarget =
+    e.target instanceof Element
+      ? (e.target.closest('[data-testid="business-panel-resizer"]') as HTMLElement | null) ??
+        (e.target as HTMLElement)
+      : null;
+  try {
+    captureTarget?.setPointerCapture?.(e.pointerId);
+  } catch {
+    // pointer capture 在部分测试/非指针设备上可能失败，忽略即可
+  }
+
+  const previousUserSelect = document.body.style.userSelect;
+  const previousCursor = document.body.style.cursor;
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'col-resize';
+
+  const move = (ev: PointerEvent) => {
+    store.setPanelWidth(
+      panelWidthFromPointer(ev.clientX, window.innerWidth, occupiedSidebarWidth()),
+    );
+  };
+  const up = (ev: PointerEvent) => {
+    try {
+      captureTarget?.releasePointerCapture?.(ev.pointerId);
+    } catch {
+      // ignore
+    }
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    document.body.style.userSelect = previousUserSelect;
+    document.body.style.cursor = previousCursor;
+  };
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up);
+}
+
+function resetPanelWidth(): void {
+  if (typeof window === 'undefined') return;
+  const geo = computePanelGeometry({
+    viewportWidth: window.innerWidth,
+    sidebarOccupiedWidth: occupiedSidebarWidth(),
+  });
+  store.setPanelWidth(geo.defaultPanelWidth);
+}
+
+onMounted(() => {
+  onViewportGeometryChange();
+  window.addEventListener('resize', onViewportGeometryChange);
+  bindHostResizeObserver();
+  window.addEventListener('resize', measureComposerHosts);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onViewportGeometryChange);
+  window.removeEventListener('resize', measureComposerHosts);
+  hostResizeObserver?.disconnect();
+  hostResizeObserver = null;
+});
+
+// 侧栏折叠/改宽后重新派生有效面板宽（偏好不变，渲染层读 effectivePanelWidth）
+watch([showSidebar, sidebarWidth, sidebarCollapsed, shellState, panelWidth], () => {
+  measureComposerHosts();
+});
+
+watch([workspaceMainRef, aiColumnRef], () => {
+  bindHostResizeObserver();
+});
+
+watch([showSidebar, sidebarWidth, sidebarCollapsed], () => {
+  // 触发一次布局派生，便于 focus 自动恢复规则与宽度消费保持一致
+  onViewportGeometryChange();
+});
 
 // ── 胶囊 / 面板动作（导航细节在 useShellRouterSync） ──
 function enterModule(id: string) {
@@ -208,14 +390,29 @@ function enterModule(id: string) {
 }
 
 function openSchedule() {
-  // 日程进入即建议 focus（V2 §6.3）；openModule 内 shouldOpenInFocus 也会兜底。
-  store.setLayout('focus');
+  // Schedule 与其它业务模块统一入口规则，不再强制 focus。
   void sync.openModule('schedule', '/schedule/calendar');
 }
 
 
-function openSettings() {
-  void sync.openModule('setting', '/settings');
+function openSettings(path = '/settings') {
+  void sync.openSettings(path);
+}
+
+function openAccount() {
+  void sync.openSettings('/settings?tab=account');
+}
+
+function openLogin() {
+  void router.push('/auth').catch(() => {});
+}
+
+async function handleLogout() {
+  await logout();
+}
+
+function returnFromSettings() {
+  void sync.returnFromSettings();
 }
 
 /**
@@ -236,13 +433,17 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
 <template>
   <div
     class="flex h-full min-h-0 w-full flex-col overflow-hidden bg-background text-foreground"
-    :data-shell-state="shellState"
+    data-testid="app-shell"
+    :data-shell-state="isSettingsScene ? 'settings' : shellState"
+    :data-shell-scene="shellScene"
   >
     <!-- 顶部窗口栏：胶囊导航 + 日程胶囊 + 窗控 -->
     <WindowHeader
+      :mode="isSettingsScene ? 'settings' : 'workspace'"
       :sidebar-collapsed="sidebarCollapsed"
       :active-module="activeModule"
       :unread-count="notification.unreadCount.value"
+      :badge-counts="badgeCounts"
       :schedule-label="scheduleLabel"
       :is-desktop="isDesktop"
       :is-mac="isMac"
@@ -257,8 +458,18 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
       @window-close="windowControls.closeWindow()"
     />
 
-    <!-- 主工作区 -->
-    <div class="relative flex min-h-0 flex-1 overflow-hidden">
+    <!-- STATE D：独立设置场景。与 workspace 互斥挂载，避免双 router-view 同渲。
+         tabs/layout 由 store 保留，返回后按 store 恢复。 -->
+    <StandaloneSettingsLayout
+      v-if="isSettingsScene"
+      class="min-h-0 flex-1"
+      @return-to-app="returnFromSettings"
+    >
+      <router-view />
+    </StandaloneSettingsLayout>
+
+    <!-- 主工作区（STATE A/B/C） -->
+    <div v-else class="relative flex min-h-0 flex-1 overflow-hidden">
       <!-- 会话侧栏（A/B 态显示，C 态隐藏） -->
       <ConversationSidebar
         v-if="showSidebar"
@@ -267,6 +478,7 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
         :groups="conversationGroups"
         :active-conversation-id="activeConversationId"
         :user-name="userName"
+        :is-authenticated="isAuthenticated"
         :loading="Boolean(aiRef?.conversationListLoading)"
         :is-desktop="isDesktop"
         @new-conversation="handleNewConversation"
@@ -274,33 +486,41 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
         @delete-conversation="handleDeleteConversation"
         @open-search="handleNewConversation"
         @open-settings="openSettings"
-        @open-help="openSettings"
+        @open-account="openAccount"
+        @open-login="openLogin"
+        @logout="() => void handleLogout()"
         @start-resize="startSidebarResize"
       />
 
-      <!-- 中央区：AI 常驻层 + 业务面板。
-           三态只换 flex 方向与 order，AI 实例永不卸载（流式不中断）。 -->
+      <!-- 中央区：AI 常驻层 + 业务面板 + GlobalComposer 宿主。
+           三态只换 flex / 显隐，AI 实例永不卸载（流式不中断）。 -->
       <div
+        ref="workspaceMainRef"
+        data-testid="shell-workspace-main"
         class="relative flex min-h-0 min-w-0 flex-1 overflow-hidden"
         :class="shellState === 'focus' ? 'flex-col' : 'flex-row'"
       >
-        <!-- AI 工作区（A/B 满列；C 退化为底部 Composer 条） -->
+        <!-- AI 工作区（A/B 满列；C 隐藏列但实例保活，Composer 改浮动宿主） -->
         <div
-          :class="
-            shellState === 'focus'
-              ? 'order-2 w-full shrink-0 border-t border-border'
-              : 'order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'
-          "
+          v-show="shellState !== 'focus'"
+          ref="aiColumnRef"
+          data-testid="shell-ai-column"
+          class="order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
         >
           <AIChatView
             ref="aiRef"
-            class="h-full w-full"
+            class="min-h-0 w-full flex-1"
             hide-conversation-sidebar
-            :composer-only="shellState === 'focus'"
+          />
+          <GlobalComposer
+            v-if="shellState !== 'focus'"
+            mode="inline"
+            :host-width="aiColumnWidth"
+            @height-change="onComposerHeightChange"
           />
         </div>
 
-        <!-- 业务面板（B 态右侧固定宽；C 态满屏） -->
+        <!-- 业务面板（B 态右侧固定宽；C 态满屏 + Composer 底部安全区） -->
         <div
           v-if="showPanel"
           :class="
@@ -308,7 +528,10 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
               ? 'order-1 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'
               : 'order-2 hidden h-full min-h-0 shrink-0 flex-col overflow-hidden md:flex'
           "
-          :style="shellState === 'split' ? { width: panelWidth + 'px' } : undefined"
+          :style="{
+            ...(shellState === 'split' ? { width: effectivePanelWidth() + 'px' } : {}),
+            ...(shellState === 'focus' ? { paddingBottom: focusComposerPad + 'px' } : {}),
+          }"
         >
           <BusinessPanel
             :tabs="tabs"
@@ -319,6 +542,7 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
             @close-panel="() => void sync.closePanel()"
             @toggle-focus="store.toggleFocus()"
             @start-resize="startPanelResize"
+            @reset-width="resetPanelWidth"
           >
             <PanelErrorBoundary :reset-key="activeTabId">
               <router-view v-slot="{ Component }">
@@ -333,7 +557,20 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
             </PanelErrorBoundary>
           </BusinessPanel>
         </div>
+
+        <!-- STATE C：相对业务工作区宿主居中的浮动 Composer（§8.4） -->
+        <GlobalComposer
+          v-if="shellState === 'focus'"
+          mode="floating"
+          :host-width="workspaceMainWidth"
+          @height-change="onComposerHeightChange"
+        />
       </div>
     </div>
   </div>
 </template>
+
+
+
+
+

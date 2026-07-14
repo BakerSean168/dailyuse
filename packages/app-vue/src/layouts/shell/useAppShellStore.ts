@@ -5,10 +5,11 @@
  * （split / focus）、侧栏与面板宽度。localStorage 持久化实现"会话恢复"
  * （重启后还原上次打开的 Tabs + 各自路由 + 布局偏好，V2 §11 拍板）。
  *
- * 契约（docs/UI_REDESIGN_V2_PLAN.md）：
+ * 契约（docs/UI_REDESIGN_V2_PLAN.md + 2026-07-14 壳层诊断修订）：
  * - §2.3 多 Tab：胶囊/深链落 Tab（同 module 已开则激活，否则新开）；
  *   上限 8，超限时最久未激活的 Tab 作为候选返回给 UI 提示（不自动关，避免丢状态）。
  * - §1.1 三态：A 纯 AI（无 Tab）/ B 分栏（split）/ C 专注（focus）。
+ * - STATE D 独立 Settings 不属于 BusinessTab / ShellModule。
  * - KeepAlive :include 由 tabs 派生，Tab 保活编辑器脏状态。
  *
  * 本 store 只存视图状态；URL 是活动 Tab 路由的持久化形式（§4），
@@ -16,6 +17,7 @@
  * 不在此处直连 router。
  */
 import { defineStore } from 'pinia';
+import { PANEL_MIN, computePanelGeometry } from './panelGeometry';
 
 /** 面板可容纳的最大 Tab 数（V2 §2.3 建议 8）。 */
 export const MAX_BUSINESS_TABS = 8;
@@ -23,53 +25,45 @@ export const MAX_BUSINESS_TABS = 8;
 const SIDEBAR_MIN = 200;
 const SIDEBAR_MAX = 400;
 const SIDEBAR_DEFAULT = 260;
-const PANEL_MIN = 320;
-const PANEL_MAX = 750;
-const PANEL_DEFAULT = 450;
+// 面板绝对像素上下限由 panelGeometry 动态计算；此处仅保留偏好默认值种子。
+const PANEL_PREFERRED_DEFAULT = 450;
 
 export type ShellLayout = 'split' | 'focus';
 
-/** 胶囊/深链可落地的业务模块标识。 */
+/**
+ * 布局来源（诊断修订 §4.2）：
+ * - default：新开业务面板的初始状态；
+ * - user：最大化/最小化按钮触发，空间恢复后不自动改回；
+ * - viewport：空间不足自动触发，可在空间恢复后回到 split。
+ */
+export type ShellLayoutReason = 'default' | 'user' | 'viewport';
+
+/** 胶囊/深链可落地的业务模块标识。Settings 已升为独立场景，不在此列。 */
 export type ShellModule =
   | 'goal'
   | 'task'
   | 'note'
   | 'reminder'
   | 'notification'
-  | 'schedule'
-  | 'setting';
+  | 'schedule';
 
 export interface BusinessTab {
-  /** 稳定标识，作为 <KeepAlive> include 名与 Tab key。 */
   id: string;
-  /** 所属业务模块（决定图标与"同模块激活而非新开"规则）。 */
   module: ShellModule;
-  /** 该 Tab 当前的路由 fullPath（切换 Tab 时 router.replace 到此）。 */
   route: string;
-  /** Tab 标题（模块名或具体对象名，如「🎯 知行 UI 重构」）。 */
   title: string;
-  /** 最近激活时间戳（LRU 淘汰候选依据）。 */
   lastActiveAt: number;
 }
 
-interface OpenTabInput {
+export interface OpenTabInput {
   module: ShellModule;
   route: string;
   title: string;
-  /**
-   * 打开方式：'capsule' 同模块已存在则激活现有（不新开）；
-   * 'deeplink' 同路由已开着才激活，否则一律新开（AI 产物/深链不抢占）。
-   */
   intent: 'capsule' | 'deeplink';
 }
 
-interface OpenTabResult {
-  /** 落地的 Tab id（激活的或新开的）。 */
+export interface OpenTabResult {
   tabId: string;
-  /**
-   * 超过 MAX_BUSINESS_TABS 时，最久未激活的 Tab id，供 UI 提示用户关闭。
-   * 未超限则为 null。不自动关闭（避免丢未保存状态）。
-   */
   evictionCandidateId: string | null;
 }
 
@@ -77,10 +71,25 @@ interface AppShellState {
   tabs: BusinessTab[];
   activeTabId: string | null;
   layout: ShellLayout;
+  layoutReason: ShellLayoutReason;
   sidebarCollapsed: boolean;
   sidebarWidth: number;
+  /**
+   * 用户偏好面板宽度（像素）。
+   * 渲染时用 computePanelGeometry clamp；窗口缩放不回写此值，
+   * 避免把临时约束永久固化（侧栏折叠后应能回到更宽偏好）。
+   */
   panelWidth: number;
 }
+
+const BUSINESS_MODULES = new Set<ShellModule>([
+  'goal',
+  'task',
+  'note',
+  'reminder',
+  'notification',
+  'schedule',
+]);
 
 let tabSeq = 0;
 function nextTabId(module: ShellModule): string {
@@ -92,14 +101,19 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function isBusinessModule(value: unknown): value is ShellModule {
+  return typeof value === 'string' && BUSINESS_MODULES.has(value as ShellModule);
+}
+
 export const useAppShellStore = defineStore('app-shell', {
   state: (): AppShellState => ({
     tabs: [],
     activeTabId: null,
     layout: 'split',
+    layoutReason: 'default',
     sidebarCollapsed: false,
     sidebarWidth: SIDEBAR_DEFAULT,
-    panelWidth: PANEL_DEFAULT,
+    panelWidth: PANEL_PREFERRED_DEFAULT,
   }),
 
   getters: {
@@ -186,6 +200,8 @@ export const useAppShellStore = defineStore('app-shell', {
 
       if (this.tabs.length === 0) {
         this.activeTabId = null;
+        this.layout = 'split';
+        this.layoutReason = 'default';
         return null;
       }
 
@@ -204,6 +220,25 @@ export const useAppShellStore = defineStore('app-shell', {
     closeAllTabs(): void {
       this.tabs = [];
       this.activeTabId = null;
+      this.layout = 'split';
+      this.layoutReason = 'default';
+    },
+
+    /**
+     * 清理历史持久化中的 Settings Tab 等非业务模块条目。
+     * Settings 已升级为独立场景，不再属于 BusinessTab。
+     */
+    sanitizeLegacyTabs(): void {
+      const next = this.tabs.filter((tab) => isBusinessModule(tab.module));
+      if (next.length === this.tabs.length) return;
+      this.tabs = next;
+      if (this.activeTabId && !next.some((tab) => tab.id === this.activeTabId)) {
+        this.activeTabId = next.length > 0 ? next[next.length - 1]!.id : null;
+      }
+      if (next.length === 0) {
+        this.layout = 'split';
+        this.layoutReason = 'default';
+      }
     },
 
     /** 更新某 Tab 的当前路由（Tab 内导航时由 AppShell 回写）。 */
@@ -212,13 +247,15 @@ export const useAppShellStore = defineStore('app-shell', {
       if (tab) tab.route = route;
     },
 
-    setLayout(layout: ShellLayout): void {
+    setLayout(layout: ShellLayout, reason: ShellLayoutReason = 'default'): void {
       this.layout = layout;
+      this.layoutReason = reason;
     },
 
-    /** B ⇄ C 切换（分栏 ⇄ 专注）。 */
+    /** B ⇄ C 切换（分栏 ⇄ 专注）；用户显式操作。 */
     toggleFocus(): void {
       this.layout = this.layout === 'focus' ? 'split' : 'focus';
+      this.layoutReason = 'user';
     },
 
     toggleSidebar(): void {
@@ -233,12 +270,44 @@ export const useAppShellStore = defineStore('app-shell', {
       this.sidebarWidth = clamp(width, SIDEBAR_MIN, SIDEBAR_MAX);
     },
 
+    /**
+     * 写入用户偏好面板宽度（仅用户拖拽/双击重置调用）。
+     * 窗口 resize 不得调用此方法写入 clamp 结果。
+     */
     setPanelWidth(width: number): void {
-      this.panelWidth = clamp(width, PANEL_MIN, PANEL_MAX);
+      if (!Number.isFinite(width)) return;
+      this.panelWidth = Math.max(PANEL_MIN, Math.round(width));
+    },
+
+    /**
+     * 按当前视口与侧栏占用计算合法有效宽度（不回写偏好）。
+     * 渲染层 / 拖拽结束校验使用。
+     */
+    resolvePanelWidth(viewportWidth: number, sidebarOccupiedWidth: number): number {
+      return computePanelGeometry({
+        viewportWidth,
+        sidebarOccupiedWidth,
+        preferredPanelWidth: this.panelWidth,
+      }).panelWidth;
+    },
+
+    /**
+     * @deprecated 使用 resolvePanelWidth；保留别名以免外部残留调用。
+     * 不再回写 panelWidth。
+     */
+    clampPanelWidthToViewport(viewportWidth: number, sidebarOccupiedWidth: number): number {
+      return this.resolvePanelWidth(viewportWidth, sidebarOccupiedWidth);
     },
   },
 
   persist: {
-    pick: ['tabs', 'activeTabId', 'layout', 'sidebarWidth', 'panelWidth'] as string[],
+    pick: [
+      'tabs',
+      'activeTabId',
+      'layout',
+      'layoutReason',
+      'sidebarWidth',
+      'panelWidth',
+    ] as string[],
   },
 });

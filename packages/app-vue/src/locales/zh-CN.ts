@@ -151,6 +151,15 @@ export default {
     moduleNav: '模块导航',
     enterModule: '进入',
     previewPlaceholder: '预览内容即将到来。',
+    preview: {
+      goalEmpty: '暂无活跃目标',
+      taskEmpty: '今日暂无任务',
+      taskAllDone: '今日待办已完成',
+      noteEmpty: '暂无最近笔记',
+      noteResource: '笔记',
+      reminderEmpty: '今日没有剩余提醒',
+      allDay: '全天',
+    },
     openSchedule: '打开日程',
     aiWorkspacePlaceholder: 'AI 工作区（待接线）',
     schedule: {
@@ -181,6 +190,26 @@ export default {
     composer: {
       placeholder: '给知行 AI 发消息…',
       send: '发送',
+    },
+    settings: {
+      returnToApp: '返回应用',
+      sceneTitle: '设置',
+    },
+    account: {
+      menu: '账户菜单',
+      signedIn: '已登录',
+      guestIdentity: '访客身份',
+      accountAndPrivacy: '账户与隐私',
+      settings: '设置',
+      logout: '退出登录',
+      loginOrRegister: '登录/注册',
+    },
+    helpMenu: {
+      shortcuts: '快捷键',
+      guide: '使用指南',
+      feedback: '问题反馈',
+      about: '关于',
+      soon: '即将推出',
     },
   },
 

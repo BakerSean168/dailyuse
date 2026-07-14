@@ -3,17 +3,16 @@ import { defineComponent, h, nextTick, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 
 /**
- * Probe for S2-Notification capsule preview wiring (V2 §6.5 / §2.2):
- * - clicking notification capsule opens dedicated preview (not generic placeholder)
+ * Probe for capsule preview wiring (V2 §6.5 / §10):
+ * - notification + goal (and other modules) open dedicated previews, not generic placeholders
  * - view-all closes preview and enters module
- * - non-notification capsules keep generic placeholder + enter
  */
 function mountCapsulePreviewProbe() {
   const previewOpenId = ref<string | null>(null);
   const entered = ref<string | null>(null);
 
   const Probe = defineComponent({
-    name: 'NotificationCapsulePreviewProbe',
+    name: 'CapsulePreviewProbe',
     setup() {
       function toggle(id: string) {
         previewOpenId.value = previewOpenId.value === id ? null : id;
@@ -55,11 +54,11 @@ function mountCapsulePreviewProbe() {
             : null,
           previewOpenId.value === 'goal'
             ? h('div', { 'data-testid': 'capsule-preview-goal' }, [
-                h('div', { 'data-testid': 'generic-preview-placeholder' }, 'placeholder'),
+                h('div', { 'data-testid': 'goal-capsule-preview' }, 'goals'),
                 h(
                   'button',
                   {
-                    'data-testid': 'capsule-preview-enter-goal',
+                    'data-testid': 'goal-capsule-view-all',
                     onClick: () => enter('goal'),
                   },
                   'enter',
@@ -74,8 +73,8 @@ function mountCapsulePreviewProbe() {
   return mount(Probe);
 }
 
-describe('Notification capsule preview wiring (V2 §6.5)', () => {
-  it('opens the notification-specific preview and enters the inbox via view-all', async () => {
+describe('Capsule preview wiring (V2 §6.5 / §10)', () => {
+  it('opens module-specific previews and enters via view-all', async () => {
     const wrapper = mountCapsulePreviewProbe();
 
     await wrapper.get('[data-testid="capsule-nav-notification"]').trigger('click');
@@ -90,8 +89,12 @@ describe('Notification capsule preview wiring (V2 §6.5)', () => {
 
     await wrapper.get('[data-testid="capsule-nav-goal"]').trigger('click');
     await nextTick();
-    expect(wrapper.find('[data-testid="generic-preview-placeholder"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="notification-capsule-preview"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="goal-capsule-preview"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="generic-preview-placeholder"]').exists()).toBe(false);
+
+    await wrapper.get('[data-testid="goal-capsule-view-all"]').trigger('click');
+    await nextTick();
+    expect(wrapper.get('[data-testid="entered"]').text()).toBe('goal');
 
     wrapper.unmount();
   });

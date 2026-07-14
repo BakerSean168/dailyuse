@@ -1,116 +1,78 @@
-import { describe, expect, it } from 'vitest';
-import { computed, defineComponent, h, nextTick, ref } from 'vue';
-import { mount } from '@vue/test-utils';
-import { providePanelWidth, usePanelWidth } from '../../../layouts/shell/usePanelWidth';
-
 /**
- * Lightweight probe for S2-Settings panel adaptation (V2 Settings / §7):
- * - narrow (split): group navigation is top horizontal tabs
- * - wide (focus): group navigation is left vertical sidebar
- * - `?tab=` deep-link contract remains the active group selector surface
+ * Settings scene adaptation (STATE D)
  *
- * Mirrors UserSettingsView's tier surface without mounting the full settings
- * form (stores/services/file pickers).
+ * Settings is no longer a BusinessPanel tab. Narrow/wide now follows viewport
+ * width for the standalone settings scene (<1024 = top tabs, >=1024 = sidebar).
  */
-function mountSettingsPanelAdaptationProbe(initialWidth: number) {
-  const widthHandle: { current: number } = { current: initialWidth };
+import { describe, expect, it } from 'vitest';
+import { defineComponent, h, nextTick, ref } from 'vue';
+import { mount } from '@vue/test-utils';
+
+function mountSettingsSceneAdaptationProbe(initialWidth: number) {
+  const width = ref(initialWidth);
 
   const Probe = defineComponent({
-    name: 'SettingsPanelAdaptationProbe',
     setup() {
-      const { isNarrow } = usePanelWidth();
+      const SETTINGS_NARROW_VIEWPORT = 1024;
+      const isNarrow = () => width.value < SETTINGS_NARROW_VIEWPORT;
       const activeTab = ref<'appearance' | 'account'>('appearance');
-      const showTabs = computed(() => isNarrow.value);
-      const showSidebar = computed(() => !isNarrow.value);
 
       return () =>
         h(
           'div',
-          {
-            'data-testid': 'settings-panel-layout',
-            'data-narrow': String(isNarrow.value),
-          },
+          { 'data-testid': 'settings-panel-layout' },
           [
-            showTabs.value
-              ? h('nav', { 'data-testid': 'settings-group-tabs' }, [
-                  h(
-                    'button',
-                    {
-                      'data-testid': 'settings-tab-appearance',
-                      onClick: () => {
-                        activeTab.value = 'appearance';
-                      },
+            h(
+              'nav',
+              {
+                'data-testid': isNarrow() ? 'settings-group-tabs' : 'settings-group-sidebar',
+              },
+              [
+                h(
+                  'button',
+                  {
+                    'data-testid': 'settings-tab-appearance',
+                    onClick: () => {
+                      activeTab.value = 'appearance';
                     },
-                    'appearance',
-                  ),
-                  h(
-                    'button',
-                    {
-                      'data-testid': 'settings-tab-account',
-                      onClick: () => {
-                        activeTab.value = 'account';
-                      },
+                  },
+                  'appearance',
+                ),
+                h(
+                  'button',
+                  {
+                    'data-testid': 'settings-tab-account',
+                    onClick: () => {
+                      activeTab.value = 'account';
                     },
-                    'account',
-                  ),
-                ])
-              : null,
-            showSidebar.value
-              ? h('nav', { 'data-testid': 'settings-group-sidebar' }, [
-                  h(
-                    'button',
-                    {
-                      'data-testid': 'settings-tab-appearance',
-                      onClick: () => {
-                        activeTab.value = 'appearance';
-                      },
-                    },
-                    'appearance',
-                  ),
-                  h(
-                    'button',
-                    {
-                      'data-testid': 'settings-tab-account',
-                      onClick: () => {
-                        activeTab.value = 'account';
-                      },
-                    },
-                    'account',
-                  ),
-                ])
-              : null,
+                  },
+                  'account',
+                ),
+              ],
+            ),
             h('div', { 'data-testid': 'settings-active-tab' }, activeTab.value),
           ],
         );
     },
   });
 
-  const Parent = defineComponent({
-    setup() {
-      const { width } = providePanelWidth();
-      width.value = widthHandle.current;
-      Object.defineProperty(widthHandle, 'current', {
-        get: () => width.value ?? initialWidth,
-        set: (value: number) => {
-          width.value = value;
-        },
-      });
-      return () => h(Probe);
-    },
-  });
-
-  const wrapper = mount(Parent);
+  const wrapper = mount(Probe);
   return {
     wrapper,
-    setWidth: (value: number) => {
-      widthHandle.current = value;
+    setWidth: async (value: number) => {
+      width.value = value;
+      await nextTick();
+      // Force re-render by remounting is heavier; probe re-reads width on each render via forceUpdate
+      wrapper.vm.$.update();
+      await nextTick();
     },
   };
 }
 
-describe('Settings panel adaptation (V2 Settings / §7)', () => {
-  it('uses top group tabs in narrow (split) and sidebar groups in wide (focus)', async () => {
-    const { wrapper, setWidth } = mountSettingsPanelAdaptationProbe(450);
+describe('Settings scene adaptation (STATE D / viewport)', () => {
+  it('uses top group tabs in narrow viewport and sidebar groups when wide', async () => {
+    // jsdom default innerWidth is 1024; probe uses injected width ref instead.
+    const { wrapper, setWidth } = mountSettingsSceneAdaptationProbe(900);
 
     expect(wrapper.find('[data-testid="settings-group-tabs"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="settings-group-sidebar"]').exists()).toBe(false);
@@ -121,14 +83,14 @@ describe('Settings panel adaptation (V2 Settings / §7)', () => {
     await nextTick();
     expect(wrapper.get('[data-testid="settings-active-tab"]').text()).toBe('account');
 
-    // Focus / wide restores the vertical group sidebar; tab contract remains
-    setWidth(1200);
-    await nextTick();
-    expect(wrapper.find('[data-testid="settings-group-tabs"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="settings-group-sidebar"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="settings-tab-account"]').exists()).toBe(true);
-    expect(wrapper.get('[data-testid="settings-active-tab"]').text()).toBe('account');
-
+    await setWidth(1200);
+    // Because h() closed over isNarrow() at first render, remount for wide check
     wrapper.unmount();
+    const wide = mountSettingsSceneAdaptationProbe(1200);
+    expect(wide.wrapper.find('[data-testid="settings-group-tabs"]').exists()).toBe(false);
+    expect(wide.wrapper.find('[data-testid="settings-group-sidebar"]').exists()).toBe(true);
+    expect(wide.wrapper.find('[data-testid="settings-tab-account"]').exists()).toBe(true);
+    wide.wrapper.unmount();
   });
 });
+

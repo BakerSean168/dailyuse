@@ -1,5 +1,5 @@
 /**
- * Shell Router ↔ Tab Sync (UI 重构 V2 §4)
+ * Shell Router ↔ Tab Sync (UI 重构 V2 §4 + 2026-07-14 壳层诊断修订)
  *
  * URL 是活动 Tab 路由的持久化形式：
  * - URL → 面板：路由变化按 §2.3 打开规则落 Tab（精确路由已开 → 激活；
@@ -7,6 +7,8 @@
  * - 面板 → URL：切 Tab = router.replace 到该 Tab 路由（不污染 history）；
  *   关最后一个 Tab / 面板 ✕ = router.push('/')。
  * - `/` = 无面板（STATE A）→ 清空 Tab 集合。
+ * - `/settings` / `/account` = STATE D 独立设置场景：不创建 BusinessTab，
+ *   不修改 layout；后台 tabs 保留，返回时恢复。
  * - 会话恢复：挂载时若 URL 为 `/` 且 store 里有持久化 Tab，则 replace 回
  *   活动 Tab 的路由（V2 §11 拍板：localStorage 恢复 Tab 列表）。
  *
@@ -18,12 +20,17 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type { RouteLocationNormalizedGeneric } from 'vue-router';
-import { useAppShellStore, type ShellModule } from './useAppShellStore';
+import {
+  useAppShellStore,
+  type ShellLayoutReason,
+  type ShellModule,
+} from './useAppShellStore'
+import { computePanelGeometry } from './panelGeometry';
 
 /** 分栏放不下的窗口宽度阈值：新开面板自动升专注态（V2 §1.1 / §7）。 */
-const AUTO_FOCUS_VIEWPORT = 1024;
+export const AUTO_FOCUS_VIEWPORT = 1024;
 
-/** 路由前缀 → 业务模块归属（V2 §3 模块矩阵；一条路由都不删）。 */
+/** 路由前缀 → 业务模块归属（V2 §3 模块矩阵；Settings 已移出）。 */
 const MODULE_PREFIXES: Array<[prefix: string, module: ShellModule]> = [
   ['/goals', 'goal'],
   ['/tasks', 'task'],
@@ -34,8 +41,6 @@ const MODULE_PREFIXES: Array<[prefix: string, module: ShellModule]> = [
   ['/notifications', 'notification'],
   ['/sse-monitor', 'notification'],
   ['/schedule', 'schedule'],
-  ['/settings', 'setting'],
-  ['/account', 'setting'],
 ];
 
 /** Tab 标题的 i18n key（S1 用模块名；S2 起换具体对象名）。 */
@@ -46,20 +51,46 @@ export const MODULE_TITLE_KEYS: Record<ShellModule, string> = {
   reminder: 'nav.capsule.reminder',
   notification: 'nav.capsule.notification',
   schedule: 'nav.schedule',
-  setting: 'nav.settings',
 };
 
-/** 进入即建议 focus 的模块（V2 §3 Settings / §6.3 Schedule）。 */
-export function shouldOpenInFocus(module: ShellModule): boolean {
-  return module === 'setting' || module === 'schedule';
+/** Settings / Account 独立场景：不落 BusinessTab。 */
+export function isStandaloneSettingsPath(path: string): boolean {
+  const bare = path.split('?')[0] ?? path;
+  return bare === '/settings' || bare.startsWith('/settings/') || bare === '/account' || bare.startsWith('/account/');
 }
 
 /** 判定一条路由路径归属哪个业务模块；壳外/未知路径返回 null。 */
 export function moduleForPath(path: string): ShellModule | null {
+  if (isStandaloneSettingsPath(path)) return null;
   for (const [prefix, module] of MODULE_PREFIXES) {
     if (path === prefix || path.startsWith(`${prefix}/`)) return module;
   }
   return null;
+}
+
+/**
+ * 新开业务面板时的布局建议（诊断修订 §4）：
+ * - 窄窗口 → focus + viewport（可自动恢复）；
+ * - 宽窗口 → 仅当当前不是用户主动 focus 时回到 split。
+ */
+export function resolveEntryLayout(
+  viewportWidth: number,
+  currentLayout: 'split' | 'focus',
+  currentReason: ShellLayoutReason,
+  /** 几何上是否还能同时保证 CHAT_MIN + PANEL_MIN；默认 true 兼容旧调用。 */
+  canSplit = true,
+): { layout: 'split' | 'focus'; reason: ShellLayoutReason } | null {
+  if (viewportWidth < AUTO_FOCUS_VIEWPORT || !canSplit) {
+    if (currentLayout === 'focus' && currentReason === 'viewport') return null;
+    return { layout: 'focus', reason: 'viewport' };
+  }
+  if (currentReason === 'user' && currentLayout === 'focus') {
+    return null;
+  }
+  if (currentLayout === 'split' && currentReason === 'default') {
+    return null;
+  }
+  return { layout: 'split', reason: 'default' };
 }
 
 export function useShellRouterSync() {
@@ -72,20 +103,29 @@ export function useShellRouterSync() {
     return t(MODULE_TITLE_KEYS[module]);
   }
 
-  function maybeAutoFocus(module: ShellModule): void {
-    // Settings 默认 focus（V2 §3）；Schedule 日历天然要宽度，进入即建议 focus（V2 §6.3）。
-    // 窄窗口分栏放不下时，其它模块也自动升专注态。
-    if (shouldOpenInFocus(module)) {
-      store.setLayout('focus');
-      return;
-    }
-    if (typeof window !== 'undefined' && window.innerWidth < AUTO_FOCUS_VIEWPORT) {
-      store.setLayout('focus');
-    }
+  function maybeAutoFocus(): void {
+    if (typeof window === 'undefined') return;
+    const geo = computePanelGeometry({
+      viewportWidth: window.innerWidth,
+      // 使用分栏态侧栏占用，避免 focus 隐藏侧栏后 canSplit 抖动。
+      sidebarOccupiedWidth: store.sidebarCollapsed ? 0 : store.sidebarWidth,
+    });
+    const next = resolveEntryLayout(
+      window.innerWidth,
+      store.layout,
+      store.layoutReason,
+      geo.canSplit,
+    );
+    if (next) store.setLayout(next.layout, next.reason);
   }
 
   /** URL → 面板状态（V2 §4）。 */
-  function syncRouteToStore(to: Pick<RouteLocationNormalizedGeneric, 'path' | 'fullPath'>): void {
+  function syncRouteToStore(to: Pick<RouteLocationNormalizedGeneric, 'path' | 'fullPath' | 'meta'>): void {
+    // STATE D：独立设置场景不创建/激活 BusinessTab，也不改 layout。
+    if (isStandaloneSettingsPath(to.path) || to.meta?.shellScene === 'settings') {
+      return;
+    }
+
     if (to.path === '/') {
       // `/` = 无面板（STATE A）。
       if (store.tabs.length > 0) store.closeAllTabs();
@@ -116,7 +156,7 @@ export function useShellRouterSync() {
       title: titleFor(module),
       intent: 'deeplink',
     });
-    maybeAutoFocus(module);
+    maybeAutoFocus();
     if (evictionCandidateId) {
       const candidate = store.tabs.find((tab) => tab.id === evictionCandidateId);
       toast.info(t('shell.panel.tabLimitHint', { title: candidate?.title ?? '' }));
@@ -171,16 +211,36 @@ export function useShellRouterSync() {
 
   /**
    * 胶囊「进入」（V2 §2.3）：已有该模块 Tab → 激活；否则导航到模块落地路由
-   * （afterEach 落成新 Tab）。
+   * （afterEach 落成新 Tab）。Schedule 与其它业务模块规则一致，不再强制 focus。
    */
   async function openModule(module: ShellModule, landingRoute: string): Promise<void> {
     const existing = store.tabs.find((tab) => tab.module === module);
     if (existing) {
       await activateTab(existing.id);
-      if (shouldOpenInFocus(module)) store.setLayout('focus');
       return;
     }
     await router.push(landingRoute).catch(() => {});
+  }
+
+  /** 打开独立设置场景：只改路由，不碰 tabs / layout。 */
+  async function openSettings(path = '/settings'): Promise<void> {
+    if (route.fullPath === path || (path === '/settings' && route.path === '/settings' && !route.query.tab)) {
+      return;
+    }
+    await router.push(path).catch(() => {});
+  }
+
+  /** 从设置返回应用：优先恢复后台业务 Tab，否则 `/`。 */
+  async function returnFromSettings(): Promise<void> {
+    if (store.activeTab) {
+      await router.push(store.activeTab.route).catch(() => {});
+      return;
+    }
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    await router.push('/').catch(() => {});
   }
 
   /** 回 STATE A（新对话 / 关面板后的地面态）。 */
@@ -197,6 +257,8 @@ export function useShellRouterSync() {
   let removeAfterEach: (() => void) | null = null;
 
   onMounted(() => {
+    store.sanitizeLegacyTabs();
+
     // 持久化状态自愈：activeTabId 必须指向存在的 Tab。
     if (store.activeTabId && !store.tabs.some((tab) => tab.id === store.activeTabId)) {
       store.activeTabId = store.tabs.length > 0 ? store.tabs[store.tabs.length - 1]!.id : null;
@@ -209,6 +271,11 @@ export function useShellRouterSync() {
       if (failure) return;
       syncRouteToStore(to);
     });
+
+    // 独立设置深链：保留后台 tabs，不覆盖到业务 Tab。
+    if (isStandaloneSettingsPath(route.path) || route.meta.shellScene === 'settings') {
+      return;
+    }
 
     // 会话恢复：URL 在 `/` 且有持久化 Tab → 回到活动 Tab 的路由。
     if (route.path === '/' && store.activeTab) {
@@ -229,6 +296,8 @@ export function useShellRouterSync() {
     closeTab,
     closePanel,
     openModule,
+    openSettings,
+    returnFromSettings,
     goHome,
   };
 }

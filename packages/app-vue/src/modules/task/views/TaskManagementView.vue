@@ -1,13 +1,19 @@
 <template>
-  <div class="h-full" data-testid="task-management-view">
-    <ListPageShell :title="t('task.management.title')" :description="countLabel">
-      <template #actions>
-        <Button data-testid="create-task-template-button" size="sm" @click="handleCreate">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden" data-testid="task-management-view">
+    <!-- 面板内容头：不再复读 Tab 模块标题，只保留计数 + 主操作（§7.1） -->
+    <header
+      class="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-border px-3"
+      data-testid="task-panel-header"
+    >
+      <p class="truncate text-xs text-muted-foreground" data-testid="task-count-label">
+        {{ countLabel }}
+      </p>
+      <div class="flex shrink-0 items-center gap-1">
+        <Button data-testid="create-task-template-button" size="sm" class="h-8" @click="handleCreate">
           <Plus class="mr-1.5 h-4 w-4" />
           {{ t('task.templateMgmt.createNew') }}
         </Button>
 
-        <!-- ⋯ 次操作菜单：破坏性操作收进危险区（§0.1） -->
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="ghost" size="icon" class="h-8 w-8" data-testid="task-more-actions">
@@ -26,20 +32,19 @@
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </template>
+      </div>
+    </header>
 
-      <template #filter>
-        <TaskFilterBar
-          v-model:status="currentStatus"
-          v-model:relation="currentRelation"
-          v-model:search="searchQuery"
-          v-model:view-mode="viewMode"
-          :status-options="statusOptions"
-          :relation-options="relationOptions"
-        />
-      </template>
+    <TaskFilterBar
+      v-model:status="currentStatus"
+      v-model:relation="currentRelation"
+      v-model:search="searchQuery"
+      v-model:view-mode="viewMode"
+      :status-options="statusOptions"
+      :relation-options="relationOptions"
+    />
 
-      <div id="task-template-management">
+    <div id="task-template-management" class="min-h-0 flex-1 overflow-y-auto p-3">
         <!-- 卡片视图；拖拽建依赖仅宽档（focus）启用（V2 §6.2 / §7） -->
         <template v-if="viewMode === 'card'">
           <p
@@ -93,8 +98,7 @@
             {{ t('task.templateMgmt.graphNarrowViewport') }}
           </p>
         </template>
-      </div>
-    </ListPageShell>
+    </div>
 
     <!-- 创建模板对话框 -->
     <TaskTemplateDialog
@@ -194,7 +198,6 @@ import {
   Label,
   useConfirm,
 } from '@dailyuse/ui-vue-shadcn';
-import ListPageShell from '../../../components/shared/ListPageShell.vue';
 import TaskFilterBar from '../components/TaskFilterBar.vue';
 import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
 import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';

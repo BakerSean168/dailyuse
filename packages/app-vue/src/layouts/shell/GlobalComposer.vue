@@ -1,50 +1,132 @@
 <script setup lang="ts">
 /**
- * GlobalComposer (UI 重构 V2 壳)
+ * GlobalComposer — shell-owned AI input host (UI 重构 V2 §8)
  *
- * 常驻 AI 输入条骨架。S1 切换后暂未挂载：真实 Composer 仍是 AIChatView
- * 内的 AIFooterComposer（常驻层单实例，专注态由 composer-only 模式收缩）。
- * 本组件是 S3「AI 工作区精修」的落点——届时 AIFooterComposer 的模式/
- * 模型选择逻辑收敛进来，成为壳级 Composer（V2 §6.0）。
+ * 壳层负责宿主矩形、密度与 focus 浮动定位；真实输入控件仍由 AIChatView
+ * 通过 Teleport 挂到本组件 mount 节点，避免拆分 chat session 状态。
+ *
+ * - inline：贴 AI 列底部（STATE A/B）
+ * - floating：相对业务工作区宿主居中（STATE C），底边稳定、宽度封顶
+ * - settings：壳不渲染本组件
  */
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { Send } from '@lucide/vue';
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from 'vue';
+import {
+  SHELL_COMPOSER_MOUNT_KEY,
+} from '../../di/keys';
+import {
+  COMPOSER_BOTTOM_GAP,
+  computeComposerLayout,
+  type ComposerLayoutMode,
+} from './panelGeometry';
+
+const props = withDefaults(
+  defineProps<{
+    mode?: ComposerLayoutMode;
+    /** 宿主宽度（floating 居中封顶；inline 可传 AI 列宽供观测）。 */
+    hostWidth?: number;
+    visible?: boolean;
+  }>(),
+  {
+    mode: 'inline',
+    hostWidth: 0,
+    visible: true,
+  },
+);
 
 const emit = defineEmits<{
-  (e: 'send', text: string): void;
+  (e: 'height-change', height: number): void;
 }>();
 
-const { t } = useI18n();
-const draft = ref('');
+const mountEl = ref<HTMLElement | null>(null);
+const shellMount = inject(SHELL_COMPOSER_MOUNT_KEY, null);
 
-function submit() {
-  const text = draft.value.trim();
-  if (!text) return;
-  emit('send', text);
-  draft.value = '';
+const layout = computed(() => computeComposerLayout(props.hostWidth || 0));
+
+const hostStyle = computed(() => {
+  if (props.mode !== 'floating') {
+    return {
+      width: '100%',
+    } as Record<string, string>;
+  }
+  return {
+    width: `${layout.value.width}px`,
+    maxWidth: '100%',
+    bottom: `${COMPOSER_BOTTOM_GAP}px`,
+  } as Record<string, string>;
+});
+
+function registerMount(el: HTMLElement | null) {
+  if (!shellMount) return;
+  shellMount.value = el;
 }
+
+function publishHeight() {
+  const height = mountEl.value?.offsetHeight ?? 0;
+  emit('height-change', height);
+}
+
+let resizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+  void nextTick(() => {
+    registerMount(mountEl.value);
+    publishHeight();
+    if (typeof ResizeObserver !== 'undefined' && mountEl.value) {
+      resizeObserver = new ResizeObserver(() => publishHeight());
+      resizeObserver.observe(mountEl.value);
+    }
+  });
+});
+
+watch(mountEl, (el) => {
+  registerMount(el);
+  publishHeight();
+});
+
+watch(
+  () => props.mode,
+  () => {
+    void nextTick(() => {
+      registerMount(mountEl.value);
+      publishHeight();
+    });
+  },
+);
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+  if (shellMount && shellMount.value === mountEl.value) {
+    shellMount.value = null;
+  }
+});
 </script>
 
 <template>
-  <div class="global-composer shrink-0 border-t border-border bg-background p-3" data-testid="global-composer">
-    <div class="mx-auto flex max-w-3xl items-end gap-2 rounded-xl border border-border bg-card p-2">
-      <textarea
-        v-model="draft"
-        rows="1"
-        class="max-h-40 min-h-[24px] flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none placeholder:text-muted-foreground"
-        :placeholder="t('shell.composer.placeholder')"
-        @keydown.enter.exact.prevent="submit"
-      />
-      <button
-        type="button"
-        class="shrink-0 rounded-lg bg-primary p-2 text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
-        :disabled="!draft.trim()"
-        :title="t('shell.composer.send')"
-        @click="submit"
-      >
-        <Send class="h-4 w-4" />
-      </button>
-    </div>
+  <div
+    v-show="visible"
+    class="global-composer pointer-events-none z-40"
+    :class="
+      mode === 'floating'
+        ? 'absolute inset-x-0 bottom-0 flex justify-center px-2'
+        : 'relative w-full shrink-0'
+    "
+    data-testid="global-composer"
+    :data-composer-mode="mode"
+  >
+    <div
+      ref="mountEl"
+      class="pointer-events-auto w-full"
+      :style="hostStyle"
+      data-testid="global-composer-mount"
+    />
   </div>
 </template>
