@@ -11,7 +11,7 @@
         "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm exec tsup --clean=false && pnpm exec tsc -p tsconfig.build.json --emitDeclarationOnly",
         "cwd": "packages/authentication"
       },
-      "dependsOn": ["^build", "database:build"]
+      "dependsOn": ["^build"]
     },
     "lint": {
       "executor": "@nx/eslint:lint",
