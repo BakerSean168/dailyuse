@@ -95,6 +95,6 @@ describe('ImageResourcePickerDialog', () => {
     await nextTick();
 
     expect(wrapper.emitted('select')?.[0]?.[0]).toMatchObject({ id: 'resource-1' });
-    expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);
+    expect(wrapper.emitted('update:open')?.slice(-1)[0]).toEqual([false]);
   });
 });

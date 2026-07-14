@@ -161,7 +161,7 @@ import {
   CheckCircle2,
   Loader2,
   FolderOpen,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import {
   Dialog,
   DialogContent,

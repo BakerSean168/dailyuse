@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Target, Lightbulb, CheckCircle, X, Plus } from 'lucide-vue-next';
+import { Target, Lightbulb, CheckCircle, X, Plus } from '@lucide/vue';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';

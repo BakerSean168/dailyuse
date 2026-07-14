@@ -100,7 +100,7 @@ import {
   Users,
   Pencil,
   Trash2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { cn } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';

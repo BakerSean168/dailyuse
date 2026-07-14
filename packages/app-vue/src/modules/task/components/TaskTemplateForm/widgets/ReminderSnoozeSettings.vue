@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Switch, Label, Input, Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Info } from 'lucide-vue-next';
+import { Info } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

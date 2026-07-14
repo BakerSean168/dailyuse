@@ -112,7 +112,7 @@ export function PageActionDrawer({
       visible>
       <View style={styles.modalRoot}>
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={() => handleClose()} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => handleClose()} />
         </Animated.View>
 
         <Animated.View style={[styles.drawerWrap, { transform: [{ translateX }] }]}>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(15, 20, 28, 0.36)',
   },
   drawerWrap: {

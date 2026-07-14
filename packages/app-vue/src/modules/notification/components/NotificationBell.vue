@@ -31,7 +31,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@dailyuse/ui-vue-shadcn';
-import { Bell } from 'lucide-vue-next';
+import { Bell } from '@lucide/vue';
 
 interface Props {
   unreadCount?: number;

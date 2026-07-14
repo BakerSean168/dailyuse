@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { Calendar, CheckCircle, Clock } from 'lucide-vue-next';
+import { Calendar, CheckCircle, Clock } from '@lucide/vue';
 import type { TaskInstanceViewModel } from '../types';
 import { useI18n } from 'vue-i18n';
 

@@ -92,7 +92,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@dailyuse/ui-vue-shadcn';
-import { MoreHorizontal } from 'lucide-vue-next';
+import { MoreHorizontal } from '@lucide/vue';
 import type { MenuAction } from './types';
 
 interface Props {

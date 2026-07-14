@@ -176,7 +176,7 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import { AlertCircle, MoreHorizontal, Plus, Trash2 } from 'lucide-vue-next';
+import { AlertCircle, MoreHorizontal, Plus, Trash2 } from '@lucide/vue';
 import {
   Alert,
   AlertDescription,

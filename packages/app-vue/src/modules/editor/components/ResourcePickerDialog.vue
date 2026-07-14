@@ -154,7 +154,7 @@ import {
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
 import { getResourceDisplayName } from '../../repository/utils/resource-presentation';
-import { File, FileImage, FileText, Film, Link2 } from 'lucide-vue-next';
+import { File, FileImage, FileText, Film, Link2 } from '@lucide/vue';
 import type {
   ResourceInsertionItem,
   ResourceInsertionKind,

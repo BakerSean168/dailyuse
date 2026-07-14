@@ -78,7 +78,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadc
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Loader2, Info } from 'lucide-vue-next';
+import { Loader2, Info } from '@lucide/vue';
 
 use([
   TitleComponent,

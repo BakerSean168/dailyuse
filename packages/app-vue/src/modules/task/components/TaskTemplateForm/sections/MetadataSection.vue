@@ -111,7 +111,7 @@ import {
   Badge,
   Input,
 } from '@dailyuse/ui-vue-shadcn';
-import { Info, X } from 'lucide-vue-next';
+import { Info, X } from '@lucide/vue';
 import type { TaskTemplateFormProps, TaskTemplateViewModel } from '../../types';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { useI18n } from 'vue-i18n';

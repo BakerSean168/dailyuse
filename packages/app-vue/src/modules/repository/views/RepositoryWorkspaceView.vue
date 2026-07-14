@@ -369,7 +369,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
-import { BookOpen, FilePlus, PanelLeftClose } from 'lucide-vue-next';
+import { BookOpen, FilePlus, PanelLeftClose } from '@lucide/vue';
 import {
   ResizablePanel,
   ResizablePanelGroup,

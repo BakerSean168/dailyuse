@@ -304,7 +304,7 @@ import {
   PopoverContent,
   Calendar,
 } from '@dailyuse/ui-vue-shadcn';
-import { MapPin, X, Loader2, Calendar as CalendarIcon } from 'lucide-vue-next';
+import { MapPin, X, Loader2, Calendar as CalendarIcon } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type { CalendarEntryClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 

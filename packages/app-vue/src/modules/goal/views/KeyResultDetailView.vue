@@ -145,7 +145,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import { ArrowLeft, Plus, History, TrendingUp } from 'lucide-vue-next';
+import { ArrowLeft, Plus, History, TrendingUp } from '@lucide/vue';
 import type { KeyResultId } from '@dailyuse/contracts/primitives';
 import {
   Button,

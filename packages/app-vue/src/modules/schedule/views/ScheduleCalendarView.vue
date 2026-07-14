@@ -104,7 +104,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
-import { CalendarDays, Calendar, CalendarRange, Plus } from 'lucide-vue-next';
+import { CalendarDays, Calendar, CalendarRange, Plus } from '@lucide/vue';
 import { Button, Separator } from '@dailyuse/ui-vue-shadcn';
 import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
 import DayViewCalendar from '../components/DayViewCalendar.vue';

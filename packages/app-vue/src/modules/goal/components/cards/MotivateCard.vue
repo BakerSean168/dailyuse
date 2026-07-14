@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Flag, Lightbulb, RefreshCw } from 'lucide-vue-next';
+import { Flag, Lightbulb, RefreshCw } from '@lucide/vue';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';

@@ -151,7 +151,7 @@ import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import { ArrowLeft, Star, Trophy, AlertTriangle, Lightbulb } from 'lucide-vue-next';
+import { ArrowLeft, Star, Trophy, AlertTriangle, Lightbulb } from '@lucide/vue';
 import {
   Button,
   Badge,

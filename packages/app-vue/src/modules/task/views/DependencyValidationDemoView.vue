@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft } from '@lucide/vue';
 import { Button, Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
 
 const { t } = useI18n();

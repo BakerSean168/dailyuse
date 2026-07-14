@@ -20,7 +20,6 @@ export default defineConfig({
     '@dailyuse/domain-shared',
     '@dailyuse/domain-shared/shared',
     '@dailyuse/patterns',
-    '@dailyuse/scheduler-server',
     'express',
     'zod',
   ],

@@ -14,7 +14,7 @@
  */
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { X } from 'lucide-vue-next';
+import { X } from '@lucide/vue';
 
 defineProps<{
   /** 是否有激活的工作流上下文（决定是否渲染） */

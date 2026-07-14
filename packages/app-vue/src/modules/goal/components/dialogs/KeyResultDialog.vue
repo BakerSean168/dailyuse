@@ -206,7 +206,7 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
-import { Target, Loader2 } from 'lucide-vue-next';
+import { Target, Loader2 } from '@lucide/vue';
 import { getKeyResultProgressPercentage } from '../../utils/progress';
 
 const { t } = useI18n();

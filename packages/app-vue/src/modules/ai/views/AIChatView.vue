@@ -277,7 +277,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Menu, PanelRightOpen, Plus } from 'lucide-vue-next';
+import { Menu, PanelRightOpen, Plus } from '@lucide/vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import type { AgentRun } from '@dailyuse/contracts/ai';
 import AIConversationSidebar from '../components/AIConversationSidebar.vue';

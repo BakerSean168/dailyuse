@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Search, FileSearch, Loader2, FileText, Hash, Folder, Code2, Tag } from 'lucide-vue-next';
+import { Search, FileSearch, Loader2, FileText, Hash, Folder, Code2, Tag } from '@lucide/vue';
 import { Card, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';

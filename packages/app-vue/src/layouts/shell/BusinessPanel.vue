@@ -24,7 +24,7 @@ import {
   Settings,
   Target,
   X,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { Component } from 'vue';
 import type { BusinessTab, ShellLayout, ShellModule } from './useAppShellStore';
 import { providePanelWidth } from './usePanelWidth';

@@ -11,7 +11,7 @@
  * @module di/navigation
  */
 
-import { AlarmClock, Bell, FileText, ListTodo, Target } from 'lucide-vue-next';
+import { AlarmClock, Bell, FileText, ListTodo, Target } from '@lucide/vue';
 import type { ModuleCapsule } from './types';
 
 /**

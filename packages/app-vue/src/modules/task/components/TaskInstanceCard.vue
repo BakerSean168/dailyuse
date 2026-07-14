@@ -42,7 +42,7 @@ import { computed } from 'vue';
 import { format } from 'date-fns';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { CheckCircle2, Circle, Clock, Check } from 'lucide-vue-next';
+import { CheckCircle2, Circle, Clock, Check } from '@lucide/vue';
 import type { TaskInstanceViewModel } from './types';
 
 // Props

@@ -69,7 +69,7 @@ import {
   CardContent,
   Button,
 } from '@dailyuse/ui-vue-shadcn';
-import { LayoutGrid, Loader2, FolderOpen, FileText } from 'lucide-vue-next';
+import { LayoutGrid, Loader2, FolderOpen, FileText } from '@lucide/vue';
 import type { TaskTemplateViewModel } from '../types';
 
 const { t } = useI18n();

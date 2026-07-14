@@ -75,7 +75,7 @@ import { computed, ref, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Music, FileQuestion, AlertCircle } from 'lucide-vue-next';
+import { Music, FileQuestion, AlertCircle } from '@lucide/vue';
 
 const { t } = useI18n();
 

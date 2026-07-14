@@ -81,7 +81,7 @@
  */
 import { computed, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ChevronDown, Folder, FolderPlus, LayoutGrid, Plus } from 'lucide-vue-next';
+import { ChevronDown, Folder, FolderPlus, LayoutGrid, Plus } from '@lucide/vue';
 import {
   Button,
   DropdownMenu,

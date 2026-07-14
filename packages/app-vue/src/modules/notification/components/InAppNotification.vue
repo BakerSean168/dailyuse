@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { X } from 'lucide-vue-next';
+import { X } from '@lucide/vue';
 import type { NotificationItem } from './types';
 
 interface Props {

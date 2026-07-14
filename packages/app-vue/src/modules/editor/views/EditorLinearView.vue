@@ -126,7 +126,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { FileX } from 'lucide-vue-next';
+import { FileX } from '@lucide/vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import ActiveDocumentPane from '../components/ActiveDocumentPane.vue';
 import ImageResourcePickerDialog from '../components/ImageResourcePickerDialog.vue';

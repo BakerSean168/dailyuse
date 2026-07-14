@@ -231,7 +231,7 @@ import {
   Trash2,
   Plus,
   Calendar as CalendarIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const { t } = useI18n();
 

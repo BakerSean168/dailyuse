@@ -8,7 +8,7 @@
  */
 import { useI18n } from 'vue-i18n';
 import { Button, Skeleton } from '@dailyuse/ui-vue-shadcn';
-import { ListChecks, Plus } from 'lucide-vue-next';
+import { ListChecks, Plus } from '@lucide/vue';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import type { TaskTemplateViewModel } from './types';

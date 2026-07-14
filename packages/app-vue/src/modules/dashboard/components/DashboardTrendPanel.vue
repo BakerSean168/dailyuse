@@ -15,7 +15,7 @@ import {
   CollapsibleTrigger,
   Skeleton,
 } from '@dailyuse/ui-vue-shadcn';
-import { ChevronDown, TrendingUp } from 'lucide-vue-next';
+import { ChevronDown, TrendingUp } from '@lucide/vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { LineChart, BarChart } from 'echarts/charts';

@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ArrowRight, ExternalLink, Plus, ListPlus, Trash2 } from 'lucide-vue-next';
+import { ArrowRight, ExternalLink, Plus, ListPlus, Trash2 } from '@lucide/vue';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';

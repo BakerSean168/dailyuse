@@ -207,7 +207,7 @@ import {
   Target,
   BellDot,
   HelpCircle,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 
 interface ScheduleStatisticsData {

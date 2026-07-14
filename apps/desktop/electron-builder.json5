@@ -14,7 +14,7 @@
     "node_modules/file-uri-to-path/**/*",
     "node_modules/undici/**/*"
   ],
-  "electronVersion": "39.2.6",
+  "electronVersion": "43.1.0",
   "productName": "Memoflow",
   "directories": {
     "output": "dist-package",

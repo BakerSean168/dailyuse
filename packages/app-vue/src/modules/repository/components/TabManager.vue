@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { computed, reactive, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PinIcon, PinOffIcon, XIcon, ArrowRightIcon } from 'lucide-vue-next';
+import { PinIcon, PinOffIcon, XIcon, ArrowRightIcon } from '@lucide/vue';
 import { Tabs, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import {
   DropdownMenu,

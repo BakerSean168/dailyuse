@@ -26,7 +26,7 @@ import {
   PanelLeftClose,
   Square,
   X,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { MODULE_CAPSULES_KEY } from '../../di/keys';
 import { defaultModuleCapsules } from '../../di/navigation';
 import type { ModuleCapsule } from '../../di/types';

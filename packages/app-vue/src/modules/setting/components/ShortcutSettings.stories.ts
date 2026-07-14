@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { Globe, FileEdit, CheckSquare, Target } from 'lucide-vue-next';
+import { Globe, FileEdit, CheckSquare, Target } from '@lucide/vue';
 import ShortcutSettings from './ShortcutSettings.vue';
 
 const mockCategories = [

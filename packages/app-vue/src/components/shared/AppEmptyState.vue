@@ -12,7 +12,7 @@ import type { Component } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 
 defineProps<{
-  /** lucide-vue-next 图标组件 */
+  /** @lucide/vue 图标组件 */
   icon?: Component;
   title: string;
   description?: string;

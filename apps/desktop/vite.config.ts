@@ -122,7 +122,7 @@ export default defineConfig(({ command, mode }) => {
     base: './',
     build: {
       outDir: 'dist-renderer',
-      rollupOptions: {
+      rolldownOptions: {
         input: path.resolve(__dirname, 'index.html'),
         external: nativeModules,
       },
@@ -167,7 +167,7 @@ export default defineConfig(({ command, mode }) => {
             },
             build: {
               outDir: 'dist-electron',
-              rollupOptions: {
+              rolldownOptions: {
                 external: isElectronMainExternal,
                 output: {
                   format: 'cjs',
@@ -189,12 +189,11 @@ export default defineConfig(({ command, mode }) => {
           vite: {
             build: {
               outDir: 'dist-electron',
-              rollupOptions: {
+              rolldownOptions: {
                 external: nativeModules,
                 output: {
                   format: 'cjs',
                   inlineDynamicImports: false,
-                  manualChunks: undefined,
                   entryFileNames: '[name].cjs',
                 },
               },

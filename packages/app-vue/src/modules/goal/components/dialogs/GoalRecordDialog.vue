@@ -92,7 +92,7 @@ import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
-import { X, PlusCircle, Check, Plus, FileText, Zap } from 'lucide-vue-next';
+import { X, PlusCircle, Check, Plus, FileText, Zap } from '@lucide/vue';
 // composables
 import { useGoal } from '../../composables/useGoal';
 

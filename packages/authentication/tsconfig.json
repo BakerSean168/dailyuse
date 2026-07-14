@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.workspace-src.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "./dist",
+
     "paths": {
       "@/*": ["./src/*"],
       "@dailyuse/patterns": ["../patterns/src/index.ts"]

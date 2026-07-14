@@ -31,7 +31,7 @@
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { BookOpen, ShieldCheck } from 'lucide-vue-next';
+import { BookOpen, ShieldCheck } from '@lucide/vue';
 
 export type NoteSegment = 'notes' | 'governance';
 

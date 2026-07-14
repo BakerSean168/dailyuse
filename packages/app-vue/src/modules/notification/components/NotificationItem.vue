@@ -88,7 +88,7 @@ import {
   Bell,
   Check,
   Trash2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';

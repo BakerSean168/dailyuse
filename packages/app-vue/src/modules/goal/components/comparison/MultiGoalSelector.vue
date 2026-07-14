@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AlertCircle, Eye, GitCompare, Info, Target, X } from 'lucide-vue-next';
+import { AlertCircle, Eye, GitCompare, Info, Target, X } from '@lucide/vue';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';

@@ -76,7 +76,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@dailyuse/ui-vue-shadcn';
-import { AlertTriangle } from 'lucide-vue-next';
+import { AlertTriangle } from '@lucide/vue';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 
 const props = defineProps<{

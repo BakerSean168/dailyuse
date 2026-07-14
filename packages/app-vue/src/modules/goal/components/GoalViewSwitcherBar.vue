@@ -98,7 +98,7 @@
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ChevronDown, Crosshair, FolderPlus, LayoutGrid, Plus } from 'lucide-vue-next';
+import { ChevronDown, Crosshair, FolderPlus, LayoutGrid, Plus } from '@lucide/vue';
 import {
   Button,
   DropdownMenu,

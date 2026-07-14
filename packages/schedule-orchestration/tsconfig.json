@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.workspace-src.json",
   "compilerOptions": {
     "baseUrl": "../..",
-    "outDir": "./dist",
+
     "composite": false,
     "incremental": false,
     "lib": ["ES2020", "DOM"],

@@ -4,12 +4,44 @@
  * @date 2025-12-22
  */
 
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Request, Response } from 'express';
-import { createRequire } from 'module';
 import { env } from '../../config/env.js';
 
-// ESM 环境下读取 package.json
-const require = createRequire(import.meta.url);
+const controllerDir = dirname(fileURLToPath(import.meta.url));
+
+function loadApiPackageInfo(): { name: string; version: string; description?: string } {
+  const candidates = [
+    // apps/api/package.json (source layout)
+    join(controllerDir, '../../../../../package.json'),
+    // apps/api/package.json (dist layout: dist/shared/infrastructure/http/controllers)
+    join(controllerDir, '../../../../package.json'),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      const raw = readFileSync(candidate, 'utf8');
+      const parsed = JSON.parse(raw) as { name?: string; version?: string; description?: string };
+      if (parsed.name && parsed.version) {
+        return {
+          name: parsed.name,
+          version: parsed.version,
+          description: parsed.description,
+        };
+      }
+    } catch {
+      // try next candidate
+    }
+  }
+
+  return {
+    name: '@dailyuse/api',
+    version: '0.0.0',
+    description: 'Memoflow API Server',
+  };
+}
 
 // 应用启动时间
 const startTime = Date.now();
@@ -69,25 +101,7 @@ export const infoController = {
    * @route GET /info
    */
   getInfo: (_req: Request, res: Response): void => {
-    // 安全地读取 package.json
-    let packageInfo = {
-      name: '@dailyuse/api',
-      version: '0.0.0',
-      description: 'Memoflow API Server',
-    };
-    
-    try {
-      // 尝试从多个可能的位置读取
-      try {
-        packageInfo = require('../../../../../package.json');
-      } catch {
-        // 如果从构建目录读取失败，尝试其他路径
-        packageInfo = require('../../../../../../apps/api/package.json');
-      }
-    } catch {
-      // 保持默认值
-    }
-    
+    const packageInfo = loadApiPackageInfo();
     const uptimeSeconds = Math.floor((Date.now() - startTime) / 1000);
     const memoryUsage = process.memoryUsage();
     

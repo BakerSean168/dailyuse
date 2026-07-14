@@ -11,7 +11,7 @@
  */
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
+import { PanelLeftClose, PanelLeftOpen } from '@lucide/vue';
 
 withDefaults(
   defineProps<{

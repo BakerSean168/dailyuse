@@ -108,7 +108,7 @@ import {
   CheckCircle,
   XCircle,
   HelpCircle,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';

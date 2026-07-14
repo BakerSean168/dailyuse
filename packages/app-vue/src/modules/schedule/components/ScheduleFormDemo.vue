@@ -118,7 +118,7 @@ import {
   SelectValue,
 } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { CalendarPlus, Clock, Check, Loader2 } from 'lucide-vue-next';
+import { CalendarPlus, Clock, Check, Loader2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type {
   ConflictDetectionResult,

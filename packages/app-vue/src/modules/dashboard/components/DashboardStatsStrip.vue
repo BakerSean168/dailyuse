@@ -15,7 +15,7 @@ import {
   ListTodo,
   AlertTriangle,
   Activity,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { DashboardStats } from '@dailyuse/contracts/dashboard';
 
 const props = withDefaults(

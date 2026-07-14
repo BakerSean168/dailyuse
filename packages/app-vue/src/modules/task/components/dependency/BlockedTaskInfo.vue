@@ -62,7 +62,7 @@
 import { computed, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Progress } from '@dailyuse/ui-vue-shadcn';
-import { Lock, CheckCircle, Clock, Ban, PlayCircle, HelpCircle, Loader2 } from 'lucide-vue-next';
+import { Lock, CheckCircle, Clock, Ban, PlayCircle, HelpCircle, Loader2 } from '@lucide/vue';
 
 interface BlockingTask {
   id: string;

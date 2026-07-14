@@ -84,7 +84,7 @@ import {
   DialogFooter,
   Button,
 } from '@dailyuse/ui-vue-shadcn';
-import { Pencil, PlusCircle } from 'lucide-vue-next';
+import { Pencil, PlusCircle } from '@lucide/vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import DependencyManager from '../dependency/DependencyManager.vue';
 import type { TaskForDAGViewModel, TaskTemplateViewModel } from '../types';

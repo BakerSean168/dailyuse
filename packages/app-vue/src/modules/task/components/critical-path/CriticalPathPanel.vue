@@ -96,7 +96,7 @@ import {
   Button,
   Badge,
 } from '@dailyuse/ui-vue-shadcn';
-import { Clock, Download, AlertTriangle } from 'lucide-vue-next';
+import { Clock, Download, AlertTriangle } from '@lucide/vue';
 
 interface CriticalPathResultViewModel {
   projectDuration: number;

@@ -187,7 +187,7 @@
 import { ref, computed, onBeforeUnmount, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { AlertTriangle, Check, ChevronDown, Plus, Shield } from 'lucide-vue-next';
+import { AlertTriangle, Check, ChevronDown, Plus, Shield } from '@lucide/vue';
 import {
   Alert,
   AlertDescription,

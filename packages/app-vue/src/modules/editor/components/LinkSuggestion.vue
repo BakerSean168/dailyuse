@@ -71,7 +71,7 @@ import {
   CommandList,
 } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { FileText, Keyboard } from 'lucide-vue-next';
+import { FileText, Keyboard } from '@lucide/vue';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
 import type { LinkIndexNote } from '../utils/link-index';
 

@@ -11,7 +11,7 @@
  */
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { AlertTriangle } from 'lucide-vue-next';
+import { AlertTriangle } from '@lucide/vue';
 import type {
   GoalClarification,
   KnowledgeAnswer,

@@ -265,7 +265,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ArrowLeft, FileQuestion, Pencil } from 'lucide-vue-next';
+import { ArrowLeft, FileQuestion, Pencil } from '@lucide/vue';
 import {
   Button,
   Badge,

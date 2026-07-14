@@ -98,7 +98,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 use([GridComponent, TooltipComponent, TitleComponent, BarChart, CanvasRenderer]);
 
 import { Card, CardHeader, CardTitle, CardContent, Progress, Badge } from '@dailyuse/ui-vue-shadcn';
-import { TrendingUp, Loader2, Info } from 'lucide-vue-next';
+import { TrendingUp, Loader2, Info } from '@lucide/vue';
 import type {
   GoalReviewClientDTO,
   GoalClientDTO,

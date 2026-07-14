@@ -154,7 +154,7 @@ describe('TaskTemplateForm', () => {
 
     await wrapper.get('[data-stub="BasicInfoSection"]').trigger('click');
 
-    expect(wrapper.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({
+    expect(wrapper.emitted('update:modelValue')?.slice(-1)[0]?.[0]).toMatchObject({
       id: 'template-1',
       title: 'Updated title',
     });

@@ -81,7 +81,7 @@
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Plus, LayoutGrid, Folder, Archive, Pencil, Trash2 } from 'lucide-vue-next';
+import { Plus, LayoutGrid, Folder, Archive, Pencil, Trash2 } from '@lucide/vue';
 import { cn } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';

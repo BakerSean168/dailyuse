@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
   Input,
 } from '@dailyuse/ui-vue-shadcn';
-import { Check, ChevronDown, Filter, LayoutGrid, Search, Share2 } from 'lucide-vue-next';
+import { Check, ChevronDown, Filter, LayoutGrid, Search, Share2 } from '@lucide/vue';
 import FilterBar from '../../../components/shared/FilterBar.vue';
 import type { TaskRelationFilter, TaskStatusFilter, TaskViewMode } from './types';
 

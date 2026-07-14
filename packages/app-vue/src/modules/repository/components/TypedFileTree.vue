@@ -165,7 +165,7 @@ import {
   File,
   Tag,
   Trash2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Button, Badge } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';

@@ -10,7 +10,7 @@
  * 待细化，S0 只按父组件给的已分组结构渲染。
  */
 import { useI18n } from 'vue-i18n';
-import { HelpCircle, Search, SquarePen, X } from 'lucide-vue-next';
+import { HelpCircle, Search, SquarePen, X } from '@lucide/vue';
 import { APP_NAME_ZH } from '@dailyuse/assets';
 
 interface ConversationEntry {

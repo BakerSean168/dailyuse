@@ -46,16 +46,27 @@ export interface StructuredResultError extends ResultError {
 }
 
 export class ResultErrorException extends Error {
+  readonly code: ResultCode | string;
+  readonly details?: ResultErrorDetail[];
+  readonly context?: Record<string, unknown>;
+  readonly statusCode?: number;
+  readonly cause?: unknown;
+
   constructor(
     message: string,
-    public readonly code: ResultCode | string,
-    public readonly details?: ResultErrorDetail[],
-    public readonly context?: Record<string, unknown>,
-    public readonly statusCode?: number,
-    public readonly cause?: unknown,
+    code: ResultCode | string,
+    details?: ResultErrorDetail[],
+    context?: Record<string, unknown>,
+    statusCode?: number,
+    cause?: unknown,
   ) {
     super(message);
     this.name = 'ResultErrorException';
+    this.code = code;
+    this.details = details;
+    this.context = context;
+    this.statusCode = statusCode;
+    this.cause = cause;
   }
 }
 

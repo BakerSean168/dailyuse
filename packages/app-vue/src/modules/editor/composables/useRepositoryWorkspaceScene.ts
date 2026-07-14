@@ -1,6 +1,6 @@
 import { computed, onMounted, reactive, toRef, unref, watch, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Bookmark, FolderTree, Search } from 'lucide-vue-next';
+import { Bookmark, FolderTree, Search } from '@lucide/vue';
 import { useRepository } from '../../repository/composables/useRepository';
 import { useRepositoryBookmarksPanel } from '../../repository/composables/useRepositoryBookmarksPanel';
 import { useRepositoryResourceCommands } from '../../repository/composables/useRepositoryResourceCommands';

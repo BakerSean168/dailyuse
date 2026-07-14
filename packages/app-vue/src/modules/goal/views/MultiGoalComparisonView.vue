@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { GitCompare } from 'lucide-vue-next';
+import { GitCompare } from '@lucide/vue';
 import {
   Button,
   Badge,

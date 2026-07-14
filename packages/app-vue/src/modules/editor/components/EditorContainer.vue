@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { FileText } from 'lucide-vue-next';
+import { FileText } from '@lucide/vue';
 import { useConfirm } from '@dailyuse/ui-vue-shadcn';
 import EditorTabBar from './EditorTabBar.vue';
 import MarkdownEditor from './MarkdownEditor.vue';

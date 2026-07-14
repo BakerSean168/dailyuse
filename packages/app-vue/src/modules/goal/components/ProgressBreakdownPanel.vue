@@ -134,7 +134,7 @@ import { Badge, type BadgeVariants } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
-import { PieChart, X, Loader2, AlertCircle, BarChart3, Calculator } from 'lucide-vue-next';
+import { PieChart, X, Loader2, AlertCircle, BarChart3, Calculator } from '@lucide/vue';
 import { format } from 'date-fns';
 import type { ProgressBreakdown } from '@dailyuse/contracts/goal';
 

@@ -117,7 +117,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { LayoutGrid, MoreHorizontal, Plus, Search, Target } from 'lucide-vue-next';
+import { LayoutGrid, MoreHorizontal, Plus, Search, Target } from '@lucide/vue';
 import {
   Button,
   DropdownMenu,

@@ -24,7 +24,7 @@ import {
   Separator,
   useConfirm,
 } from '@dailyuse/ui-vue-shadcn';
-import { LogOut } from 'lucide-vue-next';
+import { LogOut } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 import { useAccount } from '../composables/useAccount';
 import { LOGOUT_HANDLER_KEY } from '../../../di/keys';

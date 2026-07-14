@@ -7,7 +7,7 @@ import {
 import { createAuthGuard } from './guards';
 
 import AppShell from '../layouts/shell/AppShell.vue';
-import ShellHomeRoute from '../layouts/shell/ShellHomeRoute';
+import ShellHomeRoute from '../layouts/shell/shell-home-route';
 
 // Module routes
 import { accountRoutes } from '../modules/account/router';

@@ -109,7 +109,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@dailyuse/ui-vue-shadcn';
-import { Search, RotateCcw, Check, X } from 'lucide-vue-next';
+import { Search, RotateCcw, Check, X } from '@lucide/vue';
 
 const { t } = useI18n();
 
