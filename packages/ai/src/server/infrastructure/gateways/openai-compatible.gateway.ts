@@ -3,6 +3,20 @@ import type {
   OpenAICompatibleCompletionResponse,
   OpenAICompatibleCompletionResult,
 } from './types';
+import {
+  extractOpenAICompatibleMessageContent,
+  normalizeOpenAICompatibleBaseUrl,
+  normalizeOpenAICompatibleMaxTokens,
+  normalizeOpenAICompatibleModelId,
+} from '../../shared/openai-compatible-normalize';
+
+export {
+  OPENAI_COMPATIBLE_MIN_MAX_TOKENS,
+  extractOpenAICompatibleMessageContent,
+  normalizeOpenAICompatibleBaseUrl,
+  normalizeOpenAICompatibleMaxTokens,
+  normalizeOpenAICompatibleModelId,
+} from '../../shared/openai-compatible-normalize';
 
 export class OpenAICompatibleGateway {
   async complete(
@@ -19,9 +33,12 @@ export class OpenAICompatibleGateway {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: request.model,
+          model: normalizeOpenAICompatibleModelId(request.model),
           messages: request.messages,
           temperature: request.temperature ?? 0.3,
+          ...(request.maxTokens != null
+            ? { max_tokens: normalizeOpenAICompatibleMaxTokens(request.maxTokens) }
+            : {}),
           ...(request.responseFormat === 'json'
             ? { response_format: { type: 'json_object' } }
             : {}),
@@ -34,14 +51,19 @@ export class OpenAICompatibleGateway {
       }
 
       const json = (await response.json()) as OpenAICompatibleCompletionResponse;
-      const content = json?.choices?.[0]?.message?.content;
-      if (typeof content !== 'string' || content.trim().length === 0) {
-        throw new Error('Provider returned empty content');
+      const choice = json?.choices?.[0];
+      const content = extractOpenAICompatibleMessageContent(choice?.message?.content);
+      const finishReason = choice?.finish_reason ?? undefined;
+
+      if (!content) {
+        const reason = finishReason ? ` (finish_reason=${finishReason})` : '';
+        throw new Error(`Provider returned empty content${reason}`);
       }
 
       return {
         content,
-        model: json?.model,
+        model: json?.model ? normalizeOpenAICompatibleModelId(json.model) : undefined,
+        finishReason,
         usage: {
           promptTokens: json?.usage?.prompt_tokens ?? 0,
           completionTokens: json?.usage?.completion_tokens ?? 0,
@@ -60,6 +82,5 @@ export class OpenAICompatibleGateway {
 }
 
 function buildCompletionUrl(baseUrl: string): string {
-  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-  return new URL('chat/completions', normalizedBaseUrl).toString();
+  return new URL('chat/completions', normalizeOpenAICompatibleBaseUrl(baseUrl)).toString();
 }

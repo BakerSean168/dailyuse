@@ -20,6 +20,7 @@ export class DirectProviderKnowledgeNoteGenerationAdapter
       apiKey: input.providerConfig.apiKey,
       model: input.providerConfig.model,
       temperature: input.providerConfig.temperature ?? 0.4,
+      maxTokens: input.providerConfig.maxTokens,
       responseFormat: 'text',
       messages: [
         {
@@ -42,3 +43,4 @@ export class DirectProviderKnowledgeNoteGenerationAdapter
     };
   }
 }
+

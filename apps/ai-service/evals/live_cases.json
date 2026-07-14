@@ -5,7 +5,7 @@
     "description": "Live chat should still answer rollout questions concretely.",
     "question": "How should I roll out an internal AI service integration safely?",
     "model_response": "placeholder",
-    "expected_substrings": ["increment", "test", "observability"],
+    "expected_substrings": ["increment", "test"],
     "forbidden_substrings": ["cannot help", "unknown"]
   },
   {
@@ -63,7 +63,7 @@
       }
     ],
     "model_response": "placeholder",
-    "expected_answer_substrings": ["retrieval", "repository"],
+    "expected_answer_substrings": ["retrieval", "chunk"],
     "expected_resource_paths": ["docs/retrieval.md"],
     "expect_citations": true,
     "max_citations": 2

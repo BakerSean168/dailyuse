@@ -9,12 +9,14 @@ export interface OpenAICompatibleCompletionRequest {
   model: string;
   messages: OpenAICompatibleMessage[];
   temperature?: number;
+  maxTokens?: number;
   responseFormat?: 'text' | 'json';
 }
 
 export interface OpenAICompatibleCompletionResult {
   content: string;
   model?: string;
+  finishReason?: string;
   usage: {
     promptTokens: number;
     completionTokens: number;
@@ -25,8 +27,10 @@ export interface OpenAICompatibleCompletionResult {
 export interface OpenAICompatibleCompletionResponse {
   model?: string;
   choices?: Array<{
+    finish_reason?: string | null;
     message?: {
-      content?: string;
+      /** OpenAI returns string; some Gemini-compatible proxies return part arrays. */
+      content?: string | Array<string | { text?: string }>;
     };
   }>;
   usage?: {

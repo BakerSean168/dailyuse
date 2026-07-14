@@ -1,3 +1,4 @@
+import { normalizeOpenAICompatibleModelId } from '../../../shared/openai-compatible-normalize';
 import { AIProviderType, type AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
@@ -59,7 +60,7 @@ export function toChatExecutionProviderConfig(
 ): ChatExecutionProviderConfig {
   return {
     provider: toExecutionProviderName(providerConfig.providerType),
-    model: options?.modelOverride ?? providerConfig.defaultModel ?? 'gpt-4o-mini',
+    model: normalizeOpenAICompatibleModelId(options?.modelOverride ?? providerConfig.defaultModel ?? 'gpt-4o-mini'),
     apiKey: providerConfig.apiKey,
     baseUrl: providerConfig.baseUrl,
     temperature: options?.temperature ?? 0.7,
@@ -74,3 +75,6 @@ function toExecutionProviderName(providerType?: string): string {
       return 'openai';
   }
 }
+
+
+

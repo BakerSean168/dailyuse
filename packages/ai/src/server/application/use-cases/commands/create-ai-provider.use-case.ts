@@ -11,6 +11,7 @@ import { createLogger } from '@dailyuse/utils/logger';
 import { AiProviderConfigId } from '../../../domain/value-objects/ai-provider-config-id';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import { toClientDTO } from './ai-provider-config-helpers';
+import { normalizeOpenAICompatibleModelId } from '../../../shared/openai-compatible-normalize';
 
 const logger = createLogger('CreateAIProviderUseCase');
 
@@ -33,7 +34,7 @@ export class CreateAIProviderUseCase {
       providerType: AIProviderType.OpenAICompatible,
       baseUrl: request.baseUrl.replace(/\/+$/, ''),
       apiKey: request.apiKey,
-      defaultModel: request.model,
+      defaultModel: normalizeOpenAICompatibleModelId(request.model),
       availableModels: [],
       isActive: true,
       isDefault: request.isDefault ?? false,
@@ -49,3 +50,6 @@ export class CreateAIProviderUseCase {
     return ok(toClientDTO(provider));
   }
 }
+
+
+

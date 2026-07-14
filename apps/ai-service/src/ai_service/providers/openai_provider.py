@@ -20,6 +20,49 @@ from ai_service.schemas import (
 
 logger = logging.getLogger(__name__)
 
+# Gemini OpenAI-compatible often returns empty content + finish_reason=length
+# when max_tokens is tiny; keep a small practical floor.
+OPENAI_COMPATIBLE_MIN_MAX_TOKENS = 64
+
+
+def normalize_openai_compatible_model_id(model: str | None) -> str:
+    """Strip Google AI Studio catalog prefixes like `models/`."""
+
+    return (model or "").strip().removeprefix("models/")
+
+
+def normalize_openai_compatible_max_tokens(max_tokens: int | float | None) -> int | None:
+    """Clamp tiny max_tokens values that commonly empty Gemini responses."""
+
+    if max_tokens is None:
+        return None
+    try:
+        value = int(max_tokens)
+    except (TypeError, ValueError):
+        return OPENAI_COMPATIBLE_MIN_MAX_TOKENS
+    return max(value, OPENAI_COMPATIBLE_MIN_MAX_TOKENS)
+
+
+def extract_openai_compatible_message_content(content: Any) -> str:
+    """Normalize string or multipartite OpenAI-compatible message content."""
+
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        parts: list[str] = []
+        for part in content:
+            if isinstance(part, str):
+                parts.append(part)
+                continue
+            if isinstance(part, dict):
+                text = part.get("text")
+                if isinstance(text, str):
+                    parts.append(text)
+        return "".join(parts)
+
+    return ""
+
 
 class OpenAIProvider(BaseHTTPProvider):
     """Adapter for OpenAI-compatible `/chat/completions` endpoints."""
@@ -52,10 +95,20 @@ class OpenAIProvider(BaseHTTPProvider):
 
         choice = data["choices"][0]
         message = choice["message"]
+        content = extract_openai_compatible_message_content(message.get("content"))
+        finish_reason = choice.get("finish_reason") or "unknown"
         raw_tool_calls = message.get("tool_calls") or None
+
+        if not content.strip() and not raw_tool_calls:
+            logger.warning(
+                "Provider returned empty content (finish_reason=%s, model=%s)",
+                finish_reason,
+                normalize_openai_compatible_model_id(config.model),
+            )
+
         return ChatCompleteResponse(
-            content=message.get("content") or "",
-            finish_reason=choice["finish_reason"],
+            content=content,
+            finish_reason=finish_reason,
             usage=data.get("usage"),
             toolCalls=(
                 [
@@ -105,7 +158,7 @@ class OpenAIProvider(BaseHTTPProvider):
 
                 choice = data["choices"][0]
                 delta = choice.get("delta", {})
-                content = delta.get("content", "")
+                content = extract_openai_compatible_message_content(delta.get("content", ""))
                 finish_reason = choice.get("finish_reason")
 
                 if content or finish_reason:
@@ -127,7 +180,9 @@ class OpenAIProvider(BaseHTTPProvider):
         response = await self._http_client.post(
             self._build_embeddings_url(config),
             json={
-                "model": config.embedding_model or self.DEFAULT_EMBEDDING_MODEL,
+                "model": normalize_openai_compatible_model_id(
+                    config.embedding_model or self.DEFAULT_EMBEDDING_MODEL
+                ),
                 "input": texts,
             },
             headers=self._build_headers(config.api_key),
@@ -139,13 +194,13 @@ class OpenAIProvider(BaseHTTPProvider):
     def _build_url(self, config: ProviderConfig) -> str:
         """Resolve the effective base URL for this request."""
 
-        base_url = config.base_url or self.DEFAULT_BASE_URL
+        base_url = (config.base_url or self.DEFAULT_BASE_URL).rstrip("/")
         return f"{base_url}/chat/completions"
 
     def _build_embeddings_url(self, config: ProviderConfig) -> str:
         """Resolve the embeddings endpoint for this provider."""
 
-        base_url = config.base_url or self.DEFAULT_BASE_URL
+        base_url = (config.base_url or self.DEFAULT_BASE_URL).rstrip("/")
         return f"{base_url}/embeddings"
 
     def _build_payload(
@@ -159,8 +214,9 @@ class OpenAIProvider(BaseHTTPProvider):
     ) -> dict[str, Any]:
         """Translate our internal chat schema into OpenAI request JSON."""
 
+        model = normalize_openai_compatible_model_id(config.model)
         payload: dict[str, Any] = {
-            "model": config.model,
+            "model": model,
             "messages": [
                 message.model_dump(mode="json", exclude_none=True)
                 for message in messages
@@ -169,8 +225,9 @@ class OpenAIProvider(BaseHTTPProvider):
             "stream": stream,
         }
 
-        if config.max_tokens is not None:
-            payload["max_tokens"] = config.max_tokens
+        normalized_max_tokens = normalize_openai_compatible_max_tokens(config.max_tokens)
+        if normalized_max_tokens is not None:
+            payload["max_tokens"] = normalized_max_tokens
 
         if tools:
             payload["tools"] = [tool.model_dump(mode="json") for tool in tools]

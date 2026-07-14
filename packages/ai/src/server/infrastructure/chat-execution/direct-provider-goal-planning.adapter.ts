@@ -19,6 +19,7 @@ export class DirectProviderGoalPlanningAdapter implements IGoalPlanningPort {
       apiKey: input.providerConfig.apiKey,
       model: input.providerConfig.model,
       temperature: input.providerConfig.temperature ?? 0.3,
+      maxTokens: input.providerConfig.maxTokens,
       responseFormat: 'json',
       messages: [
         {
@@ -51,3 +52,4 @@ export class DirectProviderGoalPlanningAdapter implements IGoalPlanningPort {
     };
   }
 }
+

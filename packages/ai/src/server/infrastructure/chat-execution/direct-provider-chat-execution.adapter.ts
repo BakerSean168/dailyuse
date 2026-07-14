@@ -20,12 +20,13 @@ export class DirectProviderChatExecutionAdapter implements IAIChatExecutionPort 
       model: input.providerConfig.model,
       messages: input.messages,
       temperature: input.providerConfig.temperature ?? 0.7,
+      maxTokens: input.providerConfig.maxTokens,
       responseFormat: 'text',
     });
 
     return {
       content: completion.content,
-      finishReason: 'stop',
+      finishReason: completion.finishReason ?? 'stop',
       usage: completion.usage,
     };
   }
@@ -40,3 +41,5 @@ export class DirectProviderChatExecutionAdapter implements IAIChatExecutionPort 
     };
   }
 }
+
+

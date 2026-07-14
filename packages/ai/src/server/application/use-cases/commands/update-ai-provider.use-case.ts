@@ -7,6 +7,7 @@ import type {
 } from '@dailyuse/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import { toClientDTO } from './ai-provider-config-helpers';
+import { normalizeOpenAICompatibleModelId } from '../../../shared/openai-compatible-normalize';
 
 export class UpdateAIProviderUseCase {
   constructor(private readonly providerConfigRepository: IAIProviderConfigRepository) {}
@@ -29,7 +30,9 @@ export class UpdateAIProviderUseCase {
       name: request.name?.trim() ?? current.name,
       baseUrl: request.baseUrl?.replace(/\/+$/, '') ?? current.baseUrl,
       apiKey: request.apiKey ?? current.apiKey,
-      defaultModel: request.model ?? current.defaultModel,
+      defaultModel: request.model != null
+        ? normalizeOpenAICompatibleModelId(request.model)
+        : current.defaultModel,
       isDefault: request.isDefault ?? current.isDefault,
       isActive: request.isActive ?? current.isActive,
       updatedAt: Date.now(),
@@ -40,3 +43,6 @@ export class UpdateAIProviderUseCase {
     return ok(toClientDTO(updated));
   }
 }
+
+
+

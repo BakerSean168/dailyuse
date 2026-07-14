@@ -4,11 +4,17 @@ import type {
   IAIProviderModelCatalogPort,
   ProviderModelCatalogInput,
 } from '../../application/ports';
+import {
+  normalizeOpenAICompatibleBaseUrl,
+  normalizeOpenAICompatibleModelId,
+} from '../../shared/openai-compatible-normalize';
 
 interface OpenAICompatibleModelsResponse {
   data?: Array<{
     id?: string;
     name?: string;
+    /** Google AI Studio / Gemini OpenAI-compatible catalog uses display_name. */
+    display_name?: string;
     description?: string;
     context_window?: number;
     context_length?: number;
@@ -76,19 +82,26 @@ export class OpenAICompatibleModelCatalogGateway implements IAIProviderModelCata
 }
 
 function buildModelsUrl(baseUrl: string): string {
-  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-  return new URL('models', normalizedBaseUrl).toString();
+  return new URL('models', normalizeOpenAICompatibleBaseUrl(baseUrl)).toString();
 }
 
 function normalizeModel(row: OpenAICompatibleModelRow): AIModelInfo | null {
-  const id = row.id?.trim();
+  const rawId = row.id?.trim();
+  if (!rawId || EXCLUDED_MODEL_PATTERNS.some((pattern) => pattern.test(rawId))) {
+    return null;
+  }
+
+  // Gemini catalog IDs often look like "models/gemini-2.0-flash"; strip for chat/completions.
+  const id = normalizeOpenAICompatibleModelId(rawId);
   if (!id || EXCLUDED_MODEL_PATTERNS.some((pattern) => pattern.test(id))) {
     return null;
   }
 
+  const displayName = row.display_name?.trim() || row.name?.trim() || id;
+
   return {
     id,
-    name: row.name?.trim() || id,
+    name: displayName,
     description: row.description?.trim() || undefined,
     contextWindow: normalizeNumber(row.context_window ?? row.context_length),
     inputCostPer1M: normalizePrice(row.pricing?.prompt),
@@ -112,3 +125,6 @@ function normalizePrice(value: unknown): number | undefined {
 
   return undefined;
 }
+
+
+

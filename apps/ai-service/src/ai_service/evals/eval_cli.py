@@ -246,9 +246,12 @@ def resolve_live_eval_config(args: argparse.Namespace) -> LiveEvalConfig:
             api_key=api_key,
             base_url=base_url,
             temperature=args.temperature,
+            # Gemini free-tier often truncates early without an explicit budget.
+            max_tokens=1024,
         )
     )
 
 
 if __name__ == "__main__":
     main()
+

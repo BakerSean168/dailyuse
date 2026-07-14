@@ -6,6 +6,7 @@ import { createLogger } from '@dailyuse/utils/logger';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type { IAIProviderModelCatalogPort } from '../../ports';
 import { toClientDTO } from './ai-provider-config-helpers';
+import { normalizeOpenAICompatibleModelId } from '../../../shared/openai-compatible-normalize';
 
 const logger = createLogger('RefreshAIProviderModelsUseCase');
 
@@ -39,10 +40,15 @@ export class RefreshAIProviderModelsUseCase {
     const updated: AIProviderConfigServerDTO = {
       ...provider,
       availableModels: models,
-      defaultModel:
-        provider.defaultModel && models.some((item) => item.id === provider.defaultModel)
-          ? provider.defaultModel
-          : models[0]?.id ?? provider.defaultModel,
+      defaultModel: (() => {
+        const currentDefault = provider.defaultModel
+          ? normalizeOpenAICompatibleModelId(provider.defaultModel)
+          : null;
+        if (currentDefault && models.some((item) => item.id === currentDefault)) {
+          return currentDefault;
+        }
+        return models[0]?.id ?? currentDefault;
+      })(),
       updatedAt: Date.now(),
       version: provider.version + 1,
     };
@@ -57,3 +63,6 @@ export class RefreshAIProviderModelsUseCase {
     return ok(toClientDTO(updated));
   }
 }
+
+
+
