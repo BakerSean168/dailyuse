@@ -49,6 +49,41 @@ export class PowerSyncEditorWorkspaceRepository implements IEditorWorkspaceRepos
     await this.saveWithExecutor(this.db, workspace);
   }
 
+  async createOrGet(workspace: EditorWorkspace): Promise<EditorWorkspace> {
+    return this.db.writeTransaction(async (tx) => {
+      const data = PowerSyncEditorWorkspaceMapper.toPersistence(workspace);
+      const existing = await tx.getOptional<PowerSyncEditorWorkspaceRow>(
+        `SELECT * FROM editor_workspaces
+         WHERE identity_id = ? AND project_path = ?
+         LIMIT 1`,
+        [data.identity_id, data.project_path],
+      );
+
+      if (existing) {
+        if (existing.deleted_at !== null) {
+          await tx.execute(
+            `UPDATE editor_workspaces
+             SET deleted_at = NULL, updated_at = ?
+             WHERE id = ?`,
+            [data.updated_at, existing.id],
+          );
+          existing.deleted_at = null;
+          existing.updated_at = data.updated_at;
+        }
+        return PowerSyncEditorWorkspaceMapper.toDomain(existing);
+      }
+
+      await this.insertWithExecutor(tx, data);
+      const persisted = await tx.get<PowerSyncEditorWorkspaceRow>(
+        `SELECT * FROM editor_workspaces
+         WHERE identity_id = ? AND project_path = ?
+         LIMIT 1`,
+        [data.identity_id, data.project_path],
+      );
+      return PowerSyncEditorWorkspaceMapper.toDomain(persisted);
+    });
+  }
+
   async delete(id: string): Promise<void> {
     await this.db.execute(`DELETE FROM editor_workspaces WHERE id = ?`, [id]);
   }
@@ -109,29 +144,36 @@ export class PowerSyncEditorWorkspaceRepository implements IEditorWorkspaceRepos
         ],
       );
     } else {
-      await executor.execute(
-        `INSERT INTO editor_workspaces (
-           id, identity_id, name, description, project_path, project_type,
-           layout, setting, is_active, version, created_at, updated_at, accessed_at, deleted_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          d.id,
-          d.identity_id,
-          d.name,
-          d.description,
-          d.project_path,
-          d.project_type,
-          d.layout,
-          d.setting,
-          d.is_active,
-          d.version,
-          d.created_at,
-          d.updated_at,
-          d.accessed_at,
-          d.deleted_at,
-        ],
-      );
+      await this.insertWithExecutor(executor, d);
     }
+  }
+
+  private async insertWithExecutor(
+    executor: IElectronDatabaseTransaction,
+    data: ReturnType<typeof PowerSyncEditorWorkspaceMapper.toPersistence>,
+  ): Promise<void> {
+    await executor.execute(
+      `INSERT INTO editor_workspaces (
+         id, identity_id, name, description, project_path, project_type,
+         layout, setting, is_active, version, created_at, updated_at, accessed_at, deleted_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.id,
+        data.identity_id,
+        data.name,
+        data.description,
+        data.project_path,
+        data.project_type,
+        data.layout,
+        data.setting,
+        data.is_active,
+        data.version,
+        data.created_at,
+        data.updated_at,
+        data.accessed_at,
+        data.deleted_at,
+      ],
+    );
   }
 
   async existsByName(identityId: string, name: string): Promise<boolean> {

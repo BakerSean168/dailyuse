@@ -56,6 +56,24 @@ export class EditorWorkspacePrismaRepository implements IEditorWorkspaceReposito
     });
   }
 
+  async createOrGet(workspace: EditorWorkspace): Promise<EditorWorkspace> {
+    const data = this.toPrisma(workspace);
+    const persisted = await this.prisma.editorWorkspace.upsert({
+      where: {
+        identityId_projectPath: {
+          identityId: data.identityId,
+          projectPath: data.projectPath,
+        },
+      },
+      create: data,
+      update: {
+        deletedAt: null,
+      },
+    });
+
+    return this.toDomain(persisted);
+  }
+
   async delete(id: string): Promise<void> {
     await this.prisma.editorWorkspace.delete({
       where: { id },

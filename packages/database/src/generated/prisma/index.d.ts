@@ -91472,13 +91472,14 @@ export namespace Prisma {
 
   export type EditorWorkspaceWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    projectPath?: string
+    identityId_projectPath?: EditorWorkspaceIdentityIdProjectPathCompoundUniqueInput
     AND?: EditorWorkspaceWhereInput | EditorWorkspaceWhereInput[]
     OR?: EditorWorkspaceWhereInput[]
     NOT?: EditorWorkspaceWhereInput | EditorWorkspaceWhereInput[]
     identityId?: StringFilter<"EditorWorkspace"> | string
     name?: StringFilter<"EditorWorkspace"> | string
     description?: StringNullableFilter<"EditorWorkspace"> | string | null
+    projectPath?: StringFilter<"EditorWorkspace"> | string
     projectType?: StringFilter<"EditorWorkspace"> | string
     layout?: JsonFilter<"EditorWorkspace">
     setting?: JsonFilter<"EditorWorkspace">
@@ -91490,7 +91491,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"EditorWorkspace"> | Date | string | null
     sessions?: EditorWorkspaceSessionListRelationFilter
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }, "id" | "projectPath">
+  }, "id" | "identityId_projectPath">
 
   export type EditorWorkspaceOrderByWithAggregationInput = {
     id?: SortOrder
@@ -106135,6 +106136,11 @@ export namespace Prisma {
 
   export type AuthSessionSumOrderByAggregateInput = {
     version?: SortOrder
+  }
+
+  export type EditorWorkspaceIdentityIdProjectPathCompoundUniqueInput = {
+    identityId: string
+    projectPath: string
   }
 
   export type EditorWorkspaceCountOrderByAggregateInput = {

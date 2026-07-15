@@ -32,8 +32,8 @@ export class CreateEditorWorkspaceUseCase {
       settings: params.settings as WorkspaceSettingsDTO | undefined,
     });
 
-    await this.workspaceRepository.save(workspace);
+    const persistedWorkspace = await this.workspaceRepository.createOrGet(workspace);
 
-    return ok(workspace.toServerDTO());
+    return ok(persistedWorkspace.toServerDTO());
   }
 }

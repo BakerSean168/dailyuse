@@ -39,18 +39,6 @@ export async function getEditorWorkspace(workspaceId: string): Promise<EditorWor
 }
 
 export async function ensureEditorWorkspace(workspaceId: string): Promise<EditorWorkspaceResult | null> {
-  const direct = await getEditorWorkspace(workspaceId);
-  if (direct) {
-    return direct;
-  }
-
-  const existing = (await listEditorWorkspaces()).find(
-    (workspace) => workspace.projectPath === workspaceId,
-  );
-  if (existing) {
-    return existing;
-  }
-
   return createEditorWorkspace(workspaceId);
 }
 

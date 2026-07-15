@@ -516,7 +516,7 @@ model EditorWorkspace {
   identityId  String    @map("identity_id")
   name        String
   description String?
-  projectPath String    @unique @map("project_path")
+  projectPath String    @map("project_path")
   projectType String    @map("project_type")
   layout      Json
   setting     Json
@@ -530,6 +530,7 @@ model EditorWorkspace {
   sessions EditorWorkspaceSession[]
   account  Account                  @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
+  @@unique([identityId, projectPath])
   @@index([isActive])
   @@map("editor_workspaces")
 }

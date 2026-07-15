@@ -22,19 +22,30 @@ describe('editor client gateway', () => {
     setEditorRuntimeService(editorService as never);
   });
 
-  it('creates and resolves a workspace via the injected editor service', async () => {
-    editorService.getWorkspace.mockResolvedValueOnce({ ok: true, data: null });
-    editorService.listWorkspaces.mockResolvedValueOnce({ ok: true, data: [] });
-    editorService.createWorkspace.mockResolvedValueOnce({ ok: true, data: { id: 'repository-1' } });
-    editorService.listSessions.mockResolvedValueOnce({ ok: true, data: [{ workspaceId: 'repository-1' }] });
+  it('delegates concurrent workspace ensures to the atomic server operation', async () => {
+    editorService.createWorkspace.mockResolvedValue({
+      ok: true,
+      data: { id: 'editor-workspace-1', projectPath: 'repository-1' },
+    });
+    editorService.listSessions.mockResolvedValueOnce({
+      ok: true,
+      data: [{ workspaceId: 'editor-workspace-1' }],
+    });
 
     const service = await import('./editor-client-gateway');
-    const workspace = await service.ensureEditorWorkspace('repository-1');
-    const sessions = await service.listEditorSessions('repository-1');
+    const [first, second] = await Promise.all([
+      service.ensureEditorWorkspace('repository-1'),
+      service.ensureEditorWorkspace('repository-1'),
+    ]);
+    const sessions = await service.listEditorSessions('editor-workspace-1');
 
-    expect(workspace?.id).toBe('repository-1');
+    expect(first?.id).toBe('editor-workspace-1');
+    expect(second?.id).toBe('editor-workspace-1');
+    expect(editorService.createWorkspace).toHaveBeenCalledTimes(2);
+    expect(editorService.getWorkspace).not.toHaveBeenCalled();
+    expect(editorService.listWorkspaces).not.toHaveBeenCalled();
     expect(sessions).toHaveLength(1);
-    expect(sessions[0]?.workspaceId).toBe('repository-1');
+    expect(sessions[0]?.workspaceId).toBe('editor-workspace-1');
   }, 10000);
 
   it('reads and saves content through the editor service', async () => {
