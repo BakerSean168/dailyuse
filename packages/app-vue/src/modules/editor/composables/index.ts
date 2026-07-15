@@ -15,6 +15,7 @@ export { useEditorWorkspaceBootstrap } from './useEditorWorkspaceBootstrap';
 export { useEditorScene } from './useEditorScene';
 export { useEditorLinkSuggestion } from './useEditorLinkSuggestion';
 export { useEditorSceneSave } from './useEditorSceneSave';
+export { useEditorKnowledgeIndexState } from './useEditorKnowledgeIndexState';
 export { useEditorSceneNavigation } from './useEditorSceneNavigation';
 export { useEditorSceneInsertion } from './useEditorSceneInsertion';
 export { useEditorWorkspaceTabs } from './useEditorWorkspaceTabs';

@@ -163,6 +163,8 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
         status: {
           isSaving: editorScene.document.status.isSaving,
           isDirty: editorScene.document.status.isDirty,
+          knowledgeIndex: editorScene.document.status.knowledgeIndex,
+          knowledgeIndexError: editorScene.document.status.knowledgeIndexError,
         },
         diagnostics: {
           items: editorScene.diagnostics.items,
@@ -202,6 +204,19 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
       },
     },
     dialogs: {
+      createNote: {
+        open: resourceCommands.createNoteDialogOpen,
+        title: resourceCommands.createNoteTitle,
+        fileName: resourceCommands.createNoteName,
+        saveDisabled: resourceCommands.createNoteDisabled,
+        isCreating: resourceCommands.isCreatingNote,
+        actions: {
+          confirm: resourceCommands.confirmCreateNote,
+          close: () => {
+            resourceCommands.createNoteDialogOpen.value = false;
+          },
+        },
+      },
       import: {
         open: resourceCommands.showImportDialog,
         isUploading: resourceCommands.isUploading,

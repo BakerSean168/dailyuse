@@ -24,7 +24,7 @@ test.describe('Note workspace', () => {
 
     await expect(primaryCreate).toHaveCount(1);
     await expect(primaryCreate).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    await primaryCreate.click();
+    await createNote(page, 'Stable Note');
 
     await expect(page.getByTestId('active-document-pane')).toBeVisible({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -33,8 +33,12 @@ test.describe('Note workspace', () => {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
 
+    await expect(page.locator('.cm-content')).toContainText('# Stable Note');
     await page.keyboard.type('Stable note workspace content');
     await expect(page.locator('.cm-content')).toContainText('Stable note workspace content');
+    await expect(
+      page.getByTestId('knowledge-index-ready').or(page.getByTestId('knowledge-index-pending')),
+    ).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   });
 
   test('[P0] keeps one toolbar and the same editor DOM, focus, content, and scroll across layouts', async ({
@@ -52,7 +56,7 @@ test.describe('Note workspace', () => {
     await expect(primaryCreate).toBeEnabled({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
     await expectElementToFit(toolbar);
 
-    await primaryCreate.click();
+    await createNote(page, 'Responsive State');
     const editorHost = page.getByTestId('markdown-editor-host');
     const editorContent = page.locator('.cm-content');
     const editorScroller = page.locator('.cm-scroller');
@@ -112,6 +116,15 @@ test.describe('Note workspace', () => {
     await expectElementToFit(page.getByTestId('repository-workspace-grid'));
   });
 });
+
+async function createNote(page: Page, title: string): Promise<void> {
+  await page.locator('[data-primary-action="create-note"]:visible').click();
+  const titleInput = page.getByTestId('repository-create-note-title');
+  await expect(titleInput).toBeFocused();
+  await titleInput.fill(title);
+  await expect(page.getByTestId('repository-create-note-file-name')).toContainText(`${title}.md`);
+  await page.getByTestId('repository-create-note-confirm').click();
+}
 
 async function markDomIdentity(locator: Locator, value: string): Promise<void> {
   await locator.evaluate((element, marker) => {

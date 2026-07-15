@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { REPOSITORY_RESOURCE_MUTATED_EVENT, RepositoryResourceMutationType } from '@dailyuse/contracts/repository';
+import {
+  REPOSITORY_RESOURCE_MUTATED_EVENT,
+  RepositoryResourceMutationType,
+} from '@dailyuse/contracts/repository';
 import { eventBus } from '@dailyuse/utils/domain';
 
 import {
@@ -38,6 +41,7 @@ import { ReindexAllKnowledgeUseCase } from '../reindex-all-knowledge.use-case';
 import { QueryKnowledgeUseCase } from '../query-knowledge.use-case';
 import { ExpandKnowledgeUseCase } from '../expand-knowledge.use-case';
 import { ReindexKnowledgeUseCase } from '../reindex-knowledge.use-case';
+import { SyncResourceByIdUseCase } from '../sync-resource-by-id.use-case';
 import {
   createAIModuleForTests,
   createAIProviderConfigRepositoryStub,
@@ -65,9 +69,8 @@ class StubProviderConfigRepository {
 
   async findDefaultByIdentityId(identityId: string) {
     return (
-      this.providers.find(
-        (provider) => provider.identityId === identityId && provider.isDefault,
-      ) ?? null
+      this.providers.find((provider) => provider.identityId === identityId && provider.isDefault) ??
+      null
     );
   }
 
@@ -162,26 +165,26 @@ class StubKnowledgeQueryPort implements IKnowledgeQueryPort {
     },
   }));
 
-  public readonly query = vi.fn<
-    (input: KnowledgeQueryInput) => Promise<KnowledgeQueryResult>
-  >(async () => ({
-    answer: 'The repository notes confirm that grounded answers are enabled.',
-    citations: [
-      {
-        resourceId: 'resource-1',
-        resourcePath: 'notes/python-ai.md',
-        title: 'Python AI',
-        chunkIndex: 0,
-        excerpt: 'Repository-backed answers are enabled.',
-        score: 2,
+  public readonly query = vi.fn<(input: KnowledgeQueryInput) => Promise<KnowledgeQueryResult>>(
+    async () => ({
+      answer: 'The repository notes confirm that grounded answers are enabled.',
+      citations: [
+        {
+          resourceId: 'resource-1',
+          resourcePath: 'notes/python-ai.md',
+          title: 'Python AI',
+          chunkIndex: 0,
+          excerpt: 'Repository-backed answers are enabled.',
+          score: 2,
+        },
+      ],
+      usage: {
+        promptTokens: 20,
+        completionTokens: 10,
+        totalTokens: 30,
       },
-    ],
-    usage: {
-      promptTokens: 20,
-      completionTokens: 10,
-      totalTokens: 30,
-    },
-  }));
+    }),
+  );
 }
 
 class StubKnowledgeIndexRepository implements IKnowledgeIndexRepository {
@@ -201,7 +204,9 @@ class StubKnowledgeIndexRepository implements IKnowledgeIndexRepository {
     (identityId: string, query: string, limit: number) => Promise<KnowledgeIndexedResource[]>
   >(async () => []);
 
-  public readonly upsert = vi.fn<(resource: KnowledgeIndexedResource) => Promise<void>>(async () => {});
+  public readonly upsert = vi.fn<(resource: KnowledgeIndexedResource) => Promise<void>>(
+    async () => {},
+  );
 
   public readonly markRequested = vi.fn<
     (identityId: string, resourceIds: string[], requestedAt: number) => Promise<void>
@@ -227,25 +232,24 @@ class StubAnalyticsReadPort implements IAnalyticsReadPort {
 }
 
 class StubAnalyticsQueryPort implements IAnalyticsQueryPort {
-  public readonly query = vi.fn<
-    (input: AnalyticsQueryInput) => Promise<AnalyticsQueryResult>
-  >(async () => ({
-    answer: 'Focus on the overdue tasks first.',
-    highlights: ['activeGoals: 4', 'task.overdue: 2'],
-    usage: {
-      promptTokens: 18,
-      completionTokens: 8,
-      totalTokens: 26,
-    },
-  }));
+  public readonly query = vi.fn<(input: AnalyticsQueryInput) => Promise<AnalyticsQueryResult>>(
+    async () => ({
+      answer: 'Focus on the overdue tasks first.',
+      highlights: ['activeGoals: 4', 'task.overdue: 2'],
+      usage: {
+        promptTokens: 18,
+        completionTokens: 8,
+        totalTokens: 26,
+      },
+    }),
+  );
 }
 
 describe('SyncKnowledgeResourcesUseCase', () => {
   it('records an indexing failure without conflating it with the persisted source note', async () => {
-    const resource = (await new StubKnowledgeSourcePort().listIndexableResources(
-      'identity-1',
-      1,
-    ))[0]!;
+    const resource = (
+      await new StubKnowledgeSourcePort().listIndexableResources('identity-1', 1)
+    )[0]!;
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
     ingestionPort.indexResource.mockRejectedValueOnce(new Error('embedding provider unavailable'));
@@ -312,9 +316,12 @@ describe('AIKnowledgeQueryService', () => {
       executionLogPort,
     );
 
-    const result = await service.execute({
-      query: 'How does knowledge grounding work?',
-    } satisfies QueryKnowledgeReq, { identityId: 'identity-1' });
+    const result = await service.execute(
+      {
+        query: 'How does knowledge grounding work?',
+      } satisfies QueryKnowledgeReq,
+      { identityId: 'identity-1' },
+    );
 
     expect(sourcePort.listRelevantResources).toHaveBeenCalledWith(
       'identity-1',
@@ -407,9 +414,12 @@ describe('AIKnowledgeQueryService', () => {
       executionLogPort,
     );
 
-    const result = await service.execute({
-      query: 'How does grounding from repos cite sources?',
-    } satisfies QueryKnowledgeReq, { identityId: 'identity-1' });
+    const result = await service.execute(
+      {
+        query: 'How does grounding from repos cite sources?',
+      } satisfies QueryKnowledgeReq,
+      { identityId: 'identity-1' },
+    );
 
     expect(sourcePort.listRelevantResources).toHaveBeenCalledWith(
       'identity-1',
@@ -470,9 +480,12 @@ describe('AIKnowledgeQueryService', () => {
       executionLogPort,
     );
 
-    await service.execute({
-      query: 'How does repository grounding work?',
-    } satisfies QueryKnowledgeReq, { identityId: 'identity-1' });
+    await service.execute(
+      {
+        query: 'How does repository grounding work?',
+      } satisfies QueryKnowledgeReq,
+      { identityId: 'identity-1' },
+    );
 
     expect(knowledgeIndexRepository.findRelevantResources).toHaveBeenCalledWith(
       'identity-1',
@@ -515,10 +528,13 @@ describe('AIKnowledgeQueryService', () => {
       executionLogPort,
     );
 
-    const result = await service.execute({
-      instruction: 'Expand this note with citation guidance.',
-      currentContent: '# Repository Grounding',
-    } satisfies ExpandKnowledgeReq, { identityId: 'identity-1' });
+    const result = await service.execute(
+      {
+        instruction: 'Expand this note with citation guidance.',
+        currentContent: '# Repository Grounding',
+      } satisfies ExpandKnowledgeReq,
+      { identityId: 'identity-1' },
+    );
 
     expect(queryPort.expand).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -571,12 +587,21 @@ describe('AIKnowledgeQueryService', () => {
         },
       ]) as unknown as IAIProviderConfigRepository,
       reindexAll,
+      new SyncResourceByIdUseCase(
+        sourcePort,
+        knowledgeIndexRepository,
+        ingestionPort,
+        executionLogPort,
+      ),
     );
 
-    await service.execute({
-      force: true,
-      limit: 20,
-    }, { identityId: 'identity-1' });
+    await service.execute(
+      {
+        force: true,
+        limit: 20,
+      },
+      { identityId: 'identity-1' },
+    );
 
     expect(ingestionPort.indexResource).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -584,6 +609,87 @@ describe('AIKnowledgeQueryService', () => {
           model: 'gpt-4o-mini',
         }),
       }),
+    );
+  });
+
+  it('reindexes only the requested saved note and returns its authoritative index result', async () => {
+    const sourcePort = new StubKnowledgeSourcePort();
+    const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
+    const ingestionPort = new StubKnowledgeIngestionPort();
+    const executionLogPort = new StubExecutionLogPort();
+    const reindexAll = new ReindexAllKnowledgeUseCase(
+      sourcePort,
+      knowledgeIndexRepository,
+      ingestionPort,
+      executionLogPort,
+    );
+    const syncById = new SyncResourceByIdUseCase(
+      sourcePort,
+      knowledgeIndexRepository,
+      ingestionPort,
+      executionLogPort,
+    );
+    const service = new ReindexKnowledgeUseCase(
+      new StubProviderConfigRepository([
+        {
+          id: 'provider-1',
+          identityId: 'identity-1',
+          providerType: AIProviderType.OpenAICompatible,
+          baseUrl: 'https://api.openai.com/v1',
+          apiKey: 'plain-secret',
+          defaultModel: 'gpt-4o-mini',
+          isActive: true,
+          isDefault: true,
+          name: 'Main provider',
+        },
+      ]) as unknown as IAIProviderConfigRepository,
+      reindexAll,
+      syncById,
+    );
+
+    const result = await service.execute(
+      { resourceIds: ['resource-42'], force: false },
+      { identityId: 'identity-1' },
+    );
+
+    expect(sourcePort.getResourceById).toHaveBeenCalledWith('identity-1', 'resource-42');
+    expect(sourcePort.listIndexableResources).not.toHaveBeenCalled();
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.results).toEqual([
+      expect.objectContaining({ resourceId: 'resource-42', status: 'indexed' }),
+    ]);
+  });
+
+  it('indexes a requested saved note without requiring a configured chat provider', async () => {
+    const sourcePort = new StubKnowledgeSourcePort();
+    const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
+    const ingestionPort = new StubKnowledgeIngestionPort();
+    const executionLogPort = new StubExecutionLogPort();
+    const service = new ReindexKnowledgeUseCase(
+      new StubProviderConfigRepository([]) as unknown as IAIProviderConfigRepository,
+      new ReindexAllKnowledgeUseCase(
+        sourcePort,
+        knowledgeIndexRepository,
+        ingestionPort,
+        executionLogPort,
+      ),
+      new SyncResourceByIdUseCase(
+        sourcePort,
+        knowledgeIndexRepository,
+        ingestionPort,
+        executionLogPort,
+      ),
+    );
+
+    const result = await service.execute(
+      { resourceIds: ['resource-1'] },
+      { identityId: 'identity-1' },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(ingestionPort.indexResource).toHaveBeenCalledWith(
+      expect.objectContaining({ providerConfig: undefined }),
     );
   });
 });
@@ -612,14 +718,14 @@ describe('AIAnalyticsQueryService', () => {
       executionLogPort,
     );
 
-    const result = await service.queryAnalytics({
-      query: 'What needs attention today?',
-    } satisfies QueryAnalyticsReq, { identityId: 'identity-1' });
-
-    expect(readPort.buildContext).toHaveBeenCalledWith(
-      'identity-1',
-      'What needs attention today?',
+    const result = await service.queryAnalytics(
+      {
+        query: 'What needs attention today?',
+      } satisfies QueryAnalyticsReq,
+      { identityId: 'identity-1' },
     );
+
+    expect(readPort.buildContext).toHaveBeenCalledWith('identity-1', 'What needs attention today?');
     expect(queryPort.query).toHaveBeenCalledWith(
       expect.objectContaining({
         requestId: expect.any(String),

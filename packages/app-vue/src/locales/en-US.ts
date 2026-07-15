@@ -180,7 +180,8 @@ export default {
       exitFocus: 'Exit focus',
       tabLimitHint: 'Tab limit reached — consider closing "{title}" (least recently used).',
       contentErrorTitle: 'This panel ran into a problem',
-      contentErrorDescription: 'This business panel failed to render. Retry, or close the panel and keep using the AI workspace.',
+      contentErrorDescription:
+        'This business panel failed to render. Retry, or close the panel and keep using the AI workspace.',
     },
     window: {
       minimize: 'Minimize',
@@ -230,7 +231,8 @@ export default {
       subtitle:
         'Keep conversations, model selection, and the composer in one dedicated workspace, similar to Gemini or GPT.',
       welcomeTitle: 'What do you want to move forward today?',
-      welcomeDescription: 'Pick a shortcut card to start, or type below. Once messages exist, this becomes the conversation timeline.',
+      welcomeDescription:
+        'Pick a shortcut card to start, or type below. Once messages exist, this becomes the conversation timeline.',
       emptyTitle: 'Start with a prompt',
       emptyDescription:
         'Pick a provider and model, then continue the conversation here. Saved chats stay in the sidebar so you can jump back in.',
@@ -494,7 +496,8 @@ export default {
         awaitingConfirmation: 'awaiting confirmation',
         executionRecorded: 'execution recorded',
         recoveryTitle: 'Recovery',
-        recoveryRetryReady: 'You can retry execution after fixing the failed action inputs or runtime issue.',
+        recoveryRetryReady:
+          'You can retry execution after fixing the failed action inputs or runtime issue.',
         recoverySuggestions: 'Recommended recovery steps:',
         emptyState:
           'AI will draft the goal, choose explicit tool calls, and wait for confirmation before creating real goal or task entities.',
@@ -3343,7 +3346,7 @@ export default {
       createTemplateWithTodayInstanceSuccess:
         "Task template created and today's task instance generated ({count} initial instances total)",
       createTemplateWithoutTodayInstanceSuccess:
-        "Task template created; no task instance was generated for today ({count} initial instances total)",
+        'Task template created; no task instance was generated for today ({count} initial instances total)',
       updateFailed: 'Failed to update task',
       updateSuccess: 'Task updated successfully',
       deleteFailed: 'Failed to delete task',
@@ -3988,6 +3991,12 @@ export default {
       noRepositoryDesc:
         'There is no repository available for the current account. Initialize or create one first.',
       createNote: 'New Note',
+      createNoteTitle: 'New Note',
+      createNoteDescription:
+        'Name the note first; a matching Markdown filename and heading will be created.',
+      noteTitle: 'Note title',
+      noteTitlePlaceholder: 'For example: Project retrospective',
+      noteFileNamePreview: 'Filename: {name}',
       createNoteSuccess: 'Created note: {name}',
       createNoteFailed: 'Failed to create note',
       noFiles: 'No files yet',
@@ -3996,6 +4005,10 @@ export default {
       saving: 'Saving...',
       unsaved: 'Unsaved',
       saved: 'Saved',
+      saveFailed: 'Failed to save note',
+      indexPending: 'Indexing for knowledge search…',
+      indexReady: 'Searchable in knowledge Q&A',
+      indexFailed: 'Note saved, but knowledge indexing failed',
       chars: 'chars',
       linkNotFound: 'Link target not found',
     },

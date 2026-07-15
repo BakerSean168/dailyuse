@@ -37,6 +37,7 @@ export interface QueryKnowledgeRes {
 export const ReindexKnowledgeSchema = z.object({
   limit: z.number().int().min(1).max(500).default(200).optional(),
   force: z.boolean().default(false).optional(),
+  resourceIds: z.array(z.string().min(1)).min(1).max(100).optional(),
 });
 
 export type ReindexKnowledgeReq = z.infer<typeof ReindexKnowledgeSchema>;

@@ -23,6 +23,27 @@ export function buildUntitledNoteName(): string {
   return `Untitled ${parts.join('-')}.md`;
 }
 
+export function buildNoteNameFromTitle(title: string): string {
+  const normalizedTitle = title
+    .trim()
+    .replace(/\.md$/i, '')
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-')
+    .replace(/\s+/g, ' ')
+    .replace(/[. ]+$/g, '')
+    .trim();
+
+  if (!normalizedTitle) {
+    return '';
+  }
+
+  return normalizeNoteName(normalizedTitle);
+}
+
+export function buildInitialMarkdownContent(noteName: string): string {
+  const title = noteName.replace(/\.md$/i, '').trim();
+  return title ? `# ${title}\n\n` : '';
+}
+
 export function normalizeNoteName(name: string): string {
   const trimmedName = name.trim() || buildUntitledNoteName();
   return trimmedName.toLowerCase().endsWith('.md') ? trimmedName : `${trimmedName}.md`;

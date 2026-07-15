@@ -1,18 +1,14 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type {
-  ReindexKnowledgeReq,
-  ReindexKnowledgeRes,
-} from '@dailyuse/contracts/ai';
+import type { ReindexKnowledgeReq, ReindexKnowledgeRes } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils/logger';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type { ReindexAllKnowledgeUseCase } from './reindex-all-knowledge.use-case';
-import {
-  attachRequestIdToError,
-  createAIRequestId,
-} from './ai-observability';
+import type { SyncResourceByIdUseCase } from './sync-resource-by-id.use-case';
+import type { SyncKnowledgeResourcesResult } from './ai-knowledge-index-helpers';
+import { attachRequestIdToError, createAIRequestId } from './ai-observability';
 import {
   resolveActiveProviderConfig,
   toChatExecutionProviderConfig,
@@ -27,6 +23,7 @@ export class ReindexKnowledgeUseCase {
   constructor(
     private readonly providerConfigRepository: IAIProviderConfigRepository,
     private readonly knowledgeIndexService: ReindexAllKnowledgeUseCase,
+    private readonly syncResourceById?: SyncResourceByIdUseCase,
   ) {}
 
   async execute(
@@ -36,22 +33,29 @@ export class ReindexKnowledgeUseCase {
     const requestId = createAIRequestId();
 
     try {
-      const provider = await resolveActiveProviderConfig(
-        this.providerConfigRepository,
-        cx.identityId,
-      );
-      const executionProviderConfig = toChatExecutionProviderConfig(provider, {
-        temperature: 0.2,
-      });
-      const sync = await this.knowledgeIndexService.execute(
-        cx,
-        request.limit ?? 200,
-        {
-          force: request.force ?? false,
-          requestId,
-          providerConfig: executionProviderConfig,
-        },
-      );
+      let executionProviderConfig;
+      try {
+        const provider = await resolveActiveProviderConfig(
+          this.providerConfigRepository,
+          cx.identityId,
+        );
+        executionProviderConfig = toChatExecutionProviderConfig(provider, {
+          temperature: 0.2,
+        });
+      } catch (providerError) {
+        if (!request.resourceIds) {
+          throw providerError;
+        }
+        executionProviderConfig = undefined;
+      }
+      const options = {
+        force: request.force ?? false,
+        requestId,
+        providerConfig: executionProviderConfig,
+      };
+      const sync = request.resourceIds
+        ? await this.syncRequestedResources(request.resourceIds, cx, options)
+        : await this.knowledgeIndexService.execute(cx, request.limit ?? 200, options);
 
       return ok({
         indexedCount: sync.indexedCount,
@@ -68,5 +72,45 @@ export class ReindexKnowledgeUseCase {
       const enriched = attachRequestIdToError(err, requestId);
       return error('INTERNAL_ERROR', enriched.message);
     }
+  }
+
+  private async syncRequestedResources(
+    resourceIds: string[],
+    cx: ExecutionContext,
+    options: Parameters<SyncResourceByIdUseCase['execute']>[2],
+  ): Promise<SyncKnowledgeResourcesResult> {
+    if (!this.syncResourceById) {
+      throw new Error('Targeted knowledge indexing is unavailable');
+    }
+
+    const merged: SyncKnowledgeResourcesResult = {
+      indexedResources: [],
+      indexedCount: 0,
+      reusedCount: 0,
+      failedCount: 0,
+      results: [],
+    };
+
+    for (const resourceId of [...new Set(resourceIds)]) {
+      const result = await this.syncResourceById.execute(resourceId, cx, options);
+      if (!result.resource || !result.sync) {
+        merged.failedCount += 1;
+        merged.results.push({
+          resourceId,
+          resourcePath: resourceId,
+          status: 'failed',
+          error: 'Repository resource not found',
+        });
+        continue;
+      }
+
+      merged.indexedResources.push(...result.sync.indexedResources);
+      merged.indexedCount += result.sync.indexedCount;
+      merged.reusedCount += result.sync.reusedCount;
+      merged.failedCount += result.sync.failedCount;
+      merged.results.push(...result.sync.results);
+    }
+
+    return merged;
   }
 }

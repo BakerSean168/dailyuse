@@ -118,6 +118,11 @@
               :saving-label="t('repository.workspace.saving')"
               :unsaved-label="t('repository.workspace.unsaved')"
               :saved-label="t('repository.workspace.saved')"
+              :index-state="workspaceScene.main.editor.status.knowledgeIndex"
+              :index-pending-label="t('repository.workspace.indexPending')"
+              :index-ready-label="t('repository.workspace.indexReady')"
+              :index-failed-label="t('repository.workspace.indexFailed')"
+              :index-error="workspaceScene.main.editor.status.knowledgeIndexError"
               :chars-label="t('repository.workspace.chars')"
               @update:content="workspaceScene.main.editor.content = $event"
               @insert-text="workspaceScene.main.editor.actions.insertText"
@@ -203,6 +208,57 @@
     </div>
     <!-- 阶段 0：BatchImportDialog 退役（V2 §6 Note / V1 §9） -->
 
+    <Dialog v-model:open="workspaceScene.dialogs.createNote.open">
+      <DialogContent class="sm:max-w-md" data-testid="repository-create-note-dialog">
+        <DialogHeader>
+          <DialogTitle>{{ t('repository.workspace.createNoteTitle') }}</DialogTitle>
+          <DialogDescription>
+            {{ t('repository.workspace.createNoteDescription') }}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-2">
+          <Label for="repository-note-title">{{ t('repository.workspace.noteTitle') }}</Label>
+          <Input
+            id="repository-note-title"
+            v-model="workspaceScene.dialogs.createNote.title"
+            autofocus
+            :placeholder="t('repository.workspace.noteTitlePlaceholder')"
+            data-testid="repository-create-note-title"
+            @keyup.enter="workspaceScene.dialogs.createNote.actions.confirm"
+          />
+          <p
+            v-if="workspaceScene.dialogs.createNote.fileName"
+            class="text-xs text-muted-foreground"
+            data-testid="repository-create-note-file-name"
+          >
+            {{
+              t('repository.workspace.noteFileNamePreview', {
+                name: workspaceScene.dialogs.createNote.fileName,
+              })
+            }}
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="workspaceScene.dialogs.createNote.actions.close">
+            {{ t('common.cancel') }}
+          </Button>
+          <Button
+            :disabled="workspaceScene.dialogs.createNote.saveDisabled"
+            data-testid="repository-create-note-confirm"
+            @click="workspaceScene.dialogs.createNote.actions.confirm"
+          >
+            <Loader2
+              v-if="workspaceScene.dialogs.createNote.isCreating"
+              class="mr-2 h-4 w-4 animate-spin"
+            />
+            {{ t('common.create') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
     <ImageResourcePickerDialog
       v-model:open="workspaceScene.main.editor.dialogs.imagePicker.open"
       :resources="workspaceScene.main.editor.resources.imageResources"
@@ -258,7 +314,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { BookOpen, FilePlus, RefreshCw } from '@lucide/vue';
+import { BookOpen, FilePlus, Loader2, RefreshCw } from '@lucide/vue';
 import {
   Button,
   Dialog,
@@ -268,6 +324,7 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
+  Label,
 } from '@dailyuse/ui-vue-shadcn';
 import TypedFileTree from '../components/TypedFileTree.vue';
 import SearchPanel from '../components/SearchPanel.vue';

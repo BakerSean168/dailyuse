@@ -63,4 +63,13 @@ describe('Note single-page architecture', () => {
     expect(editorSource).not.toContain('isNarrow');
     expect(editorSource).not.toContain('note-context-narrow-hint');
   });
+
+  it('requires a title before note creation and exposes separate save/index states', () => {
+    expect(workspaceSource).toContain('data-testid="repository-create-note-dialog"');
+    expect(workspaceSource).toContain('data-testid="repository-create-note-title"');
+    expect(workspaceSource).toContain(':disabled="workspaceScene.dialogs.createNote.saveDisabled"');
+    expect(workspaceSource).toContain(
+      ':index-state="workspaceScene.main.editor.status.knowledgeIndex"',
+    );
+  });
 });

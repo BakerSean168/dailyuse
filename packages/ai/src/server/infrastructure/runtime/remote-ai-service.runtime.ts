@@ -85,8 +85,7 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
 
   const chatExecutionPort =
     dependencies.chatExecutionPort ?? new DirectProviderChatExecutionAdapter();
-  const goalPlanningPort =
-    dependencies.goalPlanningPort ?? new DirectProviderGoalPlanningAdapter();
+  const goalPlanningPort = dependencies.goalPlanningPort ?? new DirectProviderGoalPlanningAdapter();
   const knowledgeNoteGenerationPort =
     dependencies.knowledgeNoteGenerationPort ?? new DirectProviderKnowledgeNoteGenerationAdapter();
   const modelCatalogPort = new OpenAICompatibleModelCatalogGateway();
@@ -99,7 +98,10 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     delete: new DeleteAIProviderUseCase(providerConfigRepository),
     get: new GetAIProviderUseCase(providerConfigRepository),
     list: new ListAIProvidersUseCase(providerConfigRepository),
-    testConnection: new TestAIProviderConnectionUseCase(providerConfigRepository, chatExecutionPort),
+    testConnection: new TestAIProviderConnectionUseCase(
+      providerConfigRepository,
+      chatExecutionPort,
+    ),
     setDefault: new SetDefaultAIProviderUseCase(providerConfigRepository),
     getDefault: new GetDefaultAIProviderUseCase(providerConfigRepository),
     refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogPort),
@@ -212,6 +214,7 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
             reindex: new ReindexKnowledgeUseCase(
               providerConfigRepository,
               knowledgeIndexServices!.reindexAll,
+              knowledgeIndexServices!.syncById,
             ),
           };
         })()

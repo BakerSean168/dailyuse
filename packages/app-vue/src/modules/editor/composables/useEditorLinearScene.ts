@@ -81,6 +81,8 @@ export function useEditorLinearScene() {
       status: {
         isSaving: editor.document.status.isSaving,
         isDirty: editor.document.status.isDirty,
+        knowledgeIndex: editor.document.status.knowledgeIndex,
+        knowledgeIndexError: editor.document.status.knowledgeIndexError,
       },
       diagnostics: editor.diagnostics,
       resources: editor.resources,

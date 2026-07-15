@@ -51,6 +51,29 @@
       </span>
       <span v-else-if="dirty" class="text-muted-foreground">{{ unsavedLabel }}</span>
       <span v-else class="text-success">{{ savedLabel }}</span>
+      <span
+        v-if="indexState === 'pending'"
+        class="flex items-center gap-1 text-warning"
+        data-testid="knowledge-index-pending"
+      >
+        <Loader2 class="h-3 w-3 animate-spin" />
+        {{ indexPendingLabel }}
+      </span>
+      <span
+        v-else-if="indexState === 'indexed'"
+        class="text-success"
+        data-testid="knowledge-index-ready"
+      >
+        {{ indexReadyLabel }}
+      </span>
+      <span
+        v-else-if="indexState === 'failed'"
+        class="text-destructive"
+        data-testid="knowledge-index-failed"
+        :title="indexError || undefined"
+      >
+        {{ indexFailedLabel }}
+      </span>
       <span class="text-muted-foreground">{{ charCount }} {{ charsLabel }}</span>
     </div>
   </div>
@@ -79,6 +102,11 @@ defineProps<{
   savingLabel: string;
   unsavedLabel: string;
   savedLabel: string;
+  indexState: 'idle' | 'pending' | 'indexed' | 'failed';
+  indexPendingLabel: string;
+  indexReadyLabel: string;
+  indexFailedLabel: string;
+  indexError?: string | null;
   charsLabel: string;
 }>();
 

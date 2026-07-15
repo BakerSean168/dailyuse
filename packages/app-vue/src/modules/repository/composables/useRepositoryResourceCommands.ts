@@ -10,6 +10,7 @@ import { findNotesFolderId } from '../utils/note-folder';
 import { getEditableResourceName, normalizeRenamedResourceName } from '../utils/resource-name';
 import { getResourceDisplayName, isMarkdownResource } from '../utils/resource-presentation';
 import { useRepository } from './useRepository';
+import { buildNoteNameFromTitle } from './repositoryHelpers';
 
 export function useRepositoryResourceCommands(
   activeResource: Ref<ResourceClientDTO | null>,
@@ -29,6 +30,16 @@ export function useRepositoryResourceCommands(
   const renameDialogOpen = ref(false);
   const renameValue = ref('');
   const renameTarget = ref<ResourceClientDTO | null>(null);
+  const createNoteDialogOpen = ref(false);
+  const createNoteTitle = ref('');
+  const isCreatingNote = ref(false);
+
+  const createNoteName = computed(() =>
+    createNoteTitle.value.trim() ? buildNoteNameFromTitle(createNoteTitle.value) : '',
+  );
+  const createNoteDisabled = computed(
+    () => !createNoteTitle.value.trim() || !createNoteName.value || isCreatingNote.value,
+  );
 
   const normalizedRenameValue = computed(() =>
     renameTarget.value ? normalizeRenamedResourceName(renameTarget.value, renameValue.value) : '',
@@ -50,32 +61,52 @@ export function useRepositoryResourceCommands(
     }
   }
 
-  async function handleCreateNote() {
+  function handleCreateNote() {
+    createNoteTitle.value = '';
+    createNoteDialogOpen.value = true;
+  }
+
+  async function confirmCreateNote() {
+    if (createNoteDisabled.value) {
+      return;
+    }
+
     const noteFolderId = findNotesFolderId(repository.treeNodes.value);
+    isCreatingNote.value = true;
 
-    const note = await repository.createMarkdownNote(undefined, '', noteFolderId ?? undefined);
-    if (!note) {
-      console.error('[RepositoryResourceCommands] handleCreateNote:create-failed', {
-        repositoryId: repository.repositoryId.value,
-        noteFolderId,
-      });
-      toast.error(t('repository.workspace.createNoteFailed'));
-      return;
-    }
-    const opened = await requestOpenResource(note.id);
-    if (!opened) {
-      console.warn('[RepositoryResourceCommands] handleCreateNote:open-failed', {
-        noteId: note.id,
-        repositoryId: repository.repositoryId.value,
-      });
-      toast.error(t('repository.workspace.createNoteFailed'));
-      return;
-    }
-    await options.onResourceOpened?.();
+    try {
+      const note = await repository.createMarkdownNote(
+        createNoteName.value,
+        undefined,
+        noteFolderId ?? undefined,
+      );
+      if (!note) {
+        console.error('[RepositoryResourceCommands] handleCreateNote:create-failed', {
+          repositoryId: repository.repositoryId.value,
+          noteFolderId,
+        });
+        toast.error(t('repository.workspace.createNoteFailed'));
+        return;
+      }
+      const opened = await requestOpenResource(note.id);
+      if (!opened) {
+        console.warn('[RepositoryResourceCommands] handleCreateNote:open-failed', {
+          noteId: note.id,
+          repositoryId: repository.repositoryId.value,
+        });
+        toast.error(t('repository.workspace.createNoteFailed'));
+        return;
+      }
+      await options.onResourceOpened?.();
 
-    toast.success(
-      t('repository.workspace.createNoteSuccess', { name: getResourceDisplayName(note) }),
-    );
+      createNoteDialogOpen.value = false;
+      createNoteTitle.value = '';
+      toast.success(
+        t('repository.workspace.createNoteSuccess', { name: getResourceDisplayName(note) }),
+      );
+    } finally {
+      isCreatingNote.value = false;
+    }
   }
 
   function handleRefresh() {
@@ -185,12 +216,18 @@ export function useRepositoryResourceCommands(
     uploadProgress: repository.uploadProgress,
     showImportDialog,
     importSummary,
+    createNoteDialogOpen,
+    createNoteTitle,
+    createNoteName,
+    createNoteDisabled,
+    isCreatingNote,
     renameDialogOpen,
     renameValue,
     normalizedRenameValue,
     renameSaveDisabled,
     handleOpenResource,
     handleCreateNote,
+    confirmCreateNote,
     handleRefresh,
     handleRenameResource,
     confirmRenameResource,

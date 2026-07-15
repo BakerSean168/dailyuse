@@ -8,6 +8,7 @@ import { useEditorSceneDialogs } from './useEditorSceneDialogs';
 import { useEditorSceneSave } from './useEditorSceneSave';
 import { useEditorSceneNavigation } from './useEditorSceneNavigation';
 import { useEditorSceneInsertion } from './useEditorSceneInsertion';
+import { useEditorKnowledgeIndexState } from './useEditorKnowledgeIndexState';
 
 interface UseEditorSceneOptions {
   onOpenLinkedResource?: (resourceId: string) => void | Promise<void>;
@@ -23,6 +24,7 @@ export function useEditorScene(
 ) {
   const { t } = useI18n();
   const documentState = useActiveEditorDocument(resourceId);
+  const knowledgeIndex = useEditorKnowledgeIndexState(resourceId, documentState.lastSavedContent);
   const pane = useEditorScenePane(documentState, { initialViewMode: options.initialViewMode });
   const {
     resolveNote,
@@ -91,6 +93,8 @@ export function useEditorScene(
         isSaving,
         isDirty,
         error: loadError,
+        knowledgeIndex: knowledgeIndex.state,
+        knowledgeIndexError: knowledgeIndex.error,
       },
     },
     pane: {
@@ -146,6 +150,7 @@ export function useEditorScene(
       applyRepairCandidate: dialogs.applyRepairCandidate,
       resetTransientUi: dialogs.resetTransientUi,
       createMarkdownNote,
+      refreshKnowledgeIndex: knowledgeIndex.refresh,
     },
     internal: {
       documentState,
