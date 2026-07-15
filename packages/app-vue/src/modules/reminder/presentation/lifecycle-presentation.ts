@@ -6,6 +6,13 @@ import type {
 
 type Translate = ComposerTranslation;
 
+export type ReminderScheduleState =
+  | 'upcoming'
+  | 'missed'
+  | 'paused'
+  | 'failed'
+  | 'unscheduled';
+
 export function getTemplateLifecycleSummary(t: Translate, template: ReminderTemplateClientDTO) {
   if (template.lifecycleSource === 'global') return t('reminder.lifecycle.sourceGlobal');
   if (template.lifecycleSource === 'group') return t('reminder.lifecycle.sourceGroup');
@@ -111,6 +118,65 @@ export function getTemplateTriggerLabel(t: Translate, template: ReminderTemplate
     });
   }
   return t('reminder.templateDetail.notConfigured');
+}
+
+export function getTemplateRecurrenceLabel(t: Translate, template: ReminderTemplateClientDTO) {
+  if (template.type === 'OneTime') {
+    return t('reminder.schedule.oneTime');
+  }
+  if (template.trigger.fixedTime) {
+    return t('reminder.schedule.daily');
+  }
+  if (template.trigger.interval) {
+    return t('reminder.schedule.everyMinutes', {
+      minutes: template.trigger.interval.minutes,
+    });
+  }
+  return t('reminder.schedule.notConfigured');
+}
+
+export function getTemplateNextTriggerLabel(
+  t: Translate,
+  template: ReminderTemplateClientDTO,
+  locale: string,
+) {
+  if (template.nextTriggerAt === null) {
+    return t('reminder.schedule.noNextTrigger');
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(template.nextTriggerAt));
+}
+
+export function getTemplateScheduleState(
+  template: ReminderTemplateClientDTO,
+  now = Date.now(),
+): ReminderScheduleState {
+  if (!template.effectiveEnabled) {
+    return 'paused';
+  }
+
+  const latestHistory = [...(template.history ?? [])]
+    .filter((history) => history.deletedAt === null)
+    .sort((left, right) => right.triggeredAt - left.triggeredAt)[0];
+  if (latestHistory?.result === 'Failed') {
+    return 'failed';
+  }
+
+  if (template.nextTriggerAt === null) {
+    return 'unscheduled';
+  }
+  return template.nextTriggerAt < now ? 'missed' : 'upcoming';
+}
+
+export function getTemplateScheduleStateLabel(
+  t: Translate,
+  template: ReminderTemplateClientDTO,
+  now = Date.now(),
+) {
+  return t(`reminder.schedule.state.${getTemplateScheduleState(template, now)}`);
 }
 
 export function getGroupSidebarSummary(

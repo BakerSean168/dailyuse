@@ -34,7 +34,10 @@ export interface IReminderTemplateRepository {
    * @param options.includeHistory 是否加载历史记录（默认 false，懒加载）
    * @returns 聚合根实例，不存在则返回 null
    */
-  findById(id: string, options?: { includeHistory?: boolean }): Promise<ReminderTemplate | null>;
+  findById(
+    id: string,
+    options?: { includeHistory?: boolean; historyLimit?: number },
+  ): Promise<ReminderTemplate | null>;
 
   /**
    * 通过身份 ID 查找所有提醒模板
@@ -46,7 +49,7 @@ export interface IReminderTemplateRepository {
    */
   findByIdentityId(
     identityId: string,
-    options?: { includeHistory?: boolean; includeDeleted?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]>;
 
   /**
@@ -59,7 +62,7 @@ export interface IReminderTemplateRepository {
    */
   findByGroupId(
     groupId: string | null,
-    options?: { includeHistory?: boolean; includeDeleted?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]>;
 
   /**
@@ -68,7 +71,10 @@ export interface IReminderTemplateRepository {
    * @param identityId 身份 ID（可选，不传则查找所有）
    * @returns 活跃的提醒模板列表
    */
-  findActive(identityId?: string): Promise<ReminderTemplate[]>;
+  findActive(
+    identityId?: string,
+    options?: { includeHistory?: boolean; historyLimit?: number },
+  ): Promise<ReminderTemplate[]>;
 
   /**
    * 查找下次触发时间在指定时间之前的提醒模板（用于触发器调度）
@@ -86,7 +92,10 @@ export interface IReminderTemplateRepository {
    * @param options.includeHistory 是否加载历史记录
    * @returns 提醒模板列表
    */
-  findByIds(ids: string[], options?: { includeHistory?: boolean }): Promise<ReminderTemplate[]>;
+  findByIds(
+    ids: string[],
+    options?: { includeHistory?: boolean; historyLimit?: number },
+  ): Promise<ReminderTemplate[]>;
 
   /**
    * 删除聚合根（级联删除子实体 ReminderHistory）

@@ -3,77 +3,81 @@
     <div
       data-testid="reminder-template-card"
       :data-reminder-id="item.id"
-      class="relative rounded-xl shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+      class="relative cursor-pointer rounded-xl shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
       :class="[
-        'p-4 flex flex-col items-center justify-center gap-2',
-        isTemplateEnabled ? 'bg-card hover:bg-accent/50' : 'bg-muted opacity-60',
+        'flex min-h-48 flex-col gap-3 p-4',
+        isTemplateEnabled ? 'bg-card hover:bg-accent/50' : 'bg-muted/70',
       ]"
       draggable="true"
       @click="$emit('click', item)"
       @dragstart="onDragStart"
     >
-      <!-- Icon -->
-      <div
-        :class="[
-          'w-12 h-12 rounded-full flex items-center justify-center',
-          isTemplateEnabled ? 'bg-primary/10' : 'bg-muted',
-        ]"
-      >
-        <Bell :class="['h-6 w-6', isTemplateEnabled ? 'text-primary' : 'text-muted-foreground']" />
+      <div class="flex min-w-0 items-start justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-2.5">
+          <div
+            :class="[
+              'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+              isTemplateEnabled ? 'bg-primary/10' : 'bg-muted',
+            ]"
+          >
+            <Bell
+              :class="[
+                'h-4 w-4',
+                isTemplateEnabled ? 'text-primary' : 'text-muted-foreground',
+              ]"
+            />
+          </div>
+          <p
+            :class="[
+              'line-clamp-2 min-w-0 text-sm font-semibold',
+              isTemplateEnabled ? 'text-foreground' : 'text-muted-foreground',
+            ]"
+          >
+            {{ item.name }}
+          </p>
+        </div>
+        <span
+          class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium"
+          :class="scheduleStateClass"
+          data-testid="reminder-schedule-state"
+        >
+          {{ scheduleStateLabel }}
+        </span>
       </div>
 
-      <!-- Name -->
+      <div class="rounded-lg border bg-background/70 px-3 py-2.5" data-testid="reminder-trigger-summary">
+        <p class="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          {{ t('reminder.schedule.trigger') }}
+        </p>
+        <p class="mt-1 text-base font-semibold text-foreground">{{ triggerLabel }}</p>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <div class="flex items-start gap-2">
+          <CalendarClock class="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <div class="min-w-0">
+            <p class="text-[10px] text-muted-foreground">{{ t('reminder.schedule.nextTrigger') }}</p>
+            <p class="truncate font-medium" data-testid="reminder-next-trigger">
+              {{ nextTriggerLabel }}
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <Repeat2 class="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <div>
+            <p class="text-[10px] text-muted-foreground">{{ t('reminder.schedule.recurrence') }}</p>
+            <p class="font-medium" data-testid="reminder-recurrence">{{ recurrenceLabel }}</p>
+          </div>
+        </div>
+      </div>
+
       <p
-        :class="[
-          'text-xs text-center line-clamp-2 font-medium',
-          isTemplateEnabled ? 'text-foreground' : 'text-muted-foreground',
-        ]"
+        class="mt-auto truncate border-t pt-2 text-[10px] text-muted-foreground"
+        :title="item.effectiveEnabledReason"
+        data-testid="reminder-control-source"
       >
-        {{ item.name }}
+        {{ secondaryLifecycleLabel }}
       </p>
-
-      <div class="space-y-1 text-center">
-        <p class="text-[11px] font-medium text-muted-foreground">
-          {{ lifecycleLabel }}
-        </p>
-        <p class="line-clamp-2 text-[10px] text-muted-foreground">
-          {{ item.effectiveEnabledReason }}
-        </p>
-      </div>
-
-      <div class="flex flex-wrap items-center justify-center gap-1">
-        <span
-          v-if="item.lifecycleSource === 'global'"
-          class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800"
-        >
-          {{ lifecycleBadgeText }}
-        </span>
-        <span
-          v-else-if="item.lifecycleSource === 'group'"
-          class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-medium text-sky-800"
-        >
-          {{ lifecycleBadgeText }}
-        </span>
-        <span
-          v-else
-          class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800"
-        >
-          {{ lifecycleBadgeText }}
-        </span>
-
-        <span
-          v-if="item.groupName"
-          class="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground"
-        >
-          {{ item.groupName }}
-        </span>
-      </div>
-
-      <!-- Status Indicator -->
-      <div
-        v-if="!isTemplateEnabled"
-        class="absolute top-2 right-2 w-2 h-2 rounded-full bg-muted-foreground"
-      />
     </div>
   </ActionableWrapper>
 </template>
@@ -81,13 +85,17 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Bell, FolderInput, Pencil, Power, Trash2 } from '@lucide/vue';
+import { Bell, CalendarClock, FolderInput, Pencil, Power, Repeat2, Trash2 } from '@lucide/vue';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import {
-  getTemplateLifecycleBadgeText,
   getTemplateLifecycleSummary,
+  getTemplateNextTriggerLabel,
+  getTemplateRecurrenceLabel,
+  getTemplateScheduleState,
+  getTemplateScheduleStateLabel,
+  getTemplateTriggerLabel,
 } from '../presentation/lifecycle-presentation';
 
 const props = defineProps<{
@@ -102,10 +110,33 @@ const emit = defineEmits<{
   'toggle-enabled': [item: ReminderTemplateClientDTO];
 }>();
 
-const { t } = useI18n();
+const { locale, t } = useI18n();
 const isTemplateEnabled = computed(() => props.item.effectiveEnabled);
 const lifecycleLabel = computed(() => getTemplateLifecycleSummary(t, props.item));
-const lifecycleBadgeText = computed(() => getTemplateLifecycleBadgeText(t, props.item));
+const triggerLabel = computed(() => getTemplateTriggerLabel(t, props.item));
+const nextTriggerLabel = computed(() =>
+  getTemplateNextTriggerLabel(t, props.item, locale.value),
+);
+const recurrenceLabel = computed(() => getTemplateRecurrenceLabel(t, props.item));
+const scheduleState = computed(() => getTemplateScheduleState(props.item));
+const scheduleStateLabel = computed(() => getTemplateScheduleStateLabel(t, props.item));
+const secondaryLifecycleLabel = computed(() =>
+  props.item.groupName ? `${props.item.groupName} · ${lifecycleLabel.value}` : lifecycleLabel.value,
+);
+const scheduleStateClass = computed(() => {
+  switch (scheduleState.value) {
+    case 'upcoming':
+      return 'bg-emerald-100 text-emerald-800';
+    case 'missed':
+      return 'bg-amber-100 text-amber-800';
+    case 'failed':
+      return 'bg-red-100 text-red-800';
+    case 'paused':
+      return 'bg-muted text-muted-foreground';
+    default:
+      return 'bg-slate-100 text-slate-700';
+  }
+});
 
 // Support both injected callbacks and emits for flexibility
 const onMoveTemplate = inject<(item: ReminderTemplateClientDTO) => void>('onMoveTemplate', (item) =>

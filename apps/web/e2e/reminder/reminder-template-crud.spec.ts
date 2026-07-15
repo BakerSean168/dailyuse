@@ -28,7 +28,12 @@ test.describe('Reminder Template CRUD Operations', () => {
 
     await createReminderTemplate(page, templateTitle);
 
-    await expect(reminderCardByTitle(page, templateTitle)).toBeVisible();
+    const card = reminderCardByTitle(page, templateTitle);
+    await expect(card).toBeVisible();
+    await expect(card.getByTestId('reminder-trigger-summary')).toContainText('09:00');
+    await expect(card.getByTestId('reminder-next-trigger')).not.toBeEmpty();
+    await expect(card.getByTestId('reminder-recurrence')).not.toBeEmpty();
+    await expect(card.getByTestId('reminder-schedule-state')).not.toBeEmpty();
   });
 
   test('should display reminder templates', async ({ page }) => {

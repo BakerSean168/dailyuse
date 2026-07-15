@@ -103,12 +103,12 @@ export class ReminderTemplatePrismaRepository
 
   async findById(
     id: string,
-    options?: { includeHistory?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate | null> {
     const data = await this.prisma.reminderTemplate.findUnique({
       where: { id },
       include: options?.includeHistory
-        ? { history: { orderBy: { triggeredAt: 'desc' } } }
+        ? { history: { orderBy: { triggeredAt: 'desc' }, take: options.historyLimit } }
         : undefined,
     });
     if (!data) return null;
@@ -117,7 +117,7 @@ export class ReminderTemplatePrismaRepository
 
   async findByIdentityId(
     identityId: string,
-    options?: { includeHistory?: boolean; includeDeleted?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
     const where: Prisma.ReminderTemplateWhereInput = { identityId };
     if (!options?.includeDeleted) {
@@ -127,7 +127,7 @@ export class ReminderTemplatePrismaRepository
     const data = await this.prisma.reminderTemplate.findMany({
       where,
       include: options?.includeHistory
-        ? { history: { orderBy: { triggeredAt: 'desc' } } }
+        ? { history: { orderBy: { triggeredAt: 'desc' }, take: options.historyLimit } }
         : undefined,
       orderBy: { createdAt: 'asc' },
     });
@@ -136,7 +136,7 @@ export class ReminderTemplatePrismaRepository
 
   async findByGroupId(
     groupId: string | null,
-    options?: { includeHistory?: boolean; includeDeleted?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
     const where: Prisma.ReminderTemplateWhereInput = { reminderGroupId: groupId };
     if (!options?.includeDeleted) {
@@ -146,14 +146,17 @@ export class ReminderTemplatePrismaRepository
     const data = await this.prisma.reminderTemplate.findMany({
       where,
       include: options?.includeHistory
-        ? { history: { orderBy: { triggeredAt: 'desc' } } }
+        ? { history: { orderBy: { triggeredAt: 'desc' }, take: options.historyLimit } }
         : undefined,
       orderBy: { createdAt: 'asc' },
     });
     return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
   }
 
-  async findActive(identityId?: string): Promise<ReminderTemplate[]> {
+  async findActive(
+    identityId?: string,
+    options?: { includeHistory?: boolean; historyLimit?: number },
+  ): Promise<ReminderTemplate[]> {
     const where: Prisma.ReminderTemplateWhereInput = {
       selfEnabled: true,
       status: 'Active',
@@ -165,9 +168,12 @@ export class ReminderTemplatePrismaRepository
 
     const data = await this.prisma.reminderTemplate.findMany({
       where,
+      include: options?.includeHistory
+        ? { history: { orderBy: { triggeredAt: 'desc' }, take: options.historyLimit } }
+        : undefined,
       orderBy: { createdAt: 'asc' },
     });
-    return data.map((d: PrismaReminderTemplate) => this.mapToEntity(d));
+    return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
   }
 
   async findByNextTriggerBefore(
@@ -193,14 +199,14 @@ export class ReminderTemplatePrismaRepository
 
   async findByIds(
     ids: string[],
-    options?: { includeHistory?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]> {
     if (ids.length === 0) return [];
 
     const data = await this.prisma.reminderTemplate.findMany({
       where: { id: { in: ids } },
       include: options?.includeHistory
-        ? { history: { orderBy: { triggeredAt: 'desc' } } }
+        ? { history: { orderBy: { triggeredAt: 'desc' }, take: options.historyLimit } }
         : undefined,
     });
     return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));

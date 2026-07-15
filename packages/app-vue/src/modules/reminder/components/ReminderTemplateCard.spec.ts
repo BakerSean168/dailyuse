@@ -32,6 +32,23 @@ const i18n = createI18n({
           groupEnabled: 'Group enabled',
           groupPaused: 'Group paused',
         },
+        schedule: {
+          trigger: 'Trigger time',
+          nextTrigger: 'Next trigger',
+          recurrence: 'Recurrence',
+          daily: 'Daily',
+          oneTime: 'One time',
+          everyMinutes: 'Every {minutes} minutes',
+          notConfigured: 'No recurrence configured',
+          noNextTrigger: 'No next trigger scheduled',
+          state: {
+            upcoming: 'Upcoming',
+            missed: 'Missed',
+            paused: 'Paused',
+            failed: 'Last trigger failed',
+            unscheduled: 'Not scheduled',
+          },
+        },
         templateDetail: {
           fallbackTitle: 'Reminder details',
           description: 'View the reminder basics, lifecycle state, and trigger configuration.',
@@ -44,6 +61,8 @@ const i18n = createI18n({
           fieldTriggerType: 'Trigger Type',
           fieldTriggerConfig: 'Trigger Configuration',
           notConfigured: 'Not configured',
+          triggerSummaryTime: 'At {time}',
+          triggerSummaryInterval: 'Every {minutes} minutes',
           triggerConfigType: 'Type: {value}',
           triggerConfigInterval: 'Interval: {minutes} minutes',
           triggerConfigTime: 'Time: {time}',
@@ -237,5 +256,24 @@ describe('ReminderTemplateCard', () => {
 
     expect(wrapper.text()).not.toContain('A higher-level rule is active');
     expect(wrapper.text()).toContain('Running now');
+  });
+
+  it('puts trigger, next trigger, recurrence, and schedule state before lifecycle controls', () => {
+    const wrapper = mountCard(
+      createTemplate({
+        effectiveEnabled: true,
+        lifecycleSource: 'template',
+        nextTriggerAt: Date.now() + 60 * 60 * 1000,
+      }),
+    );
+
+    const schedule = wrapper.get('[data-testid="reminder-detail-schedule"]');
+    expect(schedule.text()).toContain('At 09:00');
+    expect(schedule.text()).toContain('Next trigger');
+    expect(schedule.text()).toContain('Daily');
+    expect(wrapper.text()).toContain('Upcoming');
+    expect(wrapper.text().indexOf('Trigger time')).toBeLessThan(
+      wrapper.text().indexOf('Lifecycle Control'),
+    );
   });
 });

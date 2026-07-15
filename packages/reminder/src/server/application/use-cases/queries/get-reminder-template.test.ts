@@ -17,7 +17,7 @@ describe('GetReminderTemplateUseCase', () => {
 
     const result = await useCase.execute('tpl-1', { identityId: 'identity-1' });
 
-    expect(repository.findById).toHaveBeenCalledWith('tpl-1');
+    expect(repository.findById).toHaveBeenCalledWith('tpl-1', { includeHistory: true });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe('NOT_FOUND');

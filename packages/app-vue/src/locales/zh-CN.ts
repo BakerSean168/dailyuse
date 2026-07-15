@@ -1563,6 +1563,23 @@ export default {
       groupPolicyGroupPaused: '当前分组已暂停，因此组内所有提醒都会保持暂停。',
       groupPolicyIndividual: '该分组中的提醒保留模板自身开关控制。',
     },
+    schedule: {
+      trigger: '触发时间',
+      nextTrigger: '下次触发',
+      recurrence: '重复规则',
+      daily: '每天',
+      oneTime: '仅一次',
+      everyMinutes: '每 {minutes} 分钟',
+      notConfigured: '未配置重复规则',
+      noNextTrigger: '暂无下次触发时间',
+      state: {
+        upcoming: '即将触发',
+        missed: '已错过',
+        paused: '已暂停',
+        failed: '上次触发失败',
+        unscheduled: '待排程',
+      },
+    },
     templateDetail: {
       fallbackTitle: '提醒详情',
       description: '查看提醒的基础信息、生命周期状态与触发配置。',

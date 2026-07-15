@@ -1610,6 +1610,23 @@ export default {
       groupPolicyGroupPaused: 'The group is paused, so every reminder in it stays paused.',
       groupPolicyIndividual: 'Templates in this group keep their own self switch control.',
     },
+    schedule: {
+      trigger: 'Trigger time',
+      nextTrigger: 'Next trigger',
+      recurrence: 'Recurrence',
+      daily: 'Daily',
+      oneTime: 'One time',
+      everyMinutes: 'Every {minutes} minutes',
+      notConfigured: 'No recurrence configured',
+      noNextTrigger: 'No next trigger scheduled',
+      state: {
+        upcoming: 'Upcoming',
+        missed: 'Missed',
+        paused: 'Paused',
+        failed: 'Last trigger failed',
+        unscheduled: 'Not scheduled',
+      },
+    },
     templateDetail: {
       fallbackTitle: 'Reminder details',
       description: 'View the reminder basics, lifecycle state, and trigger configuration.',
