@@ -61,12 +61,7 @@ test.describe('Dashboard retirement (V2 shell)', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     await page.getByTestId('capsule-nav-goal').click();
-    const enter = page.getByTestId('capsule-preview-enter-goal');
-    if (await enter.count()) {
-      await enter.click();
-    } else {
-      await page.getByRole('dialog').getByRole('button').click();
-    }
+    await page.getByTestId('goal-capsule-view-all').click();
 
     await page.waitForURL('**/goals', { timeout: TIMEOUT_CONFIG.NAVIGATION });
     await expect(page.getByTestId('business-panel')).toBeVisible();
