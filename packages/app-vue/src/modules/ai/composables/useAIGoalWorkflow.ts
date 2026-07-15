@@ -60,7 +60,7 @@ const DEFAULT_REMINDER_TIME_OF_DAY = '09:00';
 const REMINDER_TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const goalDraftLoading = ref(false);
   const goalWorkflowStage = ref<GoalWorkflowStage>('collect');
@@ -707,6 +707,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         threadId: createAgentId('thread'),
         conversationId: options.chatConversationId.value || null,
         agentType: 'goal.create',
+        locale: locale.value === 'en-US' ? 'en-US' : 'zh-CN',
         input: {
           idea: options.buildConversationTranscript(),
           conversationTitle: options.conversationTitle.value,

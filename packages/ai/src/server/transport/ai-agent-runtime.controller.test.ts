@@ -70,6 +70,7 @@ describe('AIAgentRuntimeController', () => {
       conversationId: null,
       identityId: 'identity-from-client',
       agentType: 'goal.create',
+      locale: 'zh-CN',
       input: { idea: 'Ship the AI agent runtime.' },
     };
 
@@ -83,6 +84,7 @@ describe('AIAgentRuntimeController', () => {
         conversationId: null,
         identityId: 'identity-auth',
         agentType: 'goal.create',
+        locale: 'zh-CN',
         input: { idea: 'Ship the AI agent runtime.' },
       } satisfies AgentStartRunRequest,
       cx,

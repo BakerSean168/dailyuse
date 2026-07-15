@@ -14,7 +14,7 @@ import { getAIErrorMessage } from './error';
 type KnowledgeRelatedNote = NonNullable<KnowledgeAnswer['relatedNotes']>[number];
 
 export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOptions) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
 
   const knowledgeQueryLoading = ref(false);
@@ -124,6 +124,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
         threadId: createAgentId('thread'),
         conversationId: options.chatConversationId.value || null,
         agentType: 'knowledge.qa',
+        locale: locale.value === 'en-US' ? 'en-US' : 'zh-CN',
         input: {
           question,
           providerId: selectedModel.providerId,

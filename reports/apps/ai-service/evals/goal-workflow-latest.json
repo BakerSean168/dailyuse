@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-04-30T04:00:29.016520+00:00",
+  "generated_at": "2026-07-15T17:57:59.691180+00:00",
   "mode": "deterministic",
   "provider": null,
   "model": null,
   "base_url": null,
-  "cases_path": "evals\\goal_workflow_cases.json",
-  "total_cases": 4,
-  "passed_cases": 4,
+  "cases_path": "evals/goal_workflow_cases.json",
+  "total_cases": 7,
+  "passed_cases": 7,
   "failed_cases": 0,
   "pass_rate": 1.0,
   "by_type": {
-    "goal_workflow": 4
+    "goal_workflow": 7
   },
   "failed_case_ids": [],
   "gate_passed": true,
   "gate_failures": [],
-  "baseline_path": "evals\\goal_workflow_baseline.json",
-  "archive_path": "..\\..\\reports\\apps\\ai-service\\evals\\goal-workflow-history\\2026-04-30T04-00-29.016520+00-00.json",
+  "baseline_path": "evals/goal_workflow_baseline.json",
+  "archive_path": "../../reports/apps/ai-service/evals/goal-workflow-history/2026-07-15T17-57-59.691180+00-00.json",
   "results": [
     {
       "id": "goal-workflow-clarification-search-notes-partial",
@@ -39,6 +39,11 @@
           "name": "workflow_completes_without_failure_stage",
           "passed": true,
           "detail": "Workflow completed without internal failures."
+        },
+        {
+          "name": "clarification_question_count_at_most_three",
+          "passed": true,
+          "detail": "Clarification asks no more than three questions."
         },
         {
           "name": "execution_status_matches",
@@ -154,6 +159,11 @@
           "detail": "Workflow completed without internal failures."
         },
         {
+          "name": "clarification_question_count_at_most_three",
+          "passed": true,
+          "detail": "Clarification asks no more than three questions."
+        },
+        {
           "name": "execution_status_matches",
           "passed": true,
           "detail": "Execution status matches expectations."
@@ -247,6 +257,11 @@
           "detail": "Workflow completed without internal failures."
         },
         {
+          "name": "clarification_question_count_at_most_three",
+          "passed": true,
+          "detail": "Clarification asks no more than three questions."
+        },
+        {
           "name": "execution_status_matches",
           "passed": true,
           "detail": "Execution status matches expectations."
@@ -334,6 +349,11 @@
           "detail": "Workflow failed at the expected stage."
         },
         {
+          "name": "clarification_question_count_at_most_three",
+          "passed": true,
+          "detail": "Clarification asks no more than three questions."
+        },
+        {
           "name": "goal_mentions:approval",
           "passed": true,
           "detail": "Goal output mentions \"approval\"."
@@ -363,6 +383,354 @@
         "failure_stage": "prepare",
         "failure_detail": "Provider requested goal automation tools that are not available in the current read-only runtime.",
         "recovery": null,
+        "completion_count": 3
+      }
+    },
+    {
+      "id": "goal-workflow-locale-zh-clarification",
+      "type": "goal_workflow",
+      "description": "A Chinese UI request should clarify missing information with at most three Chinese questions and keep every structured artifact in Chinese.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "stage_sequence_matches",
+          "passed": true,
+          "detail": "Workflow stages match expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Workflow action tools match expectations."
+        },
+        {
+          "name": "workflow_completes_without_failure_stage",
+          "passed": true,
+          "detail": "Workflow completed without internal failures."
+        },
+        {
+          "name": "clarification_question_count_at_most_three",
+          "passed": true,
+          "detail": "Clarification asks no more than three questions."
+        },
+        {
+          "name": "clarification_uses:zh-CN",
+          "passed": true,
+          "detail": "Clarification uses zh-CN."
+        },
+        {
+          "name": "structured_output_uses:zh-CN",
+          "passed": true,
+          "detail": "Structured Goal Agent output uses zh-CN."
+        },
+        {
+          "name": "execution_status_matches",
+          "passed": true,
+          "detail": "Execution status matches expectations."
+        },
+        {
+          "name": "recovery_can_retry_matches",
+          "passed": true,
+          "detail": "Recovery canRetry matches expectations."
+        },
+        {
+          "name": "goal_mentions:运动",
+          "passed": true,
+          "detail": "Goal output mentions \"运动\"."
+        },
+        {
+          "name": "goal_mentions:习惯",
+          "passed": true,
+          "detail": "Goal output mentions \"习惯\"."
+        },
+        {
+          "name": "tool_call_seen:submit_goal_automation_plan",
+          "passed": true,
+          "detail": "Observed provider tool call \"submit_goal_automation_plan\"."
+        }
+      ],
+      "metadata": {
+        "stages": [
+          "clarification",
+          "draft",
+          "confirm",
+          "result"
+        ],
+        "tool_calls_seen": [
+          "submit_goal_automation_plan"
+        ],
+        "goal_title": "建立稳定的晨间运动习惯",
+        "action_tools": [
+          "create_goal",
+          "create_key_result",
+          "create_task_template",
+          "create_reminder"
+        ],
+        "executed_actions": [
+          {
+            "tool": "create_goal",
+            "status": "executed",
+            "message": "Created goal in fake execution.",
+            "entityId": "fake-goal-1"
+          },
+          {
+            "tool": "create_key_result",
+            "status": "executed",
+            "message": "Created key result in fake execution.",
+            "entityId": "fake-key-result-1"
+          },
+          {
+            "tool": "create_task_template",
+            "status": "executed",
+            "message": "Created task template in fake execution.",
+            "entityId": "fake-task-template-1"
+          },
+          {
+            "tool": "create_reminder",
+            "status": "executed",
+            "message": "Executed create_reminder in fake execution."
+          }
+        ],
+        "execution_status": "success",
+        "failure_stage": null,
+        "failure_detail": null,
+        "recovery": {
+          "canRetry": false,
+          "failedActions": [],
+          "suggestions": []
+        },
+        "completion_count": 3
+      }
+    },
+    {
+      "id": "goal-workflow-locale-en-clarification",
+      "type": "goal_workflow",
+      "description": "An English UI request should clarify missing information with at most three English questions and keep structured artifacts in English.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "stage_sequence_matches",
+          "passed": true,
+          "detail": "Workflow stages match expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Workflow action tools match expectations."
+        },
+        {
+          "name": "workflow_completes_without_failure_stage",
+          "passed": true,
+          "detail": "Workflow completed without internal failures."
+        },
+        {
+          "name": "clarification_question_count_at_most_three",
+          "passed": true,
+          "detail": "Clarification asks no more than three questions."
+        },
+        {
+          "name": "clarification_uses:en-US",
+          "passed": true,
+          "detail": "Clarification uses en-US."
+        },
+        {
+          "name": "structured_output_uses:en-US",
+          "passed": true,
+          "detail": "Structured Goal Agent output uses en-US."
+        },
+        {
+          "name": "execution_status_matches",
+          "passed": true,
+          "detail": "Execution status matches expectations."
+        },
+        {
+          "name": "recovery_can_retry_matches",
+          "passed": true,
+          "detail": "Recovery canRetry matches expectations."
+        },
+        {
+          "name": "goal_mentions:weekly",
+          "passed": true,
+          "detail": "Goal output mentions \"weekly\"."
+        },
+        {
+          "name": "goal_mentions:routine",
+          "passed": true,
+          "detail": "Goal output mentions \"routine\"."
+        },
+        {
+          "name": "tool_call_seen:submit_goal_automation_plan",
+          "passed": true,
+          "detail": "Observed provider tool call \"submit_goal_automation_plan\"."
+        }
+      ],
+      "metadata": {
+        "stages": [
+          "clarification",
+          "draft",
+          "confirm",
+          "result"
+        ],
+        "tool_calls_seen": [
+          "submit_goal_automation_plan"
+        ],
+        "goal_title": "Build a reliable weekly planning routine",
+        "action_tools": [
+          "create_goal",
+          "create_key_result",
+          "create_task_template",
+          "create_reminder"
+        ],
+        "executed_actions": [
+          {
+            "tool": "create_goal",
+            "status": "executed",
+            "message": "Created goal in fake execution.",
+            "entityId": "fake-goal-1"
+          },
+          {
+            "tool": "create_key_result",
+            "status": "executed",
+            "message": "Created key result in fake execution.",
+            "entityId": "fake-key-result-1"
+          },
+          {
+            "tool": "create_task_template",
+            "status": "executed",
+            "message": "Created task template in fake execution.",
+            "entityId": "fake-task-template-1"
+          },
+          {
+            "tool": "create_reminder",
+            "status": "executed",
+            "message": "Executed create_reminder in fake execution."
+          }
+        ],
+        "execution_status": "success",
+        "failure_stage": null,
+        "failure_detail": null,
+        "recovery": {
+          "canRetry": false,
+          "failedActions": [],
+          "suggestions": []
+        },
+        "completion_count": 3
+      }
+    },
+    {
+      "id": "goal-workflow-locale-mixed-input",
+      "type": "goal_workflow",
+      "description": "Mixed-language input should still follow the Chinese UI locale for clarification and structured output.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "stage_sequence_matches",
+          "passed": true,
+          "detail": "Workflow stages match expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Workflow action tools match expectations."
+        },
+        {
+          "name": "workflow_completes_without_failure_stage",
+          "passed": true,
+          "detail": "Workflow completed without internal failures."
+        },
+        {
+          "name": "clarification_question_count_at_most_three",
+          "passed": true,
+          "detail": "Clarification asks no more than three questions."
+        },
+        {
+          "name": "clarification_uses:zh-CN",
+          "passed": true,
+          "detail": "Clarification uses zh-CN."
+        },
+        {
+          "name": "structured_output_uses:zh-CN",
+          "passed": true,
+          "detail": "Structured Goal Agent output uses zh-CN."
+        },
+        {
+          "name": "execution_status_matches",
+          "passed": true,
+          "detail": "Execution status matches expectations."
+        },
+        {
+          "name": "recovery_can_retry_matches",
+          "passed": true,
+          "detail": "Recovery canRetry matches expectations."
+        },
+        {
+          "name": "goal_mentions:复盘",
+          "passed": true,
+          "detail": "Goal output mentions \"复盘\"."
+        },
+        {
+          "name": "goal_mentions:流程",
+          "passed": true,
+          "detail": "Goal output mentions \"流程\"."
+        },
+        {
+          "name": "tool_call_seen:submit_goal_automation_plan",
+          "passed": true,
+          "detail": "Observed provider tool call \"submit_goal_automation_plan\"."
+        }
+      ],
+      "metadata": {
+        "stages": [
+          "clarification",
+          "draft",
+          "confirm",
+          "result"
+        ],
+        "tool_calls_seen": [
+          "submit_goal_automation_plan"
+        ],
+        "goal_title": "建立稳定的每周复盘流程",
+        "action_tools": [
+          "create_goal",
+          "create_key_result",
+          "create_task_template",
+          "create_reminder"
+        ],
+        "executed_actions": [
+          {
+            "tool": "create_goal",
+            "status": "executed",
+            "message": "Created goal in fake execution.",
+            "entityId": "fake-goal-1"
+          },
+          {
+            "tool": "create_key_result",
+            "status": "executed",
+            "message": "Created key result in fake execution.",
+            "entityId": "fake-key-result-1"
+          },
+          {
+            "tool": "create_task_template",
+            "status": "executed",
+            "message": "Created task template in fake execution.",
+            "entityId": "fake-task-template-1"
+          },
+          {
+            "tool": "create_reminder",
+            "status": "executed",
+            "message": "Executed create_reminder in fake execution."
+          }
+        ],
+        "execution_status": "success",
+        "failure_stage": null,
+        "failure_detail": null,
+        "recovery": {
+          "canRetry": false,
+          "failedActions": [],
+          "suggestions": []
+        },
         "completion_count": 3
       }
     }

@@ -54,12 +54,14 @@ from ai_service.evals.eval_reporter import (
 )
 from ai_service.evals.eval_workflow_checks import (
     check_action_tools,
+    check_clarification_contract,
     check_execution_status,
     check_failures,
     check_goal_terms,
     check_recovery_retry,
     check_recovery_terms,
     check_stage_sequence,
+    check_structured_output_locale,
     check_tool_calls,
 )
 from ai_service.evals.goal_workflow_harness import (
@@ -316,6 +318,11 @@ def build_goal_workflow_eval_result(
     checks.append(check_stage_sequence(case, trace))
     checks.append(check_action_tools(case, trace))
     checks.append(check_failures(case, trace))
+    checks.extend(check_clarification_contract(case, trace))
+
+    locale_check = check_structured_output_locale(case, trace)
+    if locale_check is not None:
+        checks.append(locale_check)
 
     exec_status_check = check_execution_status(case, trace)
     if exec_status_check is not None:

@@ -79,6 +79,7 @@ class GoalPlanningService:
         timeframe: str | None,
         include_key_results: bool,
         provider_config: ProviderConfig,
+        locale: str = "en-US",
         request_id: str | None = None,
     ) -> GoalPlanningResponse:
         """Generate and validate a structured goal draft."""
@@ -96,7 +97,10 @@ class GoalPlanningService:
         )
         completion = await self._chat_service.complete(
             messages=[
-                ChatMessage(role="system", content=build_goal_system_prompt()),
+                ChatMessage(
+                    role="system",
+                    content=build_goal_system_prompt(locale=locale),
+                ),
                 ChatMessage(
                     role="user",
                     content=build_goal_user_prompt(
@@ -104,6 +108,7 @@ class GoalPlanningService:
                         category=category,
                         timeframe=timeframe,
                         include_key_results=include_key_results,
+                        locale=locale,
                     ),
                 ),
             ],
@@ -170,6 +175,7 @@ class GoalPlanningService:
         related_resources: list[KnowledgeResourceDocument] | None = None,
         analytics_context: AnalyticsQueryContext | None = None,
         provider_config: ProviderConfig,
+        locale: str = "en-US",
         request_id: str | None = None,
     ) -> GoalAutomationResponse:
         """Generate a structured automation plan with explicit tool calls.
@@ -191,6 +197,7 @@ class GoalPlanningService:
             related_resources=related_resources,
             analytics_context=analytics_context,
             provider_config=provider_config,
+            locale=locale,
             request_id=request_id,
         )
 
@@ -200,6 +207,7 @@ class GoalPlanningService:
         idea: str,
         category: str | None,
         provider_config: ProviderConfig,
+        locale: str = "en-US",
         request_id: str | None = None,
     ) -> GoalPlanningResponse:
         """Check if a goal idea needs clarification before planning.
@@ -226,13 +234,14 @@ class GoalPlanningService:
             messages=[
                 ChatMessage(
                     role="system",
-                    content=build_goal_clarification_system_prompt(),
+                    content=build_goal_clarification_system_prompt(locale=locale),
                 ),
                 ChatMessage(
                     role="user",
                     content=build_goal_clarification_user_prompt(
                         idea=idea,
                         category=category,
+                        locale=locale,
                     ),
                 ),
             ],
@@ -301,6 +310,7 @@ class GoalPlanningService:
         provider_config: ProviderConfig,
         enable_clarification: bool = True,
         clarification_answers: list[str] | None = None,
+        locale: str = "en-US",
         request_id: str | None = None,
     ) -> GoalPlanningResponse:
         """Generate a goal plan with optional clarification step.
@@ -341,6 +351,7 @@ class GoalPlanningService:
                 idea=idea,
                 category=category,
                 provider_config=provider_config,
+                locale=locale,
                 request_id=request_id,
             )
 
@@ -363,10 +374,11 @@ class GoalPlanningService:
         augmented_idea = idea
         if clarification_answers:
             # Combine the original idea with the answers
+            answer_prefix = "补充信息" if locale == "zh-CN" else "Additional context"
             answers_text = "\n".join(
-                f"Q: {answer}" for answer in clarification_answers if answer.strip()
+                f"- {answer}" for answer in clarification_answers if answer.strip()
             )
-            augmented_idea = f"{idea}\n\nAdditional context:\n{answers_text}"
+            augmented_idea = f"{idea}\n\n{answer_prefix}:\n{answers_text}"
             logger.info(
                 "goal planning augmented idea with clarification answers | %s",
                 compact_log(
@@ -383,5 +395,6 @@ class GoalPlanningService:
             timeframe=timeframe,
             include_key_results=include_key_results,
             provider_config=provider_config,
+            locale=locale,
             request_id=request_id,
         )

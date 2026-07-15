@@ -89,6 +89,7 @@ describe('AIServiceAgentRuntimeAdapter', () => {
           conversationId: null,
           identityId: 'identity-1',
           agentType: 'goal.create',
+          locale: 'zh-CN',
           input: { prompt: 'Create an implementation goal' },
         },
       }),

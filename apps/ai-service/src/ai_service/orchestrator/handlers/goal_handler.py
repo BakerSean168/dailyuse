@@ -32,6 +32,7 @@ class GoalWorkflowHandler(WorkflowHandler):
 
         enable_clarification = context.input_data.get("enable_clarification", True)
         clarification_answers = context.input_data.get("clarification_answers")
+        locale = context.input_data.get("locale", "zh-CN")
 
         logger.info(
             "goal workflow handler dispatching request | %s",
@@ -56,5 +57,6 @@ class GoalWorkflowHandler(WorkflowHandler):
             provider_config=provider_config,
             enable_clarification=enable_clarification,
             clarification_answers=clarification_answers,
+            locale=locale,
             request_id=context.request_id,
         )

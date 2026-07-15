@@ -165,6 +165,7 @@ describe('AI agent contract schemas', () => {
       conversationId: null,
       identityId: 'identity-1',
       agentType: 'goal.create',
+      locale: 'en-US',
       input: {
         idea: 'Ship the AI Agent workspace',
       },
@@ -193,6 +194,7 @@ describe('AI agent contract schemas', () => {
       conversationId: null,
       identityId: 'identity-from-client',
       agentType: 'goal.create',
+      locale: 'zh-CN',
       input: {
         idea: 'Ship the AI Agent workspace',
       },
@@ -200,6 +202,33 @@ describe('AI agent contract schemas', () => {
 
     expect(parsed).not.toHaveProperty('identityId');
     expect(parsed.agentType).toBe('goal.create');
+    expect(parsed.locale).toBe('zh-CN');
+  });
+
+  it('requires a supported UI locale when starting an Agent run', () => {
+    expect(AgentStartRunClientRequestSchema.safeParse({
+      runId: 'run-1',
+      threadId: 'thread-1',
+      conversationId: null,
+      agentType: 'goal.create',
+      input: { idea: 'Ship the AI Agent workspace' },
+    }).success).toBe(false);
+
+    expect(AgentStartRunClientRequestSchema.safeParse({
+      runId: 'run-1',
+      threadId: 'thread-1',
+      conversationId: null,
+      agentType: 'goal.create',
+      locale: 'fr-FR',
+      input: { idea: 'Ship the AI Agent workspace' },
+    }).success).toBe(false);
+  });
+
+  it('rejects more than three clarification answers', () => {
+    expect(AgentResumePayloadSchema.safeParse({
+      userDecision: 'clarify',
+      clarificationAnswers: ['one', 'two', 'three', 'four'],
+    }).success).toBe(false);
   });
 
   it('accepts the experimental run result shape emitted by FastAPI', () => {

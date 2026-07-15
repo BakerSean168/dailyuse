@@ -15,6 +15,9 @@ export const AgentTypeSchema = z.enum([
 ]);
 export type AgentType = z.infer<typeof AgentTypeSchema>;
 
+export const AgentLocaleSchema = z.enum(['zh-CN', 'en-US']);
+export type AgentLocale = z.infer<typeof AgentLocaleSchema>;
+
 export const AgentRunStatusSchema = z.enum([
   'pending',
   'running',
@@ -176,7 +179,7 @@ export type AgentEvent = z.infer<typeof AgentEventSchema>;
 
 export const AgentResumePayloadSchema = z.object({
   userDecision: z.enum(['clarify', 'confirm', 'cancel', 'edit', 'regenerate']),
-  clarificationAnswers: z.array(z.string().trim().min(1)).min(1).max(4).nullish(),
+  clarificationAnswers: z.array(z.string().trim().min(1)).min(1).max(3).nullish(),
   approvedActions: z.array(AgentActionSchema).nullish(),
   executedActions: z.array(AgentExecutedActionSchema).nullish(),
   editedArtifacts: z.array(AgentArtifactSchema).nullish(),
@@ -190,6 +193,7 @@ export const AgentStartRunRequestSchema = z.object({
   conversationId: z.string().min(1).nullish(),
   identityId: z.string().min(1),
   agentType: AgentTypeSchema,
+  locale: AgentLocaleSchema,
   input: z.record(z.string(), z.unknown()).default({}),
 });
 export type AgentStartRunRequest = z.infer<typeof AgentStartRunRequestSchema>;

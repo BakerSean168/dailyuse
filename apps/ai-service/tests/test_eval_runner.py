@@ -51,9 +51,9 @@ async def test_eval_runner_passes_bundled_goal_workflow_cases():
     results = await evaluate_cases(cases)
     report = build_report(cases_path=cases_path, results=results)
 
-    assert report.total_cases == 4
+    assert report.total_cases == 7
     assert report.failed_cases == 0
-    assert report.by_type == {"goal_workflow": 4}
+    assert report.by_type == {"goal_workflow": 7}
     assert all(result.passed for result in report.results)
 
 
@@ -214,19 +214,15 @@ async def test_eval_runner_supports_live_goal_workflow_with_stubbed_provider():
     draft_goal = {
         "title": "Create a concrete AI workflow goal",
         "description": (
-            "Run weekly execution reviews around one "
-            "measurable milestone."
+            "Run weekly execution reviews around one measurable milestone."
         ),
         "motivation": "Keep AI workflow progress visible.",
         "category": "work",
         "importance": "Important",
         "tags": ["ai", "workflow"],
-        "feasibilityAnalysis": (
-            "One milestone and a weekly ritual are narrow enough."
-        ),
+        "feasibilityAnalysis": ("One milestone and a weekly ritual are narrow enough."),
         "aiInsights": (
-            "Start with the execution review loop "
-            "before adding more automation."
+            "Start with the execution review loop before adding more automation."
         ),
         "suggestedDurationDays": 90,
     }
@@ -246,9 +242,7 @@ async def test_eval_runner_supports_live_goal_workflow_with_stubbed_provider():
     )
     submit_plan = json.dumps(
         {
-            "summary": (
-                "Create the goal and attach one measurable key result."
-            ),
+            "summary": ("Create the goal and attach one measurable key result."),
             "goal": draft_goal,
             "keyResults": draft_key_results,
             "taskTemplates": [],

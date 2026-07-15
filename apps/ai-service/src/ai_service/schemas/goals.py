@@ -20,6 +20,7 @@ GoalCategory = Literal[
     "other",
 ]
 ImportanceLevel = Literal["Vital", "Important", "Moderate", "Minor", "Trivial"]
+GoalLocale = Literal["zh-CN", "en-US"]
 
 
 class GoalPlanningRequest(BaseModel):
@@ -40,6 +41,7 @@ class GoalPlanningRequest(BaseModel):
     clarification_answers: list[str] | None = Field(
         default=None, description="Answers to previous clarification questions"
     )
+    locale: GoalLocale = "zh-CN"
 
 
 class ClarificationQuestion(BaseModel):
@@ -66,7 +68,7 @@ class GoalClarificationLLMResponse(BaseModel):
     )
     questions: list[ClarificationQuestion] = Field(
         default_factory=list,
-        description="2-4 clarification questions if clarification is needed",
+        description="1-3 clarification questions if clarification is needed",
     )
     rationale: str | None = Field(
         default=None, description="Why clarification is needed"
@@ -78,8 +80,8 @@ class GoalClarificationLLMResponse(BaseModel):
             return self
 
         question_count = len(self.questions)
-        if question_count < 2 or question_count > 4:
-            raise ValueError("Clarification responses must include 2-4 questions.")
+        if question_count < 1 or question_count > 3:
+            raise ValueError("Clarification responses must include 1-3 questions.")
 
         return self
 
@@ -98,6 +100,7 @@ class GoalAutomationRequest(BaseModel):
     analytics_context: AnalyticsQueryContext | None = None
     provider_config: ProviderConfig
     request_id: str | None = None
+    locale: GoalLocale = "zh-CN"
 
 
 class GoalAutomationSearchNotesResult(BaseModel):

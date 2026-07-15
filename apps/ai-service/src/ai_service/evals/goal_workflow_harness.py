@@ -18,6 +18,7 @@ from ai_service.schemas import (
     AnalyticsQueryResponse,
     ChatCompleteResponse,
     ChatMessage,
+    GoalAutomationResponse,
     GoalAutomationToolCall,
     GoalPlanningResponse,
     KnowledgeResourceDocument,
@@ -40,6 +41,7 @@ class GoalWorkflowEvalRequest(BaseModel):
     timeframe: str | None = None
     include_key_results: bool = True
     include_task_templates: bool = True
+    locale: Literal["zh-CN", "en-US"] = "en-US"
 
 
 class GoalWorkflowFakeActionOverride(BaseModel):
@@ -69,6 +71,8 @@ class GoalWorkflowExpectedOutcome(BaseModel):
     required_tool_calls: list[str] = Field(default_factory=list)
     required_recovery_terms: list[str] = Field(default_factory=list)
     failure_stage: Literal["clarification", "draft", "prepare", "execute"] | None = None
+    clarification_locale: Literal["zh-CN", "en-US"] | None = None
+    output_locale: Literal["zh-CN", "en-US"] | None = None
 
 
 class GoalWorkflowEvalCase(BaseModel):
@@ -104,6 +108,8 @@ class GoalWorkflowTrace(BaseModel):
     goal_title: str | None = None
     goal_text: str = ""
     clarification_question_count: int = 0
+    clarification_text: str = ""
+    structured_text: str = ""
     completion_count: int = 0
 
 
@@ -233,13 +239,8 @@ class StaticAnalyticsQueryService:
         )
 
 
-def _build_analytics_answer(
-    question: str, highlights: list[str]
-) -> str:
-    metrics = (
-        "; ".join(highlights) if highlights
-        else "no prominent metrics provided."
-    )
+def _build_analytics_answer(question: str, highlights: list[str]) -> str:
+    metrics = "; ".join(highlights) if highlights else "no prominent metrics provided."
     return f"Analytics context for '{question}' suggests: {metrics}"
 
 
@@ -382,6 +383,16 @@ async def run_goal_workflow_case(
                 if draft_response.clarification
                 else []
             )
+            trace.clarification_text = " ".join(
+                part
+                for question in (
+                    draft_response.clarification.questions
+                    if draft_response.clarification
+                    else []
+                )
+                for part in (question.question, question.context)
+                if part
+            )
             if not case.clarification_answers:
                 trace.failure_stage = "clarification"
                 trace.failure_detail = (
@@ -430,11 +441,13 @@ async def run_goal_workflow_case(
                     "related_resources": list(case.related_resources),
                     "analytics_context": case.analytics_context,
                     "provider_config": provider_config,
+                    "locale": case.initial_request.locale,
                 },
             )
         )
         trace.stages.append("confirm")
         trace.action_tools = [action.tool for action in automation_response.tool_calls]
+        trace.structured_text = build_automation_text(automation_response)
 
         current_stage = "execute"
         executed_actions = FakeGoalWorkflowExecutor(case.fake_execution).execute(
@@ -485,6 +498,26 @@ def build_goal_text(response: GoalPlanningResponse) -> str:
     ]
     for key_result in response.key_results or []:
         parts.extend([key_result.title, key_result.description, key_result.unit])
+    return " ".join(part for part in parts if part).strip()
+
+
+def build_automation_text(response: GoalAutomationResponse) -> str:
+    """Flatten user-facing structured artifacts for locale evaluation."""
+
+    parts = [
+        response.summary,
+        response.goal.title,
+        response.goal.description,
+        response.goal.motivation,
+        response.goal.feasibility_analysis,
+        response.goal.ai_insights,
+    ]
+    for key_result in response.key_results or []:
+        parts.extend([key_result.title, key_result.description, key_result.unit])
+    for task_template in response.task_templates or []:
+        parts.extend([task_template.name, task_template.description])
+    for reminder in response.reminders or []:
+        parts.extend([reminder.title, reminder.description])
     return " ".join(part for part in parts if part).strip()
 
 

@@ -48,15 +48,9 @@ def _assert_node_lifecycle(result, node: str) -> None:
         for index, event in enumerate(result.events)
         if event.data.get("node") == node
     ]
-    started = next(
-        index
-        for index, event in events
-        if event.type == "node.started"
-    )
+    started = next(index for index, event in events if event.type == "node.started")
     completed_index, completed_event = next(
-        (index, event)
-        for index, event in events
-        if event.type == "node.completed"
+        (index, event) for index, event in events if event.type == "node.completed"
     )
     assert started < completed_index
     assert isinstance(completed_event.data.get("durationMs"), int)
@@ -65,9 +59,7 @@ def _assert_node_lifecycle(result, node: str) -> None:
 
 def _assert_goal_agent_action_plan(result) -> None:
     goal_artifact = next(
-        artifact
-        for artifact in result.state.artifacts
-        if artifact.kind == "goal_draft"
+        artifact for artifact in result.state.artifacts if artifact.kind == "goal_draft"
     )
     action_plan = next(
         artifact
@@ -190,10 +182,7 @@ def test_goal_create_graph_projects_supplied_read_only_context():
     )
 
     assert result.waiting_for_approval is True
-    by_tool = {
-        item["tool"]: item
-        for item in result.state.retrieved_context
-    }
+    by_tool = {item["tool"]: item for item in result.state.retrieved_context}
     assert by_tool["search_existing_goals"]["matches"] == [
         {"id": "goal-2", "title": "Similar workspace goal"}
     ]
@@ -222,15 +211,17 @@ def test_goal_create_graph_projects_supplied_read_only_context():
     assert action_plan.data["warnings"] == [
         "Potential overlap with existing goals: Similar workspace goal."
     ]
-    assert _tool_completed_events(result, "search_existing_goals")[0].data[
-        "matchCount"
-    ] == 1
-    assert _tool_completed_events(result, "search_knowledge")[0].data[
-        "matchCount"
-    ] == 1
-    assert _tool_completed_events(result, "fetch_goal_stats")[0].data[
-        "summary"
-    ]["goalSearchResultCount"] == 1
+    assert (
+        _tool_completed_events(result, "search_existing_goals")[0].data["matchCount"]
+        == 1
+    )
+    assert _tool_completed_events(result, "search_knowledge")[0].data["matchCount"] == 1
+    assert (
+        _tool_completed_events(result, "fetch_goal_stats")[0].data["summary"][
+            "goalSearchResultCount"
+        ]
+        == 1
+    )
 
 
 def test_goal_create_graph_uses_goal_planning_service_when_provider_config_supplied():
@@ -296,9 +287,7 @@ def test_goal_create_graph_uses_goal_planning_service_when_provider_config_suppl
     assert result.waiting_for_approval is True
     assert result.state.usage.total_tokens == 12
     goal_artifact = next(
-        artifact
-        for artifact in result.state.artifacts
-        if artifact.kind == "goal_draft"
+        artifact for artifact in result.state.artifacts if artifact.kind == "goal_draft"
     )
     assert goal_artifact.data["title"] == "Ship planner-backed Agent workflow"
     assert goal_artifact.data["keyResults"] == [
@@ -342,9 +331,39 @@ def test_goal_create_graph_pauses_for_clarification_when_input_is_too_brief():
     assert result.interrupts[0]["type"] == "clarification.required"
     assert result.interrupts[0]["agentType"] == "goal.create"
     assert len(result.interrupts[0]["questions"]) == 2
-    assert [event.type for event in result.events][-1] == (
-        "clarification.required"
+    assert [event.type for event in result.events][-1] == ("clarification.required")
+
+
+def test_goal_create_graph_localizes_clarification_and_artifacts_to_chinese():
+    runtime = GoalCreateAgentRuntime(clock=lambda: 1000)
+    start = runtime.start_goal_create(
+        run_id="run-zh",
+        thread_id="thread-zh",
+        identity_id="identity-1",
+        idea="开始运动",
+        locale="zh-CN",
     )
+
+    questions = start.interrupts[0]["questions"]
+    assert 1 <= len(questions) <= 3
+    assert all(
+        any("\u4e00" <= char <= "\u9fff" for char in item["question"])
+        for item in questions
+    )
+
+    result = runtime.resume_goal_create(
+        thread_id="thread-zh",
+        payload=AgentResumePayload(
+            userDecision="clarify",
+            clarificationAnswers=["每周运动五次。", "八周后完成。"],
+        ),
+    )
+
+    goal_data = result.state.artifacts[0].data
+    assert "补充信息" in goal_data["description"]
+    assert "进展" in goal_data["keyResults"][0]["title"]
+    assert "每周" in goal_data["taskTemplates"][0]["name"]
+    assert "复盘" in goal_data["reminders"][0]["title"]
 
 
 def test_goal_create_graph_resumes_from_clarification_to_approval():
@@ -372,9 +391,7 @@ def test_goal_create_graph_resumes_from_clarification_to_approval():
     assert result.state.stage == "approval"
     assert result.state.messages[-1].content.startswith("Clarification answers:")
     assert result.state.artifacts[0].data["title"].startswith("Get fit")
-    assert "Run a 5K without stopping." in result.state.artifacts[0].data[
-        "description"
-    ]
+    assert "Run a 5K without stopping." in result.state.artifacts[0].data["description"]
     _assert_goal_agent_action_plan(result)
     assert [event.type for event in result.events][-1] == "approval.required"
 
@@ -543,9 +560,10 @@ def test_goal_create_graph_completes_after_ts_executor_results_are_resumed():
     assert _tool_completed_events(resumed, "create_goal")[0].data["status"] == (
         "executed"
     )
-    assert _tool_completed_events(resumed, "create_key_result")[0].data[
-        "source"
-    ] == "external_executor"
+    assert (
+        _tool_completed_events(resumed, "create_key_result")[0].data["source"]
+        == "external_executor"
+    )
     _assert_tool_completed_duration(resumed, "create_goal")
     _assert_tool_completed_duration(resumed, "create_key_result")
     assert [event.type for event in resumed.events][-1] == "run.completed"
@@ -609,8 +627,7 @@ def test_goal_create_graph_projects_execution_timeline_and_recovery_artifact():
         "create_key_result"
     )
     assert timeline.data["recovery"]["retryApprovedActions"] == [
-        action.model_dump(by_alias=True)
-        for action in start.state.pending_actions
+        action.model_dump(by_alias=True) for action in start.state.pending_actions
     ]
     assert timeline.data["recovery"]["suggestions"] == [
         (
@@ -667,12 +684,8 @@ def test_goal_create_graph_retries_failed_execution_with_same_approved_plan():
     assert retry.state.stage == "execute"
     assert retry.state.executed_actions == []
     assert [
-        action.model_dump(by_alias=True)
-        for action in retry.state.approved_actions
-    ] == [
-        action.model_dump(by_alias=True)
-        for action in start.state.pending_actions
-    ]
+        action.model_dump(by_alias=True) for action in retry.state.approved_actions
+    ] == [action.model_dump(by_alias=True) for action in start.state.pending_actions]
     assert retry.interrupts[0]["type"] == "execution.required"
     assert retry.interrupts[0]["approvedActions"][0]["tool"] == "create_goal"
     assert retry.events[-1].type == "execution.required"
@@ -740,12 +753,8 @@ def test_goal_create_file_checkpoint_restores_failed_result_and_retry(tmp_path):
     assert retry.state.stage == "execute"
     assert retry.state.executed_actions == []
     assert [
-        action.model_dump(by_alias=True)
-        for action in retry.state.approved_actions
-    ] == [
-        action.model_dump(by_alias=True)
-        for action in start.state.pending_actions
-    ]
+        action.model_dump(by_alias=True) for action in retry.state.approved_actions
+    ] == [action.model_dump(by_alias=True) for action in start.state.pending_actions]
 
 
 def test_goal_create_file_run_history_restores_recent_run_list(tmp_path):
@@ -955,10 +964,13 @@ def test_agent_runtime_lists_runs_for_identity_and_active_statuses():
 
     assert [run.run_id for run in all_runs] == ["run-b", "run-a"]
     assert [run.run_id for run in active_runs] == ["run-a"]
-    assert runtime.list_runs(
-        identity_id="identity-1",
-        conversation_id="conversation-missing",
-    ) == []
+    assert (
+        runtime.list_runs(
+            identity_id="identity-1",
+            conversation_id="conversation-missing",
+        )
+        == []
+    )
 
 
 def test_goal_create_resume_cancel_does_not_execute_side_effects():
@@ -1031,9 +1043,7 @@ def test_knowledge_qa_graph_completes_with_grounded_answer_artifact():
         }
     ]
     _assert_node_lifecycle(result, "answer")
-    assert _tool_completed_events(result, "search_knowledge")[0].data[
-        "matchCount"
-    ] == 1
+    assert _tool_completed_events(result, "search_knowledge")[0].data["matchCount"] == 1
     assert "citation.selected" in [event.type for event in result.events]
     assert result.events[-1].type == "run.completed"
 
@@ -1074,8 +1084,7 @@ def test_agent_node_completed_events_include_duration_ms():
 
     assert completed_events
     assert all(
-        isinstance(event.data.get("durationMs"), int)
-        and event.data["durationMs"] >= 0
+        isinstance(event.data.get("durationMs"), int) and event.data["durationMs"] >= 0
         for event in completed_events
     )
     assert any(event.data["durationMs"] > 0 for event in completed_events)
@@ -1137,19 +1146,16 @@ def test_knowledge_qa_file_run_history_restores_recent_run_list(tmp_path):
     )
 
     assert history_path.exists()
-    assert restored.get_thread_id(
-        run_id="run-knowledge-history-a"
-    ) == "thread-knowledge-history-a"
-    assert [
-        run.run_id for run in restored.list_runs(identity_id="identity-1")
-    ] == [
+    assert (
+        restored.get_thread_id(run_id="run-knowledge-history-a")
+        == "thread-knowledge-history-a"
+    )
+    assert [run.run_id for run in restored.list_runs(identity_id="identity-1")] == [
         "run-knowledge-history-b",
         "run-knowledge-history-a",
     ]
     assert restored.list_runs(identity_id="identity-1", active_only=True) == []
-    restored_snapshot = restored.get_snapshot(
-        thread_id="thread-knowledge-history-a"
-    )
+    restored_snapshot = restored.get_snapshot(thread_id="thread-knowledge-history-a")
     history_payload = json.loads(history_path.read_text(encoding="utf-8"))
     stored_result = history_payload["results"]["run-knowledge-history-a"]
 
@@ -1266,9 +1272,10 @@ def test_knowledge_generate_graph_resumes_to_execution_and_result():
         "resolvedPath": "notes/ai/grounding.md",
         "indexStatus": "pending",
     }
-    assert _tool_completed_events(completed, "create_knowledge_note")[0].data[
-        "status"
-    ] == "executed"
+    assert (
+        _tool_completed_events(completed, "create_knowledge_note")[0].data["status"]
+        == "executed"
+    )
     _assert_tool_completed_duration(completed, "create_knowledge_note")
     timeline = completed.state.artifacts[-1]
     assert timeline.kind == "execution_timeline"
@@ -1394,9 +1401,10 @@ def test_knowledge_generate_file_checkpoint_restores_failed_result_and_retry(
     )
 
     assert checkpoint_path.exists()
-    assert restored.get_thread_id(
-        run_id="run-note-durable-retry"
-    ) == "thread-note-durable-retry"
+    assert (
+        restored.get_thread_id(run_id="run-note-durable-retry")
+        == "thread-note-durable-retry"
+    )
     assert snapshot.run.status == "completed"
     assert snapshot.state.stage == "result"
     timeline = next(
@@ -1467,12 +1475,10 @@ def test_knowledge_generate_file_run_history_restores_recent_run_list(tmp_path):
     )
 
     assert history_path.exists()
-    assert restored.get_thread_id(
-        run_id="run-note-history-a"
-    ) == "thread-note-history-a"
-    assert [
-        run.run_id for run in restored.list_runs(identity_id="identity-1")
-    ] == [
+    assert (
+        restored.get_thread_id(run_id="run-note-history-a") == "thread-note-history-a"
+    )
+    assert [run.run_id for run in restored.list_runs(identity_id="identity-1")] == [
         "run-note-history-b",
         "run-note-history-a",
     ]
@@ -1486,9 +1492,7 @@ def test_knowledge_generate_file_run_history_restores_recent_run_list(tmp_path):
     completed_result = history_payload["results"]["run-note-history-b"]
 
     assert restored_snapshot.interrupts[0]["agentType"] == "knowledge.generate"
-    assert restored_snapshot.state.pending_actions[0].tool == (
-        "create_knowledge_note"
-    )
+    assert restored_snapshot.state.pending_actions[0].tool == ("create_knowledge_note")
     assert waiting_result["state"]["pendingActions"][0]["tool"] == (
         "create_knowledge_note"
     )

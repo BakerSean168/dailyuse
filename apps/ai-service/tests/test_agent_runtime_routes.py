@@ -9,7 +9,13 @@ from ai_service.main import create_app
 from ai_service.schemas import GoalPlanningResponse
 
 
-def _start_goal_run(client, *, run_id: str = "run-1", thread_id: str = "thread-1"):
+def _start_goal_run(
+    client,
+    *,
+    run_id: str = "run-1",
+    thread_id: str = "thread-1",
+    locale: str = "en-US",
+):
     return client.post(
         "/internal/agents/runs",
         json={
@@ -17,6 +23,7 @@ def _start_goal_run(client, *, run_id: str = "run-1", thread_id: str = "thread-1
             "threadId": thread_id,
             "identityId": "identity-1",
             "agentType": "goal.create",
+            "locale": locale,
             "input": {
                 "idea": "Ship the AI Agent workspace with approval gates",
                 "category": "work",
@@ -30,6 +37,7 @@ def _start_brief_goal_run(
     *,
     run_id: str = "brief-run-1",
     thread_id: str = "brief-thread-1",
+    locale: str = "en-US",
 ):
     return client.post(
         "/internal/agents/runs",
@@ -38,6 +46,7 @@ def _start_brief_goal_run(
             "threadId": thread_id,
             "identityId": "identity-1",
             "agentType": "goal.create",
+            "locale": locale,
             "input": {
                 "idea": "Get fit",
                 "category": "health",
@@ -59,6 +68,7 @@ def _start_knowledge_run(
             "threadId": thread_id,
             "identityId": "identity-1",
             "agentType": "knowledge.qa",
+            "locale": "en-US",
             "input": {
                 "question": "What do my notes say about grounded answers?",
                 "answer": "Use repository citations when evidence exists.",
@@ -98,6 +108,7 @@ def _start_insufficient_knowledge_run(
             "threadId": thread_id,
             "identityId": "identity-1",
             "agentType": "knowledge.qa",
+            "locale": "en-US",
             "input": {
                 "question": "What do my notes say about unindexed archives?",
                 "citations": [],
@@ -119,11 +130,11 @@ def _start_knowledge_generate_run(
             "threadId": thread_id,
             "identityId": "identity-1",
             "agentType": "knowledge.generate",
+            "locale": "en-US",
             "input": {
                 "topic": "Grounding knowledge answers",
                 "source": (
-                    "Question: What should answers cite?\n"
-                    "Answer: Repository excerpts."
+                    "Question: What should answers cite?\nAnswer: Repository excerpts."
                 ),
                 "title": "Grounding knowledge answers",
                 "targetSubpath": "notes/ai",
@@ -220,6 +231,7 @@ def test_start_goal_create_agent_run_accepts_read_only_context(client):
             "threadId": "thread-context",
             "identityId": "identity-1",
             "agentType": "goal.create",
+            "locale": "en-US",
             "input": {
                 "idea": "Ship the AI Agent workspace with approval gates",
                 "related_resources": [
@@ -231,8 +243,7 @@ def test_start_goal_create_agent_run_accepts_read_only_context(client):
                         "title": "Agent workflow notes",
                         "mime_type": "text/markdown",
                         "content": (
-                            "Goal Agent should review existing notes before "
-                            "drafting."
+                            "Goal Agent should review existing notes before drafting."
                         ),
                         "metadata": {"source": "test"},
                     }
@@ -258,10 +269,7 @@ def test_start_goal_create_agent_run_accepts_read_only_context(client):
 
     assert response.status_code == 200
     data = response.json()
-    by_tool = {
-        item["tool"]: item
-        for item in data["state"]["retrievedContext"]
-    }
+    by_tool = {item["tool"]: item for item in data["state"]["retrievedContext"]}
     assert by_tool["search_existing_goals"]["matches"][0]["title"] == (
         "Similar workspace goal"
     )
@@ -282,33 +290,35 @@ def test_start_goal_create_agent_run_uses_provider_backed_planner(client):
         "ai_service.services.goal_planning_service.GoalPlanningService.plan",
         new_callable=AsyncMock,
     ) as mock_plan:
-        mock_plan.return_value = GoalPlanningResponse.model_validate({
-            "goal": {
-                "title": "Ship planner-backed Agent workflow",
-                "description": "Use GoalPlanningService inside the Agent graph.",
-                "motivation": "Reduce deterministic placeholder output.",
-                "category": "work",
-                "importance": "Important",
-                "tags": ["ai", "agent"],
-                "feasibilityAnalysis": "A thin async graph node is enough.",
-                "aiInsights": "Keep TS as the write boundary.",
-                "suggestedStartDate": 2000,
-                "suggestedEndDate": 3000,
-            },
-            "keyResults": [
-                {
-                    "title": "Planner-backed draft generated",
-                    "description": "The draft came from GoalPlanningService.",
-                    "targetValue": 1,
-                    "unit": "draft",
-                }
-            ],
-            "usage": {
-                "prompt_tokens": 7,
-                "completion_tokens": 5,
-                "total_tokens": 12,
-            },
-        })
+        mock_plan.return_value = GoalPlanningResponse.model_validate(
+            {
+                "goal": {
+                    "title": "Ship planner-backed Agent workflow",
+                    "description": "Use GoalPlanningService inside the Agent graph.",
+                    "motivation": "Reduce deterministic placeholder output.",
+                    "category": "work",
+                    "importance": "Important",
+                    "tags": ["ai", "agent"],
+                    "feasibilityAnalysis": "A thin async graph node is enough.",
+                    "aiInsights": "Keep TS as the write boundary.",
+                    "suggestedStartDate": 2000,
+                    "suggestedEndDate": 3000,
+                },
+                "keyResults": [
+                    {
+                        "title": "Planner-backed draft generated",
+                        "description": "The draft came from GoalPlanningService.",
+                        "targetValue": 1,
+                        "unit": "draft",
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 7,
+                    "completion_tokens": 5,
+                    "total_tokens": 12,
+                },
+            }
+        )
 
         response = client.post(
             "/internal/agents/runs",
@@ -317,6 +327,7 @@ def test_start_goal_create_agent_run_uses_provider_backed_planner(client):
                 "threadId": "thread-planner-route",
                 "identityId": "identity-1",
                 "agentType": "goal.create",
+                "locale": "en-US",
                 "input": {
                     "idea": "Ship the AI Agent workspace with approval gates",
                     "category": "work",
@@ -340,6 +351,7 @@ def test_start_goal_create_agent_run_uses_provider_backed_planner(client):
     mock_plan.assert_awaited_once()
     kwargs = mock_plan.await_args.kwargs
     assert kwargs["provider_config"].model == "gpt-4o-mini"
+    assert kwargs["locale"] == "en-US"
     assert kwargs["request_id"] == "request-planner-route"
 
 
@@ -358,6 +370,23 @@ def test_start_goal_create_agent_run_pauses_for_clarification_when_input_is_brie
     assert data["interrupts"][0]["agentType"] == "goal.create"
     assert len(data["interrupts"][0]["questions"]) == 2
     assert data["events"][-1]["type"] == "clarification.required"
+
+
+def test_start_goal_create_agent_run_uses_requested_chinese_locale(client):
+    response = _start_brief_goal_run(
+        client,
+        run_id="brief-run-zh",
+        thread_id="brief-thread-zh",
+        locale="zh-CN",
+    )
+
+    assert response.status_code == 200
+    questions = response.json()["interrupts"][0]["questions"]
+    assert 1 <= len(questions) <= 3
+    assert all(
+        any("\u4e00" <= character <= "\u9fff" for character in item["question"])
+        for item in questions
+    )
 
 
 def test_resume_goal_create_agent_run_requires_clarification_answers(client):
@@ -570,7 +599,7 @@ def test_resume_goal_create_agent_run_completes_with_external_execution_results(
                     "status": "executed",
                     "entityId": "reminder-1",
                     "message": "Created review reminder",
-                }
+                },
             ],
         },
     )
@@ -796,21 +825,30 @@ def test_knowledge_generate_agent_snapshot_survives_app_recreation(
 
 
 def test_list_agent_runs_returns_recent_runs_for_identity(client):
-    assert _start_goal_run(
-        client,
-        run_id="goal-list-run",
-        thread_id="goal-list-thread",
-    ).status_code == 200
-    assert _start_knowledge_generate_run(
-        client,
-        run_id="note-list-run",
-        thread_id="note-list-thread",
-    ).status_code == 200
-    assert _start_knowledge_run(
-        client,
-        run_id="qa-list-run",
-        thread_id="qa-list-thread",
-    ).status_code == 200
+    assert (
+        _start_goal_run(
+            client,
+            run_id="goal-list-run",
+            thread_id="goal-list-thread",
+        ).status_code
+        == 200
+    )
+    assert (
+        _start_knowledge_generate_run(
+            client,
+            run_id="note-list-run",
+            thread_id="note-list-thread",
+        ).status_code
+        == 200
+    )
+    assert (
+        _start_knowledge_run(
+            client,
+            run_id="qa-list-run",
+            thread_id="qa-list-thread",
+        ).status_code
+        == 200
+    )
 
     active_response = client.get(
         "/internal/agents/runs",
@@ -912,8 +950,7 @@ def test_start_knowledge_qa_agent_run_marks_insufficient_evidence_without_citati
     assert artifact["data"]["relatedNotes"] == []
     assert artifact["data"]["matchedResourceCount"] == 0
     assert (
-        "Current knowledge base evidence is insufficient"
-        in artifact["data"]["answer"]
+        "Current knowledge base evidence is insufficient" in artifact["data"]["answer"]
     )
     event_types = [event["type"] for event in data["events"]]
     assert "citation.selected" not in event_types
@@ -1081,8 +1118,9 @@ def test_resume_knowledge_generate_agent_run_retries_failed_execution(client):
         "failedCount": 1,
     }
     assert timeline["data"]["recovery"]["canRetry"] is True
-    assert timeline["data"]["recovery"]["retryApprovedActions"] == (
-        start["state"]["pendingActions"]
+    assert (
+        timeline["data"]["recovery"]["retryApprovedActions"]
+        == (start["state"]["pendingActions"])
     )
 
     retry_response = client.post(

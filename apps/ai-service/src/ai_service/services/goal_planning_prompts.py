@@ -3,7 +3,21 @@
 from __future__ import annotations
 
 
-def build_goal_system_prompt() -> str:
+def _output_language_instruction(locale: str) -> str:
+    if locale == "zh-CN":
+        return (
+            "Write every user-facing title, description, question, rationale, "
+            "unit, task, and reminder in Simplified Chinese. Keep JSON keys and "
+            "enum values exactly as specified."
+        )
+    return (
+        "Write every user-facing title, description, question, rationale, unit, "
+        "task, and reminder in English. Keep JSON keys and enum values exactly "
+        "as specified."
+    )
+
+
+def build_goal_system_prompt(*, locale: str = "en-US") -> str:
     """Return the structured output contract for goal generation."""
 
     return "\n".join(
@@ -14,6 +28,7 @@ def build_goal_system_prompt() -> str:
             ),
             "Respond with JSON only.",
             "Do not include markdown code fences.",
+            _output_language_instruction(locale),
             "JSON shape:",
             "{",
             '  "goal": {',
@@ -53,6 +68,7 @@ def build_goal_user_prompt(
     category: str | None,
     timeframe: str | None,
     include_key_results: bool,
+    locale: str = "en-US",
 ) -> str:
     """Build the goal-generation user prompt."""
 
@@ -68,6 +84,7 @@ def build_goal_user_prompt(
                     if include_key_results
                     else "Include key results: no"
                 ),
+                f"UI locale: {locale}",
             ],
         )
     )
@@ -78,6 +95,7 @@ def build_goal_automation_system_prompt(
     use_native_tool_calling: bool = False,
     allow_search_notes: bool = False,
     allow_fetch_stats: bool = False,
+    locale: str = "en-US",
 ) -> str:
     """Return the structured output contract for goal automation planning."""
 
@@ -95,6 +113,7 @@ def build_goal_automation_system_prompt(
             "For create_key_result and create_task_template, set index "
             "to the matching array item index."
         ),
+        _output_language_instruction(locale),
     ]
 
     if use_native_tool_calling:
@@ -115,8 +134,7 @@ def build_goal_automation_system_prompt(
                 )
                 if allow_fetch_stats
                 else (
-                    "Do not request fetch_stats unless analytics "
-                    "context is available."
+                    "Do not request fetch_stats unless analytics context is available."
                 ),
             ]
         )
@@ -202,6 +220,7 @@ def build_goal_automation_user_prompt(
     timeframe: str | None,
     include_key_results: bool,
     include_task_templates: bool,
+    locale: str = "en-US",
 ) -> str:
     """Build the automation-planning user prompt."""
 
@@ -222,12 +241,13 @@ def build_goal_automation_user_prompt(
                     if include_task_templates
                     else "Include task templates: no"
                 ),
+                f"UI locale: {locale}",
             ],
         )
     )
 
 
-def build_goal_clarification_system_prompt() -> str:
+def build_goal_clarification_system_prompt(*, locale: str = "en-US") -> str:
     """System prompt for determining if a goal needs clarification."""
 
     return "\n".join(
@@ -238,6 +258,7 @@ def build_goal_clarification_system_prompt() -> str:
             ),
             "Respond with JSON only.",
             "Do not include markdown code fences.",
+            _output_language_instruction(locale),
             "JSON shape:",
             "{",
             '  "needsClarification": boolean,',
@@ -253,10 +274,12 @@ def build_goal_clarification_system_prompt() -> str:
             "Guidelines:",
             "- If the idea is vague, unclear, or missing key "
             "information, set needsClarification to true.",
-            "- Generate 2-4 clarification questions that help fill information gaps.",
+            "- Ask only about information that is genuinely missing.",
+            "- Generate 1-3 high-value clarification questions.",
             "- Focus on: motivation, success criteria, timeline, scope, constraints.",
             "- Keep each question concise (< 15 words).",
             "- Provide context for each question explaining why it matters.",
+            "- Do not draft a goal, key result, task, or reminder in this response.",
             "- If the idea is already clear and specific, "
             "set needsClarification to false.",
             "- Always explain rationale when clarification is needed.",
@@ -268,6 +291,7 @@ def build_goal_clarification_user_prompt(
     *,
     idea: str,
     category: str | None = None,
+    locale: str = "en-US",
 ) -> str:
     """Build user prompt for clarification check.
 
@@ -284,11 +308,12 @@ def build_goal_clarification_user_prompt(
             [
                 f"Goal idea: {idea}",
                 f"Category: {category}" if category else None,
+                f"UI locale: {locale}",
                 "",
                 (
                     "Determine if this goal idea is clear enough for planning, "
                     "or if it needs clarification. If clarification is needed, "
-                    "suggest 2-4 clarification questions."
+                    "suggest no more than three high-value clarification questions."
                 ),
             ],
         )

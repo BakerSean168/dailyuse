@@ -69,6 +69,7 @@ async def execute_automation_strategy(
     related_resources: list[KnowledgeResourceDocument] | None = None,
     analytics_context: AnalyticsQueryContext | None = None,
     provider_config: ProviderConfig,
+    locale: str = "en-US",
     request_id: str | None = None,
 ) -> GoalAutomationResponse:
     """Generate a structured automation plan with explicit tool calls."""
@@ -109,6 +110,7 @@ async def execute_automation_strategy(
                 use_native_tool_calling=native_tool_support,
                 allow_search_notes=search_notes_support,
                 allow_fetch_stats=fetch_stats_support,
+                locale=locale,
             ),
         ),
         ChatMessage(
@@ -119,6 +121,7 @@ async def execute_automation_strategy(
                 timeframe=timeframe,
                 include_key_results=include_key_results,
                 include_task_templates=include_task_templates,
+                locale=locale,
             ),
         ),
     ]
@@ -212,25 +215,22 @@ async def _complete_goal_automation_with_tools(
         provider_config=provider_config,
         tools=tools,
         parse_completion=parse_goal_automation_completion,
-        execute_read_only_tools=lambda tool_calls: (
-            _execute_goal_read_only_tool_calls(
-                tool_calls,
-                knowledge_indexing_service=knowledge_indexing_service,
-                knowledge_query_service=knowledge_query_service,
-                analytics_query_service=analytics_query_service,
-                provider_config=provider_config,
-                related_resources=related_resources,
-                analytics_context=analytics_context,
-                request_id=request_id,
-            )
+        execute_read_only_tools=lambda tool_calls: _execute_goal_read_only_tool_calls(
+            tool_calls,
+            knowledge_indexing_service=knowledge_indexing_service,
+            knowledge_query_service=knowledge_query_service,
+            analytics_query_service=analytics_query_service,
+            provider_config=provider_config,
+            related_resources=related_resources,
+            analytics_context=analytics_context,
+            request_id=request_id,
         ),
         unavailable_tool_detail=(
             "Provider requested goal automation tools that are not "
             "available in the current read-only runtime."
         ),
         final_submission_missing_detail=(
-            "Provider did not submit a final goal automation "
-            "plan after tool execution."
+            "Provider did not submit a final goal automation plan after tool execution."
         ),
         request_id=request_id,
     )
@@ -315,10 +315,7 @@ async def _search_notes_for_goal_planning(
             detail="search_notes requires related repository resources."
         )
 
-    if (
-        knowledge_indexing_service is None
-        or knowledge_query_service is None
-    ):
+    if knowledge_indexing_service is None or knowledge_query_service is None:
         from ai_service.errors import StructuredOutputError
 
         raise StructuredOutputError(
@@ -371,9 +368,7 @@ async def _fetch_stats_for_goal_planning(
     if analytics_context is None:
         from ai_service.errors import StructuredOutputError
 
-        raise StructuredOutputError(
-            detail="fetch_stats requires analytics context."
-        )
+        raise StructuredOutputError(detail="fetch_stats requires analytics context.")
 
     if analytics_query_service is None:
         from ai_service.errors import StructuredOutputError

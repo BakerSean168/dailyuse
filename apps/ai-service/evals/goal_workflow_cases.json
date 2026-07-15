@@ -317,5 +317,149 @@
       "required_recovery_terms": [],
       "failure_stage": "prepare"
     }
+  },
+  {
+    "id": "goal-workflow-locale-zh-clarification",
+    "type": "goal_workflow",
+    "description": "A Chinese UI request should clarify missing information with at most three Chinese questions and keep every structured artifact in Chinese.",
+    "initial_request": {
+      "idea": "我想建立稳定的晨间运动习惯",
+      "category": "health",
+      "include_key_results": true,
+      "include_task_templates": true,
+      "locale": "zh-CN"
+    },
+    "clarification_answers": ["每周运动五次，每次三十分钟。", "希望八周后能稳定坚持。"],
+    "provider_script": [
+      {
+        "content": "{\"needsClarification\":true,\"questions\":[{\"question\":\"每周计划运动几次？\",\"context\":\"频率决定任务节奏。\"},{\"question\":\"何时判断习惯已经稳定？\",\"context\":\"时间范围用于设置里程碑。\"}],\"rationale\":\"还缺少频率和完成期限。\"}",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 10, "completion_tokens": 12, "total_tokens": 22}
+      },
+      {
+        "content": "{\"goal\":{\"title\":\"建立稳定的晨间运动习惯\",\"description\":\"在八周内形成每周五次、每次三十分钟的晨间运动习惯。\",\"motivation\":\"用规律运动提升精力和健康状态。\",\"category\":\"health\",\"importance\":\"Important\",\"tags\":[\"运动\",\"习惯\"],\"feasibilityAnalysis\":\"频率和周期明确，可以逐周跟踪。\",\"aiInsights\":\"先稳定出勤率，再逐步增加强度。\",\"suggestedDurationDays\":56},\"keyResults\":[{\"title\":\"完成四十次晨间运动\",\"description\":\"八周内累计完成四十次运动。\",\"targetValue\":40,\"unit\":\"次\"}]}",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 18, "completion_tokens": 28, "total_tokens": 46}
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [{
+          "id": "call_submit_locale_zh",
+          "function": {
+            "name": "submit_goal_automation_plan",
+            "arguments": "{\"summary\":\"创建运动目标、关键结果、每周任务和复盘提醒。\",\"goal\":{\"title\":\"建立稳定的晨间运动习惯\",\"description\":\"在八周内形成每周五次的晨间运动习惯。\",\"motivation\":\"提升精力和健康状态。\",\"category\":\"health\",\"importance\":\"Important\",\"tags\":[\"运动\"],\"feasibilityAnalysis\":\"计划频率明确。\",\"aiInsights\":\"逐周记录出勤。\",\"suggestedDurationDays\":56},\"keyResults\":[{\"title\":\"完成四十次晨间运动\",\"description\":\"累计完成计划。\",\"targetValue\":40,\"unit\":\"次\"}],\"taskTemplates\":[{\"name\":\"完成晨间运动\",\"description\":\"按计划运动三十分钟。\",\"importance\":\"Important\",\"cadence\":\"weekly\"}],\"reminders\":[{\"title\":\"复盘晨间运动\",\"description\":\"检查本周完成次数。\",\"importance\":\"Important\",\"cadence\":\"weekly\",\"timeOfDay\":\"09:00\"}],\"toolCalls\":[{\"tool\":\"create_goal\",\"rationale\":\"创建目标。\"},{\"tool\":\"create_key_result\",\"index\":0,\"rationale\":\"创建关键结果。\"},{\"tool\":\"create_task_template\",\"index\":0,\"rationale\":\"创建任务模板。\"},{\"tool\":\"create_reminder\",\"index\":0,\"rationale\":\"创建提醒。\"}]}"
+          }
+        }],
+        "usage": {"prompt_tokens": 20, "completion_tokens": 30, "total_tokens": 50}
+      }
+    ],
+    "expected": {
+      "stage_sequence": ["clarification", "draft", "confirm", "result"],
+      "action_tools": ["create_goal", "create_key_result", "create_task_template", "create_reminder"],
+      "execution_status": "success",
+      "can_retry": false,
+      "goal_terms": ["运动", "习惯"],
+      "required_tool_calls": ["submit_goal_automation_plan"],
+      "required_recovery_terms": [],
+      "clarification_locale": "zh-CN",
+      "output_locale": "zh-CN"
+    }
+  },
+  {
+    "id": "goal-workflow-locale-en-clarification",
+    "type": "goal_workflow",
+    "description": "An English UI request should clarify missing information with at most three English questions and keep structured artifacts in English.",
+    "initial_request": {
+      "idea": "I want a better weekly routine.",
+      "category": "personal",
+      "include_key_results": true,
+      "include_task_templates": true,
+      "locale": "en-US"
+    },
+    "clarification_answers": ["Plan the week every Monday and review it Friday.", "Reach 80 percent completion within six weeks."],
+    "provider_script": [
+      {
+        "content": "{\"needsClarification\":true,\"questions\":[{\"question\":\"Which weekly outcome matters most?\",\"context\":\"A success criterion keeps the goal measurable.\"},{\"question\":\"When should this routine feel established?\",\"context\":\"A deadline shapes milestones.\"}],\"rationale\":\"The outcome and deadline are missing.\"}",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 10, "completion_tokens": 12, "total_tokens": 22}
+      },
+      {
+        "content": "{\"goal\":{\"title\":\"Build a reliable weekly planning routine\",\"description\":\"Plan every Monday and review every Friday for six weeks.\",\"motivation\":\"Make weekly priorities visible and achievable.\",\"category\":\"personal\",\"importance\":\"Important\",\"tags\":[\"planning\",\"routine\"],\"feasibilityAnalysis\":\"Two short weekly checkpoints keep the scope realistic.\",\"aiInsights\":\"Measure completion and adjust the next plan.\",\"suggestedDurationDays\":42},\"keyResults\":[{\"title\":\"Complete twelve planning checkpoints\",\"description\":\"Finish Monday planning and Friday review for six weeks.\",\"targetValue\":12,\"unit\":\"checkpoints\"}]}",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 18, "completion_tokens": 28, "total_tokens": 46}
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [{
+          "id": "call_submit_locale_en",
+          "function": {
+            "name": "submit_goal_automation_plan",
+            "arguments": "{\"summary\":\"Create the goal, measurable checkpoint, weekly task, and review reminder.\",\"goal\":{\"title\":\"Build a reliable weekly planning routine\",\"description\":\"Plan every Monday and review every Friday for six weeks.\",\"motivation\":\"Make priorities achievable.\",\"category\":\"personal\",\"importance\":\"Important\",\"tags\":[\"planning\"],\"feasibilityAnalysis\":\"Two weekly checkpoints are realistic.\",\"aiInsights\":\"Adjust the next plan from review results.\",\"suggestedDurationDays\":42},\"keyResults\":[{\"title\":\"Complete twelve planning checkpoints\",\"description\":\"Finish every checkpoint.\",\"targetValue\":12,\"unit\":\"checkpoints\"}],\"taskTemplates\":[{\"name\":\"Plan the coming week\",\"description\":\"Choose priorities and schedule focused work.\",\"importance\":\"Important\",\"cadence\":\"weekly\"}],\"reminders\":[{\"title\":\"Review the weekly plan\",\"description\":\"Record completion and adjust next week.\",\"importance\":\"Important\",\"cadence\":\"weekly\",\"timeOfDay\":\"17:00\"}],\"toolCalls\":[{\"tool\":\"create_goal\",\"rationale\":\"Create the goal.\"},{\"tool\":\"create_key_result\",\"index\":0,\"rationale\":\"Create the measurable result.\"},{\"tool\":\"create_task_template\",\"index\":0,\"rationale\":\"Create the weekly task.\"},{\"tool\":\"create_reminder\",\"index\":0,\"rationale\":\"Create the review reminder.\"}]}"
+          }
+        }],
+        "usage": {"prompt_tokens": 20, "completion_tokens": 30, "total_tokens": 50}
+      }
+    ],
+    "expected": {
+      "stage_sequence": ["clarification", "draft", "confirm", "result"],
+      "action_tools": ["create_goal", "create_key_result", "create_task_template", "create_reminder"],
+      "execution_status": "success",
+      "can_retry": false,
+      "goal_terms": ["weekly", "routine"],
+      "required_tool_calls": ["submit_goal_automation_plan"],
+      "required_recovery_terms": [],
+      "clarification_locale": "en-US",
+      "output_locale": "en-US"
+    }
+  },
+  {
+    "id": "goal-workflow-locale-mixed-input",
+    "type": "goal_workflow",
+    "description": "Mixed-language input should still follow the Chinese UI locale for clarification and structured output.",
+    "initial_request": {
+      "idea": "我想 improve my weekly review workflow",
+      "category": "work",
+      "include_key_results": true,
+      "include_task_templates": true,
+      "locale": "zh-CN"
+    },
+    "clarification_answers": ["每周五复盘交付结果和阻塞项。", "六周内把复盘完成率提高到百分之九十。"],
+    "provider_script": [
+      {
+        "content": "{\"needsClarification\":true,\"questions\":[{\"question\":\"复盘需要覆盖哪些具体结果？\",\"context\":\"明确范围才能设计指标。\"},{\"question\":\"你希望何时达到稳定节奏？\",\"context\":\"期限决定行动计划。\"}],\"rationale\":\"输入混合语言且缺少范围和期限。\"}",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 10, "completion_tokens": 12, "total_tokens": 22}
+      },
+      {
+        "content": "{\"goal\":{\"title\":\"建立稳定的每周复盘流程\",\"description\":\"连续六周复盘交付结果和阻塞项。\",\"motivation\":\"让团队执行问题及时显现并得到跟进。\",\"category\":\"work\",\"importance\":\"Important\",\"tags\":[\"复盘\",\"流程\"],\"feasibilityAnalysis\":\"每周一次且范围明确。\",\"aiInsights\":\"固定模板有助于提高完成率。\",\"suggestedDurationDays\":42},\"keyResults\":[{\"title\":\"完成六次每周复盘\",\"description\":\"每周五完成一次结构化复盘。\",\"targetValue\":6,\"unit\":\"次\"}]}",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 18, "completion_tokens": 28, "total_tokens": 46}
+      },
+      {
+        "content": "",
+        "finish_reason": "tool_calls",
+        "toolCalls": [{
+          "id": "call_submit_locale_mixed",
+          "function": {
+            "name": "submit_goal_automation_plan",
+            "arguments": "{\"summary\":\"创建复盘目标、衡量指标、每周任务和提醒。\",\"goal\":{\"title\":\"建立稳定的每周复盘流程\",\"description\":\"连续六周复盘交付结果和阻塞项。\",\"motivation\":\"及时发现执行问题。\",\"category\":\"work\",\"importance\":\"Important\",\"tags\":[\"复盘\"],\"feasibilityAnalysis\":\"范围和周期明确。\",\"aiInsights\":\"使用固定模板提高完成率。\",\"suggestedDurationDays\":42},\"keyResults\":[{\"title\":\"完成六次每周复盘\",\"description\":\"按时完成结构化复盘。\",\"targetValue\":6,\"unit\":\"次\"}],\"taskTemplates\":[{\"name\":\"完成本周复盘\",\"description\":\"记录交付结果和阻塞项。\",\"importance\":\"Important\",\"cadence\":\"weekly\"}],\"reminders\":[{\"title\":\"开始每周复盘\",\"description\":\"检查本周结果并记录下一步。\",\"importance\":\"Important\",\"cadence\":\"weekly\",\"timeOfDay\":\"17:00\"}],\"toolCalls\":[{\"tool\":\"create_goal\",\"rationale\":\"创建目标。\"},{\"tool\":\"create_key_result\",\"index\":0,\"rationale\":\"创建关键结果。\"},{\"tool\":\"create_task_template\",\"index\":0,\"rationale\":\"创建任务。\"},{\"tool\":\"create_reminder\",\"index\":0,\"rationale\":\"创建提醒。\"}]}"
+          }
+        }],
+        "usage": {"prompt_tokens": 20, "completion_tokens": 30, "total_tokens": 50}
+      }
+    ],
+    "expected": {
+      "stage_sequence": ["clarification", "draft", "confirm", "result"],
+      "action_tools": ["create_goal", "create_key_result", "create_task_template", "create_reminder"],
+      "execution_status": "success",
+      "can_retry": false,
+      "goal_terms": ["复盘", "流程"],
+      "required_tool_calls": ["submit_goal_automation_plan"],
+      "required_recovery_terms": [],
+      "clarification_locale": "zh-CN",
+      "output_locale": "zh-CN"
+    }
   }
 ]

@@ -39,7 +39,7 @@ type CreateKnowledgeNoteRequest = Parameters<
 >[0];
 
 export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOptions) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
 
   const noteCreating = ref(false);
@@ -389,6 +389,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
         threadId: createAgentId('thread'),
         conversationId: options.chatConversationId.value || null,
         agentType: 'knowledge.generate',
+        locale: locale.value === 'en-US' ? 'en-US' : 'zh-CN',
         input: {
           topic: input.topic,
           ...(input.source ? { source: input.source } : {}),
