@@ -12,7 +12,7 @@ import {
   disconnectPrisma,
   getPrisma,
   seedAccount,
-} from '../../../__tests__/integration-helpers';
+} from '../../../../__tests__/integration-helpers';
 
 function createScheduleTask(identityId: string) {
   const task = ScheduleTask.create({

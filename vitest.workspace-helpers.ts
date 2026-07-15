@@ -157,6 +157,10 @@ export const domainResolveAliases = [
     replacement: path.resolve(__dirname, './packages/utils/src/index.ts'),
   },
   {
+    find: /^@dailyuse\/patterns\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/patterns/src/$1/index.ts'),
+  },
+  {
     find: '@dailyuse/patterns',
     replacement: path.resolve(__dirname, './packages/patterns/src/index.ts'),
   },
