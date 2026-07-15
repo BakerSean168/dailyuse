@@ -69,6 +69,16 @@ async function main() {
     run('pnpm', ['exec', 'prisma', 'db', 'push', '--config', './prisma/prisma.config.ts'], databaseRoot);
   }
 
+  console.log('[startup] Bootstrapping AI knowledge index...');
+  run('pnpm', ['exec', 'tsx', './scripts/bootstrap-ai-knowledge-index.ts'], databaseRoot);
+
+  console.log('[startup] Verifying required AI knowledge-index structures...');
+  run(
+    'pnpm',
+    ['exec', 'tsx', './scripts/verify-ai-knowledge-index.ts', '--require-pgvector'],
+    databaseRoot,
+  );
+
   console.log('[startup] Starting API process...');
   const child = spawn('node', ['--import', 'tsx', 'dist/main.js'], {
     cwd: apiRoot,

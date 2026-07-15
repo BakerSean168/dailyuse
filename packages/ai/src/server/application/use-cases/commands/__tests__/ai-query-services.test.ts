@@ -33,6 +33,7 @@ import type {
 } from '../../../ports';
 import { QueryAIAnalyticsUseCase } from '../query-ai-analytics.use-case';
 import { SyncRelevantKnowledgeUseCase } from '../sync-relevant-knowledge.use-case';
+import { SyncKnowledgeResourcesUseCase } from '../sync-knowledge-resources.use-case';
 import { ReindexAllKnowledgeUseCase } from '../reindex-all-knowledge.use-case';
 import { QueryKnowledgeUseCase } from '../query-knowledge.use-case';
 import { ExpandKnowledgeUseCase } from '../expand-knowledge.use-case';
@@ -238,6 +239,46 @@ class StubAnalyticsQueryPort implements IAnalyticsQueryPort {
     },
   }));
 }
+
+describe('SyncKnowledgeResourcesUseCase', () => {
+  it('records an indexing failure without conflating it with the persisted source note', async () => {
+    const resource = (await new StubKnowledgeSourcePort().listIndexableResources(
+      'identity-1',
+      1,
+    ))[0]!;
+    const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
+    const ingestionPort = new StubKnowledgeIngestionPort();
+    ingestionPort.indexResource.mockRejectedValueOnce(new Error('embedding provider unavailable'));
+    const service = new SyncKnowledgeResourcesUseCase(
+      knowledgeIndexRepository,
+      ingestionPort,
+      new StubExecutionLogPort(),
+    );
+
+    const result = await service.execute([resource], { identityId: 'identity-1' });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        indexedCount: 0,
+        failedCount: 1,
+        results: [
+          expect.objectContaining({
+            resourceId: resource.resourceId,
+            status: 'failed',
+            error: 'embedding provider unavailable',
+          }),
+        ],
+      }),
+    );
+    expect(knowledgeIndexRepository.upsert).not.toHaveBeenCalled();
+    expect(knowledgeIndexRepository.markFailed).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resourceId: resource.resourceId,
+        error: 'embedding provider unavailable',
+      }),
+    );
+  });
+});
 
 describe('AIKnowledgeQueryService', () => {
   it('reads resources, indexes them, and queries through the knowledge execution ports', async () => {

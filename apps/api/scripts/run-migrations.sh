@@ -129,3 +129,25 @@ echo "$MIGRATION_OUTPUT"
 
 echo ""
 echo "${GREEN}✅ Database schema initialized successfully${NC}"
+
+# Step 5: Bootstrap and verify the AI knowledge-index schema.
+# Bootstrap is intentionally idempotent; the required smoke check must fail the
+# container before the API process starts if pgvector or any retrieval structure
+# is unavailable.
+echo ""
+echo "${YELLOW}Step 5: Bootstrapping AI knowledge index${NC}"
+echo "   Command: /app/node_modules/.bin/tsx ./scripts/bootstrap-ai-knowledge-index.ts"
+echo ""
+
+cd /app/packages/database
+/app/node_modules/.bin/tsx ./scripts/bootstrap-ai-knowledge-index.ts
+
+echo ""
+echo "${YELLOW}Step 6: Verifying required AI knowledge-index structures${NC}"
+echo "   Command: /app/node_modules/.bin/tsx ./scripts/verify-ai-knowledge-index.ts --require-pgvector"
+echo ""
+
+/app/node_modules/.bin/tsx ./scripts/verify-ai-knowledge-index.ts --require-pgvector
+
+echo ""
+echo "${GREEN}✅ AI knowledge index initialized and verified successfully${NC}"
