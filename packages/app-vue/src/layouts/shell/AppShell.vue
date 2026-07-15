@@ -309,6 +309,8 @@ function onViewportGeometryChange(): void {
 }
 
 function startPanelResize(e: PointerEvent) {
+  const focusedElement =
+    document.activeElement instanceof HTMLElement ? document.activeElement : null;
   e.preventDefault();
   const captureTarget =
     e.target instanceof Element
@@ -341,6 +343,9 @@ function startPanelResize(e: PointerEvent) {
     window.removeEventListener('pointerup', up);
     document.body.style.userSelect = previousUserSelect;
     document.body.style.cursor = previousCursor;
+    if (focusedElement?.isConnected && document.activeElement !== focusedElement) {
+      focusedElement.focus({ preventScroll: true });
+    }
   };
   window.addEventListener('pointermove', move);
   window.addEventListener('pointerup', up);
@@ -569,7 +574,6 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     </div>
   </div>
 </template>
-
 
 
 

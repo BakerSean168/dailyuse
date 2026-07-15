@@ -209,7 +209,11 @@
     <!-- 阶段 0：BatchImportDialog 退役（V2 §6 Note / V1 §9） -->
 
     <Dialog v-model:open="workspaceScene.dialogs.createNote.open">
-      <DialogContent class="sm:max-w-md" data-testid="repository-create-note-dialog">
+      <DialogContent
+        class="sm:max-w-md"
+        data-testid="repository-create-note-dialog"
+        @close-auto-focus="workspaceScene.dialogs.createNote.actions.handleCloseAutoFocus"
+      >
         <DialogHeader>
           <DialogTitle>{{ t('repository.workspace.createNoteTitle') }}</DialogTitle>
           <DialogDescription>

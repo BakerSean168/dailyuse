@@ -33,6 +33,7 @@ export function useRepositoryResourceCommands(
   const createNoteDialogOpen = ref(false);
   const createNoteTitle = ref('');
   const isCreatingNote = ref(false);
+  let focusEditorAfterCreate = false;
 
   const createNoteName = computed(() =>
     createNoteTitle.value.trim() ? buildNoteNameFromTitle(createNoteTitle.value) : '',
@@ -97,8 +98,7 @@ export function useRepositoryResourceCommands(
         toast.error(t('repository.workspace.createNoteFailed'));
         return;
       }
-      await options.onResourceOpened?.();
-
+      focusEditorAfterCreate = true;
       createNoteDialogOpen.value = false;
       createNoteTitle.value = '';
       toast.success(
@@ -107,6 +107,19 @@ export function useRepositoryResourceCommands(
     } finally {
       isCreatingNote.value = false;
     }
+  }
+
+  function handleCreateNoteCloseAutoFocus(event: Event) {
+    if (!focusEditorAfterCreate) {
+      return;
+    }
+
+    // A successful create transfers focus into the newly opened document.
+    // Prevent Radix from restoring focus to the create trigger after its close
+    // animation, then focus CodeMirror at the dialog lifecycle boundary.
+    event.preventDefault();
+    focusEditorAfterCreate = false;
+    void options.onResourceOpened?.();
   }
 
   function handleRefresh() {
@@ -228,6 +241,7 @@ export function useRepositoryResourceCommands(
     handleOpenResource,
     handleCreateNote,
     confirmCreateNote,
+    handleCreateNoteCloseAutoFocus,
     handleRefresh,
     handleRenameResource,
     confirmRenameResource,

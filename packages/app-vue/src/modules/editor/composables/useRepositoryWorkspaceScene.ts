@@ -212,6 +212,7 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
         isCreating: resourceCommands.isCreatingNote,
         actions: {
           confirm: resourceCommands.confirmCreateNote,
+          handleCloseAutoFocus: resourceCommands.handleCreateNoteCloseAutoFocus,
           close: () => {
             resourceCommands.createNoteDialogOpen.value = false;
           },
