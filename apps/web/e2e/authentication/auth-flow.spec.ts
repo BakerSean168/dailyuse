@@ -2,7 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { ensureLoginScene, ensureRegisterScene, login } from '../helpers/testHelpers';
 import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
 
-const generateTestEmail = () => `e2e-auth-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
+const generateTestEmail = () =>
+  `e2e-auth-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
 const testPassword = 'Test123456!';
 
 test.describe('Authentication Flow - 认证完整流程', () => {
@@ -42,9 +43,11 @@ test.describe('Authentication Flow - 认证完整流程', () => {
     await fillLoginForm(page, testEmail, 'WrongPass123!');
     await page.getByTestId('login-submit-button').click();
 
-    await expect(page.getByText(/incorrect email or password|邮箱或密码错误/i).first()).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
+    await expect(page.getByText(/incorrect email or password|邮箱或密码错误/i).first()).toBeVisible(
+      {
+        timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      },
+    );
     await expectOnAuthPage(page);
   });
 });
@@ -60,7 +63,8 @@ async function gotoAuthPage(page: Page): Promise<void> {
     sessionStorage.clear();
   });
 
-  await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
+  await ensureLoginScene(page);
 }
 
 async function fillRegisterForm(page: Page, email: string, password: string): Promise<void> {
@@ -83,7 +87,7 @@ async function fillLoginForm(page: Page, email: string, password: string): Promi
 
 async function logoutFromAccountCenter(page: Page): Promise<void> {
   await page.goto(WEB_CONFIG.getFullUrl('/account/center'), {
-    waitUntil: 'networkidle',
+    waitUntil: 'domcontentloaded',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
 
@@ -91,7 +95,9 @@ async function logoutFromAccountCenter(page: Page): Promise<void> {
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
   await page.getByTestId('account-logout-button').click();
-  const confirmDialog = page.getByRole('alertdialog', { name: /log out of your account|确认退出登录/i });
+  const confirmDialog = page.getByRole('alertdialog', {
+    name: /log out of your account|确认退出登录/i,
+  });
   await expect(confirmDialog).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
@@ -102,7 +108,7 @@ async function expectAuthenticated(page: Page): Promise<void> {
   await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
     timeout: TIMEOUT_CONFIG.LOGIN,
   });
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
 }
 
 async function expectOnAuthPage(page: Page): Promise<void> {

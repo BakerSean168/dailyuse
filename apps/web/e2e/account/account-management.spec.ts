@@ -33,11 +33,11 @@ test.describe('Account Management - 账户管理', () => {
     const profileLink = page.locator('text=/个人资料|Profile|个人中心/i').first();
     if (await profileLink.isVisible()) {
       await profileLink.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
     } else {
       // 尝试直接导航
       await page.goto(WEB_CONFIG.getFullUrl('/profile'), {
-        waitUntil: 'networkidle',
+        waitUntil: 'domcontentloaded',
       });
     }
 
@@ -211,11 +211,11 @@ async function navigateToProfile(page: Page): Promise<void> {
     await profileLink.click();
   } else {
     await page.goto(WEB_CONFIG.getFullUrl('/profile'), {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
     });
   }
 
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
 }
 
 /**

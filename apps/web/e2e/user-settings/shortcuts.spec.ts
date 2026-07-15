@@ -11,7 +11,7 @@ test.describe('Shortcut Settings', () => {
     await page.goto('/settings');
 
     // ????????
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // ??????? tab
     await page.getByRole('tab', { name: /Shortcuts/i }).click();
@@ -294,7 +294,7 @@ test.describe('Shortcut Settings', () => {
 
     // ???????????
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.getByRole('tab', { name: /Shortcuts/i }).click();
 
     // ?????????

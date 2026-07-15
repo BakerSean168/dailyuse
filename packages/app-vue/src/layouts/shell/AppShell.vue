@@ -46,7 +46,7 @@ import {
   panelWidthFromPointer,
   resolveComposerDensity,
   type ComposerDensity,
-} from './panelGeometry';
+} from './panel-geometry';
 import { SHELL_COMPOSER_DENSITY_KEY, SHELL_COMPOSER_MOUNT_KEY } from '../../di/keys';
 
 const { t } = useI18n();
@@ -569,7 +569,6 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     </div>
   </div>
 </template>
-
 
 
 

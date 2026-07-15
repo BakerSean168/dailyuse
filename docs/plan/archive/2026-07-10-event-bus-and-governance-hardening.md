@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - event-bus
   - governance
   - architecture
@@ -11,6 +11,8 @@ updated: 2026-07-10T18:00:00+08:00
 ---
 
 # Event Bus & Governance Hardening
+
+> 归档结论（2026-07-15）：事件总线、统一 flush seam、Goal↔Task 事件联动和治理脚本均已落地。ADR-009 保留分层原则，ADR-031 负责标准目录形态，两者已明确为互补关系，不再存在规则冲突。
 
 ## 背景
 
@@ -120,7 +122,17 @@ updated: 2026-07-10T18:00:00+08:00
   - 派发失败不回滚业务，与 H3 的 per-handler 隔离形成双保险。
 
 验证：
+
 - `pnpm nx run-many -t typecheck lint test -p utils reminder schedule ai notification` 全绿。
 - `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过（`raw-event-bus-audit` 通过）。
 - 全仓 `grep eventBus.invoke|eventBus.handle` 零命中；无下游以第二个泛型实例化事件总线。
 - `desktop:typecheck` / `api:typecheck` 全图受**既有** `dashboard:build` / `app-vue:typecheck` 失败阻塞（`contracts` DTS `TS2209` 与 governance `RuleId` 品牌类型，均在干净 `main` 上复现，与本 PR 无关）；两宿主仅消费 `send`/`on`/`off`，签名未变，不受本次泛型收敛影响。
+
+### 后续阶段完成记录（2026-07-15 核验）
+
+- [x] **M6** `task:instance-completed` 使用自包含 Goal binding payload；Goal 侧反应逻辑由 API 与 Desktop 宿主共享。
+- [x] **M4/M5** `mitt-rpc-forbidden-audit`、`unflushed-events-audit` 及其单测已接入 governance target；`governance-tools:test` 当前 18/18 通过。
+- [x] **M2** `layer:service` 已纳入 Nx dependency constraints。
+- [x] **L3** ADR-009/ADR-031 通过“原则 / 目录形态”职责拆分消除冲突；不采用 supersede，因为两份决策当前均有独立有效范围。
+- [x] **L4** `docs/plan/archive` 已建立季度子索引。
+- [x] 最终核验：生产 mitt-RPC 零使用、deep import 零违规；`pnpm governance:check`、`pnpm docs:check`、`pnpm test:targets:check` 通过。

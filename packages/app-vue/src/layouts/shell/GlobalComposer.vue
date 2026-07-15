@@ -25,7 +25,7 @@ import {
   COMPOSER_BOTTOM_GAP,
   computeComposerLayout,
   type ComposerLayoutMode,
-} from './panelGeometry';
+} from './panel-geometry';
 
 const props = withDefaults(
   defineProps<{

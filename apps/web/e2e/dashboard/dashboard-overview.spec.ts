@@ -26,7 +26,7 @@ test.describe('Dashboard retirement (V2 shell)', () => {
 
   test('[P0] should redirect /dashboard to the AI workspace ground', async ({ page }) => {
     await page.goto(WEB_CONFIG.DASHBOARD_PATH, {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
 
@@ -41,7 +41,7 @@ test.describe('Dashboard retirement (V2 shell)', () => {
       sessionStorage.clear();
     });
 
-    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'networkidle' });
+    await page.goto(WEB_CONFIG.DASHBOARD_PATH, { waitUntil: 'domcontentloaded' });
     await page.waitForURL(`**${WEB_CONFIG.LOGIN_PATH}**`, {
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
@@ -50,7 +50,7 @@ test.describe('Dashboard retirement (V2 shell)', () => {
   });
 
   test('[P0] should expose the five module capsules in the window header', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     for (const testId of CAPSULE_TESTIDS) {
       await expect(page.getByTestId(testId)).toBeVisible();
@@ -58,7 +58,7 @@ test.describe('Dashboard retirement (V2 shell)', () => {
   });
 
   test('[P1] should open a business panel from a capsule preview', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     await page.getByTestId('capsule-nav-goal').click();
     const enter = page.getByTestId('capsule-preview-enter-goal');
@@ -73,19 +73,19 @@ test.describe('Dashboard retirement (V2 shell)', () => {
   });
 
   test('[P1] should keep legacy deep-link redirects working', async ({ page }) => {
-    await page.goto('/ai/chat', { waitUntil: 'networkidle' });
+    await page.goto('/ai/chat', { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByTestId('ai-chat-view')).toBeVisible();
 
     // Account center redirects into standalone Settings (STATE D), not BusinessPanel.
-    await page.goto('/account/center', { waitUntil: 'networkidle' });
+    await page.goto('/account/center', { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveURL(/\/settings\?tab=account$/);
     await expect(page.getByTestId('standalone-settings-layout')).toBeVisible();
     await expect(page.getByTestId('settings-scene-rail')).toBeVisible();
   });
 
   test('[P2] should return to STATE A when the panel is closed', async ({ page }) => {
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('/goals', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('business-panel')).toBeVisible();
 
     await page.getByTestId('business-panel-close').click();

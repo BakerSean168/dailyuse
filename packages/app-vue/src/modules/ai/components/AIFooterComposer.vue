@@ -206,7 +206,7 @@ import type { ChatModelOption, WorkflowMode } from '../composables/types';
 import {
   COMPOSER_TEXTAREA_MAX_PX,
   type ComposerDensity,
-} from '../../../layouts/shell/panelGeometry';
+} from '../../../layouts/shell/panel-geometry';
 
 const props = withDefaults(
   defineProps<{

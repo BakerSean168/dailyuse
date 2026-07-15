@@ -303,7 +303,7 @@ onMounted(async () => {
 });
 
 watch(
-  () => [route.name, route.query.dialog, route.query.goalId, goals.value.length],
+  () => [route.name, route.query.dialog, route.query.goalId],
   () => {
     void syncGoalDialogFromRoute();
   },

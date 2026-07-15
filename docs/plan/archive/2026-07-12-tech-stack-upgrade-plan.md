@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - infrastructure
   - dependencies
   - upgrade

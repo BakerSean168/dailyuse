@@ -311,7 +311,7 @@ import GoalProgressWidget from '../../goal/components/widgets/GoalProgressWidget
 import { useDashboard } from '../../dashboard/composables/useDashboard';
 import { useAppShellStore } from '../../../layouts/shell/useAppShellStore';
 import { SHELL_COMPOSER_DENSITY_KEY, SHELL_COMPOSER_MOUNT_KEY } from '../../../di/keys';
-import type { ComposerDensity } from '../../../layouts/shell/panelGeometry';
+import type { ComposerDensity } from '../../../layouts/shell/panel-geometry';
 import { useAIChatView } from '../composables/useAIChatView';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
 
@@ -712,4 +712,3 @@ defineExpose({
   loadConversationList,
 });
 </script>
-

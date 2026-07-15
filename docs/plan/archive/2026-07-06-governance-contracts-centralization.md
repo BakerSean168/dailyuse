@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - governance
   - contracts
 description: 将 governance 公共契约彻底收敛到 packages/contracts，并移除本地 contracts 特例
@@ -39,3 +39,7 @@ updated: 2026-07-06T00:00:00+08:00
 - governance 内部不再通过相对路径依赖本地 contracts
 - typed event/rpc registry 不再依赖 governance augmentation
 - 文档与真实代码结构一致
+
+## 完成记录
+
+2026-07-14 复核：`packages/governance/src/contracts` 已不存在；`packages/governance/package.json` 仅保留 root、`api`、`client` 与 `electron` 公开面；全仓不存在对已删除 governance contracts 子路径的引用。计划目标已完成，归档保留实施背景。

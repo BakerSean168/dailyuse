@@ -10,7 +10,7 @@ import {
   computePanelGeometry,
   panelWidthFromPointer,
   resolveComposerDensity,
-} from './panelGeometry';
+} from './panel-geometry';
 
 describe('computePanelGeometry', () => {
   it('keeps AI and panel above mins in wide split viewports', () => {

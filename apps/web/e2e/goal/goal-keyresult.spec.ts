@@ -19,7 +19,9 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // 导航到 Goal 页面
-    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), { waitUntil: 'networkidle' });
+    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), {
+      waitUntil: 'domcontentloaded',
+    });
 
     // 创建测试目标
     await createGoal(page, {
@@ -29,7 +31,7 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
 
     // 打开目标详情
     await page.click(`text=${testGoalName}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test.afterEach(async () => {
@@ -363,7 +365,9 @@ async function deleteKeyResult(page: Page, krTitle: string) {
 
 async function cleanupTestGoal(page: Page, goalTitle: string) {
   try {
-    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), { waitUntil: 'networkidle' });
+    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), {
+      waitUntil: 'domcontentloaded',
+    });
     const goalCard = page.locator(`text=${goalTitle}`);
     if (await goalCard.isVisible()) {
       await goalCard.locator('..').hover();

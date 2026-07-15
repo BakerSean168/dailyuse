@@ -21,7 +21,9 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // 导航到 Goal 页面
-    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), { waitUntil: 'networkidle' });
+    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), {
+      waitUntil: 'domcontentloaded',
+    });
 
     // 创建两个测试目标
     await createGoal(page, {
@@ -170,7 +172,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
 
     // Assert: 查看统计信息,应该记录了专注时间
     await page.click(`text=${focusGoalName}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // 查找专注时间统计
     const focusTimeLabel = page.locator('text=/专注时间|Focus Time/i');
@@ -357,7 +359,9 @@ async function viewFocusHistory(page: Page) {
 
 async function cleanupTestGoals(page: Page, goalTitles: string[]) {
   try {
-    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), { waitUntil: 'networkidle' });
+    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), {
+      waitUntil: 'domcontentloaded',
+    });
     
     for (const title of goalTitles) {
       const goalCard = page.locator(`text=${title}`);

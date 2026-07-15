@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { API_CONFIG, TIMEOUT_CONFIG } from '../config';
-import { registerAndLogin } from '../helpers/testHelpers';
+import { ensureUserSettingsRecord, registerAndLogin } from '../helpers/testHelpers';
 
 const generateTestEmail = () =>
   `e2e-settings-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
@@ -18,6 +18,7 @@ test.describe('Notification Settings', () => {
       landingPath: '/settings',
     });
 
+    await ensureUserSettingsRecord(page);
     await resetSettings(page);
     await openNotificationsSettings(page);
   });
@@ -40,7 +41,7 @@ test.describe('Notification Settings', () => {
   });
 
   test('should keep notification settings available after reload', async ({ page }) => {
-    await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
     await openNotificationsSettings(page);
 
     await expect(page.getByTestId('notification-settings-card')).toBeVisible();
@@ -81,7 +82,7 @@ async function resetSettings(page: Page) {
   await resetResponse;
 
   await page.goto('/settings', {
-    waitUntil: 'networkidle',
+    waitUntil: 'domcontentloaded',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
 }

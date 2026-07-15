@@ -101,4 +101,34 @@ describe('playwright.server', () => {
       'http://127.0.0.1:5173,http://localhost:5173,https://app.example.com',
     );
   });
+
+  it('starts fresh API and web servers by default', async () => {
+    delete process.env.CI;
+    delete process.env.E2E_REUSE_SERVERS;
+
+    const { createApiServer, createWebServer } = await import('../playwright.server');
+
+    expect(createApiServer().reuseExistingServer).toBe(false);
+    expect(createWebServer().reuseExistingServer).toBe(false);
+  });
+
+  it('reuses API and web servers only after an explicit local opt-in', async () => {
+    delete process.env.CI;
+    process.env.E2E_REUSE_SERVERS = '1';
+
+    const { createApiServer, createWebServer } = await import('../playwright.server');
+
+    expect(createApiServer().reuseExistingServer).toBe(true);
+    expect(createWebServer().reuseExistingServer).toBe(true);
+  });
+
+  it('never reuses API or web servers on CI', async () => {
+    process.env.CI = '1';
+    process.env.E2E_REUSE_SERVERS = '1';
+
+    const { createApiServer, createWebServer } = await import('../playwright.server');
+
+    expect(createApiServer().reuseExistingServer).toBe(false);
+    expect(createWebServer().reuseExistingServer).toBe(false);
+  });
 });

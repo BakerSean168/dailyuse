@@ -25,7 +25,7 @@ import {
   type ShellLayoutReason,
   type ShellModule,
 } from './useAppShellStore'
-import { computePanelGeometry } from './panelGeometry';
+import { computePanelGeometry } from './panel-geometry';
 
 /** 分栏放不下的窗口宽度阈值：新开面板自动升专注态（V2 §1.1 / §7）。 */
 export const AUTO_FOCUS_VIEWPORT = 1024;

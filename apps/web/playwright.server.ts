@@ -86,13 +86,14 @@ function getCorsOrigins(): string {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  return [...new Set([getWebOrigin(), LEGACY_LOCALHOST_WEB_ORIGIN, ...configuredOrigins])].join(',');
+  return [...new Set([getWebOrigin(), LEGACY_LOCALHOST_WEB_ORIGIN, ...configuredOrigins])].join(
+    ',',
+  );
 }
 
 /**
- * API must not silently reuse Docker/host-dev on :3000.
+ * Playwright must not silently reuse Docker/host-dev servers.
  * Opt in only with E2E_REUSE_SERVERS=1 (and never on CI).
- * Web may still reuse an existing Vite server locally.
  */
 function shouldReuseApiServer(): boolean {
   if (process.env.CI) {
@@ -105,10 +106,7 @@ function shouldReuseWebServer(): boolean {
   if (process.env.CI) {
     return false;
   }
-  if (process.env.E2E_REUSE_SERVERS === '0') {
-    return false;
-  }
-  return true;
+  return process.env.E2E_REUSE_SERVERS === '1';
 }
 
 const apiServerOptions = {

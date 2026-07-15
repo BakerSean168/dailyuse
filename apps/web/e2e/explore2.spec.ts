@@ -5,7 +5,7 @@ test('详细探索登录页面', async ({ page }) => {
   
   console.log('访问首页，应该会跳转到登录页...');
   await page.goto(baseUrl);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(3000);
   
   console.log('当前 URL:', page.url());

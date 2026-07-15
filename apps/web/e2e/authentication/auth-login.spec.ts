@@ -42,9 +42,11 @@ test.describe('Authentication - 登录页基础验证', () => {
     await fillLoginForm(page, testEmail, 'WrongPass123!');
     await submitLoginForm(page);
 
-    await expect(page.getByText(/incorrect email or password|邮箱或密码错误/i).first()).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
+    await expect(page.getByText(/incorrect email or password|邮箱或密码错误/i).first()).toBeVisible(
+      {
+        timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      },
+    );
     await expect.poll(async () => page.url()).toContain(WEB_CONFIG.LOGIN_PATH);
   });
 
@@ -72,7 +74,8 @@ async function gotoAuthPage(page: Page): Promise<void> {
     sessionStorage.clear();
   });
 
-  await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
+  await ensureLoginScene(page);
 }
 
 async function openLoginTab(page: Page): Promise<void> {
@@ -106,14 +109,13 @@ async function expectAuthenticated(page: Page): Promise<void> {
   await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
     timeout: TIMEOUT_CONFIG.LOGIN,
   });
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
 }
 
-async function readAuthState(
-  page: Page,
-): Promise<{ accessToken: boolean; refreshToken: boolean }> {
+async function readAuthState(page: Page): Promise<{ accessToken: boolean; refreshToken: boolean }> {
   return page.evaluate(() => {
-    const rawState = localStorage.getItem('authentication') ?? sessionStorage.getItem('authentication') ?? '';
+    const rawState =
+      localStorage.getItem('authentication') ?? sessionStorage.getItem('authentication') ?? '';
 
     return {
       accessToken: rawState.includes('accessToken') || !!localStorage.getItem('access_token'),
@@ -124,7 +126,7 @@ async function readAuthState(
 
 async function logoutFromAccountCenter(page: Page): Promise<void> {
   await page.goto(WEB_CONFIG.getFullUrl('/account/center'), {
-    waitUntil: 'networkidle',
+    waitUntil: 'domcontentloaded',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
 
@@ -132,7 +134,9 @@ async function logoutFromAccountCenter(page: Page): Promise<void> {
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
   await page.getByTestId('account-logout-button').click();
-  const confirmDialog = page.getByRole('alertdialog', { name: /log out of your account|确认退出登录/i });
+  const confirmDialog = page.getByRole('alertdialog', {
+    name: /log out of your account|确认退出登录/i,
+  });
   await expect(confirmDialog).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });

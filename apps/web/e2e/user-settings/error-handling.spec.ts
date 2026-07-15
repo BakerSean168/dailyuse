@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Settings Error Handling', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('should handle network errors gracefully', async ({ page, context }) => {

@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - ui
   - desktop
   - electron
@@ -12,6 +12,8 @@ updated: 2026-07-14T20:27:44+08:00
 ---
 
 # UI 重构 V2 壳层诊断与后续修订方案
+
+> 归档结论（2026-07-15）：壳层修订与自动化验收完成；当前全量 Web E2E 53/53、Electron shell matrix 7/7，相关 lint/typecheck/test/build 均通过。
 
 > 状态：壳层实施完成（S1–S5 与 §17 完成条件已满足；S6 核心 Playwright 聚焦重跑 **19/19 全绿**，见 §18 补记；`web:e2e:shell` 7/7；截图 `apps/web/test-results/shell-matrix/`）。Dashboard 保持退役（retirement 套件，不恢复旧 UI）。AI OpenAI-compatible 转换层已加固（`models/` 剥离、max_tokens 下限、display_name、空内容 finish_reason）。R0 外部参考客户端采样不阻塞壳层归档。
 >
@@ -57,18 +59,18 @@ V2 已完成三态壳、业务面板、多 Tab、模块面板化与 AI 常驻层
 
 ### 2.2 已确认事实
 
-| 项目 | 结果 |
-|---|---|
-| 模块可达性 | Goal、Task、Note、Reminder、Notification、Schedule、Settings 均可进入 |
-| 重复挂载 | 未发现同一可见 `data-testid` 重复挂载；“重复”主要来自视觉层级和 Tab 保留，不是 Vue 双实例 |
-| 运行时稳定性 | 未发现页面级异常或面板错误边界触发；仅有未打包 Electron 的 CSP 安全警告 |
-| 胶囊预览 | Notification 有真实实现；Goal / Task / Note / Reminder 为硬编码占位 |
-| Task 默认分栏 | 450px 面板基本可用，但存在 Tab 标题 + 页面标题双层结构 |
-| Task 320px | 状态 Tabs 的内部最小宽度大于内容区，右侧内容被裁切 |
-| Task 750px | 面板自身可用，但左侧 AI 列只剩约 190px，欢迎卡和 Composer 严重挤压 |
-| Settings | 当前作为 BusinessPanel Tab 打开，并切到 focus；Composer 仍占据底部 |
-| 用户入口 | 头像触发 Settings；帮助也触发 Settings |
-| focus 状态 | Settings / Schedule 只会把布局设为 focus，普通模块入口不会恢复 split |
+| 项目          | 结果                                                                                      |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| 模块可达性    | Goal、Task、Note、Reminder、Notification、Schedule、Settings 均可进入                     |
+| 重复挂载      | 未发现同一可见 `data-testid` 重复挂载；“重复”主要来自视觉层级和 Tab 保留，不是 Vue 双实例 |
+| 运行时稳定性  | 未发现页面级异常或面板错误边界触发；仅有未打包 Electron 的 CSP 安全警告                   |
+| 胶囊预览      | Notification 有真实实现；Goal / Task / Note / Reminder 为硬编码占位                       |
+| Task 默认分栏 | 450px 面板基本可用，但存在 Tab 标题 + 页面标题双层结构                                    |
+| Task 320px    | 状态 Tabs 的内部最小宽度大于内容区，右侧内容被裁切                                        |
+| Task 750px    | 面板自身可用，但左侧 AI 列只剩约 190px，欢迎卡和 Composer 严重挤压                        |
+| Settings      | 当前作为 BusinessPanel Tab 打开，并切到 focus；Composer 仍占据底部                        |
+| 用户入口      | 头像触发 Settings；帮助也触发 Settings                                                    |
+| focus 状态    | Settings / Schedule 只会把布局设为 focus，普通模块入口不会恢复 split                      |
 
 ### 2.3 代码证据
 
@@ -384,12 +386,12 @@ Task 当前状态 Tabs 的内部宽度约 374px，无法放入 320px 面板的�
 
 > 下列尺寸是截图物理像素近似值，受 Windows 显示缩放、截图裁切和客户端版本影响，只用于识别比例与锚定关系，不直接等同于最终 CSS 像素。
 
-| 样本 | 可见壳状态 | 近似测量 | 可复用结论 |
-|---|---|---|---|
-| C-01，`1699 × 1013` | 项目侧栏 + 会话列 + 内容查看区 | 侧栏约 263px，会话列约 350px；Composer 约 290px 宽，与会话列两侧各留约 30px | 存在 AI 会话列时，Composer 约束在会话列内部，不跨入内容区 |
-| C-02，`1691 × 1022` | 项目侧栏 + 内容查看区，会话列隐藏 | 可工作区约 1428px；浮动 Composer 约 736px 宽、距窗口底部约 30px，并在侧栏右侧区域内居中 | 会话列隐藏后，Composer 的宿主改为剩余工作区，不以整窗中心为锚点 |
-| C-03，`1705 × 1013` | 项目侧栏收起的沉浸内容态 | 浮动 Composer 仍约 738px 宽、距底部约 24px，并重新居中到整个工作区 | 侧栏切换只改变宿主矩形；Composer 最大宽度和底部节奏保持稳定 |
-| C-02 / C-03 附件态 | 1–2 个图片附件 + 文本 + 底部控制 | 容器宽度基本不变，高度向上增长；缩略图横向排列，单项可移除；上方另有较窄的“最近内容/上下文”条 | 附件属于同一输入表面；增加附件不应推动底部锚点或把输入框横向撑满 |
+| 样本                | 可见壳状态                        | 近似测量                                                                                      | 可复用结论                                                       |
+| ------------------- | --------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| C-01，`1699 × 1013` | 项目侧栏 + 会话列 + 内容查看区    | 侧栏约 263px，会话列约 350px；Composer 约 290px 宽，与会话列两侧各留约 30px                   | 存在 AI 会话列时，Composer 约束在会话列内部，不跨入内容区        |
+| C-02，`1691 × 1022` | 项目侧栏 + 内容查看区，会话列隐藏 | 可工作区约 1428px；浮动 Composer 约 736px 宽、距窗口底部约 30px，并在侧栏右侧区域内居中       | 会话列隐藏后，Composer 的宿主改为剩余工作区，不以整窗中心为锚点  |
+| C-03，`1705 × 1013` | 项目侧栏收起的沉浸内容态          | 浮动 Composer 仍约 738px 宽、距底部约 24px，并重新居中到整个工作区                            | 侧栏切换只改变宿主矩形；Composer 最大宽度和底部节奏保持稳定      |
+| C-02 / C-03 附件态  | 1–2 个图片附件 + 文本 + 底部控制  | 容器宽度基本不变，高度向上增长；缩略图横向排列，单项可移除；上方另有较窄的“最近内容/上下文”条 | 附件属于同一输入表面；增加附件不应推动底部锚点或把输入框横向撑满 |
 
 据此，Memoflow 的 Global Composer 采用“宿主区域”而非“窗口”定位：
 
@@ -446,13 +448,13 @@ composerLeft = composerHostLeft + (composerHostWidth - composerWidth) / 2;
 
 ### 10.2 内容建议
 
-| 模块 | 摘要内容 | 现有数据来源 |
-|---|---|---|
-| Goal | 活跃数、最多 3 个目标、进度 | `useDashboard.goalProgress` / Goal composable |
-| Task | 今日完成数、最多 3 个待办、时间 | `useTask` 今日实例逻辑 |
-| Note | 最近笔记、总数、索引状态 | Repository store / resource gateway |
-| Reminder | 今日剩余数、下一批提醒时间 | `useReminder.getTodaySchedule` |
-| Notification | 未读优先的最近通知、全部已读 | 现有 `NotificationCapsulePreview` |
+| 模块         | 摘要内容                        | 现有数据来源                                  |
+| ------------ | ------------------------------- | --------------------------------------------- |
+| Goal         | 活跃数、最多 3 个目标、进度     | `useDashboard.goalProgress` / Goal composable |
+| Task         | 今日完成数、最多 3 个待办、时间 | `useTask` 今日实例逻辑                        |
+| Note         | 最近笔记、总数、索引状态        | Repository store / resource gateway           |
+| Reminder     | 今日剩余数、下一批提醒时间      | `useReminder.getTodaySchedule`                |
+| Notification | 未读优先的最近通知、全部已读    | 现有 `NotificationCapsulePreview`             |
 
 ### 10.3 加载策略
 
@@ -507,15 +509,15 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 
 ### 12.2 建议采集矩阵
 
-| 区域 | 需要的状态 |
-|---|---|
-| 主窗口 | 首次进入、普通会话、长会话、侧栏折叠、窗口最小尺寸 |
+| 区域     | 需要的状态                                                 |
+| -------- | ---------------------------------------------------------- |
+| 主窗口   | 首次进入、普通会话、长会话、侧栏折叠、窗口最小尺寸         |
 | Composer | 空、输入一行、多行、附件、工具菜单、模型菜单、发送中、停止 |
-| 右侧面板 | 默认、最窄、最宽、多 Tab、关闭 Tab、focus、退出 focus |
-| Settings | 默认分类、搜索、切分类、下拉、Switch、错误、需要重启提示 |
-| 弹层 | 用户菜单、胶囊预览、上下文菜单、确认对话框、toast |
-| 主题 | 浅色、深色、系统跟随 |
-| 尺寸 | 900×600、1024×768、1200×800、1440×900、最大化 |
+| 右侧面板 | 默认、最窄、最宽、多 Tab、关闭 Tab、focus、退出 focus      |
+| Settings | 默认分类、搜索、切分类、下拉、Switch、错误、需要重启提示   |
+| 弹层     | 用户菜单、胶囊预览、上下文菜单、确认对话框、toast          |
+| 主题     | 浅色、深色、系统跟随                                       |
+| 尺寸     | 900×600、1024×768、1200×800、1440×900、最大化              |
 
 ### 12.3 每个样本记录
 
@@ -537,14 +539,14 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 
 ### 12.5 当前参考证据覆盖度
 
-| 能力 | 当前证据 | 状态 | 对 Memoflow 的影响 |
-|---|---|---|---|
-| Settings 独立场景 | 1 张完整页截图 | 已形成结构结论，交互状态仍缺 | 可以先实现独立路由壳；搜索、分类切换和错误态继续采集 |
-| Composer 宿主定位 | 会话列、侧栏展开工作区、侧栏收起工作区各 1 张 | 已确认 | 实现 `composerHost` 几何层，不使用整窗固定居中 |
-| Composer 附件态 | 1 个与 2 个图片附件 | 部分确认 | 附件进入同一输入表面，容器向上增长、底边稳定 |
-| Composer 输入/生成态 | 截图中仅有短文本和静止控制 | 缺失 | 空态、多行、发送中、停止、错误仍需状态样本或本项目自行定义 |
-| 参考客户端业务右面板 resize | 无连续拖动或边界样本 | 缺失 | 动态范围仍以 Memoflow 自身可用性约束为主，不宣称来自参考客户端 |
-| 用户菜单与 Help | 无展开态 | 缺失 | 先按信息架构方案实现，不复制未知菜单细节 |
+| 能力                        | 当前证据                                      | 状态                         | 对 Memoflow 的影响                                             |
+| --------------------------- | --------------------------------------------- | ---------------------------- | -------------------------------------------------------------- |
+| Settings 独立场景           | 1 张完整页截图                                | 已形成结构结论，交互状态仍缺 | 可以先实现独立路由壳；搜索、分类切换和错误态继续采集           |
+| Composer 宿主定位           | 会话列、侧栏展开工作区、侧栏收起工作区各 1 张 | 已确认                       | 实现 `composerHost` 几何层，不使用整窗固定居中                 |
+| Composer 附件态             | 1 个与 2 个图片附件                           | 部分确认                     | 附件进入同一输入表面，容器向上增长、底边稳定                   |
+| Composer 输入/生成态        | 截图中仅有短文本和静止控制                    | 缺失                         | 空态、多行、发送中、停止、错误仍需状态样本或本项目自行定义     |
+| 参考客户端业务右面板 resize | 无连续拖动或边界样本                          | 缺失                         | 动态范围仍以 Memoflow 自身可用性约束为主，不宣称来自参考客户端 |
+| 用户菜单与 Help             | 无展开态                                      | 缺失                         | 先按信息架构方案实现，不复制未知菜单细节                       |
 
 当前截图足以锁定 Composer 的定位模型，但不足以锁定所有视觉常量或右面板拖动行为。因此 R0 可以进入“部分完成”，不能把整个参考采集阶段标记完成。
 
@@ -695,7 +697,6 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
 - 用户可明确进入/退出 focus，不出现模块访问导致的 focus 粘连。
 - Help 不再打开 Settings。
 
-
 ### 15.4 自动化证据（2026-07-14）
 
 - 命令：`SHELL_E2E_SKIP_BUILD=1 pnpm nx run web:e2e:shell`（guest-only，依赖 `apps/desktop/dist-electron/main.cjs`）。
@@ -755,19 +756,20 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
   - 本地 compose 仍保留：`dailyuse-web-1:8080`、`postgres:5432`、redis/ai/powersync
 - 按文件：
 
-| 文件 | pass | fail | 说明 |
-|---|---:|---:|---|
-| `e2e/ai/goal-workflow.spec.ts` | 0 | 8 | `seedAuthenticatedSession` → API `JWT malformed`，页面停在 Sign In |
-| `e2e/authentication/*` | 6 | 0 | 真实注册/登录路径可用 → 栈健康 |
-| `e2e/dashboard/dashboard-overview.spec.ts` | 5 | 1 | deep-link redirects 失败 |
-| `e2e/goal/goal-crud.spec.ts` | 4 | 0 | |
-| `e2e/notification/notification-center.spec.ts` | 4 | 1 | filter by type (P2) |
-| `e2e/reminder/reminder-template-crud.spec.ts` | 5 | 0 | |
-| `e2e/task/task-template-crud.spec.ts` | 2 | 3 | create/edit/delete（dialog 未关闭等） |
-| `e2e/user-settings/*` | 14 | 0 | data-portability + notifications + persistence |
+| 文件                                           | pass | fail | 说明                                                               |
+| ---------------------------------------------- | ---: | ---: | ------------------------------------------------------------------ |
+| `e2e/ai/goal-workflow.spec.ts`                 |    0 |    8 | `seedAuthenticatedSession` → API `JWT malformed`，页面停在 Sign In |
+| `e2e/authentication/*`                         |    6 |    0 | 真实注册/登录路径可用 → 栈健康                                     |
+| `e2e/dashboard/dashboard-overview.spec.ts`     |    5 |    1 | deep-link redirects 失败                                           |
+| `e2e/goal/goal-crud.spec.ts`                   |    4 |    0 |                                                                    |
+| `e2e/notification/notification-center.spec.ts` |    4 |    1 | filter by type (P2)                                                |
+| `e2e/reminder/reminder-template-crud.spec.ts`  |    5 |    0 |                                                                    |
+| `e2e/task/task-template-crud.spec.ts`          |    2 |    3 | create/edit/delete（dialog 未关闭等）                              |
+| `e2e/user-settings/*`                          |   14 |    0 | data-portability + notifications + persistence                     |
 
 - 产物：`.tmp-core-playwright.log`、`apps/web/playwright-report/`、`apps/web/test-results/*`。
 - 结论：S6 核心 Playwright **不能勾选全绿**；壳层相关 dashboard/auth/settings 大体健康；AI seed 与 task template CRUD 为后续修复项。
+
 ## 18.1 聚焦重跑（2026-07-14 晚）
 
 - 命令：`pnpm nx run web:e2e -- e2e/ai/goal-workflow.spec.ts e2e/task/task-template-crud.spec.ts e2e/dashboard/dashboard-overview.spec.ts`
@@ -786,8 +788,8 @@ Memoflow 是个人目标、任务、知识与日程的 AI 工作台，不是开�
   - live eval：`max_tokens=1024`；放宽 Gemini 易碎子串断言
 
 - AI 转换层补强（2026-07-14 续）：
-  - shared helper 增加 xtractOpenAICompatibleMessageContent / 
-ormalizeOpenAICompatibleBaseUrl
+  - shared helper 增加 xtractOpenAICompatibleMessageContent /
+    ormalizeOpenAICompatibleBaseUrl
   - TS catalog/gateway 统一走 baseUrl normalize；response model 也剥离 models/
   - Python openai_provider 对齐：multipart content、max_tokens floor 常量、空内容 warning 含 finish_reason
   - 单测：TS gateway normalize **11/11**；Python helpers **3/3**

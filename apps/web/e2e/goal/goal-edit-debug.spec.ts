@@ -8,7 +8,7 @@ test('Goal 编辑对话框调试', async ({ page }) => {
 
   console.log('导航到 Goals 页面...');
   await page.goto(WEB_CONFIG.getFullUrl('/goals'), {
-    waitUntil: 'networkidle',
+    waitUntil: 'domcontentloaded',
   });
 
   await page.waitForTimeout(2000);

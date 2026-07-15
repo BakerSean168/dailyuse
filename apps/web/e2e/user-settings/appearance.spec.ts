@@ -11,7 +11,7 @@ test.describe('Appearance Settings', () => {
     await page.goto('/settings');
 
     // ????????
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // ?????? tab
     await page.getByRole('tab', { name: /Appearance/i }).click();
@@ -61,7 +61,7 @@ test.describe('Appearance Settings', () => {
 
     // ????
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // ????????
     const html = page.locator('html');
@@ -137,7 +137,7 @@ test.describe('Appearance Settings', () => {
 
     // ??????
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // ???????
     const html = page.locator('html');

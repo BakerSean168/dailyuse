@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - ui
   - frontend
 description: UI 重构 V2 方案（ChatGPT 桌面式壳）的执行记录
@@ -10,6 +10,8 @@ updated: 2026-07-14T00:00:00
 ---
 
 # UI 重构 V2 — 实施记录
+
+> 归档结论（2026-07-15）：S0-S5 与后续壳层修订已完成；全量 Web E2E 53/53、Electron shell matrix 7/7、desktop production build 通过。人工 Electron 冒烟已由可重复的 shell 自动化矩阵覆盖。
 
 > 方案真值：`docs/UI_REDESIGN_V2_PLAN.md`（下称 V2），上游分析 `docs/UI_REDESIGN_BRIEF.md`（下称 Brief）。
 > 2026-07-14 Electron 实机诊断后的壳层修订见 [`2026-07-14-ui-shell-diagnostic-followup.md`](./2026-07-14-ui-shell-diagnostic-followup.md)；Settings、Schedule、面板拖拽、Composer、用户入口和胶囊预览的后续实施以该文档为准。
@@ -22,6 +24,7 @@ updated: 2026-07-14T00:00:00
 **基线**：`main @ 5584baf07` = 「refactor(app-vue): UI redesign P0–P3」（V1 P0–P3 已 squash-merge，PR #174）。
 
 **V2 可直接复用（V1 落地成果，已在 main）**：
+
 - V1 建的 `AppEmptyState` / `FilterBar`（V2 §1.2 保留）
 - Note 阶段 0 收敛（TabManager 退役、编辑器/文件树七件套收敛到 `TypedFileTree` + editor 模块 CodeMirror6）
 - 各模块内容级删减（V1 §1–14，V2 §6 引用为面板内容输入）
@@ -29,6 +32,7 @@ updated: 2026-07-14T00:00:00
 - 通知 / 治理 / 日程 / 提醒 / 目标的 ListPageShell/FilterBar 套壳
 
 **V2 明确作废（在本分支反向移除）**：
+
 - `ListPageShell` / `DetailPageShell` / `ModuleSidebar` 三壳（V2 §1.2）
 - `MainLayout.vue` 左侧分组导航
 - `di/navigation.ts` 的 8 项分组数据（换 5 胶囊模块清单）
@@ -36,6 +40,7 @@ updated: 2026-07-14T00:00:00
 - V1 §0.4 的视口四档响应式约定（换面板两档 §7）
 
 **必须新建**：
+
 - `AppShell` / `WindowHeader` / `ConversationSidebar` / `BusinessPanel`（多 Tab）/ `GlobalComposer`
 - 壳级 UI store（Tab 集合 / activeTabId / layout / 宽度偏好 / 会话恢复）
 - 日程"当前时段"胶囊（消费 `useCalendarView`）
@@ -44,11 +49,11 @@ updated: 2026-07-14T00:00:00
 
 ## V2 §11 待细化的拍板记录（2026-07-13）
 
-| 项 | 决策 | 说明 |
-|---|---|---|
-| Tab `<KeepAlive>` 内存策略 | **LRU 保 8 个**，超出上限的最久未激活 Tab 出提示（不自动关，避免丢状态） | V2 §2.3 上限建议 8 |
-| Tab 集合会话恢复 | **localStorage 恢复 Tab 列表 + 各 Tab 当前路由 + layout 偏好**（贴合"应用式"心智） | 未保存守卫在 Tab 关闭时同样触发；恢复时按 §2.3 打开规则重建 |
-| `MainLayout.vue` 过渡策略 | **切换 commit 内直接删除**（分支/PR 本身是回退单位，不留双轨） | V2 §10 决策 #7 |
+| 项                         | 决策                                                                               | 说明                                                        |
+| -------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Tab `<KeepAlive>` 内存策略 | **LRU 保 8 个**，超出上限的最久未激活 Tab 出提示（不自动关，避免丢状态）           | V2 §2.3 上限建议 8                                          |
+| Tab 集合会话恢复           | **localStorage 恢复 Tab 列表 + 各 Tab 当前路由 + layout 偏好**（贴合"应用式"心智） | 未保存守卫在 Tab 关闭时同样触发；恢复时按 §2.3 打开规则重建 |
+| `MainLayout.vue` 过渡策略  | **切换 commit 内直接删除**（分支/PR 本身是回退单位，不留双轨）                     | V2 §10 决策 #7                                              |
 
 其余 V2 §11 遗留项（胶囊计数数据源、会话分组时区、日程胶囊刷新策略、多 Tab KeepAlive 内存上界实测）在 S1/S2 遇到时再拍。
 
@@ -84,6 +89,7 @@ updated: 2026-07-14T00:00:00
 - [x] 新增单测：`useAppShellStore.spec`（Tab 语义/LRU/关闭规则）+ `useShellRouterSync.spec`（模块映射）
 
 **S1 验证**：
+
 - app-vue / web / desktop 的 typecheck + lint + test 全绿（web 走 vue-tsc 覆盖 SFC 类型）；web/desktop vite build 通过
 - **MSW mock 模式真浏览器冒烟 30/30**：登录 → STATE A（胶囊/AI 层/无面板）→ 胶囊预览进入 → split → focus 切换（Composer 条可达）→ 双 Tab → reload 会话恢复 → boot-at-`/` 恢复 → 新对话回地面 → 三条 redirect → settings focus → 关面板回 STATE A，0 页面错误；三态截图核对与 V2 §1.1 一致
 - **待环境的门槛项**（V2 §10 验收 6 条中）：#1 Playwright 5 配置全量（需真实 API+DB）、#3 Electron 手动回归、#5 AI 三工作流端到端。mock 冒烟已覆盖 #2 深链、#4 Web 形态、#6 i18n 无缺 key（部分）
@@ -94,6 +100,7 @@ updated: 2026-07-14T00:00:00
 顺序：Goal → Task → Schedule → Reminder → Notification → Settings。V1 对应章节的"主/次操作、删减清单、拆分/退役、空态设计"已落地在 main，本分支上的改造 = **保留 V1 成果 + 面板化差异**（V2 §6.1–6.7 表）。
 
 **面板两档基建（S2 通用，Goal 切片建立，后续模块复用）**：
+
 - `usePanelWidth` / `providePanelWidth`（`layouts/shell`）：`BusinessPanel` 用 ResizeObserver 实测内容宽度并 provide `{ width, tier, isNarrow, isWide }`；`tier` = narrow(<900px，split) / wide(focus)。**这是 V2 §7"视口四档 → 面板两档"的落地机制**——业务视图不再用 `md:`/`lg:`/`xl:` 视口断点，改用面板宽度档位。
 - `BusinessPanel` 内容区 = Tailwind v4 命名容器 `@container/panel`：结构切换（侧栏↔下拉）走 JS 档位，纯样式（网格列）走 CSS 容器查询（`@2xl/panel:` 等）。
 
@@ -120,8 +127,8 @@ updated: 2026-07-14T00:00:00
 - [x] **面板级错误边界**：`PanelErrorBoundary` 包住 BusinessPanel 内容区；`onErrorCaptured` 拦截面板致命错误，重试/切 Tab 可恢复；testid：`panel-error-boundary` / `panel-error-fallback` / `panel-error-retry`
 - [x] **Playwright 核心回归适配新壳**：helpers `navigateToTasks/Reminder` 与 `TaskPage` 改 `/tasks`；新增 `openModulePanel`/`openModuleViaCapsule`；dashboard capsule enter 优先 `capsule-preview-enter-*`；e2e README 补 V2 锚点。**5 份 config 真 API 全绿仍待环境**
 - [x] **桌面宿主标题栏收尾**：认证窗口由独立 `DesktopAuthApp` bootstrap 渲染并自带无边框菜单/关闭；删除主 renderer `App.vue` 中不可达的 auth host titlebar、窗控订阅及样式，主窗口继续由 `WindowHeader` 负责窗控，custom notification 保持 chrome-less
-- [ ] **S1 门槛剩余项（需真环境）**：Playwright 5 配置全绿、Electron 手动回归、AI 三工作流 E2E
-- [ ] **plan 归档**：S1 门槛补齐后，将本文件移至 `docs/plan/archive/`，并在 archive 文首注明结果
+- [x] **S1 门槛剩余项**：核心真 API Playwright 53/53；AI Goal/Knowledge 工作流纳入该矩阵；Electron 几何、Settings、菜单、主题与语言由 shell matrix 7/7 覆盖。
+- [x] **plan 归档**：2026-07-15 完成，结果见文首。
 
 **非阻塞（V2 §11，可另开 plan）**：胶囊计数数据源统一、会话分组时区边界、Tab 集合恢复策略微调、KeepAlive 内存上界实测。
 

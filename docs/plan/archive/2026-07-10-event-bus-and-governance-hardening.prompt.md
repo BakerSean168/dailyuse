@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - prompt
   - event-bus
   - governance
@@ -11,6 +11,8 @@ updated: 2026-07-10T18:30:00+08:00
 ---
 
 # Implementation Prompt
+
+> 归档结论（2026-07-15）：配套实施计划已完成，本提示词仅保留为历史执行上下文。
 
 配套 `2026-07-10-event-bus-and-governance-hardening.md` 与 `ADR-033`。整份文件从下面分隔线开始即为提示词正文，粘贴到全新 AI 会话即可开始工作。
 
@@ -44,6 +46,7 @@ updated: 2026-07-10T18:30:00+08:00
 ### PR-2｜阶段一 · Goal↔Task 联动重构（M6，作为 ADR-033 范式 A 标杆）
 
 三段：
+
 - **Task 侧**：task:instance-completed 事件 payload 扩展 goalBinding 与"是否全部实例完成"标志。判定逻辑（shouldTriggerOnAllInstancesCompleted）从 desktop handler 迁到 Task 应用层，在事件发布前算好。同步更新 @dailyuse/contracts/task 事件形状。
 - **Goal 侧**：把 packages/goal/src/application-server/event-handlers/index.ts 从空壳桩改为真实现——订阅 task:instance-completed，直接消费 payload，调 CreateGoalRecordUseCase，不得回查 Task 的 repository。返回可停止函数（幂等 start()/stop()，仿 register-account-event-listeners.ts）。
 - **宿主**：apps/api 与 apps/desktop 分别在启动时调用同一份 registerGoalEventListeners。desktop 的 initialize-event-listeners.ts 中 task-goal 那段删除（不是注释掉）；web 端由此自动获得同款能力。
@@ -52,7 +55,7 @@ updated: 2026-07-10T18:30:00+08:00
 
 ### PR-3｜阶段二 · 治理脚本自测与语义加固（M5 → M4 → M2）
 
-- **M5** 把 tools/governance/*.mjs 的核心逻辑抽为可导出纯函数 + fixtures，在同目录补 __tests__；把 tools/governance 提为带 test target 的 Nx 项目并纳入 governance-check 前置。
+- **M5** 把 tools/governance/*.mjs 的核心逻辑抽为可导出纯函数 + fixtures，在同目录补 **tests**；把 tools/governance 提为带 test target 的 Nx 项目并纳入 governance-check 前置。
 - **M4** 新增两个 audit：
   - unflushed-events-audit.mjs：用 ts-morph 扫描继承 AggregateRoot 的类，命令方法有状态改动但整类无 addDomainEvent、或仓储 save 无 flushDomainEvents 的疑似漏发点。
   - mitt-rpc-forbidden-audit.mjs：拦截业务代码中的 .invoke( / .handle(（放行 packages/ipc-client 与 infrastructure-* 目录），落实 ADR-033 弃用条款。
@@ -87,6 +90,7 @@ updated: 2026-07-10T18:30:00+08:00
 ## 交付格式（每个 PR 完成时）
 
 给我一段简短汇报：
+
 1. 本 PR 分支名
 2. 改动概要（2-4 行，重点讲"为什么这么改"，不是"改了什么文件"）
 3. 验证命令与结果（命令 + 通过/失败）

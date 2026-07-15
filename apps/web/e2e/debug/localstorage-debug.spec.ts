@@ -19,7 +19,7 @@ test('检查 localStorage 中的 goal-store 数据', async ({ page }) => {
 
   // 导航到 Goals 页面
   await page.goto(`${WEB_CONFIG.BASE_URL}/goals`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
 
   // 等待 3 秒确保数据加载
   await page.waitForTimeout(3000);

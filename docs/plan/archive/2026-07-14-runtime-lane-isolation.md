@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - runtime
   - engineering
 description: Runtime lane isolation SSOT, preflight, Playwright anti-poisoning

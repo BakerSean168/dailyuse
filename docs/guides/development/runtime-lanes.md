@@ -25,13 +25,13 @@ updated: 2026-07-14T00:00:00
 
 ## 车道一览
 
-| Profile | 用途 | 主机端口（SSOT） | 入口命令 |
-| --- | --- | --- | --- |
-| `host-dev` | API+Web 热更新 | API `3000`，Web `5173`，PG `5432` | `pnpm docker:dev:up` + `pnpm dev` |
-| `e2e` | Playwright 核心 e2e | API `3000`，Web `5173`，PG **`5433`** | `pnpm docker:test:up` + `pnpm e2e` |
-| `local-docker` | 近生产全栈容器 | API **`53080`**，Web **`58080`**，PG **`55432`** | `pnpm docker:local:up` |
-| `dev-infra` | 仅开发依赖 | PG `5432`，Redis `6384`，PowerSync `8080` | `pnpm docker:dev:up` |
-| `test-infra` | 仅测试库 | PG `5433` | `pnpm docker:test:up` |
+| Profile        | 用途                | 主机端口（SSOT）                                 | 入口命令                           |
+| -------------- | ------------------- | ------------------------------------------------ | ---------------------------------- |
+| `host-dev`     | API+Web 热更新      | API `3000`，Web `5173`，PG `5432`                | `pnpm docker:dev:up` + `pnpm dev`  |
+| `e2e`          | Playwright 核心 e2e | API `3000`，Web `5173`，PG **`5433`**            | `pnpm docker:test:up` + `pnpm e2e` |
+| `local-docker` | 近生产全栈容器      | API **`53080`**，Web **`58080`**，PG **`55432`** | `pnpm docker:local:up`             |
+| `dev-infra`    | 仅开发依赖          | PG `5432`，Redis `6384`，PowerSync `8080`        | `pnpm docker:dev:up`               |
+| `test-infra`   | 仅测试库            | PG `5433`                                        | `pnpm docker:test:up`              |
 
 ## 互斥规则
 
@@ -64,9 +64,9 @@ pnpm docker:local:up
 
 ## Playwright 复用策略
 
-- **API**：默认 **不** `reuseExistingServer`（避免复用 Docker `:3000`）。
-- 仅当你明确知道当前 `:3000` 已是 e2e API（`/healthz` 含 `"lane":"e2e"`）时，可设 `E2E_REUSE_SERVERS=1`。
-- **Web**：本地仍可复用已有 Vite；CI 永不复用。
+- **API 与 Web**：默认均 **不** `reuseExistingServer`，避免复用错误 lane 的 Docker API 或无 E2E env/proxy 的陈旧 Vite。
+- 仅当你明确知道当前 `:3000` 是 e2e API（`/healthz` 含 `"lane":"e2e"`），且 `:5173` 是使用当前 E2E env/proxy 启动的 Vite 时，可设 `E2E_REUSE_SERVERS=1`。
+- CI 永不复用 API 或 Web server。
 - `start-api-server` 若发现端口被非 e2e 占用，会 **直接失败并打印修复提示**。
 
 ## local-docker 与 `.env.production.local`
@@ -77,12 +77,12 @@ pnpm docker:local:up
 
 ## 排障
 
-| 现象 | 原因 | 处理 |
-| --- | --- | --- |
-| e2e 报 3000 被占用 / lane missing | Docker 或 host-dev 占着 API | `pnpm docker:local:down` 或释放 3000；确认 local API 在 53080 |
-| 修了 API 代码 e2e 仍旧行为 | 旧进程被复用 | 默认已禁止 API 复用；确认没有 `E2E_REUSE_SERVERS=1` |
-| 文档写 53080，浏览器却 3000 | env 把 host 端口改回经典口 | 使用 `pnpm docker:local:*`，或修正 env |
-| e2e DB 连不上 | 5433 未起 | `pnpm docker:test:up` |
+| 现象                                 | 原因                        | 处理                                                                       |
+| ------------------------------------ | --------------------------- | -------------------------------------------------------------------------- |
+| e2e 报 3000 被占用 / lane missing    | Docker 或 host-dev 占着 API | `pnpm docker:local:down` 或释放 3000；确认 local API 在 53080              |
+| 修了代码 e2e 仍旧行为 / 页面一直加载 | API 或 Web 旧进程被复用     | 默认已禁止两端复用；确认没有 `E2E_REUSE_SERVERS=1`，并释放 `3000` / `5173` |
+| 文档写 53080，浏览器却 3000          | env 把 host 端口改回经典口  | 使用 `pnpm docker:local:*`，或修正 env                                     |
+| e2e DB 连不上                        | 5433 未起                   | `pnpm docker:test:up`                                                      |
 
 ## 维护约定
 

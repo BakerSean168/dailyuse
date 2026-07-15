@@ -129,7 +129,7 @@ async function openCreateGoalDialog(page: Page): Promise<void> {
     await stableCreateEntry.click();
   } else {
     await page.goto(WEB_CONFIG.getFullUrl('/goals?dialog=goal'), {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
   }

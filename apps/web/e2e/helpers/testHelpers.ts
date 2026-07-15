@@ -102,7 +102,9 @@ async function prepareAuthPage(page: Page): Promise<void> {
   // Avoid networkidle: Vite HMR / long-polling can keep the network busy forever.
   await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
   await page
-    .locator('#email, #reg-email, [data-testid="register-submit-button"], button:has-text("Sign In")')
+    .locator(
+      '#email, #reg-email, [data-testid="register-submit-button"], button:has-text("Sign In")',
+    )
     .first()
     .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
@@ -207,6 +209,29 @@ export async function registerAndLogin(
 }
 
 /**
+ * Materialize the effective default settings for a freshly registered account.
+ * Settings are created lazily by GET /settings, while reset/export tests require
+ * a persisted singleton as their fixture precondition.
+ */
+export async function ensureUserSettingsRecord(page: Page): Promise<void> {
+  const response = await page.evaluate(async (apiBaseUrl) => {
+    const accessToken = window.localStorage.getItem('access_token');
+    if (!accessToken) {
+      throw new Error('Missing access_token while preparing user settings');
+    }
+
+    const result = await fetch(`${apiBaseUrl}/settings`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return { ok: result.ok, status: result.status };
+  }, API_CONFIG.FULL_URL);
+
+  if (!response.ok) {
+    throw new Error(`Failed to prepare user settings (HTTP ${response.status})`);
+  }
+}
+
+/**
  * 测试数据工厂
  */
 export function createTestTask(
@@ -283,14 +308,13 @@ export async function login(
 
   // ===== 等待登录完成 =====
   console.log('[Auth] 等待登录完成...');
-  
+
   // 等待离开 /auth 页面 或者 等待特定元素出现表示登录成功
   try {
     // 方式1: 等待 URL 变化（离开 /auth）
-    await page.waitForURL(
-      (url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), 
-      { timeout: TIMEOUT_CONFIG.LOGIN }
-    );
+    await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
+      timeout: TIMEOUT_CONFIG.LOGIN,
+    });
     console.log('[Auth] 已离开登录页面');
   } catch {
     // 方式2: 检查当前 auth 页的错误横幅
@@ -303,7 +327,11 @@ export async function login(
       return;
     }
 
-    console.warn('[Auth] 登录超时，但没有错误提示，继续执行...');
+    const serviceError = page
+      .getByText(/temporarily unavailable|认证服务暂不可用|认证服务异常|authentication failed/i)
+      .first();
+    const serviceErrorText = await serviceError.textContent().catch(() => null);
+    throw new Error(serviceErrorText ?? `Login did not leave ${WEB_CONFIG.LOGIN_PATH}`);
   }
 
   // 等待页面稳定
@@ -419,7 +447,7 @@ export async function navigateToReminder(page: Page) {
   console.log('[Navigation] 导航到 Reminder 页面（V2 shell 业务面板）');
 
   try {
-    await page.goto('/reminder', { waitUntil: 'networkidle' });
+    await page.goto('/reminder', { waitUntil: 'domcontentloaded' });
     await page.getByTestId('business-panel').waitFor({
       state: 'visible',
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -625,7 +653,7 @@ export async function openModulePanel(
   module: 'goal' | 'task' | 'note' | 'reminder' | 'notification',
   route: string,
 ) {
-  await page.goto(route, { waitUntil: 'networkidle' });
+  await page.goto(route, { waitUntil: 'domcontentloaded' });
   await page.getByTestId('business-panel').waitFor({
     state: 'visible',
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -636,7 +664,7 @@ export async function openModuleViaCapsule(
   page: Page,
   module: 'goal' | 'task' | 'note' | 'reminder' | 'notification',
 ) {
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.getByTestId(`capsule-nav-${module}`).click();
   const enter = page.getByTestId(`capsule-preview-enter-${module}`);
   if (await enter.count()) {
@@ -653,7 +681,7 @@ export async function navigateToTasks(page: Page) {
 
   try {
     // V2: 任务库路由是 /tasks（已无 /tasks/one-time）
-    await page.goto('/tasks', { waitUntil: 'networkidle' });
+    await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
     await page.getByTestId('business-panel').waitFor({
       state: 'visible',
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -669,7 +697,7 @@ export async function navigateToTasks(page: Page) {
         await enter.click();
       }
     } else {
-      await page.goto('/tasks', { waitUntil: 'networkidle' });
+      await page.goto('/tasks', { waitUntil: 'domcontentloaded' });
     }
     await page.waitForURL(/\/tasks/);
     await page.getByTestId('business-panel').waitFor({

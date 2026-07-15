@@ -73,9 +73,31 @@ export class DesktopGuestShellController {
 
     const first = await this.electronApp.firstWindow({ timeout: 30_000 });
     await first.waitForLoadState('domcontentloaded');
+    await this.configureEphemeralSafeStorage();
     this.currentWindow = first;
     await this.setWindowSize(size);
     return first;
+  }
+
+  private async configureEphemeralSafeStorage(): Promise<void> {
+    if (!this.electronApp) return;
+
+    await this.electronApp.evaluate(({ safeStorage }) => {
+      if (process.platform !== 'linux' || safeStorage.isEncryptionAvailable()) return;
+
+      // Playwright forces Electron's non-encrypting `basic_text` backend on Linux.
+      // Shell tests use a disposable guest profile and do not exercise credential storage.
+      const prefix = 'dailyuse-shell-e2e:';
+      safeStorage.isEncryptionAvailable = () => true;
+      safeStorage.encryptString = (value) => Buffer.from(`${prefix}${value}`, 'utf8');
+      safeStorage.decryptString = (value) => {
+        const plaintext = value.toString('utf8');
+        if (!plaintext.startsWith(prefix)) {
+          throw new Error('Unexpected shell E2E safe-storage payload');
+        }
+        return plaintext.slice(prefix.length);
+      };
+    });
   }
 
   async enterGuestAndWaitForShell(timeoutMs = 45_000): Promise<Page> {
@@ -128,25 +150,22 @@ export class DesktopGuestShellController {
       throw new Error('Electron app has not been launched.');
     }
 
-    await this.electronApp.evaluate(
-      async ({ BrowserWindow }, payload) => {
-        const windows = BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed());
-        // Prefer a non-auth/main content window when multiple exist.
-        const win =
-          windows.find((w) => {
-            const url = w.webContents.getURL();
-            return url.length > 0 && !url.includes('#/auth');
-          }) ??
-          BrowserWindow.getFocusedWindow() ??
-          windows[0] ??
-          null;
-        if (!win) {
-          throw new Error('No BrowserWindow available to resize.');
-        }
-        win.setContentSize(payload.width, payload.height);
-      },
-      size,
-    );
+    await this.electronApp.evaluate(async ({ BrowserWindow }, payload) => {
+      const windows = BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed());
+      // Prefer a non-auth/main content window when multiple exist.
+      const win =
+        windows.find((w) => {
+          const url = w.webContents.getURL();
+          return url.length > 0 && !url.includes('#/auth');
+        }) ??
+        BrowserWindow.getFocusedWindow() ??
+        windows[0] ??
+        null;
+      if (!win) {
+        throw new Error('No BrowserWindow available to resize.');
+      }
+      win.setContentSize(payload.width, payload.height);
+    }, size);
 
     if (this.currentWindow) {
       await this.currentWindow.waitForTimeout(250);

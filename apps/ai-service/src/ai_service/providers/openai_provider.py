@@ -31,7 +31,9 @@ def normalize_openai_compatible_model_id(model: str | None) -> str:
     return (model or "").strip().removeprefix("models/")
 
 
-def normalize_openai_compatible_max_tokens(max_tokens: int | float | None) -> int | None:
+def normalize_openai_compatible_max_tokens(
+    max_tokens: int | float | None,
+) -> int | None:
     """Clamp tiny max_tokens values that commonly empty Gemini responses."""
 
     if max_tokens is None:
@@ -158,7 +160,9 @@ class OpenAIProvider(BaseHTTPProvider):
 
                 choice = data["choices"][0]
                 delta = choice.get("delta", {})
-                content = extract_openai_compatible_message_content(delta.get("content", ""))
+                content = extract_openai_compatible_message_content(
+                    delta.get("content", "")
+                )
                 finish_reason = choice.get("finish_reason")
 
                 if content or finish_reason:
@@ -225,7 +229,9 @@ class OpenAIProvider(BaseHTTPProvider):
             "stream": stream,
         }
 
-        normalized_max_tokens = normalize_openai_compatible_max_tokens(config.max_tokens)
+        normalized_max_tokens = normalize_openai_compatible_max_tokens(
+            config.max_tokens
+        )
         if normalized_max_tokens is not None:
             payload["max_tokens"] = normalized_max_tokens
 

@@ -33,7 +33,7 @@ test('Store 状态调试', async ({ page }) => {
   console.log('localStorage currentAccount:', localStorage.currentAccount);
 
   console.log('\n4. 尝试创建目标...');
-  await page.goto(WEB_CONFIG.getFullUrl('/goals'), { waitUntil: 'networkidle' });
+  await page.goto(WEB_CONFIG.getFullUrl('/goals'), { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
   const createButton = page.locator('button:has-text("创建目标")').first();

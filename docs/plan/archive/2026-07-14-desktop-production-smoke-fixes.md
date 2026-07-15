@@ -1,6 +1,7 @@
 ---
 tags:
   - plan
+  - archive
   - desktop
   - bugfix
 description: 修复 UI 重构后桌面 production 冒烟暴露的模块身份与账户空值问题
@@ -9,6 +10,8 @@ updated: 2026-07-14T00:00:00+08:00
 ---
 
 # Desktop production smoke fixes
+
+> 归档结论（2026-07-15）：修复已进入当前实现；desktop lint/typecheck/test、production build 与 Electron shell matrix 7/7 通过。
 
 ## Scope
 

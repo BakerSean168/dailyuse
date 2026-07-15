@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { API_CONFIG } from '../config';
-import { registerAndLogin } from '../helpers/testHelpers';
+import { ensureUserSettingsRecord, registerAndLogin } from '../helpers/testHelpers';
 
 const VALID_DATA_KEYS = [
   'settings',
@@ -83,11 +83,7 @@ async function callExportAPI(page: Page, include?: string[]): Promise<ExportResu
   );
 }
 
-async function callImportAPI(
-  page: Page,
-  content: string,
-  dryRun = false,
-): Promise<ImportResult> {
+async function callImportAPI(page: Page, content: string, dryRun = false): Promise<ImportResult> {
   return page.evaluate(
     async (args) => {
       const token = window.localStorage.getItem('access_token');
@@ -115,6 +111,7 @@ test.describe('Data Portability', () => {
       password: 'Test123456!',
       landingPath: '/settings',
     });
+    await ensureUserSettingsRecord(page);
   });
 
   test('[P1] export returns valid envelope with expected structure', async ({ page }) => {
@@ -150,9 +147,7 @@ test.describe('Data Portability', () => {
     }
   });
 
-  test('[P1] export does not contain banned identity or credential fields', async ({
-    page,
-  }) => {
+  test('[P1] export does not contain banned identity or credential fields', async ({ page }) => {
     const result = await callExportAPI(page);
     expect(result.ok).toBe(true);
 
@@ -199,10 +194,7 @@ test.describe('Data Portability', () => {
 
     expect(secondImport.ok).toBe(true);
 
-    const totalCreated = Object.values(secondImport.data!.created).reduce(
-      (sum, n) => sum + n,
-      0,
-    );
+    const totalCreated = Object.values(secondImport.data!.created).reduce((sum, n) => sum + n, 0);
     expect(totalCreated).toBeGreaterThanOrEqual(0);
   });
 
@@ -227,8 +219,7 @@ test.describe('Data Portability', () => {
 
     const envelope = JSON.parse(exportResult.data!.content);
     const firstRepo =
-      envelope.data?.repositories?.repositories?.[0] ??
-      envelope.data?.goals?.items?.[0];
+      envelope.data?.repositories?.repositories?.[0] ?? envelope.data?.goals?.items?.[0];
     if (firstRepo) {
       firstRepo.identityId = 'stolen-identity';
     } else {

@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - ui
   - frontend
 description: 页面级 UI 重构（UI Page Redesign Plan）的执行记录
@@ -10,6 +10,8 @@ updated: 2026-07-12T00:00:00
 ---
 
 # 页面级 UI 重构 — 实施记录
+
+> 2026-07-14 归档说明：本记录中未收尾的 P3 事项已由 V2 重构的 S4/S5 取代或完成，后续 UI 工作以 V2 壳层诊断计划为准。本文件只保留 V1 实施历史。
 
 > 方案真值：`docs/UI_PAGE_REDESIGN_PLAN.md`（下称 Plan），上游分析 `docs/UI_REDESIGN_BRIEF.md`（下称 Brief）。
 > 本文只记录执行切片、状态与验收，不重复方案内容。范围：`packages/app-vue` + 两端宿主 `apps/web`、`apps/desktop`。

@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { API_CONFIG, TIMEOUT_CONFIG } from '../config';
-import { registerAndLogin } from '../helpers/testHelpers';
+import { ensureUserSettingsRecord, registerAndLogin } from '../helpers/testHelpers';
 
 const generateTestEmail = () =>
   `e2e-persistence-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test.com`;
@@ -18,6 +18,7 @@ test.describe('Settings Persistence', () => {
       landingPath: '/settings',
     });
 
+    await ensureUserSettingsRecord(page);
     await resetSettings(page);
   });
 
@@ -27,7 +28,7 @@ test.describe('Settings Persistence', () => {
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
-    await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
     await openAppearanceSettings(page);
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -45,7 +46,7 @@ test.describe('Settings Persistence', () => {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
 
-    await page.reload({ waitUntil: 'networkidle', timeout: TIMEOUT_CONFIG.NAVIGATION });
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
     await openNotificationsSettings(page);
 
     await expect(page.getByTestId('notification-settings-switch')).toHaveAttribute(
@@ -68,7 +69,7 @@ test.describe('Settings Persistence', () => {
 
     const page2 = await context.newPage();
     await page2.goto('/settings', {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
     await openNotificationsSettings(page2);
@@ -139,7 +140,7 @@ async function resetSettings(page: Page) {
   await resetResponse;
 
   await page.goto('/settings', {
-    waitUntil: 'networkidle',
+    waitUntil: 'domcontentloaded',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
 }

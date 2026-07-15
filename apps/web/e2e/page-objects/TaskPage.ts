@@ -29,7 +29,7 @@ export class TaskPage {
   async goto() {
     // V2 shell: task library lives at /tasks inside the business panel
     await this.page.goto('/tasks');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
     await this.page.getByTestId('business-panel').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {
       console.log('[TaskPage] business-panel not found; auth or shell may not be ready');
     });

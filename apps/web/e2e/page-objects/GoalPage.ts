@@ -61,7 +61,7 @@ export class GoalPage {
    * 导航到 Goal 页面
    */
   async navigate() {
-    await this.page.goto('/goals', { waitUntil: 'networkidle' });
+    await this.page.goto('/goals', { waitUntil: 'domcontentloaded' });
     await this.waitForPageLoad();
   }
 
@@ -69,7 +69,7 @@ export class GoalPage {
    * 等待页面加载完成
    */
   async waitForPageLoad() {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
     // 等待页面标题或关键元素出现
     await this.page.waitForTimeout(1000);
   }

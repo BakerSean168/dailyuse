@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - governance
   - architecture
 description: 将 governance 收敛为仓库级严格参考模块，消除层名泄漏、客户端浅 seam、UI 领域漂移与 mocks 特例
@@ -71,3 +71,7 @@ updated: 2026-07-06T00:00:00+08:00
 - governance mocks 只从 `@dailyuse/contracts/mocks` 导入
 - README / quick reference / audit 反映新的真实结构
 - `daily-use:governance-check` 通过
+
+## 完成记录
+
+2026-07-14 复核：governance package 的 exports 只保留 root、`api`、`client` 与 `electron`；旧层名公开子路径及其调用方引用均已移除。计划目标已完成，归档保留参考模块重建的决策依据。

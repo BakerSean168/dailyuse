@@ -10,7 +10,7 @@ test.describe('DAG Visualization', () => {
     await page.goto('/goals/test-goal-1');
 
     // Wait for page to load
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Click "?????" tab
     await page.click('text=?????');
@@ -82,7 +82,7 @@ test.describe('DAG Visualization', () => {
 
     // Reload page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization');
 
@@ -117,7 +117,7 @@ test.describe('DAG Visualization', () => {
 
     // Reload to apply custom layout
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization');
 
@@ -136,7 +136,7 @@ test.describe('DAG Visualization', () => {
     });
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization');
 
@@ -221,7 +221,7 @@ test.describe('DAG Visualization', () => {
     }
 
     // Wait for loading to complete
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('should maintain layout across tab switches', async () => {
@@ -274,7 +274,7 @@ test.describe('DAG Visualization', () => {
 test.describe('DAG Visualization - Advanced Interactions', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/goals/test-goal-1');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization');
   });
@@ -322,11 +322,11 @@ test.describe('DAG Visualization - Advanced Interactions', () => {
 
     // Navigate to different goal
     await page.goto('/goals/another-goal-id');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Come back to original goal
     await page.goto('/goals/test-goal-1');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.click('text=?????');
 
     // Layout type should be restored (global preference)

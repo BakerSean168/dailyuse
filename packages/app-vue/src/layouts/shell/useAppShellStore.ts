@@ -17,7 +17,7 @@
  * 不在此处直连 router。
  */
 import { defineStore } from 'pinia';
-import { PANEL_MIN, computePanelGeometry } from './panelGeometry';
+import { PANEL_MIN, computePanelGeometry } from './panel-geometry';
 
 /** 面板可容纳的最大 Tab 数（V2 §2.3 建议 8）。 */
 export const MAX_BUSINESS_TABS = 8;
@@ -25,7 +25,7 @@ export const MAX_BUSINESS_TABS = 8;
 const SIDEBAR_MIN = 200;
 const SIDEBAR_MAX = 400;
 const SIDEBAR_DEFAULT = 260;
-// 面板绝对像素上下限由 panelGeometry 动态计算；此处仅保留偏好默认值种子。
+// 面板绝对像素上下限由 panel-geometry 动态计算；此处仅保留偏好默认值种子。
 const PANEL_PREFERRED_DEFAULT = 450;
 
 export type ShellLayout = 'split' | 'focus';

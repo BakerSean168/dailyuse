@@ -38,4 +38,4 @@ export {
   PANEL_MIN,
   PANEL_MAX_CAP,
   CHAT_MIN,
-} from './panelGeometry';
+} from './panel-geometry';

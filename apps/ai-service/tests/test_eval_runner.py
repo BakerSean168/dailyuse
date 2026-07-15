@@ -176,8 +176,8 @@ async def test_eval_runner_supports_live_mode_with_stubbed_provider_responses():
                     }
                 ),
                 (
-                    "Retrieval works by selecting relevant excerpts from repository "
-                    "resources and answering from that grounded context."
+                    "Retrieval works by chunking resources, selecting relevant "
+                    "excerpts, and answering from that grounded context."
                 ),
             ]
         ),

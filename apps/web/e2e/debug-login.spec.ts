@@ -7,7 +7,7 @@ test('debug login flow', async ({ page }) => {
 
   console.log('1. 导航到登录页...');
   await page.goto(`${baseUrl}/auth`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(2000);
   
   console.log('2. 当前 URL:', page.url());

@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - architecture
   - modules
 description: 以 governance 为严格参考模块，分批将其余 feature 包收敛到统一公开结构；本计划不覆盖内部 server-first 目录迁移
@@ -10,6 +10,8 @@ updated: 2026-07-07T00:30:00+08:00
 ---
 
 # Feature Reference Module Rollout
+
+> 归档结论（2026-07-15）：全部 feature 的公开 seam 已完成收敛；全量 lint、typecheck、test、governance 与 Web E2E 当前验证通过。内部 `server/*` 结构治理继续由独立计划负责。
 
 ## 目标
 
