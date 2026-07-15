@@ -176,6 +176,7 @@ export interface CreateTaskTemplateInput extends CreateTaskTemplateReq {
 export type CreateTaskTemplateRes = {
   template: TaskTemplateClientDTO;
   instanceCount: number;
+  todayInstanceCreated: boolean;
 };
 
 export const UpdateTaskTemplateSchema = z.object({

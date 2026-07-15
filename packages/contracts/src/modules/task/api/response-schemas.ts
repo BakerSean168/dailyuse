@@ -58,6 +58,12 @@ export const TaskTemplateResponseSchema = z.object({
   completionRate: z.number(),
 });
 
+export const CreateTaskTemplateResponseSchema = z.object({
+  template: TaskTemplateResponseSchema,
+  instanceCount: z.number().int().nonnegative(),
+  todayInstanceCreated: z.boolean(),
+});
+
 export const TaskTemplateListResponseSchema = z.object({
   templates: z.array(TaskTemplateResponseSchema),
   total: z.number(),

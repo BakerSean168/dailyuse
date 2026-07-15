@@ -80,7 +80,7 @@ describe('TaskTemplateController', () => {
 
     it('should call createTemplate use case with parsed data', async () => {
       (useCases.createTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 0 }),
+        ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 0, todayInstanceCreated: false }),
       );
 
       const result = await controller.createTemplate(VALID_CREATE_INPUT, ctx);
@@ -93,16 +93,20 @@ describe('TaskTemplateController', () => {
       expect(args.importance).toBe('Moderate');
     });
 
-    it('should unwrap ok result to return template DTO', async () => {
+    it('should preserve generated-instance feedback in the transport response', async () => {
       (useCases.createTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 5 }),
+        ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 5, todayInstanceCreated: true }),
       );
 
       const result = await controller.createTemplate(VALID_CREATE_INPUT, ctx);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.data).toBe(FAKE_TEMPLATE_DTO);
+        expect(result.data).toEqual({
+          template: FAKE_TEMPLATE_DTO,
+          instanceCount: 5,
+          todayInstanceCreated: true,
+        });
       }
     });
 

@@ -26,9 +26,21 @@ test.describe('Task Template CRUD Operations', () => {
   test('should create a new task template', async ({ page }) => {
     const templateTitle = `E2E Task Template ${Date.now()}`;
 
-    await createTaskTemplate(page, templateTitle);
+    const creation = await createTaskTemplate(page, templateTitle);
 
     await expect(taskCardByTitle(page, templateTitle)).toBeVisible();
+    await expect(taskCardByTitle(page, templateTitle)).toContainText(
+      /优先级\s+\d+\/100|Priority\s+\d+\/100/i,
+    );
+    expect(creation.instanceCount).toBeGreaterThanOrEqual(0);
+    expect(typeof creation.todayInstanceCreated).toBe('boolean');
+    await expect(
+      page.getByText(
+        creation.todayInstanceCreated
+          ? /已生成今日任务实例|today's task instance generated/i
+          : /今日没有生成任务实例|no task instance was generated for today/i,
+      ),
+    ).toBeVisible();
   });
 
   test('should display task template list', async ({ page }) => {
@@ -203,11 +215,21 @@ async function createTaskTemplate(page: Page, title: string) {
       `Task template create failed: ${createResponse.status()} ${body.slice(0, 500)}`,
     );
   }
+  const responseBody = (await createResponse.json()) as {
+    data?: { instanceCount?: number; todayInstanceCreated?: boolean };
+    instanceCount?: number;
+    todayInstanceCreated?: boolean;
+  };
+  const creation = responseBody.data ?? responseBody;
 
   await expect(page.getByTestId('task-template-dialog')).toBeHidden({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
   await expect(taskCardByTitle(page, title)).toBeVisible();
+  return {
+    instanceCount: creation.instanceCount ?? 0,
+    todayInstanceCreated: creation.todayInstanceCreated ?? false,
+  };
 }
 
 function taskTitleInput(page: Page): Locator {

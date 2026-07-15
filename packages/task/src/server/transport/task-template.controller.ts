@@ -20,6 +20,7 @@ import {
 } from '@dailyuse/contracts/task';
 import type {
   TaskTemplateClientDTO,
+  CreateTaskTemplateRes,
   TaskInstanceClientDTO,
   CreateTaskTemplateInput,
   ListTaskTemplateFilters,
@@ -93,7 +94,7 @@ export class TaskTemplateController {
    * Create new task template (with Zod validation)
    * Identity is injected from Context, not from request payload
    */
-  async createTemplate(input: unknown, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
+  async createTemplate(input: unknown, ctx: Context): Promise<Result<CreateTaskTemplateRes>> {
     const parsed = CreateTaskTemplateSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -123,10 +124,10 @@ export class TaskTemplateController {
     const result = await this.useCases.createTemplate(createInput);
 
     if (!isOk(result)) {
-      return result as Result<TaskTemplateClientDTO>;
+      return result;
     }
 
-    return ok(result.data.template);
+    return ok(result.data);
   }
 
   /**

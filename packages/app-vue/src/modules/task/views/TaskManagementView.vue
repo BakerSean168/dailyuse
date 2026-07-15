@@ -413,7 +413,6 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
   });
   if (result) {
     showCreateDialog.value = false;
-    toast.success(t('task.management.createSuccess'));
     await refreshTaskManagement();
   }
 }
@@ -445,7 +444,6 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
   if (result) {
     showEditDialog.value = false;
     editViewModel.value = null;
-    toast.success(t('task.management.editSuccess'));
     await refreshTaskManagement();
   }
 }

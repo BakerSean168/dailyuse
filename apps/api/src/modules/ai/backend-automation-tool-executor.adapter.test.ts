@@ -124,6 +124,7 @@ describe('BackendAutomationToolExecutorAdapter', () => {
           name: 'Review Agent executor progress',
         },
         instanceCount: 0,
+        todayInstanceCreated: false,
       }),
     );
     mocks.createReminderTemplate.mockResolvedValue(

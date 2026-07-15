@@ -60,7 +60,11 @@
               <!-- Priority Score Chip - Story 2.4 -->
               <Badge :class="getPriorityBadgeClass(template.priority ?? 0)" class="text-xs">
                 <Flame class="h-3 w-3 mr-1" />
-                {{ Math.round(template.priority ?? 0) }}/100
+                {{
+                  t('task.templateCard.priorityScore', {
+                    score: Math.round(template.priority ?? 0),
+                  })
+                }}
               </Badge>
             </div>
           </div>

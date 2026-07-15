@@ -12,6 +12,7 @@ import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
   CreateTaskTemplateReq,
+  CreateTaskTemplateRes,
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
@@ -22,7 +23,7 @@ import type {
 export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
-  async createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>> {
+  async createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<CreateTaskTemplateRes>> {
     return this.ipcClient.invoke(TaskChannels.TEMPLATE_CREATE, request);
   }
 

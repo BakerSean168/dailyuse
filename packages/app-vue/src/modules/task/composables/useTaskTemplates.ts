@@ -140,10 +140,21 @@ export function useTaskTemplates() {
         'task.error.createFailed',
       );
       if (result.ok) {
-        const dto = result.data.toDTO();
+        const dto = result.data.template.toDTO();
         store.addTemplate(dto);
-        toast.success(t('task.error.createSuccess'));
-        return dto;
+        toast.success(
+          t(
+            result.data.todayInstanceCreated
+              ? 'task.error.createTemplateWithTodayInstanceSuccess'
+              : 'task.error.createTemplateWithoutTodayInstanceSuccess',
+            { count: result.data.instanceCount },
+          ),
+        );
+        return {
+          template: dto,
+          instanceCount: result.data.instanceCount,
+          todayInstanceCreated: result.data.todayInstanceCreated,
+        };
       }
       return null;
     } finally {
