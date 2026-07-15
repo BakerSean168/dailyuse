@@ -260,6 +260,7 @@
         <Button
           variant="ghost"
           size="icon"
+          :aria-label="t('task.templateCard.locateInGraph')"
           class="h-8 w-8"
           :title="t('task.templateCard.locateInGraph')"
           @click.stop="handleLocateGraph"

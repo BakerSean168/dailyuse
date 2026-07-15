@@ -36,6 +36,7 @@
         <Button
           variant="ghost"
           size="icon"
+          :aria-label="t('common.close')"
           class="shrink-0 h-5 w-5 text-muted-foreground hover:text-foreground"
           @click.stop="$emit('close', notification.id)"
         >
@@ -47,9 +48,12 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { X } from '@lucide/vue';
 import type { NotificationItem } from './types';
+
+const { t } = useI18n();
 
 interface Props {
   notifications: NotificationItem[];

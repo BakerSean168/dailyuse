@@ -36,7 +36,13 @@
         <!-- 重置布局按钮 -->
         <Tooltip v-if="hasCustomLayout">
           <TooltipTrigger as-child>
-            <Button variant="ghost" size="icon" class="ml-2 h-8 w-8" @click="resetLayout">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="ml-2 h-8 w-8"
+              :aria-label="t('goal.dag.resetLayout')"
+              @click="resetLayout"
+            >
               <RefreshCw class="h-4 w-4" />
             </Button>
           </TooltipTrigger>
@@ -46,7 +52,13 @@
         <!-- 导出按钮 -->
         <Tooltip>
           <TooltipTrigger as-child>
-            <Button variant="ghost" size="icon" class="ml-2 h-8 w-8" @click="exportDialog?.open()">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="ml-2 h-8 w-8"
+              :aria-label="t('goal.dag.export')"
+              @click="exportDialog?.open()"
+            >
               <Download class="h-4 w-4" />
             </Button>
           </TooltipTrigger>
@@ -211,7 +223,17 @@ const aggregateView = ref<GetGoalAggregateRes | null>(null);
 const isLoading = ref(false);
 
 // 加载错误状态
-const loadError = ref<string | null>(null);
+type LoadErrorState =
+  | { kind: 'translation'; key: string }
+  | { kind: 'result'; cause: unknown; fallbackKey: string };
+const loadErrorState = shallowRef<LoadErrorState | null>(null);
+const loadError = computed(() => {
+  const state = loadErrorState.value;
+  if (!state) return null;
+  return state.kind === 'translation'
+    ? t(state.key)
+    : getGoalDagErrorMessage(state.cause, state.fallbackKey);
+});
 const isRetrying = ref(false);
 
 // 视口同步相关状态
@@ -682,20 +704,24 @@ const updateViewport = (viewport: { zoom: number; center: [number, number] }) =>
 const loadGoalData = async () => {
   if (!props.goalId) return;
 
-  loadError.value = null;
+  loadErrorState.value = null;
   isLoading.value = true;
   aggregateView.value = null;
   try {
     const result = await getGoalAggregateView(props.goalId);
     if (!result) {
-      loadError.value = t('goal.dag.loadDataFailed');
+      loadErrorState.value = { kind: 'translation', key: 'goal.dag.loadDataFailed' };
       return;
     }
 
     aggregateView.value = result;
   } catch (error) {
     console.error('Failed to load goal aggregate view:', error);
-    loadError.value = getGoalDagErrorMessage(error, 'goal.dag.loadDataFailed');
+    loadErrorState.value = {
+      kind: 'result',
+      cause: error,
+      fallbackKey: 'goal.dag.loadDataFailed',
+    };
   } finally {
     isLoading.value = false;
   }

@@ -69,6 +69,7 @@
             <Button
               variant="ghost"
               size="icon"
+              :aria-label="t('aiAssistant.chatPage.sidebar.open')"
               class="h-8 w-8"
               :title="t('aiAssistant.chatPage.sidebar.open')"
               data-testid="ai-mobile-sidebar-toggle"
@@ -80,6 +81,11 @@
               v-if="hasWorkflowContext"
               variant="ghost"
               size="icon"
+              :aria-label="
+                contextPanelOpen
+                  ? t('aiAssistant.chatPage.context.hide')
+                  : t('aiAssistant.chatPage.context.show')
+              "
               class="h-8 w-8"
               :title="
                 contextPanelOpen
@@ -94,6 +100,7 @@
             <Button
               variant="ghost"
               size="icon"
+              :aria-label="t('aiAssistant.dialogs.chat.newConversation')"
               class="h-8 w-8"
               :title="t('aiAssistant.dialogs.chat.newConversation')"
               @click="startNewConversation()"

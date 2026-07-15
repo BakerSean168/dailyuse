@@ -61,6 +61,7 @@ const { t } = useI18n();
     <Button
       variant="ghost"
       size="icon"
+      :aria-label="t('common.expand')"
       class="h-8 w-8"
       :title="t('common.expand')"
       data-testid="module-sidebar-expand"

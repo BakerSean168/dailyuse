@@ -7,7 +7,14 @@
         {{ backlinks.length }}
       </Badge>
       <div class="flex-1" />
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="refresh" :disabled="loading">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          :aria-label="t('common.refresh')"
+          :disabled="loading"
+          @click="refresh"
+        >
         <RotateCw :class="['h-4 w-4', loading && 'animate-spin']" />
       </Button>
     </CardHeader>
@@ -68,7 +75,8 @@
 
             <Button
               variant="ghost"
-              size="icon"
+          size="icon"
+          :aria-label="t('menu.open')"
               class="h-6 w-6"
               @click.stop="navigateToSource(backlink)"
             >

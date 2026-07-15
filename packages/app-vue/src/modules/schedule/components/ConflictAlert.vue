@@ -36,6 +36,7 @@
       v-if="dismissible"
       variant="ghost"
       size="icon"
+      :aria-label="t('common.close')"
       class="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-foreground"
       @click="handleDismiss"
     >

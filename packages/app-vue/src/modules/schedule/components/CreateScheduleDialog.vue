@@ -334,7 +334,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // ── Time picker options ────────────────────────────────────────────────
 const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
@@ -352,7 +352,11 @@ function formatDateToYMD(date: Date): string {
 function formatDisplayDate(dateStr: string): string {
   if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return d.toLocaleDateString(locale.value, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 function parseToDate(dateStr: string): Date | undefined {

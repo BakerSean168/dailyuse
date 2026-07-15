@@ -62,7 +62,13 @@
         <!-- 次操作 ⋯：编辑 + 危险区删除（§0.1） -->
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="h-8 w-8" data-testid="goal-detail-more">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :aria-label="t('common.more')"
+              data-testid="goal-detail-more"
+            >
               <MoreHorizontal class="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -198,7 +204,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-xs text-muted-foreground">{{
-                    new Date(record.createdAt).toLocaleDateString()
+                    formatDate(record.createdAt)
                   }}</span>
                   <component
                     :is="expandedRecordId === record.id ? ChevronUp : ChevronDown"
@@ -224,7 +230,7 @@
                 </div>
                 <div>
                   <span class="text-muted-foreground">{{ t('goal.detail.recordTime') }}</span>
-                  <p class="font-medium">{{ new Date(record.createdAt).toLocaleString() }}</p>
+                  <p class="font-medium">{{ formatDateTime(record.createdAt) }}</p>
                 </div>
               </div>
             </div>
@@ -261,7 +267,7 @@
                   </p>
                 </div>
                 <span class="text-xs text-muted-foreground">{{
-                  new Date(review.reviewedAt).toLocaleDateString()
+                  formatDate(review.reviewedAt)
                 }}</span>
               </CardContent>
             </Card>
@@ -327,7 +333,7 @@ import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 const route = useRoute();
 const router = useRouter();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const goalId = route.params.id as string;
 
 const {
@@ -361,7 +367,13 @@ const ringDashOffset = computed(
 );
 
 function formatDate(value: number | null | undefined): string {
-  return value ? new Date(value).toLocaleDateString() : t('goal.detail.notSet');
+  return value
+    ? new Date(value).toLocaleDateString(locale.value)
+    : t('goal.detail.notSet');
+}
+
+function formatDateTime(value: number): string {
+  return new Date(value).toLocaleString(locale.value);
 }
 
 function openRecordDialog(keyResultId: string) {

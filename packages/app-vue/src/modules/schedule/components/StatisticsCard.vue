@@ -13,7 +13,13 @@
           <p class="text-xs text-muted-foreground">{{ t('schedule.statistics.subtitle') }}</p>
         </div>
       </div>
-      <Button variant="ghost" size="icon" :disabled="isLoading" @click="$emit('refresh')">
+      <Button
+        variant="ghost"
+        size="icon"
+        :aria-label="t('common.refresh')"
+        :disabled="isLoading"
+        @click="$emit('refresh')"
+      >
         <Loader2 v-if="isLoading" class="h-4 w-4 animate-spin" />
         <RotateCw v-else class="h-4 w-4" />
       </Button>

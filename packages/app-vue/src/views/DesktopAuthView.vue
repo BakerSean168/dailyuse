@@ -469,6 +469,7 @@ onMounted(() => {
           <Button
             variant="ghost"
             size="icon"
+            :aria-label="t('common.more')"
             class="h-7 w-7 rounded-md border border-white/[0.06] bg-white/[0.04] text-white/[0.55] hover:bg-white/[0.09] hover:text-white/[0.85] data-[state=open]:bg-white/10"
           >
             <Menu class="h-3.5 w-3.5" />
@@ -499,6 +500,7 @@ onMounted(() => {
       <Button
         variant="ghost"
         size="icon"
+        :aria-label="t('common.close')"
         class="h-7 w-7 rounded-md text-white/[0.55] hover:bg-white/[0.08] hover:text-white/90"
         @click="handleCloseWindow"
       >
@@ -579,6 +581,7 @@ onMounted(() => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          :aria-label="t('common.delete')"
                           class="h-6 w-6 rounded-md opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-red-400"
                           @click.stop="handleRemove(account.identityId)"
                         >
@@ -680,6 +683,7 @@ onMounted(() => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            :aria-label="t('common.delete')"
                             class="h-6 w-6 rounded-md opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-red-400"
                             @click.stop="handleRemove(account.identityId)"
                           >

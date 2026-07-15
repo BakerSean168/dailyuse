@@ -3,7 +3,13 @@
     <header
       class="z-10 flex h-14 shrink-0 items-center border-b bg-background/50 px-6 backdrop-blur-sm"
     >
-      <Button variant="ghost" size="icon" class="mr-3 h-8 w-8" @click="$router.back()">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="mr-3 h-8 w-8"
+        :aria-label="t('common.back')"
+        @click="$router.back()"
+      >
         <ArrowLeft class="h-4 w-4" />
       </Button>
       <h1 class="text-lg font-medium text-foreground">{{ t('task.depValidationDemo.title') }}</h1>

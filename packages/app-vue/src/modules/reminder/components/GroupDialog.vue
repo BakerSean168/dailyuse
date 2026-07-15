@@ -117,6 +117,7 @@
                         :key="icon.value"
                         variant="ghost"
                         size="icon"
+                        :aria-label="t('reminder.groupDialog.selectIcon')"
                         @click="formData.icon = icon.value"
                       >
                         <component :is="getIcon(icon.value)" class="h-5 w-5" />

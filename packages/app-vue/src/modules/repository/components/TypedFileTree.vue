@@ -44,7 +44,12 @@
               class="flex w-full items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
               @click="toggleGroup(group.key)"
             >
-              <Button variant="ghost" size="icon" class="h-5 w-5 shrink-0 p-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-5 w-5 shrink-0 p-0"
+                :aria-label="expandedGroups.has(group.key) ? t('common.collapse') : t('common.expand')"
+              >
                 <ChevronRight
                   class="h-4 w-4 transition-transform"
                   :class="{ 'rotate-90': expandedGroups.has(group.key) }"

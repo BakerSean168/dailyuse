@@ -15,7 +15,12 @@
             {{ t('notification.action.markAllRead') }}
           </Button>
           <SheetClose as-child>
-            <Button variant="ghost" size="icon" data-testid="notification-drawer-close">
+            <Button
+              variant="ghost"
+              size="icon"
+              :aria-label="t('common.close')"
+              data-testid="notification-drawer-close"
+            >
               <X class="h-4 w-4" />
             </Button>
           </SheetClose>

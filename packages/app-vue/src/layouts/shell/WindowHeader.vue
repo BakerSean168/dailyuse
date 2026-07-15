@@ -111,6 +111,12 @@ function badgeFor(capsule: ModuleCapsule): number {
   return props.badgeCounts?.[capsule.id] ?? 0;
 }
 
+function capsuleAccessibleLabel(capsule: ModuleCapsule): string {
+  const name = t(capsule.title);
+  const count = badgeFor(capsule);
+  return count > 0 ? t('shell.moduleWithCount', { name, count }) : name;
+}
+
 function onDocumentPointerDown(event: MouseEvent): void {
   if (!previewOpenId.value) return;
   const target = event.target as Node | null;
@@ -146,6 +152,7 @@ onBeforeUnmount(() => {
         type="button"
         class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         :title="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
+        :aria-label="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
         @click="emit('toggle-sidebar')"
       >
         <PanelLeftClose v-if="!sidebarCollapsed" class="h-4 w-4" />
@@ -156,6 +163,7 @@ onBeforeUnmount(() => {
           type="button"
           class="rounded p-1 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
           :title="t('shell.back')"
+          :aria-label="t('shell.back')"
           @click="emit('go-back')"
         >
           <ArrowLeft class="h-3.5 w-3.5" />
@@ -164,6 +172,7 @@ onBeforeUnmount(() => {
           type="button"
           class="rounded p-1 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
           :title="t('shell.forward')"
+          :aria-label="t('shell.forward')"
           @click="emit('go-forward')"
         >
           <ArrowRight class="h-3.5 w-3.5" />
@@ -186,6 +195,7 @@ onBeforeUnmount(() => {
               : 'border-transparent text-muted-foreground hover:bg-accent hover:text-foreground'
           "
           :title="t(capsule.title)"
+          :aria-label="capsuleAccessibleLabel(capsule)"
           @click="togglePreview(capsule.id)"
         >
           <component :is="capsule.icon" class="h-3.5 w-3.5" />
@@ -202,6 +212,7 @@ onBeforeUnmount(() => {
           v-if="previewOpenId === capsule.id"
           class="absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 rounded-xl border border-border bg-popover p-3.5 text-popover-foreground shadow-2xl"
           role="dialog"
+          :aria-label="t(capsule.title)"
           :data-testid="`capsule-preview-${capsule.id}`"
         >
           <NotificationCapsulePreview
@@ -255,6 +266,7 @@ onBeforeUnmount(() => {
         type="button"
         class="flex items-center gap-1.5 rounded-full border border-border/40 bg-muted/40 px-2.5 py-1 font-mono text-[10px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
         :title="t('shell.openSchedule')"
+        :aria-label="t('shell.openSchedule')"
         @click="emit('open-schedule')"
       >
         <Calendar class="h-3 w-3" />
@@ -267,6 +279,7 @@ onBeforeUnmount(() => {
           class="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           :disabled="windowControls && !windowControls.isMinimizable"
           :title="t('shell.window.minimize')"
+          :aria-label="t('shell.window.minimize')"
           @click="emit('window-minimize')"
         >
           <Minus class="h-3.5 w-3.5" />
@@ -276,6 +289,7 @@ onBeforeUnmount(() => {
           class="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           :disabled="windowControls && !windowControls.isMaximizable"
           :title="t('shell.window.maximize')"
+          :aria-label="t('shell.window.maximize')"
           @click="emit('window-toggle-maximize')"
         >
           <Copy v-if="windowControls?.isMaximized" class="h-3 w-3" />
@@ -286,6 +300,7 @@ onBeforeUnmount(() => {
           class="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
           :disabled="windowControls && !windowControls.isClosable"
           :title="t('shell.window.close')"
+          :aria-label="t('shell.window.close')"
           @click="emit('window-close')"
         >
           <X class="h-3.5 w-3.5" />
@@ -303,4 +318,3 @@ onBeforeUnmount(() => {
   -webkit-app-region: no-drag;
 }
 </style>
-

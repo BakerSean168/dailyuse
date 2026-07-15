@@ -20,4 +20,10 @@ describe('Task single-page architecture', () => {
     expect(gridSource).not.toContain('create-first-task-template-button');
     expect(gridSource).not.toContain("'create-template'");
   });
+
+  it('uses one batch operation and one summary toast for delete-all feedback', () => {
+    expect(managementSource).toContain('await deleteTemplates(');
+    expect(managementSource).toContain("toast.success(t('task.management.allDeleted'))");
+    expect(managementSource).not.toContain('for (const template of templates.value)');
+  });
 });

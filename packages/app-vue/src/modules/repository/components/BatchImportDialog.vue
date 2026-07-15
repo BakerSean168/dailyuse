@@ -80,6 +80,7 @@
                 <Button
                   variant="ghost"
                   size="icon"
+                  :aria-label="t('common.delete')"
                   class="h-5 w-5 shrink-0"
                   @click="removeFile(idx)"
                 >

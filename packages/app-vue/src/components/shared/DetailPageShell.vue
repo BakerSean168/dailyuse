@@ -9,6 +9,7 @@
  * 适用：目标详情、KR 详情、复盘、任务详情、规则详情/编辑/历史。
  */
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { ArrowLeft } from '@lucide/vue';
 
@@ -21,6 +22,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const { t } = useI18n();
 
 function goBack() {
   if (props.backTo) {
@@ -39,6 +41,7 @@ function goBack() {
       <Button
         variant="ghost"
         size="icon"
+        :aria-label="t('common.back')"
         class="h-8 w-8 shrink-0"
         data-testid="detail-page-back"
         @click="goBack"

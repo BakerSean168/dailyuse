@@ -149,6 +149,7 @@ export default {
     back: 'Back',
     forward: 'Forward',
     moduleNav: 'Module navigation',
+    moduleWithCount: '{name}, {count} items',
     enterModule: 'Enter',
     previewPlaceholder: 'Preview coming soon.',
     preview: {
@@ -1699,7 +1700,19 @@ export default {
     },
     toolbar: {
       title: 'Markdown Editor',
+      headingMenu: 'Heading styles',
       heading: 'Heading {level}',
+      bold: 'Bold',
+      italic: 'Italic',
+      strikethrough: 'Strikethrough',
+      inlineCode: 'Inline code',
+      codeBlock: 'Code block',
+      unorderedList: 'Bulleted list',
+      orderedList: 'Numbered list',
+      taskList: 'Task list',
+      quote: 'Quote',
+      divider: 'Divider',
+      table: 'Table',
       column: 'Col',
       content: 'Content',
       insertLink: 'Insert link markdown',
@@ -3956,6 +3969,7 @@ export default {
 
     action: {
       complete: 'Mark Complete',
+      undoComplete: 'Undo completion',
       skip: 'Skip',
       start: 'Start',
     },

@@ -23,7 +23,13 @@
 
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <Button variant="ghost" size="icon" class="h-8 w-8" data-testid="task-more-actions">
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8"
+                :aria-label="t('common.more')"
+                data-testid="task-more-actions"
+              >
                 <MoreHorizontal class="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -222,6 +228,7 @@ const {
   createTemplate,
   updateTemplate,
   deleteTemplate,
+  deleteTemplates,
   activateTemplate,
   pauseTemplate,
   createDependency,
@@ -541,9 +548,9 @@ async function confirmDeleteAll() {
   if (deleteConfirmText.value !== 'DELETE') return;
   cancelDeleteAll();
 
-  for (const template of templates.value) {
-    await deleteTemplate(template.id);
-  }
+  const deleted = await deleteTemplates(templates.value.map((template) => template.id));
+  if (!deleted) return;
+
   await refreshTaskManagement();
   toast.success(t('task.management.allDeleted'));
 }

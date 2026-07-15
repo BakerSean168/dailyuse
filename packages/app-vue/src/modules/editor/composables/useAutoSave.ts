@@ -5,7 +5,7 @@
  * 自动保存、冲突检测、保存状态管理
  */
 
-import { ref, onUnmounted } from 'vue';
+import { computed, onUnmounted, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 
@@ -28,7 +28,16 @@ export function useAutoSave(config: AutoSaveConfig) {
   const lastSaved = ref<Date | null>(null);
   const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error' | 'conflict'>('idle');
   const autoSaveEnabled = ref(false);
-  const saveError = ref<string | null>(null);
+  type SaveErrorState =
+    | { kind: 'translation'; key: string }
+    | { kind: 'result'; cause: unknown; fallbackKey: string };
+  const saveErrorState = shallowRef<SaveErrorState | null>(null);
+  const saveError = computed(() => {
+    const state = saveErrorState.value;
+    if (!state) return null;
+    if (state.kind === 'translation') return t(state.key);
+    return translateResultError(state.cause, t, { fallbackKey: state.fallbackKey });
+  });
 
   let autoSaveTimer: number | null = null;
   const defaultInterval = config.interval || 30000; // 默认 30 秒
@@ -40,13 +49,16 @@ export function useAutoSave(config: AutoSaveConfig) {
     try {
       isSaving.value = true;
       saveStatus.value = 'saving';
-      saveError.value = null;
+      saveErrorState.value = null;
 
       const result = await config.saveFn(config.content());
 
       if (result.conflict) {
         saveStatus.value = 'conflict';
-        saveError.value = t('editor.autoSave.conflictDetected');
+        saveErrorState.value = {
+          kind: 'translation',
+          key: 'editor.autoSave.conflictDetected',
+        };
         return false;
       }
 
@@ -65,14 +77,16 @@ export function useAutoSave(config: AutoSaveConfig) {
       }
 
       saveStatus.value = 'error';
-      saveError.value = t('editor.autoSave.saveFailed');
+      saveErrorState.value = { kind: 'translation', key: 'editor.autoSave.saveFailed' };
       return false;
     } catch (error) {
       console.error('Save error:', error);
       saveStatus.value = 'error';
-      saveError.value = translateResultError(error, t, {
+      saveErrorState.value = {
+        kind: 'result',
+        cause: error,
         fallbackKey: 'editor.autoSave.saveError',
-      });
+      };
       return false;
     } finally {
       isSaving.value = false;
@@ -101,7 +115,7 @@ export function useAutoSave(config: AutoSaveConfig) {
 
   function resetSaveStatus() {
     saveStatus.value = 'idle';
-    saveError.value = null;
+    saveErrorState.value = null;
   }
 
   // ==================== Lifecycle ====================

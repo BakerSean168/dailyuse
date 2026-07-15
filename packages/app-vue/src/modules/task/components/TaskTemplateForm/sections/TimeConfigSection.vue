@@ -211,7 +211,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { TaskTimeType } from '@dailyuse/contracts/task';
 import type { TaskTimeConfigDTO } from '@dailyuse/contracts/task';
@@ -240,7 +240,7 @@ import {
 import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = withDefaults(
   defineProps<{
@@ -266,7 +266,17 @@ const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2,
 // ── Form data ──────────────────────────────────────────────────────────
 const timeType = ref<TaskTimeType>(TaskTimeType.AllDay);
 const startDate = ref<string>(''); // YYYY-MM-DD
-const validationError = ref<string>('');
+type ValidationErrorState =
+  | { kind: 'translation'; key: string }
+  | { kind: 'result'; cause: unknown };
+const validationErrorState = shallowRef<ValidationErrorState | null>(null);
+const validationError = computed(() => {
+  const state = validationErrorState.value;
+  if (!state) return '';
+  return state.kind === 'translation'
+    ? t(state.key)
+    : getTimeConfigErrorMessage(state.cause);
+});
 
 // TimePoint: split into hour + minute
 const timePointHour = ref<string>('00');
@@ -286,7 +296,11 @@ const timeRangeEndMinute = ref<string>('00');
 function formatDisplayDate(dateStr: string): string {
   if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return d.toLocaleDateString(locale.value, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 /** Convert a YYYY-MM-DD string to a Date for Calendar :selected */
@@ -403,7 +417,7 @@ const initializeFormData = () => {
 
 const handleDateChange = () => {
   try {
-    validationError.value = '';
+    validationErrorState.value = null;
     const parsedDate = parseDateInput(startDate.value);
 
     const updated: TaskTemplateViewModel = {
@@ -417,7 +431,7 @@ const handleDateChange = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新日期失败:', error);
-    validationError.value = getTimeConfigErrorMessage(error);
+    validationErrorState.value = { kind: 'result', cause: error };
     emit('update:validation', false);
   }
 };
@@ -427,7 +441,7 @@ const handleDateChange = () => {
  */
 const rebuildTimePoint = () => {
   try {
-    validationError.value = '';
+    validationErrorState.value = null;
     const parsedTime = combineTimeParts(timePointHour.value, timePointMinute.value);
     const parsedStartDate = parseDateInput(startDate.value);
 
@@ -444,7 +458,7 @@ const rebuildTimePoint = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新时间点失败:', error);
-    validationError.value = getTimeConfigErrorMessage(error);
+    validationErrorState.value = { kind: 'result', cause: error };
     emit('update:validation', false);
   }
 };
@@ -454,13 +468,16 @@ const rebuildTimePoint = () => {
  */
 const rebuildTimeRange = () => {
   try {
-    validationError.value = '';
+    validationErrorState.value = null;
     const parsedStart = combineTimeParts(timeRangeStartHour.value, timeRangeStartMinute.value);
     const parsedEnd = combineTimeParts(timeRangeEndHour.value, timeRangeEndMinute.value);
     const parsedStartDate = parseDateInput(startDate.value);
 
     if (parsedEnd <= parsedStart) {
-      validationError.value = t('task.timeConfig.endBeforeStart');
+      validationErrorState.value = {
+        kind: 'translation',
+        key: 'task.timeConfig.endBeforeStart',
+      };
       emit('update:validation', false);
       return;
     }
@@ -481,7 +498,7 @@ const rebuildTimeRange = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新时间段失败:', error);
-    validationError.value = getTimeConfigErrorMessage(error);
+    validationErrorState.value = { kind: 'result', cause: error };
     emit('update:validation', false);
   }
 };
@@ -491,7 +508,7 @@ const rebuildTimeRange = () => {
  */
 const handleTimeTypeChange = () => {
   try {
-    validationError.value = '';
+    validationErrorState.value = null;
 
     if (timeType.value === TaskTimeType.TimePoint) {
       timePointHour.value = '00';
@@ -526,7 +543,7 @@ const handleTimeTypeChange = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新时间类型失败:', error);
-    validationError.value = getTimeConfigErrorMessage(error);
+    validationErrorState.value = { kind: 'result', cause: error };
     emit('update:validation', false);
   }
 };

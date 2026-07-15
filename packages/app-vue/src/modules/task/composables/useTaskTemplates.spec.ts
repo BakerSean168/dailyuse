@@ -259,6 +259,43 @@ describe('useTaskTemplates', () => {
     expect(useTaskStore().pagination.total).toBe(0);
   });
 
+  it('deletes a batch without emitting per-template success feedback', async () => {
+    const first = createTemplate({ id: 'template-1' as TaskTemplateId });
+    const second = createTemplate({ id: 'template-2' as TaskTemplateId });
+    const { composable, service } = mountComposable({
+      deleteTemplate: vi.fn().mockResolvedValue(ok(undefined)),
+    });
+    useTaskStore().setTemplates([first, second], 2);
+
+    await expect(composable.deleteTemplates([first.id, second.id])).resolves.toBe(true);
+
+    expect(service.deleteTemplate).toHaveBeenNthCalledWith(1, first.id);
+    expect(service.deleteTemplate).toHaveBeenNthCalledWith(2, second.id);
+    expect(useTaskStore().templates).toEqual([]);
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('stops a batch delete after the first failure and emits no success feedback', async () => {
+    const first = createTemplate({ id: 'template-1' as TaskTemplateId });
+    const second = createTemplate({ id: 'template-2' as TaskTemplateId });
+    const { composable, service } = mountComposable({
+      deleteTemplate: vi
+        .fn()
+        .mockResolvedValueOnce(ok(undefined))
+        .mockResolvedValueOnce(
+          fail({ code: 'VALIDATION_ERROR', message: 'Cannot delete template' }),
+        ),
+    });
+    useTaskStore().setTemplates([first, second], 2);
+
+    await expect(composable.deleteTemplates([first.id, second.id])).resolves.toBe(false);
+
+    expect(service.deleteTemplate).toHaveBeenCalledTimes(2);
+    expect(useTaskStore().templates).toEqual([second]);
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledTimes(1);
+  });
+
   it("reports when template creation does not generate today's instance", async () => {
     const template = createTemplate();
     const { composable } = mountComposable({

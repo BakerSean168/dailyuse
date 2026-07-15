@@ -10,7 +10,12 @@
               : t('goal.cards.motivateCard.feasibility')
           }}
         </div>
-        <Button variant="ghost" size="icon" @click.stop="refreshContent">
+        <Button
+          variant="ghost"
+          size="icon"
+          :aria-label="t('common.refresh')"
+          @click.stop="refreshContent"
+        >
           <RefreshCw class="h-4 w-4" />
         </Button>
       </CardTitle>

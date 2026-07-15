@@ -198,6 +198,26 @@ export function useTaskTemplates() {
     }
   }
 
+  async function deleteTemplates(ids: readonly string[]) {
+    if (ids.length === 0) return true;
+
+    savingId.value = 'batch';
+    store.setError(null);
+    try {
+      for (const id of ids) {
+        const result = await executeTaskOperation(
+          () => service.deleteTemplate(id),
+          'task.error.deleteFailed',
+        );
+        if (!result.ok) return false;
+        store.removeTemplate(id);
+      }
+      return true;
+    } finally {
+      savingId.value = null;
+    }
+  }
+
   async function activateTemplate(id: string) {
     const result = await executeTaskOperation(
       () => service.activateTemplate(id),
@@ -245,6 +265,7 @@ export function useTaskTemplates() {
     createTemplate,
     updateTemplate,
     deleteTemplate,
+    deleteTemplates,
     activateTemplate,
     pauseTemplate,
     archiveTemplate,

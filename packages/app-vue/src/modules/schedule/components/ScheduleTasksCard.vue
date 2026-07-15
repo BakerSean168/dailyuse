@@ -69,6 +69,7 @@
               <Button
                 variant="ghost"
                 size="icon"
+                :aria-label="t('menu.viewDetails')"
                 class="h-7 w-7"
                 @click="emit('view-detail', task.id)"
               >
