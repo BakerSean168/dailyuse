@@ -36,6 +36,72 @@ test.describe('Reminder Template CRUD Operations', () => {
     await expect(page.getByTestId('create-reminder-template-button')).toBeVisible();
   });
 
+  test('[P0] keeps one reminder workspace and filter state across panel layouts', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    const toolbar = page.getByTestId('reminder-page-toolbar');
+    const sidebar = page.getByTestId('reminder-group-sidebar');
+    const content = page.getByTestId('reminder-content');
+    const searchInput = page.getByTestId('reminder-search-input');
+    const scrollHost = page.getByTestId('reminder-scroll-host');
+    const primaryCreate = page.locator(
+      '[data-primary-action="create-reminder-template"]:visible',
+    );
+
+    await expect(toolbar).toBeVisible();
+    await expect(primaryCreate).toHaveCount(1);
+    await expectElementToFit(toolbar);
+    await searchInput.fill('stable-reminder-filter');
+    await searchInput.focus();
+    await markDomIdentity(toolbar, 'toolbar');
+    await markDomIdentity(sidebar, 'sidebar');
+    await markDomIdentity(content, 'content');
+    await scrollHost.evaluate((element) => {
+      const filler = document.createElement('div');
+      filler.style.height = '1200px';
+      filler.dataset.layoutProbe = 'filler';
+      element.appendChild(filler);
+      element.scrollTop = 96;
+    });
+
+    await dragBusinessPanel(page, 'wider');
+    await assertStableReminderWorkspace({
+      toolbar,
+      sidebar,
+      content,
+      searchInput,
+      scrollHost,
+      primaryCreate,
+    });
+    await expect(searchInput).toBeFocused();
+
+    await dragBusinessPanel(page, 'narrower');
+    await assertStableReminderWorkspace({
+      toolbar,
+      sidebar,
+      content,
+      searchInput,
+      scrollHost,
+      primaryCreate,
+    });
+    await expect(searchInput).toBeFocused();
+
+    await page.getByTestId('business-panel-focus-toggle').click();
+    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'focus');
+    await assertStableReminderWorkspace({
+      toolbar,
+      sidebar,
+      content,
+      searchInput,
+      scrollHost,
+      primaryCreate,
+    });
+    await expectElementToFit(toolbar);
+    await expectElementToFit(page.getByTestId('reminder-linear-view'));
+  });
+
   test('should edit an existing reminder template', async ({ page }) => {
     const originalTitle = `E2E Edit Reminder ${Date.now()}`;
     const updatedTitle = `${originalTitle} Updated`;
@@ -88,16 +154,63 @@ test.describe('Reminder Template CRUD Operations', () => {
 
 async function openCreateReminderDialog(page: Page) {
   const primaryCreateButton = page.getByTestId('create-reminder-template-button');
-
-  if (await primaryCreateButton.isVisible()) {
-    await primaryCreateButton.click();
-  } else {
-    await page.getByTestId('create-first-reminder-template-button').click();
-  }
+  await primaryCreateButton.click();
 
   await expect(reminderDialog(page)).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
   });
+}
+
+async function markDomIdentity(locator: Locator, value: string): Promise<void> {
+  await locator.evaluate((element, marker) => {
+    element.setAttribute('data-instance-probe', marker);
+  }, value);
+}
+
+async function assertStableReminderWorkspace({
+  toolbar,
+  sidebar,
+  content,
+  searchInput,
+  scrollHost,
+  primaryCreate,
+}: {
+  toolbar: Locator;
+  sidebar: Locator;
+  content: Locator;
+  searchInput: Locator;
+  scrollHost: Locator;
+  primaryCreate: Locator;
+}): Promise<void> {
+  await expect(primaryCreate).toHaveCount(1);
+  await expect(toolbar).toHaveAttribute('data-instance-probe', 'toolbar');
+  await expect(sidebar).toHaveAttribute('data-instance-probe', 'sidebar');
+  await expect(content).toHaveAttribute('data-instance-probe', 'content');
+  await expect(searchInput).toHaveValue('stable-reminder-filter');
+  expect(await scrollHost.evaluate((element) => element.scrollTop)).toBe(96);
+}
+
+async function expectElementToFit(locator: Locator): Promise<void> {
+  const metrics = await locator.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+}
+
+async function dragBusinessPanel(page: Page, direction: 'wider' | 'narrower'): Promise<void> {
+  const resizer = page.getByTestId('business-panel-resizer');
+  await expect(resizer).toBeVisible();
+  const box = await resizer.boundingBox();
+  if (!box) throw new Error('business-panel-resizer has no bounding box');
+
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+  const endX = direction === 'wider' ? Math.max(40, startX - 160) : startX + 120;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(endX, startY, { steps: 12 });
+  await page.mouse.up();
 }
 
 async function createReminderTemplate(page: Page, title: string) {

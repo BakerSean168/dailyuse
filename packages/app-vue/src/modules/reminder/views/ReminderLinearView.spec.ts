@@ -388,17 +388,11 @@ describe('ReminderLinearView', () => {
     expect(wrapper.text()).toContain('All reminders are paused by the master switch.');
     expect(wrapper.text()).toContain('1 reminders paused by master switch');
 
-    const clickableGroups = wrapper
-      .findAll('div')
-      .filter(
-        (node) =>
-          node.attributes('class')?.includes('cursor-pointer') &&
-          node.text().includes('Focus') &&
-          node.text().includes('1 reminders paused by master switch'),
-      );
-    expect(clickableGroups.length).toBeGreaterThan(0);
+    const groupButton = wrapper.get(`[data-testid="reminder-group-${groupsRef.value[0]?.id}"]`);
+    expect(groupButton.text()).toContain('Focus');
+    expect(groupButton.text()).toContain('1 reminders paused by master switch');
 
-    await clickableGroups[0].trigger('click');
+    await groupButton.trigger('click');
     await nextTick();
 
     expect(wrapper.text()).toContain('Group switch decides whether reminders run.');
