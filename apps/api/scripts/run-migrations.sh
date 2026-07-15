@@ -98,6 +98,12 @@ echo ""
 
 cd /app
 
+echo "   Preparing pgvector before Prisma schema reconciliation"
+echo "   Command: /app/node_modules/.bin/tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts"
+echo ""
+(cd /app/packages/database && /app/node_modules/.bin/tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts)
+echo ""
+
 has_prisma_migration_dirs() {
   [ -d "packages/database/prisma/migrations" ] || return 1
 

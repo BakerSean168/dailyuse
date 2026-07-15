@@ -9,6 +9,7 @@ function readWorkspaceFile(path: string): string {
 }
 
 function expectKnowledgeIndexOrder(source: string): void {
+  const pgvectorPrepareIndex = source.indexOf('prepare-ai-knowledge-index-pgvector.ts');
   const migrateIndex = Math.max(
     source.indexOf('prisma migrate'),
     source.indexOf("'migrate', 'deploy'"),
@@ -23,6 +24,8 @@ function expectKnowledgeIndexOrder(source: string): void {
   const smokeIndex = source.indexOf('verify-ai-knowledge-index.ts');
 
   expect(schemaIndex).toBeGreaterThanOrEqual(0);
+  expect(pgvectorPrepareIndex).toBeGreaterThanOrEqual(0);
+  expect(pgvectorPrepareIndex).toBeLessThan(schemaIndex);
   expect(schemaPushIndex).toBeGreaterThanOrEqual(0);
   expect(editorNaturalKeyIndex).toBeGreaterThanOrEqual(0);
   expect(editorNaturalKeyIndex).toBeLessThan(schemaPushIndex);
@@ -32,6 +35,14 @@ function expectKnowledgeIndexOrder(source: string): void {
 }
 
 describe('API production database startup chain', () => {
+  it('declares the bootstrap-managed vector column in Prisma schema reconciliation', () => {
+    const schema = readWorkspaceFile('packages/database/prisma/schema/ai.prisma');
+
+    expect(schema).toContain(
+      'retrievalVector Unsupported("vector(48)")? @map("retrieval_vector")',
+    );
+  });
+
   it('bootstraps and requires pgvector after schema initialization in the container entrypoint', () => {
     const script = readWorkspaceFile('apps/api/scripts/run-migrations.sh');
 

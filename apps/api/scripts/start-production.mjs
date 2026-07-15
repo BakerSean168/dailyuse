@@ -58,6 +58,12 @@ async function main() {
   resolveDatabaseUrl();
 
   console.log('[startup] Initializing database schema...');
+  console.log('[startup] Preparing pgvector before Prisma schema reconciliation...');
+  run(
+    'pnpm',
+    ['exec', 'tsx', './scripts/prepare-ai-knowledge-index-pgvector.ts'],
+    databaseRoot,
+  );
   if (hasMigrations()) {
     run(
       'pnpm',

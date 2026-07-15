@@ -245,26 +245,27 @@ model KnowledgeGenerationTask {
 }
 
 model AiKnowledgeIndexEntry {
-  id              String    @id
-  identityId      String    @map("identity_id")
-  repositoryId    String    @map("repository_id")
-  resourceId      String    @unique @map("resource_id")
-  resourcePath    String    @map("resource_path")
+  id              String                     @id
+  identityId      String                     @map("identity_id")
+  repositoryId    String                     @map("repository_id")
+  resourceId      String                     @unique @map("resource_id")
+  resourcePath    String                     @map("resource_path")
   title           String?
-  mimeType        String    @map("mime_type")
-  contentHash     String    @map("content_hash")
+  mimeType        String                     @map("mime_type")
+  contentHash     String                     @map("content_hash")
   status          String
-  summary         String?   @db.Text
-  keywords        Json      @default("[]")
+  summary         String?                    @db.Text
+  keywords        Json                       @default("[]")
   embedding       Json?
+  retrievalVector Unsupported("vector(48)")? @map("retrieval_vector")
   chunks          Json?
-  metadata        Json      @default("{}")
-  error           String?   @db.Text
-  indexedAt       DateTime  @map("indexed_at")
-  lastRequestedAt DateTime? @map("last_requested_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  deletedAt       DateTime? @map("deleted_at")
+  metadata        Json                       @default("{}")
+  error           String?                    @db.Text
+  indexedAt       DateTime                   @map("indexed_at")
+  lastRequestedAt DateTime?                  @map("last_requested_at")
+  createdAt       DateTime                   @default(now()) @map("created_at")
+  updatedAt       DateTime                   @updatedAt @map("updated_at")
+  deletedAt       DateTime?                  @map("deleted_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
