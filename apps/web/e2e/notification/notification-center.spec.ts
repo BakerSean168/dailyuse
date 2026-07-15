@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { TIMEOUT_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
 
@@ -39,8 +39,46 @@ test.describe('Notification Center', () => {
     }
   });
 
+  test('[P0] keeps one inbox toolbar and filter state across panel layouts', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    const center = page.getByTestId('notification-center');
+    const toolbar = page.getByTestId('notification-page-toolbar');
+    const scrollHost = page.getByTestId('notification-scroll-host');
+    const unreadFilter = page.getByTestId('notification-filter-unread');
+    const markAllRead = page.getByTestId('mark-all-read-button');
+
+    await expect(toolbar).toBeVisible();
+    await unreadFilter.click();
+    await expect(unreadFilter).toHaveAttribute('aria-selected', 'true');
+    await markDomIdentity(toolbar, 'toolbar');
+    await markDomIdentity(scrollHost, 'scroll');
+    await markDomIdentity(markAllRead, 'mark-all');
+    await scrollHost.evaluate((element) => {
+      const filler = document.createElement('div');
+      filler.style.height = '1200px';
+      filler.dataset.layoutProbe = 'filler';
+      element.appendChild(filler);
+      element.scrollTop = 96;
+    });
+
+    await dragBusinessPanel(page, 'wider');
+    await assertStableNotificationWorkspace({ toolbar, scrollHost, unreadFilter, markAllRead });
+
+    await dragBusinessPanel(page, 'narrower');
+    await assertStableNotificationWorkspace({ toolbar, scrollHost, unreadFilter, markAllRead });
+
+    await page.getByTestId('business-panel-focus-toggle').click();
+    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'focus');
+    await assertStableNotificationWorkspace({ toolbar, scrollHost, unreadFilter, markAllRead });
+    await expectElementToFit(toolbar);
+    await expectElementToFit(center);
+  });
+
   test('[P1] should mark notification as read', async ({ page }) => {
-    const unreadItem = page.locator('[data-testid="notification-item"][data-read-state="unread"]').first();
+    const unreadItem = page
+      .locator('[data-testid="notification-item"][data-read-state="unread"]')
+      .first();
 
     if (await unreadItem.isVisible().catch(() => false)) {
       await unreadItem.click();
@@ -76,3 +114,50 @@ test.describe('Notification Center', () => {
     await expect(page.getByTestId('notification-filter-all')).toBeVisible();
   });
 });
+
+async function markDomIdentity(locator: Locator, value: string): Promise<void> {
+  await locator.evaluate((element, marker) => {
+    element.setAttribute('data-instance-probe', marker);
+  }, value);
+}
+
+async function assertStableNotificationWorkspace({
+  toolbar,
+  scrollHost,
+  unreadFilter,
+  markAllRead,
+}: {
+  toolbar: Locator;
+  scrollHost: Locator;
+  unreadFilter: Locator;
+  markAllRead: Locator;
+}): Promise<void> {
+  await expect(toolbar).toHaveAttribute('data-instance-probe', 'toolbar');
+  await expect(scrollHost).toHaveAttribute('data-instance-probe', 'scroll');
+  await expect(markAllRead).toHaveAttribute('data-instance-probe', 'mark-all');
+  await expect(unreadFilter).toHaveAttribute('aria-selected', 'true');
+  expect(await scrollHost.evaluate((element) => element.scrollTop)).toBe(96);
+}
+
+async function expectElementToFit(locator: Locator): Promise<void> {
+  const metrics = await locator.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+}
+
+async function dragBusinessPanel(page: Page, direction: 'wider' | 'narrower'): Promise<void> {
+  const resizer = page.getByTestId('business-panel-resizer');
+  await expect(resizer).toBeVisible();
+  const box = await resizer.boundingBox();
+  if (!box) throw new Error('business-panel-resizer has no bounding box');
+
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+  const endX = direction === 'wider' ? Math.max(40, startX - 160) : startX + 120;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(endX, startY, { steps: 12 });
+  await page.mouse.up();
+}
