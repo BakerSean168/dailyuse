@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { createApiServer, createWebServer } from './playwright.server';
+import { createApiServer, createWebServer, getE2EWebOrigin } from './playwright.server';
 
 /**
  * Playwright 配置
@@ -69,7 +69,7 @@ export default defineConfig({
   // 全局配置
   use: {
     // 基础 URL
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: getE2EWebOrigin(),
 
     // 追踪配置
     trace: 'on',

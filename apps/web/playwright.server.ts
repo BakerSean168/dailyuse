@@ -65,12 +65,12 @@ function getApiOrigin(): string {
   return apiOrigin;
 }
 
-function getWebOrigin(): string {
+export function getE2EWebOrigin(): string {
   return normalizeOrigin(process.env.E2E_WEB_BASE_URL ?? DEFAULT_WEB_ORIGIN);
 }
 
 function getWebServerRuntimeConfig() {
-  const webOrigin = getWebOrigin();
+  const webOrigin = getE2EWebOrigin();
   const webUrl = new URL(webOrigin);
 
   return {
@@ -86,7 +86,7 @@ function getCorsOrigins(): string {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  return [...new Set([getWebOrigin(), LEGACY_LOCALHOST_WEB_ORIGIN, ...configuredOrigins])].join(
+  return [...new Set([getE2EWebOrigin(), LEGACY_LOCALHOST_WEB_ORIGIN, ...configuredOrigins])].join(
     ',',
   );
 }
@@ -138,7 +138,7 @@ export function createApiServer() {
   };
 }
 
-export function createWebServer(url = `${getWebOrigin()}/auth`) {
+export function createWebServer(url = `${getE2EWebOrigin()}/auth`) {
   const apiOrigin = getApiOrigin();
   const webServer = getWebServerRuntimeConfig();
 

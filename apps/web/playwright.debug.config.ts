@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { createApiServer, createWebServer } from './playwright.server';
+import { createApiServer, createWebServer, getE2EWebOrigin } from './playwright.server';
 
 export default defineConfig({
   // 调试/探索脚本保留在单独入口，避免污染默认业务回归。
@@ -22,7 +22,7 @@ export default defineConfig({
       ]
     : [['html', { outputFolder: 'playwright-debug-report' }], ['list']],
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: getE2EWebOrigin(),
     trace: 'on',
     screenshot: 'on',
     video: 'on',
