@@ -16,6 +16,7 @@ export default defineConfig({
     '**/authentication/auth-login.spec.ts',
     '**/dashboard/dashboard-overview.spec.ts',
     '**/goal/goal-crud.spec.ts',
+    '**/note/note-workspace.spec.ts',
     '**/notification/notification-center.spec.ts',
     '**/reminder/reminder-template-crud.spec.ts',
     '**/task/task-template-crud.spec.ts',

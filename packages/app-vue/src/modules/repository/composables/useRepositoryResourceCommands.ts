@@ -11,7 +11,10 @@ import { getEditableResourceName, normalizeRenamedResourceName } from '../utils/
 import { getResourceDisplayName, isMarkdownResource } from '../utils/resource-presentation';
 import { useRepository } from './useRepository';
 
-export function useRepositoryResourceCommands(activeResource: Ref<ResourceClientDTO | null>) {
+export function useRepositoryResourceCommands(
+  activeResource: Ref<ResourceClientDTO | null>,
+  options: { onResourceOpened?: () => void | Promise<void> } = {},
+) {
   const { t } = useI18n();
   const editorWorkspaceStore = useEditorWorkspaceStore();
   const repository = useRepository();
@@ -50,11 +53,7 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
   async function handleCreateNote() {
     const noteFolderId = findNotesFolderId(repository.treeNodes.value);
 
-    const note = await repository.createMarkdownNote(
-      undefined,
-      '',
-      noteFolderId ?? undefined,
-    );
+    const note = await repository.createMarkdownNote(undefined, '', noteFolderId ?? undefined);
     if (!note) {
       console.error('[RepositoryResourceCommands] handleCreateNote:create-failed', {
         repositoryId: repository.repositoryId.value,
@@ -63,7 +62,6 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
       toast.error(t('repository.workspace.createNoteFailed'));
       return;
     }
-
     const opened = await requestOpenResource(note.id);
     if (!opened) {
       console.warn('[RepositoryResourceCommands] handleCreateNote:open-failed', {
@@ -73,6 +71,7 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
       toast.error(t('repository.workspace.createNoteFailed'));
       return;
     }
+    await options.onResourceOpened?.();
 
     toast.success(
       t('repository.workspace.createNoteSuccess', { name: getResourceDisplayName(note) }),

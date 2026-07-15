@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col">
+  <div class="flex h-full flex-col" data-testid="active-document-pane">
     <EditorToolbar
       :saving="saving"
       :view-mode="viewMode"

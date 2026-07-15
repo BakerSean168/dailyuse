@@ -1,16 +1,16 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden bg-background">
-    <div class="border-b px-4 py-3 flex items-center gap-3">
-      <div class="min-w-0 flex-1">
-        <h1 class="text-base font-semibold truncate">{{ linearScene.header.title }}</h1>
-        <p class="text-xs text-muted-foreground truncate">
-          {{ linearScene.header.path }}
-        </p>
+    <Teleport defer to="#note-page-toolbar-actions">
+      <div class="flex min-w-0 items-center gap-2" data-testid="note-detail-toolbar-actions">
+        <div class="hidden min-w-0 max-w-52 @3xl/panel:block">
+          <p class="truncate text-sm font-medium">{{ linearScene.header.title }}</p>
+          <p class="truncate text-xs text-muted-foreground">{{ linearScene.header.path }}</p>
+        </div>
+        <Button variant="outline" size="sm" @click="linearScene.header.actions.openWorkspace">
+          {{ t('editor.linear.openWorkspace') }}
+        </Button>
       </div>
-      <Button variant="outline" size="sm" @click="linearScene.header.actions.openWorkspace">
-        {{ t('editor.linear.openWorkspace') }}
-      </Button>
-    </div>
+    </Teleport>
 
     <div
       v-if="linearScene.status.isLoading"
@@ -33,10 +33,10 @@
 
     <div
       v-else-if="linearScene.editor.resource"
-      class="flex flex-1 flex-col overflow-hidden"
-      :class="isNarrow ? 'flex-col' : 'flex-row'"
+      class="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_minmax(10rem,35%)] overflow-hidden @3xl/panel:grid-cols-[minmax(0,1fr)_minmax(20rem,25rem)] @3xl/panel:grid-rows-1"
+      data-testid="note-editor-grid"
     >
-      <div class="flex min-w-0 flex-1 flex-col overflow-hidden" :class="isNarrow ? '' : 'border-r'">
+      <div class="flex min-h-0 min-w-0 flex-col overflow-hidden">
         <ActiveDocumentPane
           :ref="linearScene.editor.bindPaneRef"
           :content="linearScene.editor.content"
@@ -79,25 +79,16 @@
       </div>
 
       <aside
-        v-if="!isNarrow"
-        class="flex w-[360px] shrink-0 flex-col border-l bg-muted/10 @3xl/panel:w-[400px]"
+        class="flex min-h-0 min-w-0 flex-col border-t bg-muted/10 @3xl/panel:border-l @3xl/panel:border-t-0"
         data-testid="note-context-panel-host"
       >
-        <!-- 反链/图谱：窄档（split）隐藏并提示最大化（V2 §7） -->
         <NoteContextPanel
           :note-id="linearScene.sidecar.noteId"
-          :show-graph="isWide"
+          :show-graph="true"
           @navigate="linearScene.sidecar.actions.navigate"
           @close="linearScene.sidecar.actions.close"
         />
       </aside>
-      <div
-        v-else
-        class="border-t px-3 py-2 text-xs text-muted-foreground"
-        data-testid="note-context-narrow-hint"
-      >
-        {{ t('editor.linear.contextRequiresFocus') }}
-      </div>
     </div>
 
     <ImageResourcePickerDialog
@@ -135,11 +126,8 @@ import LinkSuggestion from '../components/LinkSuggestion.vue';
 import NoteContextPanel from '../components/NoteContextPanel.vue';
 import ResourcePickerDialog from '../components/ResourcePickerDialog.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
-import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import { useEditorLinearScene } from '../composables/useEditorLinearScene';
 
 const { t } = useI18n();
-// 面板两档（V2 §7）：窄档隐藏反链/图谱侧栏重交互。
-const { isNarrow, isWide } = usePanelWidth();
 const linearScene = useEditorLinearScene();
 </script>

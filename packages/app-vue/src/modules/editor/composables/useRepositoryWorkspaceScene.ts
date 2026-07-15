@@ -1,4 +1,4 @@
-import { computed, onMounted, reactive, toRef, unref, watch, type Ref } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, toRef, unref, watch, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Bookmark, FolderTree, Search } from '@lucide/vue';
 import { useRepository } from '../../repository/composables/useRepository';
@@ -26,6 +26,7 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
   const repository = useRepository();
   const workspaceStore = useEditorWorkspaceStore();
   const workspaceUiStore = useEditorWorkspaceUiStore();
+  const isReady = ref(false);
   const tabs = useEditorWorkspaceTabs();
   const activeResourceId = toRef(workspaceStore, 'activeResourceId');
   const editorScene = useEditorScene(activeResourceId, {
@@ -34,7 +35,12 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
     },
     saveFailureMessage: t('repository.workspace.saveFailed'),
   });
-  const resourceCommands = useRepositoryResourceCommands(editorScene.document.resource);
+  const resourceCommands = useRepositoryResourceCommands(editorScene.document.resource, {
+    onResourceOpened: async () => {
+      await nextTick();
+      editorScene.pane.actions.focus();
+    },
+  });
   const searchPanel = useRepositorySearchPanel();
   const bookmarksPanel = useRepositoryBookmarksPanel();
   const { hydrateWorkspace, bindWorkspaceLifecycle } = useEditorWorkspaceBootstrap(
@@ -68,6 +74,7 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
       await hydrateWorkspace();
       await repository.fetchResources();
       await repository.fetchBookmarks();
+      isReady.value = Boolean(workspaceStore.workspaceId && workspaceStore.isHydrated);
     }
   });
 
@@ -78,6 +85,7 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
     status: {
       repositoryId: repository.repositoryId,
       isLoading: repository.isLoading,
+      isReady,
     },
     sidebar: {
       mode: toRef(workspaceUiStore, 'sidebarMode'),
@@ -173,6 +181,7 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
           insertText: editorScene.pane.actions.insertText,
           wrapSelection: editorScene.pane.actions.wrapSelection,
           setViewMode: editorScene.pane.actions.setViewMode,
+          focus: editorScene.pane.actions.focus,
           pasteFiles: editorScene.actions.pasteFiles,
           openResourcePicker: () => {
             editorScene.dialogs.resourcePicker.open.value = true;
