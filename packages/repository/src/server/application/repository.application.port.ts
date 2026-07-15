@@ -19,6 +19,7 @@ export interface RepositoryApplicationPort {
       type: string;
       path?: string;
       content?: string;
+      mimeType?: string;
     },
     ctx: Context,
   ): Promise<Result<ResourceClientDTO>>;
