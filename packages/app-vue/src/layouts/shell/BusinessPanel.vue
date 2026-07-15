@@ -116,8 +116,10 @@ const isFocused = computed(() => props.layout === 'focus');
       <div class="flex shrink-0 items-center gap-0.5 pl-1">
         <button
           type="button"
+          data-testid="business-panel-focus-toggle"
           class="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           :title="isFocused ? t('shell.panel.exitFocus') : t('shell.panel.enterFocus')"
+          :aria-label="isFocused ? t('shell.panel.exitFocus') : t('shell.panel.enterFocus')"
           @click="emit('toggle-focus')"
         >
           <component :is="isFocused ? Minimize2 : Maximize2" class="h-3.5 w-3.5" />
