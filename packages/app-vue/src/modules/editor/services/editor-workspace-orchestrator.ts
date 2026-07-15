@@ -50,6 +50,13 @@ interface OpenEditorResourceParams {
   workspaceId?: string | null;
 }
 
+interface WorkspaceTransition {
+  key: string;
+  promise: Promise<void>;
+}
+
+const workspaceTransitions = new WeakMap<object, WorkspaceTransition>();
+
 export async function orchestrateReloadSessions(
   store: EditorWorkspaceStoreView,
   resolvedWorkspaceId?: string | null,
@@ -81,6 +88,32 @@ export async function orchestrateSetWorkspace(
   store: EditorWorkspaceStoreView,
   workspaceId: string | null,
   forceReload = false,
+): Promise<void> {
+  const transitionKey = `${workspaceId ?? 'null'}:${forceReload ? 'reload' : 'reuse'}`;
+  const activeTransition = workspaceTransitions.get(store);
+  if (activeTransition?.key === transitionKey) {
+    await activeTransition.promise;
+    return;
+  }
+
+  const transition = (activeTransition?.promise.catch(() => undefined) ?? Promise.resolve()).then(
+    () => performSetWorkspace(store, workspaceId, forceReload),
+  );
+  workspaceTransitions.set(store, { key: transitionKey, promise: transition });
+
+  try {
+    await transition;
+  } finally {
+    if (workspaceTransitions.get(store)?.promise === transition) {
+      workspaceTransitions.delete(store);
+    }
+  }
+}
+
+async function performSetWorkspace(
+  store: EditorWorkspaceStoreView,
+  workspaceId: string | null,
+  forceReload: boolean,
 ): Promise<void> {
   const currentWorkspaceId = store.workspaceId;
   const hasUsableSession = store.sessions.length > 0 && store.activeSession !== null;
