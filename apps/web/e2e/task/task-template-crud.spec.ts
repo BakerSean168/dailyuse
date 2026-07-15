@@ -53,8 +53,7 @@ test.describe('Task Template CRUD Operations', () => {
 
     const patchResponsePromise = page.waitForResponse(
       (response) =>
-        response.url().includes('/task-templates/') &&
-        response.request().method() === 'PATCH',
+        response.url().includes('/task-templates/') && response.request().method() === 'PATCH',
       { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT },
     );
     await saveButton.click();
@@ -91,16 +90,82 @@ test.describe('Task Template CRUD Operations', () => {
 
     await expect(taskPrimaryActionButton(page)).toBeDisabled();
   });
+
+  test('[P0] keeps one task toolbar DOM and filter state across panel layouts', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    const toolbar = page.getByTestId('task-page-toolbar');
+    const searchInput = page.getByTestId('task-search-input');
+    const primaryCreate = page.locator('[data-primary-action="create-task-template"]:visible');
+    const scrollHost = page.locator('#task-template-management');
+
+    await expect(toolbar).toBeVisible();
+    await expect(primaryCreate).toHaveCount(1);
+    await expectToolbarToFit(toolbar);
+    await searchInput.fill('stable-task-filter');
+    await searchInput.focus();
+    await toolbar.evaluate((element) => element.setAttribute('data-instance-probe', 'stable'));
+    await scrollHost.evaluate((element) => {
+      const filler = document.createElement('div');
+      filler.style.height = '1200px';
+      filler.dataset.layoutProbe = 'filler';
+      element.appendChild(filler);
+      element.scrollTop = 96;
+    });
+
+    await dragBusinessPanel(page, 'wider');
+    await expect(primaryCreate).toHaveCount(1);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+    await expect(searchInput).toHaveValue('stable-task-filter');
+    await expect(searchInput).toBeFocused();
+    expect(await scrollHost.evaluate((element) => element.scrollTop)).toBe(96);
+    await expectToolbarToFit(toolbar);
+
+    await dragBusinessPanel(page, 'narrower');
+    await expect(primaryCreate).toHaveCount(1);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+    await expect(searchInput).toHaveValue('stable-task-filter');
+    expect(await scrollHost.evaluate((element) => element.scrollTop)).toBe(96);
+    await expectToolbarToFit(toolbar);
+
+    await page.getByTestId('business-panel-focus-toggle').click();
+    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'focus');
+    await expect(primaryCreate).toHaveCount(1);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+    await expect(searchInput).toHaveValue('stable-task-filter');
+    expect(await scrollHost.evaluate((element) => element.scrollTop)).toBe(96);
+    await expectToolbarToFit(toolbar);
+  });
 });
+
+async function expectToolbarToFit(toolbar: Locator): Promise<void> {
+  const metrics = await toolbar.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+}
+
+async function dragBusinessPanel(page: Page, direction: 'wider' | 'narrower'): Promise<void> {
+  const resizer = page.getByTestId('business-panel-resizer');
+  await expect(resizer).toBeVisible();
+  const box = await resizer.boundingBox();
+  if (!box) throw new Error('business-panel-resizer has no bounding box');
+
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+  const endX = direction === 'wider' ? Math.max(40, startX - 160) : startX + 120;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(endX, startY, { steps: 12 });
+  await page.mouse.up();
+}
 
 async function openCreateTaskDialog(page: Page) {
   const primaryCreateButton = page.getByTestId('create-task-template-button');
-
-  if (await primaryCreateButton.isVisible()) {
-    await primaryCreateButton.click();
-  } else {
-    await page.getByTestId('create-first-task-template-button').click();
-  }
+  await primaryCreateButton.click();
 
   await expect(page.getByTestId('task-template-dialog')).toBeVisible({
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,

@@ -1,103 +1,93 @@
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden" data-testid="task-management-view">
-    <!-- 面板内容头：不再复读 Tab 模块标题，只保留计数 + 主操作（§7.1） -->
     <header
-      class="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-border px-3"
-      data-testid="task-panel-header"
+      class="z-10 flex min-h-14 shrink-0 flex-col border-b border-border bg-background/80 backdrop-blur-sm"
+      data-testid="task-page-toolbar"
     >
-      <p class="truncate text-xs text-muted-foreground" data-testid="task-count-label">
-        {{ countLabel }}
-      </p>
-      <div class="flex shrink-0 items-center gap-1">
-        <Button data-testid="create-task-template-button" size="sm" class="h-8" @click="handleCreate">
-          <Plus class="mr-1.5 h-4 w-4" />
-          {{ t('task.templateMgmt.createNew') }}
-        </Button>
+      <div class="flex items-center justify-between gap-2 px-3 pt-2">
+        <p class="truncate text-xs text-muted-foreground" data-testid="task-count-label">
+          {{ countLabel }}
+        </p>
+        <div class="flex shrink-0 items-center gap-1">
+          <Button
+            data-testid="create-task-template-button"
+            data-primary-action="create-task-template"
+            :aria-label="t('task.templateMgmt.createNew')"
+            size="sm"
+            class="h-8 px-2 @xl/panel:px-3"
+            @click="handleCreate"
+          >
+            <Plus class="h-4 w-4 @xl/panel:mr-1.5" />
+            <span class="hidden @xl/panel:inline">{{ t('task.templateMgmt.createNew') }}</span>
+          </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="h-8 w-8" data-testid="task-more-actions">
-              <MoreHorizontal class="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="w-44">
-            <DropdownMenuItem
-              data-testid="delete-all-templates-button"
-              class="text-destructive focus:text-destructive"
-              :disabled="templates.length === 0"
-              @click="showDeleteAllDialog = true"
-            >
-              <Trash2 class="mr-2 h-4 w-4" />
-              {{ t('task.templateMgmt.deleteAll') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="ghost" size="icon" class="h-8 w-8" data-testid="task-more-actions">
+                <MoreHorizontal class="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" class="w-44">
+              <DropdownMenuItem
+                data-testid="delete-all-templates-button"
+                class="text-destructive focus:text-destructive"
+                :disabled="templates.length === 0"
+                @click="showDeleteAllDialog = true"
+              >
+                <Trash2 class="mr-2 h-4 w-4" />
+                {{ t('task.templateMgmt.deleteAll') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+
+      <TaskFilterBar
+        v-model:status="currentStatus"
+        v-model:relation="currentRelation"
+        v-model:search="searchQuery"
+        v-model:view-mode="viewMode"
+        :status-options="statusOptions"
+        :relation-options="relationOptions"
+      />
     </header>
 
-    <TaskFilterBar
-      v-model:status="currentStatus"
-      v-model:relation="currentRelation"
-      v-model:search="searchQuery"
-      v-model:view-mode="viewMode"
-      :status-options="statusOptions"
-      :relation-options="relationOptions"
-    />
-
     <div id="task-template-management" class="min-h-0 flex-1 overflow-y-auto p-3">
-        <!-- 卡片视图；拖拽建依赖仅宽档（focus）启用（V2 §6.2 / §7） -->
-        <template v-if="viewMode === 'card'">
-          <p
-            v-if="isNarrow && !isLoading && filteredViewModels.length > 0"
-            class="mb-3 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
-            data-testid="task-drag-narrow-hint"
-          >
-            {{ t('task.templateMgmt.dragRequiresFocus') }}
-          </p>
-          <TaskTemplateGrid
-            :templates="filteredViewModels"
-            :total-count="viewModels.length"
-            :loading="isLoading"
-            :has-active-filters="hasActiveFilters"
-            :status-empty-text="statusEmptyText"
-            :highlighted-template-id="highlightedTemplateId"
-            :enable-drag="!isNarrow"
-            :on-create-dependency="handleCardCreateDependency"
-            @create-template="handleCreate"
-            @ai-generate="router.push('/')"
-            @clear-filters="clearFilters"
-            @click-template="handleClickTemplate"
-            @edit-template="handleEdit"
-            @delete-template="handleDelete"
-            @pause-template="handlePause"
-            @resume-template="handleResume"
-            @relation-filter-click="(filter) => (currentRelation = filter)"
-            @locate-graph="handleLocateGraph"
-          />
-        </template>
+      <template v-if="viewMode === 'card'">
+        <TaskTemplateGrid
+          :templates="filteredViewModels"
+          :total-count="viewModels.length"
+          :loading="isLoading"
+          :has-active-filters="hasActiveFilters"
+          :status-empty-text="statusEmptyText"
+          :highlighted-template-id="highlightedTemplateId"
+          :enable-drag="true"
+          :on-create-dependency="handleCardCreateDependency"
+          @ai-generate="router.push('/')"
+          @clear-filters="clearFilters"
+          @click-template="handleClickTemplate"
+          @edit-template="handleEdit"
+          @delete-template="handleDelete"
+          @pause-template="handlePause"
+          @resume-template="handleResume"
+          @relation-filter-click="(filter) => (currentRelation = filter)"
+          @locate-graph="handleLocateGraph"
+        />
+      </template>
 
-        <!-- 图谱/DAG：窄档禁用重交互，提示最大化后可用（V2 §6.2 / §7） -->
-        <template v-else>
-          <div
-            v-if="!isNarrow"
-            class="h-[600px] rounded-lg border border-border/50"
-            data-testid="task-graph-view"
-          >
-            <TaskDAGVisualization
-              :graph-data="graphData"
-              :active-node-id="graphFocusTaskId"
-              :compact="false"
-              @node-click="handleGraphNodeClick"
-            />
-          </div>
-          <p
-            v-else
-            class="py-16 text-center text-sm text-muted-foreground"
-            data-testid="task-graph-narrow-hint"
-          >
-            {{ t('task.templateMgmt.graphNarrowViewport') }}
-          </p>
-        </template>
+      <template v-else>
+        <div
+          class="h-[600px] min-w-0 rounded-lg border border-border/50"
+          data-testid="task-graph-view"
+        >
+          <TaskDAGVisualization
+            :graph-data="graphData"
+            :active-node-id="graphFocusTaskId"
+            :compact="false"
+            @node-click="handleGraphNodeClick"
+          />
+        </div>
+      </template>
     </div>
 
     <!-- 创建模板对话框 -->
@@ -203,7 +193,6 @@ import TaskTemplateGrid from '../components/TaskTemplateGrid.vue';
 import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
-import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import type {
   TaskForDAGViewModel,
   TaskRelationFilter,
@@ -224,8 +213,6 @@ import { buildTaskGraphData } from '../types/task-dag.types';
 
 const router = useRouter();
 const { t } = useI18n();
-// 面板两档（V2 §7）：拖拽/图谱等重交互仅宽档（focus）启用。
-const { isNarrow } = usePanelWidth();
 const {
   templates,
   dependencies,
@@ -290,7 +277,7 @@ const viewModels = computed(() => {
   return baseViewModels.map((template) => ({
     ...template,
     parentTaskTitle: template.parentTaskId
-      ? templateById.get(template.parentTaskId)?.title ?? null
+      ? (templateById.get(template.parentTaskId)?.title ?? null)
       : null,
     predecessorCount: predecessorCounts.get(template.id) ?? 0,
     successorCount: successorCounts.get(template.id) ?? 0,
@@ -300,14 +287,14 @@ const viewModels = computed(() => {
 
 const graphData = computed(() => buildTaskGraphData(templates.value, dependencies.value));
 
-const countLabel = computed(() => t('task.templateMgmt.countLabel', { count: viewModels.value.length }));
+const countLabel = computed(() =>
+  t('task.templateMgmt.countLabel', { count: viewModels.value.length }),
+);
 
 // ── 过滤链：状态 → 关系 → 搜索 ──
 const statusTemplates = computed(() =>
   [...viewModels.value]
-    .filter(
-      (template) => currentStatus.value === 'ALL' || template.status === currentStatus.value,
-    )
+    .filter((template) => currentStatus.value === 'ALL' || template.status === currentStatus.value)
     .sort((a, b) => (b.priority || 0) - (a.priority || 0)),
 );
 
@@ -368,9 +355,8 @@ const relationOptions = computed(() =>
     ] as const
   ).map((option) => ({
     ...option,
-    count: statusTemplates.value.filter((template) =>
-      matchesRelationFilter(template, option.value),
-    ).length,
+    count: statusTemplates.value.filter((template) => matchesRelationFilter(template, option.value))
+      .length,
   })),
 );
 

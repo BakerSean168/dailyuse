@@ -8,7 +8,7 @@
  */
 import { useI18n } from 'vue-i18n';
 import { Button, Skeleton } from '@dailyuse/ui-vue-shadcn';
-import { ListChecks, Plus } from '@lucide/vue';
+import { ListChecks } from '@lucide/vue';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import type { TaskTemplateViewModel } from './types';
@@ -41,7 +41,6 @@ withDefaults(
 );
 
 defineEmits<{
-  'create-template': [];
   'ai-generate': [];
   'clear-filters': [];
   'click-template': [templateId: string];
@@ -74,7 +73,7 @@ const { t } = useI18n();
     </div>
   </div>
 
-  <!-- 全库为空：AppEmptyState + 主操作 + AI 次链接 -->
+  <!-- 全库为空：主创建入口由固定页面工具栏持有。 -->
   <AppEmptyState
     v-else-if="totalCount === 0"
     :icon="ListChecks"
@@ -83,18 +82,7 @@ const { t } = useI18n();
     :secondary-label="t('task.templateMgmt.emptyAiLink')"
     testid="tasks-empty-state"
     @secondary="$emit('ai-generate')"
-  >
-    <template #action>
-      <Button
-        data-testid="create-first-task-template-button"
-        size="sm"
-        @click="$emit('create-template')"
-      >
-        <Plus class="mr-1.5 h-4 w-4" />
-        {{ t('task.templateMgmt.createFirst') }}
-      </Button>
-    </template>
-  </AppEmptyState>
+  />
 
   <!-- 过滤后为空：轻文案 + 清除过滤 -->
   <div

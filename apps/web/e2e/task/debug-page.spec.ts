@@ -42,9 +42,6 @@ test('Debug - Check page content', async ({ page }) => {
   const isVisible = await createBtn.isVisible().catch(() => false);
   console.log('create-task-template-button visible:', isVisible);
 
-  const firstBtn = page.locator('[data-testid="create-first-task-template-button"]');
-  const isFirstVisible = await firstBtn.isVisible().catch(() => false);
-  console.log('create-first-task-template-button visible:', isFirstVisible);
 
   // 打印所有 data-testid 属性
   const elementsWithTestId = await page.locator('[data-testid]').all();
