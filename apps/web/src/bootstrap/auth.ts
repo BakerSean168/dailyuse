@@ -15,7 +15,7 @@ export async function bootstrapAuthApp() {
   const app = createApp(AuthApp);
 
   const presentation = readPresentationPreferenceState();
-  applyAuthTheme(presentation.theme);
+  applyAuthTheme();
   applyAuthLocale(presentation.locale);
 
   app.use(createAuthI18n(presentation.locale));

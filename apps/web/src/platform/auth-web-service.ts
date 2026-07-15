@@ -110,7 +110,13 @@ async function postAuth<TReq, TRes>(path: string, payload: TReq): Promise<Result
     }
 
     const message = errorLike instanceof Error ? errorLike.message : undefined;
-    return createFailure(classifyNetworkErrorMessage(message), errorLike);
+    const classified = classifyNetworkErrorMessage(message);
+    return createFailure(
+      classified.code === 'SERVICE_UNAVAILABLE'
+        ? { ...classified, code: 'NETWORK_ERROR' }
+        : classified,
+      errorLike,
+    );
   }
 }
 

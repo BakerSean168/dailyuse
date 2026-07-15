@@ -120,17 +120,20 @@ export async function ensureRegisterScene(page: Page): Promise<void> {
     return;
   }
 
-  await registerEmailField
-    .waitFor({
-      state: 'visible',
-      timeout: TIMEOUT_CONFIG.SHORT_WAIT,
-    })
-    .catch(() => undefined);
-  if (await isVisible(registerEmailField)) {
+  const registerLink = page.getByRole('button', { name: AUTH_SCENE_LINK_TEXT.register });
+  const visibleScene = await Promise.race([
+    registerEmailField
+      .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT })
+      .then(() => 'register' as const),
+    registerLink
+      .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT })
+      .then(() => 'login' as const),
+  ]);
+  if (visibleScene === 'register') {
     return;
   }
 
-  await page.getByRole('button', { name: AUTH_SCENE_LINK_TEXT.register }).click();
+  await registerLink.click();
   await registerEmailField.waitFor({
     state: 'visible',
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -143,17 +146,20 @@ export async function ensureLoginScene(page: Page): Promise<void> {
     return;
   }
 
-  await loginEmailField
-    .waitFor({
-      state: 'visible',
-      timeout: TIMEOUT_CONFIG.SHORT_WAIT,
-    })
-    .catch(() => undefined);
-  if (await isVisible(loginEmailField)) {
+  const loginLink = page.getByRole('button', { name: AUTH_SCENE_LINK_TEXT.login });
+  const visibleScene = await Promise.race([
+    loginEmailField
+      .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT })
+      .then(() => 'login' as const),
+    loginLink
+      .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT })
+      .then(() => 'register' as const),
+  ]);
+  if (visibleScene === 'login') {
     return;
   }
 
-  await page.getByRole('button', { name: AUTH_SCENE_LINK_TEXT.login }).click();
+  await loginLink.click();
   await loginEmailField.waitFor({
     state: 'visible',
     timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
