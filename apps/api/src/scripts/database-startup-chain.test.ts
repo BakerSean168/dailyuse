@@ -9,11 +9,23 @@ function readWorkspaceFile(path: string): string {
 }
 
 function expectKnowledgeIndexOrder(source: string): void {
-  const schemaIndex = Math.max(source.indexOf('prisma migrate'), source.indexOf('prisma db push'));
+  const migrateIndex = Math.max(
+    source.indexOf('prisma migrate'),
+    source.indexOf("'migrate', 'deploy'"),
+  );
+  const schemaPushIndex = Math.max(
+    source.indexOf('prisma db push'),
+    source.indexOf("'db', 'push'"),
+  );
+  const schemaIndex = Math.max(migrateIndex, schemaPushIndex);
+  const editorNaturalKeyIndex = source.indexOf('prepare-editor-workspace-natural-key.ts');
   const bootstrapIndex = source.indexOf('bootstrap-ai-knowledge-index.ts');
   const smokeIndex = source.indexOf('verify-ai-knowledge-index.ts');
 
   expect(schemaIndex).toBeGreaterThanOrEqual(0);
+  expect(schemaPushIndex).toBeGreaterThanOrEqual(0);
+  expect(editorNaturalKeyIndex).toBeGreaterThanOrEqual(0);
+  expect(editorNaturalKeyIndex).toBeLessThan(schemaPushIndex);
   expect(bootstrapIndex).toBeGreaterThan(schemaIndex);
   expect(smokeIndex).toBeGreaterThan(bootstrapIndex);
   expect(source.slice(smokeIndex, smokeIndex + 160)).toContain('--require-pgvector');

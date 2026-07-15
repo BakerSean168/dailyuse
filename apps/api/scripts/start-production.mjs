@@ -66,6 +66,12 @@ async function main() {
     );
   } else {
     console.log('[startup] No Prisma migration directories found. Falling back to prisma db push.');
+    console.log('[startup] Preparing editor workspace natural key...');
+    run(
+      'pnpm',
+      ['exec', 'tsx', './scripts/prepare-editor-workspace-natural-key.ts'],
+      databaseRoot,
+    );
     run('pnpm', ['exec', 'prisma', 'db', 'push', '--config', './prisma/prisma.config.ts'], databaseRoot);
   }
 

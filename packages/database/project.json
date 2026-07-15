@@ -127,6 +127,14 @@
         "command": "tsx ./scripts/bootstrap-ai-knowledge-index.ts"
       },
       "cache": false
+    },
+    "editor-workspace-natural-key-bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "tsx ./scripts/prepare-editor-workspace-natural-key.ts"
+      },
+      "cache": false
     }
   }
 }

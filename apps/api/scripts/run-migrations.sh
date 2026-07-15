@@ -117,6 +117,11 @@ if has_prisma_migration_dirs; then
   MIGRATION_OUTPUT=$(cd /app/packages/database && /app/node_modules/.bin/prisma migrate deploy --config ./prisma/prisma.config.ts 2>&1) || MIGRATION_RESULT=$?
 else
   echo "${YELLOW}⚠️  No Prisma migration directories found, falling back to schema push${NC}"
+  echo "   Preparing editor workspace natural key before schema push"
+  echo "   Command: /app/node_modules/.bin/tsx ./scripts/prepare-editor-workspace-natural-key.ts"
+  echo ""
+  (cd /app/packages/database && /app/node_modules/.bin/tsx ./scripts/prepare-editor-workspace-natural-key.ts)
+  echo ""
   echo "   Command: /app/node_modules/.bin/prisma db push --config ./prisma/prisma.config.ts"
   echo ""
   MIGRATION_RESULT=0
