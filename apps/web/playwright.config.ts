@@ -19,6 +19,7 @@ export default defineConfig({
     '**/note/note-workspace.spec.ts',
     '**/notification/notification-center.spec.ts',
     '**/reminder/reminder-template-crud.spec.ts',
+    '**/schedule/schedule-calendar.spec.ts',
     '**/task/task-template-crud.spec.ts',
     '**/user-settings/notifications.spec.ts',
     '**/user-settings/persistence.spec.ts',

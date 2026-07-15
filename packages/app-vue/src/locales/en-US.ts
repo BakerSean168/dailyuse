@@ -1996,6 +1996,7 @@ export default {
     createDialog: {
       titleCreate: 'Create Schedule Event',
       titleEdit: 'Edit Schedule Event',
+      description: 'Set the schedule title, time, and optional details.',
       fieldTitle: 'Title *',
       fieldTitlePlaceholder: 'Enter schedule title',
       fieldDescription: 'Description',
@@ -2028,8 +2029,9 @@ export default {
     },
 
     calendar: {
-      narrowDayOnly: 'Day view only in split — maximize for week/month',
       today: 'Today',
+      previousPeriod: 'Previous period',
+      nextPeriod: 'Next period',
       createSchedule: 'New Schedule',
       weekRange: '{start} - {end}',
       allDay: 'All Day',

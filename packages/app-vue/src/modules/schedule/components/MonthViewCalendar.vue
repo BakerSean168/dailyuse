@@ -1,22 +1,5 @@
 <template>
-  <div class="month-calendar flex flex-col h-full">
-    <!-- Header: Month Navigation -->
-    <div class="flex items-center justify-between px-4 py-3 border-b bg-background">
-      <div class="flex items-center gap-2">
-        <Button variant="outline" size="icon" class="h-8 w-8" @click="previousMonth">
-          <ChevronLeft class="h-4 w-4" />
-        </Button>
-        <h3 class="text-lg font-semibold min-w-[160px] text-center">{{ monthTitle }}</h3>
-        <Button variant="outline" size="icon" class="h-8 w-8" @click="nextMonth">
-          <ChevronRight class="h-4 w-4" />
-        </Button>
-        <Button variant="outline" size="sm" @click="goToToday">
-          {{ t('schedule.calendar.today') }}
-        </Button>
-      </div>
-    </div>
-
-    <!-- Month Grid -->
+  <div class="month-calendar flex h-full min-h-0 flex-col" data-testid="schedule-month-calendar">
     <div v-if="loading" class="flex-1 flex justify-center items-center">
       <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
@@ -85,9 +68,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ChevronLeft, ChevronRight, Loader2 } from '@lucide/vue';
+import { computed } from 'vue';
+import { Loader2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
 
@@ -102,6 +84,7 @@ interface CalendarDay {
 
 interface Props {
   schedules: CalendarEventItem[];
+  month?: Date;
   loading?: boolean;
 }
 
@@ -110,20 +93,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: 'month-change', startDate: Date, endDate: Date): void;
   (e: 'event-click', event: CalendarEventItem): void;
   (e: 'day-click', date: Date): void;
 }>();
-const { t, locale } = useI18n();
-
-const currentMonth = ref<Date>(new Date());
-
-const monthTitle = computed(() => {
-  return currentMonth.value.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'long',
-  });
-});
+const { t } = useI18n();
+const currentMonth = computed(() => props.month ?? new Date());
 
 const weekDayNames = computed(() => {
   const dayKeys = [
@@ -225,40 +199,9 @@ function eventClass(event: CalendarEventItem): string {
   return map[event.source];
 }
 
-function previousMonth() {
-  const d = new Date(currentMonth.value);
-  d.setMonth(d.getMonth() - 1);
-  currentMonth.value = d;
-}
-
-function nextMonth() {
-  const d = new Date(currentMonth.value);
-  d.setMonth(d.getMonth() + 1);
-  currentMonth.value = d;
-}
-
-function goToToday() {
-  currentMonth.value = new Date();
-}
-
 function handleDayClick(day: CalendarDay) {
   const [y, m, d] = day.fullDate.split('-').map(Number);
   emit('day-click', new Date(y, m - 1, d));
 }
 
-function emitMonthRange() {
-  const year = currentMonth.value.getFullYear();
-  const month = currentMonth.value.getMonth();
-  const start = new Date(year, month, 1);
-  const end = new Date(year, month + 1, 0, 23, 59, 59, 999);
-  emit('month-change', start, end);
-}
-
-watch(currentMonth, () => {
-  emitMonthRange();
-});
-
-onMounted(() => {
-  emitMonthRange();
-});
 </script>

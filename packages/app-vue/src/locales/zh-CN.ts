@@ -1949,6 +1949,7 @@ export default {
     createDialog: {
       titleCreate: '创建日程事件',
       titleEdit: '编辑日程事件',
+      description: '设置日程的标题、时间和可选详情。',
       fieldTitle: '标题 *',
       fieldTitlePlaceholder: '输入日程标题',
       fieldDescription: '描述',
@@ -1980,8 +1981,9 @@ export default {
     },
 
     calendar: {
-      narrowDayOnly: '分栏态仅显示日视图，最大化后可切换周/月',
       today: '今天',
+      previousPeriod: '上一个时段',
+      nextPeriod: '下一个时段',
       createSchedule: '新建日程',
       weekRange: '{start} - {end}',
       allDay: '全天',

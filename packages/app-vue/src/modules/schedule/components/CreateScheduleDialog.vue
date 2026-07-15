@@ -1,14 +1,20 @@
 <template>
   <Dialog :open="modelValue" @update:open="$emit('update:modelValue', $event)">
-    <DialogContent class="max-w-2xl">
-      <DialogHeader>
+    <DialogContent
+      class="flex max-h-[calc(100vh-2rem)] max-w-2xl flex-col overflow-hidden"
+      data-testid="schedule-dialog"
+    >
+      <DialogHeader class="shrink-0">
         <DialogTitle>{{
           isEditing ? t('schedule.createDialog.titleEdit') : t('schedule.createDialog.titleCreate')
         }}</DialogTitle>
+        <DialogDescription class="sr-only">
+          {{ t('schedule.createDialog.description') }}
+        </DialogDescription>
       </DialogHeader>
 
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        <div class="space-y-4">
+      <form class="flex min-h-0 flex-1 flex-col gap-4" @submit.prevent="handleSubmit">
+        <div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
           <!-- 标题 -->
           <div>
             <Label for="title">{{ t('schedule.createDialog.fieldTitle') }}</Label>
@@ -18,6 +24,7 @@
               :placeholder="t('schedule.createDialog.fieldTitlePlaceholder')"
               maxlength="200"
               required
+              data-testid="schedule-title-input"
             />
             <p class="text-sm text-muted-foreground mt-1">{{ formData.title.length }}/200</p>
           </div>
@@ -266,11 +273,11 @@
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter class="shrink-0">
           <Button type="button" variant="outline" @click="handleClose">
             {{ t('common.cancel') }}
           </Button>
-          <Button type="submit" :disabled="loading">
+          <Button type="submit" :disabled="loading" data-testid="schedule-save-button">
             <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
             {{ isEditing ? t('common.save') : t('common.create') }}
           </Button>
@@ -285,6 +292,7 @@ import { ref, reactive, watch } from 'vue';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
