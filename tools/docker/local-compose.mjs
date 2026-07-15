@@ -62,6 +62,25 @@ function run(bin, args, env) {
   }
 }
 
+function readGitRevision() {
+  const revisionResult = spawnSync('git', ['rev-parse', 'HEAD'], {
+    encoding: 'utf8',
+  });
+
+  if (revisionResult.status !== 0) {
+    return 'unknown';
+  }
+
+  const revision = revisionResult.stdout.trim();
+  const statusResult = spawnSync('git', ['status', '--porcelain'], {
+    encoding: 'utf8',
+  });
+
+  return statusResult.status === 0 && statusResult.stdout.trim()
+    ? `${revision}-dirty`
+    : revision;
+}
+
 /**
  * Force local-docker host ports from SSOT so local stack never steals host-dev/e2e ports.
  * Secrets and service env still come from .env.production.local.
@@ -121,6 +140,12 @@ function createRuntimeEnv() {
     NX_DAEMON: 'false',
     NX_ISOLATE_PLUGINS: 'false',
   };
+  env.VCS_REF ||= readGitRevision();
+  env.BUILD_DATE ||= new Date().toISOString();
+
+  console.log(`[docker:local] image revision: ${env.VCS_REF}`);
+  console.log(`[docker:local] image build date: ${env.BUILD_DATE}`);
+
   const envFileMap = readEnvFileMap(envFile);
   const envKeys = readEnvFileKeys(envFile);
   const developmentEnv = readEnvFileMap('.env.development');

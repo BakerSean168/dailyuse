@@ -31,7 +31,7 @@
 - 本机运行时车道 / 端口契约：[`docs/guides/development/runtime-lanes.md`](docs/guides/development/runtime-lanes.md)
 - 标准发布链路入口：[`docs/guides/development/release-workflow.md`](docs/guides/development/release-workflow.md)
 - 默认顺序固定为：
-  1. 本地用 `docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build` 验证
+  1. 本地用 `pnpm docker:local:up` 验证；该入口会注入当前 Git revision 与构建时间到本地镜像标签
   2. 发起 PR，合并到 `main`
   3. 等待 `release-please` 更新或创建 release PR
   4. 合并 release PR，触发正式 tag / release

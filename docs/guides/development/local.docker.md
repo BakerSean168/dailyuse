@@ -6,7 +6,7 @@ tags:
   - local
 description: 使用 docker-compose.local.yml 做 prod-like 本地验证的统一入口
 created: 2026-05-19T00:00:00
-updated: 2026-07-14T00:00:00
+updated: 2026-07-15T00:00:00
 ---
 
 # Local Docker 验证
@@ -40,10 +40,16 @@ pnpm runtime:preflight:local-docker
 pnpm docker:local:up
 ```
 
+该入口会把当前 Git revision 和 UTC 构建时间写入 Web、API、AI Service 的 OCI 镜像标签；工作区存在未提交修改时，revision 带 `-dirty` 后缀。构建后可用以下命令核对：
+
+```bash
+docker image inspect dailyuse-api:local --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}'
+```
+
 等价底层命令：
 
 ```bash
-docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
+VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
 ```
 
 > 若直接调用底层 compose 且 `.env.production.local` 把 `API_HOST_PORT` 设成 `3000`，会与 `pnpm dev` / Playwright 抢口。  

@@ -6,7 +6,7 @@ tags:
   - workflow
 description: 从本地 Docker 验证到 release-please 与 docker-deploy 的标准发布链路
 created: 2026-05-19T00:00:00
-updated: 2026-05-19T00:00:00
+updated: 2026-07-15T00:00:00
 ---
 
 # Release 工作流
@@ -25,10 +25,11 @@ updated: 2026-05-19T00:00:00
 
 ### 1. 本地容器验证
 
-先跑：
+先跑统一入口；它会给本地镜像注入当前 Git revision 与构建时间：
 
 ```bash
-docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
+pnpm runtime:preflight:local-docker
+pnpm docker:local:up
 ```
 
 至少确认本次改动相关服务 healthy，且关键链路在容器环境下成立。
