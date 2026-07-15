@@ -1,37 +1,25 @@
 <template>
   <div
-    class="flex h-full min-h-0 w-full overflow-hidden bg-background"
-    :class="isNarrow ? 'flex-col' : 'flex-row'"
+    class="flex h-full min-h-0 w-full flex-col overflow-hidden bg-background"
+    data-testid="goal-module-layout"
   >
-    <!-- 宽档（focus）：第二侧栏；窄档（split）：收敛为顶部下拉栏（V2 §6.1/§7） -->
-    <GoalViewSwitcherBar
-      v-if="isNarrow"
+    <GoalPageToolbar
+      v-if="isListRoute"
       :system-views="visibleSystemViews"
       :active-system-view="systemView"
       :folders="goalFolders"
       :selected-folder-id="selectedFolderId"
       :focus-mode="currentFocusMode"
-      @create-goal="openGoalDialog"
+      :visible-goal-count="visibleGoalCount"
+      :search-query="searchQuery"
+      @create-goal="handleToolbarCreateGoal"
       @create-folder="openFolderDialog"
       @select-system-view="selectSystemView"
       @select-folder="selectFolder"
       @open-focus="openFocusDialog"
       @go-focus="goFocus"
-    />
-    <GoalSidebar
-      v-else
-      :system-views="visibleSystemViews"
-      :active-system-view="systemView"
-      :folders="goalFolders"
-      :selected-folder-id="selectedFolderId"
-      :focus-mode="currentFocusMode"
-      @create-goal="openGoalDialog"
-      @create-folder="openFolderDialog"
-      @create-goal-in-folder="openGoalDialogInFolder"
-      @select-system-view="selectSystemView"
-      @select-folder="selectFolder"
-      @open-focus="openFocusDialog"
-      @go-focus="goFocus"
+      @compare="openComparison"
+      @search="handleSearch"
     />
 
     <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -64,22 +52,18 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createLogger } from '@dailyuse/utils/logger';
 import { useGoal } from '../composables/useGoal';
-import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import type {
   GoalClientDTO,
   GoalSystemView,
   ActivateFocusModeRequest,
 } from '@dailyuse/contracts/goal';
 import { GoalDialog, GoalFolderDialog, ActivateFocusModeDialog } from '../components';
-import GoalSidebar from '../components/GoalSidebar.vue';
-import GoalViewSwitcherBar from '../components/GoalViewSwitcherBar.vue';
+import GoalPageToolbar from '../components/GoalPageToolbar.vue';
 
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const logger = createLogger('goal:layout');
-// 面板两档（V2 §7）：窄档收侧栏为顶部下拉，宽档恢复完整侧栏。
-const { isNarrow } = usePanelWidth();
 const stringify = (value: unknown): string => {
   try {
     return JSON.stringify(value);
@@ -95,6 +79,7 @@ const {
   systemView,
   setSelectedFolderId,
   setSystemView,
+  search,
   fetchGoals,
   fetchGoal,
   fetchFolders,
@@ -108,6 +93,9 @@ const editingGoal = ref<GoalClientDTO | null>(null);
 const defaultGoalFolderId = ref<string | null>(null);
 const folderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
 const focusDialogOpen = ref(false);
+const searchQuery = ref('');
+
+const isListRoute = computed(() => route.name === 'goal-list');
 
 const visibleSystemViews = computed(() => [
   {
@@ -136,6 +124,11 @@ const activeGoals = computed(() =>
   goals.value.filter((goal) => !goal.archivedAt && !goal.deletedAt && !!goal.targetDate),
 );
 
+const visibleGoalCount = computed(() => {
+  if (!selectedFolderId.value) return goals.value.length;
+  return goals.value.filter((goal) => goal.folderId === selectedFolderId.value).length;
+});
+
 function selectSystemView(view: GoalSystemView) {
   setSelectedFolderId(null);
   setSystemView(view);
@@ -149,15 +142,15 @@ function selectFolder(folderId: string) {
 function openGoalDialog() {
   goalDialogMode.value = 'create';
   editingGoal.value = null;
-  defaultGoalFolderId.value = null;
+  defaultGoalFolderId.value = selectedFolderId.value;
   goalDialogOpen.value = true;
 }
 
-function openGoalDialogInFolder(folderId: string) {
-  goalDialogMode.value = 'create';
-  editingGoal.value = null;
-  defaultGoalFolderId.value = folderId;
-  goalDialogOpen.value = true;
+function handleToolbarCreateGoal() {
+  void router.push({
+    name: 'goal-list',
+    query: { ...route.query, dialog: 'goal' },
+  });
 }
 
 async function clearGoalDialogQuery() {
@@ -194,10 +187,7 @@ async function syncGoalDialogFromRoute() {
   }
 
   if (!goalId) {
-    goalDialogMode.value = 'create';
-    editingGoal.value = null;
-    defaultGoalFolderId.value = null;
-    goalDialogOpen.value = true;
+    openGoalDialog();
     return;
   }
 
@@ -235,6 +225,15 @@ function openFocusDialog() {
 
 function goFocus() {
   router.push({ name: 'goal-focus' });
+}
+
+function openComparison() {
+  router.push({ name: 'goal-comparison' });
+}
+
+function handleSearch(query: string) {
+  searchQuery.value = query;
+  search(query);
 }
 
 function handleGoalCreated() {

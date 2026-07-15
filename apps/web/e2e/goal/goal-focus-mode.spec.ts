@@ -57,7 +57,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     // Assert: 验证进入专注模式
     await expect(page.locator('text=/专注模式|Focus Mode/i')).toBeVisible({ timeout: 5000 });
     await expect(page.locator(`text=${focusGoalName}`)).toBeVisible();
-    
+
     console.log('✅ 启用专注模式测试通过');
   });
 
@@ -72,7 +72,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     // Assert: 专注目标可见,其他目标隐藏
     await expect(page.locator(`text=${focusGoalName}`)).toBeVisible();
     await expect(page.locator(`text=${otherGoalName}`)).not.toBeVisible();
-    
+
     console.log('✅ 隐藏其他目标测试通过');
   });
 
@@ -85,11 +85,11 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     // Assert: 验证倒计时显示
     const timerElement = page.locator('[data-testid="focus-timer"]').or(page.locator('text=/\\d+:\\d+/'));
     await expect(timerElement).toBeVisible({ timeout: 5000 });
-    
+
     // 验证时间格式 (例如 "30:00" 或 "29:59")
     const timerText = await timerElement.textContent();
     expect(timerText).toMatch(/\d{1,2}:\d{2}/);
-    
+
     console.log('✅ 倒计时显示测试通过');
   });
 
@@ -108,10 +108,10 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     await page.waitForTimeout(500);
     const timerElement = page.locator('[data-testid="focus-timer"]').or(page.locator('text=/\\d+:\\d+/'));
     const timerText = await timerElement.textContent();
-    
+
     // 应该显示更长的时间
     expect(timerText).toBeTruthy();
-    
+
     console.log('✅ 延长专注时间测试通过');
   });
 
@@ -128,11 +128,11 @@ test.describe('Goal Focus Mode - 专注模式', () => {
 
     // Assert: 验证退出专注模式
     await expect(page.locator('text=/专注模式|Focus Mode/i')).not.toBeVisible();
-    
+
     // 两个目标都应该可见
     await expect(page.locator(`text=${focusGoalName}`)).toBeVisible();
     await expect(page.locator(`text=${otherGoalName}`)).toBeVisible();
-    
+
     console.log('✅ 手动结束专注模式测试通过');
   });
 
@@ -154,7 +154,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
 
     // 应该显示刚才的专注记录
     await expect(page.locator(`text=${focusGoalName}`)).toBeVisible();
-    
+
     console.log('✅ 历史记录显示测试通过');
   });
 
@@ -180,7 +180,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
       const focusTimeValue = focusTimeLabel.locator('..').locator('text=/\\d+/');
       await expect(focusTimeValue).toBeVisible();
     }
-    
+
     console.log('✅ 专注时间记录测试通过');
   });
 
@@ -195,18 +195,18 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     // Act: 尝试启动另一个专注模式
     try {
       await openFocusMode(page);
-      
+
       // Assert: 应该显示错误提示或禁用按钮
       const errorMessage = page.locator('text=/已有活跃|already active|正在进行/i');
       await expect(errorMessage).toBeVisible({ timeout: 3000 });
-      
+
       console.log('✅ 阻止重复启动测试通过');
     } catch {
       // 如果打开按钮被禁用,也算测试通过
       const focusButton = page.locator('button:has-text("专注模式")').or(page.locator('[data-testid="focus-mode-button"]'));
       const isDisabled = await focusButton.isDisabled();
       expect(isDisabled).toBe(true);
-      
+
       console.log('✅ 按钮禁用测试通过');
     }
   });
@@ -215,7 +215,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
 // ========== 辅助函数 ==========
 
 async function createGoal(page: Page, options: { name: string; description?: string }) {
-  const createButton = page.locator('button:has-text("创建目标")').or(page.locator('[data-testid="create-goal-button"]'));
+  const createButton = page.getByTestId('create-goal-entry');
   await createButton.click();
   await page.waitForTimeout(500);
 
@@ -223,7 +223,7 @@ async function createGoal(page: Page, options: { name: string; description?: str
     .locator('input[placeholder="一段话来描述自己的目标"]')
     .or(page.locator('[data-testid="goal-name-input"]'))
     .fill(options.name);
-  
+
   if (options.description) {
     await page.locator('textarea[name="description"]').or(page.locator('[data-testid="goal-description-input"]')).fill(options.description);
   }
@@ -240,7 +240,8 @@ async function openFocusMode(page: Page) {
     .locator('button:has-text("专注模式")')
     .or(page.locator('button:has-text("Focus Mode")'))
     .or(page.locator('[data-testid="focus-mode-button"]'))
-    .or(page.locator('[data-testid="open-focus-mode"]'));
+    .or(page.locator('[data-testid="open-focus-mode"]'))
+    .or(page.getByTestId('goal-focus-entry'));
 
   await focusButton.click();
   await page.waitForTimeout(500);
@@ -362,7 +363,7 @@ async function cleanupTestGoals(page: Page, goalTitles: string[]) {
     await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), {
       waitUntil: 'domcontentloaded',
     });
-    
+
     for (const title of goalTitles) {
       const goalCard = page.locator(`text=${title}`);
       if (await goalCard.isVisible()) {

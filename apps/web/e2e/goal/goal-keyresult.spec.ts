@@ -56,13 +56,13 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
     // Assert: 验证KR显示
     await expect(page.locator(`text=${krTitle}`)).toBeVisible({ timeout: 5000 });
     await expect(page.locator(`text=${targetValue}`)).toBeVisible();
-    
+
     console.log('✅ 添加INCREMENTAL类型KR测试通过');
   });
 
   test('[P0] 应该能够添加 PERCENTAGE 类型的关键结果', async () => {
     const krTitle = '项目完成度';
-    
+
     // Act: 添加百分比类型KR
     await addKeyResult(page, {
       title: krTitle,
@@ -75,13 +75,13 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
     // Assert: 验证显示
     await expect(page.locator(`text=${krTitle}`)).toBeVisible({ timeout: 5000 });
     await expect(page.locator('text=/0%/')).toBeVisible();
-    
+
     console.log('✅ 添加PERCENTAGE类型KR测试通过');
   });
 
   test('[P0] 应该能够添加 BINARY 类型的关键结果', async () => {
     const krTitle = '完成产品发布';
-    
+
     // Act: 添加二进制类型KR
     await addKeyResult(page, {
       title: krTitle,
@@ -91,13 +91,13 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
 
     // Assert: 验证显示
     await expect(page.locator(`text=${krTitle}`)).toBeVisible({ timeout: 5000 });
-    
+
     console.log('✅ 添加BINARY类型KR测试通过');
   });
 
   test('[P0] 应该能够更新关键结果进度', async () => {
     const krTitle = '销售目标';
-    
+
     // Arrange: 先添加KR
     await addKeyResult(page, {
       title: krTitle,
@@ -114,13 +114,13 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
 
     // Assert: 验证进度更新
     await expect(page.locator('text=/50%/')).toBeVisible({ timeout: 5000 });
-    
+
     console.log('✅ 更新KR进度测试通过');
   });
 
   test('[P0] 应该能够完成关键结果', async () => {
     const krTitle = '完成文档编写';
-    
+
     // Arrange: 添加KR
     await addKeyResult(page, {
       title: krTitle,
@@ -135,13 +135,13 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
     await expect(page.locator(`text=${krTitle}`)).toBeVisible();
     // 可能有完成标记,如勾选图标
     await expect(page.locator('[data-testid="kr-completed-icon"]').or(page.locator('text=/✓/'))).toBeVisible();
-    
+
     console.log('✅ 完成KR测试通过');
   });
 
   test('[P1] 应该能够删除关键结果', async () => {
     const krTitle = '待删除的KR';
-    
+
     // Arrange: 添加KR
     await addKeyResult(page, {
       title: krTitle,
@@ -158,7 +158,7 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
 
     // Assert: 验证已删除
     await expect(page.locator(`text=${krTitle}`)).not.toBeVisible();
-    
+
     console.log('✅ 删除KR测试通过');
   });
 
@@ -191,11 +191,11 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
     // Assert: 验证总进度
     // 预期: (100 * 0.4) + (50 * 0.3) + (0 * 0.3) = 40 + 15 + 0 = 55%
     await page.waitForTimeout(1000);
-    
+
     // 查找目标总进度显示
     const progressText = page.locator('[data-testid="goal-progress"]').or(page.locator('text=/总进度|Overall Progress/'));
     await expect(progressText).toBeVisible();
-    
+
     console.log('✅ 多KR总进度计算测试通过');
   });
 
@@ -220,7 +220,7 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
     // Assert: 应该显示错误提示
     const errorMessage = page.locator('text=/权重总和|weight sum|exceed/i');
     await expect(errorMessage).toBeVisible({ timeout: 3000 });
-    
+
     console.log('✅ 权重验证测试通过');
   });
 });
@@ -228,7 +228,7 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
 // ========== 辅助函数 ==========
 
 async function createGoal(page: Page, options: { name: string; description?: string }) {
-  const createButton = page.locator('button:has-text("创建目标")').or(page.locator('[data-testid="create-goal-button"]'));
+  const createButton = page.getByTestId('create-goal-entry');
   await createButton.click();
   await page.waitForTimeout(500);
 
@@ -236,7 +236,7 @@ async function createGoal(page: Page, options: { name: string; description?: str
     .locator('input[placeholder="一段话来描述自己的目标"]')
     .or(page.locator('[data-testid="goal-name-input"]'))
     .fill(options.name);
-  
+
   if (options.description) {
     await page.locator('textarea[name="description"]').or(page.locator('[data-testid="goal-description-input"]')).fill(options.description);
   }
@@ -307,7 +307,7 @@ async function updateKeyResultProgress(
 
   // 点击编辑或直接点击进度
   const editButton = krRow.locator('button[title*="编辑"]').or(krRow.locator('[data-testid="edit-kr-button"]'));
-  
+
   if (await editButton.isVisible()) {
     await editButton.click();
     await page.waitForTimeout(500);
@@ -327,7 +327,7 @@ async function completeKeyResult(page: Page, krTitle: string) {
   console.log(`[KR] 完成关键结果: ${krTitle}`);
 
   const krRow = page.locator(`text=${krTitle}`).locator('..');
-  
+
   // 查找完成按钮或勾选框
   const completeButton = krRow
     .locator('button[title*="完成"]')
@@ -344,7 +344,7 @@ async function deleteKeyResult(page: Page, krTitle: string) {
   console.log(`[KR] 删除关键结果: ${krTitle}`);
 
   const krRow = page.locator(`text=${krTitle}`).locator('..');
-  
+
   const deleteButton = krRow
     .locator('button[title*="删除"]')
     .or(krRow.locator('[data-testid="delete-kr-button"]'));

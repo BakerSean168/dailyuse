@@ -40,7 +40,7 @@ export async function openGoalList(page: Page, surface: GoalSurface): Promise<vo
   }
 
   await expect(page.getByTestId('goal-list-view')).toBeVisible();
-  await expect(page.getByTestId('create-goal-button').first()).toBeVisible();
+  await expect(page.getByTestId('create-goal-entry')).toBeVisible();
 }
 
 export async function createGoal(
@@ -49,7 +49,7 @@ export async function createGoal(
   data: { name: string; description: string },
 ): Promise<void> {
   await openGoalList(page, surface);
-  await page.getByTestId('create-goal-button').first().click();
+  await page.getByTestId('create-goal-entry').click();
 
   const dialog = page.getByTestId('goal-dialog');
   await expect(dialog).toBeVisible();
