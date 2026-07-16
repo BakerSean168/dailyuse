@@ -56,6 +56,15 @@ class GoalWorkflowFakeActionOverride(BaseModel):
     entity_id: str | None = Field(default=None, alias="entityId")
 
 
+class GoalWorkflowClarificationConcept(BaseModel):
+    """Missing-information concept that clarification must explicitly cover."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1)
+    terms: list[str] = Field(..., min_length=1)
+
+
 class GoalWorkflowExpectedOutcome(BaseModel):
     """Expected workflow shape for one eval case."""
 
@@ -72,6 +81,9 @@ class GoalWorkflowExpectedOutcome(BaseModel):
     required_recovery_terms: list[str] = Field(default_factory=list)
     failure_stage: Literal["clarification", "draft", "prepare", "execute"] | None = None
     clarification_locale: Literal["zh-CN", "en-US"] | None = None
+    clarification_concepts: list[GoalWorkflowClarificationConcept] = Field(
+        default_factory=list
+    )
     output_locale: Literal["zh-CN", "en-US"] | None = None
 
 

@@ -207,6 +207,7 @@ class GoalPlanningService:
         idea: str,
         category: str | None,
         provider_config: ProviderConfig,
+        timeframe: str | None = None,
         locale: str = "en-US",
         request_id: str | None = None,
     ) -> GoalPlanningResponse:
@@ -216,6 +217,7 @@ class GoalPlanningService:
             idea: The goal idea to check
             category: Optional category for context
             provider_config: Configuration for the provider
+            timeframe: Optional timeframe already supplied by the user
 
         Returns:
             GoalPlanningResponse with state='clarification' if questions needed,
@@ -227,6 +229,7 @@ class GoalPlanningService:
                 request_id=request_id,
                 idea_preview=preview_text(idea),
                 category=category,
+                timeframe=timeframe,
                 provider=summarize_provider_config(provider_config),
             ),
         )
@@ -241,6 +244,7 @@ class GoalPlanningService:
                     content=build_goal_clarification_user_prompt(
                         idea=idea,
                         category=category,
+                        timeframe=timeframe,
                         locale=locale,
                     ),
                 ),
@@ -351,6 +355,7 @@ class GoalPlanningService:
                 idea=idea,
                 category=category,
                 provider_config=provider_config,
+                timeframe=timeframe,
                 locale=locale,
                 request_id=request_id,
             )

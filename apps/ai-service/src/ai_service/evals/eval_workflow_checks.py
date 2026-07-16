@@ -68,6 +68,27 @@ def check_clarification_contract(
                 ),
             )
         )
+    clarification_blob = trace.clarification_text.lower()
+    for concept in case.expected.clarification_concepts:
+        matched_terms = [
+            term for term in concept.terms if term.lower() in clarification_blob
+        ]
+        passed = bool(matched_terms)
+        checks.append(
+            EvalCheck(
+                name=f"clarification_covers:{concept.name}",
+                passed=passed,
+                detail=(
+                    f"Clarification covers {concept.name} via "
+                    f"{matched_terms[0]!r}."
+                    if passed
+                    else (
+                        f"Clarification does not cover {concept.name}; expected "
+                        f"one of {concept.terms}."
+                    )
+                ),
+            )
+        )
     return checks
 
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-16T07:36:42.977785+00:00",
+  "generated_at": "2026-07-16T08:12:02.982671+00:00",
   "mode": "live",
   "provider": "openai",
   "model": "gemini-2.5-flash",
@@ -17,7 +17,7 @@
   "gate_passed": true,
   "gate_failures": [],
   "baseline_path": "evals/goal_workflow_live_baseline.json",
-  "archive_path": "../../reports/apps/ai-service/evals/goal-workflow-live-history/2026-07-16T07-36-42.977785+00-00.json",
+  "archive_path": "../../reports/apps/ai-service/evals/goal-workflow-live-history/2026-07-16T08-12-02.982671+00-00.json",
   "results": [
     {
       "id": "live-goal-workflow-clarification-quality",
@@ -59,7 +59,7 @@
         {
           "name": "clarification_covers:timeline",
           "passed": true,
-          "detail": "Clarification covers timeline via 'deadline'."
+          "detail": "Clarification covers timeline via 'timeline'."
         },
         {
           "name": "structured_output_uses:en-US",
@@ -97,7 +97,7 @@
         "tool_calls_seen": [
           "submit_goal_automation_plan"
         ],
-        "goal_title": "Enhance Work Planning for Improved Productivity",
+        "goal_title": "Enhance Work Planning and Execution",
         "action_tools": [
           "create_goal",
           "create_key_result"
@@ -120,7 +120,7 @@
         "failure_stage": null,
         "failure_detail": null,
         "clarification_question_count": 3,
-        "clarification_text": "How will you measure improved planning? Understanding success metrics is crucial for tracking progress and knowing when the goal is achieved. By when do you want to achieve this improvement? A deadline helps create urgency and structure for planning. What specific aspects of work planning do you want to improve? Pinpointing specific areas helps define the scope and focus efforts effectively.",
+        "clarification_text": "What specific outcomes would demonstrate improved planning? Defining success criteria is essential to know if the goal has been achieved. By when do you aim to achieve this improvement? A timeline helps set a realistic scope and creates accountability. What specific problems are you trying to solve with better planning? Understanding the underlying motivation helps focus efforts on the most impactful areas.",
         "recovery": {
           "canRetry": false,
           "failedActions": [],
@@ -169,7 +169,7 @@
         {
           "name": "clarification_question_count_in_range",
           "passed": true,
-          "detail": "Clarification returned 3 question(s)."
+          "detail": "Clarification returned 2 question(s)."
         },
         {
           "name": "clarification_mentions:success",
@@ -195,22 +195,18 @@
         "action_tools": [],
         "clarification_questions": [
           {
-            "question": "How will you know your work planning has improved?",
-            "context": "Defining success criteria helps measure progress and determine when the goal is achieved."
+            "question": "What specific aspects of your work planning do you want to improve?",
+            "context": "Understanding the specific areas for improvement will help define clear success criteria."
           },
           {
-            "question": "By when do you want to achieve this improvement?",
-            "context": "A timeline helps set a realistic pace and creates accountability."
-          },
-          {
-            "question": "What specific aspects of your current planning need improvement?",
-            "context": "Understanding the specific areas for improvement helps define the scope and focus efforts effectively."
+            "question": "By what date do you aim to achieve this improvement?",
+            "context": "A target date is essential for setting a realistic timeline and tracking progress."
           }
         ],
         "usage": {
           "promptTokens": 328,
-          "completionTokens": 200,
-          "totalTokens": 830
+          "completionTokens": 141,
+          "totalTokens": 690
         }
       }
     }

@@ -1,23 +1,80 @@
 [
   {
-    "id": "live-goal-workflow-direct-submit",
+    "id": "live-goal-workflow-clarification-quality",
     "type": "goal_workflow",
-    "description": "Live provider should complete the direct goal workflow path and submit an automation plan.",
+    "description": "Live provider must identify the missing success criteria and timeline, ask at most three English clarification questions, then complete the workflow.",
     "initial_request": {
-      "idea": "Create a concrete AI workflow goal for weekly execution reviews with one measurable milestone.",
+      "idea": "I want to improve how I plan my work, but I have not decided what success means or by when.",
       "category": "work",
-      "timeframe": "this quarter",
       "include_key_results": true,
-      "include_task_templates": false
+      "include_task_templates": false,
+      "locale": "en-US"
     },
+    "clarification_answers": [
+      "Success means completing at least 90% of weekly priorities and reducing missed deadlines by 30%.",
+      "Reach that result within eight weeks through weekly planning and Friday reviews, using exactly one measurable key result."
+    ],
     "expected": {
-      "stage_sequence": ["draft", "confirm", "result"],
+      "stage_sequence": ["clarification", "draft", "confirm", "result"],
       "action_tools": ["create_goal", "create_key_result"],
       "execution_status": "success",
       "can_retry": false,
-      "goal_terms": ["workflow"],
+      "goal_terms": ["planning"],
       "required_tool_calls": ["submit_goal_automation_plan"],
-      "required_recovery_terms": []
+      "required_recovery_terms": [],
+      "clarification_locale": "en-US",
+      "clarification_concepts": [
+        {
+          "name": "success_criteria",
+          "terms": [
+            "success",
+            "measure",
+            "measurable",
+            "metric",
+            "target",
+            "outcome",
+            "result",
+            "criteria",
+            "how will you know"
+          ]
+        },
+        {
+          "name": "timeline",
+          "terms": [
+            "timeline",
+            "time frame",
+            "timeframe",
+            "deadline",
+            "when",
+            "by when",
+            "duration",
+            "how long"
+          ]
+        }
+      ],
+      "output_locale": "en-US"
+    }
+  },
+  {
+    "id": "live-goal-agent-runtime-clarification",
+    "type": "agent_runtime_goal_create",
+    "description": "Live provider must drive the production goal.create graph into targeted clarification before any draft or action plan is created.",
+    "initial_request": {
+      "idea": "I want to improve how I plan my work, but I have not decided what success means or by when.",
+      "identity_id": "identity-live-eval",
+      "category": "work",
+      "request_id": "live-goal-agent-runtime-clarification"
+    },
+    "expected": {
+      "run_status": "waiting_clarification",
+      "stage": "clarify",
+      "min_key_results": 0,
+      "goal_draft_expected": false,
+      "expected_action_tools": [],
+      "require_approval_interrupt": false,
+      "require_clarification_interrupt": true,
+      "clarification_question_count_max": 3,
+      "expected_clarification_terms": ["success", "timeline"]
     }
   }
 ]

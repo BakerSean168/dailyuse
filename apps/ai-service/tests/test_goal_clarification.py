@@ -179,12 +179,17 @@ class TestGoalClarificationService:
             idea="I want to learn something.",
             category=None,
             provider_config=provider_config,
+            timeframe="this quarter",
         )
 
         assert response.state == "clarification"
         assert response.clarification is not None
         assert response.clarification.needs_clarification is True
         assert len(response.clarification.questions) == 2
+        user_prompt = mock_chat_service.complete.await_args.kwargs["messages"][
+            1
+        ].content
+        assert "Timeframe: this quarter" in user_prompt
 
     async def test_clarify_returns_draft_state(
         self, service, mock_chat_service, provider_config
@@ -260,6 +265,7 @@ class TestGoalClarificationService:
             )
 
             assert response.state == "clarification"
+            assert mock_clarify.await_args.kwargs["timeframe"] is None
             # It shouldn't call plan()
             mock_chat_service.complete.assert_not_called()
 

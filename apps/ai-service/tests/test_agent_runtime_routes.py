@@ -286,10 +286,17 @@ def test_start_goal_create_agent_run_accepts_read_only_context(client):
 
 
 def test_start_goal_create_agent_run_uses_provider_backed_planner(client):
-    with patch(
-        "ai_service.services.goal_planning_service.GoalPlanningService.plan",
-        new_callable=AsyncMock,
-    ) as mock_plan:
+    with (
+        patch(
+            "ai_service.services.goal_planning_service.GoalPlanningService.clarify",
+            new_callable=AsyncMock,
+        ) as mock_clarify,
+        patch(
+            "ai_service.services.goal_planning_service.GoalPlanningService.plan",
+            new_callable=AsyncMock,
+        ) as mock_plan,
+    ):
+        mock_clarify.return_value = GoalPlanningResponse(state="draft")
         mock_plan.return_value = GoalPlanningResponse.model_validate(
             {
                 "goal": {
@@ -348,11 +355,93 @@ def test_start_goal_create_agent_run_uses_provider_backed_planner(client):
     assert data["state"]["artifacts"][0]["data"]["title"] == (
         "Ship planner-backed Agent workflow"
     )
+    mock_clarify.assert_awaited_once()
+    clarify_kwargs = mock_clarify.await_args.kwargs
+    assert clarify_kwargs["provider_config"].model == "gpt-4o-mini"
+    assert clarify_kwargs["timeframe"] is None
+    assert clarify_kwargs["locale"] == "en-US"
+    assert clarify_kwargs["request_id"] == "request-planner-route"
     mock_plan.assert_awaited_once()
     kwargs = mock_plan.await_args.kwargs
     assert kwargs["provider_config"].model == "gpt-4o-mini"
+    assert kwargs["timeframe"] is None
     assert kwargs["locale"] == "en-US"
     assert kwargs["request_id"] == "request-planner-route"
+
+
+def test_start_goal_create_agent_run_uses_provider_backed_clarification(client):
+    with (
+        patch(
+            "ai_service.services.goal_planning_service.GoalPlanningService.clarify",
+            new_callable=AsyncMock,
+        ) as mock_clarify,
+        patch(
+            "ai_service.services.goal_planning_service.GoalPlanningService.plan",
+            new_callable=AsyncMock,
+        ) as mock_plan,
+    ):
+        mock_clarify.return_value = GoalPlanningResponse.model_validate(
+            {
+                "state": "clarification",
+                "clarification": {
+                    "needsClarification": True,
+                    "rationale": "Success criteria and timeline are missing.",
+                    "questions": [
+                        {
+                            "question": "How will you measure success?",
+                            "context": "A target makes the result verifiable.",
+                        },
+                        {
+                            "question": "By when should you reach it?",
+                            "context": "A deadline determines the plan horizon.",
+                        },
+                    ],
+                },
+            }
+        )
+
+        response = client.post(
+            "/internal/agents/runs",
+            json={
+                "runId": "run-provider-clarification-route",
+                "threadId": "thread-provider-clarification-route",
+                "identityId": "identity-1",
+                "agentType": "goal.create",
+                "locale": "en-US",
+                "input": {
+                    "idea": (
+                        "I want to improve how I plan my work, but I have not "
+                        "decided what success means or by when."
+                    ),
+                    "category": "work",
+                    "provider_config": {
+                        "provider": "openai",
+                        "model": "gpt-4o-mini",
+                        "api_key": "test-key",
+                    },
+                },
+            },
+            headers={"X-Request-Id": "request-provider-clarification-route"},
+        )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["run"]["status"] == "waiting_clarification"
+    assert data["interrupts"][0]["rationale"] == (
+        "Success criteria and timeline are missing."
+    )
+    assert [
+        question["question"] for question in data["interrupts"][0]["questions"]
+    ] == [
+        "How will you measure success?",
+        "By when should you reach it?",
+    ]
+    mock_plan.assert_not_awaited()
+    mock_clarify.assert_awaited_once()
+    kwargs = mock_clarify.await_args.kwargs
+    assert kwargs["provider_config"].model == "gpt-4o-mini"
+    assert kwargs["locale"] == "en-US"
+    assert kwargs["request_id"] == "request-provider-clarification-route"
 
 
 def test_start_goal_create_agent_run_pauses_for_clarification_when_input_is_brief(

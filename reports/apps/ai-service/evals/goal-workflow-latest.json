@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-15T17:57:59.691180+00:00",
+  "generated_at": "2026-07-16T08:15:59.781126+00:00",
   "mode": "deterministic",
   "provider": null,
   "model": null,
@@ -16,7 +16,7 @@
   "gate_passed": true,
   "gate_failures": [],
   "baseline_path": "evals/goal_workflow_baseline.json",
-  "archive_path": "../../reports/apps/ai-service/evals/goal-workflow-history/2026-07-15T17-57-59.691180+00-00.json",
+  "archive_path": "../../reports/apps/ai-service/evals/goal-workflow-history/2026-07-16T08-15-59.781126+00-00.json",
   "results": [
     {
       "id": "goal-workflow-clarification-search-notes-partial",
@@ -120,6 +120,8 @@
         "execution_status": "partial",
         "failure_stage": null,
         "failure_detail": null,
+        "clarification_question_count": 2,
+        "clarification_text": "你最想先改善哪一段 workflow？ 先确定第一优先级。 你希望这套 workflow 以什么节奏运行？ 这会影响关键结果和任务节奏。",
         "recovery": {
           "canRetry": true,
           "failedActions": [
@@ -226,6 +228,8 @@
         "execution_status": "success",
         "failure_stage": null,
         "failure_detail": null,
+        "clarification_question_count": 0,
+        "clarification_text": "",
         "recovery": {
           "canRetry": false,
           "failedActions": [],
@@ -318,6 +322,8 @@
         "execution_status": "success",
         "failure_stage": null,
         "failure_detail": null,
+        "clarification_question_count": 0,
+        "clarification_text": "",
         "recovery": {
           "canRetry": false,
           "failedActions": [],
@@ -382,6 +388,8 @@
         "execution_status": null,
         "failure_stage": "prepare",
         "failure_detail": "Provider requested goal automation tools that are not available in the current read-only runtime.",
+        "clarification_question_count": 0,
+        "clarification_text": "",
         "recovery": null,
         "completion_count": 3
       }
@@ -494,6 +502,8 @@
         "execution_status": "success",
         "failure_stage": null,
         "failure_detail": null,
+        "clarification_question_count": 2,
+        "clarification_text": "每周计划运动几次？ 频率决定任务节奏。 何时判断习惯已经稳定？ 时间范围用于设置里程碑。",
         "recovery": {
           "canRetry": false,
           "failedActions": [],
@@ -610,6 +620,8 @@
         "execution_status": "success",
         "failure_stage": null,
         "failure_detail": null,
+        "clarification_question_count": 2,
+        "clarification_text": "Which weekly outcome matters most? A success criterion keeps the goal measurable. When should this routine feel established? A deadline shapes milestones.",
         "recovery": {
           "canRetry": false,
           "failedActions": [],
@@ -726,6 +738,8 @@
         "execution_status": "success",
         "failure_stage": null,
         "failure_detail": null,
+        "clarification_question_count": 2,
+        "clarification_text": "复盘需要覆盖哪些具体结果？ 明确范围才能设计指标。 你希望何时达到稳定节奏？ 期限决定行动计划。",
         "recovery": {
           "canRetry": false,
           "failedActions": [],

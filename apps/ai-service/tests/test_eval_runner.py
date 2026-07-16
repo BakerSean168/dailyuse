@@ -4,9 +4,17 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from ai_service.errors import UpstreamProviderError
+from ai_service.evals.eval_cli import (
+    RetryingLiveChatService,
+    resolve_live_eval_config,
+)
+from ai_service.evals.eval_workflow_checks import check_clarification_contract
+from ai_service.evals.goal_workflow_harness import GoalWorkflowTrace
 from ai_service.evals.runner import (
     DEFAULT_PROVIDER,
     EvalPolicy,
@@ -21,6 +29,91 @@ from ai_service.evals.runner import (
     load_report,
 )
 from ai_service.schemas import ChatCompleteResponse, ChatToolCall, ChatToolCallFunction
+
+
+def test_live_eval_config_uses_configurable_completion_budget(monkeypatch):
+    monkeypatch.setenv("AI_SERVICE_EVAL_MAX_TOKENS", "4096")
+    config = resolve_live_eval_config(
+        SimpleNamespace(
+            provider="openai",
+            model="gemini-2.5-flash",
+            api_key="test-key",
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai",
+            temperature=0.2,
+            max_tokens=None,
+        )
+    )
+
+    assert config.provider_config.max_tokens == 4096
+
+
+def test_live_eval_config_rejects_nonpositive_completion_budget():
+    with pytest.raises(ValueError, match="greater than zero"):
+        resolve_live_eval_config(
+            SimpleNamespace(
+                provider="openai",
+                model="gemini-2.5-flash",
+                api_key="test-key",
+                base_url=None,
+                temperature=0.2,
+                max_tokens=0,
+            )
+        )
+
+
+@pytest.mark.asyncio
+async def test_live_eval_chat_service_retries_transient_upstream_failures():
+    class FlakyChatService:
+        def __init__(self):
+            self.calls = 0
+
+        async def complete(self, messages, config, *, tools=None, tool_choice=None):
+            del messages, config, tools, tool_choice
+            self.calls += 1
+            if self.calls < 3:
+                raise UpstreamProviderError(
+                    "temporary capacity error",
+                    upstream_status_code=503,
+                )
+            return ChatCompleteResponse(content="ok", finish_reason="stop")
+
+    delegate = FlakyChatService()
+    service = RetryingLiveChatService(
+        delegate,  # type: ignore[arg-type]
+        max_attempts=3,
+        base_delay_seconds=0,
+    )
+
+    response = await service.complete([], DEFAULT_PROVIDER)
+
+    assert response.content == "ok"
+    assert delegate.calls == 3
+
+
+@pytest.mark.asyncio
+async def test_live_eval_chat_service_does_not_retry_nontransient_failures():
+    class InvalidRequestChatService:
+        def __init__(self):
+            self.calls = 0
+
+        async def complete(self, messages, config, *, tools=None, tool_choice=None):
+            del messages, config, tools, tool_choice
+            self.calls += 1
+            raise UpstreamProviderError(
+                "invalid request",
+                upstream_status_code=400,
+            )
+
+    delegate = InvalidRequestChatService()
+    service = RetryingLiveChatService(
+        delegate,  # type: ignore[arg-type]
+        base_delay_seconds=0,
+    )
+
+    with pytest.raises(UpstreamProviderError, match="invalid request"):
+        await service.complete([], DEFAULT_PROVIDER)
+
+    assert delegate.calls == 1
 
 
 @pytest.mark.asyncio
@@ -206,32 +299,41 @@ async def test_eval_runner_supports_live_goal_workflow_with_stubbed_provider():
     cases = load_eval_cases(cases_path)
     clarification_json = json.dumps(
         {
-            "needsClarification": False,
-            "questions": [],
-            "rationale": "The idea is specific enough.",
+            "needsClarification": True,
+            "questions": [
+                {
+                    "question": "How will you measure success?",
+                    "context": "A measurable target keeps the goal concrete.",
+                },
+                {
+                    "question": "By when should you reach this result?",
+                    "context": "A timeline defines the planning horizon.",
+                },
+            ],
+            "rationale": "The success criteria and timeline are missing.",
         }
     )
     draft_goal = {
-        "title": "Create a concrete AI workflow goal",
+        "title": "Improve weekly work planning",
         "description": (
-            "Run weekly execution reviews around one measurable milestone."
+            "Complete weekly priorities more reliably through planning and reviews."
         ),
-        "motivation": "Keep AI workflow progress visible.",
+        "motivation": "Reduce missed deadlines and keep priorities visible.",
         "category": "work",
         "importance": "Important",
-        "tags": ["ai", "workflow"],
-        "feasibilityAnalysis": ("One milestone and a weekly ritual are narrow enough."),
+        "tags": ["planning", "weekly-review"],
+        "feasibilityAnalysis": "An eight-week planning routine is narrow enough.",
         "aiInsights": (
-            "Start with the execution review loop before adding more automation."
+            "Use one measurable result before adding more planning metrics."
         ),
-        "suggestedDurationDays": 90,
+        "suggestedDurationDays": 56,
     }
     draft_key_results = [
         {
-            "title": "Finish one workflow milestone",
-            "description": "Ship one measurable workflow improvement.",
-            "targetValue": 1,
-            "unit": "milestone",
+            "title": "Complete weekly priorities reliably",
+            "description": "Complete at least 90% of weekly priorities.",
+            "targetValue": 90,
+            "unit": "percent",
         }
     ]
     draft_response = json.dumps(
@@ -242,7 +344,7 @@ async def test_eval_runner_supports_live_goal_workflow_with_stubbed_provider():
     )
     submit_plan = json.dumps(
         {
-            "summary": ("Create the goal and attach one measurable key result."),
+            "summary": "Create the planning goal and one measurable key result.",
             "goal": draft_goal,
             "keyResults": draft_key_results,
             "taskTemplates": [],
@@ -285,17 +387,76 @@ async def test_eval_runner_supports_live_goal_workflow_with_stubbed_provider():
                         "total_tokens": 18,
                     },
                 ),
+                clarification_json,
             ]
         ),
+    )
+    policy = EvalPolicy.model_validate_json(
+        (root / "evals" / "goal_workflow_live_policy.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    gate_failures = evaluate_quality_gate(
+        report_results=results,
+        policy=policy,
     )
     report = build_report(
         cases_path=cases_path,
         results=results,
         mode="live",
         provider_config=DEFAULT_PROVIDER,
+        gate_failures=gate_failures,
     )
 
-    assert report.total_cases == 1
+    assert report.total_cases == 2
     assert report.failed_cases == 0
-    assert report.by_type == {"goal_workflow": 1}
+    assert report.gate_passed
+    assert policy.minimum_pass_rate == 1.0
+    assert policy.require_no_new_failures
+    assert policy.required_case_ids == [
+        "live-goal-workflow-clarification-quality",
+        "live-goal-agent-runtime-clarification",
+    ]
+    assert report.by_type == {
+        "agent_runtime_goal_create": 1,
+        "goal_workflow": 1,
+    }
     assert results[0].metadata["execution_status"] == "success"
+    assert results[0].metadata["clarification_question_count"] == 2
+    assert {
+        check.name for check in results[0].checks if check.passed
+    } >= {
+        "clarification_covers:success_criteria",
+        "clarification_covers:timeline",
+        "clarification_uses:en-US",
+    }
+    assert results[1].metadata["run_status"] == "waiting_clarification"
+    assert results[1].metadata["action_tools"] == []
+    assert {
+        check.name for check in results[1].checks if check.passed
+    } >= {
+        "clarification_interrupt_present",
+        "clarification_question_count_in_range",
+        "clarification_mentions:success",
+        "clarification_mentions:timeline",
+    }
+
+
+def test_live_goal_workflow_contract_rejects_generic_clarification():
+    """A generic question must not satisfy distinct missing-information checks."""
+
+    root = Path(__file__).resolve().parents[1]
+    case = load_eval_cases(
+        root / "evals" / "goal_workflow_live_cases.json"
+    )[0]
+    checks = check_clarification_contract(
+        case,
+        GoalWorkflowTrace(
+            clarification_question_count=1,
+            clarification_text="What else would you like to add to this goal?",
+        ),
+    )
+    checks_by_name = {check.name: check for check in checks}
+
+    assert not checks_by_name["clarification_covers:success_criteria"].passed
+    assert not checks_by_name["clarification_covers:timeline"].passed

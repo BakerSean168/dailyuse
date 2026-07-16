@@ -28,11 +28,13 @@ def load_agent_runtime_cases() -> list[EvalCase]:
     return TypeAdapter(list[EvalCase]).validate_python(raw)
 
 
-def agent_runtime_goal_case() -> AgentRuntimeGoalCreateEvalCase:
+def agent_runtime_goal_case(
+    case_id: str = "agent-runtime-goal-create-planner-draft",
+) -> AgentRuntimeGoalCreateEvalCase:
     return next(
         case
         for case in load_agent_runtime_cases()
-        if isinstance(case, AgentRuntimeGoalCreateEvalCase)
+        if isinstance(case, AgentRuntimeGoalCreateEvalCase) and case.id == case_id
     )
 
 
@@ -75,6 +77,29 @@ async def test_goal_create_harness_runs_planner_backed_agent_runtime_case():
         "create_task_template",
         "create_reminder",
     ]
+
+
+@pytest.mark.asyncio
+async def test_goal_create_harness_runs_provider_clarification_case():
+    """The goal.create eval case should exercise provider-derived questions."""
+
+    result = await run_agent_runtime_goal_create_case(
+        agent_runtime_goal_case(
+            "agent-runtime-goal-create-provider-clarification"
+        )
+    )
+
+    assert result.run.status == "waiting_clarification"
+    assert result.state.stage == "clarify"
+    assert result.state.artifacts == []
+    assert result.state.pending_actions == []
+    clarification = result.interrupts[0]
+    assert clarification["type"] == "clarification.required"
+    assert [question["question"] for question in clarification["questions"]] == [
+        "How will you measure success?",
+        "What timeline should the goal use?",
+    ]
+    assert result.state.usage.total_tokens == 9
 
 
 @pytest.mark.asyncio
@@ -129,10 +154,10 @@ async def test_eval_runner_passes_bundled_agent_runtime_cases():
     results = await evaluate_cases(cases)
     report = build_report(cases_path=cases_path, results=results)
 
-    assert report.total_cases == 3
+    assert report.total_cases == 4
     assert report.failed_cases == 0
     assert report.by_type == {
-        "agent_runtime_goal_create": 1,
+        "agent_runtime_goal_create": 2,
         "agent_runtime_knowledge_generate": 1,
         "agent_runtime_knowledge_qa": 1,
     }

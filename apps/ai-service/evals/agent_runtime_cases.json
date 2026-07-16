@@ -1,5 +1,50 @@
 [
   {
+    "id": "agent-runtime-goal-create-provider-clarification",
+    "type": "agent_runtime_goal_create",
+    "description": "goal.create runtime should use the provider clarification decision to identify missing success criteria and timeline before drafting.",
+    "initial_request": {
+      "idea": "I want to improve how I plan my work, but I have not decided what success means or by when.",
+      "identity_id": "identity-1",
+      "category": "work",
+      "request_id": "agent-runtime-eval-clarification"
+    },
+    "clarification_response": {
+      "state": "clarification",
+      "clarification": {
+        "needsClarification": true,
+        "rationale": "The request is missing success criteria and a timeline.",
+        "questions": [
+          {
+            "question": "How will you measure success?",
+            "context": "A measurable target defines the expected outcome."
+          },
+          {
+            "question": "What timeline should the goal use?",
+            "context": "A deadline defines the planning horizon."
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 5,
+        "completion_tokens": 4,
+        "total_tokens": 9
+      }
+    },
+    "expected": {
+      "run_status": "waiting_clarification",
+      "stage": "clarify",
+      "min_key_results": 0,
+      "goal_draft_expected": false,
+      "expected_action_tools": [],
+      "require_approval_interrupt": false,
+      "require_clarification_interrupt": true,
+      "clarification_question_count_max": 3,
+      "expected_clarification_terms": ["success", "timeline"],
+      "usage_total_tokens": 9
+    }
+  },
+  {
     "id": "agent-runtime-goal-create-planner-draft",
     "type": "agent_runtime_goal_create",
     "description": "goal.create runtime should turn a planner response into an approval-gated goal draft and action plan.",

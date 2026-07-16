@@ -291,6 +291,7 @@ def build_goal_clarification_user_prompt(
     *,
     idea: str,
     category: str | None = None,
+    timeframe: str | None = None,
     locale: str = "en-US",
 ) -> str:
     """Build user prompt for clarification check.
@@ -298,6 +299,7 @@ def build_goal_clarification_user_prompt(
     Args:
         idea: The goal idea to evaluate
         category: Optional category hint for context
+        timeframe: Optional timeframe already supplied by the user
 
     Returns:
         User prompt string
@@ -308,6 +310,7 @@ def build_goal_clarification_user_prompt(
             [
                 f"Goal idea: {idea}",
                 f"Category: {category}" if category else None,
+                f"Timeframe: {timeframe}" if timeframe else None,
                 f"UI locale: {locale}",
                 "",
                 (

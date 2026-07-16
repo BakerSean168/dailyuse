@@ -227,7 +227,12 @@ def test_goal_create_graph_projects_supplied_read_only_context():
 def test_goal_create_graph_uses_goal_planning_service_when_provider_config_supplied():
     class StubGoalPlanningService:
         def __init__(self):
+            self.clarification_calls = []
             self.calls = []
+
+        async def clarify(self, **kwargs):
+            self.clarification_calls.append(kwargs)
+            return GoalPlanningResponse(state="draft")
 
         async def plan(self, **kwargs):
             self.calls.append(kwargs)
@@ -284,6 +289,12 @@ def test_goal_create_graph_uses_goal_planning_service_when_provider_config_suppl
     )
     assert service.calls[0]["provider_config"].model == "gpt-4o-mini"
     assert service.calls[0]["request_id"] == "request-planner"
+    assert service.clarification_calls[0]["idea"] == (
+        "Ship the AI Agent workspace with approval gates"
+    )
+    assert service.clarification_calls[0]["provider_config"].model == "gpt-4o-mini"
+    assert service.clarification_calls[0]["timeframe"] is None
+    assert service.clarification_calls[0]["request_id"] == "request-planner"
     assert result.waiting_for_approval is True
     assert result.state.usage.total_tokens == 12
     goal_artifact = next(
@@ -311,6 +322,131 @@ def test_goal_create_graph_uses_goal_planning_service_when_provider_config_suppl
         "create_reminder",
     ]
     assert result.state.pending_actions[3].depends_on == [0]
+
+
+def test_goal_create_graph_uses_provider_to_identify_missing_information():
+    class StubGoalPlanningService:
+        def __init__(self):
+            self.clarification_calls = []
+            self.plan_calls = []
+
+        async def clarify(self, **kwargs):
+            self.clarification_calls.append(kwargs)
+            return GoalPlanningResponse.model_validate(
+                {
+                    "state": "clarification",
+                    "clarification": {
+                        "needsClarification": True,
+                        "rationale": (
+                            "The request does not define success or a deadline."
+                        ),
+                        "questions": [
+                            {
+                                "question": "How will you measure success?",
+                                "context": "A measurable target defines the outcome.",
+                            },
+                            {
+                                "question": "By when should this be achieved?",
+                                "context": "A deadline defines the planning horizon.",
+                            },
+                        ],
+                    },
+                    "usage": {
+                        "prompt_tokens": 5,
+                        "completion_tokens": 4,
+                        "total_tokens": 9,
+                    },
+                }
+            )
+
+        async def plan(self, **kwargs):
+            self.plan_calls.append(kwargs)
+            return GoalPlanningResponse(
+                goal=PlannedGoal(
+                    title="Improve weekly work planning",
+                    description="Use weekly planning and review to meet priorities.",
+                    motivation="Reduce missed deadlines.",
+                    category="work",
+                    importance="Important",
+                    tags=["planning"],
+                    feasibilityAnalysis="An eight-week routine is achievable.",
+                    aiInsights="Start with one measurable completion target.",
+                    suggestedStartDate=2000,
+                    suggestedEndDate=3000,
+                ),
+                keyResults=[
+                    KeyResultDraft(
+                        title="Complete weekly priorities",
+                        description="Complete at least 90% of weekly priorities.",
+                        targetValue=90,
+                        unit="percent",
+                    )
+                ],
+                usage={
+                    "prompt_tokens": 7,
+                    "completion_tokens": 5,
+                    "total_tokens": 12,
+                },
+            )
+
+    service = StubGoalPlanningService()
+    runtime = GoalCreateAgentRuntime(
+        clock=lambda: 1000,
+        goal_planning_service=service,
+    )
+
+    result = runtime.start_goal_create(
+        run_id="run-provider-clarification",
+        thread_id="thread-provider-clarification",
+        identity_id="identity-1",
+        idea=(
+            "I want to improve how I plan my work, but I have not decided what "
+            "success means or by when."
+        ),
+        category="work",
+        provider_config=ProviderConfig(
+            provider="openai",
+            model="gpt-4o-mini",
+            api_key="test-key",
+        ),
+        request_id="request-provider-clarification",
+    )
+
+    assert result.waiting_for_clarification is True
+    assert result.interrupts[0]["rationale"] == (
+        "The request does not define success or a deadline."
+    )
+    assert [
+        question["question"] for question in result.interrupts[0]["questions"]
+    ] == [
+        "How will you measure success?",
+        "By when should this be achieved?",
+    ]
+    assert result.state.usage.total_tokens == 9
+    assert service.plan_calls == []
+    assert service.clarification_calls[0]["locale"] == "en-US"
+    assert service.clarification_calls[0]["request_id"] == (
+        "request-provider-clarification"
+    )
+    assert result.state.pending_actions == []
+
+    resumed = runtime.resume_goal_create(
+        thread_id="thread-provider-clarification",
+        payload=AgentResumePayload(
+            userDecision="clarify",
+            clarificationAnswers=[
+                "Complete at least 90% of weekly priorities.",
+                "Reach the result within eight weeks.",
+            ],
+        ),
+    )
+
+    assert resumed.waiting_for_approval is True
+    assert len(service.clarification_calls) == 1
+    assert len(service.plan_calls) == 1
+    assert "Complete at least 90%" in service.plan_calls[0]["idea"]
+    assert "within eight weeks" in service.plan_calls[0]["idea"]
+    assert resumed.state.usage.total_tokens == 21
 
 
 def test_goal_create_graph_pauses_for_clarification_when_input_is_too_brief():

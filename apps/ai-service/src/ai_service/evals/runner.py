@@ -215,10 +215,18 @@ async def evaluate_agent_runtime_goal_create(
     chat_service: ChatService | StubChatService | None = None,
     provider_config: ProviderConfig | None = None,
 ) -> EvalResult:
-    """Run deterministic goal.create Agent runtime checks."""
+    """Run deterministic or live-provider goal.create runtime checks."""
 
-    del chat_service, provider_config
-    response = await run_agent_runtime_goal_create_case(case)
+    planning_service = None
+    if provider_config is not None:
+        if chat_service is None:
+            raise ValueError("Live goal.create runtime eval requires a chat service.")
+        planning_service = GoalPlanningService(cast(ChatService, chat_service))
+    response = await run_agent_runtime_goal_create_case(
+        case,
+        goal_planning_service=planning_service,
+        provider_config=provider_config,
+    )
     return build_agent_runtime_goal_create_eval_result(
         case=case,
         response=response,
@@ -354,6 +362,8 @@ def build_goal_workflow_eval_result(
             ),
             "failure_stage": trace.failure_stage,
             "failure_detail": trace.failure_detail,
+            "clarification_question_count": trace.clarification_question_count,
+            "clarification_text": trace.clarification_text,
             "recovery": trace.recovery,
             "completion_count": trace.completion_count,
         },

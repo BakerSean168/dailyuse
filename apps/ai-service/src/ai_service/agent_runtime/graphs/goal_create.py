@@ -58,6 +58,21 @@ class GoalPlanningCallback(Protocol):
     ) -> Awaitable[GoalPlanningResponse]: ...
 
 
+class GoalClarificationCallback(Protocol):
+    """Async clarification callback owned by the runtime facade."""
+
+    def __call__(
+        self,
+        *,
+        idea: str,
+        category: str | None,
+        timeframe: str | None,
+        provider_config: ProviderConfig,
+        locale: str,
+        request_id: str | None = None,
+    ) -> Awaitable[GoalPlanningResponse]: ...
+
+
 class GoalCreateGraphState(TypedDict, total=False):
     """Serializable state used by the experimental goal.create graph."""
 
@@ -335,6 +350,24 @@ def _normalize_usage(usage: dict[str, Any] | None) -> dict[str, Any]:
         ),
         "totalTokens": usage.get("totalTokens", usage.get("total_tokens")),
     }
+
+
+def _merge_usage(
+    current: dict[str, Any] | None,
+    incoming: dict[str, Any] | None,
+) -> dict[str, Any]:
+    normalized_current = _normalize_usage(current)
+    normalized_incoming = _normalize_usage(incoming)
+    merged: dict[str, Any] = {}
+    for key in ("promptTokens", "completionTokens", "totalTokens"):
+        values = [
+            value
+            for value in (normalized_current.get(key), normalized_incoming.get(key))
+            if isinstance(value, int)
+        ]
+        if values:
+            merged[key] = sum(values)
+    return merged
 
 
 def _coerce_numeric(value: Any, fallback: float) -> float:
@@ -1034,6 +1067,7 @@ def create_goal_create_initial_state(
 def build_goal_create_graph(
     *,
     clock: Clock = _default_clock_ms,
+    goal_clarifier: GoalClarificationCallback | None = None,
     goal_planner: GoalPlanningCallback | None = None,
 ) -> Any:
     """Compile a minimal goal.create graph with an approval interrupt."""
@@ -1083,9 +1117,30 @@ def build_goal_create_graph(
             ),
         }
 
-    def clarify(state: GoalCreateGraphState) -> GraphUpdate:
+    async def clarify(state: GoalCreateGraphState) -> GraphUpdate:
         events = _node_event(state, "clarify", clock)
-        if not _needs_clarification(state):
+        provider_config = state.get("provider_config")
+        clarification_response: GoalPlanningResponse | None = None
+        usage = state.get("usage", {})
+        if goal_clarifier is not None and isinstance(provider_config, dict):
+            clarification_response = await goal_clarifier(
+                idea=_idea(state),
+                category=state.get("category"),
+                timeframe=state.get("timeframe"),
+                provider_config=ProviderConfig.model_validate(provider_config),
+                locale=_locale(state),
+                request_id=state.get("request_id"),
+            )
+            usage = _merge_usage(usage, clarification_response.usage)
+            if clarification_response.state != "clarification":
+                return {
+                    "stage": "clarify",
+                    "status": "running",
+                    "updated_at": clock(),
+                    "usage": usage,
+                    "events": events,
+                }
+        elif not _needs_clarification(state):
             return {
                 "stage": "clarify",
                 "status": "running",
@@ -1093,18 +1148,42 @@ def build_goal_create_graph(
                 "events": events,
             }
 
+        clarification = (
+            clarification_response.clarification
+            if clarification_response is not None
+            else None
+        )
+        if clarification_response is not None and clarification is None:
+            raise ValueError(
+                "Goal clarification response did not include clarification details."
+            )
+
         now = clock()
         clarification_payload = {
             "type": "clarification.required",
             "runId": _run_id(state),
             "threadId": _thread_id(state),
             "agentType": "goal.create",
-            "rationale": _localized(
-                _locale(state),
-                zh="当前目标想法缺少生成可靠草稿所需的关键信息。",
-                en="The goal idea is missing details needed for a reliable draft.",
+            "rationale": (
+                clarification.rationale
+                if clarification is not None
+                else _localized(
+                    _locale(state),
+                    zh="当前目标想法缺少生成可靠草稿所需的关键信息。",
+                    en=(
+                        "The goal idea is missing details needed for a reliable "
+                        "draft."
+                    ),
+                )
             ),
-            "questions": _clarification_questions(_locale(state)),
+            "questions": (
+                [
+                    question.model_dump(by_alias=True, exclude_none=True)
+                    for question in clarification.questions
+                ]
+                if clarification is not None
+                else _clarification_questions(_locale(state))
+            ),
             "request": {
                 "idea": state.get("idea"),
                 "category": state.get("category"),
@@ -1115,6 +1194,7 @@ def build_goal_create_graph(
             "stage": "clarify",
             "status": "waiting_clarification",
             "updated_at": clock(),
+            "usage": usage,
             "clarification_interrupt": clarification_payload,
             "events": append_agent_event(
                 events,
@@ -1200,7 +1280,7 @@ def build_goal_create_graph(
                 fallback_start_date=start_date,
                 locale=locale,
             )
-            usage = _normalize_usage(planning.usage)
+            usage = _merge_usage(usage, planning.usage)
         else:
             goal_data = {
                 "title": title,
