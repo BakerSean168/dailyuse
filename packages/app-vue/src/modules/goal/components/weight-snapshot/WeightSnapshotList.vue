@@ -298,7 +298,7 @@ const filteredSnapshots = computed(() => {
 const getKRTitle = (krId: string) => {
   const goal = goals.value.find((g: GoalClientDTO) => g.id === props.goalId);
   const kr = goal?.keyResults?.find((k: KeyResultClientDTO) => k.id === krId);
-  return kr?.title || 'Unknown KR';
+  return kr?.title || t('goal.weightSnapshotList.unknownKeyResult');
 };
 
 // 格式化时间

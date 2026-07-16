@@ -40,4 +40,24 @@ describe('web authentication validation', () => {
       }),
     ).toEqual({});
   });
+
+  it('inherits the shared registration password maximum length contract', () => {
+    const passwordAtLimit = `A1${'a'.repeat(98)}`;
+    const passwordOverLimit = `${passwordAtLimit}a`;
+
+    expect(
+      validateRegistration({
+        email: 'person@example.com',
+        password: passwordAtLimit,
+        confirmPassword: passwordAtLimit,
+      }),
+    ).toEqual({});
+    expect(
+      validateRegistration({
+        email: 'person@example.com',
+        password: passwordOverLimit,
+        confirmPassword: passwordOverLimit,
+      }),
+    ).toEqual({ password: 'auth.validation.passwordMaxLength' });
+  });
 });

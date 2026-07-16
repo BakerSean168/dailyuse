@@ -81,6 +81,9 @@ describe('DailyTodoWidget', () => {
     await flushPromises();
 
     expect(completeInstance).toHaveBeenCalledWith('TaskInstanceId_today');
+    expect(wrapper.emitted('completed')).toEqual([
+      [expect.objectContaining({ id: 'TaskInstanceId_today', status: 'Completed' })],
+    ]);
     expect(wrapper.text()).toContain('1/1');
     expect(wrapper.get('.h-full.rounded-full.bg-emerald-500').attributes('style')).toContain(
       'width: 100%',

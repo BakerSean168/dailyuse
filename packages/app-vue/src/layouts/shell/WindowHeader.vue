@@ -202,6 +202,7 @@ onBeforeUnmount(() => {
           <span
             v-if="badgeFor(capsule) > 0"
             class="rounded-full bg-primary/15 px-1.5 text-[9px] font-bold text-primary"
+            :data-testid="`capsule-badge-${capsule.id}`"
           >
             {{ badgeFor(capsule) }}
           </span>

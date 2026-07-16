@@ -2,6 +2,7 @@
   <ActionableWrapper :actions="menuActions" :show-more-button="false">
     <div
       data-testid="notification-item"
+      :data-notification-id="notification.id"
       :data-read-state="notification.isRead ? 'read' : 'unread'"
       :data-notification-type="notification.type"
       :class="[

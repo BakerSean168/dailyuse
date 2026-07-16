@@ -49,6 +49,7 @@ export const zhCNAuthMessages = {
       emailInvalid: '请输入有效的邮箱地址',
       passwordRequired: '请输入密码',
       passwordMinLength: '密码至少需要 8 位',
+      passwordMaxLength: '密码不能超过 100 位',
       passwordComplexity: '密码需包含大写字母、小写字母、数字或特殊字符中的至少两类',
       confirmPasswordRequired: '请再次输入密码',
       passwordMismatch: '两次输入的密码不一致，请重新确认',
@@ -130,6 +131,7 @@ export const enUSAuthMessages = {
       emailInvalid: 'Enter a valid email address',
       passwordRequired: 'Enter your password',
       passwordMinLength: 'Password must be at least 8 characters',
+      passwordMaxLength: 'Password must not exceed 100 characters',
       passwordComplexity:
         'Use at least two of uppercase letters, lowercase letters, numbers, or special characters',
       confirmPasswordRequired: 'Enter your password again',

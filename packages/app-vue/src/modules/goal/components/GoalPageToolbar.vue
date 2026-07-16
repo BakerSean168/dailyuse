@@ -68,6 +68,18 @@
 
     <Button
       variant="ghost"
+      size="icon"
+      class="h-8 w-8 shrink-0"
+      :title="t('common.refresh')"
+      :aria-label="t('common.refresh')"
+      data-testid="goal-refresh-entry"
+      @click="emit('refresh')"
+    >
+      <RefreshCw class="h-4 w-4" />
+    </Button>
+
+    <Button
+      variant="ghost"
       size="sm"
       class="h-8 shrink-0 gap-1.5 px-2 text-muted-foreground"
       :class="focusMode ? 'text-primary' : ''"
@@ -78,7 +90,9 @@
     >
       <Crosshair class="h-4 w-4" />
       <span class="hidden @3xl/panel:inline">{{ t('goal.focusMode.sidebarTitle') }}</span>
-      <span v-if="focusMode" class="text-xs font-medium">{{ remainingDays }}d</span>
+      <span v-if="focusMode" class="text-xs font-medium">
+        {{ t('goal.focusMode.remainingDaysShort', { days: remainingDays }) }}
+      </span>
     </Button>
 
     <Button
@@ -130,6 +144,7 @@ import {
   LayoutGrid,
   MoreHorizontal,
   Plus,
+  RefreshCw,
   Search,
 } from '@lucide/vue';
 import {
@@ -161,6 +176,7 @@ const emit = defineEmits<{
   'open-focus': [];
   'go-focus': [];
   compare: [];
+  refresh: [];
   search: [query: string];
 }>();
 

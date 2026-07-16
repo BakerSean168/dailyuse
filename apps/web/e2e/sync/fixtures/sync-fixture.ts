@@ -1,7 +1,11 @@
 import fs from 'node:fs';
 import { test as base, expect, type Page } from '@playwright/test';
 import { DesktopAppController } from '../helpers/desktop';
-import { ensureE2EAccount, loadSyncCredentials, type SyncCredentials } from '../helpers/credentials';
+import {
+  ensureE2EAccount,
+  loadSyncCredentials,
+  type SyncCredentials,
+} from '../helpers/credentials';
 import { deleteGoalIfPresent, openGoalList } from '../helpers/goal';
 
 type CleanupTracker = (goalName: string) => string;
@@ -21,14 +25,8 @@ async function submitWebLogin(page: Page, credentials: SyncCredentials): Promise
     await loginTab.click();
   }
 
-  await page
-    .locator('[data-testid="login-username-input"] input, [data-testid="login-username-input"]')
-    .first()
-    .fill(credentials.email);
-  await page
-    .locator('[data-testid="login-password-input"] input, [data-testid="login-password-input"]')
-    .first()
-    .fill(credentials.password);
+  await page.getByTestId('login-username-input').locator('input').fill(credentials.email);
+  await page.getByTestId('login-password-input').locator('input').fill(credentials.password);
   await page.getByTestId('login-submit-button').click();
 
   await page.waitForURL((url) => !url.pathname.startsWith('/auth'), { timeout: 30_000 });
@@ -52,7 +50,11 @@ export const test = base.extend<SyncFixtures>({
     await desktop.ensureAuthenticated(credentials);
     await use(desktop);
     await desktop.close();
-    fs.rmSync(userDataDir, { recursive: true, force: true });
+    if (testInfo.status === testInfo.expectedStatus) {
+      fs.rmSync(userDataDir, { recursive: true, force: true });
+    } else {
+      console.log(`[sync-fixture] Preserving failed Desktop profile at ${userDataDir}`);
+    }
   },
 
   webPage: async ({ page, credentials, request }, use) => {

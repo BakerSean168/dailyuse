@@ -28,15 +28,9 @@ test.describe('Notification Center', () => {
     await expect(page.getByTestId('notification-filter-all')).toBeVisible();
   });
 
-  test('[P0] should display notifications list', async ({ page }) => {
-    const list = page.getByTestId('notifications-list');
-    const items = page.getByTestId('notification-item');
-
-    if (await list.isVisible().catch(() => false)) {
-      await expect(items.first()).toBeVisible();
-    } else {
-      await expect(page.getByTestId('notification-center')).toBeVisible();
-    }
+  test('[P0] should display a deterministic empty inbox for a new account', async ({ page }) => {
+    await expect(page.getByTestId('notifications-empty-state')).toBeVisible();
+    await expect(page.getByTestId('notification-item')).toHaveCount(0);
   });
 
   test('[P0] keeps one inbox toolbar and filter state across panel layouts', async ({ page }) => {
@@ -75,32 +69,12 @@ test.describe('Notification Center', () => {
     await expectElementToFit(center);
   });
 
-  test('[P1] should mark notification as read', async ({ page }) => {
-    const unreadItem = page
-      .locator('[data-testid="notification-item"][data-read-state="unread"]')
-      .first();
-
-    if (await unreadItem.isVisible().catch(() => false)) {
-      await unreadItem.click();
-      await expect(unreadItem).toHaveAttribute('data-read-state', 'read', {
-        timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-      });
-    } else {
-      await expect(page.getByTestId('notification-center')).toBeVisible();
-    }
-  });
-
-  test('[P1] should mark all as read', async ({ page }) => {
+  test('[P1] should disable mark-all-read for an empty inbox', async ({ page }) => {
     const markAllButton = page.getByTestId('mark-all-read-button');
     const unreadItems = page.locator('[data-testid="notification-item"][data-read-state="unread"]');
-    const initialUnreadCount = await unreadItems.count();
 
-    if (initialUnreadCount > 0) {
-      await markAllButton.click();
-      await expect(unreadItems).toHaveCount(0, { timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
-    } else {
-      await expect(markAllButton).toBeDisabled();
-    }
+    await expect(unreadItems).toHaveCount(0);
+    await expect(markAllButton).toBeDisabled();
   });
 
   test('[P2] should filter notifications by type', async ({ page }) => {

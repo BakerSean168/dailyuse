@@ -92,18 +92,49 @@ export async function goalExists(page: Page, goalName: string): Promise<boolean>
   return (await goalCard(page, goalName).count()) > 0;
 }
 
-export async function waitForGoalVisible(page: Page, goalName: string): Promise<void> {
+async function refreshWebGoalList(page: Page, surface: GoalSurface): Promise<void> {
+  if (surface !== 'web') {
+    return;
+  }
+
+  const goalsResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'GET' &&
+      new URL(response.url()).pathname === '/api/v1/goals' &&
+      response.ok(),
+    { timeout: 15_000 },
+  );
+  await page.getByTestId('goal-refresh-entry').click();
+  await goalsResponse;
+  await expect(page.getByTestId('goal-list-skeleton')).toBeHidden({ timeout: 15_000 });
+}
+
+export async function waitForGoalVisible(
+  page: Page,
+  surface: GoalSurface,
+  goalName: string,
+): Promise<void> {
   await expect
-    .poll(async () => await goalExists(page, goalName), {
+    .poll(async () => {
+      await refreshWebGoalList(page, surface);
+      return await goalExists(page, goalName);
+    }, {
       timeout: 30_000,
       message: `Timed out waiting for goal "${goalName}" to appear.`,
     })
     .toBe(true);
 }
 
-export async function waitForGoalHidden(page: Page, goalName: string): Promise<void> {
+export async function waitForGoalHidden(
+  page: Page,
+  surface: GoalSurface,
+  goalName: string,
+): Promise<void> {
   await expect
-    .poll(async () => await goalExists(page, goalName), {
+    .poll(async () => {
+      await refreshWebGoalList(page, surface);
+      return await goalExists(page, goalName);
+    }, {
       timeout: 30_000,
       message: `Timed out waiting for goal "${goalName}" to disappear.`,
     })
@@ -124,5 +155,5 @@ export async function deleteGoalIfPresent(
   }
 
   await deleteGoal(page, goalName);
-  await waitForGoalHidden(page, goalName);
+  await waitForGoalHidden(page, surface, goalName);
 }

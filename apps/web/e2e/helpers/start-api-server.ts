@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ensureTestDatabase } from '@dailyuse/test-utils/setup/database';
+import { buildApiApp } from './build-api';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, '..', '..', '..', '..');
@@ -72,6 +73,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  buildApiApp(workspaceRoot);
   await ensureTestDatabase(workspaceRoot);
 
   const apiProcess = spawn(process.execPath, ['main.js'], {

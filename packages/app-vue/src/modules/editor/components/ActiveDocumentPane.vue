@@ -45,12 +45,20 @@
     <div
       class="flex items-center justify-end gap-3 border-t px-4 py-1 text-xs text-muted-foreground"
     >
-      <span v-if="saving" class="flex items-center gap-1 text-warning">
+      <span
+        v-if="saving"
+        class="flex items-center gap-1 text-warning"
+        data-testid="editor-document-saving"
+      >
         <Loader2 class="h-3 w-3 animate-spin" />
         {{ savingLabel }}
       </span>
-      <span v-else-if="dirty" class="text-muted-foreground">{{ unsavedLabel }}</span>
-      <span v-else class="text-success">{{ savedLabel }}</span>
+      <span
+        v-else-if="dirty"
+        class="text-muted-foreground"
+        data-testid="editor-document-unsaved"
+      >{{ unsavedLabel }}</span>
+      <span v-else class="text-success" data-testid="editor-document-saved">{{ savedLabel }}</span>
       <span
         v-if="indexState === 'pending'"
         class="flex items-center gap-1 text-warning"

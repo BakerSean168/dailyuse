@@ -30,7 +30,12 @@
       <p class="min-w-0 truncate text-xs text-muted-foreground" data-testid="notification-count">
         {{ t('notification.filter.all') }} · {{ notifications.length }}
       </p>
-      <Badge v-if="unreadCount > 0" variant="destructive" class="shrink-0 text-xs">
+      <Badge
+        v-if="unreadCount > 0"
+        variant="destructive"
+        class="shrink-0 text-xs"
+        data-testid="notification-unread-badge"
+      >
         {{ t('notification.filter.unreadBadge', { count: unreadCount }) }}
       </Badge>
       <Button

@@ -114,6 +114,8 @@ services:
     command:
       - postgres
       - -c
+      - wal_level=logical
+      - -c
       - fsync=off
       - -c
       - synchronous_commit=off
@@ -126,6 +128,49 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
+
+  # PowerSync service dedicated to authenticated Desktop/Web sync E2E.
+  # It watches postgres-test instead of the unrelated local-docker database.
+  powersync-test:
+    profiles: [sync-test]
+    image: journeyapps/powersync-service:latest
+    container_name: ${TEST_POWERSYNC_CONTAINER:-Memoflow-test-powersync}
+    ports:
+      - '${TEST_POWERSYNC_PORT:-58082}:8080'
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    volumes:
+      - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
+      - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
+    command: ['start', '-c', '/config/powersync.yaml']
+    environment:
+      PS_PORT: 8080
+      PS_SOURCE_HOSTNAME: postgres-test
+      PS_SOURCE_PORT: 5432
+      PS_SOURCE_DATABASE: ${TEST_DB_NAME:-memoflow_test}
+      PS_SOURCE_USERNAME: ${TEST_DB_USER:-test_user}
+      PS_SOURCE_PASSWORD: ${TEST_DB_PASS:-test_pass}
+      PS_STORAGE_HOSTNAME: postgres-test
+      PS_STORAGE_PORT: 5432
+      PS_STORAGE_DATABASE: ${TEST_DB_NAME:-memoflow_test}
+      PS_STORAGE_USERNAME: ${TEST_DB_USER:-test_user}
+      PS_STORAGE_PASSWORD: ${TEST_DB_PASS:-test_pass}
+      PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:-iPsCAeT3UnpBpzEuLxRxsnj3GCGLp8UQrv5_WGLGR4Q0nw8OX_wmYGb4pGIzcnYsjM_JkmzZZxxtdS_lT6pWcQs9UdZbSxb1XDD_nRjohdrFvFEjGrATte05qm1Aj2VzmJnowh1tBC_QhVpljjQLBhfbQupgB4H-nuD4HKuzCYQ2-lo-zr2zRVQM9MBsuSFgijPHdHdejKqCKje4VIFjz-zxygoUvxtct3Fcloz06wtURLu5qSwHVAKOgwyHz008iSEZdvm7FfK0M931PH8iZKMb_2OIXDgc_vfIcXw5fadGo3qCgb0hFTE5WK3kHYlRxTCKDPCdznsdW_ZwIwXGvQ}
+      PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      PS_JWK_KID: ${POWERSYNC_KEY_ID:-powersync-dev-d90f228f}
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "const http = require('http'); const req = http.get('http://127.0.0.1:8080/probes/liveness', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('error', () => process.exit(1));",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
 # =============================================================================
 # 持久化卷（仅 dev 使用；test 用 tmpfs，不需要卷）

@@ -123,7 +123,10 @@
       >
         <template #today-overview>
           <div class="grid gap-3">
-            <DailyTodoWidget @view-all="router.push('/tasks')" />
+            <DailyTodoWidget
+              @view-all="router.push('/tasks')"
+              @completed="refreshDashboardAfterTaskCompletion"
+            />
             <UpcomingRemindersWidget :refresh-key="0" @view-all="router.push('/reminders')" />
             <GoalProgressWidget
               :goals="goalProgress"
@@ -536,6 +539,15 @@ watch(
   },
   { immediate: true },
 );
+
+async function refreshDashboardAfterTaskCompletion() {
+  // Task persistence completes before the HTTP response, while the linked Goal
+  // projection is updated by an asynchronous domain-event listener. Refresh
+  // once for task statistics and once more to reconcile that dependent view.
+  await fetchDashboard();
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  await fetchDashboard();
+}
 
 /**
  * Prefill composer + set tool mode from welcome shortcut cards (V2 §6.0).

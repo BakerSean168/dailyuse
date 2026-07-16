@@ -11,15 +11,28 @@ const i18n = createI18n({
   locale: 'en-US',
   messages: {
     'en-US': {
-      common: { more: 'More' },
+      common: { more: 'More', refresh: 'Refresh' },
       goal: {
         systemFolders: { active: 'Active' },
-        focusMode: { sidebarTitle: 'Focus Cycle' },
+        focusMode: { sidebarTitle: 'Focus Cycle', remainingDaysShort: '{days}d' },
         list: {
           searchGoals: 'Search goals',
           newGoal: 'New Goal',
           newFolder: 'New Folder',
           compare: 'Compare',
+        },
+      },
+    },
+    'zh-CN': {
+      common: { more: '更多', refresh: '刷新' },
+      goal: {
+        systemFolders: { active: '进行中' },
+        focusMode: { sidebarTitle: '专注周期', remainingDaysShort: '剩余 {days} 天' },
+        list: {
+          searchGoals: '搜索目标',
+          newGoal: '新建目标',
+          newFolder: '新建文件夹',
+          compare: '对比',
         },
       },
     },
@@ -68,13 +81,16 @@ describe('GoalPageToolbar', () => {
     expect(wrapper.findAll('[data-testid="goal-page-toolbar"]')).toHaveLength(1);
     expect(wrapper.findAll('[data-primary-action="create-goal"]')).toHaveLength(1);
     expect(wrapper.findAll('[data-testid="create-goal-entry"]')).toHaveLength(1);
+    expect(wrapper.findAll('[data-testid="goal-refresh-entry"]')).toHaveLength(1);
     expect(wrapper.findAll('[data-testid="goal-focus-entry"]')).toHaveLength(1);
     expect(wrapper.findAll('[data-testid="goal-toolbar-more"]')).toHaveLength(1);
 
     await wrapper.get('[data-testid="create-goal-entry"]').trigger('click');
+    await wrapper.get('[data-testid="goal-refresh-entry"]').trigger('click');
     await wrapper.get('[data-testid="goal-focus-entry"]').trigger('click');
 
     expect(wrapper.emitted('create-goal')).toHaveLength(1);
+    expect(wrapper.emitted('refresh')).toHaveLength(1);
     expect(wrapper.emitted('open-focus')).toHaveLength(1);
     wrapper.unmount();
   });
@@ -97,5 +113,18 @@ describe('GoalPageToolbar', () => {
     const searchEvents = wrapper.emitted('search') ?? [];
     expect(searchEvents[searchEvents.length - 1]).toEqual(['quarterly roadmap']);
     wrapper.unmount();
+  });
+
+  it('localizes the focus-cycle remaining-day unit', async () => {
+    i18n.global.locale.value = 'zh-CN';
+    const wrapper = mountToolbar();
+    await wrapper.setProps({
+      focusMode: { endTime: Date.now() + 36 * 60 * 60 * 1000 } as never,
+    });
+
+    expect(wrapper.get('[data-testid="goal-focus-entry"]').text()).toContain('剩余 2 天');
+    expect(wrapper.get('[data-testid="goal-focus-entry"]').text()).not.toContain('2d');
+    wrapper.unmount();
+    i18n.global.locale.value = 'en-US';
   });
 });

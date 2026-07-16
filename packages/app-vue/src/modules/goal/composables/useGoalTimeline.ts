@@ -1,8 +1,10 @@
 import { computed, ref, watch, type Ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { TimelineData, TimelineSnapshot } from '../utils/goal-timeline';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 export const useGoalTimeline = (goalRef: Ref<GoalClientDTO | null>) => {
+  const { t } = useI18n();
   const loadingSnapshots = ref(false);
   const currentIndex = ref(0);
   const isPlaying = ref(false);
@@ -31,7 +33,7 @@ export const useGoalTimeline = (goalRef: Ref<GoalClientDTO | null>) => {
               ) / keyResults.length,
         keyResults: keyResults.map((kr: KeyResultClientDTO) => ({
           id: String(kr.id ?? ''),
-          title: kr.title ?? 'KR',
+          title: kr.title ?? t('goal.keyResultFallback'),
           weight: kr.weight ?? 0,
           progress:
             (kr.progress?.targetValue ?? 0) > 0

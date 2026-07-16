@@ -2370,6 +2370,7 @@ export default {
   },
 
   goal: {
+    keyResultFallback: 'Key result',
     route: {
       management: 'Goal Management',
       list: 'Goal List',
@@ -2467,6 +2468,7 @@ export default {
         ruleHint: 'This mode keeps the goal list visible and highlights the active focus session.',
       },
       sidebarTitle: 'Focus Cycle',
+      remainingDaysShort: '{days}d',
       sidebarEmpty: 'No active focus cycle',
       routeTitle: 'Focus Cycle',
       routeSubtitle: 'Current cycle and its goals',
@@ -2698,6 +2700,9 @@ export default {
       rulesSaved: 'Status rules saved',
     },
     cards: {
+      keyResultsCount: '{done}/{total} key results',
+      daysLeft: '{days} days left',
+      daysOverdue: '{days} days overdue',
       goalStatus: {
         active: 'Active',
         completed: 'Completed',
@@ -2752,6 +2757,7 @@ export default {
       applyStrategy: 'Apply Strategy',
       krList: 'KeyResults List',
       current: 'Current:',
+      keyResultIndex: 'KR {index}',
       hasKeywords: 'Contains keywords:',
       noKeywords: 'No special keywords detected',
       cancel: 'Cancel',
@@ -3031,6 +3037,7 @@ export default {
       triggerImport: 'Batch Import',
       empty: 'No weight change records',
       allKR: 'All',
+      unknownKeyResult: 'Unknown key result',
       triggerLabelManual: 'Manual',
       triggerLabelAuto: 'Auto',
       triggerLabelRestore: 'Restore',

@@ -19,6 +19,7 @@
       @open-focus="openFocusDialog"
       @go-focus="goFocus"
       @compare="openComparison"
+      @refresh="refreshGoalData"
       @search="handleSearch"
     />
 
@@ -47,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -231,6 +232,19 @@ function openComparison() {
   router.push({ name: 'goal-comparison' });
 }
 
+async function refreshGoalData() {
+  await Promise.all([fetchGoals(), fetchFolders(), getCurrentFocusMode()]);
+}
+
+function handleDatabaseTablesChanged(event: Event) {
+  const detail = (event as CustomEvent<{ modules?: string[] }>).detail;
+  if (!detail?.modules?.includes('goal')) {
+    return;
+  }
+
+  void refreshGoalData();
+}
+
 function handleSearch(query: string) {
   searchQuery.value = query;
   search(query);
@@ -284,6 +298,7 @@ function handleFocusModeActivated() {
 }
 
 onMounted(async () => {
+  window.addEventListener('db:tables-changed', handleDatabaseTablesChanged);
   logger.info(
     `页面挂载 ${stringify({
       systemView: systemView.value,
@@ -299,6 +314,10 @@ onMounted(async () => {
       folders: goalFolders.value.length,
     })}`,
   );
+});
+
+onUnmounted(() => {
+  window.removeEventListener('db:tables-changed', handleDatabaseTablesChanged);
 });
 
 watch(

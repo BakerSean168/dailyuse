@@ -32,6 +32,7 @@ import { execFileSync } from 'node:child_process';
 import { accessSync } from 'node:fs';
 import { createConnection } from 'node:net';
 import { resolve } from 'node:path';
+import { Client } from 'pg';
 
 // ─── Constants ──────────────────────────────────────────────────────
 
@@ -186,6 +187,22 @@ export function syncPrismaSchema(prismaDir?: string): void {
   console.log('[test-utils] Prisma schema synced');
 }
 
+/**
+ * Install database extensions required by the Prisma schema before db push.
+ * PostgreSQL images expose extension binaries but do not enable extensions in
+ * every newly-created database automatically.
+ */
+export async function prepareTestDatabaseExtensions(): Promise<void> {
+  const client = new Client({ connectionString: getTestDatabaseUrl() });
+
+  await client.connect();
+  try {
+    await client.query('CREATE EXTENSION IF NOT EXISTS vector');
+  } finally {
+    await client.end();
+  }
+}
+
 // ─── High-Level Setup ──────────────────────────────────────────────
 
 /**
@@ -224,6 +241,7 @@ export async function ensureTestDatabase(projectRoot?: string): Promise<void> {
   }
 
   await waitForDatabase();
+  await prepareTestDatabaseExtensions();
   syncPrismaSchema(resolve(root, 'packages/database/prisma'));
 }
 

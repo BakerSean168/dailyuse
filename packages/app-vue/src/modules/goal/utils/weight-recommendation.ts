@@ -69,7 +69,7 @@ export const weightRecommendationService = {
         weights: buildKeywordPriority(keyResults),
         reasoning:
           getI18nGlobal()?.t('goal.weightRecommendation.keywordReasoning') ??
-          '根据关键字命中情况识别高优先级 KR，适合聚焦核心突破。',
+          '根据关键字命中情况识别高优先级关键结果，适合聚焦核心突破。',
       },
       {
         name: 'current-trend',

@@ -46,6 +46,16 @@
         "cwd": "packages/editor"
       }
     },
+    "test:integration": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": false,
+      "options": {
+        "command": "node ../../node_modules/vitest/vitest.mjs run --config vitest.integration.config.ts",
+        "cwd": "packages/editor"
+      }
+    },
     "test:coverage": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],

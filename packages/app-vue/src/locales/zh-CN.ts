@@ -2320,6 +2320,7 @@ export default {
   },
 
   goal: {
+    keyResultFallback: '关键结果',
     route: {
       management: '目标管理',
       list: '目标列表',
@@ -2417,6 +2418,7 @@ export default {
         ruleHint: '该模式会保留目标列表可见，并突出当前专注会话。',
       },
       sidebarTitle: '专注周期',
+      remainingDaysShort: '剩余 {days} 天',
       sidebarEmpty: '暂无专注周期',
       routeTitle: '专注周期',
       routeSubtitle: '当前周期及其目标',
@@ -2643,6 +2645,9 @@ export default {
       rulesSaved: '状态规则已保存',
     },
     cards: {
+      keyResultsCount: '{done}/{total} 个关键结果',
+      daysLeft: '剩余 {days} 天',
+      daysOverdue: '逾期 {days} 天',
       goalStatus: {
         active: '进行中',
         completed: '已完成',
@@ -2697,6 +2702,7 @@ export default {
       applyStrategy: '应用此策略',
       krList: '关键结果列表',
       current: '当前:',
+      keyResultIndex: '关键结果 {index}',
       hasKeywords: '包含关键词:',
       noKeywords: '未检测到特殊关键词',
       cancel: '取消',
@@ -2974,6 +2980,7 @@ export default {
       triggerImport: '批量导入',
       empty: '暂无权重变更记录',
       allKR: '全部',
+      unknownKeyResult: '未知关键结果',
       triggerLabelManual: '手动',
       triggerLabelAuto: '自动',
       triggerLabelRestore: '恢复',

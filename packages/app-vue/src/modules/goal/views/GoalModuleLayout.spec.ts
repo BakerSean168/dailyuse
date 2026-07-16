@@ -138,10 +138,31 @@ describe('GoalModuleLayout', () => {
     expect(wrapper.get('[data-testid="goal-route-scroll"]').element.scrollTop).toBe(48);
     expect(routeMountCount).toBe(1);
 
+    vi.clearAllMocks();
+    window.dispatchEvent(
+      new CustomEvent('db:tables-changed', {
+        detail: { tables: ['goals'], modules: ['goal'] },
+      }),
+    );
+    await vi.waitFor(() => {
+      expect(goalMocks.fetchGoals).toHaveBeenCalledOnce();
+      expect(goalMocks.fetchFolders).toHaveBeenCalledOnce();
+      expect(goalMocks.getCurrentFocusMode).toHaveBeenCalledOnce();
+    });
+
     await wrapper.get('[data-testid="create-goal-entry"]').trigger('click');
     await vi.waitFor(() => {
       expect(router.currentRoute.value.query.dialog).toBe('goal');
     });
     wrapper.unmount();
+
+    vi.clearAllMocks();
+    window.dispatchEvent(
+      new CustomEvent('db:tables-changed', {
+        detail: { tables: ['goals'], modules: ['goal'] },
+      }),
+    );
+    await nextTick();
+    expect(goalMocks.fetchGoals).not.toHaveBeenCalled();
   });
 });

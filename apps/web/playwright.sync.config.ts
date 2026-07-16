@@ -1,5 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
-import { createApiServer, createWebServer, getE2EWebOrigin } from './playwright.server';
+import {
+  createApiServer,
+  createPowerSyncTestServer,
+  createWebServer,
+  getE2EWebOrigin,
+} from './playwright.server';
+import { configurePowerSyncTestEnv } from './e2e/helpers/powersync-test-env';
+
+configurePowerSyncTestEnv();
 
 export default defineConfig({
   testDir: './e2e/sync',
@@ -42,6 +50,9 @@ export default defineConfig({
   // 先拉起 API，再拉起依赖该 API 的 Web dev server。这样 sync 用例和开发时
   // 通过代理访问后端的路径保持一致。
   webServer: [
+    {
+      ...createPowerSyncTestServer(),
+    },
     {
       ...createApiServer(),
     },

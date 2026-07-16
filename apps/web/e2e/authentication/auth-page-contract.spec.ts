@@ -69,6 +69,14 @@ test.describe('Web authentication page contract', () => {
       /do not match|不一致/i,
     );
 
+    const passwordOverLimit = `A1${'a'.repeat(99)}`;
+    await page.locator('#reg-password').fill(passwordOverLimit);
+    await page.locator('#confirm-password').fill(passwordOverLimit);
+    await page.getByTestId('register-submit-button').click();
+    await expect(page.getByTestId('register-password-error')).toContainText(
+      /100 characters|100 位/i,
+    );
+
     const email = `e2e-auth-form-${Date.now()}@test.com`;
     await page.locator('#reg-email').fill(email);
     await expect(page.getByTestId('register-email-error')).toHaveCount(0);

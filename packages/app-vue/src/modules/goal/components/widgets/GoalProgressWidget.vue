@@ -63,13 +63,18 @@ const { t } = useI18n();
             :key="goal.id"
             type="button"
             class="w-full space-y-1.5 rounded-md px-1 py-1 text-left transition-colors hover:bg-muted/50"
+            data-testid="goal-progress-item"
+            :data-goal-id="goal.id"
             @click="$emit('select', goal.id)"
           >
             <div class="flex items-center justify-between">
               <span class="text-xs text-foreground font-medium truncate max-w-[60%]">
                 {{ goal.name }}
               </span>
-              <span class="text-[11px] text-muted-foreground font-mono">{{ goal.progress }}%</span>
+              <span
+                class="text-[11px] text-muted-foreground font-mono"
+                data-testid="goal-progress-value"
+              >{{ goal.progress }}%</span>
             </div>
             <Progress :model-value="goal.progress" class="h-1.5" />
           </button>

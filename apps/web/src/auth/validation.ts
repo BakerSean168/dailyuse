@@ -1,3 +1,5 @@
+import { RegisterByEmailSchema } from '@dailyuse/contracts/authentication';
+
 export type LoginField = 'email' | 'password';
 export type RegisterField = 'email' | 'password' | 'confirmPassword';
 export type AuthValidationKey =
@@ -5,6 +7,7 @@ export type AuthValidationKey =
   | 'auth.validation.emailInvalid'
   | 'auth.validation.passwordRequired'
   | 'auth.validation.passwordMinLength'
+  | 'auth.validation.passwordMaxLength'
   | 'auth.validation.passwordComplexity'
   | 'auth.validation.confirmPasswordRequired'
   | 'auth.validation.passwordMismatch';
@@ -17,17 +20,6 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function emailError(email: string): AuthValidationKey | undefined {
   if (!email.trim()) return 'auth.validation.emailRequired';
   if (!EMAIL_PATTERN.test(email.trim())) return 'auth.validation.emailInvalid';
-  return undefined;
-}
-
-function passwordError(password: string): AuthValidationKey | undefined {
-  if (!password) return 'auth.validation.passwordRequired';
-  if (password.length < 8) return 'auth.validation.passwordMinLength';
-
-  const categoryCount = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((pattern) =>
-    pattern.test(password),
-  ).length;
-  if (categoryCount < 2) return 'auth.validation.passwordComplexity';
   return undefined;
 }
 
@@ -48,11 +40,29 @@ export function validateRegistration(values: {
   confirmPassword: string;
 }): RegisterValidationErrors {
   const errors: RegisterValidationErrors = {};
-  const nextEmailError = emailError(values.email);
-  const nextPasswordError = passwordError(values.password);
+  const email = values.email.trim();
+  const parsed = RegisterByEmailSchema.safeParse({ email, password: values.password });
 
-  if (nextEmailError) errors.email = nextEmailError;
-  if (nextPasswordError) errors.password = nextPasswordError;
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0];
+      if (field === 'email' && !errors.email) {
+        errors.email = email ? 'auth.validation.emailInvalid' : 'auth.validation.emailRequired';
+      }
+      if (field === 'password' && !errors.password) {
+        if (!values.password) {
+          errors.password = 'auth.validation.passwordRequired';
+        } else if (issue.code === 'too_small') {
+          errors.password = 'auth.validation.passwordMinLength';
+        } else if (issue.code === 'too_big') {
+          errors.password = 'auth.validation.passwordMaxLength';
+        } else {
+          errors.password = 'auth.validation.passwordComplexity';
+        }
+      }
+    }
+  }
+
   if (!values.confirmPassword) {
     errors.confirmPassword = 'auth.validation.confirmPasswordRequired';
   } else if (values.password !== values.confirmPassword) {

@@ -59,7 +59,12 @@
           <div class="flex items-center gap-3 text-xs text-muted-foreground">
             <div class="flex items-center gap-1">
               <Target class="h-3.5 w-3.5" />
-              <span>{{ completedKRCount }}/{{ totalKRCount }} KRs</span>
+              <span>{{
+                t('goal.cards.keyResultsCount', {
+                  done: completedKRCount,
+                  total: totalKRCount,
+                })
+              }}</span>
             </div>
             <div
               v-if="daysRemaining !== null"
@@ -67,7 +72,7 @@
               :class="getDaysRemainingClass(daysRemaining)"
             >
               <Clock class="h-3.5 w-3.5" />
-              <span>{{ daysRemaining }}d left</span>
+              <span>{{ daysRemainingLabel }}</span>
             </div>
           </div>
 
@@ -152,6 +157,14 @@ const daysRemaining = computed<number | null>(() => {
   if (!props.goal.targetDate) return null;
   const diff = props.goal.targetDate - Date.now();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
+});
+
+const daysRemainingLabel = computed(() => {
+  const days = daysRemaining.value;
+  if (days === null) return '';
+  return days < 0
+    ? t('goal.cards.daysOverdue', { days: Math.abs(days) })
+    : t('goal.cards.daysLeft', { days });
 });
 
 // Helper functions for Linear-like styling
