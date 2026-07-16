@@ -2,6 +2,8 @@
 
 > **📌 更新（2026-07-12）**：重构方向已改为 ChatGPT 桌面式壳（AI 优先三态布局），见 `docs/UI_REDESIGN_V2_PLAN.md`。本文 §9（新信息架构）与 §10（新页面布局）的建议**已被 V2 取代**；§1–§8（现状/用户/页面分析/操作路径/问题清单）、§11（保留资产）、§12（风险）、§13（Obsidian vault 专项）继续有效。
 >
+> **📌 决策固化（2026-07-16）**：§13 的 Obsidian Vault 方向已由 [ADR-034](./architecture/adr/ADR-034-obsidian-vault-repository.md) 正式采纳并在后续讨论中调整为“本地 Vault + 可选 GitHub private repository”。涉及登录、事实源、同步、Web 创建和 AI 写入路径时以 ADR-034 为准；本文 §13 的 Desktop 自定义上传、Web 永久只读和固定 `00-inbox` 只保留为历史调研方案。
+>
 > 状态：分析文档（不含实施）。所有结论均基于当前代码，引用路径以 `packages/`、`apps/` 为根。
 > 生成日期：2026-07-11。分析范围：`packages/app-vue`（Web 与 Desktop 共用的前端应用层）。
 > 移动端（`apps/mobile`，React Native）有独立 UI，本文仅在风险章节涉及。
@@ -12,13 +14,13 @@
 
 **知行 (Memoflow)**（`packages/assets/src/brand.ts`）是一个 **AI 优先的个人效能操作系统**，覆盖五个能力域：
 
-| 能力域 | 模块 | 核心模型 |
-|---|---|---|
-| 意图 | Goal（目标） | OKR：Goal → KeyResult → 进度记录 → 复盘（`packages/contracts/src/modules/goal/`） |
-| 执行 | Task（任务） | 模板/实例二元模型 + DAG 依赖 + 目标绑定（`packages/contracts/src/modules/task/`） |
-| 时间 | Schedule（日程）+ Reminder（提醒） | 日历事件聚合（含任务实例投影）；提醒模板/分组/策略 |
-| 知识 | Repository（仓储）+ Editor（编辑器） | DB 化的 markdown 资源库 + Obsidian 风格双链编辑器 |
-| 智能 | AI（助手） | 对话 + 三种 Agent 工作流（目标创建 / 知识笔记生成 / 知识问答 RAG） |
+| 能力域 | 模块                                 | 核心模型                                                                          |
+| ------ | ------------------------------------ | --------------------------------------------------------------------------------- |
+| 意图   | Goal（目标）                         | OKR：Goal → KeyResult → 进度记录 → 复盘（`packages/contracts/src/modules/goal/`） |
+| 执行   | Task（任务）                         | 模板/实例二元模型 + DAG 依赖 + 目标绑定（`packages/contracts/src/modules/task/`） |
+| 时间   | Schedule（日程）+ Reminder（提醒）   | 日历事件聚合（含任务实例投影）；提醒模板/分组/策略                                |
+| 知识   | Repository（仓储）+ Editor（编辑器） | DB 化的 markdown 资源库 + Obsidian 风格双链编辑器                                 |
+| 智能   | AI（助手）                           | 对话 + 三种 Agent 工作流（目标创建 / 知识笔记生成 / 知识问答 RAG）                |
 
 技术形态：Nx monorepo；Web（`apps/web`）与 Desktop（`apps/desktop`，Electron）**共用同一套 `packages/app-vue` 页面与路由**（见 `apps/desktop/src/renderer/bootstrap/app.ts:44` 直接调用 `createAppRouter`）；数据经 DI 端口走 HTTP（Web）或 IPC（Desktop）；离线同步使用 PowerSync（`packages/powersync-schema/src/index.ts` 定义了 `documents`、`document_links`、`resources` 等全量业务表）。
 
@@ -43,32 +45,32 @@
 
 汇总自 `packages/app-vue/src/router/index.ts` 与各模块 `router/index.ts`：
 
-| 路由 | 视图组件 | 导航可见性 | 备注 |
-|---|---|---|---|
-| `/auth` | `views/AuthView.vue` | — | 登录/注册（Desktop 用 `DesktopAuthView` 覆写） |
-| `/` | `modules/ai/views/AIChatView.vue` | 主导航「首页」 | **AI 工作台即首页** |
-| `/ai/chat` | 同上 `AIChatView.vue` | 主导航「AI对话」 | **与 `/` 完全同一组件，重复入口** |
-| `/dashboard` | `views/DashboardView.vue` | 主导航「仪表盘」 | Linear 风格聚合页 |
-| `/goals` | `goal/views/GoalModuleLayout.vue` + `GoalListView.vue` | 主导航「目标」 | 模块内含第二侧边栏（文件夹/系统视图/专注模式入口） |
-| `/goals/focus` | `goal/views/GoalFocusView.vue` | 目标侧边栏入口 | 专注模式状态页 |
-| `/goals/compare` | `goal/views/MultiGoalComparisonView.vue` | 列表页按钮 | 多目标对比 |
-| `/goals/rules-demo` | `goal/views/StatusRulesDemoView.vue` | 无入口 | **演示页混在生产路由** |
-| `/goals/:id` | `goal/views/GoalDetailView.vue` | — | 目标详情（KR/记录/复盘） |
-| `/goals/:goalId/review/create` | `GoalReviewCreationView.vue` | — | 创建复盘 |
-| `/goals/:goalId/review/:reviewId` | `GoalReviewDetailView.vue` | — | 复盘详情 |
-| `/goals/:goalId/key-results/:keyResultId` | `KeyResultDetailView.vue` | — | KR 详情 |
-| `/tasks` | `task/views/TaskManagementView.vue` | 主导航「任务」 | 任务模板管理（卡片网格） |
-| `/tasks/dependency-validation-demo` | `DependencyValidationDemoView.vue` | 仅 DEV | 演示页 |
-| `/tasks/:id` | `task/views/TaskDetailView.vue` | — | 模板详情（含依赖/父子关系） |
-| `/schedule` → `/schedule/calendar` | `schedule/views/ScheduleDashboardView.vue` | 主导航「日程」 | 日/周/月三视图；`week`、`dashboard` 为兼容重定向 |
-| `/reminders` | `reminder/views/ReminderLinearView.vue` | 主导航「提醒」 | 分组侧边栏 + 模板列表 + 全局总开关 |
-| `/repository` | `repository/views/RepositoryWorkspaceView.vue` | 主导航「仓库」 | Obsidian 风格工作区 |
-| `/note/:id` | `editor/views/EditorLinearView.vue` | — | 单笔记编辑页（AI 知识笔记落点），meta `hideSidebar` |
-| `/notifications` | `notification/views/NotificationListPage.vue` | 主导航「通知」 | 通知中心 |
-| `/sse-monitor` | `notification/views/SSEMonitorPage.vue` | 仅 DEV | SSE 调试工具 |
-| `/governance` (+`/new`、`/:id`、`/:id/edit`、`/:id/history`) | `governance/views/*` | 主导航「治理」 | 个人编码规则库（5 个子页） |
-| `/settings` | `setting/views/UserSettingsView.vue` | 底部导航 | 单页 10 个 Tab |
-| `/account/center` | `account/views/AccountCenterView.vue` | 底部导航 | 个人资料 + 登出 |
+| 路由                                                         | 视图组件                                               | 导航可见性       | 备注                                                |
+| ------------------------------------------------------------ | ------------------------------------------------------ | ---------------- | --------------------------------------------------- |
+| `/auth`                                                      | `views/AuthView.vue`                                   | —                | 登录/注册（Desktop 用 `DesktopAuthView` 覆写）      |
+| `/`                                                          | `modules/ai/views/AIChatView.vue`                      | 主导航「首页」   | **AI 工作台即首页**                                 |
+| `/ai/chat`                                                   | 同上 `AIChatView.vue`                                  | 主导航「AI对话」 | **与 `/` 完全同一组件，重复入口**                   |
+| `/dashboard`                                                 | `views/DashboardView.vue`                              | 主导航「仪表盘」 | Linear 风格聚合页                                   |
+| `/goals`                                                     | `goal/views/GoalModuleLayout.vue` + `GoalListView.vue` | 主导航「目标」   | 模块内含第二侧边栏（文件夹/系统视图/专注模式入口）  |
+| `/goals/focus`                                               | `goal/views/GoalFocusView.vue`                         | 目标侧边栏入口   | 专注模式状态页                                      |
+| `/goals/compare`                                             | `goal/views/MultiGoalComparisonView.vue`               | 列表页按钮       | 多目标对比                                          |
+| `/goals/rules-demo`                                          | `goal/views/StatusRulesDemoView.vue`                   | 无入口           | **演示页混在生产路由**                              |
+| `/goals/:id`                                                 | `goal/views/GoalDetailView.vue`                        | —                | 目标详情（KR/记录/复盘）                            |
+| `/goals/:goalId/review/create`                               | `GoalReviewCreationView.vue`                           | —                | 创建复盘                                            |
+| `/goals/:goalId/review/:reviewId`                            | `GoalReviewDetailView.vue`                             | —                | 复盘详情                                            |
+| `/goals/:goalId/key-results/:keyResultId`                    | `KeyResultDetailView.vue`                              | —                | KR 详情                                             |
+| `/tasks`                                                     | `task/views/TaskManagementView.vue`                    | 主导航「任务」   | 任务模板管理（卡片网格）                            |
+| `/tasks/dependency-validation-demo`                          | `DependencyValidationDemoView.vue`                     | 仅 DEV           | 演示页                                              |
+| `/tasks/:id`                                                 | `task/views/TaskDetailView.vue`                        | —                | 模板详情（含依赖/父子关系）                         |
+| `/schedule` → `/schedule/calendar`                           | `schedule/views/ScheduleDashboardView.vue`             | 主导航「日程」   | 日/周/月三视图；`week`、`dashboard` 为兼容重定向    |
+| `/reminders`                                                 | `reminder/views/ReminderLinearView.vue`                | 主导航「提醒」   | 分组侧边栏 + 模板列表 + 全局总开关                  |
+| `/repository`                                                | `repository/views/RepositoryWorkspaceView.vue`         | 主导航「仓库」   | Obsidian 风格工作区                                 |
+| `/note/:id`                                                  | `editor/views/EditorLinearView.vue`                    | —                | 单笔记编辑页（AI 知识笔记落点），meta `hideSidebar` |
+| `/notifications`                                             | `notification/views/NotificationListPage.vue`          | 主导航「通知」   | 通知中心                                            |
+| `/sse-monitor`                                               | `notification/views/SSEMonitorPage.vue`                | 仅 DEV           | SSE 调试工具                                        |
+| `/governance` (+`/new`、`/:id`、`/:id/edit`、`/:id/history`) | `governance/views/*`                                   | 主导航「治理」   | 个人编码规则库（5 个子页）                          |
+| `/settings`                                                  | `setting/views/UserSettingsView.vue`                   | 底部导航         | 单页 10 个 Tab                                      |
+| `/account/center`                                            | `account/views/AccountCenterView.vue`                  | 底部导航         | 个人资料 + 登出                                     |
 
 **孤儿视图（存在于磁盘但无路由/无引用）**：`goal/views/FocusModeView.vue`、`goal/views/FocusCycle.vue`、`goal/views/WeightSnapshotView.vue`、`schedule/views/ScheduleWeekView.vue`（仅剩重定向路由名）。重构时应先删除或明确归宿。
 
@@ -85,12 +87,12 @@
 **业务目标**：应用的中枢入口——对话、驱动三种 Agent 工作流（目标创建 / 知识笔记 / 知识问答），并快速回到最近对话、最近目标、最近知识笔记。
 **数据**：`useAIChatView`（会话/消息流/模型选择）+ 会话列表、AgentRun 列表、recentGoals、recentKnowledgeNotes（`AIConversationSidebar.vue`）。
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 消息时间线（`AIMessagePanel`）；输入框 + 发送/停止（`AIFooterComposer`）；当前会话标题；工作流等待用户决策的动作（澄清提交/确认执行/取消，`AIChatView.vue:127-232` goal-agent 状态按钮组） |
-| 可弱化 | 模型选择器（低频，收进输入框 ⚙ 菜单已部分做到）；会话列表刷新按钮；AgentRun 历史列表 |
-| 可隐藏 | 遗留工作流按钮组（`showLegacyGoalWorkflowActions`，由 `localStorage['ai:debug:legacy-goal-workflow']` 控制，`AIChatView.vue:484-486`）——纯调试残留；`recentGoals/recentKnowledgeNotes` 在移动宽度下 |
-| 可移入详情/侧栏 | 工作流产物全文（目标草稿编辑器、KR/任务模板/提醒草稿表格、知识引用列表）——已有右侧 context panel（`AIChatView.vue:304-385`），应保持"默认折叠、有产物才出现" |
+| 分类               | 内容                                                                                                                                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 消息时间线（`AIMessagePanel`）；输入框 + 发送/停止（`AIFooterComposer`）；当前会话标题；工作流等待用户决策的动作（澄清提交/确认执行/取消，`AIChatView.vue:127-232` goal-agent 状态按钮组）                                                        |
+| 可弱化             | 模型选择器（低频，收进输入框 ⚙ 菜单已部分做到）；会话列表刷新按钮；AgentRun 历史列表                                                                                                                                                              |
+| 可隐藏             | 遗留工作流按钮组（`showLegacyGoalWorkflowActions`，由 `localStorage['ai:debug:legacy-goal-workflow']` 控制，`AIChatView.vue:484-486`）——纯调试残留；`recentGoals/recentKnowledgeNotes` 在移动宽度下                                               |
+| 可移入详情/侧栏    | 工作流产物全文（目标草稿编辑器、KR/任务模板/提醒草稿表格、知识引用列表）——已有右侧 context panel（`AIChatView.vue:304-385`），应保持"默认折叠、有产物才出现"                                                                                      |
 | 不可删除的交互状态 | goal-agent 生命周期状态机（clarification → approval → execution → retry，各 `goalAgentWaitingFor*` 分支）；流式生成中的 stop；会话切换时的加载态；知识问答的 `evidenceStatus==='grounded'` 校验（`AIChatView.vue:269`，答案未接地时禁止生成笔记） |
 
 **页面级问题**：单文件 575 行、从 4 个 workflow 子 composable 解构约 80 个绑定；composer 的 action-rail 内嵌 3 套工作流 × 各 5–8 个条件按钮，是全应用状态最复杂的一块 UI。重构时应把"工作流控制"整体从 composer 迁到 context panel，让输入区回归纯对话。
@@ -100,13 +102,13 @@
 **业务目标**：一屏总览今日状态并跳转各模块。
 **数据**：`useDashboard()`（stats/activityTimeline/trendDays/goalProgress，HTTP 与 IPC 双适配器 `modules/dashboard/adapters/`）+ 复用 `DailyTodoWidget`（task 模块）与 `UpcomingRemindersWidget`（reminder 模块）。
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 今日待办 widget；即将到来的提醒 widget；活跃目标进度条列表 |
-| 可弱化 | 6 张统计卡（activeTasks/completedToday/activeGoals/upcomingReminders/unreadNotifications/scheduleConflicts，`DashboardView.vue:199-254`）→ 可压成一行紧凑数字条 |
-| 可隐藏 | 趋势图（ECharts 双序列，仅回顾用途）→ 折叠或移入"统计"次级页；快捷操作条（4 个按钮全部等价于左侧导航，纯重复，`DashboardView.vue:329-334`） |
-| 可移入详情 | 活动时间线（activityTimeline）→ 与通知中心合并展示 |
-| 不可删除的交互状态 | 刷新（含 `reminderWidgetRefreshKey` 联动）；统计卡点击跳转；loading skeleton |
+| 分类               | 内容                                                                                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 今日待办 widget；即将到来的提醒 widget；活跃目标进度条列表                                                                                                      |
+| 可弱化             | 6 张统计卡（activeTasks/completedToday/activeGoals/upcomingReminders/unreadNotifications/scheduleConflicts，`DashboardView.vue:199-254`）→ 可压成一行紧凑数字条 |
+| 可隐藏             | 趋势图（ECharts 双序列，仅回顾用途）→ 折叠或移入"统计"次级页；快捷操作条（4 个按钮全部等价于左侧导航，纯重复，`DashboardView.vue:329-334`）                     |
+| 可移入详情         | 活动时间线（activityTimeline）→ 与通知中心合并展示                                                                                                              |
+| 不可删除的交互状态 | 刷新（含 `reminderWidgetRefreshKey` 联动）；统计卡点击跳转；loading skeleton                                                                                    |
 
 **定位问题**：与 AI 首页争夺"home"角色（见 §8-P1）。
 
@@ -117,33 +119,33 @@
 
 **GoalModuleLayout（模块壳，含第二侧边栏）**
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 系统视图切换（进行中/已完成/已过期/回收站，含计数）；文件夹列表（色点）；「新建目标」入口 |
-| 可弱化 | 专注模式卡片（侧边栏底部常驻，`GoalModuleLayout.vue:78-102`）→ 无激活时可缩为一行按钮 |
-| 可隐藏 | 无 |
-| 可移入详情 | — |
+| 分类               | 内容                                                                                                                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 系统视图切换（进行中/已完成/已过期/回收站，含计数）；文件夹列表（色点）；「新建目标」入口                                                                                                                      |
+| 可弱化             | 专注模式卡片（侧边栏底部常驻，`GoalModuleLayout.vue:78-102`）→ 无激活时可缩为一行按钮                                                                                                                          |
+| 可隐藏             | 无                                                                                                                                                                                                             |
+| 可移入详情         | —                                                                                                                                                                                                              |
 | 不可删除的交互状态 | `?dialog=goal&goalId=` **URL 驱动的创建/编辑对话框**（`GoalModuleLayout.vue:262-306` `syncGoalDialogFromRoute`——被 AI 工作流和空态按钮深链使用，改版必须保留该契约）；文件夹右键/悬浮菜单（ActionableWrapper） |
 
 **GoalListView（列表）**
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 目标卡片网格（GoalCard：名称/进度/状态）；空态 + 创建按钮 |
-| 可弱化 | 「对比」按钮（低频，可收进 ⋯ 菜单） |
-| 可隐藏 | 搜索框在无目标时 |
-| 可移入详情 | 卡片上的次要元数据（由 GoalCard 决定的日期/文件夹徽章） |
+| 分类               | 内容                                                               |
+| ------------------ | ------------------------------------------------------------------ |
+| 必须展示           | 目标卡片网格（GoalCard：名称/进度/状态）；空态 + 创建按钮          |
+| 可弱化             | 「对比」按钮（低频，可收进 ⋯ 菜单）                                |
+| 可隐藏             | 搜索框在无目标时                                                   |
+| 可移入详情         | 卡片上的次要元数据（由 GoalCard 决定的日期/文件夹徽章）            |
 | 不可删除的交互状态 | 卡片 view/edit/delete 三操作；删除确认（`useConfirm` destructive） |
 
 **GoalDetailView（详情）**
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 名称/状态/重要度徽章；总进度环（SVG ring，`GoalDetailView.vue:41-62`）；KR 列表（当前值/目标值 + 进度条 + 点击进 KR 详情）；「添加 KR」「创建复盘」 |
-| 可弱化 | 起止日期/分类/标签四宫格 → 一行元数据 |
-| 可隐藏 | 无描述时的占位文案 |
-| 可移入详情 | 进度记录的展开明细（增量/后值/所属KR/时刻，现为行内展开 `toggleRecordDetail`）——本身已是渐进展示，保留模式即可 |
-| 不可删除的交互状态 | 记录/复盘两个 Tab；记录行展开态；KeyResultDialog 的保存回调（含 weight/valueType/aggregationMethod 等字段，`GoalDetailView.vue:309-343`） |
+| 分类               | 内容                                                                                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 名称/状态/重要度徽章；总进度环（SVG ring，`GoalDetailView.vue:41-62`）；KR 列表（当前值/目标值 + 进度条 + 点击进 KR 详情）；「添加 KR」「创建复盘」 |
+| 可弱化             | 起止日期/分类/标签四宫格 → 一行元数据                                                                                                               |
+| 可隐藏             | 无描述时的占位文案                                                                                                                                  |
+| 可移入详情         | 进度记录的展开明细（增量/后值/所属KR/时刻，现为行内展开 `toggleRecordDetail`）——本身已是渐进展示，保留模式即可                                      |
+| 不可删除的交互状态 | 记录/复盘两个 Tab；记录行展开态；KeyResultDialog 的保存回调（含 weight/valueType/aggregationMethod 等字段，`GoalDetailView.vue:309-343`）           |
 
 **子页**：GoalFocusView（当前专注期信息 + 剩余天数 + 隐藏非专注目标模式 + 退出按钮）、MultiGoalComparisonView、GoalReviewCreationView/DetailView、KeyResultDetailView——均为详情层级，信息结构合理，主要问题是**入口分散**（compare 在列表头、focus 在侧边栏底部、review 在详情头）。
 
@@ -154,23 +156,23 @@
 
 **TaskManagementView + TaskTemplateManagement**
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 状态过滤组（含计数徽章）；模板卡片网格（标题/循环规则/状态/关系计数）；「新建模板」 |
-| 可弱化 | 关系过滤第二排按钮（`TaskTemplateManagement.vue:21-34`，父子/前驱/后继过滤为低频）→ 收进过滤下拉 |
-| 可隐藏 | **「全部删除」按钮**（`TaskTemplateManagement.vue:49-59`，破坏性操作常驻主工具栏，且实现为逐条循环删除 `TaskManagementView.vue:327-343`）→ 移入危险区/移除；DEV 演示路由入口 |
-| 可移入详情 | 依赖图（现为 1400px Dialog 内嵌 `TaskDAGVisualization`）→ 作为任务页的一种视图模式而非弹窗 |
-| 不可删除的交互状态 | 卡片拖拽建依赖（`DraggableTaskCard` `enable-drag` + `onCreateDependency`）;暂停/恢复确认；创建/编辑对话框（含循环规则、目标绑定、依赖管理三块复杂表单） |
+| 分类               | 内容                                                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 状态过滤组（含计数徽章）；模板卡片网格（标题/循环规则/状态/关系计数）；「新建模板」                                                                                          |
+| 可弱化             | 关系过滤第二排按钮（`TaskTemplateManagement.vue:21-34`，父子/前驱/后继过滤为低频）→ 收进过滤下拉                                                                             |
+| 可隐藏             | **「全部删除」按钮**（`TaskTemplateManagement.vue:49-59`，破坏性操作常驻主工具栏，且实现为逐条循环删除 `TaskManagementView.vue:327-343`）→ 移入危险区/移除；DEV 演示路由入口 |
+| 可移入详情         | 依赖图（现为 1400px Dialog 内嵌 `TaskDAGVisualization`）→ 作为任务页的一种视图模式而非弹窗                                                                                   |
+| 不可删除的交互状态 | 卡片拖拽建依赖（`DraggableTaskCard` `enable-drag` + `onCreateDependency`）;暂停/恢复确认；创建/编辑对话框（含循环规则、目标绑定、依赖管理三块复杂表单）                      |
 
 **TaskDetailView**
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 标题 + 状态徽章；时间配置（timeType/timeValue）；父任务链接；依赖状态（`isBlocked`/`blockingReason` 徽章，`TaskDetailView.vue:128-146`） |
-| 可弱化 | 创建/更新时间 |
-| 可隐藏 | 空标签占位 |
-| 可移入详情 | —（本页即详情） |
-| 不可删除的交互状态 | 编辑对话框入口；父任务/依赖任务跳转 |
+| 分类               | 内容                                                                                                                                     |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 标题 + 状态徽章；时间配置（timeType/timeValue）；父任务链接；依赖状态（`isBlocked`/`blockingReason` 徽章，`TaskDetailView.vue:128-146`） |
+| 可弱化             | 创建/更新时间                                                                                                                            |
+| 可隐藏             | 空标签占位                                                                                                                               |
+| 可移入详情         | —（本页即详情）                                                                                                                          |
+| 不可删除的交互状态 | 编辑对话框入口；父任务/依赖任务跳转                                                                                                      |
 
 **模型级问题**：UI 直接暴露"模板/实例"系统概念——用户在 `/tasks` 管理的是模板，而"今天要做的事"（实例）只出现在仪表盘 widget 和日历里，没有一个"今日任务清单"主页面（`DailyTodoWidget` 是最接近的，但只在 dashboard）。
 
@@ -179,12 +181,12 @@
 **业务目标**：以日/周/月日历查看**日程事件 + 任务实例投影**（`useCalendarView.events` 中 `event.source === 'task'`，可直接在日历完成任务实例 `handleCompleteTask` → `task.completeInstance`，`ScheduleDashboardView.vue:139-156`），并创建日程。
 **数据**：`useCalendarView()`（窗口范围拉取）、`useSchedule()`、`useTask()`。
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 日/周/月视图切换；日历主体（事件块）；「创建日程」 |
-| 可弱化 | — |
-| 可隐藏 | `DevScheduleDebugPanel`（仅 DEV 渲染，保持） |
-| 可移入详情 | 月视图点击某天 → `DayDetailSheet`（右滑抽屉）已是正确模式；任务事件 → `TaskEventActionPanel` 底部面板保留 |
+| 分类               | 内容                                                                                                                                                                                                       |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 日/周/月视图切换；日历主体（事件块）；「创建日程」                                                                                                                                                         |
+| 可弱化             | —                                                                                                                                                                                                          |
+| 可隐藏             | `DevScheduleDebugPanel`（仅 DEV 渲染，保持）                                                                                                                                                               |
+| 可移入详情         | 月视图点击某天 → `DayDetailSheet`（右滑抽屉）已是正确模式；任务事件 → `TaskEventActionPanel` 底部面板保留                                                                                                  |
 | 不可删除的交互状态 | 视图窗口换页时的范围拉取（day/week/month change）；任务事件的"完成"动作及完成后窗口刷新；非任务事件目前仅 toast（`ScheduleDashboardView.vue:144`——**日程事件本身没有详情/编辑 UI，是功能缺口而非可删项**） |
 
 ### 4.6 提醒（`/reminders` → `ReminderLinearView.vue`）
@@ -192,13 +194,13 @@
 **业务目标**：管理提醒模板与分组；分组有控制模式（group/individual）与启停策略；全局总开关一键静默。
 **数据**：`useReminder`（templates、groups、preferences.globalReminderEnabled、组统计 stats）。
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 分组侧边栏（计数）；模板列表（各自启停）；全局总开关（关闭时页顶黄色横幅 + 一键恢复，`ReminderLinearView.vue:126-146`） |
-| 可弱化 | 头部里重复的"当前分组"徽章条（`ReminderLinearView.vue:96-109`，与正文分组卡重复）；分组卡内的 2×N 统计小方块 |
-| 可隐藏 | 分组描述为空时的区块 |
-| 可移入详情 | 分组策略详情文案（`getGroupPolicyText`） |
-| 不可删除的交互状态 | 全局开关与保存中禁用态；分组控制模式（决定模板开关是否被组接管）；模板/分组的创建对话框 |
+| 分类               | 内容                                                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 分组侧边栏（计数）；模板列表（各自启停）；全局总开关（关闭时页顶黄色横幅 + 一键恢复，`ReminderLinearView.vue:126-146`） |
+| 可弱化             | 头部里重复的"当前分组"徽章条（`ReminderLinearView.vue:96-109`，与正文分组卡重复）；分组卡内的 2×N 统计小方块            |
+| 可隐藏             | 分组描述为空时的区块                                                                                                    |
+| 可移入详情         | 分组策略详情文案（`getGroupPolicyText`）                                                                                |
+| 不可删除的交互状态 | 全局开关与保存中禁用态；分组控制模式（决定模板开关是否被组接管）；模板/分组的创建对话框                                 |
 
 ### 4.7 仓储 + 编辑器（`/repository`、`/note/:id`）
 
@@ -207,12 +209,12 @@
 
 **RepositoryWorkspaceView**
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 文件树（按类型分组，`TypedFileTree`）；编辑器主体 + 保存/脏状态；标签页条（多文件打开时） |
-| 可弱化 | 侧栏三模式切换（files/search/bookmarks 图标条）；字数统计 |
-| 可隐藏 | 书签面板（低频，可并入文件树顶部区）；失效引用诊断（无问题时） |
-| 可移入详情 | 自包含导出、批量导入（已是对话框，保留）；引用修复（已是对话框） |
+| 分类               | 内容                                                                                                                                                                                                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 文件树（按类型分组，`TypedFileTree`）；编辑器主体 + 保存/脏状态；标签页条（多文件打开时）                                                                                                                                                                                   |
+| 可弱化             | 侧栏三模式切换（files/search/bookmarks 图标条）；字数统计                                                                                                                                                                                                                   |
+| 可隐藏             | 书签面板（低频，可并入文件树顶部区）；失效引用诊断（无问题时）                                                                                                                                                                                                              |
+| 可移入详情         | 自包含导出、批量导入（已是对话框，保留）；引用修复（已是对话框）                                                                                                                                                                                                            |
 | 不可删除的交互状态 | 未保存守卫（`useEditorUnsavedChangesGuard`、`useWindowUnsavedChangesGuard`）；标签页 pin/关闭他项/关闭右侧；侧栏折叠（ResizablePanel collapse）；重命名对话框；媒体查看器分支（图片/视频/音频）与"不支持类型"占位分支（`RepositoryWorkspaceView.vue:124-246` 的四分支渲染） |
 
 **EditorLinearView（`/note/:id`）**：单笔记聚焦编辑 + 右侧反链/图谱面板 + `[[` 触发的链接建议浮层（`LinkSuggestion`，支持"创建并链接新笔记"）。它是 AI「打开创建的笔记」「打开引用」的着陆页（`openRecentKnowledgeNote(resourceId)` → `/note/:id`）。
@@ -221,12 +223,12 @@
 
 ### 4.8 通知（`/notifications`）
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示 | 通知列表（未读态）；未读计数徽章；「全部已读」 |
-| 可弱化 | 过滤 Tab（全部/未读等） |
-| 可隐藏 | `/sse-monitor`（已 DEV-only，保持隐藏） |
-| 可移入详情 | 通知点击跳转的目标上下文 |
+| 分类               | 内容                                                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 必须展示           | 通知列表（未读态）；未读计数徽章；「全部已读」                                                                                         |
+| 可弱化             | 过滤 Tab（全部/未读等）                                                                                                                |
+| 可隐藏             | `/sse-monitor`（已 DEV-only，保持隐藏）                                                                                                |
+| 可移入详情         | 通知点击跳转的目标上下文                                                                                                               |
 | 不可删除的交互状态 | 逐条已读/删除；SSE 实时接入（`createNotificationStartupHook`，Desktop 启动时挂载，`apps/desktop/src/renderer/bootstrap/app.ts:74-81`） |
 
 **定位问题**：作为一级页面价值弱——通知天然是"信箱"，适合铃铛入口 + 抽屉/弹层，未读数已在 dashboard 统计卡出现。
@@ -235,13 +237,13 @@
 
 **业务目标**：个人编码规范库——规则（code/title/severity/status/tags/好坏示例）、修订历史、废弃/替代链。5 个子页（列表/新建/详情/编辑/历史）。
 
-| 分类 | 内容 |
-|---|---|
-| 必须展示（列表） | 规则卡（code、title、severity、status）；搜索 |
-| 可弱化 | 状态/严重度双排按钮组过滤（`GovernanceListView.vue:23-63`）→ 下拉；标签 chips |
-| 可隐藏 | 过滤命中横幅 |
-| 可移入详情 | 好/坏代码示例（已在详情页） |
-| 不可删除的交互状态 | 规则编辑器表单；修订历史 diff 查看 |
+| 分类               | 内容                                                                          |
+| ------------------ | ----------------------------------------------------------------------------- |
+| 必须展示（列表）   | 规则卡（code、title、severity、status）；搜索                                 |
+| 可弱化             | 状态/严重度双排按钮组过滤（`GovernanceListView.vue:23-63`）→ 下拉；标签 chips |
+| 可隐藏             | 过滤命中横幅                                                                  |
+| 可移入详情         | 好/坏代码示例（已在详情页）                                                   |
+| 不可删除的交互状态 | 规则编辑器表单；修订历史 diff 查看                                            |
 
 **定位问题**：与"目标/任务/日程"不是同一层级的心智——它本质是**知识库的一种特化**（结构化笔记），却占据一级导航。
 
@@ -341,22 +343,23 @@
 
 逐页给出布局方向（组件不换血，只重排）：
 
-| 页面 | 现状 | 建议布局 |
-|---|---|---|
-| AI 首页 | 左会话栏 + 中对话 + 右产物栏；工作流按钮挤在 composer | 保持三栏骨架；**工作流生命周期按钮整体移入右栏顶部**（与产物同屏）；composer 只留发送/停止/模式切换/模型；右栏空闲态显示"今日概览"三 widget |
-| 仪表盘 | 6 卡 + 图表 + 时间线 + 3 widget + 快捷条 | 压缩为：一行紧凑统计条（6 数字）→ 三列 widget（待办/提醒/目标）→ 趋势图与活动时间线折叠区；删除快捷操作条 |
-| 目标列表 | 第二侧栏 + 卡片网格 | 保留；侧栏专注模式卡在未激活时缩为按钮；「对比」入 ⋯ 菜单 |
-| 目标详情 | 概览卡 + KR 卡 + Tabs | 保留结构；四宫格元数据压成单行；进度环缩小与 KR 完成数并排 |
-| 任务 | 双排过滤 + 卡片网格 + 图谱弹窗 | 顶部一排：状态 Tab + 过滤下拉 + 视图切换（卡片 / 图谱——图谱从 Dialog 升为视图模式）；「全部删除」移入 ⋯ 危险区 |
-| 日程 | 头部视图切换 + 日历 | 保留（这是最成熟的页面壳）；把它的 `h-14 头 + 视图 Tab` 模式定为全应用列表页标准壳 |
-| 提醒 | 第二侧栏 + 头部状态徽章 + 分组卡 + 列表 | 删除头部重复徽章条；全局开关固定在头部右侧；分组统计小方块并入分组卡一行 |
-| 笔记（仓储） | 三模式侧栏 + Tab 条 + 编辑器 | 保留骨架（它已对齐 Obsidian 心智）；书签并入文件树分区；§13 决策会影响此页去留 |
-| 笔记单页 `/note/:id` | 编辑器 + 右反链/图谱栏 | 保留；作为 AI 笔记着陆页的地位不变 |
-| 通知 | 一级页 | 铃铛弹层（最近 N 条 + 全读）+ 完整页保留原布局 |
-| 治理 | 独立头部风格 | 套用标准列表壳（h-14 头 + 过滤下拉），双按钮组过滤收敛为下拉 |
-| 设置 | 10 Tab 单页 | Tab 分组为：外观与语言 / AI / 通知与提醒 / 隐私与账户（并入账户中心）/ 数据（导入导出/用户文件）/ 高级（实验性/快捷键） |
+| 页面                 | 现状                                                  | 建议布局                                                                                                                                    |
+| -------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI 首页              | 左会话栏 + 中对话 + 右产物栏；工作流按钮挤在 composer | 保持三栏骨架；**工作流生命周期按钮整体移入右栏顶部**（与产物同屏）；composer 只留发送/停止/模式切换/模型；右栏空闲态显示"今日概览"三 widget |
+| 仪表盘               | 6 卡 + 图表 + 时间线 + 3 widget + 快捷条              | 压缩为：一行紧凑统计条（6 数字）→ 三列 widget（待办/提醒/目标）→ 趋势图与活动时间线折叠区；删除快捷操作条                                   |
+| 目标列表             | 第二侧栏 + 卡片网格                                   | 保留；侧栏专注模式卡在未激活时缩为按钮；「对比」入 ⋯ 菜单                                                                                   |
+| 目标详情             | 概览卡 + KR 卡 + Tabs                                 | 保留结构；四宫格元数据压成单行；进度环缩小与 KR 完成数并排                                                                                  |
+| 任务                 | 双排过滤 + 卡片网格 + 图谱弹窗                        | 顶部一排：状态 Tab + 过滤下拉 + 视图切换（卡片 / 图谱——图谱从 Dialog 升为视图模式）；「全部删除」移入 ⋯ 危险区                              |
+| 日程                 | 头部视图切换 + 日历                                   | 保留（这是最成熟的页面壳）；把它的 `h-14 头 + 视图 Tab` 模式定为全应用列表页标准壳                                                          |
+| 提醒                 | 第二侧栏 + 头部状态徽章 + 分组卡 + 列表               | 删除头部重复徽章条；全局开关固定在头部右侧；分组统计小方块并入分组卡一行                                                                    |
+| 笔记（仓储）         | 三模式侧栏 + Tab 条 + 编辑器                          | 保留骨架（它已对齐 Obsidian 心智）；书签并入文件树分区；§13 决策会影响此页去留                                                              |
+| 笔记单页 `/note/:id` | 编辑器 + 右反链/图谱栏                                | 保留；作为 AI 笔记着陆页的地位不变                                                                                                          |
+| 通知                 | 一级页                                                | 铃铛弹层（最近 N 条 + 全读）+ 完整页保留原布局                                                                                              |
+| 治理                 | 独立头部风格                                          | 套用标准列表壳（h-14 头 + 过滤下拉），双按钮组过滤收敛为下拉                                                                                |
+| 设置                 | 10 Tab 单页                                           | Tab 分组为：外观与语言 / AI / 通知与提醒 / 隐私与账户（并入账户中心）/ 数据（导入导出/用户文件）/ 高级（实验性/快捷键）                     |
 
 统一规范（新建一份 UI 壳约定，落在 `packages/ui-vue-shadcn` 或 app-vue shared）：
+
 - 列表页壳：`h-14 border-b` 头（标题 + 主操作右置）+ 内容 `max-w-7xl`；详情页 `max-w-4xl`。
 - 模块第二侧栏统一 `w-64`，且允许折叠（repository 的 ResizablePanel collapse 模式推广到 goal/reminder）。
 
@@ -367,12 +370,14 @@
 改版"不能动"的资产清单：
 
 **状态与数据层（全部保留）**
+
 - 所有 Pinia store 与 composable 门面：`useGoal`、`useTask`、`useSchedule`/`useCalendarView`、`useReminder`、`useRepository`（及其 5 个子 composable 拆分，`useRepository.ts:116-155`）、`useAIChatView` 及其 4 个 workflow 子 composable、`useDashboard`、`useNotification`、`useUserSetting`、`useAccount`、`useSession`。
 - DI 端口体系：`di/keys.ts` 全部 injection key（`REPOSITORY_SERVICE_KEY`、`DESKTOP_AUTH_API_KEY`、`LOGOUT_HANDLER_KEY`、`MAIN_NAVIGATION_KEY`…）与两端 `di-app.ts` 装配——**布局层重构不得绕过端口直连 HTTP/IPC**。
 - 路由契约：`?dialog=goal&goalId=` 查询参对话框（AI 与空态深链依赖）；`/note/:id`、`/goals/:id` 等被 AI 工作流 `openRecentKnowledgeNote/openAutomatedGoal` 硬引用的路径。
 - 守卫类状态：编辑器未保存守卫（两个 composable）+ 标签页状态（`editor-workspace-ui-store.ts`）；认证守卫 `createAuthGuard`。
 
 **交互组件（保留，可换皮不换逻辑）**
+
 - 对话框族：`GoalDialog`、`GoalFolderDialog`、`KeyResultDialog`、`ActivateFocusModeDialog`、`TaskTemplateDialog`（含依赖/循环/目标绑定三段式表单）、`CreateScheduleDialog`、`BatchImportDialog`、`ImageResourcePickerDialog`、`ResourcePickerDialog`、`ReferenceRepairDialog`、`SelfContainedExportDialog`、`useConfirm` 确认框。
 - 日历三视图 + `DayDetailSheet` + `TaskEventActionPanel`；`TaskDAGVisualization`；`DraggableTaskCard` 拖拽建依赖。
 - 编辑器核心：`ActiveDocumentPane`/`MarkdownEditor`（CodeMirror6 扩展在 `editor/codemirror/`）、`LinkSuggestion`、`BacklinkPanel`、`LinkGraphView`、`MediaViewer`。
@@ -380,6 +385,7 @@
 - 共享：`ActionableWrapper`（右键/悬浮菜单容器，goal/reminder 侧栏都在用）。
 
 **测试契约**
+
 - 大量 `data-testid`（`ai-chat-view`、`dashboard-stat-card-*`、`create-goal-button`、`goal-agent-*`、`notification-filter-*`…）被 Playwright 用例引用（`apps/web/e2e/`、`playwright.ai-workspace.config.ts` 等 5 份配置）——重构时 testid 必须随组件迁移。
 
 ---
@@ -448,6 +454,7 @@
    - 写路径规则：AI 生成的笔记落 `vault/00-inbox/`（可配），不污染用户的既有结构。
 
    `RepositoryClientDTO.path` 字段已存在且允许 null（`repository-client.ts:24`），用它承载 vault 绝对路径，零 schema 变更。
+
 3. **`resources` 表从"内容真源"降级为"文件索引/缓存"**：content 列变成"最近一次读到的快照"，真相在 .md 文件。这与 §13.1-5 的现状是连续的（现在 FsStorageAdapter 也已经在写文件，DB 与文件已并存），不是推倒重来。
 
 #### 13.2.3 RAG 侧：复用已有索引端口，把召回换成真向量（§13.1-6、13.1-7）
@@ -470,13 +477,13 @@
 
 ### 13.3 落地顺序（与 UI 重构解耦，可并行）
 
-| 阶段 | 内容 | 风险 | 与 UI 重构关系 |
-|---|---|---|---|
-| 0 | **UI 收缩**（§9-C）：砍多标签/分屏/导出/批量导入，`/repository` 更名"笔记"，`/note/:id` 转预览优先 | 零架构风险，纯前端减法 | 本轮重构直接做 |
-| 1 | **桌面 vault 适配器**：选目录 → `storageBaseDir` 指向 vault → `scanVault()` 登记 2000 篇 → chokidar 监听 → `obsidian://` 跳转 | 中：文件扫描/编码/大 vault 性能 | 独立于 UI，可并行 spike |
-| 2 | **pgvector 召回**：加 `vector` 列 + IVFFlat + `findRelevantResources` 走 ANN + 常态 embedding provider | 中：需 DB 迁移与 2000 篇回填索引 | 后端专项 |
-| 3 | **GitHub 同步**：桌面 git push/pull 接线；移动端只读（不接 git，走服务端索引）；Web 走服务端索引只读 | 中：桌面单端 git 冲突处理 | 后端/桌面专项 |
-| 4 | **一次性迁移**：现有 DB 里 2000+ 篇导出为 .md 到 vault（若它们还没在文件里）；`document*`/`resources` PowerSync 表角色重定义 | 一次性；项目声明不需要平滑迁移（`AGENT.md`） | 数据专项 |
+| 阶段 | 内容                                                                                                                          | 风险                                         | 与 UI 重构关系          |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ----------------------- |
+| 0    | **UI 收缩**（§9-C）：砍多标签/分屏/导出/批量导入，`/repository` 更名"笔记"，`/note/:id` 转预览优先                            | 零架构风险，纯前端减法                       | 本轮重构直接做          |
+| 1    | **桌面 vault 适配器**：选目录 → `storageBaseDir` 指向 vault → `scanVault()` 登记 2000 篇 → chokidar 监听 → `obsidian://` 跳转 | 中：文件扫描/编码/大 vault 性能              | 独立于 UI，可并行 spike |
+| 2    | **pgvector 召回**：加 `vector` 列 + IVFFlat + `findRelevantResources` 走 ANN + 常态 embedding provider                        | 中：需 DB 迁移与 2000 篇回填索引             | 后端专项                |
+| 3    | **GitHub 同步**：桌面 git push/pull 接线；移动端只读（不接 git，走服务端索引）；Web 走服务端索引只读                          | 中：桌面单端 git 冲突处理                    | 后端/桌面专项           |
+| 4    | **一次性迁移**：现有 DB 里 2000+ 篇导出为 .md 到 vault（若它们还没在文件里）；`document*`/`resources` PowerSync 表角色重定义  | 一次性；项目声明不需要平滑迁移（`AGENT.md`） | 数据专项                |
 
 **结论**：方向 B 不仅可行，而且代码里的两个关键端口（`IStoragePort`、`IKnowledgeIndexRepository`/`vectorRecallBackend`）**本来就是朝这个方向留的**。本轮 UI 重构按阶段 0 执行（纯减法、与架构切换零冲突），阶段 1–4 作为架构专项排期，不阻塞界面改版。
 

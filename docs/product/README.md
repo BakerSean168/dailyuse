@@ -4,7 +4,7 @@ tags:
   - index
 description: 业务功能资产文档入口
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-16T00:00:00
 ---
 
 # 业务功能资产
@@ -30,9 +30,9 @@ updated: 2026-06-02T00:00:00
 - [Dashboard 模块文件索引](./module-index/dashboard-files.md)：Dashboard 模块相关页面、接口、领域代码、数据结构和测试入口。
 - [AI 模块说明](./modules/ai.md)：AI 模块当前功能、用户路径、业务规则和风险点。
 - [AI 模块文件索引](./module-index/ai-files.md)：AI 模块相关页面、接口、领域代码、数据结构和测试入口。
-- [资源库模块说明](./modules/repository.md)：资源库模块当前功能、用户路径、业务规则和风险点。
+- [资源库模块说明](./modules/repository.md)：资源库模块当前实现、本地 Vault、可选 GitHub 同步和 Web 快捷创建边界。
 - [资源库模块文件索引](./module-index/repository-files.md)：资源库模块相关页面、接口、领域代码、数据结构和测试入口。
-- [编辑器模块说明](./modules/editor.md)：编辑器模块当前功能、用户路径、业务规则和风险点。
+- [编辑器模块说明](./modules/editor.md)：编辑器模块当前实现，以及安全预览、新笔记确认和 Obsidian 外部编辑后的职责收缩。
 - [编辑器模块文件索引](./module-index/editor-files.md)：编辑器模块相关页面、接口、领域代码、数据结构和测试入口。
 - [账户模块说明](./modules/account.md)：账户模块当前功能、用户路径、业务规则和风险点。
 - [账户模块文件索引](./module-index/account-files.md)：账户模块相关页面、接口、领域代码、数据结构和测试入口。
@@ -56,4 +56,3 @@ updated: 2026-06-02T00:00:00
 - 优先链接现有代码和文档，不重复抄实现细节。
 - 每个模块至少说明功能定位、当前能力、用户路径、关键规则、相关代码、当前问题、优化机会和风险点。
 - 第一版可以轻量，但必须标清待确认事项。
-

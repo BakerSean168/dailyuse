@@ -3,90 +3,119 @@ tags:
   - product
   - module
   - repository
-description: 资源库模块当前功能资产说明
+description: 资源库模块当前实现、本地 Vault、可选 GitHub 同步与跨端边界
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-16T00:00:00
 ---
 
 # 资源库模块说明
 
 ## 1. 功能定位
 
-资源库模块用于管理用户的知识资源。它围绕资源工作区、文件树、资源列表、标签、收藏、搜索、上传和批量导入形成闭环，是编辑器和 AI 知识生成的内容基础。用户文件和系统资源的边界在本模块中维护。
+资源库模块负责把用户的 Markdown 知识资产接入 Daily Use 的浏览、搜索、引用、AI 和跨端流程。长期定位不是独立知识编辑器，而是本地 Obsidian Vault、可选 GitHub private repository 和 Memory Flow 业务能力之间的边界。
 
-## 2. 当前功能说明
+[ADR-034](../../architecture/adr/ADR-034-obsidian-vault-repository.md) 已采纳：本地 Vault 优先；GitHub 登录与仓库授权解耦；用户需要同步时再连接 GitHub；绑定后 Web 可以安全地快捷创建新笔记。
 
-- 资源工作区：每个用户自动创建一个"知识库"工作区，管理所有资源。
-- 文件夹管理：创建、重命名、移动和删除文件夹，支持自引用层级结构和循环检测。
-- 资源管理：创建、更新、删除、重命名和归档资源，支持多种类型（笔记、图片、视频、音频、PDF、链接、代码等）。
-- 文件树：前端提供类型化文件树（TypedFileTree），按资源类型分组展示。
-- 搜索：支持服务端搜索和客户端搜索两种模式，可搜索资源名称、路径和内容。
-- 书签：用户可为资源添加书签，支持重命名、排序和删除。
-- 上传：支持单个和批量文件上传，带进度跟踪。
-- 批量导入：支持从文件系统批量导入资源。
-- AI 知识生成：前端提供 AIKnowledgeGeneratorDialog 入口。
-- 标签管理：为资源添加和管理标签。
-- 链接预览：hover 预览内部链接。
-- 存储策略：文件大小限制、配额检查、禁止扩展名检查。
-- 路径遍历保护：FsStorageAdapter 包含路径遍历攻击防护。
+## 2. 当前实现（尚未完成 ADR-034）
 
-## 3. 用户路径
+- 每个用户自动创建一个数据库 Repository 工作区。
+- 支持文件夹、资源、标签、书签、搜索、上传和批量导入。
+- Desktop 内容仍位于 profile 的 `storage/repository-storage`。
+- Web 仍挂载完整 Repository/Editor HTTP service，提供数据库笔记的新建、编辑和保存。
+- OAuth binding 数据结构存在，但 GitHub 登录、GitHub App 安装和仓库连接尚未落地。
+- `SyncRepositoryUseCase` 仍是占位，没有 Git runtime 或 webhook ingestion。
 
-- 资源浏览路径：用户进入资源库工作区，通过左侧文件树（按类型或文件夹）浏览资源，点击资源在右侧打开编辑器。
-- 资源创建路径：用户通过创建对话框新建笔记或文件夹，或通过上传导入外部文件。
-- 搜索路径：用户在搜索面板输入关键词，选择搜索模式，查看搜索结果并点击跳转。
-- 书签路径：用户为常用资源添加书签，通过书签面板快速访问。
-- 编辑路径：用户点击笔记资源，进入编辑器视图（/note/:id），使用 Markdown 编辑器编辑内容。
+以上是迁移前代码事实，不代表最终产品边界。
 
-## 4. 业务规则
+## 3. 已采纳目标态
 
-- Repository 是资源库模块核心聚合，Resource 和 Folder 是独立实体。
-- 每个用户最多有一个活跃的 Repository，不存在时自动创建"知识库"。
-- Resource 类型包括：note、image、video、audio、pdf、link、code、other。
-- Folder 支持自引用层级（parentId），移动时通过 FolderHierarchyService 检测循环。
-- 资源存储分离：元数据存储在数据库，内容存储在文件系统（FsStorageAdapter）。
-- 资源内容水合：二进制资源的内容在需要时从存储中加载（StoredResourceHydrationService）。
-- 资源变更通过 eventBus 发布领域事件，供其他模块（如 AI 知识索引）消费。
-- 客户端通过 HTTP 或 IPC 适配器访问资源库能力，服务端通过模块组合根装配用例和仓储实现。
+### 本地 Desktop
 
-## 5. 相关文件索引
+- 账密用户、GitHub 用户和访客都可以选择本地 Obsidian Vault。
+- 未连接 GitHub 时，所有笔记和附件只存在本地。
+- Desktop 扫描、监听、预览、搜索，并使用 `obsidian://` 外部编辑。
+- Agent 根据运行时可用上下文、知识库结构和用户当前指令提出路径和内容，用户确认后写入 Vault。
 
-详细文件清单见 [资源库模块文件索引](../module-index/repository-files.md)。
+### GitHub 同步
 
-## 6. 当前问题
+- 登录方式和知识仓库授权分开。
+- 账密或 GitHub 在线账号可创建/连接一个 private repository。
+- Desktop 将 Vault 作为 Git working tree，批量 commit、pull/rebase 和 push。
+- GitHub App webhook 驱动服务端 read model、链接索引和 RAG。
+- GitHub 故障或撤销授权不影响本地 Vault。
 
-- 文件系统、数据库资源和前端树状态的一致性需要在优化前确认。
-- 资源引用被编辑器或 AI 使用时的失效处理机制不完善。
-- 上传、批量导入和搜索索引的边界需要明确。
-- 资源库和编辑器之间的耦合较深：编辑器直接使用 ResourceClientDTO，仓库工作区视图嵌入编辑器组件。
-- Desktop 侧的搜索实现是内存搜索，与 API 侧的数据库搜索行为可能不一致。
+### Web 与 Mobile
 
-## 7. 优化机会
+- 未连接仓库时提示去 Desktop 连接同步。
+- 连接后支持浏览、搜索、预览、反链和 RAG。
+- Web 首期支持创建唯一的新 Markdown 文件和确认 AI 草稿入库。
+- 已有笔记编辑、移动、重命名、删除和冲突解决暂不开放。
+- 所有 Web 写入先创建 Git commit，不能只写服务端数据库。
 
-- 梳理资源库和编辑器的职责边界，减少双向耦合。
-- 为资源引用提供更好的失效检测和修复能力。
-- 强化搜索能力，考虑支持全文搜索引擎。
-- 优化批量导入的性能和用户体验。
-- 考虑资源版本管理能力。
+## 4. 核心数据流
+
+```text
+Local Obsidian Vault
+  <-> Desktop Git runtime
+  <-> GitHub private repository
+       -> verified webhook
+       -> server read model + RAG
+       -> Web/Mobile
+
+Web create
+  -> Daily Use API
+  -> GitHub App commit
+  -> webhook/read model
+  -> Desktop pull
+```
+
+## 5. 目标用户路径
+
+- 访客：进入 Desktop → 选择 Vault → 本地浏览与 Obsidian 编辑。
+- 在线但未同步：登录 → 选择 Vault → 保持仅本地，或主动连接 GitHub。
+- 创建仓库：连接 GitHub → 确认 private repo → 安装 App 到该仓库 → 首次 push。
+- 连接已有仓库：授权指定 repo → 选择空目录 clone，或显式处理本地/远端差异。
+- Web 快捷创建：Agent 生成完整写入提案 → 用户确认 → Git commit → Desktop pull。
+- 访客升级：注册/登录 → 保留原 Vault → 再决定是否连接 GitHub。
+
+## 6. 业务规则
+
+- GitHub 登录不自动授权知识仓库；账密用户同样可以绑定 GitHub。
+- 未绑定 GitHub 时不上传 Vault 内容。
+- 新建 GitHub 仓库默认 private，GitHub App 安装范围限定到该仓库。
+- 本地和远端都非空时不得自动覆盖或静默合并。
+- Desktop 不 force push；冲突时暂停并保留双方内容。
+- Web 创建按 repository 串行提交，以 request ID 和 commit SHA 幂等。
+- 服务端投影可以从 default branch 重建，不是可独立编辑的数据源。
+- Agent 写入提案包含 path、title、frontmatter、content 和 reason；写入始终需要用户确认。
+- Agent 上下文的载体和注入机制待专项设计，不预先规定固定 Vault 文件。
+- 移除 AI 固定默认目录设置；无指令时由用户确认提议路径。
+- 仓库改为 public 时告警并暂停新的 RAG ingestion。
+
+## 7. 当前差距
+
+- 缺少本地 Vault 绑定、扫描和外部打开。
+- 缺少 GitHub 登录的完整 OAuth UI、回调和 Desktop deep link。
+- 缺少独立 GitHub App installation/仓库授权。
+- 缺少 private repo 创建、首次对账和 Git runtime。
+- 缺少 webhook ingestion、read model 和仓库生命周期处理。
+- Web 创建仍写数据库，不会创建 Git commit。
+- AI 仍可能走固定路径或数据库 Resource 写入，尚未接入统一写入提案和用户确认契约。
+- Markdown 预览缺少真实仓库内容所需的 sanitizer。
 
 ## 8. 风险点
 
-- 文件系统、数据库和前端树状态的一致性：资源创建/删除/重命名需要同时更新存储和数据库。
-- 资源引用失效：编辑器中的 wiki-link 和资源引用在资源删除或重命名后可能失效。
-- 存储配额和路径安全：FsStorageAdapter 的路径遍历保护需要持续验证。
-- 编辑器耦合：资源库和编辑器之间的双向依赖增加了变更风险。
-- HTTP、IPC、Prisma 和 PowerSync 适配器同时存在，索引和测试需要覆盖多运行时边界。
+- GitHub private repository 不是对 GitHub/Daily Use 服务端不可见的 E2E 加密。
+- Git 冲突、仓库体积、大附件和 Git LFS 会增加 Desktop 复杂度。
+- GitHub App 撤销、仓库删除/公开、账号限制会影响跨端能力。
+- 同时使用 Obsidian Git 插件与 Daily Use 自动 Git 可能产生 lock 和竞态。
+- Agent 读取的知识内容不可信，必须防止路径穿越、命令执行和提示注入越权。
+- Web 创建和 Desktop push 并发时必须通过远端 HEAD 和串行提交控制。
 
-## 9. 后续待确认
+## 9. 相关资料
 
-- 资源库是否需要支持更多存储后端（如 S3、云存储）。
-- 全文搜索引擎的选型和集成策略。
-- 资源版本管理是否需要实现。
-- 资源引用的自动修复能力。
-- Desktop 侧搜索与 API 侧搜索的行为统一。
-
-## 10. 相关资料
-
+- [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
+- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)
 - [编辑器模块说明](./editor.md)
 - [AI 模块说明](./ai.md)
 - [资源库模块文件索引](../module-index/repository-files.md)

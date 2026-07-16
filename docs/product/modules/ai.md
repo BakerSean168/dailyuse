@@ -5,7 +5,7 @@ tags:
   - ai
 description: AI 模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-16T00:00:00
 ---
 
 # AI 模块说明
@@ -19,7 +19,7 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - AI Chat：用户与 AI 进行对话，支持消息发送和流式响应。
 - 目标生成：通过 goal workflow 生成结构化目标草稿，支持澄清、编辑和确认后写入目标模块。
 - 目标自动化：AI 可生成任务模板并绑定到目标，支持自动化 tool execution。
-- 知识笔记：AI 从对话或资源生成知识笔记，写入 repository 模块。
+- 知识笔记：当前实现可写入数据库 Repository；ADR-034 迁移后，Desktop 可确认写入本地 Vault，绑定 GitHub 后 Web 也可确认创建 Git commit。
 - 知识查询：基于向量索引的知识检索和问答。
 - 知识扩展：对已有知识进行扩展和深化。
 - 知识索引：自动同步和索引 repository 中的资源内容。
@@ -34,7 +34,7 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 
 - AI Chat 路径：用户进入 AI Chat 页面，选择模型，开始对话。AI 可根据对话内容触发 goal workflow 或 knowledge workflow。
 - 目标生成路径：用户在 AI Chat 中表达目标意图，AI 生成目标草稿，用户编辑确认后创建真实目标和关键结果。
-- 知识笔记路径：用户在 AI Chat 中请求生成知识笔记，AI 生成后写入 repository。
+- 知识笔记路径：Agent 根据运行时可用上下文、知识库结构和用户当前指令提出 path/title/frontmatter/content/reason，用户确认后由 Desktop 写文件或 Web 创建 Git commit。
 - Provider 配置路径：用户在设置中配置 AI provider，添加 API key，选择默认模型。
 - 移动端路径：移动端提供 AI Chat 入口。
 
@@ -42,8 +42,10 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 
 - AIConversation 是 AI 模块核心聚合，AIProviderConfig 是独立聚合，Message 是关联实体。
 - AI 模块不绕过业务模块写入业务数据：draft/plan 阶段产出结构化草稿或计划；execute/auto-execute 阶段可在 approved plan/actions 约束下通过 tool executor 调用 Goal、Task、Repository 等业务模块完成写入。
+- 知识笔记遵循 ADR-034：未绑定时仅 Desktop 本地确认写入；绑定 GitHub 后 Web 可经 Repository/GitHub App 创建新文件，但不能直接写 read model。
 - Goal workflow 分为多个阶段：clarification → draft → automation，每个阶段有独立的 contract 和 handler。
 - Knowledge workflow 包括 note generation、expansion、indexing、query 四个子流程。
+- 未绑定 GitHub 时 Knowledge workflow 只使用 Desktop 本地来源；绑定后服务端从 GitHub commit 投影并建立 RAG。
 - Provider 配置使用 AES-256-GCM 加密存储 API key。
 - 运行时模式选择：direct-provider（直连 LLM API）或 remote-ai-service（委托给 Python FastAPI 服务）。
 - ai-service 是独立的 Python/FastAPI 应用，通过 HMAC 签名的 HTTP 请求与主应用通信。
@@ -60,6 +62,9 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - Provider capability、workflow command、response contract 的一致性需要持续维护。
 - ai-service 的部署和运维复杂度较高（独立 Python 应用 + HMAC 签名 + LLM provider 抽象）。
 - 知识索引的向量搜索能力和准确性需要进一步验证。
+- 当前 Web AI 写入数据库 Repository，而目标态要求创建 Git commit。
+- 当前知识索引流程尚未覆盖 GitHub webhook、commit 幂等和删除 commit 后的向量清理。
+- 当前缺少统一写入提案、上下文变化处理和用户确认契约；上下文载体与注入机制待专项设计。
 
 ## 7. 优化机会
 
@@ -77,6 +82,7 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - ai-service 的可用性和延迟直接影响 AI 功能的用户体验。
 - API key 的安全存储和传输。
 - 知识索引的向量数据一致性和存储成本。
+- Agent 读取的知识内容可能包含提示注入、路径穿越或越权指令，不能绕过系统安全和用户确认。
 
 ## 9. 后续待确认
 
@@ -90,5 +96,6 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 
 - [目标模块说明](./goal.md)
 - [资源库模块说明](./repository.md)
+- [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
 - [AI 模块文件索引](../module-index/ai-files.md)
 - [AI Goal workflow v1 文档集](../../guides/ai/goal-workflow-v1/README.md)

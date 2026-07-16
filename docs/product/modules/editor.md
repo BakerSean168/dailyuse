@@ -3,89 +3,78 @@ tags:
   - product
   - module
   - editor
-description: 编辑器模块当前功能资产说明
+description: 编辑器模块当前实现及 Obsidian 外部编辑、Web 快捷创建目标态
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-16T00:00:00
 ---
 
 # 编辑器模块说明
 
 ## 1. 功能定位
 
-编辑器模块用于提供 Markdown 编辑体验。它围绕 Markdown 编辑器、资源插入、链接建议、引用修复、导出、自保存和未保存变更保护形成闭环，是用户创建和编辑知识内容的核心工具。编辑器与资源库模块紧密协作，以资源作为内容层。
+编辑器模块当前提供 CodeMirror Markdown 编辑、预览、自动保存、链接和引用能力。根据 [ADR-034](../../architecture/adr/ADR-034-obsidian-vault-repository.md)，长期职责收缩为安全预览、知识关系、Web 新笔记确认和 Obsidian 外部编辑。
 
-## 2. 当前功能说明
+## 2. 当前实现（迁移前）
 
-- Markdown 编辑器：基于 CodeMirror 6 的 Markdown 编辑器，支持语法高亮、实时预览。
-- 工作区管理：EditorWorkspace → Session → Group → Tab 四级层级结构，支持分栏布局。
-- 标签页管理：打开、关闭、固定、激活标签页，支持分栏方向切换。
-- 自保存：可配置间隔的自动保存逻辑。
-- 未保存变更保护：导航离开或关闭窗口时提示未保存变更。
-- Wiki-link：支持 `[[链接]]` 语法的内部链接，提供链接建议自动补全。
-- 链接索引：构建跨文档的 wiki-link 索引，提供 backlink 面板和链接图视图。
-- 资源插入：支持插入图片、文件等资源引用，提供资源选择器。
-- 引用修复：检测和修复失效的资源引用。
-- 导出：支持自包含包导出。
-- 媒体查看：嵌入式媒体查看器。
-- 会话恢复：启动时恢复上次的工作区状态。
+- Markdown 编辑器与实时预览。
+- 自保存与未保存变更保护。
+- Wiki-link 建议、反链、链接图和失效引用处理。
+- Web 与 Desktop 共用编辑组件，内容写入数据库 Repository。
+- `EditorPreview.vue` 使用 `v-html` 且允许原始 HTML。
 
-## 3. 用户路径
+当前能力继续作为迁移期事实存在，但跨端完整自建编辑器不再是长期方向。
 
-- 编辑路径：用户从资源库点击笔记资源，进入编辑器视图（/note/:id），使用 Markdown 编辑器编辑内容，编辑器自动保存。
-- 工作区路径：用户打开多个资源，通过标签页管理在不同文档间切换，支持分栏同时查看多个文档。
-- 链接路径：用户在编辑时输入 ` 触发链接建议，选择目标文档创建内部链接。通过 backlink 面板查看引用当前文档的其他文档。
-- 资源插入路径：用户通过工具栏或快捷键插入图片或其他资源，资源从资源库中选择。
-- 引用修复路径：当资源被删除或重命名后，编辑器检测到失效引用，提供修复对话框。
+## 3. 已采纳目标态
+
+### 保留
+
+- Markdown 安全预览、properties、内部链接、嵌入和附件。
+- 反链、链接图、搜索命中和 AI 引用跳转。
+- Desktop AI/普通新笔记写入前的内容与路径确认。
+- Web 新笔记和 AI 草稿的 path/title/frontmatter/content 确认界面。
+
+### 收缩或退役
+
+- Desktop 通用重编辑、自保存、多标签和分屏工作区。
+- Web 已有笔记全文编辑与保存。
+- 与 Vault/Git 重复的上传、批量导入和自包含导出。
+- AI 固定默认目录设置。
+
+### Desktop 主操作
+
+使用经过编码的 `obsidian://open?path=<absolute-path>`，必要时回退到 `vault + file`。Obsidian CLI 只作为可选增强；协议不可用时提供“在文件管理器中显示”和“复制路径”。
+
+### Web 创建
+
+Web 不直接修改 read model。用户确认新笔记后，Repository 服务通过 GitHub App 创建唯一文件和 commit。已有文件编辑等需要 base commit/blob SHA 与冲突 UI 的能力延期。
 
 ## 4. 业务规则
 
-- EditorWorkspace 是编辑器模块核心聚合，EditorSession、EditorGroup、EditorTab 是关联实体。
-- LinkedResource、ResourceVersion、SearchEngine 是辅助实体。
-- 编辑器不直接管理资源内容，通过 IRepositoryContentPort 和 IRepositorySearchPort 与资源库交互。
-- 会话布局（SessionLayout）支持分栏方向（horizontal/vertical）和组内标签页排列。
-- 自保存使用防抖策略，可配置保存间隔。
-- 未保存变更保护同时支持路由守卫（useEditorUnsavedChangesGuard）和窗口关闭守卫（useWindowUnsavedChangesGuard）。
-- Wiki-link 索引在内存中维护，支持跨文档的正向和反向链接查询。
-- 资源引用索引跟踪文档中所有资源引用，用于失效检测。
-- 客户端通过 HTTP 或 IPC 适配器访问编辑器能力，服务端通过模块组合根装配用例和仓储实现。
+- Editor 不直接管理 GitHub token 或 Git 操作，通过 Repository port 协作。
+- 未连接 GitHub 的账号和访客不在 Web 展示笔记工作区。
+- Web 新建必须基于用户确认的完整 Agent 写入提案创建 Git commit。
+- Agent 上下文不能关闭确认、执行代码、扩大授权或允许 Vault 外路径。
+- Markdown 输出必须经过 sanitizer；附件使用受认证 URL。
+- Web/Mobile 不执行 Dataview、Tasks 查询、主题、CSS snippets 或社区插件代码。
 
-## 5. 相关文件索引
+## 5. 当前差距
 
-详细文件清单见 [编辑器模块文件索引](../module-index/editor-files.md)。
+- Web/desktop 仍共享完整可编辑 `MarkdownEditor`。
+- Web 新建/保存写数据库，而不是 Git commit。
+- Desktop 尚未提供 Obsidian deep link 与 Git 同步状态。
+- 缺少统一 Agent 写入提案和用户确认模型。
+- 当前原始 HTML 渲染是接入真实 GitHub/Vault 内容前的安全阻断项。
 
-## 6. 当前问题
+## 6. 风险点
 
-- 编辑状态、自动保存和未保存变更保护的一致性需要在优化前确认。
-- 资源引用和链接索引在资源删除或重命名后的失效处理不完善。
-- 编辑器 UI 状态与真实文档内容不一致的风险：自动保存失败但 UI 显示已保存。
-- 编辑器和资源库之间的双向耦合较深：编辑器使用 ResourceClientDTO，资源库嵌入编辑器组件。
-- 编辑器模块的前端代码量较大（22 个 composable、16 个组件），需要确认维护成本。
+- Web 和 Desktop 同时创建或未来编辑时存在 Git HEAD 竞争。
+- 原始 HTML、危险 URL、SVG/iframe 和递归嵌入可能造成 XSS。
+- Obsidian 插件语法无法在独立 Web renderer 中完全复刻。
+- 删除旧编辑器前必须保留路径/内容确认、预览和引用跳转能力。
 
-## 7. 优化机会
+## 7. 相关资料
 
-- 梳理编辑器和资源库的职责边界，建立更清晰的接口契约。
-- 强化资源引用的自动修复能力。
-- 为编辑器提供更好的性能优化（大文档、长列表）。
-- 考虑协作编辑能力。
-- 优化 CodeMirror 扩展的可配置性。
-
-## 8. 风险点
-
-- 编辑状态和自动保存的一致性：保存失败时用户可能不知道。
-- 资源引用和链接索引失效：资源删除或重命名后，文档中的引用可能变为失效链接。
-- 编辑器 UI 状态与真实文档内容不一致。
-- 编辑器和资源库的双向耦合增加了变更风险。
-- 大文档的编辑性能。
-
-## 9. 后续待确认
-
-- 编辑器是否需要支持更多内容格式（如富文本、LaTeX）。
-- 协作编辑能力的优先级和实现方案。
-- 资源引用的自动修复策略。
-- 编辑器的性能优化策略（虚拟滚动、增量渲染）。
-- 编辑器和资源库的职责边界是否需要重新划分。
-
-## 10. 相关资料
-
+- [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
+- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)
 - [资源库模块说明](./repository.md)
 - [编辑器模块文件索引](../module-index/editor-files.md)
