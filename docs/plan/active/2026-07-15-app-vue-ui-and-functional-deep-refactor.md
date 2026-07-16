@@ -34,11 +34,11 @@ updated: 2026-07-16T00:00:00
 
 ### 版本与交付状态
 
-- 当前工作分支为 `refactor/app-vue-p0-reliability`，HEAD 为 `1f9de5b40fef47b7c32df0455e6ed548e46b91ba`，相对 `main` 领先 27 个提交；工作区包含本轮尚未提交的 P0 闭环、Editor 集成测试和测试运行时改动。
+- 当前工作分支为 `refactor/app-vue-p0-reliability`，本轮实现已整理为跨端可靠性、AI live eval 和计划证据三个提交并推送；最新远程 head 以 [PR #187](https://github.com/BakerSean168/dailyuse/pull/187) 为准。
 - GitHub `main` 仍为 `552471a41ac662601f005d5f4616313cd5496c02`。
-- 当前功能分支尚未推送到 GitHub，也没有对应 PR；因此这些改动尚未进入 `main` 或标准发布链路。
+- 功能分支已推送并创建非 Draft PR #187；PR 当前 mergeable，Performance check 已通过，CI Validate 与 Boundary Tests 正在运行，改动尚未合入 `main`。
 - 当前 `/opt/dailyuse` 主机上的 Web、API、AI Service 容器均带有目标 HEAD 的 OCI revision 标签并保持健康。
-- 最新本地部署验证报告生成于 2026-07-16T08:29:34Z，结果为 `pass` 且 `Ready for PR: yes`：[`reports/local-deploy-validation/latest.md`](../../../reports/local-deploy-validation/latest.md)。
+- 最新本地部署验证结果为 `pass` 且 `Ready for PR: yes`：[`reports/local-deploy-validation/latest.md`](../../../reports/local-deploy-validation/latest.md)。
 - 最终 prod-like 验证覆盖 affected lint 37 个项目、typecheck 35 个项目、test 31 个项目和无缓存 `docker:local:rebuild`；API、Web、AI Service、PowerSync 及其依赖服务均为 healthy，本地镜像 revision 为 `1f9de5b40fef47b7c32df0455e6ed548e46b91ba-dirty`。
 - 目标 HEAD 已完成 Web E2E 67/67 和 Shell E2E 8/8，均无失败、flaky 或跳过；该轮 Web E2E 使用 `http://localhost:58080` 与 `http://localhost:53080/api/v1`。
 - 认证态 Web/Desktop PowerSync 回归通过 3/3，覆盖 Desktop→Web 与 Web→Desktop 的 Goal 创建、编辑、删除，以及 Desktop 冷重启后的账号恢复与数据持久性；测试使用隔离的 `postgres-test` 与 `powersync-test` 逻辑复制车道。
@@ -51,9 +51,9 @@ updated: 2026-07-16T00:00:00
 
 | 基线面 | 当前可追溯事实 |
 | --- | --- |
-| 本地 Git | 分支 `refactor/app-vue-p0-reliability`，HEAD `1f9de5b40fef47b7c32df0455e6ed548e46b91ba`，相对 `main` 领先 27 个提交，工作区为 dirty |
-| 远程 Git | `origin/main` 与本地 `main` 均为 `552471a41ac662601f005d5f4616313cd5496c02`；远程不存在 `refactor/app-vue-p0-reliability` 分支，也没有对应 PR |
-| prod-like runtime | Web `58080`、API `53080`、AI Service `58100`、PowerSync `58081`；三个本地应用镜像 revision 均为目标 HEAD 加 `-dirty`，必需服务 healthy |
+| 本地 Git | 分支 `refactor/app-vue-p0-reliability`，工作区已整理为可审查提交；最终 head 与远程 PR 分支保持一致 |
+| 远程 Git | `origin/main` 为 `552471a41ac662601f005d5f4616313cd5496c02`；远程功能分支与 PR #187 已创建，等待 CI 与合并 |
+| prod-like runtime | Web `58080`、API `53080`、AI Service `58100`、PowerSync `58081`；最终验证由 clean PR head 构建三个本地应用镜像，必需服务 healthy |
 | E2E runtime | 标准 Playwright lane 使用 Web `5173`、API `3000`、PostgreSQL `5433`；认证态同步另用隔离 PowerSync `58082` 与 `postgres-test` logical replication |
 | 测试身份 | Web/业务 E2E 按用例创建隔离账号；Desktop sync profile 在成功时清理、失败时保留诊断，不依赖共享长期测试账号 |
 
@@ -76,7 +76,7 @@ updated: 2026-07-16T00:00:00
 | 阶段 3：业务模块推广 | Task、Note、Reminder、Notification、Schedule 已采用单页面 DOM 和容器响应式；Web、Shell 与 Desktop 回归已通过 | 完成 |
 | 阶段 4：Web 认证 | 固定品牌主题、真实表单、字段反馈、首错聚焦、稳定错误对象、语言即时切换和共享注册 Schema 已落地；密码找回已有独立承接计划 | 完成 |
 | 阶段 5：AI 与产品完成度 | 产品完成度项目、生产 Provider clarification、deterministic eval 与 Google AI Studio live eval 2/2 均已收口 | 完成 |
-| 阶段 6：部署与验收 | prod-like、当前主机 `58080` Web E2E、Shell 和 Desktop/PowerSync 回归已通过；功能分支未推送、无 PR | 部分完成 |
+| 阶段 6：部署与验收 | 本地与跨端验收完成，分支已推送并创建 PR #187；等待 CI、合并与标准发布 | 部分完成 |
 
 ### 已确认落地
 
@@ -105,11 +105,11 @@ updated: 2026-07-16T00:00:00
 
 以下项目完成前，本文继续保留在 `active`：
 
-1. 更新本文最终完成状态，整理并推送功能分支、发起 PR、等待 CI，通过标准发布主线合并；不得把当前主机的本地镜像替代正式发布。
+1. 等待 PR #187 CI 全部通过并完成审查、合并，再通过标准发布主线推进；不得把当前主机的本地镜像替代正式发布。
 
 ### 剩余执行顺序
 
-1. 更新计划证据，整理提交，推送分支并发起 PR。
+1. 跟进 PR #187 CI 与审查，修复真实失败后合并到 `main`。
 2. 合并并完成标准发布后，再依据完成定义将本文移入 archive。
 
 ## 摘要
@@ -500,7 +500,7 @@ Goal 先完成以下收敛：
 
 ### 阶段 6：部署与验收
 
-当前状态：**部分完成**。最终 prod-like 验证、目标 revision 容器、当前主机 `58080` Web E2E、Shell、Desktop 与认证态 PowerSync 回归已通过；本地验证报告为 `Ready for PR: yes`，但分支尚未推送且无 PR。
+当前状态：**部分完成**。最终 prod-like 验证、目标 revision 容器、当前主机 `58080` Web E2E、Shell、Desktop 与认证态 PowerSync 回归已通过；分支已推送并创建 PR #187，本地验证报告为 `Ready for PR: yes`。Performance check 已通过，等待其余 CI、审查、合并与标准发布。
 
 1. 运行离改动最近的 Nx lint、typecheck、test 和 E2E target。
 2. 使用 `pnpm docker:local:up` 构建带 revision 标签的本地 prod-like 镜像。
