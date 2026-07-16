@@ -108,7 +108,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "packages/database",
-        "command": "prisma db push --config ./prisma/prisma.config.ts"
+        "command": "tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts && prisma db push --config ./prisma/prisma.config.ts"
       },
       "cache": false
     },
