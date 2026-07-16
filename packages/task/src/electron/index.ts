@@ -285,12 +285,12 @@ export function createTaskElectronModule(
       );
       ipcMain.handle(Ch.INSTANCE_COMPLETE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
-          instanceController.completeInstance(payload?.id ?? payload, payload?.request ?? {}),
+          instanceController.completeInstance(payload?.id ?? payload, payload?.request),
         ),
       );
       ipcMain.handle(Ch.INSTANCE_SKIP, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
-          instanceController.skipInstance(payload?.id ?? payload, payload?.request ?? {}),
+          instanceController.skipInstance(payload?.id ?? payload, payload?.request),
         ),
       );
       ipcMain.handle(Ch.INSTANCE_CHECK_EXPIRED, () =>
@@ -364,6 +364,5 @@ export {
   createTaskPowerSyncScheduleExecutionSource,
   createTaskPowerSyncScheduleProjectionSource,
 } from '../server/infrastructure';
-
 
 

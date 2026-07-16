@@ -200,6 +200,19 @@ describe('CreateTaskTemplateUseCase', () => {
       expect(result).toBeOk();
       if (result.ok) {
         expect(result.data.instanceCount).toBe(3);
+        expect(result.data.todayInstanceCreated).toBe(false);
+      }
+    });
+
+    it('reports when initial generation includes a today instance', async () => {
+      mockGenerateInstances.mockReturnValue([{ instanceDate: Date.now() }]);
+
+      const result = await useCase.execute(aCreateRequest());
+
+      expect(result).toBeOk();
+      if (result.ok) {
+        expect(result.data.instanceCount).toBe(1);
+        expect(result.data.todayInstanceCreated).toBe(true);
       }
     });
 
@@ -222,6 +235,7 @@ describe('CreateTaskTemplateUseCase', () => {
       expect(result).toBeOk();
       if (result.ok) {
         expect(result.data.instanceCount).toBe(0);
+        expect(result.data.todayInstanceCreated).toBe(false);
       }
     });
 

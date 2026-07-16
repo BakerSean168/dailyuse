@@ -1,121 +1,75 @@
-import { describe, expect, it } from 'vitest';
-import { computed, defineComponent, h, nextTick, ref } from 'vue';
+/** @vitest-environment happy-dom */
+
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { mount } from '@vue/test-utils';
-import { providePanelWidth, usePanelWidth } from '../../../layouts/shell/usePanelWidth';
+import { createI18n } from 'vue-i18n';
+import { describe, expect, it } from 'vitest';
+import NoteSegmentBar from '../components/NoteSegmentBar.vue';
 
-/**
- * Lightweight probe for S4-Note panel adaptation (V2 §6 Note / §7):
- * - segment bar always present; deep-link path selects notes vs governance
- * - narrow (split): repository sidebar switcher; wide restores full sidebar
- *
- * Mirrors NoteModuleLayout + RepositoryWorkspaceView tier surface without
- * mounting stores/editor.
- */
-function mountNotePanelAdaptationProbe(initialWidth: number, path = '/repository') {
-  const widthHandle: { current: number } = { current: initialWidth };
-  const currentPath = ref(path);
-
-  const Probe = defineComponent({
-    name: 'NotePanelAdaptationProbe',
-    setup() {
-      const { isNarrow } = usePanelWidth();
-      const activeSegment = computed(() =>
-        currentPath.value === '/governance' || currentPath.value.startsWith('/governance/')
-          ? 'governance'
-          : 'notes',
-      );
-      const showSwitcher = computed(() => isNarrow.value);
-      const showSidebar = computed(() => !isNarrow.value);
-
-      return () =>
-        h('div', { 'data-testid': 'note-module-layout' }, [
-          h('div', { 'data-testid': 'note-segment-bar' }, [
-            h(
-              'button',
-              {
-                'data-testid': 'note-segment-notes',
-                'data-active': String(activeSegment.value === 'notes'),
-                onClick: () => {
-                  currentPath.value = '/repository';
-                },
-              },
-              'notes',
-            ),
-            h(
-              'button',
-              {
-                'data-testid': 'note-segment-governance',
-                'data-active': String(activeSegment.value === 'governance'),
-                onClick: () => {
-                  currentPath.value = '/governance';
-                },
-              },
-              'governance',
-            ),
-          ]),
-          h('div', { 'data-testid': 'note-active-segment' }, activeSegment.value),
-          showSwitcher.value
-            ? h('div', { 'data-testid': 'repository-sidebar-switcher' }, 'switcher')
-            : null,
-          showSidebar.value
-            ? h('div', { 'data-testid': 'repository-group-sidebar' }, 'sidebar')
-            : null,
-        ]);
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en-US',
+  messages: {
+    'en-US': {
+      repository: { segments: { notes: 'Notes', governance: 'Standards' } },
     },
-  });
+  },
+});
 
-  const Parent = defineComponent({
-    setup() {
-      const { width } = providePanelWidth();
-      width.value = widthHandle.current;
-      Object.defineProperty(widthHandle, 'current', {
-        get: () => width.value ?? initialWidth,
-        set: (value: number) => {
-          width.value = value;
-        },
-      });
-      return () => h(Probe);
-    },
-  });
+const workspaceSource = readFileSync(
+  resolve(process.cwd(), 'src/modules/repository/views/RepositoryWorkspaceView.vue'),
+  'utf8',
+);
+const treeSource = readFileSync(
+  resolve(process.cwd(), 'src/modules/repository/components/TypedFileTree.vue'),
+  'utf8',
+);
+const editorSource = readFileSync(
+  resolve(process.cwd(), 'src/modules/editor/views/EditorLinearView.vue'),
+  'utf8',
+);
 
-  const wrapper = mount(Parent);
-  return {
-    wrapper,
-    setWidth: (value: number) => {
-      widthHandle.current = value;
-    },
-    setPath: async (value: string) => {
-      currentPath.value = value;
-      await nextTick();
-    },
-  };
-}
+describe('Note single-page architecture', () => {
+  it('owns one stable toolbar for note and governance segments', async () => {
+    const wrapper = mount(NoteSegmentBar, {
+      attachTo: document.body,
+      props: { active: 'notes' },
+      global: { plugins: [i18n] },
+    });
+    const toolbar = wrapper.get('[data-testid="note-page-toolbar"]');
 
-describe('Note panel adaptation (V2 §6 Note / §7)', () => {
-  it('switches notes|governance segments and two-tier sidebar navigation', async () => {
-    const { wrapper, setWidth, setPath } = mountNotePanelAdaptationProbe(450, '/repository');
+    toolbar.element.setAttribute('style', 'width: 360px');
+    await wrapper.setProps({ active: 'governance' });
+    toolbar.element.setAttribute('style', 'width: 1000px');
 
-    expect(wrapper.find('[data-testid="note-segment-bar"]').exists()).toBe(true);
-    expect(wrapper.get('[data-testid="note-active-segment"]').text()).toBe('notes');
-    expect(wrapper.find('[data-testid="repository-sidebar-switcher"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="repository-group-sidebar"]').exists()).toBe(false);
-
-    await wrapper.get('[data-testid="note-segment-governance"]').trigger('click');
-    await nextTick();
-    expect(wrapper.get('[data-testid="note-active-segment"]').text()).toBe('governance');
-
-    // Deep-link governance path lands on standards segment
-    await setPath('/governance/rule-1');
-    expect(wrapper.get('[data-testid="note-active-segment"]').text()).toBe('governance');
-
-    // Wide / focus restores full sidebar for notes workspace
-    await setPath('/repository');
-    setWidth(1200);
-    await nextTick();
-    expect(wrapper.find('[data-testid="repository-sidebar-switcher"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="repository-group-sidebar"]').exists()).toBe(true);
-    expect(wrapper.get('[data-testid="note-active-segment"]').text()).toBe('notes');
-
+    expect(wrapper.findAll('[data-testid="note-page-toolbar"]')).toHaveLength(1);
+    expect(wrapper.get('[data-testid="note-page-toolbar"]').element).toBe(toolbar.element);
+    expect(wrapper.get('[data-testid="note-segment-governance"]').attributes('aria-pressed')).toBe(
+      'true',
+    );
+    expect(wrapper.find('#note-page-toolbar-actions').exists()).toBe(true);
     wrapper.unmount();
+  });
+
+  it('keeps one workspace/editor DOM and one primary create owner', () => {
+    expect(workspaceSource).toContain('data-primary-action="create-note"');
+    expect(workspaceSource).toContain(':disabled="!workspaceScene.status.isReady"');
+    expect(workspaceSource).not.toContain('usePanelWidth');
+    expect(workspaceSource).not.toContain('isNarrow');
+    expect(workspaceSource).not.toContain('repository-create-note-narrow');
+    expect(treeSource).not.toContain("'create-note'");
+    expect(editorSource).not.toContain('usePanelWidth');
+    expect(editorSource).not.toContain('isNarrow');
+    expect(editorSource).not.toContain('note-context-narrow-hint');
+  });
+
+  it('requires a title before note creation and exposes separate save/index states', () => {
+    expect(workspaceSource).toContain('data-testid="repository-create-note-dialog"');
+    expect(workspaceSource).toContain('data-testid="repository-create-note-title"');
+    expect(workspaceSource).toContain(':disabled="workspaceScene.dialogs.createNote.saveDisabled"');
+    expect(workspaceSource).toContain(
+      ':index-state="workspaceScene.main.editor.status.knowledgeIndex"',
+    );
   });
 });

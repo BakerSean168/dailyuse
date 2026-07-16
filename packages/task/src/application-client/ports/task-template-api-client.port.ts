@@ -11,6 +11,7 @@ import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
   CreateTaskTemplateReq,
+  CreateTaskTemplateRes,
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
@@ -24,7 +25,7 @@ export interface TaskTemplateListParams extends Record<string, unknown>, ListTas
 }
 
 export interface ITaskTemplateApiClient {
-  createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>>;
+  createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<CreateTaskTemplateRes>>;
   getTaskTemplates(
     params?: TaskTemplateListParams,
   ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>>;

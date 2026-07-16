@@ -1,23 +1,6 @@
 <template>
-  <div class="day-calendar flex flex-col h-full">
-    <!-- Header: Date Navigation -->
-    <div class="flex items-center justify-between px-4 py-3 border-b bg-background">
-      <div class="flex items-center gap-2">
-        <Button variant="outline" size="icon" class="h-8 w-8" @click="previousDay">
-          <ChevronLeft class="h-4 w-4" />
-        </Button>
-        <h3 class="text-lg font-semibold min-w-[200px] text-center">{{ dayTitle }}</h3>
-        <Button variant="outline" size="icon" class="h-8 w-8" @click="nextDay">
-          <ChevronRight class="h-4 w-4" />
-        </Button>
-        <Button variant="outline" size="sm" @click="goToToday">
-          {{ t('schedule.calendar.today') }}
-        </Button>
-      </div>
-    </div>
-
-    <!-- Day Grid -->
-    <div class="flex-1 overflow-auto">
+  <div class="day-calendar flex h-full min-h-0 flex-col" data-testid="schedule-day-calendar">
+    <div class="min-h-0 flex-1 overflow-auto" data-testid="schedule-calendar-scroll-host">
       <div v-if="loading" class="flex justify-center items-center py-8">
         <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
@@ -84,14 +67,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from '@lucide/vue';
+import { computed } from 'vue';
+import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 
 interface Props {
   schedules: CalendarEventItem[];
+  date?: Date;
   loading?: boolean;
 }
 
@@ -100,21 +83,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: 'day-change', date: Date): void;
   (e: 'event-click', event: CalendarEventItem): void;
 }>();
-const { t, locale } = useI18n();
-
-const currentDate = ref<Date>(new Date());
-
-const dayTitle = computed(() => {
-  return currentDate.value.toLocaleDateString(locale.value, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-});
+const { t } = useI18n();
+const currentDate = computed(() => props.date ?? new Date());
 
 const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
 
@@ -191,27 +163,4 @@ function getEventStyle(event: CalendarEventItem) {
   };
 }
 
-function previousDay() {
-  const d = new Date(currentDate.value);
-  d.setDate(d.getDate() - 1);
-  currentDate.value = d;
-}
-
-function nextDay() {
-  const d = new Date(currentDate.value);
-  d.setDate(d.getDate() + 1);
-  currentDate.value = d;
-}
-
-function goToToday() {
-  currentDate.value = new Date();
-}
-
-watch(currentDate, (d) => {
-  emit('day-change', d);
-});
-
-onMounted(() => {
-  emit('day-change', currentDate.value);
-});
 </script>

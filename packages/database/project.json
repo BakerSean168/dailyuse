@@ -108,7 +108,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "packages/database",
-        "command": "prisma db push --config ./prisma/prisma.config.ts"
+        "command": "tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts && prisma db push --config ./prisma/prisma.config.ts"
       },
       "cache": false
     },
@@ -125,6 +125,14 @@
       "options": {
         "cwd": "packages/database",
         "command": "tsx ./scripts/bootstrap-ai-knowledge-index.ts"
+      },
+      "cache": false
+    },
+    "editor-workspace-natural-key-bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "tsx ./scripts/prepare-editor-workspace-natural-key.ts"
       },
       "cache": false
     }

@@ -40,6 +40,7 @@ export function useTask() {
     createTemplate: templateOps.createTemplate,
     updateTemplate: templateOps.updateTemplate,
     deleteTemplate: templateOps.deleteTemplate,
+    deleteTemplates: templateOps.deleteTemplates,
     activateTemplate: templateOps.activateTemplate,
     pauseTemplate: templateOps.pauseTemplate,
     archiveTemplate: templateOps.archiveTemplate,

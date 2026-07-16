@@ -4,6 +4,7 @@
     <Button
       variant="outline"
       size="icon"
+      :aria-label="t('schedule.dev.title')"
       class="h-9 w-9 rounded-full border-dashed border-muted-foreground/50 bg-background/80 backdrop-blur-sm"
       @click="open = true"
     >

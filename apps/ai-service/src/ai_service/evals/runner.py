@@ -54,12 +54,14 @@ from ai_service.evals.eval_reporter import (
 )
 from ai_service.evals.eval_workflow_checks import (
     check_action_tools,
+    check_clarification_contract,
     check_execution_status,
     check_failures,
     check_goal_terms,
     check_recovery_retry,
     check_recovery_terms,
     check_stage_sequence,
+    check_structured_output_locale,
     check_tool_calls,
 )
 from ai_service.evals.goal_workflow_harness import (
@@ -213,10 +215,18 @@ async def evaluate_agent_runtime_goal_create(
     chat_service: ChatService | StubChatService | None = None,
     provider_config: ProviderConfig | None = None,
 ) -> EvalResult:
-    """Run deterministic goal.create Agent runtime checks."""
+    """Run deterministic or live-provider goal.create runtime checks."""
 
-    del chat_service, provider_config
-    response = await run_agent_runtime_goal_create_case(case)
+    planning_service = None
+    if provider_config is not None:
+        if chat_service is None:
+            raise ValueError("Live goal.create runtime eval requires a chat service.")
+        planning_service = GoalPlanningService(cast(ChatService, chat_service))
+    response = await run_agent_runtime_goal_create_case(
+        case,
+        goal_planning_service=planning_service,
+        provider_config=provider_config,
+    )
     return build_agent_runtime_goal_create_eval_result(
         case=case,
         response=response,
@@ -316,6 +326,11 @@ def build_goal_workflow_eval_result(
     checks.append(check_stage_sequence(case, trace))
     checks.append(check_action_tools(case, trace))
     checks.append(check_failures(case, trace))
+    checks.extend(check_clarification_contract(case, trace))
+
+    locale_check = check_structured_output_locale(case, trace)
+    if locale_check is not None:
+        checks.append(locale_check)
 
     exec_status_check = check_execution_status(case, trace)
     if exec_status_check is not None:
@@ -347,6 +362,8 @@ def build_goal_workflow_eval_result(
             ),
             "failure_stage": trace.failure_stage,
             "failure_detail": trace.failure_detail,
+            "clarification_question_count": trace.clarification_question_count,
+            "clarification_text": trace.clarification_text,
             "recovery": trace.recovery,
             "completion_count": trace.completion_count,
         },

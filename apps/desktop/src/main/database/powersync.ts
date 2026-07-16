@@ -34,6 +34,7 @@ import { PowerSyncAppSchema } from '@dailyuse/powersync-schema';
 import type { TokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
 import { serializeCrudTransaction } from './powersync-crud';
+import { normalizePowerSyncTableName, POWER_SYNC_CHANGE_TABLES } from './powersync-table-changes';
 
 const NON_SYNCABLE_LOCAL_TABLES = [
   'accounts',
@@ -369,7 +370,10 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
  * Guarded against concurrent calls — if a connection is already in
  * progress the same promise is returned.
  */
-export async function connectPowerSync(dbPath: string, tokenManager: TokenManager): Promise<PowerSyncDatabase> {
+export async function connectPowerSync(
+  dbPath: string,
+  tokenManager: TokenManager,
+): Promise<PowerSyncDatabase> {
   assertCompatibleDbPath(dbPath);
 
   if (connectingPromise) {
@@ -486,7 +490,9 @@ export async function openPowerSyncLocalOnly(dbPath: string): Promise<PowerSyncD
  * If a local-only instance already exists, it is promoted by attaching a
  * connector. If no instance exists yet, a new sync-mode connection is created.
  */
-export async function ensurePowerSyncSyncMode(tokenManager: TokenManager): Promise<PowerSyncDatabase> {
+export async function ensurePowerSyncSyncMode(
+  tokenManager: TokenManager,
+): Promise<PowerSyncDatabase> {
   if (!powerSyncDb) {
     throw new Error('PowerSync sync mode requires an already prepared profile-local database');
   }
@@ -583,25 +589,28 @@ let onChangeDispose: (() => void) | null = null;
 function startChangeBroadcast(db: PowerSyncDatabase): void {
   if (onChangeDispose) return; // already listening
 
-  onChangeDispose = db.onChange({
-    onChange: (event) => {
-      const tables = event.changedTables;
-      if (tables.length === 0) return;
+  onChangeDispose = db.onChange(
+    {
+      onChange: (event) => {
+        const tables = [...new Set(event.changedTables.map(normalizePowerSyncTableName))];
+        if (tables.length === 0) return;
 
-      const includesGoals = tables.some((table) => table.includes('goal'));
-      console.log('[PowerSync] Changed tables detected', {
-        tables,
-        includesGoals,
-      });
+        const includesGoals = tables.some((table) => table.includes('goal'));
+        console.log('[PowerSync] Changed tables detected', {
+          tables,
+          includesGoals,
+        });
 
-      // Broadcast to every open BrowserWindow
-      for (const win of BrowserWindow.getAllWindows()) {
-        if (!win.isDestroyed()) {
-          win.webContents.send('db:changed', { tables });
+        // Broadcast to every open BrowserWindow
+        for (const win of BrowserWindow.getAllWindows()) {
+          if (!win.isDestroyed()) {
+            win.webContents.send('db:changed', { tables });
+          }
         }
-      }
+      },
     },
-  });
+    { tables: [...POWER_SYNC_CHANGE_TABLES] },
+  );
 
   console.log('[PowerSync] Change broadcast started');
 }

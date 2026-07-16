@@ -63,6 +63,7 @@ import { computed, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Progress } from '@dailyuse/ui-vue-shadcn';
 import { Lock, CheckCircle, Clock, Ban, PlayCircle, HelpCircle, Loader2 } from '@lucide/vue';
+import { formatTaskDuration } from '../../utils/format-task-duration';
 
 interface BlockingTask {
   id: string;
@@ -76,7 +77,7 @@ const props = defineProps<{
   totalPredecessors: number;
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const completedCount = computed(() => {
   return props.totalPredecessors - props.blockingTasks.length;
@@ -127,12 +128,5 @@ const getStatusIconComponent = (status: string): Component => {
   return icons[status] || HelpCircle;
 };
 
-const formatDuration = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hours > 0) {
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  }
-  return `${mins}m`;
-};
+const formatDuration = (minutes: number): string => formatTaskDuration(minutes, locale.value);
 </script>

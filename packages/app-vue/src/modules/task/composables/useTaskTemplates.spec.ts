@@ -2,6 +2,7 @@ import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { toast } from 'vue-sonner';
 import { fail, ok } from '@dailyuse/contracts/result';
 import type {
   CreateTaskTemplateReq,
@@ -38,6 +39,10 @@ const i18n = createI18n({
           loadTemplatesFailed: 'Could not load task templates',
           createFailed: 'Could not create task template',
           createSuccess: 'Task template created',
+          createTemplateWithTodayInstanceSuccess:
+            "Task template created and today's instance generated ({count})",
+          createTemplateWithoutTodayInstanceSuccess:
+            "Task template created without today's instance ({count})",
           updateFailed: 'Could not update task template',
           updateSuccess: 'Task template updated',
           deleteFailed: 'Could not delete task template',
@@ -57,6 +62,10 @@ const i18n = createI18n({
           loadTemplatesFailed: 'Could not load task templates',
           createFailed: 'Could not create task template',
           createSuccess: 'Task template created',
+          createTemplateWithTodayInstanceSuccess:
+            "Task template created and today's instance generated ({count})",
+          createTemplateWithoutTodayInstanceSuccess:
+            "Task template created without today's instance ({count})",
           updateFailed: 'Could not update task template',
           updateSuccess: 'Task template updated',
           deleteFailed: 'Could not delete task template',
@@ -210,7 +219,13 @@ describe('useTaskTemplates', () => {
     const existing = createTemplate({ id: 'template-1' as TaskTemplateId, name: 'Draft' });
     const updated = createTemplate({ id: existing.id, name: 'Published' });
     const { composable, service } = mountComposable({
-      createTemplate: vi.fn().mockResolvedValue(ok(createTemplateEntity(existing))),
+      createTemplate: vi.fn().mockResolvedValue(
+        ok({
+          template: createTemplateEntity(existing),
+          instanceCount: 7,
+          todayInstanceCreated: true,
+        }),
+      ),
       updateTemplate: vi.fn().mockResolvedValue(ok(createTemplateEntity(updated))),
       deleteTemplate: vi.fn().mockResolvedValue(ok(undefined)),
     });
@@ -221,9 +236,16 @@ describe('useTaskTemplates', () => {
       name: 'Draft',
     } as CreateTaskTemplateReq);
 
-    expect(created).toEqual(existing);
+    expect(created).toEqual({
+      template: existing,
+      instanceCount: 7,
+      todayInstanceCreated: true,
+    });
     expect(useTaskStore().templates).toEqual([existing]);
     expect(composable.isSaving.value).toBe(false);
+    expect(toast.success).toHaveBeenCalledWith(
+      "Task template created and today's instance generated (7)",
+    );
 
     const result = await composable.updateTemplate(existing.id, {
       name: 'Published',
@@ -235,6 +257,62 @@ describe('useTaskTemplates', () => {
     await expect(composable.deleteTemplate(existing.id)).resolves.toBe(true);
     expect(useTaskStore().templates).toEqual([]);
     expect(useTaskStore().pagination.total).toBe(0);
+  });
+
+  it('deletes a batch without emitting per-template success feedback', async () => {
+    const first = createTemplate({ id: 'template-1' as TaskTemplateId });
+    const second = createTemplate({ id: 'template-2' as TaskTemplateId });
+    const { composable, service } = mountComposable({
+      deleteTemplate: vi.fn().mockResolvedValue(ok(undefined)),
+    });
+    useTaskStore().setTemplates([first, second], 2);
+
+    await expect(composable.deleteTemplates([first.id, second.id])).resolves.toBe(true);
+
+    expect(service.deleteTemplate).toHaveBeenNthCalledWith(1, first.id);
+    expect(service.deleteTemplate).toHaveBeenNthCalledWith(2, second.id);
+    expect(useTaskStore().templates).toEqual([]);
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('stops a batch delete after the first failure and emits no success feedback', async () => {
+    const first = createTemplate({ id: 'template-1' as TaskTemplateId });
+    const second = createTemplate({ id: 'template-2' as TaskTemplateId });
+    const { composable, service } = mountComposable({
+      deleteTemplate: vi
+        .fn()
+        .mockResolvedValueOnce(ok(undefined))
+        .mockResolvedValueOnce(
+          fail({ code: 'VALIDATION_ERROR', message: 'Cannot delete template' }),
+        ),
+    });
+    useTaskStore().setTemplates([first, second], 2);
+
+    await expect(composable.deleteTemplates([first.id, second.id])).resolves.toBe(false);
+
+    expect(service.deleteTemplate).toHaveBeenCalledTimes(2);
+    expect(useTaskStore().templates).toEqual([second]);
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports when template creation does not generate today's instance", async () => {
+    const template = createTemplate();
+    const { composable } = mountComposable({
+      createTemplate: vi.fn().mockResolvedValue(
+        ok({
+          template: createTemplateEntity(template),
+          instanceCount: 3,
+          todayInstanceCreated: false,
+        }),
+      ),
+    });
+
+    await composable.createTemplate({ name: template.name } as CreateTaskTemplateReq);
+
+    expect(toast.success).toHaveBeenCalledWith(
+      "Task template created without today's instance (3)",
+    );
   });
 
   it('stores translated errors and leaves previous templates untouched on failure', async () => {

@@ -1,317 +1,267 @@
-<!--
-  RepositoryWorkspaceView - Note workspace (UI 重构 V2 §6 Note / §7)
-  Left: resizable sidebar with mode switcher (Files / Search / Bookmarks)
-  Right: CodeMirror 6 editor (EditorToolbar + ActiveDocumentPane / MediaViewer)
-  面板两档：窄档收敛侧栏为顶部 mode 下拉；宽档恢复完整侧栏。
-  阶段 0：模块内 TabManager / 批量导入 / 自包含导出入口隐藏（壳级 Note Tab 承接多开）。
--->
-
 <template>
   <div
-    class="flex h-full overflow-hidden bg-background"
-    :class="isNarrow ? 'flex-col' : 'flex-row'"
+    class="flex h-full min-h-0 flex-col overflow-hidden bg-background"
     data-testid="repository-workspace-view"
   >
-    <!-- 窄档：侧栏 mode 收敛为顶部下拉（V2 §7） -->
+    <Teleport defer to="#note-page-toolbar-actions">
+      <div class="flex min-w-0 items-center gap-1" data-testid="note-workspace-toolbar-actions">
+        <Button
+          v-for="mode in workspaceScene.sidebar.modes"
+          :key="mode.key"
+          variant="ghost"
+          size="sm"
+          class="h-8 gap-1.5 px-2"
+          :class="{ 'bg-accent font-medium': workspaceScene.sidebar.mode === mode.key }"
+          :aria-label="mode.label"
+          :data-testid="`repository-sidebar-mode-${mode.key}`"
+          @click="workspaceScene.sidebar.actions.setMode(mode.key)"
+        >
+          <component :is="mode.icon" class="h-4 w-4" />
+          <span class="hidden text-xs @3xl/panel:inline">{{ mode.label }}</span>
+        </Button>
+        <span class="hidden text-xs text-muted-foreground @xl/panel:inline">
+          {{ repositoryResourceCount }}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          :aria-label="t('common.retry')"
+          data-testid="repository-refresh"
+          @click="workspaceScene.sidebar.files.actions.refresh"
+        >
+          <RefreshCw class="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
+          class="h-8 px-2 @xl/panel:px-3"
+          :aria-label="t('repository.workspace.createNote')"
+          :disabled="!workspaceScene.status.isReady"
+          data-primary-action="create-note"
+          data-testid="repository-create-note"
+          @click="workspaceScene.sidebar.files.actions.createNote"
+        >
+          <FilePlus class="h-4 w-4 @xl/panel:mr-1.5" />
+          <span class="hidden @xl/panel:inline">{{ t('repository.workspace.createNote') }}</span>
+        </Button>
+      </div>
+    </Teleport>
+
     <div
-      v-if="isNarrow"
-      class="flex h-10 shrink-0 items-center gap-1 border-b bg-sidebar/60 px-2"
-      data-testid="repository-sidebar-switcher"
+      class="grid min-h-0 flex-1 grid-rows-[minmax(10rem,35%)_minmax(0,1fr)] @3xl/panel:grid-cols-[minmax(14rem,22rem)_minmax(0,1fr)] @3xl/panel:grid-rows-1"
+      data-testid="repository-workspace-grid"
     >
-      <Button
-        v-for="mode in workspaceScene.sidebar.modes"
-        :key="mode.key"
-        variant="ghost"
-        size="sm"
-        class="h-8 gap-1.5 px-2"
-        :class="{ 'bg-accent font-medium': workspaceScene.sidebar.mode === mode.key }"
-        :data-testid="`repository-sidebar-mode-${mode.key}`"
-        @click="workspaceScene.sidebar.actions.setMode(mode.key)"
-      >
-        <component :is="mode.icon" class="h-4 w-4" />
-        <span class="text-xs">{{ mode.label }}</span>
-      </Button>
-      <div class="flex-1" />
-      <Button
-        size="sm"
-        class="h-8"
-        data-testid="repository-create-note-narrow"
-        @click="workspaceScene.sidebar.files.actions.createNote"
-      >
-        <FilePlus class="mr-1 h-4 w-4" />
-        {{ t('repository.workspace.createNote') }}
-      </Button>
-    </div>
-
-
-    <!-- 窄档：mode 内容区（文件树/搜索/书签），高度有限 -->
-    <div
-      v-if="isNarrow"
-      class="max-h-[40%] min-h-[160px] shrink-0 overflow-hidden border-b"
-      data-testid="repository-sidebar-narrow-body"
-    >
-      <TypedFileTree
-        v-if="workspaceScene.sidebar.mode === 'files'"
-        :resources-by-type="workspaceScene.sidebar.files.resourcesByType"
-        :tree-nodes="workspaceScene.sidebar.files.treeNodes"
-        :is-loading="workspaceScene.status.isLoading"
-        :selected-id="workspaceScene.sidebar.files.selectedId"
-        @create-note="workspaceScene.sidebar.files.actions.createNote"
-        @refresh="workspaceScene.sidebar.files.actions.refresh"
-        @open="workspaceScene.sidebar.files.actions.open"
-        @rename="workspaceScene.sidebar.files.actions.rename"
-        @delete="workspaceScene.sidebar.files.actions.delete"
-      />
-      <SearchPanel
-        v-else-if="workspaceScene.sidebar.mode === 'search'"
-        :repository-id="workspaceScene.sidebar.search.repositoryId || ''"
-        :results="workspaceScene.sidebar.search.results"
-        :searching="workspaceScene.sidebar.search.status.isSearching"
-        :has-searched="workspaceScene.sidebar.search.status.hasSearched"
-        :total-results="workspaceScene.sidebar.search.status.totalResults"
-        :total-matches="workspaceScene.sidebar.search.status.totalMatches"
-        :search-time="workspaceScene.sidebar.search.status.searchTime"
-        @close="workspaceScene.sidebar.search.actions.close"
-        @select="workspaceScene.sidebar.search.actions.select"
-        @search="workspaceScene.sidebar.search.actions.search"
-      />
-      <BookmarksPanel
-        v-else-if="workspaceScene.sidebar.mode === 'bookmarks'"
-        :bookmarks="workspaceScene.sidebar.bookmarks.items"
-        :can-rename="workspaceScene.sidebar.bookmarks.capabilities.canRename"
-        :can-reorder="workspaceScene.sidebar.bookmarks.capabilities.canReorder"
-        :can-remove="workspaceScene.sidebar.bookmarks.capabilities.canRemove"
-        @select="workspaceScene.sidebar.bookmarks.actions.select"
-        @rename="workspaceScene.sidebar.bookmarks.actions.rename"
-        @move-up="workspaceScene.sidebar.bookmarks.actions.moveUp"
-        @move-down="workspaceScene.sidebar.bookmarks.actions.moveDown"
-        @remove="workspaceScene.sidebar.bookmarks.actions.remove"
-      />
-    </div>
-
-    <ResizablePanelGroup direction="horizontal" class="min-h-0 flex-1">
-      <!-- ─── Left Sidebar（宽档） ─── -->
-      <ResizablePanel
-        v-if="!isNarrow"
-        :default-size="22"
-        :min-size="15"
-        :max-size="40"
-        :collapsed-size="0"
-        :collapsible="true"
+      <aside
+        class="min-h-0 overflow-hidden border-b bg-sidebar @3xl/panel:border-b-0 @3xl/panel:border-r"
         data-testid="repository-group-sidebar"
-        @collapse="workspaceScene.sidebar.actions.setCollapsed(true)"
-        @expand="workspaceScene.sidebar.actions.setCollapsed(false)"
       >
-        <aside class="flex h-full flex-col border-r bg-sidebar">
-          <!-- Sidebar Header: Mode Switcher -->
-          <div class="flex items-center border-b h-10 px-1">
-            <TooltipProvider :delay-duration="300">
-              <Tooltip v-for="mode in workspaceScene.sidebar.modes" :key="mode.key">
-                <TooltipTrigger as-child>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    class="h-8 w-8"
-                    :class="{
-                      'bg-accent': workspaceScene.sidebar.mode === mode.key,
-                    }"
-                    @click="workspaceScene.sidebar.actions.setMode(mode.key)"
-                  >
-                    <component :is="mode.icon" class="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  {{ mode.label }}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+        <TypedFileTree
+          v-if="workspaceScene.sidebar.mode === 'files'"
+          :resources-by-type="workspaceScene.sidebar.files.resourcesByType"
+          :tree-nodes="workspaceScene.sidebar.files.treeNodes"
+          :is-loading="workspaceScene.status.isLoading"
+          :selected-id="workspaceScene.sidebar.files.selectedId"
+          @refresh="workspaceScene.sidebar.files.actions.refresh"
+          @open="workspaceScene.sidebar.files.actions.open"
+          @rename="workspaceScene.sidebar.files.actions.rename"
+          @delete="workspaceScene.sidebar.files.actions.delete"
+        />
+        <SearchPanel
+          v-else-if="workspaceScene.sidebar.mode === 'search'"
+          :repository-id="workspaceScene.sidebar.search.repositoryId || ''"
+          :results="workspaceScene.sidebar.search.results"
+          :searching="workspaceScene.sidebar.search.status.isSearching"
+          :has-searched="workspaceScene.sidebar.search.status.hasSearched"
+          :total-results="workspaceScene.sidebar.search.status.totalResults"
+          :total-matches="workspaceScene.sidebar.search.status.totalMatches"
+          :search-time="workspaceScene.sidebar.search.status.searchTime"
+          @close="workspaceScene.sidebar.search.actions.close"
+          @select="workspaceScene.sidebar.search.actions.select"
+          @search="workspaceScene.sidebar.search.actions.search"
+        />
+        <BookmarksPanel
+          v-else-if="workspaceScene.sidebar.mode === 'bookmarks'"
+          :bookmarks="workspaceScene.sidebar.bookmarks.items"
+          :can-rename="workspaceScene.sidebar.bookmarks.capabilities.canRename"
+          :can-reorder="workspaceScene.sidebar.bookmarks.capabilities.canReorder"
+          :can-remove="workspaceScene.sidebar.bookmarks.capabilities.canRemove"
+          @select="workspaceScene.sidebar.bookmarks.actions.select"
+          @rename="workspaceScene.sidebar.bookmarks.actions.rename"
+          @move-up="workspaceScene.sidebar.bookmarks.actions.moveUp"
+          @move-down="workspaceScene.sidebar.bookmarks.actions.moveDown"
+          @remove="workspaceScene.sidebar.bookmarks.actions.remove"
+        />
+      </aside>
 
-            <div class="flex-1" />
-
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8"
-              @click="workspaceScene.sidebar.actions.toggle()"
-            >
-              <PanelLeftClose class="h-4 w-4" />
-            </Button>
-          </div>
-
-          <!-- Sidebar Content -->
-          <div class="flex-1 overflow-hidden">
-            <!-- Files Mode: TypedFileTree -->
-            <TypedFileTree
-              v-if="workspaceScene.sidebar.mode === 'files'"
-              :resources-by-type="workspaceScene.sidebar.files.resourcesByType"
-              :tree-nodes="workspaceScene.sidebar.files.treeNodes"
-              :is-loading="workspaceScene.status.isLoading"
-              :selected-id="workspaceScene.sidebar.files.selectedId"
-              @create-note="workspaceScene.sidebar.files.actions.createNote"
-              @refresh="workspaceScene.sidebar.files.actions.refresh"
-              @open="workspaceScene.sidebar.files.actions.open"
-              @rename="workspaceScene.sidebar.files.actions.rename"
-              @delete="workspaceScene.sidebar.files.actions.delete"
+      <main
+        class="flex min-h-0 min-w-0 flex-col overflow-hidden"
+        data-testid="repository-editor-pane"
+      >
+        <div class="relative flex-1 overflow-hidden">
+          <!-- Markdown Editor (CodeMirror 6) -->
+          <template
+            v-if="
+              workspaceScene.main.editor.resource &&
+              isMarkdownResource(workspaceScene.main.editor.resource)
+            "
+          >
+            <ActiveDocumentPane
+              :ref="workspaceScene.main.editor.bindPaneRef"
+              :content="workspaceScene.main.editor.content"
+              :saving="workspaceScene.main.editor.status.isSaving"
+              :dirty="workspaceScene.main.editor.status.isDirty"
+              :view-mode="workspaceScene.main.editor.viewMode"
+              :placeholder="t('repository.workspace.startWriting')"
+              :diagnostics="workspaceScene.main.editor.diagnostics.items"
+              :broken-resource-references="workspaceScene.main.editor.diagnostics.brokenReferences"
+              :char-count="workspaceScene.main.editor.wordCount"
+              :saving-label="t('repository.workspace.saving')"
+              :unsaved-label="t('repository.workspace.unsaved')"
+              :saved-label="t('repository.workspace.saved')"
+              :index-state="workspaceScene.main.editor.status.knowledgeIndex"
+              :index-pending-label="t('repository.workspace.indexPending')"
+              :index-ready-label="t('repository.workspace.indexReady')"
+              :index-failed-label="t('repository.workspace.indexFailed')"
+              :index-error="workspaceScene.main.editor.status.knowledgeIndexError"
+              :chars-label="t('repository.workspace.chars')"
+              @update:content="workspaceScene.main.editor.content = $event"
+              @insert-text="workspaceScene.main.editor.actions.insertText"
+              @insert-resource="workspaceScene.main.editor.actions.openResourcePicker"
+              @insert-existing-image="workspaceScene.main.editor.actions.openImagePicker"
+              @wrap-selection="workspaceScene.main.editor.actions.wrapSelection"
+              @view-mode-change="workspaceScene.main.editor.actions.setViewMode"
+              @save="workspaceScene.main.editor.actions.save"
+              @paste-files="workspaceScene.main.editor.actions.pasteFiles"
+              @link-click="workspaceScene.main.editor.actions.openInternalLink"
+              @repair="workspaceScene.main.editor.actions.repairReference"
             />
+          </template>
 
-            <!-- Search Mode -->
-            <SearchPanel
-              v-else-if="workspaceScene.sidebar.mode === 'search'"
-              :repository-id="workspaceScene.sidebar.search.repositoryId || ''"
-              :results="workspaceScene.sidebar.search.results"
-              :searching="workspaceScene.sidebar.search.status.isSearching"
-              :has-searched="workspaceScene.sidebar.search.status.hasSearched"
-              :total-results="workspaceScene.sidebar.search.status.totalResults"
-              :total-matches="workspaceScene.sidebar.search.status.totalMatches"
-              :search-time="workspaceScene.sidebar.search.status.searchTime"
-              @close="workspaceScene.sidebar.search.actions.close"
-              @select="workspaceScene.sidebar.search.actions.select"
-              @search="workspaceScene.sidebar.search.actions.search"
+          <!-- Media Viewer (images, video, audio) -->
+          <MediaViewer
+            v-else-if="
+              workspaceScene.main.editor.resource &&
+              getResourceMediaType(workspaceScene.main.editor.resource)
+            "
+            :file-path="workspaceScene.main.editor.resource.path || ''"
+            :file-content="workspaceScene.main.editor.resource.content"
+            :file-type="getResourceMediaType(workspaceScene.main.editor.resource)!"
+            :file-name="workspaceScene.main.editor.resource.name"
+            :mime-type="workspaceScene.main.editor.resource.mimeType"
+            :file-size="workspaceScene.main.editor.resource.size"
+          />
+
+          <!-- Other non-markdown, non-media files -->
+          <div
+            v-else-if="workspaceScene.main.editor.resource"
+            class="flex flex-col items-center justify-center h-full gap-4"
+          >
+            <component
+              :is="getResourceIcon(workspaceScene.main.editor.resource)"
+              class="h-16 w-16 text-muted-foreground/50"
             />
-
-            <!-- Bookmarks Mode -->
-            <BookmarksPanel
-              v-else-if="workspaceScene.sidebar.mode === 'bookmarks'"
-              :bookmarks="workspaceScene.sidebar.bookmarks.items"
-              :can-rename="workspaceScene.sidebar.bookmarks.capabilities.canRename"
-              :can-reorder="workspaceScene.sidebar.bookmarks.capabilities.canReorder"
-              :can-remove="workspaceScene.sidebar.bookmarks.capabilities.canRemove"
-              @select="workspaceScene.sidebar.bookmarks.actions.select"
-              @rename="workspaceScene.sidebar.bookmarks.actions.rename"
-              @move-up="workspaceScene.sidebar.bookmarks.actions.moveUp"
-              @move-down="workspaceScene.sidebar.bookmarks.actions.moveDown"
-              @remove="workspaceScene.sidebar.bookmarks.actions.remove"
-            />
-          </div>
-        </aside>
-      </ResizablePanel>
-
-      <ResizableHandle v-if="!isNarrow" with-handle />
-
-      <!-- ─── Main Content Area ─── -->
-      <ResizablePanel :default-size="78">
-        <main class="flex h-full flex-col overflow-hidden">
-          <!-- 阶段 0：模块内 TabManager 退役；多开笔记 = 壳级 Note Tab（V2 §6 Note / §9） -->
-
-          <!-- Editor / Viewer -->
-          <div class="flex-1 overflow-hidden relative">
-            <!-- Markdown Editor (CodeMirror 6) -->
-            <template
-              v-if="
-                workspaceScene.main.editor.resource &&
-                isMarkdownResource(workspaceScene.main.editor.resource)
-              "
-            >
-              <ActiveDocumentPane
-                :ref="workspaceScene.main.editor.bindPaneRef"
-                :content="workspaceScene.main.editor.content"
-                :saving="workspaceScene.main.editor.status.isSaving"
-                :dirty="workspaceScene.main.editor.status.isDirty"
-                :view-mode="workspaceScene.main.editor.viewMode"
-                :placeholder="t('repository.workspace.startWriting')"
-                :diagnostics="workspaceScene.main.editor.diagnostics.items"
-                :broken-resource-references="
-                  workspaceScene.main.editor.diagnostics.brokenReferences
-                "
-                :char-count="workspaceScene.main.editor.wordCount"
-                :saving-label="t('repository.workspace.saving')"
-                :unsaved-label="t('repository.workspace.unsaved')"
-                :saved-label="t('repository.workspace.saved')"
-                :chars-label="t('repository.workspace.chars')"
-                @update:content="workspaceScene.main.editor.content = $event"
-                @insert-text="workspaceScene.main.editor.actions.insertText"
-                @insert-resource="workspaceScene.main.editor.actions.openResourcePicker"
-                @insert-existing-image="workspaceScene.main.editor.actions.openImagePicker"
-                @wrap-selection="workspaceScene.main.editor.actions.wrapSelection"
-                @view-mode-change="workspaceScene.main.editor.actions.setViewMode"
-                @save="workspaceScene.main.editor.actions.save"
-                @paste-files="workspaceScene.main.editor.actions.pasteFiles"
-                @link-click="workspaceScene.main.editor.actions.openInternalLink"
-                @repair="workspaceScene.main.editor.actions.repairReference"
-              />
-            </template>
-
-            <!-- Media Viewer (images, video, audio) -->
-            <MediaViewer
-              v-else-if="
-                workspaceScene.main.editor.resource &&
-                getResourceMediaType(workspaceScene.main.editor.resource)
-              "
-              :file-path="workspaceScene.main.editor.resource.path || ''"
-              :file-content="workspaceScene.main.editor.resource.content"
-              :file-type="getResourceMediaType(workspaceScene.main.editor.resource)!"
-              :file-name="workspaceScene.main.editor.resource.name"
-              :mime-type="workspaceScene.main.editor.resource.mimeType"
-              :file-size="workspaceScene.main.editor.resource.size"
-            />
-
-            <!-- Other non-markdown, non-media files -->
-            <div
-              v-else-if="workspaceScene.main.editor.resource"
-              class="flex flex-col items-center justify-center h-full gap-4"
-            >
-              <component
-                :is="getResourceIcon(workspaceScene.main.editor.resource)"
-                class="h-16 w-16 text-muted-foreground/50"
-              />
-              <div class="text-center">
-                <h3 class="text-lg font-medium">
-                  {{ getResourceDisplayName(workspaceScene.main.editor.resource) }}
-                </h3>
-                <p class="text-sm text-muted-foreground mt-1">
-                  {{ workspaceScene.main.editor.resource.mimeType }}
-                </p>
-                <p class="text-xs text-muted-foreground mt-1">
-                  {{ getResourceFormattedSize(workspaceScene.main.editor.resource) }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Empty State (no file selected) -->
-            <div
-              v-else-if="!workspaceScene.status.repositoryId && !workspaceScene.status.isLoading"
-              class="flex flex-col items-center justify-center h-full gap-4 text-center px-8"
-            >
-              <div class="h-16 w-16 rounded-full bg-secondary flex items-center justify-center">
-                <BookOpen class="h-8 w-8 text-muted-foreground/50" />
-              </div>
-              <div>
-                <h3 class="text-lg font-medium">{{ t('repository.workspace.noRepository') }}</h3>
-                <p class="text-sm text-muted-foreground mt-1">
-                  {{ t('repository.workspace.noRepositoryDesc') }}
-                </p>
-              </div>
-            </div>
-
-            <div
-              v-else
-              class="flex flex-col items-center justify-center h-full gap-4 text-center px-8"
-            >
-              <div class="h-16 w-16 rounded-full bg-secondary flex items-center justify-center">
-                <BookOpen class="h-8 w-8 text-muted-foreground/50" />
-              </div>
-              <div>
-                <h3 class="text-lg font-medium">{{ t('repository.workspace.selectFile') }}</h3>
-                <p class="text-sm text-muted-foreground mt-1">
-                  {{ t('repository.workspace.selectFileDesc') }}
-                </p>
-              </div>
-              <div class="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  @click="workspaceScene.sidebar.files.actions.createNote"
-                >
-                  <FilePlus class="h-4 w-4 mr-2" />
-                  {{ t('repository.workspace.createNote') }}
-                </Button>
-              </div>
+            <div class="text-center">
+              <h3 class="text-lg font-medium">
+                {{ getResourceDisplayName(workspaceScene.main.editor.resource) }}
+              </h3>
+              <p class="text-sm text-muted-foreground mt-1">
+                {{ workspaceScene.main.editor.resource.mimeType }}
+              </p>
+              <p class="text-xs text-muted-foreground mt-1">
+                {{ getResourceFormattedSize(workspaceScene.main.editor.resource) }}
+              </p>
             </div>
           </div>
-        </main>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+
+          <!-- Empty State (no file selected) -->
+          <div
+            v-else-if="!workspaceScene.status.repositoryId && !workspaceScene.status.isLoading"
+            class="flex flex-col items-center justify-center h-full gap-4 text-center px-8"
+          >
+            <div class="h-16 w-16 rounded-full bg-secondary flex items-center justify-center">
+              <BookOpen class="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <div>
+              <h3 class="text-lg font-medium">{{ t('repository.workspace.noRepository') }}</h3>
+              <p class="text-sm text-muted-foreground mt-1">
+                {{ t('repository.workspace.noRepositoryDesc') }}
+              </p>
+            </div>
+          </div>
+
+          <div
+            v-else
+            class="flex flex-col items-center justify-center h-full gap-4 text-center px-8"
+          >
+            <div class="h-16 w-16 rounded-full bg-secondary flex items-center justify-center">
+              <BookOpen class="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <div>
+              <h3 class="text-lg font-medium">{{ t('repository.workspace.selectFile') }}</h3>
+              <p class="text-sm text-muted-foreground mt-1">
+                {{ t('repository.workspace.selectFileDesc') }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
     <!-- 阶段 0：BatchImportDialog 退役（V2 §6 Note / V1 §9） -->
+
+    <Dialog v-model:open="workspaceScene.dialogs.createNote.open">
+      <DialogContent
+        class="sm:max-w-md"
+        data-testid="repository-create-note-dialog"
+        @close-auto-focus="workspaceScene.dialogs.createNote.actions.handleCloseAutoFocus"
+      >
+        <DialogHeader>
+          <DialogTitle>{{ t('repository.workspace.createNoteTitle') }}</DialogTitle>
+          <DialogDescription>
+            {{ t('repository.workspace.createNoteDescription') }}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-2">
+          <Label for="repository-note-title">{{ t('repository.workspace.noteTitle') }}</Label>
+          <Input
+            id="repository-note-title"
+            v-model="workspaceScene.dialogs.createNote.title"
+            autofocus
+            :placeholder="t('repository.workspace.noteTitlePlaceholder')"
+            data-testid="repository-create-note-title"
+            @keyup.enter="workspaceScene.dialogs.createNote.actions.confirm"
+          />
+          <p
+            v-if="workspaceScene.dialogs.createNote.fileName"
+            class="text-xs text-muted-foreground"
+            data-testid="repository-create-note-file-name"
+          >
+            {{
+              t('repository.workspace.noteFileNamePreview', {
+                name: workspaceScene.dialogs.createNote.fileName,
+              })
+            }}
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="workspaceScene.dialogs.createNote.actions.close">
+            {{ t('common.cancel') }}
+          </Button>
+          <Button
+            :disabled="workspaceScene.dialogs.createNote.saveDisabled"
+            data-testid="repository-create-note-confirm"
+            @click="workspaceScene.dialogs.createNote.actions.confirm"
+          >
+            <Loader2
+              v-if="workspaceScene.dialogs.createNote.isCreating"
+              class="mr-2 h-4 w-4 animate-spin"
+            />
+            {{ t('common.create') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <ImageResourcePickerDialog
       v-model:open="workspaceScene.main.editor.dialogs.imagePicker.open"
@@ -368,12 +318,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
-import { BookOpen, FilePlus, PanelLeftClose } from '@lucide/vue';
+import { BookOpen, FilePlus, Loader2, RefreshCw } from '@lucide/vue';
 import {
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizableHandle,
   Button,
   Dialog,
   DialogContent,
@@ -382,10 +328,7 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+  Label,
 } from '@dailyuse/ui-vue-shadcn';
 import TypedFileTree from '../components/TypedFileTree.vue';
 import SearchPanel from '../components/SearchPanel.vue';
@@ -415,9 +358,13 @@ const props = withDefaults(
 );
 
 const { t } = useI18n();
-// 面板两档（V2 §7）：窄档收敛文件树侧栏为顶部 mode 下拉。
-const { isNarrow } = usePanelWidth();
 const workspaceScene = useRepositoryWorkspaceScene(
   computed(() => props.initialSidebarMode as EditorWorkspaceSidebarMode),
+);
+const repositoryResourceCount = computed(() =>
+  Object.values(workspaceScene.sidebar.files.resourcesByType).reduce(
+    (count, resources) => count + resources.length,
+    0,
+  ),
 );
 </script>

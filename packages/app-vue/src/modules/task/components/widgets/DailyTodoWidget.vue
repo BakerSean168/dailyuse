@@ -1,5 +1,5 @@
 <template>
-  <Card class="border-border/50 flex flex-col">
+  <Card class="border-border/50 flex flex-col" data-testid="daily-todo-widget">
     <CardHeader class="pb-2 px-4 pt-4 flex flex-row items-center justify-between shrink-0">
       <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
         <ListTodo class="w-4 h-4 text-muted-foreground" />
@@ -7,7 +7,10 @@
       </CardTitle>
       <div class="flex items-center gap-2">
         <!-- Progress text -->
-        <span class="text-[11px] text-muted-foreground font-mono">
+        <span
+          class="text-[11px] text-muted-foreground font-mono"
+          data-testid="daily-todo-progress"
+        >
           {{ completedCount }}/{{ todayInstances.length }}
         </span>
         <Button variant="ghost" size="sm" class="h-7 text-xs" @click="$emit('view-all')">
@@ -23,6 +26,8 @@
         <div
           class="h-full rounded-full bg-emerald-500 transition-all duration-500"
           :style="{ width: progressPct + '%' }"
+          :data-progress="progressPct"
+          data-testid="daily-todo-progress-bar"
         />
       </div>
     </div>
@@ -56,6 +61,9 @@
               :key="inst.id"
               class="group flex items-center gap-3 rounded-md px-1 py-1.5 hover:bg-muted/50 transition-colors"
               :class="{ 'opacity-50': inst.status === 'Completed' || inst.status === 'Skipped' }"
+              data-testid="daily-todo-item"
+              :data-task-instance-id="inst.id"
+              :data-task-status="inst.status"
             >
               <!-- Complete button (circle dot) -->
               <button
@@ -65,6 +73,7 @@
                   inst.status === 'Completed' || inst.status === 'Skipped' || completing === inst.id
                 "
                 :title="inst.status === 'Completed' ? '已完成' : '标记完成'"
+                :data-testid="`complete-today-task-${inst.id}`"
                 @click.stop="handleComplete(inst)"
               >
                 <Check v-if="inst.status === 'Completed'" class="w-2.5 h-2.5 text-white" />
@@ -124,8 +133,9 @@ import { ListTodo, ArrowRight, CheckCircle2, Check, Loader2 } from '@lucide/vue'
 import { useTask } from '../../composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'view-all'): void;
+  (e: 'completed', instance: TaskInstanceClientDTO): void;
 }>();
 
 const task = useTask();
@@ -227,7 +237,13 @@ function completeBtnClass(status: string): string {
 async function handleComplete(inst: TaskInstanceClientDTO) {
   if (completing.value || inst.status === 'Completed' || inst.status === 'Skipped') return;
   completing.value = inst.id;
-  await task.completeInstance(inst.id);
-  completing.value = null;
+  try {
+    const completed = await task.completeInstance(inst.id);
+    if (completed) {
+      emit('completed', completed);
+    }
+  } finally {
+    completing.value = null;
+  }
 }
 </script>

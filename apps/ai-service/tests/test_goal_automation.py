@@ -5,6 +5,25 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from ai_service.errors import StructuredOutputError
 from ai_service.schemas import GoalAutomationResponse
+from ai_service.services.goal_planning_tools import (
+    build_goal_automation_submission_tool,
+)
+
+
+def test_submission_tool_uses_openai_compatible_schema_subset():
+    tool = build_goal_automation_submission_tool()
+    schema = tool.function.parameters
+    serialized = json.dumps(schema)
+
+    assert schema["required"] == ["summary", "goal", "toolCalls"]
+    assert schema["properties"]["goal"]["required"] == [
+        "title",
+        "description",
+    ]
+    assert all(
+        forbidden not in serialized
+        for forbidden in ("$defs", "$ref", "anyOf", '"default"')
+    )
 
 
 class TestGoalAutomationRoute:

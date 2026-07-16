@@ -27,6 +27,42 @@ function createScheduleTask(sourceModule: SourceModuleValue) {
 }
 
 describe('schedule execution router', () => {
+  it('routes reminder execution into notification creation', async () => {
+    const notification = {
+      identityId: 'IdentityId_schedule-owner',
+      title: 'Stand up and stretch',
+      content: 'Your reminder is due.',
+      type: NotificationType.Reminder,
+      category: NotificationCategory.Reminder,
+    };
+    const notificationPort = {
+      createNotification: vi.fn().mockResolvedValue(undefined),
+    };
+    const reminderSource = {
+      executeReminder: vi.fn().mockResolvedValue({
+        nextRunAt: null,
+        notification,
+        result: { reminderId: 'ReminderTemplateId_due' },
+      }),
+    };
+    const router = createScheduleExecutionRouter({
+      reminderSource,
+      goalSource: { executeGoal: vi.fn() },
+      taskSource: { executeTask: vi.fn() },
+      notificationPort,
+    });
+    const task = createScheduleTask(SourceModule.Reminder);
+
+    const result = await router.execute(task);
+
+    expect(reminderSource.executeReminder).toHaveBeenCalledWith(task);
+    expect(notificationPort.createNotification).toHaveBeenCalledWith(notification);
+    expect(result).toEqual({
+      nextRunAt: null,
+      result: { reminderId: 'ReminderTemplateId_due' },
+    });
+  });
+
   it('routes task execution and delegates notification creation', async () => {
     const notificationPort = {
       createNotification: vi.fn().mockResolvedValue(undefined),

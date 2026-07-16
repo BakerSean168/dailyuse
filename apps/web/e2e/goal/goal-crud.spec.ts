@@ -103,7 +103,84 @@ test.describe('Goal CRUD', () => {
     await expect(page.getByTestId('goal-detail-title')).toHaveText(goalName);
     await expect(page.getByTestId('goal-detail')).toContainText(goalDescription);
   });
+
+  test('[P0] keeps one primary create action and preserves toolbar state while resizing', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    const toolbar = page.getByTestId('goal-page-toolbar');
+    const searchInput = page.getByTestId('goal-search-input');
+    const primaryCreate = page.locator('[data-primary-action="create-goal"]:visible');
+    await expect(toolbar).toBeVisible();
+    await expect(primaryCreate).toHaveCount(1);
+    await expectToolbarToFit(toolbar);
+
+    await searchInput.fill('layout-state-probe');
+    await searchInput.focus();
+    await toolbar.evaluate((element) => {
+      element.setAttribute('data-instance-probe', 'stable');
+    });
+
+    const scrollViewport = page
+      .getByTestId('goal-list-scroll')
+      .locator('[data-radix-scroll-area-viewport]');
+    await expect(scrollViewport).toBeVisible();
+    await scrollViewport.evaluate((element) => {
+      const filler = document.createElement('div');
+      filler.style.height = '1200px';
+      filler.dataset.layoutProbe = 'filler';
+      element.appendChild(filler);
+      element.scrollTop = 96;
+    });
+
+    await dragBusinessPanel(page, 'wider');
+    await expect(primaryCreate).toHaveCount(1);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+    await expect(searchInput).toHaveValue('layout-state-probe');
+    await expect(searchInput).toBeFocused();
+    expect(await scrollViewport.evaluate((element) => element.scrollTop)).toBe(96);
+    await expectToolbarToFit(toolbar);
+
+    await dragBusinessPanel(page, 'narrower');
+    await expect(primaryCreate).toHaveCount(1);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+    await expect(searchInput).toHaveValue('layout-state-probe');
+    expect(await scrollViewport.evaluate((element) => element.scrollTop)).toBe(96);
+    await expectToolbarToFit(toolbar);
+
+    await page.getByTestId('business-panel-focus-toggle').click();
+    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'focus');
+    await expect(primaryCreate).toHaveCount(1);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+    await expect(searchInput).toHaveValue('layout-state-probe');
+    expect(await scrollViewport.evaluate((element) => element.scrollTop)).toBe(96);
+    await expectToolbarToFit(toolbar);
+  });
 });
+
+async function expectToolbarToFit(toolbar: Locator): Promise<void> {
+  const metrics = await toolbar.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+}
+
+async function dragBusinessPanel(page: Page, direction: 'wider' | 'narrower'): Promise<void> {
+  const resizer = page.getByTestId('business-panel-resizer');
+  await expect(resizer).toBeVisible();
+  const box = await resizer.boundingBox();
+  if (!box) throw new Error('business-panel-resizer has no bounding box');
+
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+  const endX = direction === 'wider' ? Math.max(40, startX - 160) : startX + 120;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(endX, startY, { steps: 12 });
+  await page.mouse.up();
+}
 
 async function createGoal(
   page: Page,
@@ -167,7 +244,11 @@ async function goalIdFromCard(goalCard: Locator): Promise<string> {
   return goalId!;
 }
 
-async function openGoalAction(page: Page, goalId: string, action: 'edit' | 'delete'): Promise<void> {
+async function openGoalAction(
+  page: Page,
+  goalId: string,
+  action: 'edit' | 'delete',
+): Promise<void> {
   const card = goalCardById(page, goalId);
   await expect(card).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await card.hover();

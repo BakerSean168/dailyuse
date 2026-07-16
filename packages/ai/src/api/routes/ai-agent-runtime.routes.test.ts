@@ -114,6 +114,7 @@ describe('registerAIAgentRuntimeRoutes', () => {
       threadId: 'thread-1',
       conversationId: null,
       agentType: 'goal.create',
+      locale: 'en-US',
       input: { idea: 'Ship the AI agent runtime.' },
     };
     const req = {

@@ -72,6 +72,7 @@
             <Button
               variant="ghost"
               size="icon"
+              :aria-label="t('common.delete')"
               class="text-destructive"
               @click="removeAlert(index)"
             >

@@ -1,28 +1,15 @@
 <template>
-  <Card class="week-calendar">
-    <CardHeader>
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <Button variant="outline" size="icon" @click="previousWeek">
-            <ChevronLeft class="h-4 w-4" />
-          </Button>
-          <h3 class="text-lg font-semibold">{{ weekRange }}</h3>
-          <Button variant="outline" size="icon" @click="nextWeek">
-            <ChevronRight class="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" @click="goToToday">{{
-            t('schedule.calendar.today')
-          }}</Button>
-        </div>
-      </div>
-    </CardHeader>
-
-    <CardContent class="p-0">
+  <Card class="week-calendar h-full min-h-0 overflow-hidden" data-testid="schedule-week-calendar">
+    <CardContent class="h-full min-h-0 p-0">
       <div v-if="loading" class="flex justify-center items-center py-8">
         <Loader2 class="h-8 w-8 animate-spin" />
       </div>
 
-      <div v-else class="calendar-container overflow-auto">
+      <div
+        v-else
+        class="calendar-container h-full overflow-auto"
+        data-testid="schedule-calendar-scroll-host"
+      >
         <!-- Header: Days of Week -->
         <div class="calendar-header grid grid-cols-8 border-b-2 sticky top-0 bg-background z-10">
           <div class="time-column-header border-r"></div>
@@ -102,15 +89,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { Card, CardContent, CardHeader } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from '@lucide/vue';
+import { computed } from 'vue';
+import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
+import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 
 interface Props {
   schedules: CalendarEventItem[];
+  startDate?: Date;
   loading?: boolean;
 }
 
@@ -119,13 +106,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: 'week-change', startDate: Date, endDate: Date): void;
   (e: 'event-click', event: CalendarEventItem): void;
 }>();
 
-const { t, locale } = useI18n();
-
-const currentWeekStart = ref<Date>(getWeekStart(new Date()));
+const { t } = useI18n();
+const currentWeekStart = computed(() => getWeekStart(props.startDate ?? new Date()));
 
 const weekDays = computed(() => {
   const days = [];
@@ -147,16 +132,6 @@ const weekDays = computed(() => {
   }
 
   return days;
-});
-
-const weekRange = computed(() => {
-  const start = currentWeekStart.value;
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-
-  const format = (date: Date) =>
-    date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
-  return t('schedule.calendar.weekRange', { start: format(start), end: format(end) });
 });
 
 const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
@@ -247,42 +222,9 @@ function getEventStyle(event: CalendarEventItem) {
   };
 }
 
-function previousWeek() {
-  const newStart = new Date(currentWeekStart.value);
-  newStart.setDate(newStart.getDate() - 7);
-  currentWeekStart.value = newStart;
-}
-
-function nextWeek() {
-  const newStart = new Date(currentWeekStart.value);
-  newStart.setDate(newStart.getDate() + 7);
-  currentWeekStart.value = newStart;
-}
-
-function goToToday() {
-  currentWeekStart.value = getWeekStart(new Date());
-}
-
-watch(currentWeekStart, (newStart) => {
-  const endDate = new Date(newStart);
-  endDate.setDate(newStart.getDate() + 6);
-  endDate.setHours(23, 59, 59, 999);
-  emit('week-change', newStart, endDate);
-});
-
-onMounted(() => {
-  const endDate = new Date(currentWeekStart.value);
-  endDate.setDate(currentWeekStart.value.getDate() + 6);
-  endDate.setHours(23, 59, 59, 999);
-  emit('week-change', currentWeekStart.value, endDate);
-});
 </script>
 
 <style scoped>
-.calendar-container {
-  height: calc(100vh - 200px);
-}
-
 .time-slot,
 .time-slot-bg {
   height: 60px;

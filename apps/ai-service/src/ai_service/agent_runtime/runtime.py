@@ -172,6 +172,7 @@ class GoalCreateAgentRuntime:
         if clock_arg is not None:
             graph_kwargs["clock"] = clock_arg
         if goal_planning_service is not None:
+            graph_kwargs["goal_clarifier"] = self._clarify_goal
             graph_kwargs["goal_planner"] = self._plan_goal
         self._graph = build_goal_create_graph(**graph_kwargs).compile(
             checkpointer=self._checkpointer
@@ -185,6 +186,7 @@ class GoalCreateAgentRuntime:
         timeframe: str | None,
         include_key_results: bool,
         provider_config: ProviderConfig,
+        locale: str,
         request_id: str | None = None,
     ) -> Any:
         if self._goal_planning_service is None:
@@ -195,6 +197,28 @@ class GoalCreateAgentRuntime:
             timeframe=timeframe,
             include_key_results=include_key_results,
             provider_config=provider_config,
+            locale=locale,
+            request_id=request_id,
+        )
+
+    async def _clarify_goal(
+        self,
+        *,
+        idea: str,
+        category: str | None,
+        timeframe: str | None,
+        provider_config: ProviderConfig,
+        locale: str,
+        request_id: str | None = None,
+    ) -> Any:
+        if self._goal_planning_service is None:
+            raise RuntimeError("Goal planning service is not configured.")
+        return await self._goal_planning_service.clarify(
+            idea=idea,
+            category=category,
+            provider_config=provider_config,
+            timeframe=timeframe,
+            locale=locale,
             request_id=request_id,
         )
 
@@ -220,6 +244,7 @@ class GoalCreateAgentRuntime:
         thread_id: str,
         identity_id: str,
         idea: str,
+        locale: str = "en-US",
         conversation_id: str | None = None,
         category: str | None = None,
         timeframe: str | None = None,
@@ -235,6 +260,7 @@ class GoalCreateAgentRuntime:
             thread_id=thread_id,
             identity_id=identity_id,
             idea=idea,
+            locale=locale,
             conversation_id=conversation_id,
             category=category,
             timeframe=timeframe,
@@ -431,8 +457,7 @@ class GoalCreateAgentRuntime:
             errors=values.get("errors", []),
         )
         events = [
-            AgentEvent.model_validate(event)
-            for event in values.get("events", [])
+            AgentEvent.model_validate(event) for event in values.get("events", [])
         ]
         interrupts = [
             item.value if hasattr(item, "value") else item
@@ -581,8 +606,7 @@ class KnowledgeQaAgentRuntime:
             errors=values.get("errors", []),
         )
         events = [
-            AgentEvent.model_validate(event)
-            for event in values.get("events", [])
+            AgentEvent.model_validate(event) for event in values.get("events", [])
         ]
         interrupts = [
             item.value if hasattr(item, "value") else item
@@ -921,8 +945,7 @@ class KnowledgeGenerateAgentRuntime:
             errors=values.get("errors", []),
         )
         events = [
-            AgentEvent.model_validate(event)
-            for event in values.get("events", [])
+            AgentEvent.model_validate(event) for event in values.get("events", [])
         ]
         interrupts = [
             item.value if hasattr(item, "value") else item

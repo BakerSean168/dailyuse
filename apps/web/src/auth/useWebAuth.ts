@@ -1,6 +1,8 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { AuthResponseDTO, LoginByEmailReq, RegisterByEmailReq } from '@dailyuse/contracts/authentication';
+import type { ResultError } from '@dailyuse/contracts/result';
+import { classifyNetworkErrorMessage } from '@dailyuse/http-client';
 
 import { translateAuthResultError } from './result-error';
 import { useAuthService } from './service';
@@ -14,7 +16,15 @@ export function useWebAuth() {
   const { t } = useI18n();
 
   const isLoading = ref(false);
-  const error = ref<string | null>(null);
+  const error = ref<ResultError | null>(null);
+  const errorMessage = computed(() =>
+    error.value
+      ? translateAuthResultError(error.value, t, {
+          scope: 'auth',
+          fallbackKey: 'auth.errors.UNKNOWN',
+        })
+      : null,
+  );
 
   function handleAuthSuccess(data: AuthResponseDTO) {
     error.value = null;
@@ -36,11 +46,23 @@ export function useWebAuth() {
     }
   }
 
-  function getLocalizedAuthError(errorLike: unknown, fallbackKey: string): string {
-    return translateAuthResultError(errorLike, t, {
-      scope: 'auth',
-      fallbackKey,
-    });
+  function normalizeAuthError(errorLike: unknown): ResultError {
+    if (
+      errorLike &&
+      typeof errorLike === 'object' &&
+      'code' in errorLike &&
+      typeof errorLike.code === 'string' &&
+      'message' in errorLike &&
+      typeof errorLike.message === 'string'
+    ) {
+      return errorLike as ResultError;
+    }
+
+    if (errorLike instanceof Error) {
+      return classifyNetworkErrorMessage(errorLike.message);
+    }
+
+    return { code: 'UNKNOWN', message: 'Authentication failed' };
   }
 
   function redirectToApp() {
@@ -58,12 +80,10 @@ export function useWebAuth() {
         return true;
       }
 
-      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
-      error.value = message;
+      error.value = normalizeAuthError(result.error);
       return false;
     } catch (errorLike) {
-      const description = getLocalizedAuthError(errorLike, 'auth.errors.UNKNOWN');
-      error.value = description;
+      error.value = normalizeAuthError(errorLike);
       return false;
     } finally {
       isLoading.value = false;
@@ -81,12 +101,10 @@ export function useWebAuth() {
         return true;
       }
 
-      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
-      error.value = message;
+      error.value = normalizeAuthError(result.error);
       return false;
     } catch (errorLike) {
-      const description = getLocalizedAuthError(errorLike, 'auth.errors.UNKNOWN');
-      error.value = description;
+      error.value = normalizeAuthError(errorLike);
       return false;
     } finally {
       isLoading.value = false;
@@ -94,9 +112,15 @@ export function useWebAuth() {
   }
 
 
+  function clearError() {
+    error.value = null;
+  }
+
   return {
     error,
+    errorMessage,
     isLoading,
+    clearError,
     loginByEmail,
     registerByEmail,
   };

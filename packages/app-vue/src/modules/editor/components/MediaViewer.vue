@@ -97,7 +97,8 @@ const props = withDefaults(
 );
 
 const loading = ref(false);
-const error = ref<string | null>(null);
+const errorKey = ref<string | null>(null);
+const error = computed(() => (errorKey.value ? t(errorKey.value) : null));
 const imageInfo = ref<{
   width: number;
   height: number;
@@ -135,7 +136,7 @@ function handleImageLoad(event: Event) {
 
 function handleImageError() {
   loading.value = false;
-  error.value = t('editor.mediaViewer.imageLoadFailed');
+  errorKey.value = 'editor.mediaViewer.imageLoadFailed';
 }
 
 function handleVideoLoad(_event: Event) {
@@ -157,7 +158,7 @@ onMounted(() => {
 watch(
   () => [resolvedSource.value, props.fileType],
   () => {
-    error.value = null;
+    errorKey.value = null;
     imageInfo.value = null;
     loading.value = Boolean(resolvedSource.value);
   },

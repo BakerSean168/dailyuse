@@ -114,6 +114,17 @@ async function saveMatrixShot(page: Page, name: string): Promise<void> {
   });
 }
 
+async function expectGoalToolbarToFit(page: Page): Promise<void> {
+  const toolbar = page.getByTestId('goal-page-toolbar');
+  await expect(toolbar).toBeVisible();
+  await expect(page.locator('[data-primary-action="create-goal"]:visible')).toHaveCount(1);
+  const metrics = await toolbar.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+}
+
 test.describe.configure({ mode: 'serial' });
 
 test.describe('Electron shell geometry matrix', () => {
@@ -265,6 +276,34 @@ test.describe('Electron shell geometry matrix', () => {
     const aiMax = await boxOf(page, 'shell-ai-column');
     expect(aiMax.width).toBeGreaterThanOrEqual(CHAT_MIN - 1);
     await saveMatrixShot(page, '1440x900-split-task.png');
+  });
+
+  test('[P0] Goal keeps one toolbar DOM across split resize and focus', async () => {
+    const page = desktop.page;
+    await desktop.setWindowSize({ width: 1440, height: 900 });
+    await openModuleFromCapsule(page, 'goal');
+    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'split');
+
+    const toolbar = page.getByTestId('goal-page-toolbar');
+    await expectGoalToolbarToFit(page);
+    await toolbar.evaluate((element) => {
+      element.setAttribute('data-instance-probe', 'stable');
+    });
+
+    await dragPanelToExtreme(page, 'max');
+    await expectGoalToolbarToFit(page);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+
+    await dragPanelToExtreme(page, 'min');
+    await expectGoalToolbarToFit(page);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+
+    await page.getByTestId('business-panel-focus-toggle').click();
+    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-shell-state', 'focus');
+    await expectGoalToolbarToFit(page);
+    await expect(toolbar).toHaveAttribute('data-instance-probe', 'stable');
+
+    await saveMatrixShot(page, '1440x900-focus-goal-single-toolbar.png');
   });
 
   test('[P1] Help menu does not open Settings', async () => {

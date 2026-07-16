@@ -62,6 +62,7 @@
                   <Button
                     v-if="editingShortcut?.id === shortcut.id"
                     size="icon"
+                    :aria-label="t('common.save')"
                     variant="ghost"
                     class="h-8 w-8"
                     @click="emit('saveEdit')"
@@ -71,6 +72,7 @@
                   <Button
                     v-if="editingShortcut?.id === shortcut.id"
                     size="icon"
+                    :aria-label="t('common.cancel')"
                     variant="ghost"
                     class="h-8 w-8"
                     @click="emit('cancelEdit')"
@@ -80,6 +82,7 @@
                   <Button
                     v-else
                     size="icon"
+                    :aria-label="t('common.reset')"
                     variant="ghost"
                     class="h-8 w-8"
                     @click="emit('reset', shortcut)"

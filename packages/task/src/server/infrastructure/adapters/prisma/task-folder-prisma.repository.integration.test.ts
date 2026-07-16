@@ -8,7 +8,7 @@ import {
   disconnectPrisma,
   getPrisma,
   seedAccount,
-} from '../../../__tests__/integration-helpers';
+} from '../../../../__tests__/integration-helpers';
 
 describe('TaskFolderPrismaRepository integration', () => {
   afterAll(async () => {

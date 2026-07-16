@@ -97,13 +97,20 @@
           </div>
 
           <div class="flex gap-1">
-            <Button variant="ghost" size="icon" class="h-8 w-8" @click="openEditDialog(rule)">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :aria-label="t('common.edit')"
+              @click="openEditDialog(rule)"
+            >
               <Pencil class="h-4 w-4" />
             </Button>
             <Button
               v-if="!rule.id.startsWith('rule-')"
               variant="ghost"
               size="icon"
+              :aria-label="t('common.delete')"
               class="h-8 w-8 text-destructive hover:text-destructive"
               @click="handleDelete(rule.id)"
             >
@@ -244,6 +251,7 @@
                 <Button
                   variant="ghost"
                   size="icon"
+                  :aria-label="t('common.delete')"
                   class="h-8 w-8 text-destructive hover:text-destructive"
                   @click="removeCondition(index)"
                 >

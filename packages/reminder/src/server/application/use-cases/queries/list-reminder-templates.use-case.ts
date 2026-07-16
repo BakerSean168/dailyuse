@@ -45,14 +45,19 @@ export class ListReminderTemplatesUseCase {
 
     if (query?.groupId) {
       const groupTemplates = await this.templateRepository.findByGroupId(query.groupId, {
-        includeHistory: false,
+        includeHistory: true,
+        historyLimit: 1,
       });
       templates = groupTemplates.filter((template) => String(template.identityId) === cx.identityId);
     } else if (query?.effectiveEnabled) {
-      templates = await this.templateRepository.findActive(cx.identityId);
+      templates = await this.templateRepository.findActive(cx.identityId, {
+        includeHistory: true,
+        historyLimit: 1,
+      });
     } else {
       templates = await this.templateRepository.findByIdentityId(cx.identityId, {
-        includeHistory: false,
+        includeHistory: true,
+        historyLimit: 1,
       });
     }
 

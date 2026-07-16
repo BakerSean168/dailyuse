@@ -116,7 +116,7 @@ export class NotificationPrismaMapper {
    */
   static channelToDomain(row: PrismaNotificationChannelRow): NotificationChannel {
     return NotificationChannel.load({
-      id: NotificationChannelId.of(row.notificationId),
+      id: NotificationChannelId.of(row.id),
       notificationId: NotificationId.of(row.notificationId),
       channelType: row.channelType as NotificationChannelType,
       status: row.status as ChannelStatus,

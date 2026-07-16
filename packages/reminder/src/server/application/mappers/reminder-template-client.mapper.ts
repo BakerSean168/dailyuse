@@ -19,7 +19,7 @@ export class ReminderTemplateClientMapper {
     const effectiveStatus = await this.reminderDomainService
       .getControlService()
       .calculateEffectiveStatus(template, group);
-    const dto = template.toClientDTO();
+    const dto = template.toClientDTO(true);
 
     dto.groupName = group?.name ?? null;
     dto.controlledByGroup = effectiveStatus.lifecycleSource === 'group';
@@ -45,7 +45,7 @@ export class ReminderTemplateClientMapper {
     );
 
     return templates.map((template) => {
-      const dto = template.toClientDTO();
+      const dto = template.toClientDTO(true);
       const status = statusMap.get(template.id);
       const group = template.groupId ? (groupMap.get(template.groupId) ?? null) : null;
 

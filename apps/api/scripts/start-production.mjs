@@ -58,6 +58,12 @@ async function main() {
   resolveDatabaseUrl();
 
   console.log('[startup] Initializing database schema...');
+  console.log('[startup] Preparing pgvector before Prisma schema reconciliation...');
+  run(
+    'pnpm',
+    ['exec', 'tsx', './scripts/prepare-ai-knowledge-index-pgvector.ts'],
+    databaseRoot,
+  );
   if (hasMigrations()) {
     run(
       'pnpm',
@@ -66,8 +72,24 @@ async function main() {
     );
   } else {
     console.log('[startup] No Prisma migration directories found. Falling back to prisma db push.');
+    console.log('[startup] Preparing editor workspace natural key...');
+    run(
+      'pnpm',
+      ['exec', 'tsx', './scripts/prepare-editor-workspace-natural-key.ts'],
+      databaseRoot,
+    );
     run('pnpm', ['exec', 'prisma', 'db', 'push', '--config', './prisma/prisma.config.ts'], databaseRoot);
   }
+
+  console.log('[startup] Bootstrapping AI knowledge index...');
+  run('pnpm', ['exec', 'tsx', './scripts/bootstrap-ai-knowledge-index.ts'], databaseRoot);
+
+  console.log('[startup] Verifying required AI knowledge-index structures...');
+  run(
+    'pnpm',
+    ['exec', 'tsx', './scripts/verify-ai-knowledge-index.ts', '--require-pgvector'],
+    databaseRoot,
+  );
 
   console.log('[startup] Starting API process...');
   const child = spawn('node', ['--import', 'tsx', 'dist/main.js'], {

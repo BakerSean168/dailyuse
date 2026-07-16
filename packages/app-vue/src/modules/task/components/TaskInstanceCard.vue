@@ -9,6 +9,7 @@
     <Button
       variant="ghost"
       size="icon"
+      :aria-label="isCompleted ? t('task.action.undoComplete') : t('task.action.complete')"
       class="h-5 w-5 shrink-0 rounded-full p-0 hover:bg-transparent text-muted-foreground hover:text-primary transition-colors"
       @click="toggleComplete"
     >

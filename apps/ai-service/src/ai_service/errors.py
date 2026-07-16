@@ -46,6 +46,15 @@ class UpstreamProviderError(AIServiceError):
     error = "upstream_provider_error"
     default_detail = "The upstream LLM provider request failed."
 
+    def __init__(
+        self,
+        detail: str | None = None,
+        *,
+        upstream_status_code: int | None = None,
+    ) -> None:
+        super().__init__(detail)
+        self.upstream_status_code = upstream_status_code
+
 
 class StructuredOutputError(AIServiceError):
     """Raised when the provider response does not match our internal contract."""

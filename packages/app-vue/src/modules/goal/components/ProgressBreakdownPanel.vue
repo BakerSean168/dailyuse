@@ -5,7 +5,7 @@
         <PieChart class="h-5 w-5 text-primary" />
         <CardTitle>{{ t('goal.progressBreakdown.title') }}</CardTitle>
       </div>
-      <Button variant="ghost" size="icon" @click="$emit('close')">
+      <Button variant="ghost" size="icon" :aria-label="t('common.close')" @click="$emit('close')">
         <X class="h-4 w-4" />
       </Button>
     </CardHeader>

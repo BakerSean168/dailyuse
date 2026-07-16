@@ -21,6 +21,7 @@
           <Button
             variant="ghost"
             size="icon"
+            :aria-label="t('shell.panel.closeTab')"
             class="h-5 w-5 ml-2 opacity-0 group-hover:opacity-100 hover:bg-accent"
             @click.stop="handleTabClose(tab)"
           >
@@ -34,10 +35,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Tabs, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { FileText, Image, Video, Music, File, X } from '@lucide/vue';
 import type { EditorTab } from '../types';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{

@@ -89,6 +89,7 @@ Live mode requires provider credentials via CLI flags or environment variables:
 - `AI_SERVICE_EVAL_MODEL`
 - `AI_SERVICE_EVAL_API_KEY`
 - `AI_SERVICE_EVAL_BASE_URL` (optional)
+- `AI_SERVICE_EVAL_MAX_TOKENS` (optional, defaults to `4096`)
 
 ## Internal auth contract
 

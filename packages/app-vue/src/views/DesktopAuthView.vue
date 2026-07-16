@@ -469,6 +469,7 @@ onMounted(() => {
           <Button
             variant="ghost"
             size="icon"
+            :aria-label="t('common.more')"
             class="h-7 w-7 rounded-md border border-white/[0.06] bg-white/[0.04] text-white/[0.55] hover:bg-white/[0.09] hover:text-white/[0.85] data-[state=open]:bg-white/10"
           >
             <Menu class="h-3.5 w-3.5" />
@@ -486,11 +487,6 @@ onMounted(() => {
           <DropdownMenuItem
             class="cursor-pointer rounded-lg focus:bg-white/10 focus:text-white"
             @click="handlePlaceholderMenu"
-            >忘记密码</DropdownMenuItem
-          >
-          <DropdownMenuItem
-            class="cursor-pointer rounded-lg focus:bg-white/10 focus:text-white"
-            @click="handlePlaceholderMenu"
             >问题反馈</DropdownMenuItem
           >
         </DropdownMenuContent>
@@ -499,6 +495,7 @@ onMounted(() => {
       <Button
         variant="ghost"
         size="icon"
+        :aria-label="t('common.close')"
         class="h-7 w-7 rounded-md text-white/[0.55] hover:bg-white/[0.08] hover:text-white/90"
         @click="handleCloseWindow"
       >
@@ -579,6 +576,7 @@ onMounted(() => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          :aria-label="t('common.delete')"
                           class="h-6 w-6 rounded-md opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-red-400"
                           @click.stop="handleRemove(account.identityId)"
                         >
@@ -613,6 +611,7 @@ onMounted(() => {
               </div>
 
               <Button
+                data-testid="desktop-quick-login-submit-button"
                 class="mt-10 h-[40px] w-full rounded-[10px] bg-primary text-[15px] font-medium tracking-wide shadow-[0_10px_30px_rgba(29,78,216,0.28)] transition-all hover:bg-primary/90 hover:shadow-[0_14px_34px_rgba(29,78,216,0.42)]"
                 :disabled="isLoading"
                 @click="handleQuickLogin"
@@ -680,6 +679,7 @@ onMounted(() => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            :aria-label="t('common.delete')"
                             class="h-6 w-6 rounded-md opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-red-400"
                             @click.stop="handleRemove(account.identityId)"
                           >
@@ -705,7 +705,9 @@ onMounted(() => {
                     class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/[0.35]"
                   />
                   <Input
+                    id="desktop-login-email"
                     v-model="email"
+                    data-testid="desktop-login-email"
                     placeholder="邮箱地址"
                     class="h-[42px] rounded-[10px] border-white/10 bg-white/[0.06] pl-9 pr-3.5 text-[14px] text-white placeholder:text-white/[0.28] focus-visible:border-primary/50 focus-visible:bg-white/10 focus-visible:ring-1 focus-visible:ring-primary/50"
                     :disabled="isLoading"
@@ -716,7 +718,9 @@ onMounted(() => {
                     class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/[0.35]"
                   />
                   <Input
+                    id="desktop-login-password"
                     v-model="password"
+                    data-testid="desktop-login-password"
                     :type="passwordInputType"
                     :placeholder="passwordPlaceholder"
                     class="h-[42px] rounded-[10px] border-white/10 bg-white/[0.06] pl-9 pr-10 text-[14px] text-white placeholder:text-white/[0.28] focus-visible:border-primary/50 focus-visible:bg-white/10 focus-visible:ring-1 focus-visible:ring-primary/50"
@@ -763,6 +767,7 @@ onMounted(() => {
               </div>
 
               <Button
+                data-testid="login-submit-button"
                 class="mt-8 h-[40px] w-full rounded-[10px] bg-primary text-[15px] font-medium tracking-wide shadow-[0_10px_30px_rgba(29,78,216,0.28)] transition-all hover:bg-primary/90 hover:shadow-[0_14px_34px_rgba(29,78,216,0.42)]"
                 :disabled="isLoading"
                 @click="handleLogin"
@@ -783,7 +788,9 @@ onMounted(() => {
                     class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/[0.35]"
                   />
                   <Input
+                    id="desktop-register-email"
                     v-model="registerEmail"
+                    data-testid="desktop-register-email"
                     type="email"
                     placeholder="输入邮箱账号"
                     class="h-[42px] rounded-[10px] border-white/10 bg-white/[0.06] pl-9 pr-3.5 text-[14px] text-white placeholder:text-white/[0.28] focus-visible:border-primary/50 focus-visible:bg-white/10 focus-visible:ring-1 focus-visible:ring-primary/50"
@@ -795,7 +802,9 @@ onMounted(() => {
                     class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/[0.35]"
                   />
                   <Input
+                    id="desktop-register-password"
                     v-model="registerPassword"
+                    data-testid="desktop-register-password"
                     :type="showPassword ? 'text' : 'password'"
                     placeholder="设置密码"
                     class="h-[42px] rounded-[10px] border-white/10 bg-white/[0.06] pl-9 pr-10 text-[14px] text-white placeholder:text-white/[0.28] focus-visible:border-primary/50 focus-visible:bg-white/10 focus-visible:ring-1 focus-visible:ring-primary/50"
@@ -817,7 +826,9 @@ onMounted(() => {
                     class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/[0.35]"
                   />
                   <Input
+                    id="desktop-register-confirm-password"
                     v-model="registerConfirmPassword"
+                    data-testid="desktop-register-confirm-password"
                     type="password"
                     placeholder="确认密码"
                     class="h-[42px] rounded-[10px] border-white/10 bg-white/[0.06] pl-9 pr-10 text-[14px] text-white placeholder:text-white/[0.28] focus-visible:border-primary/50 focus-visible:bg-white/10 focus-visible:ring-1 focus-visible:ring-primary/50"
@@ -828,6 +839,7 @@ onMounted(() => {
               </div>
 
               <Button
+                data-testid="register-submit-button"
                 class="mt-8 h-[40px] w-full rounded-[10px] bg-primary text-[15px] font-medium tracking-wide shadow-[0_10px_30px_rgba(29,78,216,0.28)] transition-all hover:bg-primary/90 hover:shadow-[0_14px_34px_rgba(29,78,216,0.42)]"
                 :disabled="isLoading"
                 @click="handleRegister"

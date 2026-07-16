@@ -15,6 +15,7 @@ import {
 } from '@dailyuse/utils/result';
 import {
   CreateTaskTemplateSchema,
+  CreateTaskTemplateResponseSchema,
   UpdateTaskTemplateSchema,
   TaskTemplateGraphResponseSchema,
   TaskTemplateResponseSchema,
@@ -100,7 +101,7 @@ export function registerTaskTemplateRoutes(
       summary: '创建任务模板',
       request: { body: { content: { 'application/json': { schema: CreateTaskTemplateSchema } } } },
       responses: {
-        201: successResponse(TaskTemplateResponseSchema, '创建成功'),
+        201: successResponse(CreateTaskTemplateResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
     },

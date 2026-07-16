@@ -35,13 +35,13 @@ export const CompleteTaskInstanceSchema = z.object({
   duration: z.number().optional(),
   note: z.string().optional(),
   rating: z.number().int().min(1).max(5).optional(),
-});
+}).default({});
 
 export type CompleteTaskInstanceReq = z.infer<typeof CompleteTaskInstanceSchema>;
 
 export const SkipTaskInstanceSchema = z.object({
   reason: z.string().optional(),
-});
+}).default({});
 
 export type SkipTaskInstanceReq = z.infer<typeof SkipTaskInstanceSchema>;
 

@@ -5,6 +5,7 @@ from ai_service.schemas import (
     AgentActionPlan,
     AgentEvent,
     AgentResumePayload,
+    AgentStartRunRequest,
     AgentState,
     ReminderDraft,
 )
@@ -100,6 +101,32 @@ def test_agent_resume_payload_carries_clarification_answers():
         "Run a 5K without stopping.",
         "Review progress every Sunday.",
     ]
+
+
+def test_agent_resume_payload_rejects_more_than_three_clarification_answers():
+    with pytest.raises(ValidationError):
+        AgentResumePayload(
+            userDecision="clarify",
+            clarificationAnswers=["one", "two", "three", "four"],
+        )
+
+
+def test_agent_start_request_requires_supported_ui_locale():
+    request = {
+        "runId": "run-1",
+        "threadId": "thread-1",
+        "identityId": "identity-1",
+        "agentType": "goal.create",
+        "input": {"idea": "Build a measurable goal"},
+    }
+
+    with pytest.raises(ValidationError):
+        AgentStartRunRequest.model_validate(request)
+    with pytest.raises(ValidationError):
+        AgentStartRunRequest.model_validate({**request, "locale": "fr-FR"})
+
+    parsed = AgentStartRunRequest.model_validate({**request, "locale": "zh-CN"})
+    assert parsed.locale == "zh-CN"
 
 
 def test_reminder_draft_defaults_and_serializes_time_of_day():

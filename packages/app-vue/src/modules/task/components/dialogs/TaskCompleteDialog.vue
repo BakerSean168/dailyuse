@@ -245,6 +245,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { format } from 'date-fns';
+import { enUS, zhCN } from 'date-fns/locale';
 import { useI18n } from 'vue-i18n';
 import {
   AggregationMethod,
@@ -283,7 +284,7 @@ import {
   Hash,
 } from '@lucide/vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // ===================== 接口定义 =====================
 
@@ -555,7 +556,9 @@ const getRemainingClass = (current: number, target: number) => {
 // 格式化日期
 const formatDate = (date: number | Date) => {
   const dateObj = typeof date === 'number' ? new Date(date) : date;
-  return format(dateObj, 'yyyy-MM-dd EEEE');
+  return format(dateObj, 'yyyy-MM-dd EEEE', {
+    locale: locale.value.startsWith('zh') ? zhCN : enUS,
+  });
 };
 
 // ===================== 事件处理 =====================

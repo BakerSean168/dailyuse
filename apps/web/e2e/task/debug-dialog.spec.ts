@@ -38,16 +38,9 @@ test.describe('Debug Dialog', () => {
     
     // 点击创建按钮
     const createButton = page.locator('[data-testid="create-task-template-button"]');
-    const firstButton = page.locator('[data-testid="create-first-task-template-button"]');
-    
     console.log('\n=== Step 2: Try to open dialog ===');
-    if (await createButton.isVisible()) {
-      console.log('Clicking main create button');
-      await createButton.click();
-    } else if (await firstButton.isVisible()) {
-      console.log('Clicking first template button');
-      await firstButton.click();
-    }
+    console.log('Clicking main create button');
+    await createButton.click();
     
     await page.waitForTimeout(3000); // Wait longer for form to render
     

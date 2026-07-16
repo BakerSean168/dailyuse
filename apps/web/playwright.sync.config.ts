@@ -1,5 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
-import { createApiServer, createWebServer } from './playwright.server';
+import {
+  createApiServer,
+  createPowerSyncTestServer,
+  createWebServer,
+  getE2EWebOrigin,
+} from './playwright.server';
+import { configurePowerSyncTestEnv } from './e2e/helpers/powersync-test-env';
+
+configurePowerSyncTestEnv();
 
 export default defineConfig({
   testDir: './e2e/sync',
@@ -26,7 +34,7 @@ export default defineConfig({
   // 先准备 desktop 可执行入口，避免每个用例重复 build。
   globalSetup: './e2e/sync/global-setup.ts',
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: getE2EWebOrigin(),
     trace: 'on',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -42,6 +50,9 @@ export default defineConfig({
   // 先拉起 API，再拉起依赖该 API 的 Web dev server。这样 sync 用例和开发时
   // 通过代理访问后端的路径保持一致。
   webServer: [
+    {
+      ...createPowerSyncTestServer(),
+    },
     {
       ...createApiServer(),
     },

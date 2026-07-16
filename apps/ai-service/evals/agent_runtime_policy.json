@@ -1,6 +1,7 @@
 {
   "minimum_pass_rate": 1.0,
   "required_case_ids": [
+    "agent-runtime-goal-create-provider-clarification",
     "agent-runtime-goal-create-planner-draft",
     "agent-runtime-knowledge-qa-grounded-citations",
     "agent-runtime-knowledge-generate-draft-save-plan"

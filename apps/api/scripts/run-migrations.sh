@@ -98,6 +98,12 @@ echo ""
 
 cd /app
 
+echo "   Preparing pgvector before Prisma schema reconciliation"
+echo "   Command: /app/node_modules/.bin/tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts"
+echo ""
+(cd /app/packages/database && /app/node_modules/.bin/tsx ./scripts/prepare-ai-knowledge-index-pgvector.ts)
+echo ""
+
 has_prisma_migration_dirs() {
   [ -d "packages/database/prisma/migrations" ] || return 1
 
@@ -117,6 +123,11 @@ if has_prisma_migration_dirs; then
   MIGRATION_OUTPUT=$(cd /app/packages/database && /app/node_modules/.bin/prisma migrate deploy --config ./prisma/prisma.config.ts 2>&1) || MIGRATION_RESULT=$?
 else
   echo "${YELLOW}⚠️  No Prisma migration directories found, falling back to schema push${NC}"
+  echo "   Preparing editor workspace natural key before schema push"
+  echo "   Command: /app/node_modules/.bin/tsx ./scripts/prepare-editor-workspace-natural-key.ts"
+  echo ""
+  (cd /app/packages/database && /app/node_modules/.bin/tsx ./scripts/prepare-editor-workspace-natural-key.ts)
+  echo ""
   echo "   Command: /app/node_modules/.bin/prisma db push --config ./prisma/prisma.config.ts"
   echo ""
   MIGRATION_RESULT=0
@@ -129,3 +140,25 @@ echo "$MIGRATION_OUTPUT"
 
 echo ""
 echo "${GREEN}✅ Database schema initialized successfully${NC}"
+
+# Step 5: Bootstrap and verify the AI knowledge-index schema.
+# Bootstrap is intentionally idempotent; the required smoke check must fail the
+# container before the API process starts if pgvector or any retrieval structure
+# is unavailable.
+echo ""
+echo "${YELLOW}Step 5: Bootstrapping AI knowledge index${NC}"
+echo "   Command: /app/node_modules/.bin/tsx ./scripts/bootstrap-ai-knowledge-index.ts"
+echo ""
+
+cd /app/packages/database
+/app/node_modules/.bin/tsx ./scripts/bootstrap-ai-knowledge-index.ts
+
+echo ""
+echo "${YELLOW}Step 6: Verifying required AI knowledge-index structures${NC}"
+echo "   Command: /app/node_modules/.bin/tsx ./scripts/verify-ai-knowledge-index.ts --require-pgvector"
+echo ""
+
+/app/node_modules/.bin/tsx ./scripts/verify-ai-knowledge-index.ts --require-pgvector
+
+echo ""
+echo "${GREEN}✅ AI knowledge index initialized and verified successfully${NC}"

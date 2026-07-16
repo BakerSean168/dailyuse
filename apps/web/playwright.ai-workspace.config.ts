@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { createWebServer } from './playwright.server';
+import { createWebServer, getE2EWebOrigin } from './playwright.server';
 
 // `web:e2e:ai-workspace` starts Vite outside Playwright on Windows to avoid
 // flaky webServer teardown; keep the opt-in switch for direct config usage.
@@ -28,7 +28,7 @@ export default defineConfig({
         ['json', { outputFile: 'test-results/ai-workspace-results.json' }],
       ],
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: getE2EWebOrigin(),
     trace: 'on',
     screenshot: 'on',
     video: 'on',
@@ -42,5 +42,5 @@ export default defineConfig({
     },
   ],
   // AI workspace flows are HTTP-mocked inside the spec, so they only need the Vite app.
-  webServer: shouldManageWebServer ? [createWebServer('http://127.0.0.1:5173/')] : undefined,
+  webServer: shouldManageWebServer ? [createWebServer(`${getE2EWebOrigin()}/`)] : undefined,
 });

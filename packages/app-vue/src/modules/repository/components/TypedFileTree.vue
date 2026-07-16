@@ -6,32 +6,6 @@
 
 <template>
   <div class="flex flex-col h-full bg-background">
-    <!-- Toolbar -->
-    <div class="flex items-center gap-1 px-2 py-2 border-b">
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :title="t('repository.workspace.createNote')"
-        :disabled="isLoading"
-        @click="$emit('create-note')"
-      >
-        <FilePlus class="h-4 w-4" />
-      </Button>
-
-      <div class="flex-1" />
-
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        :disabled="isLoading"
-        @click="$emit('refresh')"
-      >
-        <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isLoading }" />
-      </Button>
-    </div>
-
     <!-- Content -->
     <div class="flex-1 overflow-y-auto p-2">
       <!-- Loading -->
@@ -55,12 +29,6 @@
         <span class="text-xs text-muted-foreground">{{
           t('repository.workspace.noFilesDesc')
         }}</span>
-        <div class="flex gap-2">
-          <Button size="sm" variant="outline" @click="$emit('create-note')">
-            <FilePlus class="mr-2 h-4 w-4" />
-            {{ t('repository.workspace.createNote') }}
-          </Button>
-        </div>
       </div>
 
       <!-- Type Groups -->
@@ -68,7 +36,7 @@
         <div v-for="group in typeGroups" :key="group.key">
           <!-- Group Header -->
           <ActionableWrapper
-            :actions="getGroupActions(group.key)"
+            :actions="getGroupActions()"
             :show-more-button="false"
             wrapper-class="w-full"
           >
@@ -76,7 +44,12 @@
               class="flex w-full items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
               @click="toggleGroup(group.key)"
             >
-              <Button variant="ghost" size="icon" class="h-5 w-5 shrink-0 p-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-5 w-5 shrink-0 p-0"
+                :aria-label="expandedGroups.has(group.key) ? t('common.collapse') : t('common.expand')"
+              >
                 <ChevronRight
                   class="h-4 w-4 transition-transform"
                   :class="{ 'rotate-90': expandedGroups.has(group.key) }"
@@ -151,9 +124,7 @@ import { useI18n } from 'vue-i18n';
 import {
   BookOpen,
   FolderOpen,
-  FilePlus,
   Pencil,
-  Upload,
   RefreshCw,
   Loader2,
   ChevronRight,
@@ -187,7 +158,6 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  'create-note': [];
   import: [];
   refresh: [];
   open: [resource: ResourceClientDTO];
@@ -287,24 +257,7 @@ function getResourceActions(resource: ResourceClientDTO): MenuAction[] {
   ];
 }
 
-function getGroupActions(groupKey: string): MenuAction[] {
-  if (groupKey === 'notes') {
-    return [
-      {
-        key: 'create-note',
-        label: t('repository.workspace.createNote'),
-        icon: FilePlus,
-        handler: () => emit('create-note'),
-      },
-      {
-        key: 'refresh',
-        label: t('common.retry'),
-        icon: RefreshCw,
-        handler: () => emit('refresh'),
-      },
-    ];
-  }
-
+function getGroupActions(): MenuAction[] {
   return [
     {
       key: 'refresh',

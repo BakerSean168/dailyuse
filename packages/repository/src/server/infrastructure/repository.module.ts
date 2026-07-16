@@ -326,6 +326,7 @@ function buildApplicationPort(
         type: data.type,
         path: data.path,
         content: data.content,
+        mimeType: data.mimeType,
       });
     },
     listResources: async (repositoryId) => {

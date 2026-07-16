@@ -18,6 +18,45 @@ import {
 } from '../../../testing';
 
 describe('Repository resource mutations', () => {
+  it('preserves a Markdown MIME type through the public create boundary', async () => {
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-mime-'));
+
+    try {
+      const { resourceRepository, repositoryRepository, module } =
+        createRepositoryModuleForTests({ tempDir });
+      const repository = Repository.create({
+        identityId: 'user-1' as any,
+        name: 'Repo',
+        type: 'personal' as any,
+        path: '/repo',
+      });
+      await repositoryRepository.save(repository);
+
+      const created = await module.api.createResource(
+        {
+          repositoryId: String(repository.id),
+          name: 'knowledge-note.md',
+          type: 'File',
+          mimeType: 'text/markdown',
+          content: '# Indexed note',
+        },
+        { identityId: 'user-1' } as any,
+      );
+
+      expect(created.ok).toBe(true);
+      if (!created.ok) throw new Error('Expected created resource');
+      expect(created.data.mimeType).toBe('text/markdown');
+
+      const stored = await resourceRepository.findById(String(created.data.id));
+      expect(stored?.mimeType).toBe('text/markdown');
+      expect(stored?.toServerDTO().metadata).toEqual(
+        expect.objectContaining({ mimeType: 'text/markdown' }),
+      );
+    } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   it('renames a resource in both storage and metadata', async () => {
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repository-rename-'));
 

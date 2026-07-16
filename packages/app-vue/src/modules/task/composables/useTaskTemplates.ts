@@ -140,10 +140,21 @@ export function useTaskTemplates() {
         'task.error.createFailed',
       );
       if (result.ok) {
-        const dto = result.data.toDTO();
+        const dto = result.data.template.toDTO();
         store.addTemplate(dto);
-        toast.success(t('task.error.createSuccess'));
-        return dto;
+        toast.success(
+          t(
+            result.data.todayInstanceCreated
+              ? 'task.error.createTemplateWithTodayInstanceSuccess'
+              : 'task.error.createTemplateWithoutTodayInstanceSuccess',
+            { count: result.data.instanceCount },
+          ),
+        );
+        return {
+          template: dto,
+          instanceCount: result.data.instanceCount,
+          todayInstanceCreated: result.data.todayInstanceCreated,
+        };
       }
       return null;
     } finally {
@@ -182,6 +193,26 @@ export function useTaskTemplates() {
         return true;
       }
       return false;
+    } finally {
+      savingId.value = null;
+    }
+  }
+
+  async function deleteTemplates(ids: readonly string[]) {
+    if (ids.length === 0) return true;
+
+    savingId.value = 'batch';
+    store.setError(null);
+    try {
+      for (const id of ids) {
+        const result = await executeTaskOperation(
+          () => service.deleteTemplate(id),
+          'task.error.deleteFailed',
+        );
+        if (!result.ok) return false;
+        store.removeTemplate(id);
+      }
+      return true;
     } finally {
       savingId.value = null;
     }
@@ -234,6 +265,7 @@ export function useTaskTemplates() {
     createTemplate,
     updateTemplate,
     deleteTemplate,
+    deleteTemplates,
     activateTemplate,
     pauseTemplate,
     archiveTemplate,

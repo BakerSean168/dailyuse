@@ -4,7 +4,7 @@ tags:
   - active
 description: 进行中的计划目录与当前状态
 created: 2026-04-26T00:00:00
-updated: 2026-07-15T00:00:00
+updated: 2026-07-16T00:00:00
 ---
 
 # Active Plans
@@ -16,7 +16,8 @@ updated: 2026-07-15T00:00:00
 | 计划                                                                                 | 当前状态                           |
 | ------------------------------------------------------------------------------------ | ---------------------------------- |
 | [Cross-Feature Boundary Hardening](./2026-07-11-cross-feature-boundary-hardening.md) | 待实施：scope 级默认拒绝与治理接入 |
-| [App Vue UI 深度重构与功能性修复](./2026-07-15-app-vue-ui-and-functional-deep-refactor.md) | canonical 执行方案：待 P0 基线修复 |
+| [App Vue UI 深度重构与功能性修复](./2026-07-15-app-vue-ui-and-functional-deep-refactor.md) | 实施与全部验收完成：PR #187 等待 CI、合并与标准发布 |
+| [密码找回与重置](./2026-07-16-password-recovery.md)                                   | 待实施：邮件、一次性令牌、安全闭环与跨端验收 |
 | [Web 登录与注册页面后续优化](./2026-07-15-web-auth-page-optimization.md)              | 输入材料：由统一执行方案承接       |
 | [Web 登录后主要功能内部产品审查](./2026-07-15-web-core-product-review.md)             | 审查材料：由统一执行方案承接       |
 

@@ -5,7 +5,13 @@
       class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
     >
       <div class="flex items-center gap-3">
-        <Button variant="ghost" size="icon" class="h-8 w-8" @click="$router.back()">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          :aria-label="t('common.back')"
+          @click="$router.back()"
+        >
           <ArrowLeft class="h-4 w-4" />
         </Button>
         <Separator orientation="vertical" class="h-4" />
@@ -60,7 +66,7 @@
           class="rounded-lg border bg-card p-3 font-mono text-sm"
         >
           <div class="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{{ msg.time }}</span>
+            <span>{{ formatMessageTime(msg.time) }}</span>
             <Badge variant="outline" class="text-xs">{{ msg.type }}</Badge>
           </div>
           <pre class="whitespace-pre-wrap text-foreground">{{ msg.data }}</pre>
@@ -77,12 +83,12 @@ import { ArrowLeft, Radio } from '@lucide/vue';
 import { Button, Badge, ScrollArea, Separator } from '@dailyuse/ui-vue-shadcn';
 
 interface SSEMessage {
-  time: string;
+  time: number;
   type: string;
   data: string;
 }
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const connected = ref(false);
 const messages = ref<SSEMessage[]>([]);
@@ -91,17 +97,21 @@ function toggleConnection() {
   connected.value = !connected.value;
   if (connected.value) {
     messages.value.push({
-      time: new Date().toLocaleTimeString(),
+      time: Date.now(),
       type: 'system',
       data: t('notification.sseMonitor.msgConnected'),
     });
   } else {
     messages.value.push({
-      time: new Date().toLocaleTimeString(),
+      time: Date.now(),
       type: 'system',
       data: t('notification.sseMonitor.msgDisconnected'),
     });
   }
+}
+
+function formatMessageTime(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString(locale.value);
 }
 
 function clearMessages() {

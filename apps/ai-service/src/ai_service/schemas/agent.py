@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 AgentIntent = Literal["chat", "goal-create", "knowledge-qa", "knowledge-generate"]
 AgentType = Literal["goal.create", "knowledge.qa", "knowledge.generate"]
+AgentLocale = Literal["zh-CN", "en-US"]
 AgentRunStatus = Literal[
     "pending",
     "running",
@@ -211,6 +212,8 @@ class AgentResumePayload(BaseModel):
     clarification_answers: list[str] | None = Field(
         default=None,
         alias="clarificationAnswers",
+        min_length=1,
+        max_length=3,
     )
     approved_actions: list[AgentAction] | None = Field(
         default=None,
@@ -241,6 +244,7 @@ class AgentStartRunRequest(BaseModel):
     )
     identity_id: str = Field(..., min_length=1, alias="identityId")
     agent_type: AgentType = Field(alias="agentType")
+    locale: AgentLocale
     input: dict[str, Any] = Field(default_factory=dict)
 
 

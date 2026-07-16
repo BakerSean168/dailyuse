@@ -207,6 +207,7 @@
                     <Button
                       variant="ghost"
                       size="icon"
+                      :aria-label="t('common.delete')"
                       class="text-destructive"
                       @click="removeReminderTrigger(index)"
                     >
@@ -362,6 +363,7 @@
                   <Button
                     variant="ghost"
                     size="icon"
+                    :aria-label="t('common.edit')"
                     class="h-8 w-8 shrink-0"
                     @click="editKr(kr._localId)"
                   >
@@ -370,6 +372,7 @@
                   <Button
                     variant="ghost"
                     size="icon"
+                    :aria-label="t('common.delete')"
                     class="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
                     @click="removeKr(kr._localId)"
                   >

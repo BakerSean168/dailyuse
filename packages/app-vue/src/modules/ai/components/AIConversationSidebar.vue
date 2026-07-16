@@ -11,6 +11,7 @@
         <Button
           variant="ghost"
           size="icon"
+          :aria-label="t('aiAssistant.dialogs.chat.newConversation')"
           class="h-8 w-8"
           :title="t('aiAssistant.dialogs.chat.newConversation')"
           data-testid="ai-sidebar-new-conversation"
@@ -23,6 +24,7 @@
             <Button
               variant="ghost"
               size="icon"
+              :aria-label="t('common.more')"
               class="h-8 w-8"
               data-testid="ai-sidebar-more"
             >
@@ -44,6 +46,7 @@
           v-if="showClose"
           variant="ghost"
           size="icon"
+          :aria-label="t('aiAssistant.chatPage.sidebar.close')"
           class="h-8 w-8"
           :title="t('aiAssistant.chatPage.sidebar.close')"
           data-testid="ai-sidebar-close"
@@ -78,6 +81,7 @@
         <Button
           variant="ghost"
           size="icon"
+          :aria-label="t('common.delete')"
           class="h-7 w-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
           @click.stop="$emit('delete', item.id)"
         >

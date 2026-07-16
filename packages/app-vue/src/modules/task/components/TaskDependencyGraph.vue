@@ -47,6 +47,7 @@
             <Button
               variant="ghost"
               size="icon"
+              :aria-label="t('task.dependencyGraph.refresh')"
               class="h-8 w-8"
               @click="refreshGraph"
               :disabled="loading"
@@ -280,7 +281,8 @@ const calculateCriticalPath = () => {
 const chartContainer = ref<HTMLElement>();
 const chartInstance = ref<ECharts>();
 const loading = ref(false);
-const error = ref<string | null>(null);
+const errorKey = ref<string | null>(null);
+const error = computed(() => (errorKey.value ? t(errorKey.value) : null));
 const layoutType = ref<'force' | 'circular'>('force');
 const showCriticalPath = ref(false);
 
@@ -392,13 +394,13 @@ function updateChart() {
 
     chartInstance.value.setOption(option);
   } catch (_err) {
-    error.value = t('task.dependencyGraph.renderFailed');
+    errorKey.value = 'task.dependencyGraph.renderFailed';
   }
 }
 
 function refreshGraph() {
   loading.value = true;
-  error.value = null;
+  errorKey.value = null;
   nextTick(() => {
     try {
       updateChart();

@@ -49,6 +49,7 @@ const { t } = useI18n();
       <Button
         variant="ghost"
         size="icon"
+        :aria-label="t('aiAssistant.chatPage.context.hide')"
         class="h-8 w-8 md:hidden"
         :title="t('aiAssistant.chatPage.context.hide')"
         data-testid="ai-context-panel-close"

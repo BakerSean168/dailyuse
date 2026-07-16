@@ -10,8 +10,12 @@ import { findNotesFolderId } from '../utils/note-folder';
 import { getEditableResourceName, normalizeRenamedResourceName } from '../utils/resource-name';
 import { getResourceDisplayName, isMarkdownResource } from '../utils/resource-presentation';
 import { useRepository } from './useRepository';
+import { buildNoteNameFromTitle } from './repositoryHelpers';
 
-export function useRepositoryResourceCommands(activeResource: Ref<ResourceClientDTO | null>) {
+export function useRepositoryResourceCommands(
+  activeResource: Ref<ResourceClientDTO | null>,
+  options: { onResourceOpened?: () => void | Promise<void> } = {},
+) {
   const { t } = useI18n();
   const editorWorkspaceStore = useEditorWorkspaceStore();
   const repository = useRepository();
@@ -26,6 +30,17 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
   const renameDialogOpen = ref(false);
   const renameValue = ref('');
   const renameTarget = ref<ResourceClientDTO | null>(null);
+  const createNoteDialogOpen = ref(false);
+  const createNoteTitle = ref('');
+  const isCreatingNote = ref(false);
+  let focusEditorAfterCreate = false;
+
+  const createNoteName = computed(() =>
+    createNoteTitle.value.trim() ? buildNoteNameFromTitle(createNoteTitle.value) : '',
+  );
+  const createNoteDisabled = computed(
+    () => !createNoteTitle.value.trim() || !createNoteName.value || isCreatingNote.value,
+  );
 
   const normalizedRenameValue = computed(() =>
     renameTarget.value ? normalizeRenamedResourceName(renameTarget.value, renameValue.value) : '',
@@ -47,36 +62,64 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
     }
   }
 
-  async function handleCreateNote() {
+  function handleCreateNote() {
+    createNoteTitle.value = '';
+    createNoteDialogOpen.value = true;
+  }
+
+  async function confirmCreateNote() {
+    if (createNoteDisabled.value) {
+      return;
+    }
+
     const noteFolderId = findNotesFolderId(repository.treeNodes.value);
+    isCreatingNote.value = true;
 
-    const note = await repository.createMarkdownNote(
-      undefined,
-      '',
-      noteFolderId ?? undefined,
-    );
-    if (!note) {
-      console.error('[RepositoryResourceCommands] handleCreateNote:create-failed', {
-        repositoryId: repository.repositoryId.value,
-        noteFolderId,
-      });
-      toast.error(t('repository.workspace.createNoteFailed'));
+    try {
+      const note = await repository.createMarkdownNote(
+        createNoteName.value,
+        undefined,
+        noteFolderId ?? undefined,
+      );
+      if (!note) {
+        console.error('[RepositoryResourceCommands] handleCreateNote:create-failed', {
+          repositoryId: repository.repositoryId.value,
+          noteFolderId,
+        });
+        toast.error(t('repository.workspace.createNoteFailed'));
+        return;
+      }
+      const opened = await requestOpenResource(note.id);
+      if (!opened) {
+        console.warn('[RepositoryResourceCommands] handleCreateNote:open-failed', {
+          noteId: note.id,
+          repositoryId: repository.repositoryId.value,
+        });
+        toast.error(t('repository.workspace.createNoteFailed'));
+        return;
+      }
+      focusEditorAfterCreate = true;
+      createNoteDialogOpen.value = false;
+      createNoteTitle.value = '';
+      toast.success(
+        t('repository.workspace.createNoteSuccess', { name: getResourceDisplayName(note) }),
+      );
+    } finally {
+      isCreatingNote.value = false;
+    }
+  }
+
+  function handleCreateNoteCloseAutoFocus(event: Event) {
+    if (!focusEditorAfterCreate) {
       return;
     }
 
-    const opened = await requestOpenResource(note.id);
-    if (!opened) {
-      console.warn('[RepositoryResourceCommands] handleCreateNote:open-failed', {
-        noteId: note.id,
-        repositoryId: repository.repositoryId.value,
-      });
-      toast.error(t('repository.workspace.createNoteFailed'));
-      return;
-    }
-
-    toast.success(
-      t('repository.workspace.createNoteSuccess', { name: getResourceDisplayName(note) }),
-    );
+    // A successful create transfers focus into the newly opened document.
+    // Prevent Radix from restoring focus to the create trigger after its close
+    // animation, then focus CodeMirror at the dialog lifecycle boundary.
+    event.preventDefault();
+    focusEditorAfterCreate = false;
+    void options.onResourceOpened?.();
   }
 
   function handleRefresh() {
@@ -186,12 +229,19 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
     uploadProgress: repository.uploadProgress,
     showImportDialog,
     importSummary,
+    createNoteDialogOpen,
+    createNoteTitle,
+    createNoteName,
+    createNoteDisabled,
+    isCreatingNote,
     renameDialogOpen,
     renameValue,
     normalizedRenameValue,
     renameSaveDisabled,
     handleOpenResource,
     handleCreateNote,
+    confirmCreateNote,
+    handleCreateNoteCloseAutoFocus,
     handleRefresh,
     handleRenameResource,
     confirmRenameResource,

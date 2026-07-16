@@ -1,5 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
-import { createApiServer, createWebServer } from './playwright.server';
+import {
+  createAIServiceServer,
+  createApiServer,
+  createOpenAICompatibleMockServer,
+  createWebServer,
+  getE2EWebOrigin,
+} from './playwright.server';
 
 /**
  * Playwright 配置
@@ -14,11 +20,17 @@ export default defineConfig({
     '**/ai/goal-workflow.spec.ts',
     '**/authentication/auth-flow.spec.ts',
     '**/authentication/auth-login.spec.ts',
+    '**/authentication/auth-page-contract.spec.ts',
     '**/dashboard/dashboard-overview.spec.ts',
     '**/goal/goal-crud.spec.ts',
+    '**/note/knowledge-index-query-loop.spec.ts',
+    '**/note/note-workspace.spec.ts',
     '**/notification/notification-center.spec.ts',
+    '**/notification/reminder-notification-loop.spec.ts',
     '**/reminder/reminder-template-crud.spec.ts',
+    '**/schedule/schedule-calendar.spec.ts',
     '**/task/task-template-crud.spec.ts',
+    '**/task/task-completion-loop.spec.ts',
     '**/user-settings/notifications.spec.ts',
     '**/user-settings/persistence.spec.ts',
     '**/user-settings/data-portability.spec.ts',
@@ -66,7 +78,7 @@ export default defineConfig({
   // 全局配置
   use: {
     // 基础 URL
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: getE2EWebOrigin(),
 
     // 追踪配置
     trace: 'on',
@@ -91,5 +103,10 @@ export default defineConfig({
   ],
 
   // 默认业务回归依赖真实登录和 CRUD，必须同时托管 API + Web。
-  webServer: [createApiServer(), createWebServer()],
+  webServer: [
+    createOpenAICompatibleMockServer(),
+    createAIServiceServer(),
+    createApiServer(),
+    createWebServer(),
+  ],
 });

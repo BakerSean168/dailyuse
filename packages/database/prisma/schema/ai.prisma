@@ -149,6 +149,7 @@ model AiKnowledgeIndexEntry {
   summary         String?   @db.Text
   keywords        Json      @default("[]")
   embedding       Json?
+  retrievalVector Unsupported("vector(48)")? @map("retrieval_vector")
   chunks          Json?
   metadata        Json      @default("{}")
   error           String?   @db.Text

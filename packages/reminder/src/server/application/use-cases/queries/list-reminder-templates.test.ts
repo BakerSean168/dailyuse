@@ -35,7 +35,8 @@ describe('ListReminderTemplatesUseCase', () => {
     const result = await useCase.execute({ groupId: 'group-1' }, { identityId: 'identity-1' });
 
     expect(repository.findByGroupId).toHaveBeenCalledWith('group-1', {
-      includeHistory: false,
+      includeHistory: true,
+      historyLimit: 1,
     });
     expect(repository.findActive).not.toHaveBeenCalled();
     expect(repository.findByIdentityId).not.toHaveBeenCalled();
@@ -59,7 +60,10 @@ describe('ListReminderTemplatesUseCase', () => {
 
     const result = await useCase.execute({ effectiveEnabled: true }, { identityId: 'identity-1' });
 
-    expect(repository.findActive).toHaveBeenCalledWith('identity-1');
+    expect(repository.findActive).toHaveBeenCalledWith('identity-1', {
+      includeHistory: true,
+      historyLimit: 1,
+    });
     expect(repository.findByGroupId).not.toHaveBeenCalled();
     expect(repository.findByIdentityId).not.toHaveBeenCalled();
     expect(result.ok).toBe(true);
@@ -77,7 +81,8 @@ describe('ListReminderTemplatesUseCase', () => {
     const result = await useCase.execute(undefined, { identityId: 'identity-1' });
 
     expect(repository.findByIdentityId).toHaveBeenCalledWith('identity-1', {
-      includeHistory: false,
+      includeHistory: true,
+      historyLimit: 1,
     });
     expect(repository.findByGroupId).not.toHaveBeenCalled();
     expect(repository.findActive).not.toHaveBeenCalled();

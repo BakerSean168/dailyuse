@@ -149,6 +149,7 @@ export default {
     back: 'Back',
     forward: 'Forward',
     moduleNav: 'Module navigation',
+    moduleWithCount: '{name}, {count} items',
     enterModule: 'Enter',
     previewPlaceholder: 'Preview coming soon.',
     preview: {
@@ -180,7 +181,8 @@ export default {
       exitFocus: 'Exit focus',
       tabLimitHint: 'Tab limit reached — consider closing "{title}" (least recently used).',
       contentErrorTitle: 'This panel ran into a problem',
-      contentErrorDescription: 'This business panel failed to render. Retry, or close the panel and keep using the AI workspace.',
+      contentErrorDescription:
+        'This business panel failed to render. Retry, or close the panel and keep using the AI workspace.',
     },
     window: {
       minimize: 'Minimize',
@@ -230,7 +232,8 @@ export default {
       subtitle:
         'Keep conversations, model selection, and the composer in one dedicated workspace, similar to Gemini or GPT.',
       welcomeTitle: 'What do you want to move forward today?',
-      welcomeDescription: 'Pick a shortcut card to start, or type below. Once messages exist, this becomes the conversation timeline.',
+      welcomeDescription:
+        'Pick a shortcut card to start, or type below. Once messages exist, this becomes the conversation timeline.',
       emptyTitle: 'Start with a prompt',
       emptyDescription:
         'Pick a provider and model, then continue the conversation here. Saved chats stay in the sidebar so you can jump back in.',
@@ -494,7 +497,8 @@ export default {
         awaitingConfirmation: 'awaiting confirmation',
         executionRecorded: 'execution recorded',
         recoveryTitle: 'Recovery',
-        recoveryRetryReady: 'You can retry execution after fixing the failed action inputs or runtime issue.',
+        recoveryRetryReady:
+          'You can retry execution after fixing the failed action inputs or runtime issue.',
         recoverySuggestions: 'Recommended recovery steps:',
         emptyState:
           'AI will draft the goal, choose explicit tool calls, and wait for confirmation before creating real goal or task entities.',
@@ -1607,6 +1611,23 @@ export default {
       groupPolicyGroupPaused: 'The group is paused, so every reminder in it stays paused.',
       groupPolicyIndividual: 'Templates in this group keep their own self switch control.',
     },
+    schedule: {
+      trigger: 'Trigger time',
+      nextTrigger: 'Next trigger',
+      recurrence: 'Recurrence',
+      daily: 'Daily',
+      oneTime: 'One time',
+      everyMinutes: 'Every {minutes} minutes',
+      notConfigured: 'No recurrence configured',
+      noNextTrigger: 'No next trigger scheduled',
+      state: {
+        upcoming: 'Upcoming',
+        missed: 'Missed',
+        paused: 'Paused',
+        failed: 'Last trigger failed',
+        unscheduled: 'Not scheduled',
+      },
+    },
     templateDetail: {
       fallbackTitle: 'Reminder details',
       description: 'View the reminder basics, lifecycle state, and trigger configuration.',
@@ -1679,7 +1700,19 @@ export default {
     },
     toolbar: {
       title: 'Markdown Editor',
+      headingMenu: 'Heading styles',
       heading: 'Heading {level}',
+      bold: 'Bold',
+      italic: 'Italic',
+      strikethrough: 'Strikethrough',
+      inlineCode: 'Inline code',
+      codeBlock: 'Code block',
+      unorderedList: 'Bulleted list',
+      orderedList: 'Numbered list',
+      taskList: 'Task list',
+      quote: 'Quote',
+      divider: 'Divider',
+      table: 'Table',
       column: 'Col',
       content: 'Content',
       insertLink: 'Insert link markdown',
@@ -1996,6 +2029,7 @@ export default {
     createDialog: {
       titleCreate: 'Create Schedule Event',
       titleEdit: 'Edit Schedule Event',
+      description: 'Set the schedule title, time, and optional details.',
       fieldTitle: 'Title *',
       fieldTitlePlaceholder: 'Enter schedule title',
       fieldDescription: 'Description',
@@ -2028,8 +2062,9 @@ export default {
     },
 
     calendar: {
-      narrowDayOnly: 'Day view only in split — maximize for week/month',
       today: 'Today',
+      previousPeriod: 'Previous period',
+      nextPeriod: 'Next period',
       createSchedule: 'New Schedule',
       weekRange: '{start} - {end}',
       allDay: 'All Day',
@@ -2335,6 +2370,7 @@ export default {
   },
 
   goal: {
+    keyResultFallback: 'Key result',
     route: {
       management: 'Goal Management',
       list: 'Goal List',
@@ -2432,6 +2468,7 @@ export default {
         ruleHint: 'This mode keeps the goal list visible and highlights the active focus session.',
       },
       sidebarTitle: 'Focus Cycle',
+      remainingDaysShort: '{days}d',
       sidebarEmpty: 'No active focus cycle',
       routeTitle: 'Focus Cycle',
       routeSubtitle: 'Current cycle and its goals',
@@ -2663,6 +2700,9 @@ export default {
       rulesSaved: 'Status rules saved',
     },
     cards: {
+      keyResultsCount: '{done}/{total} key results',
+      daysLeft: '{days} days left',
+      daysOverdue: '{days} days overdue',
       goalStatus: {
         active: 'Active',
         completed: 'Completed',
@@ -2717,6 +2757,7 @@ export default {
       applyStrategy: 'Apply Strategy',
       krList: 'KeyResults List',
       current: 'Current:',
+      keyResultIndex: 'KR {index}',
       hasKeywords: 'Contains keywords:',
       noKeywords: 'No special keywords detected',
       cancel: 'Cancel',
@@ -2996,6 +3037,7 @@ export default {
       triggerImport: 'Batch Import',
       empty: 'No weight change records',
       allKR: 'All',
+      unknownKeyResult: 'Unknown key result',
       triggerLabelManual: 'Manual',
       triggerLabelAuto: 'Auto',
       triggerLabelRestore: 'Restore',
@@ -3336,8 +3378,12 @@ export default {
     error: {
       operationFailed: 'Operation failed',
       loadTemplatesFailed: 'Failed to load task templates',
-      createFailed: 'Failed to create task',
-      createSuccess: 'Task created successfully',
+      createFailed: 'Failed to create task template',
+      createSuccess: 'Task template created',
+      createTemplateWithTodayInstanceSuccess:
+        "Task template created and today's task instance generated ({count} initial instances total)",
+      createTemplateWithoutTodayInstanceSuccess:
+        'Task template created; no task instance was generated for today ({count} initial instances total)',
       updateFailed: 'Failed to update task',
       updateSuccess: 'Task updated successfully',
       deleteFailed: 'Failed to delete task',
@@ -3360,8 +3406,8 @@ export default {
       title: 'Task Library',
       searchPlaceholder: 'Search tasks...',
       loading: 'Loading...',
-      createSuccess: 'Task created successfully',
-      editSuccess: 'Task updated successfully',
+      createSuccess: 'Task template created',
+      editSuccess: 'Task template updated',
       deleteTemplate: 'Delete Task',
       confirmDelete: 'Confirm delete task "{name}"?',
       confirmDeleteAll: 'Confirm delete all templates? This cannot be undone!',
@@ -3575,6 +3621,7 @@ export default {
       progressValue: 'Progress increment on completion',
       progressPlaceholder: 'Enter progress increment (positive)',
       points: 'pts',
+      weight: 'Weight {value}%',
       progressText: 'Completing this task will add progress to the key result',
       trigger: {
         label: 'Progress Trigger',
@@ -3720,6 +3767,7 @@ export default {
       noTags: 'No tags',
       noRecurrence: 'Does not repeat',
       linkedGoal: 'Linked Goal',
+      priorityScore: 'Priority {score}/100',
       totalCount: 'Total:',
       completionRate: 'Rate:',
       createdAt: 'Created',
@@ -3766,25 +3814,25 @@ export default {
 
     templateMgmt: {
       viewDependencyGraph: 'View Dependency Graph',
-      deleteAll: 'Delete All Tasks',
-      createNew: 'New Task',
-      createFirst: 'Create First Task',
-      countLabel: '{count} tasks',
+      deleteAll: 'Delete All Task Templates',
+      createNew: 'New Task Template',
+      createFirst: 'Create First Task Template',
+      countLabel: '{count} task templates',
       viewCard: 'Cards',
       viewGraph: 'Graph',
       relationFilterLabel: 'Relations',
-      emptyTitle: 'No task definitions yet',
+      emptyTitle: 'No task templates yet',
       emptyDescription:
         'The task library holds repeatable task definitions: recurrence rules, dependencies, and goal bindings.',
       emptyAiLink: 'Let AI generate them →',
-      noMatch: 'No matching tasks',
+      noMatch: 'No matching task templates',
       clearFilter: 'Clear Filters',
       graphNarrowViewport: 'Maximize the panel to view the dependency graph',
       dragRequiresFocus: 'Drag-to-create dependency is available after maximizing the panel',
-      noActive: 'No active tasks',
-      noPaused: 'No paused tasks',
-      noArchived: 'No archived tasks',
-      noTemplates: 'No tasks',
+      noActive: 'No active task templates',
+      noPaused: 'No paused task templates',
+      noArchived: 'No archived task templates',
+      noTemplates: 'No task templates',
       dependencyGraphTitle: 'Task Dependency Graph',
       confirmDeleteAll: 'Confirm Delete All Tasks',
       cannotUndo: 'This cannot be undone!',
@@ -3928,6 +3976,7 @@ export default {
 
     action: {
       complete: 'Mark Complete',
+      undoComplete: 'Undo completion',
       skip: 'Skip',
       start: 'Start',
     },
@@ -3980,6 +4029,12 @@ export default {
       noRepositoryDesc:
         'There is no repository available for the current account. Initialize or create one first.',
       createNote: 'New Note',
+      createNoteTitle: 'New Note',
+      createNoteDescription:
+        'Name the note first; a matching Markdown filename and heading will be created.',
+      noteTitle: 'Note title',
+      noteTitlePlaceholder: 'For example: Project retrospective',
+      noteFileNamePreview: 'Filename: {name}',
       createNoteSuccess: 'Created note: {name}',
       createNoteFailed: 'Failed to create note',
       noFiles: 'No files yet',
@@ -3988,6 +4043,10 @@ export default {
       saving: 'Saving...',
       unsaved: 'Unsaved',
       saved: 'Saved',
+      saveFailed: 'Failed to save note',
+      indexPending: 'Indexing for knowledge search…',
+      indexReady: 'Searchable in knowledge Q&A',
+      indexFailed: 'Note saved, but knowledge indexing failed',
       chars: 'chars',
       linkNotFound: 'Link target not found',
     },

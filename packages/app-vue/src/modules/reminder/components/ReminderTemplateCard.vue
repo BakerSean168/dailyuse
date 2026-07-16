@@ -16,7 +16,7 @@
         </DialogDescription>
         <div class="flex items-center gap-2 mt-2">
           <Badge :variant="template?.effectiveEnabled ? 'default' : 'secondary'">
-            {{ effectiveStatusLabel }}
+            {{ scheduleStateLabel }}
           </Badge>
           <Badge v-if="template?.groupId" variant="outline">
             <Folder class="h-3 w-3 mr-1" />
@@ -33,6 +33,30 @@
 
       <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
         <div v-if="template" class="space-y-6 py-2">
+          <div class="space-y-3" data-testid="reminder-detail-schedule">
+            <h3 class="flex items-center gap-2 text-sm font-semibold">
+              <CalendarClock class="h-4 w-4" />
+              {{ t('reminder.schedule.trigger') }}
+            </h3>
+            <Separator />
+            <div class="grid gap-3 sm:grid-cols-3">
+              <Card class="p-3">
+                <p class="text-xs text-muted-foreground">{{ t('reminder.schedule.trigger') }}</p>
+                <p class="mt-1 font-semibold">{{ triggerLabel }}</p>
+              </Card>
+              <Card class="p-3">
+                <p class="text-xs text-muted-foreground">
+                  {{ t('reminder.schedule.nextTrigger') }}
+                </p>
+                <p class="mt-1 font-semibold">{{ nextTriggerLabel }}</p>
+              </Card>
+              <Card class="p-3">
+                <p class="text-xs text-muted-foreground">{{ t('reminder.schedule.recurrence') }}</p>
+                <p class="mt-1 font-semibold">{{ recurrenceLabel }}</p>
+              </Card>
+            </div>
+          </div>
+
           <!-- Basic Info -->
           <div class="space-y-3">
             <h3 class="text-sm font-semibold flex items-center gap-2">
@@ -60,47 +84,6 @@
                 </div>
               </div>
 
-              <div class="flex items-start gap-3">
-                <Clock class="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div class="flex-1">
-                  <p class="text-sm font-medium">
-                    {{ t('reminder.templateDetail.fieldTriggerType') }}
-                  </p>
-                  <Badge variant="outline" class="mt-1">{{ triggerLabel }}</Badge>
-                </div>
-              </div>
-
-              <div v-if="template.trigger" class="flex items-start gap-3">
-                <Settings class="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div class="flex-1">
-                  <p class="text-sm font-medium">
-                    {{ t('reminder.templateDetail.fieldTriggerConfig') }}
-                  </p>
-                  <div class="flex flex-wrap gap-1 mt-1">
-                    <Badge variant="secondary">
-                      {{
-                        t('reminder.templateDetail.triggerConfigType', {
-                          value: template.trigger.type || t('common.unknown'),
-                        })
-                      }}
-                    </Badge>
-                    <Badge v-if="template.trigger.interval" variant="secondary">
-                      {{
-                        t('reminder.templateDetail.triggerConfigInterval', {
-                          minutes: template.trigger.interval.minutes,
-                        })
-                      }}
-                    </Badge>
-                    <Badge v-if="template.trigger.fixedTime" variant="secondary">
-                      {{
-                        t('reminder.templateDetail.triggerConfigTime', {
-                          time: template.trigger.fixedTime.time,
-                        })
-                      }}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -287,12 +270,11 @@ import {
   Info,
   FileText,
   AlignLeft,
-  Clock,
-  Settings,
   BarChart3,
   Calendar,
   CalendarPlus,
   CalendarCheck,
+  CalendarClock,
   Power,
   Pencil,
   Eye,
@@ -317,6 +299,9 @@ import {
   getGroupSwitchLabel,
   getTemplateEffectiveResultLabel,
   getTemplateEffectiveStatusLabel,
+  getTemplateNextTriggerLabel,
+  getTemplateRecurrenceLabel,
+  getTemplateScheduleStateLabel,
   getTemplateTriggerLabel,
   getTemplateSelfSwitchLabel,
   getTemplateSelfSwitchShortLabel,
@@ -332,7 +317,7 @@ const emit = defineEmits<{
   'status-changed': [template: ReminderTemplateClientDTO, enabled: boolean];
 }>();
 
-const { t } = useI18n();
+const { locale, t } = useI18n();
 const visible = ref(false);
 const isTogglingStatus = ref(false);
 
@@ -366,6 +351,21 @@ const effectiveResultLabel = computed(() => {
 const triggerLabel = computed(() => {
   if (!props.template) return t('reminder.templateDetail.notConfigured');
   return getTemplateTriggerLabel(t, props.template);
+});
+
+const nextTriggerLabel = computed(() => {
+  if (!props.template) return t('reminder.schedule.noNextTrigger');
+  return getTemplateNextTriggerLabel(t, props.template, locale.value);
+});
+
+const recurrenceLabel = computed(() => {
+  if (!props.template) return t('reminder.schedule.notConfigured');
+  return getTemplateRecurrenceLabel(t, props.template);
+});
+
+const scheduleStateLabel = computed(() => {
+  if (!props.template) return t('common.unknown');
+  return getTemplateScheduleStateLabel(t, props.template);
 });
 
 const globalSwitchLabel = computed(() => {

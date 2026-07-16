@@ -20,7 +20,9 @@ import type { TaskInstance } from '../domain-client/aggregates/task-instance';
 
 export interface TaskClientPort {
   // Task Template Operations
-  createTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplate>>;
+  createTemplate(request: CreateTaskTemplateReq): Promise<
+    Result<{ template: TaskTemplate; instanceCount: number; todayInstanceCreated: boolean }>
+  >;
   listTemplates(params?: TaskTemplateListParams): Promise<Result<{ templates: TaskTemplate[]; total: number }>>;
   getTaskGraph(params?: TaskTemplateListParams): Promise<Result<{ templates: TaskTemplate[]; dependencies: TaskGraphDependencyDTO[]; total: number }>>;
   getTemplate(id: string): Promise<Result<TaskTemplate>>;

@@ -53,6 +53,22 @@ class GoalPlanningCallback(Protocol):
         timeframe: str | None,
         include_key_results: bool,
         provider_config: ProviderConfig,
+        locale: str,
+        request_id: str | None = None,
+    ) -> Awaitable[GoalPlanningResponse]: ...
+
+
+class GoalClarificationCallback(Protocol):
+    """Async clarification callback owned by the runtime facade."""
+
+    def __call__(
+        self,
+        *,
+        idea: str,
+        category: str | None,
+        timeframe: str | None,
+        provider_config: ProviderConfig,
+        locale: str,
         request_id: str | None = None,
     ) -> Awaitable[GoalPlanningResponse]: ...
 
@@ -64,6 +80,7 @@ class GoalCreateGraphState(TypedDict, total=False):
     thread_id: str
     conversation_id: str | None
     identity_id: str
+    locale: str
     created_at: int
     updated_at: int
     status: str
@@ -111,15 +128,23 @@ def _idea(state: GoalCreateGraphState) -> str:
     return str(_required(state, "idea"))
 
 
+def _locale(state: GoalCreateGraphState) -> str:
+    return "en-US" if state.get("locale") == "en-US" else "zh-CN"
+
+
+def _localized(locale: str, *, zh: str, en: str) -> str:
+    return en if locale == "en-US" else zh
+
+
 def _default_clock_ms() -> int:
     return int(time.time() * 1000)
 
 
-def _goal_title(idea: str) -> str:
+def _goal_title(idea: str, *, locale: str) -> str:
     title = " ".join(idea.strip().split())
     if len(title) > 80:
         return f"{title[:77].rstrip()}..."
-    return title or "Untitled goal"
+    return title or _localized(locale, zh="未命名目标", en="Untitled goal")
 
 
 def _goal_category(value: str | None) -> str:
@@ -132,13 +157,36 @@ def _meaningful_words(value: str) -> list[str]:
     return [word for word in value.strip().split() if word]
 
 
+def _meaningful_input_length(value: str) -> int:
+    words = _meaningful_words(value)
+    if len(words) > 1:
+        return len(words)
+    return len("".join(character for character in value if character.isalnum()))
+
+
 def _needs_clarification(state: GoalCreateGraphState) -> bool:
     if state.get("clarification_answers"):
         return False
-    return len(_meaningful_words(_idea(state))) < CLARIFICATION_MIN_WORDS
+    if _locale(state) == "zh-CN":
+        meaningful_characters = sum(
+            1 for character in _idea(state) if character.isalnum()
+        )
+        return meaningful_characters < 12
+    return _meaningful_input_length(_idea(state)) < CLARIFICATION_MIN_WORDS
 
 
-def _clarification_questions() -> list[dict[str, str]]:
+def _clarification_questions(locale: str) -> list[dict[str, str]]:
+    if locale == "zh-CN":
+        return [
+            {
+                "question": "你希望这个目标产生什么可衡量的结果？",
+                "context": "明确成功标准后才能生成可靠计划。",
+            },
+            {
+                "question": "你希望何时完成或复盘这个目标？",
+                "context": "时间范围会影响里程碑和执行节奏。",
+            },
+        ]
     return [
         {
             "question": "What concrete outcome should this goal produce?",
@@ -154,6 +202,8 @@ def _clarification_questions() -> list[dict[str, str]]:
 def _augment_idea_with_clarification(
     idea: str,
     answers: list[str],
+    *,
+    locale: str,
 ) -> str:
     cleaned = [answer.strip() for answer in answers if answer.strip()]
     if not cleaned:
@@ -162,13 +212,38 @@ def _augment_idea_with_clarification(
         [
             idea,
             "",
-            "Clarification answers:",
+            _localized(locale, zh="补充信息：", en="Clarification answers:"),
             *(f"- {answer}" for answer in cleaned),
         ],
     )
 
 
-def _draft_key_results(title: str) -> list[dict[str, Any]]:
+def _draft_key_results(title: str, *, locale: str) -> list[dict[str, Any]]:
+    if locale == "zh-CN":
+        return [
+            {
+                "title": f"每周记录“{title}”的有效进展",
+                "description": "每周至少记录一次推动目标的具体进展。",
+                "valueType": "Incremental",
+                "calculationMethod": "Sum",
+                "startValue": 0,
+                "currentValue": 0,
+                "targetValue": 12,
+                "unit": "次",
+                "weight": 3,
+            },
+            {
+                "title": f"完成“{title}”的阶段成果",
+                "description": "完成三个能够证明目标正从想法转为结果的具体里程碑。",
+                "valueType": "Incremental",
+                "calculationMethod": "Sum",
+                "startValue": 0,
+                "currentValue": 0,
+                "targetValue": 3,
+                "unit": "个里程碑",
+                "weight": 2,
+            },
+        ]
     return [
         {
             "title": f"Complete weekly progress for {title}",
@@ -201,7 +276,22 @@ def _draft_key_results(title: str) -> list[dict[str, Any]]:
     ]
 
 
-def _draft_task_templates(title: str) -> list[dict[str, Any]]:
+def _draft_task_templates(title: str, *, locale: str) -> list[dict[str, Any]]:
+    if locale == "zh-CN":
+        return [
+            {
+                "name": f"推进“{title}”的每周专注时间",
+                "description": "预留固定时间推进并记录第一项关键结果。",
+                "importance": "Moderate",
+                "cadence": "weekly",
+            },
+            {
+                "name": f"复盘“{title}”的下一里程碑",
+                "description": "复盘下一里程碑、更新进展并确定下一项具体行动。",
+                "importance": "Moderate",
+                "cadence": "weekly",
+            },
+        ]
     return [
         {
             "name": f"Weekly focus block for {title}",
@@ -224,7 +314,17 @@ def _draft_task_templates(title: str) -> list[dict[str, Any]]:
     ]
 
 
-def _draft_reminders(title: str) -> list[dict[str, Any]]:
+def _draft_reminders(title: str, *, locale: str) -> list[dict[str, Any]]:
+    if locale == "zh-CN":
+        return [
+            {
+                "title": f"每周复盘“{title}”",
+                "description": "复盘目标进展、更新关键结果并确定下周重点。",
+                "importance": "Moderate",
+                "cadence": "weekly",
+                "timeOfDay": "09:00",
+            }
+        ]
     return [
         {
             "title": f"Weekly review for {title}",
@@ -252,11 +352,34 @@ def _normalize_usage(usage: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def _merge_usage(
+    current: dict[str, Any] | None,
+    incoming: dict[str, Any] | None,
+) -> dict[str, Any]:
+    normalized_current = _normalize_usage(current)
+    normalized_incoming = _normalize_usage(incoming)
+    merged: dict[str, Any] = {}
+    for key in ("promptTokens", "completionTokens", "totalTokens"):
+        values = [
+            value
+            for value in (normalized_current.get(key), normalized_incoming.get(key))
+            if isinstance(value, int)
+        ]
+        if values:
+            merged[key] = sum(values)
+    return merged
+
+
 def _coerce_numeric(value: Any, fallback: float) -> float:
     return value if isinstance(value, int | float) else fallback
 
 
-def _planner_key_result_payload(item: Any, *, index: int) -> dict[str, Any]:
+def _planner_key_result_payload(
+    item: Any,
+    *,
+    index: int,
+    locale: str,
+) -> dict[str, Any]:
     data = (
         item.model_dump(by_alias=True, exclude_none=True)
         if hasattr(item, "model_dump")
@@ -269,14 +392,21 @@ def _planner_key_result_payload(item: Any, *, index: int) -> dict[str, Any]:
         1,
     )
     return {
-        "title": str(data.get("title") or f"Complete key result {index + 1}"),
+        "title": str(
+            data.get("title")
+            or _localized(
+                locale,
+                zh=f"完成关键结果 {index + 1}",
+                en=f"Complete key result {index + 1}",
+            )
+        ),
         "description": data.get("description"),
         "valueType": "Incremental",
         "calculationMethod": "Sum",
         "startValue": 0,
         "currentValue": 0,
         "targetValue": target_value,
-        "unit": str(data.get("unit") or "step"),
+        "unit": str(data.get("unit") or _localized(locale, zh="步", en="step")),
         "weight": max(1, min(5, 3 if index == 0 else 2)),
     }
 
@@ -286,6 +416,7 @@ def _goal_data_from_planning(
     *,
     fallback_title: str,
     fallback_start_date: int,
+    locale: str,
 ) -> dict[str, Any]:
     if planning.goal is None:
         raise ValueError("GoalPlanningService returned no goal draft payload.")
@@ -293,7 +424,7 @@ def _goal_data_from_planning(
     goal_data = planning.goal.model_dump(by_alias=True, exclude_none=True)
     title = str(goal_data.get("title") or fallback_title)
     key_results = [
-        _planner_key_result_payload(key_result, index=index)
+        _planner_key_result_payload(key_result, index=index, locale=locale)
         for index, key_result in enumerate(planning.key_results or [])
     ]
     return {
@@ -308,18 +439,20 @@ def _goal_data_from_planning(
         or fallback_start_date + (90 * DAY_MS),
         "importance": goal_data.get("importance") or "Moderate",
         "tags": (
-            goal_data.get("tags")
-            if isinstance(goal_data.get("tags"), list)
-            else []
+            goal_data.get("tags") if isinstance(goal_data.get("tags"), list) else []
         ),
         "feasibilityAnalysis": goal_data.get("feasibilityAnalysis"),
         "aiInsights": goal_data.get("aiInsights"),
         "assumptions": [
-            "Drafted by GoalPlanningService through the goal.create Agent.",
+            _localized(
+                locale,
+                zh="由目标规划服务通过 Goal Agent 生成草稿。",
+                en="Drafted by GoalPlanningService through the goal.create Agent.",
+            ),
         ],
         "keyResults": key_results,
-        "taskTemplates": _draft_task_templates(title),
-        "reminders": _draft_reminders(title),
+        "taskTemplates": _draft_task_templates(title, locale=locale),
+        "reminders": _draft_reminders(title, locale=locale),
     }
 
 
@@ -359,9 +492,7 @@ def _analytics_goal_matches(
         return []
     goal_search_results = analytics_context.get("goal_search_results")
     if isinstance(goal_search_results, list) and goal_search_results:
-        return [
-            item for item in goal_search_results if isinstance(item, dict)
-        ][:6]
+        return [item for item in goal_search_results if isinstance(item, dict)][:6]
 
     goals = analytics_context.get("goals")
     if isinstance(goals, list):
@@ -496,22 +627,45 @@ def _executed_action_tool_event_data(action: AgentExecutedAction) -> dict[str, A
     return payload
 
 
-def _action_plan_warnings(goal_data: dict[str, Any]) -> list[str]:
+def _action_plan_warnings(
+    goal_data: dict[str, Any],
+    *,
+    locale: str,
+) -> list[str]:
     warnings: list[str] = []
     if not _list_data_items(goal_data, "keyResults"):
         warnings.append(
-            "No key results are included in this Agent draft; execution will "
-            "create only the goal."
+            _localized(
+                locale,
+                zh="此 Agent 草稿不含关键结果；执行时只会创建目标。",
+                en=(
+                    "No key results are included in this Agent draft; execution will "
+                    "create only the goal."
+                ),
+            )
         )
     if not _list_data_items(goal_data, "taskTemplates"):
         warnings.append(
-            "No task templates are included in this Agent draft; task setup "
-            "can be added after creation."
+            _localized(
+                locale,
+                zh="此 Agent 草稿不含任务模板；创建目标后仍可补充任务。",
+                en=(
+                    "No task templates are included in this Agent draft; task setup "
+                    "can be added after creation."
+                ),
+            )
         )
     if not _list_data_items(goal_data, "reminders"):
         warnings.append(
-            "No review reminder is included in this Agent draft; review cadence "
-            "can be added after creation."
+            _localized(
+                locale,
+                zh="此 Agent 草稿不含复盘提醒；创建目标后仍可补充复盘节奏。",
+                en=(
+                    "No review reminder is included in this Agent draft; "
+                    "review cadence "
+                    "can be added after creation."
+                ),
+            )
         )
     return warnings
 
@@ -549,49 +703,97 @@ def _validate_goal_draft(
     state: GoalCreateGraphState,
     goal_data: dict[str, Any],
 ) -> list[str]:
+    locale = _locale(state)
     warnings: list[str] = []
     if _word_count(goal_data.get("description")) < 8:
         warnings.append(
-            "Goal description is short; confirm the scope and success criteria "
-            "before execution."
+            _localized(
+                locale,
+                zh="目标描述较短；执行前请确认范围和成功标准。",
+                en=(
+                    "Goal description is short; confirm the scope and success criteria "
+                    "before execution."
+                ),
+            )
         )
 
     start_date = _numeric_value(goal_data.get("suggestedStartDate"))
     end_date = _numeric_value(goal_data.get("suggestedEndDate"))
     if start_date is None or end_date is None or end_date <= start_date:
         warnings.append(
-            "Goal timeframe is missing or invalid; review dates before execution."
+            _localized(
+                locale,
+                zh="目标时间范围缺失或无效；执行前请检查日期。",
+                en=(
+                    "Goal timeframe is missing or invalid; review dates "
+                    "before execution."
+                ),
+            )
         )
     elif end_date - start_date < 7 * DAY_MS:
         warnings.append(
-            "Goal timeframe is shorter than one week; confirm it is realistic."
+            _localized(
+                locale,
+                zh="目标周期短于一周；请确认是否可行。",
+                en="Goal timeframe is shorter than one week; confirm it is realistic.",
+            )
         )
     elif end_date - start_date > 365 * DAY_MS:
         warnings.append(
-            "Goal timeframe is longer than one year; consider splitting it."
+            _localized(
+                locale,
+                zh="目标周期超过一年；建议拆分为更小的阶段。",
+                en="Goal timeframe is longer than one year; consider splitting it.",
+            )
         )
 
     key_results = _list_data_items(goal_data, "keyResults")
     for index, key_result in enumerate(key_results):
         if not isinstance(key_result, dict):
-            warnings.append(f"Key result {index + 1} is not a valid draft object.")
+            warnings.append(
+                _localized(
+                    locale,
+                    zh=f"关键结果 {index + 1} 不是有效的草稿对象。",
+                    en=f"Key result {index + 1} is not a valid draft object.",
+                )
+            )
             continue
         target_value = _numeric_value(key_result.get("targetValue"))
         if target_value is None or target_value <= 0 or not key_result.get("unit"):
             warnings.append(
-                f"Key result {index + 1} is not measurable; review target and unit."
+                _localized(
+                    locale,
+                    zh=f"关键结果 {index + 1} 不可衡量；请检查目标值和单位。",
+                    en=(
+                        f"Key result {index + 1} is not measurable; review "
+                        "target and unit."
+                    ),
+                )
             )
         weight = _numeric_value(key_result.get("weight"))
         if weight is None or weight < 1 or weight > 5:
             warnings.append(
-                f"Key result {index + 1} has an invalid weight; review weighting."
+                _localized(
+                    locale,
+                    zh=f"关键结果 {index + 1} 的权重无效；请检查权重。",
+                    en=(
+                        f"Key result {index + 1} has an invalid weight; "
+                        "review weighting."
+                    ),
+                )
             )
 
     task_templates = _list_data_items(goal_data, "taskTemplates")
     if key_results and len(task_templates) < len(key_results):
         warnings.append(
-            "Task templates do not cover every key result; confirm the support "
-            "structure before execution."
+            _localized(
+                locale,
+                zh="任务模板未覆盖全部关键结果；执行前请确认支撑任务。",
+                en=(
+                    "Task templates do not cover every key result; confirm the support "
+                    "structure before execution."
+                ),
+            )
         )
 
     existing_matches = _existing_goal_matches(state)
@@ -601,7 +803,11 @@ def _validate_goal_draft(
             for match in existing_matches[:3]
         ]
         warnings.append(
-            "Potential overlap with existing goals: " + ", ".join(titles) + "."
+            _localized(
+                locale,
+                zh="可能与现有目标重叠：" + "、".join(titles) + "。",
+                en="Potential overlap with existing goals: " + ", ".join(titles) + ".",
+            )
         )
 
     return _dedupe_warnings(warnings)
@@ -618,7 +824,13 @@ def _action_plan_summary(
     key_result_count: int,
     task_template_count: int,
     reminder_count: int,
+    locale: str,
 ) -> str:
+    if locale == "zh-CN":
+        return (
+            f"确认后创建 1 个目标、{key_result_count} 个关键结果、"
+            f"{task_template_count} 个任务模板和 {reminder_count} 个复盘提醒。"
+        )
     return (
         "Create one goal, "
         f"{_count_phrase(key_result_count, 'key result', 'key results')}, "
@@ -658,6 +870,7 @@ def _execution_recovery(
     *,
     executed_actions: list[dict[str, Any]],
     approved_actions: list[dict[str, Any]],
+    locale: str,
 ) -> dict[str, Any]:
     failed_actions = [
         action for action in executed_actions if action.get("status") == "failed"
@@ -672,32 +885,66 @@ def _execution_recovery(
 
     if has_failed("create_goal"):
         suggestions.append(
-            "Fix the goal creation error and retry the same approved plan; "
-            "dependent actions were skipped."
+            _localized(
+                locale,
+                zh="修复目标创建错误后重试同一份已确认计划；依赖操作已跳过。",
+                en=(
+                    "Fix the goal creation error and retry the same approved plan; "
+                    "dependent actions were skipped."
+                ),
+            )
         )
     if has_failed("create_key_result"):
         suggestions.append(
-            "Confirm the goal exists and the key result drafts are complete "
-            "before retrying execution."
+            _localized(
+                locale,
+                zh="重试前请确认目标存在且关键结果草稿完整。",
+                en=(
+                    "Confirm the goal exists and the key result drafts are complete "
+                    "before retrying execution."
+                ),
+            )
         )
     if has_failed("create_task_template"):
         suggestions.append(
-            "Review task template drafts and task module configuration before "
-            "retrying execution."
+            _localized(
+                locale,
+                zh="重试前请检查任务模板草稿和任务模块配置。",
+                en=(
+                    "Review task template drafts and task module configuration before "
+                    "retrying execution."
+                ),
+            )
         )
     if has_failed("create_reminder"):
         suggestions.append(
-            "Review reminder drafts and reminder module configuration before "
-            "retrying execution."
+            _localized(
+                locale,
+                zh="重试前请检查提醒草稿和提醒模块配置。",
+                en=(
+                    "Review reminder drafts and reminder module configuration before "
+                    "retrying execution."
+                ),
+            )
         )
     if skipped_actions:
         suggestions.append(
-            "Review skipped dependent actions before retrying execution."
+            _localized(
+                locale,
+                zh="重试前请检查被跳过的依赖操作。",
+                en="Review skipped dependent actions before retrying execution.",
+            )
         )
     if failed_actions and not suggestions:
         suggestions.append(
-            "Review failed action messages and retry execution with the same "
-            "approved plan after fixing the underlying issue."
+            _localized(
+                locale,
+                zh="检查失败操作的信息，修复根因后使用同一份已确认计划重试。",
+                en=(
+                    "Review failed action messages and retry execution with the same "
+                    "approved plan after fixing the underlying issue."
+                ),
+            )
         )
 
     return {
@@ -721,13 +968,14 @@ def _execution_timeline_artifact(
     artifact = AgentArtifact(
         artifactId=f"{_run_id(state)}:execution-timeline",
         kind="execution_timeline",
-        title="Execution timeline",
+        title=_localized(_locale(state), zh="执行时间线", en="Execution timeline"),
         data={
             "summary": _execution_summary(executed_actions),
             "timeline": executed_actions,
             "recovery": _execution_recovery(
                 executed_actions=executed_actions,
                 approved_actions=state.get("approved_actions", []),
+                locale=_locale(state),
             ),
         },
         updatedAt=now,
@@ -758,6 +1006,7 @@ def create_goal_create_initial_state(
     thread_id: str,
     identity_id: str,
     idea: str,
+    locale: str = "en-US",
     conversation_id: str | None = None,
     category: str | None = None,
     timeframe: str | None = None,
@@ -781,6 +1030,7 @@ def create_goal_create_initial_state(
         "thread_id": thread_id,
         "conversation_id": conversation_id,
         "identity_id": identity_id,
+        "locale": "en-US" if locale == "en-US" else "zh-CN",
         "created_at": now,
         "updated_at": now,
         "status": "pending",
@@ -817,6 +1067,7 @@ def create_goal_create_initial_state(
 def build_goal_create_graph(
     *,
     clock: Clock = _default_clock_ms,
+    goal_clarifier: GoalClarificationCallback | None = None,
     goal_planner: GoalPlanningCallback | None = None,
 ) -> Any:
     """Compile a minimal goal.create graph with an approval interrupt."""
@@ -866,15 +1117,46 @@ def build_goal_create_graph(
             ),
         }
 
-    def clarify(state: GoalCreateGraphState) -> GraphUpdate:
+    async def clarify(state: GoalCreateGraphState) -> GraphUpdate:
         events = _node_event(state, "clarify", clock)
-        if not _needs_clarification(state):
+        provider_config = state.get("provider_config")
+        clarification_response: GoalPlanningResponse | None = None
+        usage = state.get("usage", {})
+        if goal_clarifier is not None and isinstance(provider_config, dict):
+            clarification_response = await goal_clarifier(
+                idea=_idea(state),
+                category=state.get("category"),
+                timeframe=state.get("timeframe"),
+                provider_config=ProviderConfig.model_validate(provider_config),
+                locale=_locale(state),
+                request_id=state.get("request_id"),
+            )
+            usage = _merge_usage(usage, clarification_response.usage)
+            if clarification_response.state != "clarification":
+                return {
+                    "stage": "clarify",
+                    "status": "running",
+                    "updated_at": clock(),
+                    "usage": usage,
+                    "events": events,
+                }
+        elif not _needs_clarification(state):
             return {
                 "stage": "clarify",
                 "status": "running",
                 "updated_at": clock(),
                 "events": events,
             }
+
+        clarification = (
+            clarification_response.clarification
+            if clarification_response is not None
+            else None
+        )
+        if clarification_response is not None and clarification is None:
+            raise ValueError(
+                "Goal clarification response did not include clarification details."
+            )
 
         now = clock()
         clarification_payload = {
@@ -883,9 +1165,25 @@ def build_goal_create_graph(
             "threadId": _thread_id(state),
             "agentType": "goal.create",
             "rationale": (
-                "The goal idea is too brief to produce a reliable goal draft."
+                clarification.rationale
+                if clarification is not None
+                else _localized(
+                    _locale(state),
+                    zh="当前目标想法缺少生成可靠草稿所需的关键信息。",
+                    en=(
+                        "The goal idea is missing details needed for a reliable "
+                        "draft."
+                    ),
+                )
             ),
-            "questions": _clarification_questions(),
+            "questions": (
+                [
+                    question.model_dump(by_alias=True, exclude_none=True)
+                    for question in clarification.questions
+                ]
+                if clarification is not None
+                else _clarification_questions(_locale(state))
+            ),
             "request": {
                 "idea": state.get("idea"),
                 "category": state.get("category"),
@@ -896,6 +1194,7 @@ def build_goal_create_graph(
             "stage": "clarify",
             "status": "waiting_clarification",
             "updated_at": clock(),
+            "usage": usage,
             "clarification_interrupt": clarification_payload,
             "events": append_agent_event(
                 events,
@@ -934,7 +1233,11 @@ def build_goal_create_graph(
             *state.get("messages", []),
             AgentMessage(
                 role="user",
-                content=_augment_idea_with_clarification("", answers).strip(),
+                content=_augment_idea_with_clarification(
+                    "",
+                    answers,
+                    locale=_locale(state),
+                ).strip(),
                 createdAt=now,
             ).model_dump(by_alias=True, exclude_none=True),
         ]
@@ -942,7 +1245,11 @@ def build_goal_create_graph(
             "stage": "clarify",
             "status": "running",
             "updated_at": now,
-            "idea": _augment_idea_with_clarification(_idea(state), answers),
+            "idea": _augment_idea_with_clarification(
+                _idea(state),
+                answers,
+                locale=_locale(state),
+            ),
             "clarification_answers": [answer.strip() for answer in answers],
             "messages": messages,
             "resume_decision": payload.user_decision,
@@ -953,7 +1260,8 @@ def build_goal_create_graph(
         started_at = clock()
         now = started_at
         start_date = now
-        title = _goal_title(_idea(state))
+        locale = _locale(state)
+        title = _goal_title(_idea(state), locale=locale)
         usage: dict[str, Any] = state.get("usage", {})
         provider_config = state.get("provider_config")
         if goal_planner is not None and isinstance(provider_config, dict):
@@ -963,21 +1271,27 @@ def build_goal_create_graph(
                 timeframe=state.get("timeframe"),
                 include_key_results=True,
                 provider_config=ProviderConfig.model_validate(provider_config),
+                locale=locale,
                 request_id=state.get("request_id"),
             )
             goal_data = _goal_data_from_planning(
                 planning,
                 fallback_title=title,
                 fallback_start_date=start_date,
+                locale=locale,
             )
-            usage = _normalize_usage(planning.usage)
+            usage = _merge_usage(usage, planning.usage)
         else:
             goal_data = {
                 "title": title,
                 "description": _idea(state),
-                "motivation": (
-                    "Clarify and execute the approved goal through the Agent "
-                    "workflow."
+                "motivation": _localized(
+                    locale,
+                    zh="通过 Goal Agent 工作流澄清并执行经确认的目标。",
+                    en=(
+                        "Clarify and execute the approved goal through the Agent "
+                        "workflow."
+                    ),
                 ),
                 "category": _goal_category(state.get("category")),
                 "timeframe": state.get("timeframe"),
@@ -985,19 +1299,32 @@ def build_goal_create_graph(
                 "suggestedEndDate": start_date + (90 * DAY_MS),
                 "importance": "Important",
                 "tags": [],
-                "feasibilityAnalysis": (
-                    "Generated by the experimental goal.create graph spike."
+                "feasibilityAnalysis": _localized(
+                    locale,
+                    zh="该草稿由 Goal Agent 根据当前输入生成，可在审批前继续调整。",
+                    en="Generated by the goal.create Agent from the current input.",
                 ),
-                "aiInsights": (
-                    "The approved action plan must be executed by the TS "
-                    "application layer."
+                "aiInsights": _localized(
+                    locale,
+                    zh="经确认的行动计划将由应用服务执行。",
+                    en=(
+                        "The approved action plan is executed by the application "
+                        "service."
+                    ),
                 ),
                 "assumptions": [
-                    "Generated by the experimental goal.create graph spike.",
+                    _localized(
+                        locale,
+                        zh="草稿基于当前对话和补充信息生成。",
+                        en=(
+                            "The draft is based on the current conversation and "
+                            "clarifications."
+                        ),
+                    ),
                 ],
-                "keyResults": _draft_key_results(title),
-                "taskTemplates": _draft_task_templates(title),
-                "reminders": _draft_reminders(title),
+                "keyResults": _draft_key_results(title, locale=locale),
+                "taskTemplates": _draft_task_templates(title, locale=locale),
+                "reminders": _draft_reminders(title, locale=locale),
             }
         artifact = AgentArtifact(
             artifactId=f"{_run_id(state)}:goal-draft",
@@ -1048,11 +1375,16 @@ def build_goal_create_graph(
         key_results = _list_data_items(goal_data, "keyResults")
         task_templates = _list_data_items(goal_data, "taskTemplates")
         reminders = _list_data_items(goal_data, "reminders")
+        locale = _locale(state)
         actions = [
             AgentAction(
                 tool="create_goal",
                 index=0,
-                rationale="Create the approved goal draft after user confirmation.",
+                rationale=_localized(
+                    locale,
+                    zh="用户确认后创建已审批的目标草稿。",
+                    en="Create the approved goal draft after user confirmation.",
+                ),
                 payload=goal_data,
             ),
         ]
@@ -1061,7 +1393,11 @@ def build_goal_create_graph(
                 tool="create_key_result",
                 index=index,
                 dependsOn=[0],
-                rationale="Attach a measurable key result to the approved goal.",
+                rationale=_localized(
+                    locale,
+                    zh="将可衡量的关键结果关联到已审批目标。",
+                    en="Attach a measurable key result to the approved goal.",
+                ),
                 payload=key_result if isinstance(key_result, dict) else {},
             )
             for index, key_result in enumerate(key_results)
@@ -1070,14 +1406,14 @@ def build_goal_create_graph(
             AgentAction(
                 tool="create_task_template",
                 index=index,
-                dependsOn=(
-                    [0, index + 1]
-                    if index < len(key_results)
-                    else [0]
-                ),
-                rationale=(
-                    "Create a recurring task template that supports the matching "
-                    "key result."
+                dependsOn=([0, index + 1] if index < len(key_results) else [0]),
+                rationale=_localized(
+                    locale,
+                    zh="创建支持对应关键结果的重复任务模板。",
+                    en=(
+                        "Create a recurring task template that supports the matching "
+                        "key result."
+                    ),
                 ),
                 payload=task_template if isinstance(task_template, dict) else {},
             )
@@ -1088,9 +1424,13 @@ def build_goal_create_graph(
                 tool="create_reminder",
                 index=index,
                 dependsOn=[0],
-                rationale=(
-                    "Create a review reminder so the approved goal has a "
-                    "follow-up cadence."
+                rationale=_localized(
+                    locale,
+                    zh="创建复盘提醒，为已审批目标建立跟进节奏。",
+                    en=(
+                        "Create a review reminder so the approved goal has a "
+                        "follow-up cadence."
+                    ),
                 ),
                 payload=reminder if isinstance(reminder, dict) else {},
             )
@@ -1101,11 +1441,12 @@ def build_goal_create_graph(
                 key_result_count=len(key_results),
                 task_template_count=len(task_templates),
                 reminder_count=len(reminders),
+                locale=locale,
             ),
             actions=actions,
             warnings=_dedupe_warnings(
                 [
-                    *_action_plan_warnings(goal_data),
+                    *_action_plan_warnings(goal_data, locale=locale),
                     *state.get("draft_warnings", []),
                 ]
             ),
@@ -1113,7 +1454,7 @@ def build_goal_create_graph(
         artifact = AgentArtifact(
             artifactId=f"{_run_id(state)}:action-plan",
             kind="action_plan",
-            title="Approval plan",
+            title=_localized(locale, zh="审批计划", en="Approval plan"),
             data=action_plan.model_dump(by_alias=True),
             updatedAt=now,
         )
@@ -1131,9 +1472,7 @@ def build_goal_create_graph(
                 *state.get("artifacts", []),
                 artifact.model_dump(by_alias=True),
             ],
-            "pending_actions": [
-                action.model_dump(by_alias=True) for action in actions
-            ],
+            "pending_actions": [action.model_dump(by_alias=True) for action in actions],
             "events": events,
         }
 

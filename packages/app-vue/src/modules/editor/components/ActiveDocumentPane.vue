@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col">
+  <div class="flex h-full flex-col" data-testid="active-document-pane">
     <EditorToolbar
       :saving="saving"
       :view-mode="viewMode"
@@ -45,12 +45,43 @@
     <div
       class="flex items-center justify-end gap-3 border-t px-4 py-1 text-xs text-muted-foreground"
     >
-      <span v-if="saving" class="flex items-center gap-1 text-warning">
+      <span
+        v-if="saving"
+        class="flex items-center gap-1 text-warning"
+        data-testid="editor-document-saving"
+      >
         <Loader2 class="h-3 w-3 animate-spin" />
         {{ savingLabel }}
       </span>
-      <span v-else-if="dirty" class="text-muted-foreground">{{ unsavedLabel }}</span>
-      <span v-else class="text-success">{{ savedLabel }}</span>
+      <span
+        v-else-if="dirty"
+        class="text-muted-foreground"
+        data-testid="editor-document-unsaved"
+      >{{ unsavedLabel }}</span>
+      <span v-else class="text-success" data-testid="editor-document-saved">{{ savedLabel }}</span>
+      <span
+        v-if="indexState === 'pending'"
+        class="flex items-center gap-1 text-warning"
+        data-testid="knowledge-index-pending"
+      >
+        <Loader2 class="h-3 w-3 animate-spin" />
+        {{ indexPendingLabel }}
+      </span>
+      <span
+        v-else-if="indexState === 'indexed'"
+        class="text-success"
+        data-testid="knowledge-index-ready"
+      >
+        {{ indexReadyLabel }}
+      </span>
+      <span
+        v-else-if="indexState === 'failed'"
+        class="text-destructive"
+        data-testid="knowledge-index-failed"
+        :title="indexError || undefined"
+      >
+        {{ indexFailedLabel }}
+      </span>
       <span class="text-muted-foreground">{{ charCount }} {{ charsLabel }}</span>
     </div>
   </div>
@@ -79,6 +110,11 @@ defineProps<{
   savingLabel: string;
   unsavedLabel: string;
   savedLabel: string;
+  indexState: 'idle' | 'pending' | 'indexed' | 'failed';
+  indexPendingLabel: string;
+  indexReadyLabel: string;
+  indexFailedLabel: string;
+  indexError?: string | null;
   charsLabel: string;
 }>();
 

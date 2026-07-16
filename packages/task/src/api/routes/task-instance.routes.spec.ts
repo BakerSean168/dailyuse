@@ -213,6 +213,10 @@ describe('task-instance route contracts', () => {
 
     expect(bodySchema).toBeDefined();
     expect(responseSchema).toBeDefined();
+    expect(bodySchema.safeParse(undefined).success).toBe(true);
+    expect(bodySchema.safeParse({ note: 'Finished from the dashboard', rating: 5 }).success).toBe(
+      true,
+    );
   });
 
   it('POST /{id}/skip body uses SkipTaskInstanceSchema', () => {
@@ -225,6 +229,8 @@ describe('task-instance route contracts', () => {
 
     expect(bodySchema).toBeDefined();
     expect(responseSchema).toBeDefined();
+    expect(bodySchema.safeParse(undefined).success).toBe(true);
+    expect(bodySchema.safeParse({ reason: 'Deferred until tomorrow' }).success).toBe(true);
   });
 
   it('DELETE /{id} returns z.null() data', () => {

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import logging
 import os
 import shutil
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import cast
 
 import httpx
 
+from ai_service.errors import UpstreamProviderError
 from ai_service.evals.eval_case_loader import (
     filter_eval_cases,
     load_eval_cases,
@@ -38,8 +40,66 @@ from ai_service.evals.eval_reporter import (
     write_report,
 )
 from ai_service.evals.runner import evaluate_cases_with_mode
-from ai_service.schemas import ProviderConfig
-from ai_service.services.chat_service import create_chat_service
+from ai_service.schemas import (
+    ChatCompleteResponse,
+    ChatMessage,
+    ChatToolDefinition,
+    ProviderConfig,
+)
+from ai_service.services.chat_service import ChatService, create_chat_service
+
+logger = logging.getLogger(__name__)
+TRANSIENT_LIVE_EVAL_STATUS_CODES = {429, 500, 502, 503, 504}
+
+
+class RetryingLiveChatService(ChatService):
+    """Retry only transient upstream failures during live evaluation."""
+
+    def __init__(
+        self,
+        delegate: ChatService,
+        *,
+        max_attempts: int = 3,
+        base_delay_seconds: float = 0.5,
+    ) -> None:
+        self._delegate = delegate
+        self._max_attempts = max_attempts
+        self._base_delay_seconds = base_delay_seconds
+
+    async def complete(
+        self,
+        messages: list[ChatMessage],
+        config: ProviderConfig,
+        *,
+        tools: list[ChatToolDefinition] | None = None,
+        tool_choice: str | None = None,
+    ) -> ChatCompleteResponse:
+        for attempt in range(1, self._max_attempts + 1):
+            try:
+                return await self._delegate.complete(
+                    messages,
+                    config,
+                    tools=tools,
+                    tool_choice=tool_choice,
+                )
+            except UpstreamProviderError as exc:
+                is_transient = (
+                    exc.upstream_status_code in TRANSIENT_LIVE_EVAL_STATUS_CODES
+                )
+                if not is_transient or attempt == self._max_attempts:
+                    raise
+                delay = self._base_delay_seconds * (2 ** (attempt - 1))
+                logger.warning(
+                    "live eval transient provider failure; retrying | "
+                    "status=%s attempt=%s/%s delay_seconds=%s",
+                    exc.upstream_status_code,
+                    attempt,
+                    self._max_attempts,
+                    delay,
+                )
+                await asyncio.sleep(delay)
+
+        raise RuntimeError("Live eval retry loop exited unexpectedly.")
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,6 +173,15 @@ def parse_args() -> argparse.Namespace:
         default=0.2,
         help="Live mode only: provider temperature.",
     )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=None,
+        help=(
+            "Live mode only: maximum completion token budget. Falls back to "
+            "AI_SERVICE_EVAL_MAX_TOKENS or 4096."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -133,11 +202,14 @@ async def run() -> int:
     live_eval_config = resolve_live_eval_config(args) if mode == "live" else None
     if mode == "live":
         async with httpx.AsyncClient(timeout=60.0) as http_client:
+            chat_service = RetryingLiveChatService(
+                create_chat_service(http_client)
+            )
             results = await evaluate_cases_with_mode(
                 cases,
                 mode=mode,
                 live_eval_config=live_eval_config,
-                chat_service=create_chat_service(http_client),
+                chat_service=chat_service,
             )
     else:
         results = await evaluate_cases_with_mode(cases, mode=mode)
@@ -229,6 +301,9 @@ def resolve_live_eval_config(args: argparse.Namespace) -> LiveEvalConfig:
     model = args.model or os.environ.get("AI_SERVICE_EVAL_MODEL")
     api_key = args.api_key or os.environ.get("AI_SERVICE_EVAL_API_KEY")
     base_url = args.base_url or os.environ.get("AI_SERVICE_EVAL_BASE_URL")
+    max_tokens = args.max_tokens
+    if max_tokens is None:
+        max_tokens = int(os.environ.get("AI_SERVICE_EVAL_MAX_TOKENS", "4096"))
 
     if not model:
         raise ValueError(
@@ -238,6 +313,8 @@ def resolve_live_eval_config(args: argparse.Namespace) -> LiveEvalConfig:
         raise ValueError(
             "Live evaluation mode requires --api-key or AI_SERVICE_EVAL_API_KEY."
         )
+    if max_tokens <= 0:
+        raise ValueError("Live evaluation max tokens must be greater than zero.")
 
     return LiveEvalConfig(
         provider_config=ProviderConfig(
@@ -246,12 +323,11 @@ def resolve_live_eval_config(args: argparse.Namespace) -> LiveEvalConfig:
             api_key=api_key,
             base_url=base_url,
             temperature=args.temperature,
-            # Gemini free-tier often truncates early without an explicit budget.
-            max_tokens=1024,
+            # Gemini thinking tokens share this budget with visible JSON output.
+            max_tokens=max_tokens,
         )
     )
 
 
 if __name__ == "__main__":
     main()
-

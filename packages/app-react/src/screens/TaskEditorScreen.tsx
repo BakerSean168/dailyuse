@@ -170,7 +170,7 @@ export function TaskEditorScreen() {
       return;
     }
 
-    router.replace(`../${String(result.data.id)}`);
+    router.replace(`../${String(result.data.template.id)}`);
   }
 
   return (

@@ -11,7 +11,7 @@ import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '../../../domain/value-objects';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
 import { TaskInstanceGenerationService } from '../../../domain/services/index';
-import type { TaskTemplateClientDTO, CreateTaskTemplateInput } from '@dailyuse/contracts/task';
+import type { CreateTaskTemplateInput, CreateTaskTemplateRes } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { Result } from '@dailyuse/contracts/result';
@@ -46,7 +46,7 @@ export class CreateTaskTemplateUseCase {
 
   async execute(
     request: CreateTaskTemplateInput,
-  ): Promise<Result<{ template: TaskTemplateClientDTO; instanceCount: number }>> {
+  ): Promise<Result<CreateTaskTemplateRes>> {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
         if (request.parentTaskId) {
@@ -89,10 +89,10 @@ export class CreateTaskTemplateUseCase {
 
         await templateRepository.save(template);
 
-        let instanceCount = 0;
+        let generation = { instanceCount: 0, todayInstanceCreated: false };
 
         if (template.status === TaskTemplateStatus.Active) {
-          instanceCount = await this.generateInitialInstances(
+          generation = await this.generateInitialInstances(
             template,
             templateRepository,
             instanceRepository,
@@ -101,7 +101,7 @@ export class CreateTaskTemplateUseCase {
 
         return ok({
           template: template.toClientDTO(),
-          instanceCount,
+          ...generation,
         });
       });
     } catch (caughtError) {
@@ -116,7 +116,7 @@ export class CreateTaskTemplateUseCase {
     template: TaskTemplate,
     templateRepository: ITaskTemplateRepository,
     instanceRepository: ITaskInstanceRepository,
-  ): Promise<number> {
+  ): Promise<{ instanceCount: number; todayInstanceCreated: boolean }> {
     const instances = this.generationService.generateInstances(template);
 
     if (instances.length > 0) {
@@ -124,6 +124,19 @@ export class CreateTaskTemplateUseCase {
       await templateRepository.save(template);
     }
 
-    return instances.length;
+    const today = new Date();
+    const todayInstanceCreated = instances.some((instance) => {
+      if (!Number.isFinite(instance.instanceDate)) {
+        return false;
+      }
+      const instanceDate = new Date(instance.instanceDate);
+      return (
+        instanceDate.getFullYear() === today.getFullYear() &&
+        instanceDate.getMonth() === today.getMonth() &&
+        instanceDate.getDate() === today.getDate()
+      );
+    });
+
+    return { instanceCount: instances.length, todayInstanceCreated };
   }
 }

@@ -216,6 +216,17 @@ describe('TaskInstanceController', () => {
       expect(isOk(result)).toBe(true);
     });
 
+    it('should normalize a missing transport body to an empty object', async () => {
+      (useCases.complete as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ instance: FAKE_INSTANCE_DTO }),
+      );
+
+      const result = await controller.completeInstance('inst_1', undefined);
+
+      expect(useCases.complete).toHaveBeenCalledWith('inst_1', {});
+      expect(isOk(result)).toBe(true);
+    });
+
     it('should call complete use case with parsed data', async () => {
       (useCases.complete as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ instance: FAKE_INSTANCE_DTO }),
@@ -282,6 +293,17 @@ describe('TaskInstanceController', () => {
   // skipInstance
   // =========================================================================
   describe('skipInstance', () => {
+    it('should normalize a missing transport body to an empty object', async () => {
+      (useCases.skip as ReturnType<typeof vi.fn>).mockResolvedValue(
+        ok({ instance: FAKE_INSTANCE_DTO }),
+      );
+
+      const result = await controller.skipInstance('inst_1', undefined);
+
+      expect(useCases.skip).toHaveBeenCalledWith('inst_1', {});
+      expect(isOk(result)).toBe(true);
+    });
+
     it('should accept empty object (reason is optional)', async () => {
       (useCases.skip as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ instance: FAKE_INSTANCE_DTO }),

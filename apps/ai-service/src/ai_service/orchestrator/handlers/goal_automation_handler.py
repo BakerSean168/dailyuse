@@ -60,5 +60,6 @@ class GoalAutomationWorkflowHandler(WorkflowHandler):
             related_resources=context.input_data.get("related_resources", []),
             analytics_context=context.input_data.get("analytics_context"),
             provider_config=provider_config,
+            locale=context.input_data.get("locale", "zh-CN"),
             request_id=context.request_id,
         )

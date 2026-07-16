@@ -56,8 +56,12 @@ class AgentRuntimeGoalCreateExpectedOutcome(BaseModel):
     stage: str = "approval"
     min_key_results: int = Field(default=1, ge=0)
     expected_goal_terms: list[str] = Field(default_factory=list)
-    expected_action_tools: list[str] = Field(default_factory=list)
+    expected_action_tools: list[str] | None = None
+    goal_draft_expected: bool = True
     require_approval_interrupt: bool = True
+    require_clarification_interrupt: bool = False
+    clarification_question_count_max: int = Field(default=3, ge=1, le=3)
+    expected_clarification_terms: list[str] = Field(default_factory=list)
     usage_total_tokens: int | None = Field(default=None, ge=0)
 
 
@@ -70,6 +74,7 @@ class AgentRuntimeGoalCreateEvalCase(BaseModel):
     type: Literal["agent_runtime_goal_create"]
     description: str
     initial_request: AgentRuntimeGoalCreateRequest
+    clarification_response: GoalPlanningResponse | None = None
     planner_response: GoalPlanningResponse | None = None
     provider_config: ProviderConfig | None = None
     expected: AgentRuntimeGoalCreateExpectedOutcome
@@ -163,13 +168,27 @@ class AgentRuntimeKnowledgeGenerateEvalCase(BaseModel):
 class StaticGoalPlanningService:
     """Goal planner stub that returns a checked-in planning response."""
 
-    def __init__(self, response: GoalPlanningResponse) -> None:
-        self._response = response
+    def __init__(
+        self,
+        *,
+        clarification_response: GoalPlanningResponse | None,
+        planner_response: GoalPlanningResponse | None,
+    ) -> None:
+        self._clarification_response = clarification_response
+        self._planner_response = planner_response
         self.calls: list[dict[str, Any]] = []
 
+    async def clarify(self, **kwargs: Any) -> GoalPlanningResponse:
+        self.calls.append({"stage": "clarify", **kwargs})
+        if self._clarification_response is None:
+            return GoalPlanningResponse(state="draft")
+        return self._clarification_response.model_copy(deep=True)
+
     async def plan(self, **kwargs: Any) -> GoalPlanningResponse:
-        self.calls.append(kwargs)
-        return self._response.model_copy(deep=True)
+        self.calls.append({"stage": "plan", **kwargs})
+        if self._planner_response is None:
+            raise RuntimeError("Static goal planner has no draft response.")
+        return self._planner_response.model_copy(deep=True)
 
 
 def _incrementing_clock(start: int = 1000, step: int = 5):
@@ -186,27 +205,27 @@ def _incrementing_clock(start: int = 1000, step: int = 5):
 
 async def run_agent_runtime_goal_create_case(
     case: AgentRuntimeGoalCreateEvalCase,
+    *,
+    goal_planning_service: Any | None = None,
+    provider_config: ProviderConfig | None = None,
 ) -> AgentRunResult:
-    """Run one deterministic goal.create Agent runtime case."""
+    """Run one deterministic or provider-backed goal.create runtime case."""
 
-    planner_service = (
-        StaticGoalPlanningService(case.planner_response)
-        if case.planner_response is not None
-        else None
-    )
+    planner_service = goal_planning_service
+    if planner_service is None and (
+        case.clarification_response is not None or case.planner_response is not None
+    ):
+        planner_service = StaticGoalPlanningService(
+            clarification_response=case.clarification_response,
+            planner_response=case.planner_response,
+        )
     runtime = GoalCreateAgentRuntime(
         clock=_incrementing_clock(),
         goal_planning_service=planner_service,
     )
-    provider_config = (
-        case.provider_config
-        if case.provider_config is not None
-        else (
-            DEFAULT_AGENT_RUNTIME_PROVIDER
-            if case.planner_response is not None
-            else None
-        )
-    )
+    active_provider_config = provider_config or case.provider_config
+    if active_provider_config is None and planner_service is not None:
+        active_provider_config = DEFAULT_AGENT_RUNTIME_PROVIDER
     initial = case.initial_request
     result = await runtime.astart_goal_create(
         run_id=f"{case.id}:run",
@@ -216,7 +235,7 @@ async def run_agent_runtime_goal_create_case(
         idea=initial.idea,
         category=initial.category,
         timeframe=initial.timeframe,
-        provider_config=provider_config,
+        provider_config=active_provider_config,
         request_id=initial.request_id,
     )
     return result.to_response()

@@ -1,85 +1,76 @@
-import { describe, expect, it } from 'vitest';
-import { defineComponent, h, nextTick } from 'vue';
+/** @vitest-environment happy-dom */
+
 import { mount } from '@vue/test-utils';
-import { providePanelWidth } from '../../../layouts/shell/usePanelWidth';
+import { createI18n } from 'vue-i18n';
+import { defineComponent, h, nextTick, ref } from 'vue';
+import { describe, expect, it } from 'vitest';
+import type { TaskRelationFilter, TaskStatusFilter, TaskViewMode } from './types';
+import TaskFilterBar from './TaskFilterBar.vue';
 
-/**
- * Probe for TaskFilterBar width tiers (§7.3) without mounting the full bar
- * (avoids shadcn/DropdownMenu complexity in unit scope).
- */
-function mountWidthProbe(initialWidth: number) {
-  const widthHandle: { current: number } = { current: initialWidth };
-
-  const Probe = defineComponent({
-    name: 'TaskFilterWidthProbe',
-    setup() {
-      // Inline the same thresholds as TaskFilterBar
-      const statusMode = () => {
-        const w = widthHandle.current;
-        if (w < 440) return 'menu';
-        if (w < 700) return 'scroll';
-        return 'full';
-      };
-      const compactChrome = () => widthHandle.current < 440;
-      const searchInline = () => widthHandle.current >= 700;
-
-      return () =>
-        h('div', { 'data-testid': 'probe' }, [
-          h('div', { 'data-testid': 'status-mode', 'data-value': statusMode() }),
-          h('div', { 'data-testid': 'compact-chrome', 'data-value': String(compactChrome()) }),
-          h('div', { 'data-testid': 'search-inline', 'data-value': String(searchInline()) }),
-        ]);
-    },
-  });
-
-  const Parent = defineComponent({
-    setup() {
-      const { width } = providePanelWidth();
-      width.value = widthHandle.current;
-      Object.defineProperty(widthHandle, 'current', {
-        get: () => width.value ?? initialWidth,
-        set: (value: number) => {
-          width.value = value;
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en-US',
+  messages: {
+    'en-US': {
+      task: {
+        management: { searchPlaceholder: 'Search task templates' },
+        templateMgmt: {
+          relationFilterLabel: 'Relations',
+          clearFilter: 'Clear filter',
+          viewCard: 'Cards',
+          viewGraph: 'Graph',
         },
-      });
-      return () => h(Probe);
+      },
     },
-  });
+  },
+});
 
-  const wrapper = mount(Parent);
-  return {
-    wrapper,
-    setWidth: async (value: number) => {
-      widthHandle.current = value;
-      await nextTick();
-      // remount probe content via force update by toggling
-      await wrapper.vm.$forceUpdate?.();
-      await nextTick();
-    },
-  };
-}
+describe('TaskFilterBar single responsive DOM', () => {
+  it('preserves one search input, its value, and focus across container widths', async () => {
+    const status = ref<TaskStatusFilter>('ACTIVE');
+    const relation = ref<TaskRelationFilter>('all');
+    const search = ref('');
+    const viewMode = ref<TaskViewMode>('card');
 
-describe('Task filter bar width tiers (§7.3)', () => {
-  it('uses menu + compact chrome under 440px', () => {
-    const { wrapper } = mountWidthProbe(360);
-    expect(wrapper.get('[data-testid="status-mode"]').attributes('data-value')).toBe('menu');
-    expect(wrapper.get('[data-testid="compact-chrome"]').attributes('data-value')).toBe('true');
-    expect(wrapper.get('[data-testid="search-inline"]').attributes('data-value')).toBe('false');
-    wrapper.unmount();
-  });
+    const Host = defineComponent({
+      setup() {
+        return () =>
+          h(TaskFilterBar, {
+            status: status.value,
+            relation: relation.value,
+            search: search.value,
+            viewMode: viewMode.value,
+            statusOptions: [
+              { value: 'ACTIVE', label: 'Active', count: 2 },
+              { value: 'PAUSED', label: 'Paused', count: 1 },
+            ],
+            relationOptions: [{ value: 'all', label: 'All relations', count: 3 }],
+            'onUpdate:status': (value: TaskStatusFilter) => (status.value = value),
+            'onUpdate:relation': (value: TaskRelationFilter) => (relation.value = value),
+            'onUpdate:search': (value: string) => (search.value = value),
+            'onUpdate:viewMode': (value: TaskViewMode) => (viewMode.value = value),
+          });
+      },
+    });
 
-  it('uses scrollable status tabs between 440 and 699', () => {
-    const { wrapper } = mountWidthProbe(520);
-    expect(wrapper.get('[data-testid="status-mode"]').attributes('data-value')).toBe('scroll');
-    expect(wrapper.get('[data-testid="compact-chrome"]').attributes('data-value')).toBe('false');
-    expect(wrapper.get('[data-testid="search-inline"]').attributes('data-value')).toBe('false');
-    wrapper.unmount();
-  });
+    const wrapper = mount(Host, { attachTo: document.body, global: { plugins: [i18n] } });
+    const input = wrapper.get('[data-testid="task-search-input"]');
 
-  it('uses full single-row chrome at 700+', () => {
-    const { wrapper } = mountWidthProbe(720);
-    expect(wrapper.get('[data-testid="status-mode"]').attributes('data-value')).toBe('full');
-    expect(wrapper.get('[data-testid="search-inline"]').attributes('data-value')).toBe('true');
+    await input.setValue('quarterly review');
+    (input.element as HTMLInputElement).focus();
+    wrapper.element.setAttribute('style', 'width: 360px');
+    await nextTick();
+    wrapper.element.setAttribute('style', 'width: 1000px');
+    await nextTick();
+
+    expect(wrapper.findAll('[data-testid="task-status-menu"]')).toHaveLength(1);
+    expect(wrapper.findAll('[data-testid="task-search-input"]')).toHaveLength(1);
+    expect(wrapper.find('[data-testid="task-status-tabs"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="task-search-toggle"]').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="task-search-input"]').element).toBe(input.element);
+    expect(wrapper.get('[data-testid="task-search-input"]').element).toBe(document.activeElement);
+    expect((input.element as HTMLInputElement).value).toBe('quarterly review');
+
     wrapper.unmount();
   });
 });

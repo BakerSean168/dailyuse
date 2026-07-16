@@ -148,4 +148,24 @@ describe('UpcomingReminderCalculationService.calculateTodaySchedule', () => {
       Date.parse('2026-03-29T15:40:00.000Z'),
     ]);
   });
+
+  it('moves a recurring fixed-time reminder to the next cycle when today\'s time has passed', () => {
+    const afterTime = Date.parse('2026-03-29T10:00:00.000Z');
+
+    const nextTrigger = UpcomingReminderCalculationService.calculateNextTriggerTime(
+      createReminder({
+        trigger: {
+          type: TriggerType.FixedTime,
+          fixedTime: { time: '09:00', timezone: null },
+          interval: null,
+        },
+      }),
+      afterTime,
+    );
+
+    const expectedNextCycle = new Date(afterTime);
+    expectedNextCycle.setDate(expectedNextCycle.getDate() + 1);
+    expectedNextCycle.setHours(9, 0, 0, 0);
+    expect(nextTrigger).toBe(expectedNextCycle.getTime());
+  });
 });

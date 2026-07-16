@@ -2,7 +2,6 @@ export type AuthLocale = 'zh-CN' | 'en-US';
 export type AuthThemeMode = 'light' | 'dark' | 'auto';
 
 const STORAGE_KEY = 'presentation-preference';
-const MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
 interface PresentationPreferenceState {
   locale: AuthLocale;
@@ -83,24 +82,15 @@ export function writePresentationPreferenceState(
   };
 }
 
-function resolveTheme(theme: AuthThemeMode): 'light' | 'dark' {
-  if (theme === 'auto' && typeof window !== 'undefined') {
-    return window.matchMedia(MEDIA_QUERY).matches ? 'dark' : 'light';
-  }
-
-  return theme === 'dark' ? 'dark' : 'light';
-}
-
-export function applyAuthTheme(theme: AuthThemeMode): void {
+export function applyAuthTheme(): void {
   if (typeof document === 'undefined') {
     return;
   }
 
-  const resolvedTheme = resolveTheme(theme);
   const root = document.documentElement;
-  root.classList.toggle('dark', resolvedTheme === 'dark');
-  root.dataset.theme = resolvedTheme;
-  root.style.colorScheme = resolvedTheme;
+  root.classList.add('dark');
+  root.dataset.theme = 'dark';
+  root.style.colorScheme = 'dark';
 }
 
 export function applyAuthLocale(locale: AuthLocale): void {

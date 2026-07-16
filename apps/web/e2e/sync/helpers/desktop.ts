@@ -15,22 +15,72 @@ const desktopMainEntrypoint = path.join(
   'main.cjs',
 );
 
-async function clickIfVisible(page: Page, selector: string): Promise<void> {
+async function clickIfVisible(page: Page, selector: string): Promise<boolean> {
   const locator = page.locator(selector);
-  if ((await locator.count()) > 0 && (await locator.first().isVisible())) {
+  if (
+    (await locator.count()) > 0 &&
+    (await locator.first().isVisible()) &&
+    (await locator.first().isEnabled())
+  ) {
     await locator.first().click();
+    return true;
   }
+
+  return false;
 }
 
 async function fillLoginForm(page: Page, credentials: SyncCredentials): Promise<void> {
   await clickIfVisible(page, '[data-testid="login-tab"]');
 
-  const emailField = page.locator('#login-email, [data-testid="login-username-input"] input');
-  const passwordField = page.locator(
-    '#login-password, [data-testid="login-password-input"] input',
-  );
+  const quickLoginButton = page.getByTestId('desktop-quick-login-submit-button');
+  const emailField = page.getByTestId('desktop-login-email');
+  const passwordField = page.getByTestId('desktop-login-password');
 
-  await emailField.first().fill(credentials.email);
+  await expect
+    .poll(
+      async () => {
+        if (page.isClosed()) return 'closed';
+        if ((await quickLoginButton.count()) > 0 && (await quickLoginButton.first().isVisible())) {
+          return 'quick-login';
+        }
+        if ((await passwordField.count()) > 0 && (await passwordField.first().isVisible())) {
+          return 'password-login';
+        }
+        return 'waiting';
+      },
+      { timeout: 10_000, message: 'Timed out waiting for a Desktop authentication scene.' },
+    )
+    .not.toBe('waiting');
+
+  if (page.isClosed()) {
+    return;
+  }
+
+  if (await clickIfVisible(page, '[data-testid="desktop-quick-login-submit-button"]')) {
+    const outcome = await Promise.race([
+      passwordField
+        .first()
+        .waitFor({ state: 'visible', timeout: 10_000 })
+        .then(() => 'password'),
+      page.waitForEvent('close', { timeout: 10_000 }).then(() => 'closed'),
+    ]).catch(() => 'waiting');
+
+    if (outcome === 'closed' || page.isClosed()) {
+      return;
+    }
+
+    if (outcome !== 'password') {
+      throw new Error('Desktop quick login did not transition to password login or main window.');
+    }
+  }
+
+  if ((await emailField.count()) > 0 && (await emailField.first().isVisible())) {
+    await emailField.first().fill(credentials.email);
+  }
+  if ((await passwordField.count()) === 0 || !(await passwordField.first().isVisible())) {
+    return;
+  }
+
   await passwordField.first().fill(credentials.password);
 
   await page.getByTestId('login-submit-button').click();
@@ -74,6 +124,19 @@ export class DesktopAppController {
         VITEST: 'true',
       },
     });
+
+    if (process.platform === 'linux') {
+      // Headless Linux runners do not provide a Secret Service keyring. Keep
+      // Electron's weaker basic_text backend confined to this isolated E2E
+      // process so real login and encrypted-token restart flows remain testable.
+      const encryptionAvailable = await this.electronApp.evaluate(({ safeStorage }) => {
+        safeStorage.setUsePlainTextEncryption(true);
+        return safeStorage.isEncryptionAvailable();
+      });
+      if (!encryptionAvailable) {
+        throw new Error('Electron safeStorage is unavailable in the Linux E2E runtime.');
+      }
+    }
 
     this.currentWindow = await this.electronApp.firstWindow();
     await this.currentWindow.waitForLoadState('domcontentloaded');
@@ -119,10 +182,13 @@ export class DesktopAppController {
 
   private async waitForMainWindow(): Promise<Page> {
     await expect
-      .poll(async () => {
-        const mainWindow = await this.findMainWindow();
-        return mainWindow ? 'ready' : 'waiting';
-      }, { timeout: 30_000, message: 'Timed out waiting for the desktop main window.' })
+      .poll(
+        async () => {
+          const mainWindow = await this.findMainWindow();
+          return mainWindow ? 'ready' : 'waiting';
+        },
+        { timeout: 30_000, message: 'Timed out waiting for the desktop main window.' },
+      )
       .toBe('ready');
 
     const mainWindow = await this.findMainWindow();

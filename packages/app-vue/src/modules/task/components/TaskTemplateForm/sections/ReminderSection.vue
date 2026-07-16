@@ -178,7 +178,12 @@
                   </template>
 
                   <div class="col-span-12 md:col-span-2 flex items-center">
-                    <Button variant="ghost" size="icon" @click="removeTrigger(index)">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      :aria-label="t('common.delete')"
+                      @click="removeTrigger(index)"
+                    >
                       <Trash2 class="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
@@ -233,7 +238,7 @@ import {
   Calendar as CalendarIcon,
 } from '@lucide/vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // 类型别名
 const ReminderType = TaskReminderType;
@@ -254,7 +259,11 @@ function formatDateToYMD(date: Date): string {
 function formatDisplayDate(dateStr: string): string {
   if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return d.toLocaleDateString(locale.value, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 /** Extract date part (YYYY-MM-DD) from a timestamp */

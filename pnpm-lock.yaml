@@ -1521,6 +1521,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@dailyuse/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1891,6 +1894,9 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.6
         version: 2.4.6
+      pg:
+        specifier: 8.22.0
+        version: 8.22.0
       pinia:
         specifier: ^3.0.3
         version: 3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
@@ -1901,6 +1907,9 @@ importers:
       '@types/node':
         specifier: 24.13.3
         version: 24.13.3
+      '@types/pg':
+        specifier: 8.16.0
+        version: 8.16.0
       typescript:
         specifier: ~6.0.3
         version: 6.0.3

@@ -12,6 +12,7 @@ import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
   CreateTaskTemplateReq,
+  CreateTaskTemplateRes,
   UpdateTaskTemplateReq,
   GenerateInstancesReq,
   BindToGoalReq,
@@ -31,7 +32,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   // ===== Task Template CRUD =====
 
-  async createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>> {
+  async createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<CreateTaskTemplateRes>> {
     return this.httpClient.post(this.baseUrl, request);
   }
 

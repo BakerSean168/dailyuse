@@ -10,7 +10,7 @@ tags:
   - reliability
 description: App Vue 前端 UI 深度重构与核心功能修复的统一执行方案
 created: 2026-07-15T00:00:00
-updated: 2026-07-15T00:00:00
+updated: 2026-07-16T00:00:00
 ---
 
 # App Vue 前端 UI 深度重构与功能性修复执行方案
@@ -27,6 +27,90 @@ updated: 2026-07-15T00:00:00
 - 2026-07-15 关于 BusinessPanel 双重标题、重复主操作和单页面容器响应式模型的产品决策
 
 输入材料继续保留审查事实和历史背景，但不再各自驱动实施，不重复维护平行执行顺序。
+
+## 当前事实状态（2026-07-16）
+
+本节记录当前代码、配置、测试、容器和 Git 托管状态，优先级高于下文最初编写时的待实施描述。下文原阶段设计继续保留，用于解释实施边界和决策；后续工作以本节的剩余清单为准，不重新执行已经完成的阶段。
+
+### 版本与交付状态
+
+- 当前工作分支为 `refactor/app-vue-p0-reliability`，本轮实现已整理为跨端可靠性、AI live eval 和计划证据三个提交并推送；最新远程 head 以 [PR #187](https://github.com/BakerSean168/dailyuse/pull/187) 为准。
+- GitHub `main` 仍为 `552471a41ac662601f005d5f4616313cd5496c02`。
+- 功能分支已推送并创建非 Draft PR #187；PR 当前 mergeable，Performance check 已通过，CI Validate 与 Boundary Tests 正在运行，改动尚未合入 `main`。
+- 当前 `/opt/dailyuse` 主机上的 Web、API、AI Service 容器均带有目标 HEAD 的 OCI revision 标签并保持健康。
+- 最新本地部署验证结果为 `pass` 且 `Ready for PR: yes`：[`reports/local-deploy-validation/latest.md`](../../../reports/local-deploy-validation/latest.md)。
+- 最终 prod-like 验证覆盖 affected lint 37 个项目、typecheck 35 个项目、test 31 个项目和无缓存 `docker:local:rebuild`；API、Web、AI Service、PowerSync 及其依赖服务均为 healthy，本地镜像 revision 为 `1f9de5b40fef47b7c32df0455e6ed548e46b91ba-dirty`。
+- 目标 HEAD 已完成 Web E2E 67/67 和 Shell E2E 8/8，均无失败、flaky 或跳过；该轮 Web E2E 使用 `http://localhost:58080` 与 `http://localhost:53080/api/v1`。
+- 认证态 Web/Desktop PowerSync 回归通过 3/3，覆盖 Desktop→Web 与 Web→Desktop 的 Goal 创建、编辑、删除，以及 Desktop 冷重启后的账号恢复与数据持久性；测试使用隔离的 `postgres-test` 与 `powersync-test` 逻辑复制车道。
+- Desktop 全量测试通过 26 个文件、227 项测试，Desktop typecheck 通过；其中包括 PowerSync 表变更订阅归一化，以及 Editor `IPC → application use case → PowerSync repository` 12 路并发回归。
+- 当前代码重新执行的 Task、Notification、Editor、AI、App Vue、Web、API、Database 测试通过；App Vue/Web lint 与 typecheck、AI Service 182 项测试、AI Service lint/typecheck、Goal workflow deterministic eval 7/7、Agent runtime deterministic eval 4/4 和治理检查通过。
+- Google AI Studio [live eval 报告](../../../reports/apps/ai-service/evals/goal-workflow-live-latest.json)于 2026-07-16T08:12:02Z 使用 `gemini-2.5-flash` 通过 2/2、pass rate 100%、quality gate passed；两个 case 相对真实 live baseline 均保持 1.0 score，无 regression 或 new failure。完整 workflow 与生产 `goal.create` runtime 均识别 success criteria、timeline 和 scope，最多三问且未提前产生副作用。
+- 本轮新增的 Task、Notification、Knowledge 三条真实 Web E2E 已在 Playwright 托管的 Web/API/AI Service 与确定性 OpenAI-compatible provider 上合并通过 3/3；Editor 真实 PostgreSQL 并发集成测试、Desktop IPC/PowerSync 并发测试、Editor 全量 108 项测试和类型检查通过。
+
+### 基线记录
+
+| 基线面 | 当前可追溯事实 |
+| --- | --- |
+| 本地 Git | 分支 `refactor/app-vue-p0-reliability`，工作区已整理为可审查提交；最终 head 与远程 PR 分支保持一致 |
+| 远程 Git | `origin/main` 为 `552471a41ac662601f005d5f4616313cd5496c02`；远程功能分支与 PR #187 已创建，等待 CI 与合并 |
+| prod-like runtime | Web `58080`、API `53080`、AI Service `58100`、PowerSync `58081`；最终验证由 clean PR head 构建三个本地应用镜像，必需服务 healthy |
+| E2E runtime | 标准 Playwright lane 使用 Web `5173`、API `3000`、PostgreSQL `5433`；认证态同步另用隔离 PowerSync `58082` 与 `postgres-test` logical replication |
+| 测试身份 | Web/业务 E2E 按用例创建隔离账号；Desktop sync profile 在成功时清理、失败时保留诊断，不依赖共享长期测试账号 |
+
+| 历史 P0 / 产品观察 | 原始失败签名 | 当前区分证据 |
+| --- | --- | --- |
+| Task 完成闭环 | 无 body 完成请求与输入 Schema 不一致，实例无法完成 | HTTP/IPC 共享控制器与 Schema 回归；真实 E2E 验证 `0/1 → 1/1` 和 Goal `0% → 10%` |
+| Notification 读取 | mapper 将 Notification ID 当作 Channel ID，未读数存在但列表读取失败 | 不同 ID 前缀 mapper 回归；真实提醒触发、列表读取、单条/全部已读和徽标归零闭环 |
+| Knowledge 索引 | 容器数据库缺少 pgvector、`retrieval_vector` 或索引，查询在用户请求时失败 | 启动链 bootstrap + 强制 smoke；新笔记 `indexed`，知识查询返回路径与原文引用 |
+| Editor 初始化 | query-then-create 并发触发 `project_path` 唯一约束，调用方得到不一致 ID | PostgreSQL 与 Desktop IPC/PowerSync 各 12 路 create-or-get 回归，所有调用方得到同一持久化 ID |
+| Dashboard / Reminder | Dashboard 已退役但旧测试仍锁定不存在页面；提醒信息优先级与过期规则需重新确认 | `/dashboard → /` 保留，性能测试转为 AI 工作区；Reminder 展示触发、下一次触发、重复和状态 |
+| Goal Agent | 长度启发式可能跳过澄清，问题固定，语言可能与 UI 不一致 | 生产 graph 使用 Provider clarification；deterministic workflow 7/7、runtime 4/4，Google AI Studio live gate 2/2 |
+
+### 阶段状态
+
+| 阶段 | 当前事实 | 状态 |
+| --- | --- | --- |
+| 阶段 0：基线 | 本地/远程 Git、运行时车道、镜像 revision、测试身份策略和历史故障签名均已形成可追溯记录 | 完成 |
+| 阶段 1：四个 P0 | 四个根因均已实现正式修复；Task、Notification、Knowledge 和 Editor 都已有真实闭环自动化证据 | 完成 |
+| 阶段 2：Goal 参考切片 | 单工具栏、唯一创建入口、同一页面 DOM、容器响应式和状态保持测试已落地 | 完成 |
+| 阶段 3：业务模块推广 | Task、Note、Reminder、Notification、Schedule 已采用单页面 DOM 和容器响应式；Web、Shell 与 Desktop 回归已通过 | 完成 |
+| 阶段 4：Web 认证 | 固定品牌主题、真实表单、字段反馈、首错聚焦、稳定错误对象、语言即时切换和共享注册 Schema 已落地；密码找回已有独立承接计划 | 完成 |
+| 阶段 5：AI 与产品完成度 | 产品完成度项目、生产 Provider clarification、deterministic eval 与 Google AI Studio live eval 2/2 均已收口 | 完成 |
+| 阶段 6：部署与验收 | 本地与跨端验收完成，分支已推送并创建 PR #187；等待 CI、合并与标准发布 | 部分完成 |
+
+### 已确认落地
+
+- Task 完成与跳过请求的共享 Schema 已把缺省输入规范化为空对象，HTTP/IPC 共用控制器也覆盖无 body 场景。
+- Task 闭环 E2E 通过真实 HTTP 无 body 完成今日实例，并断言首页 `0/1 → 1/1`、进度条、统计和关联 Goal `0% → 10%` 同步刷新。
+- Notification Channel mapper 已使用 Channel 行自身 ID，并有不同 ID 前缀回归。
+- Notification 闭环 E2E 由同一账号创建并实际触发两个 Reminder，随后验证通知列表、未读数、单条/全部已读和 WindowHeader 徽标归零。
+- API 容器启动链已在 Prisma schema reconciliation 前准备 pgvector，并在其后强制执行知识索引 bootstrap 与 `--require-pgvector` smoke。实际数据库已确认扩展、`retrieval_vector` 字段和相关索引存在；现有 E2E 新建笔记已经产生 `indexed` 记录。
+- Knowledge 闭环 E2E 已等待新建笔记保存并显示 `knowledge-index-ready`，强制重建返回 `indexed`，真实知识查询命中新资源并返回包含该文件路径和原文摘录的引用；测试运行时使用本地 AI Service 和确定性 OpenAI-compatible provider，不再依赖浏览器路由 mock。
+- Editor Workspace 已建立 `(identityId, projectPath)` 自然键，Prisma 使用自然键 upsert 返回真实持久化对象，PowerSync 使用写事务串行 create-or-get，客户端同仓库初始化也会合并并发调用。
+- Editor 已增加真实 PostgreSQL 12 路并发 create-or-get 集成回归，以及 Desktop `IPC → application use case → PowerSync repository` 12 路并发回归；所有调用方获得同一个持久化 ID。
+- Desktop PowerSync 现在显式订阅共享 Schema 的所有表，并将 PowerSync 内部表名归一化为业务表名；认证态双向同步与冷重启回归已通过 3/3。
+- Goal、Task、Note、Reminder、Notification、Schedule 已删除只为窄档/宽档双结构存在的主要分支，主创建入口统一由页面工具栏持有。
+- Web 认证页不再显示访客、忘记密码或未准备好的法律入口；当前隐藏行为符合本轮非目标边界。
+- Web 注册校验直接复用 `RegisterByEmailSchema`，字段提示由共享 Schema issue 派生，并覆盖密码 100 字符上限；密码找回由独立计划 [`2026-07-16-password-recovery.md`](./2026-07-16-password-recovery.md) 承接，当前入口继续隐藏。
+- 任务创建反馈会区分是否生成今日实例；Note 新建后进入编辑并显示保存/索引生命周期；Reminder 优先展示触发、下一次触发、重复和状态；Dashboard 性能回归已改为 AI 工作区回归。
+- 中文界面残留的 `d`、`min`、`h`、`m`、`KR` 和 `Unknown KR` 已改为 locale-aware 时长格式或翻译键；Goal 剩余天数、关键结果数量、未知关键结果和权重推荐均有中英文展示契约。
+- Goal live eval 已包含两条互补路径：完整 workflow case 强制期望 `clarification → draft → confirm → result`，生产 `goal.create` runtime case 强制停在 `waiting_clarification` 且不得提前生成草稿或待执行动作；两者都要求不超过三问并分别覆盖成功标准与时间范围，质量门槛为 100% 通过、必需 case 存在且不允许新增失败。
+- 生产 `goal.create` Agent graph 不再在有 Provider 配置时依赖输入长度和固定问题：它调用 `GoalPlanningService.clarify` 识别具体缺失信息，将已有 category/timeframe 一并提供给模型，保留澄清 token usage，并在用户回答后才进入草稿与审批；无 Provider 的离线测试运行时继续使用确定性 fallback。
+- Agent runtime deterministic eval 新增真实 graph 澄清 case，要求长但欠明确的输入停在 `waiting_clarification`，问题分别覆盖 success 与 timeline，且草稿和待执行动作保持为空；当前 4/4 通过。
+- Google AI Studio live eval 使用稳定且低成本的 `gemini-2.5-flash`；完整 workflow 依次经过 `clarification → draft → confirm → result` 并提交 `create_goal + create_key_result`，生产 runtime 停在 `waiting_clarification` 且草稿、待执行动作为空，两条 case 均为 1.0 score。
+- Google OpenAI-compatible 函数调用使用扁平、无 `$defs/$ref/anyOf/default` 的参数 Schema，最终参数继续由 Pydantic 严格校验；live completion budget 可通过 `AI_SERVICE_EVAL_MAX_TOKENS` 配置，默认 4096，以容纳 Gemini thinking 与可见结构化输出。
+- Live eval 仅对 429、500、502、503、504 上游瞬时错误执行最多三次指数退避重试；结构化输出错误、质量检查失败和非瞬时 4xx 不重试，因此稳定性处理不会掩盖模型回归。
+
+### 剩余阻塞项
+
+以下项目完成前，本文继续保留在 `active`：
+
+1. 等待 PR #187 CI 全部通过并完成审查、合并，再通过标准发布主线推进；不得把当前主机的本地镜像替代正式发布。
+
+### 剩余执行顺序
+
+1. 跟进 PR #187 CI 与审查，修复真实失败后合并到 `main`。
+2. 合并并完成标准发布后，再依据完成定义将本文移入 archive。
 
 ## 摘要
 
@@ -342,11 +426,15 @@ Goal 先完成以下收敛：
 
 ### 阶段 0：基线
 
+当前状态：**完成**。本文“基线记录”已固化本地/远程 Git revision、dirty 状态、运行时车道、三个应用镜像标签、测试身份策略，以及四个 P0、Dashboard、Reminder 和 Goal Agent 的历史失败签名与当前区分证据。
+
 1. 记录本地与远程 Git revision、dirty 状态和三个项目镜像标签。
 2. 记录远程四个 P0 的最小复现、日志签名和测试账号状态。
 3. 固化当前 Dashboard、提醒和 Goal Agent 行为，区分当前缺陷与历史观察。
 
 ### 阶段 1：四个 P0
+
+当前状态：**完成**。四个根因修复和真实闭环自动化均已落地：Task、Notification、Knowledge 使用真实 Web/API/调度/索引运行时，Editor 覆盖真实 PostgreSQL 与 Desktop IPC/PowerSync 并发路径。
 
 1. 规范化任务实例完成与跳过的缺省输入，并增加传输边界测试。
 2. 增加今日任务完成后的首页进度回归。
@@ -361,6 +449,8 @@ Goal 先完成以下收敛：
 
 ### 阶段 2：Goal 单页面参考切片
 
+当前状态：**完成**。Goal 已采用单工具栏和同一页面 DOM，删除窄档/宽档双结构与重复创建入口，Web 组件和 E2E 回归通过。
+
 1. 建立 Goal 唯一页面工具栏，先保持现有功能不变。
 2. 将系统视图、文件夹、专注、搜索、数量和更多操作迁入工具栏。
 3. 将创建目标收敛为工具栏唯一主入口。
@@ -371,6 +461,8 @@ Goal 先完成以下收敛：
 8. 增加任意代表性宽度下主要创建入口可见数量不超过一个的断言。
 
 ### 阶段 3：业务模块推广
+
+当前状态：**完成**。五个模块均已完成单页面结构迁移；Web 67/67、Shell 8/8、Desktop 227/227 与认证态 PowerSync 双向同步/冷重启 3/3 回归通过。
 
 按 Task、Note、Reminder、Notification、Schedule 顺序推进。每个模块独立完成以下提交序列后再进入下一个模块：
 
@@ -384,6 +476,8 @@ Goal 先完成以下收敛：
 
 ### 阶段 4：Web 认证入口
 
+当前状态：**完成**。界面、错误反馈、共享注册 Schema 和密码找回承接边界均已落地；密码找回入口保持隐藏，完整实现由独立 active plan 承接。
+
 1. 固定品牌主题并移除主题选择，不改工作区偏好。
 2. 建立标题、表单、字段和错误区域语义。
 3. 增加注册本地校验、首错聚焦和错误清除。
@@ -394,6 +488,8 @@ Goal 先完成以下收敛：
 
 ### 阶段 5：AI 与产品完成度
 
+当前状态：**完成**。任务、笔记、提醒、可访问名称、Dashboard 和本地化已经收口；生产 `goal.create` graph 已接入 Provider clarification，Goal workflow deterministic eval 7/7、Agent runtime deterministic eval 4/4 与 Google AI Studio `gemini-2.5-flash` live eval 2/2 全部通过。live lane 同时覆盖完整 workflow 和生产 runtime，并验证强制澄清、具体缺失信息、最多三问、不得提前产出与语言一致性。
+
 1. 将 locale 传入 Goal Agent 并本地化澄清问题与结构化产物。
 2. 增加先澄清、最多三问、中英文一致性的 eval。
 3. 收敛任务模板与实例文案及创建反馈。
@@ -403,6 +499,8 @@ Goal 先完成以下收敛：
 7. 重命名或重写 Dashboard 性能测试。
 
 ### 阶段 6：部署与验收
+
+当前状态：**部分完成**。最终 prod-like 验证、目标 revision 容器、当前主机 `58080` Web E2E、Shell、Desktop 与认证态 PowerSync 回归已通过；分支已推送并创建 PR #187，本地验证报告为 `Ready for PR: yes`。Performance check 已通过，等待其余 CI、审查、合并与标准发布。
 
 1. 运行离改动最近的 Nx lint、typecheck、test 和 E2E target。
 2. 使用 `pnpm docker:local:up` 构建带 revision 标签的本地 prod-like 镜像。
@@ -454,8 +552,12 @@ Goal 先完成以下收敛：
 - `pnpm nx run web:lint`
 - `pnpm nx run ai-service:test`
 - `pnpm nx run ai-service:goal-workflow-eval`
+- `pnpm nx run ai-service:goal-workflow-eval-live`
+- `pnpm nx run desktop:test`
+- `pnpm nx run desktop:typecheck`
 - `pnpm nx run web:e2e`
 - `pnpm nx run web:e2e:shell`
+- `pnpm nx run web:e2e:sync`
 - `pnpm nx run daily-use:governance-check`
 
 ## 风险与控制
@@ -486,14 +588,14 @@ Goal 先完成以下收敛：
 
 ## 完成定义
 
-本文只有在同时满足以下条件后才能移入 archive：
+本文只有在同时满足以下条件后才能移入 archive。勾选状态以 2026-07-16 事实审计为准：
 
-- 四个 P0 核心闭环全部修复并有自动化回归。
-- Goal、Task、Note、Reminder、Notification、Schedule 全部采用统一单页面响应式模型。
-- 任一业务模块不存在重复模块标题和重复主要创建入口。
-- Web 与 Desktop 关键业务和壳层回归通过。
-- Web 认证入口第一阶段全部完成；未实施的密码找回已有独立承接计划且入口保持隐藏。
-- Goal Agent 澄清与中英文评测达到约定策略。
-- 本地 prod-like 容器验证通过。
-- 远程 `58080` 验收通过并记录了可追溯 revision。
-- Dashboard 退役、提醒规则、知识索引和旧测试已完成收口。
+- [x] 四个 P0 核心闭环全部修复并有自动化回归。
+- [x] Goal、Task、Note、Reminder、Notification、Schedule 全部采用统一单页面响应式模型。
+- [x] 上述业务模块不存在重复模块标题和重复主要创建入口。
+- [x] Web 与 Desktop 关键业务和壳层回归通过。Web 67/67、Shell 8/8、Desktop 227/227、认证态双向同步与冷重启 3/3 均通过。
+- [x] Web 认证入口第一阶段全部完成；未实施的密码找回已有独立承接计划且入口保持隐藏。
+- [x] Goal Agent 澄清与中英文评测达到约定策略。生产 graph 使用 Provider 识别具体缺失信息，Goal workflow 7/7、Agent runtime 4/4 deterministic eval 与 Google AI Studio live eval 2/2 均通过；live gate 同时覆盖完整 workflow 和生产 runtime，并验证最多三问、不得提前产出和语言一致。
+- [x] 本地 prod-like 容器验证通过。
+- [x] 当前 `/opt/dailyuse` 主机的 `58080` Web E2E 通过，并记录了可追溯 revision。
+- [x] Dashboard 退役、提醒规则、知识索引和旧测试已完成收口。

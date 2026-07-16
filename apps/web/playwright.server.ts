@@ -11,6 +11,10 @@ const VITE_BIN_PATH = resolve(WORKSPACE_ROOT, 'node_modules/vite/bin/vite.js');
 const DEFAULT_API_ORIGIN = 'http://localhost:3000';
 const DEFAULT_WEB_ORIGIN = 'http://127.0.0.1:5173';
 const LEGACY_LOCALHOST_WEB_ORIGIN = 'http://localhost:5173';
+const DEFAULT_AI_SERVICE_ORIGIN = 'http://127.0.0.1:58101';
+const DEFAULT_OPENAI_MOCK_ORIGIN = 'http://127.0.0.1:58102';
+const DEFAULT_AI_SERVICE_SECRET = 'e2e-ai-service-secret';
+const DEFAULT_AI_PROVIDER_ENCRYPTION_KEY = 'e2e-ai-provider-encryption-key-32-bytes';
 
 function quoteShellArgument(value: string): string {
   return `"${value.replace(/"/g, '\\"')}"`;
@@ -52,6 +56,10 @@ export function loadE2EEnv(): void {
 
 loadE2EEnv();
 
+process.env.AI_SERVICE_BASE_URL ??= DEFAULT_AI_SERVICE_ORIGIN;
+process.env.AI_SERVICE_SECRET ??= DEFAULT_AI_SERVICE_SECRET;
+process.env.AI_PROVIDER_ENCRYPTION_KEY ??= DEFAULT_AI_PROVIDER_ENCRYPTION_KEY;
+
 function normalizeOrigin(origin: string): string {
   return origin.replace(/\/+$/, '');
 }
@@ -65,12 +73,12 @@ function getApiOrigin(): string {
   return apiOrigin;
 }
 
-function getWebOrigin(): string {
+export function getE2EWebOrigin(): string {
   return normalizeOrigin(process.env.E2E_WEB_BASE_URL ?? DEFAULT_WEB_ORIGIN);
 }
 
 function getWebServerRuntimeConfig() {
-  const webOrigin = getWebOrigin();
+  const webOrigin = getE2EWebOrigin();
   const webUrl = new URL(webOrigin);
 
   return {
@@ -86,7 +94,7 @@ function getCorsOrigins(): string {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  return [...new Set([getWebOrigin(), LEGACY_LOCALHOST_WEB_ORIGIN, ...configuredOrigins])].join(
+  return [...new Set([getE2EWebOrigin(), LEGACY_LOCALHOST_WEB_ORIGIN, ...configuredOrigins])].join(
     ',',
   );
 }
@@ -138,7 +146,26 @@ export function createApiServer() {
   };
 }
 
-export function createWebServer(url = `${getWebOrigin()}/auth`) {
+export function createPowerSyncTestServer() {
+  const port = process.env.TEST_POWERSYNC_PORT ?? '58082';
+
+  return {
+    command: 'pnpm exec tsx ./e2e/helpers/start-powersync-test-service.ts',
+    cwd: '.',
+    url: `http://127.0.0.1:${port}/probes/liveness`,
+    env: {
+      ...process.env,
+      NODE_ENV: 'test',
+    },
+    // The Docker service intentionally survives a Playwright process so a
+    // focused rerun can reuse the same isolated endpoint. The setup command
+    // still starts and validates it from scratch when the port is absent.
+    reuseExistingServer: true,
+    timeout: 180 * 1000,
+  };
+}
+
+export function createWebServer(url = `${getE2EWebOrigin()}/auth`) {
   const apiOrigin = getApiOrigin();
   const webServer = getWebServerRuntimeConfig();
 
@@ -154,6 +181,35 @@ export function createWebServer(url = `${getWebOrigin()}/auth`) {
       PROXY_TARGET_URL: apiOrigin,
     },
     ...webServerOptions,
+  };
+}
+
+export function createOpenAICompatibleMockServer() {
+  return {
+    command: 'pnpm exec tsx ./e2e/helpers/start-openai-compatible-mock.ts',
+    cwd: '.',
+    url: `${DEFAULT_OPENAI_MOCK_ORIGIN}/healthz`,
+    env: {
+      ...process.env,
+      E2E_OPENAI_MOCK_PORT: new URL(DEFAULT_OPENAI_MOCK_ORIGIN).port,
+    },
+    reuseExistingServer: false,
+    timeout: 60 * 1000,
+  };
+}
+
+export function createAIServiceServer() {
+  return {
+    command: 'uv run uvicorn ai_service.main:create_app --factory --host 127.0.0.1 --port 58101',
+    cwd: '../ai-service/src',
+    url: `${DEFAULT_AI_SERVICE_ORIGIN}/healthz`,
+    env: {
+      ...process.env,
+      SERVICE_SECRET: process.env.AI_SERVICE_SECRET ?? DEFAULT_AI_SERVICE_SECRET,
+      DEBUG: 'true',
+    },
+    reuseExistingServer: false,
+    timeout: 120 * 1000,
   };
 }
 

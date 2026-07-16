@@ -26,7 +26,13 @@
       <AlertDescription>
         {{ t('goal.aiKeyResults.hintText') }}
       </AlertDescription>
-      <Button variant="ghost" size="icon" class="absolute top-2 right-2" @click="showHint = false">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="absolute top-2 right-2"
+        :aria-label="t('common.close')"
+        @click="showHint = false"
+      >
         <X class="w-4 h-4" />
       </Button>
     </Alert>
@@ -82,6 +88,7 @@
             <Button
               variant="ghost"
               size="icon"
+              :aria-label="t('common.delete')"
               @click="handleRemoveAccepted(index)"
               data-testid="remove-accepted-button"
             >

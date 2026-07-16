@@ -97,9 +97,9 @@
                       <span class="text-xs text-muted-foreground">{{
                         (item.raw as any).progressText
                       }}</span>
-                      <Badge variant="secondary" class="text-xs"
-                        >{{ t('task.krLinks.points') }}: {{ (item.raw as any).weight }}%</Badge
-                      >
+                      <Badge variant="secondary" class="text-xs">
+                        {{ t('task.krLinks.weight', { value: (item.raw as any).weight }) }}
+                      </Badge>
                     </div>
                   </div>
                 </div>

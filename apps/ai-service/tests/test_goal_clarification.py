@@ -10,6 +10,10 @@ from ai_service.schemas.goals import (
     PlannedGoal,
 )
 from ai_service.services.chat_service import ChatService
+from ai_service.services.goal_planning_prompts import (
+    build_goal_clarification_system_prompt,
+    build_goal_system_prompt,
+)
 from ai_service.services.goal_planning_service import GoalPlanningService
 
 
@@ -36,21 +40,30 @@ class TestGoalClarificationSchemas:
         assert clari.questions[0].question == "What is your motivation?"
 
     def test_clarification_enforces_question_count_bounds(self):
-        with pytest.raises(ValueError, match="2-4 questions"):
+        single_question = GoalClarificationLLMResponse.model_validate(
+            {
+                "needsClarification": True,
+                "questions": [
+                    {
+                        "question": "What exactly do you want to learn first?",
+                        "context": None,
+                    }
+                ],
+                "rationale": "Need one missing detail",
+            }
+        )
+        assert len(single_question.questions) == 1
+
+        with pytest.raises(ValueError, match="1-3 questions"):
             GoalClarificationLLMResponse.model_validate(
                 {
                     "needsClarification": True,
-                    "questions": [
-                        {
-                            "question": "What exactly do you want to learn first?",
-                            "context": None,
-                        }
-                    ],
+                    "questions": [],
                     "rationale": "Need more context",
                 }
             )
 
-        with pytest.raises(ValueError, match="2-4 questions"):
+        with pytest.raises(ValueError, match="1-3 questions"):
             GoalClarificationLLMResponse.model_validate(
                 {
                     "needsClarification": True,
@@ -59,11 +72,19 @@ class TestGoalClarificationSchemas:
                         {"question": "Question two?", "context": None},
                         {"question": "Question three?", "context": None},
                         {"question": "Question four?", "context": None},
-                        {"question": "Question five?", "context": None},
                     ],
                     "rationale": "Need more context",
                 }
             )
+
+    def test_prompts_enforce_ui_locale_and_three_question_limit(self):
+        chinese_clarification = build_goal_clarification_system_prompt(locale="zh-CN")
+        english_goal = build_goal_system_prompt(locale="en-US")
+
+        assert "1-3 high-value clarification questions" in chinese_clarification
+        assert "Do not draft a goal" in chinese_clarification
+        assert "Simplified Chinese" in chinese_clarification
+        assert "in English" in english_goal
 
     def test_clarification_questions_must_be_non_trivial(self):
         with pytest.raises(ValueError):
@@ -158,12 +179,17 @@ class TestGoalClarificationService:
             idea="I want to learn something.",
             category=None,
             provider_config=provider_config,
+            timeframe="this quarter",
         )
 
         assert response.state == "clarification"
         assert response.clarification is not None
         assert response.clarification.needs_clarification is True
         assert len(response.clarification.questions) == 2
+        user_prompt = mock_chat_service.complete.await_args.kwargs["messages"][
+            1
+        ].content
+        assert "Timeframe: this quarter" in user_prompt
 
     async def test_clarify_returns_draft_state(
         self, service, mock_chat_service, provider_config
@@ -239,6 +265,7 @@ class TestGoalClarificationService:
             )
 
             assert response.state == "clarification"
+            assert mock_clarify.await_args.kwargs["timeframe"] is None
             # It shouldn't call plan()
             mock_chat_service.complete.assert_not_called()
 
@@ -275,6 +302,7 @@ class TestGoalClarificationService:
             assert response.state == "draft"
             mock_plan.assert_called_once()
             called_kwargs = mock_plan.call_args.kwargs
-            assert "Q: Python" in called_kwargs["idea"]
-            assert "Q: 3 months" in called_kwargs["idea"]
+            assert "Additional context:" in called_kwargs["idea"]
+            assert "- Python" in called_kwargs["idea"]
+            assert "- 3 months" in called_kwargs["idea"]
             assert "Learn to code" in called_kwargs["idea"]

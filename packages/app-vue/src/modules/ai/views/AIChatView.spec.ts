@@ -1809,6 +1809,7 @@ describe('AIChatView', () => {
       expect.objectContaining({
         conversationId: 'conv-1',
         agentType: 'goal.create',
+        locale: 'en-US',
         input: expect.objectContaining({
           idea: 'User: Help me design an AI goal.',
           conversationTitle: 'Goal session',

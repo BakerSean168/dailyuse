@@ -8,7 +8,12 @@
       <!-- Heading Menu -->
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <Button variant="ghost" size="icon" class="h-8 w-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            :aria-label="t('editor.toolbar.headingMenu')"
+          >
             <Heading class="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -22,23 +27,23 @@
       <Separator orientation="vertical" class="h-6" />
 
       <!-- Text Formatting -->
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertBold">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.bold')" @click="insertBold">
         <Bold class="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertItalic">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.italic')" @click="insertItalic">
         <Italic class="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertStrikethrough">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.strikethrough')" @click="insertStrikethrough">
         <Strikethrough class="h-4 w-4" />
       </Button>
 
       <Separator orientation="vertical" class="h-6" />
 
       <!-- Code -->
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertInlineCode">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.inlineCode')" @click="insertInlineCode">
         <Code class="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertCodeBlock">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.codeBlock')" @click="insertCodeBlock">
         <Code2 class="h-4 w-4" />
       </Button>
 
@@ -80,26 +85,26 @@
       <Separator orientation="vertical" class="h-6" />
 
       <!-- Lists -->
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertUnorderedList">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.unorderedList')" @click="insertUnorderedList">
         <List class="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertOrderedList">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.orderedList')" @click="insertOrderedList">
         <ListOrdered class="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertTaskList">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.taskList')" @click="insertTaskList">
         <ListTodo class="h-4 w-4" />
       </Button>
 
       <Separator orientation="vertical" class="h-6" />
 
       <!-- Quote, Divider, Table -->
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertQuote">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.quote')" @click="insertQuote">
         <Quote class="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertDivider">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.divider')" @click="insertDivider">
         <Minus class="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertTable">
+      <Button variant="ghost" size="icon" class="h-8 w-8" :aria-label="t('editor.toolbar.table')" @click="insertTable">
         <Table class="h-4 w-4" />
       </Button>
     </div>

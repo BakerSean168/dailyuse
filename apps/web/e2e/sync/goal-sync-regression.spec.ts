@@ -25,17 +25,17 @@ test.describe('desktop/web goal sync regression', () => {
       name: originalName,
       description: 'created on desktop and asserted on web',
     });
-    await waitForGoalVisible(webPage, originalName);
+    await waitForGoalVisible(webPage, 'web', originalName);
 
     await editGoal(desktop.page, originalName, {
       name: updatedName,
       description: 'edited on desktop and asserted on web',
     });
-    await waitForGoalVisible(webPage, updatedName);
-    await waitForGoalHidden(webPage, originalName);
+    await waitForGoalVisible(webPage, 'web', updatedName);
+    await waitForGoalHidden(webPage, 'web', originalName);
 
     await deleteGoal(desktop.page, updatedName);
-    await waitForGoalHidden(webPage, updatedName);
+    await waitForGoalHidden(webPage, 'web', updatedName);
   });
 
   test('syncs web create, edit, and delete to desktop', async ({
@@ -46,21 +46,22 @@ test.describe('desktop/web goal sync regression', () => {
     const originalName = trackGoal(uniqueGoalName('web-source', `${testInfo.parallelIndex}`));
     const updatedName = trackGoal(uniqueGoalName('web-updated', `${testInfo.parallelIndex}`));
 
+    await openGoalList(desktop.page, 'desktop');
     await createGoal(webPage, 'web', {
       name: originalName,
       description: 'created on web and asserted on desktop',
     });
-    await waitForGoalVisible(desktop.page, originalName);
+    await waitForGoalVisible(desktop.page, 'desktop', originalName);
 
     await editGoal(webPage, originalName, {
       name: updatedName,
       description: 'edited on web and asserted on desktop',
     });
-    await waitForGoalVisible(desktop.page, updatedName);
-    await waitForGoalHidden(desktop.page, originalName);
+    await waitForGoalVisible(desktop.page, 'desktop', updatedName);
+    await waitForGoalHidden(desktop.page, 'desktop', originalName);
 
     await deleteGoal(webPage, updatedName);
-    await waitForGoalHidden(desktop.page, updatedName);
+    await waitForGoalHidden(desktop.page, 'desktop', updatedName);
   });
 
   test('keeps synced goals after restarting desktop', async ({
@@ -75,10 +76,10 @@ test.describe('desktop/web goal sync regression', () => {
       name: goalName,
       description: 'used to verify desktop persistence after restart',
     });
-    await waitForGoalVisible(webPage, goalName);
+    await waitForGoalVisible(webPage, 'web', goalName);
 
     await desktop.restart(credentials);
     await openGoalList(desktop.page, 'desktop');
-    await waitForGoalVisible(desktop.page, goalName);
+    await waitForGoalVisible(desktop.page, 'desktop', goalName);
   });
 });

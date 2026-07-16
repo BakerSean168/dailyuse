@@ -1,9 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ResourceBookmarkClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { isUploadResponse } from './repositoryHelpers';
+import { ok } from '@dailyuse/contracts/result';
+import {
+  buildInitialMarkdownContent,
+  buildNoteNameFromTitle,
+  ensureUniqueNoteName,
+  isUploadResponse,
+} from './repositoryHelpers';
 import { __test__ as bookmarkTest } from './useRepositoryBookmarks';
 import { __test__ as storeTest } from '../stores/repository-store';
 import { recoverDesktopAuthIfNeeded } from '../../../shared/utils/desktop-auth-recovery';
+import { useRepositoryResources } from './useRepositoryResources';
 
 function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceClientDTO {
   return {
@@ -55,6 +62,69 @@ function createBookmark(
 }
 
 describe('useRepository helpers', () => {
+  it('derives a safe predictable filename and matching heading from a note title', () => {
+    const name = buildNoteNameFromTitle('  Project / Retrospective.md  ');
+
+    expect(name).toBe('Project - Retrospective.md');
+    expect(buildInitialMarkdownContent(name)).toBe('# Project - Retrospective\n\n');
+  });
+
+  it('keeps note filenames unique without changing the base naming contract', () => {
+    const resources = [
+      createResource({ name: 'Project Retrospective.md' }),
+      createResource({
+        id: 'resource-2' as ResourceClientDTO['id'],
+        name: 'Project Retrospective 2.md',
+      }),
+    ];
+
+    expect(ensureUniqueNoteName('Project Retrospective.md', resources)).toBe(
+      'Project Retrospective 3.md',
+    );
+  });
+
+  it('creates a unique note with a heading that matches the persisted filename', async () => {
+    const createResourceRequest = vi.fn(
+      async (_repositoryId: string, request: Record<string, unknown>) =>
+        ok(
+          createResource({
+            id: 'resource-created' as ResourceClientDTO['id'],
+            name: String(request.name),
+            content: String(request.content),
+          }),
+        ),
+    );
+    const resources = useRepositoryResources({
+      service: {
+        getCurrentRepository: vi.fn(),
+        listResources: vi.fn(),
+        createResource: createResourceRequest,
+        updateResource: vi.fn(),
+        deleteResource: vi.fn(),
+      },
+      executeOperation: (operation) => operation(),
+      handleError: vi.fn(),
+      getRepositoryId: () => 'repo-1',
+      getResources: () => [createResource({ name: 'Project Retrospective.md' })],
+      addResource: vi.fn(),
+      updateResourceInStore: vi.fn(),
+      removeResource: vi.fn(),
+      refreshTree: vi.fn(async () => undefined),
+    });
+
+    const created = await resources.createMarkdownNote('Project Retrospective.md');
+
+    expect(created?.name).toBe('Project Retrospective 2.md');
+    expect(created?.content).toBe('# Project Retrospective 2\n\n');
+    expect(createResourceRequest).toHaveBeenCalledWith(
+      'repo-1',
+      expect.objectContaining({
+        name: 'Project Retrospective 2.md',
+        content: '# Project Retrospective 2\n\n',
+      }),
+    );
+  });
+
   it('maps upload response payloads into UI result shape', () => {
     const response = {
       successes: [{ resource: createResource() }],

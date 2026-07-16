@@ -1,27 +1,218 @@
 {
-  "generated_at": "2026-04-30T00:00:00+00:00",
+  "generated_at": "2026-07-16T07:36:42.977785+00:00",
+  "mode": "live",
+  "provider": "openai",
+  "model": "gemini-2.5-flash",
+  "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
   "cases_path": "evals/goal_workflow_live_cases.json",
-  "total_cases": 1,
-  "passed_cases": 1,
+  "total_cases": 2,
+  "passed_cases": 2,
   "failed_cases": 0,
   "pass_rate": 1.0,
   "by_type": {
+    "agent_runtime_goal_create": 1,
     "goal_workflow": 1
   },
   "failed_case_ids": [],
   "gate_passed": true,
   "gate_failures": [],
-  "baseline_path": null,
-  "archive_path": null,
+  "baseline_path": "evals/goal_workflow_live_baseline.json",
+  "archive_path": "../../reports/apps/ai-service/evals/goal-workflow-live-history/2026-07-16T07-36-42.977785+00-00.json",
   "results": [
     {
-      "id": "live-goal-workflow-direct-submit",
+      "id": "live-goal-workflow-clarification-quality",
       "type": "goal_workflow",
-      "description": "Live provider should complete the direct goal workflow path and submit an automation plan.",
+      "description": "Live provider must identify the missing success criteria and timeline, ask at most three English clarification questions, then complete the workflow.",
       "passed": true,
       "score": 1.0,
-      "checks": [],
-      "metadata": {}
+      "checks": [
+        {
+          "name": "stage_sequence_matches",
+          "passed": true,
+          "detail": "Workflow stages match expectations."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Workflow action tools match expectations."
+        },
+        {
+          "name": "workflow_completes_without_failure_stage",
+          "passed": true,
+          "detail": "Workflow completed without internal failures."
+        },
+        {
+          "name": "clarification_question_count_at_most_three",
+          "passed": true,
+          "detail": "Clarification asks no more than three questions."
+        },
+        {
+          "name": "clarification_uses:en-US",
+          "passed": true,
+          "detail": "Clarification uses en-US."
+        },
+        {
+          "name": "clarification_covers:success_criteria",
+          "passed": true,
+          "detail": "Clarification covers success_criteria via 'success'."
+        },
+        {
+          "name": "clarification_covers:timeline",
+          "passed": true,
+          "detail": "Clarification covers timeline via 'deadline'."
+        },
+        {
+          "name": "structured_output_uses:en-US",
+          "passed": true,
+          "detail": "Structured Goal Agent output uses en-US."
+        },
+        {
+          "name": "execution_status_matches",
+          "passed": true,
+          "detail": "Execution status matches expectations."
+        },
+        {
+          "name": "recovery_can_retry_matches",
+          "passed": true,
+          "detail": "Recovery canRetry matches expectations."
+        },
+        {
+          "name": "goal_mentions:planning",
+          "passed": true,
+          "detail": "Goal output mentions \"planning\"."
+        },
+        {
+          "name": "tool_call_seen:submit_goal_automation_plan",
+          "passed": true,
+          "detail": "Observed provider tool call \"submit_goal_automation_plan\"."
+        }
+      ],
+      "metadata": {
+        "stages": [
+          "clarification",
+          "draft",
+          "confirm",
+          "result"
+        ],
+        "tool_calls_seen": [
+          "submit_goal_automation_plan"
+        ],
+        "goal_title": "Enhance Work Planning for Improved Productivity",
+        "action_tools": [
+          "create_goal",
+          "create_key_result"
+        ],
+        "executed_actions": [
+          {
+            "tool": "create_goal",
+            "status": "executed",
+            "message": "Created goal in fake execution.",
+            "entityId": "fake-goal-1"
+          },
+          {
+            "tool": "create_key_result",
+            "status": "executed",
+            "message": "Created key result in fake execution.",
+            "entityId": "fake-key-result-1"
+          }
+        ],
+        "execution_status": "success",
+        "failure_stage": null,
+        "failure_detail": null,
+        "clarification_question_count": 3,
+        "clarification_text": "How will you measure improved planning? Understanding success metrics is crucial for tracking progress and knowing when the goal is achieved. By when do you want to achieve this improvement? A deadline helps create urgency and structure for planning. What specific aspects of work planning do you want to improve? Pinpointing specific areas helps define the scope and focus efforts effectively.",
+        "recovery": {
+          "canRetry": false,
+          "failedActions": [],
+          "suggestions": []
+        },
+        "completion_count": 3
+      }
+    },
+    {
+      "id": "live-goal-agent-runtime-clarification",
+      "type": "agent_runtime_goal_create",
+      "description": "Live provider must drive the production goal.create graph into targeted clarification before any draft or action plan is created.",
+      "passed": true,
+      "score": 1.0,
+      "checks": [
+        {
+          "name": "run_status_matches",
+          "passed": true,
+          "detail": "Run status matches expectations."
+        },
+        {
+          "name": "stage_matches",
+          "passed": true,
+          "detail": "Runtime stage matches expectations."
+        },
+        {
+          "name": "goal_draft_artifact_present",
+          "passed": true,
+          "detail": "Goal draft artifact presence matches expectations."
+        },
+        {
+          "name": "key_result_count_at_least_minimum",
+          "passed": true,
+          "detail": "Key result count 0 meets expectations."
+        },
+        {
+          "name": "approval_interrupt_present",
+          "passed": true,
+          "detail": "Approval interrupt is present."
+        },
+        {
+          "name": "clarification_interrupt_present",
+          "passed": true,
+          "detail": "Clarification interrupt is present."
+        },
+        {
+          "name": "clarification_question_count_in_range",
+          "passed": true,
+          "detail": "Clarification returned 3 question(s)."
+        },
+        {
+          "name": "clarification_mentions:success",
+          "passed": true,
+          "detail": "Clarification mentions \"success\"."
+        },
+        {
+          "name": "clarification_mentions:timeline",
+          "passed": true,
+          "detail": "Clarification mentions \"timeline\"."
+        },
+        {
+          "name": "action_tools_match",
+          "passed": true,
+          "detail": "Action tools match expectations."
+        }
+      ],
+      "metadata": {
+        "run_status": "waiting_clarification",
+        "stage": "clarify",
+        "goal_title": null,
+        "key_result_count": 0,
+        "action_tools": [],
+        "clarification_questions": [
+          {
+            "question": "How will you know your work planning has improved?",
+            "context": "Defining success criteria helps measure progress and determine when the goal is achieved."
+          },
+          {
+            "question": "By when do you want to achieve this improvement?",
+            "context": "A timeline helps set a realistic pace and creates accountability."
+          },
+          {
+            "question": "What specific aspects of your current planning need improvement?",
+            "context": "Understanding the specific areas for improvement helps define the scope and focus efforts effectively."
+          }
+        ],
+        "usage": {
+          "promptTokens": 328,
+          "completionTokens": 200,
+          "totalTokens": 830
+        }
+      }
     }
   ]
 }

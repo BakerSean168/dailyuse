@@ -97,6 +97,7 @@ import {
   Badge,
 } from '@dailyuse/ui-vue-shadcn';
 import { Clock, Download, AlertTriangle } from '@lucide/vue';
+import { formatTaskDuration } from '../../utils/format-task-duration';
 
 interface CriticalPathResultViewModel {
   projectDuration: number;
@@ -110,15 +111,9 @@ const props = defineProps<{
   allTasks: TaskForDAGViewModel[];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
-const formatDuration = (minutes: number): string => {
-  if (minutes === 0) return '0 min';
-  const hours = Math.floor(minutes / 60);
-  const mins = Math.round(minutes % 60);
-  if (hours > 0) return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  return `${mins}m`;
-};
+const formatDuration = (minutes: number): string => formatTaskDuration(minutes, locale.value);
 
 const handleExport = () => {
   if (!props.result) return;

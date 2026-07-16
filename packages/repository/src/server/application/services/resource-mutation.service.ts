@@ -61,6 +61,7 @@ export class ResourceMutationService {
       type: string;
       path?: string;
       content?: string;
+      mimeType?: string;
     },
   ): Promise<Result<ResourceClientDTO>> {
     const result = await this.deps.createResource.execute({
@@ -71,6 +72,7 @@ export class ResourceMutationService {
       type: data.type as ResourceType,
       path: data.path ?? `/${data.name}`,
       content: data.content,
+      mimeType: data.mimeType,
     });
     if (!result.ok) return result;
 

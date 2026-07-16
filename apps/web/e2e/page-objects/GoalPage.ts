@@ -25,9 +25,7 @@ export class GoalPage {
     this.page = page;
 
     // 初始化定位器
-    this.createGoalButton = page
-      .locator('button:has-text("创建目标")')
-      .or(page.locator('[data-testid="create-goal-button"]'));
+    this.createGoalButton = page.getByTestId('create-goal-entry');
 
     this.goalListContainer = page.locator('[data-testid="goal-list"]').or(page.locator('.goal-list'));
 

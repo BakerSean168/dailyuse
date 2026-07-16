@@ -35,5 +35,6 @@ class BaseHTTPProvider(LLMProvider, ABC):
                 detail=(
                     f"{provider_name} returned HTTP {exc.response.status_code} "
                     f"for {exc.request.method} {exc.request.url}"
-                )
+                ),
+                upstream_status_code=exc.response.status_code,
             ) from exc

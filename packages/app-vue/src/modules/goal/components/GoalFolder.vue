@@ -5,7 +5,13 @@
       <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
         >{{ t('goal.folder.folders') }}</span
       >
-      <Button variant="ghost" size="icon" class="h-5 w-5 hover:bg-muted" @click="emit('create')">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="h-5 w-5 hover:bg-muted"
+        :aria-label="t('common.create')"
+        @click="emit('create')"
+      >
         <Plus class="h-3 w-3" />
       </Button>
     </div>

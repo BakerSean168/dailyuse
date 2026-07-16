@@ -26,10 +26,23 @@
         >
       </ToggleGroup>
 
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="refresh" :disabled="loading">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          :aria-label="t('common.refresh')"
+          :disabled="loading"
+          @click="refresh"
+        >
         <RotateCw :class="['h-4 w-4', loading && 'animate-spin']" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="emit('close')">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          :aria-label="t('common.close')"
+          @click="emit('close')"
+        >
         <X class="h-4 w-4" />
       </Button>
     </CardHeader>

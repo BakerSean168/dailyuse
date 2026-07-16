@@ -10,7 +10,7 @@ import {
   disconnectPrisma,
   getPrisma,
   seedAccount,
-} from '../../../__tests__/integration-helpers';
+} from '../../../../__tests__/integration-helpers';
 
 function makeAllDayTimeConfig(startDate: Date): TaskTimeConfig {
   return TaskTimeConfig.createAllDay(startDate);

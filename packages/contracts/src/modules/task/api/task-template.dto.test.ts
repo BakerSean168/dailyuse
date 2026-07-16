@@ -4,7 +4,10 @@ import {
   TaskTimeConfigSchema,
   UpdateTaskTemplateSchema,
 } from './task-template.dto';
-import { TaskTemplateResponseSchema } from './response-schemas';
+import {
+  CreateTaskTemplateResponseSchema,
+  TaskTemplateResponseSchema,
+} from './response-schemas';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { TaskTemplateStatus } from '../value-objects/task-template-status';
 import { TaskTimeType } from '../value-objects/task-time-type';
@@ -114,6 +117,17 @@ describe('task template contracts', () => {
         status: 'Done',
       }).success,
     ).toBe(false);
+  });
+
+  it('preserves template creation instance feedback', () => {
+    const parsed = CreateTaskTemplateResponseSchema.parse({
+      template: validTemplateResponse(),
+      instanceCount: 7,
+      todayInstanceCreated: true,
+    });
+
+    expect(parsed.instanceCount).toBe(7);
+    expect(parsed.todayInstanceCreated).toBe(true);
   });
 
   it('keeps time config validation intact', () => {

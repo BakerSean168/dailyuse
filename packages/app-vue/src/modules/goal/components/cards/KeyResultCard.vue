@@ -21,7 +21,12 @@
             </div>
           </div>
 
-          <Button variant="ghost" size="icon" @click="$emit('navigate', keyResult)">
+          <Button
+            variant="ghost"
+            size="icon"
+            :aria-label="t('menu.viewDetails')"
+            @click="$emit('navigate', keyResult)"
+          >
             <ExternalLink class="h-4 w-4" />
           </Button>
         </CardTitle>

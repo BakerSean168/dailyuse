@@ -232,30 +232,36 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
 
   async findById(
     id: string,
-    options?: { includeHistory?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate | null> {
     const row = await this.db.getOptional<PowerSyncReminderTemplateRow>(
       'SELECT * FROM reminder_templates WHERE id = ? LIMIT 1',
       [id],
     );
     if (!row) return null;
-    const history = options?.includeHistory ? await this.loadHistory(row.id) : [];
+    const history = options?.includeHistory
+      ? await this.loadHistory(row.id, options.historyLimit)
+      : [];
     return PowerSyncReminderTemplateMapper.toDomain(row, history);
   }
 
   async findByIdentityId(
     identityId: string,
-    options?: { includeHistory?: boolean; includeDeleted?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
     const sql = `SELECT * FROM reminder_templates WHERE identity_id = ?${
       options?.includeDeleted ? '' : ' AND deleted_at IS NULL'
     } ORDER BY created_at ASC`;
-    return this.mapRows(await this.db.getAll(sql, [identityId]), options?.includeHistory);
+    return this.mapRows(
+      await this.db.getAll(sql, [identityId]),
+      options?.includeHistory,
+      options?.historyLimit,
+    );
   }
 
   async findByGroupId(
     groupId: string | null,
-    options?: { includeHistory?: boolean; includeDeleted?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
     const sql = `SELECT * FROM reminder_templates WHERE ${
       groupId === null ? 'reminder_group_id IS NULL' : 'reminder_group_id = ?'
@@ -263,14 +269,22 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     return this.mapRows(
       await this.db.getAll(sql, groupId === null ? [] : [groupId]),
       options?.includeHistory,
+      options?.historyLimit,
     );
   }
 
-  async findActive(identityId?: string): Promise<ReminderTemplate[]> {
+  async findActive(
+    identityId?: string,
+    options?: { includeHistory?: boolean; historyLimit?: number },
+  ): Promise<ReminderTemplate[]> {
     const sql = `SELECT * FROM reminder_templates WHERE self_enabled = 1 AND status = 'Active' AND deleted_at IS NULL${
       identityId ? ' AND identity_id = ?' : ''
     } ORDER BY created_at ASC`;
-    return this.mapRows(await this.db.getAll(sql, identityId ? [identityId] : []), false);
+    return this.mapRows(
+      await this.db.getAll(sql, identityId ? [identityId] : []),
+      options?.includeHistory,
+      options?.historyLimit,
+    );
   }
 
   async findByNextTriggerBefore(
@@ -288,7 +302,7 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
 
   async findByIds(
     ids: string[],
-    options?: { includeHistory?: boolean },
+    options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]> {
     if (ids.length === 0) return [];
     const placeholders = ids.map(() => '?').join(', ');
@@ -296,7 +310,11 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
       `SELECT * FROM reminder_templates WHERE id IN (${placeholders})`,
       ids,
     );
-    const templates = await this.mapRows(rows, options?.includeHistory);
+    const templates = await this.mapRows(
+      rows,
+      options?.includeHistory,
+      options?.historyLimit,
+    );
     const map = new Map(templates.map((template) => [String(template.id), template]));
     return ids.map((id) => map.get(id)).filter((item): item is ReminderTemplate => !!item);
   }
@@ -336,21 +354,27 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
   private async mapRows(
     rows: PowerSyncReminderTemplateRow[],
     includeHistory?: boolean,
+    historyLimit?: number,
   ): Promise<ReminderTemplate[]> {
     return Promise.all(
       rows.map(async (row) =>
         PowerSyncReminderTemplateMapper.toDomain(
           row,
-          includeHistory ? await this.loadHistory(row.id) : [],
+          includeHistory ? await this.loadHistory(row.id, historyLimit) : [],
         ),
       ),
     );
   }
 
-  private async loadHistory(templateId: string): Promise<PowerSyncReminderHistoryRow[]> {
+  private async loadHistory(
+    templateId: string,
+    limit?: number,
+  ): Promise<PowerSyncReminderHistoryRow[]> {
     return this.db.getAll<PowerSyncReminderHistoryRow>(
-      'SELECT * FROM reminder_history WHERE template_id = ? ORDER BY triggered_at DESC',
-      [templateId],
+      `SELECT * FROM reminder_history WHERE template_id = ? ORDER BY triggered_at DESC${
+        limit ? ' LIMIT ?' : ''
+      }`,
+      limit ? [templateId, limit] : [templateId],
     );
   }
 }

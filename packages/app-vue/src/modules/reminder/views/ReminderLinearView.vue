@@ -1,65 +1,97 @@
 <template>
   <div
-    class="flex h-full overflow-hidden bg-background"
-    :class="isNarrow ? 'flex-col' : 'flex-row'"
+    class="flex h-full min-h-0 flex-col overflow-hidden bg-background"
+    data-testid="reminder-linear-view"
   >
-    <!-- 窄档（split）：分组侧栏收顶部下拉（V2 §6.4 / §7） -->
-    <ReminderGroupSwitcherBar
-      v-if="isNarrow"
-      :groups="groups"
-      :selected-group-id="selectedGroupId"
-      :template-count="templates.length"
-      @select-group="selectedGroupId = $event"
-      @create-template="handleCreateTemplate(selectedGroupId)"
-      @create-group="openCreateGroup()"
-    />
-
-    <!-- 宽档（focus）：完整分组侧栏 -->
-    <aside
-      v-else
-      class="flex w-64 shrink-0 flex-col overflow-hidden border-r bg-sidebar"
-      data-testid="reminder-group-sidebar"
+    <header
+      class="z-10 flex min-h-14 shrink-0 flex-wrap items-center gap-2 border-b bg-background/80 px-2 py-2 backdrop-blur-sm @2xl/panel:px-4"
+      data-testid="reminder-page-toolbar"
     >
-      <div class="flex h-14 items-center border-b p-4">
-        <div class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          <BellRing class="h-4 w-4 text-primary" />
-          <span>{{ t('reminder.linear.allReminders') }}</span>
-        </div>
-
-        <div class="ml-auto flex items-center gap-1">
-          <Button
-            data-testid="create-reminder-template-button"
-            variant="ghost"
-            size="icon"
-            class="h-8 w-8"
-            :title="t('reminder.action.createReminder')"
-            @click="() => handleCreateTemplate(selectedGroupId)"
-          >
-            <Plus class="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="h-8 w-8"
-            :title="t('reminder.action.createGroup')"
-            @click="openCreateGroup()"
-          >
-            <FolderPlus class="h-4 w-4" />
-          </Button>
-        </div>
+      <div class="flex min-w-0 items-center gap-2">
+        <component :is="selectedGroup ? Folder : LayoutGrid" class="h-4 w-4 shrink-0 text-primary" />
+        <p
+          data-testid="reminder-linear-heading"
+          class="max-w-36 truncate text-sm font-medium @2xl/panel:max-w-52"
+        >
+          {{ currentViewLabel }}
+        </p>
+        <Badge variant="secondary" class="shrink-0 text-xs">{{ filteredTemplates.length }}</Badge>
       </div>
 
-      <ScrollArea class="min-h-0 flex-1">
-        <div class="space-y-1 p-2">
-          <div
-            class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
+      <div
+        class="relative order-last w-full basis-full @2xl/panel:order-none @2xl/panel:ml-auto @2xl/panel:w-44 @2xl/panel:basis-auto @5xl/panel:w-64"
+      >
+        <Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          v-model="searchQuery"
+          :placeholder="t('reminder.linear.searchPlaceholder')"
+          class="h-8 w-full border-transparent bg-secondary/50 pl-8 focus-visible:border-ring focus-visible:bg-background"
+          data-testid="reminder-search-input"
+        />
+      </div>
+
+      <div class="ml-auto flex min-w-0 items-center gap-1 @2xl/panel:ml-0">
+        <div
+          class="flex items-center gap-2 rounded-full border bg-card px-2 py-1.5"
+          data-testid="reminder-master-switch"
+        >
+          <span class="hidden text-xs text-muted-foreground @3xl/panel:inline">{{
+            t('reminder.linear.masterSwitch')
+          }}</span>
+          <Switch
+            :checked="preferences?.globalReminderEnabled ?? true"
+            :disabled="isSaving"
+            :aria-label="t('reminder.linear.masterSwitch')"
+            @update:checked="handleToggleGlobalReminder"
+          />
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8 shrink-0"
+          :aria-label="t('reminder.action.createGroup')"
+          :title="t('reminder.action.createGroup')"
+          data-testid="create-reminder-group-button"
+          @click="openCreateGroup()"
+        >
+          <FolderPlus class="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
+          class="h-8 shrink-0 px-2 @xl/panel:px-3"
+          :aria-label="t('reminder.action.createReminder')"
+          data-primary-action="create-reminder-template"
+          data-testid="create-reminder-template-button"
+          @click="handleCreateTemplate(selectedGroupId)"
+        >
+          <Plus class="h-4 w-4 @xl/panel:mr-1.5" />
+          <span class="hidden @xl/panel:inline">{{ t('reminder.action.createReminder') }}</span>
+        </Button>
+      </div>
+    </header>
+
+    <div
+      class="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] @3xl/panel:grid-cols-[minmax(13rem,16rem)_minmax(0,1fr)] @3xl/panel:grid-rows-1"
+      data-testid="reminder-workspace-grid"
+    >
+      <nav
+        class="min-w-0 overflow-auto border-b bg-sidebar @3xl/panel:border-b-0 @3xl/panel:border-r"
+        :aria-label="t('reminder.linear.allReminders')"
+        data-testid="reminder-group-sidebar"
+      >
+        <div class="flex min-w-max gap-1 p-2 @3xl/panel:min-w-0 @3xl/panel:flex-col">
+          <button
+            type="button"
+            class="flex w-48 items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors @3xl/panel:w-full"
             :class="!selectedGroupId ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'"
+            :aria-pressed="!selectedGroupId"
+            data-testid="reminder-group-all"
             @click="selectedGroupId = null"
           >
-            <LayoutGrid class="h-4 w-4" />
-            <span>{{ t('reminder.linear.allReminders') }}</span>
+            <LayoutGrid class="h-4 w-4 shrink-0" />
+            <span class="truncate">{{ t('reminder.linear.allReminders') }}</span>
             <Badge variant="secondary" class="ml-auto text-xs">{{ templates.length }}</Badge>
-          </div>
+          </button>
 
           <ActionableWrapper
             v-for="group in groups"
@@ -67,69 +99,36 @@
             :actions="getGroupActions(group)"
             :show-more-button="false"
           >
-            <div
-              class="flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
+            <button
+              type="button"
+              class="flex w-52 items-start gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors @3xl/panel:w-full"
               :class="
                 selectedGroupId === group.id ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
               "
+              :aria-pressed="selectedGroupId === group.id"
+              :data-testid="`reminder-group-${group.id}`"
               @click="selectedGroupId = group.id"
             >
               <Folder class="mt-0.5 h-4 w-4 shrink-0" />
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
+              <span class="min-w-0 flex-1">
+                <span class="flex items-center gap-2">
                   <span class="truncate">{{ group.name }}</span>
                   <Badge variant="outline" class="ml-auto shrink-0 text-[10px]">
                     {{ group.stats.totalTemplates }}
                   </Badge>
-                </div>
-                <p class="mt-1 line-clamp-2 text-[11px] text-muted-foreground/90">
+                </span>
+                <span class="mt-1 line-clamp-2 text-[11px] text-muted-foreground/90">
                   {{ getSidebarGroupSummary(group) }}
-                </p>
-              </div>
-            </div>
+                </span>
+              </span>
+            </button>
           </ActionableWrapper>
         </div>
-      </ScrollArea>
-    </aside>
+      </nav>
 
-    <!-- Main -->
-    <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <header
-        class="z-10 flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/50 px-4 backdrop-blur-sm @2xl/panel:px-6"
-      >
-        <h1 data-testid="reminder-linear-heading" class="truncate text-lg font-medium text-foreground">
-          {{ t('reminder.linear.templateTitle') }}
-        </h1>
-        <div class="flex min-w-0 items-center gap-2">
-          <!-- 全局开关任何档位保持面板头可达（V2 §6.4） -->
-          <div
-            class="flex items-center gap-2 rounded-full border bg-card px-2.5 py-1.5 @2xl/panel:gap-3 @2xl/panel:px-3"
-            data-testid="reminder-master-switch"
-          >
-            <span class="hidden text-xs text-muted-foreground @2xl/panel:inline">{{
-              t('reminder.linear.masterSwitch')
-            }}</span>
-            <Switch
-              :checked="preferences?.globalReminderEnabled ?? true"
-              :disabled="isSaving"
-              @update:checked="handleToggleGlobalReminder"
-            />
-          </div>
-          <div class="relative hidden w-48 @3xl/panel:block @5xl/panel:w-64">
-            <Search
-              class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              v-model="searchQuery"
-              :placeholder="t('reminder.linear.searchPlaceholder')"
-              class="h-8 w-full border-transparent bg-secondary/50 pl-8 focus-visible:border-ring focus-visible:bg-background"
-            />
-          </div>
-        </div>
-      </header>
-
-      <ScrollArea class="min-h-0 flex-1 p-6">
-        <div class="mx-auto max-w-5xl">
+      <main class="flex min-h-0 min-w-0 flex-col overflow-hidden" data-testid="reminder-content">
+        <div class="min-h-0 flex-1 overflow-auto p-3 @2xl/panel:p-6" data-testid="reminder-scroll-host">
+          <div class="mx-auto max-w-5xl">
           <div
             v-if="preferences && !preferences.globalReminderEnabled"
             class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
@@ -201,18 +200,12 @@
               <BellRing class="h-6 w-6 opacity-50" />
             </div>
             <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('reminder.empty') }}</h3>
-            <p class="mb-6 text-sm">{{ t('reminder.emptyDescription') }}</p>
-            <Button
-              data-testid="create-first-reminder-template-button"
-              @click="() => handleCreateTemplate(selectedGroupId)"
-            >
-              <Plus class="mr-2 h-4 w-4" /> {{ t('reminder.action.createReminder') }}
-            </Button>
+            <p class="text-sm">{{ t('reminder.emptyDescription') }}</p>
           </div>
 
           <div
             v-else
-            class="grid grid-cols-2 gap-4 @2xl/panel:grid-cols-3 @3xl/panel:grid-cols-4 @5xl/panel:grid-cols-5"
+            class="grid grid-cols-1 gap-3 @xl/panel:grid-cols-2 @3xl/panel:grid-cols-3 @5xl/panel:grid-cols-4"
           >
             <GridTemplateItem
               v-for="tpl in filteredTemplates"
@@ -225,9 +218,10 @@
               @move="handleMoveTemplate"
             />
           </div>
+          </div>
         </div>
-      </ScrollArea>
-    </main>
+      </main>
+    </div>
 
     <!-- Template Detail Card -->
     <ReminderTemplateCard
@@ -285,7 +279,6 @@ import {
   Badge,
   Button,
   Input,
-  ScrollArea,
   Switch,
   Tooltip,
   TooltipContent,
@@ -295,12 +288,10 @@ import {
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
-import ReminderGroupSwitcherBar from '../components/ReminderGroupSwitcherBar.vue';
 import ReminderTemplateCard from '../components/ReminderTemplateCard.vue';
 import TemplateDialog from '../components/TemplateDialog.vue';
 import GroupDialog from '../components/GroupDialog.vue';
 import TemplateMoveDialog from '../components/TemplateMoveDialog.vue';
-import { usePanelWidth } from '../../../layouts/shell/usePanelWidth';
 import { useReminder } from '../composables/useReminder';
 import {
   getGroupActiveStatusLabel,
@@ -342,8 +333,6 @@ const {
 } = useReminder();
 
 const { t } = useI18n();
-// 面板两档（V2 §7）：窄档收分组侧栏为顶部下拉，宽档恢复完整侧栏；全局开关始终在面板头。
-const { isNarrow } = usePanelWidth();
 
 const selectedGroupId = ref<string | null>(null);
 const searchQuery = ref('');
@@ -376,6 +365,9 @@ const filteredTemplates = computed(() => {
 
 const selectedGroup = computed(
   () => groups.value.find((group) => group.id === selectedGroupId.value) || null,
+);
+const currentViewLabel = computed(
+  () => selectedGroup.value?.name ?? t('reminder.linear.allReminders'),
 );
 
 function getSidebarGroupSummary(group: ReminderGroupClientDTO) {
@@ -501,12 +493,6 @@ function getGroupActions(group: ReminderGroupClientDTO): MenuAction[] {
           );
         }
       },
-    },
-    {
-      key: 'createReminder',
-      label: menuLabel('createReminder'),
-      icon: Plus,
-      handler: () => handleCreateTemplate(group.id),
     },
     {
       key: 'switchControlMode',

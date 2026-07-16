@@ -5,6 +5,8 @@ Extracted from runner.py to reduce orchestration module size.
 
 from __future__ import annotations
 
+import re
+
 from ai_service.evals.eval_models import EvalCheck
 from ai_service.evals.goal_workflow_harness import (
     GoalWorkflowEvalCase,
@@ -22,6 +24,90 @@ def check_stage_sequence(
             f"Expected stages {case.expected.stage_sequence}, got {trace.stages}."
             if trace.stages != case.expected.stage_sequence
             else "Workflow stages match expectations."
+        ),
+    )
+
+
+def _matches_locale(text: str, locale: str) -> bool:
+    contains_cjk = re.search(r"[\u3400-\u9fff]", text) is not None
+    contains_latin = re.search(r"[A-Za-z]", text) is not None
+    if locale == "zh-CN":
+        return contains_cjk
+    return contains_latin and not contains_cjk
+
+
+def check_clarification_contract(
+    case: GoalWorkflowEvalCase,
+    trace: GoalWorkflowTrace,
+) -> list[EvalCheck]:
+    checks = [
+        EvalCheck(
+            name="clarification_question_count_at_most_three",
+            passed=trace.clarification_question_count <= 3,
+            detail=(
+                "Clarification asks no more than three questions."
+                if trace.clarification_question_count <= 3
+                else (
+                    "Clarification returned "
+                    f"{trace.clarification_question_count} questions."
+                )
+            ),
+        )
+    ]
+    locale = case.expected.clarification_locale
+    if locale is not None:
+        passed = _matches_locale(trace.clarification_text, locale)
+        checks.append(
+            EvalCheck(
+                name=f"clarification_uses:{locale}",
+                passed=passed,
+                detail=(
+                    f"Clarification uses {locale}."
+                    if passed
+                    else f"Clarification does not consistently use {locale}."
+                ),
+            )
+        )
+    clarification_blob = trace.clarification_text.lower()
+    for concept in case.expected.clarification_concepts:
+        matched_terms = [
+            term for term in concept.terms if term.lower() in clarification_blob
+        ]
+        passed = bool(matched_terms)
+        checks.append(
+            EvalCheck(
+                name=f"clarification_covers:{concept.name}",
+                passed=passed,
+                detail=(
+                    f"Clarification covers {concept.name} via "
+                    f"{matched_terms[0]!r}."
+                    if passed
+                    else (
+                        f"Clarification does not cover {concept.name}; expected "
+                        f"one of {concept.terms}."
+                    )
+                ),
+            )
+        )
+    return checks
+
+
+def check_structured_output_locale(
+    case: GoalWorkflowEvalCase,
+    trace: GoalWorkflowTrace,
+) -> EvalCheck | None:
+    locale = case.expected.output_locale
+    if locale is None:
+        return None
+    text = " ".join((trace.goal_text, trace.structured_text)).strip()
+    passed = _matches_locale(text, locale)
+    return EvalCheck(
+        name=f"structured_output_uses:{locale}",
+        passed=passed,
+        detail=(
+            f"Structured Goal Agent output uses {locale}."
+            if passed
+            else f"Structured Goal Agent output does not consistently use {locale}."
         ),
     )
 
@@ -101,8 +187,7 @@ def check_recovery_retry(
         name="recovery_can_retry_matches",
         passed=actual_can_retry == case.expected.can_retry,
         detail=(
-            f"Expected canRetry={case.expected.can_retry}, "
-            f"got {actual_can_retry}."
+            f"Expected canRetry={case.expected.can_retry}, got {actual_can_retry}."
             if actual_can_retry != case.expected.can_retry
             else "Recovery canRetry matches expectations."
         ),

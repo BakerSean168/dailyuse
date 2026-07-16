@@ -243,6 +243,20 @@ def build_agent_runtime_goal_create_eval_result(
     has_approval_interrupt = any(
         is_goal_approval_interrupt(interrupt) for interrupt in response.interrupts
     )
+    clarification_interrupt = next(
+        (
+            interrupt
+            for interrupt in response.interrupts
+            if interrupt.get("type") == "clarification.required"
+        ),
+        None,
+    )
+    clarification_questions = (
+        clarification_interrupt.get("questions", [])
+        if clarification_interrupt is not None
+        else []
+    )
+    clarification_blob = flatten_text(clarification_interrupt).lower()
 
     checks = [
         EvalCheck(
@@ -265,16 +279,21 @@ def build_agent_runtime_goal_create_eval_result(
         ),
         EvalCheck(
             name="goal_draft_artifact_present",
-            passed=goal_artifact is not None,
+            passed=(goal_artifact is not None) == expected.goal_draft_expected,
             detail=(
-                "Goal draft artifact is present."
-                if goal_artifact is not None
-                else "Goal draft artifact was not produced."
+                "Goal draft artifact presence matches expectations."
+                if (goal_artifact is not None) == expected.goal_draft_expected
+                else (
+                    "Goal draft artifact presence does not match expectations."
+                )
             ),
         ),
         EvalCheck(
             name="key_result_count_at_least_minimum",
-            passed=key_result_count >= expected.min_key_results,
+            passed=(
+                not expected.goal_draft_expected
+                or key_result_count >= expected.min_key_results
+            ),
             detail=(
                 f"Expected at least {expected.min_key_results} key results, "
                 f"got {key_result_count}."
@@ -291,9 +310,58 @@ def build_agent_runtime_goal_create_eval_result(
                 else "Expected an approval interrupt before side effects."
             ),
         ),
+        EvalCheck(
+            name="clarification_interrupt_present",
+            passed=(
+                not expected.require_clarification_interrupt
+                or clarification_interrupt is not None
+            ),
+            detail=(
+                "Clarification interrupt is present."
+                if (
+                    not expected.require_clarification_interrupt
+                    or clarification_interrupt is not None
+                )
+                else "Expected a clarification interrupt before drafting."
+            ),
+        ),
     ]
 
-    if expected.expected_action_tools:
+    if expected.require_clarification_interrupt:
+        question_count = (
+            len(clarification_questions)
+            if isinstance(clarification_questions, list)
+            else 0
+        )
+        checks.append(
+            EvalCheck(
+                name="clarification_question_count_in_range",
+                passed=1 <= question_count <= expected.clarification_question_count_max,
+                detail=(
+                    f"Clarification returned {question_count} question(s)."
+                    if 1 <= question_count <= expected.clarification_question_count_max
+                    else (
+                        "Expected 1-"
+                        f"{expected.clarification_question_count_max} questions, "
+                        f"got {question_count}."
+                    )
+                ),
+            )
+        )
+        checks.extend(
+            EvalCheck(
+                name=f"clarification_mentions:{term}",
+                passed=term.lower() in clarification_blob,
+                detail=(
+                    f'Clarification mentions "{term}".'
+                    if term.lower() in clarification_blob
+                    else f'Clarification should mention "{term}".'
+                ),
+            )
+            for term in expected.expected_clarification_terms
+        )
+
+    if expected.expected_action_tools is not None:
         checks.append(
             EvalCheck(
                 name="action_tools_match",
@@ -347,6 +415,7 @@ def build_agent_runtime_goal_create_eval_result(
             "goal_title": goal_artifact.title if goal_artifact else None,
             "key_result_count": key_result_count,
             "action_tools": action_tools,
+            "clarification_questions": clarification_questions,
             "usage": response.state.usage.model_dump(
                 by_alias=True,
                 exclude_none=True,

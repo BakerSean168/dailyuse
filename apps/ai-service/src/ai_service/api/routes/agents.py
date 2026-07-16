@@ -320,6 +320,7 @@ async def start_agent_run(
         conversation_id=request.conversation_id,
         identity_id=request.identity_id,
         idea=idea,
+        locale=request.locale,
         category=_string_input(request.input, "category"),
         timeframe=_string_input(request.input, "timeframe"),
         provider_config=_provider_config_input(request.input),

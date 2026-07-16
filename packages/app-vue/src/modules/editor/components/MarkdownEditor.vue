@@ -1,6 +1,6 @@
 <template>
   <div class="relative flex h-full w-full flex-col">
-    <div ref="editorRef" class="flex-1 overflow-auto" />
+    <div ref="editorRef" class="flex-1 overflow-auto" data-testid="markdown-editor-host" />
     <div
       v-if="previewImage"
       class="absolute inset-0 z-20 flex items-center justify-center bg-background/90 p-6 backdrop-blur-sm"

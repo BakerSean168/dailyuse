@@ -175,9 +175,15 @@ export class TaskClientService implements TaskClientPort {
 
   // ===== Task Template Operations =====
 
-  async createTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplate>> {
+  async createTemplate(request: CreateTaskTemplateReq): Promise<
+    Result<{ template: TaskTemplate; instanceCount: number; todayInstanceCreated: boolean }>
+  > {
     const result = await this.templateApi.createTaskTemplate(request);
-    return mapResult(result, (dto) => taskTemplateFromDTO(dto));
+    return mapResult(result, (data) => ({
+      template: taskTemplateFromDTO(data.template),
+      instanceCount: data.instanceCount,
+      todayInstanceCreated: data.todayInstanceCreated,
+    }));
   }
 
   async listTemplates(

@@ -36,6 +36,7 @@
             <Button
               variant="ghost"
               size="icon"
+              :aria-label="t('common.delete')"
               class="h-7 w-7"
               @click="emit('dependency-deleted', dep.id)"
             >

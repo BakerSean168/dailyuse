@@ -1,13 +1,14 @@
 <template>
-  <div
-    class="flex h-10 shrink-0 items-center gap-1 border-b bg-sidebar/60 px-2"
-    data-testid="note-segment-bar"
+  <header
+    class="z-10 flex min-h-12 shrink-0 flex-wrap items-center gap-1 border-b bg-background/80 px-2 py-2 backdrop-blur-sm @2xl/panel:px-4"
+    data-testid="note-page-toolbar"
   >
     <button
       v-for="segment in segments"
       :key="segment.value"
       type="button"
       :data-testid="`note-segment-${segment.value}`"
+      :aria-pressed="active === segment.value"
       class="rounded-md px-3 py-1.5 text-sm transition-colors"
       :class="
         active === segment.value
@@ -19,7 +20,8 @@
       <component :is="segment.icon" class="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
       {{ segment.label }}
     </button>
-  </div>
+    <div id="note-page-toolbar-actions" class="ml-auto flex min-w-0 items-center gap-1" />
+  </header>
 </template>
 
 <script setup lang="ts">

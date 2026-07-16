@@ -35,6 +35,12 @@ export interface IEditorWorkspaceRepository {
   save(workspace: EditorWorkspace): Promise<void>;
 
   /**
+   * Atomically creates a workspace by its natural key (identity + project path),
+   * or returns the row that already owns that key.
+   */
+  createOrGet(workspace: EditorWorkspace): Promise<EditorWorkspace>;
+
+  /**
    * 鍒犻犻櫎宸ヤ綔鍖?
    */
   delete(id: string): Promise<void>;

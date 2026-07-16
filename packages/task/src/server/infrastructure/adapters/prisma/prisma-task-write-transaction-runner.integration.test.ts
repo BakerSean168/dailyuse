@@ -12,7 +12,7 @@ import {
   disconnectPrisma,
   getPrisma,
   seedAccount,
-} from '../../../__tests__/integration-helpers';
+} from '../../../../__tests__/integration-helpers';
 import { PrismaTaskWriteTransactionRunner } from './prisma-task-write-transaction-runner';
 import { TaskInstancePrismaRepository } from './task-instance-prisma.repository';
 

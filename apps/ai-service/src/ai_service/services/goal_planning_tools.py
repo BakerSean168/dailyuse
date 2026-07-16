@@ -8,7 +8,6 @@ from typing import Any
 from ai_service.errors import StructuredOutputError
 from ai_service.schemas import (
     ChatToolDefinition,
-    GoalAutomationLLMResponse,
     ProviderConfig,
 )
 
@@ -16,6 +15,8 @@ from ai_service.schemas import (
 def build_goal_automation_submission_tool() -> ChatToolDefinition:
     """Return the provider-native function schema for automation planning."""
 
+    importance = ["Vital", "Important", "Moderate", "Minor", "Trivial"]
+    cadence = ["daily", "weekly", "once"]
     return ChatToolDefinition.model_validate(
         {
             "type": "function",
@@ -26,9 +27,123 @@ def build_goal_automation_submission_tool() -> ChatToolDefinition:
                     "optional key results, optional task templates, optional "
                     "reminders, and proposed tool calls."
                 ),
-                "parameters": GoalAutomationLLMResponse.model_json_schema(
-                    by_alias=True
-                ),
+                # Keep the tool schema within the JSON Schema subset accepted by
+                # OpenAI-compatible providers such as Google AI Studio. The
+                # returned arguments are still validated by
+                # GoalAutomationLLMResponse after the provider call.
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "summary": {"type": "string"},
+                        "goal": {
+                            "type": "object",
+                            "properties": {
+                                "title": {"type": "string"},
+                                "description": {"type": "string"},
+                                "motivation": {"type": "string"},
+                                "category": {
+                                    "type": "string",
+                                    "enum": [
+                                        "work",
+                                        "health",
+                                        "learning",
+                                        "personal",
+                                        "finance",
+                                        "relationship",
+                                        "other",
+                                    ],
+                                },
+                                "importance": {
+                                    "type": "string",
+                                    "enum": importance,
+                                },
+                                "tags": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "feasibilityAnalysis": {"type": "string"},
+                                "aiInsights": {"type": "string"},
+                                "suggestedDurationDays": {"type": "integer"},
+                            },
+                            "required": ["title", "description"],
+                        },
+                        "keyResults": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {"type": "string"},
+                                    "description": {"type": "string"},
+                                    "targetValue": {"type": "integer"},
+                                    "unit": {"type": "string"},
+                                },
+                                "required": ["title"],
+                            },
+                        },
+                        "taskTemplates": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string"},
+                                    "description": {"type": "string"},
+                                    "importance": {
+                                        "type": "string",
+                                        "enum": importance,
+                                    },
+                                    "cadence": {
+                                        "type": "string",
+                                        "enum": cadence,
+                                    },
+                                },
+                                "required": ["name"],
+                            },
+                        },
+                        "reminders": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {"type": "string"},
+                                    "description": {"type": "string"},
+                                    "importance": {
+                                        "type": "string",
+                                        "enum": importance,
+                                    },
+                                    "cadence": {
+                                        "type": "string",
+                                        "enum": cadence,
+                                    },
+                                    "timeOfDay": {"type": "string"},
+                                },
+                                "required": ["title"],
+                            },
+                        },
+                        "toolCalls": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "tool": {
+                                        "type": "string",
+                                        "enum": [
+                                            "create_goal",
+                                            "create_key_result",
+                                            "create_task_template",
+                                            "create_reminder",
+                                            "search_notes",
+                                            "fetch_stats",
+                                        ],
+                                    },
+                                    "index": {"type": "integer"},
+                                    "rationale": {"type": "string"},
+                                },
+                                "required": ["tool"],
+                            },
+                        },
+                    },
+                    "required": ["summary", "goal", "toolCalls"],
+                },
             },
         }
     )
