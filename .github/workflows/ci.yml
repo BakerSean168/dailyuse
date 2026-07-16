@@ -254,8 +254,6 @@ jobs:
         uses: ./.github/actions/setup-nx-affected-job
         with:
           node-version: ${{ env.NODE_VERSION }}
-          setup-python: 'false'
-          setup-uv: 'false'
 
       - name: Push Prisma schema to test database
         run: pnpm exec nx run database:prisma-push
