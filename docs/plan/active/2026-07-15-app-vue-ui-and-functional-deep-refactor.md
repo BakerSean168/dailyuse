@@ -91,7 +91,7 @@ updated: 2026-07-16T00:00:00
 - Desktop PowerSync 现在显式订阅共享 Schema 的所有表，并将 PowerSync 内部表名归一化为业务表名；认证态双向同步与冷重启回归已通过 3/3。
 - Goal、Task、Note、Reminder、Notification、Schedule 已删除只为窄档/宽档双结构存在的主要分支，主创建入口统一由页面工具栏持有。
 - Web 认证页不再显示访客、忘记密码或未准备好的法律入口；当前隐藏行为符合本轮非目标边界。
-- Web 注册校验直接复用 `RegisterByEmailSchema`，字段提示由共享 Schema issue 派生，并覆盖密码 100 字符上限；密码找回由独立计划 [`2026-07-16-password-recovery.md`](./2026-07-16-password-recovery.md) 承接，当前入口继续隐藏。
+- Web 注册校验直接复用 `RegisterByEmailSchema`，字段提示由共享 Schema issue 派生，并覆盖密码 100 字符上限；密码找回并入 [`2026-07-17-auth-account-security-closure.md`](./2026-07-17-auth-account-security-closure.md)（Phase A/B1；旧独立计划已归档），当前入口继续隐藏。
 - 任务创建反馈会区分是否生成今日实例；Note 新建后进入编辑并显示保存/索引生命周期；Reminder 优先展示触发、下一次触发、重复和状态；Dashboard 性能回归已改为 AI 工作区回归。
 - 中文界面残留的 `d`、`min`、`h`、`m`、`KR` 和 `Unknown KR` 已改为 locale-aware 时长格式或翻译键；Goal 剩余天数、关键结果数量、未知关键结果和权重推荐均有中英文展示契约。
 - Goal live eval 已包含两条互补路径：完整 workflow case 强制期望 `clarification → draft → confirm → result`，生产 `goal.create` runtime case 强制停在 `waiting_clarification` 且不得提前生成草稿或待执行动作；两者都要求不超过三问并分别覆盖成功标准与时间范围，质量门槛为 100% 通过、必需 case 存在且不允许新增失败。
@@ -599,3 +599,4 @@ Goal 先完成以下收敛：
 - [x] 本地 prod-like 容器验证通过。
 - [x] 当前 `/opt/dailyuse` 主机的 `58080` Web E2E 通过，并记录了可追溯 revision。
 - [x] Dashboard 退役、提醒规则、知识索引和旧测试已完成收口。
+

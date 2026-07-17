@@ -7,7 +7,7 @@ tags:
   - github
 description: ADR-034 - 本地 Obsidian Vault、可选 GitHub 仓库同步与多端知识笔记边界
 created: 2026-07-16T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-17T00:00:00
 ---
 
 # ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库
@@ -178,7 +178,7 @@ reason
 - 上下文不足或规则冲突时，Agent 应让用户选择或补充信息；不使用隐藏的固定目录兜底。
 - 所有写入必须展示最终 `path/title/frontmatter/content/reason`，并在用户确认后才允许 Desktop 写文件或 Web 创建 Git commit。
 - Agent 上下文不能覆盖系统权限、安全策略和用户确认要求，也不能触发任意命令、访问 Vault 外路径或扩大数据授权范围。
-- Agent runtime、上下文注入、跨端一致性和路径决策的具体设计，延期到 OpenDesign、pi agent 与当前 Agent 实现专项调研完成后决定。
+- Agent runtime、上下文注入、Capability、Tool Policy、Proposal revision 和跨端执行边界由 [ADR-035](./ADR-035-unified-assistant-agent-host.md) 统一规定；本 ADR 只保留知识仓库特有的路径、Vault 和 Git commit 约束。
 
 ### 2.9 Markdown 安全渲染
 
@@ -242,6 +242,7 @@ Web/Mobile 自行渲染 GitHub read model，不调用 Obsidian 插件 API。首�
 ## 6. 相关资料
 
 - [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)
+- [ADR-035: 统一助手与可插拔 Agent Host](./ADR-035-unified-assistant-agent-host.md)
 - [资源库模块说明](../../product/modules/repository.md)
 - [编辑器模块说明](../../product/modules/editor.md)
 - [Obsidian URI](https://obsidian.md/help/uri)

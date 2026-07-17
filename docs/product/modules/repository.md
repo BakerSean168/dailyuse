@@ -88,7 +88,7 @@ Web create
 - Web 创建按 repository 串行提交，以 request ID 和 commit SHA 幂等。
 - 服务端投影可以从 default branch 重建，不是可独立编辑的数据源。
 - Agent 写入提案包含 path、title、frontmatter、content 和 reason；写入始终需要用户确认。
-- Agent 上下文的载体和注入机制待专项设计，不预先规定固定 Vault 文件。
+- Agent 上下文、Capability、Tool Policy 和 Proposal revision 遵循 ADR-035；不预先规定固定 Vault 指令文件。
 - 移除 AI 固定默认目录设置；无指令时由用户确认提议路径。
 - 仓库改为 public 时告警并暂停新的 RAG ingestion。
 
@@ -115,6 +115,8 @@ Web create
 ## 9. 相关资料
 
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
+- [ADR-035: 统一助手与可插拔 Agent Host](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)
+- [统一助手与可插拔 Agent Host 实施方案](../../plan/active/2026-07-17-unified-assistant-agent-host.md)
 - [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)
 - [编辑器模块说明](./editor.md)
 - [AI 模块说明](./ai.md)

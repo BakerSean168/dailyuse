@@ -343,17 +343,22 @@ POST /knowledge-notes
 - Agent 上下文不能关闭确认、修改授权、执行任意命令、访问 Vault 外路径或把内容上传到未授权服务。
 - 上下文不足或规则冲突时，要求用户选择或补充信息，不使用隐藏固定收件箱兜底。
 
-### 9.2 暂不固化项
+### 9.2 已固化的 Agent 机制
 
-本方案不预先规定 Agent 上下文来自文件、设置、MCP、数据库还是当前对话，也不规定固定文件名、目录继承、提示词模板或专用的指令版本字段。具体机制应在分析 OpenDesign、pi agent 和当前代码中的 workflow、checkpoint、tool executor 与上下文组装方式后单独形成 Agent ADR/实施方案。
+Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通用机制由 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md) 和 [统一助手与可插拔 Agent Host 实施方案](./2026-07-17-unified-assistant-agent-host.md) 规定：
 
-专项调研至少需要回答：
+- Daily Use Agent Host 拥有 Run、Capability、Context、Tool Policy、Proposal、审批和执行边界。
+- LangGraph 是可恢复 Workflow Engine；Pi、远程 Agent 和本地 CLI 是候选 Turn Engine；自定义 AI API 接入 Model Gateway。
+- Context 区分系统安全、产品规则、用户偏好、当前任务和不可信检索内容，不要求固定 `AGENT.md`。
+- Engine 只能访问当前 Run 授权的 Query/Proposal 工具；Vault/GitHub Mutation 只由确认后的 TypeScript Executor 执行。
+- 用户确认绑定不可变 `proposalId + revision`；仓库 HEAD、路径和 Capability 等关键前置条件变化时必须重新验证。
+- Desktop 与 Web 使用相同 Context/Proposal contract，但由不同 Context Source 和 CapabilitySnapshot 提供本地 Vault 或 GitHub 投影能力。
 
-- Agent runtime 如何区分系统安全边界、产品规则、用户偏好和当前任务上下文。
-- Desktop 本地上下文与 Web 服务端上下文如何表达、版本化和保持可解释的一致性。
-- 路径提案由模型、确定性规则还是混合策略生成，冲突时如何降级。
-- 用户确认作用于哪一个不可变提案，以及确认后上下文变化时是否必须重新确认。
-- Agent 如何读取知识库结构而不把整个 Vault 注入上下文，并避免提示注入扩大工具权限。
+### 9.3 仍延后的细节
+
+- 不预先规定用户偏好必须存放在文件、设置、MCP 或数据库，也不规定固定文件名和目录继承语法。
+- 具体路径建议采用模型、确定性规则还是混合排序，在知识写入实现阶段用真实 Vault 样本评测后决定。
+- Server LangGraph 是否通过 Activity Lease 等待 Desktop 本地 CLI，只有出现真实跨端需求后再实现。
 
 ## 10. Markdown 与附件
 
@@ -479,6 +484,8 @@ POST /knowledge-notes
 ## 14. 相关资料
 
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
+- [ADR-035: 统一助手与可插拔 Agent Host](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)
+- [统一助手与可插拔 Agent Host 实施方案](./2026-07-17-unified-assistant-agent-host.md)
 - [资源库模块说明](../../product/modules/repository.md)
 - [编辑器模块说明](../../product/modules/editor.md)
 - [认证模块说明](../../product/modules/authentication.md)
