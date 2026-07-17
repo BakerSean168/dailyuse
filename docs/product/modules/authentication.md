@@ -5,7 +5,7 @@ tags:
   - authentication
 description: 认证模块当前实现及账密、GitHub、访客三入口目标态
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-17T23:59:00
 ---
 
 # 认证模块说明
@@ -17,6 +17,11 @@ updated: 2026-07-17T00:00:00
 ## 2. 当前实现
 
 - 邮箱密码登录/注册、密码修改、找回和重置。
+- 统一 Verification Challenge（`PasswordReset` / `EmailVerify`）：6 位码、hash 存储、冷却与重放防护；开发期 `ConsoleEmailSender`。
+- 邮箱验证 API：`POST /api/v1/auth/email/send-code`、`POST /api/v1/auth/email/verify`；验证成功发 `auth:email-verified` 并可将 `Unverified` 身份 `activate`。
+- Unverified 门禁：敏感路由需已验证邮箱；白名单含 me / logout / refresh / email/* / password/*。
+- IP 限流：`/password/forgot` 与 `/email/send-code`（内存实现，多实例需外置）。
+- Web 认证页场景：password-login / register / forgot / reset / verify-email（含重发冷却与 domainCode i18n）。
 - access/refresh token、会话撤销和身份锁定。
 - Desktop 访客、离线认证、记住账号、自动登录和多 profile。
 - OAuthBinding 领域与持久化基础设施。
@@ -71,6 +76,9 @@ updated: 2026-07-17T00:00:00
 
 ## 7. 当前差距
 
+- 邮箱验证与密码找回：**服务端 + Web 已闭环**；e2e、主应用 Unverified banner、Desktop IPC 真实现、生产 SMTP 仍缺。
+- 注销未级联：`closeAccount` 未同步禁用 Auth / 撤销全部 session（计划 Phase C）。
+- challenge 存储与 IP 限流为内存实现，多实例与生产需 Redis/外置。
 - 缺少 OAuth 授权发起、state/PKCE 存储校验、Web/Desktop GitHub 登录 UI、浏览器回跳与 Desktop deep link。
 - 缺少已登录账号的 GitHub binding 添加/移除与账号合并流程。
 - 访客 profile 升级为在线账号的接线尚未完成。
@@ -91,4 +99,6 @@ updated: 2026-07-17T00:00:00
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
 - [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)
 - [账户模块说明](./account.md)
+- [ADR-036: Auth / Account 边界与验证安全模型](../../architecture/adr/ADR-036-auth-account-boundary-and-verification.md)
+- [Auth + Account 安全闭环计划](../../plan/active/2026-07-17-auth-account-security-closure.md)
 - [认证模块文件索引](../module-index/authentication-files.md)

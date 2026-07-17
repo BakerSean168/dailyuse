@@ -11,7 +11,11 @@ updated: 2026-07-15T00:00:00
 
 # Web 登录与注册页面后续优化方案
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 ## 摘要
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 本方案记录 Web 端认证入口的后续优化方向，重点解决入口能力与运行表现不一致、注册反馈不足、错误提示不够精细、法律文本不可访问、主题选项冗余以及页面语义层级不足等问题。
 
@@ -19,7 +23,11 @@ updated: 2026-07-15T00:00:00
 
 ## 背景与事实边界
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 ### 运行环境
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - `58080` 是远程开发服务器上启动的项目，不是当前本地仓库直接提供的运行实例。
 - 本方案中的界面问题来自对远程 `58080` 页面的浏览器走查。
@@ -27,6 +35,8 @@ updated: 2026-07-15T00:00:00
 - 后续每项优化都要经过“代码完成、远程重新构建或部署、浏览器验收”三个阶段，才可以标记完成。
 
 ### 当前观察
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - 远程 Web 登录页曾显示“访客模式”，点击后提示该能力仅在桌面端可用。
 - 注册页在字段为空、邮箱格式错误、密码过短或两次密码不一致时，缺少明确、就近的返回信息。
@@ -37,6 +47,8 @@ updated: 2026-07-15T00:00:00
 - 页面主要依赖普通容器和段落组织内容，缺少清晰的主区域、标题、表单和错误区域语义。
 
 ## 目标
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - 让 Web 登录页只展示当前宿主真实可用的能力。
 - 让用户能够理解注册失败的具体原因，并知道下一步如何修正。
@@ -49,6 +61,8 @@ updated: 2026-07-15T00:00:00
 
 ## 非目标
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 本方案不实施任何代码改动。
 - 本方案不修改 Desktop 或 Mobile 的访客模式能力。
 - 本方案不删除 Dashboard 统计接口、统计数据或被 AI 工作区和胶囊预览复用的 Dashboard 能力。
@@ -57,15 +71,23 @@ updated: 2026-07-15T00:00:00
 
 ## 优化项
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 ### 1. Web 端移除并隐藏访客模式
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 #### 问题
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 远程 Web 页面向用户展示“访客模式”，但点击后才说明该能力只在桌面端可用。这会让用户先形成可直接体验产品的预期，再立即遇到拒绝，属于入口能力与实际能力不一致。
 
 当前本地 Web 登录页源码中已经没有访客按钮，但仍保留 Web 专用的访客模式文案；远程运行页面又曾出现该入口。这说明本地源码、构建产物或远程部署状态之间可能存在差异，不能仅以本地页面代码作为完成依据。
 
 #### 优化要求
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - Web 端不渲染访客模式按钮、链接、分隔符或占位区域。
 - 不使用“禁用按钮 + 仅桌面端可用”的表现替代移除，因为禁用入口仍会制造能力预期。
@@ -75,6 +97,8 @@ updated: 2026-07-15T00:00:00
 
 #### 验收标准
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 未登录访问 `/`、`/auth` 和受保护路由跳转到认证页时，均看不到访客模式。
 - Web 页面源码和无障碍树中均不存在可交互的访客入口。
 - Web 认证流程不会再出现“访客模式仅在桌面端可用”的提示。
@@ -82,11 +106,17 @@ updated: 2026-07-15T00:00:00
 
 ### 2. 细化注册页面的返回信息
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 #### 问题
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 当前注册处理对必填项缺失和两次密码不一致采取静默返回。用户点击注册后没有明确反馈，也无法判断需要修改哪个字段。服务端错误则主要集中显示在页面级错误区域，字段问题与系统问题没有分层。
 
 #### 反馈分层
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 注册反馈分为三层：
 
@@ -95,6 +125,8 @@ updated: 2026-07-15T00:00:00
 3. 成功反馈：说明注册已经完成以及接下来将进入的页面，避免无提示跳转。
 
 #### 建议文案
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 | 场景 | 建议中文提示 | 展示位置 |
 | --- | --- | --- |
@@ -113,6 +145,8 @@ updated: 2026-07-15T00:00:00
 
 #### 交互要求
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 首次提交时统一校验全部字段，并把焦点移动到第一个错误字段。
 - 用户修改字段后及时清除已经解决的错误，不保留过期提示。
 - 本地可判断的问题不得等待服务端返回后才提示。
@@ -123,6 +157,8 @@ updated: 2026-07-15T00:00:00
 
 #### 验收标准
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 空字段、非法邮箱、弱密码和密码不一致都有明确且就近的提示。
 - 修正字段后，对应错误会被清除。
 - 已注册邮箱、频率限制、网络失败和服务不可用可以被区分。
@@ -131,11 +167,17 @@ updated: 2026-07-15T00:00:00
 
 ### 3. 将忘记密码作为后续实施点
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 #### 当前处理
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 在完整能力上线前，不保留一个看似可点击但没有行为的“忘记密码？”入口。第一阶段可以暂时隐藏该入口；如果产品必须提前展示，则需要明确标记“暂未开放”，并确保视觉上不被理解为可以立即操作的链接。
 
 #### 后续完整流程
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 1. 用户输入邮箱并请求重置验证码或重置链接。
 2. 页面以不暴露账号是否存在的统一文案响应请求。
@@ -145,6 +187,8 @@ updated: 2026-07-15T00:00:00
 
 #### 产品与安全要求
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 请求结果不暴露某个邮箱是否已经注册，避免账号枚举。
 - 明确验证码或重置链接的有效期、重新发送倒计时和最大尝试次数。
 - 对发送、校验和重置三个阶段分别提供加载、成功、过期、频率限制和系统异常提示。
@@ -153,6 +197,8 @@ updated: 2026-07-15T00:00:00
 
 #### 验收标准
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 忘记密码入口只有在完整流程可用时才表现为可操作链接。
 - 用户可以从登录页完成请求、验证、设置新密码并返回登录的闭环。
 - 页面不会泄露邮箱是否存在。
@@ -160,11 +206,17 @@ updated: 2026-07-15T00:00:00
 
 ### 4. 补充服务条款和隐私政策
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 #### 问题
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 当前“继续即表示您同意服务条款与隐私政策”是普通文本，服务条款和隐私政策没有真实链接。用户无法查看自己被要求同意的具体内容。
 
 #### 优化要求
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - 分别提供可访问的“服务条款”和“隐私政策”链接。
 - 法律文档至少包含版本号、生效日期、更新日期和联系渠道。
@@ -175,6 +227,8 @@ updated: 2026-07-15T00:00:00
 
 #### 验收标准
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 两个法律链接都可通过鼠标、键盘和读屏访问。
 - 链接目标不是占位页或空页面。
 - 查看法律文档后，原认证页面的输入状态不会意外丢失。
@@ -182,7 +236,11 @@ updated: 2026-07-15T00:00:00
 
 ### 5. 确认 Dashboard 页面已经移除
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 #### 当前结论
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 本地仓库中的独立 Dashboard 页面已经退役：`/dashboard` 作为兼容路由跳转到 `/`，AI 工作区承接原来的首页入口，并已有针对 Dashboard 退役行为的 Web E2E 用例。
 
@@ -192,6 +250,8 @@ updated: 2026-07-15T00:00:00
 
 #### 后续确认项
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 登录后的远程环境访问 `/dashboard`，最终必须落到 `/` 的 AI 工作区。
 - 主导航、胶囊导航和设置入口中不再出现独立 Dashboard 页面入口。
 - 不存在可直接渲染的 Dashboard 独立页面组件。
@@ -200,6 +260,8 @@ updated: 2026-07-15T00:00:00
 
 #### 验收标准
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 远程环境登录后访问 `/dashboard` 会稳定跳转到 `/`。
 - 页面中没有独立 Dashboard 导航入口。
 - AI 工作区中的统计信息和相关预览仍可正常加载。
@@ -207,11 +269,17 @@ updated: 2026-07-15T00:00:00
 
 ### 6. 更细致地处理中文错误信息
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 #### 问题
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 错误提示不仅要“翻译成中文”，还需要说明发生了什么、用户能做什么，并避免将后端原始信息、内部术语或不适合当前场景的通用文案直接展示出来。当前错误文本在生成后被保存为字符串，切换语言时已有错误可能不会随当前语言重新翻译。
 
 #### 处理原则
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - 页面状态保存稳定错误码和必要上下文，不保存已经翻译完成的最终字符串。
 - 渲染时根据当前语言将错误码映射为用户文案，切换语言后现有错误同步更新。
@@ -223,6 +291,8 @@ updated: 2026-07-15T00:00:00
 - 错误被用户修正、重新提交成功或切换场景后，应及时清除。
 
 #### 建议错误分类
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 | 类型 | 示例 | 用户动作 |
 | --- | --- | --- |
@@ -236,6 +306,8 @@ updated: 2026-07-15T00:00:00
 
 #### 验收标准
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 中英文切换后，当前错误信息会立即使用对应语言重新显示。
 - 登录、注册、网络和服务错误可以被明确区分。
 - 页面不直接显示后端原始中文或内部错误信息。
@@ -243,13 +315,19 @@ updated: 2026-07-15T00:00:00
 
 ### 7. 登录页移除主题切换，统一使用单一主题
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 #### 决策
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、浅色、深色”切换控件。登录页不再根据系统主题或本地主题偏好切换视觉模式。
 
 本项只约束 Web 登录与注册入口。登录后的工作区、Desktop、Mobile 以及其他宿主的主题策略不在本方案内，除非后续形成单独的全局主题决策。
 
 #### 优化要求
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - 移除登录页右上角的主题切换控件，只保留语言切换。
 - 删除登录页对系统主题、浅色主题和深色主题选择状态的依赖。
@@ -260,6 +338,8 @@ Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、�
 
 #### 验收标准
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 登录页不再出现任何主题切换按钮。
 - 系统切换深浅色后，登录页视觉保持一致。
 - 页面首次加载没有明显的主题闪烁。
@@ -267,11 +347,17 @@ Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、�
 
 ### 8. 优化标题层级与页面语义结构
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 #### 问题
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 当前登录和注册页面主要使用普通容器及段落表达内容，没有清晰的主标题、主区域和表单结构。视觉上可以理解，但浏览器、键盘用户和读屏工具难以准确识别页面层级。
 
 #### 建议结构
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - 页面根区域使用 `main`，认证卡片使用具有明确名称的 `section`。
 - 每个场景只保留一个 `h1`：
@@ -287,6 +373,8 @@ Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、�
 
 #### 信息层级
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 1. 品牌识别：说明用户正在使用哪个产品。
 2. 场景标题：明确当前是在登录、注册还是重置密码。
 3. 场景说明：解释完成操作后的结果。
@@ -297,6 +385,8 @@ Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、�
 
 #### 验收标准
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 - 页面存在唯一且与当前场景一致的一级标题。
 - 登录与注册均可通过真实表单完成键盘提交。
 - 字段错误与对应输入框建立语义关联。
@@ -305,7 +395,11 @@ Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、�
 
 ## 实施顺序
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 ### 第一阶段：收敛当前登录页
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 1. Web 端彻底移除访客模式入口和残留 Web 文案。
 2. 移除主题切换并固定品牌主题。
@@ -317,6 +411,8 @@ Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、�
 
 ### 第二阶段：补齐账户恢复能力
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 1. 确认邮件发送服务、验证码或重置链接策略。
 2. 实现忘记密码请求、验证和设置新密码流程。
 3. 补充安全限制、错误反馈、多语言邮件和自动化测试。
@@ -324,11 +420,15 @@ Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、�
 
 ### 并行确认项：Dashboard 退役状态
 
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
+
 1. 使用有效账号验证远程 `/dashboard` 的登录后落点。
 2. 清点导航入口、旧 Lighthouse 目标和旧页面性能测试。
 3. 保留仍被 AI 工作区和其他模块消费的 Dashboard 数据能力。
 
 ## 远程验收清单
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 - [ ] Web 登录页不显示访客模式。
 - [ ] Web 登录页不显示主题切换控件。
@@ -343,6 +443,8 @@ Web 登录页固定使用当前品牌化深色紫色主题，移除“系统、�
 - [ ] 重新构建或部署远程项目后，使用 `58080` 浏览器实测以上项目。
 
 ## 完成定义
+
+> **2026-07-17 进度**：忘记密码 / 邮箱验证 Web 场景已由 [Auth+Account 安全闭环](./2026-07-17-auth-account-security-closure.md) 落地（WebAuthView forgot/reset/verify-email）。本文件其余登录页整理项仍有效；e2e 仍待。
 
 只有同时满足以下条件，本方案才可以从 `active` 移入 `archive`：
 

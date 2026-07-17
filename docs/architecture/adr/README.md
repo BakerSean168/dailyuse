@@ -4,7 +4,7 @@ tags:
   - index
 description: 架构决策记录索引
 created: 2025-11-23T15:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-17T00:00:00
 ---
 
 # ADR 索引
@@ -49,9 +49,12 @@ updated: 2026-07-16T00:00:00
 | [ADR-032](./ADR-032-support-package-import-conventions.md)          | Support Package Import Conventions                       | 已采纳 | 2026-05-25 |
 | [ADR-033](./ADR-033-cross-module-communication-patterns.md)         | Cross-Module Communication Patterns                      | 已采纳 | 2026-07-10 |
 | [ADR-034](./ADR-034-obsidian-vault-repository.md)                   | 本地 Obsidian Vault 与可选 GitHub 知识仓库               | 已采纳 | 2026-07-16 |
+| [ADR-035](./ADR-035-unified-assistant-agent-host.md)                | 统一助手与可插拔 Agent Host                              | 已采纳 | 2026-07-17 |
+| [ADR-036](./ADR-036-auth-account-boundary-and-verification.md)                | Auth / Account 边界与验证安全模型                          | 已采纳 | 2026-07-17 |
 
 ## 维护规则
 
 - 规则类 ADR 与实施类 ADR 统一收录在这里，不再使用 `003b`、`007b` 这类旁支编号。
 - 历史文档允许保留原始正文结构，但文件名、标题编号和索引状态必须保持一致。
 - 文档与代码冲突时，以当前代码、配置和测试为准；ADR 负责保留决策背景，不替代实现事实。
+

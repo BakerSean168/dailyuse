@@ -5,7 +5,7 @@ tags:
   - account
 description: 账户模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-17T23:59:00
 ---
 
 # 账户模块说明
@@ -23,6 +23,7 @@ updated: 2026-06-02T00:00:00
 - 账户状态管理：支持 Active、Inactive、Suspended、Deleted 四种状态。
 - 联系方式管理：管理邮箱和手机号，支持验证状态跟踪。
 - 身份创建联动：监听认证模块的 `auth:identity-created` 事件，自动创建对应账户。
+- 邮箱投影同步：监听 `auth:email-verified`，将 Account 展示用联系邮箱与 Auth 已验证主邮箱对齐（登录邮箱真源仍在 Authentication）。
 
 ## 3. 用户路径
 
@@ -48,12 +49,12 @@ updated: 2026-06-02T00:00:00
 - 账户资料和认证身份的概念容易混淆：AuthIdentity 管理登录凭证，Account 管理业务资料。
 - 多账户或桌面 profile 场景下的数据归属需要确认。
 - 账户设置与 Setting 模块的用户偏好之间的职责边界需要明确。
-- 联系方式（邮箱、手机）的验证流程目前只有状态跟踪，没有完整的验证实现。
+- 登录邮箱验证权威在 Authentication；Account 仅投影与展示。换绑/改登录邮箱的完整产品流仍待 Phase C/后续。
 
 ## 7. 优化机会
 
 - 梳理账户和认证的职责边界，减少用户对"账户"和"身份"概念的混淆。
-- 强化联系方式的验证流程。
+- 注销级联：关闭账户时需同时禁用 Auth 并撤销 session（见安全闭环计划 Phase C）。
 - 为账户提供更丰富的 Profile 展示能力。
 - 考虑账户数据导入导出能力。
 
@@ -67,12 +68,14 @@ updated: 2026-06-02T00:00:00
 ## 9. 后续待确认
 
 - 账户设置与 Setting 模块的用户偏好是否需要合并。
-- 联系方式验证的完整实现优先级。
+- 改登录邮箱是否允许、是否双码确认（EmailChange）的产品策略。
 - 多账户场景下的数据隔离策略。
 - 账户数据导入导出的需求。
 
 ## 10. 相关资料
 
 - [认证模块说明](./authentication.md)
+- [ADR-036: Auth / Account 边界与验证安全模型](../../architecture/adr/ADR-036-auth-account-boundary-and-verification.md)
+- [Auth + Account 安全闭环计划](../../plan/active/2026-07-17-auth-account-security-closure.md)
 - [设置模块说明](./setting.md)
 - [账户模块文件索引](../module-index/account-files.md)

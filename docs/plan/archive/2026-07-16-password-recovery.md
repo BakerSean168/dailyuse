@@ -1,16 +1,35 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - authentication
-  - web
-  - desktop
   - security
-description: Memoflow 密码找回与重置的独立实施方案
+  - superseded
+description: 已并入 Auth+Account 安全闭环计划的密码找回旧方案（归档）
 created: 2026-07-16T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-17T00:00:00
 ---
 
+# 密码找回与重置实施方案（已归档）
+
+## 归档说明
+
+**状态：已废弃并归档（2026-07-17）。**
+
+原因：
+
+1. 正文与**当前代码冲突**：仓库已有 `POST /api/v1/auth/password/forgot`、`/password/reset`、`ForgotPasswordUseCase` / `ResetPasswordUseCase` 与 6 位码契约（`email + code + newPassword`），并非「完全没有重置接口」。
+2. 正文另起 `POST /authentication/password-recovery/*` 与**链接令牌实体**，与现网路径及统一 OTP/challenge 方向分叉，易造成双轨实现。
+3. 邮件端口、challenge 存储、限流、会话撤销、前端入口与验收，已并入统一计划，不再单独维护。
+
+**承接文档：**
+
+- 实施真源：[Auth + Account 收敛与安全闭环](../active/2026-07-17-auth-account-security-closure.md)
+- 架构决策：[ADR-036](../../architecture/adr/ADR-036-auth-account-boundary-and-verification.md)
+
+以下保留原文供历史对照，**不得再按本文开工**。
+
+---
 # 密码找回与重置实施方案
 
 ## 文档地位
@@ -87,3 +106,4 @@ updated: 2026-07-16T00:00:00
 - [ ] 重置成功后既有会话按策略撤销且有审计记录。
 - [ ] Web 与 Desktop 完整 E2E 通过。
 - [ ] 部署配置、监控和回滚说明完成后入口才可见。
+
