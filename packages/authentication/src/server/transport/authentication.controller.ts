@@ -21,6 +21,7 @@ import {
   RegisterByPhoneSchema,
   RefreshTokenSchema,
   SendSmsCodeSchema,
+  OAuthCallbackSchema,
 } from '@dailyuse/contracts/authentication';
 import type {
   GetCurrentUserRes,
@@ -30,6 +31,7 @@ import type {
   ListSessionsRes,
   RefreshTokenRes,
   RegisterByPhoneRes,
+  OAuthCallbackRes,
 } from '@dailyuse/contracts/authentication';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -82,6 +84,18 @@ export class AuthenticationController {
       });
     }
     return this.api.loginByPhone(parsed.data, cx);
+  }
+
+  async oauthCallback(input: unknown, cx: Context): Promise<Result<OAuthCallbackRes>> {
+    const parsed = OAuthCallbackSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.api.oauthCallback(parsed.data, cx, cx.deviceId);
   }
 
   async sendSmsCode(input: unknown): Promise<Result<void>> {

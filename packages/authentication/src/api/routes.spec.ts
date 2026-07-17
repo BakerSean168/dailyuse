@@ -7,6 +7,7 @@ import {
   CurrentUserResponseSchema,
   ForgotPasswordSchema,
   LoginByEmailSchema,
+  OAuthCallbackSchema,
   RefreshTokenSchema,
   RegisterByEmailSchema,
   ResetPasswordSchema,
@@ -64,6 +65,7 @@ function createStubs(): AuthenticationApplicationPort {
     registerByPhone: vi.fn(),
     login: vi.fn(),
     loginByPhone: vi.fn(),
+    oauthCallback: vi.fn(),
     sendSmsCode: vi.fn(),
     logout: vi.fn(),
     refreshToken: vi.fn(),
@@ -98,6 +100,14 @@ describe('registerAuthenticationRoutes', () => {
 
     expect(bodySchema).toBe(LoginByEmailSchema);
     expect(responseSchema).toBe(AuthResponseSchema);
+  });
+
+  it('POST /oauth/callback — documents the OAuth callback schema and disabled-provider response', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/oauth/callback');
+
+    expect(getJsonBodySchema(route)).toBe(OAuthCallbackSchema);
+    expect(getResponseSchema(route, 200)).toBe(AuthResponseSchema);
+    expect(getResponseStatuses(route)).toContain('503');
   });
 
   it('POST /logout — response uses z.null()', () => {

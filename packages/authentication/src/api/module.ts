@@ -54,6 +54,17 @@ export interface CreateAuthenticationApiModuleOptions {
   readonly refreshSecret?: string;
   readonly accessTokenTtlMs?: number;
   readonly refreshTokenTtlMs?: number;
+  /**
+   * Optional GitHub login configuration. When provided, the GitHub
+   * authentication provider is registered as a pluggable login method.
+   * Omitting it leaves password login as the only method (no code change).
+   * 可选的 GitHub 登录配置。提供时，GitHub 认证提供者作为可插拔登录方式注册；
+   * 不提供则仅保留账密登录（无需改代码）。
+   */
+  readonly github?: {
+    readonly clientId: string;
+    readonly clientSecret: string;
+  };
 }
 
 const DEFAULT_ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
@@ -89,6 +100,7 @@ export function createAuthenticationApiModule(
 
       const authenticationModule = createAuthenticationPrismaModule(db, {
         tokenProvider,
+        github: options.github,
         runtimeContributions: createAuthenticationRuntimeContribution(),
       });
       activeAuthenticationModule = authenticationModule;

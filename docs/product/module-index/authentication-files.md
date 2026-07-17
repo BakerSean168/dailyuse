@@ -5,36 +5,39 @@ tags:
   - authentication
 description: 认证模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-17T00:00:00
 ---
 
 # 认证模块文件索引
 
-本索引用于连接认证模块的业务说明和真实代码。
+本索引用于连接[认证模块说明](../modules/authentication.md)与当前代码。GitHub 登录目前只完成服务端 callback 骨架；授权发起、state/PKCE 校验、Web/Desktop UI、deep link 和账号合并仍未接线。
 
-## 前端页面与路由
+## 前端页面、状态与组件
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/app-vue/src/router/index.ts`](../../../packages/app-vue/src/router/index.ts) | 顶层路由，定义 /auth 路由 |
-| [`packages/app-vue/src/router/guards.ts`](../../../packages/app-vue/src/router/guards.ts) | 认证守卫，重定向未认证用户 |
+| [`packages/app-vue/src/router/index.ts`](../../../packages/app-vue/src/router/index.ts) | 顶层路由与 `/auth` 入口 |
+| [`packages/app-vue/src/router/guards.ts`](../../../packages/app-vue/src/router/guards.ts) | requiresAuth 路由守卫 |
 | [`packages/app-vue/src/views/DesktopAuthView.vue`](../../../packages/app-vue/src/views/DesktopAuthView.vue) | Desktop 认证视图 |
-
-## 前端状态、组合函数与组件
-
-| 文件 | 说明 |
-| --- | --- |
 | [`packages/app-vue/src/modules/authentication/stores/authentication-store.ts`](../../../packages/app-vue/src/modules/authentication/stores/authentication-store.ts) | 认证 Pinia store |
-| [`packages/app-vue/src/modules/authentication/composables/useAuth.ts`](../../../packages/app-vue/src/modules/authentication/composables/useAuth.ts) | 认证编排组合函数 |
+| [`packages/app-vue/src/modules/authentication/composables/useAuth.ts`](../../../packages/app-vue/src/modules/authentication/composables/useAuth.ts) | 认证状态与动作编排 |
 | [`packages/app-vue/src/modules/authentication/composables/useLogin.ts`](../../../packages/app-vue/src/modules/authentication/composables/useLogin.ts) | 登录组合函数 |
 | [`packages/app-vue/src/modules/authentication/composables/useRegister.ts`](../../../packages/app-vue/src/modules/authentication/composables/useRegister.ts) | 注册组合函数 |
-| [`packages/app-vue/src/modules/authentication/composables/useGuestMode.ts`](../../../packages/app-vue/src/modules/authentication/composables/useGuestMode.ts) | 游客模式组合函数 |
-| [`packages/app-vue/src/modules/authentication/composables/useRememberedAccounts.ts`](../../../packages/app-vue/src/modules/authentication/composables/useRememberedAccounts.ts) | 记住账号组合函数 |
-| [`packages/app-vue/src/modules/authentication/composables/useSession.ts`](../../../packages/app-vue/src/modules/authentication/composables/useSession.ts) | 会话管理组合函数 |
-| [`packages/app-vue/src/modules/authentication/composables/usePassword.ts`](../../../packages/app-vue/src/modules/authentication/composables/usePassword.ts) | 密码管理组合函数 |
-| [`packages/app-vue/src/modules/authentication/composables/useSmsCodeCountdown.ts`](../../../packages/app-vue/src/modules/authentication/composables/useSmsCodeCountdown.ts) | 短信验证码倒计时 |
-| [`packages/app-vue/src/modules/authentication/components/LoginForm.vue`](../../../packages/app-vue/src/modules/authentication/components/LoginForm.vue) | 登录表单组件 |
-| [`packages/app-vue/src/modules/authentication/components/RegisterForm.vue`](../../../packages/app-vue/src/modules/authentication/components/RegisterForm.vue) | 注册表单组件 |
+| [`packages/app-vue/src/modules/authentication/composables/useGuestMode.ts`](../../../packages/app-vue/src/modules/authentication/composables/useGuestMode.ts) | 访客模式入口 |
+| [`packages/app-vue/src/modules/authentication/composables/useRememberedAccounts.ts`](../../../packages/app-vue/src/modules/authentication/composables/useRememberedAccounts.ts) | 记住账号能力 |
+| [`packages/app-vue/src/modules/authentication/composables/useSession.ts`](../../../packages/app-vue/src/modules/authentication/composables/useSession.ts) | 会话管理 |
+| [`packages/app-vue/src/modules/authentication/composables/usePassword.ts`](../../../packages/app-vue/src/modules/authentication/composables/usePassword.ts) | 密码管理 |
+| [`packages/app-vue/src/modules/authentication/components/LoginForm.vue`](../../../packages/app-vue/src/modules/authentication/components/LoginForm.vue) | 登录表单 |
+| [`packages/app-vue/src/modules/authentication/components/RegisterForm.vue`](../../../packages/app-vue/src/modules/authentication/components/RegisterForm.vue) | 注册表单 |
+
+## 客户端服务与传输适配器
+
+| 文件 | 说明 |
+| --- | --- |
+| [`packages/authentication/src/application-client/services/auth-client-service.ts`](../../../packages/authentication/src/application-client/services/auth-client-service.ts) | 客户端认证应用服务 |
+| [`packages/authentication/src/application-client/ports/auth-api-client.port.ts`](../../../packages/authentication/src/application-client/ports/auth-api-client.port.ts) | 客户端 API 端口 |
+| [`packages/authentication/src/infrastructure-client/adapters/http/auth-http.adapter.ts`](../../../packages/authentication/src/infrastructure-client/adapters/http/auth-http.adapter.ts) | Web HTTP 适配器 |
+| [`packages/authentication/src/infrastructure-client/adapters/ipc/auth-ipc.adapter.ts`](../../../packages/authentication/src/infrastructure-client/adapters/ipc/auth-ipc.adapter.ts) | Desktop IPC 适配器 |
 
 ## Desktop 认证架构
 
@@ -42,64 +45,90 @@ updated: 2026-06-02T00:00:00
 | --- | --- |
 | [`apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts`](../../../apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts) | Desktop 认证 IPC shell |
 | [`apps/desktop/src/main/modules/authentication/application/auth-desktop-application-service.ts`](../../../apps/desktop/src/main/modules/authentication/application/auth-desktop-application-service.ts) | Desktop 认证应用服务 |
-| [`apps/desktop/src/main/modules/authentication/application/desktop-credential-auth-coordinator.ts`](../../../apps/desktop/src/main/modules/authentication/application/desktop-credential-auth-coordinator.ts) | 凭证认证协调器 |
-| [`apps/desktop/src/main/modules/authentication/application/desktop-auth-lifecycle-coordinator.ts`](../../../apps/desktop/src/main/modules/authentication/application/desktop-auth-lifecycle-coordinator.ts) | 认证生命周期协调器 |
-| [`apps/desktop/src/main/modules/authentication/application/desktop-remembered-account-service.ts`](../../../apps/desktop/src/main/modules/authentication/application/desktop-remembered-account-service.ts) | 记住账号服务 |
+| [`apps/desktop/src/main/modules/authentication/application/desktop-credential-auth-coordinator.ts`](../../../apps/desktop/src/main/modules/authentication/application/desktop-credential-auth-coordinator.ts) | 账密认证协调器 |
+| [`apps/desktop/src/main/modules/authentication/application/desktop-auth-lifecycle-coordinator.ts`](../../../apps/desktop/src/main/modules/authentication/application/desktop-auth-lifecycle-coordinator.ts) | profile 与认证生命周期协调器 |
+| [`apps/desktop/src/main/modules/authentication/application/desktop-remembered-account-service.ts`](../../../apps/desktop/src/main/modules/authentication/application/desktop-remembered-account-service.ts) | 记住账号应用服务 |
+| [`apps/desktop/src/main/modules/authentication/infrastructure/guest-identity-helper.ts`](../../../apps/desktop/src/main/modules/authentication/infrastructure/guest-identity-helper.ts) | 本地访客身份辅助 |
 | [`apps/desktop/src/main/modules/authentication/infrastructure/token-manager.ts`](../../../apps/desktop/src/main/modules/authentication/infrastructure/token-manager.ts) | Token 管理器 |
 | [`apps/desktop/src/main/modules/authentication/infrastructure/session-manager.ts`](../../../apps/desktop/src/main/modules/authentication/infrastructure/session-manager.ts) | 会话管理器 |
 | [`apps/desktop/src/main/modules/authentication/infrastructure/offline-auth-helper.ts`](../../../apps/desktop/src/main/modules/authentication/infrastructure/offline-auth-helper.ts) | 离线认证辅助 |
 
-## API、控制器与适配器
+## HTTP API 与应用组合
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/authentication/src/api/routes.ts`](../../../packages/authentication/src/api/routes.ts) | 认证 HTTP routes（13 个端点） |
-| [`packages/authentication/src/api/module.ts`](../../../packages/authentication/src/api/module.ts) | 认证 API 模块定义 |
-| [`packages/authentication/src/controllers/auth.controller.ts`](../../../packages/authentication/src/controllers/auth.controller.ts) | 认证控制器 |
+| [`packages/authentication/src/api/routes.ts`](../../../packages/authentication/src/api/routes.ts) | 认证 HTTP routes（14 个端点，含 `/oauth/callback`） |
+| [`packages/authentication/src/api/module.ts`](../../../packages/authentication/src/api/module.ts) | API 模块生命周期与可选 GitHub 配置入口 |
+| [`packages/authentication/src/server/transport/authentication.controller.ts`](../../../packages/authentication/src/server/transport/authentication.controller.ts) | 输入校验与应用端口调用 |
+| [`packages/authentication/src/server/application/authentication.application.port.ts`](../../../packages/authentication/src/server/application/authentication.application.port.ts) | transport-neutral 认证应用端口 |
+| [`apps/api/src/main.ts`](../../../apps/api/src/main.ts) | API composition root，注入 JWT 与可选 GitHub OAuth 配置 |
+| [`apps/api/src/shared/infrastructure/config/env.schema.ts`](../../../apps/api/src/shared/infrastructure/config/env.schema.ts) | `GITHUB_OAUTH_CLIENT_ID` / `GITHUB_OAUTH_CLIENT_SECRET` 环境变量 schema |
+| [`apps/api/src/shared/infrastructure/config/env.ts`](../../../apps/api/src/shared/infrastructure/config/env.ts) | GitHub OAuth 可选配置读取 |
+| [`.env.example`](../../../.env.example) | GitHub 登录环境变量示例与权限边界说明 |
 
-## 领域、用例与仓储
-
-| 文件 | 说明 |
-| --- | --- |
-| [`packages/authentication/src/domain-server/aggregates/auth-identity.ts`](../../../packages/authentication/src/domain-server/aggregates/auth-identity.ts) | AuthIdentity 聚合根 |
-| [`packages/authentication/src/domain-server/aggregates/auth-session.ts`](../../../packages/authentication/src/domain-server/aggregates/auth-session.ts) | AuthSession 聚合根 |
-| [`packages/authentication/src/domain-server/entities/password-credential.ts`](../../../packages/authentication/src/domain-server/entities/password-credential.ts) | PasswordCredential 实体 |
-| [`packages/authentication/src/domain-server/services/login.ts`](../../../packages/authentication/src/domain-server/services/login.ts) | 登录领域服务 |
-| [`packages/authentication/src/domain-server/services/registration.ts`](../../../packages/authentication/src/domain-server/services/registration.ts) | 注册领域服务 |
-| [`packages/authentication/src/application-server/use-cases/commands/login.use-case.ts`](../../../packages/authentication/src/application-server/use-cases/commands/login.use-case.ts) | 登录用例 |
-| [`packages/authentication/src/application-server/use-cases/commands/register.use-case.ts`](../../../packages/authentication/src/application-server/use-cases/commands/register.use-case.ts) | 注册用例 |
-| [`packages/authentication/src/application-server/use-cases/commands/refresh-token.use-case.ts`](../../../packages/authentication/src/application-server/use-cases/commands/refresh-token.use-case.ts) | 刷新 token 用例 |
-| [`packages/authentication/src/infrastructure-server/authentication.module.ts`](../../../packages/authentication/src/infrastructure-server/authentication.module.ts) | 服务端认证模块组合根 |
-| [`packages/authentication/src/infrastructure-server/encryptors/argon2-hasher.ts`](../../../packages/authentication/src/infrastructure-server/encryptors/argon2-hasher.ts) | Argon2 密码哈希 |
-
-## Contracts 与数据结构
+## 可插拔认证服务端骨架
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/contracts/src/modules/authentication/aggregates/auth-identity-server.ts`](../../../packages/contracts/src/modules/authentication/aggregates/auth-identity-server.ts) | AuthIdentity 服务端 DTO |
-| [`packages/contracts/src/modules/authentication/aggregates/auth-session-server.ts`](../../../packages/contracts/src/modules/authentication/aggregates/auth-session-server.ts) | AuthSession 服务端 DTO |
-| [`packages/contracts/src/modules/authentication/api/login.dto.ts`](../../../packages/contracts/src/modules/authentication/api/login.dto.ts) | 登录 API DTO |
-| [`packages/contracts/src/modules/authentication/api/register.dto.ts`](../../../packages/contracts/src/modules/authentication/api/register.dto.ts) | 注册 API DTO |
-| [`packages/contracts/src/modules/authentication/protocol/auth-event-map.ts`](../../../packages/contracts/src/modules/authentication/protocol/auth-event-map.ts) | 认证事件 map |
-| [`packages/contracts/src/modules/authentication/protocol/auth-rpc-map.ts`](../../../packages/contracts/src/modules/authentication/protocol/auth-rpc-map.ts) | 认证 RPC map |
-| [`packages/contracts/src/modules/authentication/protocol/desktop-auth.types.ts`](../../../packages/contracts/src/modules/authentication/protocol/desktop-auth.types.ts) | Desktop 认证类型 |
+| [`packages/authentication/src/server/application/use-cases/commands/authenticate.use-case.ts`](../../../packages/authentication/src/server/application/use-cases/commands/authenticate.use-case.ts) | provider 分发后统一签发 Daily Use session |
+| [`packages/authentication/src/server/domain/services/authentication-provider.ts`](../../../packages/authentication/src/server/domain/services/authentication-provider.ts) | `AuthenticationProvider` 契约、方式 ID 与领域错误 |
+| [`packages/authentication/src/server/domain/services/authentication-provider-registry.ts`](../../../packages/authentication/src/server/domain/services/authentication-provider-registry.ts) | provider 注册、重复检测与运行时解析 |
+| [`packages/authentication/src/server/domain/services/providers/password-authentication.provider.ts`](../../../packages/authentication/src/server/domain/services/providers/password-authentication.provider.ts) | 既有账密校验的 provider 适配 |
+| [`packages/authentication/src/server/domain/services/providers/github-authentication.provider.ts`](../../../packages/authentication/src/server/domain/services/providers/github-authentication.provider.ts) | GitHub subject 查找或创建 AuthIdentity |
+| [`packages/authentication/src/server/domain/services/providers/i-github-oauth-client.ts`](../../../packages/authentication/src/server/domain/services/providers/i-github-oauth-client.ts) | GitHub 授权码换取稳定身份的领域端口 |
+| [`packages/authentication/src/server/infrastructure/services/github-oauth-client.ts`](../../../packages/authentication/src/server/infrastructure/services/github-oauth-client.ts) | GitHub token 与 `/user` API 适配器 |
+| [`packages/authentication/src/server/infrastructure/authentication.module.ts`](../../../packages/authentication/src/server/infrastructure/authentication.module.ts) | 默认账密 provider、额外 provider 与应用端口组装 |
+| [`packages/authentication/src/server/infrastructure/prisma.ts`](../../../packages/authentication/src/server/infrastructure/prisma.ts) | Prisma 仓储与可选 GitHub provider 组合根 |
+
+## 核心领域与持久化
+
+| 文件 | 说明 |
+| --- | --- |
+| [`packages/authentication/src/server/domain/aggregates/auth-identity.ts`](../../../packages/authentication/src/server/domain/aggregates/auth-identity.ts) | AuthIdentity 聚合根 |
+| [`packages/authentication/src/server/domain/aggregates/auth-session.ts`](../../../packages/authentication/src/server/domain/aggregates/auth-session.ts) | AuthSession 聚合根 |
+| [`packages/authentication/src/server/domain/entities/password-credential.ts`](../../../packages/authentication/src/server/domain/entities/password-credential.ts) | PasswordCredential 实体 |
+| [`packages/authentication/src/server/domain/entities/oauth-binding.ts`](../../../packages/authentication/src/server/domain/entities/oauth-binding.ts) | OAuthBinding 实体 |
+| [`packages/authentication/src/server/domain/services/login.ts`](../../../packages/authentication/src/server/domain/services/login.ts) | 账密登录领域服务 |
+| [`packages/authentication/src/server/domain/services/registration.ts`](../../../packages/authentication/src/server/domain/services/registration.ts) | 注册领域服务 |
+| [`packages/authentication/src/server/domain/repositories/i-auth-identity.repository.ts`](../../../packages/authentication/src/server/domain/repositories/i-auth-identity.repository.ts) | 身份仓储端口，含 OAuth subject 查询 |
+| [`packages/authentication/src/server/domain/repositories/i-auth-session.repository.ts`](../../../packages/authentication/src/server/domain/repositories/i-auth-session.repository.ts) | 会话仓储端口 |
+| [`packages/authentication/src/server/infrastructure/adapters/prisma/prisma-auth-identity.repository.ts`](../../../packages/authentication/src/server/infrastructure/adapters/prisma/prisma-auth-identity.repository.ts) | Prisma 身份仓储 |
+| [`packages/authentication/src/server/infrastructure/adapters/prisma/prisma-auth-session.repository.ts`](../../../packages/authentication/src/server/infrastructure/adapters/prisma/prisma-auth-session.repository.ts) | Prisma 会话仓储 |
 | [`packages/database/prisma/schema/auth.prisma`](../../../packages/database/prisma/schema/auth.prisma) | 认证 Prisma schema |
+
+## Contracts 与协议
+
+| 文件 | 说明 |
+| --- | --- |
+| [`packages/contracts/src/modules/authentication/api/login.dto.ts`](../../../packages/contracts/src/modules/authentication/api/login.dto.ts) | 账密登录 DTO |
+| [`packages/contracts/src/modules/authentication/api/oauth.dto.ts`](../../../packages/contracts/src/modules/authentication/api/oauth.dto.ts) | OAuth callback 与授权 DTO |
+| [`packages/contracts/src/modules/authentication/api/register.dto.ts`](../../../packages/contracts/src/modules/authentication/api/register.dto.ts) | 注册 DTO |
+| [`packages/contracts/src/modules/authentication/api/session.dto.ts`](../../../packages/contracts/src/modules/authentication/api/session.dto.ts) | 会话 DTO |
+| [`packages/contracts/src/modules/authentication/dtos/auth-response.ts`](../../../packages/contracts/src/modules/authentication/dtos/auth-response.ts) | 登录成功响应 DTO |
+| [`packages/contracts/src/modules/authentication/protocol/auth-event-map.ts`](../../../packages/contracts/src/modules/authentication/protocol/auth-event-map.ts) | 认证事件 map |
+| [`packages/contracts/src/modules/authentication/protocol/auth-rpc-map.ts`](../../../packages/contracts/src/modules/authentication/protocol/auth-rpc-map.ts) | 认证 RPC map，含 `auth:oauth-callback` |
+| [`packages/contracts/src/modules/authentication/protocol/desktop-auth.types.ts`](../../../packages/contracts/src/modules/authentication/protocol/desktop-auth.types.ts) | Desktop 认证协议类型 |
 
 ## 测试入口
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/authentication/src/domain-server/aggregates/__tests__/auth-identity.spec.ts`](../../../packages/authentication/src/domain-server/aggregates/__tests__/auth-identity.spec.ts) | AuthIdentity 聚合测试 |
-| [`packages/authentication/src/domain-server/services/__tests__/login.spec.ts`](../../../packages/authentication/src/domain-server/services/__tests__/login.spec.ts) | 登录服务测试 |
-| [`packages/authentication/src/application-server/use-cases/commands/__tests__/login.test.ts`](../../../packages/authentication/src/application-server/use-cases/commands/__tests__/login.test.ts) | 登录用例测试 |
-| [`packages/authentication/src/api/routes.spec.ts`](../../../packages/authentication/src/api/routes.spec.ts) | 认证 routes 测试 |
-| [`packages/app-vue/src/modules/authentication/stores/authenticationStore.spec.ts`](../../../packages/app-vue/src/modules/authentication/stores/authenticationStore.spec.ts) | 认证 store 测试 |
-| [`apps/web/e2e/authentication/auth-flow.spec.ts`](../../../apps/web/e2e/authentication/auth-flow.spec.ts) | Web 认证流程 e2e |
-| [`apps/desktop/src/main/modules/authentication/application/__tests__/AuthDesktopApplicationService.spec.ts`](../../../apps/desktop/src/main/modules/authentication/application/__tests__/AuthDesktopApplicationService.spec.ts) | Desktop 认证服务测试 |
+| [`packages/authentication/src/api/routes.spec.ts`](../../../packages/authentication/src/api/routes.spec.ts) | HTTP route schema 与状态码文档测试 |
+| [`packages/authentication/src/api/module.spec.ts`](../../../packages/authentication/src/api/module.spec.ts) | API 模块生命周期测试 |
+| [`packages/authentication/src/server/domain/services/__tests__/authentication-provider-registry.spec.ts`](../../../packages/authentication/src/server/domain/services/__tests__/authentication-provider-registry.spec.ts) | provider 注册表测试 |
+| [`packages/authentication/src/server/domain/services/__tests__/password-authentication.provider.spec.ts`](../../../packages/authentication/src/server/domain/services/__tests__/password-authentication.provider.spec.ts) | 账密 provider 测试 |
+| [`packages/authentication/src/server/domain/services/__tests__/github-authentication.provider.spec.ts`](../../../packages/authentication/src/server/domain/services/__tests__/github-authentication.provider.spec.ts) | GitHub subject 与身份创建测试 |
+| [`packages/authentication/src/server/infrastructure/services/__tests__/github-oauth-client.spec.ts`](../../../packages/authentication/src/server/infrastructure/services/__tests__/github-oauth-client.spec.ts) | GitHub API 适配器测试 |
+| [`packages/authentication/src/server/infrastructure/__tests__/pluggable-authentication.spec.ts`](../../../packages/authentication/src/server/infrastructure/__tests__/pluggable-authentication.spec.ts) | 可插拔 provider 组合测试 |
+| [`packages/authentication/src/server/application/use-cases/commands/__tests__/login.test.ts`](../../../packages/authentication/src/server/application/use-cases/commands/__tests__/login.test.ts) | 既有登录用例回归测试 |
+| [`packages/app-vue/src/modules/authentication/stores/authenticationStore.spec.ts`](../../../packages/app-vue/src/modules/authentication/stores/authenticationStore.spec.ts) | 前端认证 store 测试 |
+| [`apps/desktop/src/main/modules/authentication/application/__tests__/AuthDesktopApplicationService.spec.ts`](../../../apps/desktop/src/main/modules/authentication/application/__tests__/AuthDesktopApplicationService.spec.ts) | Desktop 认证应用服务测试 |
+| [`apps/web/e2e/authentication/auth-flow.spec.ts`](../../../apps/web/e2e/authentication/auth-flow.spec.ts) | Web 认证流程 E2E |
 
 ## 需要重点关注的改动风险
 
-- 会话恢复和 token 刷新的可靠性。
-- 认证状态对所有 requiresAuth 页面的影响。
-- Desktop 认证架构与 packages/authentication 的一致性。
-- 密码安全和暴力破解防护。
+- OAuth callback 目前没有授权发起与 state/PKCE 存储校验，不能把服务端骨架视为完整登录流程。
+- GitHub numeric user ID 才是稳定 subject；用户名和邮箱只能用于展示或显式账号合并。
+- GitHub 登录 binding 与知识仓库 installation/token 必须隔离，撤销流程也必须独立。
+- 会话恢复、refresh token、Desktop 离线 profile 和访客升级不能因 GitHub 故障失效。
+- client secret、GitHub user token、Daily Use token 和一次性 callback code 不得进入浏览器日志、deep link 或仓库配置。

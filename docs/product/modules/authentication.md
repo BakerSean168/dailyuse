@@ -5,7 +5,7 @@ tags:
   - authentication
 description: 认证模块当前实现及账密、GitHub、访客三入口目标态
 created: 2026-06-02T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-17T00:00:00
 ---
 
 # 认证模块说明
@@ -20,8 +20,10 @@ updated: 2026-07-16T00:00:00
 - access/refresh token、会话撤销和身份锁定。
 - Desktop 访客、离线认证、记住账号、自动登录和多 profile。
 - OAuthBinding 领域与持久化基础设施。
+- GitHub 登录服务端骨架：授权码换取 GitHub numeric user ID、按 OAuth binding 查找或创建 AuthIdentity，并签发 Daily Use session。
+- `POST /api/v1/auth/oauth/callback` 已接线；仅在 `GITHUB_OAUTH_CLIENT_ID` 与 `GITHUB_OAUTH_CLIENT_SECRET` 同时配置时启用 GitHub provider，未启用时返回 `SERVICE_UNAVAILABLE`。
 - 手机短信入口当前不可用。
-- GitHub 登录的完整 UI、回调、Desktop deep link 和账号绑定尚未实现。
+- OAuth 授权发起、state/PKCE 生命周期、Web/Desktop 登录 UI、Desktop deep link 和账号绑定尚未实现。
 
 ## 3. 已采纳目标态
 
@@ -52,17 +54,31 @@ updated: 2026-07-16T00:00:00
 - GitHub-only 账号移除最后一个 OAuth binding 前，需要增加账密凭据或明确处置账号。
 - 访客 profile 不上传业务和 Vault 数据。
 - Desktop 离线时允许已建立 profile 继续本地使用；GitHub/Daily Use 故障不得锁住 Vault。
-- OAuth callback 使用 state/PKCE；Desktop 只接收一次性 code，不在 deep link 暴露 provider token。
+- 完整 OAuth 流程必须校验 state，并在 provider 支持时使用 PKCE；Desktop 只接收一次性 code，不在 deep link 暴露 provider token。当前服务端 callback 骨架尚未接入授权发起与 state/PKCE 存储校验。
 
-## 6. 当前差距
+## 6. 可插拔认证架构（已实现服务端骨架）
 
-- 缺少 GitHub provider、callback 和账号合并/绑定流程。
-- 缺少 Web 与 Desktop 的统一 OAuth 状态处理。
+服务端已落地"抽象登录接口 + 可插拔方式"的架构，为三入口和未来 SSO 提供优雅扩展点：
+
+- `AuthenticationProvider`：抽象登录契约，每种方式实现凭据校验并返回已验证身份，不签发会话。
+- `AuthenticationProviderRegistry`：按方式 id 分发，组合期重复注册即快速失败。
+- `PasswordAuthenticationProvider`：包装既有 `LoginService`，账密行为不变。
+- `GithubAuthenticationProvider`：经 `IGithubOAuthClient` 端口用授权码换取稳定 numeric subject，find-or-create 身份；仅身份认证，不申请仓库权限。
+- `AuthenticateUseCase`：统一编排 provider 校验 + Daily Use 会话签发，新增方式无需重复会话逻辑或修改用例。
+- `GithubOAuthClient`：具体基础设施适配器（GitHub App user authorization），用授权码临时换取 user access token，再读取 `/user` 的 numeric ID；client secret 仅存服务端，user token 不写入 Daily Use session。
+- GitHub 登录通过 `POST /api/v1/auth/oauth/callback` 接收 `{ provider, code, state }`；`GITHUB_OAUTH_CLIENT_ID` 与 `GITHUB_OAUTH_CLIENT_SECRET` 配置齐全时才注册 GitHub provider，缺省仅账密登录。
+- 该端点当前是服务端骨架，不等于完整 OAuth 产品流程；授权 URL、state/PKCE 校验、浏览器回跳和 Desktop deep link 仍需后续接线。
+
+## 7. 当前差距
+
+- 缺少 OAuth 授权发起、state/PKCE 存储校验、Web/Desktop GitHub 登录 UI、浏览器回跳与 Desktop deep link。
+- 缺少已登录账号的 GitHub binding 添加/移除与账号合并流程。
+- 访客 profile 升级为在线账号的接线尚未完成。
 - 访客升级后 profile/Vault ownership 的无移动接管尚未固化。
 - GitHub 登录与知识仓库授权需要在 UI 和 contract 上明确分离。
 - 手机短信和 2FA 占位会增加设置复杂度，应在无真实实现时隐藏。
 
-## 7. 风险点
+## 8. 风险点
 
 - 同一邮箱可能对应已有账密账号和新的 GitHub identity，需要安全的账号合并确认。
 - GitHub 用户名和邮箱可变或隐藏，不能作为稳定主键。
@@ -70,7 +86,7 @@ updated: 2026-07-16T00:00:00
 - 访客升级失败不能破坏本地 profile。
 - GitHub App 仓库授权不能被误当成登录授权的一部分。
 
-## 8. 相关资料
+## 9. 相关资料
 
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
 - [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)

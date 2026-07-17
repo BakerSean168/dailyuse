@@ -5,7 +5,7 @@ tags:
   - repository
 description: 资源库模块当前实现、本地 Vault、可选 GitHub 同步与跨端边界
 created: 2026-06-02T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-17T00:00:00
 ---
 
 # 资源库模块说明
@@ -22,7 +22,7 @@ updated: 2026-07-16T00:00:00
 - 支持文件夹、资源、标签、书签、搜索、上传和批量导入。
 - Desktop 内容仍位于 profile 的 `storage/repository-storage`。
 - Web 仍挂载完整 Repository/Editor HTTP service，提供数据库笔记的新建、编辑和保存。
-- OAuth binding 数据结构存在，但 GitHub 登录、GitHub App 安装和仓库连接尚未落地。
+- OAuth binding 数据结构和 GitHub 登录服务端 callback 骨架已存在；OAuth UI/state/PKCE、GitHub App 安装和仓库连接尚未落地。
 - `SyncRepositoryUseCase` 仍是占位，没有 Git runtime 或 webhook ingestion。
 
 以上是迁移前代码事实，不代表最终产品边界。
@@ -95,7 +95,7 @@ Web create
 ## 7. 当前差距
 
 - 缺少本地 Vault 绑定、扫描和外部打开。
-- 缺少 GitHub 登录的完整 OAuth UI、回调和 Desktop deep link。
+- 缺少 GitHub 登录的授权发起、state/PKCE 校验、完整 OAuth UI 和 Desktop deep link；当前只有服务端 callback 骨架。
 - 缺少独立 GitHub App installation/仓库授权。
 - 缺少 private repo 创建、首次对账和 Git runtime。
 - 缺少 webhook ingestion、read model 和仓库生命周期处理。

@@ -79,6 +79,18 @@ export const envSchema = z.object({
     .preprocess(emptyStringToUndefined, z.string().min(32).optional())
     .describe('刷新 Token 签名密钥 (默认使用 JWT_SECRET)'),
 
+  // ========== GitHub 登录配置（可选，可插拔登录方式）==========
+  // GitHub login is identity-only per ADR-034; repository authorization is
+  // a separate GitHub App installation flow, not configured here.
+  // ADR-034：GitHub 登录仅做身份认证；仓库授权是独立的 GitHub App 安装流程。
+  GITHUB_OAUTH_CLIENT_ID: z
+    .preprocess(emptyStringToUndefined, z.string().optional())
+    .describe('GitHub 登录 Client ID（未设置时禁用 GitHub 登录）'),
+
+  GITHUB_OAUTH_CLIENT_SECRET: z
+    .preprocess(emptyStringToUndefined, z.string().optional())
+    .describe('GitHub 登录 Client Secret（服务端保管，未设置时禁用 GitHub 登录）'),
+
   // ========== CORS 配置 ==========
   CORS_ORIGIN: z
     .string()

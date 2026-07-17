@@ -18,9 +18,24 @@ import type {
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
 } from '@dailyuse/contracts/authentication';
 
 export interface AuthenticationApplicationPort {
+  /**
+   * Complete a pluggable OAuth login (e.g. GitHub) and issue a session.
+   * 完成可插拔 OAuth 登录（如 GitHub）并签发会话。
+   *
+   * Dispatches to the registered provider for `data.provider`. Returns
+   * SERVICE_UNAVAILABLE when that provider is not configured in this runtime.
+   * 按 `data.provider` 分发到已注册提供者；该运行时未配置时返回 SERVICE_UNAVAILABLE。
+   */
+  oauthCallback(
+    data: OAuthCallbackReq,
+    cx: ExecutionContext,
+    deviceId: string,
+  ): Promise<Result<OAuthCallbackRes>>;
   register(
     data: RegisterByEmailReq,
     cx: ExecutionContext,

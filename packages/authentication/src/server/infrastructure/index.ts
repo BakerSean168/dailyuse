@@ -30,6 +30,10 @@ export { Argon2Hasher } from './encryptors/argon2-hasher';
 
 // ============ Services ============
 export { JwtTokenProvider } from './services/jwt-token-provider';
+export {
+  GithubOAuthClient,
+  type GithubOAuthClientConfig,
+} from './services/github-oauth-client';
 
 // ============ Strategies ============
 export { createJwtStrategy, createLocalStrategy } from './strategies';

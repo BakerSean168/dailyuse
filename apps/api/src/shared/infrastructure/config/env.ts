@@ -169,6 +169,22 @@ export function getJwtConfig() {
 }
 
 /**
+ * 获取 GitHub OAuth 登录配置（可选）。
+ * Returns null when GitHub login is not configured, so the composition root
+ * can skip registering the GitHub provider entirely.
+ * 未配置时返回 null，组合根据此跳过注册 GitHub 提供者。
+ */
+export function getGithubOAuthConfig(): { clientId: string; clientSecret: string } | null {
+  if (!env.GITHUB_OAUTH_CLIENT_ID || !env.GITHUB_OAUTH_CLIENT_SECRET) {
+    return null;
+  }
+  return {
+    clientId: env.GITHUB_OAUTH_CLIENT_ID,
+    clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
+  };
+}
+
+/**
  * 获取 PowerSync 配置
  */
 export function getPowerSyncConfig() {

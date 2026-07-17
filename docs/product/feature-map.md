@@ -4,7 +4,7 @@ tags:
   - feature-map
 description: 当前核心功能地图
 created: 2026-06-02T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-17T00:00:00
 ---
 
 # 功能地图
@@ -25,7 +25,7 @@ updated: 2026-07-16T00:00:00
 | 编辑器模块     | 安全 Markdown 预览、路径确认、AI 引用、Obsidian 外部打开                  | 提供跨端知识呈现和新笔记确认                | 目标态已决策，待收缩      | `packages/editor`、`packages/app-vue/src/modules/editor`                                                                 | 见 [编辑器模块说明](./modules/editor.md) 和 [文件索引](./module-index/editor-files.md)                                                                              |
 | AI 模块        | AI Chat、目标生成、目标自动化、知识笔记、模型选择                         | 用 AI 辅助用户整理上下文并生成结构化行动    | 已盘点                    | `packages/ai`、`packages/app-vue/src/modules/ai`、`apps/ai-service`                                                      | 见 [AI 模块说明](./modules/ai.md) 和 [文件索引](./module-index/ai-files.md)                                                                                         |
 | 账户模块       | 账户中心、用户资料、账户管理、Profile 编辑                                | 管理用户业务资料                            | 已盘点                    | `packages/account`、`packages/app-vue/src/modules/account`                                                               | 见 [账户模块说明](./modules/account.md) 和 [文件索引](./module-index/account-files.md)                                                                              |
-| 认证模块       | 账密、GitHub 登录、访客、会话、离线 profile                               | 管理用户身份认证，并与 GitHub 仓库授权解耦  | 目标态已决策，待补 GitHub | `packages/authentication`、`packages/app-vue/src/modules/authentication`、`apps/desktop/src/main/modules/authentication` | 见 [认证模块说明](./modules/authentication.md) 和 [文件索引](./module-index/authentication-files.md)                                                                |
+| 认证模块       | 账密、GitHub 登录、访客、会话、离线 profile                               | 管理用户身份认证，并与 GitHub 仓库授权解耦  | GitHub 服务端骨架已落地   | `packages/authentication`、`packages/app-vue/src/modules/authentication`、`apps/desktop/src/main/modules/authentication` | 见 [认证模块说明](./modules/authentication.md) 和 [文件索引](./module-index/authentication-files.md)                                                                |
 | 设置模块       | 外观、语言、AI、隐私、快捷键、通知、实验功能                              | 管理用户偏好配置                            | 已盘点                    | `packages/setting`、`packages/app-vue/src/modules/setting`                                                               | 见 [设置模块说明](./modules/setting.md) 和 [文件索引](./module-index/setting-files.md)                                                                              |
 | 治理模块       | 规则管理、状态流转、修订历史、代码示例、搜索                              | 管理产品内治理规则                          | 已盘点                    | `packages/governance`、`packages/app-vue/src/modules/governance`                                                         | 见 [治理模块说明](./modules/governance.md) 和 [文件索引](./module-index/governance-files.md)                                                                        |
 

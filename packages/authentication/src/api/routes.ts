@@ -31,6 +31,7 @@ import {
   RevokeSessionSchema,
   ResetPasswordSchema,
   SendSmsCodeSchema,
+  OAuthCallbackSchema,
   CurrentUserResponseSchema,
   SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
@@ -122,6 +123,24 @@ export function registerAuthenticationRoutes(
     },
     [],
     (req, ctx) => controller.loginByPhone(req.body, ctx),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/oauth/callback',
+      summary: 'OAuth 登录回调（当前支持 GitHub）',
+      request: { body: { content: { 'application/json': { schema: OAuthCallbackSchema } } } },
+      responses: {
+        200: successResponse(AuthResponseSchema, '登录成功'),
+        400: errorResponse('参数错误或不支持的登录方式'),
+        401: errorResponse('认证失败'),
+        503: errorResponse('该 OAuth 提供者未启用'),
+      },
+    },
+    [],
+    (req, ctx) => controller.oauthCallback(req.body, ctx),
     { requireAuth: false },
   );
 

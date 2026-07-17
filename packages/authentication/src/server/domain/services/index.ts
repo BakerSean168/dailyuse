@@ -10,3 +10,28 @@ export type {
   RefreshTokenPayload,
   AuthTokens,
 } from './token-provider.interface';
+
+// ================= Pluggable authentication providers =================
+export {
+  AuthenticationMethod,
+  UnsupportedAuthenticationMethodError,
+  DuplicateAuthenticationProviderError,
+} from './authentication-provider';
+export type {
+  AuthenticationProvider,
+  AuthenticationContext,
+  AuthenticationResult,
+} from './authentication-provider';
+export { AuthenticationProviderRegistry } from './authentication-provider-registry';
+export {
+  PasswordAuthenticationProvider,
+  type PasswordCredentials,
+} from './providers/password-authentication.provider';
+export {
+  GithubAuthenticationProvider,
+  type GithubCredentials,
+} from './providers/github-authentication.provider';
+export type {
+  IGithubOAuthClient,
+  GithubUserIdentity,
+} from './providers/i-github-oauth-client';

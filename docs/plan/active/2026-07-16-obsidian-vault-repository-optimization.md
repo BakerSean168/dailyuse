@@ -399,10 +399,21 @@ POST /knowledge-notes
 
 ### 阶段 2：GitHub 认证与仓库连接
 
-- GitHub 登录 OAuth flow 和 Daily Use session。
+- GitHub 登录 OAuth flow 和 Daily Use session。**（服务端骨架已实现）**
 - 独立 GitHub App installation flow。
 - 创建/连接 private repository、首次对账和连接状态。
 - 访客升级且不移动 Vault。
+
+> 进展 2026-07-17：已落地可插拔认证架构。服务端抽象登录接口
+> `AuthenticationProvider` + `AuthenticationProviderRegistry` + `AuthenticateUseCase`
+> 就位；账密（`PasswordAuthenticationProvider`）与 GitHub
+> （`GithubAuthenticationProvider` + `IGithubOAuthClient` 端口 + `GithubOAuthClient`
+> 适配器）均以插件形式注册。GitHub 登录经 `POST /api/v1/auth/oauth/callback`
+> 暴露，仅在 `GITHUB_OAUTH_CLIENT_ID` 与 `GITHUB_OAUTH_CLIENT_SECRET` 配置齐全时
+> 注册，只做身份认证、不申请仓库权限。当前端点仍是服务端骨架，授权发起、
+> state/PKCE 校验、Web/Desktop UI 与 deep link 尚未接线。认证包 291 个单测、
+> 受影响项目 lint/typecheck/test、governance-check 与本地 Docker build/健康检查均
+> 通过。待办：完整 OAuth 流程、GitHub App installation、仓库连接与访客升级。
 
 ### 阶段 3：Desktop Git 同步
 

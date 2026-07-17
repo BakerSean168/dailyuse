@@ -37,8 +37,11 @@ import type {
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
 } from '@dailyuse/contracts/authentication';
 import {
+  AuthenticateUseCase,
   ChangePasswordUseCase,
   ForgotPasswordUseCase,
   ResetPasswordUseCase,
@@ -50,6 +53,12 @@ import {
   RefreshTokenUseCase,
   RevokeSessionUseCase,
 } from '../application';
+import {
+  AuthenticationMethod,
+  AuthenticationProviderRegistry,
+  PasswordAuthenticationProvider,
+  type AuthenticationProvider,
+} from '../domain';
 import { InMemoryPasswordResetCodeStore } from './services/in-memory-password-reset-code-store';
 import { ConsoleEmailSender } from './services/console-email-sender';
 
@@ -75,6 +84,17 @@ export interface AuthenticationModuleDependencies {
   readonly sessionRepository: IAuthSessionRepository;
   readonly passwordHasher: IPasswordHasher;
   readonly tokenProvider: ITokenProvider;
+  /**
+   * Extra pluggable authentication providers (e.g. GitHub, guest, SSO).
+   * 额外的可插拔认证提供者（如 GitHub、访客、SSO）。
+   *
+   * The password provider is always registered by default. Providers listed
+   * here are registered on top, so the composition root decides which login
+   * methods a given runtime (API / Electron) exposes — without editing the module.
+   * 账密提供者始终默认注册；此处列出的提供者叠加注册，由组合根决定某运行时
+   * 开放哪些登录方式，无需修改本模块。
+   */
+  readonly authenticationProviders?: readonly AuthenticationProvider[];
   readonly runtimeContributions?: AuthenticationRuntimeContributionsInput;
 }
 
@@ -106,6 +126,11 @@ export interface AuthenticationModuleRuntimeContribution {
  * access to use-case objects, but transports should prefer `AuthenticationApplicationPort`.
  */
 export interface AuthenticationModuleUseCases {
+  /**
+   * Unified pluggable authentication entry point (password / GitHub / ...).
+   * 统一的可插拔认证入口（账密 / GitHub / ...）。
+   */
+  readonly authenticate: AuthenticateUseCase;
   readonly login: LoginUseCase;
   readonly logout: LogoutUseCase;
   readonly register: RegisterUseCase;
@@ -143,6 +168,19 @@ export interface AuthenticationApplicationPort {
   changePassword(data: ChangePasswordReq, cx: ExecutionContext): Promise<Result<void>>;
   forgotPassword(data: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(data: ResetPasswordReq): Promise<Result<void>>;
+  /**
+   * Pluggable OAuth login callback (currently GitHub).
+   * 可插拔 OAuth 登录回调（当前为 GitHub）。
+   *
+   * Dispatches through the provider registry via {@link AuthenticateUseCase}.
+   * Returns SERVICE_UNAVAILABLE when the requested provider is not registered.
+   * 通过 AuthenticateUseCase 经注册表分发；未注册对应提供者时返回 SERVICE_UNAVAILABLE。
+   */
+  oauthCallback(
+    data: OAuthCallbackReq,
+    cx: ExecutionContext,
+    deviceId: string,
+  ): Promise<Result<OAuthCallbackRes>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -182,7 +220,18 @@ export function createAuthenticationUseCases(
   const codeStore = new InMemoryPasswordResetCodeStore();
   const emailSender = new ConsoleEmailSender();
 
+  // Build the pluggable provider registry.
+  // The password provider is always available; extra providers (GitHub, guest,
+  // SSO) are layered on by the composition root without editing this module.
+  // 组装可插拔提供者注册表：账密提供者始终可用；GitHub/访客/SSO 等额外提供者
+  // 由组合根叠加，无需修改本模块。
+  const providerRegistry = new AuthenticationProviderRegistry([
+    new PasswordAuthenticationProvider(identityRepository, passwordHasher),
+    ...(dependencies.authenticationProviders ?? []),
+  ]);
+
   return {
+    authenticate: new AuthenticateUseCase(providerRegistry, sessionRepository, tokenProvider),
     login: new LoginUseCase(identityRepository, sessionRepository, passwordHasher, tokenProvider),
     logout: new LogoutUseCase(sessionRepository),
     register: new RegisterUseCase(identityRepository, sessionRepository, passwordHasher, tokenProvider),
@@ -204,6 +253,23 @@ export function createAuthenticationUseCases(
 // ---------------------------------------------------------------------------
 // Normalize runtime contributions — 规范化运行时贡献
 // ---------------------------------------------------------------------------
+
+/**
+ * Map an OAuth provider name from the contract enum to a registry method id.
+ * 将契约枚举中的 OAuth provider 名映射为注册表方式 id。
+ *
+ * Only GitHub is wired today; other providers fall through to their lowercase
+ * name and will surface as SERVICE_UNAVAILABLE unless a provider is registered.
+ * 目前仅接线 GitHub；其他 provider 回退为小写名，未注册时表现为 SERVICE_UNAVAILABLE。
+ */
+function oauthProviderToMethod(provider: OAuthCallbackReq['provider']): string {
+  switch (provider) {
+    case 'Github':
+      return AuthenticationMethod.Github;
+    default:
+      return provider.toLowerCase();
+  }
+}
 
 function normalizeRuntimeContributions(
   runtimeContributions?:
@@ -287,6 +353,17 @@ export function createAuthenticationModule(
     forgotPassword: (data) => useCases.forgotPassword.execute(data),
 
     resetPassword: (data) => useCases.resetPassword.execute(data),
+
+    // Pluggable OAuth login — dispatches to the provider registered under the
+    // method id derived from the provider name (e.g. 'Github' -> 'github').
+    // 可插拔 OAuth 登录 —— 分发到按 provider 名派生的方式 id 所注册的提供者。
+    oauthCallback: (data, cx, deviceId) =>
+      useCases.authenticate.execute(
+        oauthProviderToMethod(data.provider),
+        { code: data.code, state: data.state },
+        cx,
+        deviceId,
+      ),
   };
 
   return {

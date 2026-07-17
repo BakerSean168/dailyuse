@@ -11,7 +11,7 @@
  */
 
 // 环境配置必须最先加载（包含 dotenv 加载逻辑）
-import { env, getJwtConfig } from './shared/infrastructure/config/env.js';
+import { env, getJwtConfig, getGithubOAuthConfig } from './shared/infrastructure/config/env.js';
 import { prisma, connectDatabase, disconnectDatabase } from '@dailyuse/database';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -155,9 +155,13 @@ async function bootstrap(): Promise<void> {
   // chars, REFRESH_TOKEN_SECRET defaults to JWT_SECRET), injected here so the
   // module never reads process.env directly or bypasses schema validation.
   const jwtConfig = getJwtConfig();
+  // GitHub login is optional and pluggable: only registered when configured.
+  // GitHub 登录可选且可插拔：仅在配置齐全时注册。
+  const githubOAuthConfig = getGithubOAuthConfig();
   const authenticationApiModule = createAuthenticationApiModule({
     jwtSecret: jwtConfig.secret,
     refreshSecret: jwtConfig.refreshSecret,
+    github: githubOAuthConfig ?? undefined,
   });
 
   const app = await bootstrapper
