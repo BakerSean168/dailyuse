@@ -9,6 +9,7 @@ import type { AuthEventMap } from '@dailyuse/contracts/authentication';
 import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
 import { IdentityCreatedHandler } from './identity-created.handler';
+import { EmailVerifiedHandler } from './email-verified.handler';
 
 const logger = createLogger('AccountEventListeners');
 
@@ -23,11 +24,22 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
   stop(): void;
 } {
   const identityCreatedHandler = new IdentityCreatedHandler(accountRepository);
+  const emailVerifiedHandler = new EmailVerifiedHandler(accountRepository);
   const onIdentityCreated = async (payload: AuthEventMap['auth:identity-created']) => {
     try {
       await identityCreatedHandler.handle({ payload });
     } catch (error) {
       logger.error('[AccountEventListeners] Failed to handle auth:identity-created event', {
+        error: error instanceof Error ? error.message : String(error),
+        payload,
+      });
+    }
+  };
+  const onEmailVerified = async (payload: AuthEventMap['auth:email-verified']) => {
+    try {
+      await emailVerifiedHandler.handle({ payload });
+    } catch (error) {
+      logger.error('[AccountEventListeners] Failed to handle auth:email-verified event', {
         error: error instanceof Error ? error.message : String(error),
         payload,
       });
@@ -42,6 +54,7 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
       }
 
       authSubscriber.on('auth:identity-created', onIdentityCreated);
+      authSubscriber.on('auth:email-verified', onEmailVerified);
       started = true;
       logger.info('[AccountEventListeners] Account event listeners registered successfully');
     },
@@ -51,6 +64,7 @@ export function createAccountEventListenerRuntime(accountRepository: IAccountRep
       }
 
       authSubscriber.off('auth:identity-created', onIdentityCreated);
+      authSubscriber.off('auth:email-verified', onEmailVerified);
       started = false;
       logger.info('[AccountEventListeners] Account event listeners unregistered');
     },

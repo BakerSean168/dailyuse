@@ -6,3 +6,4 @@
 
 export { IdentityCreatedHandler } from './identity-created.handler';
 export { createAccountEventListenerRuntime } from './register-account-event-listeners';
+export { EmailVerifiedHandler } from './email-verified.handler';

@@ -134,7 +134,29 @@ export class Account extends AggregateRoot<IdentityId> {
     });
   }
 
-  public close(): void {
+  /**
+   * Project verified login email from Authentication onto ContactEmail.
+   * Auth is the source of truth for login email ownership.
+   */
+  public syncVerifiedEmail(address: string): void {
+    const next = ContactEmail.create({
+      address,
+      isVerified: true,
+      isPrimary: true,
+      verifiedAt: Date.now(),
+    });
+    // Idempotent when already verified with same address.
+    if (
+      this._props.email.address === next.address &&
+      this._props.email.isVerified
+    ) {
+      return;
+    }
+    this._props.email = next;
+    this.refreshUpdatedAt();
+  }
+
+    public close(): void {
     if (this._props.status === AccountStatus.Deactivated) {
       throw new Error('Account is already closed.');
     }

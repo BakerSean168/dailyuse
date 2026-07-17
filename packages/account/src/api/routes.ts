@@ -34,6 +34,7 @@ import type { AccountApplicationPort } from '../server/application';
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
+  readonly requireEmailVerified?: RequestHandler;
 }
 
 // ============ Route Registration ============
@@ -44,8 +45,11 @@ export function registerAccountRoutes(
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
-  const { auth } = middleware;
+  const { auth, requireEmailVerified } = middleware;
   const controller = new AccountController(api);
+  // Profile reads allowed for Unverified (show banner); mutations gated.
+  const writeAuth: RequestHandler[] = requireEmailVerified ? [auth, requireEmailVerified] : [auth];
+  const readAuth: RequestHandler[] = [auth];
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/accounts',
@@ -64,7 +68,7 @@ export function registerAccountRoutes(
         401: errorResponse('未认证'),
       },
     },
-    [auth],
+    [...readAuth],
     (_req, ctx) => controller.getProfile(ctx),
   );
 
@@ -80,7 +84,7 @@ export function registerAccountRoutes(
         400: errorResponse('参数错误'),
       },
     },
-    [auth],
+    [...writeAuth],
     (req, ctx) => controller.updateProfile(req.body, ctx),
   );
 
@@ -97,7 +101,7 @@ export function registerAccountRoutes(
         400: errorResponse('参数错误'),
       },
     },
-    [auth],
+    [...writeAuth],
     (req, ctx) => controller.updateSettings(req.body, ctx),
   );
 
@@ -112,7 +116,7 @@ export function registerAccountRoutes(
         200: successResponse(AvailabilityResponseSchema, '检查成功'),
       },
     },
-    [auth],
+    [...writeAuth],
     (req) => controller.checkAvailability(req.body),
   );
 
@@ -128,7 +132,7 @@ export function registerAccountRoutes(
         400: errorResponse('参数错误'),
       },
     },
-    [auth],
+    [...writeAuth],
     (req, ctx) => controller.closeAccount(req.body, ctx),
   );
 
@@ -139,7 +143,7 @@ export function registerAccountRoutes(
       path: '/me',
       skipOpenApi: true,
     },
-    [auth],
+    [...writeAuth],
     (req, ctx) => controller.closeAccount(req.body, ctx),
   );
 
