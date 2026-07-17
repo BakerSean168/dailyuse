@@ -46,6 +46,12 @@ export const AuthResponseSchema = z.object({
 export const CurrentUserResponseSchema = z.object({
   identity: AuthIdentitySchema,
   session: AuthSessionSchema.nullable(),
+  emailVerification: z
+    .object({
+      required: z.boolean(),
+      emailMasked: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const SessionListResponseSchema = z.object({

@@ -60,6 +60,11 @@ export type GetCurrentUserReq = void;
 export interface CurrentUserDTO {
   identity: AuthIdentityClientDTO;
   session?: AuthSessionClientDTO | null;
+  /** Present when client should drive post-register / unverified email UX. */
+  emailVerification?: {
+    required: boolean;
+    emailMasked?: string;
+  };
 }
 
 export type GetCurrentUserRes = CurrentUserDTO;

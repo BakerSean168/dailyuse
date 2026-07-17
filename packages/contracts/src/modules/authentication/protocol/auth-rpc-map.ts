@@ -28,6 +28,10 @@ import type {
   ForgotPasswordRes,
   ResetPasswordReq,
   ResetPasswordRes,
+  SendEmailCodeReq,
+  SendEmailCodeRes,
+  VerifyEmailCodeReq,
+  VerifyEmailCodeRes,
   GetOAuthUrlReq,
   GetOAuthUrlRes,
   OAuthCallbackReq,
@@ -68,7 +72,12 @@ export type AuthRpcMap = {
   'auth:forgot-password': [ForgotPasswordReq, ForgotPasswordRes];
   'auth:reset-password': [ResetPasswordReq, ResetPasswordRes];
 
+  // Email verification
+  'auth:send-email-code': [SendEmailCodeReq, SendEmailCodeRes];
+  'auth:verify-email-code': [VerifyEmailCodeReq, VerifyEmailCodeRes];
+
   // OAuth
   'auth:get-oauth-url': [GetOAuthUrlReq, GetOAuthUrlRes];
   'auth:oauth-callback': [OAuthCallbackReq, OAuthCallbackRes];
 };
+

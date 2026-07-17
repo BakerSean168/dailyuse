@@ -26,6 +26,7 @@ export interface ServerModuleContext<DbClient> {
   readonly middleware: {
     readonly auth: import('express').RequestHandler;
     requireRole(roles: string[]): import('express').RequestHandler;
+    readonly requireEmailVerified?: import('express').RequestHandler;
   };
   readonly openApiRegistry?: {
     registerPath(route: Record<string, unknown>): void;

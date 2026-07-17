@@ -171,6 +171,8 @@ export const AuthChannels = {
   RESET_PASSWORD: 'auth:reset-password',
   CHANGE_PASSWORD: 'auth:change-password',
   SEND_SMS_CODE: 'auth:send-sms-code',
+  SEND_EMAIL_CODE: 'auth:send-email-code',
+  VERIFY_EMAIL_CODE: 'auth:verify-email-code',
 } as const;
 
 export const AIChannels = {
@@ -344,3 +346,4 @@ export const WindowChannels = {
   CLOSE_AUTH_REGISTER: 'window:close-auth-register',
   FOCUS_MAIN_WINDOW: 'window:focus-main-window',
 } as const;
+

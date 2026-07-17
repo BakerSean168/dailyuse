@@ -13,3 +13,5 @@ export * from './oauth.dto';
 export * from './session.dto';
 export * from './response-schemas';
 export type { AuthBootstrapSnapshot } from '../protocol/desktop-auth.types';
+export * from './email.dto';
+

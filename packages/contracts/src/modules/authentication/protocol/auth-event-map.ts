@@ -9,6 +9,7 @@ import type { IdentityDisabledEvent } from '../domain/events/identity-disabled.e
 import type { SessionCreatedEvent } from '../domain/events/session-created.event';
 import type { IdentityCreatedEvent } from '../domain/events/identity-created.event';
 import type { SessionRevokedEvent } from '../domain/events/session-revoked.event';
+import type { EmailVerifiedEvent } from '../domain/events/email-verified.event';
 
 /**
  * Authentication Module - Event Map
@@ -81,5 +82,12 @@ export type AuthEventMap = {
 
   'auth:session-created': SessionCreatedEvent;
   'auth:session-revoked': SessionRevokedEvent;
+
+  /**
+   * Email ownership verified
+   * Triggered when an email identifier is verified via OTP
+   */
+  'auth:email-verified': EmailVerifiedEvent;
 };
+
 

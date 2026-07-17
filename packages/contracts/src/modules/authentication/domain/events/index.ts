@@ -17,3 +17,5 @@ export { IdentityCreateMethod } from './identity-created.event';
 export type { IdentityCreatedEvent } from './identity-created.event';
 // Re-export union type
 export type { UserLoggedInEvent as AuthenticationDomainEvent } from './user-logged-in.event';
+export type { EmailVerifiedEvent } from './email-verified.event';
+
