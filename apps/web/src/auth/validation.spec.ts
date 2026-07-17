@@ -1,5 +1,14 @@
+import { RegisterByEmailSchema } from '@dailyuse/contracts/authentication';
 import { describe, expect, it } from 'vitest';
-import { firstInvalidField, validateLogin, validateRegistration } from './validation';
+
+import {
+  firstInvalidField,
+  validateForgotPassword,
+  validateLogin,
+  validateRegistration,
+  validateResetPassword,
+  validateVerifyEmail,
+} from './validation';
 
 describe('web authentication validation', () => {
   it('returns every registration issue and preserves first-field order', () => {
@@ -43,15 +52,13 @@ describe('web authentication validation', () => {
 
   it('inherits the shared registration password maximum length contract', () => {
     const passwordAtLimit = `A1${'a'.repeat(98)}`;
-    const passwordOverLimit = `${passwordAtLimit}a`;
+    const passwordOverLimit = `A1${'a'.repeat(99)}`;
 
-    expect(
-      validateRegistration({
-        email: 'person@example.com',
-        password: passwordAtLimit,
-        confirmPassword: passwordAtLimit,
-      }),
-    ).toEqual({});
+    expect(passwordAtLimit.length).toBe(100);
+    expect(passwordOverLimit.length).toBe(101);
+    expect(RegisterByEmailSchema.safeParse({ email: 'person@example.com', password: passwordAtLimit }).success).toBe(
+      true,
+    );
     expect(
       validateRegistration({
         email: 'person@example.com',
@@ -59,5 +66,39 @@ describe('web authentication validation', () => {
         confirmPassword: passwordOverLimit,
       }),
     ).toEqual({ password: 'auth.validation.passwordMaxLength' });
+  });
+
+  it('validates forgot password email', () => {
+    expect(validateForgotPassword({ email: '' })).toEqual({
+      email: 'auth.validation.emailRequired',
+    });
+    expect(validateForgotPassword({ email: 'person@example.com' })).toEqual({});
+  });
+
+  it('validates reset password fields including 6-digit code', () => {
+    expect(
+      validateResetPassword({
+        email: 'person@example.com',
+        code: '12',
+        newPassword: 'Test123456!',
+        confirmPassword: 'Test123456!',
+      }),
+    ).toEqual({ code: 'auth.validation.codeInvalid' });
+
+    expect(
+      validateResetPassword({
+        email: 'person@example.com',
+        code: '123456',
+        newPassword: 'Test123456!',
+        confirmPassword: 'Test123456!',
+      }),
+    ).toEqual({});
+  });
+
+  it('validates email verification fields', () => {
+    expect(validateVerifyEmail({ email: 'person@example.com', code: '' })).toEqual({
+      code: 'auth.validation.codeRequired',
+    });
+    expect(validateVerifyEmail({ email: 'person@example.com', code: '123456' })).toEqual({});
   });
 });

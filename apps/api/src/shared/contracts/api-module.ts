@@ -46,6 +46,11 @@ export interface IApiMiddleware {
   readonly auth: RequestHandler;
   /** 角色权限检查中间件 */
   requireRole(roles: string[]): RequestHandler;
+  /**
+   * Optional gate: after JWT auth, block Unverified identities on sensitive routes.
+   * 可选门禁：JWT 后对未验证邮箱身份拦截敏感路由。
+   */
+  readonly requireEmailVerified?: RequestHandler;
 }
 
 /**

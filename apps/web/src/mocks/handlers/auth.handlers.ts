@@ -24,6 +24,8 @@ export const authMockRoutes = {
   changePassword: `${BASE}/password/change`,
   forgotPassword: `${BASE}/password/forgot`,
   resetPassword: `${BASE}/password/reset`,
+  sendEmailCode: `${BASE}/email/send-code`,
+  verifyEmailCode: `${BASE}/email/verify`,
 };
 
 export function createMockCurrentUserResponse() {
@@ -180,6 +182,28 @@ export const authHandlers = [
       code: 200,
       message: 'Password reset successful',
       data: null,
+      timestamp: Date.now(),
+    });
+  }),
+
+
+  http.post(`${BASE}/email/send-code`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Verification code sent',
+      data: null,
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${BASE}/email/verify`, () => {
+    const mockAuth = createMockAuthResponse();
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Email verified',
+      data: { identity: { ...mockAuth.identity, status: 'Active' } },
       timestamp: Date.now(),
     });
   }),

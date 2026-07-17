@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { APP_DISPLAY_NAME, logo128 } from '@dailyuse/assets';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn/components/ui/card';
@@ -18,12 +18,21 @@ import {
 } from './presentation';
 import {
   firstInvalidField,
+  validateForgotPassword,
   validateLogin,
   validateRegistration,
+  validateResetPassword,
+  validateVerifyEmail,
+  type ForgotField,
+  type ForgotValidationErrors,
   type LoginField,
   type LoginValidationErrors,
   type RegisterField,
   type RegisterValidationErrors,
+  type ResetField,
+  type ResetValidationErrors,
+  type VerifyEmailField,
+  type VerifyEmailValidationErrors,
 } from './validation';
 
 const { t, locale } = useI18n();
@@ -33,12 +42,25 @@ const currentLocale = ref<AuthLocale>(initialPresentation.locale);
 applyAuthLocale(currentLocale.value);
 locale.value = currentLocale.value;
 
-const { loginByEmail, registerByEmail, isLoading, errorMessage, clearError } = useWebAuth();
+const {
+  loginByEmail,
+  registerByEmail,
+  forgotPassword,
+  resetPassword,
+  sendEmailCode,
+  verifyEmailCode,
+  isLoading,
+  errorMessage,
+  successMessage,
+  pendingVerificationEmail,
+  clearError,
+  clearSuccessMessage,
+} = useWebAuth();
 
 const INPUT_DARK_CLASS =
   'h-[42px] rounded-[10px] border-white/10 bg-white/[0.06] px-3.5 text-[14px] text-white placeholder:text-white/[0.28] focus-visible:border-primary/50 focus-visible:bg-white/10 focus-visible:ring-1 focus-visible:ring-primary/50 aria-[invalid=true]:border-red-400/70 aria-[invalid=true]:ring-red-400/30';
 
-type Scene = 'password-login' | 'register';
+type Scene = 'password-login' | 'register' | 'forgot' | 'reset' | 'verify-email';
 
 const scene = ref<Scene>('password-login');
 const email = ref('');
@@ -46,24 +68,58 @@ const password = ref('');
 const regEmail = ref('');
 const regPassword = ref('');
 const confirmPassword = ref('');
-const authAction = ref<'login' | 'register' | null>(null);
+const forgotEmail = ref('');
+const resetEmail = ref('');
+const resetCode = ref('');
+const resetPasswordValue = ref('');
+const resetConfirmPassword = ref('');
+const verifyEmail = ref('');
+const verifyCode = ref('');
+const authAction = ref<'login' | 'register' | 'forgot' | 'reset' | 'verify' | 'resend' | null>(null);
+const resendSecondsLeft = ref(0);
+let resendTimer: ReturnType<typeof setInterval> | null = null;
 const loginErrors = reactive<LoginValidationErrors>({});
 const registerErrors = reactive<RegisterValidationErrors>({});
+const forgotErrors = reactive<ForgotValidationErrors>({});
+const resetErrors = reactive<ResetValidationErrors>({});
+const verifyErrors = reactive<VerifyEmailValidationErrors>({});
+const RESEND_COOLDOWN_SECONDS = 60;
 
 const localeOptions = computed(() => [
   { value: 'zh-CN' as const, label: t('auth.page.locales.zhCN') },
   { value: 'en-US' as const, label: t('auth.page.locales.enUS') },
 ]);
-const sceneTitle = computed(() =>
-  scene.value === 'password-login'
-    ? t('auth.login.heading', { app: APP_DISPLAY_NAME })
-    : t('auth.register.heading', { app: APP_DISPLAY_NAME }),
-);
-const sceneDescription = computed(() =>
-  scene.value === 'password-login'
-    ? t('auth.page.description')
-    : t('auth.register.description'),
-);
+const sceneTitle = computed(() => {
+  switch (scene.value) {
+    case 'register':
+      return t('auth.register.heading', { app: APP_DISPLAY_NAME });
+    case 'forgot':
+      return t('auth.forgot.heading');
+    case 'reset':
+      return t('auth.reset.heading');
+    case 'verify-email':
+      return t('auth.verify.heading');
+    default:
+      return t('auth.login.heading', { app: APP_DISPLAY_NAME });
+  }
+});
+const sceneDescription = computed(() => {
+  switch (scene.value) {
+    case 'register':
+      return t('auth.register.description');
+    case 'forgot':
+      return t('auth.forgot.description');
+    case 'reset':
+      return t('auth.reset.description');
+    case 'verify-email':
+      return verifyEmail.value
+        ? t('auth.verify.description', { email: verifyEmail.value })
+        : t('auth.verify.descriptionGeneric');
+    default:
+      return t('auth.page.description');
+  }
+});
+const canResendCode = computed(() => resendSecondsLeft.value <= 0 && !isLoading.value);
 
 function setLocale(nextLocale: AuthLocale) {
   const normalized = normalizeLocale(nextLocale);
@@ -76,13 +132,46 @@ function setLocale(nextLocale: AuthLocale) {
 function clearValidationErrors() {
   replaceErrors(loginErrors, {});
   replaceErrors(registerErrors, {});
+  replaceErrors(forgotErrors, {});
+  replaceErrors(resetErrors, {});
+  replaceErrors(verifyErrors, {});
 }
 
-function switchScene(next: Scene) {
+function clearResendTimer() {
+  if (resendTimer) {
+    clearInterval(resendTimer);
+    resendTimer = null;
+  }
+}
+
+function startResendCooldown(seconds = RESEND_COOLDOWN_SECONDS) {
+  clearResendTimer();
+  resendSecondsLeft.value = seconds;
+  resendTimer = setInterval(() => {
+    if (resendSecondsLeft.value <= 1) {
+      resendSecondsLeft.value = 0;
+      clearResendTimer();
+      return;
+    }
+    resendSecondsLeft.value -= 1;
+  }, 1000);
+}
+
+function switchScene(next: Scene, options?: { keepSuccess?: boolean }) {
   authAction.value = null;
   clearError();
+  if (!options?.keepSuccess) {
+    clearSuccessMessage();
+  }
   clearValidationErrors();
   scene.value = next;
+}
+
+function enterVerifyScene(nextEmail: string) {
+  verifyEmail.value = nextEmail.trim();
+  verifyCode.value = '';
+  switchScene('verify-email');
+  startResendCooldown();
 }
 
 function replaceErrors<T extends Record<string, string | undefined>>(target: T, next: Partial<T>) {
@@ -92,10 +181,12 @@ function replaceErrors<T extends Record<string, string | undefined>>(target: T, 
   Object.assign(target, next);
 }
 
-async function focusField(field: LoginField | RegisterField, register = false) {
-  const fieldId = register
-    ? { email: 'reg-email', password: 'reg-password', confirmPassword: 'confirm-password' }[field]
-    : field;
+async function focusField(
+  field: LoginField | RegisterField | ForgotField | ResetField | VerifyEmailField,
+  map: Record<string, string>,
+) {
+  const fieldId = map[field];
+  if (!fieldId) return;
   await nextTick();
   document.getElementById(fieldId)?.focus();
 }
@@ -106,13 +197,16 @@ async function handleLogin() {
   replaceErrors(loginErrors, nextErrors);
   const firstError = firstInvalidField(nextErrors, ['email', 'password'] as const);
   if (firstError) {
-    await focusField(firstError);
+    await focusField(firstError, { email: 'email', password: 'password' });
     return;
   }
 
   authAction.value = 'login';
-  const success = await loginByEmail({ email: email.value.trim(), password: password.value });
-  if (!success) authAction.value = null;
+  const outcome = await loginByEmail({ email: email.value.trim(), password: password.value });
+  if (outcome === 'needs-email-verification') {
+    enterVerifyScene(pendingVerificationEmail.value ?? email.value);
+  }
+  if (!outcome) authAction.value = null;
 }
 
 async function handleRegister() {
@@ -129,16 +223,126 @@ async function handleRegister() {
     'confirmPassword',
   ] as const);
   if (firstError) {
-    await focusField(firstError, true);
+    await focusField(firstError, {
+      email: 'reg-email',
+      password: 'reg-password',
+      confirmPassword: 'confirm-password',
+    });
     return;
   }
 
   authAction.value = 'register';
-  const success = await registerByEmail({
+  const outcome = await registerByEmail({
     email: regEmail.value.trim(),
     password: regPassword.value,
   });
+  if (outcome === 'needs-email-verification') {
+    enterVerifyScene(pendingVerificationEmail.value ?? regEmail.value);
+  }
+  if (!outcome) authAction.value = null;
+}
+
+async function handleForgot() {
+  if (isLoading.value) return;
+  const nextErrors = validateForgotPassword({ email: forgotEmail.value });
+  replaceErrors(forgotErrors, nextErrors);
+  const firstError = firstInvalidField(nextErrors, ['email'] as const);
+  if (firstError) {
+    await focusField(firstError, { email: 'forgot-email' });
+    return;
+  }
+
+  authAction.value = 'forgot';
+  const success = await forgotPassword({ email: forgotEmail.value.trim() });
+  authAction.value = null;
+  if (success) {
+    resetEmail.value = forgotEmail.value.trim();
+    startResendCooldown();
+  }
+}
+
+async function handleReset() {
+  if (isLoading.value) return;
+  const nextErrors = validateResetPassword({
+    email: resetEmail.value,
+    code: resetCode.value,
+    newPassword: resetPasswordValue.value,
+    confirmPassword: resetConfirmPassword.value,
+  });
+  replaceErrors(resetErrors, nextErrors);
+  const firstError = firstInvalidField(nextErrors, [
+    'email',
+    'code',
+    'newPassword',
+    'confirmPassword',
+  ] as const);
+  if (firstError) {
+    await focusField(firstError, {
+      email: 'reset-email',
+      code: 'reset-code',
+      newPassword: 'reset-password',
+      confirmPassword: 'reset-confirm-password',
+    });
+    return;
+  }
+
+  authAction.value = 'reset';
+  const success = await resetPassword({
+    email: resetEmail.value.trim(),
+    code: resetCode.value.trim(),
+    newPassword: resetPasswordValue.value,
+  });
+  authAction.value = null;
+  if (success) {
+    email.value = resetEmail.value.trim();
+    password.value = '';
+    switchScene('password-login', { keepSuccess: true });
+  }
+}
+
+async function handleVerifyEmail() {
+  if (isLoading.value) return;
+  const nextErrors = validateVerifyEmail({
+    email: verifyEmail.value,
+    code: verifyCode.value,
+  });
+  replaceErrors(verifyErrors, nextErrors);
+  const firstError = firstInvalidField(nextErrors, ['email', 'code'] as const);
+  if (firstError) {
+    await focusField(firstError, { email: 'verify-email', code: 'verify-code' });
+    return;
+  }
+
+  authAction.value = 'verify';
+  const success = await verifyEmailCode({
+    email: verifyEmail.value.trim(),
+    code: verifyCode.value.trim(),
+    purpose: 'EmailVerify',
+  });
   if (!success) authAction.value = null;
+}
+
+async function handleResendVerification() {
+  if (!canResendCode.value) return;
+  authAction.value = 'resend';
+  const success = await sendEmailCode({
+    email: verifyEmail.value.trim() || undefined,
+    purpose: 'EmailVerify',
+  });
+  authAction.value = null;
+  if (success) {
+    startResendCooldown();
+  }
+}
+
+async function handleResendResetCode() {
+  if (!canResendCode.value || !resetEmail.value.trim()) return;
+  authAction.value = 'resend';
+  const success = await forgotPassword({ email: resetEmail.value.trim() });
+  authAction.value = null;
+  if (success) {
+    startResendCooldown();
+  }
 }
 
 watch([email, password], () => {
@@ -160,6 +364,45 @@ watch([regEmail, regPassword, confirmPassword], () => {
   if (registerErrors.confirmPassword && !nextErrors.confirmPassword) {
     delete registerErrors.confirmPassword;
   }
+});
+
+watch(forgotEmail, () => {
+  clearError();
+  clearSuccessMessage();
+  const nextErrors = validateForgotPassword({ email: forgotEmail.value });
+  if (forgotErrors.email && !nextErrors.email) delete forgotErrors.email;
+});
+
+watch([resetEmail, resetCode, resetPasswordValue, resetConfirmPassword], () => {
+  clearError();
+  clearSuccessMessage();
+  const nextErrors = validateResetPassword({
+    email: resetEmail.value,
+    code: resetCode.value,
+    newPassword: resetPasswordValue.value,
+    confirmPassword: resetConfirmPassword.value,
+  });
+  if (resetErrors.email && !nextErrors.email) delete resetErrors.email;
+  if (resetErrors.code && !nextErrors.code) delete resetErrors.code;
+  if (resetErrors.newPassword && !nextErrors.newPassword) delete resetErrors.newPassword;
+  if (resetErrors.confirmPassword && !nextErrors.confirmPassword) {
+    delete resetErrors.confirmPassword;
+  }
+});
+
+watch([verifyEmail, verifyCode], () => {
+  clearError();
+  clearSuccessMessage();
+  const nextErrors = validateVerifyEmail({
+    email: verifyEmail.value,
+    code: verifyCode.value,
+  });
+  if (verifyErrors.email && !nextErrors.email) delete verifyErrors.email;
+  if (verifyErrors.code && !nextErrors.code) delete verifyErrors.code;
+});
+
+onUnmounted(() => {
+  clearResendTimer();
 });
 </script>
 
@@ -235,6 +478,16 @@ watch([regEmail, regPassword, confirmPassword], () => {
             {{ errorMessage }}
           </p>
 
+          <p
+            v-if="successMessage && !errorMessage"
+            data-testid="auth-success-banner"
+            class="mb-4 w-full rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-center text-[13px] text-emerald-200"
+            role="status"
+            aria-live="polite"
+          >
+            {{ successMessage }}
+          </p>
+
           <form
             v-if="scene === 'password-login'"
             class="w-full"
@@ -292,8 +545,20 @@ watch([regEmail, regPassword, confirmPassword], () => {
               </div>
             </div>
 
+            <div class="mt-2 flex justify-end">
+              <Button
+                type="button"
+                variant="link"
+                class="h-auto px-0 py-0 text-[12px] text-white/[0.46] hover:text-white/[0.78]"
+                data-testid="login-forgot-link"
+                @click="switchScene('forgot')"
+              >
+                {{ t('auth.login.forgotLink') }}
+              </Button>
+            </div>
+
             <Button
-              class="mt-5 h-[40px] w-full rounded-[10px] bg-primary text-[15px] font-medium tracking-wide shadow-[0_10px_30px_rgba(29,78,216,0.28)] transition-all hover:bg-primary/90 hover:shadow-[0_14px_34px_rgba(29,78,216,0.42)]"
+              class="mt-3 h-[40px] w-full rounded-[10px] bg-primary text-[15px] font-medium tracking-wide shadow-[0_10px_30px_rgba(29,78,216,0.28)] transition-all hover:bg-primary/90 hover:shadow-[0_14px_34px_rgba(29,78,216,0.42)]"
               type="submit"
               :disabled="isLoading"
               data-testid="login-submit-button"
@@ -310,7 +575,7 @@ watch([regEmail, regPassword, confirmPassword], () => {
           </form>
 
           <form
-            v-else
+            v-else-if="scene === 'register'"
             class="w-full"
             data-testid="register-form"
             novalidate
@@ -408,6 +673,299 @@ watch([regEmail, regPassword, confirmPassword], () => {
             </Button>
           </form>
 
+
+          <form
+            v-else-if="scene === 'forgot'"
+            class="w-full"
+            data-testid="forgot-form"
+            novalidate
+            @submit.prevent="handleForgot"
+          >
+            <div class="space-y-3">
+              <div data-testid="forgot-email-input">
+                <Label for="forgot-email" class="mb-1 block text-[12px] text-white/[0.55]">
+                  {{ t('auth.field.email') }}
+                </Label>
+                <Input
+                  id="forgot-email"
+                  v-model="forgotEmail"
+                  type="email"
+                  autocomplete="email"
+                  :placeholder="t('auth.page.emailPlaceholder')"
+                  :class="INPUT_DARK_CLASS"
+                  :disabled="isLoading"
+                  :aria-invalid="Boolean(forgotErrors.email)"
+                  :aria-describedby="forgotErrors.email ? 'forgot-email-error' : undefined"
+                />
+                <p
+                  v-if="forgotErrors.email"
+                  id="forgot-email-error"
+                  class="mt-1 text-xs text-red-300"
+                  data-testid="forgot-email-error"
+                >
+                  {{ t(forgotErrors.email) }}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              class="mt-5 h-[40px] w-full rounded-[10px] bg-primary text-[15px] font-medium tracking-wide shadow-[0_10px_30px_rgba(29,78,216,0.28)] transition-all hover:bg-primary/90 hover:shadow-[0_14px_34px_rgba(29,78,216,0.42)]"
+              type="submit"
+              :disabled="isLoading"
+              data-testid="forgot-submit-button"
+            >
+              <Loader2
+                v-if="isLoading && authAction === 'forgot'"
+                class="mr-2 h-[18px] w-[18px] animate-spin"
+              />
+              <template v-if="isLoading && authAction === 'forgot'">
+                {{ t('auth.forgot.submitting') }}
+              </template>
+              <template v-else>{{ t('auth.forgot.submit') }}</template>
+            </Button>
+
+            <Button
+              v-if="successMessage"
+              type="button"
+              variant="secondary"
+              class="mt-3 h-[40px] w-full rounded-[10px]"
+              data-testid="forgot-next-button"
+              @click="resetEmail = forgotEmail.trim(); switchScene('reset')"
+            >
+              {{ t('auth.forgot.next') }}
+            </Button>
+          </form>
+
+          <form
+            v-else-if="scene === 'reset'"
+            class="w-full"
+            data-testid="reset-form"
+            novalidate
+            @submit.prevent="handleReset"
+          >
+            <div class="space-y-3">
+              <div data-testid="reset-email-input">
+                <Label for="reset-email" class="mb-1 block text-[12px] text-white/[0.55]">
+                  {{ t('auth.field.email') }}
+                </Label>
+                <Input
+                  id="reset-email"
+                  v-model="resetEmail"
+                  type="email"
+                  autocomplete="email"
+                  :placeholder="t('auth.page.emailPlaceholder')"
+                  :class="INPUT_DARK_CLASS"
+                  :disabled="isLoading"
+                  :aria-invalid="Boolean(resetErrors.email)"
+                  :aria-describedby="resetErrors.email ? 'reset-email-error' : undefined"
+                />
+                <p
+                  v-if="resetErrors.email"
+                  id="reset-email-error"
+                  class="mt-1 text-xs text-red-300"
+                  data-testid="reset-email-error"
+                >
+                  {{ t(resetErrors.email) }}
+                </p>
+              </div>
+              <div data-testid="reset-code-input">
+                <Label for="reset-code" class="mb-1 block text-[12px] text-white/[0.55]">
+                  {{ t('auth.field.code') }}
+                </Label>
+                <Input
+                  id="reset-code"
+                  v-model="resetCode"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  maxlength="6"
+                  :placeholder="t('auth.page.codePlaceholder')"
+                  :class="INPUT_DARK_CLASS"
+                  :disabled="isLoading"
+                  :aria-invalid="Boolean(resetErrors.code)"
+                  :aria-describedby="resetErrors.code ? 'reset-code-error' : undefined"
+                />
+                <p
+                  v-if="resetErrors.code"
+                  id="reset-code-error"
+                  class="mt-1 text-xs text-red-300"
+                  data-testid="reset-code-error"
+                >
+                  {{ t(resetErrors.code) }}
+                </p>
+              </div>
+              <div data-testid="reset-password-input">
+                <Label for="reset-password" class="mb-1 block text-[12px] text-white/[0.55]">
+                  {{ t('auth.field.newPassword') }}
+                </Label>
+                <Input
+                  id="reset-password"
+                  v-model="resetPasswordValue"
+                  type="password"
+                  autocomplete="new-password"
+                  :class="INPUT_DARK_CLASS"
+                  :disabled="isLoading"
+                  :aria-invalid="Boolean(resetErrors.newPassword)"
+                  :aria-describedby="resetErrors.newPassword ? 'reset-password-error' : undefined"
+                />
+                <p
+                  v-if="resetErrors.newPassword"
+                  id="reset-password-error"
+                  class="mt-1 text-xs text-red-300"
+                  data-testid="reset-password-error"
+                >
+                  {{ t(resetErrors.newPassword) }}
+                </p>
+              </div>
+              <div data-testid="reset-confirm-password-input">
+                <Label for="reset-confirm-password" class="mb-1 block text-[12px] text-white/[0.55]">
+                  {{ t('auth.field.confirmPassword') }}
+                </Label>
+                <Input
+                  id="reset-confirm-password"
+                  v-model="resetConfirmPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  :class="INPUT_DARK_CLASS"
+                  :disabled="isLoading"
+                  :aria-invalid="Boolean(resetErrors.confirmPassword)"
+                  :aria-describedby="
+                    resetErrors.confirmPassword ? 'reset-confirm-password-error' : undefined
+                  "
+                />
+                <p
+                  v-if="resetErrors.confirmPassword"
+                  id="reset-confirm-password-error"
+                  class="mt-1 text-xs text-red-300"
+                  data-testid="reset-confirm-password-error"
+                >
+                  {{ t(resetErrors.confirmPassword) }}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              class="mt-5 h-[40px] w-full rounded-[10px] bg-primary text-[15px] font-medium tracking-wide shadow-[0_10px_30px_rgba(29,78,216,0.28)] transition-all hover:bg-primary/90 hover:shadow-[0_14px_34px_rgba(29,78,216,0.42)]"
+              type="submit"
+              :disabled="isLoading"
+              data-testid="reset-submit-button"
+            >
+              <Loader2
+                v-if="isLoading && authAction === 'reset'"
+                class="mr-2 h-[18px] w-[18px] animate-spin"
+              />
+              <template v-if="isLoading && authAction === 'reset'">
+                {{ t('auth.reset.submitting') }}
+              </template>
+              <template v-else>{{ t('auth.reset.submit') }}</template>
+            </Button>
+
+            <Button
+              type="button"
+              variant="link"
+              class="mt-3 h-auto w-full px-0 py-0 text-[12.5px] text-white/[0.46] hover:text-white/[0.78]"
+              :disabled="!canResendCode"
+              data-testid="reset-resend-button"
+              @click="handleResendResetCode"
+            >
+              <template v-if="resendSecondsLeft > 0">
+                {{ t('auth.verify.resendIn', { seconds: resendSecondsLeft }) }}
+              </template>
+              <template v-else>{{ t('auth.reset.backToForgot') }}</template>
+            </Button>
+          </form>
+
+          <form
+            v-else
+            class="w-full"
+            data-testid="verify-email-form"
+            novalidate
+            @submit.prevent="handleVerifyEmail"
+          >
+            <div class="space-y-3">
+              <div data-testid="verify-email-input">
+                <Label for="verify-email" class="mb-1 block text-[12px] text-white/[0.55]">
+                  {{ t('auth.field.email') }}
+                </Label>
+                <Input
+                  id="verify-email"
+                  v-model="verifyEmail"
+                  type="email"
+                  autocomplete="email"
+                  :placeholder="t('auth.page.emailPlaceholder')"
+                  :class="INPUT_DARK_CLASS"
+                  :disabled="isLoading"
+                  :aria-invalid="Boolean(verifyErrors.email)"
+                  :aria-describedby="verifyErrors.email ? 'verify-email-error' : undefined"
+                />
+                <p
+                  v-if="verifyErrors.email"
+                  id="verify-email-error"
+                  class="mt-1 text-xs text-red-300"
+                  data-testid="verify-email-error"
+                >
+                  {{ t(verifyErrors.email) }}
+                </p>
+              </div>
+              <div data-testid="verify-code-input">
+                <Label for="verify-code" class="mb-1 block text-[12px] text-white/[0.55]">
+                  {{ t('auth.field.code') }}
+                </Label>
+                <Input
+                  id="verify-code"
+                  v-model="verifyCode"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  maxlength="6"
+                  :placeholder="t('auth.page.codePlaceholder')"
+                  :class="INPUT_DARK_CLASS"
+                  :disabled="isLoading"
+                  :aria-invalid="Boolean(verifyErrors.code)"
+                  :aria-describedby="verifyErrors.code ? 'verify-code-error' : undefined"
+                />
+                <p
+                  v-if="verifyErrors.code"
+                  id="verify-code-error"
+                  class="mt-1 text-xs text-red-300"
+                  data-testid="verify-code-error"
+                >
+                  {{ t(verifyErrors.code) }}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              class="mt-5 h-[40px] w-full rounded-[10px] bg-primary text-[15px] font-medium tracking-wide shadow-[0_10px_30px_rgba(29,78,216,0.28)] transition-all hover:bg-primary/90 hover:shadow-[0_14px_34px_rgba(29,78,216,0.42)]"
+              type="submit"
+              :disabled="isLoading"
+              data-testid="verify-submit-button"
+            >
+              <Loader2
+                v-if="isLoading && authAction === 'verify'"
+                class="mr-2 h-[18px] w-[18px] animate-spin"
+              />
+              <template v-if="isLoading && authAction === 'verify'">
+                {{ t('auth.verify.submitting') }}
+              </template>
+              <template v-else>{{ t('auth.verify.submit') }}</template>
+            </Button>
+
+            <Button
+              type="button"
+              variant="link"
+              class="mt-3 h-auto w-full px-0 py-0 text-[12.5px] text-white/[0.46] hover:text-white/[0.78]"
+              :disabled="!canResendCode"
+              data-testid="verify-resend-button"
+              @click="handleResendVerification"
+            >
+              <template v-if="resendSecondsLeft > 0">
+                {{ t('auth.verify.resendIn', { seconds: resendSecondsLeft }) }}
+              </template>
+              <template v-else>{{ t('auth.verify.resend') }}</template>
+            </Button>
+          </form>
+
           <div class="mt-5 flex items-center justify-center text-[12.5px] text-white/[0.46]">
             <Button
               v-if="scene === 'password-login'"
@@ -419,13 +977,25 @@ watch([regEmail, regPassword, confirmPassword], () => {
               {{ t('auth.login.registerLink') }}
             </Button>
             <Button
-              v-else
+              v-else-if="scene === 'register'"
               type="button"
               variant="link"
               class="h-auto px-0 py-0 text-white/[0.46] hover:text-white/[0.78]"
               @click="switchScene('password-login')"
             >
               {{ t('auth.register.loginLink') }}
+            </Button>
+            <Button
+              v-else
+              type="button"
+              variant="link"
+              class="h-auto px-0 py-0 text-white/[0.46] hover:text-white/[0.78]"
+              data-testid="auth-back-to-login"
+              @click="switchScene('password-login')"
+            >
+              <template v-if="scene === 'forgot'">{{ t('auth.forgot.backToLogin') }}</template>
+              <template v-else-if="scene === 'reset'">{{ t('auth.reset.backToLogin') }}</template>
+              <template v-else>{{ t('auth.verify.backToLogin') }}</template>
             </Button>
           </div>
         </CardContent>

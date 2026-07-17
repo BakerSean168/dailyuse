@@ -19,6 +19,7 @@ import express, { type Express, Router } from 'express';
 import type { IApiModule, IApiModuleContext, IApiMiddleware, DatabaseClient } from './shared/contracts/api-module';
 import { applyGlobalMiddleware, applyErrorHandlers } from './shared/infrastructure/middleware';
 import { authMiddleware, requireRole } from './shared/infrastructure/http/middlewares';
+import { createRequireEmailVerifiedMiddleware } from '@dailyuse/authentication/api';
 import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createInfrastructureRouter } from './shared/infrastructure/http/routes/infrastructure-routes';
 import { registry } from './shared/infrastructure/openapi/registry';
@@ -70,10 +71,20 @@ export class ApiBootstrapper {
     // 3. 基础设施路由（health, metrics 等 — 无版本前缀）
     this.app.use('/', createInfrastructureRouter(this.metricsStore));
 
-    // 4. 准备模块上下文（含平台中间件）
+    // 4. 准备模块上下文（含平台中间件 + 邮箱验证门禁）
+    const requireEmailVerified = createRequireEmailVerifiedMiddleware({
+      lookupStatus: async (identityId) => {
+        const row = await this.db.authIdentity.findUnique({
+          where: { id: identityId },
+          select: { status: true },
+        });
+        return row?.status ?? null;
+      },
+    });
     const platformMiddleware: IApiMiddleware = {
       auth: authMiddleware,
       requireRole: (roles: string[]) => requireRole(roles),
+      requireEmailVerified,
     };
 
     const context: IApiModuleContext = {

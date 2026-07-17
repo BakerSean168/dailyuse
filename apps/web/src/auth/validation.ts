@@ -2,6 +2,10 @@ import { RegisterByEmailSchema } from '@dailyuse/contracts/authentication';
 
 export type LoginField = 'email' | 'password';
 export type RegisterField = 'email' | 'password' | 'confirmPassword';
+export type ForgotField = 'email';
+export type ResetField = 'email' | 'code' | 'newPassword' | 'confirmPassword';
+export type VerifyEmailField = 'email' | 'code';
+
 export type AuthValidationKey =
   | 'auth.validation.emailRequired'
   | 'auth.validation.emailInvalid'
@@ -10,17 +14,43 @@ export type AuthValidationKey =
   | 'auth.validation.passwordMaxLength'
   | 'auth.validation.passwordComplexity'
   | 'auth.validation.confirmPasswordRequired'
-  | 'auth.validation.passwordMismatch';
+  | 'auth.validation.passwordMismatch'
+  | 'auth.validation.codeRequired'
+  | 'auth.validation.codeInvalid';
 
 export type LoginValidationErrors = Partial<Record<LoginField, AuthValidationKey>>;
 export type RegisterValidationErrors = Partial<Record<RegisterField, AuthValidationKey>>;
+export type ForgotValidationErrors = Partial<Record<ForgotField, AuthValidationKey>>;
+export type ResetValidationErrors = Partial<Record<ResetField, AuthValidationKey>>;
+export type VerifyEmailValidationErrors = Partial<Record<VerifyEmailField, AuthValidationKey>>;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CODE_PATTERN = /^\d{6}$/;
 
 function emailError(email: string): AuthValidationKey | undefined {
   if (!email.trim()) return 'auth.validation.emailRequired';
   if (!EMAIL_PATTERN.test(email.trim())) return 'auth.validation.emailInvalid';
   return undefined;
+}
+
+function codeError(code: string): AuthValidationKey | undefined {
+  if (!code.trim()) return 'auth.validation.codeRequired';
+  if (!CODE_PATTERN.test(code.trim())) return 'auth.validation.codeInvalid';
+  return undefined;
+}
+
+function passwordComplexityError(password: string): AuthValidationKey | undefined {
+  const parsed = RegisterByEmailSchema.safeParse({
+    email: 'person@example.com',
+    password,
+  });
+  if (parsed.success) return undefined;
+  const issue = parsed.error.issues.find((item) => item.path[0] === 'password');
+  if (!issue) return undefined;
+  if (!password) return 'auth.validation.passwordRequired';
+  if (issue.code === 'too_small') return 'auth.validation.passwordMinLength';
+  if (issue.code === 'too_big') return 'auth.validation.passwordMaxLength';
+  return 'auth.validation.passwordComplexity';
 }
 
 export function validateLogin(values: {
@@ -69,6 +99,50 @@ export function validateRegistration(values: {
     errors.confirmPassword = 'auth.validation.passwordMismatch';
   }
 
+  return errors;
+}
+
+export function validateForgotPassword(values: { email: string }): ForgotValidationErrors {
+  const errors: ForgotValidationErrors = {};
+  const nextEmailError = emailError(values.email);
+  if (nextEmailError) errors.email = nextEmailError;
+  return errors;
+}
+
+export function validateResetPassword(values: {
+  email: string;
+  code: string;
+  newPassword: string;
+  confirmPassword: string;
+}): ResetValidationErrors {
+  const errors: ResetValidationErrors = {};
+  const nextEmailError = emailError(values.email);
+  if (nextEmailError) errors.email = nextEmailError;
+
+  const nextCodeError = codeError(values.code);
+  if (nextCodeError) errors.code = nextCodeError;
+
+  const nextPasswordError = passwordComplexityError(values.newPassword);
+  if (nextPasswordError) errors.newPassword = nextPasswordError;
+
+  if (!values.confirmPassword) {
+    errors.confirmPassword = 'auth.validation.confirmPasswordRequired';
+  } else if (values.newPassword !== values.confirmPassword) {
+    errors.confirmPassword = 'auth.validation.passwordMismatch';
+  }
+
+  return errors;
+}
+
+export function validateVerifyEmail(values: {
+  email: string;
+  code: string;
+}): VerifyEmailValidationErrors {
+  const errors: VerifyEmailValidationErrors = {};
+  const nextEmailError = emailError(values.email);
+  if (nextEmailError) errors.email = nextEmailError;
+  const nextCodeError = codeError(values.code);
+  if (nextCodeError) errors.code = nextCodeError;
   return errors;
 }
 

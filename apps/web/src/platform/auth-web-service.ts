@@ -1,8 +1,13 @@
 import type {
+  ForgotPasswordReq,
   LoginByEmailReq,
   LoginByEmailRes,
   RegisterByEmailReq,
   RegisterByEmailRes,
+  ResetPasswordReq,
+  SendEmailCodeReq,
+  VerifyEmailCodeReq,
+  VerifyEmailCodeRes,
 } from '@dailyuse/contracts/authentication';
 import type { Result, ResultError, ResultMeta } from '@dailyuse/contracts/result';
 import { classifyNetworkErrorMessage, statusToResultError } from '@dailyuse/http-client';
@@ -127,5 +132,21 @@ export const authWebService = {
 
   registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>> {
     return postAuth('/register', req);
+  },
+
+  forgotPassword(req: ForgotPasswordReq): Promise<Result<void>> {
+    return postAuth('/password/forgot', req);
+  },
+
+  resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
+    return postAuth('/password/reset', req);
+  },
+
+  sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>> {
+    return postAuth('/email/send-code', req);
+  },
+
+  verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
+    return postAuth('/email/verify', req);
   },
 };

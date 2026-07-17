@@ -57,6 +57,8 @@ const Ch = {
   RESET_PASSWORD: 'auth:reset-password',
   CHANGE_PASSWORD: 'auth:change-password',
   SEND_SMS_CODE: 'auth:send-sms-code',
+  SEND_EMAIL_CODE: 'auth:send-email-code',
+  VERIFY_EMAIL_CODE: 'auth:verify-email-code',
 } as const;
 
 const allChannels = Object.values(Ch);
@@ -569,6 +571,12 @@ export function registerDesktopAuthShellHandlers(
   );
   ipcMain.handle(Ch.SEND_SMS_CODE, async () =>
     toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'SMS not implemented' })),
+  );
+  ipcMain.handle(Ch.SEND_EMAIL_CODE, async () =>
+    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Send email code not implemented on desktop shell' })),
+  );
+  ipcMain.handle(Ch.VERIFY_EMAIL_CODE, async () =>
+    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Verify email code not implemented on desktop shell' })),
   );
 
   logger.info(`Desktop shell auth handlers registered (${allChannels.length} channels)`);
