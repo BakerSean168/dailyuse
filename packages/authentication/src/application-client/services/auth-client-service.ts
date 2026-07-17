@@ -26,6 +26,9 @@ import type {
   ChangePasswordReq,
   ForgotPasswordReq,
   ResetPasswordReq,
+  SendEmailCodeReq,
+  VerifyEmailCodeReq,
+  VerifyEmailCodeRes,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -51,6 +54,8 @@ export interface AuthenticationClientPort {
   changePassword(req: ChangePasswordReq): Promise<Result<void>>;
   forgotPassword(req: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
+  sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>>;
+  verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>>;
   enterGuestMode(): Promise<Result<GuestModeRes>>;
   autoLoginDesktop(): Promise<Result<AutoLoginResult>>;
   listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>>;
@@ -75,6 +80,8 @@ export class AuthClientService implements AuthenticationClientPort {
     this.changePassword = this.changePassword.bind(this);
     this.forgotPassword = this.forgotPassword.bind(this);
     this.resetPassword = this.resetPassword.bind(this);
+    this.sendEmailCode = this.sendEmailCode.bind(this);
+    this.verifyEmailCode = this.verifyEmailCode.bind(this);
     this.enterGuestMode = this.enterGuestMode.bind(this);
     this.autoLoginDesktop = this.autoLoginDesktop.bind(this);
     this.listRememberedAccounts = this.listRememberedAccounts.bind(this);
@@ -144,6 +151,16 @@ export class AuthClientService implements AuthenticationClientPort {
 
   async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
     return this.apiClient.resetPassword(req);
+  }
+
+  // ========== Email verification ==========
+
+  async sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>> {
+    return this.apiClient.sendEmailCode(req);
+  }
+
+  async verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
+    return this.apiClient.verifyEmailCode(req);
   }
 
   // ========== Guest Mode (Desktop) ==========

@@ -2,6 +2,7 @@
  * Register Use Case
  *
  * Application use case for user registration.
+ * On success, best-effort sends an EmailVerify challenge (failure does not block registration).
  */
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -9,14 +10,20 @@ import { ok, fail } from '@dailyuse/contracts/result';
 import {
   AuthSession,
   RegistrationService as DomainRegistrationService,
+  VerificationChallengePurpose,
   type IAuthIdentityRepository,
   type IAuthSessionRepository,
+  type IEmailSender,
   type ITokenProvider,
+  type IVerificationChallengeStore,
 } from '../../../domain';
 import type { IPasswordHasher } from '../../../domain';
 import type { RegisterByEmailReq, AuthResponseDTO } from '@dailyuse/contracts/authentication';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { UserAlreadyExistsError } from '../../../domain/services/registration';
+import { createLogger } from '@dailyuse/utils/logger';
+
+const logger = createLogger('Register');
 
 /**
  * Register Use Case
@@ -29,6 +36,8 @@ export class RegisterUseCase {
     private readonly sessionRepository: IAuthSessionRepository,
     private readonly passwordHasher: IPasswordHasher,
     private readonly tokenProvider: ITokenProvider,
+    private readonly challengeStore?: IVerificationChallengeStore,
+    private readonly emailSender?: IEmailSender,
   ) {
     this.domainRegistrationService = new DomainRegistrationService(
       identityRepository,
@@ -57,9 +66,26 @@ export class RegisterUseCase {
       // 3. Save session (repository dispatches domain events automatically)
       await this.sessionRepository.save(session);
 
+      // 4. Best-effort EmailVerify code (do not fail registration if send fails)
+      if (this.challengeStore && this.emailSender) {
+        try {
+          const code = await this.challengeStore.issue({
+            purpose: VerificationChallengePurpose.EmailVerify,
+            subject: input.email,
+            identityId: String(identity.id),
+          });
+          await this.emailSender.sendEmailVerificationCode(input.email, code);
+        } catch (sendErr) {
+          logger.warn('[Register] Failed to send email verification code after register', {
+            email: input.email,
+            error: sendErr instanceof Error ? sendErr.message : String(sendErr),
+          });
+        }
+      }
+
       const sessionDto = session.toClientDTO(true);
 
-      // 4. Return AuthResponse
+      // 5. Return AuthResponse
       return ok({
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,

@@ -24,6 +24,9 @@ import type {
   ChangePasswordReq,
   ForgotPasswordReq,
   ResetPasswordReq,
+  SendEmailCodeReq,
+  VerifyEmailCodeReq,
+  VerifyEmailCodeRes,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -85,6 +88,14 @@ export class AuthIpcAdapter implements IAuthApiClient {
 
   async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
     return this.ipcClient.invoke(AuthChannels.RESET_PASSWORD, req);
+  }
+
+  async sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>> {
+    return this.ipcClient.invoke(AuthChannels.SEND_EMAIL_CODE, req);
+  }
+
+  async verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
+    return this.ipcClient.invoke(AuthChannels.VERIFY_EMAIL_CODE, req);
   }
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {

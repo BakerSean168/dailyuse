@@ -34,6 +34,9 @@ import type {
   ChangePasswordReq,
   ForgotPasswordReq,
   ResetPasswordReq,
+  SendEmailCodeReq,
+  VerifyEmailCodeReq,
+  VerifyEmailCodeRes,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -45,6 +48,8 @@ import {
   ChangePasswordUseCase,
   ForgotPasswordUseCase,
   ResetPasswordUseCase,
+  SendEmailVerificationCodeUseCase,
+  VerifyEmailCodeUseCase,
   GetCurrentUserUseCase,
   LoginUseCase,
   ListSessionsUseCase,
@@ -59,7 +64,7 @@ import {
   PasswordAuthenticationProvider,
   type AuthenticationProvider,
 } from '../domain';
-import { InMemoryPasswordResetCodeStore } from './services/in-memory-password-reset-code-store';
+import { InMemoryVerificationChallengeStore } from './services/in-memory-verification-challenge-store';
 import { ConsoleEmailSender } from './services/console-email-sender';
 
 // ---------------------------------------------------------------------------
@@ -141,6 +146,8 @@ export interface AuthenticationModuleUseCases {
   readonly changePassword: ChangePasswordUseCase;
   readonly forgotPassword: ForgotPasswordUseCase;
   readonly resetPassword: ResetPasswordUseCase;
+  readonly sendEmailVerificationCode: SendEmailVerificationCodeUseCase;
+  readonly verifyEmailCode: VerifyEmailCodeUseCase;
 }
 
 // ---------------------------------------------------------------------------
@@ -168,6 +175,8 @@ export interface AuthenticationApplicationPort {
   changePassword(data: ChangePasswordReq, cx: ExecutionContext): Promise<Result<void>>;
   forgotPassword(data: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(data: ResetPasswordReq): Promise<Result<void>>;
+  sendEmailCode(data: SendEmailCodeReq, cx?: ExecutionContext): Promise<Result<void>>;
+  verifyEmailCode(data: VerifyEmailCodeReq, cx?: ExecutionContext): Promise<Result<VerifyEmailCodeRes>>;
   /**
    * Pluggable OAuth login callback (currently GitHub).
    * 可插拔 OAuth 登录回调（当前为 GitHub）。
@@ -217,7 +226,7 @@ export function createAuthenticationUseCases(
 ): AuthenticationModuleUseCases {
   const { identityRepository, sessionRepository, passwordHasher, tokenProvider } = dependencies;
 
-  const codeStore = new InMemoryPasswordResetCodeStore();
+  const challengeStore = new InMemoryVerificationChallengeStore();
   const emailSender = new ConsoleEmailSender();
 
   // Build the pluggable provider registry.
@@ -234,19 +243,25 @@ export function createAuthenticationUseCases(
     authenticate: new AuthenticateUseCase(providerRegistry, sessionRepository, tokenProvider),
     login: new LoginUseCase(identityRepository, sessionRepository, passwordHasher, tokenProvider),
     logout: new LogoutUseCase(sessionRepository),
-    register: new RegisterUseCase(identityRepository, sessionRepository, passwordHasher, tokenProvider),
+    register: new RegisterUseCase(identityRepository, sessionRepository, passwordHasher, tokenProvider, challengeStore, emailSender),
     refreshToken: new RefreshTokenUseCase(sessionRepository, identityRepository, tokenProvider),
     getCurrentUser: new GetCurrentUserUseCase(identityRepository, sessionRepository),
     listSessions: new ListSessionsUseCase(sessionRepository),
     revokeSession: new RevokeSessionUseCase(sessionRepository),
     changePassword: new ChangePasswordUseCase(identityRepository, sessionRepository, passwordHasher),
-    forgotPassword: new ForgotPasswordUseCase(identityRepository, codeStore, emailSender),
+    forgotPassword: new ForgotPasswordUseCase(identityRepository, challengeStore, emailSender),
     resetPassword: new ResetPasswordUseCase(
       identityRepository,
       sessionRepository,
-      codeStore,
+      challengeStore,
       passwordHasher,
     ),
+    sendEmailVerificationCode: new SendEmailVerificationCodeUseCase(
+      identityRepository,
+      challengeStore,
+      emailSender,
+    ),
+    verifyEmailCode: new VerifyEmailCodeUseCase(identityRepository, challengeStore),
   };
 }
 
@@ -354,6 +369,10 @@ export function createAuthenticationModule(
 
     resetPassword: (data) => useCases.resetPassword.execute(data),
 
+    sendEmailCode: (data, cx) => useCases.sendEmailVerificationCode.execute(data, cx),
+
+    verifyEmailCode: (data, cx) => useCases.verifyEmailCode.execute(data, cx),
+
     // Pluggable OAuth login — dispatches to the provider registered under the
     // method id derived from the provider name (e.g. 'Github' -> 'github').
     // 可插拔 OAuth 登录 —— 分发到按 provider 名派生的方式 id 所注册的提供者。
@@ -395,3 +414,4 @@ export function createAuthenticationModule(
     },
   };
 }
+

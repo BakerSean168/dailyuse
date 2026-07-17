@@ -29,6 +29,9 @@ import {
   type AuthenticationModuleInstance,
 } from '../server/infrastructure';
 import { registerAuthenticationRoutes } from './routes';
+import {
+  createRequireEmailVerifiedMiddleware,
+} from './require-email-verified.middleware';
 import { createAuthenticationRuntimeContribution } from '../server/infrastructure/runtime';
 
 /**
@@ -106,10 +109,22 @@ export function createAuthenticationApiModule(
       activeAuthenticationModule = authenticationModule;
       authenticationModule.start();
 
-      // ── 2. Register routes — 注册路由（注入平台中间件）──
+      // ── 2. Register routes — 注册路由（注入平台中间件 + 邮箱验证门禁）──
+      const requireEmailVerified = createRequireEmailVerifiedMiddleware({
+        lookupStatus: async (identityId) => {
+          const row = await db.authIdentity.findUnique({
+            where: { id: identityId },
+            select: { status: true },
+          });
+          return row?.status ?? null;
+        },
+      });
       const authRoutes = registerAuthenticationRoutes(
         authenticationModule.api,
-        middleware,
+        {
+          ...middleware,
+          requireEmailVerified,
+        },
         context.openApiRegistry,
       );
 

@@ -1,19 +1,28 @@
+/**
+ * Reset Password Use Case
+ *
+ * Consumes a PasswordReset challenge, updates the password credential,
+ * and revokes all sessions for the identity.
+ */
+
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { ok, error, fail } from '@dailyuse/contracts/result';
 import type {
   IAuthIdentityRepository,
   IAuthSessionRepository,
-  IPasswordResetCodeStore,
+  IVerificationChallengeStore,
 } from '../../../domain';
 import {
+  AuthDomainCode,
   CredentialType,
   HashedPassword,
   PlainPassword,
+  VerificationChallengePurpose,
   type IPasswordHasher,
 } from '../../../domain';
 import type { ResetPasswordReq } from '@dailyuse/contracts/authentication';
 
-// Business exceptions — kept for backward compatibility with tests
+/** @deprecated Prefer Result errors; kept for tests that catch by name. */
 export class InvalidResetCodeError extends Error {
   constructor() {
     super('Invalid or expired reset code.');
@@ -21,6 +30,7 @@ export class InvalidResetCodeError extends Error {
   }
 }
 
+/** @deprecated Prefer Result errors; kept for tests that catch by name. */
 export class UserNotFoundError extends Error {
   constructor(email: string) {
     super(`User with email [${email}] not found.`);
@@ -32,24 +42,30 @@ export class ResetPasswordUseCase {
   constructor(
     private readonly identityRepository: IAuthIdentityRepository,
     private readonly sessionRepository: IAuthSessionRepository,
-    private readonly codeStore: IPasswordResetCodeStore,
+    private readonly challengeStore: IVerificationChallengeStore,
     private readonly passwordHasher: IPasswordHasher,
   ) {}
 
   async execute(input: ResetPasswordReq): Promise<Result<void>> {
-    // 1. Verify the reset code
-    const valid = await this.codeStore.verifyCode(input.email, input.code);
+    const valid = await this.challengeStore.consume({
+      purpose: VerificationChallengePurpose.PasswordReset,
+      subject: input.email,
+      challenge: input.code,
+    });
+
     if (!valid) {
-      return error('VALIDATION_ERROR', 'Invalid or expired reset code.');
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid or expired reset code.',
+        context: { domainCode: AuthDomainCode.INVALID_OR_EXPIRED_CODE },
+      });
     }
 
-    // 2. Look up identity by email
     const identity = await this.identityRepository.findByEmail(input.email);
     if (!identity) {
       return error('NOT_FOUND', `User with email [${input.email}] not found.`);
     }
 
-    // 3. Get the password credential and update it
     const credential = identity.getCredentialByType(CredentialType.Password);
     if (!credential) {
       return error('NOT_FOUND', 'Password credential not found');
@@ -60,7 +76,6 @@ export class ResetPasswordUseCase {
     credential.updatePassword(hashedPassword);
     await this.identityRepository.save(identity);
 
-    // 4. Revoke all existing sessions for security
     await this.sessionRepository.removeAllByIdentityId(identity.id);
 
     return ok(undefined);

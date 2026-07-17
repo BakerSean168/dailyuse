@@ -26,6 +26,9 @@ import type {
   ChangePasswordReq,
   ForgotPasswordReq,
   ResetPasswordReq,
+  SendEmailCodeReq,
+  VerifyEmailCodeReq,
+  VerifyEmailCodeRes,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -101,6 +104,14 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
     return this.httpClient.post(`${this.baseUrl}/password/reset`, req);
+  }
+
+  async sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/email/send-code`, req);
+  }
+
+  async verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
+    return this.httpClient.post(`${this.baseUrl}/email/verify`, req);
   }
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {

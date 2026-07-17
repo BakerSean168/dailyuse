@@ -11,3 +11,9 @@ export type {
   AuthenticationApiModuleDef,
   CreateAuthenticationApiModuleOptions,
 } from './module';
+export { createChallengeIpRateLimitMiddleware, createDefaultAuthChallengeIpRateLimit } from './challenge-ip-rate-limit';
+export {
+  createRequireEmailVerifiedMiddleware,
+  composeAuthWithEmailVerificationGate,
+  isEmailVerificationWhitelisted,
+} from './require-email-verified.middleware';

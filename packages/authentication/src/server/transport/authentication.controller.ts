@@ -17,6 +17,8 @@ import {
   LoginByPhoneSchema,
   RevokeSessionSchema,
   ResetPasswordSchema,
+  SendEmailCodeSchema,
+  VerifyEmailCodeSchema,
   RegisterByEmailSchema,
   RegisterByPhoneSchema,
   RefreshTokenSchema,
@@ -32,6 +34,7 @@ import type {
   RefreshTokenRes,
   RegisterByPhoneRes,
   OAuthCallbackRes,
+  VerifyEmailCodeRes,
 } from '@dailyuse/contracts/authentication';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -180,5 +183,29 @@ export class AuthenticationController {
       });
     }
     return this.api.resetPassword(parsed.data);
+  }
+
+  async sendEmailCode(input: unknown, cx?: Context): Promise<Result<void>> {
+    const parsed = SendEmailCodeSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.api.sendEmailCode(parsed.data, cx);
+  }
+
+  async verifyEmailCode(input: unknown, cx?: Context): Promise<Result<VerifyEmailCodeRes>> {
+    const parsed = VerifyEmailCodeSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.api.verifyEmailCode(parsed.data, cx);
   }
 }

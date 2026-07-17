@@ -261,8 +261,17 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
   public verifyEmailIdentifier(email: string): void {
     const idx = this._props.identifiers.findIndex((i) => i.type === 'Email' && i.value === email);
     if (idx < 0) throw new Error('Email identifier not found');
-    this._props.identifiers[idx] = (this._props.identifiers[idx] as EmailIdentifier).verify();
+    const current = this._props.identifiers[idx] as EmailIdentifier;
+    if (current.isVerified) {
+      return;
+    }
+    this._props.identifiers[idx] = current.verify();
     this.refreshUpdatedAt();
+
+    this.addDomainEvent<AuthEventMap['auth:email-verified']>('auth:email-verified', {
+      identityId: this.id,
+      email: current.value,
+    });
   }
 
   /**

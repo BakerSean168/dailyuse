@@ -25,6 +25,9 @@ import type {
   ChangePasswordReq,
   ForgotPasswordReq,
   ResetPasswordReq,
+  SendEmailCodeReq,
+  VerifyEmailCodeReq,
+  VerifyEmailCodeRes,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -61,6 +64,10 @@ export interface IAuthApiClient {
   changePassword(req: ChangePasswordReq): Promise<Result<void>>;
   forgotPassword(req: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
+
+  // ========== Email verification ==========
+  sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>>;
+  verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>>;
 
   // ========== Guest Mode (Desktop) ==========
   enterGuestMode(): Promise<Result<GuestModeRes>>;

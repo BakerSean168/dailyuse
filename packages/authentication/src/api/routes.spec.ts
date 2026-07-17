@@ -11,6 +11,8 @@ import {
   RefreshTokenSchema,
   RegisterByEmailSchema,
   ResetPasswordSchema,
+  SendEmailCodeSchema,
+  VerifyEmailCodeSchema,
   SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
 import { registerAuthenticationRoutes } from './routes';
@@ -75,6 +77,8 @@ function createStubs(): AuthenticationApplicationPort {
     changePassword: vi.fn(),
     forgotPassword: vi.fn(),
     resetPassword: vi.fn(),
+    sendEmailCode: vi.fn(),
+    verifyEmailCode: vi.fn(),
   };
 }
 
@@ -157,5 +161,16 @@ describe('registerAuthenticationRoutes', () => {
     expect(getResponseStatuses(route)).toContain('404');
     expect(getResponseStatuses(route)).toContain('422');
     expect(getResponseStatuses(route)).not.toContain('503');
+  });
+
+  it('POST /email/send-code — documents SendEmailCodeSchema', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/email/send-code');
+    expect(getJsonBodySchema(route)).toBe(SendEmailCodeSchema);
+    expect(getResponseSchema(route, 200)).toBeInstanceOf(z.ZodNull);
+  });
+
+  it('POST /email/verify — documents VerifyEmailCodeSchema', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/email/verify');
+    expect(getJsonBodySchema(route)).toBe(VerifyEmailCodeSchema);
   });
 });

@@ -15,6 +15,9 @@ import type {
   ChangePasswordReq,
   ForgotPasswordReq,
   ResetPasswordReq,
+  SendEmailCodeReq,
+  VerifyEmailCodeReq,
+  VerifyEmailCodeRes,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -57,4 +60,6 @@ export interface AuthenticationApplicationPort {
   changePassword(data: ChangePasswordReq, cx: ExecutionContext): Promise<Result<void>>;
   forgotPassword(data: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(data: ResetPasswordReq): Promise<Result<void>>;
+  sendEmailCode(data: SendEmailCodeReq, cx?: ExecutionContext): Promise<Result<void>>;
+  verifyEmailCode(data: VerifyEmailCodeReq, cx?: ExecutionContext): Promise<Result<VerifyEmailCodeRes>>;
 }

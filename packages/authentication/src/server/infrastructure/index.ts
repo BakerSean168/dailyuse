@@ -30,6 +30,8 @@ export { Argon2Hasher } from './encryptors/argon2-hasher';
 
 // ============ Services ============
 export { JwtTokenProvider } from './services/jwt-token-provider';
+export { InMemoryVerificationChallengeStore } from './services/in-memory-verification-challenge-store';
+export { ConsoleEmailSender } from './services/console-email-sender';
 export {
   GithubOAuthClient,
   type GithubOAuthClientConfig,
@@ -61,3 +63,4 @@ export {
   createAuthenticationRuntimeContribution,
   type AuthenticationRuntimeContribution,
 } from './runtime';
+

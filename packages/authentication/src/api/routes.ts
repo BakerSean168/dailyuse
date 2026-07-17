@@ -30,6 +30,8 @@ import {
   AuthResponseSchema,
   RevokeSessionSchema,
   ResetPasswordSchema,
+  SendEmailCodeSchema,
+  VerifyEmailCodeSchema,
   SendSmsCodeSchema,
   OAuthCallbackSchema,
   CurrentUserResponseSchema,
@@ -37,10 +39,16 @@ import {
 } from '@dailyuse/contracts/authentication';
 import { AuthenticationController } from '../server/transport';
 import type { AuthenticationApplicationPort } from '../server/application';
+import { createDefaultAuthChallengeIpRateLimit } from './challenge-ip-rate-limit';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
+  /**
+   * Optional email-verification gate applied after JWT auth on sensitive routes.
+   * 可选：JWT 之后叠加的邮箱验证门禁。
+   */
+  readonly requireEmailVerified?: RequestHandler;
 }
 
 export function registerAuthenticationRoutes(
@@ -49,8 +57,13 @@ export function registerAuthenticationRoutes(
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
-  const { auth } = middleware;
+  const { auth, requireEmailVerified } = middleware;
   const controller = new AuthenticationController(api);
+  const challengeIpLimit = createDefaultAuthChallengeIpRateLimit('auth-challenge');
+  // Sensitive authenticated routes: JWT + optional Unverified gate.
+  const guardedAuth: RequestHandler[] = requireEmailVerified
+    ? [auth, requireEmailVerified]
+    : [auth];
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/auth',
@@ -202,7 +215,7 @@ export function registerAuthenticationRoutes(
         401: errorResponse('未认证'),
       },
     },
-    [auth],
+    [...guardedAuth],
     (req, ctx) => controller.listSessions(ctx, req.user?.sessionId),
   );
 
@@ -218,7 +231,7 @@ export function registerAuthenticationRoutes(
         401: errorResponse('未认证'),
       },
     },
-    [auth],
+    [...guardedAuth],
     (req, ctx) => controller.revokeSession(req.body, ctx),
   );
 
@@ -263,9 +276,10 @@ export function registerAuthenticationRoutes(
       responses: {
         200: successResponse(z.null(), '请求已接收'),
         422: errorResponse('参数验证失败'),
+        429: errorResponse('请求过于频繁'),
       },
     },
-    [],
+    [challengeIpLimit],
     (req) => controller.forgotPassword(req.body),
     { requireAuth: false },
   );
@@ -286,6 +300,40 @@ export function registerAuthenticationRoutes(
     (req) => controller.resetPassword(req.body),
     { requireAuth: false },
   );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/email/send-code',
+      summary: '发送邮箱验证码',
+      request: { body: { content: { 'application/json': { schema: SendEmailCodeSchema } } } },
+      responses: {
+        200: successResponse(z.null(), '请求已接收'),
+        422: errorResponse('参数验证失败'),
+        429: errorResponse('请求过于频繁'),
+      },
+    },
+    [challengeIpLimit],
+    (req, ctx) => controller.sendEmailCode(req.body, ctx),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/email/verify',
+      summary: '校验邮箱验证码',
+      request: { body: { content: { 'application/json': { schema: VerifyEmailCodeSchema } } } },
+      responses: {
+        200: successResponse(z.object({ identity: z.any().optional() }), '验证成功'),
+        422: errorResponse('参数验证失败'),
+      },
+    },
+    [],
+    (req, ctx) => controller.verifyEmailCode(req.body, ctx),
+    { requireAuth: false },
+  );
+
 
   return router;
 }
