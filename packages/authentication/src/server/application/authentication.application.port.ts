@@ -23,6 +23,8 @@ import type {
   RevokeSessionReq,
   OAuthCallbackReq,
   OAuthCallbackRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
 } from '@dailyuse/contracts/authentication';
 
 export interface AuthenticationApplicationPort {
@@ -39,6 +41,7 @@ export interface AuthenticationApplicationPort {
     cx: ExecutionContext,
     deviceId: string,
   ): Promise<Result<OAuthCallbackRes>>;
+  getOAuthUrl(data: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
   register(
     data: RegisterByEmailReq,
     cx: ExecutionContext,

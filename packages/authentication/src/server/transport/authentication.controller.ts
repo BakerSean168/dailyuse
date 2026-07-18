@@ -24,6 +24,7 @@ import {
   RefreshTokenSchema,
   SendSmsCodeSchema,
   OAuthCallbackSchema,
+  GetOAuthUrlSchema,
 } from '@dailyuse/contracts/authentication';
 import type {
   GetCurrentUserRes,
@@ -34,6 +35,7 @@ import type {
   RefreshTokenRes,
   RegisterByPhoneRes,
   OAuthCallbackRes,
+  GetOAuthUrlRes,
   VerifyEmailCodeRes,
 } from '@dailyuse/contracts/authentication';
 import { formatZodErrors } from '@dailyuse/utils/result';
@@ -87,6 +89,17 @@ export class AuthenticationController {
       });
     }
     return this.api.loginByPhone(parsed.data, cx);
+  }
+
+  async getOAuthUrl(input: unknown): Promise<Result<GetOAuthUrlRes>> {
+    const parsed = GetOAuthUrlSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: parsed.error.message,
+      });
+    }
+    return this.api.getOAuthUrl(parsed.data);
   }
 
   async oauthCallback(input: unknown, cx: Context): Promise<Result<OAuthCallbackRes>> {

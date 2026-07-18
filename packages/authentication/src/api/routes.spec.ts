@@ -8,6 +8,7 @@ import {
   ForgotPasswordSchema,
   LoginByEmailSchema,
   OAuthCallbackSchema,
+  GetOAuthUrlSchema,
   RefreshTokenSchema,
   RegisterByEmailSchema,
   ResetPasswordSchema,
@@ -68,6 +69,7 @@ function createStubs(): AuthenticationApplicationPort {
     login: vi.fn(),
     loginByPhone: vi.fn(),
     oauthCallback: vi.fn(),
+    getOAuthUrl: vi.fn(),
     sendSmsCode: vi.fn(),
     logout: vi.fn(),
     refreshToken: vi.fn(),
@@ -104,6 +106,12 @@ describe('registerAuthenticationRoutes', () => {
 
     expect(bodySchema).toBe(LoginByEmailSchema);
     expect(responseSchema).toBe(AuthResponseSchema);
+  });
+
+  it('POST /oauth/url — documents GetOAuthUrlSchema', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/oauth/url');
+    expect(getJsonBodySchema(route)).toBe(GetOAuthUrlSchema);
+    expect(getResponseStatuses(route)).toContain('503');
   });
 
   it('POST /oauth/callback — documents the OAuth callback schema and disabled-provider response', () => {

@@ -32,6 +32,7 @@ export { Argon2Hasher } from './encryptors/argon2-hasher';
 export { JwtTokenProvider } from './services/jwt-token-provider';
 export { InMemoryVerificationChallengeStore } from './services/in-memory-verification-challenge-store';
 export { ConsoleEmailSender } from './services/console-email-sender';
+export { InMemoryOAuthStateStore } from './services/in-memory-oauth-state-store';
 export {
   GithubOAuthClient,
   type GithubOAuthClientConfig,

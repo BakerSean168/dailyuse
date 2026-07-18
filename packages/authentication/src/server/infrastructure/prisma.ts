@@ -79,6 +79,11 @@ export function createAuthenticationPrismaModule(
     passwordHasher: options.passwordHasher ?? new Argon2Hasher(),
     tokenProvider: options.tokenProvider,
     authenticationProviders,
+    githubOAuth: options.github
+      ? {
+          clientId: options.github.clientId,
+        }
+      : undefined,
     runtimeContributions: [cascadeRuntime, ...extraRuntime],
   });
 }

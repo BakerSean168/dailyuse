@@ -34,6 +34,7 @@ import {
   VerifyEmailCodeSchema,
   SendSmsCodeSchema,
   OAuthCallbackSchema,
+  GetOAuthUrlSchema,
   CurrentUserResponseSchema,
   SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
@@ -138,6 +139,25 @@ export function registerAuthenticationRoutes(
     },
     [],
     (req, ctx) => controller.loginByPhone(req.body, ctx),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/oauth/url',
+      summary: '获取 OAuth 授权 URL（含 state/PKCE）',
+      request: { body: { content: { 'application/json': { schema: GetOAuthUrlSchema } } } },
+      responses: {
+        200: successResponse(
+          z.object({ authUrl: z.string(), state: z.string() }),
+          '授权 URL',
+        ),
+        503: errorResponse('该 OAuth 提供者未启用'),
+      },
+    },
+    [],
+    (req) => controller.getOAuthUrl(req.body),
     { requireAuth: false },
   );
 

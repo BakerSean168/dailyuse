@@ -76,6 +76,7 @@ export class GithubOAuthClient implements IGithubOAuthClient {
     code: string;
     state?: string;
     redirectUri?: string;
+    codeVerifier?: string;
   }): Promise<GithubUserIdentity> {
     // 1. Exchange authorization code for a user access token.
     const accessToken = await this.exchangeCode(params);
@@ -88,6 +89,7 @@ export class GithubOAuthClient implements IGithubOAuthClient {
     code: string;
     state?: string;
     redirectUri?: string;
+    codeVerifier?: string;
   }): Promise<string> {
     const body: Record<string, string> = {
       client_id: this.config.clientId,
@@ -99,6 +101,9 @@ export class GithubOAuthClient implements IGithubOAuthClient {
     }
     if (params.state) {
       body.state = params.state;
+    }
+    if (params.codeVerifier) {
+      body.code_verifier = params.codeVerifier;
     }
 
     const response = await this.fetchImpl(this.tokenUrl, {

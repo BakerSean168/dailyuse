@@ -34,6 +34,7 @@ export interface GithubCredentials {
   readonly code: string;
   readonly state?: string;
   readonly redirectUri?: string;
+  readonly codeVerifier?: string;
 }
 
 export class GithubAuthenticationProvider
@@ -55,6 +56,7 @@ export class GithubAuthenticationProvider
       code: credentials.code,
       state: credentials.state,
       redirectUri: credentials.redirectUri,
+      codeVerifier: credentials.codeVerifier,
     });
 
     // 2. Find the identity already bound to this GitHub subject.

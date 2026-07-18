@@ -49,5 +49,6 @@ export interface IGithubOAuthClient {
     code: string;
     state?: string;
     redirectUri?: string;
+    codeVerifier?: string;
   }): Promise<GithubUserIdentity>;
 }

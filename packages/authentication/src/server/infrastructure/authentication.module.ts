@@ -42,6 +42,8 @@ import type {
   RevokeSessionReq,
   OAuthCallbackReq,
   OAuthCallbackRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
 } from '@dailyuse/contracts/authentication';
 import {
   AuthenticateUseCase,
@@ -50,6 +52,7 @@ import {
   ResetPasswordUseCase,
   SendEmailVerificationCodeUseCase,
   VerifyEmailCodeUseCase,
+  GetOAuthUrlUseCase,
   GetCurrentUserUseCase,
   LoginUseCase,
   ListSessionsUseCase,
@@ -66,6 +69,7 @@ import {
 } from '../domain';
 import { InMemoryVerificationChallengeStore } from './services/in-memory-verification-challenge-store';
 import { ConsoleEmailSender } from './services/console-email-sender';
+import { InMemoryOAuthStateStore } from './services/in-memory-oauth-state-store';
 
 // ---------------------------------------------------------------------------
 // Dependencies — 依赖接口
@@ -101,6 +105,14 @@ export interface AuthenticationModuleDependencies {
    */
   readonly authenticationProviders?: readonly AuthenticationProvider[];
   readonly runtimeContributions?: AuthenticationRuntimeContributionsInput;
+  /**
+   * Optional GitHub OAuth client id for authorize-url issuance (identity-only scopes).
+   * 可选 GitHub OAuth client id，用于签发授权 URL（仅身份 scopes）。
+   */
+  readonly githubOAuth?: {
+    readonly clientId: string;
+    readonly authorizeUrl?: string;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -148,6 +160,8 @@ export interface AuthenticationModuleUseCases {
   readonly resetPassword: ResetPasswordUseCase;
   readonly sendEmailVerificationCode: SendEmailVerificationCodeUseCase;
   readonly verifyEmailCode: VerifyEmailCodeUseCase;
+  readonly getOAuthUrl: GetOAuthUrlUseCase;
+  readonly oauthStateStore: InMemoryOAuthStateStore;
 }
 
 // ---------------------------------------------------------------------------
@@ -190,6 +204,7 @@ export interface AuthenticationApplicationPort {
     cx: ExecutionContext,
     deviceId: string,
   ): Promise<Result<OAuthCallbackRes>>;
+  getOAuthUrl(data: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -228,6 +243,7 @@ export function createAuthenticationUseCases(
 
   const challengeStore = new InMemoryVerificationChallengeStore();
   const emailSender = new ConsoleEmailSender();
+  const oauthStateStore = new InMemoryOAuthStateStore();
 
   // Build the pluggable provider registry.
   // The password provider is always available; extra providers (GitHub, guest,
@@ -262,6 +278,8 @@ export function createAuthenticationUseCases(
       emailSender,
     ),
     verifyEmailCode: new VerifyEmailCodeUseCase(identityRepository, challengeStore),
+    getOAuthUrl: new GetOAuthUrlUseCase(oauthStateStore, dependencies.githubOAuth),
+    oauthStateStore,
   };
 }
 
@@ -373,16 +391,31 @@ export function createAuthenticationModule(
 
     verifyEmailCode: (data, cx) => useCases.verifyEmailCode.execute(data, cx),
 
+    getOAuthUrl: (data) => useCases.getOAuthUrl.execute(data),
+
     // Pluggable OAuth login — dispatches to the provider registered under the
     // method id derived from the provider name (e.g. 'Github' -> 'github').
     // 可插拔 OAuth 登录 —— 分发到按 provider 名派生的方式 id 所注册的提供者。
-    oauthCallback: (data, cx, deviceId) =>
-      useCases.authenticate.execute(
+    oauthCallback: async (data, cx, deviceId) => {
+      const consumed = useCases.oauthStateStore.consume(data.state, data.provider);
+      if (!consumed) {
+        return fail({
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid or expired OAuth state',
+        });
+      }
+      return useCases.authenticate.execute(
         oauthProviderToMethod(data.provider),
-        { code: data.code, state: data.state },
+        {
+          code: data.code,
+          state: data.state,
+          codeVerifier: consumed.codeVerifier,
+          redirectUri: consumed.redirectUri,
+        },
         cx,
         deviceId,
-      ),
+      );
+    },
   };
 
   return {
