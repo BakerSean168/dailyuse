@@ -33,7 +33,7 @@ test.describe('Web authentication page contract', () => {
       'Interface language',
     );
     await expect(page.getByTestId('guest-mode-button')).toHaveCount(0);
-    await expect(page.getByText(/forgot password|忘记密码/i)).toHaveCount(0);
+    await expect(page.getByTestId('login-forgot-link')).toBeVisible();
     await expect(page.getByText(/terms of service|服务条款|privacy policy|隐私政策/i)).toHaveCount(0);
 
     await ensureRegisterScene(page);

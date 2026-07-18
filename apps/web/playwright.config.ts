@@ -20,6 +20,8 @@ export default defineConfig({
     '**/ai/goal-workflow.spec.ts',
     '**/authentication/auth-flow.spec.ts',
     '**/authentication/auth-login.spec.ts',
+    '**/authentication/auth-password.spec.ts',
+    '**/authentication/auth-register.spec.ts',
     '**/authentication/auth-page-contract.spec.ts',
     '**/dashboard/dashboard-overview.spec.ts',
     '**/goal/goal-crud.spec.ts',
