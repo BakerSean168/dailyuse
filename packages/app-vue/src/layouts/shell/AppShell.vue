@@ -214,6 +214,14 @@ const userName = computed<string | undefined>(() => {
   return identifier?.value || undefined;
 });
 
+const needsEmailVerification = computed(
+  () => isAuthenticated.value && authStore.currentIdentity?.status === 'Unverified',
+);
+
+function goVerifyEmail() {
+  void router.push({ path: '/auth', query: { scene: 'verify-email' } });
+}
+
 // ── 通知未读角标（SSE 启动钩子推流，胶囊消费；V2 §8-7） ──
 const notification = useNotification();
 const dashboard = useDashboard();
@@ -442,6 +450,23 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     :data-shell-state="isSettingsScene ? 'settings' : shellState"
     :data-shell-scene="shellScene"
   >
+    <div
+      v-if="needsEmailVerification"
+      data-testid="unverified-email-banner"
+      class="flex items-center justify-between gap-3 border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-100"
+      role="status"
+    >
+      <span>{{ t('shell.auth.unverifiedBanner', 'Verify your email to unlock all features.') }}</span>
+      <button
+        type="button"
+        class="rounded-md bg-amber-400/20 px-3 py-1 text-xs font-medium text-amber-50 hover:bg-amber-400/30"
+        data-testid="unverified-email-banner-action"
+        @click="goVerifyEmail"
+      >
+        {{ t('shell.auth.unverifiedAction', 'Verify now') }}
+      </button>
+    </div>
+
     <!-- 顶部窗口栏：胶囊导航 + 日程胶囊 + 窗控 -->
     <WindowHeader
       :mode="isSettingsScene ? 'settings' : 'workspace'"

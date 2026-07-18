@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { APP_DISPLAY_NAME, logo128 } from '@dailyuse/assets';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn/components/ui/card';
@@ -36,6 +37,7 @@ import {
 } from './validation';
 
 const { t, locale } = useI18n();
+const route = useRoute();
 const initialPresentation = readPresentationPreferenceState();
 const currentLocale = ref<AuthLocale>(initialPresentation.locale);
 
@@ -49,6 +51,8 @@ const {
   resetPassword,
   sendEmailCode,
   verifyEmailCode,
+  startGithubLogin,
+  completeGithubOAuth,
   isLoading,
   errorMessage,
   successMessage,
@@ -174,6 +178,26 @@ function enterVerifyScene(nextEmail: string) {
   startResendCooldown();
 }
 
+onMounted(async () => {
+  const sceneQuery = route.query.scene;
+  const code = typeof route.query.code === 'string' ? route.query.code : '';
+  const state = typeof route.query.state === 'string' ? route.query.state : '';
+  if (code && state) {
+    authAction.value = 'login';
+    await completeGithubOAuth(code, state);
+    authAction.value = null;
+    return;
+  }
+  if (sceneQuery === 'verify-email') {
+    const emailQuery = typeof route.query.email === 'string' ? route.query.email : '';
+    enterVerifyScene(emailQuery || pendingVerificationEmail.value || '');
+  } else if (sceneQuery === 'forgot') {
+    switchScene('forgot');
+  } else if (sceneQuery === 'reset') {
+    switchScene('reset');
+  }
+});
+
 function replaceErrors<T extends Record<string, string | undefined>>(target: T, next: Partial<T>) {
   for (const key of Object.keys(target)) {
     delete target[key];
@@ -240,6 +264,13 @@ async function handleRegister() {
     enterVerifyScene(pendingVerificationEmail.value ?? regEmail.value);
   }
   if (!outcome) authAction.value = null;
+}
+
+async function handleGithubLogin() {
+  authAction.value = 'login';
+  const redirectUri = `${window.location.origin}/auth?scene=oauth-callback`;
+  await startGithubLogin(redirectUri);
+  authAction.value = null;
 }
 
 async function handleForgot() {
@@ -571,6 +602,17 @@ onUnmounted(() => {
                 {{ t('auth.login.submitting') }}
               </template>
               <template v-else>{{ t('auth.login.submit') }}</template>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              class="mt-3 h-[40px] w-full rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] text-white/80 hover:bg-white/[0.08]"
+              :disabled="isLoading"
+              data-testid="login-github-button"
+              @click="handleGithubLogin"
+            >
+              {{ t('auth.login.github', 'Continue with GitHub') }}
             </Button>
           </form>
 

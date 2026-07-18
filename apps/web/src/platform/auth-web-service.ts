@@ -1,5 +1,9 @@
 import type {
   ForgotPasswordReq,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
   LoginByEmailReq,
   LoginByEmailRes,
   RegisterByEmailReq,
@@ -133,6 +137,14 @@ export const authWebService = {
   registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>> {
     return postAuth('/register', req);
   },
+
+  getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>> {
+    return postAuth('/oauth/url', req);
+  }
+
+  oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {
+    return postAuth('/oauth/callback', req);
+  }
 
   forgotPassword(req: ForgotPasswordReq): Promise<Result<void>> {
     return postAuth('/password/forgot', req);

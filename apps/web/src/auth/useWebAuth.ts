@@ -1,6 +1,8 @@
 import type {
   AuthResponseDTO,
   ForgotPasswordReq,
+  GetOAuthUrlReq,
+  OAuthCallbackReq,
   LoginByEmailReq,
   RegisterByEmailReq,
   ResetPasswordReq,
@@ -271,11 +273,62 @@ export function useWebAuth() {
     }
   }
 
+
+  async function startGithubLogin(redirectUri?: string): Promise<boolean> {
+    isLoading.value = true;
+    error.value = null;
+    successMessage.value = null;
+    try {
+      const req: GetOAuthUrlReq = { provider: 'Github', redirectUri };
+      const result = await service.getOAuthUrl(req);
+      if (!result.ok) {
+        error.value = result.error;
+        return false;
+      }
+      window.location.assign(result.data.authUrl);
+      return true;
+    } catch (errorLike) {
+      error.value = normalizeAuthError(errorLike);
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function completeGithubOAuth(code: string, state: string): Promise<AuthSuccessOutcome | null> {
+    isLoading.value = true;
+    error.value = null;
+    successMessage.value = null;
+    try {
+      const req: OAuthCallbackReq = { provider: 'Github', code, state };
+      const result = await service.oauthCallback(req);
+      if (!result.ok) {
+        error.value = result.error;
+        return null;
+      }
+      handleAuthSuccess(result.data);
+      if (isUnverifiedIdentity(result.data.identity)) {
+        pendingVerificationEmail.value = null;
+        return 'needs-email-verification';
+      }
+      redirectToApp();
+      return 'authenticated';
+    } catch (errorLike) {
+      error.value = normalizeAuthError(errorLike);
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+
   return {
     error,
     errorMessage,
     successMessage,
     pendingVerificationEmail,
+    startGithubLogin,
+    completeGithubOAuth,
     isLoading,
     clearError,
     clearSuccessMessage,
