@@ -560,24 +560,33 @@ export function registerDesktopAuthShellHandlers(
       : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
   });
 
-  ipcMain.handle(Ch.FORGOT_PASSWORD, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Forgot password not implemented' })),
+  ipcMain.handle(Ch.FORGOT_PASSWORD, async (_event, data) =>
+    toIpcResult(await remoteGateway.forgotPassword(data)),
   );
-  ipcMain.handle(Ch.RESET_PASSWORD, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Reset password not implemented' })),
+  ipcMain.handle(Ch.RESET_PASSWORD, async (_event, data) =>
+    toIpcResult(await remoteGateway.resetPassword(data)),
   );
-  ipcMain.handle(Ch.CHANGE_PASSWORD, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Change password not implemented' })),
-  );
+  ipcMain.handle(Ch.CHANGE_PASSWORD, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? null;
+    if (!accessToken) {
+      return toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
+    }
+    return toIpcResult(await remoteGateway.changePassword(data, accessToken));
+  });
   ipcMain.handle(Ch.SEND_SMS_CODE, async () =>
     toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'SMS not implemented' })),
   );
-  ipcMain.handle(Ch.SEND_EMAIL_CODE, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Send email code not implemented on desktop shell' })),
-  );
-  ipcMain.handle(Ch.VERIFY_EMAIL_CODE, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Verify email code not implemented on desktop shell' })),
-  );
+  ipcMain.handle(Ch.SEND_EMAIL_CODE, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? undefined;
+    return toIpcResult(await remoteGateway.sendEmailCode(data, accessToken));
+  });
+  ipcMain.handle(Ch.VERIFY_EMAIL_CODE, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? undefined;
+    return toIpcResult(await remoteGateway.verifyEmailCode(data, accessToken));
+  });
 
   logger.info(`Desktop shell auth handlers registered (${allChannels.length} channels)`);
 }

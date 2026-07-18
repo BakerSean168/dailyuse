@@ -372,6 +372,14 @@ export class AuthDesktopApplicationService {
   }
 
   /**
+   * Synchronous cached access token for online API calls from the desktop shell.
+   * 桌面壳层在线 API 调用使用的同步缓存 access token。
+   */
+  getAccessToken(): string | null {
+    return this.tokenManager.getCachedTokenData()?.accessToken ?? null;
+  }
+
+  /**
    * 获取会话状态
    */
   async getSessionStatus(): Promise<SessionStatus | null> {
