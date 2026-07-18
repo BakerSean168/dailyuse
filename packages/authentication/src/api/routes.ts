@@ -39,7 +39,9 @@ import {
 } from '@dailyuse/contracts/authentication';
 import { AuthenticationController } from '../server/transport';
 import type { AuthenticationApplicationPort } from '../server/application';
+import { ok } from '@dailyuse/contracts/result';
 import { createDefaultAuthChallengeIpRateLimit } from './challenge-ip-rate-limit';
+import { ConsoleEmailSender } from '../server/infrastructure/services/console-email-sender';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -335,5 +337,34 @@ export function registerAuthenticationRoutes(
   );
 
 
+
+  // Test/e2e only: expose last console-captured email code so Playwright can complete verify/reset flows.
+  // 仅测试/e2e：暴露控制台捕获的最近验证码，供 Playwright 完成验证/重置流程。
+  // Never enable this outside test lanes.
+  if (process.env.NODE_ENV === 'test' || process.env.RUNTIME_LANE === 'e2e') {
+    r.route(
+      {
+        method: 'get',
+        path: '/test/last-email-code',
+        summary: 'Test-only: last captured email verification/reset code',
+        responses: {
+          200: successResponse(z.object({ code: z.string().nullable(), kind: z.string().nullable() }), 'ok'),
+        },
+      },
+      [],
+      async (req) => {
+        const query = req.query ?? {};
+        const email = typeof query.email === 'string' ? query.email : '';
+        const kindRaw = typeof query.kind === 'string' ? query.kind : undefined;
+        const kind =
+          kindRaw === 'password-reset' || kindRaw === 'email-verify' ? kindRaw : undefined;
+        const code = email ? ConsoleEmailSender.getLatestCode(email, kind) : null;
+        return ok({ code, kind: kind ?? null });
+      },
+      { requireAuth: false },
+    );
+  }
+
   return router;
 }
+

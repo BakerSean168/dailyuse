@@ -16,7 +16,7 @@ import {
 import type { LoginByEmailReq, LoginByEmailRes } from '@dailyuse/contracts/authentication';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IPasswordHasher } from '../../../domain';
-import { UserNotFoundError, InvalidPasswordError } from '../../../domain/services/login';
+import { UserNotFoundError, InvalidPasswordError, IdentityDisabledError } from '../../../domain/services/login';
 import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('Login');
@@ -75,7 +75,7 @@ export class LoginUseCase {
       });
     } catch (err) {
       // Security: don't distinguish "user not found" vs "wrong password"
-      if (err instanceof UserNotFoundError || err instanceof InvalidPasswordError) {
+      if (err instanceof UserNotFoundError || err instanceof InvalidPasswordError || err instanceof IdentityDisabledError) {
         return error('UNAUTHORIZED', 'Invalid email or password');
       }
 

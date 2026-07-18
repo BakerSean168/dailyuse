@@ -11,6 +11,7 @@ import { PrismaAuthIdentityRepository, PrismaAuthSessionRepository } from './ada
 import { Argon2Hasher } from './encryptors/argon2-hasher';
 import { GithubOAuthClient } from './services/github-oauth-client';
 import { GithubAuthenticationProvider, type AuthenticationProvider } from '../domain';
+import { createAuthenticationRuntimeContribution } from './runtime';
 
 /**
  * Optional GitHub login configuration (ADR-034: identity-only).
@@ -61,12 +62,23 @@ export function createAuthenticationPrismaModule(
     );
   }
 
+  const sessionRepository = new PrismaAuthSessionRepository(db, eventBusAdapter);
+  const cascadeRuntime = createAuthenticationRuntimeContribution({
+    identityRepository,
+    sessionRepository,
+  });
+  const extraRuntime = options.runtimeContributions
+    ? Array.isArray(options.runtimeContributions)
+      ? Array.from(options.runtimeContributions)
+      : [options.runtimeContributions]
+    : [];
+
   return createAuthenticationModule({
     identityRepository,
-    sessionRepository: new PrismaAuthSessionRepository(db, eventBusAdapter),
+    sessionRepository,
     passwordHasher: options.passwordHasher ?? new Argon2Hasher(),
     tokenProvider: options.tokenProvider,
     authenticationProviders,
-    runtimeContributions: options.runtimeContributions,
+    runtimeContributions: [cascadeRuntime, ...extraRuntime],
   });
 }

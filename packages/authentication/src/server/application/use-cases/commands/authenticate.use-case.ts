@@ -31,7 +31,7 @@ import {
   UnsupportedAuthenticationMethodError,
   type AuthenticationMethod,
 } from '../../../domain/services/authentication-provider';
-import { UserNotFoundError, InvalidPasswordError } from '../../../domain/services/login';
+import { UserNotFoundError, InvalidPasswordError, IdentityDisabledError } from '../../../domain/services/login';
 import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('Authenticate');
@@ -100,7 +100,7 @@ export class AuthenticateUseCase {
       }
 
       // Security: never distinguish "user not found" vs "wrong password".
-      if (err instanceof UserNotFoundError || err instanceof InvalidPasswordError) {
+      if (err instanceof UserNotFoundError || err instanceof InvalidPasswordError || err instanceof IdentityDisabledError) {
         return error('UNAUTHORIZED', 'Invalid credentials');
       }
 

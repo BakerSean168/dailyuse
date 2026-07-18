@@ -32,7 +32,6 @@ import { registerAuthenticationRoutes } from './routes';
 import {
   createRequireEmailVerifiedMiddleware,
 } from './require-email-verified.middleware';
-import { createAuthenticationRuntimeContribution } from '../server/infrastructure/runtime';
 
 /**
  * Typed module context for authentication registration.
@@ -104,7 +103,6 @@ export function createAuthenticationApiModule(
       const authenticationModule = createAuthenticationPrismaModule(db, {
         tokenProvider,
         github: options.github,
-        runtimeContributions: createAuthenticationRuntimeContribution(),
       });
       activeAuthenticationModule = authenticationModule;
       authenticationModule.start();

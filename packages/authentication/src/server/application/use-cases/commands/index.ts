@@ -9,3 +9,4 @@ export * from './forgot-password.use-case';
 export * from './reset-password.use-case';
 export * from './send-email-verification-code.use-case';
 export * from './verify-email-code.use-case';
+export * from './disable-identity-for-account-close.use-case';
