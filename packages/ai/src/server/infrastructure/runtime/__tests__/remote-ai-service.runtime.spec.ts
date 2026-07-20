@@ -372,9 +372,7 @@ describe('createRemoteAIServiceRuntime', () => {
 
   it('uses remote chat port when provided', () => {
     const remoteChat = createMockChatPort();
-    const runtime = createRemoteAIServiceRuntime(
-      createMockDeps({ chatExecutionPort: remoteChat }),
-    );
+    const runtime = createRemoteAIServiceRuntime(createMockDeps({ chatExecutionPort: remoteChat }));
     expect(runtime.services.chatServices).toBeDefined();
     // The chat send use case should be constructed with the remote port
     // (we verify via capability consistency instead of private fields)
@@ -391,9 +389,7 @@ describe('createRemoteAIServiceRuntime', () => {
 
   it('uses remote goal planning port when provided', () => {
     const remoteGoal = createMockGoalPort();
-    const runtime = createRemoteAIServiceRuntime(
-      createMockDeps({ goalPlanningPort: remoteGoal }),
-    );
+    const runtime = createRemoteAIServiceRuntime(createMockDeps({ goalPlanningPort: remoteGoal }));
     expect(runtime.services.goalGenerationService).toBeDefined();
     expect(runtime.capabilities.supportsGoalGeneration).toBe(true);
   });
@@ -983,7 +979,6 @@ describe('createRemoteAIServiceRuntime', () => {
         executionLogPort,
         providerConfigRepository,
         knowledgeNotePersistence,
-        getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('notes'),
       }),
     );
 
@@ -1002,7 +997,10 @@ describe('createRemoteAIServiceRuntime', () => {
     expect(knowledgeNotePersistence.createKnowledgeNote).toHaveBeenCalledWith(
       expect.objectContaining({
         identityId: 'identity-1',
-        path: '/notes/notes/ai/Grounding-knowledge-answers.md',
+        path: 'notes/ai/Grounding-knowledge-answers.md',
+        proposalId: 'run-note-1:knowledge-note:run-note-1:knowledge-note-draft',
+        proposalRevision: 1,
+        requestId: 'request-note-save',
         fileName: 'Grounding-knowledge-answers.md',
         content: '# Grounding knowledge answers\n\nUse cited repository excerpts.',
       }),
@@ -1019,9 +1017,9 @@ describe('createRemoteAIServiceRuntime', () => {
             tool: 'create_knowledge_note',
             status: 'executed',
             entityId: 'resource-note-1',
-            message: 'Saved knowledge note to /notes/notes/ai/Grounding-knowledge-answers.md.',
+            message: 'Saved knowledge note to notes/ai/Grounding-knowledge-answers.md.',
             data: {
-              resolvedPath: '/notes/notes/ai/Grounding-knowledge-answers.md',
+              resolvedPath: 'notes/ai/Grounding-knowledge-answers.md',
               indexStatus: 'pending',
               resource: {
                 id: 'resource-note-1',
@@ -1057,9 +1055,7 @@ describe('createRemoteAIServiceRuntime', () => {
           executedActionCount: 1,
           interruptCount: 0,
           nodeTimings: [{ node: 'draft_note', durationMs: 64 }],
-          toolTimings: [
-            { tool: 'create_knowledge_note', status: 'executed', durationMs: 180 },
-          ],
+          toolTimings: [{ tool: 'create_knowledge_note', status: 'executed', durationMs: 180 }],
         }),
         tokenUsage: {
           promptTokens: 14,
@@ -1139,9 +1135,7 @@ describe('createRemoteAIServiceRuntime', () => {
           status: 'waiting_approval',
           stage: 'approval',
           nodeTimings: [{ node: 'clarify', durationMs: 45 }],
-          toolTimings: [
-            { tool: 'search_existing_goals', status: 'executed', durationMs: 120 },
-          ],
+          toolTimings: [{ tool: 'search_existing_goals', status: 'executed', durationMs: 120 }],
         }),
         tokenUsage: {
           promptTokens: 5,
@@ -1260,9 +1254,7 @@ describe('createRemoteAIServiceRuntime', () => {
         dashboard: { stats: { activeGoals: 2 } },
         taskDashboard: { summary: { totalTasks: 5 } },
         goals: [{ id: 'goal-1', title: 'Existing Agent work' }],
-        goalSearchResults: [
-          { id: 'goal-2', title: 'Similar workspace goal' },
-        ],
+        goalSearchResults: [{ id: 'goal-2', title: 'Similar workspace goal' }],
         extra: { source: 'test' },
       }),
     };
@@ -1326,9 +1318,7 @@ describe('createRemoteAIServiceRuntime', () => {
             dashboard: { stats: { activeGoals: 2 } },
             task_dashboard: { summary: { totalTasks: 5 } },
             goals: [{ id: 'goal-1', title: 'Existing Agent work' }],
-            goal_search_results: [
-              { id: 'goal-2', title: 'Similar workspace goal' },
-            ],
+            goal_search_results: [{ id: 'goal-2', title: 'Similar workspace goal' }],
             extra: { source: 'test' },
           },
         },
@@ -1948,7 +1938,6 @@ describe('createRemoteAIServiceRuntime', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
         knowledgeNotePersistence: { saveNote: vi.fn(), loadNote: vi.fn() } as any,
-        getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('/notes'),
       }),
     );
     expect(runtime.capabilities.supportsKnowledgeNotes).toBe(true);
@@ -2018,7 +2007,6 @@ describe('createRemoteAIServiceRuntime', () => {
         automationToolExecutorPort: { execute: vi.fn() } as any,
         agentRuntimePort: createMockAgentRuntimePort(),
         knowledgeNotePersistence: { saveNote: vi.fn(), loadNote: vi.fn() } as any,
-        getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('/notes'),
         evaluationReportPort: { getOverview: vi.fn() } as any,
       }),
     );

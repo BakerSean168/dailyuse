@@ -32,6 +32,7 @@ import type {
   IGoalAutomationPlanningPort,
   IGoalPlanningPort,
   IKnowledgeIndexRepository,
+  IKnowledgeIndexStatusPort,
   IKnowledgeIngestionPort,
   IKnowledgeQueryPort,
   IKnowledgeNoteGenerationPort,
@@ -98,6 +99,7 @@ import type {
   ReindexAllKnowledgeUseCase,
   SyncRelevantKnowledgeUseCase,
   SyncResourceByIdUseCase,
+  RemoveKnowledgeIndexResourceUseCase,
 } from '../application/use-cases';
 
 // ---------------------------------------------------------------------------
@@ -121,6 +123,7 @@ export interface AIModuleDependencies {
   readonly goalAutomationPlanningPort?: IGoalAutomationPlanningPort;
   readonly automationToolExecutorPort?: IAIAutomationToolExecutorPort;
   readonly knowledgeIndexRepository?: IKnowledgeIndexRepository;
+  readonly knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort;
   readonly knowledgeIngestionPort?: IKnowledgeIngestionPort;
   readonly knowledgeQueryPort?: IKnowledgeQueryPort;
   readonly knowledgeNoteGenerationPort?: IKnowledgeNoteGenerationPort;
@@ -141,12 +144,6 @@ export interface AIModuleDependencies {
   readonly knowledgeNotePersistence?: IKnowledgeNotePersistencePort;
 
   /**
-   * Resolves the knowledge-note subdirectory for a given identity.
-   * 根据身份 ID 解析知识笔记子目录。
-   */
-  readonly getKnowledgeNoteSubpath?: (identityId: string) => Promise<string>;
-
-  /**
    * Optional runtime side effects to start/stop with the module.
    * 可选的运行时副作用，随模块一起启动/停止。
    */
@@ -158,8 +155,7 @@ export interface AIModuleDependencies {
 // ---------------------------------------------------------------------------
 
 export type AIRuntimeContributionsInput =
-  | AIModuleRuntimeContribution
-  | readonly AIModuleRuntimeContribution[];
+  AIModuleRuntimeContribution | readonly AIModuleRuntimeContribution[];
 
 /**
  * Module-owned runtime side effects.
@@ -236,6 +232,7 @@ export interface AIKnowledgeIndexServices {
   readonly reindexAll: ReindexAllKnowledgeUseCase;
   readonly syncRelevant: SyncRelevantKnowledgeUseCase;
   readonly syncById: SyncResourceByIdUseCase;
+  readonly removeById: RemoveKnowledgeIndexResourceUseCase;
 }
 
 /**
@@ -244,22 +241,13 @@ export interface AIKnowledgeIndexServices {
 export interface AIKnowledgeQueryServices {
   readonly isAvailable: boolean;
   readonly query: {
-    execute(
-      req: QueryKnowledgeReq,
-      cx: ExecutionContext,
-    ): Promise<Result<QueryKnowledgeRes>>;
+    execute(req: QueryKnowledgeReq, cx: ExecutionContext): Promise<Result<QueryKnowledgeRes>>;
   };
   readonly expand: {
-    execute(
-      req: ExpandKnowledgeReq,
-      cx: ExecutionContext,
-    ): Promise<Result<ExpandKnowledgeRes>>;
+    execute(req: ExpandKnowledgeReq, cx: ExecutionContext): Promise<Result<ExpandKnowledgeRes>>;
   };
   readonly reindex: {
-    execute(
-      req: ReindexKnowledgeReq,
-      cx: ExecutionContext,
-    ): Promise<Result<ReindexKnowledgeRes>>;
+    execute(req: ReindexKnowledgeReq, cx: ExecutionContext): Promise<Result<ReindexKnowledgeRes>>;
   };
 }
 
@@ -273,17 +261,12 @@ export interface AIKnowledgeNoteService {
 
 export interface AIAnalyticsQueryService {
   readonly isAvailable: boolean;
-  queryAnalytics(
-    req: QueryAnalyticsReq,
-    cx: ExecutionContext,
-  ): Promise<Result<QueryAnalyticsRes>>;
+  queryAnalytics(req: QueryAnalyticsReq, cx: ExecutionContext): Promise<Result<QueryAnalyticsRes>>;
 }
 
 export interface AIEvaluationReportService {
   readonly isAvailable: boolean;
-  getOverview(
-    req?: GetAIEvaluationOverviewReq,
-  ): Promise<Result<GetAIEvaluationOverviewRes>>;
+  getOverview(req?: GetAIEvaluationOverviewReq): Promise<Result<GetAIEvaluationOverviewRes>>;
 }
 
 export interface AIAgentRuntimeService {
@@ -364,7 +347,6 @@ export interface AIModuleInstance {
   dispose(): void;
 }
 
-
 async function getKnowledgeIndexDiagnostics(
   dependencies: AIModuleDependencies,
   supportsKnowledgeQuery: boolean,
@@ -419,7 +401,6 @@ export function createAIUseCases(
   };
 }
 
-
 // ---------------------------------------------------------------------------
 // Composition Root — 规范化的 AI 模块主组合根
 // ---------------------------------------------------------------------------
@@ -443,13 +424,13 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
 
   const isRemoteMode = Boolean(
     dependencies.chatExecutionPort ||
-      dependencies.goalPlanningPort ||
-      dependencies.goalAutomationPlanningPort ||
-      dependencies.knowledgeIngestionPort ||
-      dependencies.knowledgeQueryPort ||
-      dependencies.knowledgeNoteGenerationPort ||
-      dependencies.analyticsQueryPort ||
-      dependencies.agentRuntimePort,
+    dependencies.goalPlanningPort ||
+    dependencies.goalAutomationPlanningPort ||
+    dependencies.knowledgeIngestionPort ||
+    dependencies.knowledgeQueryPort ||
+    dependencies.knowledgeNoteGenerationPort ||
+    dependencies.analyticsQueryPort ||
+    dependencies.agentRuntimePort,
   );
 
   const runtime = isRemoteMode
@@ -515,8 +496,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       }
       return ok(result.data.toClientDTO());
     },
-    deleteConversation: (id) =>
-      services.conversationServices.deleteConversationV2.execute(id),
+    deleteConversation: (id) => services.conversationServices.deleteConversationV2.execute(id),
 
     // -- Chat --
     sendMessage: (conversationId, content, cx, providerId, model) =>

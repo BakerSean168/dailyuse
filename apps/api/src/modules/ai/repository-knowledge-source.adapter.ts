@@ -1,151 +1,124 @@
 import { createHash } from 'node:crypto';
-
 import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/ports';
 import type { PrismaClient } from '@dailyuse/database';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import {
-  createRepositoryPrismaModule,
-  type RepositoryModuleInstance,
-} from '@dailyuse/repository';
 
 function tokenize(text: string): string[] {
-  return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);
-}
-
-function isQueryableResource(resource: ResourceClientDTO): boolean {
-  return (
-    resource.isActive &&
-    !resource.isDeleted &&
-    (resource.mimeType.startsWith('text/') ||
-      resource.extension === '.md' ||
-      resource.extension === '.txt')
+  return (text.toLowerCase().match(/[a-z0-9\u4e00-\u9fff_]+/g) ?? []).filter(
+    (token) => token.length > 1,
   );
 }
 
-function scoreResource(resource: ResourceClientDTO, query: string): number {
+function scoreResource(resource: KnowledgeSourceResource, query: string): number {
   const tokens = new Set(tokenize(query));
-  const haystack = `${resource.name} ${resource.path} ${resource.content ?? ''}`.toLowerCase();
+  const haystack =
+    `${resource.title ?? ''} ${resource.resourcePath} ${resource.content}`.toLowerCase();
   let score = 0;
-
   for (const token of tokens) {
-    if (haystack.includes(token)) {
-      score += 1;
-    }
+    if (haystack.includes(token)) score += 1;
   }
-
-  if (query.trim() && resource.name.toLowerCase().includes(query.trim().toLowerCase())) {
-    score += 2;
-  }
-
+  const normalizedQuery = query.trim().toLowerCase();
+  if (normalizedQuery && (resource.title ?? '').toLowerCase().includes(normalizedQuery)) score += 2;
   return score;
 }
 
+/**
+ * AI reads the GitHub-derived projection, never the legacy database resource
+ * table. The projection remains rebuildable from the repository default branch.
+ */
 export class RepositoryKnowledgeSourceAdapter implements IKnowledgeSourcePort {
-  private readonly repositoryModule: RepositoryModuleInstance;
-
-  constructor(db: PrismaClient, storageBaseDir: string) {
-    this.repositoryModule = createRepositoryPrismaModule(db, {
-      storageBaseDir,
-    });
-  }
+  constructor(
+    private readonly db: PrismaClient,
+    _storageBaseDir?: string,
+  ) {}
 
   async listRelevantResources(
     identityId: string,
     query: string,
     limit: number,
   ): Promise<KnowledgeSourceResource[]> {
-    const hydrated = await this.loadQueryableResources(identityId);
-
-    return hydrated
-      .map((resource) => ({
-        resource,
-        score: scoreResource(resource, query),
-      }))
+    const resources = await this.loadResources(identityId, limit * 3);
+    return resources
+      .map((resource) => ({ resource, score: scoreResource(resource, query) }))
       .filter(({ score }) => score > 0 || query.trim().length === 0)
       .sort((left, right) => right.score - left.score)
       .slice(0, limit)
-      .map(({ resource }) => this.toKnowledgeResource(identityId, resource));
+      .map(({ resource }) => resource);
   }
 
   async listIndexableResources(
     identityId: string,
     limit: number,
   ): Promise<KnowledgeSourceResource[]> {
-    const hydrated = await this.loadQueryableResources(identityId);
-    return hydrated.slice(0, limit).map((resource) => this.toKnowledgeResource(identityId, resource));
+    return this.loadResources(identityId, limit);
   }
 
   async getResourceById(
     identityId: string,
     resourceId: string,
   ): Promise<KnowledgeSourceResource | null> {
-    const repositoryId = await this.resolveActiveRepositoryId(identityId);
-    if (!repositoryId) {
-      return null;
-    }
-
-    const result = await this.repositoryModule.api.getResource(resourceId);
-    if (!result.ok) {
-      return null;
-    }
-
-    const resource = result.data as ResourceClientDTO;
-    if (String(resource.repositoryId) !== repositoryId || !isQueryableResource(resource)) {
-      return null;
-    }
-
-    return resource.content ? this.toKnowledgeResource(identityId, resource) : null;
+    const row = await this.db.knowledgeNoteProjection.findFirst({
+      where: {
+        id: resourceId,
+        deletedAt: null,
+        connection: { identityId, deletedAt: null, status: { in: ['Active', 'Suspended'] } },
+      },
+    });
+    return row ? this.toResource(identityId, row) : null;
   }
 
-  private async loadQueryableResources(identityId: string): Promise<ResourceClientDTO[]> {
-    const repositoryId = await this.resolveActiveRepositoryId(identityId);
-    if (!repositoryId) {
-      return [];
-    }
-
-    const listResult = await this.repositoryModule.api.listResources(repositoryId);
-    if (!listResult.ok) {
-      return [];
-    }
-
-    const resources = (listResult.data as ResourceClientDTO[]).filter(isQueryableResource);
-    const hydrated = await Promise.all(
-      resources.map(async (resource) => {
-        const result = await this.repositoryModule.api.getResource(String(resource.id));
-        return result.ok ? (result.data as ResourceClientDTO) : null;
-      }),
-    );
-
-    return hydrated.filter((resource): resource is ResourceClientDTO => !!resource && !!resource.content);
-  }
-
-  private async resolveActiveRepositoryId(identityId: string): Promise<string | null> {
-    const repositoryResult = await this.repositoryModule.api.findActiveRepository(identityId);
-    if (!repositoryResult.ok) {
-      return null;
-    }
-
-    return String((repositoryResult.data as { id: string }).id);
-  }
-
-  private toKnowledgeResource(
+  private async loadResources(
     identityId: string,
-    resource: ResourceClientDTO,
+    limit: number,
+  ): Promise<KnowledgeSourceResource[]> {
+    const rows = await this.db.knowledgeNoteProjection.findMany({
+      where: {
+        deletedAt: null,
+        connection: { identityId, deletedAt: null, status: { in: ['Active', 'Suspended'] } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: limit,
+    });
+    return rows.map((row) => this.toResource(identityId, row));
+  }
+
+  private toResource(
+    identityId: string,
+    row: {
+      id: string;
+      connectionId: string;
+      relativePath: string;
+      markdownContent: string;
+      frontmatter: unknown;
+      blobSha: string;
+      contentHash: string;
+      indexStatus: string;
+    },
   ): KnowledgeSourceResource {
+    const frontmatter =
+      row.frontmatter && typeof row.frontmatter === 'object' && !Array.isArray(row.frontmatter)
+        ? (row.frontmatter as Record<string, unknown>)
+        : {};
+    const title =
+      typeof frontmatter['title'] === 'string'
+        ? frontmatter['title']
+        : (row.relativePath.split('/').slice(-1)[0]?.replace(/\.md$/i, '') ?? row.relativePath);
+    const contentHash =
+      row.contentHash || createHash('sha256').update(row.markdownContent).digest('hex');
     return {
       identityId,
-      repositoryId: String(resource.repositoryId),
-      resourceId: String(resource.id),
-      resourcePath: resource.path,
-      title: resource.name,
-      mimeType: resource.mimeType,
-      content: resource.content ?? '',
+      repositoryId: row.connectionId,
+      resourceId: row.id,
+      resourcePath: row.relativePath,
+      title,
+      mimeType: 'text/markdown',
+      content: row.markdownContent,
       metadata: {
-        ...resource.metadata,
-        resourceVersion: resource.version,
-        contentDigest: createHash('sha256')
-          .update(resource.content ?? '')
-          .digest('hex'),
+        frontmatter,
+        blobSha: row.blobSha,
+        contentHash,
+        contentDigest: contentHash,
+        projectionIndexStatus: row.indexStatus,
+        sourceType: 'github-default-branch-projection',
       },
     };
   }

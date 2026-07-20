@@ -122,7 +122,6 @@ describe('AIKnowledgeNoteService', () => {
       }) as unknown as IAIProviderConfigRepository,
       dependencies.executionPort,
       dependencies.persistencePort,
-      async () => 'python',
       new AIKnowledgeNotePathResolver(),
       dependencies.executionLogPort,
     );
@@ -138,10 +137,19 @@ describe('AIKnowledgeNoteService', () => {
       executionLogPort,
     });
 
-    const result = await service.createKnowledgeNote({
-      topic: 'Python tooling',
-      title: 'Python Tooling',
-    }, { identityId: 'identity-1' });
+    const result = await service.createKnowledgeNote(
+      {
+        topic: 'Python tooling',
+        title: 'Python Tooling',
+        targetSubpath: 'python',
+        confirmation: {
+          proposalId: 'proposal-generated',
+          revision: 1,
+          requestId: 'request-generated',
+        },
+      },
+      { identityId: 'identity-1' },
+    );
 
     expect(executionPort.generate).toHaveBeenCalledWith({
       identityId: 'identity-1',
@@ -160,16 +168,19 @@ describe('AIKnowledgeNoteService', () => {
 
     expect(persistencePort.createKnowledgeNote).toHaveBeenCalledWith({
       identityId: 'identity-1',
-      path: '/notes/python/Python-Tooling.md',
+      path: 'python/Python-Tooling.md',
       fileName: 'Python-Tooling.md',
       content: '# Python Tooling\n\nA concise note.',
+      proposalId: 'proposal-generated',
+      proposalRevision: 1,
+      requestId: 'request-generated',
     });
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected ok');
     expect(result.data.providerId).toBe('provider-1');
     expect(result.data.tokenUsage.totalTokens).toBe(30);
-    expect(result.data.resolvedPath).toBe('/notes/python/Python-Tooling.md');
+    expect(result.data.resolvedPath).toBe('python/Python-Tooling.md');
     expect(result.data.indexStatus).toBe('pending');
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -193,18 +204,30 @@ describe('AIKnowledgeNoteService', () => {
       executionLogPort,
     });
 
-    const result = await service.createKnowledgeNote({
-      topic: 'Agent note draft',
-      title: 'Agent Note Draft',
-      contentMarkdown: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',
-    }, { identityId: 'identity-1' });
+    const result = await service.createKnowledgeNote(
+      {
+        topic: 'Agent note draft',
+        title: 'Agent Note Draft',
+        targetSubpath: 'python',
+        contentMarkdown: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',
+        confirmation: {
+          proposalId: 'proposal-reviewed',
+          revision: 3,
+          requestId: 'request-reviewed',
+        },
+      },
+      { identityId: 'identity-1' },
+    );
 
     expect(executionPort.generate).not.toHaveBeenCalled();
     expect(persistencePort.createKnowledgeNote).toHaveBeenCalledWith({
       identityId: 'identity-1',
-      path: '/notes/python/Agent-Note-Draft.md',
+      path: 'python/Agent-Note-Draft.md',
       fileName: 'Agent-Note-Draft.md',
       content: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',
+      proposalId: 'proposal-reviewed',
+      proposalRevision: 3,
+      requestId: 'request-reviewed',
     });
 
     expect(result.ok).toBe(true);
@@ -214,7 +237,7 @@ describe('AIKnowledgeNoteService', () => {
       completionTokens: 0,
       totalTokens: 0,
     });
-    expect(result.data.resolvedPath).toBe('/notes/python/Agent-Note-Draft.md');
+    expect(result.data.resolvedPath).toBe('python/Agent-Note-Draft.md');
     expect(result.data.indexStatus).toBe('pending');
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({

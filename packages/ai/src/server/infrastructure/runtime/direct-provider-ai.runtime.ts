@@ -78,7 +78,10 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     delete: new DeleteAIProviderUseCase(providerConfigRepository),
     get: new GetAIProviderUseCase(providerConfigRepository),
     list: new ListAIProvidersUseCase(providerConfigRepository),
-    testConnection: new TestAIProviderConnectionUseCase(providerConfigRepository, chatExecutionPort),
+    testConnection: new TestAIProviderConnectionUseCase(
+      providerConfigRepository,
+      chatExecutionPort,
+    ),
     setDefault: new SetDefaultAIProviderUseCase(providerConfigRepository),
     getDefault: new GetDefaultAIProviderUseCase(providerConfigRepository),
     refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogPort),
@@ -123,18 +126,16 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     dependencies.analyticsReadPort,
   );
 
-  // Knowledge notes — optional, requires persistence + subpath
-  const knowledgeNoteUseCase =
-    dependencies.knowledgeNotePersistence && dependencies.getKnowledgeNoteSubpath
-      ? new ManageAIKnowledgeNoteUseCase(
-          providerConfigRepository,
-          knowledgeNoteGenerationPort,
-          dependencies.knowledgeNotePersistence,
-          dependencies.getKnowledgeNoteSubpath,
-          new AIKnowledgeNotePathResolver(),
-          dependencies.executionLogPort,
-        )
-      : null;
+  // Knowledge notes — optional, requires host persistence.
+  const knowledgeNoteUseCase = dependencies.knowledgeNotePersistence
+    ? new ManageAIKnowledgeNoteUseCase(
+        providerConfigRepository,
+        knowledgeNoteGenerationPort,
+        dependencies.knowledgeNotePersistence,
+        new AIKnowledgeNotePathResolver(),
+        dependencies.executionLogPort,
+      )
+    : null;
 
   const capabilities: AICapabilities = {
     runtimeMode: 'direct-provider',

@@ -1,4 +1,8 @@
-export type { AICostEstimate, AIExecutionLogInput, IAIExecutionLogPort } from './ai-execution-log.port';
+export type {
+  AICostEstimate,
+  AIExecutionLogInput,
+  IAIExecutionLogPort,
+} from './ai-execution-log.port';
 export type {
   AIEvaluationCheckRecord,
   AIEvaluationHistoryRecord,
@@ -59,7 +63,11 @@ export type {
   ChatExecutionUsage,
   IAIChatExecutionPort,
 } from './chat-execution.port';
-export type { GoalPlanningInput, GoalPlanningResult, IGoalPlanningPort } from './goal-planning.port';
+export type {
+  GoalPlanningInput,
+  GoalPlanningResult,
+  IGoalPlanningPort,
+} from './goal-planning.port';
 export type {
   GoalAutomationPlanningInput,
   GoalAutomationPlanningResult,
@@ -77,6 +85,10 @@ export type {
   KnowledgeIndexDiagnostics,
   KnowledgeIndexFailureRecord,
 } from './knowledge-index.port';
+export type {
+  IKnowledgeIndexStatusPort,
+  KnowledgeIndexStatusUpdate,
+} from './knowledge-index-status.port';
 export type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,

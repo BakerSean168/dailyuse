@@ -65,6 +65,7 @@ import type {
   IAnalyticsReadPort,
   IAIAutomationToolExecutorPort,
   IKnowledgeNotePersistencePort,
+  IKnowledgeIndexStatusPort,
   IKnowledgeSourcePort,
 } from '../ports';
 import { createAITransportHandlers } from '../server/transport';
@@ -88,21 +89,21 @@ let activeAIModule: AIModuleInstance | null = null;
  * Factory that creates an AI API module definition.
  * 创建 AI API 模块定义的工厂函数。
  *
- * External collaborators (knowledge-note persistence, subpath resolver) are
+ * External collaborators (such as knowledge-note persistence) are
  * injected here because they come from the host application, not from the AI
  * module's own domain. This mirrors how the governance module receives its
  * runtime contributions.
  *
- * 外部协作者（知识笔记持久化、子路径解析器）在此注入，因为它们
+ * 外部协作者（如知识笔记持久化）在此注入，因为它们
  * 来自宿主应用，而非 AI 模块自身的领域。这与 governance 模块
  * 接收运行时贡献的方式一致。
  */
 export function createAIApiModule(options: {
   createKnowledgeNotePersistence(context: AIApiModuleContext): IKnowledgeNotePersistencePort;
   createKnowledgeSourcePort(context: AIApiModuleContext): IKnowledgeSourcePort;
+  createKnowledgeIndexStatusPort?(context: AIApiModuleContext): IKnowledgeIndexStatusPort;
   createAnalyticsReadPort(context: AIApiModuleContext): IAnalyticsReadPort;
   createAutomationToolExecutor(context: AIApiModuleContext): IAIAutomationToolExecutorPort;
-  getKnowledgeNoteSubpath(identityId: string, context: AIApiModuleContext): Promise<string>;
 }): AIApiModuleDef {
   return {
     name: 'AI',
@@ -150,9 +151,8 @@ export function createAIApiModule(options: {
         evaluationReportPort: new AIEvaluationReportFileAdapter(),
         knowledgeNotePersistence: options.createKnowledgeNotePersistence(context),
         knowledgeSourcePort: options.createKnowledgeSourcePort(context),
+        knowledgeIndexStatusPort: options.createKnowledgeIndexStatusPort?.(context),
         analyticsReadPort: options.createAnalyticsReadPort(context),
-        getKnowledgeNoteSubpath: (identityId: string) =>
-          options.getKnowledgeNoteSubpath(identityId, context),
       });
       activeAIModule = aiModule;
       aiModule.start();

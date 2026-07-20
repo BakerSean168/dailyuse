@@ -39,6 +39,7 @@ export * from './sync-knowledge-resources.use-case';
 export * from './reindex-all-knowledge.use-case';
 export * from './sync-relevant-knowledge.use-case';
 export * from './sync-resource-by-id.use-case';
+export * from './remove-knowledge-index-resource.use-case';
 
 // AI Knowledge Query individual use cases
 export * from './query-knowledge.use-case';

@@ -112,10 +112,7 @@ function getStringInput(input: Record<string, unknown>, key: string): string | u
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
 }
 
-function getPositiveIntegerInput(
-  input: Record<string, unknown>,
-  key: string,
-): number | undefined {
+function getPositiveIntegerInput(input: Record<string, unknown>, key: string): number | undefined {
   const value = input[key];
   if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
     return undefined;
@@ -205,8 +202,7 @@ function getAgentRuntimeProviderMetadata(input: Record<string, unknown>): {
   const config = providerConfig as Record<string, unknown>;
   return {
     providerName: typeof config['provider'] === 'string' ? config['provider'] : undefined,
-    model:
-      typeof config['model'] === 'string' ? config['model'] : getStringInput(input, 'model'),
+    model: typeof config['model'] === 'string' ? config['model'] : getStringInput(input, 'model'),
   };
 }
 
@@ -331,11 +327,7 @@ async function withGoalAgentReadOnlyContext(
   const inputPatch: Record<string, unknown> = {};
   const contextErrors: Array<{ tool: string; message: string }> = [];
 
-  if (
-    knowledgeSourcePort &&
-    !req.input['related_resources'] &&
-    !req.input['relatedResources']
-  ) {
+  if (knowledgeSourcePort && !req.input['related_resources'] && !req.input['relatedResources']) {
     try {
       const resources = await knowledgeSourcePort.listRelevantResources(identityId, query, 6);
       inputPatch['related_resources'] = resources.map(toAIServiceKnowledgeResource);
@@ -347,11 +339,7 @@ async function withGoalAgentReadOnlyContext(
     }
   }
 
-  if (
-    analyticsReadPort &&
-    !req.input['analytics_context'] &&
-    !req.input['analyticsContext']
-  ) {
+  if (analyticsReadPort && !req.input['analytics_context'] && !req.input['analyticsContext']) {
     try {
       inputPatch['analytics_context'] = toAIServiceAnalyticsContext(
         await analyticsReadPort.buildContext(identityId, query),
@@ -505,9 +493,7 @@ function isSupportedGoalAgentAutomationTool(
 
 function toAgentExecutedActions(actions: GoalAutomationExecutedAction[]): AgentExecutedAction[] {
   return actions.map((action) => ({
-    tool: isSupportedGoalAgentAutomationTool(action.tool)
-      ? action.tool
-      : 'create_goal',
+    tool: isSupportedGoalAgentAutomationTool(action.tool) ? action.tool : 'create_goal',
     status: action.status,
     entityId: action.entityId ?? null,
     message: isSupportedGoalAgentAutomationTool(action.tool)
@@ -589,10 +575,7 @@ export function createKnowledgeQueryRuntimeServices(
   return {
     isAvailable: Boolean(services),
     query: {
-      execute(
-        req: QueryKnowledgeReq,
-        cx: ExecutionContext,
-      ): Promise<Result<QueryKnowledgeRes>> {
+      execute(req: QueryKnowledgeReq, cx: ExecutionContext): Promise<Result<QueryKnowledgeRes>> {
         return services
           ? services.query.execute(req, cx)
           : unavailableResult(
@@ -601,10 +584,7 @@ export function createKnowledgeQueryRuntimeServices(
       },
     },
     expand: {
-      execute(
-        req: ExpandKnowledgeReq,
-        cx: ExecutionContext,
-      ): Promise<Result<ExpandKnowledgeRes>> {
+      execute(req: ExpandKnowledgeReq, cx: ExecutionContext): Promise<Result<ExpandKnowledgeRes>> {
         return services
           ? services.expand.execute(req, cx)
           : unavailableResult(
@@ -649,9 +629,7 @@ export function createEvaluationRuntimeService(
 ): AIEvaluationReportService {
   return {
     isAvailable: Boolean(service),
-    getOverview(
-      req: GetAIEvaluationOverviewReq = {},
-    ): Promise<Result<GetAIEvaluationOverviewRes>> {
+    getOverview(req: GetAIEvaluationOverviewReq = {}): Promise<Result<GetAIEvaluationOverviewRes>> {
       return service
         ? service.getOverview(req)
         : unavailableResult('AI evaluation report access is unavailable.');
@@ -751,6 +729,7 @@ export function createAgentRuntimeService(
   async function executeKnowledgeGenerateInterrupt(
     interrupt: z.infer<typeof KnowledgeGenerateExecutionRequiredInterruptSchema>,
     identityId: string,
+    requestId?: string,
   ): Promise<AgentExecutedAction[]> {
     if (!knowledgeNoteUseCase) {
       throw new Error('Knowledge Generation execution requires the knowledge-note use case.');
@@ -768,6 +747,8 @@ export function createAgentRuntimeService(
       }
 
       const contentArtifactId = getPayloadString(action.payload, 'contentArtifactId');
+      const confirmationRequestId =
+        requestId ?? `${interrupt.runId}:knowledge-note:${action.index ?? 0}`;
       const parsed = CreateKnowledgeNoteSchema.safeParse({
         topic: getPayloadString(action.payload, 'topic'),
         title: getPayloadString(action.payload, 'title'),
@@ -775,8 +756,14 @@ export function createAgentRuntimeService(
           getPayloadString(action.payload, 'contentMarkdown') ??
           getKnowledgeNoteDraftArtifactMarkdown(interrupt.artifacts, contentArtifactId),
         targetSubpath: getPayloadString(action.payload, 'targetSubpath'),
+        connectionId: getPayloadString(action.payload, 'connectionId'),
         providerId: getPayloadString(action.payload, 'providerId'),
         model: getPayloadString(action.payload, 'model'),
+        confirmation: {
+          proposalId: `${interrupt.runId}:knowledge-note:${contentArtifactId ?? action.index ?? 0}`,
+          revision: 1,
+          requestId: confirmationRequestId,
+        },
       });
 
       if (!parsed.success) {
@@ -835,7 +822,11 @@ export function createAgentRuntimeService(
       throw new Error('Agent runtime execution requires the Agent runtime port.');
     }
 
-    const executedActions = await executeKnowledgeGenerateInterrupt(interrupt, input.identityId);
+    const executedActions = await executeKnowledgeGenerateInterrupt(
+      interrupt,
+      input.identityId,
+      input.requestId,
+    );
     return port.resumeRun({
       identityId: input.identityId,
       runId: input.runId,
@@ -865,8 +856,7 @@ export function createAgentRuntimeService(
 
   function hasResolvableExecutionInterrupt(result: AgentRunResult): boolean {
     return Boolean(
-      findGoalAgentExecutionInterrupt(result) ||
-        findKnowledgeGenerateExecutionInterrupt(result),
+      findGoalAgentExecutionInterrupt(result) || findKnowledgeGenerateExecutionInterrupt(result),
     );
   }
 
@@ -1110,12 +1100,14 @@ export function createAgentRuntimeService(
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port.getRun({
-        identityId: cx.identityId,
-        runId,
-        requestId,
-        signal,
-      }).then(ok);
+      return port
+        .getRun({
+          identityId: cx.identityId,
+          runId,
+          requestId,
+          signal,
+        })
+        .then(ok);
     },
     listRuns(
       params: AgentRunListParams,
@@ -1127,12 +1119,14 @@ export function createAgentRuntimeService(
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port.listRuns({
-        ...params,
-        identityId: cx.identityId,
-        requestId,
-        signal,
-      }).then(ok);
+      return port
+        .listRuns({
+          ...params,
+          identityId: cx.identityId,
+          requestId,
+          signal,
+        })
+        .then(ok);
     },
     getEvents(
       runId: string,
@@ -1144,12 +1138,14 @@ export function createAgentRuntimeService(
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port.getEvents({
-        identityId: cx.identityId,
-        runId,
-        requestId,
-        signal,
-      }).then(ok);
+      return port
+        .getEvents({
+          identityId: cx.identityId,
+          runId,
+          requestId,
+          signal,
+        })
+        .then(ok);
     },
   };
 }

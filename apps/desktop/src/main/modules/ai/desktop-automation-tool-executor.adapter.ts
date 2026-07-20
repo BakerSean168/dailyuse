@@ -8,15 +8,12 @@ import type {
   GoalAutomationReminderPreview,
 } from '@dailyuse/contracts/ai';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
 import { createGoalPowerSyncModule } from '@dailyuse/goal';
 import { createReminderPowerSyncModule } from '@dailyuse/reminder';
 import { createTaskPowerSyncModule } from '@dailyuse/task';
-import {
-  NotificationChannel,
-  ReminderType,
-  TriggerType,
-} from '@dailyuse/contracts/reminder';
+import { NotificationChannel, ReminderType, TriggerType } from '@dailyuse/contracts/reminder';
 import {
   DayOfWeek,
   RecurrenceFrequency,
@@ -49,9 +46,7 @@ function readNestedNumber(source: unknown, path: readonly string[]): number {
 }
 
 function normalizeReminderTimeOfDay(value: string | undefined): string {
-  return value && REMINDER_TIME_OF_DAY_PATTERN.test(value)
-    ? value
-    : DEFAULT_REMINDER_TIME_OF_DAY;
+  return value && REMINDER_TIME_OF_DAY_PATTERN.test(value) ? value : DEFAULT_REMINDER_TIME_OF_DAY;
 }
 
 function buildReminderStartTimestamp(timeOfDay: string, now = Date.now()): number {
@@ -116,11 +111,11 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
   private readonly knowledgeSource;
   private readonly analyticsRead;
 
-  constructor(db: IElectronDatabase, repositoryStorageDir: string) {
+  constructor(db: IElectronDatabase, localVault: LocalVaultElectronPort) {
     this.goalModule = createGoalPowerSyncModule(db);
     this.taskModule = createTaskPowerSyncModule(db);
     this.reminderModule = createReminderPowerSyncModule(db);
-    this.knowledgeSource = new DesktopKnowledgeSourceAdapter(db, repositoryStorageDir);
+    this.knowledgeSource = new DesktopKnowledgeSourceAdapter(localVault);
     this.analyticsRead = new DesktopAnalyticsReadAdapter();
   }
 
@@ -220,14 +215,8 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
             skipAction(action, 'Skipped because goal creation failed.');
             continue;
           }
-          if (
-            typeof action.index === 'number' &&
-            failedKeyResultIndexes.has(action.index)
-          ) {
-            skipAction(
-              action,
-              `Skipped because key result ${action.index} creation failed.`,
-            );
+          if (typeof action.index === 'number' && failedKeyResultIndexes.has(action.index)) {
+            skipAction(action, `Skipped because key result ${action.index} creation failed.`);
             continue;
           }
           const taskTemplate = input.plan.taskTemplates?.[action.index ?? -1];
@@ -239,8 +228,7 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
             identityId: input.identityId as IdentityId,
             name: taskTemplate.name,
             description: taskTemplate.description ?? null,
-            taskType:
-              taskTemplate.cadence === 'once' ? TaskType.OneTime : TaskType.Recurring,
+            taskType: taskTemplate.cadence === 'once' ? TaskType.OneTime : TaskType.Recurring,
             timeConfig: {
               timeType: 'AllDay',
               startDate: Date.now(),
@@ -318,7 +306,10 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
         }
 
         if (action.tool === 'fetch_stats') {
-          const context = await this.analyticsRead.buildContext(input.identityId, input.request.idea);
+          const context = await this.analyticsRead.buildContext(
+            input.identityId,
+            input.request.idea,
+          );
           const activeGoals = readNestedNumber(context.dashboard, ['stats', 'activeGoals']);
           const overdue = readNestedNumber(context.taskDashboard, ['summary', 'overdue']);
           actions.push({

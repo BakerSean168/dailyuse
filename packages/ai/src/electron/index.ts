@@ -95,32 +95,6 @@ type StreamSession = {
 const activeStreamSessions = new Map<string, StreamSession>();
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function createKnowledgeNoteSubpathResolver(ctx: IElectronModuleContext) {
-  return async (identityId: string): Promise<string> => {
-    const row = await ctx.db.getOptional<{ preferences?: string }>(
-      'SELECT preferences FROM user_settings WHERE identity_id = ? LIMIT 1',
-      [identityId],
-    );
-
-    if (!row?.preferences) {
-      return '';
-    }
-
-    try {
-      const preferences = JSON.parse(row.preferences) as {
-        ai?: { knowledgeNoteSubpath?: string };
-      };
-      return preferences.ai?.knowledgeNoteSubpath ?? '';
-    } catch {
-      return '';
-    }
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Electron Module Factory — Electron 模块工厂
 // ---------------------------------------------------------------------------
 
@@ -186,7 +160,6 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         knowledgeNotePersistence: options.createKnowledgeNotePersistence(ctx),
         knowledgeSourcePort: options.createKnowledgeSourcePort(ctx),
         analyticsReadPort: options.createAnalyticsReadPort(ctx),
-        getKnowledgeNoteSubpath: createKnowledgeNoteSubpathResolver(ctx),
       });
       activeAIModule = aiModule;
       aiModule.start();
@@ -228,7 +201,9 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
       );
       ipcMain.handle(Ch.PROVIDER_SET_DEFAULT, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.setDefaultProvider(dto.providerId, { identityId: requestContext.identityId }),
+          aiModule.api.setDefaultProvider(dto.providerId, {
+            identityId: requestContext.identityId,
+          }),
         ),
       );
       ipcMain.handle(Ch.PROVIDER_REFRESH_MODELS, async (_, id) =>
@@ -429,11 +404,9 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
       );
       ipcMain.handle(Ch.AGENT_RUN_RESUME, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.resumeAgentRun(
-            String(dto.runId),
-            dto.payload,
-            { identityId: requestContext.identityId },
-          ),
+          aiModule.api.resumeAgentRun(String(dto.runId), dto.payload, {
+            identityId: requestContext.identityId,
+          }),
         ),
       );
       ipcMain.handle(Ch.AGENT_RUN_GET, async (_, runId) =>

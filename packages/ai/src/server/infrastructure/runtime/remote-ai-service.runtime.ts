@@ -57,6 +57,7 @@ import {
   ReindexAllKnowledgeUseCase,
   SyncRelevantKnowledgeUseCase,
   SyncResourceByIdUseCase,
+  RemoveKnowledgeIndexResourceUseCase,
   QueryKnowledgeUseCase,
   ExpandKnowledgeUseCase,
   ReindexKnowledgeUseCase,
@@ -151,17 +152,15 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
 
   // --- Knowledge note generation bundle ---
 
-  const knowledgeNoteUseCase =
-    dependencies.knowledgeNotePersistence && dependencies.getKnowledgeNoteSubpath
-      ? new ManageAIKnowledgeNoteUseCase(
-          providerConfigRepository,
-          knowledgeNoteGenerationPort,
-          dependencies.knowledgeNotePersistence,
-          dependencies.getKnowledgeNoteSubpath,
-          new AIKnowledgeNotePathResolver(),
-          dependencies.executionLogPort,
-        )
-      : null;
+  const knowledgeNoteUseCase = dependencies.knowledgeNotePersistence
+    ? new ManageAIKnowledgeNoteUseCase(
+        providerConfigRepository,
+        knowledgeNoteGenerationPort,
+        dependencies.knowledgeNotePersistence,
+        new AIKnowledgeNotePathResolver(),
+        dependencies.executionLogPort,
+      )
+    : null;
 
   // --- Knowledge query bundle (requires all 4 dependencies) ---
 
@@ -177,24 +176,31 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
+              dependencies.knowledgeIndexStatusPort,
             ),
             reindexAll: new ReindexAllKnowledgeUseCase(
               dependencies.knowledgeSourcePort!,
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
+              dependencies.knowledgeIndexStatusPort,
             ),
             syncRelevant: new SyncRelevantKnowledgeUseCase(
               dependencies.knowledgeSourcePort!,
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
+              dependencies.knowledgeIndexStatusPort,
             ),
             syncById: new SyncResourceByIdUseCase(
               dependencies.knowledgeSourcePort!,
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
+              dependencies.knowledgeIndexStatusPort,
+            ),
+            removeById: new RemoveKnowledgeIndexResourceUseCase(
+              dependencies.knowledgeIndexRepository,
             ),
           };
 

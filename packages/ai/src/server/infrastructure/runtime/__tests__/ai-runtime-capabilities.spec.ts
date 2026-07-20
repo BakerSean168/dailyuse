@@ -94,7 +94,6 @@ describe('AI runtime capability consistency', () => {
         getEvents: vi.fn(),
       } as any,
       knowledgeNotePersistence: { saveNote: vi.fn(), loadNote: vi.fn() } as any,
-      getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('/notes'),
       evaluationReportPort: { getOverview: vi.fn() } as any,
     });
 

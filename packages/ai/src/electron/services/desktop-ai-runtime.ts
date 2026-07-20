@@ -25,13 +25,11 @@ export class DesktopAIRuntime {
   constructor(
     providerConfigRepository: IAIProviderConfigRepository,
     persistencePort: IKnowledgeNotePersistencePort,
-    getKnowledgeNoteSubpath: (identityId: string) => Promise<string>,
   ) {
     this.knowledgeNoteService = new ManageAIKnowledgeNoteUseCase(
       providerConfigRepository,
       new DirectProviderKnowledgeNoteGenerationAdapter(),
       persistencePort,
-      getKnowledgeNoteSubpath,
       new AIKnowledgeNotePathResolver(),
     );
   }

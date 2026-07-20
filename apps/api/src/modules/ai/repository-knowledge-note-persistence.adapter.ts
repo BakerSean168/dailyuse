@@ -1,59 +1,130 @@
-import { ResourceType } from '@dailyuse/contracts/repository';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import type { PrismaClient } from '@dailyuse/database';
+import { createHash } from 'node:crypto';
+import {
+  ResourceStatus,
+  ResourceType,
+  type ResourceClientDTO,
+} from '@dailyuse/contracts/repository';
+import type { RepositoryApplicationPort } from '@dailyuse/repository';
 import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
 } from '@dailyuse/ai/ports';
-import {
-  createRepositoryPrismaModule,
-  type RepositoryModuleInstance,
-} from '@dailyuse/repository';
 
 /**
- * Adapter that persists AI knowledge notes via the repository module's
- * application port — never bypassing it with raw repository access.
+ * Server AI knowledge-note persistence.
  *
- * 通过仓库模块的应用层门面持久化 AI 知识笔记的适配器 ——
- * 绝不绕过门面直接访问原始仓储。
+ * A generated note is committed through the Repository application port after
+ * the immutable Agent confirmation metadata has been supplied. The returned
+ * legacy ResourceClientDTO is a compatibility view over the projection; this
+ * adapter never creates or updates a row in the old Resource table.
  */
 export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNotePersistencePort {
-  private readonly repositoryModule: RepositoryModuleInstance;
-
-  constructor(db: PrismaClient, storageBaseDir: string) {
-    this.repositoryModule = createRepositoryPrismaModule(db, {
-      storageBaseDir,
-    });
-  }
+  constructor(private readonly repositoryApi: RepositoryApplicationPort) {}
 
   async createKnowledgeNote(
     input: CreateKnowledgeNotePersistenceInput,
   ): Promise<CreateKnowledgeNotePersistenceResult> {
-    // Resolve the active repository through the application port.
-    // 通过应用层门面解析活跃仓库。
-    const repoResult = await this.repositoryModule.api.findActiveRepository(input.identityId);
-    if (!repoResult.ok) {
-      throw new Error('No repository available for current user');
+    if (!input.proposalId || !input.proposalRevision || !input.requestId) {
+      throw new Error('A confirmed knowledge-note proposal is required for GitHub writes');
     }
-    const repository = repoResult.data as { id: string };
 
-    // Create the resource through the application port.
-    // 通过应用层门面创建资源。
-    const createResult = await this.repositoryModule.api.createResource(
-      {
-        repositoryId: String(repository.id),
-        name: input.fileName,
-        type: ResourceType.File,
-        content: input.content,
-      },
-      { identityId: input.identityId, deviceId: 'api-server' },
+    const connections = await this.repositoryApi.listKnowledgeRepositoryConnections({
+      identityId: input.identityId,
+      deviceId: 'api-server',
+    });
+    if (!connections.ok) {
+      throw new Error(connections.error.message);
+    }
+
+    const activeConnections = connections.data.connections.filter(
+      (connection) => connection.status === 'Active',
     );
+    const connection = input.connectionId
+      ? activeConnections.find((candidate) => candidate.id === input.connectionId)
+      : activeConnections.length === 1
+        ? activeConnections[0]
+        : undefined;
 
-    if (!createResult.ok) {
-      throw new Error('Failed to create knowledge note resource');
+    if (!connection) {
+      throw new Error(
+        input.connectionId
+          ? 'The selected knowledge repository connection is not active'
+          : activeConnections.length > 1
+            ? 'An explicit knowledge repository connection is required'
+            : 'No active knowledge repository connection is available',
+      );
     }
 
-    return { resource: createResult.data as ResourceClientDTO };
+    const committed = await this.repositoryApi.createConfirmedKnowledgeNote(
+      { identityId: input.identityId, deviceId: 'api-server' },
+      {
+        connectionId: connection.id,
+        proposalId: input.proposalId,
+        revision: input.proposalRevision,
+        requestId: input.requestId,
+        proposedPath: input.path,
+        title: input.fileName.replace(/\.md$/i, ''),
+        frontmatter: {},
+        content: input.content,
+        reason: 'AI knowledge note approved by the user',
+      },
+    );
+    if (!committed.ok) {
+      throw new Error(committed.error.message);
+    }
+
+    return {
+      resource: toProjectionResourceDTO(input, connection.id),
+    };
   }
+}
+
+function toProjectionResourceDTO(
+  input: CreateKnowledgeNotePersistenceInput,
+  connectionId: string,
+): ResourceClientDTO {
+  const now = Date.now();
+  const id = `knowledge-note-${createHash('sha256')
+    .update(`${connectionId}:${input.path}`)
+    .digest('hex')}`;
+  const wordCount = input.content.split(/\s+/).filter(Boolean).length;
+
+  return {
+    id: id as ResourceClientDTO['id'],
+    repositoryId: connectionId as ResourceClientDTO['repositoryId'],
+    folderId: null,
+    name: input.fileName,
+    type: ResourceType.File,
+    mimeType: 'text/markdown',
+    path: input.path,
+    size: Buffer.byteLength(input.content, 'utf8'),
+    content: input.content,
+    metadata: {
+      tags: [],
+      wordCount,
+      readingTime: null,
+      thumbnail: null,
+      sourceType: 'github-default-branch-projection',
+      connectionId,
+    },
+    stats: {
+      viewCount: 0,
+      editCount: 0,
+      linkCount: 0,
+      lastViewedAt: null,
+      lastEditedAt: now,
+    },
+    status: ResourceStatus.Active,
+    createdAt: now as ResourceClientDTO['createdAt'],
+    updatedAt: now as ResourceClientDTO['updatedAt'],
+    deletedAt: null,
+    version: 1,
+    isDeleted: false,
+    isArchived: false,
+    isActive: true,
+    isDraft: false,
+    extension: '.md',
+    icon: 'description',
+  };
 }

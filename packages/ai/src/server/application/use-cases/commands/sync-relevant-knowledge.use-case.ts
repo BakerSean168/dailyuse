@@ -3,11 +3,16 @@ import type {
   IAIExecutionLogPort,
   IKnowledgeIndexRepository,
   IKnowledgeIngestionPort,
+  IKnowledgeIndexStatusPort,
   IKnowledgeSourcePort,
   KnowledgeSourceResource,
 } from '../../ports';
 import { SyncKnowledgeResourcesUseCase } from './sync-knowledge-resources.use-case';
-import { mergeUniqueResources, type SyncKnowledgeResourcesOptions, type SyncKnowledgeResourcesResult } from './ai-knowledge-index-helpers';
+import {
+  mergeUniqueResources,
+  type SyncKnowledgeResourcesOptions,
+  type SyncKnowledgeResourcesResult,
+} from './ai-knowledge-index-helpers';
 
 /**
  * 同步相关知识资源
@@ -20,11 +25,13 @@ export class SyncRelevantKnowledgeUseCase {
     private readonly knowledgeIndexRepository: IKnowledgeIndexRepository,
     knowledgeIngestionPort: IKnowledgeIngestionPort,
     executionLogPort?: IAIExecutionLogPort,
+    knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort,
   ) {
     this.syncResources = new SyncKnowledgeResourcesUseCase(
       knowledgeIndexRepository,
       knowledgeIngestionPort,
       executionLogPort,
+      knowledgeIndexStatusPort,
     );
   }
 
@@ -56,7 +63,11 @@ export class SyncRelevantKnowledgeUseCase {
     const relevantResources =
       hydratedIndexedCandidates.length >= Math.min(requestedLimit, 6)
         ? []
-        : await this.knowledgeSourcePort.listRelevantResources(cx.identityId, query, candidateLimit);
+        : await this.knowledgeSourcePort.listRelevantResources(
+            cx.identityId,
+            query,
+            candidateLimit,
+          );
     const fallbackResources =
       hydratedIndexedCandidates.length + relevantResources.length >= Math.min(requestedLimit, 6)
         ? []

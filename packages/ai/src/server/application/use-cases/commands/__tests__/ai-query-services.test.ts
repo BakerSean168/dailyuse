@@ -22,6 +22,7 @@ import type {
   IAnalyticsQueryPort,
   IAnalyticsReadPort,
   IKnowledgeIndexRepository,
+  IKnowledgeIndexStatusPort,
   IKnowledgeIngestionPort,
   IKnowledgeQueryPort,
   IKnowledgeSourcePort,
@@ -213,6 +214,11 @@ class StubKnowledgeIndexRepository implements IKnowledgeIndexRepository {
   >(async () => {});
 
   public readonly markFailed = vi.fn(async () => {});
+  public readonly removeByResourceId = vi.fn(async () => {});
+}
+
+class StubKnowledgeIndexStatusPort implements IKnowledgeIndexStatusPort {
+  public readonly updateIndexStatus = vi.fn(async () => {});
 }
 
 class StubExecutionLogPort implements IAIExecutionLogPort {
@@ -253,10 +259,12 @@ describe('SyncKnowledgeResourcesUseCase', () => {
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
     ingestionPort.indexResource.mockRejectedValueOnce(new Error('embedding provider unavailable'));
+    const indexStatusPort = new StubKnowledgeIndexStatusPort();
     const service = new SyncKnowledgeResourcesUseCase(
       knowledgeIndexRepository,
       ingestionPort,
       new StubExecutionLogPort(),
+      indexStatusPort,
     );
 
     const result = await service.execute([resource], { identityId: 'identity-1' });
@@ -279,6 +287,42 @@ describe('SyncKnowledgeResourcesUseCase', () => {
       expect.objectContaining({
         resourceId: resource.resourceId,
         error: 'embedding provider unavailable',
+      }),
+    );
+    expect(indexStatusPort.updateIndexStatus).toHaveBeenCalledWith(
+      'identity-1',
+      expect.objectContaining({
+        resourceId: resource.resourceId,
+        contentHash: expect.any(String),
+        status: 'failed',
+      }),
+    );
+  });
+
+  it('reports a successful index without making status projection failures fatal', async () => {
+    const resource = (
+      await new StubKnowledgeSourcePort().listIndexableResources('identity-1', 1)
+    )[0]!;
+    const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
+    const indexStatusPort = new StubKnowledgeIndexStatusPort();
+    indexStatusPort.updateIndexStatus.mockRejectedValueOnce(new Error('projection unavailable'));
+    const service = new SyncKnowledgeResourcesUseCase(
+      knowledgeIndexRepository,
+      new StubKnowledgeIngestionPort(),
+      new StubExecutionLogPort(),
+      indexStatusPort,
+    );
+
+    const result = await service.execute([resource], { identityId: 'identity-1' });
+
+    expect(result).toMatchObject({ indexedCount: 1, failedCount: 0 });
+    expect(knowledgeIndexRepository.upsert).toHaveBeenCalledOnce();
+    expect(indexStatusPort.updateIndexStatus).toHaveBeenCalledWith(
+      'identity-1',
+      expect.objectContaining({
+        resourceId: resource.resourceId,
+        contentHash: expect.any(String),
+        status: 'indexed',
       }),
     );
   });
@@ -795,6 +839,7 @@ describe('AI knowledge auto-index runtime', () => {
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
     const queryPort = new StubKnowledgeQueryPort();
+    const indexStatusPort = new StubKnowledgeIndexStatusPort();
 
     const aiModule = createAIModuleForTests({
       providerConfigRepository: createAIProviderConfigRepositoryStub({
@@ -807,6 +852,7 @@ describe('AI knowledge auto-index runtime', () => {
       knowledgeIndexRepository,
       knowledgeIngestionPort: ingestionPort,
       knowledgeQueryPort: queryPort,
+      knowledgeIndexStatusPort: indexStatusPort,
     });
 
     aiModule.start();
@@ -832,13 +878,17 @@ describe('AI knowledge auto-index runtime', () => {
           }),
         );
         expect(knowledgeIndexRepository.upsert).toHaveBeenCalledTimes(1);
+        expect(indexStatusPort.updateIndexStatus).toHaveBeenCalledWith(
+          'identity-1',
+          expect.objectContaining({ resourceId: 'resource-1', status: 'indexed' }),
+        );
       });
     } finally {
       aiModule.dispose();
     }
   });
 
-  it('ignores deleted repository resource mutation events', async () => {
+  it('removes deleted repository resources from the derived index', async () => {
     const sourcePort = new StubKnowledgeSourcePort();
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
@@ -869,7 +919,12 @@ describe('AI knowledge auto-index runtime', () => {
         timestamp: Date.now(),
       });
 
-      await Promise.resolve();
+      await vi.waitFor(() => {
+        expect(knowledgeIndexRepository.removeByResourceId).toHaveBeenCalledWith(
+          'identity-1',
+          'resource-1',
+        );
+      });
 
       expect(sourcePort.getResourceById).not.toHaveBeenCalled();
       expect(ingestionPort.indexResource).not.toHaveBeenCalled();

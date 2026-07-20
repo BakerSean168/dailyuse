@@ -48,11 +48,15 @@ function parseJsonRecord(value: string | null): Record<string, unknown> {
 }
 
 function toStringArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
 }
 
 function toNumberArray(value: unknown): number[] {
-  return Array.isArray(value) ? value.filter((item): item is number => typeof item === 'number') : [];
+  return Array.isArray(value)
+    ? value.filter((item): item is number => typeof item === 'number')
+    : [];
 }
 
 function tokenize(text: string): string[] {
@@ -138,7 +142,8 @@ function scoreIndexedResource(resource: KnowledgeIndexedResource, query: string)
 
   const tokens = new Set(tokenize(trimmedQuery));
   const keywordSet = new Set(resource.keywords.map((keyword) => keyword.toLowerCase()));
-  const haystack = `${resource.title ?? ''} ${resource.resourcePath} ${resource.summary} ${resource.keywords.join(' ')}`.toLowerCase();
+  const haystack =
+    `${resource.title ?? ''} ${resource.resourcePath} ${resource.summary} ${resource.keywords.join(' ')}`.toLowerCase();
   let score = 0;
 
   for (const token of tokens) {
@@ -306,7 +311,11 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
     ]);
   }
 
-  async markRequested(identityId: string, resourceIds: string[], requestedAt: number): Promise<void> {
+  async markRequested(
+    identityId: string,
+    resourceIds: string[],
+    requestedAt: number,
+  ): Promise<void> {
     if (resourceIds.length === 0) {
       return;
     }
@@ -362,6 +371,22 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
     await this.db.execute(`UPDATE resources SET metadata = ? WHERE id = ?`, [
       JSON.stringify(metadata),
       record.resourceId,
+    ]);
+  }
+
+  async removeByResourceId(identityId: string, resourceId: string): Promise<void> {
+    const row = await this.db.getOptional<{ metadata: string | null }>(
+      `SELECT metadata FROM resources WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [resourceId, identityId],
+    );
+    if (!row) return;
+
+    const metadata = parseJsonRecord(row.metadata);
+    if (!(KNOWLEDGE_INDEX_KEY in metadata)) return;
+    delete metadata[KNOWLEDGE_INDEX_KEY];
+    await this.db.execute(`UPDATE resources SET metadata = ? WHERE id = ?`, [
+      JSON.stringify(metadata),
+      resourceId,
     ]);
   }
 }

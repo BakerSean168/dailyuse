@@ -32,6 +32,15 @@ export function createKnowledgeAutoIndexRuntimeContribution(
 
   const handleResourceMutation = (event: RepositoryResourceMutatedEvent): void => {
     if (event.mutation === RepositoryResourceMutationType.Deleted) {
+      void knowledgeIndexServices.removeById
+        .execute(event.resourceId, { identityId: event.identityId })
+        .catch((error) => {
+          logger.warn('Automatic knowledge index deletion failed after repository mutation', {
+            error,
+            identityId: event.identityId,
+            resourceId: event.resourceId,
+          });
+        });
       return;
     }
 
@@ -49,18 +58,22 @@ export function createKnowledgeAutoIndexRuntimeContribution(
         providerConfig = undefined;
       }
 
-      await knowledgeIndexServices.syncById.execute(event.resourceId, { identityId: event.identityId }, {
-        force: true,
-        providerConfig,
-      });
+      await knowledgeIndexServices.syncById.execute(
+        event.resourceId,
+        { identityId: event.identityId },
+        {
+          force: true,
+          providerConfig,
+        },
+      );
     })().catch((error) => {
-        logger.warn('Automatic knowledge reindex failed after repository mutation', {
-          error,
-          identityId: event.identityId,
-          resourceId: event.resourceId,
-          mutation: event.mutation,
-        });
+      logger.warn('Automatic knowledge reindex failed after repository mutation', {
+        error,
+        identityId: event.identityId,
+        resourceId: event.resourceId,
+        mutation: event.mutation,
       });
+    });
   };
 
   return {

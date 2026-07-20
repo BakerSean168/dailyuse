@@ -54,7 +54,6 @@ export interface AIModulePowerSyncOptions {
   readonly knowledgeNotePersistence?: IKnowledgeNotePersistencePort;
   readonly knowledgeSourcePort?: IKnowledgeSourcePort;
   readonly analyticsReadPort?: IAnalyticsReadPort;
-  readonly getKnowledgeNoteSubpath?: (identityId: string) => Promise<string>;
   readonly runtimeContributions?: AIModuleDependencies['runtimeContributions'];
 }
 
@@ -85,7 +84,6 @@ export function createAIPowerSyncModule(
     knowledgeNotePersistence: options?.knowledgeNotePersistence,
     knowledgeSourcePort: options?.knowledgeSourcePort,
     analyticsReadPort: options?.analyticsReadPort,
-    getKnowledgeNoteSubpath: options?.getKnowledgeNoteSubpath,
     runtimeContributions: options?.runtimeContributions,
   });
 }

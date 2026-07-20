@@ -2,9 +2,7 @@ import type { KnowledgeIndexedResource } from './knowledge-ingestion.port';
 
 export interface KnowledgeIndexDiagnostics {
   persistenceBackend:
-    | 'legacy-resource-metadata'
-    | 'powersync-resource-metadata'
-    | 'prisma-index-table';
+    'legacy-resource-metadata' | 'powersync-resource-metadata' | 'prisma-index-table';
   persistenceStatus: 'enabled' | 'fallback';
   persistenceReason?: string;
   vectorRecallBackend: 'none' | 'local-js-hybrid' | 'pgvector-ivfflat';
@@ -26,10 +24,7 @@ export interface KnowledgeIndexFailureRecord {
 
 export interface IKnowledgeIndexRepository {
   getDiagnostics(): Promise<KnowledgeIndexDiagnostics>;
-  findByResourceIds(
-    identityId: string,
-    resourceIds: string[],
-  ): Promise<KnowledgeIndexedResource[]>;
+  findByResourceIds(identityId: string, resourceIds: string[]): Promise<KnowledgeIndexedResource[]>;
   findRelevantResources(
     identityId: string,
     query: string,
@@ -38,4 +33,5 @@ export interface IKnowledgeIndexRepository {
   upsert(resource: KnowledgeIndexedResource): Promise<void>;
   markRequested(identityId: string, resourceIds: string[], requestedAt: number): Promise<void>;
   markFailed(record: KnowledgeIndexFailureRecord): Promise<void>;
+  removeByResourceId(identityId: string, resourceId: string): Promise<void>;
 }

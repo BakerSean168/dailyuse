@@ -1,151 +1,95 @@
 import { createHash } from 'node:crypto';
 import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/ports';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import {
-  createRepositoryPowerSyncModule,
-  createFsStorageAdapter,
-  type RepositoryModuleInstance,
-} from '@dailyuse/repository/electron';
+import type { LocalVaultNoteDTO, LocalVaultNoteSummaryDTO } from '@dailyuse/contracts/repository';
+import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
 
-function tokenize(text: string): string[] {
-  return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);
+function resourceIdForPath(relativePath: string): string {
+  return `local-vault-${createHash('sha256').update(relativePath).digest('hex').slice(0, 24)}`;
 }
 
-function isQueryableResource(resource: ResourceClientDTO): boolean {
-  return (
-    resource.isActive &&
-    !resource.isDeleted &&
-    (resource.mimeType.startsWith('text/') ||
-      resource.extension === '.md' ||
-      resource.extension === '.txt')
-  );
-}
-
-function scoreResource(resource: ResourceClientDTO, query: string): number {
-  const tokens = new Set(tokenize(query));
-  const haystack = `${resource.name} ${resource.path} ${resource.content ?? ''}`.toLowerCase();
-  let score = 0;
-
-  for (const token of tokens) {
-    if (haystack.includes(token)) {
-      score += 1;
-    }
-  }
-
-  if (query.trim() && resource.name.toLowerCase().includes(query.trim().toLowerCase())) {
-    score += 2;
-  }
-
-  return score;
-}
-
+/** Local Vault is the only Desktop knowledge source; disconnected Vaults return no cloud fallback. */
 export class DesktopKnowledgeSourceAdapter implements IKnowledgeSourcePort {
-  private readonly repositoryModule: RepositoryModuleInstance;
-
-  constructor(db: IElectronDatabase, storageBaseDir: string) {
-    this.repositoryModule = createRepositoryPowerSyncModule(db, {
-      storagePort: createFsStorageAdapter(storageBaseDir),
-    });
-  }
+  constructor(private readonly localVault: LocalVaultElectronPort) {}
 
   async listRelevantResources(
     identityId: string,
     query: string,
     limit: number,
   ): Promise<KnowledgeSourceResource[]> {
-    const hydrated = await this.loadQueryableResources(identityId);
+    const binding = await this.localVault.getBinding(identityId);
+    if (!binding || binding.status !== 'Active') return [];
 
-    return hydrated
-      .map((resource) => ({
-        resource,
-        score: scoreResource(resource, query),
-      }))
-      .filter(({ score }) => score > 0 || query.trim().length === 0)
-      .sort((left, right) => right.score - left.score)
-      .slice(0, limit)
-      .map(({ resource }) => this.toKnowledgeResource(identityId, resource));
+    const summaries = query.trim()
+      ? (await this.localVault.searchVault(identityId, { query, limit })).results.map(
+          (result) => result.note,
+        )
+      : (await this.localVault.scanVault(identityId)).notes.slice(0, limit);
+    return this.hydrate(identityId, binding.id, summaries.slice(0, limit));
   }
 
   async listIndexableResources(
     identityId: string,
     limit: number,
   ): Promise<KnowledgeSourceResource[]> {
-    const hydrated = await this.loadQueryableResources(identityId);
-    return hydrated.slice(0, limit).map((resource) => this.toKnowledgeResource(identityId, resource));
+    const binding = await this.localVault.getBinding(identityId);
+    if (!binding || binding.status !== 'Active') return [];
+    const scanned = await this.localVault.scanVault(identityId);
+    return this.hydrate(identityId, binding.id, scanned.notes.slice(0, limit));
   }
 
   async getResourceById(
     identityId: string,
     resourceId: string,
   ): Promise<KnowledgeSourceResource | null> {
-    const repositoryId = await this.resolveActiveRepositoryId(identityId);
-    if (!repositoryId) {
-      return null;
-    }
-
-    const result = await this.repositoryModule.api.getResource(resourceId);
-    if (!result.ok) {
-      return null;
-    }
-
-    const resource = result.data as ResourceClientDTO;
-    if (String(resource.repositoryId) !== repositoryId || !isQueryableResource(resource)) {
-      return null;
-    }
-
-    return resource.content ? this.toKnowledgeResource(identityId, resource) : null;
-  }
-
-  private async loadQueryableResources(identityId: string): Promise<ResourceClientDTO[]> {
-    const repositoryId = await this.resolveActiveRepositoryId(identityId);
-    if (!repositoryId) {
-      return [];
-    }
-
-    const listResult = await this.repositoryModule.api.listResources(repositoryId);
-    if (!listResult.ok) {
-      return [];
-    }
-
-    const resources = (listResult.data as ResourceClientDTO[]).filter(isQueryableResource);
-    const hydrated = await Promise.all(
-      resources.map(async (resource) => {
-        const result = await this.repositoryModule.api.getResource(String(resource.id));
-        return result.ok ? (result.data as ResourceClientDTO) : null;
-      }),
+    const binding = await this.localVault.getBinding(identityId);
+    if (!binding || binding.status !== 'Active') return null;
+    const scanned = await this.localVault.scanVault(identityId);
+    const summary = scanned.notes.find(
+      (note) => resourceIdForPath(note.relativePath) === resourceId,
     );
-
-    return hydrated.filter((resource): resource is ResourceClientDTO => !!resource && !!resource.content);
+    if (!summary) return null;
+    const note = await this.localVault.readNote(identityId, {
+      relativePath: summary.relativePath,
+    });
+    return this.toKnowledgeResource(identityId, binding.id, note);
   }
 
-  private async resolveActiveRepositoryId(identityId: string): Promise<string | null> {
-    const repositoryResult = await this.repositoryModule.api.findActiveRepository(identityId);
-    if (!repositoryResult.ok) {
-      return null;
-    }
-
-    return String((repositoryResult.data as { id: string }).id);
+  private async hydrate(
+    identityId: string,
+    repositoryId: string,
+    summaries: LocalVaultNoteSummaryDTO[],
+  ): Promise<KnowledgeSourceResource[]> {
+    return Promise.all(
+      summaries.map(async (summary) =>
+        this.toKnowledgeResource(
+          identityId,
+          repositoryId,
+          await this.localVault.readNote(identityId, {
+            relativePath: summary.relativePath,
+          }),
+        ),
+      ),
+    );
   }
 
   private toKnowledgeResource(
     identityId: string,
-    resource: ResourceClientDTO,
+    repositoryId: string,
+    note: LocalVaultNoteDTO,
   ): KnowledgeSourceResource {
     return {
       identityId,
-      repositoryId: String(resource.repositoryId),
-      resourceId: String(resource.id),
-      resourcePath: resource.path,
-      title: resource.name,
-      mimeType: resource.mimeType,
-      content: resource.content ?? '',
+      repositoryId,
+      resourceId: resourceIdForPath(note.relativePath),
+      resourcePath: note.relativePath,
+      title: note.title,
+      mimeType: 'text/markdown',
+      content: note.contentMarkdown,
       metadata: {
-        ...resource.metadata,
-        resourceVersion: resource.version,
-        contentDigest: createHash('sha256')
-          .update(resource.content ?? '')
-          .digest('hex'),
+        ...note.frontmatter,
+        tags: note.tags,
+        outgoingLinks: note.outgoingLinks,
+        contentDigest: createHash('sha256').update(note.contentMarkdown).digest('hex'),
       },
     };
   }

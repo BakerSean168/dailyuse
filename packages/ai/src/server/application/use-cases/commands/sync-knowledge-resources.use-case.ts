@@ -2,6 +2,7 @@ import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type {
   IAIExecutionLogPort,
   IKnowledgeIndexRepository,
+  IKnowledgeIndexStatusPort,
   IKnowledgeIngestionPort,
   KnowledgeSourceResource,
   KnowledgeIndexedResource,
@@ -24,6 +25,7 @@ export class SyncKnowledgeResourcesUseCase {
     private readonly knowledgeIndexRepository: IKnowledgeIndexRepository,
     private readonly knowledgeIngestionPort: IKnowledgeIngestionPort,
     private readonly executionLogPort?: IAIExecutionLogPort,
+    private readonly knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort,
   ) {}
 
   async execute(
@@ -59,8 +61,7 @@ export class SyncKnowledgeResourcesUseCase {
     for (const resource of resources) {
       const cached = cachedByResourceId.get(resource.resourceId);
       const sourceContentHash = resolveSourceContentHash(resource);
-      const canReuse =
-        !options?.force && cached && cached.contentHash === sourceContentHash;
+      const canReuse = !options?.force && cached && cached.contentHash === sourceContentHash;
 
       if (canReuse && cached) {
         indexedResources.push(cached);
@@ -70,6 +71,7 @@ export class SyncKnowledgeResourcesUseCase {
           status: 'reused',
         });
         reusedCount += 1;
+        await this.reportIndexStatus(cx.identityId, resource, sourceContentHash, 'indexed');
         continue;
       }
 
@@ -86,6 +88,7 @@ export class SyncKnowledgeResourcesUseCase {
           status: 'indexed',
         });
         indexedCount += 1;
+        await this.reportIndexStatus(cx.identityId, resource, sourceContentHash, 'indexed');
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to index resource';
         failedCount += 1;
@@ -113,6 +116,7 @@ export class SyncKnowledgeResourcesUseCase {
           metadata: resource.metadata ?? {},
           error: message,
         });
+        await this.reportIndexStatus(cx.identityId, resource, sourceContentHash, 'failed');
 
         if (cached) {
           indexedResources.push(cached);
@@ -142,9 +146,7 @@ export class SyncKnowledgeResourcesUseCase {
         failedCount,
       },
       error:
-        failedCount > 0
-          ? `${failedCount} resource(s) failed during knowledge indexing`
-          : undefined,
+        failedCount > 0 ? `${failedCount} resource(s) failed during knowledge indexing` : undefined,
       processingMs: Date.now() - requestedAt,
     });
 
@@ -155,5 +157,28 @@ export class SyncKnowledgeResourcesUseCase {
       failedCount,
       results,
     };
+  }
+
+  private async reportIndexStatus(
+    identityId: string,
+    resource: KnowledgeSourceResource,
+    contentHash: string,
+    status: 'indexed' | 'failed',
+  ): Promise<void> {
+    if (!this.knowledgeIndexStatusPort) return;
+    try {
+      await this.knowledgeIndexStatusPort.updateIndexStatus(identityId, {
+        resourceId: resource.resourceId,
+        contentHash,
+        status,
+      });
+    } catch (error) {
+      logger.warn('Failed to report knowledge index status to source projection', {
+        error,
+        identityId,
+        resourceId: resource.resourceId,
+        status,
+      });
+    }
   }
 }

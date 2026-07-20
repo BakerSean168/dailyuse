@@ -17,12 +17,12 @@ export class AIKnowledgeNotePathResolver {
       .join('/');
 
     const safeTitle = this.slugify(title || 'AI Note');
-    const directoryPath = normalizedSubpath ? `/notes/${normalizedSubpath}` : '/notes';
+    const directoryPath = normalizedSubpath;
     const fileName = `${safeTitle}.md`;
     return {
       directoryPath,
       fileName,
-      path: `${directoryPath}/${fileName}`,
+      path: directoryPath ? `${directoryPath}/${fileName}` : fileName,
     };
   }
 

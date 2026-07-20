@@ -38,7 +38,6 @@ export class ManageAIKnowledgeNoteUseCase {
     private readonly providerConfigRepository: IAIProviderConfigRepository,
     private readonly knowledgeNoteGenerationPort: IKnowledgeNoteGenerationPort,
     private readonly persistencePort: IKnowledgeNotePersistencePort,
-    private readonly getKnowledgeNoteSubpath: (identityId: string) => Promise<string>,
     private readonly pathResolver: AIKnowledgeNotePathResolver,
     private readonly executionLogPort?: IAIExecutionLogPort,
   ) {}
@@ -70,8 +69,10 @@ export class ManageAIKnowledgeNoteUseCase {
         providerName: provider.name,
         model: executionProviderConfig.model,
       };
-      const subpath = request.targetSubpath ?? (await this.getKnowledgeNoteSubpath(cx.identityId));
-      const pathInfo = this.pathResolver.resolve(subpath, request.title ?? request.topic);
+      const pathInfo = this.pathResolver.resolve(
+        request.targetSubpath ?? '',
+        request.title ?? request.topic,
+      );
 
       const completion = request.contentMarkdown
         ? {
@@ -90,12 +91,17 @@ export class ManageAIKnowledgeNoteUseCase {
             requestId,
           });
 
-      const persisted = await this.persistencePort.createKnowledgeNote({
+      const persistenceInput = {
         identityId: cx.identityId,
         path: pathInfo.path,
         fileName: pathInfo.fileName,
         content: completion.content,
-      });
+        proposalId: request.confirmation?.proposalId,
+        proposalRevision: request.confirmation?.revision,
+        requestId: request.confirmation?.requestId ?? requestId,
+        ...(request.connectionId ? { connectionId: request.connectionId } : {}),
+      };
+      const persisted = await this.persistencePort.createKnowledgeNote(persistenceInput);
 
       const result: CreateKnowledgeNoteRes = {
         resource: persisted.resource,

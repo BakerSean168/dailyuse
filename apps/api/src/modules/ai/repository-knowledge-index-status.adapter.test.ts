@@ -1,0 +1,44 @@
+import { describe, expect, it, vi } from 'vitest';
+import { fail, ok } from '@dailyuse/contracts/result';
+import type { RepositoryApplicationPort } from '@dailyuse/repository';
+import { RepositoryKnowledgeIndexStatusAdapter } from './repository-knowledge-index-status.adapter';
+
+describe('RepositoryKnowledgeIndexStatusAdapter', () => {
+  it('forwards identity and content-hash preconditions to Repository', async () => {
+    const updateKnowledgeNoteProjectionIndexStatus = vi.fn(async () => ok({ updated: true }));
+    const adapter = new RepositoryKnowledgeIndexStatusAdapter({
+      updateKnowledgeNoteProjectionIndexStatus,
+    } as unknown as RepositoryApplicationPort);
+
+    await adapter.updateIndexStatus('identity-1', {
+      resourceId: 'projection-1',
+      contentHash: 'content-hash-1',
+      status: 'indexed',
+    });
+
+    expect(updateKnowledgeNoteProjectionIndexStatus).toHaveBeenCalledWith(
+      { identityId: 'identity-1' },
+      {
+        projectionId: 'projection-1',
+        contentHash: 'content-hash-1',
+        status: 'indexed',
+      },
+    );
+  });
+
+  it('surfaces Repository failures to the best-effort AI reporter', async () => {
+    const adapter = new RepositoryKnowledgeIndexStatusAdapter({
+      updateKnowledgeNoteProjectionIndexStatus: vi.fn(async () =>
+        fail({ code: 'SERVICE_UNAVAILABLE', message: 'Projection store unavailable' }),
+      ),
+    } as unknown as RepositoryApplicationPort);
+
+    await expect(
+      adapter.updateIndexStatus('identity-1', {
+        resourceId: 'projection-1',
+        contentHash: 'content-hash-1',
+        status: 'failed',
+      }),
+    ).rejects.toThrow('Projection store unavailable');
+  });
+});
