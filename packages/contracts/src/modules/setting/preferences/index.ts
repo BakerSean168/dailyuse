@@ -32,7 +32,6 @@ export {
   ExperimentalSchema,
   UISchema,
   AISchema,
-  KnowledgeNoteSubpathSchema,
   UserPreferencesSchema,
   CATEGORY_SCHEMAS,
 } from './schemas';

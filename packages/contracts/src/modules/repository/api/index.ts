@@ -31,3 +31,6 @@ export {
 } from './upload.dto';
 
 export * from './response-schemas';
+export * from './knowledge-repository-connection.dto';
+export * from './knowledge-note-projection.dto';
+export * from './knowledge-attachment-projection.dto';

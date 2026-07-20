@@ -16,7 +16,7 @@ import { EditorSchema } from './editor.schema';
 import { ShortcutsSchema } from './shortcuts.schema';
 import { ExperimentalSchema } from './experimental.schema';
 import { UISchema } from './ui.schema';
-import { AISchema, KnowledgeNoteSubpathSchema } from './ai.schema';
+import { AISchema } from './ai.schema';
 
 export const UserPreferencesSchema = z.object({
   appearance: AppearanceSchema.default(() => AppearanceSchema.parse({})),
@@ -56,5 +56,4 @@ export {
   ExperimentalSchema,
   UISchema,
   AISchema,
-  KnowledgeNoteSubpathSchema,
 };

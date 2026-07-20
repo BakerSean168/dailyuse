@@ -173,6 +173,11 @@ export const AuthChannels = {
   SEND_SMS_CODE: 'auth:send-sms-code',
   SEND_EMAIL_CODE: 'auth:send-email-code',
   VERIFY_EMAIL_CODE: 'auth:verify-email-code',
+  GET_OAUTH_URL: 'auth:get-oauth-url',
+  OAUTH_PROVIDERS: 'auth:oauth-providers',
+  OAUTH_CALLBACK: 'auth:oauth-callback',
+  OAUTH_BIND: 'auth:oauth-bind',
+  OAUTH_UNBIND: 'auth:oauth-unbind',
 } as const;
 
 export const AIChannels = {
@@ -245,11 +250,31 @@ export const RepositoryChannels = {
   BOOKMARK_UPDATE: 'repository:bookmark:update',
   BOOKMARK_REORDER: 'repository:bookmark:reorder',
   BOOKMARK_DELETE: 'repository:bookmark:delete',
+  KNOWLEDGE_CONNECTION_INSTALLATION_START: 'repository:knowledge-connection:installation:start',
+  KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE:
+    'repository:knowledge-connection:installation:complete',
+  KNOWLEDGE_CONNECTION_LIST: 'repository:knowledge-connection:list',
+  KNOWLEDGE_CONNECTION_CONNECT: 'repository:knowledge-connection:connect',
+  KNOWLEDGE_CONNECTION_DISCONNECT: 'repository:knowledge-connection:disconnect',
+  KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW:
+    'repository:knowledge-connection:reconciliation-preview',
+  KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE:
+    'repository:knowledge-connection:reconciliation-execute',
+  KNOWLEDGE_CONNECTION_SYNC: 'repository:knowledge-connection:sync',
+  KNOWLEDGE_CONNECTION_DESKTOP_TOKEN: 'repository:knowledge-connection:desktop-token',
   FOLDER_LIST: 'repository:folder:list',
   FOLDER_CREATE: 'repository:folder:create',
   FOLDER_UPDATE: 'repository:folder:update',
   FOLDER_DELETE: 'repository:folder:delete',
   SEARCH: 'repository:search',
+  LOCAL_VAULT_GET: 'repository:local-vault:get',
+  LOCAL_VAULT_SELECT: 'repository:local-vault:select',
+  LOCAL_VAULT_DETACH: 'repository:local-vault:detach',
+  LOCAL_VAULT_SCAN: 'repository:local-vault:scan',
+  LOCAL_VAULT_NOTE_READ: 'repository:local-vault:note:read',
+  LOCAL_VAULT_SEARCH: 'repository:local-vault:search',
+  LOCAL_VAULT_OPEN_OBSIDIAN: 'repository:local-vault:open-obsidian',
+  LOCAL_VAULT_NOTE_WRITE_CONFIRMED: 'repository:local-vault:note:write-confirmed',
 } as const;
 
 export const SettingChannels = {
@@ -285,12 +310,12 @@ export const EditorChannels = {
   SEARCH: 'editor:search-resources',
 } as const;
 
-
 export const SystemChannels = {
   GET_APP_VERSION: 'system:getAppVersion',
   GET_LAZY_MODULE_STATS: 'system:getLazyModuleStats',
   GET_MEMORY_USAGE: 'system:getMemoryUsage',
   GET_IPC_CACHE_STATS: 'system:getIpcCacheStats',
+  OPEN_EXTERNAL_URL: 'system:openExternalUrl',
   USER_FILES_SAVE_TEXT: 'system:userFiles:saveText',
   USER_FILES_OPEN_TEXT: 'system:userFiles:openText',
   USER_FILES_GET_PATH: 'system:userFiles:getPath',
@@ -346,4 +371,3 @@ export const WindowChannels = {
   CLOSE_AUTH_REGISTER: 'window:close-auth-register',
   FOCUS_MAIN_WINDOW: 'window:focus-main-window',
 } as const;
-

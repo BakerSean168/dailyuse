@@ -13,3 +13,5 @@ export type {
 export type {
   ResourceClientDTO,
 } from './resource-client';
+export * from './knowledge-repository-connection';
+export * from './local-vault-binding';

@@ -58,3 +58,55 @@ export const OAuthAuthorizeSchema = z.object({
 
 export type OAuthAuthorizeReq = z.infer<typeof OAuthAuthorizeSchema>;
 export type OAuthAuthorizeRes = AuthResponseDTO;
+
+// ============================================================================
+// Bind / Unbind OAuth (authenticated account linking)
+// ============================================================================
+
+/**
+ * Bind an OAuth provider to the currently authenticated identity.
+ * 将 OAuth 提供者绑定到当前已登录身份。
+ *
+ * Uses the same authorize callback payload (code + state) issued by getOAuthUrl.
+ * 使用 getOAuthUrl 签发的同一授权回调载荷（code + state）。
+ */
+export const BindOAuthSchema = z.object({
+  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+  code: z.string().min(1),
+  state: z.string().min(1),
+});
+
+export type BindOAuthReq = z.infer<typeof BindOAuthSchema>;
+
+export interface BindOAuthRes {
+  /** Provider that was bound. */
+  provider: BindOAuthReq['provider'];
+  /** Stable provider subject id (e.g. GitHub numeric user id). */
+  providerSubjectId: string;
+  /** Whether the binding was newly created (false when already bound to self). */
+  created: boolean;
+}
+
+/**
+ * Unbind an OAuth provider from the currently authenticated identity.
+ * 从当前已登录身份解绑 OAuth 提供者。
+ */
+export const UnbindOAuthSchema = z.object({
+  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+});
+
+export type UnbindOAuthReq = z.infer<typeof UnbindOAuthSchema>;
+export type UnbindOAuthRes = void;
+
+// ============================================================================
+// OAuth providers availability (UI gating, no state issuance)
+// ============================================================================
+
+export interface OAuthProviderAvailability {
+  provider: 'Google' | 'Github' | 'Microsoft' | 'Apple';
+  enabled: boolean;
+}
+
+export interface OAuthProvidersRes {
+  providers: OAuthProviderAvailability[];
+}

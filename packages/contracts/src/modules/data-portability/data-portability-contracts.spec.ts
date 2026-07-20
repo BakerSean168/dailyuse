@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ExportUserDataReqSchema,
+  ExportServerHeldDataDisclosureReqSchema,
   ImportUserDataReqSchema,
   parseUserDataExportEnvelope,
   PortableAIDataSchema,
@@ -12,6 +13,7 @@ import {
   PortableSettingsSchema,
   PortableTaskDataSchema,
   PortableUserDataV1Schema,
+  ServerHeldDataDisclosureEnvelopeV1Schema,
 } from './index';
 
 describe('parseUserDataExportEnvelope', () => {
@@ -79,7 +81,8 @@ describe('parseUserDataExportEnvelope', () => {
 
     expect(result).toEqual({
       ok: false,
-      error: 'Envelope validation failed: data.settings.preferences.profile.identityId — banned import field',
+      error:
+        'Envelope validation failed: data.settings.preferences.profile.identityId — banned import field',
     });
   });
 
@@ -105,7 +108,8 @@ describe('parseUserDataExportEnvelope', () => {
 
     expect(result).toEqual({
       ok: false,
-      error: 'Envelope validation failed: data.repositories.repositories.0.config.auth — banned import field',
+      error:
+        'Envelope validation failed: data.repositories.repositories.0.config.auth — banned import field',
     });
   });
 
@@ -115,7 +119,13 @@ describe('parseUserDataExportEnvelope', () => {
       data: {
         repositories: {
           repositories: [
-            { _ref: 'repository:1', name: 'Knowledge', type: 'local', config: {}, status: 'ACTIVE' },
+            {
+              _ref: 'repository:1',
+              name: 'Knowledge',
+              type: 'local',
+              config: {},
+              status: 'ACTIVE',
+            },
           ],
           folders: [],
           resources: [
@@ -135,7 +145,8 @@ describe('parseUserDataExportEnvelope', () => {
 
     expect(result).toEqual({
       ok: false,
-      error: 'Envelope validation failed: data.repositories.resources.0.metadata.source.resourceId — banned import field',
+      error:
+        'Envelope validation failed: data.repositories.resources.0.metadata.source.resourceId — banned import field',
     });
   });
 
@@ -145,19 +156,36 @@ describe('parseUserDataExportEnvelope', () => {
       data: {
         goals: {
           folders: [{ _ref: 'goalFolder:1', name: 'Work', sortOrder: 0, isSystemFolder: false }],
-          items: [{
-            _ref: 'goal:1',
-            name: 'Ship V1',
-            color: '#3B82F6',
-            status: 'active',
-            importance: 'high',
-            priority: 1,
-            tags: ['release'],
-            sortOrder: 0,
-            keyResults: [{ _ref: 'keyResult:1', title: 'All tests pass', progress: {}, weight: 1, sortOrder: 0 }],
-            goalReviews: [],
-          }],
-          records: [{ _ref: 'goalRecord:1', keyResultRef: 'keyResult:1', value: 1, recordedAt: '2026-06-03T00:00:00Z' }],
+          items: [
+            {
+              _ref: 'goal:1',
+              name: 'Ship V1',
+              color: '#3B82F6',
+              status: 'active',
+              importance: 'high',
+              priority: 1,
+              tags: ['release'],
+              sortOrder: 0,
+              keyResults: [
+                {
+                  _ref: 'keyResult:1',
+                  title: 'All tests pass',
+                  progress: {},
+                  weight: 1,
+                  sortOrder: 0,
+                },
+              ],
+              goalReviews: [],
+            },
+          ],
+          records: [
+            {
+              _ref: 'goalRecord:1',
+              keyResultRef: 'keyResult:1',
+              value: 1,
+              recordedAt: '2026-06-03T00:00:00Z',
+            },
+          ],
           focusSessions: [],
           focusModes: [],
         },
@@ -218,6 +246,62 @@ describe('request schemas', () => {
   it('ImportUserDataReqSchema rejects missing content', () => {
     expect(ImportUserDataReqSchema.safeParse({}).success).toBe(false);
   });
+
+  it('ExportServerHeldDataDisclosureReqSchema accepts only an empty object', () => {
+    expect(ExportServerHeldDataDisclosureReqSchema.safeParse({}).success).toBe(true);
+    expect(
+      ExportServerHeldDataDisclosureReqSchema.safeParse({ includeCredentials: true }).success,
+    ).toBe(false);
+  });
+});
+
+describe('ServerHeldDataDisclosureEnvelopeV1Schema', () => {
+  const disclosure = {
+    kind: 'memoflow.server-held-data-disclosure' as const,
+    schemaVersion: 1 as const,
+    disclosedAt: '2026-07-20T00:00:00.000Z',
+    subject: { identityId: 'identity-1' },
+    scope: {
+      importMode: 'not-importable' as const,
+      includesImportableBusinessDataBackup: false as const,
+      includesLocalVaultFiles: false as const,
+      includesGithubRepositoryHistory: false as const,
+      includesApplicationManagedReplayableGithubAuthorization: false as const,
+      includesNonReplayableGithubInstallationIdentifiers: true as const,
+      includesCachedAttachmentBytes: true as const,
+      includesEphemeralWorkerLeases: false as const,
+      includesDatabaseInternalRetrievalVector: false as const,
+    },
+    data: {
+      knowledgeRepositoryConnections: [],
+      githubWebhookDeliveries: [],
+      knowledgeNoteProjections: [],
+      knowledgeAttachmentProjections: [],
+      knowledgeAttachmentContentCaches: [],
+      knowledgeWriteRequests: [],
+      aiKnowledgeIndexEntries: [],
+    },
+  };
+
+  it('accepts the explicit non-importable disclosure envelope', () => {
+    expect(ServerHeldDataDisclosureEnvelopeV1Schema.safeParse(disclosure).success).toBe(true);
+  });
+
+  it('cannot be parsed as an importable user-data export', () => {
+    expect(parseUserDataExportEnvelope(disclosure).ok).toBe(false);
+  });
+
+  it('does not allow the scope to claim replayable GitHub authorization is included', () => {
+    expect(
+      ServerHeldDataDisclosureEnvelopeV1Schema.safeParse({
+        ...disclosure,
+        scope: {
+          ...disclosure.scope,
+          includesApplicationManagedReplayableGithubAuthorization: true,
+        },
+      }).success,
+    ).toBe(false);
+  });
 });
 
 describe('PortableUserDataV1Schema', () => {
@@ -258,7 +342,9 @@ describe('PortableUserDataV1Schema', () => {
   });
 
   it('rejects unknown top-level module key', () => {
-    expect(PortableUserDataV1Schema.safeParse({ unknownModule: { foo: 'bar' } }).success).toBe(false);
+    expect(PortableUserDataV1Schema.safeParse({ unknownModule: { foo: 'bar' } }).success).toBe(
+      false,
+    );
   });
 
   it('rejects goal with missing required fields', () => {
@@ -279,7 +365,17 @@ describe('PortableUserDataV1Schema', () => {
     const result = PortableUserDataV1Schema.safeParse({
       tasks: {
         folders: [],
-        templates: [{ _ref: 'invalid-ref', title: 'test', taskType: 'once', importance: 'moderate', tags: [], status: 'pending', checklist: [] }],
+        templates: [
+          {
+            _ref: 'invalid-ref',
+            title: 'test',
+            taskType: 'once',
+            importance: 'moderate',
+            tags: [],
+            status: 'pending',
+            checklist: [],
+          },
+        ],
         instances: [],
         dependencies: [],
       },
@@ -291,20 +387,31 @@ describe('PortableUserDataV1Schema', () => {
   it('accepts valid reminder data', () => {
     const result = PortableUserDataV1Schema.safeParse({
       reminders: {
-        groups: [{ _ref: 'reminderGroup:1', name: 'Daily', controlMode: 'manual', enabled: true, status: 'active', order: 0 }],
-        templates: [{
-          _ref: 'reminderTemplate:1',
-          title: 'Standup',
-          type: 'once',
-          trigger: {},
-          activeTime: {},
-          notificationConfig: {},
-          selfEnabled: true,
-          status: 'active',
-          importanceLevel: 'moderate',
-          tags: [],
-          smartFrequencyEnabled: false,
-        }],
+        groups: [
+          {
+            _ref: 'reminderGroup:1',
+            name: 'Daily',
+            controlMode: 'manual',
+            enabled: true,
+            status: 'active',
+            order: 0,
+          },
+        ],
+        templates: [
+          {
+            _ref: 'reminderTemplate:1',
+            title: 'Standup',
+            type: 'once',
+            trigger: {},
+            activeTime: {},
+            notificationConfig: {},
+            selfEnabled: true,
+            status: 'active',
+            importanceLevel: 'moderate',
+            tags: [],
+            smartFrequencyEnabled: false,
+          },
+        ],
         responses: [],
       },
     });
@@ -315,12 +422,14 @@ describe('PortableUserDataV1Schema', () => {
   it('accepts valid AI data', () => {
     const result = PortableUserDataV1Schema.safeParse({
       ai: {
-        conversations: [{
-          _ref: 'aiConversation:1',
-          name: 'Chat',
-          status: 'ACTIVE',
-          messages: [{ _ref: 'aiMessage:1', role: 'user', content: 'Hello' }],
-        }],
+        conversations: [
+          {
+            _ref: 'aiConversation:1',
+            name: 'Chat',
+            status: 'ACTIVE',
+            messages: [{ _ref: 'aiMessage:1', role: 'user', content: 'Hello' }],
+          },
+        ],
       },
     });
 
@@ -332,8 +441,30 @@ describe('PortableUserDataV1Schema', () => {
       goals: {
         folders: [],
         items: [
-          { _ref: 'goal:1', name: 'a', color: '#000', status: 'pending', importance: 'moderate', priority: 0, tags: [], sortOrder: 0, keyResults: [], goalReviews: [] },
-          { _ref: 'goal:1', name: 'b', color: '#000', status: 'pending', importance: 'moderate', priority: 0, tags: [], sortOrder: 0, keyResults: [], goalReviews: [] },
+          {
+            _ref: 'goal:1',
+            name: 'a',
+            color: '#000',
+            status: 'pending',
+            importance: 'moderate',
+            priority: 0,
+            tags: [],
+            sortOrder: 0,
+            keyResults: [],
+            goalReviews: [],
+          },
+          {
+            _ref: 'goal:1',
+            name: 'b',
+            color: '#000',
+            status: 'pending',
+            importance: 'moderate',
+            priority: 0,
+            tags: [],
+            sortOrder: 0,
+            keyResults: [],
+            goalReviews: [],
+          },
         ],
         records: [],
         focusSessions: [],
@@ -353,7 +484,21 @@ describe('module schemas', () => {
   it('PortableGoalDataSchema rejects goal with id', () => {
     const result = PortableGoalDataSchema.safeParse({
       folders: [],
-      items: [{ _ref: 'goal:1', name: 'test', color: '#000', status: 'pending', importance: 'moderate', priority: 0, tags: [], sortOrder: 0, keyResults: [], goalReviews: [], id: 'bad' }],
+      items: [
+        {
+          _ref: 'goal:1',
+          name: 'test',
+          color: '#000',
+          status: 'pending',
+          importance: 'moderate',
+          priority: 0,
+          tags: [],
+          sortOrder: 0,
+          keyResults: [],
+          goalReviews: [],
+          id: 'bad',
+        },
+      ],
       records: [],
       focusSessions: [],
       focusModes: [],
@@ -365,7 +510,20 @@ describe('module schemas', () => {
   it('PortableGoalDataSchema accepts valid goal', () => {
     const result = PortableGoalDataSchema.safeParse({
       folders: [],
-      items: [{ _ref: 'goal:1', name: 'test', color: '#000', status: 'pending', importance: 'moderate', priority: 0, tags: [], sortOrder: 0, keyResults: [], goalReviews: [] }],
+      items: [
+        {
+          _ref: 'goal:1',
+          name: 'test',
+          color: '#000',
+          status: 'pending',
+          importance: 'moderate',
+          priority: 0,
+          tags: [],
+          sortOrder: 0,
+          keyResults: [],
+          goalReviews: [],
+        },
+      ],
       records: [],
       focusSessions: [],
       focusModes: [],
@@ -377,7 +535,18 @@ describe('module schemas', () => {
   it('PortableTaskDataSchema rejects template with identityId', () => {
     const result = PortableTaskDataSchema.safeParse({
       folders: [],
-      templates: [{ _ref: 'taskTemplate:1', title: 'test', taskType: 'once', importance: 'moderate', tags: [], status: 'pending', checklist: [], identityId: 'bad' }],
+      templates: [
+        {
+          _ref: 'taskTemplate:1',
+          title: 'test',
+          taskType: 'once',
+          importance: 'moderate',
+          tags: [],
+          status: 'pending',
+          checklist: [],
+          identityId: 'bad',
+        },
+      ],
       instances: [],
       dependencies: [],
     });
@@ -387,9 +556,21 @@ describe('module schemas', () => {
 
   it('PortableRepositoryDataSchema rejects resource with id', () => {
     const result = PortableRepositoryDataSchema.safeParse({
-      repositories: [{ _ref: 'repository:1', name: 'test', type: 'text', config: {}, status: 'ACTIVE' }],
+      repositories: [
+        { _ref: 'repository:1', name: 'test', type: 'text', config: {}, status: 'ACTIVE' },
+      ],
       folders: [],
-      resources: [{ _ref: 'resource:1', repositoryRef: 'repository:1', type: 'text', name: 'test', path: '/test', status: 'ACTIVE', id: 'bad' }],
+      resources: [
+        {
+          _ref: 'resource:1',
+          repositoryRef: 'repository:1',
+          type: 'text',
+          name: 'test',
+          path: '/test',
+          status: 'ACTIVE',
+          id: 'bad',
+        },
+      ],
     });
 
     expect(result.success).toBe(false);
@@ -397,7 +578,17 @@ describe('module schemas', () => {
 
   it('PortableReminderDataSchema rejects group with unknown field', () => {
     const result = PortableReminderDataSchema.safeParse({
-      groups: [{ _ref: 'reminderGroup:1', name: 'test', controlMode: 'manual', enabled: true, status: 'active', order: 0, badField: true }],
+      groups: [
+        {
+          _ref: 'reminderGroup:1',
+          name: 'test',
+          controlMode: 'manual',
+          enabled: true,
+          status: 'active',
+          order: 0,
+          badField: true,
+        },
+      ],
       templates: [],
       responses: [],
     });
@@ -407,7 +598,16 @@ describe('module schemas', () => {
 
   it('PortableScheduleDataSchema rejects schedule with id', () => {
     const result = PortableScheduleDataSchema.safeParse({
-      entries: [{ _ref: 'schedule:1', title: 'test', startTime: '2026-01-01T00:00:00Z', endTime: '2026-01-01T01:00:00Z', duration: 60, id: 'bad' }],
+      entries: [
+        {
+          _ref: 'schedule:1',
+          title: 'test',
+          startTime: '2026-01-01T00:00:00Z',
+          endTime: '2026-01-01T01:00:00Z',
+          duration: 60,
+          id: 'bad',
+        },
+      ],
       tasks: [],
     });
 
@@ -416,7 +616,19 @@ describe('module schemas', () => {
 
   it('PortableEditorDataSchema rejects workspace with identityId', () => {
     const result = PortableEditorDataSchema.safeParse({
-      workspaces: [{ _ref: 'editorWorkspace:1', name: 'test', projectPath: '/test', projectType: 'unknown', layout: {}, settings: {}, isActive: false, sessions: [], identityId: 'bad' }],
+      workspaces: [
+        {
+          _ref: 'editorWorkspace:1',
+          name: 'test',
+          projectPath: '/test',
+          projectType: 'unknown',
+          layout: {},
+          settings: {},
+          isActive: false,
+          sessions: [],
+          identityId: 'bad',
+        },
+      ],
     });
 
     expect(result.success).toBe(false);
@@ -424,7 +636,9 @@ describe('module schemas', () => {
 
   it('PortableAIDataSchema rejects conversation with id', () => {
     const result = PortableAIDataSchema.safeParse({
-      conversations: [{ _ref: 'aiConversation:1', name: 'test', status: 'ACTIVE', messages: [], id: 'bad' }],
+      conversations: [
+        { _ref: 'aiConversation:1', name: 'test', status: 'ACTIVE', messages: [], id: 'bad' },
+      ],
     });
 
     expect(result.success).toBe(false);

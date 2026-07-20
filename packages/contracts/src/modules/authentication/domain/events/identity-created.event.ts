@@ -21,7 +21,7 @@ export interface IdentityCreatedEvent {
   /** Creation method: Email, Oauth, Phone */
   createMethod: IdentityCreateMethod;
 
-  /** Email address (for Email creation) */
+  /** Verified or pending email address, when the creation method provides one. */
   email?: string;
 
   /** OAuth provider (for Oauth creation) */

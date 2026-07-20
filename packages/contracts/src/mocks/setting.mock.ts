@@ -73,9 +73,7 @@ export function createMockUserSetting(
         startPage: faker.helpers.arrayElement(['dashboard', 'tasks', 'goals']),
         sidebarCollapsed: faker.datatype.boolean(),
       },
-      ai: {
-        knowledgeNoteSubpath: faker.helpers.arrayElement(['', 'ai', 'ai/inbox']),
-      },
+      ai: {},
     },
     version: 1,
     createdAt: now - faker.number.int({ min: 0, max: 365 * 24 * 60 * 60 * 1000 }),
