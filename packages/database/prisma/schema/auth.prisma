@@ -41,8 +41,8 @@ model AuthIdentity {
 model AuthIdentifier {
   id         String   @id @default(uuid())
   identityId String   @map("identity_id")
-  type       String   // 'EMAIL' | 'PHONE'
-  value      String   // 邮箱地址或手机号
+  type       String // 'EMAIL' | 'PHONE'
+  value      String // 邮箱地址或手机号
   isVerified Boolean  @default(false) @map("is_verified")
   createdAt  DateTime @default(now()) @map("created_at")
 
@@ -61,7 +61,7 @@ model AuthIdentifier {
 model AuthOAuthBinding {
   id                String    @id @default(uuid())
   identityId        String    @map("identity_id")
-  provider          String    // GOOGLE, GITHUB 等
+  provider          String // GOOGLE, GITHUB 等
   providerSubjectId String    @map("provider_subject_id")
   accessToken       String?   @map("access_token")
   refreshToken      String?   @map("refresh_token")
