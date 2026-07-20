@@ -10,6 +10,10 @@ import {
 import { PrismaAuthIdentityRepository, PrismaAuthSessionRepository } from './adapters/prisma';
 import { Argon2Hasher } from './encryptors/argon2-hasher';
 import { GithubOAuthClient } from './services/github-oauth-client';
+import {
+  MockGithubOAuthClient,
+  isMockGithubOAuthClientId,
+} from './services/mock-github-oauth-client';
 import { GithubAuthenticationProvider, type AuthenticationProvider } from '../domain';
 import { createAuthenticationRuntimeContribution } from './runtime';
 
@@ -52,11 +56,14 @@ export function createAuthenticationPrismaModule(
   // registered by the module itself; here we only add opt-in methods.
   // 组装可选可插拔提供者：账密提供者由模块本身默认注册，此处仅叠加按需启用的方式。
   const authenticationProviders: AuthenticationProvider[] = [];
+  let githubOAuthClient: GithubOAuthClient | MockGithubOAuthClient | undefined;
   if (options.github) {
-    const githubOAuthClient = new GithubOAuthClient({
-      clientId: options.github.clientId,
-      clientSecret: options.github.clientSecret,
-    });
+    githubOAuthClient = isMockGithubOAuthClientId(options.github.clientId)
+      ? new MockGithubOAuthClient()
+      : new GithubOAuthClient({
+          clientId: options.github.clientId,
+          clientSecret: options.github.clientSecret,
+        });
     authenticationProviders.push(
       new GithubAuthenticationProvider(githubOAuthClient, identityRepository),
     );
@@ -84,6 +91,7 @@ export function createAuthenticationPrismaModule(
           clientId: options.github.clientId,
         }
       : undefined,
+    githubOAuthClient,
     runtimeContributions: [cascadeRuntime, ...extraRuntime],
   });
 }

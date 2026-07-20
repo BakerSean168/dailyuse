@@ -92,7 +92,7 @@ describe('expressAdapter', () => {
 
     await handler(req, res);
 
-    expect(controllerFn).toHaveBeenCalledWith(req, { identityId: 'user-1', deviceId: 'unknown' });
+    expect(controllerFn).toHaveBeenCalledWith(req, expect.objectContaining({ identityId: 'user-1', deviceId: 'unknown' }));
     expect(res.statusCode).toBe(200);
     expect(res.body.ok).toBe(true);
     expect(res.body.data).toEqual({ id: '1', name: 'Test' });
@@ -251,7 +251,7 @@ describe('expressAdapterWithValidation', () => {
 
     expect(controllerFn).toHaveBeenCalledWith(
       inputData,
-      { identityId: 'user-1', deviceId: 'unknown' },
+      expect.objectContaining({ identityId: 'user-1', deviceId: 'unknown' }),
       req,
     );
     expect(res.statusCode).toBe(200);

@@ -54,6 +54,7 @@ export class LoginUseCase {
         identityId: identity.id,
         deviceId,
         tokenProvider: this.tokenProvider,
+        device: cx.device,
       });
 
       // 3. Save session (repository dispatches domain events automatically)

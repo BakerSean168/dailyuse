@@ -13,10 +13,10 @@
 import { net, powerMonitor } from 'electron';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { ILogger } from '@dailyuse/utils/logger';
-import type { 
-  NetworkStatus, 
-  NetworkStateChangeEvent, 
-  NetworkCheckConfig 
+import type {
+  NetworkStatus,
+  NetworkStateChangeEvent,
+  NetworkCheckConfig,
 } from '@dailyuse/contracts/authentication';
 import { EventEmitter } from 'events';
 
@@ -59,7 +59,6 @@ export class NetworkStateManager extends EventEmitter {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.logger = logger || createLogger('NetworkStateManager');
   }
-
 
   // ============ Initialization ============
 
@@ -250,9 +249,10 @@ export class NetworkStateManager extends EventEmitter {
 
     this.checkTimer = setInterval(async () => {
       await this.refreshStatus();
-    }, (this.config.checkInterval || 30000));
+    }, this.config.checkInterval || 30000);
+    this.checkTimer.unref?.();
 
-    this.logger.info('Health check started', { interval: (this.config.checkInterval || 30000) });
+    this.logger.info('Health check started', { interval: this.config.checkInterval || 30000 });
   }
 
   /**

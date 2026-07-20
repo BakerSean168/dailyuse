@@ -2,6 +2,7 @@ import type {
   ForgotPasswordReq,
   GetOAuthUrlReq,
   GetOAuthUrlRes,
+  OAuthProvidersRes,
   OAuthCallbackReq,
   OAuthCallbackRes,
   LoginByEmailReq,
@@ -44,6 +45,45 @@ function isResultEnvelope(
 
 function toResultMeta(value: unknown): ResultMeta | undefined {
   return value && typeof value === 'object' ? (value as ResultMeta) : undefined;
+}
+
+async function getAuth<TRes>(path: string): Promise<Result<TRes>> {
+  try {
+    const response = await fetch(`${AUTH_BASE_URL}${path}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const body = await readJson(response);
+    if (isResultEnvelope(body)) {
+      if (body.ok) {
+        return {
+          ok: true,
+          data: body.data as TRes,
+          ...(toResultMeta(body.meta) ? { meta: toResultMeta(body.meta) } : {}),
+        };
+      }
+      return {
+        ok: false,
+        error: body.error ?? statusToResultError(response.status),
+        ...(toResultMeta(body.meta) ? { meta: toResultMeta(body.meta) } : {}),
+      };
+    }
+    if (response.ok) {
+      return { ok: true, data: (body ?? {}) as TRes };
+    }
+    return { ok: false, error: statusToResultError(response.status) };
+  } catch (errorLike) {
+    const message = errorLike instanceof Error ? errorLike.message : undefined;
+    const classified = classifyNetworkErrorMessage(message);
+    return createFailure(
+      classified.code === 'SERVICE_UNAVAILABLE'
+        ? { ...classified, code: 'NETWORK_ERROR' }
+        : classified,
+      errorLike,
+    );
+  }
 }
 
 async function postAuth<TReq, TRes>(path: string, payload: TReq): Promise<Result<TRes>> {
@@ -140,11 +180,15 @@ export const authWebService = {
 
   getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>> {
     return postAuth('/oauth/url', req);
-  }
+  },
+
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>> {
+    return getAuth('/oauth/providers');
+  },
 
   oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {
     return postAuth('/oauth/callback', req);
-  }
+  },
 
   forgotPassword(req: ForgotPasswordReq): Promise<Result<void>> {
     return postAuth('/password/forgot', req);

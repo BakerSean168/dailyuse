@@ -18,20 +18,23 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { ok, error, fail } from '@dailyuse/contracts/result';
 import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import {
-  AuthSession,
-  type IAuthSessionRepository,
-  type ITokenProvider,
-} from '../../../domain';
+import { AuthSession, type IAuthSessionRepository, type ITokenProvider } from '../../../domain';
 import type { AuthenticationProviderRegistry } from '../../../domain/services/authentication-provider-registry';
 import {
+  AccountLinkRequiredError,
+  OAuthEmailRequiredError,
   UnsupportedAuthenticationMethodError,
   type AuthenticationMethod,
 } from '../../../domain/services/authentication-provider';
-import { UserNotFoundError, InvalidPasswordError, IdentityDisabledError } from '../../../domain/services/login';
+import { AuthDomainCode } from '../../../domain/services/i-verification-challenge-store';
+import {
+  UserNotFoundError,
+  InvalidPasswordError,
+  IdentityDisabledError,
+} from '../../../domain/services/login';
 import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('Authenticate');
@@ -75,6 +78,7 @@ export class AuthenticateUseCase {
         identityId: identity.id,
         deviceId,
         tokenProvider: this.tokenProvider,
+        device: cx.device,
       });
       await this.sessionRepository.save(session);
 
@@ -93,14 +97,37 @@ export class AuthenticateUseCase {
       });
     } catch (err) {
       if (err instanceof UnsupportedAuthenticationMethodError) {
-        return error(
-          'SERVICE_UNAVAILABLE',
-          `Authentication method is not enabled: ${err.method}`,
-        );
+        return error('SERVICE_UNAVAILABLE', `Authentication method is not enabled: ${err.method}`);
+      }
+
+      if (err instanceof AccountLinkRequiredError) {
+        return fail({
+          code: 'CONFLICT',
+          message: 'Sign in to the existing account before linking this OAuth provider.',
+          context: {
+            domainCode: AuthDomainCode.ACCOUNT_LINK_REQUIRED,
+            method: err.method,
+          },
+        });
+      }
+
+      if (err instanceof OAuthEmailRequiredError) {
+        return fail({
+          code: 'VALIDATION_ERROR',
+          message: 'A verified provider email is required to create an account.',
+          context: {
+            domainCode: AuthDomainCode.OAUTH_EMAIL_REQUIRED,
+            method: err.method,
+          },
+        });
       }
 
       // Security: never distinguish "user not found" vs "wrong password".
-      if (err instanceof UserNotFoundError || err instanceof InvalidPasswordError || err instanceof IdentityDisabledError) {
+      if (
+        err instanceof UserNotFoundError ||
+        err instanceof InvalidPasswordError ||
+        err instanceof IdentityDisabledError
+      ) {
         return error('UNAUTHORIZED', 'Invalid credentials');
       }
 

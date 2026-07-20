@@ -65,7 +65,12 @@ const authenticationEventHandlers: {
     logger.info('[Authentication] User logged out');
   },
   'auth:registered': (payload) => {
-    logger.info(`[Authentication] User registered (email: ${payload.email})`);
+    const email = typeof payload.email === 'string' ? payload.email : '';
+    const masked =
+      email.includes('@')
+        ? `${email[0]}***@${email.split('@')[1] ?? ''}`
+        : '***';
+    logger.info(`[Authentication] User registered (email: ${masked})`);
   },
   'auth:password-changed': () => {
     logger.info('[Authentication] Password changed');

@@ -219,4 +219,26 @@ describe('Login (Application Command)', () => {
       expect(identityRepo.save).toHaveBeenCalledWith(identity);
     });
   });
+
+  it('rejects disabled identities as invalid credentials', async () => {
+    const identity = await AuthIdentity.createWithEmailAndPassword({
+      email: 'closed@example.com',
+      plainPassword: 'StrongP@ss1',
+      hasher: passwordHasher,
+    });
+    identity.disable();
+    (identityRepo.findByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(identity);
+
+    const result = await useCase.execute(
+      { email: 'closed@example.com', password: 'StrongP@ss1' },
+      { identityId: String(identity.id) } as any,
+      'device-1',
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('UNAUTHORIZED');
+    }
+  });
+
 });

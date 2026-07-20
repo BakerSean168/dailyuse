@@ -32,8 +32,7 @@ export const AuthenticationMethod = {
 } as const;
 
 export type AuthenticationMethod =
-  | (typeof AuthenticationMethod)[keyof typeof AuthenticationMethod]
-  | (string & {});
+  (typeof AuthenticationMethod)[keyof typeof AuthenticationMethod] | (string & {});
 
 /**
  * Ambient context handed to every provider.
@@ -107,5 +106,22 @@ export class DuplicateAuthenticationProviderError extends Error {
   constructor(public readonly method: string) {
     super(`Authentication provider for method [${method}] is already registered.`);
     this.name = 'DuplicateAuthenticationProviderError';
+  }
+}
+
+export class AccountLinkRequiredError extends Error {
+  constructor(
+    public readonly method: string,
+    public readonly email: string,
+  ) {
+    super(`An identity already exists for the email returned by [${method}].`);
+    this.name = 'AccountLinkRequiredError';
+  }
+}
+
+export class OAuthEmailRequiredError extends Error {
+  constructor(public readonly method: string) {
+    super(`Authentication method [${method}] did not return a verified email.`);
+    this.name = 'OAuthEmailRequiredError';
   }
 }

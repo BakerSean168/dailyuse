@@ -8,6 +8,14 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
 } from '@dailyuse/contracts/authentication';
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, ok } from '@dailyuse/contracts/result';
@@ -162,6 +170,26 @@ export class AuthRemoteGateway {
     return this.createApiUrlFn('/auth/email/verify');
   }
 
+  createGetOAuthUrlUrl(): string {
+    return this.createApiUrlFn('/auth/oauth/url');
+  }
+
+  createOAuthProvidersUrl(): string {
+    return this.createApiUrlFn('/auth/oauth/providers');
+  }
+
+  createOAuthCallbackUrl(): string {
+    return this.createApiUrlFn('/auth/oauth/callback');
+  }
+
+  createBindOAuthUrl(): string {
+    return this.createApiUrlFn('/auth/oauth/bind');
+  }
+
+  createUnbindOAuthUrl(): string {
+    return this.createApiUrlFn('/auth/oauth/unbind');
+  }
+
   async register(
     request: RegistrationRequestPayload,
     registerUrl: string = this.createRegisterUrl(),
@@ -303,6 +331,51 @@ export class AuthRemoteGateway {
     return this.postResult<VerifyEmailCodeRes>(this.createVerifyEmailCodeUrl(), request, {
       accessToken,
       fallbackMessage: 'Failed to verify email code',
+    });
+  }
+
+  async getOAuthUrl(request: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>> {
+    return this.postResult<GetOAuthUrlRes>(this.createGetOAuthUrlUrl(), request, {
+      fallbackMessage: 'Failed to get OAuth authorize URL',
+    });
+  }
+
+  async listOAuthProviders(): Promise<Result<OAuthProvidersRes>> {
+    const response = await this.fetchImpl(this.createOAuthProvidersUrl(), {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const body = await parseJson(response);
+    if (!response.ok) {
+      return toResultError(response.status, body, 'Failed to list OAuth providers');
+    }
+    if (body && typeof body === 'object' && 'ok' in body) {
+      const envelope = body as { ok?: boolean; data?: OAuthProvidersRes; error?: unknown };
+      if (envelope.ok && envelope.data) {
+        return ok(envelope.data);
+      }
+      return toResultError(response.status, body, 'Failed to list OAuth providers');
+    }
+    return ok(unwrapEnvelope(body) as OAuthProvidersRes);
+  }
+
+  async oauthCallback(request: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {
+    return this.postResult<OAuthCallbackRes>(this.createOAuthCallbackUrl(), request, {
+      fallbackMessage: 'Failed to complete OAuth login',
+    });
+  }
+
+  async bindOAuth(request: BindOAuthReq, accessToken: string): Promise<Result<BindOAuthRes>> {
+    return this.postResult<BindOAuthRes>(this.createBindOAuthUrl(), request, {
+      accessToken,
+      fallbackMessage: 'Failed to bind OAuth provider',
+    });
+  }
+
+  async unbindOAuth(request: UnbindOAuthReq, accessToken: string): Promise<Result<void>> {
+    return this.postResult<void>(this.createUnbindOAuthUrl(), request, {
+      accessToken,
+      fallbackMessage: 'Failed to unbind OAuth provider',
     });
   }
 }

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { ensureLoginScene, ensureRegisterScene } from '../helpers/testHelpers';
+import { completeEmailVerification } from '../helpers/auth-email-code';
 import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
 
 const generateTestEmail = () =>
@@ -103,6 +104,7 @@ async function registerUser(page: Page, email: string, password: string): Promis
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
   await page.getByTestId('register-submit-button').click();
+  await completeEmailVerification(page, email);
 }
 
 async function expectAuthenticated(page: Page): Promise<void> {

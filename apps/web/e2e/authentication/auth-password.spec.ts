@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ensureLoginScene, ensureRegisterScene, login } from '../helpers/testHelpers';
-import { waitForCapturedEmailCode } from '../helpers/auth-email-code';
+import { completeEmailVerification, waitForCapturedEmailCode } from '../helpers/auth-email-code';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 
 const oldPassword = 'Test123456!';
@@ -29,15 +29,7 @@ async function registerUser(page: Page, email: string, password: string): Promis
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
   await page.getByTestId('register-submit-button').click();
-  // Accept either verify scene or authenticated shell depending on gate policy.
-  await Promise.race([
-    page
-      .getByTestId('verify-email-form')
-      .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.LOGIN }),
-    page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
-      timeout: TIMEOUT_CONFIG.LOGIN,
-    }),
-  ]);
+  await completeEmailVerification(page, email);
 }
 
 test.describe('Authentication - password recovery', () => {
@@ -79,9 +71,11 @@ test.describe('Authentication - password recovery', () => {
     await page.locator('#email').fill(email);
     await page.locator('#password').fill(oldPassword);
     await page.getByTestId('login-submit-button').click();
-    await expect(page.getByText(/incorrect email or password|邮箱或密码错误/i).first()).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
-    });
+    await expect(page.getByText(/incorrect email or password|邮箱或密码错误/i).first()).toBeVisible(
+      {
+        timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      },
+    );
 
     // New password succeeds.
     await login(page, email, newPassword);

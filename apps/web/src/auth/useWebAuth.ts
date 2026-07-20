@@ -295,6 +295,21 @@ export function useWebAuth() {
     }
   }
 
+  /**
+   * Probe whether GitHub OAuth is configured without issuing state/PKCE.
+   * 探测 GitHub OAuth 是否已配置，且不签发 state/PKCE。
+   */
+  async function probeGithubAvailability(): Promise<boolean> {
+    try {
+      if (!service.listOAuthProviders) return false;
+      const result = await service.listOAuthProviders();
+      if (!result.ok) return false;
+      return result.data.providers.some((p) => p.provider === 'Github' && p.enabled);
+    } catch {
+      return false;
+    }
+  }
+
   async function completeGithubOAuth(code: string, state: string): Promise<AuthSuccessOutcome | null> {
     isLoading.value = true;
     error.value = null;
@@ -328,6 +343,7 @@ export function useWebAuth() {
     successMessage,
     pendingVerificationEmail,
     startGithubLogin,
+    probeGithubAvailability,
     completeGithubOAuth,
     isLoading,
     clearError,

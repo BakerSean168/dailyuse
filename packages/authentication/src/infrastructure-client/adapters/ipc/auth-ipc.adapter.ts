@@ -27,6 +27,14 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -96,6 +104,26 @@ export class AuthIpcAdapter implements IAuthApiClient {
 
   async verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
     return this.ipcClient.invoke(AuthChannels.VERIFY_EMAIL_CODE, req);
+  }
+
+  async getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>> {
+    return this.ipcClient.invoke(AuthChannels.GET_OAUTH_URL, req);
+  }
+
+  async listOAuthProviders(): Promise<Result<OAuthProvidersRes>> {
+    return this.ipcClient.invoke(AuthChannels.OAUTH_PROVIDERS);
+  }
+
+  async oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {
+    return this.ipcClient.invoke(AuthChannels.OAUTH_CALLBACK, req);
+  }
+
+  async bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>> {
+    return this.ipcClient.invoke(AuthChannels.OAUTH_BIND, req);
+  }
+
+  async unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>> {
+    return this.ipcClient.invoke(AuthChannels.OAUTH_UNBIND, req);
   }
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {

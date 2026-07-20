@@ -2,6 +2,7 @@ import type {
   ForgotPasswordReq,
   GetOAuthUrlReq,
   GetOAuthUrlRes,
+  OAuthProvidersRes,
   OAuthCallbackReq,
   OAuthCallbackRes,
   LoginByEmailReq,
@@ -22,6 +23,7 @@ export interface WebAuthService {
   forgotPassword(req: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
   getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
   oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>>;
   sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>>;
   verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>>;

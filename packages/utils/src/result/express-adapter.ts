@@ -90,10 +90,78 @@ export interface ExpressAdapterOptions {
  * Default context extractor from Express request
  */
 function defaultExtractContext(req: ExpressLikeRequest): Context {
+  const headers = req.headers ?? {};
+  const userAgentHeader = headers['user-agent'];
+  const userAgent = Array.isArray(userAgentHeader)
+    ? userAgentHeader[0]
+    : typeof userAgentHeader === 'string'
+      ? userAgentHeader
+      : undefined;
+  const forwarded = headers['x-forwarded-for'];
+  const realIp = headers['x-real-ip'];
+  const ipFromForwarded = Array.isArray(forwarded)
+    ? forwarded[0]
+    : typeof forwarded === 'string'
+      ? forwarded.split(',')[0]?.trim()
+      : undefined;
+  const ipAddress =
+    ipFromForwarded ||
+    (Array.isArray(realIp) ? realIp[0] : typeof realIp === 'string' ? realIp : undefined) ||
+    null;
+
+  const body = (req.body ?? {}) as {
+    deviceId?: string;
+    deviceInfo?: {
+      deviceId?: string;
+      deviceName?: string | null;
+      platform?: string | null;
+      os?: string | null;
+      browser?: string | null;
+      ipAddress?: string | null;
+      userAgent?: string | null;
+      deviceType?: string;
+      deviceFingerprint?: string;
+    };
+    ipAddress?: string;
+  };
+
+  const deviceInfo = body.deviceInfo;
+  const deviceId =
+    (typeof headers['x-device-id'] === 'string' && headers['x-device-id']) ||
+    body.deviceId ||
+    deviceInfo?.deviceId ||
+    'unknown';
+
+  const ua = deviceInfo?.userAgent || userAgent || null;
+  const platform = deviceInfo?.platform || deviceInfo?.os || null;
+  const browser = deviceInfo?.browser || null;
+  const deviceType = deviceInfo?.deviceType || inferDeviceType(ua);
+  const deviceName =
+    deviceInfo?.deviceName ||
+    (platform || browser ? `${platform ?? 'Unknown'} - ${browser ?? 'Unknown'}` : null);
+
   return {
     identityId: req.user?.identityId ?? '',
-    deviceId: (req.headers?.['x-device-id'] as string) || 'unknown',
+    deviceId,
+    device: {
+      deviceName,
+      os: platform,
+      browser,
+      ipAddress: deviceInfo?.ipAddress || body.ipAddress || ipAddress,
+      userAgent: ua,
+      deviceType,
+      deviceFingerprint: deviceInfo?.deviceFingerprint || undefined,
+    },
   };
+}
+
+function inferDeviceType(userAgent: string | null | undefined): string {
+  if (!userAgent) return 'Browser';
+  const ua = userAgent.toLowerCase();
+  if (ua.includes('electron')) return 'Desktop';
+  if (ua.includes('ipad') || ua.includes('tablet')) return 'Tablet';
+  if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) return 'Mobile';
+  return 'Browser';
 }
 
 /**

@@ -28,6 +28,8 @@ export {
   AuthenticationMethod,
   UnsupportedAuthenticationMethodError,
   DuplicateAuthenticationProviderError,
+  AccountLinkRequiredError,
+  OAuthEmailRequiredError,
 } from './authentication-provider';
 export type {
   AuthenticationProvider,
@@ -43,7 +45,5 @@ export {
   GithubAuthenticationProvider,
   type GithubCredentials,
 } from './providers/github-authentication.provider';
-export type {
-  IGithubOAuthClient,
-  GithubUserIdentity,
-} from './providers/i-github-oauth-client';
+export type { IGithubOAuthClient, GithubUserIdentity } from './providers/i-github-oauth-client';
+export * from './i-oauth-state-store';

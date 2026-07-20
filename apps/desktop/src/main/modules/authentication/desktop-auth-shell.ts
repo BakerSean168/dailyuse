@@ -59,6 +59,11 @@ const Ch = {
   SEND_SMS_CODE: 'auth:send-sms-code',
   SEND_EMAIL_CODE: 'auth:send-email-code',
   VERIFY_EMAIL_CODE: 'auth:verify-email-code',
+  GET_OAUTH_URL: 'auth:get-oauth-url',
+  OAUTH_PROVIDERS: 'auth:oauth-providers',
+  OAUTH_CALLBACK: 'auth:oauth-callback',
+  OAUTH_BIND: 'auth:oauth-bind',
+  OAUTH_UNBIND: 'auth:oauth-unbind',
 } as const;
 
 const allChannels = Object.values(Ch);
@@ -123,6 +128,40 @@ async function activatePreparedProfileForCurrentMode(
     throw new Error('No active profile available for main window transition');
   }
   await windowManager.transitionToMainWindow(profileId, profileResolver.mainWindowStatePath);
+}
+
+
+async function prepareProfileForOnlineIdentity(
+  runtimeManager: DesktopProfileRuntimeManager,
+  onlineIdentityId: string,
+  options: {
+    displayName?: string;
+    identifier?: string | null;
+    snapshotAccessToken?: string | null;
+  },
+  callback: (service: AuthDesktopApplicationService) => Promise<void>,
+): Promise<void> {
+  const currentIdentity = runtimeManager.getActiveOrPreparedIdentityId();
+  const guestActive =
+    runtimeManager.isGuestProfileIdentity(currentIdentity) ||
+    (await runtimeManager.getActiveProfileDescriptor().then((d) =>
+      runtimeManager.isGuestProfileIdentity(d?.identityId),
+    ));
+
+  if (guestActive) {
+    // Guest upgrade path: rebind ownership, keep Vault directory, then run success hook.
+    // 访客升级：重绑 ownership、保留 Vault 目录，再跑成功钩子。
+    const prepared = await runtimeManager.upgradeGuestProfileToOnlineIdentity({
+      onlineIdentityId,
+      displayName: options.displayName,
+      identifier: options.identifier,
+      snapshotAccessToken: options.snapshotAccessToken,
+    });
+    await callback(prepared.authService);
+    return;
+  }
+
+  await withPreparedProfile(runtimeManager, onlineIdentityId, options, callback);
 }
 
 function mapRememberedAccounts(
@@ -195,7 +234,7 @@ export function registerDesktopAuthShellHandlers(
         );
       }
 
-      await withPreparedProfile(
+      await prepareProfileForOnlineIdentity(
         runtimeManager,
         String(remoteResult.response.identity.id),
         {
@@ -239,7 +278,7 @@ export function registerDesktopAuthShellHandlers(
         return toIpcResult(fail(result.error));
       }
 
-      await withPreparedProfile(
+      await prepareProfileForOnlineIdentity(
         runtimeManager,
         String(result.response.identity.id),
         {
@@ -586,6 +625,73 @@ export function registerDesktopAuthShellHandlers(
     const service = currentAuthService();
     const accessToken = service?.getAccessToken?.() ?? undefined;
     return toIpcResult(await remoteGateway.verifyEmailCode(data, accessToken));
+  });
+  ipcMain.handle(Ch.GET_OAUTH_URL, async (_event, data) =>
+    toIpcResult(await remoteGateway.getOAuthUrl(data)),
+  );
+  ipcMain.handle(Ch.OAUTH_PROVIDERS, async () =>
+    toIpcResult(await remoteGateway.listOAuthProviders()),
+  );
+  ipcMain.handle(Ch.OAUTH_CALLBACK, async (_event, data) => {
+    try {
+      const remoteResult = await remoteGateway.oauthCallback(data);
+      if (!remoteResult.ok) {
+        return toIpcResult(remoteResult);
+      }
+
+      const identity = remoteResult.data.identity;
+      const emailIdentifier = identity.identifiers?.find((item) => item.type === 'Email');
+      const email = emailIdentifier && 'value' in emailIdentifier ? emailIdentifier.value : null;
+      const displayName = email ?? String(identity.id);
+
+      await prepareProfileForOnlineIdentity(
+        runtimeManager,
+        String(identity.id),
+        {
+          displayName,
+          identifier: email,
+          snapshotAccessToken: remoteResult.data.accessToken,
+        },
+        async (service) => {
+          // Reuse remote-login success path without password remember flags.
+          // 复用远程登录成功路径（无记住密码标志）。
+          await service.completeRemoteLoginSuccess(remoteResult.data, {
+            email: email ?? displayName,
+            password: '',
+            rememberPassword: false,
+            autoLogin: false,
+          });
+        },
+      );
+
+      await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
+      return toIpcResult(remoteResult);
+    } catch (error) {
+      await runtimeManager.discardPreparedProfile().catch(() => undefined);
+      logger.error('Shell OAuth callback failed', { error });
+      return toIpcResult(
+        fail({
+          code: 'OAUTH_ERROR',
+          message: error instanceof Error ? error.message : 'OAuth 登录失败',
+        }),
+      );
+    }
+  });
+  ipcMain.handle(Ch.OAUTH_BIND, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? null;
+    if (!accessToken) {
+      return toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
+    }
+    return toIpcResult(await remoteGateway.bindOAuth(data, accessToken));
+  });
+  ipcMain.handle(Ch.OAUTH_UNBIND, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? null;
+    if (!accessToken) {
+      return toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
+    }
+    return toIpcResult(await remoteGateway.unbindOAuth(data, accessToken));
   });
 
   logger.info(`Desktop shell auth handlers registered (${allChannels.length} channels)`);

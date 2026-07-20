@@ -35,6 +35,8 @@ import {
   SendSmsCodeSchema,
   OAuthCallbackSchema,
   GetOAuthUrlSchema,
+  BindOAuthSchema,
+  UnbindOAuthSchema,
   CurrentUserResponseSchema,
   SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
@@ -144,6 +146,30 @@ export function registerAuthenticationRoutes(
 
   r.route(
     {
+      method: 'get',
+      path: '/oauth/providers',
+      summary: '列出已启用的 OAuth 提供者（不签发 state）',
+      responses: {
+        200: successResponse(
+          z.object({
+            providers: z.array(
+              z.object({
+                provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+                enabled: z.boolean(),
+              }),
+            ),
+          }),
+          '提供者列表',
+        ),
+      },
+    },
+    [],
+    () => controller.listOAuthProviders(),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
       method: 'post',
       path: '/oauth/url',
       summary: '获取 OAuth 授权 URL（含 state/PKCE）',
@@ -177,6 +203,47 @@ export function registerAuthenticationRoutes(
     [],
     (req, ctx) => controller.oauthCallback(req.body, ctx),
     { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/oauth/bind',
+      summary: '绑定 OAuth 提供者到当前账号（已登录）',
+      request: { body: { content: { 'application/json': { schema: BindOAuthSchema } } } },
+      responses: {
+        200: successResponse(
+          z.object({
+            provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+            providerSubjectId: z.string(),
+            created: z.boolean(),
+          }),
+          '绑定成功',
+        ),
+        401: errorResponse('未认证'),
+        409: errorResponse('该 OAuth 账号已绑定其他身份'),
+        503: errorResponse('该 OAuth 提供者未启用'),
+      },
+    },
+    guardedAuth,
+    (req, ctx) => controller.bindOAuth(req.body, ctx),
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/oauth/unbind',
+      summary: '解绑 OAuth 提供者（已登录）',
+      request: { body: { content: { 'application/json': { schema: UnbindOAuthSchema } } } },
+      responses: {
+        200: successResponse(z.void(), '解绑成功'),
+        401: errorResponse('未认证'),
+        404: errorResponse('未找到绑定'),
+        409: errorResponse('不能移除最后一条登录路径'),
+      },
+    },
+    guardedAuth,
+    (req, ctx) => controller.unbindOAuth(req.body, ctx),
   );
 
   r.route(

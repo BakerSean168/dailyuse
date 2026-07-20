@@ -22,6 +22,11 @@ export const zhCNAuthMessages = {
       emailPlaceholder: "name{'@'}example.com",
       codePlaceholder: '6 位验证码',
       languageSelector: '界面语言',
+      legalNoticePrefix: '继续即表示您同意',
+      legalNoticeMid: '与',
+      legalNoticeSuffix: '。',
+      termsOfService: '服务条款',
+      privacyPolicy: '隐私政策',
       locales: {
         zhCN: '中文',
         enUS: 'EN',
@@ -109,6 +114,8 @@ export const zhCNAuthMessages = {
       INVALID_OR_EXPIRED_CODE: '验证码无效或已过期，请重新获取',
       CHALLENGE_COOLDOWN: '发送过于频繁，请稍后再试',
       CHALLENGE_RATE_LIMITED: '今日验证码次数已达上限，请明天再试',
+      ACCOUNT_LINK_REQUIRED: '该 GitHub 邮箱已有关联账号，请先使用原方式登录后再绑定 GitHub',
+      OAUTH_EMAIL_REQUIRED: 'GitHub 未提供已验证邮箱，请先在 GitHub 中验证邮箱后重试',
     },
     toast: {
       loginSuccess: '登录成功',
@@ -145,6 +152,11 @@ export const enUSAuthMessages = {
       emailPlaceholder: "name{'@'}example.com",
       codePlaceholder: '6-digit code',
       languageSelector: 'Interface language',
+      legalNoticePrefix: 'By continuing, you agree to the ',
+      legalNoticeMid: ' and ',
+      legalNoticeSuffix: '.',
+      termsOfService: 'Terms of Service',
+      privacyPolicy: 'Privacy Policy',
       locales: {
         zhCN: '中文',
         enUS: 'EN',
@@ -233,6 +245,10 @@ export const enUSAuthMessages = {
       INVALID_OR_EXPIRED_CODE: 'Invalid or expired code. Request a new one.',
       CHALLENGE_COOLDOWN: 'Please wait before requesting another code.',
       CHALLENGE_RATE_LIMITED: 'Daily code limit reached. Try again tomorrow.',
+      ACCOUNT_LINK_REQUIRED:
+        'An account already uses this GitHub email. Sign in to that account, then link GitHub.',
+      OAUTH_EMAIL_REQUIRED:
+        'GitHub did not provide a verified email. Verify an email on GitHub and try again.',
     },
     toast: {
       loginSuccess: 'Login successful',

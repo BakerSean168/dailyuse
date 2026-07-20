@@ -25,6 +25,10 @@ import type {
   OAuthCallbackRes,
   GetOAuthUrlReq,
   GetOAuthUrlRes,
+  OAuthProvidersRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
 } from '@dailyuse/contracts/authentication';
 
 export interface AuthenticationApplicationPort {
@@ -42,6 +46,9 @@ export interface AuthenticationApplicationPort {
     deviceId: string,
   ): Promise<Result<OAuthCallbackRes>>;
   getOAuthUrl(data: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
+  bindOAuth(data: BindOAuthReq, cx: ExecutionContext): Promise<Result<BindOAuthRes>>;
+  unbindOAuth(data: UnbindOAuthReq, cx: ExecutionContext): Promise<Result<void>>;
   register(
     data: RegisterByEmailReq,
     cx: ExecutionContext,

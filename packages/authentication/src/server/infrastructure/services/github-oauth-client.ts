@@ -29,6 +29,7 @@ const logger = createLogger('GithubOAuthClient');
 
 const DEFAULT_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 const DEFAULT_USER_URL = 'https://api.github.com/user';
+const DEFAULT_EMAILS_URL = 'https://api.github.com/user/emails';
 
 export interface GithubOAuthClientConfig {
   /** GitHub App / OAuth client id. */
@@ -39,6 +40,8 @@ export interface GithubOAuthClientConfig {
   readonly tokenUrl?: string;
   /** Override the user endpoint (tests / GitHub Enterprise). */
   readonly userUrl?: string;
+  /** Override the verified-email endpoint (tests / GitHub Enterprise). */
+  readonly emailsUrl?: string;
   /**
    * Injected fetch implementation, for testing without real network.
    * 注入的 fetch 实现，便于无网络测试。
@@ -58,9 +61,16 @@ interface GithubUserResponse {
   email?: string | null;
 }
 
+interface GithubEmailResponse {
+  email?: string;
+  primary?: boolean;
+  verified?: boolean;
+}
+
 export class GithubOAuthClient implements IGithubOAuthClient {
   private readonly tokenUrl: string;
   private readonly userUrl: string;
+  private readonly emailsUrl: string;
   private readonly fetchImpl: typeof fetch;
 
   constructor(private readonly config: GithubOAuthClientConfig) {
@@ -69,6 +79,7 @@ export class GithubOAuthClient implements IGithubOAuthClient {
     }
     this.tokenUrl = config.tokenUrl ?? DEFAULT_TOKEN_URL;
     this.userUrl = config.userUrl ?? DEFAULT_USER_URL;
+    this.emailsUrl = config.emailsUrl ?? DEFAULT_EMAILS_URL;
     this.fetchImpl = config.fetchImpl ?? fetch;
   }
 
@@ -150,11 +161,33 @@ export class GithubOAuthClient implements IGithubOAuthClient {
       throw new Error('GitHub user response missing stable id');
     }
 
+    const email = user.email?.trim() || (await this.fetchVerifiedEmail(accessToken));
+
     return {
       // GitHub numeric user id is the stable OAuth subject.
       subjectId: String(user.id),
       username: user.login,
-      email: user.email ?? null,
+      email,
     };
+  }
+
+  private async fetchVerifiedEmail(accessToken: string): Promise<string | null> {
+    const response = await this.fetchImpl(this.emailsUrl, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+    if (!response.ok) {
+      logger.warn('[GitHub] verified email fetch failed', { status: response.status });
+      return null;
+    }
+    const emails = (await response.json()) as GithubEmailResponse[];
+    const selected =
+      emails.find((candidate) => candidate.primary && candidate.verified)?.email ??
+      emails.find((candidate) => candidate.verified)?.email;
+    return selected?.trim() || null;
   }
 }

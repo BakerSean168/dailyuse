@@ -44,6 +44,10 @@ import type {
   OAuthCallbackRes,
   GetOAuthUrlReq,
   GetOAuthUrlRes,
+  OAuthProvidersRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
 } from '@dailyuse/contracts/authentication';
 import {
   AuthenticateUseCase,
@@ -53,6 +57,9 @@ import {
   SendEmailVerificationCodeUseCase,
   VerifyEmailCodeUseCase,
   GetOAuthUrlUseCase,
+  ListOAuthProvidersUseCase,
+  BindOAuthUseCase,
+  UnbindOAuthUseCase,
   GetCurrentUserUseCase,
   LoginUseCase,
   ListSessionsUseCase,
@@ -113,6 +120,12 @@ export interface AuthenticationModuleDependencies {
     readonly clientId: string;
     readonly authorizeUrl?: string;
   };
+  /**
+   * Optional GitHub OAuth client used for bind (code exchange). Login providers
+   * still come from authenticationProviders.
+   * 可选 GitHub OAuth 客户端，用于绑定（code 换主体）。登录提供者仍来自 authenticationProviders。
+   */
+  readonly githubOAuthClient?: import('../domain/services/providers/i-github-oauth-client').IGithubOAuthClient;
 }
 
 // ---------------------------------------------------------------------------
@@ -161,6 +174,9 @@ export interface AuthenticationModuleUseCases {
   readonly sendEmailVerificationCode: SendEmailVerificationCodeUseCase;
   readonly verifyEmailCode: VerifyEmailCodeUseCase;
   readonly getOAuthUrl: GetOAuthUrlUseCase;
+  readonly listOAuthProviders: ListOAuthProvidersUseCase;
+  readonly bindOAuth: BindOAuthUseCase;
+  readonly unbindOAuth: UnbindOAuthUseCase;
   readonly oauthStateStore: InMemoryOAuthStateStore;
 }
 
@@ -205,6 +221,9 @@ export interface AuthenticationApplicationPort {
     deviceId: string,
   ): Promise<Result<OAuthCallbackRes>>;
   getOAuthUrl(data: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
+  bindOAuth(data: BindOAuthReq, cx: ExecutionContext): Promise<Result<BindOAuthRes>>;
+  unbindOAuth(data: UnbindOAuthReq, cx: ExecutionContext): Promise<Result<void>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -279,6 +298,13 @@ export function createAuthenticationUseCases(
     ),
     verifyEmailCode: new VerifyEmailCodeUseCase(identityRepository, challengeStore),
     getOAuthUrl: new GetOAuthUrlUseCase(oauthStateStore, dependencies.githubOAuth),
+    listOAuthProviders: new ListOAuthProvidersUseCase(dependencies.githubOAuth),
+    bindOAuth: new BindOAuthUseCase(
+      identityRepository,
+      oauthStateStore,
+      dependencies.githubOAuthClient,
+    ),
+    unbindOAuth: new UnbindOAuthUseCase(identityRepository),
     oauthStateStore,
   };
 }
@@ -392,6 +418,12 @@ export function createAuthenticationModule(
     verifyEmailCode: (data, cx) => useCases.verifyEmailCode.execute(data, cx),
 
     getOAuthUrl: (data) => useCases.getOAuthUrl.execute(data),
+
+    listOAuthProviders: () => useCases.listOAuthProviders.execute(),
+
+    bindOAuth: (data, cx) => useCases.bindOAuth.execute(data, cx),
+
+    unbindOAuth: (data, cx) => useCases.unbindOAuth.execute(data, cx),
 
     // Pluggable OAuth login — dispatches to the provider registered under the
     // method id derived from the provider name (e.g. 'Github' -> 'github').

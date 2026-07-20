@@ -45,18 +45,43 @@ describe('GithubOAuthClient', () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ access_token: 't' }))
-      .mockResolvedValueOnce(jsonResponse({ id: 1, login: 'renamed-user' })) as unknown as typeof fetch;
+      .mockResolvedValueOnce(jsonResponse({ id: 1, login: 'renamed-user' }))
+      .mockResolvedValueOnce(
+        jsonResponse([{ email: 'verified@example.com', primary: true, verified: true }]),
+      ) as unknown as typeof fetch;
 
     const client = new GithubOAuthClient({ clientId: 'c', clientSecret: 's', fetchImpl });
     const identity = await client.exchangeCodeForIdentity({ code: 'x' });
 
     expect(identity.subjectId).toBe('1');
+    expect(identity.email).toBe('verified@example.com');
+  });
+
+  it('falls back to the first verified email when the public profile email is hidden', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ access_token: 't' }))
+      .mockResolvedValueOnce(jsonResponse({ id: 2, login: 'hidden-email', email: null }))
+      .mockResolvedValueOnce(
+        jsonResponse([
+          { email: 'unverified@example.com', primary: true, verified: false },
+          { email: 'verified@example.com', primary: false, verified: true },
+        ]),
+      ) as unknown as typeof fetch;
+    const client = new GithubOAuthClient({ clientId: 'c', clientSecret: 's', fetchImpl });
+
+    const identity = await client.exchangeCodeForIdentity({ code: 'x' });
+
+    expect(identity.email).toBe('verified@example.com');
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
   });
 
   it('throws when the token exchange is rejected', async () => {
     const fetchImpl = vi
       .fn()
-      .mockResolvedValueOnce(jsonResponse({ error: 'bad_verification_code' })) as unknown as typeof fetch;
+      .mockResolvedValueOnce(
+        jsonResponse({ error: 'bad_verification_code' }),
+      ) as unknown as typeof fetch;
 
     const client = new GithubOAuthClient({ clientId: 'c', clientSecret: 's', fetchImpl });
 
@@ -73,7 +98,9 @@ describe('GithubOAuthClient', () => {
 
     const client = new GithubOAuthClient({ clientId: 'c', clientSecret: 's', fetchImpl });
 
-    await expect(client.exchangeCodeForIdentity({ code: 'x' })).rejects.toThrow(/missing stable id/);
+    await expect(client.exchangeCodeForIdentity({ code: 'x' })).rejects.toThrow(
+      /missing stable id/,
+    );
   });
 
   it('never sends the client secret to the browser-visible user endpoint', async () => {
@@ -83,7 +110,7 @@ describe('GithubOAuthClient', () => {
       return Promise.resolve(
         calls.length === 1
           ? jsonResponse({ access_token: 't' })
-          : jsonResponse({ id: 9, login: 'u' }),
+          : jsonResponse({ id: 9, login: 'u', email: 'u@example.com' }),
       );
     }) as unknown as typeof fetch;
 

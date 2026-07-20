@@ -5,7 +5,7 @@ tags:
   - authentication
 description: 认证模块当前实现及账密、GitHub、访客三入口目标态
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T23:59:00
+updated: 2026-07-18T06:50:00
 ---
 
 # 认证模块说明
@@ -28,7 +28,7 @@ updated: 2026-07-17T23:59:00
 - GitHub 登录服务端骨架：授权码换取 GitHub numeric user ID、按 OAuth binding 查找或创建 AuthIdentity，并签发 Daily Use session。
 - `POST /api/v1/auth/oauth/callback` 已接线；仅在 `GITHUB_OAUTH_CLIENT_ID` 与 `GITHUB_OAUTH_CLIENT_SECRET` 同时配置时启用 GitHub provider，未启用时返回 `SERVICE_UNAVAILABLE`。
 - 手机短信入口当前不可用。
-- OAuth 授权发起、state/PKCE 生命周期、Web/Desktop 登录 UI、Desktop deep link 和账号绑定尚未实现。
+- OAuth 授权发起、state/PKCE、Web 登录/回调、providers 门控、账号 bind/unbind 与 Desktop IPC 已接线；生产需配置 GitHub client，e2e 可用 mock。
 
 ## 3. 已采纳目标态
 
@@ -59,7 +59,7 @@ updated: 2026-07-17T23:59:00
 - GitHub-only 账号移除最后一个 OAuth binding 前，需要增加账密凭据或明确处置账号。
 - 访客 profile 不上传业务和 Vault 数据。
 - Desktop 离线时允许已建立 profile 继续本地使用；GitHub/Daily Use 故障不得锁住 Vault。
-- 完整 OAuth 流程必须校验 state，并在 provider 支持时使用 PKCE；Desktop 只接收一次性 code，不在 deep link 暴露 provider token。当前服务端 callback 骨架尚未接入授权发起与 state/PKCE 存储校验。
+- 完整 OAuth 流程必须校验 state，并在 provider 支持时使用 PKCE；Desktop 只接收一次性 code，不在 deep link 暴露 provider token。服务端 authorize URL 与 state/PKCE 存储校验已接入；Desktop 仅接收一次性 code。
 
 ## 6. 可插拔认证架构（已实现服务端骨架）
 
@@ -81,8 +81,7 @@ updated: 2026-07-17T23:59:00
 - challenge 存储与 IP 限流为内存实现，多实例与生产需 Redis/外置。
 - 缺少 OAuth 授权发起、state/PKCE 存储校验、Web/Desktop GitHub 登录 UI、浏览器回跳与 Desktop deep link。
 - 缺少已登录账号的 GitHub binding 添加/移除与账号合并流程。
-- 访客 profile 升级为在线账号的接线尚未完成。
-- 访客升级后 profile/Vault ownership 的无移动接管尚未固化。
+- 访客升级：Desktop login/register/OAuth 在访客态重绑 profile ownership，保留 profileId/本地 Vault 目录；目标 identity 已有其他 profile 时拒绝静默合并。
 - GitHub 登录与知识仓库授权需要在 UI 和 contract 上明确分离。
 - 手机短信和 2FA 占位会增加设置复杂度，应在无真实实现时隐藏。
 

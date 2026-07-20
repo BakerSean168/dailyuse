@@ -167,7 +167,11 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    * 🏭 通过 OAuth 创建身份
    * OAuthBinding 进入 oauthBindings 集合
    */
-  public static createWithOAuth(params: { provider: OAuthProvider; sub: string }): AuthIdentity {
+  public static createWithOAuth(params: {
+    provider: OAuthProvider;
+    sub: string;
+    verifiedEmail?: string;
+  }): AuthIdentity {
     const oauthBinding = OAuthBinding.create({
       id: AuthCredentialId.generate(),
       provider: params.provider,
@@ -178,7 +182,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     const now = new Date();
     const identity = new AuthIdentity({
       id: identityId,
-      identifiers: [],
+      identifiers: params.verifiedEmail ? [EmailIdentifier.create(params.verifiedEmail, true)] : [],
       oauthBindings: [oauthBinding],
       credentials: [],
       status: AuthIdentityStatus.Unverified,
@@ -195,6 +199,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       identityId: identityId,
       createMethod: 'Oauth',
       oauthProvider: params.provider,
+      email: params.verifiedEmail,
     });
 
     return identity;
@@ -289,8 +294,9 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    */
   public findIdentifierByEmail(email: string): EmailIdentifier | null {
     return (
-      (this._props.identifiers.find((i) => i.type === 'Email' && i.value === email) as EmailIdentifier) ??
-      null
+      (this._props.identifiers.find(
+        (i) => i.type === 'Email' && i.value === email,
+      ) as EmailIdentifier) ?? null
     );
   }
 
@@ -299,8 +305,9 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    */
   public findIdentifierByPhone(phone: string): PhoneIdentifier | null {
     return (
-      (this._props.identifiers.find((i) => i.type === 'Phone' && i.value === phone) as PhoneIdentifier) ??
-      null
+      (this._props.identifiers.find(
+        (i) => i.type === 'Phone' && i.value === phone,
+      ) as PhoneIdentifier) ?? null
     );
   }
 
@@ -511,7 +518,9 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
   private hasOtherLoginPathAfterOAuthRemoval(removeIdx: number): boolean {
     const remainingBindings = this._props.oauthBindings.filter((_, idx) => idx !== removeIdx);
     return (
-      this._props.identifiers.length > 0 || remainingBindings.length > 0 || this._props.credentials.length > 0
+      this._props.identifiers.length > 0 ||
+      remainingBindings.length > 0 ||
+      this._props.credentials.length > 0
     );
   }
 

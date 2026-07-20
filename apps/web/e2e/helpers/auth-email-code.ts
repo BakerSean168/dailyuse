@@ -1,4 +1,5 @@
-import { API_CONFIG, TIMEOUT_CONFIG } from '../config';
+import type { Page } from '@playwright/test';
+import { API_CONFIG, TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 
 export type CapturedEmailKind = 'email-verify' | 'password-reset';
 
@@ -45,4 +46,17 @@ export async function waitForCapturedEmailCode(
       lastError instanceof Error ? lastError.message : String(lastError ?? 'no code')
     }`,
   );
+}
+
+export async function completeEmailVerification(page: Page, email: string): Promise<void> {
+  await page.getByTestId('verify-email-form').waitFor({
+    state: 'visible',
+    timeout: TIMEOUT_CONFIG.LOGIN,
+  });
+  const code = await waitForCapturedEmailCode(email, 'email-verify');
+  await page.locator('#verify-code').fill(code);
+  await page.getByTestId('verify-submit-button').click();
+  await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
+    timeout: TIMEOUT_CONFIG.LOGIN,
+  });
 }

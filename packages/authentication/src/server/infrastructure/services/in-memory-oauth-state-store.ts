@@ -1,18 +1,11 @@
 import { createHash, randomBytes } from 'node:crypto';
+import type {
+  ConsumedOAuthState,
+  IssuedOAuthState,
+  IOAuthStateStore,
+} from '../../domain/services/i-oauth-state-store';
 
-export interface IssuedOAuthState {
-  readonly state: string;
-  readonly codeVerifier: string;
-  readonly codeChallenge: string;
-  readonly provider: string;
-  readonly redirectUri?: string;
-}
-
-export interface ConsumedOAuthState {
-  readonly provider: string;
-  readonly codeVerifier: string;
-  readonly redirectUri?: string;
-}
+export type { ConsumedOAuthState, IssuedOAuthState } from '../../domain/services/i-oauth-state-store';
 
 interface StoredOAuthState {
   readonly provider: string;
@@ -27,7 +20,7 @@ const STATE_TTL_MS = 10 * 60 * 1000;
  * In-memory OAuth state + PKCE verifier store for single-instance / test runtimes.
  * 单实例与测试用的内存 OAuth state + PKCE verifier 存储。
  */
-export class InMemoryOAuthStateStore {
+export class InMemoryOAuthStateStore implements IOAuthStateStore {
   private readonly entries = new Map<string, StoredOAuthState>();
 
   issue(params: {

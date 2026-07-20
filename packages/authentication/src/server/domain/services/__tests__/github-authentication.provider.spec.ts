@@ -8,7 +8,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GithubAuthenticationProvider } from '../providers/github-authentication.provider';
 import type { IGithubOAuthClient } from '../providers/i-github-oauth-client';
-import { AuthenticationMethod } from '../authentication-provider';
+import {
+  AccountLinkRequiredError,
+  AuthenticationMethod,
+  OAuthEmailRequiredError,
+} from '../authentication-provider';
 import { AuthIdentity } from '../../aggregates/auth-identity';
 import { OAuthProvider } from '../../value-objects';
 import type { IAuthIdentityRepository } from '../../repositories/i-auth-identity.repository';
@@ -77,7 +81,43 @@ describe('GithubAuthenticationProvider', () => {
 
     expect(result.isNewIdentity).toBe(true);
     expect(result.identity.hasOAuth()).toBe(true);
+    expect(result.identity.identifiers).toHaveLength(1);
+    expect(result.identity.identifiers[0]?.isVerified).toBe(true);
+    expect(repo.findByEmail).toHaveBeenCalledWith('octocat@example.com');
     expect(repo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('requires explicit linking when the provider email belongs to another identity', async () => {
+    const existing = AuthIdentity.createWithOAuth({
+      provider: OAuthProvider.Google,
+      sub: 'existing-google-subject',
+      verifiedEmail: 'octocat@example.com',
+    });
+    repo = createMockIdentityRepo({
+      findByEmail: vi.fn().mockResolvedValue(existing),
+    });
+    const provider = new GithubAuthenticationProvider(oauthClient, repo);
+
+    await expect(provider.authenticate({ code: 'auth-code' }, context)).rejects.toBeInstanceOf(
+      AccountLinkRequiredError,
+    );
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it('does not create an orphan identity when GitHub has no verified email', async () => {
+    oauthClient = {
+      exchangeCodeForIdentity: vi.fn().mockResolvedValue({
+        subjectId: 'no-email',
+        username: 'private-email-user',
+        email: null,
+      }),
+    };
+    const provider = new GithubAuthenticationProvider(oauthClient, repo);
+
+    await expect(provider.authenticate({ code: 'auth-code' }, context)).rejects.toBeInstanceOf(
+      OAuthEmailRequiredError,
+    );
+    expect(repo.save).not.toHaveBeenCalled();
   });
 
   it('keys the lookup by the stable numeric subject id, not the username', async () => {
@@ -95,9 +135,7 @@ describe('GithubAuthenticationProvider', () => {
     };
     const provider = new GithubAuthenticationProvider(oauthClient, repo);
 
-    await expect(
-      provider.authenticate({ code: 'invalid' }, context),
-    ).rejects.toThrow('bad code');
+    await expect(provider.authenticate({ code: 'invalid' }, context)).rejects.toThrow('bad code');
     expect(repo.save).not.toHaveBeenCalled();
   });
 });

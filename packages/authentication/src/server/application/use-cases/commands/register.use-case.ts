@@ -25,6 +25,13 @@ import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('Register');
 
+function maskEmail(email: string): string {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return '***';
+  if (local.length <= 2) return `${local[0] ?? '*'}***@${domain}`;
+  return `${local[0]}***${local.slice(-1)}@${domain}`;
+}
+
 /**
  * Register Use Case
  */
@@ -61,6 +68,7 @@ export class RegisterUseCase {
         identityId: identity.id,
         deviceId,
         tokenProvider: this.tokenProvider,
+        device: cx.device,
       });
 
       // 3. Save session (repository dispatches domain events automatically)
@@ -77,7 +85,7 @@ export class RegisterUseCase {
           await this.emailSender.sendEmailVerificationCode(input.email, code);
         } catch (sendErr) {
           logger.warn('[Register] Failed to send email verification code after register', {
-            email: input.email,
+            email: maskEmail(input.email),
             error: sendErr instanceof Error ? sendErr.message : String(sendErr),
           });
         }

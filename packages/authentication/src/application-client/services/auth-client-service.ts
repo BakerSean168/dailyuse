@@ -29,6 +29,14 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -56,6 +64,11 @@ export interface AuthenticationClientPort {
   resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
   sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>>;
   verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>>;
+  getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
+  oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>>;
+  bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>>;
+  unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>>;
   enterGuestMode(): Promise<Result<GuestModeRes>>;
   autoLoginDesktop(): Promise<Result<AutoLoginResult>>;
   listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>>;
@@ -82,6 +95,11 @@ export class AuthClientService implements AuthenticationClientPort {
     this.resetPassword = this.resetPassword.bind(this);
     this.sendEmailCode = this.sendEmailCode.bind(this);
     this.verifyEmailCode = this.verifyEmailCode.bind(this);
+    this.getOAuthUrl = this.getOAuthUrl.bind(this);
+    this.listOAuthProviders = this.listOAuthProviders.bind(this);
+    this.oauthCallback = this.oauthCallback.bind(this);
+    this.bindOAuth = this.bindOAuth.bind(this);
+    this.unbindOAuth = this.unbindOAuth.bind(this);
     this.enterGuestMode = this.enterGuestMode.bind(this);
     this.autoLoginDesktop = this.autoLoginDesktop.bind(this);
     this.listRememberedAccounts = this.listRememberedAccounts.bind(this);
@@ -161,6 +179,26 @@ export class AuthClientService implements AuthenticationClientPort {
 
   async verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
     return this.apiClient.verifyEmailCode(req);
+  }
+
+  async getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>> {
+    return this.apiClient.getOAuthUrl(req);
+  }
+
+  async listOAuthProviders(): Promise<Result<OAuthProvidersRes>> {
+    return this.apiClient.listOAuthProviders();
+  }
+
+  async oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {
+    return this.apiClient.oauthCallback(req);
+  }
+
+  async bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>> {
+    return this.apiClient.bindOAuth(req);
+  }
+
+  async unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>> {
+    return this.apiClient.unbindOAuth(req);
   }
 
   // ========== Guest Mode (Desktop) ==========

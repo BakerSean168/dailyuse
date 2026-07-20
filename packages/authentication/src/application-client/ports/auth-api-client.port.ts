@@ -28,6 +28,14 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -68,6 +76,11 @@ export interface IAuthApiClient {
   // ========== Email verification ==========
   sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>>;
   verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>>;
+  getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
+  oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>>;
+  bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>>;
+  unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>>;
 
   // ========== Guest Mode (Desktop) ==========
   enterGuestMode(): Promise<Result<GuestModeRes>>;

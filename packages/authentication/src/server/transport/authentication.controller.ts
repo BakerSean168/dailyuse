@@ -25,6 +25,8 @@ import {
   SendSmsCodeSchema,
   OAuthCallbackSchema,
   GetOAuthUrlSchema,
+  BindOAuthSchema,
+  UnbindOAuthSchema,
 } from '@dailyuse/contracts/authentication';
 import type {
   GetCurrentUserRes,
@@ -36,6 +38,8 @@ import type {
   RegisterByPhoneRes,
   OAuthCallbackRes,
   GetOAuthUrlRes,
+  OAuthProvidersRes,
+  BindOAuthRes,
   VerifyEmailCodeRes,
 } from '@dailyuse/contracts/authentication';
 import { formatZodErrors } from '@dailyuse/utils/result';
@@ -102,6 +106,10 @@ export class AuthenticationController {
     return this.api.getOAuthUrl(parsed.data);
   }
 
+  async listOAuthProviders(): Promise<Result<OAuthProvidersRes>> {
+    return this.api.listOAuthProviders();
+  }
+
   async oauthCallback(input: unknown, cx: Context): Promise<Result<OAuthCallbackRes>> {
     const parsed = OAuthCallbackSchema.safeParse(input);
     if (!parsed.success) {
@@ -112,6 +120,30 @@ export class AuthenticationController {
       });
     }
     return this.api.oauthCallback(parsed.data, cx, cx.deviceId);
+  }
+
+  async bindOAuth(input: unknown, cx: Context): Promise<Result<BindOAuthRes>> {
+    const parsed = BindOAuthSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.api.bindOAuth(parsed.data, cx);
+  }
+
+  async unbindOAuth(input: unknown, cx: Context): Promise<Result<void>> {
+    const parsed = UnbindOAuthSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.api.unbindOAuth(parsed.data, cx);
   }
 
   async sendSmsCode(input: unknown): Promise<Result<void>> {

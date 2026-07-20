@@ -29,6 +29,14 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -112,6 +120,26 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   async verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
     return this.httpClient.post(`${this.baseUrl}/email/verify`, req);
+  }
+
+  async getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>> {
+    return this.httpClient.post(`${this.baseUrl}/oauth/url`, req);
+  }
+
+  async listOAuthProviders(): Promise<Result<OAuthProvidersRes>> {
+    return this.httpClient.get(`${this.baseUrl}/oauth/providers`);
+  }
+
+  async oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {
+    return this.httpClient.post(`${this.baseUrl}/oauth/callback`, req);
+  }
+
+  async bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>> {
+    return this.httpClient.post(`${this.baseUrl}/oauth/bind`, req);
+  }
+
+  async unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/oauth/unbind`, req);
   }
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {

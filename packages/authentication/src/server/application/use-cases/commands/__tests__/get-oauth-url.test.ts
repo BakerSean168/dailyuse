@@ -32,3 +32,25 @@ describe('GetOAuthUrlUseCase', () => {
     }
   });
 });
+
+
+  it('returns local callback URL for e2e-mock client without repo scopes', async () => {
+    const store = new InMemoryOAuthStateStore();
+    const useCase = new GetOAuthUrlUseCase(store, {
+      clientId: 'e2e-mock',
+      mockSubjectId: 'subject-7',
+    });
+    const result = await useCase.execute({
+      provider: 'Github',
+      redirectUri: 'http://127.0.0.1:5173/auth',
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const url = new URL(result.data.authUrl);
+      expect(url.origin + url.pathname).toBe('http://127.0.0.1:5173/auth');
+      expect(url.searchParams.get('code')).toBe('e2e-github-subject-7');
+      expect(url.searchParams.get('state')).toBe(result.data.state);
+      expect(url.toString()).not.toContain('repo');
+      expect(store.consume(result.data.state, 'Github')).not.toBeNull();
+    }
+  });

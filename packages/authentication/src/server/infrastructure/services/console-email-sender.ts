@@ -7,13 +7,21 @@ export type CapturedAuthEmail = {
   readonly sentAt: number;
 };
 
+function maskEmail(email: string): string {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return '***';
+  if (local.length <= 2) return `${local[0] ?? '*'}***@${domain}`;
+  return `${local[0]}***${local.slice(-1)}@${domain}`;
+}
+
 /**
  * Console-based IEmailSender for local development / e2e.
  * 本地开发与 e2e 用的控制台邮件发送实现。
  *
- * Logs codes and keeps an in-memory ring buffer so test lanes can read the
- * latest code without scraping process logs. Production must replace this.
- * 记录验证码并保留内存环形缓冲，测试车道可读取最新码而无需抓日志。生产必须替换。
+ * Logs only masked emails and never prints plaintext codes. Codes remain in an
+ * in-memory ring buffer so test lanes can read them via the test-only API.
+ * 日志只写掩码邮箱，从不打印明文验证码；码保留在内存环形缓冲，测试车道通过
+ * 仅测试 API 读取。
  */
 export class ConsoleEmailSender implements IEmailSender {
   private static readonly MAX_ENTRIES = 50;
@@ -55,7 +63,8 @@ export class ConsoleEmailSender implements IEmailSender {
       code,
       sentAt: Date.now(),
     });
-    console.log(`[PasswordReset] Code for ${normalized}: ${code}`);
+    // Security checklist: mask email, never log plaintext code.
+    console.log(`[PasswordReset] Code issued for ${maskEmail(normalized)}`);
   }
 
   async sendEmailVerificationCode(email: string, code: string): Promise<void> {
@@ -66,6 +75,6 @@ export class ConsoleEmailSender implements IEmailSender {
       code,
       sentAt: Date.now(),
     });
-    console.log(`[EmailVerify] Code for ${normalized}: ${code}`);
+    console.log(`[EmailVerify] Code issued for ${maskEmail(normalized)}`);
   }
 }
