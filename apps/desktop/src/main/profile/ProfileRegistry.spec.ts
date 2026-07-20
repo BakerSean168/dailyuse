@@ -205,4 +205,36 @@ describe('ProfileRegistry', () => {
     expect(updated.profileId).toBe(first.profileId);
     expect(updated.identifier).toBe('alice@new.com');
   });
+
+  it('rebinds guest ownership to online identity without changing profileId', async () => {
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
+    const guest = await registry.register('__desktop_guest_profile__', 'Guest', null);
+    const rebound = await registry.rebindIdentityOwnership({
+      fromIdentityId: '__desktop_guest_profile__',
+      toIdentityId: 'IdentityId_online_1',
+      displayName: 'Online User',
+      identifier: 'user@example.com',
+    });
+
+    expect(rebound.profileId).toBe(guest.profileId);
+    expect(rebound.identityId).toBe('IdentityId_online_1');
+    expect(rebound.displayName).toBe('Online User');
+    expect(rebound.identifier).toBe('user@example.com');
+    expect(await registry.find('__desktop_guest_profile__')).toBeNull();
+    expect((await registry.find('IdentityId_online_1'))?.profileId).toBe(guest.profileId);
+  });
+
+  it('refuses rebind when target identity already owns another profile', async () => {
+    const registry = new ProfileRegistry(createSharedResolver(rootDir));
+    await registry.register('__desktop_guest_profile__', 'Guest', null);
+    await registry.register('IdentityId_online_1', 'Existing', 'user@example.com');
+
+    await expect(
+      registry.rebindIdentityOwnership({
+        fromIdentityId: '__desktop_guest_profile__',
+        toIdentityId: 'IdentityId_online_1',
+      }),
+    ).rejects.toThrow(/refusing silent merge/);
+  });
+
 });

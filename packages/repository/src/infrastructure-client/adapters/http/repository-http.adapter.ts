@@ -28,6 +28,40 @@ import type {
   CreateResourceBookmarkRequestDTO,
   UpdateResourceBookmarkRequestDTO,
   ReorderResourceBookmarksRequestDTO,
+  LocalVaultBindingClientDTO,
+  SelectLocalVaultReq,
+  ScanLocalVaultRes,
+  ReadLocalVaultNoteReq,
+  ReadLocalVaultNoteRes,
+  SearchLocalVaultReq,
+  SearchLocalVaultRes,
+  OpenLocalVaultInObsidianReq,
+  ConfirmedLocalVaultWriteReq,
+  ConfirmedLocalVaultWriteRes,
+  CompleteKnowledgeRepositoryInstallationReq,
+  CompleteKnowledgeRepositoryInstallationRes,
+  CreateKnowledgeRepositoryConnectionReq,
+  KnowledgeRepositoryConnectionClientDTO,
+  KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryReconciliationPreview,
+  ListKnowledgeRepositoryConnectionsRes,
+  StartKnowledgeRepositoryInstallationReq,
+  StartKnowledgeRepositoryInstallationRes,
+  DisconnectKnowledgeRepositoryConnectionRes,
+  ExecuteKnowledgeRepositoryReconciliationReq,
+  ExecuteKnowledgeRepositoryReconciliationRes,
+  SyncKnowledgeRepositoryReq,
+  SyncKnowledgeRepositoryRes,
+  CreateConfirmedKnowledgeNoteReq,
+  CreateConfirmedKnowledgeNoteResponse,
+  KnowledgeNoteProjectionClientDTO,
+  KnowledgeNoteProjectionListResponse,
+  ListKnowledgeNoteProjectionsReq,
+  GetKnowledgeNoteLinkGraphReq,
+  KnowledgeNoteLinkGraphResponse,
+  KnowledgeAttachmentContentResponse,
+  KnowledgeAttachmentProjectionListResponse,
+  ListKnowledgeAttachmentProjectionsReq,
 } from '@dailyuse/contracts/repository';
 import { fail } from '@dailyuse/contracts/result';
 
@@ -54,9 +88,7 @@ function getAxiosInstance(httpClient: IResultHttpClient): unknown | null {
   const client = httpClient as IResultHttpClient & {
     getAxiosInstance?: () => unknown;
   };
-  return typeof client.getAxiosInstance === 'function'
-    ? client.getAxiosInstance()
-    : null;
+  return typeof client.getAxiosInstance === 'function' ? client.getAxiosInstance() : null;
 }
 
 function base64ToBytes(value: string): Uint8Array {
@@ -242,6 +274,173 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
 
   async deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>> {
     return this.httpClient.delete(`${this.baseUrl}/${repositoryId}/bookmarks/${bookmarkId}`);
+  }
+
+  async startKnowledgeRepositoryInstallation(
+    request: StartKnowledgeRepositoryInstallationReq = {},
+  ): Promise<Result<StartKnowledgeRepositoryInstallationRes>> {
+    return this.httpClient.post(
+      `${this.baseUrl}/knowledge-connections/installations/start`,
+      request,
+    );
+  }
+
+  async completeKnowledgeRepositoryInstallation(
+    request: CompleteKnowledgeRepositoryInstallationReq,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
+    return this.httpClient.post(
+      `${this.baseUrl}/knowledge-connections/installations/complete`,
+      request,
+    );
+  }
+
+  async listKnowledgeRepositoryConnections(): Promise<
+    Result<ListKnowledgeRepositoryConnectionsRes>
+  > {
+    return this.httpClient.get(`${this.baseUrl}/knowledge-connections`);
+  }
+
+  async connectKnowledgeRepository(
+    request: CreateKnowledgeRepositoryConnectionReq,
+  ): Promise<Result<KnowledgeRepositoryConnectionClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/knowledge-connections`, request);
+  }
+
+  async disconnectKnowledgeRepository(
+    connectionId: string,
+    purgeCloudData = false,
+  ): Promise<Result<DisconnectKnowledgeRepositoryConnectionRes>> {
+    return this.httpClient.delete(
+      `${this.baseUrl}/knowledge-connections/${encodeURIComponent(connectionId)}`,
+      { params: { purgeCloudData } },
+    );
+  }
+
+  async previewKnowledgeRepositoryReconciliation(
+    _connectionId: string,
+  ): Promise<Result<KnowledgeRepositoryReconciliationPreview>> {
+    return this.localVaultUnavailable();
+  }
+
+  async executeKnowledgeRepositoryReconciliation(
+    _request: ExecuteKnowledgeRepositoryReconciliationReq,
+  ): Promise<Result<ExecuteKnowledgeRepositoryReconciliationRes>> {
+    return this.localVaultUnavailable();
+  }
+
+  async syncKnowledgeRepository(
+    _request: SyncKnowledgeRepositoryReq,
+  ): Promise<Result<SyncKnowledgeRepositoryRes>> {
+    return this.localVaultUnavailable();
+  }
+
+  async issueDesktopKnowledgeRepositoryToken(
+    connectionId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationTokenRes>> {
+    return this.httpClient.post(
+      `${this.baseUrl}/knowledge-connections/${encodeURIComponent(connectionId)}/desktop-token`,
+    );
+  }
+
+  async listKnowledgeNoteProjections(
+    request: ListKnowledgeNoteProjectionsReq = { limit: 50 },
+  ): Promise<Result<KnowledgeNoteProjectionListResponse>> {
+    return this.httpClient.get(`${this.baseUrl}/knowledge-notes`, {
+      params: {
+        ...(request.connectionId ? { connectionId: request.connectionId } : {}),
+        ...(request.query ? { query: request.query } : {}),
+        limit: request.limit,
+      },
+    });
+  }
+
+  async getKnowledgeNoteProjection(
+    projectionId: string,
+  ): Promise<Result<KnowledgeNoteProjectionClientDTO>> {
+    return this.httpClient.get(
+      `${this.baseUrl}/knowledge-notes/${encodeURIComponent(projectionId)}`,
+    );
+  }
+
+  async getKnowledgeNoteLinkGraph(
+    projectionId: string,
+    request: GetKnowledgeNoteLinkGraphReq = { depth: 1, maxNodes: 40 },
+  ): Promise<Result<KnowledgeNoteLinkGraphResponse>> {
+    return this.httpClient.get(
+      `${this.baseUrl}/knowledge-notes/${encodeURIComponent(projectionId)}/link-graph`,
+      { params: request },
+    );
+  }
+
+  async listKnowledgeAttachmentProjections(
+    request: ListKnowledgeAttachmentProjectionsReq = { limit: 50 },
+  ): Promise<Result<KnowledgeAttachmentProjectionListResponse>> {
+    return this.httpClient.get(`${this.baseUrl}/knowledge-attachments`, {
+      params: {
+        ...(request.connectionId ? { connectionId: request.connectionId } : {}),
+        ...(request.query ? { query: request.query } : {}),
+        limit: request.limit,
+      },
+    });
+  }
+
+  async getKnowledgeAttachmentContent(
+    projectionId: string,
+  ): Promise<Result<KnowledgeAttachmentContentResponse>> {
+    return this.httpClient.get(
+      `${this.baseUrl}/knowledge-attachments/${encodeURIComponent(projectionId)}/content`,
+    );
+  }
+
+  async createConfirmedKnowledgeNote(
+    request: CreateConfirmedKnowledgeNoteReq,
+  ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>> {
+    return this.httpClient.post(`${this.baseUrl}/knowledge-notes`, request);
+  }
+
+  private localVaultUnavailable<T>(): Result<T> {
+    return fail({
+      code: 'SERVICE_UNAVAILABLE',
+      message: 'Local Vault is only available in the Desktop runtime',
+    });
+  }
+
+  async getLocalVaultBinding(): Promise<Result<LocalVaultBindingClientDTO | null>> {
+    return this.localVaultUnavailable();
+  }
+
+  async selectLocalVault(
+    _request: SelectLocalVaultReq = {},
+  ): Promise<Result<LocalVaultBindingClientDTO | null>> {
+    return this.localVaultUnavailable();
+  }
+
+  async detachLocalVault(): Promise<Result<void>> {
+    return this.localVaultUnavailable();
+  }
+
+  async scanLocalVault(): Promise<Result<ScanLocalVaultRes>> {
+    return this.localVaultUnavailable();
+  }
+
+  async readLocalVaultNote(
+    _request: ReadLocalVaultNoteReq,
+  ): Promise<Result<ReadLocalVaultNoteRes>> {
+    return this.localVaultUnavailable();
+  }
+
+  async searchLocalVault(_request: SearchLocalVaultReq): Promise<Result<SearchLocalVaultRes>> {
+    return this.localVaultUnavailable();
+  }
+
+  async openLocalVaultInObsidian(_request: OpenLocalVaultInObsidianReq): Promise<Result<void>> {
+    return this.localVaultUnavailable();
+  }
+
+  async writeConfirmedLocalVaultNote(
+    _request: ConfirmedLocalVaultWriteReq,
+  ): Promise<Result<ConfirmedLocalVaultWriteRes>> {
+    return this.localVaultUnavailable();
   }
 }
 

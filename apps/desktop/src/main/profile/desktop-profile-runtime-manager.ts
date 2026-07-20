@@ -12,7 +12,11 @@ import { ProfileRegistry, type ProfileDescriptor } from './profile-registry';
 import { ProfileSnapshotService } from './profile-snapshot-service';
 import { ElectronBootstrapper } from '../bootstrap';
 import { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
-import type { TokenManager, RememberedAccountsService, NetworkStateManager } from '../modules/authentication/infrastructure';
+import type {
+  TokenManager,
+  RememberedAccountsService,
+  NetworkStateManager,
+} from '../modules/authentication/infrastructure';
 import { createDesktopProfileAuthService } from '../modules/authentication/application/create-desktop-profile-auth-service';
 import type { AuthDesktopApplicationService } from '../modules/authentication/application/auth-desktop-application-service';
 import type { WindowManager } from '../lifecycle/window-manager';
@@ -98,6 +102,10 @@ export class DesktopProfileRuntimeManager {
     return this.rememberedAccountsService;
   }
 
+  getNetworkStateManager(): NetworkStateManager {
+    return this.networkStateManager;
+  }
+
   getActiveProfileResolver(): ProfilePathResolver | null {
     return this.activeRuntime?.profileResolver ?? null;
   }
@@ -158,12 +166,20 @@ export class DesktopProfileRuntimeManager {
       options?.identifier,
     );
 
-    const profileResolver = createProfilePathResolver(this.sharedResolver.rootDir, descriptor.profileId);
+    const profileResolver = createProfilePathResolver(
+      this.sharedResolver.rootDir,
+      descriptor.profileId,
+    );
     ensureProfileDirs(profileResolver);
 
-    const snapshotResult = await this.hydrateProfileSnapshot(descriptor, profileResolver, options?.snapshotAccessToken);
+    const snapshotResult = await this.hydrateProfileSnapshot(
+      descriptor,
+      profileResolver,
+      options?.snapshotAccessToken,
+    );
 
-    const { db, authService, authContextProvider } = await this.openProfileResources(profileResolver);
+    const { db, authService, authContextProvider } =
+      await this.openProfileResources(profileResolver);
 
     this.preparedRuntime = { descriptor, profileResolver, db, authService, authContextProvider };
     await this.profileRegistry.markReady(descriptor.profileId);
@@ -182,6 +198,63 @@ export class DesktopProfileRuntimeManager {
     return await this.prepareProfile(GUEST_PROFILE_IDENTITY, {
       displayName: 'Guest',
       identifier: null,
+    });
+  }
+
+  isGuestProfileIdentity(identityId: string | null | undefined): boolean {
+    return identityId === GUEST_PROFILE_IDENTITY;
+  }
+
+  getActiveOrPreparedIdentityId(): string | null {
+    return (
+      this.activeRuntime?.descriptor.identityId ??
+      this.preparedRuntime?.descriptor.identityId ??
+      null
+    );
+  }
+
+  /**
+   * Upgrade the current guest profile to an online identity without moving local data.
+   * 将当前访客 profile 升级为在线 identity，本地数据目录不搬家。
+   *
+   * Failure leaves the guest registry entry untouched when rebind throws before mutation completes.
+   * 失败时若 rebind 抛错，访客注册表项保持不变。
+   */
+  async upgradeGuestProfileToOnlineIdentity(params: {
+    onlineIdentityId: string;
+    displayName?: string;
+    identifier?: string | null;
+    snapshotAccessToken?: string | null;
+  }): Promise<PreparedProfileRuntime> {
+    const guestIdentityId = GUEST_PROFILE_IDENTITY;
+    const guestDescriptor = await this.profileRegistry.find(guestIdentityId);
+    if (!guestDescriptor) {
+      throw new Error('No guest profile exists to upgrade');
+    }
+
+    // If a prepared/active runtime is currently on guest, discard it first so we can
+    // re-open under the rebound identity without holding stale auth context.
+    // 若当前 prepared/active 是访客，先丢弃，以便用新 identity 重新打开。
+    if (this.preparedRuntime?.descriptor.identityId === guestIdentityId) {
+      await this.discardPreparedProfile();
+    }
+    if (this.activeRuntime?.descriptor.identityId === guestIdentityId) {
+      await this.deactivateProfile();
+    }
+
+    await this.profileRegistry.rebindIdentityOwnership({
+      fromIdentityId: guestIdentityId,
+      toIdentityId: params.onlineIdentityId,
+      displayName: params.displayName ?? guestDescriptor.displayName,
+      identifier: params.identifier ?? guestDescriptor.identifier,
+    });
+
+    // prepareProfile will find the rebound registry entry by online identityId and
+    // reuse the same profileId/directory (Vault stays put).
+    return await this.prepareProfile(params.onlineIdentityId, {
+      displayName: params.displayName ?? guestDescriptor.displayName,
+      identifier: params.identifier ?? guestDescriptor.identifier,
+      snapshotAccessToken: params.snapshotAccessToken,
     });
   }
 
@@ -239,13 +312,17 @@ export class DesktopProfileRuntimeManager {
       await activationPromise;
     } catch (error) {
       logger.error('Profile activation failed', { error });
-      await this.profileRegistry.markError(preparedProfileId).catch(
-        (registryError) => logger.error('Failed to mark profile activation error', { error: registryError }),
-      );
+      await this.profileRegistry
+        .markError(preparedProfileId)
+        .catch((registryError) =>
+          logger.error('Failed to mark profile activation error', { error: registryError }),
+        );
       // activeRuntime may have been assigned before the failure — clean it up too
       if (this.activeRuntime) {
-        await this.deactivateProfile().catch(
-          (deactivateError) => logger.error('Failed to deactivate partially activated profile', { error: deactivateError }),
+        await this.deactivateProfile().catch((deactivateError) =>
+          logger.error('Failed to deactivate partially activated profile', {
+            error: deactivateError,
+          }),
         );
       }
       await this.disposePreparedRuntime();
@@ -286,7 +363,10 @@ export class DesktopProfileRuntimeManager {
     try {
       await this.profileRegistry.setActiveProfile(null);
     } catch (error) {
-      logger.error('Failed to clear active profile in registry', { error, previousProfileId: profileId });
+      logger.error('Failed to clear active profile in registry', {
+        error,
+        previousProfileId: profileId,
+      });
     }
   }
 
@@ -305,7 +385,10 @@ export class DesktopProfileRuntimeManager {
       await this.disposePreparedRuntime();
     }
 
-    const profileResolver = createProfilePathResolver(this.sharedResolver.rootDir, descriptor.profileId);
+    const profileResolver = createProfilePathResolver(
+      this.sharedResolver.rootDir,
+      descriptor.profileId,
+    );
 
     try {
       await fs.promises.rm(profileResolver.profileDir, { recursive: true, force: true });
@@ -360,7 +443,13 @@ export class DesktopProfileRuntimeManager {
     this.tokenManager.switchToProfile(profileResolver.tokensPath);
 
     const db = await openPowerSyncLocalOnly(profileResolver.dbPath);
-    const authService = createDesktopProfileAuthService(db, this.tokenManager, this.rememberedAccountsService, this.networkStateManager, this.windowManager);
+    const authService = createDesktopProfileAuthService(
+      db,
+      this.tokenManager,
+      this.rememberedAccountsService,
+      this.networkStateManager,
+      this.windowManager,
+    );
     const authContextProvider = new DesktopAuthContextProvider(authService);
     this.onAuthServiceChanged?.(authService);
 

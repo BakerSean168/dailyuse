@@ -12,3 +12,10 @@ export * from './use-cases';
 
 // ===== Ports =====
 export * from './ports/i-storage-port';
+export * from './ports/github-app-client.port';
+export * from './ports/knowledge-repository-connection.repository';
+export * from './ports/knowledge-note-projection.repository';
+export * from './ports/knowledge-attachment-projection.repository';
+export * from './ports/knowledge-attachment-content-cache.port';
+export * from './ports/knowledge-repository-lease.repository';
+export * from './ports/knowledge-repository-cloud-data-purger.port';

@@ -36,10 +36,7 @@ export {
   resolveRepositoryStorageBaseDir,
   type ResolveRepositoryStorageBaseDirOptions,
 } from './storage-config';
-export {
-  createRepositoryRuntimeContribution,
-  type RepositoryRuntimeContribution,
-} from './runtime';
+export { createRepositoryRuntimeContribution, type RepositoryRuntimeContribution } from './runtime';
 
 // Repository Factory (adapter builder — 适配器构建器)
 export { RepositoryRepositoryFactory } from './di/repository-repository.factory';
@@ -57,6 +54,15 @@ export { RepositoryPrismaRepository } from './adapters/prisma/repository-prisma.
 export { ResourcePrismaRepository } from './adapters/prisma/resource-prisma.repository';
 export { ResourceBookmarkPrismaRepository } from './adapters/prisma/resource-bookmark-prisma.repository';
 export { FsStorageAdapter } from './adapters/fs/fs-storage.adapter';
+export { KnowledgeRepositoryConnectionPrismaRepository } from './adapters/prisma/knowledge-repository-connection-prisma.repository';
+export { GitHubAppClient } from './services/github-app-client';
+export { InMemoryKnowledgeRepositoryInstallationStateStore } from './services/in-memory-knowledge-repository-installation-state-store';
+export { GithubWebhookDeliveryPrismaRepository } from './adapters/prisma/github-webhook-delivery-prisma.repository';
+export { KnowledgeNoteProjectionPrismaRepository } from './adapters/prisma/knowledge-note-projection-prisma.repository';
+export { KnowledgeAttachmentProjectionPrismaRepository } from './adapters/prisma/knowledge-attachment-projection-prisma.repository';
+export { KnowledgeAttachmentContentCachePrismaRepository } from './adapters/prisma/knowledge-attachment-content-cache-prisma.repository';
+export { KnowledgeWriteRequestPrismaRepository } from './adapters/prisma/knowledge-write-request-prisma.repository';
+export { KnowledgeRepositoryLeasePrismaRepository } from './adapters/prisma/knowledge-repository-lease-prisma.repository';
 
 // PowerSync Adapters (Desktop — PowerSync 适配器)
 export { PowerSyncRepositoryRepository } from './adapters/powersync/repository-powersync.repository';

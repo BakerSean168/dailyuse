@@ -50,6 +50,13 @@ function createProfileResolver(rootDir: string, profileId: string): ProfilePathR
     repositoryStorageDir: path.join(profileDir, 'storage', 'repository-storage'),
     knowledgeNotesDir: path.join(profileDir, 'storage', 'knowledge-notes'),
     attachmentsDir: path.join(profileDir, 'storage', 'attachments'),
+    localVaultBindingPath: path.join(profileDir, 'storage', 'local-vault-binding.json'),
+    localVaultWriteLedgerPath: path.join(profileDir, 'storage', 'local-vault-write-ledger.json'),
+    knowledgeRepositoryAutoSyncStatePath: path.join(
+      profileDir,
+      'storage',
+      'knowledge-repository-auto-sync.json',
+    ),
     uiDir: path.join(profileDir, 'ui'),
     mainWindowStatePath: path.join(profileDir, 'ui', 'main-window-state.json'),
   };
@@ -127,7 +134,9 @@ describe('ProfileSnapshotService', () => {
     expect(result.metadata?.version).toBe('2026-05-18T00:00:00Z');
     expect(await fs.promises.readFile(profileResolver.dbPath)).toEqual(sqliteBuffer);
 
-    const meta = JSON.parse(await fs.promises.readFile(profileResolver.snapshotMetaPath, 'utf8')) as {
+    const meta = JSON.parse(
+      await fs.promises.readFile(profileResolver.snapshotMetaPath, 'utf8'),
+    ) as {
       version: string;
       sourceUrl: string;
     };

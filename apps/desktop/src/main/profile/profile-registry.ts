@@ -144,6 +144,50 @@ export class ProfileRegistry {
     return profile ? normalizeProfileDescriptor(profile) : null;
   }
 
+  /**
+   * Rebind an existing profile directory/registry entry to a new online identity.
+   * Keeps the same profileId so local Vault/data paths do not move (guest upgrade).
+   * 将既有 profile 目录/注册表项重绑到新的在线 identity；保留 profileId，本地 Vault 不搬家。
+   */
+  async rebindIdentityOwnership(params: {
+    fromIdentityId: string;
+    toIdentityId: string;
+    displayName?: string;
+    identifier?: string | null;
+  }): Promise<ProfileDescriptor> {
+    const data = await this.load();
+    const from = data.profiles.find((p) => p.identityId === params.fromIdentityId);
+    if (!from) {
+      throw new Error(`Profile not found for identity: ${params.fromIdentityId}`);
+    }
+
+    const conflict = data.profiles.find(
+      (p) => p.identityId === params.toIdentityId && p.profileId !== from.profileId,
+    );
+    if (conflict) {
+      throw new Error(
+        `Target identity already owns another profile (${conflict.profileId}); refusing silent merge`,
+      );
+    }
+
+    from.identityId = params.toIdentityId;
+    if (params.displayName !== undefined) {
+      from.displayName = params.displayName;
+    }
+    if (params.identifier !== undefined) {
+      from.identifier = params.identifier?.trim().toLowerCase() || null;
+    }
+    from.lastActiveAt = Date.now();
+    await this.save();
+
+    logger.info('Profile identity ownership rebound', {
+      profileId: from.profileId,
+      fromIdentityId: params.fromIdentityId,
+      toIdentityId: params.toIdentityId,
+    });
+    return normalizeProfileDescriptor(from);
+  }
+
   async findByIdentifier(identifier: string): Promise<ProfileDescriptor | null> {
     const normalized = identifier.trim().toLowerCase();
     if (!normalized) {

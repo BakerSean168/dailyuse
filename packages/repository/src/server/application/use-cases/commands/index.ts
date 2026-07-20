@@ -8,7 +8,6 @@ export * from './delete-resource.use-case';
 export * from './move-folder.use-case';
 export * from './reorder-resource-bookmarks.use-case';
 export * from './rename-folder.use-case';
-export * from './sync-repository.use-case';
 export * from './update-resource-bookmark.use-case';
 export * from './update-repository-stats.use-case';
 export * from './update-resource-content.use-case';

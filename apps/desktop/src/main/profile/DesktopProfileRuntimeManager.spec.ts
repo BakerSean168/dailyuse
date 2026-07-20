@@ -416,6 +416,33 @@ describe('DesktopProfileRuntimeManager', () => {
     expect(guestB).toBe(guestA);
   });
 
+  it('upgradeGuestProfileToOnlineIdentity keeps profileId (Vault does not move)', async () => {
+    const runtimeManager = createRuntimeManager();
+    const guest = await runtimeManager.prepareGuestProfile();
+    const guestProfileId = guest.descriptor.profileId;
+    const guestDir = guest.profileResolver.profileDir;
+
+    const upgraded = await runtimeManager.upgradeGuestProfileToOnlineIdentity({
+      onlineIdentityId: 'IdentityId_online_guest_upgrade',
+      displayName: 'Upgraded',
+      identifier: 'upgrade@example.com',
+    });
+
+    expect(upgraded.descriptor.profileId).toBe(guestProfileId);
+    expect(upgraded.descriptor.identityId).toBe('IdentityId_online_guest_upgrade');
+    expect(upgraded.profileResolver.profileDir).toBe(guestDir);
+    expect(runtimeManager.isGuestProfileIdentity(upgraded.descriptor.identityId)).toBe(false);
+  });
+
+  it('upgradeGuestProfileToOnlineIdentity fails safely when no guest profile exists', async () => {
+    const runtimeManager = createRuntimeManager();
+    await expect(
+      runtimeManager.upgradeGuestProfileToOnlineIdentity({
+        onlineIdentityId: 'IdentityId_online_guest_upgrade',
+      }),
+    ).rejects.toThrow(/No guest profile exists/);
+  });
+
   // ──────────────────────────────────────────────────────────────────
   // Activation failure marks profile as error
   // ──────────────────────────────────────────────────────────────────

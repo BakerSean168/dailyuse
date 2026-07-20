@@ -11,8 +11,6 @@ import type { IStoragePort } from '../ports/i-storage-port';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import {
-  REPOSITORY_RESOURCE_MUTATED_EVENT,
-  type RepositoryEventMap,
   RepositoryResourceMutationType,
   type RepositoryResourceMutatedEvent,
   type ResourceClientDTO,
@@ -20,20 +18,17 @@ import {
   type UploadResourceFileDTO,
   type UploadResourcesRequestDTO,
 } from '@dailyuse/contracts/repository';
-import type { IdentityId, RepositoryId, ResourceId, FolderId } from '@dailyuse/contracts/primitives';
+import type {
+  IdentityId,
+  RepositoryId,
+  ResourceId,
+  FolderId,
+} from '@dailyuse/contracts/primitives';
 import { PathCalculator } from '../../domain/services/path-calculator';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
+import { publishRepositoryResourceMutation } from './repository-resource-mutation.publisher';
 import type { CreateResourceUseCase } from '../use-cases/commands/create-resource.use-case';
 import type { DeleteResourceUseCase } from '../use-cases/commands/delete-resource.use-case';
 import type { UpdateResourceContentUseCase } from '../use-cases/commands/update-resource-content.use-case';
-
-type RepositoryResourceMutationEvents = Pick<
-  RepositoryEventMap,
-  typeof REPOSITORY_RESOURCE_MUTATED_EVENT
->;
-
-const repositoryEventPublisher =
-  createTypedEventPublisher<RepositoryResourceMutationEvents>(eventBus);
 
 export interface ResourceMutationServiceDependencies {
   resourceRepository: IResourceRepository;
@@ -52,18 +47,16 @@ export class ResourceMutationService {
   // Public mutation methods
   // ---------------------------------------------------------------------------
 
-  async createResource(
-    data: {
-      repositoryId: string;
-      identityId: string;
-      folderId?: string;
-      name: string;
-      type: string;
-      path?: string;
-      content?: string;
-      mimeType?: string;
-    },
-  ): Promise<Result<ResourceClientDTO>> {
+  async createResource(data: {
+    repositoryId: string;
+    identityId: string;
+    folderId?: string;
+    name: string;
+    type: string;
+    path?: string;
+    content?: string;
+    mimeType?: string;
+  }): Promise<Result<ResourceClientDTO>> {
     const result = await this.deps.createResource.execute({
       repositoryId: data.repositoryId,
       identityId: data.identityId,
@@ -262,13 +255,8 @@ export class ResourceMutationService {
   // Internal helpers
   // ---------------------------------------------------------------------------
 
-  private emitMutationEvent(
-    payload: Omit<RepositoryResourceMutatedEvent, 'timestamp'>,
-  ): void {
-    repositoryEventPublisher.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
-      ...payload,
-      timestamp: Date.now(),
-    } satisfies RepositoryResourceMutatedEvent);
+  private emitMutationEvent(payload: Omit<RepositoryResourceMutatedEvent, 'timestamp'>): void {
+    publishRepositoryResourceMutation(payload);
   }
 
   private async resolveParentPath(folderId?: string | null): Promise<Result<string | null>> {
@@ -289,7 +277,10 @@ export class ResourceMutationService {
     path: string,
     currentResourceId: string,
   ): Promise<Result<void>> {
-    const existing = await this.deps.resourceRepository.findByRepositoryIdAndPath(repositoryId, path);
+    const existing = await this.deps.resourceRepository.findByRepositoryIdAndPath(
+      repositoryId,
+      path,
+    );
     if (existing && String(existing.id) !== currentResourceId) {
       return error('CONFLICT', `Resource already exists at path: ${path}`);
     }

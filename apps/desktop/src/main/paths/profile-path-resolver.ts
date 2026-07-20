@@ -16,10 +16,7 @@ export function computeProfileId(identityId: string): string {
  * Creates a ProfilePathResolver from the application root directory and profileId.
  * Pure computation — does not create directories on disk.
  */
-export function createProfilePathResolver(
-  rootDir: string,
-  profileId: string,
-): ProfilePathResolver {
+export function createProfilePathResolver(rootDir: string, profileId: string): ProfilePathResolver {
   const profileDir = path.join(rootDir, 'profiles', profileId);
   const authDir = path.join(profileDir, 'auth');
   const dbDir = path.join(profileDir, 'db');
@@ -41,6 +38,12 @@ export function createProfilePathResolver(
     repositoryStorageDir: path.join(storageDir, 'repository-storage'),
     knowledgeNotesDir: path.join(storageDir, 'knowledge-notes'),
     attachmentsDir: path.join(storageDir, 'attachments'),
+    localVaultBindingPath: path.join(storageDir, 'local-vault-binding.json'),
+    localVaultWriteLedgerPath: path.join(storageDir, 'local-vault-write-ledger.json'),
+    knowledgeRepositoryAutoSyncStatePath: path.join(
+      storageDir,
+      'knowledge-repository-auto-sync.json',
+    ),
 
     uiDir,
     mainWindowStatePath: path.join(uiDir, 'main-window-state.json'),

@@ -1,0 +1,28 @@
+import type {
+  ConfirmKnowledgeRepositoryHeadReq,
+  KnowledgeRepositoryConnectionClientDTO,
+  KnowledgeRepositoryContentState,
+  KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryReconciliationPreview,
+  ListKnowledgeRepositoryConnectionsRes,
+} from '@dailyuse/contracts/repository';
+import type { Result } from '@dailyuse/contracts/result';
+
+/**
+ * Online operations used by the Desktop-owned local Vault/Git runtime.
+ * Browser clients never receive the installation token methods behind this port.
+ */
+export interface KnowledgeRepositoryDesktopRemotePort {
+  listKnowledgeRepositoryConnections(): Promise<Result<ListKnowledgeRepositoryConnectionsRes>>;
+  previewKnowledgeRepositoryReconciliation(
+    connectionId: string,
+    localState: KnowledgeRepositoryContentState,
+  ): Promise<Result<KnowledgeRepositoryReconciliationPreview>>;
+  issueDesktopKnowledgeRepositoryToken(
+    connectionId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationTokenRes>>;
+  confirmKnowledgeRepositoryHead(
+    connectionId: string,
+    request: ConfirmKnowledgeRepositoryHeadReq,
+  ): Promise<Result<KnowledgeRepositoryConnectionClientDTO>>;
+}

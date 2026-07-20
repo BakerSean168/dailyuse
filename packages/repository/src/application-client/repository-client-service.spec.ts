@@ -68,6 +68,27 @@ function createApiClient(overrides: Partial<IRepositoryApiClient> = {}): IReposi
     updateBookmark: vi.fn(),
     reorderBookmarks: vi.fn(),
     deleteBookmark: vi.fn(),
+    startKnowledgeRepositoryInstallation: vi.fn(),
+    completeKnowledgeRepositoryInstallation: vi.fn(),
+    listKnowledgeRepositoryConnections: vi.fn(),
+    connectKnowledgeRepository: vi.fn(),
+    disconnectKnowledgeRepository: vi.fn(),
+    previewKnowledgeRepositoryReconciliation: vi.fn(),
+    executeKnowledgeRepositoryReconciliation: vi.fn(),
+    syncKnowledgeRepository: vi.fn(),
+    issueDesktopKnowledgeRepositoryToken: vi.fn(),
+    listKnowledgeNoteProjections: vi.fn(),
+    getKnowledgeNoteProjection: vi.fn(),
+    getKnowledgeNoteLinkGraph: vi.fn(),
+    createConfirmedKnowledgeNote: vi.fn(),
+    getLocalVaultBinding: vi.fn(),
+    selectLocalVault: vi.fn(),
+    detachLocalVault: vi.fn(),
+    scanLocalVault: vi.fn(),
+    readLocalVaultNote: vi.fn(),
+    searchLocalVault: vi.fn(),
+    openLocalVaultInObsidian: vi.fn(),
+    writeConfirmedLocalVaultNote: vi.fn(),
     ...overrides,
   } as IRepositoryApiClient;
 }
@@ -107,5 +128,85 @@ describe('RepositoryClientService', () => {
     if (result.ok) {
       expect(result.data?.identityId).toBe('IdentityId_11111111-1111-4111-8111-111111111111');
     }
+  });
+
+  it('forwards Desktop knowledge repository synchronization requests', async () => {
+    const syncKnowledgeRepository = vi.fn(async () =>
+      ok({
+        connection: {} as never,
+        outcome: 'UpToDate' as const,
+        headSha: 'a'.repeat(40),
+        localCommitCreated: false,
+        remoteChangesApplied: false,
+        pushed: false,
+      }),
+    );
+    const service = new RepositoryClientService(createApiClient({ syncKnowledgeRepository }));
+
+    await service.syncKnowledgeRepository({ connectionId: 'connection-1' });
+
+    expect(syncKnowledgeRepository).toHaveBeenCalledWith({ connectionId: 'connection-1' });
+  });
+
+  it('forwards GitHub projection queries and confirmed note creation', async () => {
+    const listKnowledgeNoteProjections = vi.fn(async () => ok({ notes: [] }));
+    const getKnowledgeNoteProjection = vi.fn();
+    const getKnowledgeNoteLinkGraph = vi.fn(async () =>
+      ok({
+        centerProjectionId: 'projection-1',
+        depth: 2,
+        nodes: [],
+        edges: [],
+        unresolvedLinks: [],
+        truncated: false,
+      }),
+    );
+    const createConfirmedKnowledgeNote = vi.fn(async () =>
+      ok({
+        requestId: 'request-1',
+        relativePath: 'notes/Approved.md',
+        commitSha: 'commit-1',
+        status: 'Committed' as const,
+      }),
+    );
+    const service = new RepositoryClientService(
+      createApiClient({
+        listKnowledgeNoteProjections,
+        getKnowledgeNoteProjection,
+        getKnowledgeNoteLinkGraph,
+        createConfirmedKnowledgeNote,
+      }),
+    );
+
+    await service.listKnowledgeNoteProjections({
+      connectionId: 'connection-1',
+      query: 'approved',
+      limit: 20,
+    });
+    await service.getKnowledgeNoteLinkGraph('projection-1', { depth: 2, maxNodes: 30 });
+    await service.createConfirmedKnowledgeNote({
+      connectionId: 'connection-1',
+      proposalId: 'proposal-1',
+      revision: 1,
+      requestId: 'request-1',
+      proposedPath: 'notes/Approved.md',
+      title: 'Approved',
+      frontmatter: {},
+      content: '# Approved',
+      reason: 'Reviewed by the user',
+    });
+
+    expect(listKnowledgeNoteProjections).toHaveBeenCalledWith({
+      connectionId: 'connection-1',
+      query: 'approved',
+      limit: 20,
+    });
+    expect(getKnowledgeNoteLinkGraph).toHaveBeenCalledWith('projection-1', {
+      depth: 2,
+      maxNodes: 30,
+    });
+    expect(createConfirmedKnowledgeNote).toHaveBeenCalledWith(
+      expect.objectContaining({ requestId: 'request-1', proposedPath: 'notes/Approved.md' }),
+    );
   });
 });

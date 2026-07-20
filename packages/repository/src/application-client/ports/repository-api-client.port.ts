@@ -23,6 +23,40 @@ import type {
   CreateResourceBookmarkRequestDTO,
   UpdateResourceBookmarkRequestDTO,
   ReorderResourceBookmarksRequestDTO,
+  LocalVaultBindingClientDTO,
+  SelectLocalVaultReq,
+  ScanLocalVaultRes,
+  ReadLocalVaultNoteReq,
+  ReadLocalVaultNoteRes,
+  SearchLocalVaultReq,
+  SearchLocalVaultRes,
+  OpenLocalVaultInObsidianReq,
+  ConfirmedLocalVaultWriteReq,
+  ConfirmedLocalVaultWriteRes,
+  CompleteKnowledgeRepositoryInstallationReq,
+  CompleteKnowledgeRepositoryInstallationRes,
+  CreateKnowledgeRepositoryConnectionReq,
+  KnowledgeRepositoryConnectionClientDTO,
+  KnowledgeRepositoryInstallationTokenRes,
+  KnowledgeRepositoryReconciliationPreview,
+  ListKnowledgeRepositoryConnectionsRes,
+  StartKnowledgeRepositoryInstallationReq,
+  StartKnowledgeRepositoryInstallationRes,
+  DisconnectKnowledgeRepositoryConnectionRes,
+  ExecuteKnowledgeRepositoryReconciliationReq,
+  ExecuteKnowledgeRepositoryReconciliationRes,
+  SyncKnowledgeRepositoryReq,
+  SyncKnowledgeRepositoryRes,
+  CreateConfirmedKnowledgeNoteReq,
+  CreateConfirmedKnowledgeNoteResponse,
+  KnowledgeNoteProjectionClientDTO,
+  KnowledgeNoteProjectionListResponse,
+  ListKnowledgeNoteProjectionsReq,
+  GetKnowledgeNoteLinkGraphReq,
+  KnowledgeNoteLinkGraphResponse,
+  KnowledgeAttachmentContentResponse,
+  KnowledgeAttachmentProjectionListResponse,
+  ListKnowledgeAttachmentProjectionsReq,
 } from '@dailyuse/contracts/repository';
 
 // ============ Local Request Types ============
@@ -115,4 +149,67 @@ export interface IRepositoryApiClient {
     request: ReorderResourceBookmarksRequestDTO,
   ): Promise<Result<ResourceBookmarkClientDTO[]>>;
   deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>>;
+
+  // ===== GitHub Knowledge Repository Connection =====
+  startKnowledgeRepositoryInstallation(
+    request?: StartKnowledgeRepositoryInstallationReq,
+  ): Promise<Result<StartKnowledgeRepositoryInstallationRes>>;
+  completeKnowledgeRepositoryInstallation(
+    request: CompleteKnowledgeRepositoryInstallationReq,
+  ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>>;
+  listKnowledgeRepositoryConnections(): Promise<Result<ListKnowledgeRepositoryConnectionsRes>>;
+  connectKnowledgeRepository(
+    request: CreateKnowledgeRepositoryConnectionReq,
+  ): Promise<Result<KnowledgeRepositoryConnectionClientDTO>>;
+  disconnectKnowledgeRepository(
+    connectionId: string,
+    purgeCloudData?: boolean,
+  ): Promise<Result<DisconnectKnowledgeRepositoryConnectionRes>>;
+  previewKnowledgeRepositoryReconciliation(
+    connectionId: string,
+  ): Promise<Result<KnowledgeRepositoryReconciliationPreview>>;
+  executeKnowledgeRepositoryReconciliation(
+    request: ExecuteKnowledgeRepositoryReconciliationReq,
+  ): Promise<Result<ExecuteKnowledgeRepositoryReconciliationRes>>;
+  syncKnowledgeRepository(
+    request: SyncKnowledgeRepositoryReq,
+  ): Promise<Result<SyncKnowledgeRepositoryRes>>;
+  issueDesktopKnowledgeRepositoryToken(
+    connectionId: string,
+  ): Promise<Result<KnowledgeRepositoryInstallationTokenRes>>;
+
+  // ===== Server-projected GitHub Knowledge Notes =====
+  listKnowledgeNoteProjections(
+    request?: ListKnowledgeNoteProjectionsReq,
+  ): Promise<Result<KnowledgeNoteProjectionListResponse>>;
+  getKnowledgeNoteProjection(
+    projectionId: string,
+  ): Promise<Result<KnowledgeNoteProjectionClientDTO>>;
+  getKnowledgeNoteLinkGraph(
+    projectionId: string,
+    request?: GetKnowledgeNoteLinkGraphReq,
+  ): Promise<Result<KnowledgeNoteLinkGraphResponse>>;
+  listKnowledgeAttachmentProjections(
+    request?: ListKnowledgeAttachmentProjectionsReq,
+  ): Promise<Result<KnowledgeAttachmentProjectionListResponse>>;
+  getKnowledgeAttachmentContent(
+    projectionId: string,
+  ): Promise<Result<KnowledgeAttachmentContentResponse>>;
+  createConfirmedKnowledgeNote(
+    request: CreateConfirmedKnowledgeNoteReq,
+  ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>>;
+
+  // ===== Desktop Local Vault =====
+  getLocalVaultBinding(): Promise<Result<LocalVaultBindingClientDTO | null>>;
+  selectLocalVault(
+    request?: SelectLocalVaultReq,
+  ): Promise<Result<LocalVaultBindingClientDTO | null>>;
+  detachLocalVault(): Promise<Result<void>>;
+  scanLocalVault(): Promise<Result<ScanLocalVaultRes>>;
+  readLocalVaultNote(request: ReadLocalVaultNoteReq): Promise<Result<ReadLocalVaultNoteRes>>;
+  searchLocalVault(request: SearchLocalVaultReq): Promise<Result<SearchLocalVaultRes>>;
+  openLocalVaultInObsidian(request: OpenLocalVaultInObsidianReq): Promise<Result<void>>;
+  writeConfirmedLocalVaultNote(
+    request: ConfirmedLocalVaultWriteReq,
+  ): Promise<Result<ConfirmedLocalVaultWriteRes>>;
 }

@@ -46,7 +46,10 @@ import {
 import { RepositoryResolutionService } from '../application/services/repository-resolution.service';
 import { StoredResourceHydrationService } from '../application/services/stored-resource-hydration.service';
 import { ResourceMutationService } from '../application/services/resource-mutation.service';
-import { ok } from '@dailyuse/contracts/result';
+import { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
+import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
+import { KnowledgeNoteCommitService } from '../application/services/knowledge-note-commit.service';
+import { fail, ok, type Result } from '@dailyuse/contracts/result';
 import type { BookmarkId } from '@dailyuse/contracts/primitives';
 import type {
   UploadResourceFileDTO,
@@ -73,8 +76,7 @@ import type { RepositoryApplicationPort } from '../application';
  *   绝不将依赖隐藏在单例容器之后
  */
 export type RepositoryRuntimeContributionsInput =
-  | RepositoryModuleRuntimeContribution
-  | readonly RepositoryModuleRuntimeContribution[];
+  RepositoryModuleRuntimeContribution | readonly RepositoryModuleRuntimeContribution[];
 
 export interface RepositoryModuleDependencies {
   readonly repositoryRepository: IRepositoryRepository;
@@ -84,6 +86,9 @@ export interface RepositoryModuleDependencies {
   readonly storagePort: IStoragePort;
   readonly runtimeContributions?: RepositoryRuntimeContributionsInput;
   readonly autoCreateCanonicalRepository?: boolean;
+  readonly knowledgeRepositoryConnectionService?: KnowledgeRepositoryConnectionService | null;
+  readonly knowledgeRepositoryProjectionService?: KnowledgeRepositoryProjectionService | null;
+  readonly knowledgeNoteCommitService?: KnowledgeNoteCommitService | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -161,6 +166,9 @@ export interface RepositoryModuleInstance {
   readonly resourceRepository: IResourceRepository;
   readonly folderRepository: IFolderRepository;
   readonly resourceBookmarkRepository: IResourceBookmarkRepository;
+  readonly knowledgeRepositoryConnectionService: KnowledgeRepositoryConnectionService | null;
+  readonly knowledgeRepositoryProjectionService: KnowledgeRepositoryProjectionService | null;
+  readonly knowledgeNoteCommitService: KnowledgeNoteCommitService | null;
   readonly useCases: RepositoryModuleUseCases;
   readonly api: RepositoryApplicationPort;
   start(): void;
@@ -186,8 +194,16 @@ export function createRepositoryUseCases(
     storagePort,
   } = deps;
 
-  const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storagePort);
-  const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storagePort);
+  const createResource = new CreateResourceUseCase(
+    resourceRepository,
+    repositoryRepository,
+    storagePort,
+  );
+  const deleteResource = new DeleteResourceUseCase(
+    resourceRepository,
+    repositoryRepository,
+    storagePort,
+  );
   const updateResourceContent = new UpdateResourceContentUseCase(
     resourceRepository,
     repositoryRepository,
@@ -211,9 +227,7 @@ export function createRepositoryUseCases(
     listResources: new ListResourcesUseCase(resourceRepository),
     createResource,
     updateResourceContent,
-    uploadResources: new UploadResourcesUseCase(
-      mutationService,
-    ),
+    uploadResources: new UploadResourcesUseCase(mutationService),
     deleteResource,
     createFolder: new CreateFolderUseCase(folderRepository, repositoryRepository, storagePort),
     getFolder: new GetFolderUseCase(folderRepository),
@@ -258,8 +272,7 @@ export function createRepositoryUseCases(
 
 function normalizeRuntimeContributions(
   runtimeContributions?:
-    | RepositoryModuleRuntimeContribution
-    | ReadonlyArray<RepositoryModuleRuntimeContribution>,
+    RepositoryModuleRuntimeContribution | ReadonlyArray<RepositoryModuleRuntimeContribution>,
 ): readonly RepositoryModuleRuntimeContribution[] {
   if (!runtimeContributions) {
     return [];
@@ -311,6 +324,17 @@ function buildApplicationPort(
     updateResourceContent: useCases.updateResourceContent,
   });
 
+  const connectionService = deps.knowledgeRepositoryConnectionService ?? null;
+  const projectionService = deps.knowledgeRepositoryProjectionService ?? null;
+  const noteCommitService = deps.knowledgeNoteCommitService ?? null;
+  const unavailable = <T>(): Promise<Result<T>> =>
+    Promise.resolve(
+      fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'GitHub App knowledge repository connections are not configured',
+      }),
+    );
+
   return {
     getCurrentRepository: async (ctx) => {
       return repositoryResolution.ensureCanonicalRepository(ctx.identityId);
@@ -359,7 +383,10 @@ function buildApplicationPort(
 
     // ---- Repository stats — 仓库统计 ----
     updateRepositoryStats: async (id, data) => {
-      return useCases.updateRepositoryStats.execute({ id, stats: data as Partial<RepositoryStatsDTO> });
+      return useCases.updateRepositoryStats.execute({
+        id,
+        stats: data as Partial<RepositoryStatsDTO>,
+      });
     },
 
     // ---- Folder CRUD — 文件夹增删改查 ----
@@ -434,6 +461,84 @@ function buildApplicationPort(
     findActiveRepository: async (identityId) => {
       return repositoryResolution.ensureCanonicalRepository(identityId);
     },
+
+    // ---- GitHub App knowledge repository authorization ----
+    startKnowledgeRepositoryInstallation: async (ctx, request) =>
+      connectionService
+        ? connectionService.startInstallation(ctx.identityId, request)
+        : unavailable(),
+    completeKnowledgeRepositoryInstallation: async (ctx, request) =>
+      connectionService
+        ? connectionService.completeInstallation(ctx.identityId, request)
+        : unavailable(),
+    listKnowledgeRepositoryConnections: async (ctx) =>
+      connectionService ? connectionService.list(ctx.identityId) : unavailable(),
+    connectKnowledgeRepository: async (ctx, request) =>
+      connectionService ? connectionService.connect(ctx.identityId, request) : unavailable(),
+    disconnectKnowledgeRepository: async (ctx, connectionId, purgeCloudData) =>
+      connectionService
+        ? connectionService.disconnect(ctx.identityId, connectionId, purgeCloudData)
+        : unavailable(),
+    issueDesktopKnowledgeRepositoryToken: async (ctx, connectionId) => {
+      const deviceType = ctx.device?.deviceType?.toLowerCase();
+      if (deviceType !== 'desktop') {
+        return fail({
+          code: 'FORBIDDEN',
+          message: 'GitHub installation tokens are available only to Desktop clients',
+        });
+      }
+      return connectionService
+        ? connectionService.issueInstallationToken(ctx.identityId, connectionId)
+        : unavailable();
+    },
+    previewKnowledgeRepositoryReconciliation: async (ctx, connectionId, request) => {
+      const deviceType = ctx.device?.deviceType?.toLowerCase();
+      if (deviceType !== 'desktop') {
+        return fail({
+          code: 'FORBIDDEN',
+          message: 'Local Vault reconciliation preview is available only to Desktop clients',
+        });
+      }
+      return connectionService
+        ? connectionService.previewFirstReconciliation(ctx.identityId, connectionId, request)
+        : unavailable();
+    },
+    confirmKnowledgeRepositoryHead: async (ctx, connectionId, request) => {
+      const deviceType = ctx.device?.deviceType?.toLowerCase();
+      if (deviceType !== 'desktop') {
+        return fail({
+          code: 'FORBIDDEN',
+          message: 'Knowledge repository HEAD confirmation is available only to Desktop clients',
+        });
+      }
+      return connectionService
+        ? connectionService.confirmHead(ctx.identityId, connectionId, request)
+        : unavailable();
+    },
+    listKnowledgeNoteProjections: async (ctx, request) =>
+      projectionService ? projectionService.listNotes(ctx.identityId, request) : unavailable(),
+    getKnowledgeNoteProjection: async (ctx, projectionId) =>
+      projectionService ? projectionService.getNote(ctx.identityId, projectionId) : unavailable(),
+    getKnowledgeNoteLinkGraph: async (ctx, projectionId, request) =>
+      projectionService
+        ? projectionService.getLinkGraph(ctx.identityId, projectionId, request)
+        : unavailable(),
+    listKnowledgeAttachmentProjections: async (ctx, request) =>
+      projectionService
+        ? projectionService.listAttachments(ctx.identityId, request)
+        : unavailable(),
+    getKnowledgeAttachmentContent: async (ctx, projectionId) =>
+      projectionService
+        ? projectionService.getAttachmentContent(ctx.identityId, projectionId)
+        : unavailable(),
+    createConfirmedKnowledgeNote: async (ctx, request) =>
+      noteCommitService ? noteCommitService.create(ctx.identityId, request) : unavailable(),
+    updateKnowledgeNoteProjectionIndexStatus: async (ctx, request) =>
+      projectionService
+        ? projectionService.updateIndexStatus(ctx.identityId, request)
+        : unavailable(),
+    ingestGithubWebhook: async (request) =>
+      projectionService ? projectionService.ingest(request) : unavailable(),
   };
 }
 
@@ -473,6 +578,9 @@ export function createRepositoryModule(
     resourceRepository,
     folderRepository,
     resourceBookmarkRepository,
+    knowledgeRepositoryConnectionService: dependencies.knowledgeRepositoryConnectionService ?? null,
+    knowledgeRepositoryProjectionService: dependencies.knowledgeRepositoryProjectionService ?? null,
+    knowledgeNoteCommitService: dependencies.knowledgeNoteCommitService ?? null,
     useCases,
     api,
     start(): void {
