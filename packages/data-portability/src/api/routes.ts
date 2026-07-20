@@ -3,20 +3,31 @@
  *
  * Routes:
  *   POST /export — 导出用户数据
+ *   POST /server-held-data-disclosure — 导出不可导入的服务端持有数据披露
  *   POST /import — 导入用户数据
  */
 
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import { RouteRegistrar, type OpenApiRegistryLike, successResponse, errorResponse } from '@dailyuse/utils/result';
 import {
+  RouteRegistrar,
+  type OpenApiRegistryLike,
+  successResponse,
+  errorResponse,
+} from '@dailyuse/utils/result';
+import {
+  ExportServerHeldDataDisclosureReqSchema,
+  ExportServerHeldDataDisclosureResSchema,
   ExportUserDataReqSchema,
   ImportUserDataReqSchema,
   ExportUserDataResSchema,
   ImportUserDataResSchema,
 } from '@dailyuse/contracts/data-portability';
-import { DataPortabilityController } from '../server/transport';
-import type { DataPortabilityApplicationPort } from '../server/application';
+import { DataPortabilityController, ServerHeldDataDisclosureController } from '../server/transport';
+import type {
+  DataPortabilityApplicationPort,
+  ServerHeldDataDisclosureApplicationPort,
+} from '../server/application';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -25,18 +36,40 @@ interface PlatformMiddleware {
 
 export function registerDataPortabilityRoutes(
   api: DataPortabilityApplicationPort,
+  disclosureApi: ServerHeldDataDisclosureApplicationPort,
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
   const controller = new DataPortabilityController(api);
+  const disclosureController = new ServerHeldDataDisclosureController(disclosureApi);
 
   const r = new RouteRegistrar(router, openApiRegistry ?? null, {
     basePath: '/api/v1/data-portability',
     defaultTags: ['DataPortability'],
     defaultSecurity: [{ bearerAuth: [] }],
   });
+
+  r.route(
+    {
+      method: 'post',
+      path: '/server-held-data-disclosure',
+      summary: '导出不可导入的服务端持有数据披露',
+      request: {
+        body: {
+          content: {
+            'application/json': { schema: ExportServerHeldDataDisclosureReqSchema },
+          },
+        },
+      },
+      responses: {
+        200: successResponse(ExportServerHeldDataDisclosureResSchema, '服务端持有数据披露导出成功'),
+      },
+    },
+    [auth],
+    (req, ctx) => disclosureController.exportServerHeldDataDisclosure(req.body, ctx),
+  );
 
   r.route(
     {

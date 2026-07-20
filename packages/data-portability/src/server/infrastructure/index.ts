@@ -19,3 +19,5 @@ export {
   createDataPortabilityRuntimeContribution,
   type DataPortabilityRuntimeContribution,
 } from './runtime';
+export { PrismaServerHeldDataDisclosureSource } from './prisma-server-held-data-disclosure.source';
+export { createPrismaServerHeldDataDisclosureApplicationPort } from './server-held-data-disclosure';
