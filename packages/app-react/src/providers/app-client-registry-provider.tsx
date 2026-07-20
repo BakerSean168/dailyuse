@@ -1,9 +1,4 @@
-import {
-  createContext,
-  type PropsWithChildren,
-  useContext,
-  useRef,
-} from 'react';
+import { createContext, type PropsWithChildren, useContext, useRef } from 'react';
 
 import type { AccountClientPort } from '@dailyuse/account/client';
 import { createAccountHttpClient } from '@dailyuse/account/client';
@@ -15,8 +10,6 @@ import type { NotificationClientPort } from '@dailyuse/notification/client';
 import { createNotificationHttpClient } from '@dailyuse/notification/client';
 import type { ReminderClientPort } from '@dailyuse/reminder/client';
 import { createReminderHttpClient } from '@dailyuse/reminder/client';
-import type { RepositoryClientPort } from '@dailyuse/repository/client';
-import { createRepositoryHttpClient } from '@dailyuse/repository/client';
 import type { ScheduleClientPort } from '@dailyuse/schedule/client';
 import { createScheduleHttpClient } from '@dailyuse/schedule/client';
 import type { SettingClientPort } from '@dailyuse/setting/client';
@@ -34,7 +27,6 @@ export type AppClientRegistry = {
   goalService: GoalClientPort;
   notificationService: NotificationClientPort;
   reminderService: ReminderClientPort;
-  repositoryService: RepositoryClientPort;
   scheduleService: ScheduleClientPort;
   settingService: SettingClientPort;
   taskService: TaskClientPort;
@@ -50,7 +42,6 @@ export function createAppClientRegistry(httpClient: IResultHttpClient): AppClien
     goalService: createGoalHttpClient(httpClient),
     notificationService: createNotificationHttpClient(httpClient),
     reminderService: createReminderHttpClient(httpClient),
-    repositoryService: createRepositoryHttpClient(httpClient),
     scheduleService: createScheduleHttpClient(httpClient),
     settingService: createSettingHttpClient(httpClient),
     taskService: createTaskHttpClient(httpClient),

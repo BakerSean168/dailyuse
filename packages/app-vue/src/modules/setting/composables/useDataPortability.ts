@@ -1,5 +1,6 @@
 /**
- * useDataPortability — composable for full user data export/import.
+ * useDataPortability — composable for importable data backup/restore and the
+ * separate server-held data disclosure.
  *
  * Uses DataPortabilityClientService via DI to export/import all user data
  * (not just settings). Handles file save/open via platform-specific IPC.
@@ -14,9 +15,31 @@ export function useDataPortability() {
   const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
 
   const isAvailable = ref(service !== undefined);
+  const isServerDisclosureAvailable = ref(service !== undefined && desktopApi === undefined);
   const isExporting = ref(false);
+  const isExportingServerDisclosure = ref(false);
   const isImporting = ref(false);
   const lastResult = ref<string | null>(null);
+
+  async function saveJsonFile(fileName: string, content: string): Promise<void> {
+    if (desktopApi?.invoke) {
+      await desktopApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {
+        subdirectory: 'exports',
+        defaultFileName: fileName,
+        content,
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      });
+      return;
+    }
+
+    const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 
   async function exportAllData(): Promise<void> {
     if (!service) {
@@ -34,27 +57,10 @@ export function useDataPortability() {
       }
 
       const { fileName, content, summary } = result.data;
-      const warnings = summary.warnings.length > 0
-        ? `\nWarnings: ${summary.warnings.join(', ')}`
-        : '';
+      const warnings =
+        summary.warnings.length > 0 ? `\nWarnings: ${summary.warnings.join(', ')}` : '';
 
-      // Save file via platform
-      if (desktopApi?.invoke) {
-        await desktopApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {
-          subdirectory: 'exports',
-          defaultFileName: fileName,
-          content,
-          filters: [{ name: 'JSON', extensions: ['json'] }],
-        });
-      } else {
-        const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
+      await saveJsonFile(fileName, content);
 
       const counts = Object.entries(summary.entityCounts)
         .map(([k, v]) => `${k}: ${v}`)
@@ -64,6 +70,37 @@ export function useDataPortability() {
       lastResult.value = `Export error: ${err instanceof Error ? err.message : String(err)}`;
     } finally {
       isExporting.value = false;
+    }
+  }
+
+  async function exportServerHeldDataDisclosure(): Promise<void> {
+    if (!service || desktopApi !== undefined) {
+      lastResult.value =
+        'Server-held data disclosure is available from the authenticated Web runtime';
+      return;
+    }
+
+    isExportingServerDisclosure.value = true;
+    lastResult.value = null;
+    try {
+      const result = await service.exportServerHeldDataDisclosure({});
+      if (!result.ok) {
+        lastResult.value = `Disclosure export failed: ${result.error.message}`;
+        return;
+      }
+
+      const { fileName, content, summary } = result.data;
+      await saveJsonFile(fileName, content);
+      const counts = Object.entries(summary.entityCounts)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ');
+      lastResult.value = `Disclosed ${counts}; cached attachment bytes: ${summary.cachedAttachmentBytes}`;
+    } catch (err) {
+      lastResult.value = `Disclosure export error: ${
+        err instanceof Error ? err.message : String(err)
+      }`;
+    } finally {
+      isExportingServerDisclosure.value = false;
     }
   }
 
@@ -96,9 +133,12 @@ export function useDataPortability() {
           input.accept = '.json';
           input.onchange = () => {
             const file = input.files?.[0];
-            if (!file) { resolve(null); return; }
+            if (!file) {
+              resolve(null);
+              return;
+            }
             const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result as string ?? null);
+            reader.onload = (e) => resolve((e.target?.result as string) ?? null);
             reader.readAsText(file);
           };
           input.click();
@@ -137,10 +177,13 @@ export function useDataPortability() {
 
   return {
     isAvailable,
+    isServerDisclosureAvailable,
     isExporting,
+    isExportingServerDisclosure,
     isImporting,
     lastResult,
     exportAllData,
+    exportServerHeldDataDisclosure,
     importAllData,
   };
 }

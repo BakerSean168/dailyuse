@@ -220,8 +220,6 @@ export default {
     subtitle: 'Goal, chat, knowledge, analytics, and automation tools',
     provider: 'Provider',
     notConfigured: 'Not configured',
-    notesPath: 'Notes Path',
-    notesPathHint: 'New AI notes are saved here by default.',
     configureProviderNotice:
       'Configure an OpenAI-compatible provider in Settings before using AI features.',
     providerSummaryEmpty: 'No AI provider configured yet.',
@@ -698,11 +696,140 @@ export default {
     // Group navigation (10 tabs -> 6 groups, Plan §13)
     groups: {
       appearance: 'Appearance & Language',
+      repository: 'Knowledge Repository',
       ai: 'AI',
       notifications: 'Notifications & Reminders',
       account: 'Account & Privacy',
       data: 'Data',
       advanced: 'Advanced',
+    },
+
+    knowledgeRepository: {
+      localTitle: 'Local Obsidian Vault',
+      localDescription:
+        'Desktop reads your local Vault directly. Notes stay local until you connect GitHub.',
+      localNotSelected: 'No Vault selected',
+      localNotSelectedHint: 'Choose an existing Obsidian Vault as your local knowledge base.',
+      localSelect: 'Select Vault',
+      localChange: 'Change Vault',
+      localDetach: 'Detach',
+      localDetachTitle: 'Detach the local Vault?',
+      localDetachDescription:
+        'This only removes the Memoflow binding. No local files will be deleted or moved.',
+      localDesktopOnly: 'Local Vault selection and management are available in Desktop only.',
+      localSelectFailed: 'Failed to select the local Vault',
+      localDetachFailed: 'Failed to detach the local Vault',
+      githubTitle: 'GitHub Knowledge Repository',
+      githubDescription:
+        'Authorize a private repository through a dedicated GitHub App. This is fully separate from GitHub login.',
+      permissionTitle: 'Least-privilege repository access',
+      permissionDescription:
+        'Only repositories explicitly selected during installation are visible. Desktop credentials are short-lived and restricted to one repository.',
+      chooseTitle: 'Choose a knowledge repository',
+      chooseDescription:
+        'Only private, active repositories where you have administrator permission can be connected.',
+      private: 'Private',
+      public: 'Public',
+      connect: 'Connect',
+      disconnect: 'Disconnect',
+      connectAnother: 'Connect another repository',
+      startConnect: 'Connect GitHub Repository',
+      createPrivate: 'Create private repository',
+      createOpenFailed: 'Unable to open GitHub repository creation',
+      notConnected: 'No GitHub knowledge repository connected',
+      desktopConnectHint:
+        'Authorization opens in your system browser. Return to Desktop and refresh after connecting.',
+      webConnectHint:
+        'After installing the GitHub App, you will return here to choose a private repository.',
+      defaultBranch: 'Default branch: {branch}',
+      lastSyncedCommit: 'Last synchronized commit: {sha}',
+      errorTitle: 'Knowledge repository action failed',
+      loadFailed: 'Failed to load knowledge repository connections',
+      startFailed: 'Unable to start GitHub App installation',
+      completeFailed: 'GitHub App installation validation failed. Start the connection again.',
+      connectFailed: 'Failed to connect the GitHub knowledge repository',
+      disconnectFailed: 'Failed to disconnect the GitHub knowledge repository',
+      disconnectTitle: 'Disconnect the GitHub knowledge repository?',
+      disconnectDescription:
+        'Remote sync for {repository} will stop. Choose whether Memoflow should retain or permanently delete its server-derived data.',
+      purgeCloudData: 'Delete Memoflow cloud projections and AI index',
+      purgeCloudDataDescription:
+        'Permanently deletes projected notes, attachment metadata and cache, webhook history, write ledger, and RAG index from Memoflow.',
+      purgeLocalAndGithubPreserved:
+        'Your local Vault, local Git history, and GitHub repository are preserved. This cloud-data deletion cannot be undone.',
+      retainCloudDataDescription:
+        'Memoflow will retain the rebuildable cloud projection so reconnecting can resume without a full rebuild. Your local Vault and GitHub repository are preserved.',
+      reconciliation: {
+        preview: 'Check first sync',
+        previewFailed: 'First-sync preflight failed',
+        execute: 'Run first sync',
+        executeTitle: 'Run the first Git reconciliation?',
+        executeDescription:
+          '{action}\n\nMemoflow will revalidate both sides and use a short-lived repository credential. It will never force-push.',
+        executeFailed: 'First Git reconciliation failed',
+        completed: 'First sync completed at GitHub HEAD {sha}',
+        action: {
+          InitializeRemoteFromLocal:
+            'The local Vault has content and GitHub is empty. It is safe to initialize and push.',
+          CloneRemoteIntoLocal:
+            'The local Vault is empty and GitHub has content. It is safe to clone into this empty directory.',
+          InitializeBoth:
+            'Both sides are empty. Memoflow can create the scaffold and first commit.',
+          ManualResolutionRequired:
+            'Both sides contain content. Automatic overwrite is blocked; review the difference and import, use another repository, or cancel.',
+        },
+      },
+      sync: {
+        execute: 'Sync now',
+        retry: 'Recheck sync',
+        failed: 'Knowledge repository synchronization failed',
+        conflictTitle: 'Git conflict needs attention',
+        conflictDescription:
+          'Both local and remote changes were preserved. Resolve the listed files and complete or abort the rebase in an external Git tool, then recheck sync.',
+        conflictLocalHead: 'Local HEAD: {sha}',
+        conflictRemoteHead: 'Remote HEAD: {sha}',
+        openInObsidian: 'Open conflict in Obsidian',
+        openInObsidianFailed: 'Failed to open the conflict in Obsidian',
+        pendingTitle: 'Local commit saved; upload pending',
+        pendingDescription:
+          'Your Vault changes are safe in local commit {sha}. Recheck sync when GitHub is available.',
+        outcome: {
+          UpToDate: 'Already up to date at {sha}',
+          Pushed: 'Local changes pushed to GitHub at {sha}',
+          Pulled: 'Remote changes applied locally at {sha}',
+          RebasedAndPushed: 'Local changes rebased and pushed at {sha}',
+        },
+      },
+      lifecycle: {
+        GITHUB_INSTALLATION_NOT_FOUND:
+          'The GitHub App installation was removed. Reconnect the repository to resume synchronization.',
+        GITHUB_INSTALLATION_SUSPENDED:
+          'The GitHub App installation is suspended. Restore it on GitHub before synchronizing.',
+        GITHUB_CONTENTS_PERMISSION_REQUIRED:
+          'GitHub Contents write permission is missing. Update the GitHub App installation.',
+        GITHUB_REPOSITORY_ACCESS_LOST:
+          'The repository was deleted or removed from this GitHub App installation.',
+        GITHUB_REPOSITORY_PUBLIC:
+          'This repository is public. Synchronization is paused to protect knowledge privacy.',
+        GITHUB_REPOSITORY_ARCHIVED:
+          'This repository is archived. Unarchive it before synchronizing.',
+        GITHUB_REPOSITORY_DISABLED:
+          'This repository is disabled on GitHub. Synchronization is paused.',
+        GITHUB_REPOSITORY_ADMIN_REQUIRED:
+          'Repository administrator permission is required to continue synchronization.',
+        GITHUB_DEFAULT_BRANCH_CHANGED:
+          'The GitHub default branch changed. Reconcile the repository before synchronizing again.',
+        GITHUB_LIFECYCLE_CHECK_UNAVAILABLE:
+          'GitHub status could not be checked. Local Vault access remains available.',
+        unknown: 'The GitHub repository connection requires attention.',
+      },
+      status: {
+        PendingInstall: 'Waiting for installation',
+        Active: 'Connected',
+        Suspended: 'Suspended',
+        Revoked: 'Revoked',
+        Error: 'Error',
+      },
     },
 
     // Tab labels
@@ -905,17 +1032,7 @@ export default {
 
     ai: {
       title: 'AI Assistant',
-      description:
-        'Configure the default save path for AI-generated knowledge notes and AI provider connections.',
-      knowledgeNoteSubpath: 'Knowledge note default subpath',
-      knowledgeNoteSubpathDescription:
-        'Only enter a relative path under notes/. Leave blank to save directly into notes/.',
-      knowledgeNoteSubpathPlaceholder: 'For example ai/inbox',
-      knowledgeNoteResolvedPath: 'Resolved save location: {path}',
-      invalidSubpath: 'Please enter a valid relative subpath',
-      resetPath: 'Reset',
-      savePath: 'Save path',
-      saved: 'AI settings updated',
+      description: 'Configure AI provider connections and the default model for AI workflows.',
       quickProviderSectionTitle: 'Quick Provider Setup',
       quickProviderSectionDescription:
         'Configure mainstream providers with just an API key. Models are discovered automatically when supported.',
@@ -1051,6 +1168,16 @@ export default {
       exportJSON: 'Export as JSON',
       exportCSV: 'Export as CSV',
       importSettings: 'Import Settings',
+      exportPortableData: 'Export Importable Data',
+      exportingPortableData: 'Exporting...',
+      importPortableData: 'Import Data File',
+      importingPortableData: 'Importing...',
+      portableDataDescription:
+        'Creates an importable JSON backup of Memoflow business data. It does not include local Vault files, GitHub authorization, GitHub-derived projections or attachment cache, or the RAG index. Export or clone the GitHub repository itself for the authoritative knowledge files.',
+      exportServerDataDisclosure: 'Download Server-held Data Disclosure',
+      exportingServerDataDisclosure: 'Preparing disclosure...',
+      serverDataDisclosureDescription:
+        'Web-only, non-importable JSON disclosure of repository connection metadata and the projections, cached attachment bytes, webhook/write history, and RAG index held by Memoflow. It excludes Memoflow-managed replayable GitHub authorization, local Vault files, and GitHub history; repository content is included verbatim.',
       createBackup: 'Create Local Backup',
       restoreBackup: 'Restore Backup',
       restoreBackupNoBackups: 'Restore Backup (No backups available)',
@@ -1106,6 +1233,11 @@ export default {
       or: 'or',
       guestMode: 'Guest Mode',
       guestLoading: 'Starting guest mode...',
+      legalNoticePrefix: 'By continuing, you agree to the ',
+      legalNoticeMid: ' and ',
+      legalNoticeSuffix: '.',
+      termsOfService: 'Terms of Service',
+      privacyPolicy: 'Privacy Policy',
       legalNotice: 'By continuing, you agree to the Terms of Service and Privacy Policy.',
       locales: {
         zhCN: '中文',
@@ -1256,6 +1388,48 @@ export default {
 
   // ── Account module ──────────────────────────────────────
   account: {
+    oauth: {
+      title: 'Sign-in methods',
+      description:
+        'Linking GitHub is for identity login only and never requests repository Contents permission. Connect a knowledge vault separately when you need sync.',
+      githubLinked: 'GitHub login is linked',
+      githubNotLinked: 'GitHub login is not linked',
+      bindGithub: 'Link GitHub',
+      unbindGithub: 'Unlink GitHub',
+      bindSuccess: 'GitHub linked',
+      unbindSuccess: 'GitHub unlinked',
+      bindFailed: 'Failed to link GitHub',
+      unbindFailed: 'Failed to unlink GitHub',
+      githubUnavailable: 'GitHub login is not configured',
+      serviceUnavailable: 'Authentication service is unavailable',
+      alreadyLinked:
+        'This GitHub account is already linked to another Daily Use identity. Silent merge is not allowed — sign in with that GitHub account instead.',
+      lastLoginPath:
+        'This is the last login path for this account and cannot be removed. Add a password first.',
+      invalidState: 'OAuth state is invalid or expired. Please try linking again.',
+      unbindConfirmTitle: 'Unlink GitHub?',
+      unbindConfirmDescription:
+        'You will no longer be able to sign in to this Daily Use identity with that GitHub account.',
+      unbindConfirmText: 'Unlink',
+      repoScopeHint: 'Login linking is separate from knowledge-repository authorization (ADR-034).',
+    },
+    sessions: {
+      title: 'Devices & sessions',
+      description:
+        'Review active sessions for this account. Revoke any device you do not recognize.',
+      loading: 'Loading sessions…',
+      empty: 'No active sessions',
+      current: 'This device',
+      lastActive: 'Last active',
+      revoke: 'Revoke',
+      refresh: 'Refresh',
+      unknownDevice: 'Unknown device',
+      cannotRevokeCurrent: 'You cannot revoke the current session. Sign out instead.',
+      revokeConfirmTitle: 'Revoke this session?',
+      revokeConfirmDescription: 'That device will need to sign in again.',
+      revokeConfirmText: 'Revoke session',
+    },
+
     title: 'Account',
     center: 'Account Center',
     description:
@@ -4049,6 +4223,89 @@ export default {
       indexFailed: 'Note saved, but knowledge indexing failed',
       chars: 'chars',
       linkNotFound: 'Link target not found',
+    },
+    projection: {
+      title: 'GitHub Knowledge Repository',
+      connectTitle: 'Connect a knowledge repository',
+      connectDescription:
+        'The Web workspace reads a server projection of a GitHub private repository. Connect one to continue.',
+      connectAction: 'Open repository settings',
+      connectionLabel: 'Select knowledge repository',
+      refresh: 'Refresh projection',
+      createAction: 'New note',
+      commit: 'commit {sha}',
+      readOnly: 'Read-only projection',
+      noteViews: 'Knowledge note views',
+      previewTab: 'Preview',
+      relationsTab: 'Relations',
+      graphDepth: 'Depth',
+      depthValue: 'depth {depth}',
+      graphTruncated: 'Partial graph',
+      graphSummary: '{nodes} notes · {edges} links',
+      refreshRelations: 'Refresh relations',
+      outgoingLinks: 'Outgoing links',
+      noOutgoingLinks: 'This note has no outgoing wiki links',
+      backlinks: 'Backlinks',
+      noBacklinks: 'No other projected notes link here',
+      relatedNotes: 'Related notes',
+      noRelatedNotes: 'No related projected notes',
+      unresolvedLinks: 'Unresolved links',
+      noUnresolvedLinks: 'No unresolved links in this note',
+      ambiguousLink: 'Matches more than one projected note',
+      missingLink: 'No projected note matches this link',
+      searchPlaceholder: 'Search titles, paths, and content',
+      noSearchResults: 'No matching notes',
+      noNotes: 'No Markdown notes in this repository',
+      selectNote: 'Select a note',
+      selectNoteDescription:
+        'The Web app previews synchronized content. Edit existing notes through the Desktop Git workflow.',
+      createTitle: 'New GitHub knowledge note',
+      createDescription:
+        'Complete the proposal, review it, then confirm creation of a new Markdown file. Existing paths are never overwritten.',
+      confirmTitle: 'Confirm GitHub write',
+      confirmDescription:
+        'Review the repository, path, and content. Confirmation creates one non-overwriting Git commit.',
+      confirmImmutable:
+        'The proposal revision and request ID are fixed after confirmation for idempotent retry and auditability.',
+      reviewAction: 'Review proposal',
+      confirmAction: 'Confirm and commit',
+      noteTitle: 'Title',
+      notePath: 'Repository-relative path',
+      noteContent: 'Markdown content',
+      noteReason: 'Write reason',
+      invalidDraft: 'Add a title, .md path, content, and write reason.',
+      indexStatus: {
+        pending: 'Pending indexing',
+        indexed: 'Searchable',
+        failed: 'Indexing failed',
+      },
+      status: {
+        Active: 'Connected',
+        Suspended: 'Suspended',
+        Revoked: 'Revoked',
+        Error: 'Needs attention',
+        PendingInstall: 'Pending installation',
+        Unknown: 'Unknown status',
+      },
+    },
+    localVault: {
+      selectTitle: 'Select a local Obsidian Vault',
+      selectDescription:
+        'Notes remain in the folder you select and are not uploaded while GitHub is disconnected.',
+      selectAction: 'Select Vault folder',
+      rescan: 'Rescan',
+      openRoot: 'Open Vault in Obsidian',
+      openNote: 'Open in Obsidian',
+      changeVault: 'Change Vault',
+      detach: 'Disconnect',
+      detachTitle: 'Disconnect local Vault',
+      detachDescription:
+        'This only removes the Memoflow binding. Files inside the Vault are not deleted or changed.',
+      searchPlaceholder: 'Search titles, paths, and content',
+      noSearchResults: 'No matching notes',
+      noNotes: 'No Markdown notes in this Vault',
+      selectNote: 'Select a note',
+      selectNoteDescription: 'Preview notes here and continue editing them in Obsidian.',
     },
     import: {
       title: 'Import Resources',

@@ -178,9 +178,7 @@ test.describe('AI Goal Workflow', () => {
     });
   });
 
-  test('[P0] restores a pending Goal Agent approval run after refresh', async ({
-    page,
-  }) => {
+  test('[P0] restores a pending Goal Agent approval run after refresh', async ({ page }) => {
     await bootstrapGoalWorkflowSession(page, {
       conversationId: e2eConversationId,
       modelKey: 'provider-e2e-openai::gpt-4.1-mini',
@@ -362,9 +360,7 @@ test.describe('AI Goal Workflow', () => {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
     await expect(noteSummaryPanel).toContainText(/Conversation Agent Checkpoints\.md/i);
-    await expect(noteSummaryPanel).toContainText(
-      /notes\/ai\/Conversation Agent Checkpoints\.md/i,
-    );
+    await expect(noteSummaryPanel).toContainText(/notes\/ai\/Conversation Agent Checkpoints\.md/i);
     await expect(noteSummaryPanel).toContainText(/indexed/i);
   });
 
@@ -398,9 +394,7 @@ test.describe('AI Goal Workflow', () => {
     await expect(page.getByTestId('knowledge-qa-draft-note')).toBeDisabled();
   });
 
-  test('[P0] starts Goal Agent from goal-create tool and cancels at approval', async ({
-    page,
-  }) => {
+  test('[P0] starts Goal Agent from goal-create tool and cancels at approval', async ({ page }) => {
     const telemetry = await bootstrapGoalWorkflowSession(page);
 
     await expect(page.getByTestId('ai-chat-view')).toBeVisible({
@@ -764,8 +758,7 @@ function createGoalAgentMockRun(request: {
     createdAt: now,
     goalDraft,
     actionPlan: {
-      summary:
-        'Create the Agent goal, measurable key result, review task template, and reminder.',
+      summary: 'Create the Agent goal, measurable key result, review task template, and reminder.',
       actions: pendingActions,
       warnings: [],
     },
@@ -835,10 +828,7 @@ function expectGoalAgentApprovalPayload(
   expect(editedGoalData.reminders).toEqual(goalAgentRun.goalDraft.reminders);
 }
 
-function executeGoalAgentMockRun(
-  mockRun: GoalAgentMockRun,
-  telemetry: GoalWorkflowMockTelemetry,
-) {
+function executeGoalAgentMockRun(mockRun: GoalAgentMockRun, telemetry: GoalWorkflowMockTelemetry) {
   telemetry.goalAgentExecuteRequestCount += 1;
   const retrySucceeded = telemetry.goalAgentExecuteRequestCount > 1;
 
@@ -895,21 +885,14 @@ function executeGoalAgentMockRun(
       ];
 }
 
-function createGoalAgentRunResult(
-  mockRun: GoalAgentMockRun,
-  status: GoalAgentMockStatus,
-) {
+function createGoalAgentRunResult(mockRun: GoalAgentMockRun, status: GoalAgentMockStatus) {
   const now = Date.now();
   const hasExecution = status === 'completed';
   const executedCount = mockRun.executedActions.filter(
     (action) => action.status === 'executed',
   ).length;
-  const skippedActions = mockRun.executedActions.filter(
-    (action) => action.status === 'skipped',
-  );
-  const failedActions = mockRun.executedActions.filter(
-    (action) => action.status === 'failed',
-  );
+  const skippedActions = mockRun.executedActions.filter((action) => action.status === 'skipped');
+  const failedActions = mockRun.executedActions.filter((action) => action.status === 'failed');
   const executionOutcome =
     failedActions.length === 0
       ? 'success'
@@ -992,9 +975,7 @@ function createGoalAgentRunResult(
       retrievedContext: [],
       pendingActions: status === 'waiting_approval' ? mockRun.pendingActions : [],
       approvedActions:
-        status === 'waiting_approval' || status === 'cancelled'
-          ? []
-          : mockRun.approvedActions,
+        status === 'waiting_approval' || status === 'cancelled' ? [] : mockRun.approvedActions,
       executedActions: hasExecution ? mockRun.executedActions : [],
       usage: {
         promptTokens: 90,
@@ -1040,10 +1021,7 @@ function createGoalAgentRunResult(
               eventId: `${mockRun.runId}:1`,
               runId: mockRun.runId,
               sequence: 1,
-              type:
-                status === 'waiting_approval'
-                  ? 'approval.required'
-                  : 'execution.required',
+              type: status === 'waiting_approval' ? 'approval.required' : 'execution.required',
               createdAt: now,
               data: { status },
             },
@@ -1218,9 +1196,7 @@ async function installGoalWorkflowMocks(
             startPage: 'dashboard',
             sidebarCollapsed: false,
           },
-          ai: {
-            knowledgeNoteSubpath: 'notes/ai',
-          },
+          ai: {},
         },
       }),
     );
@@ -1344,7 +1320,10 @@ async function installGoalWorkflowMocks(
     const url = new URL(route.request().url());
     const path = url.pathname;
 
-    if (route.request().method() === 'GET' && path.endsWith(`/editor/workspaces/${repository.id}`)) {
+    if (
+      route.request().method() === 'GET' &&
+      path.endsWith(`/editor/workspaces/${repository.id}`)
+    ) {
       await fulfillJson(route, editorWorkspace);
       return;
     }
@@ -1480,10 +1459,7 @@ async function installGoalWorkflowMocks(
       return;
     }
 
-    if (
-      method === 'POST' &&
-      (path.includes('/activate') || path.includes('/auto-save'))
-    ) {
+    if (method === 'POST' && (path.includes('/activate') || path.includes('/auto-save'))) {
       await fulfillJson(route, null);
       return;
     }
@@ -1603,14 +1579,17 @@ async function installGoalWorkflowMocks(
     await route.continue();
   });
 
-  await page.route('**/api/v1/ai/chat/messages?conversationId=*&page=*&pageSize=*', async (route) => {
-    await fulfillJson(route, {
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 80,
-    });
-  });
+  await page.route(
+    '**/api/v1/ai/chat/messages?conversationId=*&page=*&pageSize=*',
+    async (route) => {
+      await fulfillJson(route, {
+        data: [],
+        total: 0,
+        page: 1,
+        pageSize: 80,
+      });
+    },
+  );
 
   await page.route('**/api/v1/ai/chat/messages/sse', async (route) => {
     const request = route.request().postDataJSON() as { content?: string };
@@ -1711,17 +1690,14 @@ async function installGoalWorkflowMocks(
     });
   });
 
-  await page.route(
-    '**/api/v1/ai/agents/runs/run-e2e-restored-approval',
-    async (route) => {
-      if (route.request().method() !== 'GET') {
-        await route.continue();
-        return;
-      }
+  await page.route('**/api/v1/ai/agents/runs/run-e2e-restored-approval', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.continue();
+      return;
+    }
 
-      await fulfillJson(route, createRuntimeRestoredApprovalRunResult());
-    },
-  );
+    await fulfillJson(route, createRuntimeRestoredApprovalRunResult());
+  });
 
   await page.route('**/api/v1/ai/agents/runs?*', async (route) => {
     if (route.request().method() !== 'GET') {
@@ -1783,8 +1759,7 @@ async function installGoalWorkflowMocks(
               resourcePath: 'notes/ai/grounding-policy.md',
               title: 'Memoflow grounding policy',
               chunkIndex: 0,
-              excerpt:
-                'Knowledge answers must cite repository evidence before sounding certain.',
+              excerpt: 'Knowledge answers must cite repository evidence before sounding certain.',
               score: 0.94,
             },
           ];
@@ -1865,9 +1840,7 @@ async function installGoalWorkflowMocks(
     expect(request.input?.model).toBe('gpt-4.1-mini');
 
     const source = request.input?.source ?? '';
-    const isConversationDraft = source.includes(
-      'reusable knowledge note about agent checkpoints',
-    );
+    const isConversationDraft = source.includes('reusable knowledge note about agent checkpoints');
     if (!isConversationDraft) {
       expect(request.input?.title).toContain(
         'How should knowledge answers stay grounded in citations?',
@@ -2450,9 +2423,7 @@ async function installGoalWorkflowMocks(
 
       await fulfillJson(route, {
         state: 'result',
-        summary: retrySucceeded
-          ? '目标和关键结果已创建。'
-          : '目标已创建，关键结果暂未完全写入。',
+        summary: retrySucceeded ? '目标和关键结果已创建。' : '目标已创建，关键结果暂未完全写入。',
         plan: {
           goal: {
             title: request.approvedPlan?.goal?.title ?? '建立稳定的 AI agent 工作流',
@@ -2461,16 +2432,13 @@ async function installGoalWorkflowMocks(
               '围绕澄清、规划、执行和复盘，建立可重复的 AI goal workflow。',
             category: request.approvedPlan?.goal?.category ?? 'learning',
             importance: request.approvedPlan?.goal?.importance ?? 'Important',
-            motivation:
-              request.approvedPlan?.goal?.motivation ??
-              '把 AI 想法稳定转成可执行目标。',
+            motivation: request.approvedPlan?.goal?.motivation ?? '把 AI 想法稳定转成可执行目标。',
             feasibilityAnalysis:
               request.approvedPlan?.goal?.feasibilityAnalysis ??
               '聚焦日常执行和每周复盘，范围可控。',
             suggestedStartDate: request.approvedPlan?.goal?.suggestedStartDate ?? Date.now(),
             suggestedEndDate:
-              request.approvedPlan?.goal?.suggestedEndDate ??
-              Date.now() + 1000 * 60 * 60 * 24 * 60,
+              request.approvedPlan?.goal?.suggestedEndDate ?? Date.now() + 1000 * 60 * 60 * 24 * 60,
             tags: request.approvedPlan?.goal?.tags ?? ['ai', 'workflow'],
           },
           keyResults: request.approvedPlan?.keyResults ?? [

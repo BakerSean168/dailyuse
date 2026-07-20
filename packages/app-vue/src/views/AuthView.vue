@@ -332,8 +332,31 @@ function setTheme(theme: PresentationThemeMode) {
         </div>
       </CardContent>
 
-      <CardFooter class="justify-center pb-5 text-[11px] text-white/[0.30]">
-        {{ t('auth.page.legalNotice') }}
+      <CardFooter
+        class="flex flex-wrap items-center justify-center gap-x-1 pb-5 text-center text-[11px] text-white/[0.30]"
+        data-testid="auth-legal-footer"
+      >
+        <span>{{ t('auth.page.legalNoticePrefix') }}</span>
+        <a
+          class="underline decoration-white/25 underline-offset-2 hover:text-white/70"
+          href="/legal/terms.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="auth-terms-link"
+        >
+          {{ t('auth.page.termsOfService') }}
+        </a>
+        <span>{{ t('auth.page.legalNoticeMid') }}</span>
+        <a
+          class="underline decoration-white/25 underline-offset-2 hover:text-white/70"
+          href="/legal/privacy.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="auth-privacy-link"
+        >
+          {{ t('auth.page.privacyPolicy') }}
+        </a>
+        <span>{{ t('auth.page.legalNoticeSuffix') }}</span>
       </CardFooter>
     </Card>
 

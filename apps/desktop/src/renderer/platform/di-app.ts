@@ -12,7 +12,6 @@ import { createTaskIpcClient } from '@dailyuse/task/client';
 import { createScheduleIpcClient } from '@dailyuse/schedule/client';
 import { createReminderIpcClient } from '@dailyuse/reminder/client';
 import { createRepositoryIpcClient } from '@dailyuse/repository/client';
-import { createEditorIpcClient } from '@dailyuse/editor/client';
 import { createNotificationIpcClient } from '@dailyuse/notification/client';
 import { createSettingIpcClient } from '@dailyuse/setting/client';
 import { createAIIpcClient } from '@dailyuse/ai/client';
@@ -25,7 +24,6 @@ import {
   SCHEDULE_SERVICE_KEY,
   REMINDER_SERVICE_KEY,
   REPOSITORY_SERVICE_KEY,
-  EDITOR_SERVICE_KEY,
   NOTIFICATION_SERVICE_KEY,
   SETTING_SERVICE_KEY,
   AI_SERVICE_KEY,
@@ -40,7 +38,6 @@ import {
 } from '@dailyuse/app-vue/di';
 import { createDashboardIpcAdapter } from '@dailyuse/app-vue/modules/dashboard/adapters';
 import { useAuthenticationStore } from '@dailyuse/app-vue/modules/authentication';
-import { setEditorRuntimeService } from '@dailyuse/app-vue/modules/editor';
 
 export function installDesktopAppServices(app: App): void {
   const bridge = window.electronAPI;
@@ -63,10 +60,6 @@ export function installDesktopAppServices(app: App): void {
   app.provide(REMINDER_SERVICE_KEY, createReminderIpcClient(resultIpcClient));
 
   app.provide(REPOSITORY_SERVICE_KEY, createRepositoryIpcClient(resultIpcClient));
-
-  const editorService = createEditorIpcClient(resultIpcClient);
-  app.provide(EDITOR_SERVICE_KEY, editorService);
-  setEditorRuntimeService(editorService);
 
   app.provide(NOTIFICATION_SERVICE_KEY, createNotificationIpcClient(resultIpcClient));
 

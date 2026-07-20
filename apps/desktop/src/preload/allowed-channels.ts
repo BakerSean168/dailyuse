@@ -6,7 +6,6 @@ import {
   DashboardChannels,
   DataPortabilityChannels,
   DesktopFeatureChannels,
-  EditorChannels,
   GoalChannels,
   GovernanceChannels,
   NotificationChannels,
@@ -20,6 +19,26 @@ import {
   WindowChannels,
 } from '../shared/types/ipc-channels';
 
+export const SUPPORTED_REPOSITORY_CHANNELS = [
+  RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_START,
+  RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE,
+  RepositoryChannels.KNOWLEDGE_CONNECTION_LIST,
+  RepositoryChannels.KNOWLEDGE_CONNECTION_CONNECT,
+  RepositoryChannels.KNOWLEDGE_CONNECTION_DISCONNECT,
+  RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW,
+  RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE,
+  RepositoryChannels.KNOWLEDGE_CONNECTION_SYNC,
+  RepositoryChannels.KNOWLEDGE_CONNECTION_DESKTOP_TOKEN,
+  RepositoryChannels.LOCAL_VAULT_GET,
+  RepositoryChannels.LOCAL_VAULT_SELECT,
+  RepositoryChannels.LOCAL_VAULT_DETACH,
+  RepositoryChannels.LOCAL_VAULT_SCAN,
+  RepositoryChannels.LOCAL_VAULT_NOTE_READ,
+  RepositoryChannels.LOCAL_VAULT_SEARCH,
+  RepositoryChannels.LOCAL_VAULT_OPEN_OBSIDIAN,
+  RepositoryChannels.LOCAL_VAULT_NOTE_WRITE_CONFIRMED,
+] as const;
+
 export const ALLOWED_CHANNELS = [
   ...Object.values(SystemChannels),
   ...Object.values(GoalChannels),
@@ -32,10 +51,9 @@ export const ALLOWED_CHANNELS = [
   ...Object.values(DesktopFeatureChannels),
   ...Object.values(RendererEventChannels),
   ...Object.values(NotificationChannels),
-  ...Object.values(RepositoryChannels),
+  ...SUPPORTED_REPOSITORY_CHANNELS,
   ...Object.values(SettingChannels),
   ...Object.values(WindowChannels),
-  ...Object.values(EditorChannels),
   ...Object.values(GovernanceChannels),
   ...Object.values(AIChannels),
   ...Object.values(AIStreamChannels),

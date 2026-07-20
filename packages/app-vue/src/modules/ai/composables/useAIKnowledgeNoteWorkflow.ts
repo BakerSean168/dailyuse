@@ -26,17 +26,12 @@ export interface UseAIKnowledgeNoteWorkflowOptions {
   chatTimeline: Ref<ChatItem[]>;
   conversationTitle: Ref<string>;
   hasWorkflowMessages: Ref<boolean>;
-  knowledgeNoteSubpath: Ref<string>;
   scrollMessagesToBottom: () => void;
   maybeRenameCurrentConversation: (name: string) => Promise<void>;
   fetchResources: () => Promise<void>;
   resources: Ref<Array<{ id: string; name: string; path?: string }>>;
   requestOpenResource: (id: string) => Promise<unknown>;
 }
-
-type CreateKnowledgeNoteRequest = Parameters<
-  UseAIKnowledgeNoteWorkflowOptions['service']['createKnowledgeNote']
->[0];
 
 export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOptions) {
   const { t, locale } = useI18n();
@@ -53,8 +48,12 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
         (artifact) => artifact.kind === 'knowledge_note_draft',
       ) ?? null,
   );
-  const noteAgentDraftTitle = computed(() => getArtifactString(noteAgentDraftArtifact.value, 'title'));
-  const noteAgentDraftTopic = computed(() => getArtifactString(noteAgentDraftArtifact.value, 'topic'));
+  const noteAgentDraftTitle = computed(() =>
+    getArtifactString(noteAgentDraftArtifact.value, 'title'),
+  );
+  const noteAgentDraftTopic = computed(() =>
+    getArtifactString(noteAgentDraftArtifact.value, 'topic'),
+  );
   const noteAgentDraftMarkdown = computed(() =>
     getArtifactString(noteAgentDraftArtifact.value, 'markdown'),
   );
@@ -62,9 +61,9 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     getArtifactString(noteAgentDraftArtifact.value, 'targetSubpath'),
   );
   const noteAgentExecutionRecovery = computed(() => {
-    const recovery = noteAgentRun.value?.state.artifacts
-      .find((artifact) => artifact.kind === 'execution_timeline')
-      ?.data['recovery'];
+    const recovery = noteAgentRun.value?.state.artifacts.find(
+      (artifact) => artifact.kind === 'execution_timeline',
+    )?.data['recovery'];
     return isRecord(recovery) ? recovery : null;
   });
   const canRetryKnowledgeNoteAgentExecution = computed(
@@ -240,51 +239,6 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       .slice(0, 4000);
   }
 
-  async function createKnowledgeNote(input: {
-    topic: string;
-    title?: string;
-    contentMarkdown?: string;
-    targetSubpath?: string;
-  }) {
-    if (!options.selectedModel.value || !input.topic.trim()) return;
-
-    noteCreating.value = true;
-    try {
-      const targetSubpath = input.targetSubpath || options.knowledgeNoteSubpath.value;
-      const summary = await options.service.createKnowledgeNote({
-        topic: input.topic,
-        ...(input.contentMarkdown ? { contentMarkdown: input.contentMarkdown } : {}),
-        ...(input.title ? { title: input.title } : {}),
-        ...(targetSubpath ? { targetSubpath } : {}),
-        providerId:
-          options.selectedModel.value.providerId as CreateKnowledgeNoteRequest['providerId'],
-        model: options.selectedModel.value.modelId,
-      });
-
-      noteSummary.value = {
-        resolvedPath: summary.resolvedPath,
-        indexStatus: summary.indexStatus,
-        resource: summary.resource
-          ? {
-              id: summary.resource.id,
-              name: summary.resource.name,
-              content: summary.resource.content,
-            }
-          : undefined,
-      };
-      await options.fetchResources();
-      await options.maybeRenameCurrentConversation(
-        summary.resource?.name?.replace(/\.md$/i, '') || input.title || input.topic,
-      );
-      toast.success(t('aiAssistant.dialogs.note.created'));
-      options.scrollMessagesToBottom();
-    } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.note.createFailed'));
-    } finally {
-      noteCreating.value = false;
-    }
-  }
-
   async function createKnowledgeNoteFromConversation() {
     if (!options.hasWorkflowMessages.value && !noteAgentDraftMarkdown.value) return;
 
@@ -311,7 +265,9 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
         noteSummary.value = summary;
         await options.fetchResources();
         await options.maybeRenameCurrentConversation(
-          summary.resource?.name?.replace(/\.md$/i, '') || noteAgentDraftTitle.value || buildKnowledgeNoteTitle(),
+          summary.resource?.name?.replace(/\.md$/i, '') ||
+            noteAgentDraftTitle.value ||
+            buildKnowledgeNoteTitle(),
         );
         toast.success(t('aiAssistant.dialogs.note.created'));
         options.scrollMessagesToBottom();
@@ -323,16 +279,12 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       return;
     }
 
-    const noteTitle = buildKnowledgeNoteTitle();
-    await createKnowledgeNote({
+    // A note is never written directly from the conversation. Start the
+    // proposal run first so the complete path/body is visible and approved.
+    await startKnowledgeNoteAgentRunWithInput({
       topic: buildKnowledgeNoteTopic(),
-      ...(noteAgentDraftMarkdown.value
-        ? { contentMarkdown: noteAgentDraftMarkdown.value.slice(0, 50000) }
-        : {}),
-      ...(noteTitle ? { title: noteTitle } : {}),
-      ...(noteAgentDraftTargetSubpath.value
-        ? { targetSubpath: noteAgentDraftTargetSubpath.value }
-        : {}),
+      title: buildKnowledgeNoteTitle(),
+      source: options.chatTimeline.value.map((item) => `${item.role}: ${item.content}`).join('\n'),
     });
   }
 
@@ -356,7 +308,9 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       noteSummary.value = summary;
       await options.fetchResources();
       await options.maybeRenameCurrentConversation(
-        summary.resource?.name?.replace(/\.md$/i, '') || noteAgentDraftTitle.value || buildKnowledgeNoteTitle(),
+        summary.resource?.name?.replace(/\.md$/i, '') ||
+          noteAgentDraftTitle.value ||
+          buildKnowledgeNoteTitle(),
       );
       toast.success(t('aiAssistant.dialogs.note.created'));
       options.scrollMessagesToBottom();
@@ -394,9 +348,6 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
           topic: input.topic,
           ...(input.source ? { source: input.source } : {}),
           ...(input.title ? { title: input.title } : {}),
-          ...(options.knowledgeNoteSubpath.value
-            ? { targetSubpath: options.knowledgeNoteSubpath.value }
-            : {}),
           ...(selectedModel
             ? {
                 providerId: selectedModel.providerId,

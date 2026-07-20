@@ -131,7 +131,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { marked } from 'marked';
+import { renderSafeMarkdown } from '../../../shared/utils/safe-markdown';
 import {
   Sparkles,
   Folder,
@@ -205,13 +205,7 @@ const savePath = computed(() => {
   return `${repo}${parentPath}${folderPath}`;
 });
 
-const renderedContent = computed(() => {
-  try {
-    return marked(generatedContent.value);
-  } catch {
-    return generatedContent.value;
-  }
-});
+const renderedContent = computed(() => renderSafeMarkdown(generatedContent.value));
 
 watch(
   () => props.open,

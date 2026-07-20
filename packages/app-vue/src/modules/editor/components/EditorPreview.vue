@@ -37,7 +37,9 @@ let renderRunId = 0;
 
 function initializeMarkdownIt() {
   md = new MarkdownIt({
-    html: true,
+    // Vault notes are untrusted content; never enable raw HTML (ADR-034 Phase 0).
+    // Vault 笔记内容不可信，禁止原始 HTML（ADR-034 阶段 0）。
+    html: false,
     linkify: true,
     typographer: true,
     breaks: true,

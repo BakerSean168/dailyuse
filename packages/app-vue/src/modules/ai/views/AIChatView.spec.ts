@@ -153,11 +153,13 @@ const i18n = createI18n({
             executionStatus: 'Execution Status',
             executionTimeline: 'Execution Timeline',
             executionResult: 'Execution Result',
-            executionSummaryText: '{status}: {executed} executed, {skipped} skipped, {failed} failed.',
+            executionSummaryText:
+              '{status}: {executed} executed, {skipped} skipped, {failed} failed.',
             awaitingConfirmation: 'awaiting confirmation',
             executionRecorded: 'execution recorded',
             recoveryTitle: 'Recovery',
-            recoveryRetryReady: 'You can retry execution after fixing the failed action inputs or runtime issue.',
+            recoveryRetryReady:
+              'You can retry execution after fixing the failed action inputs or runtime issue.',
             recoverySuggestions: 'Recommended recovery steps:',
             planReady: 'Automation plan ready',
             planFailed: 'Automation plan failed',
@@ -225,7 +227,11 @@ const i18n = createI18n({
           shortcuts: {
             chat: { title: 'Just chat', description: 'Chat', prefill: 'chat prefill' },
             goalCreate: { title: 'Plan a goal', description: 'Goal', prefill: 'goal prefill' },
-            knowledgeGenerate: { title: 'Write a note', description: 'Note', prefill: 'note prefill' },
+            knowledgeGenerate: {
+              title: 'Write a note',
+              description: 'Note',
+              prefill: 'note prefill',
+            },
             knowledgeQa: { title: 'Ask KB', description: 'QA', prefill: 'qa prefill' },
           },
           sidebar: {
@@ -330,10 +336,11 @@ const SelectItemStub = defineComponent({
 const AIFooterComposerStub = defineComponent({
   name: 'AIFooterComposerStub',
   setup(_, { slots }) {
-    return () => h('div', { 'data-testid': 'ai-footer-composer-stub' }, [
-      slots.default?.(),
-      slots['action-rail']?.(),
-    ]);
+    return () =>
+      h('div', { 'data-testid': 'ai-footer-composer-stub' }, [
+        slots.default?.(),
+        slots['action-rail']?.(),
+      ]);
   },
 });
 
@@ -347,14 +354,28 @@ const AIMessagePanelStub = defineComponent({
 const AIGoalWorkflowPanelStub = defineComponent({
   name: 'AIGoalWorkflowPanelStub',
   props: [
-    'toolMode', 'goalClarification', 'goalDraft', 'goalAutomationResult',
-    'goalAgentRun', 'goalAgentPendingActions', 'goalAgentExecutedActions',
-    'clarificationAnswers', 'editableGoal', 'editableKeyResults',
-    'editableTaskTemplates', 'editableReminders',
-    'showGoalDraftEditor', 'creatingGoal', 'goalExecutedActions',
-    'goalExecutionSummary', 'goalExecutionRecovery', 'knowledgeAnswer',
+    'toolMode',
+    'goalClarification',
+    'goalDraft',
+    'goalAutomationResult',
+    'goalAgentRun',
+    'goalAgentPendingActions',
+    'goalAgentExecutedActions',
+    'clarificationAnswers',
+    'editableGoal',
+    'editableKeyResults',
+    'editableTaskTemplates',
+    'editableReminders',
+    'showGoalDraftEditor',
+    'creatingGoal',
+    'goalExecutedActions',
+    'goalExecutionSummary',
+    'goalExecutionRecovery',
+    'knowledgeAnswer',
     'knowledgeQaAgentRun',
-    'noteAgentRun', 'noteSummary', 'notePreview',
+    'noteAgentRun',
+    'noteSummary',
+    'notePreview',
   ],
   emits: [
     'update:clarification-answers',
@@ -375,103 +396,131 @@ const AIGoalWorkflowPanelStub = defineComponent({
       const fragments = [];
       if (props.toolMode === 'goal-create') {
         if (props.goalDraft) {
-          fragments.push(h('div', { 'data-testid': 'goal-draft-panel' }, [
-            h('h3', 'Goal draft'),
-            h('p', props.goalDraft.goal?.title ?? ''),
-            h('p', props.goalDraft.goal?.description ?? ''),
-          ]));
+          fragments.push(
+            h('div', { 'data-testid': 'goal-draft-panel' }, [
+              h('h3', 'Goal draft'),
+              h('p', props.goalDraft.goal?.title ?? ''),
+              h('p', props.goalDraft.goal?.description ?? ''),
+            ]),
+          );
         }
         if (props.goalClarification) {
           const answers = [...(props.clarificationAnswers ?? [])];
-          fragments.push(h('div', { 'data-testid': 'goal-clarification-panel' }, [
-            h('h3', 'Goal clarification'),
-            h('p', props.goalClarification.rationale ?? ''),
-            ...(props.goalClarification.questions ?? []).map((q: { question: string; context?: string }, i: number) =>
-              h('div', [
-                h('p', q.question),
-                h('textarea', {
-                  placeholder: 'Answer here',
-                  value: answers[i] ?? '',
-                  onInput: (e: Event) => {
-                    const next = [...answers];
-                    next[i] = (e.target as HTMLTextAreaElement).value;
-                    emit('update:clarification-answers', next);
-                  },
-                }),
-              ]),
-            ),
-          ]));
+          fragments.push(
+            h('div', { 'data-testid': 'goal-clarification-panel' }, [
+              h('h3', 'Goal clarification'),
+              h('p', props.goalClarification.rationale ?? ''),
+              ...(props.goalClarification.questions ?? []).map(
+                (q: { question: string; context?: string }, i: number) =>
+                  h('div', [
+                    h('p', q.question),
+                    h('textarea', {
+                      placeholder: 'Answer here',
+                      value: answers[i] ?? '',
+                      onInput: (e: Event) => {
+                        const next = [...answers];
+                        next[i] = (e.target as HTMLTextAreaElement).value;
+                        emit('update:clarification-answers', next);
+                      },
+                    }),
+                  ]),
+              ),
+            ]),
+          );
         }
         if (props.goalAgentRun) {
           const run = props.goalAgentRun;
-          fragments.push(h('div', { 'data-testid': 'goal-agent-panel' }, [
-            h('h3', 'Agent Run'),
-            h('p', run.run.status),
-            h('p', run.state.stage),
-            ...(props.showGoalDraftEditor ? [
-              h('button', {
-                'data-testid': 'goal-agent-draft-editor-update',
-                onClick: () => {
-                  emit('update-goal', {
-                    ...props.editableGoal,
-                    name: 'Edited Agent AI Goal',
-                    description: 'Edited before Agent approval.',
-                  });
-                  if ((props.editableTaskTemplates ?? []).length) {
-                    emit('update-task-template', {
-                      index: 0,
-                      value: {
-                        ...props.editableTaskTemplates[0],
-                        name: 'Edited weekly implementation block',
-                        description: 'Edited task template before Agent approval.',
-                        cadence: 'daily',
+          fragments.push(
+            h('div', { 'data-testid': 'goal-agent-panel' }, [
+              h('h3', 'Agent Run'),
+              h('p', run.run.status),
+              h('p', run.state.stage),
+              ...(props.showGoalDraftEditor
+                ? [
+                    h(
+                      'button',
+                      {
+                        'data-testid': 'goal-agent-draft-editor-update',
+                        onClick: () => {
+                          emit('update-goal', {
+                            ...props.editableGoal,
+                            name: 'Edited Agent AI Goal',
+                            description: 'Edited before Agent approval.',
+                          });
+                          if ((props.editableTaskTemplates ?? []).length) {
+                            emit('update-task-template', {
+                              index: 0,
+                              value: {
+                                ...props.editableTaskTemplates[0],
+                                name: 'Edited weekly implementation block',
+                                description: 'Edited task template before Agent approval.',
+                                cadence: 'daily',
+                              },
+                            });
+                          }
+                          if ((props.editableReminders ?? []).length) {
+                            emit('update-reminder', {
+                              index: 0,
+                              value: {
+                                ...props.editableReminders[0],
+                                title: 'Edited weekly review reminder',
+                                description: 'Edited reminder before Agent approval.',
+                                cadence: 'daily',
+                                timeOfDay: '10:30',
+                              },
+                            });
+                          }
+                        },
                       },
-                    });
-                  }
-                  if ((props.editableReminders ?? []).length) {
-                    emit('update-reminder', {
-                      index: 0,
-                      value: {
-                        ...props.editableReminders[0],
-                        title: 'Edited weekly review reminder',
-                        description: 'Edited reminder before Agent approval.',
-                        cadence: 'daily',
-                        timeOfDay: '10:30',
-                      },
-                    });
-                  }
-                },
-              }, 'Edit agent draft'),
-            ] : []),
-            ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
-              h('p', String(artifact.title ?? artifact.kind ?? '')),
-            ),
-            ...(props.goalAgentPendingActions ?? []).map((action: Record<string, unknown>) =>
-              h('p', String(action.rationale ?? action.tool ?? '')),
-            ),
-            ...(props.goalAgentExecutedActions ?? []).map((action: Record<string, unknown>) =>
-              h('p', String(action.message ?? action.tool ?? '')),
-            ),
-          ]));
+                      'Edit agent draft',
+                    ),
+                  ]
+                : []),
+              ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
+                h('p', String(artifact.title ?? artifact.kind ?? '')),
+              ),
+              ...(props.goalAgentPendingActions ?? []).map((action: Record<string, unknown>) =>
+                h('p', String(action.rationale ?? action.tool ?? '')),
+              ),
+              ...(props.goalAgentExecutedActions ?? []).map((action: Record<string, unknown>) =>
+                h('p', String(action.message ?? action.tool ?? '')),
+              ),
+            ]),
+          );
         }
         if (props.goalAutomationResult) {
           const result = props.goalAutomationResult;
-          fragments.push(h('div', { 'data-testid': 'goal-automation-panel' }, [
-            h('h3', 'Summary'),
-            h('p', result.summary ?? ''),
-            ...(result.actions ?? []).map((a: Record<string, unknown>) => h('p', (a.rationale as string) ?? '')),
-            h('h3', 'Execution Status'),
-            ...(result.executedActions ?? []).map((a: Record<string, unknown>) => h('p', (a.message as string) ?? '')),
-            ...(props.goalExecutionSummary ? [
-              h('p', `${props.goalExecutionSummary.status === 'partial' ? 'Partial success' : props.goalExecutionSummary.status === 'success' ? 'Success' : 'Failed'}: ${props.goalExecutionSummary.executedCount} executed, ${props.goalExecutionSummary.skippedCount} skipped, ${props.goalExecutionSummary.failedCount} failed.`),
-            ] : []),
-            h('h3', 'Execution Timeline'),
-            ...(result.executedActions ?? []).map((a: Record<string, unknown>) => h('p', (a.message as string) ?? '')),
-            ...(result.recovery ? [
-              h('h3', 'Recovery'),
-              ...(result.recovery.suggestions ?? []).map((s: string) => h('p', s)),
-            ] : []),
-          ]));
+          fragments.push(
+            h('div', { 'data-testid': 'goal-automation-panel' }, [
+              h('h3', 'Summary'),
+              h('p', result.summary ?? ''),
+              ...(result.actions ?? []).map((a: Record<string, unknown>) =>
+                h('p', (a.rationale as string) ?? ''),
+              ),
+              h('h3', 'Execution Status'),
+              ...(result.executedActions ?? []).map((a: Record<string, unknown>) =>
+                h('p', (a.message as string) ?? ''),
+              ),
+              ...(props.goalExecutionSummary
+                ? [
+                    h(
+                      'p',
+                      `${props.goalExecutionSummary.status === 'partial' ? 'Partial success' : props.goalExecutionSummary.status === 'success' ? 'Success' : 'Failed'}: ${props.goalExecutionSummary.executedCount} executed, ${props.goalExecutionSummary.skippedCount} skipped, ${props.goalExecutionSummary.failedCount} failed.`,
+                    ),
+                  ]
+                : []),
+              h('h3', 'Execution Timeline'),
+              ...(result.executedActions ?? []).map((a: Record<string, unknown>) =>
+                h('p', (a.message as string) ?? ''),
+              ),
+              ...(result.recovery
+                ? [
+                    h('h3', 'Recovery'),
+                    ...(result.recovery.suggestions ?? []).map((s: string) => h('p', s)),
+                  ]
+                : []),
+            ]),
+          );
         }
       }
       if (props.toolMode === 'knowledge-qa' && props.knowledgeAnswer) {
@@ -479,65 +528,77 @@ const AIGoalWorkflowPanelStub = defineComponent({
         const relatedNotes = answer.relatedNotes?.length
           ? answer.relatedNotes
           : (answer.citations ?? []).filter(
-              (citation: Record<string, unknown>, index: number, citations: Array<Record<string, unknown>>) =>
-                citations.findIndex((item) => item.resourceId === citation.resourceId) === index,
+              (
+                citation: Record<string, unknown>,
+                index: number,
+                citations: Array<Record<string, unknown>>,
+              ) => citations.findIndex((item) => item.resourceId === citation.resourceId) === index,
             );
-        fragments.push(h('div', { 'data-testid': 'knowledge-answer-panel' }, [
-          h('h3', 'Knowledge Answer'),
-          h('p', answer.evidenceStatus === 'grounded'
-            ? 'Grounded in repository citations'
-            : 'Current knowledge base evidence is insufficient'),
-          h('p', answer.question ?? ''),
-          h('p', answer.answer ?? ''),
-          h('p', `${answer.matchedResourceCount} resource(s) matched in ${answer.processingTimeMs} ms.`),
-          ...(relatedNotes ?? []).map((note: Record<string, unknown>) =>
-            h('div', [
-              h('h4', 'Related Notes'),
-              h('p', String(note.title ?? '')),
-              h('p', String(note.resourcePath ?? '')),
-              h(
-                'button',
-                {
-                  type: 'button',
-                  'data-testid': 'knowledge-related-note-open',
-                  onClick: () => emit('open-knowledge-citation', String(note.resourceId ?? '')),
-                },
-                'Open Source',
-              ),
-            ]),
-          ),
-          ...(answer.citations ?? []).map((citation: Record<string, unknown>) =>
-            h('div', [
-              h('p', String(citation.title ?? '')),
-              h('p', String(citation.resourcePath ?? '')),
-              h('p', String(citation.excerpt ?? '')),
-              h(
-                'button',
-                {
-                  type: 'button',
-                  'data-testid': 'knowledge-citation-open',
-                  onClick: () => emit('open-knowledge-citation', String(citation.resourceId ?? '')),
-                },
-                'Open Source',
-              ),
-            ]),
-          ),
-          ...(props.knowledgeQaAgentRun
-            ? [
-                h('h4', 'Observability'),
+        fragments.push(
+          h('div', { 'data-testid': 'knowledge-answer-panel' }, [
+            h('h3', 'Knowledge Answer'),
+            h(
+              'p',
+              answer.evidenceStatus === 'grounded'
+                ? 'Grounded in repository citations'
+                : 'Current knowledge base evidence is insufficient',
+            ),
+            h('p', answer.question ?? ''),
+            h('p', answer.answer ?? ''),
+            h(
+              'p',
+              `${answer.matchedResourceCount} resource(s) matched in ${answer.processingTimeMs} ms.`,
+            ),
+            ...(relatedNotes ?? []).map((note: Record<string, unknown>) =>
+              h('div', [
+                h('h4', 'Related Notes'),
+                h('p', String(note.title ?? '')),
+                h('p', String(note.resourcePath ?? '')),
                 h(
-                  'p',
-                  `${props.knowledgeQaAgentRun.state.usage.promptTokens ?? 0} prompt · ${props.knowledgeQaAgentRun.state.usage.completionTokens ?? 0} completion · ${props.knowledgeQaAgentRun.state.usage.totalTokens ?? 0} total`,
+                  'button',
+                  {
+                    type: 'button',
+                    'data-testid': 'knowledge-related-note-open',
+                    onClick: () => emit('open-knowledge-citation', String(note.resourceId ?? '')),
+                  },
+                  'Open Source',
                 ),
-                ...props.knowledgeQaAgentRun.events.map((event: Record<string, unknown>) =>
+              ]),
+            ),
+            ...(answer.citations ?? []).map((citation: Record<string, unknown>) =>
+              h('div', [
+                h('p', String(citation.title ?? '')),
+                h('p', String(citation.resourcePath ?? '')),
+                h('p', String(citation.excerpt ?? '')),
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    'data-testid': 'knowledge-citation-open',
+                    onClick: () =>
+                      emit('open-knowledge-citation', String(citation.resourceId ?? '')),
+                  },
+                  'Open Source',
+                ),
+              ]),
+            ),
+            ...(props.knowledgeQaAgentRun
+              ? [
+                  h('h4', 'Observability'),
                   h(
                     'p',
-                    `${String(event.type)} · ${String((event.data as Record<string, unknown> | undefined)?.node ?? (event.data as Record<string, unknown> | undefined)?.tool ?? '')}`,
+                    `${props.knowledgeQaAgentRun.state.usage.promptTokens ?? 0} prompt · ${props.knowledgeQaAgentRun.state.usage.completionTokens ?? 0} completion · ${props.knowledgeQaAgentRun.state.usage.totalTokens ?? 0} total`,
                   ),
-                ),
-              ]
-            : []),
-        ]));
+                  ...props.knowledgeQaAgentRun.events.map((event: Record<string, unknown>) =>
+                    h(
+                      'p',
+                      `${String(event.type)} · ${String((event.data as Record<string, unknown> | undefined)?.node ?? (event.data as Record<string, unknown> | undefined)?.tool ?? '')}`,
+                    ),
+                  ),
+                ]
+              : []),
+          ]),
+        );
       }
       if (
         (props.toolMode === 'knowledge-generate' || props.toolMode === 'knowledge-qa') &&
@@ -545,29 +606,36 @@ const AIGoalWorkflowPanelStub = defineComponent({
         !props.noteSummary
       ) {
         const run = props.noteAgentRun;
-        fragments.push(h('div', { 'data-testid': 'knowledge-note-agent-panel' }, [
-          h('h3', 'Knowledge Note Draft'),
-          h('p', run.run.status),
-          h('p', run.state.stage),
-          ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
-            h('div', [
-              h('p', String(artifact.title ?? artifact.kind ?? '')),
-              h('p', String((artifact.data as Record<string, unknown> | undefined)?.markdown ?? '')),
-            ]),
-          ),
-        ]));
+        fragments.push(
+          h('div', { 'data-testid': 'knowledge-note-agent-panel' }, [
+            h('h3', 'Knowledge Note Draft'),
+            h('p', run.run.status),
+            h('p', run.state.stage),
+            ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
+              h('div', [
+                h('p', String(artifact.title ?? artifact.kind ?? '')),
+                h(
+                  'p',
+                  String((artifact.data as Record<string, unknown> | undefined)?.markdown ?? ''),
+                ),
+              ]),
+            ),
+          ]),
+        );
       }
       if (
         (props.toolMode === 'knowledge-generate' || props.toolMode === 'knowledge-qa') &&
         props.noteSummary
       ) {
-        fragments.push(h('div', { 'data-testid': 'knowledge-note-summary-panel' }, [
-          h('h3', 'Knowledge Note Created'),
-          h('p', props.noteSummary.resource?.name ?? ''),
-          h('p', props.noteSummary.resolvedPath ?? ''),
-          h('p', props.noteSummary.indexStatus ?? ''),
-          h('p', props.notePreview ?? ''),
-        ]));
+        fragments.push(
+          h('div', { 'data-testid': 'knowledge-note-summary-panel' }, [
+            h('h3', 'Knowledge Note Created'),
+            h('p', props.noteSummary.resource?.name ?? ''),
+            h('p', props.noteSummary.resolvedPath ?? ''),
+            h('p', props.noteSummary.indexStatus ?? ''),
+            h('p', props.notePreview ?? ''),
+          ]),
+        );
       }
       return h('div', { 'data-testid': 'goal-workflow-stub' }, fragments);
     };
@@ -681,85 +749,89 @@ function createAgentRunResult(overrides?: {
       messages: [],
       intent: 'goal-create',
       stage: overrides?.stage ?? 'approval',
-      artifacts: overrides?.artifacts ?? (status === 'waiting_clarification'
-        ? []
-        : [
-            {
-              artifactId: 'artifact-1',
-              kind: 'goal_draft',
-              title: 'Agent AI Goal',
-              data: {
+      artifacts:
+        overrides?.artifacts ??
+        (status === 'waiting_clarification'
+          ? []
+          : [
+              {
+                artifactId: 'artifact-1',
+                kind: 'goal_draft',
                 title: 'Agent AI Goal',
-                description: 'Generated by the Agent runtime',
-                category: 'learning',
-                importance: 'Important',
-                tags: ['ai'],
-                suggestedStartDate: 1,
-                suggestedEndDate: 2,
-                taskTemplates: [
-                  {
-                    name: 'Weekly implementation block',
-                    description: 'Reserve implementation time.',
-                    importance: 'Important',
-                    cadence: 'weekly',
-                  },
-                ],
-                reminders: [
-                  {
-                    title: 'Weekly review reminder',
-                    description: 'Review Agent implementation progress.',
-                    importance: 'Moderate',
-                    cadence: 'weekly',
-                    timeOfDay: '09:00',
-                  },
-                ],
+                data: {
+                  title: 'Agent AI Goal',
+                  description: 'Generated by the Agent runtime',
+                  category: 'learning',
+                  importance: 'Important',
+                  tags: ['ai'],
+                  suggestedStartDate: 1,
+                  suggestedEndDate: 2,
+                  taskTemplates: [
+                    {
+                      name: 'Weekly implementation block',
+                      description: 'Reserve implementation time.',
+                      importance: 'Important',
+                      cadence: 'weekly',
+                    },
+                  ],
+                  reminders: [
+                    {
+                      title: 'Weekly review reminder',
+                      description: 'Review Agent implementation progress.',
+                      importance: 'Moderate',
+                      cadence: 'weekly',
+                      timeOfDay: '09:00',
+                    },
+                  ],
+                },
+                updatedAt: 2,
               },
-              updatedAt: 2,
-            },
-            {
-              artifactId: 'artifact-2',
-              kind: 'action_plan',
-              title: 'Approval plan',
-              data: {
-                summary: 'Create one goal after approval.',
+              {
+                artifactId: 'artifact-2',
+                kind: 'action_plan',
+                title: 'Approval plan',
+                data: {
+                  summary: 'Create one goal after approval.',
+                },
+                updatedAt: 2,
               },
-              updatedAt: 2,
-            },
-          ]),
+            ]),
       citations: [],
       retrievedContext: [],
-      pendingActions: status === 'waiting_approval'
-        ? [
-            {
-              tool: 'create_goal',
-              payload: { title: 'Agent AI Goal' },
-              rationale: 'Create the approved goal draft after user confirmation.',
-              index: 0,
-              dependsOn: [],
-            },
-            {
-              tool: 'create_task_template',
-              payload: { name: 'Weekly implementation block' },
-              rationale: 'Create the weekly implementation task template.',
-              index: 0,
-              dependsOn: [0],
-            },
-            {
-              tool: 'create_reminder',
-              payload: { title: 'Weekly review reminder' },
-              rationale: 'Create the weekly review reminder.',
-              index: 0,
-              dependsOn: [0],
-            },
-          ]
-        : [],
+      pendingActions:
+        status === 'waiting_approval'
+          ? [
+              {
+                tool: 'create_goal',
+                payload: { title: 'Agent AI Goal' },
+                rationale: 'Create the approved goal draft after user confirmation.',
+                index: 0,
+                dependsOn: [],
+              },
+              {
+                tool: 'create_task_template',
+                payload: { name: 'Weekly implementation block' },
+                rationale: 'Create the weekly implementation task template.',
+                index: 0,
+                dependsOn: [0],
+              },
+              {
+                tool: 'create_reminder',
+                payload: { title: 'Weekly review reminder' },
+                rationale: 'Create the weekly review reminder.',
+                index: 0,
+                dependsOn: [0],
+              },
+            ]
+          : [],
       approvedActions: overrides?.approvedActions ?? [],
       executedActions: overrides?.executedActions ?? [],
       usage: {},
       errors: [],
     },
     events: [],
-    interrupts: overrides?.interrupts ??
+    interrupts:
+      overrides?.interrupts ??
       (status === 'waiting_approval'
         ? [{ runId: 'run-1' }]
         : status === 'waiting_clarification'
@@ -797,8 +869,7 @@ function createKnowledgeAnswer(overrides?: {
     processingTimeMs: 42,
     matchedResourceCount: citations.length,
     question: overrides?.question ?? 'How should knowledge answers be grounded?',
-    evidenceStatus:
-      overrides?.evidenceStatus ?? (citations.length ? 'grounded' : 'insufficient'),
+    evidenceStatus: overrides?.evidenceStatus ?? (citations.length ? 'grounded' : 'insufficient'),
   };
 }
 
@@ -808,10 +879,12 @@ function createKnowledgeQaAgentRunResult(overrides?: {
   runId?: string;
   threadId?: string;
 }) {
-  const answer = overrides?.answer ?? createKnowledgeAnswer({
-    question: 'What does run history say about grounded answers?',
-    answer: 'Run history answers should keep citations attached.',
-  });
+  const answer =
+    overrides?.answer ??
+    createKnowledgeAnswer({
+      question: 'What does run history say about grounded answers?',
+      answer: 'Run history answers should keep citations attached.',
+    });
   const runId = overrides?.runId ?? 'knowledge-qa-run-1';
   return {
     run: {
@@ -1164,7 +1237,7 @@ describe('AIChatView', () => {
       resources,
     });
     mocks.useUserSetting.mockReturnValue({
-      getCategory: () => ({ knowledgeNoteSubpath: 'notes/ai' }),
+      getCategory: () => ({}),
     });
     mocks.useEditorWorkspaceActions.mockReturnValue({
       requestOpenResource,
@@ -1693,7 +1766,9 @@ describe('AIChatView', () => {
     await flushPromises();
 
     expect(service.getAgentRun).toHaveBeenCalledWith('knowledge-qa-run-1');
-    expect(wrapper.text()).not.toContain('Old persisted answer should not survive selecting this run.');
+    expect(wrapper.text()).not.toContain(
+      'Old persisted answer should not survive selecting this run.',
+    );
     expect(wrapper.find('[data-testid="knowledge-answer-panel"]').exists()).toBe(false);
   });
 
@@ -2047,10 +2122,7 @@ describe('AIChatView', () => {
 
     expect(service.resumeAgentRun).toHaveBeenCalledWith('run-1', {
       userDecision: 'clarify',
-      clarificationAnswers: [
-        'Run a 5K without stopping.',
-        'Review progress every Sunday.',
-      ],
+      clarificationAnswers: ['Run a 5K without stopping.', 'Review progress every Sunday.'],
     });
     expect(service.generateGoal).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('waiting_approval');
@@ -2372,7 +2444,10 @@ describe('AIChatView', () => {
         'conv-1': {
           mode: 'goal-create',
           goalWorkflowStage: 'result',
-          goalDraft: createGoalDraft('Generated AI Goal', 'Generated from the current conversation'),
+          goalDraft: createGoalDraft(
+            'Generated AI Goal',
+            'Generated from the current conversation',
+          ),
           goalClarification: null,
           goalAutomationResult: {
             state: 'result',
@@ -2521,7 +2596,9 @@ describe('AIChatView', () => {
     expect(wrapper.text()).toContain('Use cited repository excerpts to answer the question.');
     expect(wrapper.text()).toContain('notes/ai/grounded-answer.md');
     expect(wrapper.text()).toContain('Grounded Answer');
-    expect(wrapper.text()).toContain('Repository evidence says to keep answers grounded in citations.');
+    expect(wrapper.text()).toContain(
+      'Repository evidence says to keep answers grounded in citations.',
+    );
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Knowledge answer ready');
   });
 
@@ -2675,7 +2752,9 @@ describe('AIChatView', () => {
     );
     expect(service.queryKnowledge).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('Current knowledge base evidence is insufficient');
-    expect(wrapper.text()).toContain('No relevant repository resources were found for this question.');
+    expect(wrapper.text()).toContain(
+      'No relevant repository resources were found for this question.',
+    );
     expect(wrapper.find('[data-testid="knowledge-citation-open"]').exists()).toBe(false);
     const draftNoteButton = wrapper.find('[data-testid="knowledge-qa-draft-note"]');
     expect(draftNoteButton.exists()).toBe(true);
@@ -2797,7 +2876,6 @@ describe('AIChatView', () => {
             'Question: How should knowledge answers be grounded? Answer: Use cited repository excerpts to answer the question. Sources: Grounded Answer',
           title: 'How should knowledge answers be grounded?',
           source: expect.stringContaining('Question: How should knowledge answers be grounded?'),
-          targetSubpath: 'notes/ai',
           providerId: 'provider-1',
           model: 'gpt-4o-mini',
         }),
@@ -2895,7 +2973,6 @@ describe('AIChatView', () => {
           topic: 'Summarize agent notes.',
           source: 'User: Summarize agent notes.',
           title: 'Knowledge note session',
-          targetSubpath: 'notes/ai',
           providerId: 'provider-1',
           model: 'gpt-4o-mini',
         }),

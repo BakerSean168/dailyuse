@@ -5,7 +5,7 @@
  * 由 ApiBootstrapper 在启动时统一调用。
  */
 
-import type { Express } from 'express';
+import type { Express, Request } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -48,7 +48,18 @@ export function applyGlobalMiddleware(app: Express, metricsStore: MetricsStore):
   );
 
   // JSON body parsing (must be after CORS for preflight)
-  app.use(express.json());
+  app.use(
+    express.json({
+      limit: '2mb',
+      verify(req, _res, buffer) {
+        // GitHub signs the exact JSON bytes. Keep them only for signed webhook
+        // requests so normal API traffic does not retain a second body copy.
+        if (req.headers['x-hub-signature-256']) {
+          (req as Request & { rawBody?: string }).rawBody = buffer.toString('utf8');
+        }
+      },
+    }),
+  );
 
   // Compression (skip SSE paths)
   app.use(

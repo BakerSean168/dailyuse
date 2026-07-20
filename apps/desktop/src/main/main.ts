@@ -14,6 +14,7 @@
  */
 
 import './runtime-init';
+import { powerMonitor } from 'electron';
 import type { IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
@@ -22,26 +23,16 @@ import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { GoalElectronModule } from '@dailyuse/goal/electron';
-import {
-  createTaskElectronModule,
-} from '@dailyuse/task/electron';
-import {
-  createTaskPowerSyncScheduleExecutionSource,
-} from '@dailyuse/task/schedule-execution';
-import {
-  createTaskPowerSyncScheduleProjectionSource,
-} from '@dailyuse/task/schedule-projection';
+import { createTaskElectronModule } from '@dailyuse/task/electron';
+import { createTaskPowerSyncScheduleExecutionSource } from '@dailyuse/task/schedule-execution';
+import { createTaskPowerSyncScheduleProjectionSource } from '@dailyuse/task/schedule-projection';
 import {
   createScheduleElectronModule,
   PowerSyncScheduleTaskRepository,
 } from '@dailyuse/schedule/electron';
 import { createScheduleOrchestrationModule } from '@dailyuse/schedule-orchestration';
-import {
-  createGoalPowerSyncScheduleExecutionSource,
-} from '@dailyuse/goal/schedule-execution';
-import {
-  createGoalPowerSyncScheduleProjectionSource,
-} from '@dailyuse/goal/schedule-projection';
+import { createGoalPowerSyncScheduleExecutionSource } from '@dailyuse/goal/schedule-execution';
+import { createGoalPowerSyncScheduleProjectionSource } from '@dailyuse/goal/schedule-projection';
 import { ReminderElectronModule } from '@dailyuse/reminder/electron';
 import { createReminderPowerSyncScheduleExecutionSource } from '@dailyuse/reminder/schedule-execution';
 import { createReminderPowerSyncScheduleProjectionSource } from '@dailyuse/reminder/schedule-projection';
@@ -52,16 +43,13 @@ import {
 import { SettingElectronModule } from '@dailyuse/setting/electron';
 import { createAIElectronModule } from '@dailyuse/ai/electron';
 import {
-  createFsStorageAdapter,
   createRepositoryElectronModule,
-  createRepositoryPowerSyncModule,
+  createLocalVaultRuntime,
 } from '@dailyuse/repository/electron';
-import { createEditorElectronModule } from '@dailyuse/editor/electron';
 import { AccountElectronModule } from '@dailyuse/account/electron';
 import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron';
 import { registerDesktopAuthShellHandlers } from './modules/authentication/desktop-auth-shell';
 import { GovernanceElectronModule } from '@dailyuse/governance/electron';
-import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
@@ -74,7 +62,11 @@ import type { ProfilePathResolver } from './paths';
 import { ProfileRegistry } from './profile/profile-registry';
 import { DesktopProfileRuntimeManager } from './profile/desktop-profile-runtime-manager';
 import type { PowerSyncDatabase } from '@powersync/node';
-import { createDesktopRepositorySearchAdapter } from './modules/repository/desktop-repository-search.adapter';
+import { KnowledgeRepositoryRemoteGateway } from './modules/repository/knowledge-repository-remote.gateway';
+import { DesktopKnowledgeRepositoryGitRuntime } from './modules/repository/desktop-knowledge-repository-git.runtime';
+import { DesktopKnowledgeRepositoryReconciliationService } from './modules/repository/desktop-knowledge-repository-reconciliation.service';
+import { DesktopKnowledgeRepositorySyncService } from './modules/repository/desktop-knowledge-repository-sync.service';
+import { DesktopKnowledgeRepositoryAutoSyncScheduler } from './modules/repository/desktop-knowledge-repository-auto-sync.scheduler';
 import { DesktopMainRuntime } from './desktop-main-runtime';
 
 configureDesktopShellIdentity();
@@ -94,12 +86,10 @@ async function registerBusinessModules(
 ): Promise<void> {
   const startTime = performance.now();
 
-  const repositoryStorageDir = profilePaths.repositoryStorageDir;
-  const editorRepositoryModule = createRepositoryPowerSyncModule(db, {
-    storagePort: createFsStorageAdapter(repositoryStorageDir),
+  const localVaultRuntime = createLocalVaultRuntime({
+    bindingFilePath: profilePaths.localVaultBindingPath,
+    writeLedgerFilePath: profilePaths.localVaultWriteLedgerPath,
   });
-
-  const searchAdapter = createDesktopRepositorySearchAdapter(db, repositoryStorageDir);
   const scheduleTaskRepository = new PowerSyncScheduleTaskRepository(db);
   const scheduleOrchestrationModule = createScheduleOrchestrationModule({
     taskProjection: {
@@ -126,17 +116,62 @@ async function registerBusinessModules(
   });
 
   const AIElectronModule = createAIElectronModule({
-    createKnowledgeNotePersistence: (context: IElectronModuleContext) =>
-      new DesktopKnowledgeNotePersistenceAdapter(context.db, repositoryStorageDir),
-    createKnowledgeSourcePort: (context: IElectronModuleContext) =>
-      new DesktopKnowledgeSourceAdapter(context.db, repositoryStorageDir),
+    createKnowledgeNotePersistence: () =>
+      new DesktopKnowledgeNotePersistenceAdapter(localVaultRuntime),
+    createKnowledgeSourcePort: () => new DesktopKnowledgeSourceAdapter(localVaultRuntime),
     createAnalyticsReadPort: () => new DesktopAnalyticsReadAdapter(),
     createAutomationToolExecutor: (context: IElectronModuleContext) =>
-      new DesktopAutomationToolExecutorAdapter(context.db, repositoryStorageDir),
+      new DesktopAutomationToolExecutorAdapter(context.db, localVaultRuntime),
   });
 
+  const knowledgeRepositoryRemoteGateway = new KnowledgeRepositoryRemoteGateway({
+    getAccessToken: () =>
+      mainRuntime?.profileRuntimeManager.getCurrentAuthService()?.getAccessToken() ?? null,
+  });
+  const knowledgeRepositoryGitRuntime = new DesktopKnowledgeRepositoryGitRuntime();
+  const knowledgeRepositoryReconciliationService =
+    new DesktopKnowledgeRepositoryReconciliationService({
+      localVault: localVaultRuntime,
+      remote: knowledgeRepositoryRemoteGateway,
+      gitRuntime: knowledgeRepositoryGitRuntime,
+    });
+  const knowledgeRepositorySyncService = new DesktopKnowledgeRepositorySyncService({
+    localVault: localVaultRuntime,
+    remote: knowledgeRepositoryRemoteGateway,
+    gitRuntime: knowledgeRepositoryGitRuntime,
+  });
+  const networkStateManager = mainRuntime?.profileRuntimeManager.getNetworkStateManager();
+  const knowledgeRepositoryAutoSyncScheduler = new DesktopKnowledgeRepositoryAutoSyncScheduler({
+    localVault: localVaultRuntime,
+    remote: knowledgeRepositoryRemoteGateway,
+    synchronization: knowledgeRepositorySyncService,
+    lifecycle: {
+      onNetworkOnline(listener) {
+        networkStateManager?.on('online', listener);
+        return () => networkStateManager?.off('online', listener);
+      },
+      onSystemResume(listener) {
+        let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+        const handleResume = () => {
+          if (resumeTimer) clearTimeout(resumeTimer);
+          resumeTimer = setTimeout(listener, 2_000);
+          resumeTimer.unref?.();
+        };
+        powerMonitor.on('resume', handleResume);
+        return () => {
+          powerMonitor.off('resume', handleResume);
+          if (resumeTimer) clearTimeout(resumeTimer);
+        };
+      },
+    },
+    stateFilePath: profilePaths.knowledgeRepositoryAutoSyncStatePath,
+  });
   const repositoryElectronModule = createRepositoryElectronModule({
-    storageBaseDir: repositoryStorageDir,
+    localVaultPort: localVaultRuntime,
+    knowledgeRepositoryConnectionPort: knowledgeRepositoryRemoteGateway,
+    knowledgeRepositoryReconciliationPort: knowledgeRepositoryReconciliationService,
+    knowledgeRepositorySyncPort: knowledgeRepositorySyncService,
+    knowledgeRepositoryAutoSyncScheduler,
   });
 
   const scheduleElectronModule = createScheduleElectronModule({
@@ -161,60 +196,7 @@ async function registerBusinessModules(
     .register(ReminderElectronModule)
     .register(AIElectronModule)
     .register(GovernanceElectronModule)
-    // Repository must precede Editor (cross-module dep)
-    .register(repositoryElectronModule)
-    .register(
-      createEditorElectronModule({
-        contentPort: {
-          getContent: async (resourceId) => {
-            const result = await editorRepositoryModule.api.getResource(resourceId);
-            if (!result.ok || !result.data) {
-              return { resourceId, name: '', content: null };
-            }
-
-            const resource = result.data as { id: string; name: string; content: string | null };
-            return {
-              resourceId: resource.id,
-              name: resource.name,
-              content: resource.content,
-            };
-          },
-          saveContent: async ({ resourceId, content }) => {
-            const result = await editorRepositoryModule.api.updateResource(resourceId, { content });
-            unwrapOrThrowError(result);
-          },
-        },
-        searchPort: {
-          search: async (request) => {
-            if (!request.workspaceId) {
-              return { results: [], total: 0 };
-            }
-
-            const repositorySearch = await searchAdapter.search(
-              request.workspaceId,
-              request.query,
-            );
-
-            return {
-              results: repositorySearch.results
-                .slice(request.offset ?? 0, (request.offset ?? 0) + (request.limit ?? 20))
-                .map((item) => ({
-                  resourceId: item.resourceId,
-                  resourcePath: item.resourcePath,
-                  resourceName: item.resourceName,
-                  snippet: item.matches[0]?.lineContent ?? '',
-                  score: item.matchCount,
-                  highlights: item.matches.map((match) => ({
-                    line: match.lineNumber,
-                    text: match.lineContent,
-                  })),
-                })),
-              total: repositorySearch.totalResults,
-            };
-          },
-        },
-      }),
-    );
+    .register(repositoryElectronModule);
 
   const initTime = performance.now() - startTime;
   logger.info(`Business modules registered in ${initTime.toFixed(2)}ms`);
@@ -241,13 +223,15 @@ async function initializeShellRuntime(): Promise<void> {
   console.log('[Shell] ProfileRegistry initialized');
 
   // Initialize shared auth infrastructure
-  const { RememberedAccountsService, NetworkStateManager, TokenManager } = await import(
-    './modules/authentication/infrastructure'
-  );
+  const { RememberedAccountsService, NetworkStateManager, TokenManager } =
+    await import('./modules/authentication/infrastructure');
   const tokenManager = new TokenManager();
   const rememberedAccountsService = new RememberedAccountsService();
   rememberedAccountsService.setFilePath(sharedResolver.rememberedAccountsPath);
-  const networkStateManager = new NetworkStateManager();
+  const networkStateManager = new NetworkStateManager({
+    enableHealthCheck: true,
+    checkInterval: 15_000,
+  });
 
   // Initialize DesktopProfileRuntimeManager with injected dependencies
   const profileRuntimeManager = new DesktopProfileRuntimeManager(

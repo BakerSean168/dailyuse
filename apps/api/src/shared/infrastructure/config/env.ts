@@ -175,12 +175,55 @@ export function getJwtConfig() {
  * 未配置时返回 null，组合根据此跳过注册 GitHub 提供者。
  */
 export function getGithubOAuthConfig(): { clientId: string; clientSecret: string } | null {
-  if (!env.GITHUB_OAUTH_CLIENT_ID || !env.GITHUB_OAUTH_CLIENT_SECRET) {
+  if (env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET) {
+    return {
+      clientId: env.GITHUB_OAUTH_CLIENT_ID,
+      clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
+    };
+  }
+  // E2E / test lanes get a deterministic mock provider so OAuth product flows are exercisable.
+  // e2e / test 车道注入确定性 mock 提供者，便于演练 OAuth 产品流。
+  if (env.RUNTIME_LANE === 'e2e' || env.NODE_ENV === 'test') {
+    return {
+      clientId: 'e2e-mock',
+      clientSecret: 'e2e-mock-secret',
+    };
+  }
+  return null;
+}
+
+export interface GithubAppConfig {
+  appId: string;
+  appSlug: string;
+  privateKey: string;
+  webhookSecret: string;
+}
+
+/**
+ * GitHub App configuration for knowledge repository authorization.
+ * A partial configuration is rejected so the runtime cannot expose a flow
+ * that later fails at token issuance or webhook verification.
+ */
+export function getGithubAppConfig(): GithubAppConfig | null {
+  const values = [
+    env.GITHUB_APP_ID,
+    env.GITHUB_APP_SLUG,
+    env.GITHUB_APP_PRIVATE_KEY,
+    env.GITHUB_APP_WEBHOOK_SECRET,
+  ];
+  if (values.every((value) => value === undefined)) {
     return null;
   }
+  if (values.some((value) => value === undefined)) {
+    throw new Error(
+      'GITHUB_APP_ID, GITHUB_APP_SLUG, GITHUB_APP_PRIVATE_KEY and GITHUB_APP_WEBHOOK_SECRET must be configured together',
+    );
+  }
   return {
-    clientId: env.GITHUB_OAUTH_CLIENT_ID,
-    clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
+    appId: env.GITHUB_APP_ID!,
+    appSlug: env.GITHUB_APP_SLUG!,
+    privateKey: env.GITHUB_APP_PRIVATE_KEY!,
+    webhookSecret: env.GITHUB_APP_WEBHOOK_SECRET!,
   };
 }
 

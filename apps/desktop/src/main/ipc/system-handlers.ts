@@ -115,6 +115,18 @@ function registerSystemHandlers(): void {
     return getIpcCache().getStats();
   });
 
+  ipcMain.handle('system:openExternalUrl', async (_event, request: { url?: unknown }) => {
+    if (typeof request?.url !== 'string') {
+      throw new Error('External URL is required');
+    }
+    const url = new URL(request.url);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      throw new Error('Only HTTP(S) external URLs are allowed');
+    }
+    await shell.openExternal(url.toString());
+    return { opened: true };
+  });
+
   ipcMain.handle(
     'system:userFiles:saveText',
     async (_event, request: SaveTextFileRequest): Promise<SaveTextFileResult> => {

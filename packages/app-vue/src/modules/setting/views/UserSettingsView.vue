@@ -19,6 +19,7 @@ import { SystemChannels } from '@dailyuse/contracts/electron';
 import AppearanceSettings from '../components/AppearanceSettings.vue';
 import AISettings from '../components/AISettings.vue';
 import LocaleSettings from '../components/LocaleSettings.vue';
+import KnowledgeRepositorySettings from '../components/KnowledgeRepositorySettings.vue';
 import PrivacySettings from '../components/PrivacySettings.vue';
 import ShortcutSettings from '../components/ShortcutSettings.vue';
 import NotificationSettings from '../components/NotificationSettings.vue';
@@ -43,7 +44,9 @@ const presentationStore = usePresentationPreferenceStore();
 const desktopApi = inject(DESKTOP_AUTH_API_KEY, undefined);
 // 独立设置场景：窄窗口用顶部分组 tabs；宽窗口用左侧垂直导航。
 const SETTINGS_NARROW_VIEWPORT = 1024;
-const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : SETTINGS_NARROW_VIEWPORT);
+const viewportWidth = ref(
+  typeof window !== 'undefined' ? window.innerWidth : SETTINGS_NARROW_VIEWPORT,
+);
 const isNarrow = computed(() => viewportWidth.value < SETTINGS_NARROW_VIEWPORT);
 
 function onViewportResize(): void {
@@ -67,18 +70,23 @@ const {
 
 const {
   isAvailable: isDataPortabilityAvailable,
+  isServerDisclosureAvailable,
   isExporting: isExportingData,
+  isExportingServerDisclosure,
   isImporting: isImportingData,
   lastResult: dataPortabilityResult,
   exportAllData,
+  exportServerHeldDataDisclosure,
   importAllData,
 } = useDataPortability();
 
 // ── 分组导航（§13-3）──
-type SettingsGroup = 'appearance' | 'ai' | 'notifications' | 'account' | 'data' | 'advanced';
+type SettingsGroup =
+  'appearance' | 'repository' | 'ai' | 'notifications' | 'account' | 'data' | 'advanced';
 
 const GROUP_VALUES: SettingsGroup[] = [
   'appearance',
+  'repository',
   'ai',
   'notifications',
   'account',
@@ -94,6 +102,7 @@ const activeTab = ref<SettingsGroup>(normalizeGroup(route.query.tab));
 
 const groups = computed(() => [
   { value: 'appearance' as const, label: t('setting.groups.appearance') },
+  { value: 'repository' as const, label: t('setting.groups.repository') },
   { value: 'ai' as const, label: t('setting.groups.ai') },
   { value: 'notifications' as const, label: t('setting.groups.notifications') },
   { value: 'account' as const, label: t('setting.groups.account') },
@@ -381,11 +390,7 @@ onMounted(async () => {
         <!-- 窄档：顶部分组横向 tabs；宽档：左侧垂直分组导航（V2 §7 / V1 §13-8） -->
         <nav
           class="flex shrink-0 gap-1"
-          :class="
-            isNarrow
-              ? 'overflow-x-auto'
-              : 'w-48 flex-col overflow-visible'
-          "
+          :class="isNarrow ? 'overflow-x-auto' : 'w-48 flex-col overflow-visible'"
           :data-testid="isNarrow ? 'settings-group-tabs' : 'settings-group-sidebar'"
           :aria-label="t('setting.title')"
         >
@@ -417,6 +422,10 @@ onMounted(async () => {
             <AISettings />
           </template>
 
+          <template v-else-if="activeTab === 'repository'">
+            <KnowledgeRepositorySettings />
+          </template>
+
           <template v-else-if="activeTab === 'notifications'">
             <NotificationSettings />
           </template>
@@ -435,10 +444,13 @@ onMounted(async () => {
               :exporting-data="isExportingData"
               :importing-data="isImportingData"
               :data-portability-available="isDataPortabilityAvailable"
+              :server-data-disclosure-available="isServerDisclosureAvailable"
+              :exporting-server-data-disclosure="isExportingServerDisclosure"
               :data-portability-result="dataPortabilityResult"
               @export-j-s-o-n="handleExportJson"
               @import="handleImport"
               @export-all-data="exportAllData"
+              @export-server-data-disclosure="exportServerHeldDataDisclosure"
               @import-all-data="importAllData"
             />
           </template>

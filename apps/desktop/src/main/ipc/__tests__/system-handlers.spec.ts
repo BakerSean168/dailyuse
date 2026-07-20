@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   dialogShowOpenDialog: vi.fn(),
   dialogShowSaveDialog: vi.fn(),
   shellOpenPath: vi.fn(),
+  shellOpenExternal: vi.fn(),
   getLazyModuleStats: vi.fn(() => ({ loaded: 1 })),
   getIpcCache: vi.fn(() => ({
     getStats: () => ({ size: 0, hits: 0, misses: 0, hitRate: 0 }),
@@ -31,6 +32,7 @@ vi.mock('electron', () => ({
   },
   shell: {
     openPath: mocks.shellOpenPath,
+    openExternal: mocks.shellOpenExternal,
   },
 }));
 
@@ -71,7 +73,9 @@ function buildSharedResolver() {
 type RegisteredHandler = (event: unknown, payload?: unknown) => Promise<unknown>;
 
 function getRegisteredHandler(channel: string): RegisteredHandler {
-  const entry = mocks.ipcHandle.mock.calls.find(([registeredChannel]) => registeredChannel === channel);
+  const entry = mocks.ipcHandle.mock.calls.find(
+    ([registeredChannel]) => registeredChannel === channel,
+  );
   expect(entry, `Expected handler for channel ${channel} to be registered`).toBeTruthy();
   return entry![1] as RegisteredHandler;
 }
@@ -82,7 +86,9 @@ describe('registerSystemIpcHandlers', () => {
     vi.clearAllMocks();
 
     mocks.getSharedPathResolver.mockReturnValue(createSharedResolver());
-    mocks.resolveDesktopUserFilesPath.mockReturnValue(path.join(os.tmpdir(), 'Memoflow Files Default'));
+    mocks.resolveDesktopUserFilesPath.mockReturnValue(
+      path.join(os.tmpdir(), 'Memoflow Files Default'),
+    );
     mocks.dialogShowOpenDialog.mockResolvedValue({
       canceled: true,
       filePaths: [],
@@ -92,6 +98,7 @@ describe('registerSystemIpcHandlers', () => {
       filePath: null,
     });
     mocks.shellOpenPath.mockResolvedValue('');
+    mocks.shellOpenExternal.mockResolvedValue(undefined);
   });
 
   it('registers all shared system and desktop feature handlers', async () => {
@@ -120,7 +127,9 @@ describe('registerSystemIpcHandlers', () => {
   it('returns the current user-files path, default path, and custom flag', async () => {
     const currentPath = path.join(os.tmpdir(), 'Memoflow Files Custom');
     const defaultPath = path.join(os.tmpdir(), 'Memoflow Files Default');
-    mocks.getSharedPathResolver.mockReturnValue(createSharedResolver({ userFilesRootDir: currentPath }));
+    mocks.getSharedPathResolver.mockReturnValue(
+      createSharedResolver({ userFilesRootDir: currentPath }),
+    );
     mocks.resolveDesktopUserFilesPath.mockReturnValue(defaultPath);
 
     const { registerSystemIpcHandlers } = await import('../system-handlers');
@@ -191,7 +200,9 @@ describe('registerSystemIpcHandlers', () => {
 
   it('opens the active user-files root directory in the shell', async () => {
     const currentPath = path.join(os.tmpdir(), 'Memoflow Files Current');
-    mocks.getSharedPathResolver.mockReturnValue(createSharedResolver({ userFilesRootDir: currentPath }));
+    mocks.getSharedPathResolver.mockReturnValue(
+      createSharedResolver({ userFilesRootDir: currentPath }),
+    );
 
     const { registerSystemIpcHandlers } = await import('../system-handlers');
     registerSystemIpcHandlers(null, null, null);
@@ -200,5 +211,21 @@ describe('registerSystemIpcHandlers', () => {
     await handler({});
 
     expect(mocks.shellOpenPath).toHaveBeenCalledWith(currentPath);
+  });
+
+  it('opens only HTTP(S) URLs in the external browser', async () => {
+    const { registerSystemIpcHandlers } = await import('../system-handlers');
+    registerSystemIpcHandlers(null, null, null);
+
+    const handler = getRegisteredHandler(SystemChannels.OPEN_EXTERNAL_URL);
+    await expect(
+      handler({}, { url: 'https://github.com/apps/memoflow/installations/new' }),
+    ).resolves.toEqual({ opened: true });
+    expect(mocks.shellOpenExternal).toHaveBeenCalledWith(
+      'https://github.com/apps/memoflow/installations/new',
+    );
+
+    await expect(handler({}, { url: 'file:///tmp/secret' })).rejects.toThrow('HTTP(S)');
+    await expect(handler({}, { url: 'javascript:alert(1)' })).rejects.toThrow('HTTP(S)');
   });
 });

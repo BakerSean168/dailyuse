@@ -31,6 +31,10 @@ export const envSchema = z.object({
   // ========== 应用基础配置 ==========
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
+  RUNTIME_LANE: z
+    .preprocess(emptyStringToUndefined, z.string().trim().min(1).optional())
+    .describe('Named runtime lane used to identify managed local processes (for example e2e)'),
+
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
 
   API_HOST: z.string().default('localhost'),
@@ -56,9 +60,9 @@ export const envSchema = z.object({
   DB_PASSWORD: z.string().default(''),
 
   // ========== Redis 缓存配置 ==========
-  REDIS_URL: z.preprocess(emptyStringToUndefined, z.string().url().optional()).describe(
-    'Redis 连接字符串 (优先使用)',
-  ),
+  REDIS_URL: z
+    .preprocess(emptyStringToUndefined, z.string().url().optional())
+    .describe('Redis 连接字符串 (优先使用)'),
 
   REDIS_HOST: z.string().default('localhost'),
 
@@ -90,6 +94,23 @@ export const envSchema = z.object({
   GITHUB_OAUTH_CLIENT_SECRET: z
     .preprocess(emptyStringToUndefined, z.string().optional())
     .describe('GitHub 登录 Client Secret（服务端保管，未设置时禁用 GitHub 登录）'),
+
+  // ========== GitHub 知识仓库配置（GitHub App，与登录 OAuth 分离）==========
+  GITHUB_APP_ID: z
+    .preprocess(emptyStringToUndefined, z.string().trim().min(1).optional())
+    .describe('GitHub App ID（知识仓库授权）'),
+
+  GITHUB_APP_SLUG: z
+    .preprocess(emptyStringToUndefined, z.string().trim().min(1).optional())
+    .describe('GitHub App slug（用于安装链接）'),
+
+  GITHUB_APP_PRIVATE_KEY: z
+    .preprocess(emptyStringToUndefined, z.string().min(1).optional())
+    .describe('GitHub App RSA private key（支持转义换行）'),
+
+  GITHUB_APP_WEBHOOK_SECRET: z
+    .preprocess(emptyStringToUndefined, z.string().min(32).optional())
+    .describe('GitHub App webhook HMAC secret（至少 32 字符）'),
 
   // ========== CORS 配置 ==========
   CORS_ORIGIN: z

@@ -1,16 +1,4 @@
-import type {
-  ReminderTemplateClientDTO,
-} from '@dailyuse/contracts/reminder';
-import type {
-  RepositoryClientDTO,
-  ResourceClientDTO,
-} from '@dailyuse/contracts/repository';
-
-import { formatFileSize } from './file-utils';
-
-function stripTrailingExtension(value: string): string {
-  return value.replace(/\.[^.]+$/, '');
-}
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 
 function toTimestamp(value: number | string | null | undefined): number {
   if (value === null || value === undefined) {
@@ -40,49 +28,7 @@ export function formatDateTime(value: number | string | null | undefined): strin
   }).format(new Date(timestamp));
 }
 
-export function getResourceDisplayName(resource: Pick<ResourceClientDTO, 'name' | 'path'>): string {
-  const rawName = resource.name?.trim() || resource.path?.split('/').pop()?.trim() || 'resource';
-  const withoutExtension = stripTrailingExtension(rawName).trim();
-  return withoutExtension || rawName;
-}
-
-export function getResourceTypeText(resource: Pick<ResourceClientDTO, 'type' | 'mimeType' | 'extension'>): string {
-  if (resource.mimeType?.startsWith('text/markdown') || resource.extension === '.md') {
-    return 'Markdown';
-  }
-
-  if (resource.mimeType?.startsWith('image/')) {
-    return 'Image';
-  }
-
-  if (resource.mimeType?.startsWith('video/')) {
-    return 'Video';
-  }
-
-  if (resource.mimeType?.startsWith('audio/')) {
-    return 'Audio';
-  }
-
-  return resource.type;
-}
-
-export function getResourceStatusText(resource: Pick<ResourceClientDTO, 'status'>): string {
-  return resource.status;
-}
-
-export function getResourceFormattedSize(resource: Pick<ResourceClientDTO, 'size'>): string {
-  return formatFileSize(resource.size);
-}
-
-export function getRepositoryStatusText(
-  repository: Pick<RepositoryClientDTO, 'status'>,
-): string {
-  return repository.status;
-}
-
-export function getReminderDisplayTitle(
-  template: Pick<ReminderTemplateClientDTO, 'name'>,
-): string {
+export function getReminderDisplayTitle(template: Pick<ReminderTemplateClientDTO, 'name'>): string {
   return template.name;
 }
 

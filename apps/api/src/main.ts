@@ -11,7 +11,12 @@
  */
 
 // 环境配置必须最先加载（包含 dotenv 加载逻辑）
-import { env, getJwtConfig, getGithubOAuthConfig } from './shared/infrastructure/config/env.js';
+import {
+  env,
+  getJwtConfig,
+  getGithubOAuthConfig,
+  getGithubAppConfig,
+} from './shared/infrastructure/config/env.js';
 import { prisma, connectDatabase, disconnectDatabase } from '@dailyuse/database';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -23,7 +28,6 @@ import { ensurePowerSyncPublication } from './shared/infrastructure/database/ens
 import { GovernanceApiModule } from '@dailyuse/governance/api';
 import { AccountApiModule } from '@dailyuse/account/api';
 import { createAuthenticationApiModule } from '@dailyuse/authentication/api';
-import { createEditorApiModule } from '@dailyuse/editor/api';
 import { GoalApiModule } from '@dailyuse/goal/api';
 import { createGoalPrismaScheduleExecutionSource } from '@dailyuse/goal/schedule-execution';
 import { createGoalPrismaScheduleProjectionSource } from '@dailyuse/goal/schedule-projection';
@@ -37,15 +41,11 @@ import { resolveRepositoryStorageBaseDir } from '@dailyuse/repository';
 import { createScheduleTaskPrismaRepository } from '@dailyuse/schedule';
 import { createScheduleApiModule } from '@dailyuse/schedule/api';
 import { createScheduleOrchestrationModule } from '@dailyuse/schedule-orchestration';
-import { createSettingPrismaModule } from '@dailyuse/setting';
 import { SettingApiModule } from '@dailyuse/setting/api';
 import { DataPortabilityApiModule } from '@dailyuse/data-portability/api';
 import { createTaskPrismaScheduleExecutionSource } from '@dailyuse/task/schedule-execution';
 import { createTaskPrismaScheduleProjectionSource } from '@dailyuse/task/schedule-projection';
-import {
-  createAIApiModule,
-  type AIApiModuleContext,
-} from '@dailyuse/ai/api';
+import { createAIApiModule, type AIApiModuleContext } from '@dailyuse/ai/api';
 import { createTaskApiModule } from '@dailyuse/task/api';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
@@ -54,9 +54,9 @@ import { ControlledAnalyticsReadAdapter } from './modules/ai/controlled-analytic
 import { BackendAutomationToolExecutorAdapter } from './modules/ai/backend-automation-tool-executor.adapter';
 import { RepositoryKnowledgeNotePersistenceAdapter } from './modules/ai/repository-knowledge-note-persistence.adapter';
 import { RepositoryKnowledgeSourceAdapter } from './modules/ai/repository-knowledge-source.adapter';
-import {
-  createCronScheduler,
-} from './shared/infrastructure/cron/index.js';
+import { RepositoryKnowledgeIndexStatusAdapter } from './modules/ai/repository-knowledge-index-status.adapter';
+import { RepositoryKnowledgeCloudDataPurgerAdapter } from './modules/ai/repository-knowledge-cloud-data-purger.adapter';
+import { createCronScheduler } from './shared/infrastructure/cron/index.js';
 import type { CronSchedulerManager } from './shared/infrastructure/cron/index.js';
 
 // 初始化日志系统
@@ -66,31 +66,6 @@ const logger = createLogger('API');
 let bootstrapper: ApiBootstrapper | null = null;
 let scheduler: CronSchedulerManager | null = null;
 const repositoryStorageBaseDir = resolveRepositoryStorageBaseDir();
-
-const AIApiModule = createAIApiModule({
-  createKnowledgeNotePersistence: (context: AIApiModuleContext) =>
-    new RepositoryKnowledgeNotePersistenceAdapter(
-      context.db,
-      repositoryStorageBaseDir,
-    ),
-  createKnowledgeSourcePort: (context: AIApiModuleContext) =>
-    new RepositoryKnowledgeSourceAdapter(
-      context.db,
-      repositoryStorageBaseDir,
-    ),
-  createAnalyticsReadPort: (context: AIApiModuleContext) =>
-    new ControlledAnalyticsReadAdapter(context.db),
-  createAutomationToolExecutor: (context: AIApiModuleContext) =>
-    new BackendAutomationToolExecutorAdapter(
-      context.db,
-      repositoryStorageBaseDir,
-    ),
-  getKnowledgeNoteSubpath: async (identityId: string, context: AIApiModuleContext) => {
-    const settingModule = createSettingPrismaModule(context.db);
-    const setting = await settingModule.api.getUserSetting(identityId);
-    return setting.preferences.ai.knowledgeNoteSubpath;
-  },
-});
 
 async function bootstrap(): Promise<void> {
   logger.info('Starting Memoflow API server...', {
@@ -146,11 +121,31 @@ async function bootstrap(): Promise<void> {
   });
   const repositoryApiModule = createRepositoryApiModule({
     storageBaseDir: repositoryStorageBaseDir,
+    githubApp: getGithubAppConfig() ?? undefined,
+    knowledgeRepositoryCloudDataPurger: new RepositoryKnowledgeCloudDataPurgerAdapter(prisma),
   });
-  const editorApiModule = createEditorApiModule({
-    repositoryStorageBaseDir,
+  const AIApiModule = createAIApiModule({
+    createKnowledgeNotePersistence: (_context: AIApiModuleContext) => {
+      const repositoryApi = repositoryApiModule.getApplicationPort();
+      if (!repositoryApi) {
+        throw new Error('Repository application port is unavailable while composing AI');
+      }
+      return new RepositoryKnowledgeNotePersistenceAdapter(repositoryApi);
+    },
+    createKnowledgeSourcePort: (context: AIApiModuleContext) =>
+      new RepositoryKnowledgeSourceAdapter(context.db, repositoryStorageBaseDir),
+    createKnowledgeIndexStatusPort: () => {
+      const repositoryApi = repositoryApiModule.getApplicationPort();
+      if (!repositoryApi) {
+        throw new Error('Repository application port is unavailable while composing AI indexing');
+      }
+      return new RepositoryKnowledgeIndexStatusAdapter(repositoryApi);
+    },
+    createAnalyticsReadPort: (context: AIApiModuleContext) =>
+      new ControlledAnalyticsReadAdapter(context.db),
+    createAutomationToolExecutor: (context: AIApiModuleContext) =>
+      new BackendAutomationToolExecutorAdapter(context.db, repositoryStorageBaseDir),
   });
-
   // Authentication secrets come from the validated env schema (JWT_SECRET min 32
   // chars, REFRESH_TOKEN_SECRET defaults to JWT_SECRET), injected here so the
   // module never reads process.env directly or bypasses schema validation.
@@ -169,7 +164,6 @@ async function bootstrap(): Promise<void> {
     .register(GovernanceApiModule) // ✅ 治理模块
     .register(AccountApiModule) // ✅ 账户模块
     .register(authenticationApiModule) // ✅ 认证模块
-    .register(editorApiModule) // ✅ 编辑器模块
     .register(NotificationApiModule) // ✅ 通知模块
     .register(ReminderApiModule) // ✅ 提醒模块
     .register(repositoryApiModule) // ✅ 仓库模块

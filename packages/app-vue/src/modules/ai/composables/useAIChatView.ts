@@ -5,7 +5,6 @@ import { toast } from 'vue-sonner';
 import { useAI } from './useAI';
 import { useGoal } from '../../goal/composables/useGoal';
 import { useRepository } from '../../repository/composables/useRepository';
-import { useUserSetting } from '../../setting/composables/useUserSetting';
 import { useEditorWorkspaceActions } from '../../editor/composables';
 import { useAIChatSession } from './useAIChatSession';
 import { useAIModelSelection } from './useAIModelSelection';
@@ -15,7 +14,13 @@ import { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 import { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 import { useAIFormatters } from './useAIFormatters';
 import { getToolLocaleKey, normalizeWorkflowMode } from './types';
-import { adjustComposerHeight as createAdjustComposerHeight, bindChatViewLifecycle, getWorkflowStatusText, initializeChatView, maybeRenameConversation } from './chatViewHelpers';
+import {
+  adjustComposerHeight as createAdjustComposerHeight,
+  bindChatViewLifecycle,
+  getWorkflowStatusText,
+  initializeChatView,
+  maybeRenameConversation,
+} from './chatViewHelpers';
 import type {
   AgentRunSummary,
   AIWorkspaceRecentGoal,
@@ -34,7 +39,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   const router = useRouter();
   const { service, providers, loadProviders } = useAI();
   const { goals, fetchGoals, createGoal, addKeyResult } = useGoal();
-  const { getCategory } = useUserSetting();
   const { initRepository, fetchResources, resources } = useRepository();
   const { requestOpenResource } = useEditorWorkspaceActions();
   const formatters = useAIFormatters();
@@ -94,9 +98,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
 
   const providerList = computed<ProviderListItem[]>(() => providers.value);
 
-  const aiSettings = computed(() => getCategory('ai'));
-  const knowledgeNoteSubpath = computed(() => aiSettings.value?.knowledgeNoteSubpath ?? '');
-
   // Late-binding closure for cross-composable coordination.
   // eslint-disable-next-line prefer-const -- reassigned after options object is constructed
   let _persistWorkflowAndModel: ((id: string) => void) | undefined;
@@ -139,7 +140,6 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     chatTimeline: chatSession.chatTimeline,
     conversationTitle: chatSession.conversationTitle,
     hasWorkflowMessages: chatSession.hasWorkflowMessages,
-    knowledgeNoteSubpath,
     scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
     maybeRenameCurrentConversation,
     fetchResources,
@@ -426,9 +426,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     );
     if (!conversation) {
       await chatSession.loadConversationList(service, { preserveSelection: true });
-      conversation = chatSession.conversationList.value.find(
-        (item) => item.id === conversationId,
-      );
+      conversation = chatSession.conversationList.value.find((item) => item.id === conversationId);
     }
     if (conversation) {
       await selectConversation(conversation);
@@ -460,12 +458,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const currentTitle = chatSession.conversationTitle.value;
     if (!nextName || nextName === currentTitle) return;
     chatSession.conversationTitle.value = nextName;
-    await maybeRenameConversation(
-      nextName,
-      currentTitle,
-      chatConversationId.value,
-      service,
-      () => chatSession.loadConversationList(service),
+    await maybeRenameConversation(nextName, currentTitle, chatConversationId.value, service, () =>
+      chatSession.loadConversationList(service),
     );
   }
 
@@ -539,14 +533,24 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       messagesViewport: chatSession.messagesViewport,
       selectConversation,
       deleteConversation: (id: string) =>
-        chatSession.deleteConversation(id, service, persistence.clearWorkflowState, modelSelection.clearConversationModelSelection),
+        chatSession.deleteConversation(
+          id,
+          service,
+          persistence.clearWorkflowState,
+          modelSelection.clearConversationModelSelection,
+        ),
       loadConversationList: loadWorkspaceLists,
       selectAgentRun,
       openRecentGoal,
       openRecentKnowledgeNote,
       startNewConversation,
       handleSendChat: () =>
-        chatSession.handleSendChat(service, modelSelection.selectedModel.value, currentConversationLabel.value, adjustComposerHeight),
+        chatSession.handleSendChat(
+          service,
+          modelSelection.selectedModel.value,
+          currentConversationLabel.value,
+          adjustComposerHeight,
+        ),
       stopGenerating: () => chatSession.stopGenerating(),
     },
     model: {
@@ -575,4 +579,3 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     },
   };
 }
-

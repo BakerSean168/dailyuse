@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { marked } from 'marked';
+import { renderSafeMarkdownExcerpt } from '../../../shared/utils/safe-markdown';
 import { FileText, Image as ImageIcon, Music, Video, FileType } from '@lucide/vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 
@@ -102,12 +102,7 @@ const displayTitle = computed(() => {
 
 const renderedExcerpt = computed(() => {
   if (!props.content?.excerpt) return '';
-  try {
-    const excerpt = props.content.excerpt.slice(0, 500);
-    return marked(excerpt);
-  } catch {
-    return props.content.excerpt;
-  }
+  return renderSafeMarkdownExcerpt(props.content.excerpt, 500);
 });
 
 function getPreviewIcon() {

@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import { API_CONFIG, WEB_CONFIG, TIMEOUT_CONFIG, TEST_USERS } from '../config';
+import { completeEmailVerification } from './auth-email-code';
 
 type SSEEventRecord = {
   type: string;
@@ -189,10 +190,7 @@ async function registerViaAuth(page: Page, email: string, password: string): Pro
   await page.locator('#reg-password').fill(password);
   await page.locator('#confirm-password').fill(password);
   await page.getByTestId('register-submit-button').click();
-
-  await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
-    timeout: TIMEOUT_CONFIG.LOGIN,
-  });
+  await completeEmailVerification(page, email);
 }
 
 export async function registerAndLogin(
