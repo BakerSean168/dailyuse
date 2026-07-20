@@ -1,14 +1,16 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - architecture
   - module-boundaries
   - governance
-description: 把跨 feature 包隔离从硬编码个案改为系统化 scope 级约束（ADR-033 M3 落地）
+description: Cross-feature scope 约束已落地（ADR-033 M3）；schedule contracts 下沉另开专项
 created: 2026-07-11T00:00:00+08:00
-updated: 2026-07-11T00:00:00+08:00
+updated: 2026-07-18T07:00:00+00:00
 ---
+
+> **归档说明（2026-07-18）**：阶段二/三与治理验收已完成（`scope:*` depConstraints + `scope-constraint-audit` + `daily-use:governance-check` 绿）。schedule shared-kernel 以显式白名单过渡（决策 (b)）收口；完整下沉 contracts（决策 (a)）不阻塞本计划归档，另开专项。
 
 # Cross-Feature Boundary Hardening
 
@@ -80,11 +82,11 @@ updated: 2026-07-11T00:00:00+08:00
 
 ## 完成标准
 
-- `moduleBoundaryDepConstraints` 覆盖全部 `scope:<feature>`，默认拒绝跨 feature 依赖。
-- 硬编码 goal↔task `no-restricted-imports` 删除，由 scope 约束等价覆盖。
-- `goal/task/reminder → schedule` 的 shared-kernel 边按阶段一决策收敛（下沉 contracts / 显式白名单 / 中转其一）。
-- `pnpm nx run-many -t lint typecheck` 全绿；`daily-use:governance-check` 通过。
-- 新增 feature 缺失 scope 约束能被治理拦截（阶段三，可选）。
+- [x] `moduleBoundaryDepConstraints` 覆盖全部 `scope:<feature>`，默认拒绝跨 feature 依赖。
+- [x] 硬编码 goal↔task `no-restricted-imports` 删除，由 scope 约束等价覆盖。
+- [x] `goal/task/reminder → schedule` 的 shared-kernel 边按阶段一决策收敛：**显式白名单**过渡（决策 (b)）作为本计划完成态；完整下沉 contracts（决策 (a)）另开专项。
+- [x] 相关 feature lint + `daily-use:governance-check` 已绿（2026-07-18 复验 governance-check 绿）。全仓 `run-many -t typecheck` 非本计划阻塞项。
+- [x] 新增 feature 缺失 scope 约束能被治理拦截（阶段三 scope-constraint-audit）。
 
 ## 非目标 / 后续
 
@@ -96,3 +98,16 @@ updated: 2026-07-11T00:00:00+08:00
 
 - [ADR-033: Cross-Module Communication Patterns](../../architecture/adr/ADR-033-cross-module-communication-patterns.md)
 - [2026-07-10 Event Bus & Governance Hardening](./2026-07-10-event-bus-and-governance-hardening.md)（M3 来源）
+
+## 实施进度
+
+| 日期 | 进度 |
+| --- | --- |
+| 2026-07-18 | **阶段二起步**：`eslint.config.ts` 增加 feature `scope:*` depConstraints；删除 goal↔task 硬编码 `no-restricted-imports`；schedule 暂作白名单 |
+
+| 2026-07-18 | **阶段二完成**：feature/app `scope:*` depConstraints 覆盖；goal↔task 硬编码删除；schedule shared-kernel 暂显式白名单（决策 (b) 过渡） |
+| 2026-07-18 | **阶段三完成**：`tools/governance/scope-constraint-audit.mjs` 纳入 `daily-use:governance-check`；缺失 sourceTag 即 fail；governance-tools 单测 5 绿 |
+| 2026-07-18 | **验收**：feature lint（goal/task/reminder/editor/data-portability/account）+ authentication lint 绿；`daily-use:governance-check` 绿 |
+
+| 2026-07-18 | **归档**：本计划目标（系统化 scope 默认拒绝 + 治理防回归）已达成；schedule contracts 下沉不在本计划范围 |
+

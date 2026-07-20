@@ -1,17 +1,14 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - app-vue
-  - web
-  - desktop
-  - ui
-  - product
-  - reliability
-description: App Vue 前端 UI 深度重构与核心功能修复的统一执行方案
+description: App Vue UI 深度重构与功能性修复（已完成并合入 main #187）
 created: 2026-07-15T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-18T06:50:00
 ---
+
+> **归档说明（2026-07-18）**：实施与验收已完成；`fbdc83b1b` 已合入 `main`（PR #187）。后续仅保留历史参考。
 
 # App Vue 前端 UI 深度重构与功能性修复执行方案
 

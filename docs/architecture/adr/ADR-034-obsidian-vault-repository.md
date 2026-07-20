@@ -7,7 +7,7 @@ tags:
   - github
 description: ADR-034 - 本地 Obsidian Vault、可选 GitHub 仓库同步与多端知识笔记边界
 created: 2026-07-16T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-20T00:00:00
 ---
 
 # ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库
@@ -185,6 +185,34 @@ reason
 Web/Mobile 自行渲染 GitHub read model，不调用 Obsidian 插件 API。首期支持 CommonMark、GFM、properties、wiki link、heading/block link、附件/笔记 embed、callout、highlight 和 comments；Dataview、Tasks 查询、Excalidraw、Canvas、主题和插件代码不执行。
 
 所有输出必须经过严格 sanitizer。默认不执行任意原始 HTML；禁止脚本、事件属性、危险 URL、任意 iframe、Vault CSS 和插件 JavaScript。附件通过受认证 URL 加载，不能暴露本机路径或永久公开地址。当前 `EditorPreview.vue` 的 `v-html + html: true` 必须在真实仓库内容进入 Web 前收口。
+
+### 2.10 断开、云端保留与导出边界
+
+断开 GitHub 知识仓库必须让用户明确选择服务端派生数据的处理方式：
+
+- 默认断开只撤销同步连接，保留可从 GitHub default branch 重建的笔记投影、附件投影与短期缓存、Webhook
+  处理记录、Web 写入幂等流水和 RAG 索引，以便重新连接后继续使用。
+- 用户明确选择“删除云端数据”时，服务端必须再次校验 `identityId + connectionId` ownership，并在同一数据库事务内
+  删除独立 AI 索引和连接记录；连接外键级联统一清理笔记/附件投影、附件缓存、Webhook delivery 和 write ledger。
+- 两种模式都不得删除或改写 Desktop 本地 Vault、本地 Git 历史或 GitHub repository。
+- 清理失败必须整体失败，不能只删除 connection cascade 而遗留无外键的 AI 索引，也不能只删索引后保留半套连接数据。
+
+导出语义分为两个互不兼容的产品契约：
+
+1. `memoflow.user-data-export` 是可重新导入的业务数据备份，采用 append-create-like 语义。其 `repository` section
+   只包含旧 Repository/Folder/Resource DTO，不包含本地 Vault 文件、GitHub App 授权、GitHub 派生投影、附件缓存或 RAG
+   索引。权威知识文件应直接从本地 Vault 或 GitHub repository 导出/clone。
+2. `memoflow.server-held-data-disclosure` 是独立、明确不可导入的服务端持有数据披露。它按当前认证 identity 披露
+   GitHub connection metadata（包括不可重放的 installation identifier）、Markdown/附件投影、附件缓存字节、Webhook
+   delivery、Web 写入幂等流水和 AI knowledge index。它不包含本地 Vault、本地 Git/GitHub repository 历史、worker
+   lease 或数据库内部 retrieval vector，也不得包含 OAuth token、installation access token、GitHub App private key 等任何
+   Memoflow 管理的可重放授权材料。用户写入 Markdown/frontmatter/附件的内容按原样披露；若用户自行把 secret 写入仓库，
+   它仍属于被披露的 repository content。
+
+第二类文件只通过独立的受认证服务端 endpoint 生成；Desktop 本地 IPC export 不得伪装成服务端披露，普通 import
+入口必须因 artifact kind 不匹配而拒绝它。
+
+UI 不得把第一类文件称为“全部数据导出”，也不得暗示它是完整的服务端数据披露。
 
 ## 3. 不采用的方案
 

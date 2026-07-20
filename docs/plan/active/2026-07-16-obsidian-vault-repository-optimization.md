@@ -12,7 +12,7 @@ tags:
   - security
 description: 本地 Obsidian Vault、可选 GitHub 私有仓库同步、Web 快捷创建与 Agent 知识写入边界的实施方案
 created: 2026-07-16T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-20T00:00:00
 ---
 
 # Obsidian Vault 与 GitHub 知识仓库后续优化方案
@@ -21,15 +21,25 @@ updated: 2026-07-16T00:00:00
 
 本文执行 [ADR-034](../../architecture/adr/ADR-034-obsidian-vault-repository.md)，合并 UI 重构分析、Web 产品审查、Obsidian 官方能力、GitHub App 权限模型以及 2026-07-16 的最新产品调整。
 
-状态：**待实施**。
+状态：**实施中**。
 
-当前代码仍是迁移前状态：
+当前实施状态：
 
-- 认证主流程以邮箱密码为主，OAuth binding 基础设施存在但 GitHub UI/回调尚未完成。
-- Desktop 支持在线、离线和访客 profile，但 Repository 仍使用应用私有存储目录。
-- `SyncRepositoryUseCase` 仍是占位，尚无 Vault Git runtime。
-- Web 仍通过数据库 Repository 创建和编辑笔记。
-- Markdown 预览允许原始 HTML，未建立适合真实 Vault/GitHub 内容的 sanitizer 边界。
+- GitHub 登录与 GitHub App 仓库授权已按独立 contract、token 和 UI 边界接线；认证与仓库授权的后续验收由各自 active plan 继续收口。
+- Desktop 已具备 profile-owned 本地 Vault 选择、扫描、搜索、预览、Obsidian 打开和确认后写入，不依赖云端即可工作。
+- GitHub-hosted private repository 创建入口、GitHub App installation、private/admin/active 仓库连接、首次对账、
+  手动持续同步以及 profile-scoped 自动同步已贯通。
+- 服务端 Markdown read model、GitHub webhook 投影、删除传播、RAG 自动索引/状态回写与 default branch
+  定期 reconciliation 已贯通；Link Graph 已按 Markdown projection 派生并提供后端与 Web 关系视图；附件元数据投影、
+  identity-scoped 列表和 GitHub blob 按需受认证读取已贯通；delivery、reconciliation 和 write 的多实例 claim/lease
+  已接通。
+- Web 已支持只读投影列表、搜索、安全预览和 repository-backed 新建笔记；确认快照、request ledger 与 Git
+  commit 幂等已接通；单 runtime 与多实例 repository-scoped 串行写协调均已实现。Desktop pull 已通过真实 Git
+  的服务边界验收，真实 GitHub E2E 仍待补齐。
+- Web Markdown 已关闭原始 HTML 并建立 sanitizer/危险 URL 测试边界；共享安全渲染器已补齐 comments、highlights、
+  inert embeds、callouts、task lists 以及 heading/block navigation metadata；附件读取只允许安全媒体类型并限制为
+  10 MiB；附件 blob 已按 `connectionId + blobSha` 建立短期共享 PostgreSQL cache，并保留每次读取的授权、投影
+  版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
 
 ## 2. 已确认产品边界
 
@@ -128,24 +138,32 @@ Local Obsidian Vault / Git working tree
 
 ### 5.2 创建新仓库
 
-用户确认后创建：
+首期采用 GitHub-hosted repository creation，不扩展身份 OAuth scope，也不保留 user access token：
+
+1. 用户点击“创建 private repository”。
+2. Memoflow 打开 GitHub 官方新建仓库页，预填 `memory-flow-notes` 和 `private` visibility。
+3. 仓库名确认、同名冲突和最终创建操作均由用户在 GitHub 完成。
+4. 创建后通过独立 GitHub App installation flow 明确选择该仓库，Memoflow 才获得 repository-scoped Contents 权限。
+
+GitHub 页面预填参数为：
 
 ```json
 {
   "name": "memory-flow-notes",
-  "private": true,
-  "auto_init": true,
-  "has_issues": false,
-  "has_projects": false,
-  "has_wiki": false
+  "visibility": "private"
 }
 ```
+
+不依赖 GitHub 页面初始化 README；空仓库由首次对账安全写入 Memoflow scaffold 和首个 commit。
 
 仓库名已存在时不能覆盖。允许：
 
 - 连接经验证的现有仓库。
 - 使用带短后缀的新仓库名。
 - 返回取消，不影响本地 Vault。
+
+Memoflow 不复用 GitHub 登录 token 调用 user-owned repository creation API；若未来需要应用内一键创建，必须新增独立、
+一次性的 repository-creation authorization，并重新评审 scope、token 生命周期和撤销边界。
 
 ### 5.3 连接已有仓库
 
@@ -226,10 +244,14 @@ LOCAL_ONLY
 ### 6.4 Git 凭据
 
 - Desktop 从 Daily Use 服务端按需获取短期、指定 repository 的 installation token。
-- token 使用 safeStorage 或仅内存缓存，过期后重新获取。
+- token 仅在首次对账或同步操作期间保留于内存，过期后重新获取。
 - 不把 token 写入 `.git/config`、remote URL、命令行参数或日志。
-- 如果采用系统 Git，使用受控 credential helper/stdin；如果采用嵌入式 Git library，使用 credential callback。
-- 具体 Git 实现先做 spike，对比系统 Git、libgit2 和 isomorphic-git 的打包、性能、凭据和冲突能力后再定。
+- spike 选定受控系统 Git 子进程：`shell: false`、参数数组调用，并通过子进程环境中的 Git config
+  `http.https://github.com/.extraheader` 注入 Basic authorization header；禁用交互式凭据提示和外部
+  credential helper。
+- runtime 接受可注入 Git binary，后续发行版可在不改变同步端口的前提下切换到随应用分发的 portable Git。
+- 暂不采用 libgit2/native addon，避免 Electron ABI 与跨平台打包复杂度；暂不采用 isomorphic-git，
+  因后续持续同步需要成熟的 rebase、冲突和 lock 行为。
 
 ### 6.5 冲突
 
@@ -275,7 +297,8 @@ deletedAt
 indexStatus
 ```
 
-附件进入受认证对象存储或由 GitHub blob 按需缓存；Web 永不获得 installation token。
+附件只保存相对路径、commit/blob SHA、大小和安全媒体类型；内容由服务端按 blob SHA 受认证按需读取，单个附件限制
+10 MiB，Web 永不获得 installation token。未知、可执行和仓库控制目录中的文件不进入附件投影。
 
 ### 7.3 仓库生命周期
 
@@ -365,6 +388,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - 统一兼容 CommonMark、GFM、properties、wiki link、heading/block、embed、callout、highlight 和 comments。
 - 不执行 Dataview、Tasks 查询、Excalidraw、Canvas、社区插件、Vault CSS 或脚本。
 - Web 渲染默认不执行任意 HTML，并经过严格 sanitizer。
+- Web shared Markdown renderer 通过 MarkdownIt token rules 表示 Obsidian comments、highlights、wiki links、inert
+  embeds、allowlisted callouts、disabled task-list controls 与 heading/block metadata；code span/fence 不经过这些
+  转换，用户文本和属性继续由 MarkdownIt 负责 escaping。
 - 附件路径解析必须保持在仓库根目录，禁止 symlink/`..` 逃逸。
 - 大附件和仓库体积设置明确上限；Git LFS 不进入首期，超过上限时提示外部存储或排除。
 - GitHub private 不等于 E2E；连接前说明 GitHub 和 Daily Use 服务端会处理明文内容。
@@ -406,7 +432,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 - GitHub 登录 OAuth flow 和 Daily Use session。**（服务端骨架已实现）**
 - 独立 GitHub App installation flow。
-- 创建/连接 private repository、首次对账和连接状态。
+- GitHub-hosted private repository 创建、GitHub App 连接、首次对账和连接状态。**（已实现）**
 - 访客升级且不移动 Vault。
 
 > 进展 2026-07-17：已落地可插拔认证架构。服务端抽象登录接口
@@ -420,25 +446,131 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 受影响项目 lint/typecheck/test、governance-check 与本地 Docker build/健康检查均
 > 通过。待办：完整 OAuth 流程、GitHub App installation、仓库连接与访客升级。
 
+> 进展 2026-07-18：本地 Vault 纵向闭环与 GitHub 仓库连接第一批已落入工作树。
+> Desktop 已支持 Vault 选择、扫描、搜索、安全 Markdown 预览、Obsidian 打开与确认后写入；
+> 访客升级保持原 profile/Vault 目录。GitHub 登录与仓库授权继续使用独立 contract、路由和 UI：
+> Repository 新增 identity-bound 一次性 installation state、private/admin/active repository 校验、
+> `KnowledgeRepositoryConnection` 持久化、Desktop-only 仓库级短期 token，以及 RS256 GitHub App
+> JWT / `repository_ids` 限权测试。统一 client seam 已接通 HTTP 与 IPC；设置页新增“知识仓库”分组，
+> Web 可消费 installation callback 并选择仓库，Desktop 通过受控 HTTP(S) 外跳发起授权并经在线代理
+> 获取连接状态与凭据。Repository 88、Desktop 244、App Vue 292 个测试通过，相关类型检查通过。
+> 续进展 2026-07-18：首次对账预检已经贯通 Desktop、IPC、HTTP、服务端与 GitHub App。
+> Desktop 主进程从当前 profile 的真实 Vault 计算 `Empty / NonEmpty`，忽略 `.git`、Obsidian
+> workspace、回收站、临时文件和 Memoflow scaffold；服务端重新验证 identity-owned active
+> connection、installation、Contents write、private/admin/active repository，并使用单仓库
+> installation token 读取 GitHub GraphQL default-branch snapshot。四类组合被确定性映射为
+> `InitializeRemoteFromLocal`、`CloneRemoteIntoLocal`、`InitializeBoth` 或
+> `ManualResolutionRequired`，两个非空时 UI 明确阻止自动覆盖。该预检只读且只允许 Desktop
+> context，Web adapter 不伪造本地状态。Repository 98、Desktop 245、App Vue 293 个测试通过，
+> 相关 typecheck 与 lint 通过。待办：真实 GitHub App fixture/e2e、创建 private repository、
+> 首次对账执行器、Desktop Git runtime 与 webhook 投影。
+> 续进展 2026-07-18：首次对账执行器与 Desktop Git runtime 已贯通。用户确认绑定不可变的
+> `connectionId + action + defaultBranch + remoteHeadSha`，Desktop 在执行前重新读取当前 Vault、
+> connection 与 GitHub preview，只对三个安全动作签发短期单仓库 token；Git 完成后服务端再次读取
+> live GitHub HEAD，匹配后才推进 `lastSyncedCommitSha`，确认响应丢失时可依据 app-owned manifest
+> 修复游标而不重复 mutation。Git runtime 使用受控系统 Git 子进程完成本地初始化、scaffold-only
+> remote 继承、空 Vault checkout、提交与非 force push；凭据只进入子进程环境，不进入 URL、config、
+> 参数或日志。`.git` 内的本地 ownership marker 支持失败重试，foreign `.git`、Git lock、stale HEAD、
+> checkout collision 与 symlink 风险均会停止执行。Repository 102、Desktop 257 个测试以及 App Vue
+> 全量测试通过，相关 lint/typecheck 通过。待办：真实 GitHub App fixture/e2e、private repository
+> 创建与 webhook 投影。
+> 续进展 2026-07-19：连接后的手动持续同步已经贯通 contracts、Desktop IPC/client、主进程编排、
+> Git runtime 与设置页。同步首先在完全离线的本地阶段筛选允许路径并创建 commit，随后才申请短期
+> repository token；GitHub 不可用时，本地 commit 作为待上传队列保留，UI 明确显示 pending 状态。
+> 在线阶段执行 fetch，并根据 history graph 确定 up-to-date、push、fast-forward pull 或 rebase + push，
+> 始终禁止 force push。rebase 冲突会保留 Git 状态、双方文件、local/remote HEAD 和冲突路径，用户可在
+> 外部 Git/Obsidian 工具完成或中止后点击“重新检查同步”；检测到 default branch force-push/history
+> rewrite 时自动同步暂停而不尝试覆盖。runtime 同时屏蔽 repository hooks、system/global Git config、
+> credential helper 和非同步路径的预暂存内容。服务端 HEAD confirmation 已从首次对账专用语义提升为
+> 通用同步游标确认。Repository 103、Desktop 269 个测试及 App Vue 全量测试通过，相关 lint/typecheck
+> 通过。待办：真实 GitHub fixture/e2e、private repository 创建和 webhook 投影。
+> 续进展 2026-07-19：profile-scoped 自动同步调度器已经接入 Repository Electron module 生命周期。
+> Chokidar 使用 `awaitWriteFinish` 等待文件稳定，并在空闲窗口合并 Markdown 与附件变化；`.git`、
+> `.memory-flow`、Obsidian 运行态目录、回收站、`node_modules` 和临时文件不会触发同步。调度器在 profile
+> 激活、稳定文件变化、网络恢复和延迟后的系统唤醒时运行，profile 销毁/应用退出前则在有界时间内只做
+> 本地 commit，不等待在线上传。连接与 `lastSyncedCommitSha` 的 token-free 快照持久化在 profile storage，
+> 因而应用离线重启后仍可继续监听并把变化提交到本地 Git 队列；在线时 repository token endpoint 继续
+> 独立重验 ownership 和授权。rebase 冲突与远端 history rewrite 会暂停自动重试，短暂 Git lock 则退让并
+> 等待下一次触发。Vault 选择/解绑、仓库连接/断开、首次对账和成功的手动同步都会刷新 watcher；module
+> destroy 会移除 watcher、网络与 power 监听器。设置页冲突卡会显示 local/remote HEAD 和冲突路径，并可
+> 直接在 Obsidian 中打开第一个冲突文件；history rewrite 无具体文件时打开 Vault 根目录。Repository 104、
+> Desktop 279 个测试以及知识仓库设置页 6 个组件测试通过，相关 lint、typecheck 与 14 项真实 Git runtime
+> 测试通过。仓库生命周期诊断已接入设置页；待办：真实 GitHub fixture/e2e、private repository 创建和 webhook 投影。
+> 续进展 2026-07-19：private repository 创建采用 GitHub-hosted flow。设置页打开预填名称与 private visibility 的
+> GitHub 官方创建页，创建后仍必须经独立 GitHub App installation/selection 才能连接；认证 OAuth scope、登录 token
+> 与仓库授权均未扩大或复用。同名冲突、取消和最终确认由 GitHub 承担，应用内不保存 user access token。
+
 ### 阶段 3：Desktop Git 同步
 
-- Git implementation spike 与选型。
-- 文件去抖、批量 commit、凭据、pull/rebase/push 和离线恢复。
-- Git lock、冲突和仓库生命周期 UI。
-- profile 激活/销毁、网络恢复和系统唤醒接线。
+- Git implementation spike 与选型。**（已选系统 Git 子进程；首次对账执行已实现）**
+- 文件去抖、批量 commit、凭据、pull/rebase/push 和离线恢复。**（手动同步、批量 commit、凭据、
+  rebase/push、稳定文件监听/去抖、profile-local 连接游标与离线 commit 队列已实现）**
+- Git lock、冲突和仓库生命周期 UI。**（lock、rebase conflict、force-push pause、双方 HEAD/冲突路径展示、
+  Obsidian 打开入口与 repository lifecycle diagnosis 均已实现）**
+- profile 激活/销毁、网络恢复和系统唤醒接线。**（已实现；退出前执行有界的 local-only commit）**
 
 ### 阶段 4：服务端投影与 RAG
 
-- webhook 验签、后台 ingestion、commit/blob 幂等。
-- read model、附件、link graph、RAG 和删除传播。
-- default branch 定期 reconciliation。
+- webhook 验签、后台 ingestion、commit/blob 幂等。**（HMAC、delivery 去重、pending 恢复和单实例
+  connection queue 已实现；持久化 delivery/connection claim lease 与续租已实现）**
+- read model、附件、link graph、RAG 和删除传播。**（Markdown read model、全量/增量删除、Link Graph、RAG 自动索引、
+  content-hash 状态回写、附件元数据投影和 identity-scoped blob 读取已实现；投影/附件工作共用 connection lease）**
+- default branch 定期 reconciliation。**（启动恢复后与每 15 分钟定时检查已实现；HEAD 不变不拉全量，
+  HEAD 变化重建投影，force-push 成功后恢复 Active；reconciliation 使用持久化 connection lease，并以
+  `(updatedAt, id)` cursor 分批、耗尽后回绕，避免不变连接长期占用批次）**
+
+> 进展 2026-07-19：服务端阶段 4 的 Markdown 主链已贯通。push webhook 先校验 HMAC、installation、
+> repository 与 default branch，再以 delivery ID 持久化去重并按 connection 串行处理；compare 截断、
+> 初次投影或 diverged history 会回退到 full snapshot，删除同时传播到 AI 索引。AI 自动索引完成后使用
+> `identityId + projectionId + contentHash` 回写 `indexed / failed`，晚到旧任务不能覆盖新版投影。定时
+> reconciliation 与 webhook 共用连接队列，相同 HEAD 不下载 tree，变化 HEAD 重建 Markdown snapshot，
+> force-push 暂停状态可在成功重建后恢复；重复 start、stop 后延迟启动及重叠 timer 已建立规格边界。
+> Repository 21 files / 136 tests、AI 37 files / 313 tests、API 14 files / 33 tests 及三者 typecheck 通过。
+> 续进展 2026-07-19：Link Graph 从 Markdown projection 按需派生，支持出链、反链、alias、heading、embed、歧义/断链、
+> 双向 BFS、深度与节点/边上限，并通过 identity-scoped API 暴露；Web 投影工作区已加入 Preview / Relations tabs，
+> 关系节点可切换到已加载笔记，也可按 identity-scoped 单笔 API 补载。Repository link graph、projection、HTTP、client
+> 聚焦测试及 App Vue Relations/Workspace 测试、App Vue 全量测试、lint 与 typecheck 均通过。
+> repository-scoped 写队列已保证单 runtime 内同仓库请求串行、相同 request/hash 复用在途 Promise、request 冲突拒绝；
+> 多实例 delivery/reconciliation/write claim lease 已补齐：新增 `knowledge_repository_leases` 持久化表，按
+> delivery 与 connection key 条件抢占、续租和释放，随机 owner token 在关键持久化写前重新确认，过期 owner 不能覆盖
+> 新实例结果；启动与定时恢复会重新入队 Received/Processing delivery。Web commit、webhook projection 与定时
+> reconciliation 共用 connection lease，Pending write ledger 在前 owner 失效后可由新 owner 接续。
+> reconciliation 批处理新增 `(updatedAt, id)` cursor 与耗尽回绕，未变化的连接不会长期占用首批；Repository 25 files /
+> 161 tests、lint 与 typecheck 通过；API 与 App Vue typecheck 通过。待办收缩为真实 GitHub fixture/e2e。
+> 续进展 2026-07-19：附件投影从 default branch tree/compare 记录相对路径、blob SHA、大小和安全媒体类型，按路径变化
+> 做增量/全量删除传播；Web 通过 identity-scoped `/knowledge-attachments/:projectionId/content` 获取服务端 base64 内容，
+> 服务端重新验证 installation/repository ownership、private/active 状态、blob SHA 和大小，10 MiB 以上拒绝读取，
+> 不向浏览器返回 installation token。Repository 23 files / 153 tests、lint 与 typecheck 通过；App Vue typecheck
+> 通过，`KnowledgeProjectionWorkspaceView.spec.ts` 的 wrapper 类型断言已同步修正。
+> 续进展 2026-07-19：Web shared Markdown renderer 已改为 token-based Obsidian compatibility boundary，覆盖 inline/block
+> comments、escaped highlights、heading/block target metadata、inert non-recursive embeds、allowlisted callouts、
+> disabled task-list semantics 和 protocol-relative external-link hardening；新增 15 个 focused security/compatibility
+> tests。App Vue 89 files / 318 tests、typecheck、lint（7 个既有 warning）与 governance check 通过；真实 GitHub E2E
+> 仍是外部/后续缺口。
+> 续进展 2026-07-19：附件内容读取增加 `connectionId + blobSha` 复合键的短期 PostgreSQL cache；每次请求仍先验证
+> identity、private/active installation、当前 projection 和 10 MiB 上限，缓存命中还会校验 byte size，GitHub 返回的
+> blob SHA/size 不匹配则拒绝并不写入缓存。服务内并发 cold miss 合并，缓存故障回退 GitHub，不影响读取正确性。
+> 新增 Repository projection/cache 26 files / 169 tests、API 14 files / 33 tests，Repository/API typecheck、Repository
+> lint 与 focused cache tests 通过；live GitHub E2E remains externally gated。
+> 续进展 2026-07-19：新增独立、关闭 Nx cache 的 `desktop:test:live-github` acceptance target。它要求受控 fixture
+> 的 `GITHUB_APP_ID`、`GITHUB_APP_PRIVATE_KEY`、`GITHUB_TEST_REPOSITORY` 和 `GITHUB_TEST_INSTALLATION_ID`，
+> 通过真实 GitHub App installation inventory、confirmed Web note commit、GitHub readback、Desktop Git pull 与
+> 最终 scoped cleanup commit；缺少凭据时会 fail fast，默认 test target 不会执行该 live 文件。
 
 ### 阶段 5：Web 快捷创建
 
-- Agent 写入提案与确认 UI。
-- repository 串行 commit 队列、request ID 和 HEAD 冲突重试。
-- AI Web 草稿确认入库。
-- Desktop pull 后可在 Obsidian 看到 Web 新建文件。
+- Agent 写入提案与确认 UI。**（知识投影工作区的两阶段草稿/不可变确认已实现；统一 Agent Host 提案
+  协议仍由对应 active plan 承接）**
+- repository 串行 commit 队列、request ID 和 HEAD 冲突重试。**（持久化 request ledger、失败原请求重试、
+  已提交复用和 GitHub ref 冲突重试已实现；单 runtime 与持久化 connection lease 协调均已实现）**
+- AI Web 草稿确认入库。**（确认后的 Repository adapter 写入已接通，内容变化会提升 revision 并更换
+  request ID）**
+- Desktop pull 后可在 Obsidian 看到 Web 新建文件。**（真实 Git 服务边界验收已通过；真实 GitHub E2E 待验收）**
+
+> 续进展 2026-07-19：Desktop pull 验收已覆盖完整服务边界。测试使用真实系统 Git 与本地 bare remote 初始化
+> app-owned Vault，由第二工作树模拟 Web/GitHub 新提交，再经 Desktop 同步服务完成 connection 解析、短期 token
+> 获取、fast-forward pull、文件落盘和服务端 HEAD confirmation。Desktop 35 files / 282 tests、lint、typecheck 与
+> governance-check 通过；真实 GitHub fixture/e2e 仍需在受控 GitHub App 环境中执行。
 
 ### 阶段 6：遗留收缩
 
@@ -446,6 +578,48 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - 保留安全 Markdown 预览、关系、搜索和 RAG。
 - 更新 E2E、隐私说明、数据导出和断开仓库流程。
 - 不保留长期双写兼容。
+
+> 续进展 2026-07-19：固定 AI 路径设置已从 setting schema、设置页和最后残留的 locale 文案中移除；路径解析器
+> 在提案未指定子路径时只生成仓库根目录相对文件名，不再隐式回退到 `notes/`，并新增回归测试。阶段 6 的数据生命周期
+> 仍未收口：现有 data-portability `repository` 数据是可重新导入的旧 Repository/Resource 快照，不能混入不可移植的
+> GitHub App 授权或可重建投影；当前断开仓库是可恢复的软删除，也不会同步清理独立 AI 索引。后续必须先明确“可重新导入
+> 的用户数据”与“服务端持有数据披露”的导出边界，以及断开时保留/立即清除云端投影的用户选项，再统一删除投影、附件缓存、
+> write ledger 和 AI 索引，不能仅依赖 connection cascade 造成半清理。
+> 续进展 2026-07-19：Prisma 服务端 AI 索引已删除 `Resource.metadata.aiKnowledgeIndex` 的长期兼容回退；索引读写、
+> 失败状态和删除状态现在只使用 `AiKnowledgeIndexEntry`，专用表不可用时会显式失败而不会静默双写旧资源。pgvector
+> 仍是可选的检索优化，缺失时只回退到专用索引表上的 lexical/JSON 检索。新增专用表故障回归测试，AI 索引与 API
+> Repository bridge focused suites 通过；Desktop PowerSync metadata adapter 是独立本地实现，不与 Prisma 服务端双写。
+> 续进展 2026-07-20：断开仓库已增加明确的保留/清理选择。默认维持可恢复软断开并保留服务端派生数据；用户勾选清理时，
+> host composition edge 在单个 Prisma transaction 中按 `identityId + connectionId` 重新校验 ownership，先删除无外键的
+> `AiKnowledgeIndexEntry`，再 hard-delete connection，由 cascade 清理 Markdown/attachment projection、attachment cache、
+> webhook delivery 和 write ledger。HTTP query、Desktop gateway/IPC 和设置页双语 dialog 已贯通；本地 Vault、本地 Git
+> 与 GitHub repository 在两种模式下均保留。现有 data-portability 文件正式定义为可重新导入的业务数据备份，设置页不再称为
+> “Export All Data”，并明确排除 Vault 文件、GitHub authorization、派生 projection/cache 和 RAG；独立、不可导入的服务端
+> 持有数据披露 artifact 仍是阶段 6 后续项。
+> 续进展 2026-07-20：独立服务端持有数据披露已实现。受认证 Web endpoint 生成
+> `memoflow.server-held-data-disclosure` v1，按 identity 通过显式 Prisma select allowlist 披露 retained repository
+> connection metadata（含不可重放 installation identifier）、Markdown/attachment projection、base64 attachment cache、
+> webhook delivery、write ledger 与全部 identity-scoped AI knowledge index；不读取或导出 OAuth/installation token、GitHub App
+> private key 等 Memoflow 管理的可重放授权，也排除本地 Vault/Git history、GitHub repository history、worker lease 和
+> 数据库内部 retrieval vector；用户仓库中的 Markdown/frontmatter/cache bytes 按原样披露。artifact kind 与普通 import
+> parser 不兼容，Desktop IPC 明确返回不支持，Web 设置页提供单独下载动作与双语范围说明。
+> Contracts 94、Data Portability 50 和 App Vue focused 3 个测试通过；Contracts/Data Portability/API/App Vue/Desktop typecheck
+> 通过。App Vue 依赖 build 仍打印既有 `ui-vue-shadcn` TS2883 与 source-root declaration 噪声，但 Nx target 成功；真实 GitHub
+> fixture E2E 仍受外部凭据限制。
+> 续验证 2026-07-20：仓库标准 local-deploy 验证中的全量 affected lint、typecheck 与 test 均通过；随后
+> `pnpm docker:local:up` 连续三次在 API 镜像导出后的 containerd layer 解包阶段因宿主机 Docker 存储耗尽而失败，
+> 报错为 `no space left on device`。经确认清理未被运行容器使用的 build cache 与 image 后仍无法在当前容量下完成
+> prod-like 重建；既有 API、Web、AI service、PowerSync、Postgres 与 Redis 服务始终保持 healthy。最新标准验证报告因此
+> 仍为 `fail` / `readyForPr: no`，当前阻断属于宿主机 Docker 存储容量，不是 lint、类型或测试失败；阶段状态继续保持实施中。
+> 续进展 2026-07-20：旧数据库笔记的可达跨端编辑路径已收缩。API host 只挂载 GitHub knowledge connection、投影、
+> 附件与 confirmed-create 路由，不再挂载 Repository/Folder/Resource CRUD，也不再注册 Editor API module；Desktop
+> Repository IPC 只保留 Local Vault 与 GitHub connection/reconciliation/sync，Editor Electron runtime 不再注册；Vue
+> `/note/:id`、Mobile Repository/folder/note-editor 路由与 React mobile 旧客户端依赖均已移除。旧 Repository/Folder/Resource
+> 与 Editor workspace 数据只继续服务已明确标注的可重新导入备份，不构成运行时 Markdown 编辑源。旧 Web E2E 已替换为
+> projection-only 空连接边界与 legacy mutation endpoint 404 规格。Repository focused 2 files / 11 tests、App Vue router
+> 1 test、Repository/API/App Vue/App React/Mobile typecheck、相关文件 lint 与 Playwright test discovery 通过；Desktop 独立
+> `tsc` 仍受既有 source/dist 重复类型噪声影响，标准 affected typecheck 在本轮变更前已通过，但 pnpm store SQLite 故障使
+> 当前标准依赖链无法重新执行。
 
 ## 13. 测试与完成定义
 
@@ -474,7 +648,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [ ] Desktop Git 同步具备离线恢复且不 force push。
 - [ ] 冲突明确暂停并保留双方内容。
 - [ ] Web 新建笔记产生唯一 Git commit，重复请求不重复创建。
-- [ ] 已有笔记编辑在首期仍关闭。
+- [x] 已有笔记编辑在首期仍关闭。
 - [ ] AI 无固定默认目录设置，完整写入提案必须获得用户确认。
 - [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。
 - [ ] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。
