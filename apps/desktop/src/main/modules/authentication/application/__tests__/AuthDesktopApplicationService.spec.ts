@@ -90,7 +90,7 @@ describe('AuthDesktopApplicationService', () => {
       await expect(service.initialize()).rejects.toThrow(
         'Lifecycle coordinator not initialized',
       );
-      await expect(service.enable2FA('totp')).rejects.toThrow(
+      await expect(service.listSessions()).rejects.toThrow(
         'Security admin service not initialized',
       );
     });

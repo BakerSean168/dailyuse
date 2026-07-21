@@ -348,27 +348,3 @@ export interface RememberedDesktopAccountLoginReq {
   autoLogin?: boolean;
 }
 
-// ============================================================================
-// 2FA & API Keys (stubs for future use)
-// ============================================================================
-
-/**
- * Two-factor authentication status.
- */
-export interface TwoFactorStatus {
-  enabled: boolean;
-  method: string | null;
-}
-
-/**
- * API key info.
- */
-export interface ApiKeyInfo {
-  id: string;
-  name: string;
-  prefix: string;
-  scopes: string[];
-  createdAt: string;
-  lastUsedAt?: string;
-  expiresAt?: string;
-}

@@ -35,15 +35,6 @@ const Ch = {
   TOKEN_STATUS: 'auth:token-status',
   SESSION_STATUS: 'auth:session-status',
   CLEANUP_SESSIONS: 'auth:cleanup-sessions',
-  TFA_ENABLE: 'auth:2fa:enable',
-  TFA_DISABLE: 'auth:2fa:disable',
-  TFA_VERIFY: 'auth:2fa:verify',
-  TFA_GET_STATUS: 'auth:2fa:get-status',
-  TFA_BACKUP_CODES: 'auth:2fa:generate-backup-codes',
-  API_KEY_CREATE: 'auth:api-key:create',
-  API_KEY_LIST: 'auth:api-key:list',
-  API_KEY_REVOKE: 'auth:api-key:revoke',
-  API_KEY_ROTATE: 'auth:api-key:rotate',
   SESSION_LIST: 'auth:session:list',
   SESSION_GET_CURRENT: 'auth:session:get-current',
   SESSION_REVOKE: 'auth:session:revoke',
@@ -500,52 +491,6 @@ export function registerDesktopAuthShellHandlers(
   ipcMain.handle(Ch.CLEANUP_SESSIONS, async () => {
     const service = currentAuthService();
     return service ? await service.cleanupExpiredSessions() : 0;
-  });
-
-  ipcMain.handle(Ch.TFA_ENABLE, async (_event, method: string) => {
-    const service = currentAuthService();
-    return service
-      ? await service.enable2FA(method || 'totp')
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.TFA_DISABLE, async () => {
-    const service = currentAuthService();
-    return service
-      ? await service.disable2FA()
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.TFA_VERIFY, async (_event, code: string) => {
-    const service = currentAuthService();
-    return service
-      ? await service.verify2FA(code)
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.TFA_GET_STATUS, async () => {
-    const service = currentAuthService();
-    return service ? await service.get2FAStatus() : { enabled: false, method: null };
-  });
-  ipcMain.handle(Ch.TFA_BACKUP_CODES, async () => {
-    const service = currentAuthService();
-    return service ? await service.generateBackupCodes() : { codes: [] };
-  });
-
-  ipcMain.handle(Ch.API_KEY_CREATE, async (_event, req) => {
-    const service = currentAuthService();
-    return service ? await service.createApiKey(req) : null;
-  });
-  ipcMain.handle(Ch.API_KEY_LIST, async () => {
-    const service = currentAuthService();
-    return service ? await service.listApiKeys() : { apiKeys: [], total: 0 };
-  });
-  ipcMain.handle(Ch.API_KEY_REVOKE, async (_event, keyId: string) => {
-    const service = currentAuthService();
-    return service
-      ? await service.revokeApiKey(keyId)
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.API_KEY_ROTATE, async (_event, keyId: string) => {
-    const service = currentAuthService();
-    return service ? await service.rotateApiKey(keyId) : { newKey: null };
   });
 
   ipcMain.handle(Ch.SESSION_LIST, async () => {

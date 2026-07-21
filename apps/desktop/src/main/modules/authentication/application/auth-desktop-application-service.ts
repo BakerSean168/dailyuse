@@ -38,8 +38,6 @@ import {
   type AuthResponseDTO,
   type GetCurrentUserRes,
   type TokenStatus,
-  type TwoFactorStatus,
-  type ApiKeyInfo,
   type AuthStatus,
   type EmailLoginCredentials,
   type DeviceInfoUI,
@@ -70,7 +68,7 @@ import type { WindowManager } from '../../../lifecycle/window-manager';
 import { toCloudAccessToken } from '../infrastructure/session-types';
 
 // Re-export from contracts for convenience
-export type { IpcResult, TwoFactorStatus, ApiKeyInfo, AuthStatus, EmailLoginCredentials };
+export type { IpcResult, AuthStatus, EmailLoginCredentials };
 export type { DeviceInfoUI } from '@dailyuse/contracts/authentication';
 export { AuthMode, toIpcResult, ok, fail };
 
@@ -388,45 +386,6 @@ export class AuthDesktopApplicationService {
   // ============================================
   // Security Admin Methods (delegated)
   // ============================================
-
-  async enable2FA(method: string): Promise<IpcResult<{ qrCodeUrl?: string; secret?: string }>> {
-    return this.requireSecurityAdmin().enable2FA(method);
-  }
-
-  async disable2FA(): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().disable2FA();
-  }
-
-  async verify2FA(code: string): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().verify2FA(code);
-  }
-
-  async get2FAStatus(): Promise<TwoFactorStatus> {
-    return this.requireSecurityAdmin().get2FAStatus();
-  }
-
-  async generateBackupCodes(): Promise<{ codes: string[] }> {
-    return this.requireSecurityAdmin().generateBackupCodes();
-  }
-
-  async createApiKey(request: {
-    name: string;
-    scopes?: string[];
-  }): Promise<{ id: string; key: string } | null> {
-    return this.requireSecurityAdmin().createApiKey(request);
-  }
-
-  async listApiKeys(): Promise<{ apiKeys: ApiKeyInfo[]; total: number }> {
-    return this.requireSecurityAdmin().listApiKeys();
-  }
-
-  async revokeApiKey(keyId: string): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().revokeApiKey(keyId);
-  }
-
-  async rotateApiKey(keyId: string): Promise<{ newKey: string | null }> {
-    return this.requireSecurityAdmin().rotateApiKey(keyId);
-  }
 
   async listSessions(): Promise<ListSessionsRes> {
     return this.requireSecurityAdmin().listSessions();
