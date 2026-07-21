@@ -219,7 +219,9 @@ export function createTaskScheduleProjectionSource(deps: {
 }): TaskScheduleProjectionSource {
   return {
     async buildTemplatePlan(templateId, identityId) {
-      const template = await deps.taskTemplateRepository.findById(templateId);
+      const template = identityId
+        ? await deps.taskTemplateRepository.findByIdForIdentity(identityId, templateId)
+        : await deps.taskTemplateRepository.findById(templateId);
       if (!template) {
         return {
           selection: selectTemplateProjection(templateId, identityId),
@@ -237,7 +239,9 @@ export function createTaskScheduleProjectionSource(deps: {
         };
       }
 
-      const instances = await deps.taskInstanceRepository.findByTemplateId(templateId);
+      const instances = (await deps.taskInstanceRepository.findByTemplateId(templateId)).filter(
+        (instance) => String(instance.identityId) === String(templateDTO.identityId),
+      );
       const now = Date.now();
       const nextTasks = instances
         .filter(isSchedulableInstance)

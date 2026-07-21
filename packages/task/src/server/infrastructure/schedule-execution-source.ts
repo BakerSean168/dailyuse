@@ -9,8 +9,8 @@ import type { ITaskTemplateRepository } from '../domain/repositories/i-task-temp
 import type { TaskScheduleExecutionSource } from '../../schedule-execution';
 
 export interface CreateTaskScheduleExecutionSourceDeps {
-  readonly taskInstanceRepository: Pick<ITaskInstanceRepository, 'findById'>;
-  readonly taskTemplateRepository: Pick<ITaskTemplateRepository, 'findById'>;
+  readonly taskInstanceRepository: Pick<ITaskInstanceRepository, 'findById' | 'findByIdForIdentity'>;
+  readonly taskTemplateRepository: Pick<ITaskTemplateRepository, 'findById' | 'findByIdForIdentity'>;
 }
 
 export function createTaskScheduleExecutionSource(
@@ -18,7 +18,10 @@ export function createTaskScheduleExecutionSource(
 ): TaskScheduleExecutionSource {
   return {
     async executeTask(task) {
-      const instance = await deps.taskInstanceRepository.findById(task.sourceEntityId);
+      const instance = await deps.taskInstanceRepository.findByIdForIdentity(
+        String(task.identityId),
+        task.sourceEntityId,
+      );
 
       if (
         !instance ||
@@ -28,7 +31,10 @@ export function createTaskScheduleExecutionSource(
         return { nextRunAt: null, result: { skipped: true } };
       }
 
-      const template = await deps.taskTemplateRepository.findById(String(instance.templateId));
+      const template = await deps.taskTemplateRepository.findByIdForIdentity(
+        String(task.identityId),
+        String(instance.templateId),
+      );
       const payload = task.metadata.toDTO().payload;
       const taskTitle =
         typeof payload['taskTitle'] === 'string'
