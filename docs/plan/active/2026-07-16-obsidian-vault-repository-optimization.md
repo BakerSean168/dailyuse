@@ -1187,6 +1187,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留七十三轮）：contracts 新增严格 `isIpcResultEnvelope`（要求
+> `ok` + `data`/`error`），ipc-client / ResultIpcClient 删除 raw 双轨透传并对非信封响应失败；
+> authenticated-ipc 共用同一检测。补 contracts/ipc-client surface specs。§13.2 仍为部分/外部阻塞。
+> 验证：contracts + ipc-client focused specs + governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

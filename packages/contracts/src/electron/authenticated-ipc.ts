@@ -1,4 +1,4 @@
-import { extractStructuredResultError, fail, ok, type IpcResult } from '../result';
+import { extractStructuredResultError, fail, isIpcResultEnvelope, ok, type IpcResult } from '../result';
 import type { IElectronModuleContext } from './index';
 import type { Context } from '../shared';
 import { isElectronAuthResolutionError } from './auth-context';
@@ -13,16 +13,6 @@ export interface AuthenticatedIpcWrapperOptions {
 }
 
 export interface AuthenticatedIdentityIpcWrapperOptions extends AuthenticatedIpcWrapperOptions {}
-
-function isIpcResult<T>(value: unknown): value is IpcResult<T> {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'ok' in value &&
-    typeof (value as { ok?: unknown }).ok === 'boolean' &&
-    ('data' in value || 'error' in value)
-  );
-}
 
 export function createAuthenticatedIpcWrapper(options: AuthenticatedIpcWrapperOptions = {}) {
   const authRequiredMessage = options.authRequiredMessage ?? 'Authentication required';
@@ -44,10 +34,10 @@ export function createAuthenticatedIpcWrapper(options: AuthenticatedIpcWrapperOp
       });
       const result = await handler(requestContext);
       console.info('[contracts:authenticated-ipc] 处理器执行完成', {
-        isIpcResult: isIpcResult(result),
+        isIpcResult: isIpcResultEnvelope(result),
         hasOk: typeof result === 'object' && result !== null && 'ok' in result,
       });
-      return isIpcResult<T>(result) ? result : ok(result);
+      return isIpcResultEnvelope(result) ? result : ok(result);
     } catch (error) {
       console.info('[contracts:authenticated-ipc] 捕获到 IPC 错误', {
         errorName: error instanceof Error ? error.name : typeof error,

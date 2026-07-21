@@ -45,20 +45,31 @@ describe('IpcClientImpl', () => {
     });
   });
 
-  it('passes through non-IpcResult responses', async () => {
+  it('rejects non-IpcResult responses without raw dual-track passthrough', async () => {
     vi.mocked(bridge.invoke).mockResolvedValue('raw string');
 
-    const result = await client.invoke('test:channel');
-
-    expect(result).toBe('raw string');
+    await expect(client.invoke('test:channel')).rejects.toThrow(IpcClientError);
+    await expect(client.invoke('test:channel')).rejects.toMatchObject({
+      code: 'INVALID_IPC_RESULT',
+      channel: 'test:channel',
+    });
   });
 
-  it('passes through null responses', async () => {
+  it('rejects domain ok DTOs that are not IpcResult envelopes', async () => {
+    // AutoLogin-style business ok without data/error must not be treated as envelope
+    vi.mocked(bridge.invoke).mockResolvedValue({ ok: true, authenticated: false });
+
+    await expect(client.invoke('test:channel')).rejects.toMatchObject({
+      code: 'INVALID_IPC_RESULT',
+    });
+  });
+
+  it('rejects null responses without raw dual-track passthrough', async () => {
     vi.mocked(bridge.invoke).mockResolvedValue(null);
 
-    const result = await client.invoke('test:channel');
-
-    expect(result).toBeNull();
+    await expect(client.invoke('test:channel')).rejects.toMatchObject({
+      code: 'INVALID_IPC_RESULT',
+    });
   });
 
   it('throws IpcClientError when bridge is missing', async () => {
@@ -144,14 +155,26 @@ describe('ResultIpcClient', () => {
     }
   });
 
-  it('returns Result.ok for raw non-IpcResult response', async () => {
+  it('returns Result.fail for raw non-IpcResult response', async () => {
     vi.mocked(bridge.invoke).mockResolvedValue({ custom: 'format' });
 
     const result = await client.invoke('test:channel');
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.data).toEqual({ custom: 'format' });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('INTERNAL_ERROR');
+      expect(result.error.message).toContain('not an IpcResult envelope');
+    }
+  });
+
+  it('does not misclassify domain ok DTOs as IpcResult envelopes', async () => {
+    vi.mocked(bridge.invoke).mockResolvedValue({ ok: true, authenticated: false });
+
+    const result = await client.invoke('test:channel');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain('not an IpcResult envelope');
     }
   });
 

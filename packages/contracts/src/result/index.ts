@@ -6,7 +6,7 @@
 
 export * from './core';
 
-export { toIpcResult, fromIpcResult, createIpcClientWrapper, type IpcResult } from './ipc';
+export { toIpcResult, fromIpcResult, isIpcResultEnvelope, createIpcClientWrapper, type IpcResult } from './ipc';
 
 export {
   toHttpResponse,

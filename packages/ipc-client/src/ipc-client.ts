@@ -18,12 +18,12 @@
  * - 自动解包 IpcResult 信封（从 Main Process 返回的 { ok, data, error } 格式）
  * - 成功时返回纯业务数据 `T`
  * - 失败时抛出 `IpcClientError`
- * - 支持非 IpcResult 格式的透传（向后兼容）
+ * - 非 IpcResult 信封一律视为协议错误（活跃开发期无双轨透传）
  *
  * @module @dailyuse/ipc-client
  */
 
-import type { IpcResult } from '@dailyuse/contracts/result';
+import { isIpcResultEnvelope, type IpcResult } from '@dailyuse/contracts/result';
 import type { ElectronBridge, IpcClient, IpcClientConfig } from './types';
 import { DEFAULT_IPC_CLIENT_CONFIG, IpcClientError } from './types';
 
@@ -137,14 +137,13 @@ export class IpcClientImpl implements IpcClient {
   /**
    * 解包 IPC 响应
    *
-   * 主进程通过 BaseIPCHandler 返回 IpcResult 格式：
+   * 主进程返回 IpcResult/Result 信封：
    * - `{ ok: true, data }` → 返回 data
    * - `{ ok: false, error }` → 抛出 IpcClientError
-   * - 非 IpcResult 格式 → 透传（向后兼容）
+   * - 非信封格式 → 抛出协议错误（无 raw dual-track 透传）
    */
   private unwrapResponse<T>(channel: string, response: unknown): T {
-    // 检测是否为 IpcResult 信封格式
-    if (this.isIpcResultEnvelope(response)) {
+    if (isIpcResultEnvelope(response)) {
       const ipcResult = response as IpcResult<T>;
 
       if (ipcResult.ok) {
@@ -154,7 +153,6 @@ export class IpcClientImpl implements IpcClient {
         return ipcResult.data as T;
       }
 
-      // 失败：抛出结构化错误
       throw new IpcClientError(
         ipcResult.error?.message ?? 'IPC request failed',
         ipcResult.error?.code ?? 'UNKNOWN',
@@ -163,22 +161,13 @@ export class IpcClientImpl implements IpcClient {
       );
     }
 
-    // 非标准格式 — 透传
     if (this.enableLogging) {
-      console.debug(`[IPC] ← ${channel} (raw)`);
+      console.debug(`[IPC] ← ${channel} ✗ (non-envelope)`);
     }
-    return response as T;
-  }
-
-  /**
-   * 判断是否为 IpcResult 信封格式
-   */
-  private isIpcResultEnvelope(data: unknown): boolean {
-    return (
-      data !== null &&
-      typeof data === 'object' &&
-      'ok' in (data as Record<string, unknown>) &&
-      typeof (data as Record<string, unknown>).ok === 'boolean'
+    throw new IpcClientError(
+      `IPC response for ${channel} is not an IpcResult envelope`,
+      'INVALID_IPC_RESULT',
+      channel,
     );
   }
 }

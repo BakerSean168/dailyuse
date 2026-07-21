@@ -46,6 +46,27 @@ export interface IpcResult<T = unknown> {
 }
 
 // ============================================================================
+// IPC Result Detection
+// ============================================================================
+
+/**
+ * Strict IpcResult / Result envelope detector.
+ *
+ * Requires boolean `ok` plus either `data` or `error` so domain DTOs that only
+ * carry a business `ok` flag (e.g. AutoLoginResult) are not misclassified.
+ */
+export function isIpcResultEnvelope(data: unknown): data is IpcResult {
+  if (data === null || typeof data !== 'object') {
+    return false;
+  }
+  const record = data as Record<string, unknown>;
+  if (typeof record.ok !== 'boolean') {
+    return false;
+  }
+  return 'data' in record || 'error' in record;
+}
+
+// ============================================================================
 // IPC Result Converters
 // ============================================================================
 
