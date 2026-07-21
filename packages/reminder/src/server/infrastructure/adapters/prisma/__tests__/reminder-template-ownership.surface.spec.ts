@@ -3,9 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Reminder template ownership surface (stage-6 residual 127):
- * get/update/delete/actions must never authorize by bare template/group
- * primary key alone.
+ * Reminder template ownership surface (stage-6 residual 127/128):
+ * get/update/delete/actions and group-scoped list/batch must never authorize
+ * by bare template/group primary key alone.
  */
 describe('reminder template ownership surface', () => {
   const templatePort = readFileSync(
@@ -24,6 +24,13 @@ describe('reminder template ownership surface', () => {
     resolve(
       __dirname,
       '../../../../application/use-cases/queries/get-reminder-template.use-case.ts',
+    ),
+    'utf8',
+  );
+  const listUseCase = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/list-reminder-templates.use-case.ts',
     ),
     'utf8',
   );
@@ -63,5 +70,15 @@ describe('reminder template ownership surface', () => {
     expect(actionService).toContain('findByIdForIdentity(');
     expect(actionService).toContain('ctx.identityId');
     expect(module).toContain('findByIdForIdentity(ctx.identityId, templateId, options)');
+  });
+
+  it('findByGroupId requires identityId and list uses identity-scoped query', () => {
+    expect(templatePort).toContain(
+      'findByGroupId(\n    groupId: string | null,\n    identityId: string,',
+    );
+    expect(prismaTemplate).toContain('reminderGroupId: groupId');
+    expect(prismaTemplate).toContain('identityId,');
+    expect(listUseCase).toContain('findByGroupId(query.groupId, cx.identityId');
+    expect(listUseCase).not.toContain('groupTemplates.filter');
   });
 });

@@ -45,9 +45,9 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
     );
   }
 
-  async findByGroupId(groupId: string | null): Promise<any[]> {
+  async findByGroupId(groupId: string | null, identityId: string): Promise<any[]> {
     return Array.from(this.templates.values()).filter(
-      (t) => t.groupId === groupId,
+      (t) => t.groupId === groupId && String(t.identityId) === String(identityId),
     );
   }
 

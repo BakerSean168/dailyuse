@@ -150,14 +150,13 @@ export class ReminderGroupApplicationService {
       return fail({ code: 'NOT_FOUND', message: 'Group not found' });
     }
 
-    const templates = await this.reminderTemplateRepository.findByGroupId(group.id);
+    const templates = await this.reminderTemplateRepository.findByGroupId(
+      group.id,
+      ctx.identityId,
+    );
     let successCount = 0;
 
     for (const template of templates) {
-      if (String(template.identityId) !== ctx.identityId) {
-        continue;
-      }
-
       if (data.action === 'ENABLE') {
         template.enable();
       } else {

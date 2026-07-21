@@ -72,6 +72,7 @@ export interface IReminderTemplateRepository {
    */
   findByGroupId(
     groupId: string | null,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]>;
 

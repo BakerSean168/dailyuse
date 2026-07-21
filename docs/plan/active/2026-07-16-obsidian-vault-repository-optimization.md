@@ -1650,6 +1650,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百二十八轮）：Reminder `findByGroupId` 身份隔离——列表/批
+> 量分组动作与 domain stats/delete 路径均要求 identityId；不再 bare groupId 后 filter。
+> ownership surface 扩展。§13.2 仍部分（缺跨端 E2E / 真实 GitHub fixture）。验证：reminder
+> focused specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1759,6 +1767,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百二十五轮：task dependency list/update/delete/validate/chain identity-scoped（findByIdForIdentity）。
   残留一百二十六轮：notification get/mark-read/update/delete/batch identity-scoped（findByIdForIdentity）。
   残留一百二十七轮：reminder template/group get/update/delete/actions identity-scoped（findByIdForIdentity）。
+  残留一百二十八轮：reminder findByGroupId identity-scoped（list/batch/domain stats）。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

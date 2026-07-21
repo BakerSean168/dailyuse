@@ -303,10 +303,12 @@ describe('ReminderDomainService', () => {
   // -----------------------------------------------------------------------
   describe('deleteGroup()', () => {
     it('should throw when group has templates', async () => {
+      const group = ReminderGroup.load(makeGroupState());
       const template = ReminderTemplate.load(makeTemplateState());
+      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
       (templateRepo.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([template]);
 
-      await expect(service.deleteGroup('group-1')).rejects.toThrow('still contains');
+      await expect(service.deleteGroup(group.id)).rejects.toThrow('still contains');
     });
 
     it('should soft-delete when no templates in group', async () => {
@@ -320,11 +322,13 @@ describe('ReminderDomainService', () => {
     });
 
     it('should hard-delete via repository when specified', async () => {
+      const group = ReminderGroup.load(makeGroupState());
+      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
       (templateRepo.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
-      await service.deleteGroup('group-1', false);
+      await service.deleteGroup(group.id, false);
 
-      expect(groupRepo.delete).toHaveBeenCalledWith('group-1');
+      expect(groupRepo.delete).toHaveBeenCalledWith(group.id);
     });
   });
 

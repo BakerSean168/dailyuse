@@ -170,6 +170,7 @@ describe('ReminderTemplateControlService', () => {
     });
     const ungrouped = createTemplate({ identityId });
 
+    groupRepository.findById.mockResolvedValue(group);
     groupRepository.findByIds.mockResolvedValue([group]);
     templateRepository.findByGroupId.mockResolvedValue([enabled, paused]);
     templateRepository.findByIdentityId.mockResolvedValue([enabled, paused, ungrouped]);

@@ -151,9 +151,13 @@ export class ReminderTemplatePrismaRepository
 
   async findByGroupId(
     groupId: string | null,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
-    const where: Prisma.ReminderTemplateWhereInput = { reminderGroupId: groupId };
+    const where: Prisma.ReminderTemplateWhereInput = {
+      reminderGroupId: groupId,
+      identityId,
+    };
     if (!options?.includeDeleted) {
       where.deletedAt = null;
     }

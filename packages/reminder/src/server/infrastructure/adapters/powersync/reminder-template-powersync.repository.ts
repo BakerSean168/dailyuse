@@ -277,13 +277,16 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
 
   async findByGroupId(
     groupId: string | null,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
-    const sql = `SELECT * FROM reminder_templates WHERE ${
-      groupId === null ? 'reminder_group_id IS NULL' : 'reminder_group_id = ?'
-    }${options?.includeDeleted ? '' : ' AND deleted_at IS NULL'} ORDER BY created_at ASC`;
+    const groupClause = groupId === null ? 'reminder_group_id IS NULL' : 'reminder_group_id = ?'
+    const sql = `SELECT * FROM reminder_templates WHERE ${groupClause} AND identity_id = ?${
+      options?.includeDeleted ? '' : ' AND deleted_at IS NULL'
+    } ORDER BY created_at ASC`;
+    const params = groupId === null ? [identityId] : [groupId, identityId]
     return this.mapRows(
-      await this.db.getAll(sql, groupId === null ? [] : [groupId]),
+      await this.db.getAll(sql, params),
       options?.includeHistory,
       options?.historyLimit,
     );

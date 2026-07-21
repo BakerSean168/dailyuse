@@ -341,7 +341,14 @@ export class ReminderTemplateControlService {
    * 获取分组下所有真正启用的模板
    */
   async getEffectivelyEnabledTemplatesInGroup(groupId: string): Promise<ReminderTemplate[]> {
-    const templates = await this.templateRepository.findByGroupId(groupId);
+    const group = await this.groupRepository.findById(groupId);
+    if (!group) {
+      return [];
+    }
+    const templates = await this.templateRepository.findByGroupId(
+      groupId,
+      String(group.identityId),
+    );
     const statusResults = await this.calculateEffectiveStatusBatch(templates);
 
     const enabledTemplateIdSet = new Set(

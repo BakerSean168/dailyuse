@@ -70,7 +70,12 @@ export class ReminderDomainService {
   }
 
   public async syncTemplatesEffectiveEnabledByGroup(groupId: string): Promise<void> {
-    const templates = await this.reminderTemplateRepository.findByGroupId(groupId);
+    const group = await this.getGroup(groupId);
+    if (!group) return;
+    const templates = await this.reminderTemplateRepository.findByGroupId(
+      groupId,
+      String(group.identityId),
+    );
     for (const template of templates) {
       await this.syncTemplateEffectiveEnabled(template);
       await this.reminderTemplateRepository.save(template);
@@ -179,8 +184,16 @@ export class ReminderDomainService {
   }
 
   public async deleteGroup(id: string, softDelete: boolean = true): Promise<void> {
+    const group = await this.getGroup(id);
+    if (!group) {
+      throw new Error(`ReminderGroup not found: ${id}`);
+    }
+
     // Business Rule: Cannot delete a group that still contains templates.
-    const templatesInGroup = await this.reminderTemplateRepository.findByGroupId(id);
+    const templatesInGroup = await this.reminderTemplateRepository.findByGroupId(
+      id,
+      String(group.identityId),
+    );
     if (templatesInGroup.length > 0) {
       throw new Error(
         `Cannot delete group ${id} because it still contains ${templatesInGroup.length} templates.`,
@@ -188,11 +201,8 @@ export class ReminderDomainService {
     }
 
     if (softDelete) {
-      const group = await this.getGroup(id);
-      if (group) {
-        group.softDelete();
-        await this.reminderGroupRepository.save(group);
-      }
+      group.softDelete();
+      await this.reminderGroupRepository.save(group);
     } else {
       await this.reminderGroupRepository.delete(id);
     }
@@ -252,9 +262,13 @@ export class ReminderDomainService {
   public async updateGroupStats(groupId: string): Promise<void> {
     const group = await this.getGroup(groupId);
     if (!group) return;
-    const templates = await this.reminderTemplateRepository.findByGroupId(groupId, {
-      includeDeleted: false,
-    });
+    const templates = await this.reminderTemplateRepository.findByGroupId(
+      groupId,
+      String(group.identityId),
+      {
+        includeDeleted: false,
+      },
+    );
 
     const stats = this.groupBusinessService.calculateGroupStatistics(templates);
     group.updateStats(
