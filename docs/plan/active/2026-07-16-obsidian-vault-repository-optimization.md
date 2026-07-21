@@ -44,9 +44,10 @@ updated: 2026-07-21T00:00:00
   app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
   path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
   **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**；repository 运行时组合根/
-  客户端面仅 knowledge + Local Vault；**未挂载的 legacy application use-case/service 栈已删除**。
-  Prisma/PowerSync `editor_*`/`resources` 表与 data-portability 可再导入备份仍保留。完成定义审计见 §13.2；
-  真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
+  客户端面仅 knowledge + Local Vault；**legacy application use-case 栈与 Prisma/PowerSync/memory
+  Folder/Resource/Repository/Bookmark 适配器、`RepositoryRepositoryFactory` 已删除**。
+  Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
+  完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
 ## 2. 已确认产品边界
 
@@ -703,6 +704,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > testing helper 收缩为 knowledge-only 模块壳。验证：`repository:test` 18 files / 129 tests、
 > `repository:typecheck`、`daily-use:governance-check` 通过。domain/PowerSync/Prisma resource 适配器与
 > portable 边界仍保留。§13.2 未完成项不变。状态保持 **实施中**；PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留十一轮）：删除未引用的 legacy 基础设施适配层——Prisma/PowerSync/memory
+> Folder/Resource/Repository/Bookmark repositories 与 mappers、`RepositoryRepositoryFactory`；
+> 去掉空的 `createRepositoryUseCases` / `RepositoryModuleUseCases` 袋；`createRepositoryPowerSyncModule`
+> 仅返回 knowledge-only 模块壳。data-portability 仍直接写 Prisma 表，schema 与 portable 边界未动。
+> 验证：`repository:test` 129、`repository:typecheck`、`governance-check` 通过。domain 实体/值对象与
+> domain-client 仍保留（AI ResourceClientDTO 兼容视图与 FolderHierarchy 单测）。§13.2 未完成项不变。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 ## 13. 测试与完成定义
 

@@ -28,17 +28,10 @@ export interface RepositoryModuleRuntimeContribution {
   stop(): void;
 }
 
-/**
- * @deprecated Legacy use-case bag removed with database note CRUD runtime.
- * Kept as an empty type so old test imports can be updated gradually.
- */
-export type RepositoryModuleUseCases = Record<string, never>;
-
 export interface RepositoryModuleInstance {
   readonly knowledgeRepositoryConnectionService: KnowledgeRepositoryConnectionService | null;
   readonly knowledgeRepositoryProjectionService: KnowledgeRepositoryProjectionService | null;
   readonly knowledgeNoteCommitService: KnowledgeNoteCommitService | null;
-  readonly useCases: RepositoryModuleUseCases;
   readonly api: RepositoryApplicationPort;
   start(): void;
   dispose(): void;
@@ -154,15 +147,6 @@ function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApp
   };
 }
 
-/**
- * @deprecated No legacy use cases remain. Prefer `createRepositoryModule`.
- */
-export function createRepositoryUseCases(
-  _deps: RepositoryModuleDependencies,
-): RepositoryModuleUseCases {
-  return {};
-}
-
 export function createRepositoryModule(
   dependencies: RepositoryModuleDependencies,
 ): RepositoryModuleInstance {
@@ -174,7 +158,6 @@ export function createRepositoryModule(
     knowledgeRepositoryConnectionService: dependencies.knowledgeRepositoryConnectionService ?? null,
     knowledgeRepositoryProjectionService: dependencies.knowledgeRepositoryProjectionService ?? null,
     knowledgeNoteCommitService: dependencies.knowledgeNoteCommitService ?? null,
-    useCases: {},
     api,
     start() {
       if (started) return;

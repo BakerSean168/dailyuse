@@ -2,9 +2,8 @@
  * createRepositoryPowerSyncModule — Desktop convenience factory.
  *
  * Knowledge repository connection/sync on Desktop is owned by Electron IPC
- * ports (local vault + knowledge sync). This factory now only assembles the
- * knowledge application facade when hosts still call it; it no longer wires
- * legacy PowerSync Resource/Folder repositories into a CRUD runtime.
+ * ports (local vault + knowledge sync). This factory returns a knowledge-only
+ * module shell for hosts that still call it.
  */
 
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
@@ -33,10 +32,3 @@ export function createRepositoryPowerSyncModule(
     runtimeContributions: options.runtimeContributions,
   });
 }
-
-export {
-  PowerSyncRepositoryRepository,
-  PowerSyncResourceRepository,
-  PowerSyncFolderRepository,
-  ResourceBookmarkPowerSyncRepository,
-} from './adapters/powersync';

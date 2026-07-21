@@ -11,7 +11,6 @@ export {
   createFsStorageAdapter,
   createRepositoryModule,
   createRepositoryPrismaModule,
-  createRepositoryUseCases,
   createRepositoryPowerSyncModule,
   createRepositoryRuntimeContribution,
   resolveRepositoryStorageBaseDir,
@@ -22,7 +21,6 @@ export {
   type RepositoryModuleDependencies,
   type RepositoryModuleInstance,
   type RepositoryModuleRuntimeContribution,
-  type RepositoryModuleUseCases,
   type RepositoryRuntimeContribution,
 } from './server';
 export type { RepositoryApplicationPort } from './server';
