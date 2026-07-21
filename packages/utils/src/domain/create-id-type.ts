@@ -1,5 +1,5 @@
 import { IdGenerator } from './id-generator';
-import { isValidUUID } from '../uuid';
+import { isValidUUID } from '../shared/uuid';
 
 const GENERIC_PREFIXED_UUID_REGEX =
   /^[A-Za-z][A-Za-z0-9]*_[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
