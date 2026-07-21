@@ -1306,6 +1306,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十八轮）：Desktop IPC 对齐 HTTP void 成功信封——
+> `PROVIDER_DELETE` / `PROVIDER_SET_DEFAULT` / `CONVERSATION_DELETE` 成功路径显式
+> `ok(null)`（不再透传 `Result<void>`/`data:undefined` 双轨）。扩展 void-success
+> envelope surface 覆盖 electron。§13.2 仍为部分/外部阻塞。验证：ai focused +
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

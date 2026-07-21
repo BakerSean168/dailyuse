@@ -163,7 +163,12 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         ),
       );
       ipcMain.handle(AIChannels.PROVIDER_DELETE, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => aiModule.api.deleteProvider(id)),
+        withAuthenticatedValue(ctx, async () => {
+          const result = await aiModule.api.deleteProvider(id);
+          if (!result.ok) return result;
+          // Align with HTTP void success: data:null (no undefined dual-track).
+          return ok(null);
+        }),
       );
       ipcMain.handle(AIChannels.PROVIDER_TEST, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
@@ -171,11 +176,13 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         ),
       );
       ipcMain.handle(AIChannels.PROVIDER_SET_DEFAULT, async (_, dto) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.setDefaultProvider(dto.providerId, {
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.setDefaultProvider(dto.providerId, {
             identityId: requestContext.identityId,
-          }),
-        ),
+          });
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
       ipcMain.handle(AIChannels.PROVIDER_REFRESH_MODELS, async (_, id) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
@@ -223,7 +230,11 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         }),
       );
       ipcMain.handle(AIChannels.CONVERSATION_DELETE, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => aiModule.api.deleteConversation(String(id))),
+        withAuthenticatedValue(ctx, async () => {
+          const result = await aiModule.api.deleteConversation(String(id));
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
 
       // -- Chat Messages --
