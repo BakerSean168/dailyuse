@@ -15,7 +15,6 @@ import {
   type AuthSessionClientDTO,
   type AuthSessionId,
   type GetCurrentUserRes,
-  type DeviceInfoUI,
   type ListSessionsRes,
   type SessionInfo,
 } from '@dailyuse/contracts/authentication';
@@ -27,7 +26,7 @@ import {
 } from './auth-coordinator-helpers';
 
 /**
- * Handles security admin operations: session management and device management.
+ * Handles security admin operations: session management.
  */
 export class DesktopAuthSecurityAdminService {
   constructor(
@@ -157,67 +156,6 @@ export class DesktopAuthSecurityAdminService {
       this.logger.error('Failed to revoke all sessions', { error });
       return { ok: false, count: 0 };
     }
-  }
-
-  // ============================================
-  // Devices Methods
-  // ============================================
-
-  async listDevices(): Promise<{ devices: DeviceInfoUI[]; total: number }> {
-    this.logger.debug('List devices');
-
-    const deviceInfo = this.sessionManager?.getDeviceInfo();
-    if (!deviceInfo) {
-      return { devices: [], total: 0 };
-    }
-
-    const currentDevice: DeviceInfoUI = {
-      id: deviceInfo.deviceId,
-      name: deviceInfo.deviceName ?? 'Desktop App',
-      type: deviceInfo.deviceType,
-      os: deviceInfo.os ?? undefined,
-      fingerprint: deviceInfo.deviceFingerprint ?? undefined,
-    };
-
-    return { devices: [currentDevice], total: 1 };
-  }
-
-  async getCurrentDevice(): Promise<DeviceInfoUI> {
-    this.logger.debug('Get current device');
-
-    const deviceInfo = this.sessionManager?.getDeviceInfo();
-    if (!deviceInfo) {
-      return {
-        id: 'unknown',
-        name: 'Desktop App',
-        type: 'DESKTOP',
-      };
-    }
-
-    return {
-      id: deviceInfo.deviceId,
-      name: deviceInfo.deviceName ?? 'Desktop App',
-      type: deviceInfo.deviceType,
-      os: deviceInfo.os ?? undefined,
-      fingerprint: deviceInfo.deviceFingerprint ?? undefined,
-    };
-  }
-
-  async revokeDevice(deviceId: string): Promise<IpcResult<void>> {
-    this.logger.debug('Revoke device', { deviceId });
-
-    const currentDevice = this.sessionManager?.getDeviceInfo();
-    if (currentDevice && deviceId === currentDevice.deviceId) {
-      return toIpcResult(fail({ code: 'INVALID_OPERATION', message: '无法撤销当前设备' }));
-    }
-
-    return toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: '跨设备撤销尚未实现' }));
-  }
-
-  async renameDevice(deviceId: string, name: string): Promise<IpcResult<void>> {
-    this.logger.debug('Rename device', { deviceId, name });
-
-    return toIpcResult(ok(undefined));
   }
 
   // ===== Private Helpers =====

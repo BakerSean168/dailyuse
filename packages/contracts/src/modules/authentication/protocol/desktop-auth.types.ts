@@ -264,17 +264,6 @@ export interface DeviceInfoClientDTO {
   lastSeenAt?: number;
 }
 
-/**
- * Device info for the renderer (simplified UI-facing shape).
- * Note: distinct from the domain DeviceInfo value object.
- */
-export interface DeviceInfoUI {
-  id: string;
-  name: string;
-  type: string;
-  os?: string;
-  fingerprint?: string;
-}
 export interface AuthStatus {
   authenticated: boolean;
   mode: AuthMode;

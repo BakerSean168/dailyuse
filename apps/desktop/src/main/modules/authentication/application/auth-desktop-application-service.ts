@@ -40,7 +40,6 @@ import {
   type TokenStatus,
   type AuthStatus,
   type EmailLoginCredentials,
-  type DeviceInfoUI,
   type ListSessionsRes,
   type RememberedDesktopAccountDTO,
   type RememberedDesktopAccountLoginReq,
@@ -69,7 +68,6 @@ import { toCloudAccessToken } from '../infrastructure/session-types';
 
 // Re-export from contracts for convenience
 export type { IpcResult, AuthStatus, EmailLoginCredentials };
-export type { DeviceInfoUI } from '@dailyuse/contracts/authentication';
 export { AuthMode, toIpcResult, ok, fail };
 
 // Re-export lifecycle types
@@ -405,22 +403,6 @@ export class AuthDesktopApplicationService {
 
   async revokeAllSessions(): Promise<{ ok: boolean; count: number }> {
     return this.requireSecurityAdmin().revokeAllSessions();
-  }
-
-  async listDevices(): Promise<{ devices: DeviceInfoUI[]; total: number }> {
-    return this.requireSecurityAdmin().listDevices();
-  }
-
-  async getCurrentDevice(): Promise<DeviceInfoUI> {
-    return this.requireSecurityAdmin().getCurrentDevice();
-  }
-
-  async revokeDevice(deviceId: string): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().revokeDevice(deviceId);
-  }
-
-  async renameDevice(deviceId: string, name: string): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().renameDevice(deviceId, name);
   }
 
   // ============================================

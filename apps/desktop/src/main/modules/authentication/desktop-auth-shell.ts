@@ -39,10 +39,6 @@ const Ch = {
   SESSION_GET_CURRENT: 'auth:session:get-current',
   SESSION_REVOKE: 'auth:session:revoke',
   SESSION_REVOKE_ALL: 'auth:session:revoke-all',
-  DEVICE_LIST: 'auth:device:list',
-  DEVICE_GET_CURRENT: 'auth:device:get-current',
-  DEVICE_REVOKE: 'auth:device:revoke',
-  DEVICE_RENAME: 'auth:device:rename',
   FORGOT_PASSWORD: 'auth:forgot-password',
   RESET_PASSWORD: 'auth:reset-password',
   CHANGE_PASSWORD: 'auth:change-password',
@@ -510,33 +506,6 @@ export function registerDesktopAuthShellHandlers(
   ipcMain.handle(Ch.SESSION_REVOKE_ALL, async () => {
     const service = currentAuthService();
     return service ? await service.revokeAllSessions() : { ok: false, count: 0 };
-  });
-
-  ipcMain.handle(Ch.DEVICE_LIST, async () => {
-    const service = currentAuthService();
-    return service ? await service.listDevices() : { devices: [], total: 0 };
-  });
-  ipcMain.handle(Ch.DEVICE_GET_CURRENT, async () => {
-    const service = currentAuthService();
-    return service
-      ? await service.getCurrentDevice()
-      : {
-          id: 'unknown',
-          name: 'Desktop App',
-          type: 'DESKTOP',
-        };
-  });
-  ipcMain.handle(Ch.DEVICE_REVOKE, async (_event, deviceId: string) => {
-    const service = currentAuthService();
-    return service
-      ? await service.revokeDevice(deviceId)
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.DEVICE_RENAME, async (_event, data: { deviceId: string; name: string }) => {
-    const service = currentAuthService();
-    return service
-      ? await service.renameDevice(data.deviceId, data.name)
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
   });
 
   ipcMain.handle(Ch.FORGOT_PASSWORD, async (_event, data) =>

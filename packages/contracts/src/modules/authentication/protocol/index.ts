@@ -25,7 +25,6 @@ export type {
   EmailLoginCredentials,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,
-  DeviceInfoUI,
 } from './desktop-auth.types';
 
 // Export individual event types for external consumers
