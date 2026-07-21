@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Goal ownership surface (stage-6 residual 117/118):
- * get/update/delete + status + KR/review mutations + record create/delete must identity-scope
+ * goal aggregate + status + KR/review + create parent + focus + records/progress must identity-scope
  * repository reads — never authorize by bare goal/record primary key alone.
  */
 describe('goal ownership surface', () => {
@@ -117,6 +117,41 @@ describe('goal ownership surface', () => {
     resolve(__dirname, '../../../../../api/routes/review.routes.ts'),
     'utf8',
   );
+  const createGoal = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/create-goal.use-case.ts',
+    ),
+    'utf8',
+  );
+  const activateFocus = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/activate-focus-mode.use-case.ts',
+    ),
+    'utf8',
+  );
+  const listRecords = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/list-goal-records.use-case.ts',
+    ),
+    'utf8',
+  );
+  const progressBreakdown = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/get-goal-progress-breakdown.use-case.ts',
+    ),
+    'utf8',
+  );
+  const crossModule = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/goal-cross-module-query-service.use-case.ts',
+    ),
+    'utf8',
+  );
   const routes = readFileSync(
     resolve(__dirname, '../../../../../api/routes/goal.routes.ts'),
     'utf8',
@@ -191,7 +226,19 @@ describe('goal ownership surface', () => {
     expect(listReviews).toMatch(/execute\(goalId: string, identityId: string\)/);
   });
 
+  it('create parent, focus, records, progress and cross-module use owned reads', () => {
+    expect(createGoal).toContain('findByIdForIdentity(\n        cx.identityId,\n        input.parentGoalId,');
+    expect(activateFocus).toContain('findByIdForIdentity(identityId, goalId)');
+    expect(listRecords).toContain('identityId: string;');
+    expect(listRecords).toContain('findByIdForIdentity(identityId, goalId,');
+    expect(listRecords).toContain('String(record.identityId) === identityId');
+    expect(progressBreakdown).toContain('findByIdForIdentity(identityId, goalId,');
+    expect(progressBreakdown).toMatch(/execute\(goalId: string, identityId: string\)/);
+    expect(crossModule).toContain('findByIdForIdentity(identityId, goalId)');
+  });
+
   it('HTTP and Electron get/update/delete/record pass identity context', () => {
+
 
 
     expect(routes).toContain('controller.get(');
@@ -254,6 +301,16 @@ describe('goal ownership surface', () => {
     );
     expect(electron).toMatch(
       /KEY_RESULT_BATCH_UPDATE_WEIGHTS[\s\S]*requestContext/,
+    );
+    expect(routes).toContain('controller.getProgressBreakdown(req.params!.id, ctx)');
+    expect(electron).toMatch(
+      /PROGRESS_BREAKDOWN[\s\S]*goalController\.getProgressBreakdown\(id, requestContext\)/,
+    );
+    expect(electron).toMatch(
+      /RECORD_LIST_BY_GOAL[\s\S]*listRecordsByGoal\(goalId, params \?\? undefined, requestContext\)/,
+    );
+    expect(electron).toMatch(
+      /RECORD_LIST_BY_KEY_RESULT[\s\S]*requestContext/,
     );
   });
 });

@@ -327,7 +327,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.getProgressBreakdown(req.params!.id),
+    (req, ctx) => controller.getProgressBreakdown(req.params!.id, ctx),
   );
 
   // POST /:id/clone — 克隆目标

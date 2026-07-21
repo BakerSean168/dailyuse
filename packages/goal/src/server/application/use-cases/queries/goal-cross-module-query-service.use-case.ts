@@ -80,8 +80,11 @@ export class GoalCrossModuleQueryServiceUseCase {
    * 获取目标的关键结果列表（用于任务绑定）
    * @param goalId 目标 UUID
    */
-  async getKeyResultsForTaskBinding(goalId: string): Promise<Result<KeyResultBindingOption[]>> {
-    const goal = await this.goalRepository.findById(goalId);
+  async getKeyResultsForTaskBinding(
+    goalId: string,
+    identityId: string,
+  ): Promise<Result<KeyResultBindingOption[]>> {
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId);
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
@@ -114,9 +117,10 @@ export class GoalCrossModuleQueryServiceUseCase {
   async validateGoalBinding(
     goalId: string,
     keyResultId: string,
+    identityId: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const goal = await this.goalRepository.findById(goalId);
+      const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId);
       if (!goal) {
         return { valid: false, error: `Goal not found: ${goalId}` };
       }

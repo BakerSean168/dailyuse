@@ -203,8 +203,8 @@ export class GoalController {
     return this.useCases.getGoalAggregate(goalId, cx.identityId);
   }
 
-  async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
-    return this.useCases.getGoalProgressBreakdown(goalId);
+  async getProgressBreakdown(goalId: string, cx: ExecutionContext): Promise<Result<ProgressBreakdown>> {
+    return this.useCases.getGoalProgressBreakdown(goalId, cx.identityId);
   }
 
   async cloneGoal(goalId: string, params: unknown, cx: ExecutionContext): Promise<Result<GoalClientDTO>> {
@@ -416,9 +416,11 @@ export class GoalController {
 
   async listRecordsByGoal(
     goalId: string,
-    params?: { limit?: number; offset?: number },
+    params: { limit?: number; offset?: number } | undefined,
+    cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     return this.useCases.listRecords({
+      identityId: cx.identityId,
       goalId,
       limit: params?.limit,
       offset: params?.offset,
@@ -428,9 +430,11 @@ export class GoalController {
   async listRecordsByKeyResult(
     goalId: string,
     keyResultId: string,
-    params?: { limit?: number; offset?: number },
+    params: { limit?: number; offset?: number } | undefined,
+    cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     return this.useCases.listRecords({
+      identityId: cx.identityId,
       goalId,
       keyResultId,
       limit: params?.limit,

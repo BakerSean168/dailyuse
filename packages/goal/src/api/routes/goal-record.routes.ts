@@ -103,11 +103,12 @@ export function registerRecordRoutes(
       },
     },
     [auth],
-    (req) =>
+    (req, ctx) =>
       controller.listRecordsByKeyResult(
         req.params!.id,
         req.params!.krId,
         req.query as { limit?: number; offset?: number },
+        ctx,
       ),
   );
 
@@ -129,10 +130,11 @@ export function registerRecordRoutes(
       },
     },
     [auth],
-    (req) =>
+    (req, ctx) =>
       controller.listRecordsByGoal(
         req.params!.id,
         req.query as { limit?: number; offset?: number },
+        ctx,
       ),
   );
 

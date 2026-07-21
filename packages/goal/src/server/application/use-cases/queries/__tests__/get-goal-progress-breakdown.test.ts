@@ -42,11 +42,11 @@ describe('GetGoalProgressBreakdownUseCase', () => {
     };
     const goal = createGoalFixture(breakdown);
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
 
     const useCase = new GetGoalProgressBreakdownUseCase(goalRepo);
-    const result = await useCase.execute('goal-id-1');
+    const result = await useCase.execute('goal-id-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -56,11 +56,11 @@ describe('GetGoalProgressBreakdownUseCase', () => {
 
   it('returns NOT_FOUND when goal does not exist', async () => {
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
 
     const useCase = new GetGoalProgressBreakdownUseCase(goalRepo);
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -69,13 +69,13 @@ describe('GetGoalProgressBreakdownUseCase', () => {
 
   it('passes includeChildren=true to repository', async () => {
     const goal = createGoalFixture();
-    const findById = vi.fn().mockResolvedValue(goal);
-    const goalRepo = createMockRepo<IGoalRepository>({ findById });
+    const findByIdForIdentity = vi.fn().mockResolvedValue(goal);
+    const goalRepo = createMockRepo<IGoalRepository>({ findByIdForIdentity });
 
     const useCase = new GetGoalProgressBreakdownUseCase(goalRepo);
-    await useCase.execute('goal-id-1');
+    await useCase.execute('goal-id-1', 'identity-1');
 
-    expect(findById).toHaveBeenCalledWith('goal-id-1', { includeChildren: true });
+    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-id-1', { includeChildren: true });
   });
 
   it('returns krContributions from domain aggregate', async () => {
@@ -85,11 +85,11 @@ describe('GetGoalProgressBreakdownUseCase', () => {
       ],
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
 
     const useCase = new GetGoalProgressBreakdownUseCase(goalRepo);
-    const result = await useCase.execute('goal-id-1');
+    const result = await useCase.execute('goal-id-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -103,11 +103,11 @@ describe('GetGoalProgressBreakdownUseCase', () => {
       updateTrigger: '自动计算',
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
 
     const useCase = new GetGoalProgressBreakdownUseCase(goalRepo);
-    const result = await useCase.execute('goal-id-1');
+    const result = await useCase.execute('goal-id-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;

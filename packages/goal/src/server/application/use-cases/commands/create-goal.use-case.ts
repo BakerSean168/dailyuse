@@ -35,7 +35,10 @@ export class CreateGoalUseCase {
     // 2. 如果有父目标，先查询
     let parentGoal: Goal | undefined;
     if (input.parentGoalId) {
-      const found = await this.goalRepository.findById(input.parentGoalId);
+      const found = await this.goalRepository.findByIdForIdentity(
+        cx.identityId,
+        input.parentGoalId,
+      );
       if (!found) {
         return error('NOT_FOUND', `Parent goal not found: ${input.parentGoalId}`);
       }

@@ -159,7 +159,11 @@ export const GoalElectronModule: IElectronModule = {
         goalController.getAggregate(id, requestContext),
       ),
     );
-    ipcMain.handle(GoalChannels.PROGRESS_BREAKDOWN, (_, id) => goalController.getProgressBreakdown(id));
+    ipcMain.handle(GoalChannels.PROGRESS_BREAKDOWN, async (_, id) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.getProgressBreakdown(id, requestContext),
+      ),
+    );
     ipcMain.handle(GoalChannels.FOCUS_MODE_GET, async (_event) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
         logger.info('IPC 获取专注模式处理器', {
@@ -257,11 +261,20 @@ export const GoalElectronModule: IElectronModule = {
         goalController.createRecord(goalId, keyResultId, dto, requestContext),
       ),
     );
-    ipcMain.handle(GoalChannels.RECORD_LIST_BY_KEY_RESULT, (_, goalId, keyResultId, params) =>
-      goalController.listRecordsByKeyResult(goalId, keyResultId, params ?? undefined),
+    ipcMain.handle(GoalChannels.RECORD_LIST_BY_KEY_RESULT, async (_, goalId, keyResultId, params) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.listRecordsByKeyResult(
+          goalId,
+          keyResultId,
+          params ?? undefined,
+          requestContext,
+        ),
+      ),
     );
-    ipcMain.handle(GoalChannels.RECORD_LIST_BY_GOAL, (_, goalId, params) =>
-      goalController.listRecordsByGoal(goalId, params ?? undefined),
+    ipcMain.handle(GoalChannels.RECORD_LIST_BY_GOAL, async (_, goalId, params) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.listRecordsByGoal(goalId, params ?? undefined, requestContext),
+      ),
     );
     ipcMain.handle(GoalChannels.RECORD_DELETE, async (_, _goalId, _keyResultId, recordId) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {

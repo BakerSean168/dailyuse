@@ -347,7 +347,8 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
 
     // Workflow / 工作流
     getGoalAggregate: (goalId, identityId) => useCases.getGoalAggregate.execute(goalId, identityId),
-    getGoalProgressBreakdown: (goalId) => useCases.getGoalProgressBreakdown.execute(goalId),
+    getGoalProgressBreakdown: (goalId, identityId) =>
+      useCases.getGoalProgressBreakdown.execute(goalId, identityId),
     cloneGoal: (goalId, params, cx) => useCases.cloneGoal.execute(goalId, params, cx),
     batchUpdateKeyResultWeights: (goalId, identityId, updates) =>
       useCases.batchUpdateKeyResultWeights.execute(goalId, identityId, updates),

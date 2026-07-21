@@ -159,11 +159,11 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
       const kr2 = createKeyResultFixture({ id: 'kr-2', title: 'KR Two' });
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [kr1, kr2] });
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockResolvedValue(goal),
+        findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.getKeyResultsForTaskBinding('goal-1');
+      const result = await service.getKeyResultsForTaskBinding('goal-1', 'identity-1');
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -176,11 +176,11 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
 
     it('should return NOT_FOUND error when goal is not found', async () => {
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockResolvedValue(null),
+        findByIdForIdentity: vi.fn().mockResolvedValue(null),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.getKeyResultsForTaskBinding('non-existent');
+      const result = await service.getKeyResultsForTaskBinding('non-existent', 'identity-1');
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -199,11 +199,11 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
       });
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [kr] });
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockResolvedValue(goal),
+        findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.getKeyResultsForTaskBinding('goal-1');
+      const result = await service.getKeyResultsForTaskBinding('goal-1', 'identity-1');
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -221,11 +221,11 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
     it('should return ok with empty array when goal has no key results', async () => {
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [] });
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockResolvedValue(goal),
+        findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.getKeyResultsForTaskBinding('goal-1');
+      const result = await service.getKeyResultsForTaskBinding('goal-1', 'identity-1');
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -243,22 +243,22 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
       const kr = createKeyResultFixture({ id: 'kr-1' });
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [kr] });
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockResolvedValue(goal),
+        findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.validateGoalBinding('goal-1', 'kr-1');
+      const result = await service.validateGoalBinding('goal-1', 'kr-1', 'identity-1');
 
       expect(result).toEqual({ valid: true });
     });
 
     it('should return invalid when goal is not found', async () => {
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockResolvedValue(null),
+        findByIdForIdentity: vi.fn().mockResolvedValue(null),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.validateGoalBinding('non-existent', 'kr-1');
+      const result = await service.validateGoalBinding('non-existent', 'kr-1', 'identity-1');
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain('Goal not found');
@@ -268,11 +268,11 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
       const kr = createKeyResultFixture({ id: 'kr-1' });
       const goal = createGoalFixture({ id: 'goal-1', keyResults: [kr] });
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockResolvedValue(goal),
+        findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.validateGoalBinding('goal-1', 'kr-unknown');
+      const result = await service.validateGoalBinding('goal-1', 'kr-unknown', 'identity-1');
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain('KeyResult not found in goal');
@@ -280,11 +280,11 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
 
     it('should catch repository errors and return invalid', async () => {
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockRejectedValue(new Error('DB connection failed')),
+        findByIdForIdentity: vi.fn().mockRejectedValue(new Error('DB connection failed')),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.validateGoalBinding('goal-1', 'kr-1');
+      const result = await service.validateGoalBinding('goal-1', 'kr-1', 'identity-1');
 
       expect(result.valid).toBe(false);
       expect(result.error).toBe('DB connection failed');
@@ -292,11 +292,11 @@ describe('GoalCrossModuleQueryServiceUseCase', () => {
 
     it('should handle non-Error thrown values', async () => {
       const goalRepo = createMockRepo<IGoalRepository>({
-        findById: vi.fn().mockRejectedValue('string error'),
+        findByIdForIdentity: vi.fn().mockRejectedValue('string error'),
       });
       const service = new GoalCrossModuleQueryServiceUseCase(goalRepo);
 
-      const result = await service.validateGoalBinding('goal-1', 'kr-1');
+      const result = await service.validateGoalBinding('goal-1', 'kr-1', 'identity-1');
 
       expect(result.valid).toBe(false);
       expect(result.error).toBe('Unknown error');

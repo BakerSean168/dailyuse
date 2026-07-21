@@ -148,7 +148,7 @@ export interface GoalApplicationPort {
   getCurrentFocusMode(identityId: string): Promise<Result<FocusModeDTO | null>>;
 
   getGoalAggregate(goalId: string, identityId: string): Promise<Result<GetGoalAggregateRes>>;
-  getGoalProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>>;
+  getGoalProgressBreakdown(goalId: string, identityId: string): Promise<Result<ProgressBreakdown>>;
   cloneGoal(
     goalId: string,
     params: CloneGoalReq,

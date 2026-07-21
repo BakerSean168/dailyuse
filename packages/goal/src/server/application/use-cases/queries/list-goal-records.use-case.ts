@@ -4,6 +4,7 @@
  * 查询目标进度记录
  * - 按 goalId 查询
  * - 按 keyResultId 查询
+ * - 必须 identity-scope：owned goal 读 + record.identityId 过滤
  */
 
 import type { IGoalRecordRepository, IGoalRepository } from '../../../domain';
@@ -11,9 +12,10 @@ import type { GoalRecord } from '../../../domain';
 import { KeyResultProgress } from '../../../domain';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 
 export interface ListGoalRecordsParams {
+  identityId: string;
   goalId?: string;
   keyResultId?: string;
   limit?: number;
@@ -32,7 +34,20 @@ export class ListGoalRecordsUseCase {
   ) {}
 
   async execute(params: ListGoalRecordsParams): Promise<Result<ListGoalRecordsResult>> {
-    const { goalId, keyResultId, limit = 20, offset = 0 } = params;
+    const { identityId, goalId, keyResultId, limit = 20, offset = 0 } = params;
+
+    if (!identityId?.trim()) {
+      return error('UNAUTHORIZED', 'Identity ID is required');
+    }
+
+    if (goalId) {
+      const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+        includeChildren: true,
+      });
+      if (!goal) {
+        return error('NOT_FOUND', `Goal not found: ${goalId}`);
+      }
+    }
 
     let records: GoalRecord[];
     if (keyResultId) {
@@ -47,10 +62,13 @@ export class ListGoalRecordsUseCase {
       records = [];
     }
 
+    // Defense-in-depth: drop any records not owned by the current identity.
+    records = records.filter((record) => String(record.identityId) === identityId);
+
     // Apply offset manually (repository doesn't support offset)
     const sliced = records.slice(offset, offset + limit);
 
-    const valueAfterByRecordId = await this.buildValueAfterMap(goalId, records);
+    const valueAfterByRecordId = await this.buildValueAfterMap(identityId, goalId, records);
 
     return ok({
       data: sliced.map((r) =>
@@ -61,6 +79,7 @@ export class ListGoalRecordsUseCase {
   }
 
   private async buildValueAfterMap(
+    identityId: string,
     goalId: string | undefined,
     records: GoalRecord[],
   ): Promise<Map<string, number>> {
@@ -69,7 +88,9 @@ export class ListGoalRecordsUseCase {
       return result;
     }
 
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return result;
     }

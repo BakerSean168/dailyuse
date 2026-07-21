@@ -8,6 +8,7 @@ function createRecordFixture(overrides?: Record<string, any>) {
   const value = overrides?.value ?? 10;
   return {
     id,
+    identityId: overrides?.identityId ?? 'identity-1',
     keyResultId: overrides?.keyResultId ?? 'kr-1',
     value,
     createdAt: overrides?.createdAt ?? new Date('2026-01-01T00:00:00.000Z'),
@@ -31,11 +32,11 @@ describe('ListGoalRecordsUseCase', () => {
       findByGoalId: vi.fn(),
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
     });
     const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
-    const result = await useCase.execute({});
+    const result = await useCase.execute({ identityId: 'identity-1' });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -43,7 +44,7 @@ describe('ListGoalRecordsUseCase', () => {
     expect(result.data.total).toBe(0);
     expect(goalRecordRepo.findByKeyResultId).not.toHaveBeenCalled();
     expect(goalRecordRepo.findByGoalId).not.toHaveBeenCalled();
-    expect(goalRepo.findById).not.toHaveBeenCalled();
+    expect(goalRepo.findByIdForIdentity).not.toHaveBeenCalled();
   });
 
   it('should query by keyResultId and apply offset/limit', async () => {
@@ -57,11 +58,16 @@ describe('ListGoalRecordsUseCase', () => {
       findByGoalId: vi.fn(),
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
     });
     const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
-    const result = await useCase.execute({ keyResultId: 'kr-1', offset: 1, limit: 1 });
+    const result = await useCase.execute({
+      identityId: 'identity-1',
+      keyResultId: 'kr-1',
+      offset: 1,
+      limit: 1,
+    });
 
     expect(findByKeyResultId).toHaveBeenCalledWith('kr-1', { orderBy: 'desc' });
     expect(result.ok).toBe(true);
@@ -71,28 +77,59 @@ describe('ListGoalRecordsUseCase', () => {
     expect(second.toClientDTO).toHaveBeenCalledWith('', 20);
     expect(first.toClientDTO).not.toHaveBeenCalled();
     expect(third.toClientDTO).not.toHaveBeenCalled();
-    expect(goalRepo.findById).not.toHaveBeenCalled();
+    expect(goalRepo.findByIdForIdentity).not.toHaveBeenCalled();
   });
 
-  it('should fallback to record value when goal is not found', async () => {
+  it('should filter out foreign-identity records', async () => {
+    const owned = createRecordFixture({ id: 'record-1', value: 10 });
+    const foreign = createRecordFixture({
+      id: 'record-2',
+      value: 20,
+      identityId: 'identity-other',
+    });
+    const goalRecordRepo = createMockRepo<IGoalRecordRepository>({
+      findByKeyResultId: vi.fn().mockResolvedValue([owned, foreign]),
+      findByGoalId: vi.fn(),
+    });
+    const goalRepo = createMockRepo<IGoalRepository>({
+      findByIdForIdentity: vi.fn(),
+    });
+    const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
+
+    const result = await useCase.execute({
+      identityId: 'identity-1',
+      keyResultId: 'kr-1',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.total).toBe(1);
+    expect(owned.toClientDTO).toHaveBeenCalled();
+    expect(foreign.toClientDTO).not.toHaveBeenCalled();
+  });
+
+  it('should return NOT_FOUND when goal is not found for identity', async () => {
     const record = createRecordFixture({ id: 'record-1', value: 40, keyResultId: 'kr-1' });
 
     const goalRecordRepo = createMockRepo<IGoalRecordRepository>({
       findByGoalId: vi.fn().mockResolvedValue([record]),
       findByKeyResultId: vi.fn(),
     });
-    const findById = vi.fn().mockResolvedValue(null);
+    const findByIdForIdentity = vi.fn().mockResolvedValue(null);
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById,
+      findByIdForIdentity,
     });
     const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
-    const result = await useCase.execute({ goalId: 'goal-1' });
+    const result = await useCase.execute({ identityId: 'identity-1', goalId: 'goal-1' });
 
-    expect(findById).toHaveBeenCalledWith('goal-1', { includeChildren: true });
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(record.toClientDTO).toHaveBeenCalledWith('goal-1', 40);
+    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-1', {
+      includeChildren: true,
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe('NOT_FOUND');
+    expect(goalRecordRepo.findByGoalId).not.toHaveBeenCalled();
   });
 
   it('should fallback to record value when keyResult does not exist on goal', async () => {
@@ -118,11 +155,11 @@ describe('ListGoalRecordsUseCase', () => {
       findByKeyResultId: vi.fn(),
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
-    const result = await useCase.execute({ goalId: 'goal-1' });
+    const result = await useCase.execute({ identityId: 'identity-1', goalId: 'goal-1' });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -164,11 +201,11 @@ describe('ListGoalRecordsUseCase', () => {
       findByKeyResultId: vi.fn(),
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
-    const result = await useCase.execute({ goalId: 'goal-1' });
+    const result = await useCase.execute({ identityId: 'identity-1', goalId: 'goal-1' });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -211,11 +248,11 @@ describe('ListGoalRecordsUseCase', () => {
       findByKeyResultId: vi.fn(),
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const useCase = new ListGoalRecordsUseCase(goalRecordRepo, goalRepo);
 
-    const result = await useCase.execute({ goalId: 'goal-1' });
+    const result = await useCase.execute({ identityId: 'identity-1', goalId: 'goal-1' });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;

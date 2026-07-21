@@ -1577,6 +1577,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百二十轮）：Goal 剩余 bare-id 读路径收口——create parent、
+> activate-focus focusedGoalIds、list records（identity 过滤 + owned goal）、progress
+> breakdown、cross-module task-binding 均经 `findByIdForIdentity`；HTTP/Electron progress/
+> record list 透传 identity。补 ownership surface 与单测。§13.2 Agent/边界证据再增强，仍为
+> 部分。验证：goal ownership specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1678,6 +1687,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百一十七轮：goal get/update/delete + record create/delete identity-scoped（findByIdForIdentity）。
   残留一百一十八轮：goal archive/activate/complete/permanent-delete identity-scoped（findByIdForIdentity）。
   残留一百一十九轮：goal key-result/review mutations + listReviews/clone identity-scoped（findByIdForIdentity）。
+  残留一百二十轮：goal create-parent/focus/list-records/progress/cross-module identity-scoped（findByIdForIdentity）。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
