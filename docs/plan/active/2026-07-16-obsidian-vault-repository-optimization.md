@@ -42,8 +42,9 @@ updated: 2026-07-21T00:00:00
   版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
 - 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 硬失败；MSW/E2E knowledge-only；
   app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
-  path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**。Prisma/PowerSync
-  `editor_*` 与 data-portability 可再导入备份仍保留。完成定义审计见 §13.2；真实 GitHub fixture E2E 与
+  path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
+  **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**。Prisma/PowerSync `editor_*` 与
+  data-portability 可再导入备份仍保留。完成定义审计见 §13.2；真实 GitHub fixture E2E 与
   prod-like local-deploy 仍为外部阻塞。
 
 ## 2. 已确认产品边界
@@ -674,6 +675,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-21（阶段 6 残留六轮）：从 `contracts` 共享 `AppEventRegistry` / `AppRpcRegistry` 拆除
 > 已退役 `EditorEventMap` / `EditorRpcMap`；Desktop IPC 前缀 `editor:` 仍为空集合。`domain-shared` tsup
 > 仅构建现存入口。状态保持 **实施中**；PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留七轮）：删除 `@dailyuse/contracts/editor` 整模块与 `EditorChannels` IPC 常量、
+> Editor* branded IDs；package export/tsup/package-export-audit/README 同步。portable editor 契约仅保留在
+> `@dailyuse/contracts/data-portability`。产品 `editor-files` 索引已对齐。验证：`contracts:typecheck`、
+> desktop ipc-contracts 30、`governance-check` 通过。§13.2 未打勾项仍为：三入口完整 E2E（Web 账密/GitHub E2E
+> + Desktop guest 单测已有，跨端一揽子 E2E 未齐）、Agent Host 全量隔离（ADR-035）、以及外部阻塞验收。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 ## 13. 测试与完成定义
 

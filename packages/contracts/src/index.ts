@@ -23,7 +23,6 @@
  * - @dailyuse/contracts/goal       - 目标模块
  * - @dailyuse/contracts/governance - 治理模块
  * - @dailyuse/contracts/reminder   - 提醒模块
- * - @dailyuse/contracts/editor     - 编辑器模块
  * - @dailyuse/contracts/repository - 仓库模块
  * - @dailyuse/contracts/account    - 账户模块
  * - @dailyuse/contracts/authentication - 认证模块

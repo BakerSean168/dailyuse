@@ -54,8 +54,7 @@ Desktop Obsidian 打开入口落在 repository 工作区与共享 Markdown 工�
 | [`packages/powersync-schema/src/index.ts`](../../../packages/powersync-schema/src/index.ts) | PowerSync `editor_*` 表定义 |
 | [`packages/data-portability/src/server/application/use-cases/projections/editor.projection.ts`](../../../packages/data-portability/src/server/application/use-cases/projections/editor.projection.ts) | portable 导出投影 |
 | [`packages/data-portability/src/server/application/use-cases/importers/editor.importer.ts`](../../../packages/data-portability/src/server/application/use-cases/importers/editor.importer.ts) | portable 导入 |
-| [`packages/contracts/src/modules/editor/`](../../../packages/contracts/src/modules/editor/) | 遗留 editor DTO（备份/契约，非运行时 host 入口） |
-| [`packages/contracts/src/modules/data-portability/`](../../../packages/contracts/src/modules/data-portability/) | portable editor workspace 类型 |
+| [`packages/contracts/src/modules/data-portability/`](../../../packages/contracts/src/modules/data-portability/) | portable editor workspace 类型（唯一保留的 editor 相关契约） |
 
 ## 测试入口
 

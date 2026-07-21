@@ -116,7 +116,6 @@ import { AccountDTO } from '@dailyuse/contracts/account';
 | `@dailyuse/contracts/task`           | 任务模块契约   |
 | `@dailyuse/contracts/goal`           | 目标模块契约   |
 | `@dailyuse/contracts/reminder`       | 提醒模块契约   |
-| `@dailyuse/contracts/editor`         | 编辑器模块契约 |
 | `@dailyuse/contracts/repository`     | 仓库模块契约   |
 | `@dailyuse/contracts/account`        | 账户模块契约   |
 | `@dailyuse/contracts/authentication` | 认证模块契约   |

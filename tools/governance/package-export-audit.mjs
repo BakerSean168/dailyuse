@@ -34,7 +34,7 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
   notification: ['./commands', './schedule-execution'],
   reminder: ['./schema', './schedule-execution', './schedule-projection'],
   contracts: [
-    './task', './goal', './governance', './reminder', './editor', './repository',
+    './task', './goal', './governance', './reminder', './repository',
     './account', './authentication', './schedule', './setting',
     './notification', './ai', './dashboard', './response', './result',
     './data-portability', './shared', './primitives', './electron', './mocks',

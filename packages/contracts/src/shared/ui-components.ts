@@ -44,7 +44,7 @@ export interface ContextMenuItem {
 /**
  * 简化的编辑器标签数据结构（用于 UI 组件）
  * 注意：这是用于简单 UI 展示的轻量级接口，
- * 完整的 EditorTab 类型请使用 editorContracts.EditorTabClientDTO
+ * 遗留轻量 UI 标签结构；完整笔记编辑器 runtime 已退役。
  */
 export interface SimpleEditorTab {
   id: string;

@@ -23,7 +23,6 @@ export default createTsupConfig({
     'src/modules/goal/index.ts',
     'src/modules/governance/index.ts',
     'src/modules/reminder/index.ts',
-    'src/modules/editor/index.ts',
     'src/modules/repository/index.ts',
     'src/modules/account/index.ts',
     'src/modules/authentication/index.ts',

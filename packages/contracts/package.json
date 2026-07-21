@@ -26,10 +26,6 @@
       "types": "./dist/modules/reminder/index.d.ts",
       "import": "./dist/modules/reminder/index.js"
     },
-    "./editor": {
-      "types": "./dist/modules/editor/index.d.ts",
-      "import": "./dist/modules/editor/index.js"
-    },
     "./repository": {
       "types": "./dist/modules/repository/index.d.ts",
       "import": "./dist/modules/repository/index.js"

@@ -285,31 +285,6 @@ export const SettingChannels = {
   EXPORT: 'setting:export',
 } as const;
 
-export const EditorChannels = {
-  WORKSPACE_LIST: 'editor:list-workspaces',
-  WORKSPACE_GET: 'editor:get-workspace',
-  WORKSPACE_CREATE: 'editor:create-workspace',
-  WORKSPACE_UPDATE: 'editor:update-workspace',
-  WORKSPACE_DELETE: 'editor:delete-workspace',
-  SESSION_LIST: 'editor:list-sessions',
-  SESSION_GET: 'editor:get-session',
-  SESSION_CREATE: 'editor:create-session',
-  SESSION_UPDATE: 'editor:update-session',
-  SESSION_ACTIVATE: 'editor:activate-session',
-  SESSION_DELETE: 'editor:delete-session',
-  GROUP_CREATE: 'editor:create-group',
-  GROUP_UPDATE: 'editor:update-group',
-  GROUP_DELETE: 'editor:delete-group',
-  TAB_CREATE: 'editor:create-tab',
-  TAB_UPDATE: 'editor:update-tab',
-  TAB_ACTIVATE: 'editor:activate-tab',
-  TAB_DELETE: 'editor:delete-tab',
-  GET_CONTENT: 'editor:get-content',
-  SAVE_CONTENT: 'editor:save-content',
-  AUTO_SAVE: 'editor:auto-save-content',
-  SEARCH: 'editor:search-resources',
-} as const;
-
 export const SystemChannels = {
   GET_APP_VERSION: 'system:getAppVersion',
   GET_LAZY_MODULE_STATS: 'system:getLazyModuleStats',

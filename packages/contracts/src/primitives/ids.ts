@@ -146,24 +146,6 @@ export type PendingChangeId = string & { readonly __brand: 'PendingChangeId' };
 /** 数据快照 ID */
 export type DataSnapshotId = string & { readonly __brand: 'DataSnapshotId' };
 
-/** 编辑器工作区 ID */
-export type EditorWorkspaceId = string & { readonly __brand: 'EditorWorkspaceId' };
-
-/** 编辑器会话 ID */
-export type EditorSessionId = string & { readonly __brand: 'EditorSessionId' };
-
-/** 编辑器分组 ID */
-export type EditorGroupId = string & { readonly __brand: 'EditorGroupId' };
-
-/** 编辑器标签 ID */
-export type EditorTabId = string & { readonly __brand: 'EditorTabId' };
-
-/** 链接资源 ID */
-export type LinkedResourceId = string & { readonly __brand: 'LinkedResourceId' };
-
-/** 搜索引擎 ID */
-export type SearchEngineId = string & { readonly __brand: 'SearchEngineId' };
-
 /** 应用配置 ID */
 export type AppConfigId = string & { readonly __brand: 'AppConfigId' };
 
@@ -268,12 +250,6 @@ export const ID_PREFIXES = {
   AiGenerationTaskId: 'IAiGenerationTaskId',
   AiProviderConfigId: 'IAiProviderConfigId',
   AiUsageQuotaId: 'IAiUsageQuotaId',
-
-  // === Editor ===
-  EditorWorkspaceId: 'IEditorWorkspaceId',
-  EditorSessionId: 'IEditorSessionId',
-  EditorGroupId: 'IEditorGroupId',
-  EditorTabId: 'IEditorTabId',
 
   // === Governance ===
   RuleId: 'RuleId',
