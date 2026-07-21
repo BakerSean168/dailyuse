@@ -230,7 +230,7 @@ describe('KnowledgeRepositorySettings', () => {
   });
 
   it('opens GitHub-hosted private repository creation without requesting broader OAuth access', async () => {
-    const invoke = vi.fn(async () => ({ opened: true }));
+    const invoke = vi.fn(async () => ({ ok: true as const, data: { opened: true } }));
     const service = createService({
       getLocalVaultBinding: vi.fn(async () => ok(null)),
     });

@@ -5,7 +5,8 @@ import { DesktopFeatureChannels, SystemChannels } from '@dailyuse/contracts/elec
 
 /**
  * Desktop system/desktop-feature IPC surface (stage-6 residual):
- * system-handlers must register via contracts channel maps — no string dual-track.
+ * system-handlers must register via contracts channel maps — no string dual-track —
+ * and return contracts Result ok/fail envelopes (no raw dual-track payloads).
  */
 describe('system-handlers channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'system-handlers.ts'), 'utf8');
@@ -20,6 +21,17 @@ describe('system-handlers channel surface', () => {
     expect(source).toContain('DesktopFeatureChannels.TRAY_FLASH');
     expect(source).not.toMatch(/ipcMain\.handle\(\s*'system:/);
     expect(source).not.toMatch(/ipcMain\.handle\(\s*'desktop:/);
+  });
+
+  it('returns contracts Result ok/fail envelopes instead of raw dual-track payloads', () => {
+    expect(source).toContain("import { fail, ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain('return ok(');
+    expect(source).toContain('return fail({');
+    expect(source).toContain('return ok({ opened: true as const })');
+    expect(source).not.toMatch(/return\s+app\.getVersion\(\)/);
+    expect(source).not.toMatch(/return\s+\{\s*opened:\s*true\s*\}/);
+    expect(source).not.toMatch(/success:\s*true/);
+    expect(source).not.toMatch(/success:\s*false/);
   });
 
   it('keeps contracts values stable for live channels', () => {

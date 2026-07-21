@@ -84,6 +84,7 @@ import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Label } from '@dailyuse/ui-vue-shadcn';
 import { FolderOpen, FolderInput, ExternalLink, RotateCcw, Loader2, CheckCircle2, AlertCircle } from '@lucide/vue';
 import { SystemChannels } from '@dailyuse/contracts/electron';
+import { isOk, type Result } from '@dailyuse/contracts/result';
 import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 const { t } = useI18n();
@@ -124,12 +125,16 @@ async function loadPath() {
   const electronApi = desktopApi;
   if (!electronApi?.invoke) return;
   try {
-    const result = (await electronApi.invoke(
+    const response = (await electronApi.invoke(
       SystemChannels.USER_FILES_GET_PATH,
-    )) as UserFilesPathResult;
-    currentPath.value = result.currentPath;
-    defaultPath.value = result.defaultPath;
-    isCustom.value = result.isCustom;
+    )) as Result<UserFilesPathResult>;
+    if (!isOk(response)) {
+      showFeedback('error', t('setting.userFiles.loadPathFailed', '无法加载文件存储路径'));
+      return;
+    }
+    currentPath.value = response.data.currentPath;
+    defaultPath.value = response.data.defaultPath;
+    isCustom.value = response.data.isCustom;
   } catch (err) {
     console.error('Failed to load user files path:', err);
     showFeedback('error', t('setting.userFiles.loadPathFailed', '无法加载文件存储路径'));
@@ -141,10 +146,14 @@ async function pickDirectory() {
   if (!electronApi?.invoke) return;
   pickLoading.value = true;
   try {
-    const result = (await electronApi.invoke(
+    const response = (await electronApi.invoke(
       SystemChannels.USER_FILES_PICK_DIRECTORY,
-    )) as UserFilesPickDirectoryResult;
-    if (!result.canceled && result.path) {
+    )) as Result<UserFilesPickDirectoryResult>;
+    if (!isOk(response)) {
+      showFeedback('error', t('setting.userFiles.pickDirectoryFailed', '更改目录失败，请重试'));
+      return;
+    }
+    if (!response.data.canceled && response.data.path) {
       await loadPath();
       showFeedback('success', t('setting.userFiles.directoryChanged', '文件存储位置已更新'));
     }
@@ -161,7 +170,12 @@ async function openDirectory() {
   if (!electronApi?.invoke) return;
   openLoading.value = true;
   try {
-    await electronApi.invoke(SystemChannels.USER_FILES_OPEN_DIRECTORY);
+    const response = (await electronApi.invoke(
+      SystemChannels.USER_FILES_OPEN_DIRECTORY,
+    )) as Result<null>;
+    if (!isOk(response)) {
+      showFeedback('error', t('setting.userFiles.openDirectoryFailed', '无法打开文件夹'));
+    }
   } catch (err) {
     console.error('Failed to open directory:', err);
     showFeedback('error', t('setting.userFiles.openDirectoryFailed', '无法打开文件夹'));
@@ -184,7 +198,13 @@ async function resetToDefault() {
   if (!electronApi?.invoke) return;
   resetLoading.value = true;
   try {
-    await electronApi.invoke(SystemChannels.USER_FILES_RESET_PATH);
+    const response = (await electronApi.invoke(
+      SystemChannels.USER_FILES_RESET_PATH,
+    )) as Result<{ path: string }>;
+    if (!isOk(response)) {
+      showFeedback('error', t('setting.userFiles.resetFailed', '恢复默认失败，请重试'));
+      return;
+    }
     await loadPath();
     showFeedback('success', t('setting.userFiles.resetSuccess', '已恢复默认文件存储位置'));
   } catch (err) {

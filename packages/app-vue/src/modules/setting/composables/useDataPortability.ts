@@ -8,6 +8,7 @@
 
 import { ref, inject } from 'vue';
 import { SystemChannels } from '@dailyuse/contracts/electron';
+import { isOk, type Result } from '@dailyuse/contracts/result';
 import { DATA_PORTABILITY_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 export function useDataPortability() {
@@ -23,12 +24,15 @@ export function useDataPortability() {
 
   async function saveJsonFile(fileName: string, content: string): Promise<void> {
     if (desktopApi?.invoke) {
-      await desktopApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {
+      const response = (await desktopApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {
         subdirectory: 'exports',
         defaultFileName: fileName,
         content,
         filters: [{ name: 'JSON', extensions: ['json'] }],
-      });
+      })) as Result<{ canceled: boolean; filePath: string | null }>;
+      if (!isOk(response)) {
+        throw new Error(response.error.message || 'Failed to save file');
+      }
       return;
     }
 
@@ -116,15 +120,15 @@ export function useDataPortability() {
       let content: string | null = null;
 
       if (desktopApi?.invoke) {
-        const result = (await desktopApi.invoke(SystemChannels.USER_FILES_OPEN_TEXT, {
+        const response = (await desktopApi.invoke(SystemChannels.USER_FILES_OPEN_TEXT, {
           subdirectory: 'exports',
           filters: [{ name: 'JSON', extensions: ['json'] }],
-        })) as { canceled: boolean; content: string | null };
-        if (result.canceled || !result.content) {
+        })) as Result<{ canceled: boolean; content: string | null }>;
+        if (!isOk(response) || response.data.canceled || !response.data.content) {
           isImporting.value = false;
           return;
         }
-        content = result.content;
+        content = response.data.content;
       } else {
         // Web: use file input
         content = await new Promise<string | null>((resolve) => {

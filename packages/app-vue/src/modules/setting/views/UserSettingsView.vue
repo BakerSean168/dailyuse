@@ -15,6 +15,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Loader2 } from '@lucide/vue';
 import { SystemChannels } from '@dailyuse/contracts/electron';
+import { isOk, type Result } from '@dailyuse/contracts/result';
 
 import AppearanceSettings from '../components/AppearanceSettings.vue';
 import AISettings from '../components/AISettings.vue';
@@ -211,13 +212,13 @@ async function handleImport() {
   const electronApi = desktopApi;
   if (electronApi?.invoke) {
     try {
-      const result = (await electronApi.invoke(SystemChannels.USER_FILES_OPEN_TEXT, {
+      const response = (await electronApi.invoke(SystemChannels.USER_FILES_OPEN_TEXT, {
         subdirectory: 'exports',
         filters: [{ name: 'JSON', extensions: ['json'] }],
-      })) as OpenTextResult;
+      })) as Result<OpenTextResult>;
 
-      if (!result.canceled && result.content) {
-        await importSettings(JSON.parse(result.content));
+      if (isOk(response) && !response.data.canceled && response.data.content) {
+        await importSettings(JSON.parse(response.data.content));
       }
     } catch (err) {
       console.error('Failed to import settings JSON from desktop file dialog:', err);
@@ -242,13 +243,16 @@ async function handleExportJson() {
   const electronApi = desktopApi;
   if (electronApi?.invoke) {
     try {
-      await electronApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {
+      const response = (await electronApi.invoke(SystemChannels.USER_FILES_SAVE_TEXT, {
         subdirectory: 'exports',
         defaultFileName: createSettingsExportFilename(),
         content: exported,
         filters: [{ name: 'JSON', extensions: ['json'] }],
-      });
-      return;
+      })) as Result<{ canceled: boolean; filePath: string | null }>;
+      if (isOk(response)) {
+        return;
+      }
+      console.error('Failed to export settings JSON via desktop file dialog:', response.error);
     } catch (err) {
       console.error('Failed to export settings JSON via desktop file dialog:', err);
     }

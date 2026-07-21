@@ -134,9 +134,12 @@ describe('registerSystemIpcHandlers', () => {
     const result = await handler({});
 
     expect(result).toEqual({
-      currentPath,
-      defaultPath,
-      isCustom: true,
+      ok: true,
+      data: {
+        currentPath,
+        defaultPath,
+        isCustom: true,
+      },
     });
   });
 
@@ -155,8 +158,11 @@ describe('registerSystemIpcHandlers', () => {
 
     expect(mocks.updateUserFilesRootPath).toHaveBeenCalledWith(selectedPath);
     expect(result).toEqual({
-      canceled: false,
-      path: selectedPath,
+      ok: true,
+      data: {
+        canceled: false,
+        path: selectedPath,
+      },
     });
   });
 
@@ -174,8 +180,11 @@ describe('registerSystemIpcHandlers', () => {
 
     expect(mocks.updateUserFilesRootPath).not.toHaveBeenCalled();
     expect(result).toEqual({
-      canceled: true,
-      path: null,
+      ok: true,
+      data: {
+        canceled: true,
+        path: null,
+      },
     });
   });
 
@@ -190,7 +199,10 @@ describe('registerSystemIpcHandlers', () => {
     const result = await handler({});
 
     expect(mocks.updateUserFilesRootPath).toHaveBeenCalledWith(null);
-    expect(result).toEqual({ path: defaultPath });
+    expect(result).toEqual({
+      ok: true,
+      data: { path: defaultPath },
+    });
   });
 
   it('opens the active user-files root directory in the shell', async () => {
@@ -203,9 +215,10 @@ describe('registerSystemIpcHandlers', () => {
     registerSystemIpcHandlers(null, null, null);
 
     const handler = getRegisteredHandler(SystemChannels.USER_FILES_OPEN_DIRECTORY);
-    await handler({});
+    const result = await handler({});
 
     expect(mocks.shellOpenPath).toHaveBeenCalledWith(currentPath);
+    expect(result).toEqual({ ok: true, data: null });
   });
 
   it('opens only HTTP(S) URLs in the external browser', async () => {
@@ -215,12 +228,24 @@ describe('registerSystemIpcHandlers', () => {
     const handler = getRegisteredHandler(SystemChannels.OPEN_EXTERNAL_URL);
     await expect(
       handler({}, { url: 'https://github.com/apps/memoflow/installations/new' }),
-    ).resolves.toEqual({ opened: true });
+    ).resolves.toEqual({ ok: true, data: { opened: true } });
     expect(mocks.shellOpenExternal).toHaveBeenCalledWith(
       'https://github.com/apps/memoflow/installations/new',
     );
 
-    await expect(handler({}, { url: 'file:///tmp/secret' })).rejects.toThrow('HTTP(S)');
-    await expect(handler({}, { url: 'javascript:alert(1)' })).rejects.toThrow('HTTP(S)');
+    await expect(handler({}, { url: 'file:///tmp/secret' })).resolves.toEqual({
+      ok: false,
+      error: expect.objectContaining({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('HTTP(S)'),
+      }),
+    });
+    await expect(handler({}, { url: 'javascript:alert(1)' })).resolves.toEqual({
+      ok: false,
+      error: expect.objectContaining({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('HTTP(S)'),
+      }),
+    });
   });
 });
