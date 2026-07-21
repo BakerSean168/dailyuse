@@ -41,6 +41,10 @@ class MemoryConnectionRepository implements IKnowledgeRepositoryConnectionReposi
   }
 
   async save(connection: KnowledgeRepositoryConnectionServerDTO) {
+    const existing = this.rows.get(connection.id);
+    if (existing && existing.identityId !== connection.identityId) {
+      throw new Error('Knowledge repository connection not found for the current identity.');
+    }
     this.rows.set(connection.id, connection);
   }
 
@@ -209,6 +213,40 @@ describe('KnowledgeRepositoryConnectionService', () => {
     });
     expect(JSON.stringify(connected)).not.toContain('short-lived-token');
     expect(repository.rows.size).toBe(1);
+  });
+
+  it('refuses connection save when identityId does not match', async () => {
+    const repository = new MemoryConnectionRepository();
+    repository.rows.set('connection-1', {
+      id: 'connection-1',
+      identityId: 'identity-1',
+      githubUserId: 'github-user-1',
+      githubRepositoryId: 'repository-1',
+      githubRepositoryFullName: 'acme/notes',
+      installationId: 'installation-1',
+      defaultBranch: 'main',
+      status: 'Active',
+      lastSyncedCommitSha: null,
+      lastProjectedCommitSha: null,
+      lastErrorCode: null,
+      lastErrorMessage: null,
+      version: 1,
+      createdAt: 1_750_000_000_000 as never,
+      updatedAt: 1_750_000_000_000 as never,
+      deletedAt: null,
+    });
+
+    await expect(
+      repository.save({
+        ...repository.rows.get('connection-1')!,
+        identityId: 'identity-other' as never,
+        status: 'Error',
+      }),
+    ).rejects.toThrow(/current identity/);
+    expect(repository.rows.get('connection-1')).toMatchObject({
+      identityId: 'identity-1',
+      status: 'Active',
+    });
   });
 
   it('returns null from findByIdForIdentity when identity does not own the connection', async () => {

@@ -1516,6 +1516,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App 授权边界证据再增强。验证：repository + api purger specs + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百一十三轮）：知识仓库 connection `save` 身份不可改写——
+> 去掉 bare `upsert` 更新路径上的 `identityId` 写入；既有行必须 `existing.identityId ===
+> connection.identityId`，再以 `updateMany where { id, identityId }` 更新；跨 identity 改写
+> fail-closed。补 prisma/memory 单测与 ownership surface。§13.2 GitHub App 授权边界证据再
+> 增强。验证：repository connection prisma/service/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1565,6 +1573,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [x] GitHub App 只访问用户明确授权的 knowledge repository。 **（已证明）**
   残留一百一十一轮：connection status 转移 identity-scoped（disconnect updateStatus id+identityId）。
   残留一百一十二轮：connection 读路径 findByIdForIdentity + purger deleteMany id+identityId。
+  残留一百一十三轮：connection save 拒绝跨 identity 改写（updateMany id+identityId，无 identity 字段）。
 - [x] private repo 可创建/连接，连接两个非空仓库不会自动覆盖。 **（已证明）**
 - [x] Desktop Git 同步具备离线恢复且不 force push。 **（已证明）**
 - [x] 冲突明确暂停并保留双方内容。 **（已证明）**

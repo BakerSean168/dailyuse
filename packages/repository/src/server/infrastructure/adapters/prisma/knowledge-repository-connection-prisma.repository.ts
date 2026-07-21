@@ -89,29 +89,43 @@ export class KnowledgeRepositoryConnectionPrismaRepository implements IKnowledge
   }
 
   async save(connection: KnowledgeRepositoryConnectionServerDTO): Promise<void> {
-    await this.db.knowledgeRepositoryConnection.upsert({
+    const existing = await this.db.knowledgeRepositoryConnection.findUnique({
       where: { id: connection.id },
-      create: {
-        id: connection.id,
-        identityId: connection.identityId,
-        githubUserId: connection.githubUserId,
-        githubRepositoryId: connection.githubRepositoryId,
-        githubRepositoryFullName: connection.githubRepositoryFullName,
-        installationId: connection.installationId,
-        defaultBranch: connection.defaultBranch,
-        isPrivate: true,
-        status: connection.status,
-        lastSyncedCommitSha: connection.lastSyncedCommitSha,
-        lastProjectedCommitSha: connection.lastProjectedCommitSha,
-        lastErrorCode: connection.lastErrorCode,
-        lastErrorMessage: connection.lastErrorMessage,
-        version: connection.version,
-        createdAt: new Date(connection.createdAt),
-        updatedAt: new Date(connection.updatedAt),
-        deletedAt: connection.deletedAt ? new Date(connection.deletedAt) : null,
-      },
-      update: {
-        identityId: connection.identityId,
+      select: { identityId: true },
+    });
+
+    if (!existing) {
+      await this.db.knowledgeRepositoryConnection.create({
+        data: {
+          id: connection.id,
+          identityId: connection.identityId,
+          githubUserId: connection.githubUserId,
+          githubRepositoryId: connection.githubRepositoryId,
+          githubRepositoryFullName: connection.githubRepositoryFullName,
+          installationId: connection.installationId,
+          defaultBranch: connection.defaultBranch,
+          isPrivate: true,
+          status: connection.status,
+          lastSyncedCommitSha: connection.lastSyncedCommitSha,
+          lastProjectedCommitSha: connection.lastProjectedCommitSha,
+          lastErrorCode: connection.lastErrorCode,
+          lastErrorMessage: connection.lastErrorMessage,
+          version: connection.version,
+          createdAt: new Date(connection.createdAt),
+          updatedAt: new Date(connection.updatedAt),
+          deletedAt: connection.deletedAt ? new Date(connection.deletedAt) : null,
+        },
+      });
+      return;
+    }
+
+    if (existing.identityId !== connection.identityId) {
+      throw new Error('Knowledge repository connection not found for the current identity.');
+    }
+
+    const updated = await this.db.knowledgeRepositoryConnection.updateMany({
+      where: { id: connection.id, identityId: connection.identityId },
+      data: {
         githubUserId: connection.githubUserId,
         githubRepositoryFullName: connection.githubRepositoryFullName,
         installationId: connection.installationId,
@@ -127,6 +141,9 @@ export class KnowledgeRepositoryConnectionPrismaRepository implements IKnowledge
         deletedAt: connection.deletedAt ? new Date(connection.deletedAt) : null,
       },
     });
+    if (updated.count !== 1) {
+      throw new Error('Knowledge repository connection not found for the current identity.');
+    }
   }
 
   async updateStatus(

@@ -3,9 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Knowledge repository connection ownership surface (stage-6 residual 111/112):
- * status transitions and identity-scoped reads must include identityId —
- * never mutate or authorize by bare connection primary key alone.
+ * Knowledge repository connection ownership surface (stage-6 residual 111/112/113):
+ * status transitions, identity-scoped reads, and save updates must include
+ * identityId — never reassign ownership via bare connection primary key.
  */
 describe('knowledge repository connection ownership surface', () => {
   const port = readFileSync(
@@ -67,6 +67,18 @@ describe('knowledge repository connection ownership surface', () => {
     expect(service).not.toMatch(
       /connectionRepository\.updateStatus\(\s*connectionId\s*,/,
     );
+  });
+
+  it('prisma save refuses identity reassignment and updates by id + identityId', () => {
+    expect(prisma).toContain('existing.identityId !== connection.identityId');
+    expect(prisma).toMatch(
+      /updateMany\(\{\s*where:\s*\{\s*id:\s*connection\.id,\s*identityId:\s*connection\.identityId/,
+    );
+    // Update path must not rewrite identityId.
+    expect(prisma).not.toMatch(
+      /updateMany\([\s\S]*?data:\s*\{[\s\S]*?identityId:\s*connection\.identityId/,
+    );
+    expect(prisma).not.toContain('upsert({');
   });
 
   it('connection service loads connections via findByIdForIdentity', () => {
