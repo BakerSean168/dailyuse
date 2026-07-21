@@ -77,7 +77,6 @@ export { AuthMode, toIpcResult, ok, fail };
 // Re-export lifecycle types
 export type { AutoLoginResult, SessionRestoreResult } from './desktop-auth-lifecycle-coordinator';
 
-export type LoginCredentials = EmailLoginCredentials;
 
 // ===== Application Service =====
 
@@ -266,7 +265,7 @@ export class AuthDesktopApplicationService {
   // Core Auth Methods (delegated to credential coordinator)
   // ============================================
 
-  async login(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
+  async login(credentials: EmailLoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     return this.requireCoordinator().login(credentials);
   }
 

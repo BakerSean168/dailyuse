@@ -39,7 +39,6 @@ import {
   ListAIProvidersUseCase,
   TestAIProviderConnectionUseCase,
   SetDefaultAIProviderUseCase,
-  GetDefaultAIProviderUseCase,
   RefreshAIProviderModelsUseCase,
   SendAIMessageUseCase,
   StreamAIMessageUseCase,
@@ -101,7 +100,6 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
       chatExecutionPort,
     ),
     setDefault: new SetDefaultAIProviderUseCase(providerConfigRepository),
-    getDefault: new GetDefaultAIProviderUseCase(providerConfigRepository),
     refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogPort),
   };
 

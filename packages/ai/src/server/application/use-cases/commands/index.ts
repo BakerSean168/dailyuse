@@ -13,7 +13,6 @@ export * from './get-ai-provider.use-case';
 export * from './list-ai-providers.use-case';
 export * from './test-ai-provider-connection.use-case';
 export * from './set-default-ai-provider.use-case';
-export * from './get-default-ai-provider.use-case';
 export * from './refresh-ai-provider-models.use-case';
 
 // AI Chat helpers and individual use cases

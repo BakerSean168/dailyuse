@@ -76,7 +76,6 @@ import type {
   ListAIProvidersUseCase,
   TestAIProviderConnectionUseCase,
   SetDefaultAIProviderUseCase,
-  GetDefaultAIProviderUseCase,
   RefreshAIProviderModelsUseCase,
   SendAIMessageUseCase,
   StreamAIMessageUseCase,
@@ -170,7 +169,6 @@ export interface AIProviderServices {
   readonly list: ListAIProvidersUseCase;
   readonly testConnection: TestAIProviderConnectionUseCase;
   readonly setDefault: SetDefaultAIProviderUseCase;
-  readonly getDefault: GetDefaultAIProviderUseCase;
   readonly refreshModels: RefreshAIProviderModelsUseCase;
 }
 

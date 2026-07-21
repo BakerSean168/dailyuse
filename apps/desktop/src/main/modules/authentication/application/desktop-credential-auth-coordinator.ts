@@ -35,7 +35,6 @@ import {
   safeTransition,
 } from './auth-coordinator-helpers';
 
-export type LoginCredentials = EmailLoginCredentials;
 
 export interface RegisterRequest {
   email: string;
@@ -71,7 +70,7 @@ export interface CredentialAuthCoordinatorDeps {
 export class DesktopCredentialAuthCoordinator {
   constructor(private readonly deps: CredentialAuthCoordinatorDeps) {}
 
-  async login(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
+  async login(credentials: EmailLoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     this.deps.logger.info('Login attempt', { email: credentials.email });
     return this.executeLogin(credentials);
   }
@@ -106,7 +105,7 @@ export class DesktopCredentialAuthCoordinator {
     });
   }
 
-  private async executeLogin(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
+  private async executeLogin(credentials: EmailLoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     try {
       const mainWindow = this.deps.windowManager.getMainWindow();
       if (mainWindow && !mainWindow.isDestroyed()) {
