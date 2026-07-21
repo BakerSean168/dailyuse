@@ -1,12 +1,12 @@
 import type { AIAnalyticsQueryApiClient, IResultHttpClient } from '../types';
 import type { QueryAnalyticsReq, QueryAnalyticsRes } from '@dailyuse/contracts/ai';
-import { unwrapResultOrThrow } from '../result-client-error';
+import type { Result } from '@dailyuse/contracts/result';
 
+/** HTTP adapter — returns Result, never throws (residual 98). */
 export class AIAnalyticsQueryHttpAdapter implements AIAnalyticsQueryApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async queryAnalytics(request: QueryAnalyticsReq): Promise<QueryAnalyticsRes> {
-    const result = await this.httpClient.post<QueryAnalyticsRes>('/ai/analytics/query', request);
-    return unwrapResultOrThrow(result);
+  async queryAnalytics(request: QueryAnalyticsReq): Promise<Result<QueryAnalyticsRes>> {
+    return this.httpClient.post<QueryAnalyticsRes>('/ai/analytics/query', request);
   }
 }

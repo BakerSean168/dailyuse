@@ -5,8 +5,9 @@
  * This is the single entry point for UI layers to interact with the AI module.
  * All methods delegate directly to the underlying API client adapters.
  *
- * Provider-config, capabilities, and conversation methods return Result envelopes
- * (residual 96/97). Other AI ports still throw-unwrap at adapters until migrated.
+ * Provider-config, capabilities, conversation, goal, evaluation, knowledge, and
+ * analytics methods return Result envelopes (residual 96–98). Message/stream/agent
+ * ports still throw-unwrap at adapters until migrated.
  *
  * 这是 UI 层与 AI 模块交互的唯一入口。
  * 所有方法直接委托给底层 API 客户端适配器。

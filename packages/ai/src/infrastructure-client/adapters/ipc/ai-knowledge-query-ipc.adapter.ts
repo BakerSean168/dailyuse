@@ -8,26 +8,21 @@ import type {
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
 } from '@dailyuse/contracts/ai';
-import { unwrapResultOrThrow } from '../result-client-error';
+import type { Result } from '@dailyuse/contracts/result';
 
+/** IPC adapter — returns Result, never throws (residual 98). */
 export class AIKnowledgeQueryIpcAdapter implements AIKnowledgeQueryApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
-  async expandKnowledge(request: ExpandKnowledgeReq): Promise<ExpandKnowledgeRes> {
-    const result = await this.ipcClient.invoke<ExpandKnowledgeRes>(AIChannels.KNOWLEDGE_EXPAND, request);
-    return unwrapResultOrThrow(result);
+  async expandKnowledge(request: ExpandKnowledgeReq): Promise<Result<ExpandKnowledgeRes>> {
+    return this.ipcClient.invoke<ExpandKnowledgeRes>(AIChannels.KNOWLEDGE_EXPAND, request);
   }
 
-  async queryKnowledge(request: QueryKnowledgeReq): Promise<QueryKnowledgeRes> {
-    const result = await this.ipcClient.invoke<QueryKnowledgeRes>(AIChannels.KNOWLEDGE_QUERY, request);
-    return unwrapResultOrThrow(result);
+  async queryKnowledge(request: QueryKnowledgeReq): Promise<Result<QueryKnowledgeRes>> {
+    return this.ipcClient.invoke<QueryKnowledgeRes>(AIChannels.KNOWLEDGE_QUERY, request);
   }
 
-  async reindexKnowledge(request: ReindexKnowledgeReq): Promise<ReindexKnowledgeRes> {
-    const result = await this.ipcClient.invoke<ReindexKnowledgeRes>(
-      AIChannels.KNOWLEDGE_REINDEX,
-      request,
-    );
-    return unwrapResultOrThrow(result);
+  async reindexKnowledge(request: ReindexKnowledgeReq): Promise<Result<ReindexKnowledgeRes>> {
+    return this.ipcClient.invoke<ReindexKnowledgeRes>(AIChannels.KNOWLEDGE_REINDEX, request);
   }
 }

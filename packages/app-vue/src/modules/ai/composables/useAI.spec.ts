@@ -139,7 +139,7 @@ describe('useAI', () => {
     const { composable, service } = mountComposable({
       getCapabilities: vi.fn().mockResolvedValue(ok(capabilities)),
       testProvider: vi.fn().mockResolvedValue(ok(providerTestResult)),
-      expandKnowledge: vi.fn().mockResolvedValue(expandKnowledgeResult),
+      expandKnowledge: vi.fn().mockResolvedValue(ok(expandKnowledgeResult)),
     });
     const request: TestAIProviderReq = {
       baseUrl: 'https://api.example.com/v1',

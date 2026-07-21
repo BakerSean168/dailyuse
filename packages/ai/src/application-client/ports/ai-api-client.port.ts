@@ -100,7 +100,7 @@ export interface IAIStreamMessageApiClient {
 }
 
 export interface IAIGoalApiClient {
-  generateGoal(request: GenerateGoalsReq): Promise<GenerateGoalsRes>;
+  generateGoal(request: GenerateGoalsReq): Promise<Result<GenerateGoalsRes>>;
 }
 
 export interface IAICapabilitiesApiClient {
@@ -108,21 +108,25 @@ export interface IAICapabilitiesApiClient {
 }
 
 export interface AIEvaluationReportApiClient {
-  getEvaluationOverview(request?: GetAIEvaluationOverviewReq): Promise<GetAIEvaluationOverviewRes>;
+  getEvaluationOverview(
+    request?: GetAIEvaluationOverviewReq,
+  ): Promise<Result<GetAIEvaluationOverviewRes>>;
 }
 
 export interface AIKnowledgeNoteApiClient {
-  createKnowledgeNote(request: CreateKnowledgeNoteReq): Promise<CreateKnowledgeNoteRes>;
+  createKnowledgeNote(
+    request: CreateKnowledgeNoteReq,
+  ): Promise<Result<CreateKnowledgeNoteRes>>;
 }
 
 export interface AIKnowledgeQueryApiClient {
-  expandKnowledge(request: ExpandKnowledgeReq): Promise<ExpandKnowledgeRes>;
-  queryKnowledge(request: QueryKnowledgeReq): Promise<QueryKnowledgeRes>;
-  reindexKnowledge(request: ReindexKnowledgeReq): Promise<ReindexKnowledgeRes>;
+  expandKnowledge(request: ExpandKnowledgeReq): Promise<Result<ExpandKnowledgeRes>>;
+  queryKnowledge(request: QueryKnowledgeReq): Promise<Result<QueryKnowledgeRes>>;
+  reindexKnowledge(request: ReindexKnowledgeReq): Promise<Result<ReindexKnowledgeRes>>;
 }
 
 export interface AIAnalyticsQueryApiClient {
-  queryAnalytics(request: QueryAnalyticsReq): Promise<QueryAnalyticsRes>;
+  queryAnalytics(request: QueryAnalyticsReq): Promise<Result<QueryAnalyticsRes>>;
 }
 
 export interface AIAgentRuntimeApiClient {

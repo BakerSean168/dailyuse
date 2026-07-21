@@ -1390,6 +1390,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十八轮）：AI goal/evaluation/knowledge/analytics 客户端
+> Result 端口迁移——对应 ports + HTTP/IPC adapters 去掉 `unwrapResultOrThrow`；
+> `goalAutomationHelpers` / `useAI.expandKnowledge` 在 composable 边界 `unwrap`。补
+> `ai-query-result-port.surface`。message/stream/agent 仍 throw-unwrap。§13.2 仍为
+> 部分/外部阻塞。验证：ai typecheck + surfaces + useAI/AIChatView + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

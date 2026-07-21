@@ -14,8 +14,8 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 
 /**
  * AI provider/capabilities composable.
- * Provider-config, capabilities, and conversation methods consume Result ports
- * (residual 96/97); other AI ports still throw-unwrap until migrated.
+ * Provider/capabilities/conversation/goal/knowledge/analytics methods consume
+ * Result ports (residual 96–98); message/stream/agent still throw-unwrap.
  */
 export function useAI() {
   const service = useStrictInject(AI_SERVICE_KEY, 'AIService');
@@ -83,8 +83,8 @@ export function useAI() {
     return unwrap(await service.testProvider(request));
   }
 
-  function expandKnowledge(request: ExpandKnowledgeReq) {
-    return service.expandKnowledge(request);
+  async function expandKnowledge(request: ExpandKnowledgeReq) {
+    return unwrap(await service.expandKnowledge(request));
   }
 
   return {

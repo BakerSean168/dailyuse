@@ -37,7 +37,7 @@ import type { Result } from '@dailyuse/contracts/result';
 
 export interface AIClientPort {
   getCapabilities(): Promise<Result<AICapabilities>>;
-  getEvaluationOverview(request?: GetAIEvaluationOverviewReq): Promise<GetAIEvaluationOverviewRes>;
+  getEvaluationOverview(request?: GetAIEvaluationOverviewReq): Promise<Result<GetAIEvaluationOverviewRes>>;
 
   createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
   updateProvider(
@@ -51,7 +51,7 @@ export interface AIClientPort {
   setDefaultProvider(providerId: string): Promise<Result<void>>;
   refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>>;
 
-  generateGoal(request: GenerateGoalsReq): Promise<GenerateGoalsRes>;
+  generateGoal(request: GenerateGoalsReq): Promise<Result<GenerateGoalsRes>>;
 
   createConversation(request: CreateConversationReq): Promise<Result<AIConversationClientDTO>>;
   updateConversation(
@@ -82,12 +82,12 @@ export interface AIClientPort {
   ): Promise<void>;
   listMessages(conversationId: string, params?: { page?: number; pageSize?: number }): Promise<MessageListRes>;
 
-  queryKnowledge(request: QueryKnowledgeReq): Promise<QueryKnowledgeRes>;
-  expandKnowledge(request: ExpandKnowledgeReq): Promise<ExpandKnowledgeRes>;
-  reindexKnowledge(request: ReindexKnowledgeReq): Promise<ReindexKnowledgeRes>;
-  createKnowledgeNote(request: CreateKnowledgeNoteReq): Promise<CreateKnowledgeNoteRes>;
+  queryKnowledge(request: QueryKnowledgeReq): Promise<Result<QueryKnowledgeRes>>;
+  expandKnowledge(request: ExpandKnowledgeReq): Promise<Result<ExpandKnowledgeRes>>;
+  reindexKnowledge(request: ReindexKnowledgeReq): Promise<Result<ReindexKnowledgeRes>>;
+  createKnowledgeNote(request: CreateKnowledgeNoteReq): Promise<Result<CreateKnowledgeNoteRes>>;
 
-  queryAnalytics(request: QueryAnalyticsReq): Promise<QueryAnalyticsRes>;
+  queryAnalytics(request: QueryAnalyticsReq): Promise<Result<QueryAnalyticsRes>>;
 
   listAgentRuns(params?: AgentRunListParams): Promise<AgentRun[]>;
   startAgentRun(request: AgentStartRunClientRequest): Promise<AgentRunResult>;
