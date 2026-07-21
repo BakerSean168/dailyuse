@@ -23,6 +23,12 @@ describe('ipc-cache channel surface', () => {
     expect(source).not.toMatch(/ipcMain\.handle\(\s*'cache:/);
   });
 
+  it('returns contracts Result ok envelopes for cache management handlers', () => {
+    expect(source).toContain("import { ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain('return ok(');
+    expect(source).not.toMatch(/success:\s*true/);
+  });
+
   it('configures list TTL keys via contracts channel constants', () => {
     expect(source).toContain('GoalChannels.LIST');
     expect(source).toContain('TaskChannels.TEMPLATE_LIST');

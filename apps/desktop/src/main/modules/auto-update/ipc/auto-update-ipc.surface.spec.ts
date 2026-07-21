@@ -5,7 +5,8 @@ import { AutoUpdateChannels } from '@dailyuse/contracts/electron';
 
 /**
  * Auto-update IPC handler surface (stage-6 residual):
- * Registers via contracts AutoUpdateChannels — no string dual-track channel names.
+ * Registers via contracts AutoUpdateChannels and returns Result ok/fail envelopes
+ * (no { success } dual-track response shape).
  */
 describe('auto-update IPC channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'index.ts'), 'utf8');
@@ -18,6 +19,14 @@ describe('auto-update IPC channel surface', () => {
     expect(source).toContain('AutoUpdateChannels.STATUS');
     expect(source).toContain('AutoUpdateChannels.CONFIG');
     expect(source).not.toMatch(/ipcMain\.handle\(\s*'auto-update:/);
+  });
+
+  it('returns contracts Result ok/fail envelopes instead of { success } dual-track', () => {
+    expect(source).toContain("import { fail, ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain('return ok(');
+    expect(source).toContain('return fail({');
+    expect(source).not.toMatch(/success:\s*true/);
+    expect(source).not.toMatch(/success:\s*false/);
   });
 
   it('keeps contracts channel values aligned with live handler surface', () => {

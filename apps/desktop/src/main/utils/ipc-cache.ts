@@ -16,6 +16,7 @@ import {
   ReminderChannels,
   TaskChannels,
 } from '@dailyuse/contracts/electron';
+import { ok } from '@dailyuse/contracts/result';
 import { isDesktopDevelopmentRuntime } from './dev-runtime';
 
 // ============ Types ============
@@ -492,17 +493,17 @@ export function invalidatesCache<T>(
  */
 export function registerCacheIpcHandlers(): void {
   ipcMain.handle(CacheChannels.STATS, async () => {
-    return getIpcCache().getStats();
+    return ok(getIpcCache().getStats());
   });
 
   ipcMain.handle(CacheChannels.CLEAR, async () => {
     getIpcCache().clear();
-    return { success: true };
+    return ok(null);
   });
 
   ipcMain.handle(CacheChannels.INVALIDATE, async (_, channel: string) => {
     const count = getIpcCache().invalidateChannel(channel);
-    return { invalidated: count };
+    return ok({ invalidated: count });
   });
 
   console.log('[IpcCache] Management IPC handlers registered');
