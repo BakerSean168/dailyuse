@@ -14,7 +14,6 @@ import {
   AIProviderConfigClientDTOSchema,
   ListAIProviderConfigsResSchema,
   TestAIProviderResultDTOSchema,
-  ActionSuccessSchema,
 } from '@dailyuse/contracts/ai';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
@@ -120,7 +119,7 @@ export function registerAIProviderRoutes(
         params: z.object({ id: brandedId<AiProviderConfigId>() }),
       },
       responses: {
-        200: successResponse(ActionSuccessSchema, '删除成功'),
+        200: successResponse(z.null(), '删除成功'),
         404: errorResponse('未找到'),
       },
     },
@@ -154,7 +153,7 @@ export function registerAIProviderRoutes(
         params: z.object({ id: brandedId<AiProviderConfigId>() }),
       },
       responses: {
-        200: successResponse(ActionSuccessSchema, '设置成功'),
+        200: successResponse(z.null(), '设置成功'),
         404: errorResponse('未找到'),
       },
     },

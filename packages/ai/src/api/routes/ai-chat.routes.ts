@@ -17,7 +17,6 @@ import {
   SendMessageResSchema,
   ConversationListResSchema,
   MessageListResSchema,
-  ActionSuccessSchema,
 } from '@dailyuse/contracts/ai';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { AiConversationId } from '@dailyuse/contracts/primitives';
@@ -132,7 +131,7 @@ export function registerAIChatRoutes(
         params: z.object({ id: brandedId<AiConversationId>() }),
       },
       responses: {
-        200: successResponse(ActionSuccessSchema, '删除成功'),
+        200: successResponse(z.null(), '删除成功'),
         404: errorResponse('未找到'),
       },
     },

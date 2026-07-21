@@ -69,8 +69,11 @@ export class AIProviderConfigController {
     return this.service.getProvider(id);
   }
 
-  async delete(id: string): Promise<Result<void>> {
-    return this.service.deleteProvider(id);
+  async delete(id: string): Promise<Result<null>> {
+    const result = await this.service.deleteProvider(id);
+    if (!result.ok) return result;
+    // Serialize as data:null so HttpResponse keeps the data key (no ActionSuccess dual-track).
+    return ok(null);
   }
 
   async test(input: unknown, cx: ExecutionContext): Promise<Result<TestAIProviderRes>> {
@@ -86,8 +89,10 @@ export class AIProviderConfigController {
     return this.service.testConnection(parsed.data, cx);
   }
 
-  async setDefault(id: string, cx: ExecutionContext): Promise<Result<void>> {
-    return this.service.setDefaultProvider(id, cx);
+  async setDefault(id: string, cx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.service.setDefaultProvider(id, cx);
+    if (!result.ok) return result;
+    return ok(null);
   }
 
   async refreshModels(id: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>> {

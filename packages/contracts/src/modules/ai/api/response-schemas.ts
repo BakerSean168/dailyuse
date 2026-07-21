@@ -290,6 +290,3 @@ export const ListAIProviderConfigsResSchema = z.object({
   data: z.array(AIProviderConfigSummarySchema),
 });
 
-export const ActionSuccessSchema = z.object({
-  success: z.boolean(),
-});

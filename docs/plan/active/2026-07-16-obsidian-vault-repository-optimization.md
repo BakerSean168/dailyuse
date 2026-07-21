@@ -1298,6 +1298,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > ai focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十七轮）：折叠 AI void 成功双轨——删除
+> `ActionSuccessSchema`（`{ success: boolean }`）；delete conversation / delete provider /
+> set-default 与其他模块一致使用 OpenAPI `z.null()`，controller 返回 `ok(null)` 以保留
+> HttpResponse `data` 键。补 void-success envelope surface + chat routes spec。§13.2
+> 仍为部分/外部阻塞。验证：ai focused + governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

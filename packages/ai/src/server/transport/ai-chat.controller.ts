@@ -99,8 +99,11 @@ export class AIChatController {
     return this.conversationService.updateConversation(id, parsed.data);
   }
 
-  async deleteConversation(id: string): Promise<Result<void>> {
-    return this.conversationService.deleteConversation(id);
+  async deleteConversation(id: string): Promise<Result<null>> {
+    const result = await this.conversationService.deleteConversation(id);
+    if (!result.ok) return result;
+    // Serialize as data:null so HttpResponse keeps the data key (no ActionSuccess dual-track).
+    return ok(null);
   }
 
   async sendMessage(input: unknown, cx: ExecutionContext): Promise<Result<SendMessageRes>> {
