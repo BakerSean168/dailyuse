@@ -12,7 +12,7 @@ tags:
   - security
 description: 本地 Obsidian Vault、可选 GitHub 私有仓库同步、Web 快捷创建与 Agent 知识写入边界的实施方案
 created: 2026-07-16T00:00:00
-updated: 2026-07-20T00:00:00
+updated: 2026-07-21T00:00:00
 ---
 
 # Obsidian Vault 与 GitHub 知识仓库后续优化方案
@@ -40,6 +40,9 @@ updated: 2026-07-20T00:00:00
   inert embeds、callouts、task lists 以及 heading/block navigation metadata；附件读取只允许安全媒体类型并限制为
   10 MiB；附件 blob 已按 `connectionId + blobSha` 建立短期共享 PostgreSQL cache，并保留每次读取的授权、投影
   版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
+- 阶段 6 残留：API 不再包含 legacy Repository/Folder/Resource route builders；壳层与 AI 最近笔记改为 projection /
+  Local Vault，不再调用退役 Resource CRUD。旧 `RepositoryWorkspaceView` / `packages/editor` UI 仍有非路由死代码待删。
+  完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
 ## 2. 已确认产品边界
 
@@ -621,6 +624,28 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `tsc` 仍受既有 source/dist 重复类型噪声影响，标准 affected typecheck 在本轮变更前已通过，但 pnpm store SQLite 故障使
 > 当前标准依赖链无法重新执行。
 
+> 续进展 2026-07-21：完成定义 §13.2 证据审计（代码/规格为主，不凭感觉勾选）与阶段 6 残留收口。
+> **§13.2 审计结果**：
+> 1. 账密/GitHub/访客入口 — **部分实现**：三入口代码与 Desktop profile 在位；完整三端 E2E 未齐。
+> 2. GitHub 登录与仓库授权解耦 — **已证明**：独立 contract/token/UI/routes；登录不申请 Contents。
+> 3. 访客/未绑定不上传 Vault — **已证明**：访客无 knowledge connection；未绑定仅 Local Vault。
+> 4. Desktop Vault 云端故障仍可用 — **已证明**：Local Vault 不依赖云端；同步离线本地 commit 队列。
+> 5. GitHub App 仅访问明确授权仓库 — **已证明**：installation + repository_ids / private-admin-active 校验。
+> 6. private 创建/连接且双非空不覆盖 — **已证明**：reconciliation 映射 `ManualResolutionRequired`。
+> 7. Desktop Git 离线恢复且禁 force push — **已证明**：sync runtime 规格与实现。
+> 8. 冲突暂停并保留双方 — **已证明**：rebase 冲突保留路径与双方 HEAD。
+> 9. Web 新建唯一 commit / 幂等 — **已证明**：confirmed create + request ledger。
+> 10. 已有笔记编辑首期关闭 — **已证明**（已勾选）：无 `/note/:id` 全文编辑入口。
+> 11. AI 无固定目录 + 确认写入 — **已证明**：固定路径设置移除；confirmed proposal/write。
+> 12. Agent 上下文隔离/不绕过确认 — **部分实现**：提案确认与 path 边界在位；完整 Agent Host 安全面仍由 ADR-035 plan 收口。
+> 13. webhook/read model/附件/RAG 可重建 — **已证明**：projection + reconciliation + AI index 专用表。
+> 14. Web Markdown 安全 — **已证明**：sanitizer/危险 URL 测试边界。
+> 15. lint/typecheck/test/E2E/governance/prod-like — **外部阻塞**：真实 GitHub fixture 缺凭据；local-deploy 曾 Docker 磁盘耗尽；本轮补最近单测验证。
+> **阶段 6 本轮代码收口**：删除未挂载的 legacy `folder/repository/resource` API route builders；壳层/AI 最近笔记改为
+> Web projection + Desktop Local Vault，不再调用已退役 Resource CRUD；`/repository?note=` 深链选中；Note capsule /
+> AI open 跳转 projection/local workspace。旧 `RepositoryWorkspaceView` 与 `packages/editor` 仍残留为非路由死代码，
+> 下轮继续删除。计划状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -639,21 +664,23 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-- [ ] 账密、GitHub 和访客入口均可用。
-- [ ] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。
-- [ ] 访客和未绑定用户不上传 Vault 内容。
-- [ ] Desktop 本地 Vault 在云端故障时仍可用。
-- [ ] GitHub App 只访问用户明确授权的 knowledge repository。
-- [ ] private repo 可创建/连接，连接两个非空仓库不会自动覆盖。
-- [ ] Desktop Git 同步具备离线恢复且不 force push。
-- [ ] 冲突明确暂停并保留双方内容。
-- [ ] Web 新建笔记产生唯一 Git commit，重复请求不重复创建。
-- [x] 已有笔记编辑在首期仍关闭。
-- [ ] AI 无固定默认目录设置，完整写入提案必须获得用户确认。
-- [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。
-- [ ] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。
-- [ ] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。
-- [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。
+> 审计时间 2026-07-21。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+
+- [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
+- [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
+- [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
+- [x] Desktop 本地 Vault 在云端故障时仍可用。 **（已证明）**
+- [x] GitHub App 只访问用户明确授权的 knowledge repository。 **（已证明）**
+- [x] private repo 可创建/连接，连接两个非空仓库不会自动覆盖。 **（已证明）**
+- [x] Desktop Git 同步具备离线恢复且不 force push。 **（已证明）**
+- [x] 冲突明确暂停并保留双方内容。 **（已证明）**
+- [x] Web 新建笔记产生唯一 Git commit，重复请求不重复创建。 **（已证明）**
+- [x] 已有笔记编辑在首期仍关闭。 **（已证明）**
+- [x] AI 无固定默认目录设置，完整写入提案必须获得用户确认。 **（已证明）**
+- [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**
+- [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
+- [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
+- [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（外部阻塞 + 部分验证）**
 
 ## 14. 相关资料
 
