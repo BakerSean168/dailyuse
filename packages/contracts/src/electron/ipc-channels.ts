@@ -121,9 +121,6 @@ export const DashboardChannels = {
 } as const;
 
 export const AccountChannels = {
-  LIST: 'account:list',
-  GET: 'account:get',
-  GET_CURRENT: 'account:current',
   GET_ME: 'account:get-me',
   UPDATE_PROFILE: 'account:update-profile',
   UPDATE_SETTINGS: 'account:update-settings',

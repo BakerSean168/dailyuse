@@ -5,6 +5,7 @@
  */
 import { ipcMain } from 'electron';
 import {
+  AccountChannels,
   type IElectronModule,
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
@@ -17,7 +18,6 @@ import type {
 import { createLogger } from '@dailyuse/utils/logger';
 import {
   createAccountPowerSyncModule,
-  type AccountListOptions,
   type AccountModuleInstance,
   type Transactional,
 } from '../server/infrastructure';
@@ -31,18 +31,7 @@ export type { Transactional } from '../server/infrastructure';
 
 const logger = createLogger('AccountElectron');
 
-const Ch = {
-  LIST: 'account:list',
-  GET: 'account:get',
-  GET_CURRENT_ALIAS: 'account:current',
-  GET_CURRENT: 'account:get-me',
-  UPDATE_PROFILE: 'account:update-profile',
-  UPDATE_SETTINGS: 'account:update-settings',
-  CHECK_AVAILABILITY: 'account:check-availability',
-  CLOSE: 'account:close',
-} as const;
-
-const channels = Object.values(Ch);
+const allChannels = Object.values(AccountChannels);
 let activeAccountModule: AccountModuleInstance | null = null;
 
 export const AccountElectronModule: IElectronModule = {
@@ -54,45 +43,29 @@ export const AccountElectronModule: IElectronModule = {
     activeAccountModule = accountModule;
     accountModule.start();
 
-    ipcMain.handle(Ch.LIST, (_event, params) =>
-      accountModule.api.listAccounts(params as AccountListOptions | undefined),
-    );
-
-    ipcMain.handle(Ch.GET, async () => {
+    ipcMain.handle(AccountChannels.GET_ME, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
         controller.getProfile({ identityId }),
       );
     });
 
-    ipcMain.handle(Ch.GET_CURRENT, async () => {
-      return withAuthenticatedIdentity(ctx, (identityId) =>
-        controller.getProfile({ identityId }),
-      );
-    });
-
-    ipcMain.handle(Ch.GET_CURRENT_ALIAS, async () => {
-      return withAuthenticatedIdentity(ctx, (identityId) =>
-        controller.getProfile({ identityId }),
-      );
-    });
-
-    ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: UpdateAccountReq) => {
+    ipcMain.handle(AccountChannels.UPDATE_PROFILE, async (_event, payload: UpdateAccountReq) => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
         accountModule.api.updateProfile(payload, { identityId }),
       );
     });
 
-    ipcMain.handle(Ch.UPDATE_SETTINGS, async (_event, payload: UpdateAccountSettingsReq) => {
+    ipcMain.handle(AccountChannels.UPDATE_SETTINGS, async (_event, payload: UpdateAccountSettingsReq) => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
         accountModule.api.updateSettings(payload, { identityId }),
       );
     });
 
-    ipcMain.handle(Ch.CHECK_AVAILABILITY, (_event, data: CheckAvailabilityReq) =>
+    ipcMain.handle(AccountChannels.CHECK_AVAILABILITY, (_event, data: CheckAvailabilityReq) =>
       accountModule.api.checkAvailability(data),
     );
 
-    ipcMain.handle(Ch.CLOSE, async (_event, payload: CloseAccountReq) => {
+    ipcMain.handle(AccountChannels.CLOSE, async (_event, payload: CloseAccountReq) => {
       return withAuthenticatedIdentity(ctx, (identityId) =>
         accountModule.api.closeAccount(payload, { identityId }),
       );
@@ -102,7 +75,7 @@ export const AccountElectronModule: IElectronModule = {
   },
 
   destroy(): void {
-    for (const ch of channels) {
+    for (const ch of allChannels) {
       ipcMain.removeHandler(ch);
     }
     activeAccountModule?.dispose();

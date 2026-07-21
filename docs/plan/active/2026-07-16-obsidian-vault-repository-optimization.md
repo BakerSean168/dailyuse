@@ -1061,6 +1061,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留五十五轮）：折叠 account 资料读取 IPC 三轨（`account:get` /
+> `account:current` / `account:get-me`）为单一活通道 `GET_ME`；删除无 renderer 消费者的
+> `account:list`；account electron 注册改为 contracts `AccountChannels`（去掉本地 `Ch` 双轨）。
+> 补 `ipc-channels.account-surface.spec.ts` 与 `account-electron.surface.spec.ts`。
+> §13.2 仍为部分/外部阻塞。验证：account/contracts focused specs + desktop ipc contracts +
+> module-handler-contracts + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
