@@ -49,8 +49,6 @@ export interface UseAIKnowledgeQaWorkflowOptions {
 }
 
 export type WorkflowMode = 'chat' | 'goal-create' | 'knowledge-qa' | 'knowledge-generate';
-export type LegacyWorkflowMode = 'goal' | 'knowledge-note';
-export type PersistedWorkflowMode = WorkflowMode | LegacyWorkflowMode;
 
 export type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
 
@@ -206,7 +204,8 @@ export type EditableGoalReminder = {
 };
 
 export type PersistedWorkflowEntry = {
-  mode: PersistedWorkflowMode;
+  /** Canonical WorkflowMode; unknown/legacy values are normalized on read. */
+  mode: string;
   goalWorkflowStage?: GoalWorkflowStage;
   goalDraft: GoalDraft | null;
   goalClarification: GoalClarification | null;
@@ -269,7 +268,8 @@ export function getToolLocaleKey(mode: WorkflowMode): string {
   }[mode];
 }
 
-export function normalizeWorkflowMode(mode: PersistedWorkflowMode | string | null | undefined): WorkflowMode {
+export function normalizeWorkflowMode(mode: string | null | undefined): WorkflowMode {
+  // One-way map for previously persisted short mode ids; no dual-track type surface.
   if (mode === 'goal') return 'goal-create';
   if (mode === 'knowledge-note') return 'knowledge-generate';
   if (mode === 'goal-create' || mode === 'knowledge-qa' || mode === 'knowledge-generate') {

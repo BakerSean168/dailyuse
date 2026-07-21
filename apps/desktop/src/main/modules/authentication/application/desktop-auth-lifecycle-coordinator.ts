@@ -2,7 +2,6 @@ import type { ILogger } from '@dailyuse/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-  AuthSession,
 } from '@dailyuse/authentication/electron';
 import {
   type IpcResult,
@@ -16,8 +15,6 @@ import {
   ConnectionStatus,
   type AuthResponseDTO,
   type TokenStatus,
-  type AutoLoginResult as ContractAutoLoginResult,
-  type SessionRestoreResult as ContractSessionRestoreResult,
   type UserInfo,
   type SessionInfo,
   type AuthStatus,
@@ -30,6 +27,10 @@ import {
   type SessionStatus,
   NetworkStateManager,
 } from '../infrastructure';
+import type {
+  AutoLoginResult,
+  SessionRestoreResult as InfrastructureSessionRestoreResult,
+} from '../infrastructure/session-types';
 import { AuthRemoteGateway } from './auth-remote-gateway';
 import { refreshDesktopSession } from './refresh-desktop-session';
 import { DesktopAuthAccountProjectionService } from './desktop-auth-account-projection-service';
@@ -45,14 +46,12 @@ import {
 } from './auth-coordinator-helpers';
 
 // ===== Extended Types =====
+// Reuse infrastructure AutoLoginResult; lifecycle adds hasValidSession for initialize/bootstrap.
 
-export interface AutoLoginResult extends ContractAutoLoginResult {
-  session?: AuthSession;
-}
+export type { AutoLoginResult } from '../infrastructure/session-types';
 
-export interface SessionRestoreResult extends ContractSessionRestoreResult {
+export interface SessionRestoreResult extends InfrastructureSessionRestoreResult {
   hasValidSession: boolean;
-  session?: AuthSession;
 }
 
 /**
