@@ -1,11 +1,14 @@
 import { ipcMain } from 'electron';
-import { isElectronAuthResolutionError } from '@dailyuse/contracts/electron';
+import {
+  DashboardChannels,
+  isElectronAuthResolutionError,
+} from '@dailyuse/contracts/electron';
 import { extractStructuredResultError, fail, ok } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
 import { getDesktopDashboardData } from '../services/dashboard-read-service';
 
-const CHANNEL = 'dashboard:get-stats';
+const CHANNEL = DashboardChannels.GET_STATS;
 const logger = createLogger('DashboardIpc');
 
 export function registerDashboardIpcHandler(

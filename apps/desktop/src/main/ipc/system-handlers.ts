@@ -17,6 +17,10 @@ import type { AutoLaunchManager } from '../modules/autolaunch';
 import { getIpcCache } from '../utils';
 import { getSharedPathResolver, updateUserFilesRootPath } from '../runtime-init';
 import { resolveDesktopUserFilesPath } from '../user-data-path';
+import {
+  DesktopFeatureChannels,
+  SystemChannels,
+} from '@dailyuse/contracts/electron';
 
 type UserFilesSubdirectory = 'exports' | 'downloads' | 'attachments';
 
@@ -60,7 +64,7 @@ function resolveUserFilesDirectory(subdirectory: UserFilesSubdirectory | undefin
 /**
  * @function registerSystemHandlers
  * @description Registers system-level utility IPC handlers.
- * Channels: 'system:getAppVersion', 'system:getMemoryUsage', 'system:getIpcCacheStats'
+ * Channels: SystemChannels.GET_APP_VERSION, SystemChannels.GET_MEMORY_USAGE, SystemChannels.GET_IPC_CACHE_STATS
  */
 function registerSystemHandlers(): void {
   /**
@@ -70,7 +74,7 @@ function registerSystemHandlers(): void {
    * Return: string
    * Security: None
    */
-  ipcMain.handle('system:getAppVersion', async () => {
+  ipcMain.handle(SystemChannels.GET_APP_VERSION, async () => {
     return app.getVersion();
   });
 
@@ -81,7 +85,7 @@ function registerSystemHandlers(): void {
    * Return: MemoryUsage
    * Security: Requires authentication
    */
-  ipcMain.handle('system:getMemoryUsage', async () => {
+  ipcMain.handle(SystemChannels.GET_MEMORY_USAGE, async () => {
     const usage = process.memoryUsage();
     return {
       heapUsed: Math.round(usage.heapUsed / 1024 / 1024),
@@ -98,11 +102,11 @@ function registerSystemHandlers(): void {
    * Return: CacheStats
    * Security: Requires authentication
    */
-  ipcMain.handle('system:getIpcCacheStats', async () => {
+  ipcMain.handle(SystemChannels.GET_IPC_CACHE_STATS, async () => {
     return getIpcCache().getStats();
   });
 
-  ipcMain.handle('system:openExternalUrl', async (_event, request: { url?: unknown }) => {
+  ipcMain.handle(SystemChannels.OPEN_EXTERNAL_URL, async (_event, request: { url?: unknown }) => {
     if (typeof request?.url !== 'string') {
       throw new Error('External URL is required');
     }
@@ -115,7 +119,7 @@ function registerSystemHandlers(): void {
   });
 
   ipcMain.handle(
-    'system:userFiles:saveText',
+    SystemChannels.USER_FILES_SAVE_TEXT,
     async (_event, request: SaveTextFileRequest): Promise<SaveTextFileResult> => {
       const targetDir = resolveUserFilesDirectory(request?.subdirectory);
       await fs.mkdir(targetDir, { recursive: true });
@@ -136,7 +140,7 @@ function registerSystemHandlers(): void {
   );
 
   ipcMain.handle(
-    'system:userFiles:openText',
+    SystemChannels.USER_FILES_OPEN_TEXT,
     async (_event, request?: OpenTextFileRequest): Promise<OpenTextFileResult> => {
       const defaultPath = resolveUserFilesDirectory(request?.subdirectory);
       await fs.mkdir(defaultPath, { recursive: true });
@@ -159,7 +163,7 @@ function registerSystemHandlers(): void {
 
   // ========== User Files Directory Management ==========
 
-  ipcMain.handle('system:userFiles:getPath', async () => {
+  ipcMain.handle(SystemChannels.USER_FILES_GET_PATH, async () => {
     const resolver = getSharedPathResolver();
     const defaultPath = resolveDesktopUserFilesPath();
     return {
@@ -169,7 +173,7 @@ function registerSystemHandlers(): void {
     };
   });
 
-  ipcMain.handle('system:userFiles:pickDirectory', async () => {
+  ipcMain.handle(SystemChannels.USER_FILES_PICK_DIRECTORY, async () => {
     const result = await dialog.showOpenDialog({
       properties: ['openDirectory', 'createDirectory'],
       title: 'Select User Files Directory',
@@ -185,7 +189,7 @@ function registerSystemHandlers(): void {
     return { canceled: false, path: selectedPath };
   });
 
-  ipcMain.handle('system:userFiles:openDirectory', async () => {
+  ipcMain.handle(SystemChannels.USER_FILES_OPEN_DIRECTORY, async () => {
     const resolver = getSharedPathResolver();
     await fs.mkdir(resolver.userFilesRootDir, { recursive: true });
     const error = await shell.openPath(resolver.userFilesRootDir);
@@ -194,7 +198,7 @@ function registerSystemHandlers(): void {
     }
   });
 
-  ipcMain.handle('system:userFiles:resetPath', async () => {
+  ipcMain.handle(SystemChannels.USER_FILES_RESET_PATH, async () => {
     updateUserFilesRootPath(null);
     const defaultPath = resolveDesktopUserFilesPath();
     return { path: defaultPath };
@@ -223,7 +227,7 @@ function registerDesktopFeaturesHandlers(
    * Return: boolean
    * Security: None
    */
-  ipcMain.handle('desktop:autoLaunch:isEnabled', async () => {
+  ipcMain.handle(DesktopFeatureChannels.AUTO_LAUNCH_IS_ENABLED, async () => {
     return autoLaunchManager?.isEnabled() ?? false;
   });
 
@@ -234,7 +238,7 @@ function registerDesktopFeaturesHandlers(
    * Return: boolean
    * Security: None
    */
-  ipcMain.handle('desktop:autoLaunch:enable', async () => {
+  ipcMain.handle(DesktopFeatureChannels.AUTO_LAUNCH_ENABLE, async () => {
     return autoLaunchManager?.enable() ?? false;
   });
 
@@ -245,7 +249,7 @@ function registerDesktopFeaturesHandlers(
    * Return: boolean
    * Security: None
    */
-  ipcMain.handle('desktop:autoLaunch:disable', async () => {
+  ipcMain.handle(DesktopFeatureChannels.AUTO_LAUNCH_DISABLE, async () => {
     return autoLaunchManager?.disable() ?? false;
   });
 
@@ -257,7 +261,7 @@ function registerDesktopFeaturesHandlers(
    * Return: ShortcutConfig[]
    * Security: None
    */
-  ipcMain.handle('desktop:shortcuts:getAll', async () => {
+  ipcMain.handle(DesktopFeatureChannels.SHORTCUTS_GET_ALL, async () => {
     return shortcutManager?.getShortcuts() ?? [];
   });
 
@@ -269,7 +273,7 @@ function registerDesktopFeaturesHandlers(
    * Security: None
    */
   ipcMain.handle(
-    'desktop:shortcuts:update',
+    DesktopFeatureChannels.SHORTCUTS_UPDATE,
     async (_, accelerator: string, newConfig: { enabled?: boolean }) => {
       if (!shortcutManager) return false;
       if (newConfig.enabled === false) {
@@ -293,7 +297,7 @@ function registerDesktopFeaturesHandlers(
    * Return: void
    * Security: None
    */
-  ipcMain.handle('desktop:tray:flash', async () => {
+  ipcMain.handle(DesktopFeatureChannels.TRAY_FLASH, async () => {
     trayManager?.startFlashing();
   });
 
@@ -304,7 +308,7 @@ function registerDesktopFeaturesHandlers(
    * Return: void
    * Security: None
    */
-  ipcMain.handle('desktop:tray:stopFlash', async () => {
+  ipcMain.handle(DesktopFeatureChannels.TRAY_STOP_FLASH, async () => {
     trayManager?.stopFlashing();
   });
 }
