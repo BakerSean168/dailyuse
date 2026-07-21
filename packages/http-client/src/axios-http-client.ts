@@ -180,7 +180,9 @@ export class AxiosHttpClient implements HttpClient {
           console.debug(`[HTTP] ← ${response.status} ${response.config.url ?? ''}`);
         }
 
-        // 如果后端返回标准 HttpResponse 信封 → 剥离
+        // First-party Memoflow APIs always serialize Result as HttpResponse.
+        // JSON success without envelope is dual-track and is rejected.
+        // Non-JSON payloads (blob/arraybuffer/text downloads) may still pass through.
         if (this.isHttpResponseEnvelope(data)) {
           if (data.ok) {
             // 返回业务数据（拦截器修改了返回值，Axios 类型已失效，靠 Client 方法矫正）
@@ -197,8 +199,16 @@ export class AxiosHttpClient implements HttpClient {
           );
         }
 
-        // 非标准信封（例如第三方接口、文件下载）→ 原样返回
-        return data;
+        if (this.isNonJsonDownloadPayload(data, response)) {
+          return data;
+        }
+
+        throw new HttpClientError(
+          'HTTP response missing standard Result envelope (raw dual-track payloads are not accepted)',
+          'INTERNAL_ERROR',
+          response.status,
+          data,
+        );
       },
 
       // ── 失败 (HTTP != 2xx | 网络异常) ──
@@ -300,14 +310,38 @@ export class AxiosHttpClient implements HttpClient {
   // Helpers
   // ────────────────────────────────────────
 
-  /** 判断是否为后端标准 HttpResponse 信封 */
+  /** 判断是否为后端标准 HttpResponse 信封（与 ResultHttpClient / IpcResult 一致） */
   private isHttpResponseEnvelope(data: unknown): data is HttpResponse {
-    return (
-      data !== null &&
-      typeof data === 'object' &&
-      'ok' in (data as any) &&
-      typeof (data as any).ok === 'boolean'
-    );
+    if (data === null || typeof data !== 'object') {
+      return false;
+    }
+    const envelope = data as Record<string, unknown>;
+    if (typeof envelope.ok !== 'boolean') {
+      return false;
+    }
+    if (envelope.ok === true) {
+      return 'data' in envelope;
+    }
+    return 'error' in envelope || typeof envelope.message === 'string';
+  }
+
+  /**
+   * Allow non-JSON download bodies (blob/arraybuffer/stream/text) without treating
+   * plain JSON objects as a dual-track business payload.
+   */
+  private isNonJsonDownloadPayload(data: unknown, response: AxiosResponse): boolean {
+    const responseType = response.config?.responseType;
+    if (responseType && responseType !== 'json' && responseType !== 'document') {
+      return true;
+    }
+    if (typeof Blob !== 'undefined' && data instanceof Blob) {
+      return true;
+    }
+    if (typeof ArrayBuffer !== 'undefined' && data instanceof ArrayBuffer) {
+      return true;
+    }
+    // Primitive string/number bodies are not Memoflow Result envelopes.
+    return typeof data === 'string' || typeof data === 'number' || data === null;
   }
 
   /** 根据 HTTP 状态码获取默认错误消息 */

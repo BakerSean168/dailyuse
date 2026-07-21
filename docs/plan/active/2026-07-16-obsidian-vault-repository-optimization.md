@@ -1243,6 +1243,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十轮）：`AxiosHttpClient` 对齐 `ResultHttpClient`——JSON
+> 成功体无 HttpResponse 信封 fail-closed（删除 raw dual-track）；blob/arraybuffer/text
+> 下载仍允许非 JSON 透传；信封检测要求 `ok:true` 含 `data` 键。补 http-client specs 与
+> surface；修正 web platform 过时 AxiosHttpClient 注释。§13.2 仍为部分/外部阻塞。
+> 验证：http-client focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

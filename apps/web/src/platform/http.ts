@@ -1,7 +1,7 @@
 /**
  * Web Platform — HTTP Client Instance
  *
- * 创建统一的 AxiosHttpClient，配置：
+ * 创建统一的 ResultHttpClient，配置：
  * - baseURL: /api/v1
  * - TokenProvider: 从 Pinia authenticationStore 读取 accessToken
  * - 401 自动 Token 刷新 + 重试

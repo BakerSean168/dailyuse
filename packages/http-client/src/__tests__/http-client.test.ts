@@ -116,7 +116,7 @@ describe('AxiosHttpClient', () => {
     expect(result).toEqual({ id: 1 });
   });
 
-  it('get() returns raw data when no envelope', async () => {
+  it('get() fails closed when JSON response omits the Result envelope', async () => {
     const client = new AxiosHttpClient({ baseURL: 'http://localhost' });
     const axios = client.getAxiosInstance();
 
@@ -128,8 +128,27 @@ describe('AxiosHttpClient', () => {
       config: {} as any,
     });
 
-    const result = await client.get('/test');
-    expect(result).toEqual({ raw: true });
+    await expect(client.get('/test')).rejects.toMatchObject({
+      code: 'INTERNAL_ERROR',
+      message: expect.stringMatching(/envelope|dual-track/i),
+    });
+  });
+
+  it('get() allows non-JSON download payloads without envelope', async () => {
+    const client = new AxiosHttpClient({ baseURL: 'http://localhost' });
+    const axios = client.getAxiosInstance();
+
+    axios.defaults.adapter = async (config) => ({
+      data: 'file-bytes',
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { ...config, responseType: 'text' } as any,
+    });
+
+    await expect(client.get('/download', { responseType: 'text' } as never)).resolves.toBe(
+      'file-bytes',
+    );
   });
 
   it('get() throws HttpClientError on ok:false envelope', async () => {
