@@ -29,15 +29,12 @@ describe('DeleteTaskTemplateUseCase', () => {
     vi.restoreAllMocks();
   });
 
-  it('should return ok with success:true when template not found (idempotent)', async () => {
+  it('should return ok(void) when template not found (idempotent)', async () => {
     vi.mocked(templateRepo.findById).mockResolvedValue(null);
 
     const result = await useCase.execute('non-existent');
 
     expect(result).toBeOk();
-    if (result.ok) {
-      expect(result.data.success).toBe(true);
-    }
     expect(templateRepo.delete).not.toHaveBeenCalled();
     expect(templateRepo.save).not.toHaveBeenCalled();
     expect(instanceRepo.deleteByTemplateId).not.toHaveBeenCalled();
@@ -67,13 +64,13 @@ describe('DeleteTaskTemplateUseCase', () => {
     expect(templateRepo.delete).not.toHaveBeenCalled();
   });
 
-  it('should return success:true after delete', async () => {
+  it('should return ok(void) after delete', async () => {
     const template = aOneTimeTask();
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
 
     const result = await useCase.execute(template.id);
 
-    expect(result).toBeOkWith({ success: true });
+    expect(result).toBeOk();
   });
 
   it('should return INTERNAL_ERROR when deleting generated instances fails', async () => {

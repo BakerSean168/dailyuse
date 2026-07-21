@@ -248,7 +248,8 @@ export const DeleteRuleSchema = z.object({
 
 export type DeleteRuleReq = z.infer<typeof DeleteRuleSchema>;
 
-export type DeleteRuleRes = { success: boolean };
+/** Void delete success body; transport serializes as `data: null`. */
+export type DeleteRuleRes = null;
 
 // ============================================================================
 // LIST Operation - 列出规则

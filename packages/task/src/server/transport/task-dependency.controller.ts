@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, isOk, ok } from '@dailyuse/contracts/result';
 import type { TaskDependencyClientDTO, DependencyType } from '@dailyuse/contracts/task';
 import type { DependencyChainClientDTO } from '@dailyuse/contracts/task';
 import {
@@ -109,8 +109,13 @@ export class TaskDependencyController {
   /**
    * Delete a dependency
    */
-  async deleteDependency(id: string): Promise<Result<void>> {
-    return await this.useCases.deleteDependency(id);
+  async deleteDependency(id: string): Promise<Result<null>> {
+    const result = await this.useCases.deleteDependency(id);
+    if (!isOk(result)) {
+      return result as Result<null>;
+    }
+    // Serialize as data:null (no Result.void / undefined dual-track).
+    return ok(null);
   }
 
   /**

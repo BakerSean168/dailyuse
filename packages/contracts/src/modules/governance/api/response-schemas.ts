@@ -15,7 +15,7 @@ import type { CodeSnippetDTO } from '../value-objects/code-snippet';
 import type { RuleTagDTO } from '../value-objects/rule-tag';
 import type { RuleClientDTO } from '../aggregates/rule-client';
 import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
-import type { DeleteRuleRes, ListRulesRes, SearchRulesRes } from './rules';
+import type { ListRulesRes, SearchRulesRes } from './rules';
 import type { GetRuleRevisionsRes } from './rule-revisions';
 
 export const RuleTagDTOSchema: z.ZodType<RuleTagDTO> = z.object({
@@ -82,6 +82,3 @@ export const GetRuleRevisionsResSchema: z.ZodType<GetRuleRevisionsRes> = z.objec
   pageSize: z.number(),
 });
 
-export const DeleteRuleResSchema: z.ZodType<DeleteRuleRes> = z.object({
-  success: z.boolean(),
-});

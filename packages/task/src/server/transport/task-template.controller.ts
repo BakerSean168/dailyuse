@@ -210,12 +210,13 @@ export class TaskTemplateController {
   /**
    * Delete template
    */
-  async deleteTemplate(id: string): Promise<Result<void>> {
+  async deleteTemplate(id: string): Promise<Result<null>> {
     const result = await this.useCases.deleteTemplate(id);
     if (!isOk(result)) {
-      return result as Result<void>;
+      return result as Result<null>;
     }
-    return ok(undefined);
+    // Serialize as data:null (no { success: boolean } / undefined dual-track).
+    return ok(null);
   }
 
   /**

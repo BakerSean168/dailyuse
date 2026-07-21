@@ -394,15 +394,14 @@ describe('TaskInstanceController', () => {
       expect(useCases.deleteInstance).toHaveBeenCalledWith('inst_1');
     });
 
-    it('should pass through use case result directly', async () => {
-      const expectedResult = ok(undefined);
+    it('should normalize success to ok(null)', async () => {
       (useCases.deleteInstance as ReturnType<typeof vi.fn>).mockResolvedValue(
-        expectedResult,
+        ok(undefined),
       );
 
       const result = await controller.deleteInstance('inst_1');
 
-      expect(result).toBe(expectedResult);
+      expect(result).toEqual(ok(null));
     });
   });
 });

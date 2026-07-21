@@ -41,7 +41,7 @@ describe('DeleteRuleUseCase', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.data.success).toBe(true);
+    expect(result.data).toBeNull();
     expect(deleteFn).toHaveBeenCalledWith('rule-id-1');
   });
 
@@ -59,7 +59,7 @@ describe('DeleteRuleUseCase', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.data.success).toBe(true);
+    expect(result.data).toBeNull();
     expect(deprecate).toHaveBeenCalledWith(`Deleted by user ${testCx.identityId}`);
     expect(saveFn).toHaveBeenCalledWith(rule);
   });
@@ -76,7 +76,7 @@ describe('DeleteRuleUseCase', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.data.success).toBe(true);
+    expect(result.data).toBeNull();
   });
 
   it('should return NOT_FOUND when rule does not exist', async () => {

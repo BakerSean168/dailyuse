@@ -7,6 +7,7 @@
  */
 
 import { ipcMain } from 'electron';
+import { ok } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import {
@@ -66,9 +67,11 @@ export const GovernanceElectronModule: IElectronModule = {
     );
 
     ipcMain.handle(GovernanceChannels.RULE_DELETE, (_event, payload: DeleteRuleReq) =>
-      withAuthenticatedValue(ctx, async (requestContext) =>
-        controller.deleteRule(payload, requestContext),
-      ),
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await controller.deleteRule(payload, requestContext);
+        if (!result.ok) return result;
+        return ok(null);
+      }),
     );
 
     ipcMain.handle(

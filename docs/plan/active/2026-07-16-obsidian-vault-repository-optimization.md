@@ -1320,6 +1320,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > goal focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十轮）：折叠 task/governance void 删除双轨——task template
+> delete 去掉 `{ success: true }`；OpenAPI 已有 `z.null()` 的 template/instance/dependency
+> delete 在 controller/electron 统一 `ok(null)`；governance `DeleteRuleRes` 改为 `null`，
+> 删除 `DeleteRuleResSchema`，OpenAPI/controller/electron 对齐 `z.null()`/`ok(null)`。
+> 补 task/governance void-success envelope surfaces。§13.2 仍为部分/外部阻塞。验证：
+> task + governance focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

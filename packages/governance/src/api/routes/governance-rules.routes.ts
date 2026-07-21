@@ -8,7 +8,6 @@ import { Router } from 'express';
 import { RouteRegistrar, successResponse, errorResponse } from '@dailyuse/utils/result';
 import {
   CreateRuleSchema,
-  DeleteRuleResSchema,
   ListRulesQuerySchema,
   SearchRulesQuerySchema,
   UpdateRuleSchema,
@@ -178,7 +177,7 @@ export function registerGovernanceRulesRoutes(
       summary: '删除规则',
       request: { params: z.object({ id: brandedId<RuleId>() }) },
       responses: {
-        200: successResponse(DeleteRuleResSchema, '删除成功'),
+        200: successResponse(z.null(), '删除成功'),
         404: errorResponse('规则不存在'),
         403: errorResponse('权限不足'),
       },

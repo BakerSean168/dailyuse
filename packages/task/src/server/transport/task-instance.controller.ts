@@ -155,8 +155,13 @@ export class TaskInstanceController {
   /**
    * Delete instance
    */
-  async deleteInstance(id: string): Promise<Result<void>> {
-    return await this.useCases.deleteInstance(id);
+  async deleteInstance(id: string): Promise<Result<null>> {
+    const result = await this.useCases.deleteInstance(id);
+    if (!isOk(result)) {
+      return result as Result<null>;
+    }
+    // Serialize as data:null (no Result.void / undefined dual-track).
+    return ok(null);
   }
 
   /**

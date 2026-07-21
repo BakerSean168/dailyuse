@@ -35,13 +35,13 @@ export class DeleteTaskTemplateUseCase {
       });
   }
 
-  async execute(id: string, soft = false): Promise<Result<{ success: boolean }>> {
+  async execute(id: string, soft = false): Promise<Result<void>> {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
         const template = await templateRepository.findById(id);
         if (!template) {
           // Idempotent delete: if the template is already gone, treat it as success.
-          return ok({ success: true });
+          return ok(undefined);
         }
 
         template.softDelete();
@@ -52,7 +52,7 @@ export class DeleteTaskTemplateUseCase {
           await templateRepository.delete(id);
         }
 
-        return ok({ success: true });
+        return ok(undefined);
       });
     } catch (caughtError) {
       this.logger.error('Failed to delete task template', { error: caughtError });

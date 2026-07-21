@@ -12,6 +12,7 @@
  */
 
 import { ipcMain } from 'electron';
+import { ok } from '@dailyuse/contracts/result';
 import {
   TaskChannels,
   type IElectronDatabase,
@@ -169,9 +170,11 @@ export function createTaskElectronModule(
         ),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          templateController.deleteTemplate(payload?.id ?? payload),
-        ),
+        withAuthenticatedValue(ctx, async () => {
+          const result = await templateController.deleteTemplate(payload?.id ?? payload);
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_ARCHIVE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
@@ -248,9 +251,11 @@ export function createTaskElectronModule(
         ),
       );
       ipcMain.handle(TaskChannels.INSTANCE_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          instanceController.deleteInstance(payload?.id ?? payload),
-        ),
+        withAuthenticatedValue(ctx, async () => {
+          const result = await instanceController.deleteInstance(payload?.id ?? payload);
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
       ipcMain.handle(TaskChannels.INSTANCE_COMPLETE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
@@ -302,9 +307,11 @@ export function createTaskElectronModule(
         ),
       );
       ipcMain.handle(TaskChannels.DEPENDENCY_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          dependencyController.deleteDependency(payload?.id ?? payload),
-        ),
+        withAuthenticatedValue(ctx, async () => {
+          const result = await dependencyController.deleteDependency(payload?.id ?? payload);
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
       ipcMain.handle(TaskChannels.DEPENDENCY_UPDATE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>

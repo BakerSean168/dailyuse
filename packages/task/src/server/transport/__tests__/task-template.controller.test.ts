@@ -383,15 +383,14 @@ describe('TaskTemplateController', () => {
       expect(useCases.deleteTemplate).toHaveBeenCalledWith('tmpl_1');
     });
 
-    it('should pass through use case result', async () => {
-      const expectedResult = ok(undefined);
+    it('should normalize success to ok(null)', async () => {
       (useCases.deleteTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        expectedResult,
+        ok(undefined),
       );
 
       const result = await controller.deleteTemplate('tmpl_1');
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toEqual(ok(null));
     });
   });
 
