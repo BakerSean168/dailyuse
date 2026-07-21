@@ -7,6 +7,8 @@
  * AuthApp password/GitHub → Desktop password/guest → guest upgrade vault ownership
  * rebind (profile path stable) → guest cloud knowledge repo boundary.
  */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { RouteLocationNormalized } from 'vue-router';
 import { createAuthGuard } from '../router/guards';
@@ -240,4 +242,45 @@ describe('ADR-034 three-login same-fixture journey', () => {
     expect(THREE_LOGIN_SURFACE_MATRIX.desktop.guest).toBe(true);
     expect(isServerDisclosureAvailable('desktop', true)).toBe(false);
   });
+
+  it('step 9: product surface source files lock the three-login matrix boundaries', () => {
+    const authPlatformEntry = readFileSync(
+      resolve(__dirname, './AuthPlatformEntry.vue'),
+      'utf8',
+    );
+    const desktopAuth = readFileSync(resolve(__dirname, './DesktopAuthView.vue'), 'utf8');
+    const webAuth = readFileSync(
+      resolve(__dirname, '../../../../apps/web/src/auth/WebAuthView.vue'),
+      'utf8',
+    );
+    const dataPortability = readFileSync(
+      resolve(__dirname, '../modules/setting/composables/useDataPortability.ts'),
+      'utf8',
+    );
+
+    // Web shell entry only hard-redirects; never hosts password/guest/GitHub itself.
+    expect(authPlatformEntry).toContain('window.location.replace');
+    expect(authPlatformEntry).toContain('data-testid="auth-platform-entry"');
+    expect(authPlatformEntry).not.toContain('enterGuestMode');
+    expect(authPlatformEntry).not.toContain('login-github-button');
+
+    // Desktop owns password + guest; never GitHub OAuth login button.
+    expect(desktopAuth).toContain('enterGuestMode');
+    expect(desktopAuth).toContain('data-testid="guest-mode-button"');
+    expect(desktopAuth).toContain('data-testid="desktop-login-password"');
+    expect(desktopAuth).not.toContain('login-github-button');
+    expect(desktopAuth).not.toMatch(/Continue with GitHub/);
+
+    // AuthApp (WebAuthView) owns password + GitHub; no guest mode.
+    expect(webAuth).toContain('data-testid="login-github-button"');
+    expect(webAuth).not.toContain('enterGuestMode');
+    expect(webAuth).not.toContain('guest-mode-button');
+
+    // Server-held disclosure is gated off Desktop by DESKTOP_AUTH_API_KEY presence.
+    expect(dataPortability).toContain('DESKTOP_AUTH_API_KEY');
+    expect(dataPortability).toContain(
+      'const isServerDisclosureAvailable = ref(service !== undefined && desktopApi === undefined);',
+    );
+  });
+
 });

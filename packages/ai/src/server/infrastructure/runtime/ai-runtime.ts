@@ -1263,7 +1263,7 @@ export function createAgentRuntimeService(
           ok(runs.filter((run) => run.identityId === cx.identityId)),
         );
     },
-    getEvents(
+    async getEvents(
       runId: string,
       cx: ExecutionContext,
       requestId?: string,
@@ -1273,14 +1273,25 @@ export function createAgentRuntimeService(
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port
-        .getEvents({
-          identityId: cx.identityId,
-          runId,
-          requestId,
-          signal,
-        })
-        .then(ok);
+      // Ownership must fail closed before returning run events (residual 103).
+      const snapshot = await port.getRun({
+        identityId: cx.identityId,
+        runId,
+        requestId,
+        signal,
+      });
+      const ownership = ensureAgentRunOwnedByIdentity(snapshot, cx.identityId);
+      if (!ownership.ok) {
+        return error(ownership.error.code, ownership.error.message);
+      }
+
+      const events = await port.getEvents({
+        identityId: cx.identityId,
+        runId,
+        requestId,
+        signal,
+      });
+      return ok(events);
     },
   };
 }

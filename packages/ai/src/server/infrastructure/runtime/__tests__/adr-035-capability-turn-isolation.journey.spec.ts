@@ -5,7 +5,7 @@
  * fixture series: capability plan → start gate → confirm-only mutation →
  * cross-capability fail-closed → identity isolation → vault path safety →
  * first-phase tool surface → multi-engine fail-closed → resume ownership before
- * host side-effects.
+ * host side-effects → getEvents ownership isolation.
  *
  * This is host-boundary integration coverage (not a full Playwright E2E and not
  * a multi-engine Turn Engine suite). Complements the scattered unit specs.
@@ -792,6 +792,53 @@ describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
       expect(shortcutPath.error.code).toBe('FORBIDDEN');
     }
     expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.getRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        identityId: FIXTURE.identity,
+        runId: FIXTURE.runId,
+      }),
+    );
+  });
+
+
+  it('step 14: foreign identity getEvents is FORBIDDEN (no event leakage)', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const foreignRun = baseRun('completed', {
+      run: {
+        ...baseRun('completed').run,
+        identityId: FIXTURE.foreignIdentity,
+      },
+    });
+    const leakedEvents = [
+      {
+        eventId: 'event-foreign-1',
+        runId: FIXTURE.runId,
+        sequence: 0,
+        type: 'node.completed' as const,
+        createdAt: 1,
+        data: { node: 'secret', durationMs: 1 },
+      },
+    ];
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(foreignRun);
+    vi.mocked(agentRuntimePort.getEvents).mockResolvedValueOnce(leakedEvents);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createDeps({
+        agentRuntimePort,
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.getEvents(
+      FIXTURE.runId,
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-events`,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('FORBIDDEN');
+    }
+    // Must not return foreign events even if the port would have leaked them.
+    expect(agentRuntimePort.getEvents).not.toHaveBeenCalled();
     expect(agentRuntimePort.getRun).toHaveBeenCalledWith(
       expect.objectContaining({
         identityId: FIXTURE.identity,

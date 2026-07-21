@@ -1563,6 +1563,45 @@ describe('createRemoteAIServiceRuntime', () => {
     expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
   });
 
+  it('getEvents refuses foreign-owned runs before returning events (residual 103)', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const foreignRun = createAgentRunResult('completed', {
+      run: {
+        ...createAgentRunResult('completed').run,
+        identityId: 'identity-other',
+      },
+    });
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(foreignRun);
+    vi.mocked(agentRuntimePort.getEvents).mockResolvedValueOnce([
+      {
+        eventId: 'event-foreign-1',
+        runId: 'run-1',
+        sequence: 0,
+        type: 'node.completed',
+        createdAt: 1,
+        data: { node: 'secret', durationMs: 1 },
+      },
+    ]);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.getEvents(
+      'run-1',
+      { identityId: 'identity-1' },
+      'request-foreign-events',
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('FORBIDDEN');
+    }
+    expect(agentRuntimePort.getEvents).not.toHaveBeenCalled();
+  });
+
   it('filters foreign identity runs out of list results as defense-in-depth', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     vi.mocked(agentRuntimePort.listRuns).mockResolvedValueOnce([

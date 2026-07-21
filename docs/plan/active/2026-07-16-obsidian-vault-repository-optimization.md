@@ -1433,6 +1433,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 外部阻塞）。验证：ai journey/runtime focused specs + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百零三轮）：Agent 事件隔离——`getEvents` 在返回事件前经
+> `getRun` + `ensureAgentRunOwnedByIdentity` fail-closed，foreign-owned run 不调用底层
+> getEvents、不泄露事件；ADR-035 journey 增 step 14；三入口 matrix step 9 固化
+> AuthPlatformEntry / DesktopAuthView / WebAuthView / useDataPortability 源码边界。
+> §13.2 三入口与 Agent 项证据再增强，仍为部分（缺完整 multi-surface Playwright/Electron
+> E2E 与 multi-engine Turn Engine E2E；真实 GitHub fixture 外部阻塞）。验证：ai journey/
+> runtime + app-vue three-login matrix + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1472,6 +1482,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四十轮：`three-login-surface.matrix.spec.ts` 增加 step 6（GitHub 登录仅身份、不蕴含 knowledge-repo App 授权）；
   残留四十三轮：三入口 matrix step 7 固化无 phone/SMS；auth identity 仓储删除 findByPhone/existsByPhone；
   残留七十五轮：matrix step 8 固化 server-held data disclosure 为 Web-only（Desktop 不暴露）；
+  残留一百零三轮：matrix step 9 固化 AuthPlatformEntry/DesktopAuthView/WebAuthView/
+  useDataPortability 源码边界与矩阵一致。
   仍缺：真实跨端 Playwright/Electron 一揽子 E2E（含真实 OAuth/GitHub fixture）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
@@ -1517,8 +1529,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百/一百零一轮：AI 客户端 agent/list/start/resume 等 Result 端口与 dead stream 双接口清理
   已完成（transport 边界不再 throw-unwrap）；仍不替代完整 multi-engine Turn Engine E2E。
   残留一百零二轮：journey step 13 + runtime 在 side-effect 前 ownership fail-closed；MSW
-  governance void delete 对齐 data:null。仍缺完整 multi-engine Turn Engine E2E 与跨端对抗
-  Playwright/Electron。
+  governance void delete 对齐 data:null。
+  残留一百零三轮：journey step 14 getEvents ownership；三入口 matrix step 9 源码边界锁定。
+  仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**
