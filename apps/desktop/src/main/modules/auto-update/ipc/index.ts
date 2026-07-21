@@ -9,6 +9,7 @@
  */
 
 import { ipcMain, BrowserWindow } from 'electron';
+import { AutoUpdateChannels } from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils/logger';
 import { type AutoUpdateManager, type UpdateConfig } from '../auto-update-manager';
 
@@ -29,7 +30,7 @@ export function registerAutoUpdateIpcHandlers(
   }
 
   // Check for updates
-  ipcMain.handle('auto-update:check', async () => {
+  ipcMain.handle(AutoUpdateChannels.CHECK, async () => {
     try {
       const result = await manager.checkForUpdates();
       return { success: true, data: result };
@@ -40,7 +41,7 @@ export function registerAutoUpdateIpcHandlers(
   });
 
   // Download update
-  ipcMain.handle('auto-update:download', async () => {
+  ipcMain.handle(AutoUpdateChannels.DOWNLOAD, async () => {
     try {
       const result = await manager.downloadUpdate();
       return { success: result };
@@ -51,7 +52,7 @@ export function registerAutoUpdateIpcHandlers(
   });
 
   // Quit and install
-  ipcMain.handle('auto-update:install', async () => {
+  ipcMain.handle(AutoUpdateChannels.INSTALL, async () => {
     try {
       manager.quitAndInstall();
       return { success: true };
@@ -62,7 +63,7 @@ export function registerAutoUpdateIpcHandlers(
   });
 
   // Get current status
-  ipcMain.handle('auto-update:status', async () => {
+  ipcMain.handle(AutoUpdateChannels.STATUS, async () => {
     try {
       const status = manager.getStatus();
       return { success: true, data: status };
@@ -73,7 +74,7 @@ export function registerAutoUpdateIpcHandlers(
   });
 
   // Update configuration
-  ipcMain.handle('auto-update:config', async (_, config: Partial<UpdateConfig>) => {
+  ipcMain.handle(AutoUpdateChannels.CONFIG, async (_, config: Partial<UpdateConfig>) => {
     try {
       manager.updateConfig(config);
       return { success: true };

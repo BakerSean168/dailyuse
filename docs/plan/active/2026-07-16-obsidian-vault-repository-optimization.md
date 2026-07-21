@@ -1139,6 +1139,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：desktop focused surface/specs + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留六十六轮）：新增 contracts `AutoUpdateChannels`，desktop
+> auto-update IPC handlers 从字符串频道折叠到 contracts 单一真值。补 contracts/desktop
+> surface specs。§13.2 仍为部分/外部阻塞。验证：contracts + desktop focused specs +
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

@@ -288,6 +288,14 @@ export const DevChannels = {
   MEMORY_FORCE_GC: 'dev:memory:force-gc',
 } as const;
 
+export const AutoUpdateChannels = {
+  CHECK: 'auto-update:check',
+  DOWNLOAD: 'auto-update:download',
+  INSTALL: 'auto-update:install',
+  STATUS: 'auto-update:status',
+  CONFIG: 'auto-update:config',
+} as const;
+
 export const DataPortabilityChannels = {
   EXPORT: 'data-portability:export',
   IMPORT: 'data-portability:import',
