@@ -27,8 +27,6 @@
       "@dailyuse/goal/schedule-projection": [
         "../../packages/goal/src/schedule-projection/index.ts"
       ],
-      "@dailyuse/editor/client": ["../../packages/editor/src/client/index.ts"],
-      "@dailyuse/editor/electron": ["../../packages/editor/src/electron/index.ts"],
       "@dailyuse/task/client": ["../../packages/task/src/client/index.ts"],
       "@dailyuse/task/electron": ["../../packages/task/src/electron/index.ts"],
       "@dailyuse/task/schedule-execution": [

@@ -14,7 +14,6 @@
       "@dailyuse/app-vue/web-entry": ["packages/app-vue/src/web-entry.ts"],
       "@dailyuse/app-vue": ["packages/app-vue/src/index.ts"],
       "@dailyuse/goal/client": ["packages/goal/dist/client/index.d.ts"],
-      "@dailyuse/editor/client": ["packages/editor/dist/client/index.d.ts"],
       "@dailyuse/ai/client": ["packages/ai/dist/client/index.d.ts"],
       "@dailyuse/reminder/client": ["packages/reminder/dist/client/index.d.ts"],
       "@dailyuse/schedule/client": ["packages/schedule/dist/client/index.d.ts"],

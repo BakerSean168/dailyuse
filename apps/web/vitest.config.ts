@@ -21,7 +21,6 @@ const sharedConfig = createSharedConfig({
     '@dailyuse/reminder/client': '../../packages/reminder/src/client/index.ts',
     '@dailyuse/schedule/client': '../../packages/schedule/src/client/index.ts',
     '@dailyuse/notification/client': '../../packages/notification/src/client/index.ts',
-    '@dailyuse/editor/client': '../../packages/editor/src/client/index.ts',
     '@dailyuse/ai/client': '../../packages/ai/src/client/index.ts',
     '@dailyuse/goal/client': '../../packages/goal/src/client/index.ts',
     '@dailyuse/repository/client': '../../packages/repository/src/client/index.ts',

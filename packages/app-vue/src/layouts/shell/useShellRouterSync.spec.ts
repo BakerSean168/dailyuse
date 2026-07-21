@@ -15,7 +15,8 @@ describe('moduleForPath (V2 §3 module matrix + settings scene D)', () => {
     expect(moduleForPath('/tasks')).toBe('task');
     expect(moduleForPath('/tasks/t-1')).toBe('task');
     expect(moduleForPath('/repository')).toBe('note');
-    expect(moduleForPath('/note/n-1')).toBe('note');
+    // retired /note/:id editor route no longer maps into the shell
+    expect(moduleForPath('/note/n-1')).toBeNull();
     expect(moduleForPath('/governance')).toBe('note');
     expect(moduleForPath('/governance/r-1/history')).toBe('note');
     expect(moduleForPath('/reminders')).toBe('reminder');
@@ -44,7 +45,7 @@ describe('moduleForPath (V2 §3 module matrix + settings scene D)', () => {
   });
 
   it('does not treat prefix-similar paths as module routes', () => {
-    // '/notes' is not '/note/:id' nor '/notifications'
+    // '/notes' is not '/note' nor '/notifications'
     expect(moduleForPath('/notes')).toBeNull();
     expect(moduleForPath('/goalsmith')).toBeNull();
   });

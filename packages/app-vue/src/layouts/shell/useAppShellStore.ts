@@ -229,7 +229,12 @@ export const useAppShellStore = defineStore('app-shell', {
      * Settings 已升级为独立场景，不再属于 BusinessTab。
      */
     sanitizeLegacyTabs(): void {
-      const next = this.tabs.filter((tab) => isBusinessModule(tab.module));
+      const next = this.tabs.filter(
+        (tab) =>
+          isBusinessModule(tab.module) &&
+          // retired existing-note editor routes (/note/:id) no longer exist
+          !(tab.route === '/note' || tab.route.startsWith('/note/') || tab.route.startsWith('/note?')),
+      );
       if (next.length === this.tabs.length) return;
       this.tabs = next;
       if (this.activeTabId && !next.some((tab) => tab.id === this.activeTabId)) {

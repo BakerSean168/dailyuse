@@ -36,7 +36,6 @@
     "@dailyuse/reminder": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/schedule": "workspace:*",
-    "@dailyuse/editor": "workspace:*",
     "@dailyuse/ai": "workspace:*",
     "@dailyuse/notification": "workspace:*",
     "@dailyuse/setting": "workspace:*",

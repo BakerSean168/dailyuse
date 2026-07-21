@@ -25,7 +25,6 @@ const webDevWorkspaceEntries = [
   ['@dailyuse/reminder/client', 'packages/reminder/src/client/index.ts'],
   ['@dailyuse/notification/client', 'packages/notification/src/client/index.ts'],
   ['@dailyuse/repository/client', 'packages/repository/src/client/index.ts'],
-  ['@dailyuse/editor/client', 'packages/editor/src/client/index.ts'],
   ['@dailyuse/task/client', 'packages/task/src/client/index.ts'],
   ['@dailyuse/ai/client', 'packages/ai/src/client/index.ts'],
 ] as const;

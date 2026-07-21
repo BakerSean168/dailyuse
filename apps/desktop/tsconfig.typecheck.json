@@ -19,8 +19,6 @@
       "@dailyuse/ai/ports": ["packages/ai/dist/ports/index.d.ts"],
       "@dailyuse/goal/client": ["packages/goal/dist/client/index.d.ts"],
       "@dailyuse/goal/electron": ["packages/goal/dist/electron/index.d.ts"],
-      "@dailyuse/editor/client": ["packages/editor/dist/client/index.d.ts"],
-      "@dailyuse/editor/electron": ["packages/editor/dist/electron/index.d.ts"],
       "@dailyuse/task/client": ["packages/task/dist/client/index.d.ts"],
       "@dailyuse/task/electron": ["packages/task/dist/electron/index.d.ts"],
       "@dailyuse/schedule/client": ["packages/schedule/dist/client/index.d.ts"],

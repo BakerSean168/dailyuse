@@ -13,11 +13,6 @@
       "@dailyuse/http-client": ["packages/http-client/src/index.ts"],
       "@dailyuse/utils": ["packages/utils/src/index.ts"],
       "@dailyuse/utils/*": ["packages/utils/src/*/index.ts", "packages/utils/src/*.ts"],
-      "@dailyuse/editor": ["packages/editor/src/index.ts"],
-      "@dailyuse/editor/*": [
-        "packages/editor/src/*/index.ts",
-        "packages/editor/src/*.ts"
-      ],
       "@dailyuse/dashboard": ["packages/dashboard/src/index.ts"],
       "@dailyuse/dashboard/*": [
         "packages/dashboard/src/*/index.ts",

@@ -327,9 +327,6 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../../packages/domain-shared
-      '@dailyuse/editor':
-        specifier: workspace:*
-        version: link:../../packages/editor
       '@dailyuse/goal':
         specifier: workspace:*
         version: link:../../packages/goal
@@ -668,9 +665,6 @@ importers:
         specifier: 4.0.2
         version: 4.0.2
     devDependencies:
-      '@dailyuse/editor':
-        specifier: workspace:*
-        version: link:../../packages/editor
       '@electron/rebuild':
         specifier: 4.2.0
         version: 4.2.0
@@ -1397,9 +1391,6 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
-      '@dailyuse/editor':
-        specifier: workspace:*
-        version: link:../editor
       '@dailyuse/goal':
         specifier: workspace:*
         version: link:../goal

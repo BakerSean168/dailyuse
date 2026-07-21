@@ -30,8 +30,6 @@ const desktopRendererDevWorkspaceEntries = [
   ['@dailyuse/reminder/electron', 'packages/reminder/src/electron/index.ts'],
   ['@dailyuse/notification/client', 'packages/notification/src/client/index.ts'],
   ['@dailyuse/notification/electron', 'packages/notification/src/electron/index.ts'],
-  ['@dailyuse/editor/client', 'packages/editor/src/client/index.ts'],
-  ['@dailyuse/editor/electron', 'packages/editor/src/electron/index.ts'],
 ] as const;
 
 const nativeModules = electronNativeModules;
