@@ -1083,6 +1083,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > ipc/module-handler contracts + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留五十八轮）：删除 task electron 不支持的 `task:instance:update`
+> 死通道（仅抛错、无 adapter 消费者）；task electron 本地 `Ch` 折叠到 contracts
+> `TaskChannels`。补 task electron/contracts surface specs。§13.2 仍为部分/外部阻塞。
+> 验证：task/contracts focused specs + desktop ipc/module-handler contracts + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

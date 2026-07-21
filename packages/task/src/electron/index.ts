@@ -12,7 +12,12 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronDatabase, IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import {
+  TaskChannels,
+  type IElectronDatabase,
+  type IElectronModule,
+  type IElectronModuleContext,
+} from '@dailyuse/contracts/electron';
 import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
 import {
   createTaskPowerSyncModule,
@@ -32,40 +37,7 @@ import { withAuthenticatedValue } from './authenticated-ipc';
 const logger = createLogger('TaskElectron');
 
 
-const Ch = {
-  TEMPLATE_LIST: 'task:template:list',
-  TEMPLATE_GET: 'task:template:get',
-  TEMPLATE_GRAPH: 'task:template:graph',
-  TEMPLATE_CREATE: 'task:template:create',
-  TEMPLATE_UPDATE: 'task:template:update',
-  TEMPLATE_DELETE: 'task:template:delete',
-  TEMPLATE_ARCHIVE: 'task:template:archive',
-  TEMPLATE_RESTORE: 'task:template:restore',
-  TEMPLATE_PAUSE: 'task:template:pause',
-  TEMPLATE_GENERATE_INSTANCES: 'task:template:generate-instances',
-  TEMPLATE_GET_INSTANCES: 'task:template:get-instances',
-  TEMPLATE_GET_BY_PRIORITY: 'task:template:get-by-priority',
-  TEMPLATE_BIND_GOAL: 'task:template:bind-goal',
-  TEMPLATE_UNBIND_GOAL: 'task:template:unbind-goal',
-  INSTANCE_LIST: 'task:instance:list',
-  INSTANCE_LIST_BY_DATE_RANGE: 'task:instance:list-by-date-range',
-  INSTANCE_GET: 'task:instance:get',
-  INSTANCE_CREATE: 'task:instance:create',
-  INSTANCE_UPDATE: 'task:instance:update',
-  INSTANCE_DELETE: 'task:instance:delete',
-  INSTANCE_COMPLETE: 'task:instance:complete',
-  INSTANCE_SKIP: 'task:instance:skip',
-  INSTANCE_CHECK_EXPIRED: 'task:instance:check-expired',
-  DEPENDENCY_CREATE: 'task:dependency:create',
-  DEPENDENCY_LIST: 'task:dependency:list',
-  DEPENDENCY_DEPENDENTS: 'task:dependency:dependents',
-  DEPENDENCY_CHAIN: 'task:dependency:chain',
-  DEPENDENCY_VALIDATE: 'task:dependency:validate',
-  DEPENDENCY_DELETE: 'task:dependency:delete',
-  DEPENDENCY_UPDATE: 'task:dependency:update',
-} as const;
-
-const channels = Object.values(Ch);
+const allChannels = Object.values(TaskChannels);
 let activeTaskModule: TaskModuleInstance | null = null;
 let taskTemplateRepository: ITaskTemplateRepository | null = null;
 let taskInstanceRepository: ITaskInstanceRepository | null = null;
@@ -158,7 +130,7 @@ export function createTaskElectronModule(
       //    IPC 处理器 — 通过传输层处理器委托给用例
 
       // --- Template channels ---
-      ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_LIST, (_, params) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           templateController.listTemplates(
             normalizeTemplateListParams(
@@ -169,13 +141,13 @@ export function createTaskElectronModule(
           ),
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_GET, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_GET, (_, payload) =>
         templateController.getTemplate(
           payload?.id ?? payload,
           payload?.includeChildren ?? false,
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_GRAPH, (_, params) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_GRAPH, (_, params) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           templateController.getTaskGraph(
             normalizeTemplateListParams(
@@ -186,42 +158,42 @@ export function createTaskElectronModule(
           ),
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_CREATE, (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) => {
           return templateController.createTemplate(dto, requestContext);
         }),
       );
-      ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_UPDATE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           templateController.updateTemplate(payload?.id, payload?.request),
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_DELETE, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_DELETE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           templateController.deleteTemplate(payload?.id ?? payload),
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_ARCHIVE, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_ARCHIVE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           templateController.archiveTemplate(payload?.id ?? payload),
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_RESTORE, (_, payload) =>
         withAuthenticatedValue(ctx, async () => {
           return templateController.activateTemplate(payload?.id ?? payload);
         }),
       );
-      ipcMain.handle(Ch.TEMPLATE_PAUSE, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_PAUSE, (_, payload) =>
         withAuthenticatedValue(ctx, async () => {
           return templateController.pauseTemplate(payload?.id ?? payload);
         }),
       );
-      ipcMain.handle(Ch.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           templateController.generateInstances(payload?.templateId, payload?.request),
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_GET_INSTANCES, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_GET_INSTANCES, (_, payload) =>
         withAuthenticatedValue(ctx, async () => {
           return templateController.getInstancesByTemplate(payload?.templateId, {
             from: payload?.from,
@@ -229,24 +201,24 @@ export function createTaskElectronModule(
           });
         }),
       );
-      ipcMain.handle(Ch.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           templateController.listByPriority(requestContext, payload?.params?.limit),
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_BIND_GOAL, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_BIND_GOAL, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           templateController.bindToGoal(payload?.templateId, payload?.request),
         ),
       );
-      ipcMain.handle(Ch.TEMPLATE_UNBIND_GOAL, (_, payload) =>
+      ipcMain.handle(TaskChannels.TEMPLATE_UNBIND_GOAL, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           templateController.unbindFromGoal(payload?.templateId),
         ),
       );
 
       // --- Instance channels ---
-      ipcMain.handle(Ch.INSTANCE_LIST, (_, params) =>
+      ipcMain.handle(TaskChannels.INSTANCE_LIST, (_, params) =>
         withAuthenticatedValue(ctx, async (requestContext) => {
           if (params?.templateId) {
             return handlers.instance.listByTemplate(params.templateId);
@@ -259,7 +231,7 @@ export function createTaskElectronModule(
           return handlers.instance.listByAccount(requestContext.identityId);
         }),
       );
-      ipcMain.handle(Ch.INSTANCE_LIST_BY_DATE_RANGE, (_, params) =>
+      ipcMain.handle(TaskChannels.INSTANCE_LIST_BY_DATE_RANGE, (_, params) =>
         withAuthenticatedValue(ctx, async (requestContext) => {
           return instanceController.getInstancesByDateRange(requestContext.identityId, {
             startDate: params?.startDate ?? Date.now(),
@@ -267,40 +239,37 @@ export function createTaskElectronModule(
           });
         }),
       );
-      ipcMain.handle(Ch.INSTANCE_GET, (_, payload) =>
+      ipcMain.handle(TaskChannels.INSTANCE_GET, (_, payload) =>
         instanceController.getInstance(payload?.id ?? payload),
       );
-      ipcMain.handle(Ch.INSTANCE_CREATE, (_, payload) =>
+      ipcMain.handle(TaskChannels.INSTANCE_CREATE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           instanceController.startInstance(payload?.id ?? payload),
         ),
       );
-      ipcMain.handle(Ch.INSTANCE_UPDATE, () => {
-        throw new Error('task:instance:update is not supported');
-      });
-      ipcMain.handle(Ch.INSTANCE_DELETE, (_, payload) =>
+      ipcMain.handle(TaskChannels.INSTANCE_DELETE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           instanceController.deleteInstance(payload?.id ?? payload),
         ),
       );
-      ipcMain.handle(Ch.INSTANCE_COMPLETE, (_, payload) =>
+      ipcMain.handle(TaskChannels.INSTANCE_COMPLETE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           instanceController.completeInstance(payload?.id ?? payload, payload?.request),
         ),
       );
-      ipcMain.handle(Ch.INSTANCE_SKIP, (_, payload) =>
+      ipcMain.handle(TaskChannels.INSTANCE_SKIP, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           instanceController.skipInstance(payload?.id ?? payload, payload?.request),
         ),
       );
-      ipcMain.handle(Ch.INSTANCE_CHECK_EXPIRED, () =>
+      ipcMain.handle(TaskChannels.INSTANCE_CHECK_EXPIRED, () =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           instanceController.checkExpired(requestContext.identityId),
         ),
       );
 
       // --- Dependency channels ---
-      ipcMain.handle(Ch.DEPENDENCY_CREATE, (_, payload) =>
+      ipcMain.handle(TaskChannels.DEPENDENCY_CREATE, (_, payload) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           dependencyController.createDependency(
             payload?.taskId,
@@ -309,22 +278,22 @@ export function createTaskElectronModule(
           ),
         ),
       );
-      ipcMain.handle(Ch.DEPENDENCY_LIST, (_, payload) =>
+      ipcMain.handle(TaskChannels.DEPENDENCY_LIST, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           dependencyController.getDependencies(payload?.taskId),
         ),
       );
-      ipcMain.handle(Ch.DEPENDENCY_DEPENDENTS, (_, payload) =>
+      ipcMain.handle(TaskChannels.DEPENDENCY_DEPENDENTS, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           dependencyController.getDependents(payload?.taskId),
         ),
       );
-      ipcMain.handle(Ch.DEPENDENCY_CHAIN, (_, payload) =>
+      ipcMain.handle(TaskChannels.DEPENDENCY_CHAIN, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           dependencyController.getDependencyChain(payload?.taskId),
         ),
       );
-      ipcMain.handle(Ch.DEPENDENCY_VALIDATE, (_, payload) =>
+      ipcMain.handle(TaskChannels.DEPENDENCY_VALIDATE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           dependencyController.validateDependency({
             predecessorTaskId: payload?.predecessorTaskId,
@@ -332,12 +301,12 @@ export function createTaskElectronModule(
           }),
         ),
       );
-      ipcMain.handle(Ch.DEPENDENCY_DELETE, (_, payload) =>
+      ipcMain.handle(TaskChannels.DEPENDENCY_DELETE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           dependencyController.deleteDependency(payload?.id ?? payload),
         ),
       );
-      ipcMain.handle(Ch.DEPENDENCY_UPDATE, (_, payload) =>
+      ipcMain.handle(TaskChannels.DEPENDENCY_UPDATE, (_, payload) =>
         withAuthenticatedValue(ctx, async () =>
           dependencyController.updateDependency(payload?.id, payload?.request),
         ),
@@ -347,7 +316,7 @@ export function createTaskElectronModule(
     },
 
     destroy(): void {
-      for (const ch of channels) {
+      for (const ch of allChannels) {
         ipcMain.removeHandler(ch);
       }
       activeTaskModule?.dispose();
