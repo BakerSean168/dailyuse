@@ -39,6 +39,11 @@ export interface ITaskInstanceRepository {
   findById(id: string): Promise<TaskInstance | null>;
 
   /**
+   * 根据 ID + identity 查找任务实例
+   */
+  findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null>;
+
+  /**
    * 根据模板 ID 查找任务实例
    */
   findByTemplateId(templateId: string): Promise<TaskInstance[]>;
@@ -64,9 +69,9 @@ export interface ITaskInstanceRepository {
   findOverdueInstances(identityId: string): Promise<TaskInstance[]>;
 
   /**
-   * 删除任务实例
+   * 删除任务实例（identity-scoped）
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * 批量删除任务实例

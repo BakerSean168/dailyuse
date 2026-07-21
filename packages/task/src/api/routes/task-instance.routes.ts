@@ -141,7 +141,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.getInstance(req.params!.id),
+    (req, ctx) => controller.getInstance(req.params!.id, ctx),
   );
 
   // POST /:id/complete — Complete instance
@@ -160,7 +160,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.completeInstance(req.params!.id, req.body),
+    (req, ctx) => controller.completeInstance(req.params!.id, req.body, ctx),
   );
 
   // POST /:id/skip — Skip instance
@@ -179,7 +179,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.skipInstance(req.params!.id, req.body),
+    (req, ctx) => controller.skipInstance(req.params!.id, req.body, ctx),
   );
 
   // POST /:id/start — Start instance
@@ -195,7 +195,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.startInstance(req.params!.id),
+    (req, ctx) => controller.startInstance(req.params!.id, ctx),
   );
 
   // DELETE /:id — Delete instance
@@ -211,7 +211,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteInstance(req.params!.id),
+    (req, ctx) => controller.deleteInstance(req.params!.id, ctx),
   );
 
   return router;

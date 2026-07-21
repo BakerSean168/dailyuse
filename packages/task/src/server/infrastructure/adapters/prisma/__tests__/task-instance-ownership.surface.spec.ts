@@ -1,0 +1,84 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+/**
+ * Task instance ownership surface (stage-6 residual 124):
+ * get/complete/skip/start/delete must never authorize by bare task instance
+ * primary key alone.
+ */
+describe('task instance ownership surface', () => {
+  const port = readFileSync(
+    resolve(__dirname, '../../../../domain/repositories/i-task-instance-repository.ts'),
+    'utf8',
+  );
+  const prisma = readFileSync(
+    resolve(__dirname, '../task-instance-prisma.repository.ts'),
+    'utf8',
+  );
+  const getUseCase = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/get-task-instance.use-case.ts',
+    ),
+    'utf8',
+  );
+  const deleteUseCase = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/delete-task-instance.use-case.ts',
+    ),
+    'utf8',
+  );
+  const routes = readFileSync(
+    resolve(__dirname, '../../../../../api/routes/task-instance.routes.ts'),
+    'utf8',
+  );
+  const electron = readFileSync(resolve(__dirname, '../../../../../electron/index.ts'), 'utf8');
+  const module = readFileSync(resolve(__dirname, '../../../task.module.ts'), 'utf8');
+
+  it('port findByIdForIdentity and delete require identityId', () => {
+    expect(port).toContain(
+      'findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null>;',
+    );
+    expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
+  });
+
+  it('prisma filters by id + identityId', () => {
+    expect(prisma).toContain('where: { id, identityId }');
+    expect(prisma).toContain('deleteMany({');
+    expect(prisma).toContain(
+      "throw new Error('Task instance not found for the current identity.');",
+    );
+  });
+
+  it('get/delete use cases load via findByIdForIdentity', () => {
+    expect(getUseCase).toContain('findByIdForIdentity(identityId, id)');
+    expect(getUseCase).toMatch(/execute\(\s*id: string,\s*identityId: string,/);
+    expect(deleteUseCase).toContain('findByIdForIdentity(identityId, id)');
+    expect(deleteUseCase).toContain('delete(identityId, id)');
+  });
+
+  it('module api wrappers pass identityId for instance mutations', () => {
+    expect(module).toMatch(
+      /completeTaskInstance:\s*\(id, identityId, input\)\s*=>/,
+    );
+    expect(module).toMatch(/deleteTaskInstance:\s*\(id, identityId\)\s*=>/);
+    expect(module).toMatch(/getTaskInstance:\s*\(id, identityId\)\s*=>/);
+  });
+
+  it('HTTP and Electron instance get/delete pass identity context', () => {
+    expect(routes).toContain('controller.getInstance(req.params!.id, ctx)');
+    expect(routes).toContain('controller.deleteInstance(req.params!.id, ctx)');
+    expect(routes).toContain('controller.completeInstance(req.params!.id, req.body, ctx)');
+    expect(electron).toMatch(
+      /INSTANCE_GET[\s\S]*instanceController\.getInstance\([\s\S]*requestContext/,
+    );
+    expect(electron).toMatch(
+      /INSTANCE_DELETE[\s\S]*instanceController\.deleteInstance\([\s\S]*requestContext/,
+    );
+    expect(electron).not.toContain(
+      'instanceController.getInstance(payload?.id ?? payload),',
+    );
+  });
+});

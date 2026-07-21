@@ -261,28 +261,41 @@ export function createTaskElectronModule(
         }),
       );
       ipcMain.handle(TaskChannels.INSTANCE_GET, (_, payload) =>
-        instanceController.getInstance(payload?.id ?? payload),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          instanceController.getInstance(payload?.id ?? payload, requestContext),
+        ),
       );
       ipcMain.handle(TaskChannels.INSTANCE_CREATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          instanceController.startInstance(payload?.id ?? payload),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          instanceController.startInstance(payload?.id ?? payload, requestContext),
         ),
       );
       ipcMain.handle(TaskChannels.INSTANCE_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await instanceController.deleteInstance(payload?.id ?? payload);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await instanceController.deleteInstance(
+            payload?.id ?? payload,
+            requestContext,
+          );
           if (!result.ok) return result;
           return ok(null);
         }),
       );
       ipcMain.handle(TaskChannels.INSTANCE_COMPLETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          instanceController.completeInstance(payload?.id ?? payload, payload?.request),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          instanceController.completeInstance(
+            payload?.id ?? payload,
+            payload?.request,
+            requestContext,
+          ),
         ),
       );
       ipcMain.handle(TaskChannels.INSTANCE_SKIP, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          instanceController.skipInstance(payload?.id ?? payload, payload?.request),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          instanceController.skipInstance(
+            payload?.id ?? payload,
+            payload?.request,
+            requestContext,
+          ),
         ),
       );
       ipcMain.handle(TaskChannels.INSTANCE_CHECK_EXPIRED, () =>

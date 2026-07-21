@@ -1615,6 +1615,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百二十四轮）：Task instance get/complete/skip/start/delete
+> 身份隔离——新增 `findByIdForIdentity`；delete 改为 `deleteMany where { id, identityId }`；
+> complete 模板读取同 identity；HTTP/Electron（含原未认证 INSTANCE_GET）透传 identity 上下文。
+> 补 ownership surface 与 instance 单测。§13.2 Agent/边界证据再增强，仍为部分。验证：task
+> instance ownership specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1720,6 +1729,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百二十一轮：schedule task get/update/delete/actions + list identity-scoped（findByIdForIdentity）。
   残留一百二十二轮：schedule calendar event get/update/delete + conflict identity-scoped（findByIdForIdentity）。
   残留一百二十三轮：task template get/update/delete/actions + list-instances identity-scoped（findByIdForIdentity）。
+  残留一百二十四轮：task instance get/complete/skip/start/delete identity-scoped（findByIdForIdentity）。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

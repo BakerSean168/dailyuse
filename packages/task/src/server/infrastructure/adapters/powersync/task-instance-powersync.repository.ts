@@ -111,6 +111,14 @@ export class PowerSyncTaskInstanceRepository
     return row ? PowerSyncTaskInstanceMapper.toDomain(row) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null> {
+    const row = await this.db.getOptional<PowerSyncTaskInstanceRow>(
+      'SELECT * FROM task_instances WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
+    );
+    return row ? PowerSyncTaskInstanceMapper.toDomain(row) : null;
+  }
+
   async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
     return this.query(
       'SELECT * FROM task_instances WHERE template_id = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
@@ -150,8 +158,15 @@ export class PowerSyncTaskInstanceRepository
     );
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM task_instances WHERE id = ?', [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task instance not found for the current identity.');
+    }
+    await this.db.execute('DELETE FROM task_instances WHERE id = ? AND identity_id = ?', [
+      id,
+      identityId,
+    ]);
   }
 
   async deleteMany(ids: string[]): Promise<void> {

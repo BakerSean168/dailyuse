@@ -17,12 +17,12 @@ describe('CompleteTaskInstanceUseCase', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       findByTemplateId: vi.fn().mockResolvedValue([]),
       save: vi.fn().mockResolvedValue(undefined),
     });
     templateRepo = createMockRepo<ITaskTemplateRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     useCase = new CompleteTaskInstanceUseCase(instanceRepo, templateRepo);
   });
@@ -32,9 +32,9 @@ describe('CompleteTaskInstanceUseCase', () => {
   });
 
   it('should return NOT_FOUND when instance does not exist', async () => {
-    vi.mocked(instanceRepo.findById).mockResolvedValue(null);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(instanceRepo.save).not.toHaveBeenCalled();
@@ -45,9 +45,9 @@ describe('CompleteTaskInstanceUseCase', () => {
     const instance = await aTaskInstance();
     instance.start();
     instance.complete();
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    const result = await useCase.execute(instance.id);
+    const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeErrorWithCode('VALIDATION_ERROR');
     expect(instanceRepo.save).not.toHaveBeenCalled();
@@ -55,9 +55,9 @@ describe('CompleteTaskInstanceUseCase', () => {
 
   it('should complete a Pending instance', async () => {
     const instance = await aTaskInstance();
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    const result = await useCase.execute(instance.id);
+    const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeOk();
     expect(instance.status).toBe('Completed');
@@ -67,9 +67,9 @@ describe('CompleteTaskInstanceUseCase', () => {
   it('should complete an InProgress instance', async () => {
     const instance = await aTaskInstance();
     instance.start();
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    const result = await useCase.execute(instance.id);
+    const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeOk();
     expect(instance.status).toBe('Completed');
@@ -78,9 +78,9 @@ describe('CompleteTaskInstanceUseCase', () => {
   it('should pass duration, note, and rating to complete()', async () => {
     const instance = await aTaskInstance();
     const completeSpy = vi.spyOn(instance, 'complete');
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    await useCase.execute(instance.id, {
+    await useCase.execute(instance.id, instance.identityId, {
       duration: 45,
       note: 'Great work',
       rating: 5,
@@ -98,10 +98,10 @@ describe('CompleteTaskInstanceUseCase', () => {
     template.bindToGoal('goal-1', 'kr-1', 2, TaskGoalBindingTrigger.PerInstance);
     const instance = await aTaskInstance({ templateId: template.id });
     const completeSpy = vi.spyOn(instance, 'complete');
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    await useCase.execute(instance.id);
+    await useCase.execute(instance.id, instance.identityId);
 
     expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
       taskTitle: 'Ship linked task',
@@ -117,11 +117,11 @@ describe('CompleteTaskInstanceUseCase', () => {
     const completedSibling = await aTaskInstance({ templateId: template.id, instanceDate: 100 });
     completedSibling.complete();
     const completeSpy = vi.spyOn(instance, 'complete');
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
     vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([completedSibling, instance]);
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    await useCase.execute(instance.id);
+    await useCase.execute(instance.id, instance.identityId);
 
     expect(completeSpy).toHaveBeenCalledWith(undefined, undefined, undefined, {
       taskTitle: 'Finish recurring work',
@@ -132,9 +132,9 @@ describe('CompleteTaskInstanceUseCase', () => {
 
   it('should return the instance client DTO in the response', async () => {
     const instance = await aTaskInstance();
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    const result = await useCase.execute(instance.id);
+    const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {

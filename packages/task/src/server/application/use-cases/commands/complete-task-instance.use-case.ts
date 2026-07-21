@@ -26,9 +26,10 @@ export class CompleteTaskInstanceUseCase {
 
   async execute(
     id: string,
+    identityId: string,
     request?: CompleteTaskInstanceReq,
   ): Promise<Result<TaskInstanceOperationRes>> {
-    const instance = await this.instanceRepository.findById(id);
+    const instance = await this.instanceRepository.findByIdForIdentity(identityId, id);
     if (!instance) {
       return error('NOT_FOUND', `TaskInstance ${id} not found`);
     }
@@ -37,7 +38,10 @@ export class CompleteTaskInstanceUseCase {
       return error('VALIDATION_ERROR', 'Cannot complete this task instance');
     }
 
-    const template = await this.templateRepository.findById(String(instance.templateId));
+    const template = await this.templateRepository.findByIdForIdentity(
+      identityId,
+      String(instance.templateId),
+    );
     const goalContext = await this.buildGoalContext(instance, template);
 
     // Mark as completed（goalContext 会被嵌入领域事件的 payload）

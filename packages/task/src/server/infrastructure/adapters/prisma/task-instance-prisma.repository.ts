@@ -90,6 +90,13 @@ export class TaskInstancePrismaRepository
     return data ? this.mapToEntity(data) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null> {
+    const data = await this.db.taskInstance.findFirst({
+      where: { id, identityId },
+    });
+    return data ? this.mapToEntity(data) : null;
+  }
+
   async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
     const data = await this.db.taskInstance.findMany({
       where: { templateId, deletedAt: null },
@@ -147,8 +154,13 @@ export class TaskInstancePrismaRepository
     return data.map((record: PrismaTaskInstance) => this.mapToEntity(record));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.taskInstance.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const deleted = await this.db.taskInstance.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Task instance not found for the current identity.');
+    }
   }
 
   async deleteMany(ids: string[]): Promise<void> {

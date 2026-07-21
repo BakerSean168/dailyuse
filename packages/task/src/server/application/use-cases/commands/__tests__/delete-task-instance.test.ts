@@ -27,45 +27,42 @@ import { DeleteTaskInstanceUseCase } from '../delete-task-instance.use-case';
 describe('DeleteTaskInstanceUseCase', () => {
   function setup() {
     const instanceRepo = createMockRepo<ITaskInstanceRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       delete: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new DeleteTaskInstanceUseCase(instanceRepo);
     return { useCase, instanceRepo };
   }
 
-  it('should delete the instance and return ok', async () => {
+  it('should be idempotent when instance is missing or unowned', async () => {
     const { useCase, instanceRepo } = setup();
 
-    const result = await useCase.execute('inst-123');
+    const result = await useCase.execute('non-existent-id', 'identity-1');
 
     expect(result).toBeOk();
-    expect(instanceRepo.delete).toHaveBeenCalledWith('inst-123');
+    expect(instanceRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'non-existent-id');
+    expect(instanceRepo.delete).not.toHaveBeenCalled();
+    expect(taskEventSend).not.toHaveBeenCalled();
   });
 
-  it('should be idempotent (no existence check)', async () => {
+  it('should delete the owned instance and return ok', async () => {
     const { useCase, instanceRepo } = setup();
+    const instance = await aTaskInstance();
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    const result = await useCase.execute('non-existent-id');
+    const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeOk();
-    expect(instanceRepo.delete).toHaveBeenCalledWith('non-existent-id');
-  });
-
-  it('should call delete exactly once', async () => {
-    const { useCase, instanceRepo } = setup();
-
-    await useCase.execute('inst-456');
-
+    expect(instanceRepo.delete).toHaveBeenCalledWith(instance.identityId, instance.id);
     expect(instanceRepo.delete).toHaveBeenCalledTimes(1);
   });
 
   it('should publish task:instance-deleted when the instance exists', async () => {
     const { useCase, instanceRepo } = setup();
     const instance = await aTaskInstance();
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    await useCase.execute(instance.id);
+    await useCase.execute(instance.id, instance.identityId);
 
     expect(taskEventSend).toHaveBeenCalledWith('task:instance-deleted', {
       identityId: instance.identityId,

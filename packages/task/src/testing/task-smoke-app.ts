@@ -71,6 +71,7 @@ export function createMockInstanceRepo(): ITaskInstanceRepository {
     save: vi.fn().mockResolvedValue(undefined),
     saveMany: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
+    findByIdForIdentity: vi.fn().mockResolvedValue(null),
     findByTemplateId: vi.fn().mockResolvedValue([]),
     findByIdentityId: vi.fn().mockResolvedValue([]),
     findByDateRange: vi.fn().mockResolvedValue([]),

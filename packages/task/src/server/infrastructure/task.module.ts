@@ -320,12 +320,14 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     getTaskTemplateGraph: (query) => useCases.getTaskTemplateGraph.execute(query),
     listTaskTemplatesByPriority: (identityId, limit) =>
       useCases.listTaskTemplatesByPriority.execute(identityId, limit),
-    completeTaskInstance: (id, input) => useCases.completeTaskInstance.execute(id, input),
-    skipTaskInstance: (id, input) => useCases.skipTaskInstance.execute(id, input),
-    startTaskInstance: (id) => useCases.startTaskInstance.execute(id),
-    deleteTaskInstance: (id) => useCases.deleteTaskInstance.execute(id),
+    completeTaskInstance: (id, identityId, input) =>
+      useCases.completeTaskInstance.execute(id, identityId, input),
+    skipTaskInstance: (id, identityId, input) =>
+      useCases.skipTaskInstance.execute(id, identityId, input),
+    startTaskInstance: (id, identityId) => useCases.startTaskInstance.execute(id, identityId),
+    deleteTaskInstance: (id, identityId) => useCases.deleteTaskInstance.execute(id, identityId),
     checkExpiredInstances: (identityId) => useCases.checkExpiredInstances.execute(identityId),
-    getTaskInstance: (id) => useCases.getTaskInstance.execute(id),
+    getTaskInstance: (id, identityId) => useCases.getTaskInstance.execute(id, identityId),
     listTaskInstancesByAccount: (identityId) =>
       useCases.listTaskInstancesByAccount.execute(identityId),
     listTaskInstancesByTemplate: (templateId, identityId) =>

@@ -48,6 +48,7 @@ const FAKE_INSTANCE_DTO: TaskInstanceClientDTO = {
 // ---------------------------------------------------------------------------
 
 describe('TaskInstanceController', () => {
+  const ctx = { identityId: TEST_IDENTITY_ID } as any;
   let useCases: TaskInstanceUseCases;
   let controller: TaskInstanceController;
 
@@ -65,9 +66,9 @@ describe('TaskInstanceController', () => {
         ok(FAKE_INSTANCE_DTO),
       );
 
-      await controller.getInstance('inst_abc123');
+      await controller.getInstance('inst_abc123', ctx);
 
-      expect(useCases.getTaskInstance).toHaveBeenCalledWith('inst_abc123');
+      expect(useCases.getTaskInstance).toHaveBeenCalledWith('inst_abc123', TEST_IDENTITY_ID);
     });
 
     it('should pass through use case result directly', async () => {
@@ -76,7 +77,7 @@ describe('TaskInstanceController', () => {
         expectedResult,
       );
 
-      const result = await controller.getInstance('inst_abc123');
+      const result = await controller.getInstance('inst_abc123', ctx);
 
       expect(result).toBe(expectedResult);
     });
@@ -84,7 +85,7 @@ describe('TaskInstanceController', () => {
     it('should return null result when instance not found', async () => {
       (useCases.getTaskInstance as ReturnType<typeof vi.fn>).mockResolvedValue(ok(null));
 
-      const result = await controller.getInstance('inst_nonexistent');
+      const result = await controller.getInstance('inst_nonexistent', ctx);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -194,7 +195,7 @@ describe('TaskInstanceController', () => {
   describe('completeInstance', () => {
     it('should return VALIDATION_ERROR for invalid input', async () => {
       // rating must be integer 1-5
-      const result = await controller.completeInstance('inst_1', { rating: 10 });
+      const result = await controller.completeInstance('inst_1', { rating: 10 }, ctx);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -210,9 +211,9 @@ describe('TaskInstanceController', () => {
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      const result = await controller.completeInstance('inst_1', {});
+      const result = await controller.completeInstance('inst_1', {}, ctx);
 
-      expect(useCases.complete).toHaveBeenCalledWith('inst_1', {});
+      expect(useCases.complete).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {});
       expect(isOk(result)).toBe(true);
     });
 
@@ -221,9 +222,9 @@ describe('TaskInstanceController', () => {
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      const result = await controller.completeInstance('inst_1', undefined);
+      const result = await controller.completeInstance('inst_1', undefined, ctx);
 
-      expect(useCases.complete).toHaveBeenCalledWith('inst_1', {});
+      expect(useCases.complete).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {});
       expect(isOk(result)).toBe(true);
     });
 
@@ -236,9 +237,9 @@ describe('TaskInstanceController', () => {
         duration: 30,
         note: 'Done well',
         rating: 4,
-      });
+      }, ctx);
 
-      expect(useCases.complete).toHaveBeenCalledWith('inst_1', {
+      expect(useCases.complete).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {
         duration: 30,
         note: 'Done well',
         rating: 4,
@@ -250,7 +251,7 @@ describe('TaskInstanceController', () => {
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      const result = await controller.completeInstance('inst_1', {});
+      const result = await controller.completeInstance('inst_1', {}, ctx);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -262,7 +263,7 @@ describe('TaskInstanceController', () => {
       const useCaseError = fail({ code: 'NOT_FOUND', message: 'Instance not found' });
       (useCases.complete as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
-      const result = await controller.completeInstance('inst_1', {});
+      const result = await controller.completeInstance('inst_1', {}, ctx);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -271,7 +272,7 @@ describe('TaskInstanceController', () => {
     });
 
     it('should reject non-integer rating', async () => {
-      const result = await controller.completeInstance('inst_1', { rating: 3.5 });
+      const result = await controller.completeInstance('inst_1', { rating: 3.5 }, ctx);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -280,7 +281,7 @@ describe('TaskInstanceController', () => {
     });
 
     it('should reject rating below 1', async () => {
-      const result = await controller.completeInstance('inst_1', { rating: 0 });
+      const result = await controller.completeInstance('inst_1', { rating: 0 }, ctx);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -298,9 +299,9 @@ describe('TaskInstanceController', () => {
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      const result = await controller.skipInstance('inst_1', undefined);
+      const result = await controller.skipInstance('inst_1', undefined, ctx);
 
-      expect(useCases.skip).toHaveBeenCalledWith('inst_1', {});
+      expect(useCases.skip).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {});
       expect(isOk(result)).toBe(true);
     });
 
@@ -309,9 +310,9 @@ describe('TaskInstanceController', () => {
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      const result = await controller.skipInstance('inst_1', {});
+      const result = await controller.skipInstance('inst_1', {}, ctx);
 
-      expect(useCases.skip).toHaveBeenCalledWith('inst_1', {});
+      expect(useCases.skip).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, {});
       expect(isOk(result)).toBe(true);
     });
 
@@ -320,9 +321,9 @@ describe('TaskInstanceController', () => {
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      await controller.skipInstance('inst_1', { reason: 'Too tired' });
+      await controller.skipInstance('inst_1', { reason: 'Too tired' }, ctx);
 
-      expect(useCases.skip).toHaveBeenCalledWith('inst_1', { reason: 'Too tired' });
+      expect(useCases.skip).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID, { reason: 'Too tired' });
     });
 
     it('should unwrap result.data.instance', async () => {
@@ -330,7 +331,7 @@ describe('TaskInstanceController', () => {
         ok({ instance: FAKE_INSTANCE_DTO }),
       );
 
-      const result = await controller.skipInstance('inst_1', {});
+      const result = await controller.skipInstance('inst_1', {}, ctx);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -342,14 +343,14 @@ describe('TaskInstanceController', () => {
       const useCaseError = fail({ code: 'NOT_FOUND', message: 'Not found' });
       (useCases.skip as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
-      const result = await controller.skipInstance('inst_1', {});
+      const result = await controller.skipInstance('inst_1', {}, ctx);
 
       expect(isOk(result)).toBe(false);
     });
 
     it('should return VALIDATION_ERROR for invalid input type', async () => {
       // Pass a non-object to trigger Zod validation failure
-      const result = await controller.skipInstance('inst_1', 'invalid');
+      const result = await controller.skipInstance('inst_1', 'invalid', ctx);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -365,16 +366,16 @@ describe('TaskInstanceController', () => {
     it('should call start use case with id', async () => {
       (useCases.start as ReturnType<typeof vi.fn>).mockResolvedValue(ok(FAKE_INSTANCE_DTO));
 
-      await controller.startInstance('inst_1');
+      await controller.startInstance('inst_1', ctx);
 
-      expect(useCases.start).toHaveBeenCalledWith('inst_1');
+      expect(useCases.start).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID);
     });
 
     it('should pass through use case result directly', async () => {
       const expectedResult = ok(FAKE_INSTANCE_DTO);
       (useCases.start as ReturnType<typeof vi.fn>).mockResolvedValue(expectedResult);
 
-      const result = await controller.startInstance('inst_1');
+      const result = await controller.startInstance('inst_1', ctx);
 
       expect(result).toBe(expectedResult);
     });
@@ -389,9 +390,9 @@ describe('TaskInstanceController', () => {
         ok(undefined),
       );
 
-      await controller.deleteInstance('inst_1');
+      await controller.deleteInstance('inst_1', ctx);
 
-      expect(useCases.deleteInstance).toHaveBeenCalledWith('inst_1');
+      expect(useCases.deleteInstance).toHaveBeenCalledWith('inst_1', TEST_IDENTITY_ID);
     });
 
     it('should normalize success to ok(null)', async () => {
@@ -399,7 +400,7 @@ describe('TaskInstanceController', () => {
         ok(undefined),
       );
 
-      const result = await controller.deleteInstance('inst_1');
+      const result = await controller.deleteInstance('inst_1', ctx);
 
       expect(result).toEqual(ok(null));
     });

@@ -10,8 +10,8 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class StartTaskInstanceUseCase {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(id: string): Promise<Result<TaskInstanceClientDTO>> {
-    const instance = await this.instanceRepository.findById(id);
+  async execute(id: string, identityId: string): Promise<Result<TaskInstanceClientDTO>> {
+    const instance = await this.instanceRepository.findByIdForIdentity(identityId, id);
     if (!instance) {
       return error('NOT_FOUND', `TaskInstance ${id} not found`);
     }
