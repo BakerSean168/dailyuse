@@ -69,11 +69,11 @@ describe('AIAgentRuntimeIpcAdapter', () => {
       approvedActions: [{ tool: 'create_goal', index: 0 }],
     };
 
-    await expect(adapter.listAgentRuns({ activeOnly: true, limit: 5 })).resolves.toEqual(runs);
-    await expect(adapter.startAgentRun(request)).resolves.toEqual(runResult);
-    await expect(adapter.resumeAgentRun('run-1', payload)).resolves.toEqual(runResult);
-    await expect(adapter.getAgentRun('run-1')).resolves.toEqual(runResult);
-    await expect(adapter.getAgentEvents('run-1')).resolves.toEqual(events);
+    await expect(adapter.listAgentRuns({ activeOnly: true, limit: 5 })).resolves.toEqual(ok(runs));
+    await expect(adapter.startAgentRun(request)).resolves.toEqual(ok(runResult));
+    await expect(adapter.resumeAgentRun('run-1', payload)).resolves.toEqual(ok(runResult));
+    await expect(adapter.getAgentRun('run-1')).resolves.toEqual(ok(runResult));
+    await expect(adapter.getAgentEvents('run-1')).resolves.toEqual(ok(events));
 
     expect(invoke).toHaveBeenNthCalledWith(1, AIChannels.AGENT_RUN_LIST, {
       activeOnly: true,

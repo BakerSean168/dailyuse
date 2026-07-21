@@ -17,6 +17,7 @@ import type {
   NoteSummary,
 } from './types';
 import { getAIErrorMessage } from './error';
+import { unwrap } from '@dailyuse/contracts/result';
 
 export interface UseAIKnowledgeNoteWorkflowOptions {
   service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun'>;
@@ -39,7 +40,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
   const noteCreating = ref(false);
   const noteSummary = ref<NoteSummary | null>(null);
-  const noteAgentRun = ref<Awaited<ReturnType<AIChatService['startAgentRun']>> | null>(null);
+  const noteAgentRun = ref<import('@dailyuse/contracts/ai').AgentRunResult | null>(null);
   const noteAgentLoading = ref(false);
 
   const noteAgentDraftArtifact = computed(
@@ -250,10 +251,10 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
       noteCreating.value = true;
       try {
-        const result = await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
+        const result = unwrap(await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
           userDecision: 'confirm',
           approvedActions,
-        });
+        }));
         noteAgentRun.value = result;
         const summary = noteSummaryFromAgentRun(result);
         if (!summary) {
@@ -293,9 +294,9 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
     noteCreating.value = true;
     try {
-      const result = await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
+      const result = unwrap(await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
         userDecision: 'confirm',
-      });
+      }));
       noteAgentRun.value = result;
 
       const summary = noteSummaryFromAgentRun(result);
@@ -358,7 +359,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       };
 
       noteSummary.value = null;
-      noteAgentRun.value = await options.service.startAgentRun(request);
+      noteAgentRun.value = unwrap(await options.service.startAgentRun(request));
       toast.success(t('aiAssistant.dialogs.note.draftReady'));
       options.scrollMessagesToBottom();
     } catch (error) {

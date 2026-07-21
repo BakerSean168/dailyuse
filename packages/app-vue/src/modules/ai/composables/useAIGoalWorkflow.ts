@@ -34,6 +34,7 @@ import {
   handleExecuteAutomation,
   type AutomationContext,
 } from './goalAutomationHelpers';
+import { unwrap } from '@dailyuse/contracts/result';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -720,7 +721,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         },
       };
 
-      const result = await options.service.startAgentRun(request);
+      const result = unwrap(await options.service.startAgentRun(request));
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.started'));
       options.scrollMessagesToBottom();
@@ -736,7 +737,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     goalAgentResuming.value = true;
     try {
       const payload = buildGoalAgentApprovalPayload(goalAgentRun.value, userDecision);
-      const result = await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload);
+      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload));
       syncGoalAgentRun(result);
       toast.success(
         userDecision === 'cancel'
@@ -755,10 +756,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!goalAgentRun.value || !canResumeGoalAgentClarification.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
         userDecision: 'clarify',
         clarificationAnswers: clarificationAnswers.value.map((item) => item.trim()),
-      });
+      }));
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();
@@ -773,9 +774,9 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!canContinueGoalAgentExecution.value || !goalAgentRun.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
         userDecision: 'confirm',
-      });
+      }));
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();
@@ -790,9 +791,9 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!canRetryGoalAgentExecution.value || !goalAgentRun.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
         userDecision: 'confirm',
-      });
+      }));
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();

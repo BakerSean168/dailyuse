@@ -1407,6 +1407,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留一百轮）：AI agent-runtime 客户端 Result 端口迁移——
+> list/start/resume/get/events 改为 `Promise<Result<T>>`；HTTP/IPC adapters 去掉
+> `unwrapResultOrThrow`；Vue chat/goal/knowledge workflows 在 composable 边界 `unwrap`。
+> 补 `ai-agent-runtime-result-port.surface`。`streamMessage` 仍为 throw-based（SSE 控制流）。
+> 基础设施客户端 Result 端口迁移至此基本收口。§13.2 仍为部分/外部阻塞。
+> 验证：ai typecheck + agent adapter/surface + AIChatView + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

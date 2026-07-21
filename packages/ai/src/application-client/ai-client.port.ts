@@ -89,9 +89,9 @@ export interface AIClientPort {
 
   queryAnalytics(request: QueryAnalyticsReq): Promise<Result<QueryAnalyticsRes>>;
 
-  listAgentRuns(params?: AgentRunListParams): Promise<AgentRun[]>;
-  startAgentRun(request: AgentStartRunClientRequest): Promise<AgentRunResult>;
-  resumeAgentRun(runId: string, payload: AgentResumePayload): Promise<AgentRunResult>;
-  getAgentRun(runId: string): Promise<AgentRunResult>;
-  getAgentEvents(runId: string): Promise<AgentEvent[]>;
+  listAgentRuns(params?: AgentRunListParams): Promise<Result<AgentRun[]>>;
+  startAgentRun(request: AgentStartRunClientRequest): Promise<Result<AgentRunResult>>;
+  resumeAgentRun(runId: string, payload: AgentResumePayload): Promise<Result<AgentRunResult>>;
+  getAgentRun(runId: string): Promise<Result<AgentRunResult>>;
+  getAgentEvents(runId: string): Promise<Result<AgentEvent[]>>;
 }

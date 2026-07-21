@@ -1185,7 +1185,7 @@ describe('AIChatView', () => {
       deleteConversation: vi.fn(),
       generateGoal: vi.fn(),
       queryKnowledge: vi.fn(),
-      listAgentRuns: vi.fn(async () => []),
+      listAgentRuns: vi.fn(async () => ok([])),
       startAgentRun: vi.fn(),
       resumeAgentRun: vi.fn(),
       getAgentRun: vi.fn(),
@@ -1351,7 +1351,7 @@ describe('AIChatView', () => {
       runId: 'run-active-1',
       updatedAt: 20,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
     service.listConversations.mockResolvedValue(ok({ data: [] }));
     service.listMessages.mockResolvedValue(ok({ data: [] }));
 
@@ -1561,7 +1561,7 @@ describe('AIChatView', () => {
       conversationId: 'conv-2',
       updatedAt: 20,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
     service.listConversations.mockResolvedValue(ok({
       data: [
         { id: 'conv-1', name: 'First session' },
@@ -1591,12 +1591,12 @@ describe('AIChatView', () => {
       conversationId: 'conv-3',
       updatedAt: 30,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
     service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-3', name: 'Runtime-only Agent session' }],
     }));
     service.listMessages.mockResolvedValue(ok({ data: [] }));
-    service.getAgentRun.mockResolvedValueOnce(
+    service.getAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'waiting_approval',
         stage: 'approval',
@@ -1627,7 +1627,7 @@ describe('AIChatView', () => {
           },
         ],
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1647,12 +1647,12 @@ describe('AIChatView', () => {
       ...createKnowledgeQaAgentRunResult().run,
       updatedAt: 40,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
     service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-4', name: 'Runtime-only Knowledge Q&A session' }],
     }));
     service.listMessages.mockResolvedValue(ok({ data: [] }));
-    service.getAgentRun.mockResolvedValueOnce(createKnowledgeQaAgentRunResult());
+    service.getAgentRun.mockResolvedValueOnce(ok(createKnowledgeQaAgentRunResult()));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1710,12 +1710,12 @@ describe('AIChatView', () => {
     const runWithoutAnswerArtifact = createKnowledgeQaAgentRunResult();
     runWithoutAnswerArtifact.state.artifacts = [];
     runWithoutAnswerArtifact.state.citations = [];
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
     service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-4', name: 'Runtime-only Knowledge Q&A session' }],
     }));
     service.listMessages.mockResolvedValue(ok({ data: [] }));
-    service.getAgentRun.mockResolvedValueOnce(runWithoutAnswerArtifact);
+    service.getAgentRun.mockResolvedValueOnce(ok(runWithoutAnswerArtifact));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1813,8 +1813,8 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     }));
-    service.startAgentRun.mockResolvedValueOnce(createAgentRunResult());
-    service.resumeAgentRun.mockResolvedValueOnce(
+    service.startAgentRun.mockResolvedValueOnce(ok(createAgentRunResult()));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'completed',
         stage: 'result',
@@ -1827,7 +1827,7 @@ describe('AIChatView', () => {
           },
         ],
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2043,13 +2043,13 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Get fit' }],
     }));
-    service.startAgentRun.mockResolvedValueOnce(
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'waiting_clarification',
         stage: 'clarify',
       }),
-    );
-    service.resumeAgentRun.mockResolvedValueOnce(createAgentRunResult());
+    ));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(createAgentRunResult()));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2138,7 +2138,7 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     }));
-    service.resumeAgentRun.mockResolvedValueOnce(
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'completed',
         stage: 'result',
@@ -2151,7 +2151,7 @@ describe('AIChatView', () => {
           },
         ],
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2227,13 +2227,13 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     }));
-    service.getAgentRun.mockResolvedValueOnce(
+    service.getAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'waiting_execution',
         stage: 'execute',
         approvedActions,
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2360,7 +2360,7 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     }));
-    service.resumeAgentRun.mockResolvedValueOnce(
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'completed',
         stage: 'result',
@@ -2375,7 +2375,7 @@ describe('AIChatView', () => {
           },
         ],
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2521,12 +2521,12 @@ describe('AIChatView', () => {
         { id: 'm-3', role: 'user', content: 'How should knowledge answers be grounded?' },
       ],
     }));
-    service.startAgentRun.mockResolvedValueOnce(
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeQaAgentRunResult({
         answer: createKnowledgeAnswer(),
         conversationId: 'conv-1',
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2601,7 +2601,7 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'What is the latest grounding rule?' }],
     }));
-    service.startAgentRun.mockResolvedValueOnce(
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeQaAgentRunResult({
         answer: createKnowledgeAnswer({
           question: 'What is the latest grounding rule?',
@@ -2610,7 +2610,7 @@ describe('AIChatView', () => {
         conversationId: 'conv-1',
         runId: 'knowledge-qa-run-2',
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2677,7 +2677,7 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'What does the repo say about unknown topic?' }],
     }));
-    service.startAgentRun.mockResolvedValueOnce(
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeQaAgentRunResult({
         answer: createKnowledgeAnswer({
           question: 'What does the repo say about unknown topic?',
@@ -2686,7 +2686,7 @@ describe('AIChatView', () => {
         }),
         conversationId: 'conv-1',
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2805,18 +2805,18 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'How should knowledge answers be grounded?' }],
     }));
-    service.startAgentRun.mockResolvedValueOnce(
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeNoteAgentRunResult({
         topic:
           'Question: How should knowledge answers be grounded? Answer: Use cited repository excerpts to answer the question. Sources: Grounded Answer',
       }),
-    );
-    service.resumeAgentRun.mockResolvedValueOnce(
+    ));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createSavedKnowledgeNoteAgentRunResult({
         topic:
           'Question: How should knowledge answers be grounded? Answer: Use cited repository excerpts to answer the question. Sources: Grounded Answer',
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2909,12 +2909,12 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
     }));
-    service.startAgentRun.mockResolvedValueOnce(
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeNoteAgentRunResult({ targetSubpath: 'notes/agent-drafts' }),
-    );
-    service.resumeAgentRun.mockResolvedValueOnce(
+    ));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createSavedKnowledgeNoteAgentRunResult({ targetSubpath: 'notes/agent-drafts' }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -3023,12 +3023,12 @@ describe('AIChatView', () => {
       ...createSavedKnowledgeNoteAgentRunResult().run,
       updatedAt: 70,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
     service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Runtime-only Knowledge note session' }],
     }));
     service.listMessages.mockResolvedValue(ok({ data: [] }));
-    service.getAgentRun.mockResolvedValueOnce(createSavedKnowledgeNoteAgentRunResult());
+    service.getAgentRun.mockResolvedValueOnce(ok(createSavedKnowledgeNoteAgentRunResult()));
 
     const wrapper = mountView();
     await flushPromises();
@@ -3083,9 +3083,9 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
     }));
-    service.resumeAgentRun.mockResolvedValueOnce(
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createSavedKnowledgeNoteAgentRunResult({ targetSubpath: 'notes/agent-drafts' }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -3145,9 +3145,9 @@ describe('AIChatView', () => {
     service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
     }));
-    service.resumeAgentRun.mockResolvedValueOnce(
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createFailedKnowledgeNoteAgentRunResult({ targetSubpath: 'notes/agent-drafts' }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();

@@ -20,6 +20,7 @@ import {
   initializeChatView,
   maybeRenameConversation,
 } from './chatViewHelpers';
+import { unwrap } from '@dailyuse/contracts/result';
 import type {
   AgentRunSummary,
   AIWorkspaceRecentGoal,
@@ -199,7 +200,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const goalRunId = goalWorkflow.goalAgentRun.value?.run.runId;
     if (goalRunId) {
       try {
-        const result = await service.getAgentRun(goalRunId);
+        const result = unwrap(await service.getAgentRun(goalRunId));
         if (result?.run) {
           goalWorkflow.syncGoalAgentRun(result);
         }
@@ -212,7 +213,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const noteRunId = noteWorkflow.noteAgentRun.value?.run.runId;
     if (noteRunId) {
       try {
-        const result = await service.getAgentRun(noteRunId);
+        const result = unwrap(await service.getAgentRun(noteRunId));
         if (result?.run) {
           noteWorkflow.syncKnowledgeNoteAgentRun(result);
         }
@@ -227,7 +228,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const knowledgeQaRunId = knowledgeQaWorkflow.knowledgeQaAgentRun.value?.run.runId;
     if (knowledgeQaRunId) {
       try {
-        const result = await service.getAgentRun(knowledgeQaRunId);
+        const result = unwrap(await service.getAgentRun(knowledgeQaRunId));
         if (result?.run) {
           knowledgeQaWorkflow.syncKnowledgeQaAgentRun(result);
         }
@@ -244,7 +245,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     await refreshRestoredAgentRun(conversationId);
   }
 
-  function syncSelectedAgentRun(result: Awaited<ReturnType<typeof service.getAgentRun>>) {
+  function syncSelectedAgentRun(result: import("@dailyuse/contracts/ai").AgentRunResult) {
     if (result.run.agentType === 'goal.create') {
       noteWorkflow.resetNoteArtifacts();
       knowledgeQaWorkflow.resetKnowledgeAnswer();
@@ -280,7 +281,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   async function loadAgentRunList() {
     agentRunListLoading.value = true;
     try {
-      const runs = await service.listAgentRuns({ limit: 5 });
+      const runs = unwrap(await service.listAgentRuns({ limit: 5 }));
       agentRunList.value = Array.isArray(runs) ? runs : [];
     } catch {
       agentRunList.value = [];
@@ -441,7 +442,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       await selectConversation(conversation);
     }
     try {
-      const result = await service.getAgentRun(run.runId);
+      const result = unwrap(await service.getAgentRun(run.runId));
       if (result?.run) {
         syncSelectedAgentRun(result);
         persistence.persistWorkflowState(conversationId);

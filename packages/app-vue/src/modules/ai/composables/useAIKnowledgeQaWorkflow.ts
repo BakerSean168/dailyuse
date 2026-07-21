@@ -10,6 +10,7 @@ import type {
   UseAIKnowledgeQaWorkflowOptions,
 } from './types';
 import { getAIErrorMessage } from './error';
+import { unwrap } from '@dailyuse/contracts/result';
 
 type KnowledgeRelatedNote = NonNullable<KnowledgeAnswer['relatedNotes']>[number];
 
@@ -132,7 +133,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
         },
       };
 
-      syncKnowledgeQaAgentRun(await options.service.startAgentRun(request));
+      syncKnowledgeQaAgentRun(unwrap(await options.service.startAgentRun(request)));
       if (!knowledgeAnswer.value) {
         throw new Error('Knowledge Q&A Agent did not return an answer artifact.');
       }

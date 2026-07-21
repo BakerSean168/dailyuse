@@ -5,8 +5,8 @@
  * This is the single entry point for UI layers to interact with the AI module.
  * All methods delegate directly to the underlying API client adapters.
  *
- * Most AI client ports return Result envelopes (residual 96–99). Message send/list
- * return Result; streamMessage still throw-based; agent runtime still throw-unwrap.
+ * AI client ports return Result envelopes (residual 96–100). streamMessage remains
+ * throw-based for SSE/IPC stream control flow.
  *
  * 这是 UI 层与 AI 模块交互的唯一入口。
  * 所有方法直接委托给底层 API 客户端适配器。
