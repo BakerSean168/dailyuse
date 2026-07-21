@@ -1339,6 +1339,103 @@ describe('createRemoteAIServiceRuntime', () => {
     );
   });
 
+  it('does not execute knowledge writes through the goal automation executor', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const automationToolExecutorPort = createMockAutomationToolExecutorPort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    // Schema-valid knowledge tool must fail closed inside goal.create execution.
+    const pendingAction = {
+      tool: 'create_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Attempt to expand goal agent into knowledge write capability.',
+      payload: {
+        topic: 'Should not write a note from goal.create',
+        title: 'Cross-capability leak',
+        contentMarkdown: '# Should not persist',
+        targetSubpath: 'notes/leak',
+      },
+    };
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        artifacts: [goalDraftArtifact],
+        approvedActions: [pendingAction],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-goal-cross-cap',
+          threadId: 'thread-goal-cross-cap',
+          agentType: 'goal.create',
+          request: {
+            idea: 'Ship the AI Agent workspace',
+            category: 'work',
+            timeframe: 'Q3',
+          },
+          approvedActions: [pendingAction],
+          artifacts: [goalDraftArtifact],
+        },
+      ],
+    });
+    const completed = createAgentRunResult('completed', {
+      state: {
+        ...createAgentRunResult('completed').state,
+        approvedActions: [pendingAction],
+        executedActions: [
+          {
+            tool: 'create_knowledge_note',
+            status: 'failed',
+            message:
+              'Agent action "create_knowledge_note" is not supported by the TS goal automation executor yet.',
+          },
+        ],
+      },
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun)
+      .mockResolvedValueOnce(waitingExecution)
+      .mockResolvedValueOnce(completed);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        automationToolExecutorPort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-goal-cross-cap',
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingAction],
+      },
+      { identityId: 'identity-1' },
+      'request-goal-cross-cap',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(automationToolExecutorPort.executeGoalAutomation).not.toHaveBeenCalled();
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_knowledge_note',
+              status: 'failed',
+              message:
+                'Agent action "create_knowledge_note" is not supported by the TS goal automation executor yet.',
+            },
+          ],
+        },
+      }),
+    );
+  });
+
   it('does not execute goal automation when the user cancels, even if execution.required remains', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     const automationToolExecutorPort = createMockAutomationToolExecutorPort();
