@@ -40,6 +40,14 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
 
     // 多条写入放进单事务，避免 upsert 成功而 message 同步失败导致的半持久化。
     await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const existing = await tx.aiConversation.findUnique({
+        where: { id: String(dto.id) },
+        select: { identityId: true },
+      });
+      if (existing && existing.identityId !== String(dto.identityId)) {
+        throw new Error('Conversation not found for the current identity.');
+      }
+
       await tx.aiConversation.upsert({
         where: { id: String(dto.id) },
         create: {
@@ -109,6 +117,25 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     return this.toDomain(row, Boolean(options?.includeChildren));
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: AIConversationQueryOptions,
+  ): Promise<AIConversation | null> {
+    const row = await this.prisma.aiConversation.findFirst({
+      where: { id, identityId, deletedAt: null },
+      include: options?.includeChildren
+        ? { messages: { orderBy: { createdAt: 'asc' } } }
+        : undefined,
+    });
+
+    if (!row) {
+      return null;
+    }
+
+    return this.toDomain(row, Boolean(options?.includeChildren));
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: AIConversationQueryOptions,
@@ -128,14 +155,17 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
 
 
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.aiConversation.update({
-      where: { id },
+  async delete(identityId: string, id: string): Promise<void> {
+    const updated = await this.prisma.aiConversation.updateMany({
+      where: { id, identityId, deletedAt: null },
       data: {
         status: 'Archived',
         deletedAt: new Date(),
       },
     });
+    if (updated.count !== 1) {
+      throw new Error('Conversation not found for the current identity.');
+    }
   }
 
 

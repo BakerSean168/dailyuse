@@ -13,13 +13,18 @@ export class GetConversationUseCase {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   async execute(
+    identityId: string,
     conversationId: string,
     includeMessages: boolean = true,
   ): Promise<Result<AIConversationServer | null>> {
     try {
-      const conversation = await this.conversationRepository.findById(conversationId, {
-        includeChildren: includeMessages,
-      });
+      const conversation = await this.conversationRepository.findByIdForIdentity(
+        identityId,
+        conversationId,
+        {
+          includeChildren: includeMessages,
+        },
+      );
       if (!conversation) {
         return ok(null);
       }

@@ -24,6 +24,13 @@ class InMemoryConversationRepository {
   async findById(): Promise<AIConversation | null> {
     return this.conversation;
   }
+
+  async findByIdForIdentity(
+    identityId: string,
+    _id: string,
+  ): Promise<AIConversation | null> {
+    return String(this.conversation.identityId) === identityId ? this.conversation : null;
+  }
 }
 
 class StubProviderConfigRepository {

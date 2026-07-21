@@ -11,6 +11,7 @@ export function createAIConversationRepositoryStub(
   return {
     save: async () => {},
     findById: async () => null,
+    findByIdForIdentity: async () => null,
     findByIdentityId: async () => [],
     delete: async () => {},
     ...overrides,

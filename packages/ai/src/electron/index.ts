@@ -207,10 +207,14 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         ),
       );
       ipcMain.handle(AIChannels.CONVERSATION_UPDATE, async (_, dto) =>
-        withAuthenticatedValue(ctx, async () =>
-          aiModule.api.updateConversation(String(dto.id), {
-            name: String(dto.name),
-          }),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.updateConversation(
+            String(dto.id),
+            {
+              name: String(dto.name),
+            },
+            { identityId: requestContext.identityId },
+          ),
         ),
       );
       ipcMain.handle(AIChannels.CONVERSATION_LIST, async (_, dto) =>
@@ -223,15 +227,21 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         ),
       );
       ipcMain.handle(AIChannels.CONVERSATION_GET, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await aiModule.api.getConversation(String(id), true);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.getConversation(
+            String(id),
+            { identityId: requestContext.identityId },
+            true,
+          );
           if (!result.ok) return result;
           return result.data ?? null;
         }),
       );
       ipcMain.handle(AIChannels.CONVERSATION_DELETE, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await aiModule.api.deleteConversation(String(id));
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.deleteConversation(String(id), {
+            identityId: requestContext.identityId,
+          });
           if (!result.ok) return result;
           return ok(null);
         }),
@@ -326,8 +336,12 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         }),
       );
       ipcMain.handle(AIChannels.MESSAGE_LIST, async (_, dto) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await aiModule.api.getConversation(String(dto.conversationId), true);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.getConversation(
+            String(dto.conversationId),
+            { identityId: requestContext.identityId },
+            true,
+          );
           if (!result.ok) return result;
           if (!result.data) {
             return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });

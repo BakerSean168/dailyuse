@@ -17,9 +17,17 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 interface AIChatConversationControllerService {
   createConversation(cx: ExecutionContext, name?: string): Promise<Result<CreateConversationRes>>;
   listConversations(cx: ExecutionContext, page?: number, pageSize?: number): Promise<Result<ConversationListRes>>;
-  getConversation(id: string, includeMessages?: boolean): Promise<Result<GetConversationRes | null>>;
-  updateConversation(id: string, input: UpdateConversationReq): Promise<Result<UpdateConversationRes>>;
-  deleteConversation(id: string): Promise<Result<void>>;
+  getConversation(
+    id: string,
+    cx: ExecutionContext,
+    includeMessages?: boolean,
+  ): Promise<Result<GetConversationRes | null>>;
+  updateConversation(
+    id: string,
+    input: UpdateConversationReq,
+    cx: ExecutionContext,
+  ): Promise<Result<UpdateConversationRes>>;
+  deleteConversation(id: string, cx: ExecutionContext): Promise<Result<void>>;
 }
 
 interface AIChatMessageControllerService {
@@ -77,8 +85,8 @@ export class AIChatController {
     return this.conversationService.listConversations(cx, page, pageSize);
   }
 
-  async getConversation(id: string): Promise<Result<GetConversationRes>> {
-    const result = await this.conversationService.getConversation(id, true);
+  async getConversation(id: string, cx: ExecutionContext): Promise<Result<GetConversationRes>> {
+    const result = await this.conversationService.getConversation(id, cx, true);
     if (!result.ok) return result;
     if (!result.data) {
       return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
@@ -86,7 +94,11 @@ export class AIChatController {
     return ok(result.data);
   }
 
-  async updateConversation(id: string, input: unknown): Promise<Result<UpdateConversationRes>> {
+  async updateConversation(
+    id: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<UpdateConversationRes>> {
     const parsed = UpdateConversationSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -96,11 +108,11 @@ export class AIChatController {
       });
     }
 
-    return this.conversationService.updateConversation(id, parsed.data);
+    return this.conversationService.updateConversation(id, parsed.data, cx);
   }
 
-  async deleteConversation(id: string): Promise<Result<null>> {
-    const result = await this.conversationService.deleteConversation(id);
+  async deleteConversation(id: string, cx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.conversationService.deleteConversation(id, cx);
     if (!result.ok) return result;
     // Serialize as data:null so HttpResponse keeps the data key (no ActionSuccess dual-track).
     return ok(null);
@@ -176,7 +188,7 @@ export class AIChatController {
     });
   }
 
-  async listMessages(input: unknown): Promise<Result<MessageListRes>> {
+  async listMessages(input: unknown, cx: ExecutionContext): Promise<Result<MessageListRes>> {
     const parsed = ListMessagesSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -188,6 +200,7 @@ export class AIChatController {
 
     const result = await this.conversationService.getConversation(
       parsed.data.conversationId,
+      cx,
       true,
     );
     if (!result.ok) return result;

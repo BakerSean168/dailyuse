@@ -98,7 +98,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req) => controller.getConversation(req.params!.id),
+    (req, ctx) => controller.getConversation(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // PATCH /conversations/:id — Update conversation
@@ -118,7 +118,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req) => controller.updateConversation(req.params!.id, req.body),
+    (req, ctx) => controller.updateConversation(req.params!.id, req.body, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // DELETE /conversations/:id — Delete conversation
@@ -136,7 +136,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteConversation(req.params!.id),
+    (req, ctx) => controller.deleteConversation(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // POST /messages — Send message
@@ -170,7 +170,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req) => controller.listMessages(req.query),
+    (req, ctx) => controller.listMessages(req.query, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   router.post('/messages/sse', auth, async (req, res) => {

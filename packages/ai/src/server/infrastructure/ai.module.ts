@@ -423,12 +423,13 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     // -- Conversations --
     createConversation: (cx, name) =>
       services.conversationServices.createConversation.execute(cx, name),
-    updateConversation: (id, req) =>
-      services.conversationServices.updateConversation.execute(id, req),
+    updateConversation: (id, req, cx) =>
+      services.conversationServices.updateConversation.execute(cx.identityId, id, req),
     listConversations: (cx, page, pageSize) =>
       services.conversationServices.listConversations.execute(cx, page, pageSize),
-    getConversation: async (id, includeMessages) => {
+    getConversation: async (id, cx, includeMessages) => {
       const result = await services.conversationServices.getConversation.execute(
+        cx.identityId,
         id,
         includeMessages,
       );
@@ -438,7 +439,8 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       }
       return ok(result.data.toClientDTO());
     },
-    deleteConversation: (id) => services.conversationServices.deleteConversation.execute(id),
+    deleteConversation: (id, cx) =>
+      services.conversationServices.deleteConversation.execute(cx.identityId, id),
 
     // -- Chat --
     sendMessage: (conversationId, content, cx, providerId, model) =>

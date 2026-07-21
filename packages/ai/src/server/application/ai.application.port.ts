@@ -64,7 +64,11 @@ export interface AIApplicationPort {
     cx: ExecutionContext,
     name?: string,
   ): Promise<Result<AIConversationClientDTO>>;
-  updateConversation(id: string, req: UpdateConversationReq): Promise<Result<UpdateConversationRes>>;
+  updateConversation(
+    id: string,
+    req: UpdateConversationReq,
+    cx: ExecutionContext,
+  ): Promise<Result<UpdateConversationRes>>;
   listConversations(
     cx: ExecutionContext,
     page?: number,
@@ -72,9 +76,10 @@ export interface AIApplicationPort {
   ): Promise<Result<ConversationListRes>>;
   getConversation(
     id: string,
+    cx: ExecutionContext,
     includeMessages?: boolean,
   ): Promise<Result<AIConversationClientDTO | null>>;
-  deleteConversation(id: string): Promise<Result<void>>;
+  deleteConversation(id: string, cx: ExecutionContext): Promise<Result<void>>;
 
   // Chat
   sendMessage(

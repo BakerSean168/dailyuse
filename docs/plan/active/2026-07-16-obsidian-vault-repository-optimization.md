@@ -1524,6 +1524,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 增强。验证：repository connection prisma/service/surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百一十四轮）：AI conversation get/update/delete 身份隔离——
+> 新增 `findByIdForIdentity`；delete 改为 `updateMany where { id, identityId }`；save 拒绝
+> 跨 identity 改写；HTTP/Electron 与 use case 透传 identityId；sendMessage 路径 helpers 同步
+> 改用 identity 读路径。补 ownership surface + memory 单测。§13.2 Agent 隔离证据再增强，仍为
+> 部分。验证：ai conversation ownership specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1620,6 +1628,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百零四轮：journey step 15 owned getEvents passthrough + ownership surface。
   残留一百零五轮：checkpoint upsert 拒绝 foreign runId 覆盖与 run.identityId 冒充。
   残留一百零七轮：checkpoint get/list 过滤 spoofed run.identityId metadata。
+  残留一百一十四轮：conversation get/update/delete identity-scoped（findByIdForIdentity）。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

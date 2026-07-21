@@ -109,6 +109,24 @@ export class PowerSyncAIConversationRepository implements IAIConversationReposit
     return PowerSyncAIConversationMapper.toDomain(row, messages);
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: AIConversationQueryOptions,
+  ): Promise<AIConversation | null> {
+    const row = await this.db.getOptional<PowerSyncAIConversationRow>(
+      `SELECT * FROM ai_conversations WHERE id = ? AND identity_id = ? AND deleted_at IS NULL LIMIT 1`,
+      [id, identityId],
+    );
+
+    if (!row) {
+      return null;
+    }
+
+    const messages = options?.includeChildren ? await this.loadMessages(row.id) : [];
+    return PowerSyncAIConversationMapper.toDomain(row, messages);
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: AIConversationQueryOptions,
@@ -132,11 +150,15 @@ export class PowerSyncAIConversationRepository implements IAIConversationReposit
 
 
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Conversation not found for the current identity.');
+    }
     const now = new Date().toISOString();
     await this.db.execute(
-      `UPDATE ai_conversations SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ?`,
-      ['Archived', now, now, id],
+      `UPDATE ai_conversations SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?`,
+      ['Archived', now, now, id, identityId],
     );
   }
 

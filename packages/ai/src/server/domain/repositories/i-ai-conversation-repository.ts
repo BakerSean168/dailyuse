@@ -39,6 +39,15 @@ export interface IAIConversationRepository {
   findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null>;
 
   /**
+   * 按账户 + 对话 ID 查找（身份隔离读路径）
+   */
+  findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: AIConversationQueryOptions,
+  ): Promise<AIConversation | null>;
+
+  /**
    * 根据账户 UUID 查找所有对话
    */
   findByIdentityId(
@@ -49,5 +58,5 @@ export interface IAIConversationRepository {
   /**
    * 删除对话（级联删除所有消息）
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 }

@@ -11,9 +11,12 @@ const logger = createLogger('DeleteConversationUseCase');
 export class DeleteConversationUseCase {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(conversationId: string): Promise<Result<void>> {
+  async execute(identityId: string, conversationId: string): Promise<Result<void>> {
     try {
-      const conversation = await this.conversationRepository.findById(conversationId);
+      const conversation = await this.conversationRepository.findByIdForIdentity(
+        identityId,
+        conversationId,
+      );
       if (!conversation) {
         return error('NOT_FOUND', 'Conversation not found');
       }
@@ -21,10 +24,10 @@ export class DeleteConversationUseCase {
       conversation.softDelete();
       await this.conversationRepository.save(conversation);
 
-      logger.info('Conversation deleted', { id: conversationId });
+      logger.info('Conversation deleted', { id: conversationId, identityId });
       return ok(undefined);
     } catch (err) {
-      logger.error('Failed to delete conversation', { error: err, conversationId });
+      logger.error('Failed to delete conversation', { error: err, conversationId, identityId });
       return error('INTERNAL_ERROR', err instanceof Error ? err.message : 'Failed to delete conversation');
     }
   }

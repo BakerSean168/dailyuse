@@ -16,12 +16,27 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
   private conversations = new Map<string, AIConversation>();
 
   async save(conversation: AIConversation): Promise<void> {
+    const existing = this.conversations.get(String(conversation.id));
+    if (existing && String(existing.identityId) !== String(conversation.identityId)) {
+      throw new Error('Conversation not found for the current identity.');
+    }
     this.conversations.set(String(conversation.id), conversation);
   }
 
   async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
     void options;
     return this.conversations.get(id) ?? null;
+  }
+
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: AIConversationQueryOptions,
+  ): Promise<AIConversation | null> {
+    void options;
+    const conversation = this.conversations.get(id) ?? null;
+    if (!conversation || String(conversation.identityId) !== identityId) return null;
+    return conversation;
   }
 
   async findByIdentityId(
@@ -34,7 +49,11 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
     );
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const conversation = this.conversations.get(id);
+    if (!conversation || String(conversation.identityId) !== identityId) {
+      throw new Error('Conversation not found for the current identity.');
+    }
     this.conversations.delete(id);
   }
 

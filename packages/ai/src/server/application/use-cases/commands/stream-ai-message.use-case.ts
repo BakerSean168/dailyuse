@@ -80,7 +80,7 @@ export class StreamAIMessageUseCase {
         MessageRole.User,
         content,
       );
-      const history = await getConversationHistory(this.conversationRepository, conversationId);
+      const history = await getConversationHistory(this.conversationRepository, cx.identityId, conversationId);
       const providerConfig = await resolveActiveProviderConfig(
         this.providerConfigRepository,
         cx.identityId,
