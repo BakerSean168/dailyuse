@@ -5,7 +5,6 @@ export interface IAccountRepository {
   findById(id: string, tx?: unknown): Promise<Account | null>;
   findByNickname(nickname: string, tx?: unknown): Promise<Account | null>;
   findByEmail(email: string, tx?: unknown): Promise<Account | null>;
-  findByPhone(phoneNumber: string, tx?: unknown): Promise<Account | null>;
   existsByNickname(nickname: string, tx?: unknown): Promise<boolean>;
   existsByEmail(email: string, tx?: unknown): Promise<boolean>;
   delete(id: string, tx?: unknown): Promise<void>;

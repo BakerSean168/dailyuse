@@ -50,7 +50,6 @@ const Ch = {
   SESSION_REVOKE_ALL: 'auth:session:revoke-all',
   DEVICE_LIST: 'auth:device:list',
   DEVICE_GET_CURRENT: 'auth:device:get-current',
-  DEVICE_TRUST: 'auth:device:trust',
   DEVICE_REVOKE: 'auth:device:revoke',
   DEVICE_RENAME: 'auth:device:rename',
   FORGOT_PASSWORD: 'auth:forgot-password',
@@ -582,9 +581,6 @@ export function registerDesktopAuthShellHandlers(
           type: 'DESKTOP',
         };
   });
-  ipcMain.handle(Ch.DEVICE_TRUST, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Device trust not implemented' })),
-  );
   ipcMain.handle(Ch.DEVICE_REVOKE, async (_event, deviceId: string) => {
     const service = currentAuthService();
     return service

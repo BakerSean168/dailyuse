@@ -164,7 +164,6 @@ export const AuthChannels = {
   SESSION_REVOKE_ALL: 'auth:session:revoke-all',
   DEVICE_LIST: 'auth:device:list',
   DEVICE_GET_CURRENT: 'auth:device:get-current',
-  DEVICE_TRUST: 'auth:device:trust',
   DEVICE_REVOKE: 'auth:device:revoke',
   DEVICE_RENAME: 'auth:device:rename',
   FORGOT_PASSWORD: 'auth:forgot-password',
