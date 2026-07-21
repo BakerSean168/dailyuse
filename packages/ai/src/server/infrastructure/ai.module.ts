@@ -85,9 +85,6 @@ import type {
   ListConversationsUseCase,
   DeleteConversationUseCase,
   UpdateConversationUseCase,
-  AddConversationMessageUseCase,
-  GetConversationsByStatusUseCase,
-  UpdateConversationStatusUseCase,
   SyncKnowledgeResourcesUseCase,
   ReindexAllKnowledgeUseCase,
   SyncRelevantKnowledgeUseCase,
@@ -186,9 +183,6 @@ export interface AIConversationServices {
   readonly listConversations: ListConversationsUseCase;
   readonly deleteConversation: DeleteConversationUseCase;
   readonly updateConversation: UpdateConversationUseCase;
-  readonly addMessage: AddConversationMessageUseCase;
-  readonly getByStatus: GetConversationsByStatusUseCase;
-  readonly updateStatus: UpdateConversationStatusUseCase;
 }
 
 /**

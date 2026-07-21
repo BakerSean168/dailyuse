@@ -1,7 +1,7 @@
 /**
  * Conversation service surface (stage-6 residual):
- * After dropping dual-track v1/v2 assembly, the host conversation API is
- * served only by the canonical use-case names (no *V2 fields).
+ * Host conversation assembly matches AIApplicationPort CRUD only.
+ * Message writes go through chat send/stream; no orphan add/status use cases.
  */
 import { describe, expect, it, vi } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
@@ -19,7 +19,7 @@ function createMockDeps(overrides?: Partial<AIModuleDependencies>): AIModuleDepe
 }
 
 describe('conversation services surface', () => {
-  it('exposes canonical conversation use-case fields without V2 dual-track names', () => {
+  it('exposes only transport-wired conversation CRUD use cases', () => {
     const direct = createDirectProviderAIRuntime(createMockDeps());
     const remote = createRemoteAIServiceRuntime(createMockDeps());
 
@@ -27,16 +27,16 @@ describe('conversation services surface', () => {
       const keys = Object.keys(runtime.services.conversationServices).sort();
       expect(keys).toEqual(
         [
-          'addMessage',
           'createConversation',
           'deleteConversation',
-          'getByStatus',
           'getConversation',
           'listConversations',
           'updateConversation',
-          'updateStatus',
         ].sort(),
       );
+      expect(keys).not.toContain('addMessage');
+      expect(keys).not.toContain('getByStatus');
+      expect(keys).not.toContain('updateStatus');
       expect(keys.some((key) => key.includes('V2') || key.includes('v2'))).toBe(false);
     }
   });

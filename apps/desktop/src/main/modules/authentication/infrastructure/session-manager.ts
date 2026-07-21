@@ -34,7 +34,6 @@ import { TokenRefreshOrchestrator } from './token-refresh';
 import { LoginOrchestrator } from './login-orchestrator';
 import type { SessionRestoreResult, AutoLoginResult, SessionStatus, OfflineLoginResponse } from './session-types';
 
-// Re-export types for backward compatibility
 export type { SessionRestoreResult, AutoLoginResult, SessionStatus, OfflineLoginResponse } from './session-types';
 
 // ============ SessionManager ============

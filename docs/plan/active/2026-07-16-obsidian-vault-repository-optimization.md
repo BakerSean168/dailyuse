@@ -57,7 +57,7 @@ updated: 2026-07-21T00:00:00
   Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView/useSmsCodeCountdown 已删；Agent identity 归属 fail-closed + resolveRunPlan surface 隔离；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
-  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；残留三十三至三十六轮删除 Desktop DI/PowerSync/lazy-module/contracts、AI conversation 双轨命名与 Desktop auth stub services 残留；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
+  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；残留三十三至三十七轮删除 Desktop DI/PowerSync/lazy-module/contracts、AI conversation 双轨命名与无传输层 conversation add/status 用例、Desktop auth stub/TokenData 双轨别名残留；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
 
 ## 2. 已确认产品边界
 
@@ -923,6 +923,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留三十七轮）：删除无传输层 / `AIApplicationPort` 接线的 conversation
+> 死用例 `AddConversationMessageUseCase`、`GetConversationsByStatusUseCase`、
+> `UpdateConversationStatusUseCase` 及其 runtime 装配字段；消息写入仅走 chat send/stream，
+> conversation host 表面只保留 create/get/list/update/delete。同步收口 Desktop
+> `TokenData`→`TokenStorageData` 双轨类型别名与若干 “backward compatibility” 注释（
+> `LoginCredentials`/`getBootstrapper`/`setMenuLocale` 仍有真实消费者，保留）。§13.2 未打勾项
+> 仍为部分/外部阻塞（缺真实 OAuth/GitHub fixture 跨端 E2E、Agent multi-turn E2E、全量 PR 门禁）。
+> 验证：ai conversation surface + runtime focused specs、governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -941,7 +952,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留三十六轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留三十七轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；

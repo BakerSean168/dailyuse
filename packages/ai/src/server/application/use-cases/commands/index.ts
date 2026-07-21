@@ -27,9 +27,6 @@ export * from './get-conversation.use-case';
 export * from './list-conversations.use-case';
 export * from './delete-conversation.use-case';
 export * from './update-conversation.use-case';
-export * from './add-conversation-message.use-case';
-export * from './get-conversations-by-status.use-case';
-export * from './update-conversation-status.use-case';
 
 // AI Knowledge Index helpers and individual use cases
 export * from './ai-knowledge-index-helpers';

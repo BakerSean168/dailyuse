@@ -77,7 +77,6 @@ export { AuthMode, toIpcResult, ok, fail };
 // Re-export lifecycle types
 export type { AutoLoginResult, SessionRestoreResult } from './desktop-auth-lifecycle-coordinator';
 
-// Alias for backward compatibility
 export type LoginCredentials = EmailLoginCredentials;
 
 // ===== Application Service =====

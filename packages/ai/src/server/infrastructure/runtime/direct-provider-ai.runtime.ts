@@ -41,9 +41,6 @@ import {
   ListConversationsUseCase,
   DeleteConversationUseCase,
   UpdateConversationUseCase,
-  AddConversationMessageUseCase,
-  GetConversationsByStatusUseCase,
-  UpdateConversationStatusUseCase,
   GenerateAIGoalUseCase,
   ManageAIKnowledgeNoteUseCase,
 } from '../../application/use-cases';
@@ -94,9 +91,6 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     listConversations: new ListConversationsUseCase(conversationRepository),
     deleteConversation: new DeleteConversationUseCase(conversationRepository),
     updateConversation: new UpdateConversationUseCase(conversationRepository),
-    addMessage: new AddConversationMessageUseCase(conversationRepository),
-    getByStatus: new GetConversationsByStatusUseCase(conversationRepository),
-    updateStatus: new UpdateConversationStatusUseCase(conversationRepository),
   };
 
   // Chat services
