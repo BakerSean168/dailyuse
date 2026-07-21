@@ -17,16 +17,20 @@ const i18n = createI18n({
   },
 });
 
-const workspaceSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/repository/views/RepositoryWorkspaceView.vue'),
+const projectionSource = readFileSync(
+  resolve(process.cwd(), 'src/modules/repository/views/KnowledgeProjectionWorkspaceView.vue'),
   'utf8',
 );
-const treeSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/repository/components/TypedFileTree.vue'),
+const localVaultSource = readFileSync(
+  resolve(process.cwd(), 'src/modules/repository/views/LocalVaultWorkspaceView.vue'),
   'utf8',
 );
-const editorSource = readFileSync(
-  resolve(process.cwd(), 'src/modules/editor/views/EditorLinearView.vue'),
+const entrySource = readFileSync(
+  resolve(process.cwd(), 'src/modules/repository/views/RepositoryEntryView.vue'),
+  'utf8',
+);
+const routerSource = readFileSync(
+  resolve(process.cwd(), 'src/modules/repository/router/index.ts'),
   'utf8',
 );
 
@@ -52,24 +56,20 @@ describe('Note single-page architecture', () => {
     wrapper.unmount();
   });
 
-  it('keeps one workspace/editor DOM and one primary create owner', () => {
-    expect(workspaceSource).toContain('data-primary-action="create-note"');
-    expect(workspaceSource).toContain(':disabled="!workspaceScene.status.isReady"');
-    expect(workspaceSource).not.toContain('usePanelWidth');
-    expect(workspaceSource).not.toContain('isNarrow');
-    expect(workspaceSource).not.toContain('repository-create-note-narrow');
-    expect(treeSource).not.toContain("'create-note'");
-    expect(editorSource).not.toContain('usePanelWidth');
-    expect(editorSource).not.toContain('isNarrow');
-    expect(editorSource).not.toContain('note-context-narrow-hint');
+  it('uses projection-only web entry and local vault desktop entry without legacy note routes', () => {
+    expect(entrySource).toContain('LocalVaultWorkspaceView');
+    expect(entrySource).toContain('KnowledgeProjectionWorkspaceView');
+    expect(routerSource).toContain("path: '/repository'");
+    expect(routerSource).not.toContain("path: '/note");
+    expect(routerSource).not.toContain('note-edit');
   });
 
-  it('requires a title before note creation and exposes separate save/index states', () => {
-    expect(workspaceSource).toContain('data-testid="repository-create-note-dialog"');
-    expect(workspaceSource).toContain('data-testid="repository-create-note-title"');
-    expect(workspaceSource).toContain(':disabled="workspaceScene.dialogs.createNote.saveDisabled"');
-    expect(workspaceSource).toContain(
-      ':index-state="workspaceScene.main.editor.status.knowledgeIndex"',
-    );
+  it('keeps confirmed create and deep-link selection on the projection workspace', () => {
+    expect(projectionSource).toContain('data-testid="knowledge-projection-workspace"');
+    expect(projectionSource).toContain('createConfirmedKnowledgeNote');
+    expect(projectionSource).toContain('noteQueryId');
+    expect(projectionSource).toContain('route.query.note');
+    expect(localVaultSource).toContain('route.query.note');
+    expect(localVaultSource).toContain('applyNoteQuerySelection');
   });
 });

@@ -4,8 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { useAI } from './useAI';
 import { useGoal } from '../../goal/composables/useGoal';
-import { useRepository } from '../../repository/composables/useRepository';
-import { useEditorWorkspaceActions } from '../../editor/composables';
+import { useRecentKnowledgeNotes } from '../../repository/composables/useRecentKnowledgeNotes';
 import { useAIChatSession } from './useAIChatSession';
 import { useAIModelSelection } from './useAIModelSelection';
 import { useAIGoalWorkflow } from './useAIGoalWorkflow';
@@ -39,9 +38,25 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   const router = useRouter();
   const { service, providers, loadProviders } = useAI();
   const { goals, fetchGoals, createGoal, addKeyResult } = useGoal();
-  const { initRepository, fetchResources, resources } = useRepository();
-  const { requestOpenResource } = useEditorWorkspaceActions();
+  const recentKnowledgeNotes = useRecentKnowledgeNotes();
   const formatters = useAIFormatters();
+
+  async function openKnowledgeNoteInRepository(noteId: string): Promise<void> {
+    if (!noteId) return;
+    await router.push({ path: '/repository', query: { note: noteId } });
+  }
+
+  async function requestOpenResource(resourceId: string): Promise<void> {
+    await openKnowledgeNoteInRepository(resourceId);
+  }
+
+  async function fetchResources(): Promise<void> {
+    await recentKnowledgeNotes.load(20);
+  }
+
+  async function initRepository(): Promise<void> {
+    await recentKnowledgeNotes.load(20);
+  }
 
   // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -77,21 +92,12 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   );
 
   const recentKnowledgeNoteList = computed<AIWorkspaceRecentKnowledgeNote[]>(() =>
-    [...resources.value]
-      .filter((resource) => {
-        if (resource.deletedAt || resource.isDeleted || resource.isArchived) return false;
-        const extension = resource.extension?.toLowerCase?.() ?? '';
-        const mimeType = resource.mimeType?.toLowerCase?.() ?? '';
-        return extension === '.md' || mimeType === 'text/markdown';
-      })
-      .sort((left, right) => Number(right.updatedAt ?? 0) - Number(left.updatedAt ?? 0))
-      .slice(0, 5)
-      .map((resource) => ({
-        id: String(resource.id),
-        title: resource.name,
-        path: resource.path,
-        updatedAt: Number(resource.updatedAt ?? 0),
-      })),
+    recentKnowledgeNotes.notes.value.slice(0, 5).map((note) => ({
+      id: note.id,
+      title: note.title,
+      path: note.path,
+      updatedAt: note.updatedAt,
+    })),
   );
 
   // ─── Composables ───────────────────────────────────────────────────
@@ -448,9 +454,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   }
 
   async function openRecentKnowledgeNote(resourceId: string) {
-    if (!resourceId) return;
-    await requestOpenResource(resourceId);
-    await router.push('/repository');
+    await openKnowledgeNoteInRepository(resourceId);
   }
 
   async function maybeRenameCurrentConversation(name: string) {

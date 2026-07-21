@@ -389,9 +389,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import {
   BookOpen,
   CheckCircle,
@@ -432,12 +432,35 @@ import KnowledgeProjectionRelationsView from '../components/KnowledgeProjectionR
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');
 
 const connections = ref<KnowledgeRepositoryConnectionClientDTO[]>([]);
 const selectedConnectionId = ref('');
 const notes = ref<KnowledgeNoteProjectionClientDTO[]>([]);
 const selectedNoteId = ref('');
+
+function noteQueryId(): string {
+  const raw = route.query.note;
+  if (typeof raw === 'string') return raw;
+  if (Array.isArray(raw) && typeof raw[0] === 'string') return raw[0];
+  return '';
+}
+
+async function applyNoteQuerySelection(): Promise<void> {
+  const requested = noteQueryId();
+  if (!requested) return;
+  if (selectedNoteId.value === requested) return;
+  const listed = notes.value.find(
+    (note) => note.id === requested || note.relativePath === requested,
+  );
+  if (listed) {
+    selectedNoteId.value = listed.id;
+    return;
+  }
+  await selectGraphNode(requested);
+}
+
 const noteView = ref<'preview' | 'relations'>('preview');
 const searchQuery = ref('');
 const loadingConnections = ref(true);
@@ -542,7 +565,19 @@ async function loadNotes(): Promise<void> {
   }
 
   notes.value = result.data.notes;
-  if (!notes.value.some((note) => note.id === selectedNoteId.value)) {
+  const requested = noteQueryId();
+  if (requested) {
+    const matched = notes.value.find(
+      (note) => note.id === requested || note.relativePath === requested,
+    );
+    if (matched) {
+      selectedNoteId.value = matched.id;
+    } else {
+      loadingNotes.value = false;
+      await selectGraphNode(requested);
+      return;
+    }
+  } else if (!notes.value.some((note) => note.id === selectedNoteId.value)) {
     selectedNoteId.value = notes.value[0]?.id ?? '';
   }
   loadingNotes.value = false;
@@ -672,6 +707,13 @@ async function confirmCreate(): Promise<void> {
 onMounted(() => {
   void loadConnections();
 });
+
+watch(
+  () => route.query.note,
+  () => {
+    void applyNoteQuerySelection();
+  },
+);
 </script>
 
 <style scoped>

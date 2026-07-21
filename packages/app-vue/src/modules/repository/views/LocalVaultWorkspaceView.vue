@@ -221,8 +221,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import {
   BookOpen,
   ExternalLink,
@@ -241,6 +242,7 @@ import { renderSafeMarkdown } from '../../../shared/utils/safe-markdown';
 import { useLocalVault } from '../composables/useLocalVault';
 
 const { t } = useI18n();
+const route = useRoute();
 const {
   binding,
   activeNote,
@@ -262,6 +264,36 @@ const {
   openWikiLink,
   notes,
 } = useLocalVault();
+
+function noteQueryId(): string {
+  const raw = route.query.note;
+  if (typeof raw === 'string') return raw;
+  if (Array.isArray(raw) && typeof raw[0] === 'string') return raw[0];
+  return '';
+}
+
+async function applyNoteQuerySelection(): Promise<void> {
+  const requested = noteQueryId();
+  if (!requested) return;
+  const target =
+    notes.value.find((note) => note.relativePath === requested) ??
+    notes.value.find((note) => note.title === requested) ??
+    null;
+  if (!target) return;
+  if (activeNote.value?.relativePath === target.relativePath) return;
+  await openNote(target);
+}
+
+onMounted(() => {
+  void applyNoteQuerySelection();
+});
+
+watch(
+  () => [route.query.note, notes.value.map((note) => note.relativePath).join('|')],
+  () => {
+    void applyNoteQuerySelection();
+  },
+);
 
 const renderedMarkdown = computed(() =>
   renderSafeMarkdown(activeNote.value?.contentMarkdown ?? ''),

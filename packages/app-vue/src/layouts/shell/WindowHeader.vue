@@ -16,6 +16,7 @@
  */
 import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import {
   ArrowLeft,
   ArrowRight,
@@ -76,6 +77,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const router = useRouter();
 
 const capsules = computed<ModuleCapsule[]>(
   () => inject(MODULE_CAPSULES_KEY, defaultModuleCapsules) ?? defaultModuleCapsules,
@@ -96,6 +98,15 @@ function togglePreview(id: string): void {
 function enterModule(id: string): void {
   previewOpenId.value = null;
   emit('enter-module', id);
+}
+
+function enterNote(noteId?: string): void {
+  previewOpenId.value = null;
+  if (noteId) {
+    void router.push({ path: '/repository', query: { note: noteId } }).catch(() => {});
+    return;
+  }
+  emit('enter-module', 'note');
 }
 
 function closePreview(): void {
@@ -233,7 +244,7 @@ onBeforeUnmount(() => {
           <NoteCapsulePreview
             v-else-if="capsule.id === 'note'"
             @view-all="enterModule(capsule.id)"
-            @select="enterModule(capsule.id)"
+            @select="enterNote"
           />
           <ReminderCapsulePreview
             v-else-if="capsule.id === 'reminder'"
