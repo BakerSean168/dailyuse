@@ -36,7 +36,6 @@ export default defineConfig({
       './packages/account/vitest.config.ts',
       './packages/ai/vitest.config.ts',
       './packages/authentication/vitest.config.ts',
-      './packages/editor/vitest.config.ts',
       './packages/goal/vitest.config.ts',
       './packages/governance/vitest.config.ts',
       './packages/notification/vitest.config.ts',

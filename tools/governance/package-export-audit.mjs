@@ -62,8 +62,7 @@ const PACKAGE_SPECIFIC_SUBPATHS = {
     './modules/authentication', './modules/account', './modules/goal',
     './modules/task', './modules/schedule', './modules/reminder',
     './modules/notification', './modules/repository', './modules/setting',
-    './modules/governance', './modules/dashboard/adapters', './modules/editor',
-    './modules/ai',
+    './modules/governance', './modules/dashboard/adapters',    './modules/ai',
   ],
 };
 

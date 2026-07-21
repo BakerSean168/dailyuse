@@ -30,11 +30,6 @@ const featureScopeConstraints = [
     onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:authentication'],
   },
   {
-    sourceTag: 'scope:editor',
-    // editor wires repository via /api composition (ADR-033 paradigm B)
-    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:editor', 'scope:repository'],
-  },
-  {
     sourceTag: 'scope:goal',
     // temporary: schedule shared-kernel until Schedule* contracts are extracted
     onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:goal', 'scope:schedule'],
@@ -145,7 +140,6 @@ const moduleBoundaryDepConstraints = [
       'scope:account',
       'scope:ai',
       'scope:authentication',
-      'scope:editor',
       'scope:goal',
       'scope:governance',
       'scope:notification',
@@ -166,7 +160,6 @@ const moduleBoundaryDepConstraints = [
       'scope:account',
       'scope:ai',
       'scope:authentication',
-      'scope:editor',
       'scope:goal',
       'scope:governance',
       'scope:notification',
@@ -188,7 +181,6 @@ const moduleBoundaryDepConstraints = [
       'scope:account',
       'scope:ai',
       'scope:authentication',
-      'scope:editor',
       'scope:goal',
       'scope:governance',
       'scope:notification',
@@ -218,7 +210,6 @@ const moduleBoundaryDepConstraints = [
       'scope:account',
       'scope:ai',
       'scope:authentication',
-      'scope:editor',
       'scope:goal',
       'scope:governance',
       'scope:notification',
@@ -248,7 +239,6 @@ const moduleBoundaryDepConstraints = [
       'scope:account',
       'scope:ai',
       'scope:authentication',
-      'scope:editor',
       'scope:goal',
       'scope:governance',
       'scope:notification',
@@ -278,7 +268,6 @@ const moduleBoundaryDepConstraints = [
       'scope:account',
       'scope:ai',
       'scope:authentication',
-      'scope:editor',
       'scope:goal',
       'scope:governance',
       'scope:notification',
@@ -575,17 +564,6 @@ export default tseslint.config(
     },
     {
       files: ['packages/account/src/**/*.ts'],
-      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
-      rules: {
-        '@typescript-eslint/no-explicit-any': 'error',
-        '@typescript-eslint/no-unused-vars': [
-          'error',
-          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
-        ],
-      },
-    },
-    {
-      files: ['packages/editor/src/**/*.ts'],
       ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
       rules: {
         '@typescript-eslint/no-explicit-any': 'error',

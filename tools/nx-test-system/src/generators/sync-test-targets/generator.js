@@ -7,7 +7,6 @@ const governedDomainProjects = new Set([
   "ai",
   "authentication",
   "domain-shared",
-  "editor",
   "goal",
   "governance",
   "notification",

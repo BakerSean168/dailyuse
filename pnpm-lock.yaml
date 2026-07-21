@@ -1479,43 +1479,6 @@ importers:
         specifier: ~6.0.3
         version: 6.0.3
 
-  packages/editor:
-    dependencies:
-      '@dailyuse/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@dailyuse/database':
-        specifier: workspace:*
-        version: link:../database
-      '@dailyuse/domain-shared':
-        specifier: workspace:*
-        version: link:../domain-shared
-      '@dailyuse/http-client':
-        specifier: workspace:*
-        version: link:../http-client
-      '@dailyuse/patterns':
-        specifier: workspace:*
-        version: link:../patterns
-      '@dailyuse/repository':
-        specifier: workspace:*
-        version: link:../repository
-      '@dailyuse/utils':
-        specifier: workspace:*
-        version: link:../utils
-      express:
-        specifier: ^5.2.1
-        version: 5.2.1
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-    devDependencies:
-      '@dailyuse/test-utils':
-        specifier: workspace:*
-        version: link:../test-utils
-      '@types/express':
-        specifier: ^5.0.0
-        version: 5.0.6
-
   packages/goal:
     dependencies:
       '@dailyuse/contracts':
