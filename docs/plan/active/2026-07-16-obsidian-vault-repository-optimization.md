@@ -40,8 +40,8 @@ updated: 2026-07-21T00:00:00
   inert embeds、callouts、task lists 以及 heading/block navigation metadata；附件读取只允许安全媒体类型并限制为
   10 MiB；附件 blob 已按 `connectionId + blobSha` 建立短期共享 PostgreSQL cache，并保留每次读取的授权、投影
   版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
-- 阶段 6 残留：API 不再包含 legacy Repository/Folder/Resource route builders；壳层与 AI 最近笔记改为 projection /
-  Local Vault，不再调用退役 Resource CRUD。旧 `RepositoryWorkspaceView` / `packages/editor` UI 仍有非路由死代码待删。
+- 阶段 6 残留：API 不再包含 legacy route builders；客户端 legacy CRUD 硬失败；MSW 与 E2E 对齐 knowledge-only 边界；
+  未引用 `RepositoryWorkspaceView` 已删除。`packages/app-vue` editor 模块与 `useRepository` 死代码仍待删除。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
 ## 2. 已确认产品边界
@@ -645,6 +645,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Web projection + Desktop Local Vault，不再调用已退役 Resource CRUD；`/repository?note=` 深链选中；Note capsule /
 > AI open 跳转 projection/local workspace。旧 `RepositoryWorkspaceView` 与 `packages/editor` 仍残留为非路由死代码，
 > 下轮继续删除。计划状态保持 **实施中**；PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留二轮）：客户端 HTTP/IPC adapter 对已退役 Repository/Folder/Resource/Bookmark
+> 方法硬失败 `NOT_SUPPORTED`，不再请求未挂载端点或未注册 IPC channel；Web MSW 仅保留 knowledge connection/
+> projection 与 legacy 404 边界；删除未引用的 `RepositoryWorkspaceView`；E2E 补 `GET /repositories/current`
+> 与 folders 404。旧 editor 模块与 useRepository 死代码仍在，但运行时入口已切断。状态保持实施中。
 
 ## 13. 测试与完成定义
 
