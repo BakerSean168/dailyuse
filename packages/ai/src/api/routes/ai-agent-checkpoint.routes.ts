@@ -61,6 +61,7 @@ export function registerAIAgentCheckpointRoutes(
       responses: {
         204: { description: 'Checkpoint upserted successfully' },
         400: errorResponse('参数错误'),
+        403: errorResponse('无权限覆盖其他身份的 Agent checkpoint'),
       },
     },
     [auth],

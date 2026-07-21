@@ -1451,6 +1451,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > ai journey/runtime/surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百零五轮）：Agent checkpoint upsert 身份隔离——禁止
+> `run.identityId` 冒充与 foreign `runId` 覆盖（原 bare `where:{runId}` upsert 可改写他人
+> checkpoint）；事务内 findUnique + owner gate 后 create/update；补 adapter 单测与
+> `agent-checkpoint-ownership.surface`；OpenAPI upsert 文档 403。§13.2 Agent 证据再增强，
+> 仍为部分。验证：ai checkpoint adapter/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1540,6 +1548,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   governance void delete 对齐 data:null。
   残留一百零三轮：journey step 14 getEvents ownership；三入口 matrix step 9 源码边界锁定。
   残留一百零四轮：journey step 15 owned getEvents passthrough + ownership surface。
+  残留一百零五轮：checkpoint upsert 拒绝 foreign runId 覆盖与 run.identityId 冒充。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
