@@ -3,7 +3,6 @@ import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
 import type {
   AIProviderConfigClientDTO,
-  AIProviderConfigSummary,
 } from '../aggregates/ai-provider-config-client';
 import type { TestAIProviderResultDTO } from '../dtos/provider-test-result.dto';
 
@@ -33,7 +32,8 @@ export type UpdateAIProviderConfigReq = z.infer<typeof UpdateAIProviderConfigSch
 export type UpdateAIProviderConfigRes = AIProviderConfigClientDTO;
 
 export interface ListAIProviderConfigsRes {
-  data: AIProviderConfigSummary[];
+  /** Full client DTOs — list payload matches server listProviders (no Summary dual-track). */
+  data: AIProviderConfigClientDTO[];
 }
 
 export type GetAIProviderConfigReq = void;

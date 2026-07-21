@@ -33,19 +33,23 @@ import type {
   AgentRunResult,
   AgentStartRunClientRequest,
 } from '@dailyuse/contracts/ai';
+import type { Result } from '@dailyuse/contracts/result';
 
 export interface AIClientPort {
   getCapabilities(): Promise<AICapabilities>;
   getEvaluationOverview(request?: GetAIEvaluationOverviewReq): Promise<GetAIEvaluationOverviewRes>;
 
-  createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
-  updateProvider(id: string, request: UpdateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
-  listProviders(): Promise<AIProviderConfigClientDTO[]>;
-  getProvider(id: string): Promise<AIProviderConfigClientDTO>;
-  deleteProvider(id: string): Promise<void>;
-  testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes>;
-  setDefaultProvider(providerId: string): Promise<void>;
-  refreshProviderModels(id: string): Promise<AIProviderConfigClientDTO>;
+  createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
+  updateProvider(
+    id: string,
+    request: UpdateAIProviderConfigReq,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
+  listProviders(): Promise<Result<AIProviderConfigClientDTO[]>>;
+  getProvider(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  deleteProvider(id: string): Promise<Result<void>>;
+  testProvider(request: TestAIProviderReq): Promise<Result<TestAIProviderRes>>;
+  setDefaultProvider(providerId: string): Promise<Result<void>>;
+  refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>>;
 
   generateGoal(request: GenerateGoalsReq): Promise<GenerateGoalsRes>;
 

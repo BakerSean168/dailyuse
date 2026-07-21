@@ -3,9 +3,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * AI provider list envelope surface (stage-6 residual 86):
+ * AI provider list envelope surface (stage-6 residual 86/96):
  * HTTP controller, Desktop IPC, and client adapters share contracts
  * ListAIProviderConfigsRes `{ data: [...] }` — no bare-array dual-track.
+ * Residual 96: adapters map Result envelopes (no unwrapResultOrThrow dual-track).
  */
 describe('ai provider list envelope surface', () => {
   const controller = readFileSync(
@@ -21,6 +22,20 @@ describe('ai provider list envelope surface', () => {
     resolve(__dirname, '../ipc/ai-provider-config-ipc.adapter.ts'),
     'utf8',
   );
+  const listSchema = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../../contracts/src/modules/ai/api/response-schemas.ts',
+    ),
+    'utf8',
+  );
+  const listDto = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../../contracts/src/modules/ai/api/ai-provider-config.dto.ts',
+    ),
+    'utf8',
+  );
 
   it('HTTP controller wraps list as ListAIProviderConfigsRes', () => {
     expect(controller).toContain('ListAIProviderConfigsRes');
@@ -32,12 +47,21 @@ describe('ai provider list envelope surface', () => {
     expect(electron).toContain('return ok({ data: result.data })');
   });
 
-  it('client adapters unwrap ListAIProviderConfigsRes only (no bare-array dual path)', () => {
+  it('client adapters map ListAIProviderConfigsRes only (no bare-array or throw dual path)', () => {
     expect(httpAdapter).toContain('ListAIProviderConfigsRes');
-    expect(httpAdapter).toContain('unwrapResultOrThrow(result).data');
+    expect(httpAdapter).toContain('map(result, (envelope) => envelope.data)');
+    expect(httpAdapter).not.toContain('unwrapResultOrThrow');
     expect(ipcAdapter).toContain('ListAIProviderConfigsRes');
-    expect(ipcAdapter).toContain('unwrapResultOrThrow(result).data');
+    expect(ipcAdapter).toContain('map(result, (envelope) => envelope.data)');
+    expect(ipcAdapter).not.toContain('unwrapResultOrThrow');
     expect(ipcAdapter).not.toContain('Array.isArray(data)');
     expect(ipcAdapter).not.toContain('AIProviderConfigClientDTO[] | { data');
+  });
+
+  it('list contracts use full ClientDTO items (no Summary dual-track)', () => {
+    const schemaBlock = listSchema.slice(listSchema.indexOf('ListAIProviderConfigsResSchema'));
+    expect(schemaBlock).toContain('data: z.array(AIProviderConfigClientDTOSchema)');
+    expect(schemaBlock.split('export const')[0]).not.toContain('AIProviderConfigSummarySchema');
+    expect(listDto).toContain('data: AIProviderConfigClientDTO[]');
   });
 });

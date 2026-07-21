@@ -1369,6 +1369,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十六轮）：AI provider-config 客户端 Result 端口迁移——
+> `IAIProviderConfigApiClient` / `AIClientPort` provider 方法改为 `Promise<Result<T>>`；
+> HTTP/IPC adapters 去掉 `unwrapResultOrThrow` 双轨，list 用 `map` 解 `ListAIProviderConfigsRes`；
+> contracts list 条目统一 `AIProviderConfigClientDTO`（去掉 Summary 列表双轨）；UI
+> (`useAI`/`useAIWorkspace`) 在 composable 边界 `unwrap`。顺带修复 electron destroy 使用
+> 未定义 `channels`（改为 `allChannels`）。补 `ai-provider-config-result-port.surface`。
+> 其它 AI ports 仍 throw-unwrap，未整包迁移。§13.2 仍为部分/外部阻塞。
+> 验证：ai typecheck + provider result/list envelope surfaces + useAI + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

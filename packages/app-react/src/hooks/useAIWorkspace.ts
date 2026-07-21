@@ -8,6 +8,7 @@ import {
   type MessageClientDTO,
   type SendMessageReq,
 } from '@dailyuse/contracts/ai';
+import { unwrap } from '@dailyuse/contracts/result';
 
 import { useAppSession } from './useAppSession';
 import { useAIService } from './useAIService';
@@ -81,11 +82,12 @@ export function useAIWorkspace() {
     setError(null);
 
     try {
-      const [list, nextProviders, nextCapabilities] = await Promise.all([
+      const [list, providersResult, nextCapabilities] = await Promise.all([
         service.listConversations({ page: 1, pageSize: 20 }),
         service.listProviders(),
         service.getCapabilities(),
       ]);
+      const nextProviders = unwrap(providersResult);
 
       setConversations(list.data);
       setProviders(nextProviders);
@@ -155,8 +157,8 @@ export function useAIWorkspace() {
     setError(null);
 
     try {
-      await service.setDefaultProvider(providerId);
-      const nextProviders = await service.listProviders();
+      unwrap(await service.setDefaultProvider(providerId));
+      const nextProviders = unwrap(await service.listProviders());
       setProviders(nextProviders);
       resolveSelectedProvider(nextProviders, providerId);
       return true;

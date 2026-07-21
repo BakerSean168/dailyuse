@@ -5,6 +5,9 @@
  * This is the single entry point for UI layers to interact with the AI module.
  * All methods delegate directly to the underlying API client adapters.
  *
+ * Provider-config methods return Result envelopes (residual 96). Other AI ports
+ * still throw-unwrap at infrastructure adapters until migrated.
+ *
  * 这是 UI 层与 AI 模块交互的唯一入口。
  * 所有方法直接委托给底层 API 客户端适配器。
  */

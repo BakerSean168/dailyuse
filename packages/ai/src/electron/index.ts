@@ -409,7 +409,7 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
     },
 
     destroy(): void {
-      for (const channel of channels) {
+      for (const channel of allChannels) {
         ipcMain.removeHandler(channel);
       }
       for (const session of activeStreamSessions.values()) {

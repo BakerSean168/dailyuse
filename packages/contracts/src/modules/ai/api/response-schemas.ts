@@ -287,6 +287,6 @@ export const QueryAnalyticsResSchema = z.object({
 });
 
 export const ListAIProviderConfigsResSchema = z.object({
-  data: z.array(AIProviderConfigSummarySchema),
+  data: z.array(AIProviderConfigClientDTOSchema),
 });
 

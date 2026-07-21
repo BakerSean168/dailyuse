@@ -8,6 +8,7 @@ import type {
   TestAIProviderReq,
   TestAIProviderRes,
 } from '@dailyuse/contracts/ai';
+import { ok } from '@dailyuse/contracts/result';
 import { AI_SERVICE_KEY } from '../../../di/keys';
 import { useAI } from './useAI';
 
@@ -115,7 +116,7 @@ describe('useAI', () => {
   it('keeps provider results strongly typed at the composable seam', async () => {
     const providers = [createProvider(), createProvider({ id: 'provider-2' as AIProviderConfigClientDTO['id'], isDefault: false })];
     const { composable, service } = mountComposable({
-      listProviders: vi.fn().mockResolvedValue(providers),
+      listProviders: vi.fn().mockResolvedValue(ok(providers)),
     });
 
     const loadedProviders: AIProviderConfigClientDTO[] = await composable.loadProviders();
@@ -137,7 +138,7 @@ describe('useAI', () => {
     const expandKnowledgeResult = createExpandKnowledgeResult();
     const { composable, service } = mountComposable({
       getCapabilities: vi.fn().mockResolvedValue(capabilities),
-      testProvider: vi.fn().mockResolvedValue(providerTestResult),
+      testProvider: vi.fn().mockResolvedValue(ok(providerTestResult)),
       expandKnowledge: vi.fn().mockResolvedValue(expandKnowledgeResult),
     });
     const request: TestAIProviderReq = {
