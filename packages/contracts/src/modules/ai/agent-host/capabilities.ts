@@ -118,3 +118,16 @@ export function knowledgeWriteRequirements(
       : { kind: 'context.cloud_rag', optional: false },
   ];
 }
+
+/**
+ * First-phase goal automation requires proposal + writable mutation + goal workflow.
+ * 首期目标自动化需要 proposal、可写 mutation 与 goal workflow 能力。
+ */
+export function goalAutomationRequirements(): CapabilityRequirement[] {
+  return [
+    { kind: 'tool.proposal', optional: false },
+    { kind: 'tool.mutation', optional: false, readonly: false },
+    { kind: 'workflow.goal', optional: false },
+  ];
+}
+

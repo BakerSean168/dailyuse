@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CapabilityOffer, ResolvedRunPlan } from './capabilities';
 import {
+  goalAutomationRequirements,
   knowledgeWriteRequirements,
   resolveRunPlan,
 } from './capabilities';
@@ -183,6 +184,62 @@ describe('resolveRunPlan isolation', () => {
     });
 
     expect(plan.engineId).toBe('chat.turn');
+    expect(plan.missing).toEqual([]);
+  });
+});
+
+describe('goalAutomationRequirements isolation', () => {
+  it('fails closed without workflow.goal even when mutation is present', () => {
+    const plan = resolveRunPlan({
+      engineId: 'goal.create',
+      offers: [
+        {
+          kind: 'tool.proposal',
+          providerId: 'proposal',
+          surface: 'any',
+          readonly: false,
+        },
+        {
+          kind: 'tool.mutation',
+          providerId: 'mutation',
+          surface: 'any',
+          readonly: false,
+        },
+      ],
+      requirements: goalAutomationRequirements(),
+    });
+
+    expect(plan.engineId).toBe('none');
+    expect(plan.missing.map((item) => item.kind)).toEqual(['workflow.goal']);
+  });
+
+  it('accepts a complete goal automation plan', () => {
+    const plan = resolveRunPlan({
+      engineId: 'goal.create',
+      offers: [
+        {
+          kind: 'tool.proposal',
+          providerId: 'proposal',
+          surface: 'any',
+          readonly: false,
+        },
+        {
+          kind: 'tool.mutation',
+          providerId: 'mutation',
+          surface: 'any',
+          readonly: false,
+        },
+        {
+          kind: 'workflow.goal',
+          providerId: 'goal',
+          surface: 'any',
+          readonly: false,
+        },
+      ],
+      requirements: goalAutomationRequirements(),
+    });
+
+    expect(plan.engineId).toBe('goal.create');
     expect(plan.missing).toEqual([]);
   });
 });

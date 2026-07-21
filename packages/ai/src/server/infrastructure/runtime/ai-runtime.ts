@@ -13,7 +13,10 @@ import {
   AgentArtifactSchema,
   CreateKnowledgeNoteSchema,
   GoalAutomationPlanSchema,
+  knowledgeWriteRequirements,
+  resolveRunPlan,
   type AICapabilities,
+  type CapabilityOffer,
 } from '@dailyuse/contracts/ai';
 import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
@@ -105,6 +108,92 @@ export function buildCapabilityUnavailableMessage(
 
 function unavailableResult<T>(message: string): Promise<Result<T>> {
   return Promise.resolve(error('SERVICE_UNAVAILABLE', message));
+}
+
+/**
+ * Project runtime ports into ADR-035 capability offers for start-time fail-closed gating.
+ * 将运行时端口投影为 ADR-035 capability offers，供 start 时 fail-closed 门禁使用。
+ */
+export function buildAgentRuntimeCapabilityOffers(input: {
+  knowledgeNoteUseCase?: ManageAIKnowledgeNoteUseCase | null;
+  automationToolExecutorPort?: IAIAutomationToolExecutorPort;
+}): CapabilityOffer[] {
+  const offers: CapabilityOffer[] = [
+    {
+      kind: 'tool.proposal',
+      providerId: 'agent-host-proposal',
+      surface: 'any',
+      readonly: false,
+    },
+  ];
+
+  if (input.knowledgeNoteUseCase) {
+    offers.push(
+      {
+        kind: 'tool.mutation',
+        providerId: 'knowledge-note-executor',
+        surface: 'any',
+        readonly: false,
+      },
+      {
+        // Server knowledge persistence is GitHub-projection backed (Web surface).
+        kind: 'context.cloud_rag',
+        providerId: 'server-github-projection',
+        surface: 'web',
+        readonly: true,
+      },
+    );
+  }
+
+  if (input.automationToolExecutorPort) {
+    offers.push(
+      {
+        kind: 'tool.mutation',
+        providerId: 'goal-automation-executor',
+        surface: 'any',
+        readonly: false,
+      },
+      {
+        kind: 'workflow.goal',
+        providerId: 'goal-create-adapter',
+        surface: 'any',
+        readonly: false,
+      },
+    );
+  }
+
+  return offers;
+}
+
+/**
+ * Fail closed before starting agent types that require host capabilities.
+ * 对需要 host 能力的 agent 类型在 start 前 fail-closed。
+ */
+export function assertAgentStartCapabilityPlan(
+  agentType: AgentStartRunRequest['agentType'],
+  offers: readonly CapabilityOffer[],
+): Result<void> {
+  if (agentType === 'knowledge.generate') {
+    const plan = resolveRunPlan({
+      engineId: 'knowledge.generate',
+      offers: [...offers],
+      requirements: knowledgeWriteRequirements('web'),
+      surface: 'web',
+    });
+    if (plan.engineId === 'none') {
+      return error(
+        'SERVICE_UNAVAILABLE',
+        `Knowledge generation is unavailable; missing capabilities: ${plan.missing
+          .map((item) => item.kind)
+          .join(', ')}`,
+      );
+    }
+    return ok(undefined);
+  }
+
+  // goal.create may start planning without the TS automation executor; mutation
+  // capability is enforced when execution.required is resolved, not at start.
+  return ok(undefined);
 }
 
 
@@ -968,6 +1057,15 @@ export function createAgentRuntimeService(
     ): Promise<Result<AgentRunResult>> {
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
+      }
+
+      const capabilityOffers = buildAgentRuntimeCapabilityOffers({
+        knowledgeNoteUseCase,
+        automationToolExecutorPort,
+      });
+      const capabilityGate = assertAgentStartCapabilityPlan(req.agentType, capabilityOffers);
+      if (!capabilityGate.ok) {
+        return capabilityGate;
       }
 
       const requestWithProvider = await withAgentProviderConfig(

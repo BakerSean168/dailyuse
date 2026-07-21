@@ -846,6 +846,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Capability/Turn E2E）。验证：contracts capabilities specs、app-vue matrix spec、governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留二十九轮）：Agent start 门禁接线——`createAgentRuntimeService.startRun`
+> 在调用 Python/runtime 前对 `knowledge.generate` 用 `resolveRunPlan` +
+> `knowledgeWriteRequirements('web')` fail-closed（缺 knowledge note / cloud_rag 则
+> `SERVICE_UNAVAILABLE`）；`goal.create` 仍可在 start 阶段规划，mutation 在 execution.required
+> 解析时强制。导出 `buildAgentRuntimeCapabilityOffers` / `assertAgentStartCapabilityPlan`。
+> contracts 增加 `goalAutomationRequirements` 纯函数。app-vue 删除无 UI 的 phone/SMS
+> composable 入口（`loginByPhone`/`registerByPhone`/`sendSmsCode`）。§13.2 Agent 项证据增强，
+> 仍为部分（缺完整 Capability/Turn E2E）。验证：contracts capabilities specs、ai-runtime-capabilities
+> specs、remote-ai-service runtime agent specs。状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -864,7 +874,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留二十八轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留二十九轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
@@ -901,6 +911,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   PowerSync 云端 API，设置页仅 online 账户可发起连接。
   残留二十八轮：contracts `resolveRunPlan` 增补 Web knowledge-write / 跨 surface / goal-offer 不能
   顶替 knowledge mutation 的规格。
+  残留二十九轮：AI runtime `startRun` 对 knowledge.generate 接线 capability plan fail-closed；
+  `goalAutomationRequirements` 纯函数；goal mutation 仍在 execution 阶段强制。
   仍缺：完整 ADR-035 Capability/Turn isolation E2E 与跨端一揽子对抗 E2E。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

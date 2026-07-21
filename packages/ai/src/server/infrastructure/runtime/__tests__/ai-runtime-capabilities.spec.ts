@@ -4,6 +4,10 @@ import type { IAIConversationRepository, IAIProviderConfigRepository } from '../
 import type { AIModuleDependencies } from '../../ai.module';
 import { createDirectProviderAIRuntime } from '../direct-provider-ai.runtime';
 import { createRemoteAIServiceRuntime } from '../remote-ai-service.runtime';
+import {
+  assertAgentStartCapabilityPlan,
+  buildAgentRuntimeCapabilityOffers,
+} from '../ai-runtime';
 
 // ============================================================
 // Helpers
@@ -121,5 +125,50 @@ describe('AI runtime capability consistency', () => {
   it('remote runtime with no advanced features still has advancedFeaturesReason', () => {
     const runtime = createRemoteAIServiceRuntime(createMockDeps());
     expect(runtime.capabilities.advancedFeaturesReason).toBeDefined();
+  });
+});
+
+describe('Agent start capability plan gating', () => {
+  it('builds knowledge-write offers only when knowledge note use case is present', () => {
+    const without = buildAgentRuntimeCapabilityOffers({});
+    expect(without.map((offer) => offer.kind).sort()).toEqual(['tool.proposal']);
+
+    const withNote = buildAgentRuntimeCapabilityOffers({
+      knowledgeNoteUseCase: {} as never,
+    });
+    expect(withNote.map((offer) => offer.kind).sort()).toEqual(
+      ['context.cloud_rag', 'tool.mutation', 'tool.proposal'].sort(),
+    );
+  });
+
+  it('fails closed for knowledge.generate without knowledge note capability offers', () => {
+    const result = assertAgentStartCapabilityPlan(
+      'knowledge.generate',
+      buildAgentRuntimeCapabilityOffers({}),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('SERVICE_UNAVAILABLE');
+      expect(result.error.message).toContain('context.cloud_rag');
+    }
+  });
+
+  it('accepts knowledge.generate when knowledge note offers are present', () => {
+    const result = assertAgentStartCapabilityPlan(
+      'knowledge.generate',
+      buildAgentRuntimeCapabilityOffers({
+        knowledgeNoteUseCase: {} as never,
+      }),
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it('does not block goal.create planning at start without automation executor', () => {
+    // Mutation for goal.create is enforced at execution.required resolution time.
+    const result = assertAgentStartCapabilityPlan(
+      'goal.create',
+      buildAgentRuntimeCapabilityOffers({}),
+    );
+    expect(result.ok).toBe(true);
   });
 });

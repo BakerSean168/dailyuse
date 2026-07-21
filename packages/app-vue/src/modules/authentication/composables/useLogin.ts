@@ -1,5 +1,5 @@
 import { toast } from 'vue-sonner';
-import type { LoginByEmailReq, LoginByPhoneReq } from '@dailyuse/contracts/authentication';
+import type { LoginByEmailReq } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
 import { isDesktopEnvironment } from './useAuthContext';
 
@@ -56,42 +56,7 @@ export function useLogin(ctx: AuthContext) {
     }
   }
 
-  async function loginByPhone(req: LoginByPhoneReq): Promise<boolean> {
-    store.setLoading(true);
-    store.setError(null);
-    try {
-      const result = await service.loginByPhone(req);
-      if (result.ok) {
-        lastResultError.value = null;
-        return await completeAuthSuccess(
-          result.data,
-          t('auth.toast.loginSuccess'),
-          t('auth.toast.welcomeBack'),
-        );
-      }
-      lastResultError.value = result.error;
-      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
-      store.setError(message);
-      toast.error(t('auth.toast.loginFailed'), { description: message });
-      return false;
-    } catch (e) {
-      store.setLoading(false);
-      console.error('[auth] loginByPhone failed', e);
-      lastResultError.value = {
-        code: 'UNKNOWN',
-        message: e instanceof Error ? e.message : 'Unknown error',
-      };
-      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
-      store.setError(description);
-      toast.error(t('auth.toast.loginFailed'), { description });
-      return false;
-    } finally {
-      store.setLoading(false);
-    }
-  }
-
   return {
     loginByEmail,
-    loginByPhone,
   };
 }

@@ -31,7 +31,7 @@ updated: 2026-07-21T00:00:00
   - 账户页可 bind/unbind GitHub identity binding（与知识仓库 GitHub App 授权分离）
   - Desktop 远程 gateway/IPC 已暴露 OAuth 调用；登录首屏仍不提供 GitHub 入口
 - OAuthBinding 与 Daily Use session 分离；GitHub user access token 不写入业务 session。
-- 手机短信入口当前不可用；无真实 SMS provider 时不应作为主登录入口暴露。
+- 手机短信入口当前不可用；app-vue 认证 composable 已移除 `sendSmsCode` / phone login-register 客户端入口，无真实 SMS provider 时不暴露主登录面。
 - E2E：账密注册/登录流与 mock GitHub OAuth 流已覆盖；真实 GitHub fixture 仍依赖外部凭据。
 
 ## 3. 已采纳目标态
