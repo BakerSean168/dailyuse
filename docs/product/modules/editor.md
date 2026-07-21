@@ -5,7 +5,7 @@ tags:
   - editor
 description: 编辑器模块退役后的安全预览、Obsidian 外部编辑与 Web 快捷创建边界
 created: 2026-06-02T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-21T00:00:00
 ---
 
 # 编辑器模块说明
@@ -21,7 +21,8 @@ updated: 2026-07-16T00:00:00
 - API host 不再注册 Editor API module，也不挂载旧 Repository/Folder/Resource CRUD；Desktop Repository IPC 只保留本地 Vault 与 GitHub knowledge connection/sync 能力。
 - Mobile 已移除数据库 Repository、文件夹和 note editor 路由，等待后续基于服务端投影实现只读能力。
 - 旧 Repository/Folder/Resource 与 Editor workspace 数据仅为可重新导入业务数据备份保留，不再构成运行时编辑通道。
-- Web 与 Desktop 预览统一使用关闭原始 HTML并经过 sanitizer 的安全 Markdown 渲染边界。
+- `@dailyuse/editor` 包与 `packages/app-vue/src/modules/editor` 已删除；知识呈现入口在 repository 工作区与 `safe-markdown` 工具。
+- Web 与 Desktop 预览统一使用关闭原始 HTML 并经过 sanitizer 的安全 Markdown 渲染边界。
 
 ## 3. 已采纳目标态
 

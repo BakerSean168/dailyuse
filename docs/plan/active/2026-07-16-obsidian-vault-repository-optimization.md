@@ -42,8 +42,9 @@ updated: 2026-07-21T00:00:00
   版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
 - 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 硬失败；MSW/E2E knowledge-only；
   app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
-  path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀。`packages/editor` 包骨架与可再导入备份表仍在但
-  不作为 app 运行时入口。完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
+  path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**。Prisma/PowerSync
+  `editor_*` 与 data-portability 可再导入备份仍保留。完成定义审计见 §13.2；真实 GitHub fixture E2E 与
+  prod-like local-deploy 仍为外部阻塞。
 
 ## 2. 已确认产品边界
 
@@ -663,6 +664,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 壳层 `MODULE_PREFIXES` 移除退役 `/note`；`sanitizeLegacyTabs` 清理持久化的 `/note*` Tab；删除未使用
 > `createMockEditorStore`。验证：app-vue focused 3 files / 21 tests、`daily-use:governance-check` 通过。
 > `packages/editor` 包本身与 Prisma `editor_*` 表仍保留。状态保持 **实施中**；PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留五轮）：删除整个 `packages/editor` 运行时包；同步清理根 tsconfig path、
+> root vitest project、eslint scope:editor 边界、target-baseline / server-feature-shape / scope-constraint /
+> package-export（app-vue `./modules/editor`）与 nx graph。产品文档 `modules/editor.md` 与
+> `module-index/editor-files.md`、`feature-map` 改为指向 repository 工作区 + `safe-markdown`；可再导入
+> `editor_*` 备份表与 contracts/editor DTO 保留。状态保持 **实施中**；PR readiness 仍为 no。
 
 ## 13. 测试与完成定义
 

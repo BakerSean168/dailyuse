@@ -3,103 +3,73 @@ tags:
   - product
   - module-index
   - editor
-description: 编辑器模块相关文件索引
+description: 编辑器模块相关文件索引（运行时包退役后的知识呈现面）
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-21T00:00:00
 ---
 
 # 编辑器模块文件索引
 
-本索引用于连接编辑器模块的业务说明和真实代码。它不是代码注释替代品；做优化前仍需以当前代码、配置和测试为准。
+本索引连接编辑器模块业务说明与**当前**代码。旧 `@dailyuse/editor` 包与
+`packages/app-vue/src/modules/editor` 已删除；知识呈现、安全预览、Web 快捷创建与
+Desktop Obsidian 打开入口落在 repository 工作区与共享 Markdown 工具上。
+
+做优化前仍以当前代码、配置和测试为准。
 
 ## 前端页面与路由
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/app-vue/src/modules/editor/views/EditorLinearView.vue`](../../../packages/app-vue/src/modules/editor/views/EditorLinearView.vue) | 编辑器线性视图（注册在 repository 路由 /note/:id 下） |
+| [`packages/app-vue/src/modules/repository/router/index.ts`](../../../packages/app-vue/src/modules/repository/router/index.ts) | Note 模块仅注册 `/repository`（无 `/note/:id`） |
+| [`packages/app-vue/src/modules/repository/views/RepositoryEntryView.vue`](../../../packages/app-vue/src/modules/repository/views/RepositoryEntryView.vue) | Web/Desktop 入口分发 |
+| [`packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.vue`](../../../packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.vue) | Web 投影只读工作区 + confirmed create |
+| [`packages/app-vue/src/modules/repository/views/LocalVaultWorkspaceView.vue`](../../../packages/app-vue/src/modules/repository/views/LocalVaultWorkspaceView.vue) | Desktop Local Vault 浏览/预览/Obsidian 打开 |
+| [`packages/app-vue/src/modules/repository/views/NoteModuleLayout.vue`](../../../packages/app-vue/src/modules/repository/views/NoteModuleLayout.vue) | Note 模块壳（笔记 / 规范分段） |
 
-## 前端状态、组合函数与组件
-
-| 文件 | 说明 |
-| --- | --- |
-| [`packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts`](../../../packages/app-vue/src/modules/editor/stores/editor-workspace-store.ts) | 编辑器工作区 Pinia store |
-| [`packages/app-vue/src/modules/editor/stores/editor-workspace-ui-store.ts`](../../../packages/app-vue/src/modules/editor/stores/editor-workspace-ui-store.ts) | 编辑器 UI store |
-| [`packages/app-vue/src/modules/editor/composables/useEditor.ts`](../../../packages/app-vue/src/modules/editor/composables/useEditor.ts) | 核心编辑器组合函数 |
-| [`packages/app-vue/src/modules/editor/composables/useAutoSave.ts`](../../../packages/app-vue/src/modules/editor/composables/useAutoSave.ts) | 自动保存组合函数 |
-| [`packages/app-vue/src/modules/editor/composables/useMarkdownEditor.ts`](../../../packages/app-vue/src/modules/editor/composables/useMarkdownEditor.ts) | Markdown 编辑器集成 |
-| [`packages/app-vue/src/modules/editor/composables/useEditorLinkIndex.ts`](../../../packages/app-vue/src/modules/editor/composables/useEditorLinkIndex.ts) | 链接索引组合函数 |
-| [`packages/app-vue/src/modules/editor/composables/useEditorLinkSuggestion.ts`](../../../packages/app-vue/src/modules/editor/composables/useEditorLinkSuggestion.ts) | 链接建议组合函数 |
-| [`packages/app-vue/src/modules/editor/composables/useResourceInsertion.ts`](../../../packages/app-vue/src/modules/editor/composables/useResourceInsertion.ts) | 资源插入组合函数 |
-| [`packages/app-vue/src/modules/editor/composables/useResourceReferenceIndex.ts`](../../../packages/app-vue/src/modules/editor/composables/useResourceReferenceIndex.ts) | 资源引用索引 |
-| [`packages/app-vue/src/modules/editor/composables/useEditorUnsavedChangesGuard.ts`](../../../packages/app-vue/src/modules/editor/composables/useEditorUnsavedChangesGuard.ts) | 未保存变更守卫 |
-| [`packages/app-vue/src/modules/editor/composables/useEditorWorkspaceBootstrap.ts`](../../../packages/app-vue/src/modules/editor/composables/useEditorWorkspaceBootstrap.ts) | 工作区引导 |
-| [`packages/app-vue/src/modules/editor/components/MarkdownEditor.vue`](../../../packages/app-vue/src/modules/editor/components/MarkdownEditor.vue) | Markdown 编辑器组件（CodeMirror） |
-| [`packages/app-vue/src/modules/editor/components/ActiveDocumentPane.vue`](../../../packages/app-vue/src/modules/editor/components/ActiveDocumentPane.vue) | 活动文档面板 |
-| [`packages/app-vue/src/modules/editor/components/EditorTabBar.vue`](../../../packages/app-vue/src/modules/editor/components/EditorTabBar.vue) | 标签页栏 |
-| [`packages/app-vue/src/modules/editor/components/EditorToolbar.vue`](../../../packages/app-vue/src/modules/editor/components/EditorToolbar.vue) | 编辑器工具栏 |
-| [`packages/app-vue/src/modules/editor/components/EditorPreview.vue`](../../../packages/app-vue/src/modules/editor/components/EditorPreview.vue) | Markdown 预览面板 |
-| [`packages/app-vue/src/modules/editor/components/BacklinkPanel.vue`](../../../packages/app-vue/src/modules/editor/components/BacklinkPanel.vue) | Backlink 面板 |
-| [`packages/app-vue/src/modules/editor/components/LinkGraphView.vue`](../../../packages/app-vue/src/modules/editor/components/LinkGraphView.vue) | 链接图视图 |
-| [`packages/app-vue/src/modules/editor/components/LinkSuggestion.vue`](../../../packages/app-vue/src/modules/editor/components/LinkSuggestion.vue) | 链接建议弹出框 |
-| [`packages/app-vue/src/modules/editor/components/ImageResourcePickerDialog.vue`](../../../packages/app-vue/src/modules/editor/components/ImageResourcePickerDialog.vue) | 图片资源选择器 |
-| [`packages/app-vue/src/modules/editor/components/ReferenceRepairDialog.vue`](../../../packages/app-vue/src/modules/editor/components/ReferenceRepairDialog.vue) | 引用修复弹窗 |
-| [`packages/app-vue/src/modules/editor/components/SelfContainedExportDialog.vue`](../../../packages/app-vue/src/modules/editor/components/SelfContainedExportDialog.vue) | 自包含导出弹窗 |
-| [`packages/app-vue/src/modules/editor/services/editor-client-gateway.ts`](../../../packages/app-vue/src/modules/editor/services/editor-client-gateway.ts) | 编辑器客户端网关 |
-| [`packages/app-vue/src/modules/editor/services/editor-workspace-orchestrator.ts`](../../../packages/app-vue/src/modules/editor/services/editor-workspace-orchestrator.ts) | 工作区编排器 |
-
-## 编辑器包（packages/editor）
+## 安全 Markdown 与共享工具
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/editor/src/api/module.ts`](../../../packages/editor/src/api/module.ts) | 编辑器模块组合根 |
-| [`packages/editor/src/api/routes/workspace.routes.ts`](../../../packages/editor/src/api/routes/workspace.routes.ts) | 工作区 HTTP routes |
-| [`packages/editor/src/api/routes/session.routes.ts`](../../../packages/editor/src/api/routes/session.routes.ts) | 会话 HTTP routes |
-| [`packages/editor/src/api/routes/tab.routes.ts`](../../../packages/editor/src/api/routes/tab.routes.ts) | 标签页 HTTP routes |
-| [`packages/editor/src/api/routes/content.routes.ts`](../../../packages/editor/src/api/routes/content.routes.ts) | 内容 HTTP routes |
-| [`packages/editor/src/api/routes/search.routes.ts`](../../../packages/editor/src/api/routes/search.routes.ts) | 搜索 HTTP routes |
-| [`packages/editor/src/domain-server/aggregates/editor-workspace.ts`](../../../packages/editor/src/domain-server/aggregates/editor-workspace.ts) | EditorWorkspace 聚合根 |
-| [`packages/editor/src/domain-server/entities/editor-session.ts`](../../../packages/editor/src/domain-server/entities/editor-session.ts) | EditorSession 实体 |
-| [`packages/editor/src/domain-server/entities/editor-tab.ts`](../../../packages/editor/src/domain-server/entities/editor-tab.ts) | EditorTab 实体 |
-| [`packages/editor/src/domain-server/entities/linked-resource.ts`](../../../packages/editor/src/domain-server/entities/linked-resource.ts) | LinkedResource 实体 |
-| [`packages/editor/src/domain-server/services/editor-policy.ts`](../../../packages/editor/src/domain-server/services/editor-policy.ts) | 编辑器策略服务 |
-| [`packages/editor/src/domain-server/services/session-restorer.ts`](../../../packages/editor/src/domain-server/services/session-restorer.ts) | 会话恢复服务 |
-| [`packages/editor/src/application-server/ports/i-repository-content-port.ts`](../../../packages/editor/src/application-server/ports/i-repository-content-port.ts) | 资源内容端口（读写） |
-| [`packages/editor/src/application-server/ports/i-repository-search-port.ts`](../../../packages/editor/src/application-server/ports/i-repository-search-port.ts) | 资源搜索端口 |
-| [`packages/editor/src/infrastructure-server/editor.module.ts`](../../../packages/editor/src/infrastructure-server/editor.module.ts) | 服务端编辑器模块组合根 |
-| [`packages/editor/src/infrastructure-client/adapters/http/editor-http.adapter.ts`](../../../packages/editor/src/infrastructure-client/adapters/http/editor-http.adapter.ts) | 客户端 HTTP 适配器 |
-| [`packages/editor/src/infrastructure-client/adapters/ipc/editor-ipc.adapter.ts`](../../../packages/editor/src/infrastructure-client/adapters/ipc/editor-ipc.adapter.ts) | 客户端 IPC 适配器 |
+| [`packages/app-vue/src/shared/utils/safe-markdown.ts`](../../../packages/app-vue/src/shared/utils/safe-markdown.ts) | 关闭原始 HTML 的安全 Markdown 渲染 |
+| [`packages/app-vue/src/shared/utils/safe-markdown.spec.ts`](../../../packages/app-vue/src/shared/utils/safe-markdown.spec.ts) | XSS / 危险 URL / Obsidian 语法边界测试 |
+| [`packages/app-vue/src/modules/repository/composables/useRecentKnowledgeNotes.ts`](../../../packages/app-vue/src/modules/repository/composables/useRecentKnowledgeNotes.ts) | 壳层/AI 最近笔记（projection / Local Vault） |
 
-## Contracts 与数据结构
+## Repository 服务端知识面
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/contracts/src/modules/editor/aggregates/editor-workspace-server.ts`](../../../packages/contracts/src/modules/editor/aggregates/editor-workspace-server.ts) | EditorWorkspace 服务端 DTO |
-| [`packages/contracts/src/modules/editor/entities/editor-session-server.ts`](../../../packages/contracts/src/modules/editor/entities/editor-session-server.ts) | EditorSession 服务端 DTO |
-| [`packages/contracts/src/modules/editor/entities/editor-tab-server.ts`](../../../packages/contracts/src/modules/editor/entities/editor-tab-server.ts) | EditorTab 服务端 DTO |
-| [`packages/contracts/src/modules/editor/api/editor-workspace.dto.ts`](../../../packages/contracts/src/modules/editor/api/editor-workspace.dto.ts) | 工作区 API DTO |
-| [`packages/contracts/src/modules/editor/protocol/editor-event-map.ts`](../../../packages/contracts/src/modules/editor/protocol/editor-event-map.ts) | 编辑器事件 map |
-| [`packages/contracts/src/modules/editor/protocol/editor-rpc-map.ts`](../../../packages/contracts/src/modules/editor/protocol/editor-rpc-map.ts) | 编辑器 RPC map |
+| [`packages/repository/src/api/routes/knowledge-repository-connection.routes.ts`](../../../packages/repository/src/api/routes/knowledge-repository-connection.routes.ts) | knowledge connection / projection / confirmed create |
+| [`packages/repository/src/server/application/services/knowledge-note-commit.service.ts`](../../../packages/repository/src/server/application/services/knowledge-note-commit.service.ts) | Web 确认后唯一 commit 写入 |
+| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts) | 客户端 HTTP；legacy CRUD 硬失败 `NOT_SUPPORTED` |
 
-## Prisma Schema
+## 可重新导入业务备份（非运行时编辑）
 
-编辑器 Prisma schema 定义在主 schema 文件中，包含 4 个模型：EditorWorkspace、EditorWorkspaceSession、EditorWorkspaceSessionGroup、EditorWorkspaceSessionGroupTab。
+旧 Editor workspace 表与 portable 导出/导入仍保留，仅服务可重新导入业务备份，
+不构成运行时 Markdown 编辑通道。独立的服务端持有数据披露见
+`memoflow.server-held-data-disclosure`。
+
+| 文件 | 说明 |
+| --- | --- |
+| [`packages/database/prisma/schema/editor.prisma`](../../../packages/database/prisma/schema/editor.prisma) | `editor_*` Prisma 模型 |
+| [`packages/powersync-schema/src/index.ts`](../../../packages/powersync-schema/src/index.ts) | PowerSync `editor_*` 表定义 |
+| [`packages/data-portability/src/server/application/use-cases/projections/editor.projection.ts`](../../../packages/data-portability/src/server/application/use-cases/projections/editor.projection.ts) | portable 导出投影 |
+| [`packages/data-portability/src/server/application/use-cases/importers/editor.importer.ts`](../../../packages/data-portability/src/server/application/use-cases/importers/editor.importer.ts) | portable 导入 |
+| [`packages/contracts/src/modules/editor/`](../../../packages/contracts/src/modules/editor/) | 遗留 editor DTO（备份/契约，非运行时 host 入口） |
+| [`packages/contracts/src/modules/data-portability/`](../../../packages/contracts/src/modules/data-portability/) | portable editor workspace 类型 |
 
 ## 测试入口
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/editor/src/domain-server/aggregates/__tests__/editor-workspace.spec.ts`](../../../packages/editor/src/domain-server/aggregates/__tests__/editor-workspace.spec.ts) | EditorWorkspace 聚合测试 |
-| [`packages/editor/src/domain-server/services/__tests__/editor-policy.spec.ts`](../../../packages/editor/src/domain-server/services/__tests__/editor-policy.spec.ts) | 编辑器策略测试 |
-| [`packages/editor/src/domain-server/services/__tests__/session-restorer.spec.ts`](../../../packages/editor/src/domain-server/services/__tests__/session-restorer.spec.ts) | 会话恢复测试 |
-| [`packages/editor/src/api/routes/editor.routes.spec.ts`](../../../packages/editor/src/api/routes/editor.routes.spec.ts) | 编辑器 routes 测试 |
-| [`packages/app-vue/src/modules/editor/stores/editorWorkspaceStore.spec.ts`](../../../packages/app-vue/src/modules/editor/stores/editorWorkspaceStore.spec.ts) | 编辑器 store 测试 |
-| [`packages/app-vue/src/modules/editor/composables/useResourceInsertion.spec.ts`](../../../packages/app-vue/src/modules/editor/composables/useResourceInsertion.spec.ts) | 资源插入测试 |
-| [`packages/app-vue/src/modules/editor/utils/linkIndex.spec.ts`](../../../packages/app-vue/src/modules/editor/utils/linkIndex.spec.ts) | 链接索引测试 |
+| [`packages/app-vue/src/shared/utils/safe-markdown.spec.ts`](../../../packages/app-vue/src/shared/utils/safe-markdown.spec.ts) | 安全 Markdown 边界 |
+| [`packages/app-vue/src/modules/repository/views/notePanelAdaptation.spec.ts`](../../../packages/app-vue/src/modules/repository/views/notePanelAdaptation.spec.ts) | 无 `/note/:id`、confirmed create 与深链 |
+| [`packages/app-vue/src/modules/repository/router/index.spec.ts`](../../../packages/app-vue/src/modules/repository/router/index.spec.ts) | repository 路由契约 |
+| [`packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts`](../../../packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts) | Web 投影工作区 |
+| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts) | projection/confirmed-create 与 legacy 硬失败 |
 
 ## 需要重点关注的改动风险
 
-- 编辑状态和自动保存的一致性。
-- 资源引用和链接索引失效。
-- 编辑器 UI 状态与真实文档内容不一致。
-- 编辑器和资源库的双向耦合。
-- 大文档的编辑性能。
+- 不要把可重新导入的 `editor_*` 备份表与服务端披露 artifact 混为同一导出通道。
+- 不要恢复 `/note/:id` 或挂载旧 Editor API / Electron runtime。
+- Web Markdown 必须继续走 sanitizer；禁止重新启用原始 HTML。
+- 删除或收缩 portable editor 备份前，先更新 data-portability 契约与用户隐私说明。
