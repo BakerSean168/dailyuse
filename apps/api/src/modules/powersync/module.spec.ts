@@ -49,10 +49,8 @@ async function createTestApp(): Promise<ReturnType<typeof express>> {
     middleware: {
       auth: (req, _res, next) => {
         const authenticated = req as typeof req & {
-          identityId?: string;
           user?: { identityId: string };
         };
-        authenticated.identityId = TEST_IDENTITY_ID;
         authenticated.user = { identityId: TEST_IDENTITY_ID };
         next();
       },

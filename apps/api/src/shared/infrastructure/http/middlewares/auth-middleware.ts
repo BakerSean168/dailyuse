@@ -44,8 +44,6 @@ export interface AuthenticatedRequest extends Request {
     tokenType?: string;
     exp?: number;
   };
-  identityId?: string; // 向后兼容，直接提供identityId
-  sessionId?: string; // 当前会话UUID
 }
 
 function sendUnauthorized(
@@ -69,7 +67,7 @@ function sendInternalError(
  *
  * @remarks
  * 从 Authorization header 中提取 JWT token，验证并解析出 identityId。
- * 将用户信息添加到 req.user 和 req.identityId 中。
+ * 将用户信息添加到 req.user 中。
  *
  * @param req - Express 请求对象
  * @param res - Express 响应对象
@@ -116,17 +114,13 @@ export const authMiddleware: RequestHandler = (req: Request, res: Response, next
         return sendUnauthorized(authenticatedReq, res, '认证令牌已过期，请重新登录');
       }
 
-      // 将用户信息添加到请求对象
+      // 将用户信息添加到请求对象（单一真值：req.user）
       authenticatedReq.user = {
         identityId: decoded.identityId,
         sessionId: decoded.sessionId,
         tokenType: decoded.type,
         exp: decoded.exp,
       };
-
-      // 向后兼容：直接提供 identityId 和 sessionId
-      authenticatedReq.identityId = decoded.identityId;
-      authenticatedReq.sessionId = decoded.sessionId;
 
       return next();
     } catch (jwtError) {
@@ -174,10 +168,10 @@ export const optionalAuthMiddleware = (
  * @throws Error 如果未认证
  */
 export const requireAuth = (req: AuthenticatedRequest): string => {
-  if (!req.identityId || !req.user) {
+  if (!req.user?.identityId) {
     throw new Error('用户未认证，请先登录');
   }
-  return req.identityId;
+  return req.user.identityId;
 };
 
 /**
@@ -187,5 +181,5 @@ export const requireAuth = (req: AuthenticatedRequest): string => {
  * @returns identityId 或 null
  */
 export const getCurrentAccountId = (req: AuthenticatedRequest): string | null => {
-  return req.identityId || null;
+  return req.user?.identityId ?? null;
 };
