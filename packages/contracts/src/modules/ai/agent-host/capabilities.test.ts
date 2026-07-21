@@ -115,6 +115,56 @@ describe('resolveRunPlan isolation', () => {
     expect(plan.missing.map((item) => item.kind)).toContain('tool.mutation');
   });
 
+
+  it('accepts a web knowledge-write plan only with cloud_rag + proposal + mutation', () => {
+    const plan = resolveRunPlan({
+      engineId: 'knowledge.generate',
+      offers: [proposal, mutation, desktopVault, cloudRag],
+      requirements: knowledgeWriteRequirements('web'),
+      surface: 'web',
+    });
+
+    expect(plan.engineId).toBe('knowledge.generate');
+    expect(plan.missing).toEqual([]);
+    expect(plan.offers.map((offer) => offer.kind).sort()).toEqual(
+      ['context.cloud_rag', 'tool.mutation', 'tool.proposal'].sort(),
+    );
+    // Desktop-only local vault offer is filtered out of the web plan.
+    expect(plan.offers.some((offer) => offer.kind === 'context.local_vault')).toBe(false);
+  });
+
+  it('fails closed when desktop vault is present but surface is web without cloud_rag', () => {
+    const plan = resolveRunPlan({
+      engineId: 'knowledge.generate',
+      offers: [proposal, mutation, desktopVault],
+      requirements: knowledgeWriteRequirements('web'),
+      surface: 'web',
+    });
+
+    expect(plan.engineId).toBe('none');
+    expect(plan.missing.map((item) => item.kind)).toEqual(['context.cloud_rag']);
+  });
+
+  it('does not treat goal workflow offers as substitutes for knowledge write requirements', () => {
+    const goalWorkflow: CapabilityOffer = {
+      kind: 'workflow.goal',
+      providerId: 'goal-automation',
+      surface: 'any',
+      readonly: false,
+    };
+    const plan = resolveRunPlan({
+      engineId: 'knowledge.generate',
+      offers: [goalWorkflow, proposal],
+      requirements: knowledgeWriteRequirements('desktop'),
+      surface: 'desktop',
+    });
+
+    expect(plan.engineId).toBe('none');
+    expect(plan.missing.map((item) => item.kind).sort()).toEqual(
+      ['context.local_vault', 'tool.mutation'].sort(),
+    );
+  });
+
   it('ignores optional missing capabilities without disabling the engine', () => {
     const plan = resolveRunPlan({
       engineId: 'chat.turn',

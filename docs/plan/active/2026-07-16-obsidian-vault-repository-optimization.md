@@ -837,6 +837,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > §13.2 第 15 项 prod-like 磁盘/启动阻塞解除，但仍缺全量 lint/typecheck/test/E2E/governance 与
 > 真实 GitHub fixture E2E。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留二十八轮）：文档/证据收口——纠正 `docs/product/modules/authentication.md`
+> 中过时的“OAuth 仅服务端骨架 / 缺少 Web GitHub 登录 UI”表述，对齐已实现的 providers/url/callback/
+> bind/unbind、Web AuthApp GitHub 入口、Desktop 首屏无 GitHub、账户页 bind 与知识仓库 GitHub App 分离。
+> 补 `three-login-surface.matrix.spec.ts` 固化 ADR-034 三入口面矩阵；扩展 contracts
+> `resolveRunPlan` 隔离规格（Web knowledge-write 需 cloud_rag、跨 surface fail-closed、goal offer 不能顶替
+> knowledge mutation）。§13.2 三入口与 Agent 项证据增强，仍为部分（缺同一 fixture 端到端与完整
+> Capability/Turn E2E）。验证：contracts capabilities specs、app-vue matrix spec、governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -855,7 +864,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留二十七轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留二十八轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
@@ -865,6 +874,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二十四轮：Web auth guard 硬跳转 AuthApp（`createAuthGuard` + hard redirect specs）。
   残留二十五轮：删除死 `LoginForm`/`RegisterForm`；Web 主壳 `/auth` 默认改为
   `AuthPlatformEntry` full-page 进入 AuthApp（删除遗留 in-shell `AuthView`）。
+  残留二十八轮：`three-login-surface.matrix.spec.ts` 固化 Web shell 硬跳转 / AuthApp 账密+GitHub /
+  Desktop 账密+访客矩阵；`authentication.md` 与实现边界对齐（不再声称 OAuth UI 缺失）。
   仍缺：三入口同一 fixture 下的端到端串联验收（含访客升级与仓库边界）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
@@ -888,6 +899,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   按 surface fail-closed（Desktop 需 local_vault，Web 需 cloud_rag；readonly 不能顶替 mutation）；
   Desktop `toCloudAccessToken` 阻止 guest/offline 占位 token 调用 GitHub knowledge App /
   PowerSync 云端 API，设置页仅 online 账户可发起连接。
+  残留二十八轮：contracts `resolveRunPlan` 增补 Web knowledge-write / 跨 surface / goal-offer 不能
+  顶替 knowledge mutation 的规格。
   仍缺：完整 ADR-035 Capability/Turn isolation E2E 与跨端一揽子对抗 E2E。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
