@@ -47,7 +47,9 @@ updated: 2026-07-21T00:00:00
   客户端面仅 knowledge + Local Vault；**legacy application/adapters/domain-client 与 contracts
   CRUD request 面已删除**；AI 确认创建返回 `KnowledgeNotePersistedRef`（`note`）；
   **`ResourceClientDTO`/`RepositoryClientDTO` 与相关 value objects / mock factories 已删除**；
-  Web E2E 不再 mock 退役 editor/resource API；knowledge event 保留。
+  Web E2E 不再 mock 退役 editor/resource API；客户端 adapter 删除无调用的
+  legacy hard-fail stub；app-vue repository locale 收缩为 projection/localVault 面；
+  knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
@@ -740,6 +742,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Web `goal-workflow` E2E 去掉退役 editor/session/tab/resource/current-repository 路由 mock，
 > citation open 仅依赖 `/repository` 导航。更新 `repository-files` 索引。验证：`contracts:test`、
 > `daily-use:governance-check`（见提交说明）。§13.2 未完成项不变。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留十六轮）：删除 HTTP/IPC adapter 中已无调用的
+> `legacyDatabaseRepositoryUnavailable` hard-fail stub；Web repository handlers 单测改为断言
+> 退役 CRUD 方法不存在于客户端面；app-vue `repository` locale 删除 createResource/folder/editor
+> tabs/bookmarks 等死文案，仅保留 route/segments/projection/localVault。验证：repository adapter
+> specs、web handlers spec、governance-check。§13.2 未完成项不变。状态保持 **实施中**；
 > PR readiness 仍为 no。
 
 ## 13. 测试与完成定义

@@ -131,3 +131,21 @@ describe('RepositoryHttpAdapter knowledge repository connections', () => {
     );
   });
 });
+
+describe('RepositoryHttpAdapter retired surface', () => {
+  it('does not keep hard-fail stubs for retired CRUD methods', () => {
+    const adapter = new RepositoryHttpAdapter(createHttpClient()) as Record<string, unknown>;
+    for (const method of [
+      'getCurrentRepository',
+      'listResources',
+      'listBookmarks',
+      'uploadResources',
+      'createResource',
+      'updateResource',
+      'deleteResource',
+    ]) {
+      expect(adapter).not.toHaveProperty(method);
+    }
+  });
+});
+

@@ -202,14 +202,6 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   }
 
 
-  private legacyDatabaseRepositoryUnavailable<T>(): Result<T> {
-    return fail({
-      code: 'NOT_SUPPORTED',
-      message:
-        'Legacy database Repository/Folder/Resource APIs were removed; use Local Vault or GitHub knowledge projections',
-    });
-  }
-
   private serverProjectionUnavailable<T>(): Result<T> {
     return fail({
       code: 'SERVICE_UNAVAILABLE',

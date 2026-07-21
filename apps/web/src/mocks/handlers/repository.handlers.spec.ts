@@ -18,37 +18,24 @@ describe('repository handlers contracts', () => {
     expect(repositoryMockRoutes).not.toHaveProperty('search');
   });
 
-  it('hard-fails legacy adapter methods without issuing HTTP calls', async () => {
+  it('does not expose retired database Repository/Resource client methods', async () => {
     const { RepositoryHttpAdapter } = await import('@dailyuse/repository/client');
     const httpClient = createHttpClientSpy();
-    const adapter = new RepositoryHttpAdapter(httpClient);
+    const adapter = new RepositoryHttpAdapter(httpClient) as Record<string, unknown>;
 
-    await expect(adapter.getCurrentRepository()).resolves.toMatchObject({
-      ok: false,
-      error: { code: 'NOT_SUPPORTED' },
-    });
-    await expect(adapter.listResources('repo-1')).resolves.toMatchObject({
-      ok: false,
-      error: { code: 'NOT_SUPPORTED' },
-    });
-    await expect(adapter.listBookmarks('repo-1')).resolves.toMatchObject({
-      ok: false,
-      error: { code: 'NOT_SUPPORTED' },
-    });
-    await expect(
-      adapter.uploadResources('repo-1', {
-        files: [
-          {
-            name: 'Inbox.md',
-            mimeType: 'text/markdown',
-            contentBase64: 'IyA=',
-          },
-        ],
-      }),
-    ).resolves.toMatchObject({
-      ok: false,
-      error: { code: 'NOT_SUPPORTED' },
-    });
+    for (const method of [
+      'getCurrentRepository',
+      'listResources',
+      'listBookmarks',
+      'uploadResources',
+      'createResource',
+      'updateResource',
+      'deleteResource',
+      'listFolders',
+      'createFolder',
+    ]) {
+      expect(adapter).not.toHaveProperty(method);
+    }
 
     expect(httpClient.get).not.toHaveBeenCalled();
     expect(httpClient.post).not.toHaveBeenCalled();
