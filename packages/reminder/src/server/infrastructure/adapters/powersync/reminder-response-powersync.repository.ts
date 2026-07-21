@@ -58,19 +58,23 @@ export class ReminderResponsePowerSyncRepository implements IReminderResponseRep
     return row ? PowerSyncReminderResponseMapper.toDomain(row) : null;
   }
 
-  async findByTemplateId(templateId: string, limit?: number): Promise<ReminderResponse[]> {
+  async findByTemplateId(
+    templateId: string,
+    identityId: string,
+    limit?: number,
+  ): Promise<ReminderResponse[]> {
     const rows = await this.db.getAll<PowerSyncReminderResponseRow>(
-      `SELECT * FROM reminder_responses WHERE template_id = ? ORDER BY timestamp DESC${limit ? ' LIMIT ?' : ''}`,
-      limit ? [templateId, limit] : [templateId],
+      `SELECT * FROM reminder_responses WHERE template_id = ? AND identity_id = ? ORDER BY timestamp DESC${limit ? ' LIMIT ?' : ''}`,
+      limit ? [templateId, identityId, limit] : [templateId, identityId],
     );
     return rows.map((row) => PowerSyncReminderResponseMapper.toDomain(row));
   }
 
-  async getResponseStats(templateId: string, lookbackDays: number = 30) {
+  async getResponseStats(templateId: string, identityId: string, lookbackDays: number = 30) {
     const cutoff = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000).toISOString();
     const rows = await this.db.getAll<PowerSyncReminderResponseRow>(
-      'SELECT * FROM reminder_responses WHERE template_id = ? AND timestamp >= ?',
-      [templateId, cutoff],
+      'SELECT * FROM reminder_responses WHERE template_id = ? AND identity_id = ? AND timestamp >= ?',
+      [templateId, identityId, cutoff],
     );
     const total = rows.length;
     const counters = { CLICKED: 0, IGNORED: 0, SNOOZED: 0, DISMISSED: 0, COMPLETED: 0 } as Record<
@@ -98,23 +102,27 @@ export class ReminderResponsePowerSyncRepository implements IReminderResponseRep
     };
   }
 
-  async deleteByTemplateId(templateId: string): Promise<number> {
+  async deleteByTemplateId(templateId: string, identityId: string): Promise<number> {
     const rows = await this.db.getAll<{ id: string }>(
-      'SELECT id FROM reminder_responses WHERE template_id = ?',
-      [templateId],
+      'SELECT id FROM reminder_responses WHERE template_id = ? AND identity_id = ?',
+      [templateId, identityId],
     );
-    await this.db.execute('DELETE FROM reminder_responses WHERE template_id = ?', [templateId]);
+    await this.db.execute(
+      'DELETE FROM reminder_responses WHERE template_id = ? AND identity_id = ?',
+      [templateId, identityId],
+    );
     return rows.length;
   }
 
   async getResponseDistribution(
     templateId: string,
+    identityId: string,
     lookbackDays: number = 30,
   ): Promise<Record<ReminderResponseAction, number>> {
     const cutoff = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000).toISOString();
     const rows = await this.db.getAll<PowerSyncReminderResponseRow>(
-      'SELECT * FROM reminder_responses WHERE template_id = ? AND timestamp >= ?',
-      [templateId, cutoff],
+      'SELECT * FROM reminder_responses WHERE template_id = ? AND identity_id = ? AND timestamp >= ?',
+      [templateId, identityId, cutoff],
     );
     const distribution = {
       CLICKED: 0,

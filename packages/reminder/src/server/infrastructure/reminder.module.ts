@@ -248,7 +248,10 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      return useCases.recordReminderResponse.getResponsesByTemplate(templateId);
+      return useCases.recordReminderResponse.getResponsesByTemplate(
+        templateId,
+        ctx.identityId,
+      );
     },
 
     async getResponseStats(templateId, ctx) {
@@ -256,7 +259,7 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      return useCases.recordReminderResponse.getResponseStats(templateId);
+      return useCases.recordReminderResponse.getResponseStats(templateId, ctx.identityId);
     },
 
     async analyzeFrequency(templateId, ctx) {
@@ -264,7 +267,7 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      return useCases.analyzeReminderFrequency.execute(templateId);
+      return useCases.analyzeReminderFrequency.execute(templateId, ctx.identityId);
     },
 
     async adjustFrequency(templateId, data, ctx) {

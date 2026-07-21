@@ -53,9 +53,13 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
     return data ? this.mapToEntity(data) : null;
   }
 
-  async findByTemplateId(templateId: string, limit?: number): Promise<ReminderResponse[]> {
+  async findByTemplateId(
+    templateId: string,
+    identityId: string,
+    limit?: number,
+  ): Promise<ReminderResponse[]> {
     const data = await this.prisma.reminderResponse.findMany({
-      where: { templateId },
+      where: { templateId, identityId },
       orderBy: { timestamp: 'desc' },
       take: limit,
     });
@@ -64,6 +68,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
 
   async getResponseStats(
     templateId: string,
+    identityId: string,
     lookbackDays?: number,
   ): Promise<{
     total: number;
@@ -74,7 +79,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
     completed: number;
     avgResponseTime: number;
   }> {
-    const where: Prisma.ReminderResponseWhereInput = { templateId };
+    const where: Prisma.ReminderResponseWhereInput = { templateId, identityId };
     if (lookbackDays) {
       const cutoff = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
       where.timestamp = { gte: cutoff };
@@ -133,18 +138,19 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
     return stats;
   }
 
-  async deleteByTemplateId(templateId: string): Promise<number> {
+  async deleteByTemplateId(templateId: string, identityId: string): Promise<number> {
     const result = await this.prisma.reminderResponse.deleteMany({
-      where: { templateId },
+      where: { templateId, identityId },
     });
     return result.count;
   }
 
   async getResponseDistribution(
     templateId: string,
+    identityId: string,
     lookbackDays?: number,
   ): Promise<Record<ReminderResponseAction, number>> {
-    const where: Prisma.ReminderResponseWhereInput = { templateId };
+    const where: Prisma.ReminderResponseWhereInput = { templateId, identityId };
     if (lookbackDays) {
       const cutoff = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
       where.timestamp = { gte: cutoff };

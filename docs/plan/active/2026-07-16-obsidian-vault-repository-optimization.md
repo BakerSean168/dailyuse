@@ -1658,6 +1658,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百二十九轮）：Reminder response list/stats/delete 与
+> frequency analyze 身份隔离——仓储 `findByTemplateId`/`getResponseStats`/`deleteByTemplateId`
+> 要求 identityId；analyze 走 `findByIdForIdentity`。补 ownership surface。§13.2 仍部分。
+> 验证：reminder response/analyze specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1768,6 +1776,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百二十六轮：notification get/mark-read/update/delete/batch identity-scoped（findByIdForIdentity）。
   残留一百二十七轮：reminder template/group get/update/delete/actions identity-scoped（findByIdForIdentity）。
   残留一百二十八轮：reminder findByGroupId identity-scoped（list/batch/domain stats）。
+  残留一百二十九轮：reminder response stats/list/delete + frequency analyze identity-scoped。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
