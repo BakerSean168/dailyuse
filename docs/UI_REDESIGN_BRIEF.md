@@ -26,7 +26,7 @@
 | 意图   | Goal（目标）                         | OKR：Goal → KeyResult → 进度记录 → 复盘（`packages/contracts/src/modules/goal/`） |
 | 执行   | Task（任务）                         | 模板/实例二元模型 + DAG 依赖 + 目标绑定（`packages/contracts/src/modules/task/`） |
 | 时间   | Schedule（日程）+ Reminder（提醒）   | 日历事件聚合（含任务实例投影）；提醒模板/分组/策略                                |
-| 知识   | Repository（仓储）+ Editor（编辑器） | DB 化的 markdown 资源库 + Obsidian 风格双链编辑器                                 |
+| 知识   | Repository（仓储）+ Desktop Local Vault | GitHub projection / Local Vault（`/note/:id` 与 DB Resource 编辑已退役） |
 | 智能   | AI（助手）                           | 对话 + 三种 Agent 工作流（目标创建 / 知识笔记生成 / 知识问答 RAG）                |
 
 技术形态：Nx monorepo；Web（`apps/web`）与 Desktop（`apps/desktop`，Electron）**共用同一套 `packages/app-vue` 页面与路由**（见 `apps/desktop/src/renderer/bootstrap/app.ts:44` 直接调用 `createAppRouter`）；数据经 DI 端口走 HTTP（Web）或 IPC（Desktop）；离线同步使用 PowerSync（`packages/powersync-schema/src/index.ts` 定义了 `documents`、`document_links`、`resources` 等全量业务表）。

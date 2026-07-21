@@ -148,7 +148,7 @@ AppShell
 |---|---|---|---|
 | Goal 目标 | 胶囊 1 | `GoalModuleLayout` 全子树（列表/详情/KR/复盘/专注/对比） | `/goals/**` 不变 |
 | Task 任务 | 胶囊 2 | `TaskManagementView` / `TaskDetailView` | `/tasks/**` 不变 |
-| Note 笔记 | 胶囊 3 | `RepositoryWorkspaceView`（阶段 0 收缩版）+ `/note/:id` + **Governance 并入为"规范"区** | `/repository`、`/note/:id`、`/governance/**` 不变 |
+| Note 笔记 | 胶囊 3 | Knowledge projection / Local Vault 工作区 + **Governance 并入为"规范"区**（`/note/:id` 已退役） | `/repository`（`?note=` 深链）、`/governance/**` |
 | Reminder 提醒 | 胶囊 4 | `ReminderLinearView` | `/reminders` 不变 |
 | Notification 通知 | 胶囊 5（未读角标） | `NotificationListPage`（预览浮层承担 V1 的"铃铛弹层"职责） | `/notifications` 不变 |
 | Schedule 日程 | 当前时段胶囊 | `ScheduleDashboardView`（日/周/月日历） | `/schedule/**` 不变 |
@@ -170,7 +170,7 @@ AppShell
 ```
 
 - **URL = 活动 Tab 的当前路由**；`/` = 无面板（STATE A）。
-- **URL → 面板**：路由变化时按 §2.3 打开规则落到某个 Tab（激活已有或新开）；深链（AI 硬跳转 `openAutomatedGoal`→`/goals/:id`、`openRecentKnowledgeNote`→`/note/:id`、通知点击）自然新开/激活 Tab 并定位。
+- **URL → 面板**：路由变化时按 §2.3 打开规则落到某个 Tab（激活已有或新开）；深链（AI 硬跳转 `openAutomatedGoal`→`/goals/:id`、`openRecentKnowledgeNote`→`/repository?note=`、通知点击）自然新开/激活 Tab 并定位。
 - **面板 → URL**：Tab 内导航沿用现有 `router.push`，不改任何业务代码；**切换 Tab = `router.replace` 到该 Tab 的当前路由**（不污染 history）；关活动 Tab = 切到相邻 Tab 并 replace；关最后一个 Tab / 面板 ✕ = `router.push('/')`。
 - **layout 与 Tab 集合不进 URL**：split/focus 与打开的 Tab 列表是视图状态，存壳级 UI store；URL 只承诺"这条链接能到达这个业务位置"。深链默认 split（<1024px 自动 focus）；Settings 默认 focus。
 - **`?dialog=goal&goalId=` 契约**：路由查询参数原样保留，`syncGoalDialogFromRoute` 逻辑不动——面板化对它透明。
@@ -236,7 +236,7 @@ V1 §0.4 的 xl/lg/md/sm 页面断点作废。V2 的宽度适配对象是**面�
 ## 8. 不可破坏契约（继承 V1 §0.6 + Brief §11/§12）
 
 1. `data-testid` 随组件迁移（5 份 Playwright 配置锚定）。
-2. 路由契约：`?dialog=goal&goalId=`、`/note/:id`、`/goals/:id` 等 AI 硬引用路径；删改路由一律 redirect。
+2. 路由契约：`?dialog=goal&goalId=`、`/repository?note=`（已有笔记预览，不再有 `/note/:id`）、`/goals/:id` 等 AI 硬引用路径；删改路由一律 redirect。
 3. 数据访问只走 DI 端口与 composable 门面；壳重构不得直连 HTTP/IPC。
 4. 三处高危状态机迁移时逻辑分支不重写：AI goal-agent 等待态按钮互斥、编辑器未保存守卫（双 composable）、提醒分组控制模式。
 5. `MAIN_NAVIGATION_KEY` DI 覆写：新壳导航形态变了，`NavigationItem` 接口需重定义（胶囊模块清单可覆写）——仍属破坏性接口变更，同步 `di/types.ts` 与 web/desktop 两个 `di-app.ts`。
@@ -273,7 +273,7 @@ V1 §0.4 的 xl/lg/md/sm 页面断点作废。V2 的宽度适配对象是**面�
 ### 验收清单（S1 切换 PR 的门槛）
 
 1. 5 份 Playwright 配置全绿（布局断言按新壳更新，路由与 testid 锚定不变）。
-2. 深链逐条验证：`?dialog=goal&goalId=`、`/note/:id`、`/goals/:id`、三个 redirect、schedule `week/dashboard` redirect。
+2. 深链逐条验证：`?dialog=goal&goalId=`、`/repository?note=`、`/goals/:id`、三个 redirect、schedule `week/dashboard` redirect。
 3. Electron 手动回归：无边框拖拽/窗口控制、桌面通知弹窗、IPC 数据链路、启动水合。
 4. Web 回归：无窗饰形态、浏览器前进后退与面板历史一致。
 5. AI 三工作流端到端各跑一遍（目标创建全生命周期 / 知识笔记 / 知识问答）。

@@ -1194,6 +1194,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留七十四轮）：文档/深链边界对齐——UI redesign 文中仍写为现行
+> 契约的 `/note/:id` 深链改为 `/repository?note=`（`/note/:id` 已退役）；补 AI
+> `useAIChatView` knowledge deep-link surface；ADR-035 journey 增 step 10（readonly cloud_rag
+> 不能顶替 knowledge mutation）。§13.2 未打勾项仍为部分/外部阻塞（真实 OAuth/GitHub fixture
+> E2E、完整 multi-engine Turn Engine E2E、全量 PR 门禁）。验证：ai journey + app-vue surface +
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1264,6 +1272,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   cross-capability fail-closed → identity get/list 隔离 → vault path/confirmation/tool surface）。
   仍缺：多 Turn Engine 完整 E2E、跨端对抗 Playwright E2E 与真实 fixture。
   残留四十轮：`adr-035-capability-turn-isolation.journey.spec.ts` 增加 multi-turn 二次 confirm 不重复落盘，以及 Web surface 无法满足 Desktop `local_vault` knowledge-write 要求；仍缺完整 multi-engine Turn Engine E2E 与跨端对抗性 Playwright/Electron E2E。
+  残留七十四轮：journey step 10 固化 readonly cloud_rag/proposal 不能满足 knowledge mutation；
+  AI deep-link surface 固化 `openRecentKnowledgeNote` → `/repository?note=`（无 `/note/:id`）。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**

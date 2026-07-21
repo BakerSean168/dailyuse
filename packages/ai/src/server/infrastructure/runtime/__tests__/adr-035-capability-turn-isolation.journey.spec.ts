@@ -596,4 +596,46 @@ describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
     expect(okWeb.missing).toEqual([]);
   });
 
+
+
+  it('step 10: readonly cloud_rag/proposal cannot satisfy knowledge mutation requirements', () => {
+    const readonlyRagOffers: CapabilityOffer[] = [
+      {
+        kind: 'context.cloud_rag',
+        providerId: 'web-rag',
+        surface: 'web',
+        readonly: true,
+      },
+      {
+        kind: 'tool.proposal',
+        providerId: 'web-agent',
+        surface: 'web',
+        readonly: true,
+      },
+    ];
+
+    const webMutation = resolveRunPlan({
+      engineId: 'langgraph',
+      offers: readonlyRagOffers,
+      requirements: knowledgeWriteRequirements('web'),
+      surface: 'web',
+    });
+    expect(webMutation.engineId).toBe('none');
+    expect(
+      webMutation.missing.some(
+        (item) => item.kind === 'tool.mutation' || item.kind === 'tool.proposal',
+      ),
+    ).toBe(true);
+
+    const desktopMutation = resolveRunPlan({
+      engineId: 'langgraph',
+      offers: readonlyRagOffers,
+      requirements: knowledgeWriteRequirements('desktop'),
+      surface: 'desktop',
+    });
+    expect(desktopMutation.engineId).toBe('none');
+    expect(desktopMutation.missing.some((item) => item.kind === 'context.local_vault')).toBe(true);
+  });
+
+
 });

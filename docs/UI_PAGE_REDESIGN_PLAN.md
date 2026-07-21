@@ -23,7 +23,7 @@
 | ------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
 | **ListPageShell（列表壳）**    | 仪表盘、目标列表、任务、提醒、通知、治理              | `LinearPageHeader`（sticky：标题 + 描述 + 右置操作）→ 可选 FilterBar 行 → 内容 `max-w-7xl mx-auto px-6 py-6` | `custom/linear/LinearPageHeader.vue` 已存在（`px-6 py-3 border-b sticky top-0`），直接采用 |
 | **DetailPageShell（详情壳）**  | 目标详情、KR 详情、复盘、任务详情、规则详情/编辑/历史 | 返回按钮 + 标题 + 状态徽章 + 右置操作 → 内容 `max-w-4xl`                                                     | 从 `GoalDetailView` / `TaskDetailView` 现有头部抽取                                        |
-| **WorkspaceShell（工作区壳）** | AI 首页、日程日历、笔记工作区、`/note/:id`            | 全宽无 max-w；`ResizablePanel` 分栏；模块第二侧栏统一 `w-64` 可折叠                                          | repository 的 ResizablePanel collapse 模式推广到 goal/reminder                             |
+| **WorkspaceShell（工作区壳）** | AI 首页、日程日历、笔记工作区（`/repository`；`/note/:id` 已退役） | 全宽无 max-w；`ResizablePanel` 分栏；模块第二侧栏统一 `w-64` 可折叠                                          | repository 的 ResizablePanel collapse 模式推广到 goal/reminder                             |
 
 操作层级约定（每页强制执行）：
 
@@ -103,7 +103,7 @@
 ### 0.6 全局不可破坏契约（每页默认适用，不再逐页重复）
 
 - `data-testid` 随组件迁移（5 份 Playwright 配置锚定，Brief §11）。
-- `?dialog=goal&goalId=` URL 对话框契约；`/note/:id`、`/goals/:id` 等 AI 工作流硬引用路径。
+- `?dialog=goal&goalId=` URL 对话框契约；`/repository?note=`、`/goals/:id` 等 AI 工作流硬引用路径（`/note/:id` 已退役）。
 - 一切数据访问走 DI 端口与 composable 门面，布局重构不得直连 HTTP/IPC。
 - 每页改动在 Web + Electron 双端回归（Brief §12-1）。
 - 删除/改名路由一律先加 redirect（沿用 schedule 模块 `week/dashboard → calendar` 先例）。
@@ -151,7 +151,7 @@
 | recentGoals / recentKnowledgeNotes | 侧栏折叠段                               | 快捷入口有价值但非首要，折叠保留而非删除                                                 |
 | legacy 工作流按钮组                | **删除**                                 | `localStorage['ai:debug:legacy-goal-workflow']` 调试残留，新状态机已全覆盖（Brief §4.1） |
 
-**6) 表单 / 卡片 / 列表 / 详情组织**：无传统表单，对话即输入。草稿编辑（Goal/KR/任务模板/提醒草稿，`AIGoalDraftEditor` + `AIGoalWorkflowPanel`）全部在右栏，保持"默认折叠、有产物才出现"契约；会话列表项用 `LinearListItem`；证据引用列表在右栏，点击走 `openRecentKnowledgeNote` → `/note/:id`。
+**6) 表单 / 卡片 / 列表 / 详情组织**：无传统表单，对话即输入。草稿编辑（Goal/KR/任务模板/提醒草稿，`AIGoalDraftEditor` + `AIGoalWorkflowPanel`）全部在右栏，保持"默认折叠、有产物才出现"契约；会话列表项用 `LinearListItem`；证据引用列表在右栏，点击走 `openRecentKnowledgeNote` → `/repository?note=`。
 
 **7) 空 / 加载 / 错误**：空会话 = 欢迎态（见 4）；会话切换 = 消息行 skeleton；流式生成 = 现有打字指示 + stop 按钮（保留）；发送失败 = 消息气泡内 inline 重试；工作流执行失败 = 操作条 retry 分支（现有状态机，不动）。
 
@@ -533,9 +533,9 @@ FilterBar：[全部|进行中|已暂停|已归档](计数Tabs) [关系过滤▾]
 
 ---
 
-## 10. 笔记单页 `/note/:id`（`EditorLinearView.vue`）
+## 10. 笔记单页 `/note/:id`（`EditorLinearView.vue`）— **已退役（2026-07-21）**
 
-**1) 页面目标**：单笔记聚焦阅读与轻编辑；**AI 工作流的着陆页**（`openRecentKnowledgeNote` → `/note/:id`，AI 创建的笔记与问答引用都落这里）。阶段 0 起**预览优先**。
+**1) 页面目标（历史）**：单笔记聚焦阅读与轻编辑。**当前着陆**为 `/repository?note=`（projection / Local Vault 预览）；`/note/:id` 与 `EditorLinearView` 已从运行时删除。
 
 **2) 最重要的动作**
 
@@ -728,7 +728,7 @@ RuleCard 列表（code + title + RuleStatusBadge + severity）
 | `/schedule/calendar` | 创建日程                              | 视图切换、完成任务事件                  |
 | `/reminders`         | 新建提醒                              | 启停 Switch、全局开关、新建分组(⋯)      |
 | `/repository`        | 新建笔记                              | 搜索、保存、重命名                      |
-| `/note/:id`          | 编辑/保存（→阶段1: 在 Obsidian 打开） | 反链、图谱                              |
+| ~~`/note/:id`~~ → `/repository?note=` | 预览 / Desktop 在 Obsidian 打开 | 反链、图谱（projection） |
 | `/notifications`     | 全部已读                              | 逐条已读/删除、跳转来源                 |
 | `/governance`        | 新建规则                              | 搜索、过滤、看历史                      |
 | `/settings`          | 保存当前分组设置                      | 导入导出、登出                          |
@@ -757,7 +757,7 @@ RuleCard 列表（code + title + RuleStatusBadge + severity）
 
 1. 5 份 Playwright 配置全绿（`ai-workspace` 专项重点回归——testid 已随组件迁移）。
 2. Electron 桌面端手动回归：导航、`isDesktopEnvironment` 分支、桌面通知弹窗路由 `/custom-notification`、IPC 数据链路。
-3. 深链契约逐条验证：`?dialog=goal&goalId=`、`/note/:id`、`/goals/:id`、`/ai/chat` redirect、`/account/center` redirect、schedule `week/dashboard` redirect。
+3. 深链契约逐条验证：`?dialog=goal&goalId=`、`/repository?note=`、`/goals/:id`、`/ai/chat` redirect、`/account/center` redirect、schedule `week/dashboard` redirect。
 4. i18n：zh-CN / en-US 无缺 key（新增 `nav.group.*`、更名「笔记」「任务库」）。
 5. 断点走查：xl / lg / md / sm 四档，每页首屏无横向滚动、主操作可达。
 6. 移动端（RN）文案同步：模块更名（仓库→笔记、任务模板→任务库）通知 mobile 维护者（Brief §12-6）。
