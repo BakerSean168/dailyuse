@@ -706,6 +706,8 @@ export default {
       createPrivate: '创建 private repository',
       createOpenFailed: '无法打开 GitHub 仓库创建页面',
       notConnected: '尚未连接 GitHub 知识仓库',
+      guestCloudBlocked: '访客模式仅限本地。请先用账户登录后再连接 GitHub 知识仓库。',
+      offlineCloudBlocked: '请先在线登录后再连接 GitHub 知识仓库。离线与访客配置不能扩大云端授权。',
       desktopConnectHint: '授权将在系统浏览器中完成。完成连接后返回 Desktop 并刷新状态。',
       webConnectHint: '安装 GitHub App 后，你将返回此页面选择一个 private repository。',
       defaultBranch: '默认分支：{branch}',

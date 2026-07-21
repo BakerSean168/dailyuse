@@ -735,6 +735,8 @@ export default {
       createPrivate: 'Create private repository',
       createOpenFailed: 'Unable to open GitHub repository creation',
       notConnected: 'No GitHub knowledge repository connected',
+      guestCloudBlocked: 'Guest mode is local-only. Sign in with an account before connecting a GitHub knowledge repository.',
+      offlineCloudBlocked: 'Sign in online before connecting a GitHub knowledge repository. Offline and guest profiles cannot expand cloud authorization.',
       desktopConnectHint:
         'Authorization opens in your system browser. Return to Desktop and refresh after connecting.',
       webConnectHint:

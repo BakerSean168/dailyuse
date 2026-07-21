@@ -14,6 +14,7 @@ import type {
 } from '@dailyuse/contracts/repository';
 import { fail, ok, type Result } from '@dailyuse/contracts/result';
 import { createApiUrl } from '../../utils/api-config';
+import { toCloudAccessToken } from '../authentication/infrastructure/session-types';
 
 interface HttpEnvelope<T> {
   ok?: boolean;
@@ -128,11 +129,12 @@ export class KnowledgeRepositoryRemoteGateway {
     path: string,
     options: { method: 'GET' | 'POST' | 'DELETE'; body?: unknown },
   ): Promise<Result<T>> {
-    const accessToken = this.options.getAccessToken();
+    const accessToken = toCloudAccessToken(this.options.getAccessToken());
     if (!accessToken) {
       return fail({
         code: 'UNAUTHORIZED',
-        message: 'Sign in before connecting a GitHub knowledge repository',
+        message:
+          'Sign in with a cloud account before connecting a GitHub knowledge repository. Guest and offline-only profiles stay local.',
       });
     }
 

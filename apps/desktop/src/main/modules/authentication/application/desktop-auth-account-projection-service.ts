@@ -7,6 +7,7 @@ import type {
   TokenStorageData,
 } from '@dailyuse/contracts/authentication';
 import { TokenManager } from '../infrastructure';
+import { GUEST_ACCESS_TOKEN, LOCAL_ACCESS_TOKEN } from '../infrastructure/session-types';
 
 /**
  * Handles account projection bootstrap for guest/offline sessions
@@ -122,8 +123,8 @@ export class DesktopAuthAccountProjectionService {
       return false;
     }
     return (
-      tokenData.accessToken === 'guest-local-token' &&
-      tokenData.refreshToken === 'guest-local-token'
+      tokenData.accessToken === GUEST_ACCESS_TOKEN &&
+      tokenData.refreshToken === GUEST_ACCESS_TOKEN
     );
   }
 
@@ -132,7 +133,7 @@ export class DesktopAuthAccountProjectionService {
       return false;
     }
 
-    return tokenData.accessToken === 'local-token' && tokenData.refreshToken === 'local-token';
+    return tokenData.accessToken === LOCAL_ACCESS_TOKEN && tokenData.refreshToken === LOCAL_ACCESS_TOKEN;
   }
 
   private getProjectionFallbackEmail(_identityId: string): string | null {

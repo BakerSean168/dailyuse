@@ -67,6 +67,7 @@ import {
 import { DesktopAuthSecurityAdminService } from './desktop-auth-security-admin-service';
 import { safeTransition } from './auth-coordinator-helpers';
 import type { WindowManager } from '../../../lifecycle/window-manager';
+import { toCloudAccessToken } from '../infrastructure/session-types';
 
 // Re-export from contracts for convenience
 export type { IpcResult, TwoFactorStatus, ApiKeyInfo, AuthStatus, EmailLoginCredentials };
@@ -376,7 +377,7 @@ export class AuthDesktopApplicationService {
    * 桌面壳层在线 API 调用使用的同步缓存 access token。
    */
   getAccessToken(): string | null {
-    return this.tokenManager.getCachedTokenData()?.accessToken ?? null;
+    return toCloudAccessToken(this.tokenManager.getCachedTokenData()?.accessToken ?? null);
   }
 
   /**

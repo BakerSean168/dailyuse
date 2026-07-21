@@ -2,6 +2,8 @@ import { defineComponent, h } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createTestPinia } from '@dailyuse/test-utils';
+import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { SystemChannels } from '@dailyuse/contracts/electron';
 import { fail, ok } from '@dailyuse/contracts/result';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
@@ -48,6 +50,8 @@ const messages = {
       createPrivate: 'Create private repository',
       createOpenFailed: 'Create repository page failed',
       notConnected: 'Not connected',
+      guestCloudBlocked: 'Guest mode is local-only.',
+      offlineCloudBlocked: 'Sign in online first.',
       webConnectHint: 'Web connect hint',
       desktopConnectHint: 'Desktop connect hint',
       defaultBranch: 'Default branch: {branch}',
@@ -166,10 +170,15 @@ function createService(overrides: Partial<IRepositoryService> = {}): IRepository
 function mountSettings(
   service: IRepositoryService,
   desktopBridge?: { invoke: ReturnType<typeof vi.fn> },
+  options?: { authMode?: string | null },
 ) {
+  // Always install a fresh pinia so authMode set in the test is visible to the component.
+  const pinia = createTestPinia();
+  const authStore = useAuthenticationStore();
+  authStore.setAuthMode(options?.authMode ?? 'password');
   return mount(KnowledgeRepositorySettings, {
     global: {
-      plugins: [i18n],
+      plugins: [pinia, i18n],
       provide: {
         [REPOSITORY_SERVICE_KEY as symbol]: service,
         ...(desktopBridge ? { [DESKTOP_BRIDGE_KEY as symbol]: desktopBridge } : {}),
@@ -211,6 +220,9 @@ function mountSettings(
 
 describe('KnowledgeRepositorySettings', () => {
   beforeEach(() => {
+    createTestPinia();
+    const authStore = useAuthenticationStore();
+    authStore.setAuthMode('password');
     routerMocks.query = {};
     routerMocks.replace.mockClear();
     confirmMock.mockClear();
@@ -749,4 +761,29 @@ describe('KnowledgeRepositorySettings', () => {
     );
     expect(wrapper.text()).not.toContain('Sync now');
   });
+  it('hides GitHub connect actions and skips cloud listing for guest profiles', async () => {
+    const service = createService();
+    const wrapper = mountSettings(service, undefined, { authMode: 'GUEST' });
+    await flushPromises();
+
+    expect(service.listKnowledgeRepositoryConnections).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('Guest mode is local-only.');
+    expect(wrapper.find('[data-testid="github-repository-connect"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="github-repository-create"]').exists()).toBe(false);
+  });
+
+  it('does not start GitHub App installation for offline-only profiles', async () => {
+    const service = createService({
+      startKnowledgeRepositoryInstallation: vi.fn(async () =>
+        ok({ installationUrl: 'https://github.com/apps/memoflow/installations/new', expiresAt: 1 }),
+      ),
+    });
+    const wrapper = mountSettings(service, undefined, { authMode: 'OFFLINE_USER' });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Sign in online first.');
+    expect(wrapper.find('[data-testid="github-repository-connect"]').exists()).toBe(false);
+    expect(service.startKnowledgeRepositoryInstallation).not.toHaveBeenCalled();
+  });
+
 });

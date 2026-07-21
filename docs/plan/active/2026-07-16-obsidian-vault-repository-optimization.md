@@ -52,7 +52,7 @@ updated: 2026-07-21T00:00:00
   退役顶层 `editor` locale 与无 UI 的 `setting.tabs`/`setting.editor` 文案已删；
   contracts 空 entities/dtos/value-objects 桶已移除；无调用的
   `createRepositoryPowerSyncModule` 已删；知识笔记 path resolver 应用层路径穿越 hardening；
-  Agent resume 仅 confirm 可执行 side-effect；首期 Agent 工具面不含 note update/reindex；AI index diagnostics 去掉 legacy-resource-metadata；
+  Agent resume 仅 confirm 可执行 side-effect；首期 Agent 工具面不含 note update/reindex；AI index diagnostics 去掉 legacy-resource-metadata；访客/离线 token 不能扩 GitHub/PowerSync 云端授权；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
@@ -788,6 +788,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：contracts/ai capabilities & knowledge-index focused specs、governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留二十二轮）：访客/离线占位 token 不得扩大云端授权——
+> `toCloudAccessToken` 过滤 `guest-local-token`/`local-token`；Desktop knowledge remote gateway、
+> Auth online getAccessToken、PowerSync credentials/upload 均拒绝；设置页仅 `ONLINE_USER` 显示
+> GitHub 连接控件，访客/离线文案明确。§13.2 访客不上传与 Agent 授权扩大证据增强（仍缺完整
+> 三入口 E2E 与 ADR-035 full E2E）。验证：desktop knowledge gateway specs、KnowledgeRepositorySettings
+> specs、governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -806,7 +813,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留二十一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留二十二轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在。
@@ -827,8 +834,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   路径；runtime 仅在 `userDecision=confirm` 时解析 `execution.required` 并执行 side-effect
   （knowledge cancel 与 goal cancel 即使 interrupt 残留也不落盘/不跑 automation）；
   `AgentToolName` 首期不含 `update_knowledge_note`/`reindex_resource`；knowledge executor 对
-  跨能力工具（如 `create_goal`）失败关闭。仍缺：完整 ADR-035 Capability/Turn isolation E2E，
-  以及 Auth/GitHub 授权扩大的端到端对抗用例。
+  跨能力工具（如 `create_goal`）失败关闭；Desktop `toCloudAccessToken` 阻止 guest/offline
+  占位 token 调用 GitHub knowledge App / PowerSync 云端 API，设置页仅 online 账户可发起连接。
+  仍缺：完整 ADR-035 Capability/Turn isolation E2E 与跨端一揽子对抗 E2E。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（外部阻塞 + 部分验证）**

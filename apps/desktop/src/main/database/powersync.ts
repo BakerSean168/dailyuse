@@ -35,6 +35,7 @@ import type { TokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
 import { serializeCrudTransaction } from './powersync-crud';
 import { normalizePowerSyncTableName, POWER_SYNC_CHANGE_TABLES } from './powersync-table-changes';
+import { toCloudAccessToken } from '../modules/authentication/infrastructure/session-types';
 
 const NON_SYNCABLE_LOCAL_TABLES = [
   'accounts',
@@ -243,10 +244,10 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
    * existing HS256 access token stored in safeStorage.
    */
   async fetchCredentials(): Promise<PowerSyncCredentials> {
-    const accessToken = await this.tokenManager.getAccessToken();
+    const accessToken = toCloudAccessToken(await this.tokenManager.getAccessToken());
 
     if (!accessToken) {
-      throw new Error('[PowerSync] No valid access token — user is not authenticated');
+      throw new Error('[PowerSync] No cloud-eligible access token — guest/offline profiles stay local');
     }
 
     const response = await fetch(`${this.apiBaseUrl}/powersync/token`, {
@@ -302,10 +303,10 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
    * The API's `/powersync/crud` endpoint applies them inside a Prisma $transaction.
    */
   async uploadData(database: AbstractPowerSyncDatabase): Promise<void> {
-    const accessToken = await this.tokenManager.getAccessToken();
+    const accessToken = toCloudAccessToken(await this.tokenManager.getAccessToken());
 
     if (!accessToken) {
-      throw new Error('[PowerSync] No valid access token — cannot upload data');
+      throw new Error('[PowerSync] No cloud-eligible access token — cannot upload data');
     }
 
     let transaction: CrudTransaction | null;

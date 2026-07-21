@@ -340,14 +340,18 @@
           <p class="text-sm font-medium">{{ t('setting.knowledgeRepository.notConnected') }}</p>
           <p class="mt-1 text-xs leading-5 text-muted-foreground">
             {{
-              desktopBridge
-                ? t('setting.knowledgeRepository.desktopConnectHint')
-                : t('setting.knowledgeRepository.webConnectHint')
+              isGuest
+                ? t('setting.knowledgeRepository.guestCloudBlocked')
+                : !canUseCloudKnowledgeRepo
+                  ? t('setting.knowledgeRepository.offlineCloudBlocked')
+                  : desktopBridge
+                    ? t('setting.knowledgeRepository.desktopConnectHint')
+                    : t('setting.knowledgeRepository.webConnectHint')
             }}
           </p>
         </div>
 
-        <div class="flex flex-wrap gap-2">
+        <div v-if="canUseCloudKnowledgeRepo" class="flex flex-wrap gap-2">
           <Button
             variant="outline"
             :disabled="busy"
@@ -498,12 +502,22 @@ import {
 } from '@dailyuse/contracts/repository';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');
 const desktopBridge = inject(DESKTOP_BRIDGE_KEY, undefined);
+const authStore = useAuthenticationStore();
+// Desktop AuthMode values are ONLINE_USER/OFFLINE_USER/GUEST; Web may use provider names
+// (password/github). Block only local-only profiles from expanding GitHub cloud authorization.
+const isGuest = computed(() => {
+  const mode = authStore.authMode;
+  return mode === 'GUEST' || mode === 'guest';
+});
+const isOfflineOnly = computed(() => authStore.authMode === 'OFFLINE_USER');
+const canUseCloudKnowledgeRepo = computed(() => !isGuest.value && !isOfflineOnly.value);
 
 const connections = ref<KnowledgeRepositoryConnectionClientDTO[]>([]);
 const installationRepositories = ref<GitHubInstallationRepositoryDTO[]>([]);
@@ -541,6 +555,11 @@ function lifecycleDiagnostic(errorCode: string): string {
 }
 
 async function loadConnections(): Promise<void> {
+  if (!canUseCloudKnowledgeRepo.value) {
+    connections.value = [];
+    errorMessage.value = '';
+    return;
+  }
   busyAction.value = 'load';
   errorMessage.value = '';
   const result = await service.listKnowledgeRepositoryConnections();
@@ -593,6 +612,12 @@ async function detachLocalVault(): Promise<void> {
 }
 
 async function startInstallation(): Promise<void> {
+  if (!canUseCloudKnowledgeRepo.value) {
+    errorMessage.value = isGuest.value
+      ? t('setting.knowledgeRepository.guestCloudBlocked')
+      : t('setting.knowledgeRepository.offlineCloudBlocked');
+    return;
+  }
   busyAction.value = 'start';
   errorMessage.value = '';
   const returnUrl = desktopBridge
@@ -620,6 +645,12 @@ async function startInstallation(): Promise<void> {
 }
 
 async function createPrivateRepository(): Promise<void> {
+  if (!canUseCloudKnowledgeRepo.value) {
+    errorMessage.value = isGuest.value
+      ? t('setting.knowledgeRepository.guestCloudBlocked')
+      : t('setting.knowledgeRepository.offlineCloudBlocked');
+    return;
+  }
   busyAction.value = 'create';
   errorMessage.value = '';
   try {
@@ -646,6 +677,12 @@ async function completeInstallationFromQuery(): Promise<void> {
   const installationId = queryValue(route.query.installation_id);
   const setupAction = queryValue(route.query.setup_action);
   if (!state || !installationId) return;
+  if (!canUseCloudKnowledgeRepo.value) {
+    errorMessage.value = isGuest.value
+      ? t('setting.knowledgeRepository.guestCloudBlocked')
+      : t('setting.knowledgeRepository.offlineCloudBlocked');
+    return;
+  }
 
   busyAction.value = 'complete';
   const result = await service.completeKnowledgeRepositoryInstallation({
@@ -682,6 +719,12 @@ function canConnect(repository: GitHubInstallationRepositoryDTO): boolean {
 
 async function connectRepository(repository: GitHubInstallationRepositoryDTO): Promise<void> {
   if (!pendingInstallationId.value || !canConnect(repository)) return;
+  if (!canUseCloudKnowledgeRepo.value) {
+    errorMessage.value = isGuest.value
+      ? t('setting.knowledgeRepository.guestCloudBlocked')
+      : t('setting.knowledgeRepository.offlineCloudBlocked');
+    return;
+  }
   busyAction.value = `connect:${repository.id}`;
   const result = await service.connectKnowledgeRepository({
     installationId: pendingInstallationId.value,

@@ -87,3 +87,14 @@ export function toDeviceInfoDTO(client: DeviceInfoClientDTO): DeviceInfoDTO {
 }
 
 export const LOCAL_ACCESS_TOKEN = 'local-token';
+export const GUEST_ACCESS_TOKEN = 'guest-local-token';
+
+/**
+ * Desktop guest/offline placeholder tokens must never authorize cloud APIs
+ * (GitHub knowledge App, PowerSync remote, etc.).
+ */
+export function toCloudAccessToken(token: string | null | undefined): string | null {
+  if (!token) return null;
+  if (token === GUEST_ACCESS_TOKEN || token === LOCAL_ACCESS_TOKEN) return null;
+  return token;
+}

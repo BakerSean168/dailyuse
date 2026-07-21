@@ -166,6 +166,27 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
+  it.each(['guest-local-token', 'local-token'] as const)(
+    'does not expand authorization with non-cloud desktop token %s',
+    async (token) => {
+      const fetchImpl = vi.fn<typeof fetch>();
+      const gateway = new KnowledgeRepositoryRemoteGateway({
+        getAccessToken: () => token,
+        fetchImpl,
+        createApiUrl: (path) => path,
+      });
+
+      await expect(gateway.startKnowledgeRepositoryInstallation()).resolves.toMatchObject({
+        ok: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: expect.stringMatching(/Guest and offline-only|cloud account/i),
+        },
+      });
+      expect(fetchImpl).not.toHaveBeenCalled();
+    },
+  );
+
   it('preserves structured server authorization failures', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       response(

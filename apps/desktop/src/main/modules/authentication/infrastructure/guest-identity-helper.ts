@@ -16,6 +16,7 @@ import type { ILogger } from '@dailyuse/utils/logger';
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 import { generateUUID } from '@dailyuse/utils/shared';
 import type { TokenManager, TokenData } from './token-manager';
+import { GUEST_ACCESS_TOKEN } from './session-types';
 
 function toIdentityId(value: string | IdentityId): IdentityId {
   return IdentityIdValue.of(String(value));
@@ -41,8 +42,6 @@ function toDeviceInfoDTO(client: DeviceInfoClientDTO): DeviceInfoDTO {
 }
 
 const GUEST_ID_PREFIX = 'IdentityId';
-const GUEST_ACCESS_TOKEN = 'guest-local-token';
-
 export interface GuestIdentityResult {
   guestId: string;
   session: AuthSession;
