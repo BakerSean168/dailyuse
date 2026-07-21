@@ -44,9 +44,9 @@ export interface ITaskInstanceRepository {
   findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null>;
 
   /**
-   * 根据模板 ID 查找任务实例
+   * 根据模板 ID + identity 查找任务实例
    */
-  findByTemplateId(templateId: string): Promise<TaskInstance[]>;
+  findByTemplateId(templateId: string, identityId: string): Promise<TaskInstance[]>;
 
   /**
    * 根据用户 ID 查找任务实例

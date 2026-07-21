@@ -39,7 +39,7 @@ export class GetTaskTemplateUseCase {
       let stats = ((await this.instanceRepository.getTemplateStats([id])) ?? {})[id];
 
       if (!stats) {
-        const instances = (await this.instanceRepository.findByTemplateId(id)) ?? [];
+        const instances = (await this.instanceRepository.findByTemplateId(id, identityId)) ?? [];
         const completedInstanceCount = instances.filter(
           (instance) => instance.status === TaskInstanceStatus.Completed,
         ).length;

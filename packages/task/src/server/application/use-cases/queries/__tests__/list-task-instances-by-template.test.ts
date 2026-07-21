@@ -70,6 +70,6 @@ describe('ListTaskInstancesByTemplateUseCase', () => {
     await useCase.execute(template.id, template.identityId);
 
     expect(templateRepo.findByIdForIdentity).toHaveBeenCalledWith(template.identityId, template.id);
-    expect(instanceRepo.findByTemplateId).toHaveBeenCalledWith(template.id);
+    expect(instanceRepo.findByTemplateId).toHaveBeenCalledWith(template.id, template.identityId);
   });
 });

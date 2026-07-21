@@ -76,7 +76,10 @@ export class CompleteTaskInstanceUseCase {
     return {
       taskTitle,
       goalBinding,
-      allInstancesCompleted: await this.areAllInstancesCompleted(instance),
+      allInstancesCompleted: await this.areAllInstancesCompleted(
+        instance,
+        String(instance.identityId),
+      ),
     };
   }
 
@@ -84,8 +87,14 @@ export class CompleteTaskInstanceUseCase {
    * 「本实例完成后」模板下所有相关实例（截至本实例日期）是否都已完成。
    * 兄弟实例读自持久化状态；本实例即将被标记完成，故只需其余相关实例均已完成。
    */
-  private async areAllInstancesCompleted(instance: TaskInstance): Promise<boolean> {
-    const siblings = await this.instanceRepository.findByTemplateId(String(instance.templateId));
+  private async areAllInstancesCompleted(
+    instance: TaskInstance,
+    identityId: string,
+  ): Promise<boolean> {
+    const siblings = await this.instanceRepository.findByTemplateId(
+      String(instance.templateId),
+      identityId,
+    );
     const relevant = siblings.filter((sibling) => sibling.instanceDate <= instance.instanceDate);
 
     if (relevant.length === 0) {

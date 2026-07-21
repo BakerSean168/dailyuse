@@ -119,10 +119,10 @@ export class PowerSyncTaskInstanceRepository
     return row ? PowerSyncTaskInstanceMapper.toDomain(row) : null;
   }
 
-  async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
+  async findByTemplateId(templateId: string, identityId: string): Promise<TaskInstance[]> {
     return this.query(
-      'SELECT * FROM task_instances WHERE template_id = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
-      [templateId],
+      'SELECT * FROM task_instances WHERE template_id = ? AND identity_id = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
+      [templateId, identityId],
     );
   }
 

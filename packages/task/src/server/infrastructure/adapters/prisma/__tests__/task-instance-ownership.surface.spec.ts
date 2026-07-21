@@ -30,6 +30,31 @@ describe('task instance ownership surface', () => {
     ),
     'utf8',
   );
+  const listByTemplate = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/list-task-instances-by-template.use-case.ts',
+    ),
+    'utf8',
+  );
+  const getTemplate = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/get-task-template.use-case.ts',
+    ),
+    'utf8',
+  );
+  const completeInstance = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/complete-task-instance.use-case.ts',
+    ),
+    'utf8',
+  );
+  const projection = readFileSync(
+    resolve(__dirname, '../../../schedule-projection-source.ts'),
+    'utf8',
+  );
   const routes = readFileSync(
     resolve(__dirname, '../../../../../api/routes/task-instance.routes.ts'),
     'utf8',
@@ -42,6 +67,19 @@ describe('task instance ownership surface', () => {
       'findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null>;',
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
+  });
+
+  it('findByTemplateId requires identityId (residual 133)', () => {
+    expect(port).toContain(
+      'findByTemplateId(templateId: string, identityId: string): Promise<TaskInstance[]>;',
+    );
+    expect(prisma).toContain('where: { templateId, identityId, deletedAt: null }');
+    expect(listByTemplate).toContain('findByTemplateId(templateId, identityId)');
+    expect(getTemplate).toContain('findByTemplateId(id, identityId)');
+    expect(completeInstance).toContain('findByTemplateId(');
+    expect(completeInstance).toContain('identityId');
+    expect(projection).toContain('findByTemplateId(');
+    expect(projection).toContain('String(templateDTO.identityId)');
   });
 
   it('prisma filters by id + identityId', () => {

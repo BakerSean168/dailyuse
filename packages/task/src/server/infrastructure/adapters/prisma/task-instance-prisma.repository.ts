@@ -97,9 +97,9 @@ export class TaskInstancePrismaRepository
     return data ? this.mapToEntity(data) : null;
   }
 
-  async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
+  async findByTemplateId(templateId: string, identityId: string): Promise<TaskInstance[]> {
     const data = await this.db.taskInstance.findMany({
-      where: { templateId, deletedAt: null },
+      where: { templateId, identityId, deletedAt: null },
       orderBy: { instanceDate: 'desc' },
     });
     return data.map((record: PrismaTaskInstance) => this.mapToEntity(record));

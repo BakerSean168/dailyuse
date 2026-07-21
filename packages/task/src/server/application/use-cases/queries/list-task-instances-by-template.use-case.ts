@@ -23,7 +23,7 @@ export class ListTaskInstancesByTemplateUseCase {
       return ok([]);
     }
 
-    const instances = await this.instanceRepository.findByTemplateId(templateId);
+    const instances = await this.instanceRepository.findByTemplateId(templateId, identityId);
     return ok(instances.map((i) => i.toClientDTO()));
   }
 }

@@ -14,9 +14,8 @@ describe('task schedule source ownership surface', () => {
   it('projection prefers findByIdForIdentity when identity present', () => {
     expect(projection).toContain('findByIdForIdentity(identityId, templateId)');
     expect(projection).toContain('findById(templateId)');
-    expect(projection).toContain(
-      'String(instance.identityId) === String(templateDTO.identityId)',
-    );
+    expect(projection).toContain('findByTemplateId(');
+    expect(projection).toContain('String(templateDTO.identityId)');
   });
 
   it('execution loads instance and template via findByIdForIdentity(task.identityId)', () => {

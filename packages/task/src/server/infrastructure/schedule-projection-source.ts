@@ -239,8 +239,9 @@ export function createTaskScheduleProjectionSource(deps: {
         };
       }
 
-      const instances = (await deps.taskInstanceRepository.findByTemplateId(templateId)).filter(
-        (instance) => String(instance.identityId) === String(templateDTO.identityId),
+      const instances = await deps.taskInstanceRepository.findByTemplateId(
+        templateId,
+        String(templateDTO.identityId),
       );
       const now = Date.now();
       const nextTasks = instances

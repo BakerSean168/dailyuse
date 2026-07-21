@@ -1691,6 +1691,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百三十三轮）：Task instance `findByTemplateId`
+> 身份隔离——仓储签名要求 identityId；Prisma/PowerSync 过滤 templateId+identityId；
+> list-by-template / get-template stats / complete siblings / schedule projection
+> 透传 identity。补 ownership surface。§13.2 仍部分。
+> 验证：task instance list/get/complete/projection/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
+
 
 
 ## 13. 测试与完成定义
@@ -1807,6 +1817,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百三十轮：goal/reminder schedule projection+execution identity-scoped load。
   残留一百三十一轮：schedule runtime sync/execute identity-scoped load。
   残留一百三十二轮：task schedule projection+execution identity-scoped load。
+  残留一百三十三轮：task findByTemplateId identity-scoped。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

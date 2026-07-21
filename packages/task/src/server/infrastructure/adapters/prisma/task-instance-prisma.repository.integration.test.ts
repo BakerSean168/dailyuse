@@ -159,7 +159,7 @@ describe('TaskInstancePrismaRepository integration', () => {
     await instanceRepository.save(instance1);
     await instanceRepository.save(instance2);
 
-    const instances = await instanceRepository.findByTemplateId(template.id);
+    const instances = await instanceRepository.findByTemplateId(template.id, String(template.identityId));
 
     expect(instances).toHaveLength(2);
     expect(instances.map((i) => i.id)).toContain(instance1.id);
