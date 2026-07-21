@@ -39,6 +39,11 @@ class StubProviderConfigRepository {
     return this.providers.find((provider) => provider.id === id) ?? null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string) {
+    const provider = await this.findById(id);
+    return provider && String(provider.identityId) === identityId ? provider : null;
+  }
+
   async findDefaultByIdentityId(identityId: string) {
     return this.providers.find((provider) => provider.identityId === identityId && provider.isDefault) ?? null;
   }

@@ -37,6 +37,14 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
   }
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {
+    const existing = await this.prisma.aiProviderConfig.findUnique({
+      where: { id: String(config.id) },
+      select: { identityId: true },
+    });
+    if (existing && existing.identityId !== String(config.identityId)) {
+      throw new Error('Provider config not found for the current identity.');
+    }
+
     await this.prisma.aiProviderConfig.upsert({
       where: { id: String(config.id) },
       create: {
@@ -81,6 +89,17 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     return row ? this.toServerDTO(row) : null;
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<AIProviderConfigServerDTO | null> {
+    const row = await this.prisma.aiProviderConfig.findFirst({
+      where: { id, identityId, deletedAt: null },
+    });
+
+    return row ? this.toServerDTO(row) : null;
+  }
+
   async findByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
     const rows = await this.prisma.aiProviderConfig.findMany({
       where: { identityId, deletedAt: null },
@@ -98,14 +117,17 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     return row ? this.toServerDTO(row) : null;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.aiProviderConfig.update({
-      where: { id },
+  async delete(identityId: string, id: string): Promise<void> {
+    const updated = await this.prisma.aiProviderConfig.updateMany({
+      where: { id, identityId, deletedAt: null },
       data: {
         isDefault: false,
         deletedAt: new Date(),
       },
     });
+    if (updated.count !== 1) {
+      throw new Error('Provider config not found for the current identity.');
+    }
   }
 
   async clearDefaultForIdentity(identityId: string): Promise<void> {

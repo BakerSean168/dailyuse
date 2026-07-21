@@ -29,6 +29,14 @@ export interface IAIProviderConfigRepository {
   findById(id: string): Promise<AIProviderConfigServerDTO | null>;
 
   /**
+   * 按账户 + 配置 ID 查找（身份隔离读路径）
+   */
+  findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<AIProviderConfigServerDTO | null>;
+
+  /**
    * 根据账户 UUID 查找所有配置
    */
   findByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO[]>;
@@ -41,7 +49,7 @@ export interface IAIProviderConfigRepository {
   /**
    * 删除配置
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * 取消账户下所有 Provider 的默认状态

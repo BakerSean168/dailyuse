@@ -48,9 +48,10 @@ export interface AIApplicationPort {
   updateProvider(
     id: string,
     req: UpdateAIProviderConfigReq,
+    cx: ExecutionContext,
   ): Promise<Result<UpdateAIProviderConfigRes>>;
-  deleteProvider(id: string): Promise<Result<void>>;
-  getProvider(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  deleteProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
+  getProvider(id: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>>;
   listProviders(cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO[]>>;
   testConnection(req: TestAIProviderReq, cx: ExecutionContext): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;

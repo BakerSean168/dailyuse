@@ -155,16 +155,22 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         }),
       );
       ipcMain.handle(AIChannels.PROVIDER_GET, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => aiModule.api.getProvider(id)),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.getProvider(id, { identityId: requestContext.identityId }),
+        ),
       );
       ipcMain.handle(AIChannels.PROVIDER_UPDATE, async (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          aiModule.api.updateProvider(String(payload.id), payload),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.updateProvider(String(payload.id), payload, {
+            identityId: requestContext.identityId,
+          }),
         ),
       );
       ipcMain.handle(AIChannels.PROVIDER_DELETE, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await aiModule.api.deleteProvider(id);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.deleteProvider(id, {
+            identityId: requestContext.identityId,
+          });
           if (!result.ok) return result;
           // Align with HTTP void success: data:null (no undefined dual-track).
           return ok(null);

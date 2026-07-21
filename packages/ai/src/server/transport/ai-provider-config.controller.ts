@@ -20,10 +20,14 @@ interface AIProviderConfigControllerService {
     request: CreateAIProviderConfigReq,
     cx: ExecutionContext,
   ): Promise<Result<CreateAIProviderConfigRes>>;
-  updateProvider(id: string, request: UpdateAIProviderConfigReq): Promise<Result<UpdateAIProviderConfigRes>>;
+  updateProvider(
+    id: string,
+    request: UpdateAIProviderConfigReq,
+    cx: ExecutionContext,
+  ): Promise<Result<UpdateAIProviderConfigRes>>;
   listProviders(cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO[]>>;
-  getProvider(id: string): Promise<Result<AIProviderConfigClientDTO>>;
-  deleteProvider(id: string): Promise<Result<void>>;
+  getProvider(id: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>>;
+  deleteProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
   testConnection(request: TestAIProviderReq, cx: ExecutionContext): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
   refreshProviderModels(providerId: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>>;
@@ -45,7 +49,11 @@ export class AIProviderConfigController {
     return this.service.createProvider(parsed.data, cx);
   }
 
-  async update(id: string, input: unknown): Promise<Result<UpdateAIProviderConfigRes>> {
+  async update(
+    id: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<UpdateAIProviderConfigRes>> {
     const parsed = UpdateAIProviderConfigSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -55,7 +63,7 @@ export class AIProviderConfigController {
       });
     }
 
-    return this.service.updateProvider(id, parsed.data);
+    return this.service.updateProvider(id, parsed.data, cx);
   }
 
   async list(cx: ExecutionContext): Promise<Result<ListAIProviderConfigsRes>> {
@@ -65,12 +73,12 @@ export class AIProviderConfigController {
     return ok({ data: result.data });
   }
 
-  async get(id: string): Promise<Result<AIProviderConfigClientDTO>> {
-    return this.service.getProvider(id);
+  async get(id: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>> {
+    return this.service.getProvider(id, cx);
   }
 
-  async delete(id: string): Promise<Result<null>> {
-    const result = await this.service.deleteProvider(id);
+  async delete(id: string, cx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.service.deleteProvider(id, cx);
     if (!result.ok) return result;
     // Serialize as data:null so HttpResponse keeps the data key (no ActionSuccess dual-track).
     return ok(null);

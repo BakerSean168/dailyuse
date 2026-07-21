@@ -7,8 +7,8 @@ import { toClientDTO } from './ai-provider-config-helpers';
 export class GetAIProviderUseCase {
   constructor(private readonly providerConfigRepository: IAIProviderConfigRepository) {}
 
-  async execute(id: string): Promise<Result<AIProviderConfigClientDTO>> {
-    const provider = await this.providerConfigRepository.findById(id);
+  async execute(identityId: string, id: string): Promise<Result<AIProviderConfigClientDTO>> {
+    const provider = await this.providerConfigRepository.findByIdForIdentity(identityId, id);
     if (!provider) {
       return error('NOT_FOUND', 'Provider not found');
     }

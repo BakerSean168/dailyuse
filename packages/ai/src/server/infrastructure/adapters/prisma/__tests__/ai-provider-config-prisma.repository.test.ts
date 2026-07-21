@@ -11,6 +11,7 @@ describe('AIProviderConfigPrismaRepository', () => {
     const cipher = new AISecretCipher('test-secret');
     const prisma = {
       aiProviderConfig: {
+        findUnique: vi.fn(async () => ({ identityId: 'identity-1' })),
         upsert: vi.fn(async () => undefined),
         findFirst: vi.fn(async () => ({
           id: 'provider-1',
@@ -75,6 +76,7 @@ describe('AIProviderConfigPrismaRepository', () => {
       const prisma = {
         aiProviderConfig: {
           count: vi.fn(async () => 0),
+          findUnique: vi.fn(async () => null),
           findFirst: vi.fn(async () => null),
           upsert: vi.fn(async () => undefined),
         },

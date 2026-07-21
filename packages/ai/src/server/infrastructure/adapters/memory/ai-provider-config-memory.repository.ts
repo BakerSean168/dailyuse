@@ -16,11 +16,24 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
   private configs = new Map<string, AIProviderConfigServerDTO>();
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {
-    this.configs.set(config.id, config);
+    const existing = this.configs.get(String(config.id));
+    if (existing && String(existing.identityId) !== String(config.identityId)) {
+      throw new Error('Provider config not found for the current identity.');
+    }
+    this.configs.set(String(config.id), config);
   }
 
   async findById(id: string): Promise<AIProviderConfigServerDTO | null> {
     return this.configs.get(id) ?? null;
+  }
+
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<AIProviderConfigServerDTO | null> {
+    const config = this.configs.get(id) ?? null;
+    if (!config || String(config.identityId) !== identityId) return null;
+    return config;
   }
 
   async findByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
@@ -34,7 +47,11 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
     );
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const config = this.configs.get(id);
+    if (!config || String(config.identityId) !== identityId) {
+      throw new Error('Provider config not found for the current identity.');
+    }
     this.configs.delete(id);
   }
 

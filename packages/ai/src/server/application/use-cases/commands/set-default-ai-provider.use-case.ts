@@ -7,8 +7,8 @@ export class SetDefaultAIProviderUseCase {
   constructor(private readonly providerConfigRepository: IAIProviderConfigRepository) {}
 
   async execute(id: string, cx: ExecutionContext): Promise<Result<void>> {
-    const provider = await this.providerConfigRepository.findById(id);
-    if (!provider || String(provider.identityId) !== cx.identityId) {
+    const provider = await this.providerConfigRepository.findByIdForIdentity(cx.identityId, id);
+    if (!provider) {
       return error('NOT_FOUND', 'Provider not found');
     }
 

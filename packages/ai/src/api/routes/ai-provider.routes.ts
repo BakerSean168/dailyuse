@@ -86,7 +86,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id),
+    (req, ctx) => controller.get(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // PATCH /:id — Update provider
@@ -106,7 +106,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // DELETE /:id — Delete provider
@@ -124,7 +124,7 @@ export function registerAIProviderRoutes(
       },
     },
     [auth],
-    (req) => controller.delete(req.params!.id),
+    (req, ctx) => controller.delete(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // POST /test — Test provider connection

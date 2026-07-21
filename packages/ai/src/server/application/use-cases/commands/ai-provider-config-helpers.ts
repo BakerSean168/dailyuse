@@ -36,8 +36,11 @@ export async function resolveProviderConfigForConnectionTest(
   request: TestAIProviderReq,
 ) {
   if (request.providerId) {
-    const provider = await providerConfigRepository.findById(request.providerId);
-    if (!provider || String(provider.identityId) !== identityId) {
+    const provider = await providerConfigRepository.findByIdForIdentity(
+      identityId,
+      request.providerId,
+    );
+    if (!provider) {
       throw new Error('Provider not found');
     }
 

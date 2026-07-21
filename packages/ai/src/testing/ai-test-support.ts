@@ -24,6 +24,7 @@ export function createAIProviderConfigRepositoryStub(
   return {
     save: async () => {},
     findById: async () => null,
+    findByIdForIdentity: async () => null,
     findByIdentityId: async () => [],
     findDefaultByIdentityId: async () => null,
     delete: async () => {},

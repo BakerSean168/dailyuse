@@ -411,9 +411,10 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
 
     // -- Provider Config --
     createProvider: (req, cx) => services.providerServices.create.execute(req, cx),
-    updateProvider: (id, req) => services.providerServices.update.execute(id, req),
-    deleteProvider: (id) => services.providerServices.delete.execute(id),
-    getProvider: (id) => services.providerServices.get.execute(id),
+    updateProvider: (id, req, cx) =>
+      services.providerServices.update.execute(cx.identityId, id, req),
+    deleteProvider: (id, cx) => services.providerServices.delete.execute(cx.identityId, id),
+    getProvider: (id, cx) => services.providerServices.get.execute(cx.identityId, id),
     listProviders: (cx) => services.providerServices.list.execute(cx),
     testConnection: (req, cx) => services.providerServices.testConnection.execute(req, cx),
     setDefaultProvider: (id, cx) => services.providerServices.setDefault.execute(id, cx),

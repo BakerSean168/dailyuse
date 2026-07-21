@@ -100,6 +100,17 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
     return row ? PowerSyncAIProviderConfigMapper.toDTO(row, this.secretCipher) : null;
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<AIProviderConfigServerDTO | null> {
+    const row = await this.db.getOptional<PowerSyncAIProviderConfigRow>(
+      `SELECT * FROM ai_provider_configs WHERE id = ? AND identity_id = ? AND deleted_at IS NULL LIMIT 1`,
+      [id, identityId],
+    );
+    return row ? PowerSyncAIProviderConfigMapper.toDTO(row, this.secretCipher) : null;
+  }
+
   async findByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
     const rows = await this.db.getAll<PowerSyncAIProviderConfigRow>(
       `SELECT * FROM ai_provider_configs
@@ -120,11 +131,15 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
     return row ? PowerSyncAIProviderConfigMapper.toDTO(row, this.secretCipher) : null;
   }
 
-  async delete(id: string): Promise<void> {
+    async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Provider config not found for the current identity.');
+    }
     const now = new Date().toISOString();
     await this.db.execute(
-      `UPDATE ai_provider_configs SET is_default = 0, deleted_at = ?, updated_at = ? WHERE id = ?`,
-      [now, now, id],
+      `UPDATE ai_provider_configs SET is_default = 0, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?`,
+      [now, now, id, identityId],
     );
   }
 

@@ -13,10 +13,11 @@ export class UpdateAIProviderUseCase {
   constructor(private readonly providerConfigRepository: IAIProviderConfigRepository) {}
 
   async execute(
+    identityId: string,
     id: string,
     request: UpdateAIProviderConfigReq,
   ): Promise<Result<AIProviderConfigClientDTO>> {
-    const current = await this.providerConfigRepository.findById(id);
+    const current = await this.providerConfigRepository.findByIdForIdentity(identityId, id);
     if (!current) {
       return error('NOT_FOUND', 'Provider not found');
     }
