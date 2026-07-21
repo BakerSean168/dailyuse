@@ -126,34 +126,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     );
   }
 
-  async findByStatus(
-    identityId: string,
-    status: ConversationStatus,
-    options?: AIConversationQueryOptions,
-  ): Promise<AIConversation[]> {
-    const rows = await this.prisma.aiConversation.findMany({
-      where: { identityId, status, deletedAt: null },
-      include: options?.includeChildren
-        ? { messages: { orderBy: { createdAt: 'asc' } } }
-        : undefined,
-      orderBy: { updatedAt: 'desc' },
-    });
 
-    return rows.map((row: PrismaAiConversationWithMessages) =>
-      this.toDomain(row, Boolean(options?.includeChildren)),
-    );
-  }
-
-  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
-    const rows = await this.prisma.aiConversation.findMany({
-      where: { identityId, deletedAt: null },
-      orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
-      take: limit,
-      skip: offset ?? 0,
-    });
-
-    return rows.map((row: PrismaAiConversationWithMessages) => this.toDomain(row, false));
-  }
 
   async delete(id: string): Promise<void> {
     await this.prisma.aiConversation.update({
@@ -165,13 +138,6 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     });
   }
 
-  async exists(id: string): Promise<boolean> {
-    const count = await this.prisma.aiConversation.count({
-      where: { id, deletedAt: null },
-    });
-
-    return count > 0;
-  }
 
   private toDomain(
     row: PrismaAiConversationWithMessages,

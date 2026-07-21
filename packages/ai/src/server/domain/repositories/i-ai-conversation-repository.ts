@@ -1,74 +1,53 @@
-﻿/**
+/**
  * AI Conversation Repository Interface
- * AI 瀵硅瘽浠撳偍鎺ュ彛
+ * AI 对话仓储接口
  *
- * DDD 浠撳偍妯″紡锛?
- * - 鎿嶄綔棰嗗煙瀵硅薄锛堣仛鍚堟牴锛夛紝涓嶇洿鎺ユ搷浣滄暟鎹簱妯″瀷
- * - 鐢卞熀纭€璁炬柦灞傚疄鐜帮紙Prisma锛?
- * - 鑱氬悎鏍规ā寮忥細绾ц仈淇濆瓨/鍔犺浇 AIMessage
+ * DDD 仓储模式：
+ * - 操作领域对象（聚合根），不直接操作数据库模型
+ * - 由基础设施层实现（Prisma / PowerSync / memory）
+ * - 聚合根模式：级联保存/加载 AIMessage
  */
 
 import type { AIConversation } from '../aggregates/ai-conversation';
-import { ConversationStatus } from '@dailyuse/contracts/ai';
 
 /**
- * 鏌ヨ閫夐」
+ * 查询选项
  */
 export interface AIConversationQueryOptions {
   includeChildren?: boolean;
 }
 
 /**
- * IAIConversationRepository 浠撳偍鎺ュ彛
+ * IAIConversationRepository 仓储接口
  *
- * 鑱岃矗锛?
- * - AI 瀵硅瘽鑱氬悎鏍圭殑鎸佷箙鍖栨搷浣?
- * - 绾ц仈淇濆瓨瀵硅瘽娑堟伅
- * - 鎸夎处鎴枫€佺姸鎬佹煡璇㈠璇?
+ * 职责：
+ * - AI 对话聚合根的持久化操作
+ * - 级联保存对话消息
+ * - 按账户查询对话（列表分页由应用层基于 findByIdentityId 完成）
  */
 export interface IAIConversationRepository {
   /**
-   * 淇濆瓨瀵硅瘽锛堝垱寤烘垨鏇存柊锛?
-   * 娉ㄦ剰锛氱骇鑱斾繚瀛樻墍鏈夋秷鎭?
+   * 保存对话（创建或更新）
+   * 注意：级联保存所有消息
    */
   save(conversation: AIConversation): Promise<void>;
 
   /**
-   * 鏍规嵁 UUID 鏌ユ壘瀵硅瘽
-   * @param options.includeChildren 鏄惁鍔犺浇娑堟伅锛堥粯璁?false锛?
+   * 根据 UUID 查找对话
+   * @param options.includeChildren 是否加载消息（默认 false）
    */
   findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null>;
 
   /**
-   * 鏍规嵁璐︽埛 UUID 鏌ユ壘鎵€鏈夊璇?
+   * 根据账户 UUID 查找所有对话
    */
-  findByIdentityId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]>;
-
-  /**
-   * 鏍规嵁鐘舵€佹煡鎵惧璇?
-   */
-  findByStatus(
+  findByIdentityId(
     identityId: string,
-    status: ConversationStatus,
     options?: AIConversationQueryOptions,
   ): Promise<AIConversation[]>;
 
   /**
-   * 鏌ユ壘鏈€杩戠殑瀵硅瘽锛堝垎椤碉級
-   */
-  findRecent(
-    identityId: string,
-    limit: number,
-    offset?: number,
-  ): Promise<AIConversation[]>;
-
-  /**
-   * 鍒犻櫎瀵硅瘽锛堢骇鑱斿垹闄ゆ墍鏈夋秷鎭級
+   * 删除对话（级联删除所有消息）
    */
   delete(id: string): Promise<void>;
-
-  /**
-   * 妫€鏌ュ璇濇槸鍚﹀瓨鍦?
-   */
-  exists(id: string): Promise<boolean>;
 }

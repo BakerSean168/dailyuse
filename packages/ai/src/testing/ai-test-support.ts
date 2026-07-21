@@ -12,10 +12,7 @@ export function createAIConversationRepositoryStub(
     save: async () => {},
     findById: async () => null,
     findByIdentityId: async () => [],
-    findByStatus: async () => [],
-    findRecent: async () => [],
     delete: async () => {},
-    exists: async () => false,
     ...overrides,
   };
 }

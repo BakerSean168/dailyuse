@@ -1,5 +1,5 @@
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { AIEventMap, ConversationStatus } from '@dailyuse/contracts/ai';
+import type { AIEventMap } from '@dailyuse/contracts/ai';
 import { AIConversation } from '../../../domain/aggregates/ai-conversation';
 import { Message } from '../../../domain/entities/message';
 import type {
@@ -130,40 +130,7 @@ export class PowerSyncAIConversationRepository implements IAIConversationReposit
     );
   }
 
-  async findByStatus(
-    identityId: string,
-    status: ConversationStatus,
-    options?: AIConversationQueryOptions,
-  ): Promise<AIConversation[]> {
-    const rows = await this.db.getAll<PowerSyncAIConversationRow>(
-      `SELECT * FROM ai_conversations
-       WHERE identity_id = ? AND status = ? AND deleted_at IS NULL
-       ORDER BY updated_at DESC`,
-      [identityId, status],
-    );
 
-    if (!options?.includeChildren) {
-      return rows.map((row) => PowerSyncAIConversationMapper.toDomain(row, []));
-    }
-
-    const messagesByConversationId = await this.loadMessagesByConversationIds(
-      rows.map((r) => r.id),
-    );
-    return rows.map((row) =>
-      PowerSyncAIConversationMapper.toDomain(row, messagesByConversationId.get(row.id) ?? []),
-    );
-  }
-
-  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
-    const rows = await this.db.getAll<PowerSyncAIConversationRow>(
-      `SELECT * FROM ai_conversations
-       WHERE identity_id = ? AND deleted_at IS NULL
-       ORDER BY COALESCE(last_message_at, updated_at) DESC
-       LIMIT ? OFFSET ?`,
-      [identityId, Math.max(1, limit), Math.max(0, offset ?? 0)],
-    );
-    return rows.map((row) => PowerSyncAIConversationMapper.toDomain(row, []));
-  }
 
   async delete(id: string): Promise<void> {
     const now = new Date().toISOString();
@@ -173,13 +140,6 @@ export class PowerSyncAIConversationRepository implements IAIConversationReposit
     );
   }
 
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ one: number }>(
-      `SELECT 1 as one FROM ai_conversations WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
-      [id],
-    );
-    return row !== null;
-  }
 
   private async loadMessages(conversationId: string): Promise<Message[]> {
     const rows = await this.db.getAll<PowerSyncAIMessageRow>(

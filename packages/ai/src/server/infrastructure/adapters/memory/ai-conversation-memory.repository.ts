@@ -6,7 +6,6 @@
 
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain';
 import type { AIConversation } from '../../../domain/aggregates/ai-conversation';
-import type { ConversationStatus } from '@dailyuse/contracts/ai';
 
 /**
  * AIConversation Memory Repository
@@ -35,31 +34,8 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
     );
   }
 
-  async findByStatus(
-    identityId: string,
-    status: ConversationStatus,
-    options?: AIConversationQueryOptions,
-  ): Promise<AIConversation[]> {
-    void options;
-    return Array.from(this.conversations.values()).filter(
-      (conversation) =>
-        String(conversation.identityId) === identityId && conversation.status === status,
-    );
-  }
-
-  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
-    const filtered = Array.from(this.conversations.values())
-      .filter((conversation) => String(conversation.identityId) === identityId)
-      .sort((left, right) => right.updatedAt.getTime() - left.updatedAt.getTime());
-    return filtered.slice(offset ?? 0, (offset ?? 0) + limit);
-  }
-
   async delete(id: string): Promise<void> {
     this.conversations.delete(id);
-  }
-
-  async exists(id: string): Promise<boolean> {
-    return this.conversations.has(id);
   }
 
   // Test helpers
