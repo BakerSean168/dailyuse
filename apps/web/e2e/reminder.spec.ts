@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { TEST_USERS } from './config';
 import {
   login,
   navigateToReminder,
@@ -7,7 +8,6 @@ import {
   waitForReminderNotification,
   getSSEEvents,
   cleanupReminder,
-  TEST_USER,
 } from './helpers/testHelpers';
 
 type ReminderWindowState = Window &
@@ -52,7 +52,7 @@ test.describe('Reminder E2E Flow', () => {
     test.setTimeout(5 * 60 * 1000); // 5 ????
 
     console.log('\n? Step 1: ????');
-    await login(page, TEST_USER.username, TEST_USER.password);
+    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
 
     // ??????
     await expect(page).toHaveURL(/\/(home|dashboard|reminder)/);
@@ -151,7 +151,7 @@ test.describe('Reminder E2E Flow', () => {
     console.log('\n? ????: ?? SSE ????');
 
     // ??
-    await login(page, TEST_USER.username, TEST_USER.password);
+    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
 
     // ??? Reminder
     await navigateToReminder(page);

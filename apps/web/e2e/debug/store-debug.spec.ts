@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
-import { login, TEST_USER } from '../helpers/testHelpers';
-import { WEB_CONFIG } from '../config';
+import { login } from '../helpers/testHelpers';
+import { WEB_CONFIG, TEST_USERS } from '../config';
 
 test('Store 状态调试', async ({ page }) => {
   console.log('\n========== Store 调试测试 ==========\n');
@@ -17,7 +17,7 @@ test('Store 状态调试', async ({ page }) => {
   });
 
   console.log('1. 登录...');
-  await login(page, TEST_USER.username, TEST_USER.password);
+  await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
 
   console.log('\n2. 等待登录完成...');
   await page.waitForTimeout(2000);

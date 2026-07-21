@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { TaskPage } from '../page-objects/TaskPage';
 import { TaskDAGPage } from '../page-objects/TaskDAGPage';
-import { login, navigateToTasks, createTestTask, cleanupTask, TEST_USER } from '../helpers/testHelpers';
-
+import { login, navigateToTasks, createTestTask, cleanupTask } from '../helpers/testHelpers';
+import { TEST_USERS } from '../config';
 /**
  * Task DAG Visualization E2E Tests
  * 
@@ -28,7 +28,7 @@ test.describe('Task DAG Visualization', () => {
     console.log('========================================\n');
 
     // Login
-    await login(page, TEST_USER.username, TEST_USER.password);
+    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
     
     // Navigate to Tasks page
     await navigateToTasks(page);

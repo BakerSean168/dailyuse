@@ -57,7 +57,7 @@ updated: 2026-07-21T00:00:00
   Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView/useSmsCodeCountdown 已删；Agent identity 归属 fail-closed + resolveRunPlan surface 隔离；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
-  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；残留三十三至五十轮删除 Desktop DI/PowerSync/lazy-module/contracts、AI conversation/provider 双轨命名与无传输层 conversation add/status/getDefault 用例、conversation/provider-config/auth-identity/account phone 仓储死方法与 DEVICE_TRUST/2FA/API-Key/device 管理/诊断会话 IPC 空 stub、Desktop auth shell 本地 Ch 与 contracts AuthChannels 双轨、governance mapper-helpers 兼容 re-export、generateStrongPassword/updateCurrentValueByAggregation 兼容别名、Desktop auth stub/TokenData/LoginCredentials/AutoLoginResult 双轨别名与 app-vue LegacyWorkflowMode 双轨类型残留，并增强三入口/ADR-035 multi-turn journey 证据；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
+  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；残留三十三至五十一轮删除 Desktop DI/PowerSync/lazy-module/contracts、AI conversation/provider 双轨命名与无传输层 conversation add/status/getDefault 用例、conversation/provider-config/auth-identity/account phone 仓储死方法与 DEVICE_TRUST/2FA/API-Key/device 管理/诊断会话 IPC 空 stub、Desktop auth shell 本地 Ch 与 contracts AuthChannels 双轨、governance mapper-helpers 兼容 re-export、generateStrongPassword/updateCurrentValueByAggregation/E2E TEST_USER 兼容别名、Desktop auth stub/TokenData/LoginCredentials/AutoLoginResult 双轨别名与 app-vue LegacyWorkflowMode 双轨类型残留，并增强三入口/ADR-035 multi-turn journey 证据；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
 
 ## 2. 已确认产品边界
 
@@ -1036,6 +1036,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留五十一轮）：删除 Web E2E 双轨测试用户别名
+> `TEST_USER`/`TEST_USER_2`/`ADMIN_TEST_USER`，调用方统一 `TEST_USERS`（`e2e/config`）。
+> §13.2 仍为部分/外部阻塞。验证：e2e 文件 import 语法自检、governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1054,7 +1060,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留五十轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留五十一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；

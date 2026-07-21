@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { TaskPage } from '../page-objects/TaskPage';
+import { TEST_USERS } from '../config';
 import {
   login,
   navigateToTasks,
   createTestTask,
   cleanupTask,
-  TEST_USER,
 } from '../helpers/testHelpers';
 
 /**
@@ -31,7 +31,7 @@ test.describe('Task Dependency CRUD', () => {
     console.log('========================================\n');
 
     // Login
-    await login(page, TEST_USER.username, TEST_USER.password);
+    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
 
     // Navigate to Tasks page
     await navigateToTasks(page);

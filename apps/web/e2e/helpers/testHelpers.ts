@@ -31,23 +31,7 @@ type SSEWindowState = Window &
  * 配置来源: /apps/web/e2e/config.ts
  */
 
-/**
- * 主要测试用户（用于大部分测试）
- * @deprecated 请使用 TEST_USERS.MAIN
- */
-export const TEST_USER = TEST_USERS.MAIN;
-
-/**
- * 第二个测试用户（用于多用户交互测试）
- * @deprecated 请使用 TEST_USERS.SECONDARY
- */
-export const TEST_USER_2 = TEST_USERS.SECONDARY;
-
-/**
- * 管理员测试用户
- * @deprecated 请使用 TEST_USERS.ADMIN
- */
-export const ADMIN_TEST_USER = TEST_USERS.ADMIN;
+/** Canonical test users: import { TEST_USERS } from '../config'. */
 
 export type RegisterAndLoginOptions = {
   email?: string;

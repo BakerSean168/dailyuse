@@ -8,8 +8,8 @@
  *   (`capsule-nav-*` testids replace `main-nav-*` / `bottom-nav-*`)
  */
 import { test, expect } from '@playwright/test';
-import { login, TEST_USER } from '../helpers/testHelpers';
-import { WEB_CONFIG, TIMEOUT_CONFIG } from '../config';
+import { login } from '../helpers/testHelpers';
+import { WEB_CONFIG, TIMEOUT_CONFIG, TEST_USERS } from '../config';
 
 const CAPSULE_TESTIDS = [
   'capsule-nav-goal',
@@ -21,7 +21,7 @@ const CAPSULE_TESTIDS = [
 
 test.describe('Dashboard retirement (V2 shell)', () => {
   test.beforeEach(async ({ page }) => {
-    await login(page, TEST_USER.username, TEST_USER.password);
+    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
   });
 
   test('[P0] should redirect /dashboard to the AI workspace ground', async ({ page }) => {

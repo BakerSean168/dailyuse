@@ -3,11 +3,11 @@
  * ??????????
  */
 import { test, expect } from '@playwright/test';
-import { login, TEST_USER } from '../helpers/testHelpers';
-
+import { login } from '../helpers/testHelpers';
+import { TEST_USERS } from '../config';
 test.describe('Account - Profile Management', () => {
   test.beforeEach(async ({ page }) => {
-    await login(page, TEST_USER.username, TEST_USER.password);
+    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
     await page.goto('/account/profile');
   });
 

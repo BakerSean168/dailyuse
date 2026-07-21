@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { CommandPalettePage } from '../page-objects/CommandPalettePage';
 import { TaskPage } from '../page-objects/TaskPage';
+import { TEST_USERS } from '../config';
 import {
   login,
   navigateToTasks,
@@ -9,7 +10,6 @@ import {
   openCommandPalette,
   searchInCommandPalette,
   closeCommandPalette,
-  TEST_USER,
 } from '../helpers/testHelpers';
 
 /**
@@ -37,7 +37,7 @@ test.describe('Command Palette', () => {
     console.log('========================================\n');
 
     // Login
-    await login(page, TEST_USER.username, TEST_USER.password);
+    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
 
     console.log('[PASS] Setup complete\n');
   });

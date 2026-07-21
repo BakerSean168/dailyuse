@@ -5,8 +5,8 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { WEB_CONFIG } from '../config';
-import { login, TEST_USER } from '../helpers/testHelpers';
-
+import { login } from '../helpers/testHelpers';
+import { TEST_USERS } from '../config';
 test.describe('Goal Focus Mode - 专注模式', () => {
   let page: Page;
   let focusGoalName: string;
@@ -18,7 +18,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     otherGoalName = `E2E Other Goal ${Date.now()}`;
 
     // 登录
-    await login(page, TEST_USER.username, TEST_USER.password);
+    await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
 
     // 导航到 Goal 页面
     await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), {

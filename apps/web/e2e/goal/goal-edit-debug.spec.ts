@@ -1,10 +1,10 @@
 import { test } from '@playwright/test';
-import { login, TEST_USER } from '../helpers/testHelpers';
-import { WEB_CONFIG } from '../config';
+import { login } from '../helpers/testHelpers';
+import { WEB_CONFIG, TEST_USERS } from '../config';
 
 test('Goal 编辑对话框调试', async ({ page }) => {
   console.log('登录...');
-  await login(page, TEST_USER.username, TEST_USER.password);
+  await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
 
   console.log('导航到 Goals 页面...');
   await page.goto(WEB_CONFIG.getFullUrl('/goals'), {
