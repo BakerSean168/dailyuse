@@ -19,7 +19,7 @@ import { RuleId } from '@/server/domain/value-objects/rule-id';
 import { RuleRevisionId } from '@/server/domain/value-objects/rule-revision-id';
 import type { ChangeType } from '@/server/domain/value-objects/change-type';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { toDate, parseStringArray, parseRecord } from '../../mapper-helpers';
+import { toDate, parseStringArray, parseRecord } from '@dailyuse/utils/shared';
 
 /**
  * Represents a row in the PowerSync `rule_revisions` table.

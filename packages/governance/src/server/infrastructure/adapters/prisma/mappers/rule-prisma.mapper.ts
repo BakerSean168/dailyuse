@@ -31,7 +31,7 @@ import { CodeSnippet } from '@/server/domain/value-objects/code-snippet';
 import type { RuleStatus } from '@/server/domain/value-objects/rule-status';
 import type { RuleSeverity } from '@/server/domain/value-objects/rule-severity';
 import type { CodeSnippetPersistenceDTO } from '@/server/domain/value-objects/code-snippet';
-import { fromDbDate, parseJson } from '../../mapper-helpers';
+import { fromDbDate, parseJson } from '@dailyuse/utils/shared';
 
 // ---------------------------------------------------------------------------
 // Mapper

@@ -17,8 +17,7 @@
  *     powersync/
  *       mappers/           ← Entity ↔ SQLite row mapping
  *       <entity>-powersync.repository.ts
- *     mapper-helpers.ts    ← Shared parsing utilities
- *   runtime/
+ *      *   runtime/
  *     module-runtime.ts    ← Runtime adapter seam
  *     governance-event-log.runtime.ts
  *   governance.module.ts   ← Canonical composition root

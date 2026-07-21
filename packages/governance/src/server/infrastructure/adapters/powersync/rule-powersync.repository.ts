@@ -34,7 +34,7 @@ import {
   type PowerSyncRuleWriteRow,
 } from './mappers/powersync-rule.mapper';
 import { PowerSyncRuleRevisionMapper } from './mappers/powersync-rule-revision.mapper';
-import { escapeSqlLike } from '../mapper-helpers';
+import { escapeSqlLike } from '@dailyuse/utils/shared';
 import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils/domain';
 
