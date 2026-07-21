@@ -101,7 +101,6 @@ describe('AdjustReminderFrequencyUseCase', () => {
       expect(result.data).toEqual(
         expect.objectContaining({
           templateId: 'tpl-1',
-          success: true,
           originalInterval: 60,
           adjustedInterval: 30,
         }),

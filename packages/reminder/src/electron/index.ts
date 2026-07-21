@@ -15,6 +15,7 @@
  */
 
 import { ipcMain } from 'electron';
+import { ok } from '@dailyuse/contracts/result';
 import {
   ReminderChannels,
   type IElectronModule,
@@ -84,9 +85,11 @@ export const ReminderElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(ReminderChannels.TEMPLATE_DELETE, async (_event, id) =>
-      withAuthenticatedValue(ctx, async (requestContext) =>
-        controller.deleteTemplate(id, requestContext),
-      ),
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await controller.deleteTemplate(id, requestContext);
+        if (!result.ok) return result;
+        return ok(null);
+      }),
     );
 
     // Toggle template enabled/paused state.
@@ -137,9 +140,11 @@ export const ReminderElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(ReminderChannels.GROUP_DELETE, async (_event, id) =>
-      withAuthenticatedValue(ctx, async (requestContext) =>
-        controller.deleteGroup(id, requestContext),
-      ),
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await controller.deleteGroup(id, requestContext);
+        if (!result.ok) return result;
+        return ok(null);
+      }),
     );
     ipcMain.handle(ReminderChannels.GROUP_TOGGLE_STATUS, async (_event, id) =>
       withAuthenticatedValue(ctx, async (requestContext) =>

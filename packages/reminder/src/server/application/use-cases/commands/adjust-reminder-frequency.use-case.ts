@@ -22,7 +22,6 @@ const reminderAnalyticsEvents = createTypedEventPublisher<
  */
 export interface AdjustmentResult {
   templateId: string;
-  success: boolean;
   originalInterval: number;
   adjustedInterval: number;
   reason: string;
@@ -98,7 +97,6 @@ export class AdjustReminderFrequencyUseCase {
 
     return ok({
       templateId: request.templateId,
-      success: true,
       originalInterval,
       adjustedInterval: request.newInterval,
       reason: request.reason,

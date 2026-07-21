@@ -269,7 +269,6 @@ export const FrequencyAnalysisResultSchema = z.object({
 
 export const FrequencyAdjustmentResultSchema = z.object({
   templateId: brandedId<ReminderTemplateId>(),
-  success: z.boolean(),
   originalInterval: z.number(),
   adjustedInterval: z.number(),
   reason: z.string(),

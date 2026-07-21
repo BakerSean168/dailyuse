@@ -1328,6 +1328,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > task + governance focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十一轮）：折叠 reminder void/success 双轨——template/group
+> delete 与 frequency-adjustment reject 在 controller/electron 统一 `ok(null)`（对齐 OpenAPI
+> `z.null()`）；`FrequencyAdjustmentResultSchema` / use case 去掉冗余 `success: boolean`
+> （成功已由 Result 信封表达）。补 reminder void-success envelope surface。§13.2 仍为部分/
+> 外部阻塞。验证：reminder focused + contracts + governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
