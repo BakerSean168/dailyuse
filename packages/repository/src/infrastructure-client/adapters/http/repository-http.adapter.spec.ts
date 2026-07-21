@@ -3,7 +3,7 @@ import { ok } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import { RepositoryHttpAdapter } from './repository-http.adapter';
 
-function createHttpClient() {
+function createResultHttpClientStub() {
   return {
     get: vi.fn(async () => ok({ connections: [] })),
     post: vi.fn(async () => ok({})),
@@ -15,7 +15,7 @@ function createHttpClient() {
 
 describe('RepositoryHttpAdapter knowledge repository connections', () => {
   it('uses the dedicated GitHub App installation and connection endpoints', async () => {
-    const httpClient = createHttpClient();
+    const httpClient = createResultHttpClientStub();
     const adapter = new RepositoryHttpAdapter(httpClient);
 
     await adapter.startKnowledgeRepositoryInstallation({
@@ -74,7 +74,7 @@ describe('RepositoryHttpAdapter knowledge repository connections', () => {
   });
 
   it('uses the projection read and confirmed-create endpoints', async () => {
-    const httpClient = createHttpClient();
+    const httpClient = createResultHttpClientStub();
     const adapter = new RepositoryHttpAdapter(httpClient);
 
     await adapter.listKnowledgeNoteProjections({
@@ -134,7 +134,7 @@ describe('RepositoryHttpAdapter knowledge repository connections', () => {
 
 describe('RepositoryHttpAdapter retired surface', () => {
   it('does not keep hard-fail stubs for retired CRUD methods', () => {
-    const adapter = new RepositoryHttpAdapter(createHttpClient()) as Record<string, unknown>;
+    const adapter = new RepositoryHttpAdapter(createResultHttpClientStub()) as Record<string, unknown>;
     for (const method of [
       'getCurrentRepository',
       'listResources',

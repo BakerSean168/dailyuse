@@ -30,7 +30,7 @@
 export type {
   IResultHttpClient,
   HttpRequestOptions,
-  AxiosHttpClientConfig,
+  HttpClientConfig,
   TokenProvider,
   TokenRefreshHandler,
 } from './types';
@@ -47,12 +47,12 @@ export {
 } from './result-error';
 
 // ── Factories ──
-import type { AxiosHttpClientConfig } from './types';
+import type { HttpClientConfig } from './types';
 import { ResultHttpClient } from './result-http-client';
 
 /**
  * Create a ResultHttpClient (never throws; returns Result envelopes).
  */
-export function createResultHttpClient(config?: AxiosHttpClientConfig): ResultHttpClient {
+export function createResultHttpClient(config?: HttpClientConfig): ResultHttpClient {
   return new ResultHttpClient(config);
 }

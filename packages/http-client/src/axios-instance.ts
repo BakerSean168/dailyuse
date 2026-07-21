@@ -16,7 +16,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
-import { DEFAULT_HTTP_CLIENT_CONFIG, type AxiosHttpClientConfig } from './types';
+import { DEFAULT_HTTP_CLIENT_CONFIG, type HttpClientConfig } from './types';
 
 /**
  * 创建一个预配置的 Axios 实例
@@ -36,7 +36,7 @@ import { DEFAULT_HTTP_CLIENT_CONFIG, type AxiosHttpClientConfig } from './types'
  * });
  * ```
  */
-export function createAxiosInstance(config: AxiosHttpClientConfig = {}): AxiosInstance {
+export function createAxiosInstance(config: HttpClientConfig = {}): AxiosInstance {
   const {
     baseURL = DEFAULT_HTTP_CLIENT_CONFIG.baseURL,
     timeout = DEFAULT_HTTP_CLIENT_CONFIG.timeout,

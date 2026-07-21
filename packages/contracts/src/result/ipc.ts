@@ -10,7 +10,7 @@
 // Import ResultCode from codes.ts to avoid circular dependency issues
 import { ResultCode } from './codes';
 import type { Result, ResultError, ResultMeta } from './core';
-import { ok, fail, isOk, toResultErrorException } from './core';
+import { ok, fail, isOk } from './core';
 
 // ============================================================================
 // IPC Result Types
@@ -205,18 +205,6 @@ export function createIpcClientWrapper(invoker: {
     async invoke<T>(channel: string, ...args: unknown[]): Promise<Result<T, ResultError>> {
       const ipcResult = (await invoker.invoke(channel, ...args)) as IpcResult<T>;
       return fromIpcResult<T>(ipcResult);
-    },
-
-    /**
-     * 调用 IPC 并直接返回数据（失败时抛出错误）
-     * 用于不需要处理错误的场景
-     */
-    async invokeUnsafe<T>(channel: string, ...args: unknown[]): Promise<T> {
-      const result = await this.invoke<T>(channel, ...args);
-      if (isOk(result)) {
-        return result.data;
-      }
-      throw toResultErrorException(result.error);
     },
   };
 }

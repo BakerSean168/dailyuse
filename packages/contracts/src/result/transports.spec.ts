@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fail, ok, ResultErrorException } from './index';
+import { fail, ok } from './index';
 import { fromHttpResponse, toHttpResponse } from './http';
 import { createIpcClientWrapper, fromIpcResult, toIpcResult } from './ipc';
 
@@ -84,7 +84,7 @@ describe('result transport context support', () => {
     }
   });
 
-  it('throws ResultErrorException from invokeUnsafe', async () => {
+  it('createIpcClientWrapper.invoke returns fail Result without throwing', async () => {
     const client = createIpcClientWrapper({
       invoke: async () =>
         toIpcResult(
@@ -95,10 +95,13 @@ describe('result transport context support', () => {
         ),
     });
 
-    await expect(client.invokeUnsafe('auth:status')).rejects.toMatchObject<ResultErrorException>({
-      name: 'ResultErrorException',
-      code: 'UNAUTHORIZED',
-      message: '未授权，请登录',
-    });
+    const result = await client.invoke('auth:status');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatchObject({
+        code: 'UNAUTHORIZED',
+        message: '未授权，请登录',
+      });
+    }
   });
 });

@@ -29,7 +29,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosReq
 import type { Result, ResultError } from '@dailyuse/contracts/result';
 import { fail, fromHttpResponse } from '@dailyuse/contracts/result';
 import type { HttpResponse } from '@dailyuse/contracts/result';
-import type { AxiosHttpClientConfig, TokenProvider, TokenRefreshHandler } from './types';
+import type { HttpClientConfig, TokenProvider, TokenRefreshHandler } from './types';
 import { createAxiosInstance } from './axios-instance';
 import {
   classifyNetworkErrorMessage,
@@ -84,7 +84,7 @@ export class ResultHttpClient {
     reject: (err: unknown) => void;
   }> = [];
 
-  constructor(config: AxiosHttpClientConfig = {}) {
+  constructor(config: HttpClientConfig = {}) {
     this.axios = createAxiosInstance(config);
     this.enableLogging = config.enableLogging ?? false;
     this.onTokenRefresh = config.onTokenRefresh;

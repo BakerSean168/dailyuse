@@ -1275,6 +1275,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十四轮）：Result 传输面继续收口——`AxiosHttpClientConfig`
+> 重命名为 `HttpClientConfig`；contracts `createIpcClientWrapper` 删除 throw 风格
+> `invokeUnsafe`（仅保留 Result `invoke`）；ADR-032 工厂约定改为 `IResultHttpClient` 并
+> 移除已删除的 editor 工厂行；repository adapter specs 本地 stub 命名对齐 Result。§13.2
+> 仍为部分/外部阻塞。验证：http-client + contracts focused + governance-check。状态保持
+> **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

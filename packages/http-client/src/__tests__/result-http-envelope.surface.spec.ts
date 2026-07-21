@@ -32,8 +32,9 @@ describe('first-party HTTP Result envelope surface', () => {
   it('package public surface exports only Result path (throw dual-track removed)', () => {
     expect(index).toContain('ResultHttpClient');
     expect(index).toContain('createResultHttpClient');
-    // AxiosHttpClientConfig remains as the axios-backed config type name.
     expect(index).not.toMatch(/export \{ AxiosHttpClient \}/);
+    expect(index).not.toMatch(/AxiosHttpClientConfig/);
+    expect(index).toContain('HttpClientConfig');
     expect(index).not.toMatch(/function createHttpClient\b/);
     expect(index).not.toMatch(/export \{ HttpClientError \}/);
     expect(index).not.toMatch(/export type \{[\s\S]*\bIHttpClient\b/);

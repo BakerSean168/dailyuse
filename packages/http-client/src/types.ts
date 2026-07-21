@@ -71,9 +71,9 @@ export interface TokenProvider {
 export type TokenRefreshHandler = () => Promise<string | null>;
 
 /**
- * Axios HTTP Client 配置
+ * ResultHttpClient / createAxiosInstance 配置
  */
-export interface AxiosHttpClientConfig {
+export interface HttpClientConfig {
   /** API 基础 URL（默认: '/api/v1'） */
   baseURL?: string;
   /** 请求超时时间（毫秒，默认: 10000） */
@@ -94,7 +94,7 @@ export interface AxiosHttpClientConfig {
  * 默认配置
  */
 export const DEFAULT_HTTP_CLIENT_CONFIG: Required<
-  Pick<AxiosHttpClientConfig, 'baseURL' | 'timeout' | 'enableLogging'>
+  Pick<HttpClientConfig, 'baseURL' | 'timeout' | 'enableLogging'>
 > = {
   baseURL: '/api/v1',
   timeout: 10000,
