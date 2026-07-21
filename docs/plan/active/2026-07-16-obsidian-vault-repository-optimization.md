@@ -1111,6 +1111,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留六十二轮）：notification electron 本地 `Ch`/`RendererCh` 与
+> adapter `NOTIFICATION_CHANNELS` 双轨折叠到 contracts `NotificationChannels`；custom 频道仍由
+> desktop `custom-notification.manager` 注册，destroy 仍清理完整 NotificationChannels 集合。
+> 补 electron/adapter surface specs。§13.2 仍为部分/外部阻塞。验证：notification focused specs +
+> desktop ipc/module-handler contracts + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
