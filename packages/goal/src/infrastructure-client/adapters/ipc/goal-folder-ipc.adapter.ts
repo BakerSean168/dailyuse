@@ -5,6 +5,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { GoalChannels } from '@dailyuse/contracts/electron';
 import type { IGoalFolderApiClient, IResultIpcClient } from '../types';
 import type {
   GoalFolderClientDTO,
@@ -14,14 +15,12 @@ import type {
 } from '@dailyuse/contracts/goal';
 
 export class GoalFolderIpcAdapter implements IGoalFolderApiClient {
-  private readonly channel = 'goal:folder';
-
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async createGoalFolder(
     request: CreateGoalFolderReq,
   ): Promise<Result<GoalFolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:create`, request);
+    return this.ipcClient.invoke(GoalChannels.FOLDER_CREATE, request);
   }
 
   async getGoalFolders(params?: {
@@ -30,23 +29,23 @@ export class GoalFolderIpcAdapter implements IGoalFolderApiClient {
     status?: string;
     parentId?: string | null;
   }): Promise<Result<QueryGoalFoldersRes>> {
-    return this.ipcClient.invoke(`${this.channel}:list`, params);
+    return this.ipcClient.invoke(GoalChannels.FOLDER_LIST, params);
   }
 
   async getGoalFolderById(
     id: string,
   ): Promise<Result<GoalFolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:get`, id);
+    return this.ipcClient.invoke(GoalChannels.FOLDER_GET, id);
   }
 
   async updateGoalFolder(
     id: string,
     request: UpdateGoalFolderReq,
   ): Promise<Result<GoalFolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:update`, id, request);
+    return this.ipcClient.invoke(GoalChannels.FOLDER_UPDATE, id, request);
   }
 
   async deleteGoalFolder(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, id);
+    return this.ipcClient.invoke(GoalChannels.FOLDER_DELETE, id);
   }
 }
