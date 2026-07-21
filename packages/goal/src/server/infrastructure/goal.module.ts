@@ -302,7 +302,7 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     // Folder CRUD / 文件夹增删改查
     listGoalFolders: (input) => useCases.listGoalFolders.execute(input),
     createGoalFolder: (identityId, input) => useCases.createGoalFolder.execute(identityId, input),
-    getGoalFolder: (id) => useCases.getGoalFolder.execute(id),
+    getGoalFolder: (id, identityId) => useCases.getGoalFolder.execute(id, identityId),
     updateGoalFolder: (id, identityId, input) =>
       useCases.updateGoalFolder.execute(id, identityId, input),
     deleteGoalFolder: (id, identityId) => useCases.deleteGoalFolder.execute(id, identityId),

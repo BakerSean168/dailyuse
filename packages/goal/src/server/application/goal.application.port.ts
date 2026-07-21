@@ -56,7 +56,7 @@ export interface GoalApplicationPort {
     identityId: IdentityId,
     input: CreateGoalFolderReq,
   ): Promise<Result<GoalFolderClientDTO>>;
-  getGoalFolder(id: string): Promise<Result<GoalFolderClientDTO>>;
+  getGoalFolder(id: string, identityId: string): Promise<Result<GoalFolderClientDTO>>;
   updateGoalFolder(
     id: string,
     identityId: string,

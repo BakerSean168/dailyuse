@@ -115,7 +115,7 @@ export function registerGoalFolderRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id),
+    (req, ctx) => controller.get(req.params!.id, ctx),
   );
 
   // PUT /:id — 更新文件夹

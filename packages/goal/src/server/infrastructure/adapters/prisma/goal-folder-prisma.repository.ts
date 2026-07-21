@@ -31,6 +31,14 @@ export class GoalFolderPrismaRepository
    * Protected persistence method - called by base class before event publishing
    */
   protected async persist(folder: GoalFolder): Promise<void> {
+    const existing = await this.prisma.goalFolder.findUnique({
+      where: { id: folder.id as string },
+      select: { identityId: true },
+    });
+    if (existing && existing.identityId !== String(folder.identityId)) {
+      throw new Error('Goal folder not found for the current identity.');
+    }
+
     await this.prisma.goalFolder.upsert({
       where: { id: folder.id as string },
       create: {
@@ -77,6 +85,16 @@ export class GoalFolderPrismaRepository
   }
 
   /**
+   * Find folder by identity + ID
+   */
+  async findByIdForIdentity(identityId: string, id: string): Promise<GoalFolder | null> {
+    const data = await this.prisma.goalFolder.findFirst({
+      where: { id, identityId },
+    });
+    return data ? this.mapToEntity(data) : null;
+  }
+
+  /**
    * Find all folders by identity ID
    */
   async findByIdentityId(identityId: string): Promise<GoalFolder[]> {
@@ -90,10 +108,13 @@ export class GoalFolderPrismaRepository
   /**
    * Delete folder
    */
-  async delete(id: string): Promise<void> {
-    await this.prisma.goalFolder.delete({
-      where: { id },
+  async delete(identityId: string, id: string): Promise<void> {
+    const deleted = await this.prisma.goalFolder.deleteMany({
+      where: { id, identityId },
     });
+    if (deleted.count !== 1) {
+      throw new Error('Goal folder not found for the current identity.');
+    }
   }
 
   /**

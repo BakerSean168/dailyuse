@@ -20,15 +20,10 @@ export class DeleteGoalFolderUseCase {
    */
 
   async execute(id: string, identityId: string): Promise<Result<void>> {
-    const folder = await this.goalFolderRepository.findById(id);
+    const folder = await this.goalFolderRepository.findByIdForIdentity(identityId, id);
 
     if (!folder) {
       return error('NOT_FOUND', `Goal folder not found: ${id}`);
-    }
-
-    // 验证所属账户
-    if (folder.identityId !== identityId) {
-      return error('FORBIDDEN', 'Unauthorized access to goal folder');
     }
 
     folder.softDelete();

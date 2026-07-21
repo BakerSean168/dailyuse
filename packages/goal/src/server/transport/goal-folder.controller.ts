@@ -76,8 +76,8 @@ export class GoalFolderController {
     return this.useCases.listGoalFolders(query);
   }
 
-  async get(id: string): Promise<Result<unknown>> {
-    return this.useCases.getGoalFolder(id);
+  async get(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.getGoalFolder(id, cx.identityId);
   }
 
   async update(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {

@@ -242,7 +242,11 @@ export const GoalElectronModule: IElectronModule = {
         goalFolderController.list(params ?? {}, requestContext),
       ),
     );
-    ipcMain.handle(GoalChannels.FOLDER_GET, (_event, id) => goalFolderController.get(id));
+    ipcMain.handle(GoalChannels.FOLDER_GET, async (_event, id) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalFolderController.get(id, requestContext as ExecutionContext),
+      ),
+    );
     ipcMain.handle(GoalChannels.FOLDER_CREATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
         goalFolderController.create(dto, requestContext as ExecutionContext),

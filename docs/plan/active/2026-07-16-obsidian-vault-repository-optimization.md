@@ -1540,6 +1540,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分。验证：ai provider ownership specs/surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百一十六轮）：Goal folder get/update/delete 身份隔离——新增
+> `findByIdForIdentity`；delete 改为 `deleteMany where { id, identityId }`；PowerSync update
+> 不再改写 `identity_id`；get use case/HTTP/Electron 透传 identityId。补 ownership surface 与
+> get use case 单测。§13.2 Agent/边界证据再增强，仍为部分。验证：goal folder specs/surface +
+> governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1638,6 +1646,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百零七轮：checkpoint get/list 过滤 spoofed run.identityId metadata。
   残留一百一十四轮：conversation get/update/delete identity-scoped（findByIdForIdentity）。
   残留一百一十五轮：provider config get/update/delete identity-scoped（findByIdForIdentity）。
+  残留一百一十六轮：goal folder get/update/delete identity-scoped（findByIdForIdentity）。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
