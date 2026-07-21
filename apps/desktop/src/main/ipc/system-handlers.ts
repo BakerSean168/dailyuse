@@ -14,7 +14,6 @@ import path from 'node:path';
 import type { TrayManager } from '../modules/tray';
 import type { ShortcutManager } from '../modules/shortcuts';
 import type { AutoLaunchManager } from '../modules/autolaunch';
-import { getLazyModuleStats } from '../di';
 import { getIpcCache } from '../utils';
 import { getSharedPathResolver, updateUserFilesRootPath } from '../runtime-init';
 import { resolveDesktopUserFilesPath } from '../user-data-path';
@@ -61,8 +60,7 @@ function resolveUserFilesDirectory(subdirectory: UserFilesSubdirectory | undefin
 /**
  * @function registerSystemHandlers
  * @description Registers system-level utility IPC handlers.
- * Channels: 'system:getAppVersion', 'system:getLazyModuleStats',
- * 'system:getMemoryUsage', 'system:getIpcCacheStats'
+ * Channels: 'system:getAppVersion', 'system:getMemoryUsage', 'system:getIpcCacheStats'
  */
 function registerSystemHandlers(): void {
   /**
@@ -74,17 +72,6 @@ function registerSystemHandlers(): void {
    */
   ipcMain.handle('system:getAppVersion', async () => {
     return app.getVersion();
-  });
-
-  /**
-   * @description 获取懒加载模块统计
-   * Channel Name: system:getLazyModuleStats
-   * Payload: void
-   * Return: ModuleStats
-   * Security: Requires authentication
-   */
-  ipcMain.handle('system:getLazyModuleStats', async () => {
-    return getLazyModuleStats();
   });
 
   /**

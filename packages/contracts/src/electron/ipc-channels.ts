@@ -270,7 +270,6 @@ export const SettingChannels = {
 
 export const SystemChannels = {
   GET_APP_VERSION: 'system:getAppVersion',
-  GET_LAZY_MODULE_STATS: 'system:getLazyModuleStats',
   GET_MEMORY_USAGE: 'system:getMemoryUsage',
   GET_IPC_CACHE_STATS: 'system:getIpcCacheStats',
   OPEN_EXTERNAL_URL: 'system:openExternalUrl',

@@ -64,12 +64,8 @@ const toTimestamp = (value: number | string | Date | null | undefined): number |
 const resolveTimeRange = (goal: GoalWithDerivedMetrics | null) => {
   if (!goal) return { start: null, end: null };
 
-  const legacyGoal = goal as GoalWithDerivedMetrics & {
-    startTime?: number | string;
-    endTime?: number | string;
-  };
-  const startCandidates = [goal.startDate, legacyGoal.startTime, goal.createdAt];
-  const endCandidates = [goal.targetDate, legacyGoal.endTime, goal.completedAt, goal.updatedAt];
+  const startCandidates = [goal.startDate, goal.createdAt];
+  const endCandidates = [goal.targetDate, goal.completedAt, goal.updatedAt];
 
   let start = startCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
   let end = endCandidates.map(toTimestamp).find((value) => value !== null) ?? null;

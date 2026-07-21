@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => ({
   dialogShowSaveDialog: vi.fn(),
   shellOpenPath: vi.fn(),
   shellOpenExternal: vi.fn(),
-  getLazyModuleStats: vi.fn(() => ({ loaded: 1 })),
   getIpcCache: vi.fn(() => ({
     getStats: () => ({ size: 0, hits: 0, misses: 0, hitRate: 0 }),
   })),
@@ -34,10 +33,6 @@ vi.mock('electron', () => ({
     openPath: mocks.shellOpenPath,
     openExternal: mocks.shellOpenExternal,
   },
-}));
-
-vi.mock('../../di', () => ({
-  getLazyModuleStats: mocks.getLazyModuleStats,
 }));
 
 vi.mock('../../utils', () => ({

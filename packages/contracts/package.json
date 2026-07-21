@@ -62,10 +62,6 @@
       "types": "./dist/modules/data-portability/index.d.ts",
       "import": "./dist/modules/data-portability/index.js"
     },
-    "./response": {
-      "types": "./dist/response/index.d.ts",
-      "import": "./dist/response/index.js"
-    },
     "./result": {
       "types": "./dist/result/index.d.ts",
       "import": "./dist/result/index.js"

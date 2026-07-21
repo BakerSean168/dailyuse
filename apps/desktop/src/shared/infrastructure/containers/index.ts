@@ -1,14 +1,12 @@
 /**
  * Shared DI Container Infrastructure Adapter
  *
- * NOTE: These exports are only available in the main process.
- * This file exists for structural completeness but should not be imported
- * from the renderer process.
- * 
- * The actual DI configuration is done via:
- * - Main process: import from '../../main/di' directly
- * - Renderer process: use @dailyuse/infrastructure-client
+ * Main-process module wiring is owned by ElectronBootstrapper + per-package
+ * electron-entry composition roots. This placeholder keeps the shared
+ * infrastructure layout complete without re-exporting retired DI shims.
+ *
+ * Renderer process DI lives under apps/desktop/src/renderer/platform and
+ * @dailyuse/app-vue/di.
  */
 
-// Main-process only exports - import directly from main/di when needed
 export const MAIN_PROCESS_ONLY = true;
