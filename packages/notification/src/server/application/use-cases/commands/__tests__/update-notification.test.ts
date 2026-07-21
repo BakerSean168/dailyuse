@@ -27,7 +27,7 @@ describe('UpdateNotificationUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     notificationRepo = createMockRepo<INotificationRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new UpdateNotificationUseCase(notificationRepo);
@@ -36,9 +36,9 @@ describe('UpdateNotificationUseCase', () => {
   it('updates mutable fields and returns a client DTO', async () => {
     const notification = aNotification();
     const expiresAt = Date.now() + 60_000;
-    vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
+    vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(notification);
 
-    const result = await useCase.execute(String(notification.id), {
+    const result = await useCase.execute(String(notification.id), String(notification.identityId), {
       title: 'Updated title',
       content: 'Updated content',
       status: NotificationStatus.Delivered,
@@ -63,9 +63,9 @@ describe('UpdateNotificationUseCase', () => {
   });
 
   it('returns NOT_FOUND when the notification does not exist', async () => {
-    vi.mocked(notificationRepo.findById).mockResolvedValue(null);
+    vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('missing-id', { title: 'Nope' });
+    const result = await useCase.execute('missing-id', anIdentityId(), { title: 'Nope' });
 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error('Expected error');

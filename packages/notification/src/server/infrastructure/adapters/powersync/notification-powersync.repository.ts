@@ -220,6 +220,18 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     return row ? hydrateNotification(row) : null;
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    _options?: { includeChildren?: boolean },
+  ): Promise<Notification | null> {
+    const row = await this.db.getOptional<NotificationRow>(
+      `SELECT * FROM notifications WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [id, identityId],
+    );
+    return row ? hydrateNotification(row) : null;
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: {

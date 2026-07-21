@@ -117,22 +117,30 @@ export const NotificationElectronModule: IElectronModule = {
         }, requestContext),
       );
     });
-    ipcMain.handle(NotificationChannels.GET, (_, id) => controller.get(id));
+    ipcMain.handle(NotificationChannels.GET, (_, id) =>
+      withAuthenticatedValue(ctx, (requestContext) => controller.get(id, requestContext)),
+    );
     ipcMain.handle(NotificationChannels.CREATE, async (_, dto) =>
       withAuthenticatedValue(ctx, (requestContext) => controller.create(dto, requestContext)),
     );
-    ipcMain.handle(NotificationChannels.MARK_READ, (_, id) => controller.markAsRead(id));
+    ipcMain.handle(NotificationChannels.MARK_READ, (_, id) =>
+      withAuthenticatedValue(ctx, (requestContext) => controller.markAsRead(id, requestContext)),
+    );
     ipcMain.handle(NotificationChannels.MARK_ALL_READ, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) => controller.markAllAsRead(identityId));
     });
-    ipcMain.handle(NotificationChannels.DELETE, async (_, id) => {
-      const result = await controller.delete(id);
-      if (!result.ok) return result;
-      return ok(null);
-    });
+    ipcMain.handle(NotificationChannels.DELETE, async (_, id) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await controller.delete(id, requestContext);
+        if (!result.ok) return result;
+        return ok(null);
+      }),
+    );
     ipcMain.handle(NotificationChannels.CLEAR_ALL, async (_, ids) => {
       if (Array.isArray(ids) && ids.length > 0) {
-        return controller.batchDelete({ notificationIds: ids });
+        return withAuthenticatedValue(ctx, (requestContext) =>
+          controller.batchDelete({ notificationIds: ids }, requestContext),
+        );
       }
       return fail({ code: 'VALIDATION_ERROR', message: 'notification ids are required' });
     });

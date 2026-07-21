@@ -76,8 +76,8 @@ export class NotificationQueryApplicationService {
     });
   }
 
-  async getNotification(id: string): Promise<Result<NotificationClientDTO>> {
-    const notification = await this.notificationRepository.findById(id);
+  async getNotification(id: string, identityId: string): Promise<Result<NotificationClientDTO>> {
+    const notification = await this.notificationRepository.findByIdForIdentity(identityId, id);
     if (!notification) {
       return fail({ code: 'NOT_FOUND', message: 'notification not found' });
     }

@@ -20,8 +20,8 @@ export class MarkNotificationAsReadUseCase {
     private readonly notificationRepository: INotificationRepository,
   ) {}
 
-  async execute(id: string): Promise<Result<NotificationClientDTO>> {
-    const notification = await this.notificationRepository.findById(id);
+  async execute(id: string, identityId: string): Promise<Result<NotificationClientDTO>> {
+    const notification = await this.notificationRepository.findByIdForIdentity(identityId, id);
     if (!notification) {
       return error('NOT_FOUND', `Notification not found: ${id}`);
     }
@@ -32,9 +32,9 @@ export class MarkNotificationAsReadUseCase {
     return ok(toNotificationClientDTO(notification.toServerDTO()));
   }
 
-  async executeMany(ids: string[]): Promise<Result<number>> {
+  async executeMany(ids: string[], identityId: string): Promise<Result<number>> {
     const notifications = (
-      await Promise.all(ids.map((id) => this.notificationRepository.findById(id)))
+      await Promise.all(ids.map((id) => this.notificationRepository.findByIdForIdentity(identityId, id)))
     ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
 
     for (const notification of notifications) {

@@ -45,6 +45,16 @@ export interface INotificationRepository {
   findById(id: string, options?: { includeChildren?: boolean }): Promise<Notification | null>;
 
   /**
+   * Find notification by id + identity (ownership fence).
+   * Returns null when missing or not owned by identityId.
+   */
+  findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Notification | null>;
+
+  /**
    * 閫氳繃璐︽埛 UUID 鏌ユ壘鎵€鏈夐€氱煡
    *
    * @param identityId 璐︽埛 UUID

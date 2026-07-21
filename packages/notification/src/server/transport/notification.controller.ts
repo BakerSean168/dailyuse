@@ -55,12 +55,12 @@ export class NotificationController {
     });
   }
 
-  async get(id: string): Promise<Result<unknown>> {
-    return this.useCases.getNotification(id);
+  async get(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.getNotification(id, ctx.identityId);
   }
 
-  async delete(id: string): Promise<Result<null>> {
-    const result = await this.useCases.deleteNotification(id);
+  async delete(id: string, ctx: Context): Promise<Result<null>> {
+    const result = await this.useCases.deleteNotification(id, ctx.identityId);
     if (!result.ok) return result as Result<null>;
     // Serialize as data:null (no ActionResult / undefined dual-track).
     return ok(null);
@@ -68,8 +68,8 @@ export class NotificationController {
 
   // ==================== Read/Batch Operations ====================
 
-  async markAsRead(id: string): Promise<Result<unknown>> {
-    return this.useCases.markAsRead(id);
+  async markAsRead(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.markAsRead(id, ctx.identityId);
   }
 
   async markAllAsRead(identityId: string): Promise<Result<{ count: number }>> {
@@ -84,7 +84,7 @@ export class NotificationController {
     return this.useCases.getUnreadCount(identityId);
   }
 
-  async batchMarkAsRead(input: unknown): Promise<Result<{ updatedCount: number }>> {
+  async batchMarkAsRead(input: unknown, ctx: Context): Promise<Result<{ updatedCount: number }>> {
     const parsed = MarkAsReadBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -93,14 +93,14 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const result = await this.useCases.batchMarkAsRead(parsed.data);
+    const result = await this.useCases.batchMarkAsRead(parsed.data, ctx.identityId);
     if (!result.ok) return result as Result<{ updatedCount: number }>;
     // Align bare number Result with NotificationBatchResultSchema { updatedCount }.
     const updatedCount = typeof result.data === 'number' ? result.data : 0;
     return ok({ updatedCount });
   }
 
-  async batchDelete(input: unknown): Promise<Result<{ deletedCount: number }>> {
+  async batchDelete(input: unknown, ctx: Context): Promise<Result<{ deletedCount: number }>> {
     const parsed = DeleteNotificationsBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -109,7 +109,7 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const result = await this.useCases.batchDelete(parsed.data);
+    const result = await this.useCases.batchDelete(parsed.data, ctx.identityId);
     if (!result.ok) return result as Result<{ deletedCount: number }>;
     // Normalize to BatchOperationResultDTO (no { success, affected } dual-track).
     if (

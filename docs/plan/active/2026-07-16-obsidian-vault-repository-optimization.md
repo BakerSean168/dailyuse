@@ -1633,6 +1633,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百二十六轮）：Notification get/mark-read/update/delete/batch
+> 身份隔离——新增 `findByIdForIdentity`；应用层不再用 bare findById 授权；HTTP/Electron
+> （含原未认证 GET/MARK_READ/DELETE）透传 identity 上下文。补 ownership surface 与 notification
+> 单测。§13.2 Agent/边界证据再增强，仍为部分。验证：notification ownership specs/surface +
+> governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1740,6 +1749,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百二十三轮：task template get/update/delete/actions + list-instances identity-scoped（findByIdForIdentity）。
   残留一百二十四轮：task instance get/complete/skip/start/delete identity-scoped（findByIdForIdentity）。
   残留一百二十五轮：task dependency list/update/delete/validate/chain identity-scoped（findByIdForIdentity）。
+  残留一百二十六轮：notification get/mark-read/update/delete/batch identity-scoped（findByIdForIdentity）。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

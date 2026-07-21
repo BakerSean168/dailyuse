@@ -144,6 +144,19 @@ export class NotificationPrismaRepository implements INotificationRepository {
     return NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations);
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Notification | null> {
+    const row = await this.prisma.notification.findFirst({
+      where: { id, identityId },
+      include: options?.includeChildren ? INCLUDE_CHILDREN : INCLUDE_CHANNELS,
+    });
+    if (!row) return null;
+    return NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations);
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: {

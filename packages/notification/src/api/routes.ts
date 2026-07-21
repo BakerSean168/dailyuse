@@ -151,7 +151,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.batchMarkAsRead(req.body),
+    (req, ctx) => controller.batchMarkAsRead(req.body, ctx),
   );
 
   // POST /batch-delete — Batch delete (must be before /:id)
@@ -169,7 +169,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.batchDelete(req.body),
+    (req, ctx) => controller.batchDelete(req.body, ctx),
   );
 
   // POST /cleanup — Cleanup old notifications (must be before /:id)
@@ -231,7 +231,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id),
+    (req, ctx) => controller.get(req.params!.id, ctx),
   );
 
   // DELETE /:id — Delete notification
@@ -247,7 +247,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.delete(req.params!.id),
+    (req, ctx) => controller.delete(req.params!.id, ctx),
   );
 
   // PATCH /:id/read — Mark single notification as read
@@ -263,7 +263,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.markAsRead(req.params!.id),
+    (req, ctx) => controller.markAsRead(req.params!.id, ctx),
   );
 
   return router;
