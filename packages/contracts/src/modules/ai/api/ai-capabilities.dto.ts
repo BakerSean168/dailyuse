@@ -5,7 +5,7 @@ export type AIRuntimeMode = z.infer<typeof AIRuntimeModeSchema>;
 
 export const AIKnowledgeIndexDiagnosticsSchema = z.object({
   persistenceBackend: z.enum([
-    'legacy-resource-metadata',
+    // Desktop PowerSync local index; server uses dedicated AiKnowledgeIndexEntry table only.
     'powersync-resource-metadata',
     'prisma-index-table',
   ]),

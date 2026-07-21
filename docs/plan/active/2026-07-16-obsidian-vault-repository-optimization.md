@@ -52,7 +52,7 @@ updated: 2026-07-21T00:00:00
   退役顶层 `editor` locale 与无 UI 的 `setting.tabs`/`setting.editor` 文案已删；
   contracts 空 entities/dtos/value-objects 桶已移除；无调用的
   `createRepositoryPowerSyncModule` 已删；知识笔记 path resolver 应用层路径穿越 hardening；
-  Agent resume 仅 confirm 可执行 side-effect；首期 Agent 工具面不含 note update/reindex；
+  Agent resume 仅 confirm 可执行 side-effect；首期 Agent 工具面不含 note update/reindex；AI index diagnostics 去掉 legacy-resource-metadata；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
@@ -782,6 +782,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > §13.2 Agent 证据再增强，仍为部分。验证：contracts agent dto specs、ai runtime specs、
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留二十一轮）：删除 AI knowledge index diagnostics 中已无返回值的
+> `legacy-resource-metadata` backend 枚举（服务端只报 `prisma-index-table`，Desktop 仍报
+> `powersync-resource-metadata`）。与“专用索引表、无旧 Resource.metadata 回退”边界对齐。
+> 验证：contracts/ai capabilities & knowledge-index focused specs、governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -800,7 +806,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留二十轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留二十一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在。

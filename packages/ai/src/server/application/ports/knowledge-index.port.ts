@@ -2,7 +2,7 @@ import type { KnowledgeIndexedResource } from './knowledge-ingestion.port';
 
 export interface KnowledgeIndexDiagnostics {
   persistenceBackend:
-    'legacy-resource-metadata' | 'powersync-resource-metadata' | 'prisma-index-table';
+    'powersync-resource-metadata' | 'prisma-index-table';
   persistenceStatus: 'enabled' | 'fallback';
   persistenceReason?: string;
   vectorRecallBackend: 'none' | 'local-js-hybrid' | 'pgvector-ivfflat';
