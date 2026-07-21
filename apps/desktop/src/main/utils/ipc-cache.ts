@@ -9,6 +9,13 @@
 
 import { ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
+import {
+  CacheChannels,
+  DashboardChannels,
+  GoalChannels,
+  ReminderChannels,
+  TaskChannels,
+} from '@dailyuse/contracts/electron';
 import { isDesktopDevelopmentRuntime } from './dev-runtime';
 
 // ============ Types ============
@@ -385,10 +392,10 @@ export function getIpcCache(): IpcCache {
     });
 
     // Configure specific channel TTLs
-    ipcCacheInstance.setChannelTTL('goal:list', 10000); // 10 seconds
-    ipcCacheInstance.setChannelTTL('task:template:list', 10000);
-    ipcCacheInstance.setChannelTTL('dashboard:get-stats', 30000); // 30 seconds
-    ipcCacheInstance.setChannelTTL('reminder:template:list', 5000); // 5 seconds
+    ipcCacheInstance.setChannelTTL(GoalChannels.LIST, 10000); // 10 seconds
+    ipcCacheInstance.setChannelTTL(TaskChannels.TEMPLATE_LIST, 10000);
+    ipcCacheInstance.setChannelTTL(DashboardChannels.GET_STATS, 30000); // 30 seconds
+    ipcCacheInstance.setChannelTTL(ReminderChannels.TEMPLATE_LIST, 5000); // 5 seconds
   }
   return ipcCacheInstance;
 }
@@ -484,16 +491,16 @@ export function invalidatesCache<T>(
  * @description Registers IPC handlers for managing the cache (stats, clear, invalidate).
  */
 export function registerCacheIpcHandlers(): void {
-  ipcMain.handle('cache:stats', async () => {
+  ipcMain.handle(CacheChannels.STATS, async () => {
     return getIpcCache().getStats();
   });
 
-  ipcMain.handle('cache:clear', async () => {
+  ipcMain.handle(CacheChannels.CLEAR, async () => {
     getIpcCache().clear();
     return { success: true };
   });
 
-  ipcMain.handle('cache:invalidate', async (_, channel: string) => {
+  ipcMain.handle(CacheChannels.INVALIDATE, async (_, channel: string) => {
     const count = getIpcCache().invalidateChannel(channel);
     return { invalidated: count };
   });
