@@ -3,7 +3,7 @@
  * AI 模块 — 基础设施服务端导出。
  *
  * Re-exports the composition root, adapters, and runtime composition roots.
- * 重新导出组合根、适配器和遗留类。
+ * 重新导出组合根、适配器与运行时组合根。
  */
 
 // ---------------------------------------------------------------------------
@@ -12,10 +12,8 @@
 // ---------------------------------------------------------------------------
 export {
   createAIModule,
-  createAIUseCases,
   type AIModuleDependencies,
   type AIModuleInstance,
-  type AIModuleUseCases,
   type AIModuleServices,
   type AIModuleRuntimeContribution,
   type AIRuntimeContributionsInput,

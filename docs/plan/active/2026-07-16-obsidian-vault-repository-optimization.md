@@ -57,7 +57,7 @@ updated: 2026-07-21T00:00:00
   Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView/useSmsCodeCountdown 已删；Agent identity 归属 fail-closed + resolveRunPlan surface 隔离；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
-  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；残留三十三/三十四轮删除 Desktop DI/PowerSync/lazy-module/contracts 双轨兼容残留；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
+  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；残留三十三至三十五轮删除 Desktop DI/PowerSync/lazy-module/contracts 与 AI conversation v1 双轨兼容残留；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
 
 ## 2. 已确认产品边界
 
@@ -905,6 +905,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > contracts typecheck、governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留三十五轮）：收口 AI conversation 双轨——删除无传输层消费者的
+> `CreateConversationUseCase` / `DeleteConversationUseCase` / `GetConversationUseCase` /
+> `ListConversationsUseCase` 与 `createAIUseCases` / `AIModuleUseCases` / `module.useCases`；
+> 运行时仅保留 conversation V2 服务（HTTP/IPC 已接线）。同步删除无引用的
+> `infrastructure/errors/a-i-errors.ts` 兼容 re-export。§13.2 未打勾项仍为部分/外部阻塞。
+> 验证：ai typecheck + focused runtime/module tests、governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -923,7 +932,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留三十四轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留三十五轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；

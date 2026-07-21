@@ -10,11 +10,9 @@
 
 export {
   createAIModule,
-  createAIUseCases,
   createAIPowerSyncModule,
   type AIModuleDependencies,
   type AIModuleInstance,
-  type AIModuleUseCases,
   type AIModuleServices,
   type AIApplicationPort,
   type AIModuleRuntimeContribution,

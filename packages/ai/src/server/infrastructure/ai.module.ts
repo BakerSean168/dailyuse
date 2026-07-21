@@ -40,13 +40,6 @@ import type {
   IKnowledgeSourcePort,
 } from '../application/ports';
 
-import {
-  // Concrete classes used by createAIUseCases()
-  CreateConversationUseCase,
-  DeleteConversationUseCase,
-  ListConversationsUseCase,
-  GetConversationUseCase,
-} from '../application/use-cases';
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
@@ -167,24 +160,6 @@ export type AIRuntimeContributionsInput =
 export interface AIModuleRuntimeContribution {
   start(): void;
   stop(): void;
-}
-
-// ---------------------------------------------------------------------------
-// Use Cases — 已完成接线的底层 use case 集合
-// ---------------------------------------------------------------------------
-
-/**
- * Lower-level assembled use cases.
- * 已完成接线的底层 use case 集合。
- *
- * We keep this type because tests and low-level assembly sometimes need direct
- * access to use-case objects, but transports should prefer `AIApplicationPort`.
- */
-export interface AIModuleUseCases {
-  readonly createConversation: CreateConversationUseCase;
-  readonly deleteConversation: DeleteConversationUseCase;
-  readonly listConversations: ListConversationsUseCase;
-  readonly getConversation: GetConversationUseCase;
 }
 
 /**
@@ -333,14 +308,12 @@ export interface AIModuleServices {
  * AI 模块主组合根返回类型。
  *
  * `api` is the transport-facing surface.
- * `useCases` is kept for low-level tests and diagnostics.
  * `services` exposes higher-level orchestrators.
  * `start` / `dispose` own runtime side effects.
  */
 export interface AIModuleInstance {
   readonly conversationRepository: IAIConversationRepository;
   readonly providerConfigRepository: IAIProviderConfigRepository;
-  readonly useCases: AIModuleUseCases;
   readonly services: AIModuleServices;
   readonly api: AIApplicationPort;
   start(): void;
@@ -381,27 +354,6 @@ function normalizeRuntimeContributions(
 }
 
 // ---------------------------------------------------------------------------
-// Use-case assembly — 纯组装函数
-// ---------------------------------------------------------------------------
-
-/**
- * Pure assembly helper used by the composition root and tests.
- * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
- */
-export function createAIUseCases(
-  dependencies: Pick<AIModuleDependencies, 'conversationRepository'>,
-): AIModuleUseCases {
-  const { conversationRepository } = dependencies;
-
-  return {
-    createConversation: new CreateConversationUseCase(conversationRepository),
-    deleteConversation: new DeleteConversationUseCase(conversationRepository),
-    listConversations: new ListConversationsUseCase(conversationRepository),
-    getConversation: new GetConversationUseCase(conversationRepository),
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Composition Root — 规范化的 AI 模块主组合根
 // ---------------------------------------------------------------------------
 
@@ -418,8 +370,6 @@ export function createAIUseCases(
  */
 export function createAIModule(dependencies: AIModuleDependencies): AIModuleInstance {
   const { conversationRepository, providerConfigRepository } = dependencies;
-  const useCases = createAIUseCases({ conversationRepository });
-
   // --- Runtime selection: delegate to the appropriate runtime ---
 
   const isRemoteMode = Boolean(
@@ -537,7 +487,6 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
   return {
     conversationRepository,
     providerConfigRepository,
-    useCases,
     services,
     api,
     start(): void {

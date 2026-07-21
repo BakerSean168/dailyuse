@@ -2,8 +2,6 @@
 export * from './query-ai-analytics.use-case';
 export * from './manage-ai-evaluation-report.use-case';
 export * from './manage-ai-knowledge-note.use-case';
-export * from './create-conversation.use-case';
-export * from './delete-conversation.use-case';
 export * from './generate-ai-goal.use-case';
 
 // AI Provider Config helpers and individual use cases
