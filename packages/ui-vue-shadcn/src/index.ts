@@ -40,7 +40,6 @@ export type {
 export {
   VALIDATION_RULES,
   generatePassword,
-  generateStrongPassword,
   generatePassphrase,
   isLightColor,
   hexToRgb,

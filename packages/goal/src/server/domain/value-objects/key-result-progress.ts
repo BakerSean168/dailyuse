@@ -203,17 +203,6 @@ export class KeyResultProgress extends ValueObject<KeyResultProgressDTO> impleme
   }
 
   /**
-   * 根据聚合方法更新当前值
-   * 
-   * @param values 新的数值数组
-   * @returns 更新后的新实例
-   * @deprecated 建议使用 recalculateFromHistory 方法，更清晰地表达语义
-   */
-  public updateCurrentValueByAggregation(values: number[]): KeyResultProgress {
-    return this.recalculateFromHistory(values);
-  }
-
-  /**
    * ✅ 纯计算方法：根据历史数据重新计算当前状态
    * 
    * 【DDD 原则】

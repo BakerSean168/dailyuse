@@ -201,11 +201,6 @@ export function generatePassword(length = 16): string {
 }
 
 /**
- * Alias for generatePassword for backward compatibility
- */
-export const generateStrongPassword = generatePassword;
-
-/**
  * Generate a memorable passphrase
  */
 export function generatePassphrase(wordCount = 4, separator = '-'): string {

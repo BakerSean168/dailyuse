@@ -290,7 +290,6 @@ describe('goal shared value objects', () => {
     expect(progress.calculateAggregatedValue([])).toBe(10);
     expect(progress.calculateAggregatedValue([5, 15])).toBe(30);
     expect(progress.recalculateFromHistory([5, 15]).currentValue).toBe(30);
-    expect(progress.updateCurrentValueByAggregation([5, 15]).currentValue).toBe(30);
     expect(progress.getAggregationMethodDescription()).toContain('求和');
     expect(progress.getProgressPercentage()).toBeCloseTo(33.3333333333);
     expect(progress.isCompleted).toBe(false);
