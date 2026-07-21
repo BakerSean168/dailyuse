@@ -96,9 +96,9 @@ export const AgentToolNameSchema = z.enum([
   'create_key_result',
   'create_task_template',
   'create_reminder',
+  // First-phase knowledge writes are create-only; existing-note edit / reindex
+  // remain closed and must not appear as agent action tools.
   'create_knowledge_note',
-  'update_knowledge_note',
-  'reindex_resource',
 ]);
 export type AgentToolName = z.infer<typeof AgentToolNameSchema>;
 

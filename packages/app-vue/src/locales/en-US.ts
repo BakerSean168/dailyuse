@@ -467,8 +467,6 @@ export default {
         toolLabels: {
           createReminder: 'Create Reminder',
           createKnowledgeNote: 'Create Knowledge Note',
-          updateKnowledgeNote: 'Update Knowledge Note',
-          reindexResource: 'Reindex Resource',
           searchExistingGoals: 'Search Existing Goals',
           searchKnowledge: 'Search Knowledge',
           fetchGoalStats: 'Fetch Goal Stats',

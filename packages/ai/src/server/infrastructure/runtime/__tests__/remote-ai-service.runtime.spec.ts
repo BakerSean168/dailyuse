@@ -1244,18 +1244,17 @@ describe('createRemoteAIServiceRuntime', () => {
     );
   });
 
-  it('does not execute unsupported knowledge agent tools such as note update / reindex expansion', async () => {
+  it('does not execute cross-capability tools through the knowledge generation executor', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
     // Schema-valid Agent tools that are not create_knowledge_note must fail closed.
     const pendingAction = {
-      tool: 'update_knowledge_note' as const,
+      tool: 'create_goal' as const,
       index: 0,
       dependsOn: [],
-      rationale: 'Attempt to expand agent capability beyond confirmed create.',
+      rationale: 'Attempt to expand knowledge agent into goal mutation capability.',
       payload: {
-        path: 'notes/ai/Existing.md',
-        contentMarkdown: '# should not write',
+        title: 'Should not create a goal from knowledge.generate',
       },
     };
     const waitingExecution = createAgentRunResult('waiting_execution', {
@@ -1271,8 +1270,8 @@ describe('createRemoteAIServiceRuntime', () => {
       interrupts: [
         {
           type: 'execution.required',
-          runId: 'run-note-update',
-          threadId: 'thread-note-update',
+          runId: 'run-note-cross-cap',
+          threadId: 'thread-note-cross-cap',
           agentType: 'knowledge.generate',
           approvedActions: [pendingAction],
           artifacts: [],
@@ -1290,10 +1289,10 @@ describe('createRemoteAIServiceRuntime', () => {
         approvedActions: [pendingAction],
         executedActions: [
           {
-            tool: 'update_knowledge_note',
+            tool: 'create_goal',
             status: 'failed',
             message:
-              'Agent action "update_knowledge_note" is not supported by the Knowledge Generation executor yet.',
+              'Agent action "create_goal" is not supported by the Knowledge Generation executor yet.',
           },
         ],
       },
@@ -1312,13 +1311,13 @@ describe('createRemoteAIServiceRuntime', () => {
     );
 
     const result = await runtime.services.agentRuntimeService.resumeRun(
-      'run-note-update',
+      'run-note-cross-cap',
       {
         userDecision: 'confirm',
         approvedActions: [pendingAction],
       },
       { identityId: 'identity-1' },
-      'request-note-update',
+      'request-note-cross-cap',
     );
 
     expect(result.ok).toBe(true);
@@ -1329,15 +1328,69 @@ describe('createRemoteAIServiceRuntime', () => {
           userDecision: 'confirm',
           executedActions: [
             {
-              tool: 'update_knowledge_note',
+              tool: 'create_goal',
               status: 'failed',
               message:
-                'Agent action "update_knowledge_note" is not supported by the Knowledge Generation executor yet.',
+                'Agent action "create_goal" is not supported by the Knowledge Generation executor yet.',
             },
           ],
         },
       }),
     );
+  });
+
+  it('does not execute goal automation when the user cancels, even if execution.required remains', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const automationToolExecutorPort = createMockAutomationToolExecutorPort();
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        artifacts: [goalDraftArtifact],
+        approvedActions: goalAgentApprovedActions,
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-1',
+          threadId: 'thread-1',
+          agentType: 'goal.create',
+          request: {
+            idea: 'Ship the AI Agent workspace',
+            category: 'work',
+            timeframe: 'Q3',
+          },
+          approvedActions: goalAgentApprovedActions,
+          artifacts: [goalDraftArtifact],
+        },
+      ],
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValueOnce(waitingExecution);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        automationToolExecutorPort,
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-1',
+      { userDecision: 'cancel' },
+      { identityId: 'identity-1' },
+      'request-goal-cancel',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(automationToolExecutorPort.executeGoalAutomation).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenCalledTimes(1);
+    expect(agentRuntimePort.resumeRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+      requestId: 'request-goal-cancel',
+      signal: undefined,
+      payload: { userDecision: 'cancel' },
+    });
   });
 
   it('records Agent runtime resume execution logs', async () => {

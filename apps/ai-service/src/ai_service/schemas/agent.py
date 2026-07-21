@@ -37,9 +37,8 @@ AgentToolName = Literal[
     "create_key_result",
     "create_task_template",
     "create_reminder",
+    # First-phase knowledge writes are create-only (no existing-note edit/reindex).
     "create_knowledge_note",
-    "update_knowledge_note",
-    "reindex_resource",
 ]
 AgentActionStatus = Literal["executed", "skipped", "failed"]
 AgentEventType = Literal[

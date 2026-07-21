@@ -451,8 +451,6 @@ export default {
         toolLabels: {
           createReminder: '创建提醒',
           createKnowledgeNote: '创建知识笔记',
-          updateKnowledgeNote: '更新知识笔记',
-          reindexResource: '重建资源索引',
           searchExistingGoals: '搜索已有目标',
           searchKnowledge: '搜索知识库',
           fetchGoalStats: '获取目标统计',

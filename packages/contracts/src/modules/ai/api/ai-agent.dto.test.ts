@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   AgentActionPlanSchema,
+  AgentActionSchema,
   AgentEventSchema,
   AgentRunListParamsSchema,
   AgentRunResultSchema,
@@ -15,6 +16,20 @@ import {
 } from './ai-goal-automation.dto';
 
 describe('AI agent contract schemas', () => {
+  it.each(['update_knowledge_note', 'reindex_resource'] as const)(
+    'rejects first-phase-closed knowledge mutation tools: %s',
+    (tool) => {
+      expect(
+        AgentActionSchema.safeParse({
+          tool,
+          index: 0,
+          rationale: 'Existing note edit remains closed in phase 1.',
+          payload: {},
+        }).success,
+      ).toBe(false);
+    },
+  );
+
   it('accepts a confirmation-first action plan with side-effect actions', () => {
     const parsed = AgentActionPlanSchema.parse({
       summary: 'Create a goal after user approval.',

@@ -33,8 +33,6 @@ export function useAIFormatters() {
       create_task_template: t('aiAssistant.dialogs.automation.toolLabels.createTaskTemplate'),
       create_reminder: t('aiAssistant.dialogs.agent.toolLabels.createReminder'),
       create_knowledge_note: t('aiAssistant.dialogs.agent.toolLabels.createKnowledgeNote'),
-      update_knowledge_note: t('aiAssistant.dialogs.agent.toolLabels.updateKnowledgeNote'),
-      reindex_resource: t('aiAssistant.dialogs.agent.toolLabels.reindexResource'),
       search_existing_goals: t('aiAssistant.dialogs.agent.toolLabels.searchExistingGoals'),
       search_knowledge: t('aiAssistant.dialogs.agent.toolLabels.searchKnowledge'),
       fetch_goal_stats: t('aiAssistant.dialogs.agent.toolLabels.fetchGoalStats'),
