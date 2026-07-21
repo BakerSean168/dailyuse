@@ -41,8 +41,9 @@ updated: 2026-07-21T00:00:00
   10 MiB；附件 blob 已按 `connectionId + blobSha` 建立短期共享 PostgreSQL cache，并保留每次读取的授权、投影
   版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
 - 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 硬失败；MSW/E2E knowledge-only；
-  app-vue editor 模块与 `useRepository`/dead workspace components 已删除。`packages/editor` 包骨架仍在但
-  不作为 app-vue 运行时入口。完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
+  app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
+  path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀。`packages/editor` 包骨架与可再导入备份表仍在但
+  不作为 app 运行时入口。完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
 ## 2. 已确认产品边界
 
@@ -655,6 +656,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > repository-store/dead components；public exports 与 Desktop PowerSync invalidation 不再引用旧 Resource
 > 表；AI/Note capsule 仅依赖 projection/local-vault 路径。`packages/editor` 服务端/包骨架仍在仓库中但
 > 不再作为 app-vue 运行时入口。状态保持实施中。
+
+> 续进展 2026-07-21（阶段 6 残留四轮）：摘除宿主 `@dailyuse/editor` 死接线——`apps/api`、`apps/desktop`、
+> `packages/data-portability` 的 package 依赖，以及 api/desktop/web 的 tsconfig path 与 vite/vitest alias；
+> data-portability 仍通过 Prisma/PowerSync 导出导入 editor workspace 作为可再导入备份，不依赖 `@dailyuse/editor` 包。
+> 壳层 `MODULE_PREFIXES` 移除退役 `/note`；`sanitizeLegacyTabs` 清理持久化的 `/note*` Tab；删除未使用
+> `createMockEditorStore`。验证：app-vue focused 3 files / 21 tests、`daily-use:governance-check` 通过。
+> `packages/editor` 包本身与 Prisma `editor_*` 表仍保留。状态保持 **实施中**；PR readiness 仍为 no。
 
 ## 13. 测试与完成定义
 
