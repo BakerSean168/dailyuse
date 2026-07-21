@@ -7,7 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
-import { AIChannels } from '@dailyuse/contracts/electron';
+import { AIChannels, GoalChannels } from '@dailyuse/contracts/electron';
 import type { IGoalApiClient, IResultIpcClient } from '../types';
 import type {
   GoalClientDTO,
