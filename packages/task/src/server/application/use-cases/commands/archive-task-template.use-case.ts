@@ -10,8 +10,8 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class ArchiveTaskTemplateUseCase {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
-  async execute(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    const template = await this.templateRepository.findById(id);
+  async execute(id: string, identityId: string): Promise<Result<TaskTemplateClientDTO>> {
+    const template = await this.templateRepository.findByIdForIdentity(identityId, id);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${id} not found`);
     }

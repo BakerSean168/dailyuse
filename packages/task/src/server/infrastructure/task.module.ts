@@ -253,7 +253,10 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     // Instance queries
     getTaskInstance: new GetTaskInstanceUseCase(taskInstanceRepository),
     listTaskInstancesByAccount: new ListTaskInstancesByAccountUseCase(taskInstanceRepository),
-    listTaskInstancesByTemplate: new ListTaskInstancesByTemplateUseCase(taskInstanceRepository),
+    listTaskInstancesByTemplate: new ListTaskInstancesByTemplateUseCase(
+      taskInstanceRepository,
+      taskTemplateRepository,
+    ),
     listTaskInstancesByStatus: new ListTaskInstancesByStatusUseCase(taskInstanceRepository),
     getTaskInstancesByDateRange: new GetTaskInstancesByDateRangeUseCase(taskInstanceRepository),
 
@@ -297,15 +300,22 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
   // API 门面只是直接暴露已组装好的 use case。
   const api: TaskApplicationPort = {
     createTaskTemplate: (input) => useCases.createTaskTemplate.execute(input),
-    updateTaskTemplate: (id, input) => useCases.updateTaskTemplate.execute(id, input),
-    activateTaskTemplate: (id) => useCases.activateTaskTemplate.execute(id),
-    pauseTaskTemplate: (id) => useCases.pauseTaskTemplate.execute(id),
-    archiveTaskTemplate: (id) => useCases.archiveTaskTemplate.execute(id),
-    deleteTaskTemplate: (id) => useCases.deleteTaskTemplate.execute(id),
-    generateTaskInstances: (id, input) => useCases.generateTaskInstances.execute(id, input),
-    bindTaskToGoal: (id, input) => useCases.bindTaskToGoal.execute(id, input),
-    unbindTaskFromGoal: (id) => useCases.unbindTaskFromGoal.execute(id),
-    getTaskTemplate: (id, includeChildren) => useCases.getTaskTemplate.execute(id, includeChildren),
+    updateTaskTemplate: (id, identityId, input) =>
+      useCases.updateTaskTemplate.execute(id, identityId, input),
+    activateTaskTemplate: (id, identityId) =>
+      useCases.activateTaskTemplate.execute(id, identityId),
+    pauseTaskTemplate: (id, identityId) => useCases.pauseTaskTemplate.execute(id, identityId),
+    archiveTaskTemplate: (id, identityId) =>
+      useCases.archiveTaskTemplate.execute(id, identityId),
+    deleteTaskTemplate: (id, identityId) => useCases.deleteTaskTemplate.execute(id, identityId),
+    generateTaskInstances: (id, identityId, input) =>
+      useCases.generateTaskInstances.execute(id, identityId, input),
+    bindTaskToGoal: (id, identityId, input) =>
+      useCases.bindTaskToGoal.execute(id, identityId, input),
+    unbindTaskFromGoal: (id, identityId) =>
+      useCases.unbindTaskFromGoal.execute(id, identityId),
+    getTaskTemplate: (id, identityId, includeChildren) =>
+      useCases.getTaskTemplate.execute(id, identityId, includeChildren),
     listTaskTemplates: (query) => useCases.listTaskTemplates.execute(query),
     getTaskTemplateGraph: (query) => useCases.getTaskTemplateGraph.execute(query),
     listTaskTemplatesByPriority: (identityId, limit) =>
@@ -318,8 +328,8 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     getTaskInstance: (id) => useCases.getTaskInstance.execute(id),
     listTaskInstancesByAccount: (identityId) =>
       useCases.listTaskInstancesByAccount.execute(identityId),
-    listTaskInstancesByTemplate: (templateId) =>
-      useCases.listTaskInstancesByTemplate.execute(templateId),
+    listTaskInstancesByTemplate: (templateId, identityId) =>
+      useCases.listTaskInstancesByTemplate.execute(templateId, identityId),
     listTaskInstancesByStatus: (identityId, status) =>
       useCases.listTaskInstancesByStatus.execute(identityId, status),
     getTaskInstancesByDateRange: (identityId, startDate, endDate) =>

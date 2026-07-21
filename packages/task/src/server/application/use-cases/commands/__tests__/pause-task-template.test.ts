@@ -16,7 +16,7 @@ describe('PauseTaskTemplateUseCase', () => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     templateRepo = createMockRepo<ITaskTemplateRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
@@ -30,9 +30,9 @@ describe('PauseTaskTemplateUseCase', () => {
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {
-    vi.mocked(templateRepo.findById).mockResolvedValue(null);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(templateRepo.save).not.toHaveBeenCalled();
@@ -40,9 +40,9 @@ describe('PauseTaskTemplateUseCase', () => {
 
   it('should pause an active template', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     expect(template.status).toBe(TaskTemplateStatus.Paused);
@@ -51,9 +51,9 @@ describe('PauseTaskTemplateUseCase', () => {
 
   it('should return BAD_REQUEST when template is not active', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeErrorWithCode('BAD_REQUEST');
     expect(templateRepo.save).not.toHaveBeenCalled();
@@ -61,10 +61,10 @@ describe('PauseTaskTemplateUseCase', () => {
 
   it('should delete incomplete instances when pausing', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockResolvedValue(1);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     expect(instanceRepo.deleteIncompleteInstancesFrom).toHaveBeenCalledWith(
@@ -75,10 +75,10 @@ describe('PauseTaskTemplateUseCase', () => {
 
   it('should include the deleted instance count', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockResolvedValue(2);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -88,10 +88,10 @@ describe('PauseTaskTemplateUseCase', () => {
 
   it('should return 0 deleted instances when there are none', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockResolvedValue(0);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -104,9 +104,9 @@ describe('PauseTaskTemplateUseCase', () => {
       status: TaskTemplateStatus.Active,
       title: 'My Paused Task',
     });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -117,10 +117,10 @@ describe('PauseTaskTemplateUseCase', () => {
 
   it('should return INTERNAL_ERROR when deleting incomplete instances fails', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockRejectedValue(new Error('DB error'));
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeErrorWithCode('INTERNAL_ERROR');
   });

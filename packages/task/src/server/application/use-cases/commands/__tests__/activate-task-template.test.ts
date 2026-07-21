@@ -29,7 +29,7 @@ describe('ActivateTaskTemplateUseCase', () => {
     mockGenerateInstances.mockReturnValue([]);
 
     templateRepo = createMockRepo<ITaskTemplateRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
@@ -44,9 +44,9 @@ describe('ActivateTaskTemplateUseCase', () => {
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {
-    vi.mocked(templateRepo.findById).mockResolvedValue(null);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(templateRepo.save).not.toHaveBeenCalled();
@@ -54,9 +54,9 @@ describe('ActivateTaskTemplateUseCase', () => {
 
   it('should activate a paused template', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     expect(template.status).toBe(TaskTemplateStatus.Active);
@@ -65,9 +65,9 @@ describe('ActivateTaskTemplateUseCase', () => {
 
   it('should return BAD_REQUEST when template cannot be activated from its current state', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeErrorWithCode('BAD_REQUEST');
     expect(templateRepo.save).not.toHaveBeenCalled();
@@ -75,30 +75,30 @@ describe('ActivateTaskTemplateUseCase', () => {
 
   it('should save template at least once after activating', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    await useCase.execute(template.id);
+    await useCase.execute(template.id, template.identityId);
 
     expect(templateRepo.save).toHaveBeenCalled();
   });
 
   it('should generate instances after activation', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    await useCase.execute(template.id);
+    await useCase.execute(template.id, template.identityId);
 
     expect(mockGenerateInstances).toHaveBeenCalledWith(template);
   });
 
   it('should save generated instances when there are some', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
     const fakeInstances = [{}, {}, {}];
     mockGenerateInstances.mockReturnValue(fakeInstances);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     expect(instanceRepo.saveMany).toHaveBeenCalledWith(fakeInstances);
@@ -109,10 +109,10 @@ describe('ActivateTaskTemplateUseCase', () => {
 
   it('should not save instances when none are generated', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     mockGenerateInstances.mockReturnValue([]);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     expect(instanceRepo.saveMany).not.toHaveBeenCalled();
@@ -123,10 +123,10 @@ describe('ActivateTaskTemplateUseCase', () => {
 
   it('should return instancesGenerated count', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     mockGenerateInstances.mockReturnValue([{}, {}, {}, {}, {}]);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -139,9 +139,9 @@ describe('ActivateTaskTemplateUseCase', () => {
       status: TaskTemplateStatus.Paused,
       title: 'Reactivated Task',
     });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -152,13 +152,13 @@ describe('ActivateTaskTemplateUseCase', () => {
 
   it('should return INTERNAL_ERROR when post-generation template persistence fails', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     mockGenerateInstances.mockReturnValue([{}, {}]);
     vi.mocked(templateRepo.save)
       .mockResolvedValueOnce(undefined)
       .mockRejectedValueOnce(new Error('late save failed'));
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeErrorWithCode('INTERNAL_ERROR');
   });

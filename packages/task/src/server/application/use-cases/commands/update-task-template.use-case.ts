@@ -16,15 +16,20 @@ export class UpdateTaskTemplateUseCase {
 
   async execute(
     id: string,
+    identityId: string,
     request: Partial<UpdateTaskTemplateReq>,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    const template = await this.templateRepository.findById(id);
+    const template = await this.templateRepository.findByIdForIdentity(identityId, id);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${id} not found`);
     }
 
     if (request.parentTaskId !== undefined) {
-      const parentValidation = await this.validateParentTask(id, request.parentTaskId ?? null);
+      const parentValidation = await this.validateParentTask(
+        id,
+        identityId,
+        request.parentTaskId ?? null,
+      );
       if (!parentValidation.ok) {
         return parentValidation;
       }
@@ -94,6 +99,7 @@ export class UpdateTaskTemplateUseCase {
 
   private async validateParentTask(
     templateId: string,
+    identityId: string,
     parentTaskId: string | null,
   ): Promise<Result<void>> {
     if (!parentTaskId) {
@@ -118,7 +124,10 @@ export class UpdateTaskTemplateUseCase {
 
       visited.add(currentParentId);
 
-      const parentTemplate = await this.templateRepository.findById(currentParentId);
+      const parentTemplate = await this.templateRepository.findByIdForIdentity(
+        identityId,
+        currentParentId,
+      );
       if (!parentTemplate) {
         return error('BAD_REQUEST', `Parent task template ${currentParentId} not found`);
       }

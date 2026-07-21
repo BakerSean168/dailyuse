@@ -1,0 +1,82 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+/**
+ * Task template ownership surface (stage-6 residual 123):
+ * get/update/delete/actions and list-instances-by-template must never authorize
+ * by bare task template primary key alone.
+ */
+describe('task template ownership surface', () => {
+  const port = readFileSync(
+    resolve(__dirname, '../../../../domain/repositories/i-task-template-repository.ts'),
+    'utf8',
+  );
+  const prisma = readFileSync(
+    resolve(__dirname, '../task-template-prisma.repository.ts'),
+    'utf8',
+  );
+  const getUseCase = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/get-task-template.use-case.ts',
+    ),
+    'utf8',
+  );
+  const deleteUseCase = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/delete-task-template.use-case.ts',
+    ),
+    'utf8',
+  );
+  const routes = readFileSync(
+    resolve(__dirname, '../../../../../api/routes/task-template.routes.ts'),
+    'utf8',
+  );
+  const electron = readFileSync(resolve(__dirname, '../../../../../electron/index.ts'), 'utf8');
+  const module = readFileSync(resolve(__dirname, '../../../task.module.ts'), 'utf8');
+
+  it('port findByIdForIdentity and delete require identityId', () => {
+    expect(port).toContain(
+      'findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null>;',
+    );
+    expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
+  });
+
+  it('prisma filters by id + identityId', () => {
+    expect(prisma).toContain('where: { id, identityId }');
+    expect(prisma).toContain('deleteMany({');
+    expect(prisma).toContain(
+      "throw new Error('Task template not found for the current identity.');",
+    );
+  });
+
+  it('get/delete use cases load via findByIdForIdentity', () => {
+    expect(getUseCase).toContain('findByIdForIdentity(identityId, id)');
+    expect(getUseCase).toMatch(/execute\(\s*id: string,\s*identityId: string,/);
+    expect(deleteUseCase).toContain('findByIdForIdentity(identityId, id)');
+    expect(deleteUseCase).toContain('delete(identityId, id)');
+  });
+
+  it('module api wrappers pass identityId for template mutations', () => {
+    expect(module).toMatch(/updateTaskTemplate:\s*\(id, identityId, input\)\s*=>/);
+    expect(module).toMatch(/deleteTaskTemplate:\s*\(id, identityId\)\s*=>/);
+    expect(module).toMatch(/getTaskTemplate:\s*\(id, identityId, includeChildren\)\s*=>/);
+  });
+
+  it('HTTP and Electron template get/delete pass identity context', () => {
+    expect(routes).toContain('controller.getTemplate(req.params!.id, ctx,');
+    expect(routes).toContain('controller.deleteTemplate(req.params!.id, ctx)');
+    expect(routes).toContain('controller.activateTemplate(req.params!.id, ctx)');
+    expect(electron).toMatch(
+      /TEMPLATE_GET[\s\S]*templateController\.getTemplate\([\s\S]*requestContext/,
+    );
+    expect(electron).toMatch(
+      /TEMPLATE_DELETE[\s\S]*templateController\.deleteTemplate\([\s\S]*requestContext/,
+    );
+    expect(electron).not.toMatch(
+      /TEMPLATE_GET[\s\S]*templateController\.getTemplate\(\s*payload\?\.id \?\? payload,\s*payload\?\.includeChildren/,
+    );
+  });
+});

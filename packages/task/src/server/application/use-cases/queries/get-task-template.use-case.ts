@@ -20,10 +20,14 @@ export class GetTaskTemplateUseCase {
     private readonly instanceRepository: ITaskInstanceRepository,
   ) {}
 
-  async execute(id: string, includeChildren = false): Promise<Result<GetTaskTemplateRes>> {
+  async execute(
+    id: string,
+    identityId: string,
+    includeChildren = false,
+  ): Promise<Result<GetTaskTemplateRes>> {
     const template = includeChildren
-      ? await this.templateRepository.findByIdWithChildren(id)
-      : await this.templateRepository.findById(id);
+      ? await this.templateRepository.findByIdWithChildrenForIdentity(identityId, id)
+      : await this.templateRepository.findByIdForIdentity(identityId, id);
 
     if (!template) {
       return ok(null);

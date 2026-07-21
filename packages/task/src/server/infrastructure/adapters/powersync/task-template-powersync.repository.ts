@@ -188,8 +188,33 @@ export class PowerSyncTaskTemplateRepository
     return row ? PowerSyncTaskTemplateMapper.toDomain(row) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null> {
+    const row = await this.db.getOptional<PowerSyncTaskTemplateRow>(
+      'SELECT * FROM task_templates WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
+    );
+    return row ? PowerSyncTaskTemplateMapper.toDomain(row) : null;
+  }
+
   async findByIdWithChildren(id: string): Promise<TaskTemplate | null> {
     const template = await this.findById(id);
+    if (!template) return null;
+
+    const instances = await this.db.getAll<PowerSyncTaskInstanceRow>(
+      'SELECT * FROM task_instances WHERE template_id = ? ORDER BY instance_date DESC',
+      [id],
+    );
+    instances
+      .map((row) => PowerSyncTaskInstanceMapper.toDomain(row))
+      .forEach((instance) => template.addInstance(instance));
+    return template;
+  }
+
+  async findByIdWithChildrenForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<TaskTemplate | null> {
+    const template = await this.findByIdForIdentity(identityId, id);
     if (!template) return null;
 
     const instances = await this.db.getAll<PowerSyncTaskInstanceRow>(
@@ -253,8 +278,15 @@ export class PowerSyncTaskTemplateRepository
     });
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM task_templates WHERE id = ?', [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task template not found for the current identity.');
+    }
+    await this.db.execute('DELETE FROM task_templates WHERE id = ? AND identity_id = ?', [
+      id,
+      identityId,
+    ]);
   }
 
   async softDelete(id: string): Promise<void> {

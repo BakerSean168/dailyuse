@@ -75,7 +75,7 @@ export class TaskInstanceController {
     },
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     if (filters?.templateId) {
-      return await this.useCases.listByTemplate(filters.templateId);
+      return await this.useCases.listByTemplate(filters.templateId, identityId);
     } else if (filters?.status) {
       return await this.useCases.listByStatus(identityId, filters.status);
     } else {

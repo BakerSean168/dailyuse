@@ -143,9 +143,12 @@ export function createTaskElectronModule(
         ),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_GET, (_, payload) =>
-        templateController.getTemplate(
-          payload?.id ?? payload,
-          payload?.includeChildren ?? false,
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          templateController.getTemplate(
+            payload?.id ?? payload,
+            requestContext,
+            payload?.includeChildren ?? false,
+          ),
         ),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_GRAPH, (_, params) =>
@@ -165,43 +168,54 @@ export function createTaskElectronModule(
         }),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_UPDATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          templateController.updateTemplate(payload?.id, payload?.request),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          templateController.updateTemplate(payload?.id, payload?.request, requestContext),
         ),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await templateController.deleteTemplate(payload?.id ?? payload);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await templateController.deleteTemplate(
+            payload?.id ?? payload,
+            requestContext,
+          );
           if (!result.ok) return result;
           return ok(null);
         }),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_ARCHIVE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          templateController.archiveTemplate(payload?.id ?? payload),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          templateController.archiveTemplate(payload?.id ?? payload, requestContext),
         ),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_RESTORE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () => {
-          return templateController.activateTemplate(payload?.id ?? payload);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          return templateController.activateTemplate(payload?.id ?? payload, requestContext);
         }),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_PAUSE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () => {
-          return templateController.pauseTemplate(payload?.id ?? payload);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          return templateController.pauseTemplate(payload?.id ?? payload, requestContext);
         }),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          templateController.generateInstances(payload?.templateId, payload?.request),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          templateController.generateInstances(
+            payload?.templateId,
+            payload?.request,
+            requestContext,
+          ),
         ),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_GET_INSTANCES, (_, payload) =>
-        withAuthenticatedValue(ctx, async () => {
-          return templateController.getInstancesByTemplate(payload?.templateId, {
-            from: payload?.from,
-            to: payload?.to,
-          });
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          return templateController.getInstancesByTemplate(
+            payload?.templateId,
+            requestContext,
+            {
+              from: payload?.from,
+              to: payload?.to,
+            },
+          );
         }),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
@@ -210,13 +224,17 @@ export function createTaskElectronModule(
         ),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_BIND_GOAL, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          templateController.bindToGoal(payload?.templateId, payload?.request),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          templateController.bindToGoal(
+            payload?.templateId,
+            payload?.request,
+            requestContext,
+          ),
         ),
       );
       ipcMain.handle(TaskChannels.TEMPLATE_UNBIND_GOAL, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          templateController.unbindFromGoal(payload?.templateId),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          templateController.unbindFromGoal(payload?.templateId, requestContext),
         ),
       );
 
@@ -224,7 +242,7 @@ export function createTaskElectronModule(
       ipcMain.handle(TaskChannels.INSTANCE_LIST, (_, params) =>
         withAuthenticatedValue(ctx, async (requestContext) => {
           if (params?.templateId) {
-            return handlers.instance.listByTemplate(params.templateId);
+            return handlers.instance.listByTemplate(params.templateId, requestContext.identityId);
           }
 
           if (params?.status) {

@@ -102,7 +102,7 @@ describe('TaskInstanceController', () => {
 
       await controller.listInstances(TEST_IDENTITY_ID, { templateId: 'tmpl_1' });
 
-      expect(useCases.listByTemplate).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.listByTemplate).toHaveBeenCalledWith('tmpl_1', TEST_IDENTITY_ID);
       expect(useCases.listByStatus).not.toHaveBeenCalled();
       expect(useCases.listByAccount).not.toHaveBeenCalled();
     });
@@ -135,7 +135,7 @@ describe('TaskInstanceController', () => {
         status: 'Pending' as any,
       });
 
-      expect(useCases.listByTemplate).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.listByTemplate).toHaveBeenCalledWith('tmpl_1', TEST_IDENTITY_ID);
       expect(useCases.listByStatus).not.toHaveBeenCalled();
     });
 

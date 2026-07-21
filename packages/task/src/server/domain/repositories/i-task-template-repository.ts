@@ -42,9 +42,22 @@ export interface ITaskTemplateRepository {
   findById(id: string): Promise<TaskTemplate | null>;
 
   /**
+   * 根据 ID + identity 查找任务模板
+   */
+  findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null>;
+
+  /**
    * 根据 ID 查找任务模板（包含子实体：子任务、实例）
    */
   findByIdWithChildren(id: string): Promise<TaskTemplate | null>;
+
+  /**
+   * 根据 ID + identity 查找任务模板（含子集）
+   */
+  findByIdWithChildrenForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<TaskTemplate | null>;
 
   /**
    * 根据用户 ID 查找所有任务模板
@@ -82,9 +95,9 @@ export interface ITaskTemplateRepository {
   findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]>;
 
   /**
-   * 硬删除任务模板
+   * 硬删除任务模板（identity-scoped）
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * 软删除任务模板

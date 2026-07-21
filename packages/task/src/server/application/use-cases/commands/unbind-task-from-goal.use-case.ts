@@ -12,8 +12,8 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class UnbindTaskFromGoalUseCase {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
-  async execute(templateId: string): Promise<Result<TaskTemplateClientDTO>> {
-    const template = await this.templateRepository.findById(templateId);
+  async execute(templateId: string, identityId: string): Promise<Result<TaskTemplateClientDTO>> {
+    const template = await this.templateRepository.findByIdForIdentity(identityId, templateId);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${templateId} not found`);
     }

@@ -32,7 +32,7 @@ describe('Instance maintenance use-cases', () => {
     mockGenerateInstances.mockReturnValue([]);
 
     templateRepo = createMockRepo<ITaskTemplateRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
 
@@ -73,10 +73,10 @@ describe('Instance maintenance use-cases', () => {
 
   describe('GenerateTaskInstancesUseCase', () => {
     it('returns NOT_FOUND when template does not exist', async () => {
-      vi.mocked(templateRepo.findById).mockResolvedValue(null);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
       const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
 
-      const result = await useCase.execute('tpl-404', {
+      const result = await useCase.execute('tpl-404', 'identity-1', {
         fromDate: 0,
         toDate: Date.now(),
       });
@@ -89,11 +89,11 @@ describe('Instance maintenance use-cases', () => {
 
     it('returns empty list without persisting when generator yields none', async () => {
       const template = { id: 'tpl-1' } as any;
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
       mockGenerateInstances.mockReturnValue([]);
       const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
 
-      const result = await useCase.execute('tpl-1', {
+      const result = await useCase.execute('tpl-1', 'identity-1', {
         fromDate: 1,
         toDate: 2,
       });
@@ -113,11 +113,11 @@ describe('Instance maintenance use-cases', () => {
         { toClientDTO: vi.fn().mockReturnValue({ id: 'i-1' }) },
         { toClientDTO: vi.fn().mockReturnValue({ id: 'i-2' }) },
       ];
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
       mockGenerateInstances.mockReturnValue(generated as any);
       const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
 
-      const result = await useCase.execute('tpl-1', {
+      const result = await useCase.execute('tpl-1', 'identity-1', {
         fromDate: 10,
         toDate: 20,
       });
@@ -129,13 +129,13 @@ describe('Instance maintenance use-cases', () => {
 
     it('returns BAD_REQUEST when the template cannot generate instances in its current state', async () => {
       const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
       mockGenerateInstances.mockImplementation(() => {
         throw new InvalidTaskTemplateStateError('Can only generate instances for active templates');
       });
       const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
 
-      const result = await useCase.execute(template.id, {
+      const result = await useCase.execute(template.id, template.identityId, {
         fromDate: 10,
         toDate: 20,
       });
@@ -147,12 +147,12 @@ describe('Instance maintenance use-cases', () => {
     it('returns INTERNAL_ERROR when template persistence fails after generating instances', async () => {
       const template = aLoadedTaskTemplate();
       const generated = [{ toClientDTO: vi.fn().mockReturnValue({ id: 'i-1' }) }];
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
       mockGenerateInstances.mockReturnValue(generated as any);
       vi.mocked(templateRepo.save).mockRejectedValue(new Error('save failed'));
       const useCase = new GenerateTaskInstancesUseCase(templateRepo, instanceRepo);
 
-      const result = await useCase.execute(template.id, {
+      const result = await useCase.execute(template.id, template.identityId, {
         fromDate: 10,
         toDate: 20,
       });

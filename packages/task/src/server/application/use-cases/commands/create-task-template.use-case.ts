@@ -50,7 +50,10 @@ export class CreateTaskTemplateUseCase {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
         if (request.parentTaskId) {
-          const parentTemplate = await templateRepository.findById(request.parentTaskId);
+          const parentTemplate = await templateRepository.findByIdForIdentity(
+            request.identityId,
+            request.parentTaskId,
+          );
           if (!parentTemplate) {
             return error('BAD_REQUEST', `Parent task template ${request.parentTaskId} not found`);
           }

@@ -135,9 +135,10 @@ export class TaskTemplateController {
    */
   async getTemplate(
     id: string,
+    ctx: Context,
     includeChildren = false,
   ): Promise<Result<TaskTemplateClientDTO | null>> {
-    const result = await this.useCases.getTemplate(id, includeChildren);
+    const result = await this.useCases.getTemplate(id, ctx.identityId, includeChildren);
 
     if (!isOk(result)) {
       return result as Result<TaskTemplateClientDTO | null>;
@@ -182,7 +183,7 @@ export class TaskTemplateController {
   /**
    * Update template (with Zod validation)
    */
-  async updateTemplate(id: string, input: unknown): Promise<Result<TaskTemplateClientDTO>> {
+  async updateTemplate(id: string, input: unknown, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
     const parsed = UpdateTaskTemplateSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -192,7 +193,7 @@ export class TaskTemplateController {
       });
     }
 
-    return await this.useCases.updateTemplate(id, {
+    return await this.useCases.updateTemplate(id, ctx.identityId, {
       name: parsed.data.name,
       description: parsed.data.description,
       timeConfig: parsed.data.timeConfig,
@@ -210,8 +211,8 @@ export class TaskTemplateController {
   /**
    * Delete template
    */
-  async deleteTemplate(id: string): Promise<Result<null>> {
-    const result = await this.useCases.deleteTemplate(id);
+  async deleteTemplate(id: string, ctx: Context): Promise<Result<null>> {
+    const result = await this.useCases.deleteTemplate(id, ctx.identityId);
     if (!isOk(result)) {
       return result as Result<null>;
     }
@@ -222,8 +223,8 @@ export class TaskTemplateController {
   /**
    * Activate template
    */
-  async activateTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    const result = await this.useCases.activateTemplate(id);
+  async activateTemplate(id: string, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
+    const result = await this.useCases.activateTemplate(id, ctx.identityId);
 
     if (!isOk(result)) {
       return result as Result<TaskTemplateClientDTO>;
@@ -235,8 +236,8 @@ export class TaskTemplateController {
   /**
    * Pause template
    */
-  async pauseTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    const result = await this.useCases.pauseTemplate(id);
+  async pauseTemplate(id: string, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
+    const result = await this.useCases.pauseTemplate(id, ctx.identityId);
 
     if (!isOk(result)) {
       return result as Result<TaskTemplateClientDTO>;
@@ -248,8 +249,8 @@ export class TaskTemplateController {
   /**
    * Archive template
    */
-  async archiveTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return await this.useCases.archiveTemplate(id);
+  async archiveTemplate(id: string, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
+    return await this.useCases.archiveTemplate(id, ctx.identityId);
   }
 
   /**
@@ -263,7 +264,11 @@ export class TaskTemplateController {
   /**
    * Generate instances for a template
    */
-  async generateInstances(id: string, input: unknown): Promise<Result<TaskInstanceClientDTO[]>> {
+  async generateInstances(
+    id: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
     const parsed = GenerateInstancesSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -273,7 +278,7 @@ export class TaskTemplateController {
       });
     }
 
-    return await this.useCases.generateInstances(id, parsed.data);
+    return await this.useCases.generateInstances(id, ctx.identityId, parsed.data);
   }
 
   /**
@@ -281,9 +286,10 @@ export class TaskTemplateController {
    */
   async getInstancesByTemplate(
     templateId: string,
+    ctx: Context,
     range?: TaskTemplateInstancesQuery,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    const result = await this.useCases.listInstancesByTemplate(templateId);
+    const result = await this.useCases.listInstancesByTemplate(templateId, ctx.identityId);
 
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO[]>;
@@ -311,7 +317,11 @@ export class TaskTemplateController {
   /**
    * Bind template to goal
    */
-  async bindToGoal(id: string, input: unknown): Promise<Result<TaskTemplateClientDTO>> {
+  async bindToGoal(
+    id: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<TaskTemplateClientDTO>> {
     const parsed = BindToGoalSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -321,13 +331,13 @@ export class TaskTemplateController {
       });
     }
 
-    return await this.useCases.bindToGoal(id, parsed.data);
+    return await this.useCases.bindToGoal(id, ctx.identityId, parsed.data);
   }
 
   /**
    * Unbind template from goal
    */
-  async unbindFromGoal(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return await this.useCases.unbindFromGoal(id);
+  async unbindFromGoal(id: string, ctx: Context): Promise<Result<TaskTemplateClientDTO>> {
+    return await this.useCases.unbindFromGoal(id, ctx.identityId);
   }
 }

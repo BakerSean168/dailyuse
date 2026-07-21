@@ -38,11 +38,12 @@ export class GenerateTaskInstancesUseCase {
 
   async execute(
     templateId: string,
+    identityId: string,
     request: { fromDate: number; toDate: number },
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
-        const template = await templateRepository.findById(templateId);
+        const template = await templateRepository.findByIdForIdentity(identityId, templateId);
         if (!template) {
           return error('NOT_FOUND', `TaskTemplate ${templateId} not found`);
         }

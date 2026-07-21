@@ -77,9 +77,27 @@ export class TaskTemplatePrismaRepository
     return data ? this.mapToEntity(data) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null> {
+    const data = await this.db.taskTemplate.findFirst({
+      where: { id, identityId },
+    });
+    return data ? this.mapToEntity(data) : null;
+  }
+
   async findByIdWithChildren(id: string): Promise<TaskTemplate | null> {
     const data = await this.db.taskTemplate.findUnique({
       where: { id },
+      include: { subtasks: true, instances: true },
+    });
+    return data ? this.mapToEntity(data) : null;
+  }
+
+  async findByIdWithChildrenForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<TaskTemplate | null> {
+    const data = await this.db.taskTemplate.findFirst({
+      where: { id, identityId },
       include: { subtasks: true, instances: true },
     });
     return data ? this.mapToEntity(data) : null;
@@ -173,8 +191,13 @@ export class TaskTemplatePrismaRepository
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.taskTemplate.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const deleted = await this.db.taskTemplate.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Task template not found for the current identity.');
+    }
   }
 
   async softDelete(id: string): Promise<void> {

@@ -178,7 +178,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.getTemplate(req.params!.id, req.query?.includeChildren === 'true'),
+    (req, ctx) => controller.getTemplate(req.params!.id, ctx, req.query?.includeChildren === 'true'),
   );
 
   // PUT /:id — Update template (backwards compatibility)
@@ -197,7 +197,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTemplate(req.params!.id, req.body),
+    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
   );
 
   // PATCH /:id — Update template (preferred method for partial updates)
@@ -216,7 +216,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTemplate(req.params!.id, req.body),
+    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
   );
 
   // DELETE /:id — Delete template
@@ -232,7 +232,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteTemplate(req.params!.id),
+    (req, ctx) => controller.deleteTemplate(req.params!.id, ctx),
   );
 
   // POST /:id/activate — Activate template
@@ -248,7 +248,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.activateTemplate(req.params!.id),
+    (req, ctx) => controller.activateTemplate(req.params!.id, ctx),
   );
 
   // POST /:id/pause — Pause template
@@ -264,7 +264,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.pauseTemplate(req.params!.id),
+    (req, ctx) => controller.pauseTemplate(req.params!.id, ctx),
   );
 
   // POST /:id/archive — Archive template
@@ -280,7 +280,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.archiveTemplate(req.params!.id),
+    (req, ctx) => controller.archiveTemplate(req.params!.id, ctx),
   );
 
   // POST /:id/generate-instances — Generate instances for template
@@ -299,7 +299,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.generateInstances(req.params!.id, req.body),
+    (req, ctx) => controller.generateInstances(req.params!.id, req.body, ctx),
   );
 
   // GET /:id/instances — Get instances by template ID
@@ -318,9 +318,10 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) =>
+    (req, ctx) =>
       controller.getInstancesByTemplate(
         req.params!.id,
+        ctx,
         parseTemplateInstancesRange(req.query as Record<string, unknown>),
       ),
   );
@@ -341,7 +342,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.bindToGoal(req.params!.id, req.body),
+    (req, ctx) => controller.bindToGoal(req.params!.id, req.body, ctx),
   );
 
   // POST /:id/unbind-goal — Unbind template from goal
@@ -357,7 +358,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.unbindFromGoal(req.params!.id),
+    (req, ctx) => controller.unbindFromGoal(req.params!.id, ctx),
   );
 
   return router;

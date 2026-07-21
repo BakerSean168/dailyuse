@@ -35,10 +35,10 @@ export class DeleteTaskTemplateUseCase {
       });
   }
 
-  async execute(id: string, soft = false): Promise<Result<void>> {
+  async execute(id: string, identityId: string, soft = false): Promise<Result<void>> {
     try {
       return await this.transactionRunner.run(async ({ templateRepository, instanceRepository }) => {
-        const template = await templateRepository.findById(id);
+        const template = await templateRepository.findByIdForIdentity(identityId, id);
         if (!template) {
           // Idempotent delete: if the template is already gone, treat it as success.
           return ok(undefined);
@@ -49,7 +49,7 @@ export class DeleteTaskTemplateUseCase {
         await instanceRepository.deleteByTemplateId(id);
 
         if (!soft) {
-          await templateRepository.delete(id);
+          await templateRepository.delete(identityId, id);
         }
 
         return ok(undefined);
