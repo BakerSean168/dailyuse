@@ -1443,6 +1443,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > runtime + app-vue three-login matrix + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百零四轮）：补齐 getEvents 正向路径证据——owned identity
+> 通过 ownership gate 后正常返回事件；ADR-035 journey 增 step 15；新增
+> `ai-agent-events-ownership.surface` 固化 getEvents 必须先 getRun+ownership 再取事件。
+> §13.2 Agent 项仍为部分（缺完整 multi-engine Turn Engine E2E 与跨端对抗 E2E）。验证：
+> ai journey/runtime/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1531,6 +1539,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百零二轮：journey step 13 + runtime 在 side-effect 前 ownership fail-closed；MSW
   governance void delete 对齐 data:null。
   残留一百零三轮：journey step 14 getEvents ownership；三入口 matrix step 9 源码边界锁定。
+  残留一百零四轮：journey step 15 owned getEvents passthrough + ownership surface。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

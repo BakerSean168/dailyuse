@@ -1602,6 +1602,57 @@ describe('createRemoteAIServiceRuntime', () => {
     expect(agentRuntimePort.getEvents).not.toHaveBeenCalled();
   });
 
+  it('getEvents returns events for owned runs after ownership gate (residual 104)', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const ownedRun = createAgentRunResult('completed', {
+      run: {
+        ...createAgentRunResult('completed').run,
+        identityId: 'identity-1',
+      },
+    });
+    const events = [
+      {
+        eventId: 'event-own-1',
+        runId: 'run-1',
+        sequence: 0,
+        type: 'node.completed' as const,
+        createdAt: 1,
+        data: { node: 'plan', durationMs: 12 },
+      },
+    ];
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(ownedRun);
+    vi.mocked(agentRuntimePort.getEvents).mockResolvedValueOnce(events);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.getEvents(
+      'run-1',
+      { identityId: 'identity-1' },
+      'request-owned-events',
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual(events);
+    }
+    expect(agentRuntimePort.getRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+      requestId: 'request-owned-events',
+      signal: undefined,
+    });
+    expect(agentRuntimePort.getEvents).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+      requestId: 'request-owned-events',
+      signal: undefined,
+    });
+  });
+
   it('filters foreign identity runs out of list results as defense-in-depth', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     vi.mocked(agentRuntimePort.listRuns).mockResolvedValueOnce([

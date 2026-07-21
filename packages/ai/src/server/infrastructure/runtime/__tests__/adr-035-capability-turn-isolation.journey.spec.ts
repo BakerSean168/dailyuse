@@ -5,7 +5,7 @@
  * fixture series: capability plan → start gate → confirm-only mutation →
  * cross-capability fail-closed → identity isolation → vault path safety →
  * first-phase tool surface → multi-engine fail-closed → resume ownership before
- * host side-effects → getEvents ownership isolation.
+ * host side-effects → getEvents ownership isolation → owned getEvents passthrough.
  *
  * This is host-boundary integration coverage (not a full Playwright E2E and not
  * a multi-engine Turn Engine suite). Complements the scattered unit specs.
@@ -845,6 +845,41 @@ describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
         runId: FIXTURE.runId,
       }),
     );
+  });
+
+
+  it('step 15: owned identity getEvents returns events after ownership gate', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const ownedRun = baseRun('completed');
+    const events = [
+      {
+        eventId: 'event-owned-1',
+        runId: FIXTURE.runId,
+        sequence: 0,
+        type: 'node.completed' as const,
+        createdAt: 1,
+        data: { node: 'result', durationMs: 5 },
+      },
+    ];
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(ownedRun);
+    vi.mocked(agentRuntimePort.getEvents).mockResolvedValueOnce(events);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createDeps({
+        agentRuntimePort,
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.getEvents(
+      FIXTURE.runId,
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-owned-events`,
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual(events);
+    }
+    expect(agentRuntimePort.getEvents).toHaveBeenCalledTimes(1);
   });
 
 });
