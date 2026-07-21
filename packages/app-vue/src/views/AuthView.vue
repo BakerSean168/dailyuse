@@ -19,6 +19,7 @@ import {
 import { Loader2 } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 import { useAuth } from '../modules/authentication/composables/useAuth';
+import { isDesktopEnvironment } from '../modules/authentication/composables/useAuthContext';
 import {
   usePresentationPreferenceStore,
   type PresentationThemeMode,
@@ -27,6 +28,8 @@ import {
 const { t } = useI18n();
 const presentationStore = usePresentationPreferenceStore();
 const { loginByEmail, registerByEmail, enterGuestMode, isLoading, error } = useAuth();
+// Guest mode is Desktop-only. Web owns AuthApp/WebAuthView (password + GitHub).
+const guestModeAvailable = isDesktopEnvironment();
 
 const INPUT_DARK_CLASS =
   'h-[42px] rounded-[10px] border-white/10 bg-white/[0.06] px-3.5 text-[14px] text-white placeholder:text-white/[0.28] focus-visible:border-primary/50 focus-visible:bg-white/10 focus-visible:ring-1 focus-visible:ring-primary/50';
@@ -309,16 +312,18 @@ function setTheme(theme: PresentationThemeMode) {
             >
               {{ t('auth.login.registerLink') }}
             </Button>
-            <span class="text-white/[0.22]">|</span>
-            <Button
-              data-testid="guest-mode-button"
-              variant="link"
-              class="h-auto px-0 py-0 text-white/[0.46] hover:text-white/[0.78]"
-              :disabled="isLoading"
-              @click="handleGuestLogin"
-            >
-              {{ t('auth.page.guestMode') }}
-            </Button>
+            <template v-if="guestModeAvailable">
+              <span class="text-white/[0.22]">|</span>
+              <Button
+                data-testid="guest-mode-button"
+                variant="link"
+                class="h-auto px-0 py-0 text-white/[0.46] hover:text-white/[0.78]"
+                :disabled="isLoading"
+                @click="handleGuestLogin"
+              >
+                {{ t('auth.page.guestMode') }}
+              </Button>
+            </template>
           </template>
           <template v-else-if="scene === 'register'">
             <Button
