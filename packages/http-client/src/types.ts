@@ -11,20 +11,11 @@
 import type { AxiosRequestConfig } from 'axios';
 
 // ============================================================================
-// Abstract HTTP Client Interface
+// Result HTTP Client Interface
 // ============================================================================
 
 /**
- * HTTP Client 配置
- */
-export interface HttpClientConfig {
-  baseUrl: string;
-  timeout?: number;
-  headers?: Record<string, string>;
-}
-
-/**
- * HTTP 请求选项
+ * HTTP 请求选项（ResultHttpClient 适配层参数）
  */
 export interface HttpRequestOptions {
   params?: Record<string, unknown>;
@@ -32,36 +23,11 @@ export interface HttpRequestOptions {
 }
 
 /**
- * 抽象 HTTP Client 接口
- *
- * 所有 HTTP 适配器（GoalHttpAdapter 等）依赖此接口。
- * 具体实现：
- * - AxiosHttpClient: 使用 Axios（Web 环境）
- * - FetchHttpClient: 使用原生 Fetch
- * - IpcHttpClient: 使用 Electron IPC（Desktop 环境）
- */
-export interface HttpClient {
-  get<T>(url: string, options?: HttpRequestOptions): Promise<T>;
-  post<T>(url: string, data?: unknown, options?: HttpRequestOptions): Promise<T>;
-  put<T>(url: string, data?: unknown, options?: HttpRequestOptions): Promise<T>;
-  patch<T>(url: string, data?: unknown, options?: HttpRequestOptions): Promise<T>;
-  delete<T>(url: string, options?: HttpRequestOptions): Promise<T>;
-}
-
-/**
- * HttpClient 类型别名（更明确的命名）
- */
-export type IHttpClient = HttpClient;
-
-// ============================================================================
-// Result HTTP Client Interface
-// ============================================================================
-
-/**
  * Result HTTP Client 接口
  *
  * 所有方法返回 `Promise<Result<T>>`，永不抛出异常。
- * 适配器可以依赖此接口而不依赖具体实现。
+ * 模块 HTTP adapters 依赖此接口；实现为 ResultHttpClient。
+ * Throw 风格 IHttpClient / AxiosHttpClient 双轨已删除。
  */
 export interface IResultHttpClient {
   get<T = unknown>(url: string, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;

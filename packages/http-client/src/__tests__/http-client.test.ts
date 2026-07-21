@@ -1,30 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HttpClientError } from '../axios-http-client';
 import { createAxiosInstance } from '../axios-instance';
 import { DEFAULT_HTTP_CLIENT_CONFIG } from '../types';
-
-describe('HttpClientError', () => {
-  it('stores message, code, status, details, cause, and context', () => {
-    const cause = new Error('original');
-    const err = new HttpClientError('msg', 'CODE', 422, { field: 'x' }, cause, { extra: 1 });
-
-    expect(err.message).toBe('msg');
-    expect(err.code).toBe('CODE');
-    expect(err.status).toBe(422);
-    expect(err.details).toEqual({ field: 'x' });
-    expect(err.cause).toBe(cause);
-    expect(err.context).toEqual({ extra: 1 });
-    expect(err.name).toBe('HttpClientError');
-    expect(err).toBeInstanceOf(Error);
-  });
-
-  it('allows optional fields to be undefined', () => {
-    const err = new HttpClientError('msg', 'ERR', 500);
-    expect(err.details).toBeUndefined();
-    expect(err.cause).toBeUndefined();
-    expect(err.context).toBeUndefined();
-  });
-});
 
 describe('createAxiosInstance', () => {
   it('creates instance with default config', () => {
@@ -34,142 +10,60 @@ describe('createAxiosInstance', () => {
   });
 
   it('accepts custom baseURL and timeout', () => {
-    const instance = createAxiosInstance({ baseURL: '/custom', timeout: 5000 });
-    expect(instance.defaults.baseURL).toBe('/custom');
+    const instance = createAxiosInstance({ baseURL: 'https://api.example', timeout: 5000 });
+    expect(instance.defaults.baseURL).toBe('https://api.example');
     expect(instance.defaults.timeout).toBe(5000);
   });
 
   it('injects Bearer token from tokenProvider', async () => {
     const instance = createAxiosInstance({
-      baseURL: 'http://localhost',
-      tokenProvider: { getAccessToken: () => 'test-token' },
+      tokenProvider: { getAccessToken: () => 'token-abc' },
     });
 
-    // Capture the request config via a spy on the adapter
-    const adapter = vi.fn(async (config: any) => ({
-      data: {},
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config,
-    }));
-    instance.defaults.adapter = adapter;
+    let seenAuth: unknown;
+    instance.defaults.adapter = async (config) => {
+      const headers = config.headers as { get?: (k: string) => unknown; Authorization?: unknown };
+      seenAuth = typeof headers?.get === 'function' ? headers.get('Authorization') : headers?.Authorization;
+      return {
+        data: { ok: true, data: {} },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
 
-    await instance.get('/test');
-
-    expect(adapter).toHaveBeenCalled();
-    const config = adapter.mock.calls[0][0];
-    expect(config.headers.Authorization).toBe('Bearer test-token');
+    await instance.get('/ping');
+    expect(seenAuth).toBe('Bearer token-abc');
   });
 
   it('does not inject Authorization when tokenProvider returns null', async () => {
     const instance = createAxiosInstance({
-      baseURL: 'http://localhost',
       tokenProvider: { getAccessToken: () => null },
     });
 
-    const adapter = vi.fn(async (config: any) => ({
-      data: {},
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config,
-    }));
-    instance.defaults.adapter = adapter;
+    let seenAuth: unknown = 'unset';
+    instance.defaults.adapter = async (config) => {
+      const headers = config.headers as { get?: (k: string) => unknown; Authorization?: unknown };
+      seenAuth = typeof headers?.get === 'function' ? headers.get('Authorization') : headers?.Authorization;
+      return {
+        data: { ok: true, data: {} },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
 
-    await instance.get('/test');
-
-    const config = adapter.mock.calls[0][0];
-    expect(config.headers.Authorization).toBeUndefined();
+    await instance.get('/ping');
+    expect(seenAuth == null || seenAuth === false || seenAuth === '').toBe(true);
   });
 
   it('merges extra axiosConfig', () => {
     const instance = createAxiosInstance({
-      axiosConfig: { withCredentials: true },
+      axiosConfig: { timeout: 1234 },
     });
-    expect(instance.defaults.withCredentials).toBe(true);
-  });
-});
-
-describe('AxiosHttpClient', () => {
-  // Dynamically import to avoid circular dep issues
-  let AxiosHttpClient: typeof import('../axios-http-client').AxiosHttpClient;
-
-  beforeEach(async () => {
-    const mod = await import('../axios-http-client');
-    AxiosHttpClient = mod.AxiosHttpClient;
-  });
-
-  it('get() returns data from standard envelope', async () => {
-    const client = new AxiosHttpClient({ baseURL: 'http://localhost' });
-    const axios = client.getAxiosInstance();
-
-    axios.defaults.adapter = async () => ({
-      data: { ok: true, data: { id: 1 }, message: 'ok' },
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config: {} as any,
-    });
-
-    const result = await client.get('/test');
-    expect(result).toEqual({ id: 1 });
-  });
-
-  it('get() fails closed when JSON response omits the Result envelope', async () => {
-    const client = new AxiosHttpClient({ baseURL: 'http://localhost' });
-    const axios = client.getAxiosInstance();
-
-    axios.defaults.adapter = async () => ({
-      data: { raw: true },
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config: {} as any,
-    });
-
-    await expect(client.get('/test')).rejects.toMatchObject({
-      code: 'INTERNAL_ERROR',
-      message: expect.stringMatching(/envelope|dual-track/i),
-    });
-  });
-
-  it('get() allows non-JSON download payloads without envelope', async () => {
-    const client = new AxiosHttpClient({ baseURL: 'http://localhost' });
-    const axios = client.getAxiosInstance();
-
-    axios.defaults.adapter = async (config) => ({
-      data: 'file-bytes',
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config: { ...config, responseType: 'text' } as any,
-    });
-
-    await expect(client.get('/download', { responseType: 'text' } as never)).resolves.toBe(
-      'file-bytes',
-    );
-  });
-
-  it('get() throws HttpClientError on ok:false envelope', async () => {
-    const client = new AxiosHttpClient({ baseURL: 'http://localhost' });
-    const axios = client.getAxiosInstance();
-
-    axios.defaults.adapter = async () => ({
-      data: { ok: false, error: { message: 'fail', code: 'ERR', details: null } },
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config: {} as any,
-    });
-
-    await expect(client.get('/test')).rejects.toThrow(HttpClientError);
-    try {
-      await client.get('/test');
-    } catch (e: any) {
-      expect(e.code).toBe('ERR');
-      expect(e.message).toBe('fail');
-    }
+    expect(instance.defaults.timeout).toBe(1234);
   });
 });
 

@@ -1,15 +1,13 @@
 /**
  * @dailyuse/http-client — unified HTTP client package
  *
- * Primary path for first-party Memoflow APIs:
+ * Primary (only) path for first-party Memoflow APIs:
  *
- * 1. **ResultHttpClient** — `Promise<Result<T>>`, never throws
- *    - Used by Web/Desktop DI and all module HTTP adapters
- *    - Requires HttpResponse envelopes (no raw dual-track JSON)
+ * **ResultHttpClient** — `Promise<Result<T>>`, never throws
+ * - Used by Web/Desktop DI and all module HTTP adapters
+ * - Requires HttpResponse envelopes (no raw dual-track JSON)
  *
- * 2. **AxiosHttpClient** — throw-style `Promise<T>` twin
- *    - Also requires HttpResponse envelopes for JSON success bodies
- *    - Non-JSON download payloads (blob/arraybuffer/text) may pass through
+ * Throw-style AxiosHttpClient / IHttpClient dual-track removed (stage-6 residual 83).
  *
  * @module @dailyuse/http-client
  *
@@ -30,22 +28,15 @@
 
 // ── Types ──
 export type {
-  HttpClient,
-  IHttpClient,
   IResultHttpClient,
   HttpRequestOptions,
-  HttpClientConfig,
   AxiosHttpClientConfig,
   TokenProvider,
   TokenRefreshHandler,
 } from './types';
 export { DEFAULT_HTTP_CLIENT_CONFIG } from './types';
 
-// ── Errors ──
-export { HttpClientError } from './axios-http-client';
-
 // ── Clients ──
-export { AxiosHttpClient } from './axios-http-client';
 export { ResultHttpClient } from './result-http-client';
 
 // ── Result error helpers ──
@@ -57,15 +48,7 @@ export {
 
 // ── Factories ──
 import type { AxiosHttpClientConfig } from './types';
-import { AxiosHttpClient } from './axios-http-client';
 import { ResultHttpClient } from './result-http-client';
-
-/**
- * Create an AxiosHttpClient (throw-style Promise<T>).
- */
-export function createHttpClient(config?: AxiosHttpClientConfig): AxiosHttpClient {
-  return new AxiosHttpClient(config);
-}
 
 /**
  * Create a ResultHttpClient (never throws; returns Result envelopes).

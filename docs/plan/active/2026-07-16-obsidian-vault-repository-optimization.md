@@ -1266,6 +1266,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十三轮）：删除 throw 风格 `AxiosHttpClient` / `IHttpClient` /
+> `HttpClientError` / `createHttpClient` 双轨（全仓无生产消费者；模块 adapters 与
+> Web/Desktop/Mobile DI 仅用 `ResultHttpClient`/`createResultHttpClient`）；保留
+> `AxiosHttpClientConfig` 作为 axios 配置类型名与 `createAxiosInstance`。收紧
+> http-client envelope surface（文件删除 + 包入口 Result-only）。§13.2 仍为部分/外部
+> 阻塞。验证：http-client focused + governance-check。状态保持 **实施中**；PR readiness
+> 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
