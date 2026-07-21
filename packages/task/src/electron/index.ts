@@ -315,38 +315,48 @@ export function createTaskElectronModule(
         ),
       );
       ipcMain.handle(TaskChannels.DEPENDENCY_LIST, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          dependencyController.getDependencies(payload?.taskId),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          dependencyController.getDependencies(payload?.taskId, requestContext.identityId),
         ),
       );
       ipcMain.handle(TaskChannels.DEPENDENCY_DEPENDENTS, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          dependencyController.getDependents(payload?.taskId),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          dependencyController.getDependents(payload?.taskId, requestContext.identityId),
         ),
       );
       ipcMain.handle(TaskChannels.DEPENDENCY_CHAIN, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          dependencyController.getDependencyChain(payload?.taskId),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          dependencyController.getDependencyChain(payload?.taskId, requestContext.identityId),
         ),
       );
       ipcMain.handle(TaskChannels.DEPENDENCY_VALIDATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          dependencyController.validateDependency({
-            predecessorTaskId: payload?.predecessorTaskId,
-            successorTaskId: payload?.successorTaskId,
-          }),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          dependencyController.validateDependency(
+            {
+              predecessorTaskId: payload?.predecessorTaskId,
+              successorTaskId: payload?.successorTaskId,
+            },
+            requestContext.identityId,
+          ),
         ),
       );
       ipcMain.handle(TaskChannels.DEPENDENCY_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await dependencyController.deleteDependency(payload?.id ?? payload);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await dependencyController.deleteDependency(
+            payload?.id ?? payload,
+            requestContext.identityId,
+          );
           if (!result.ok) return result;
           return ok(null);
         }),
       );
       ipcMain.handle(TaskChannels.DEPENDENCY_UPDATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          dependencyController.updateDependency(payload?.id, payload?.request),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          dependencyController.updateDependency(
+            payload?.id,
+            payload?.request,
+            requestContext.identityId,
+          ),
         ),
       );
 

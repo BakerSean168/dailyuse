@@ -16,6 +16,7 @@ export class ValidateTaskDependencyUseCase {
   async execute(
     predecessorTaskId: string,
     successorTaskId: string,
+    identityId: string,
   ): Promise<Result<ValidateDependencyResponse>> {
     // Self-dependency check
     if (predecessorTaskId === successorTaskId) {
@@ -31,6 +32,7 @@ export class ValidateTaskDependencyUseCase {
     const existing = await this.dependencyRepository.findByPredecessorAndSuccessorId(
       predecessorTaskId,
       successorTaskId,
+      identityId,
     );
     if (existing) {
       return ok({
@@ -41,7 +43,10 @@ export class ValidateTaskDependencyUseCase {
     }
 
     // Circular dependency check — would adding this edge create a cycle?
-    const allSuccessorsOfSuccessor = await this.dependencyRepository.findAllSuccessorIds(successorTaskId);
+    const allSuccessorsOfSuccessor = await this.dependencyRepository.findAllSuccessorIds(
+      successorTaskId,
+      identityId,
+    );
     if (allSuccessorsOfSuccessor.includes(predecessorTaskId)) {
       return ok({
         isValid: false,

@@ -68,51 +68,79 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
     return row ? PowerSyncTaskDependencyMapper.toDTO(row) : null;
   }
 
-  async findBySuccessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<TaskDependencyServerDTO | null> {
+    const row = await this.db.getOptional<PowerSyncTaskDependencyRow>(
+      'SELECT * FROM task_dependencies WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
+    );
+    return row ? PowerSyncTaskDependencyMapper.toDTO(row) : null;
+  }
+
+  async findBySuccessorId(
+    taskId: string,
+    identityId: string,
+  ): Promise<TaskDependencyServerDTO[]> {
     return this.query(
-      'SELECT * FROM task_dependencies WHERE successor_task_id = ? ORDER BY created_at ASC',
-      [taskId],
+      'SELECT * FROM task_dependencies WHERE successor_task_id = ? AND identity_id = ? ORDER BY created_at ASC',
+      [taskId, identityId],
     );
   }
 
-  async findByPredecessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
+  async findByPredecessorId(
+    taskId: string,
+    identityId: string,
+  ): Promise<TaskDependencyServerDTO[]> {
     return this.query(
-      'SELECT * FROM task_dependencies WHERE predecessor_task_id = ? ORDER BY created_at ASC',
-      [taskId],
+      'SELECT * FROM task_dependencies WHERE predecessor_task_id = ? AND identity_id = ? ORDER BY created_at ASC',
+      [taskId, identityId],
     );
   }
 
   async findByPredecessorAndSuccessorId(
     predecessorId: string,
     successorId: string,
+    identityId: string,
   ): Promise<TaskDependencyServerDTO | null> {
     const row = await this.db.getOptional<PowerSyncTaskDependencyRow>(
-      'SELECT * FROM task_dependencies WHERE predecessor_task_id = ? AND successor_task_id = ? LIMIT 1',
-      [predecessorId, successorId],
+      'SELECT * FROM task_dependencies WHERE predecessor_task_id = ? AND successor_task_id = ? AND identity_id = ? LIMIT 1',
+      [predecessorId, successorId, identityId],
     );
     return row ? PowerSyncTaskDependencyMapper.toDTO(row) : null;
   }
 
-  async findAllPredecessorIds(taskId: string): Promise<string[]> {
+  async findAllPredecessorIds(taskId: string, identityId: string): Promise<string[]> {
     const visited = new Set<string>();
     const result: string[] = [];
-    await this.walkPredecessors(taskId, visited, result);
+    await this.walkPredecessors(taskId, identityId, visited, result);
     return result;
   }
 
-  async findAllSuccessorIds(taskId: string): Promise<string[]> {
+  async findAllSuccessorIds(taskId: string, identityId: string): Promise<string[]> {
     const visited = new Set<string>();
     const result: string[] = [];
-    await this.walkSuccessors(taskId, visited, result);
+    await this.walkSuccessors(taskId, identityId, visited, result);
     return result;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM task_dependencies WHERE id = ?', [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task dependency not found for the current identity.');
+    }
+    await this.db.execute(
+      'DELETE FROM task_dependencies WHERE id = ? AND identity_id = ?',
+      [id, identityId],
+    );
   }
 
   async deleteAggregate(dependency: TaskDependency): Promise<void> {
-    await this.db.execute('DELETE FROM task_dependencies WHERE id = ?', [dependency.id]);
+    await this.db.execute(
+      'DELETE FROM task_dependencies WHERE id = ? AND identity_id = ?',
+      [dependency.id, dependency.identityId],
+    );
     await publishAggregateEvents(dependency, eventBusAdapter);
   }
 
@@ -120,6 +148,17 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
     const row = await this.db.getOptional<PowerSyncTaskDependencyRow>(
       'SELECT * FROM task_dependencies WHERE id = ? LIMIT 1',
       [id],
+    );
+    return row ? PowerSyncTaskDependencyMapper.toAggregate(row) : null;
+  }
+
+  async findAggregateByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<TaskDependency | null> {
+    const row = await this.db.getOptional<PowerSyncTaskDependencyRow>(
+      'SELECT * FROM task_dependencies WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
     );
     return row ? PowerSyncTaskDependencyMapper.toAggregate(row) : null;
   }
@@ -132,6 +171,7 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
   }
 
   async update(
+    identityId: string,
     id: string,
     data: { dependencyType?: DependencyType; lagDays?: number },
   ): Promise<TaskDependencyServerDTO> {
@@ -140,12 +180,20 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
        SET dependency_type = COALESCE(?, dependency_type),
            lag_days = COALESCE(?, lag_days),
            updated_at = ?
-       WHERE id = ?`,
-      [data.dependencyType ?? null, data.lagDays ?? null, new Date().toISOString(), id],
+       WHERE id = ? AND identity_id = ?`,
+      [
+        data.dependencyType ?? null,
+        data.lagDays ?? null,
+        new Date().toISOString(),
+        id,
+        identityId,
+      ],
     );
 
-    const dependency = await this.findById(id);
-    if (!dependency) throw new Error(`Dependency not found: ${id}`);
+    const dependency = await this.findByIdForIdentity(identityId, id);
+    if (!dependency) {
+      throw new Error('Task dependency not found for the current identity.');
+    }
     return dependency;
   }
 
@@ -158,33 +206,35 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
 
   private async walkPredecessors(
     taskId: string,
+    identityId: string,
     visited: Set<string>,
     result: string[],
   ): Promise<void> {
     if (visited.has(taskId)) return;
     visited.add(taskId);
-    const dependencies = await this.findBySuccessorId(taskId);
+    const dependencies = await this.findBySuccessorId(taskId, identityId);
     for (const dependency of dependencies) {
       if (!result.includes(dependency.predecessorTaskId)) {
         result.push(dependency.predecessorTaskId);
       }
-      await this.walkPredecessors(dependency.predecessorTaskId, visited, result);
+      await this.walkPredecessors(dependency.predecessorTaskId, identityId, visited, result);
     }
   }
 
   private async walkSuccessors(
     taskId: string,
+    identityId: string,
     visited: Set<string>,
     result: string[],
   ): Promise<void> {
     if (visited.has(taskId)) return;
     visited.add(taskId);
-    const dependencies = await this.findByPredecessorId(taskId);
+    const dependencies = await this.findByPredecessorId(taskId, identityId);
     for (const dependency of dependencies) {
       if (!result.includes(dependency.successorTaskId)) {
         result.push(dependency.successorTaskId);
       }
-      await this.walkSuccessors(dependency.successorTaskId, visited, result);
+      await this.walkSuccessors(dependency.successorTaskId, identityId, visited, result);
     }
   }
 

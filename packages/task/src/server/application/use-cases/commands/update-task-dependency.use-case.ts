@@ -15,14 +15,15 @@ export class UpdateTaskDependencyUseCase {
 
   async execute(
     id: string,
+    identityId: string,
     request: { dependencyType?: DependencyType; lagDays?: number },
   ): Promise<Result<TaskDependencyClientDTO>> {
-    const dependency = await this.dependencyRepository.findById(id);
+    const dependency = await this.dependencyRepository.findByIdForIdentity(identityId, id);
     if (!dependency) {
       return error('NOT_FOUND', `TaskDependency ${id} not found`);
     }
 
-    const updated = await this.dependencyRepository.update(id, request);
+    const updated = await this.dependencyRepository.update(identityId, id, request);
     return ok(dependencyServerToClientDTO(updated));
   }
 }

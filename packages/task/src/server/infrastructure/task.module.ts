@@ -337,13 +337,18 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
     getTaskInstancesByDateRange: (identityId, startDate, endDate) =>
       useCases.getTaskInstancesByDateRange.execute(identityId, startDate, endDate),
     createTaskDependency: (input) => useCases.createTaskDependency.execute(input),
-    deleteTaskDependency: (id) => useCases.deleteTaskDependency.execute(id),
-    updateTaskDependency: (id, input) => useCases.updateTaskDependency.execute(id, input),
-    listTaskDependencies: (taskId) => useCases.listTaskDependencies.executeDependencies(taskId),
-    listTaskDependents: (taskId) => useCases.listTaskDependencies.executeDependents(taskId),
-    getDependencyChain: (taskId) => useCases.getDependencyChain.execute(taskId),
-    validateTaskDependency: (predecessorTaskId, successorTaskId) =>
-      useCases.validateTaskDependency.execute(predecessorTaskId, successorTaskId),
+    deleteTaskDependency: (id, identityId) =>
+      useCases.deleteTaskDependency.execute(id, identityId),
+    updateTaskDependency: (id, identityId, input) =>
+      useCases.updateTaskDependency.execute(id, identityId, input),
+    listTaskDependencies: (taskId, identityId) =>
+      useCases.listTaskDependencies.executeDependencies(taskId, identityId),
+    listTaskDependents: (taskId, identityId) =>
+      useCases.listTaskDependencies.executeDependents(taskId, identityId),
+    getDependencyChain: (taskId, identityId) =>
+      useCases.getDependencyChain.execute(taskId, identityId),
+    validateTaskDependency: (predecessorTaskId, successorTaskId, identityId) =>
+      useCases.validateTaskDependency.execute(predecessorTaskId, successorTaskId, identityId),
   };
 
   return {

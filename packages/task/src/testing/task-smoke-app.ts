@@ -91,6 +91,7 @@ export function createMockDependencyRepo(): ITaskDependencyRepository {
   return {
     create: vi.fn().mockResolvedValue(null as never),
     findById: vi.fn().mockResolvedValue(null),
+    findByIdForIdentity: vi.fn().mockResolvedValue(null),
     findBySuccessorId: vi.fn().mockResolvedValue([]),
     findByPredecessorId: vi.fn().mockResolvedValue([]),
     findByPredecessorAndSuccessorId: vi.fn().mockResolvedValue(null),
@@ -99,6 +100,7 @@ export function createMockDependencyRepo(): ITaskDependencyRepository {
     delete: vi.fn().mockResolvedValue(undefined),
     deleteAggregate: vi.fn().mockResolvedValue(undefined),
     findAggregateById: vi.fn().mockResolvedValue(null),
+    findAggregateByIdForIdentity: vi.fn().mockResolvedValue(null),
     deleteByTaskId: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue(null as never),
     findAllByIdentityId: vi.fn().mockResolvedValue([]),

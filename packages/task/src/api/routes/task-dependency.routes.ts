@@ -84,7 +84,7 @@ export function registerTaskDependencyRoutes(
       },
     },
     [auth],
-    (req) => controller.getDependencies(req.params!.taskId),
+    (req, ctx) => controller.getDependencies(req.params!.taskId, ctx.identityId),
   );
 
   // GET /:taskId/dependents — Get task dependents (successor tasks)
@@ -101,7 +101,7 @@ export function registerTaskDependencyRoutes(
       },
     },
     [auth],
-    (req) => controller.getDependents(req.params!.taskId),
+    (req, ctx) => controller.getDependents(req.params!.taskId, ctx.identityId),
   );
 
   // GET /:taskId/dependency-chain — Get full dependency chain
@@ -118,7 +118,7 @@ export function registerTaskDependencyRoutes(
       },
     },
     [auth],
-    (req) => controller.getDependencyChain(req.params!.taskId),
+    (req, ctx) => controller.getDependencyChain(req.params!.taskId, ctx.identityId),
   );
 
   // POST /dependencies/validate — Validate a potential dependency
@@ -135,7 +135,7 @@ export function registerTaskDependencyRoutes(
       },
     },
     [auth],
-    (req) => controller.validateDependency(req.body),
+    (req, ctx) => controller.validateDependency(req.body, ctx.identityId),
   );
 
   // DELETE /dependencies/:id — Delete dependency
@@ -151,7 +151,7 @@ export function registerTaskDependencyRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteDependency(req.params!.id),
+    (req, ctx) => controller.deleteDependency(req.params!.id, ctx.identityId),
   );
 
   // PUT /dependencies/:id — Update dependency
@@ -170,7 +170,7 @@ export function registerTaskDependencyRoutes(
       },
     },
     [auth],
-    (req) => controller.updateDependency(req.params!.id, req.body),
+    (req, ctx) => controller.updateDependency(req.params!.id, req.body, ctx.identityId),
   );
 
   return router;
