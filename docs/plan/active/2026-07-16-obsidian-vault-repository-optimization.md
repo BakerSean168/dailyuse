@@ -1104,6 +1104,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留六十一轮）：AI electron 本地 `Ch` 折叠到 contracts
+> `AIChannels`；stream push 事件保持 `AIStreamChannels`（不再把 chunk/done/error 放进本地
+> handler 频道表双轨）。补 ai electron + contracts ai-surface specs。§13.2 仍为部分/外部阻塞。
+> 验证：ai/contracts focused specs + desktop ipc/module-handler contracts + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
