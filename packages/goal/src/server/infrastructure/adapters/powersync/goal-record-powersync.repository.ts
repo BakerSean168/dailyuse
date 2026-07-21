@@ -181,8 +181,23 @@ export class GoalRecordPowerSyncRepository
     }
   }
 
-  async delete(recordId: string): Promise<void> {
-    await this.db.execute(`DELETE FROM goal_records WHERE id = ?`, [recordId]);
+  async findByIdForIdentity(identityId: string, recordId: string): Promise<GoalRecord | null> {
+    const row = await this.db.getOptional<Record<string, unknown>>(
+      `SELECT * FROM goal_records WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [recordId, identityId],
+    );
+    return row ? PowerSyncGoalRecordMapper.toDomain(row) : null;
+  }
+
+  async delete(identityId: string, recordId: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, recordId);
+    if (!existing) {
+      throw new Error('Goal record not found for the current identity.');
+    }
+    await this.db.execute(`DELETE FROM goal_records WHERE id = ? AND identity_id = ?`, [
+      recordId,
+      identityId,
+    ]);
   }
 
   async deleteMany(recordIds: string[]): Promise<void> {

@@ -159,11 +159,11 @@ export class GoalController {
     return this.useCases.searchGoals(cx.identityId, query, systemView as GoalSystemView);
   }
 
-  async get(id: string, includeChildren = true): Promise<Result<unknown>> {
-    return this.useCases.getGoal(id, includeChildren);
+  async get(id: string, cx: ExecutionContext, includeChildren = true): Promise<Result<unknown>> {
+    return this.useCases.getGoal(id, cx.identityId, includeChildren);
   }
 
-  async update(id: string, input: unknown): Promise<Result<unknown>> {
+  async update(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = UpdateGoalSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -172,11 +172,11 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateGoal(id, parsed.data);
+    return this.useCases.updateGoal(id, cx.identityId, parsed.data);
   }
 
-  async delete(id: string): Promise<Result<unknown>> {
-    return this.useCases.deleteGoal(id);
+  async delete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.deleteGoal(id, cx.identityId);
   }
 
   async archiveExpired(cx: ExecutionContext): Promise<Result<unknown>> {
@@ -199,8 +199,8 @@ export class GoalController {
     return ok(result.data.goal);
   }
 
-  async getAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>> {
-    return this.useCases.getGoalAggregate(goalId);
+  async getAggregate(goalId: string, cx: ExecutionContext): Promise<Result<GetGoalAggregateRes>> {
+    return this.useCases.getGoalAggregate(goalId, cx.identityId);
   }
 
   async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
@@ -229,8 +229,8 @@ export class GoalController {
 
   // ==================== Key Results ====================
 
-  async getKeyResults(goalId: string): Promise<Result<unknown>> {
-    const result = await this.useCases.getGoal(goalId, true);
+  async getKeyResults(goalId: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    const result = await this.useCases.getGoal(goalId, cx.identityId, true);
     if (!result.ok) return result;
     const goal = result.data as unknown as Record<string, unknown>;
     const keyResults = (goal.keyResults as unknown[]) ?? [];
@@ -425,8 +425,8 @@ export class GoalController {
     });
   }
 
-  async deleteRecord(recordId: string): Promise<Result<null>> {
-    const result = await this.useCases.deleteRecord(recordId);
+  async deleteRecord(recordId: string, cx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.useCases.deleteRecord(recordId, cx.identityId);
     if (!result.ok) return result;
     return ok(null);
   }

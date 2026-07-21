@@ -155,7 +155,7 @@ export function registerRecordRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteRecord(req.params!.recordId),
+    (req, ctx) => controller.deleteRecord(req.params!.recordId, ctx),
   );
 
   return router;

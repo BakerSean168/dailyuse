@@ -18,10 +18,24 @@ export class GoalPowerSyncRepository
     super(eventBusAdapter);
   }
 
-  async findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
+    async findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
     const row = await this.db.getOptional<Record<string, unknown>>(
       `SELECT * FROM goals WHERE id = ? LIMIT 1`,
       [id],
+    );
+
+    if (!row) return null;
+    return this.toGoal(row, options?.includeChildren ?? false);
+  }
+
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Goal | null> {
+    const row = await this.db.getOptional<Record<string, unknown>>(
+      `SELECT * FROM goals WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [id, identityId],
     );
 
     if (!row) return null;

@@ -41,7 +41,7 @@ describe('DeleteGoalUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new DeleteGoalUseCase(goalRepo, new GoalPolicy());
@@ -49,9 +49,9 @@ describe('DeleteGoalUseCase', () => {
 
   describe('execute()', () => {
     it('should return NOT_FOUND when goal does not exist', async () => {
-      vi.mocked(goalRepo.findById).mockResolvedValue(null);
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-      const result = await useCase.execute('non-existent');
+      const result = await useCase.execute('non-existent', 'identity-1');
 
       expect(result).toBeErrorWithCode('NOT_FOUND');
       expect(goalRepo.save).not.toHaveBeenCalled();
@@ -59,9 +59,9 @@ describe('DeleteGoalUseCase', () => {
 
     it('should soft delete a completed goal', async () => {
       const goal = createCompletedGoal();
-      vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-      const result = await useCase.execute(goal.id);
+      const result = await useCase.execute(goal.id, 'identity-1');
 
       expect(result).toBeOk();
       expect(goal.deletedAt).not.toBeNull();
@@ -70,9 +70,9 @@ describe('DeleteGoalUseCase', () => {
 
     it('should soft delete an active goal', async () => {
       const goal = createTestGoal();
-      vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-      const result = await useCase.execute(goal.id);
+      const result = await useCase.execute(goal.id, 'identity-1');
 
       expect(result).toBeOk();
       expect(goal.deletedAt).not.toBeNull();
@@ -80,9 +80,9 @@ describe('DeleteGoalUseCase', () => {
 
     it('should return the DTO after deleting', async () => {
       const goal = createCompletedGoal('My Goal');
-      vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-      const result = await useCase.execute(goal.id);
+      const result = await useCase.execute(goal.id, 'identity-1');
 
       expect(result).toBeOk();
       if (result.ok) {
@@ -94,18 +94,18 @@ describe('DeleteGoalUseCase', () => {
 
   describe('checkDependencies()', () => {
     it('should return NOT_FOUND when goal does not exist', async () => {
-      vi.mocked(goalRepo.findById).mockResolvedValue(null);
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-      const result = await useCase.checkDependencies('non-existent');
+      const result = await useCase.checkDependencies('non-existent', 'identity-1');
 
       expect(result).toBeErrorWithCode('NOT_FOUND');
     });
 
     it('should return dependency info for goal with no children', async () => {
       const goal = createTestGoal();
-      vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-      const result = await useCase.checkDependencies(goal.id);
+      const result = await useCase.checkDependencies(goal.id, 'identity-1');
 
       expect(result).toBeOk();
       if (result.ok) {
@@ -126,9 +126,9 @@ describe('DeleteGoalUseCase', () => {
         targetValue: 100,
         weight: 3,
       });
-      vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+      vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-      const result = await useCase.checkDependencies(goal.id);
+      const result = await useCase.checkDependencies(goal.id, 'identity-1');
 
       expect(result).toBeOk();
       if (result.ok) {

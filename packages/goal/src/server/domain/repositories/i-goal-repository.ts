@@ -40,6 +40,20 @@ export interface IGoalRepository {
   findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null>;
 
   /**
+   * 通过 identity + ID 查找聚合根（身份隔离读路径）
+   *
+   * @param identityId - 用户身份 ID
+   * @param id - 目标 ID
+   * @param options.includeChildren - 是否加载子实体
+   * @returns 聚合根实例，不存在或不属于该 identity 则返回 null
+   */
+  findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Goal | null>;
+
+  /**
    * 通过 identityId 查找所有目标
    *
    * @param identityId - 用户身份 ID

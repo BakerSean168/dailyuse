@@ -63,6 +63,21 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     return Goal.load(rawDataToGoalState(dto));
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Goal | null> {
+    const row = await this.prisma.goal.findFirst({
+      where: { id, identityId },
+      include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
+    });
+    if (!row) return null;
+
+    const dto = PrismaGoalMapper.toDomainDTO(row);
+    return Goal.load(rawDataToGoalState(dto));
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: {

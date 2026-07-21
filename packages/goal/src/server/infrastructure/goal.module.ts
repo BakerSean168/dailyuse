@@ -287,10 +287,11 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
   const api: GoalApplicationPort = {
     // Goal CRUD / 目标增删改查
     createGoal: (input, cx) => useCases.createGoal.execute(input, cx),
-    getGoal: (id, includeChildren) => useCases.getGoal.execute(id, includeChildren),
+    getGoal: (id, identityId, includeChildren) =>
+      useCases.getGoal.execute(id, identityId, includeChildren),
     listGoals: (input) => useCases.listGoals.execute(input),
-    updateGoal: (id, input) => useCases.updateGoal.execute(id, input),
-    deleteGoal: (id) => useCases.deleteGoal.execute(id),
+    updateGoal: (id, identityId, input) => useCases.updateGoal.execute(id, identityId, input),
+    deleteGoal: (id, identityId) => useCases.deleteGoal.execute(id, identityId),
     permanentlyDeleteGoal: (id) => useCases.permanentlyDeleteGoal.execute(id),
     archiveGoal: (id) => useCases.archiveGoal.execute(id),
     archiveExpiredGoals: (identityId) => useCases.archiveExpiredGoals.execute(identityId),
@@ -326,7 +327,7 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     createRecord: (goalId, keyResultId, params, identityId) =>
       useCases.createRecord.execute(goalId, keyResultId, params, identityId),
     listRecords: (params) => useCases.listRecords.execute(params),
-    deleteRecord: (recordId) => useCases.deleteRecord.execute(recordId),
+    deleteRecord: (recordId, identityId) => useCases.deleteRecord.execute(recordId, identityId),
 
     // Focus Mode / 专注模式
     getCurrentFocusMode: (identityId) => useCases.getCurrentFocusMode.execute(identityId),
@@ -336,7 +337,7 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
       useCases.extendFocusMode.execute(identityId, newEndTime),
 
     // Workflow / 工作流
-    getGoalAggregate: (goalId) => useCases.getGoalAggregate.execute(goalId),
+    getGoalAggregate: (goalId, identityId) => useCases.getGoalAggregate.execute(goalId, identityId),
     getGoalProgressBreakdown: (goalId) => useCases.getGoalProgressBreakdown.execute(goalId),
     cloneGoal: (goalId, params, cx) => useCases.cloneGoal.execute(goalId, params, cx),
     batchUpdateKeyResultWeights: (goalId, updates) =>

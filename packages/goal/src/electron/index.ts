@@ -99,8 +99,10 @@ export const GoalElectronModule: IElectronModule = {
         goalController.list(params ?? {}, requestContext),
       ),
     );
-    ipcMain.handle(GoalChannels.GET, (_event, id, includeChildren = true) =>
-      goalController.get(id, includeChildren),
+    ipcMain.handle(GoalChannels.GET, async (_event, id, includeChildren = true) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.get(id, requestContext, includeChildren),
+      ),
     );
     ipcMain.handle(GoalChannels.CREATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
@@ -110,12 +112,16 @@ export const GoalElectronModule: IElectronModule = {
     // Issue #4 fix: route update through auth + controller validation
     // 问题 #4 修复：将更新操作路由到认证 + 控制器校验
     ipcMain.handle(GoalChannels.UPDATE, async (_, id, dto) =>
-      withAuthenticatedValue(ctx, async () => goalController.update(id, dto)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.update(id, dto, requestContext),
+      ),
     );
     // Issue #4 fix: route delete through auth + controller validation
     // 问题 #4 修复：将删除操作路由到认证 + 控制器校验
     ipcMain.handle(GoalChannels.DELETE, async (_, id) =>
-      withAuthenticatedValue(ctx, async () => goalController.delete(id)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.delete(id, requestContext),
+      ),
     );
     ipcMain.handle(GoalChannels.ARCHIVE_EXPIRED, async () =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
@@ -142,7 +148,11 @@ export const GoalElectronModule: IElectronModule = {
         ),
       ),
     );
-    ipcMain.handle(GoalChannels.AGGREGATE, (_, id) => goalController.getAggregate(id));
+    ipcMain.handle(GoalChannels.AGGREGATE, async (_, id) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.getAggregate(id, requestContext),
+      ),
+    );
     ipcMain.handle(GoalChannels.PROGRESS_BREAKDOWN, (_, id) => goalController.getProgressBreakdown(id));
     ipcMain.handle(GoalChannels.FOCUS_MODE_GET, async (_event) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
@@ -187,7 +197,9 @@ export const GoalElectronModule: IElectronModule = {
       withAuthenticatedValue(ctx, async () => goalController.addKeyResult(goalId, dto)),
     );
     ipcMain.handle(GoalChannels.KEY_RESULT_LIST, async (_, goalId) =>
-      withAuthenticatedValue(ctx, async () => goalController.getKeyResults(goalId)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.getKeyResults(goalId, requestContext),
+      ),
     );
     ipcMain.handle(GoalChannels.KEY_RESULT_UPDATE, async (_, goalId, keyResultId, dto) =>
       withAuthenticatedValue(ctx, async () =>
@@ -230,8 +242,8 @@ export const GoalElectronModule: IElectronModule = {
       goalController.listRecordsByGoal(goalId, params ?? undefined),
     );
     ipcMain.handle(GoalChannels.RECORD_DELETE, async (_, _goalId, _keyResultId, recordId) =>
-      withAuthenticatedValue(ctx, async () => {
-        const result = await goalController.deleteRecord(recordId);
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
+        const result = await goalController.deleteRecord(recordId, requestContext);
         if (!result.ok) return result;
         return ok(null);
       }),

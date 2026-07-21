@@ -30,8 +30,10 @@ export class CreateGoalRecordUseCase {
     },
     identityId: string,
   ): Promise<Result<GoalRecordClientDTO>> {
-    // 1. 验证 Goal 存在
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+    // 1. 验证 Goal 存在且属于当前 identity
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }

@@ -161,12 +161,25 @@ export class GoalRecordPrismaRepository
   }
 
   /**
-   * Delete a record by ID
+   * Find a record by identity + ID
    */
-  async delete(recordId: string): Promise<void> {
-    await this.prisma.goalRecord.delete({
-      where: { id: recordId },
+  async findByIdForIdentity(identityId: string, recordId: string): Promise<GoalRecord | null> {
+    const row = await this.prisma.goalRecord.findFirst({
+      where: { id: recordId, identityId },
     });
+    return row ? PrismaGoalRecordMapper.toDomain(row) : null;
+  }
+
+  /**
+   * Delete a record by identity + ID
+   */
+  async delete(identityId: string, recordId: string): Promise<void> {
+    const deleted = await this.prisma.goalRecord.deleteMany({
+      where: { id: recordId, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Goal record not found for the current identity.');
+    }
   }
 
   /**

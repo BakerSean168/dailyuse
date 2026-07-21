@@ -75,14 +75,14 @@ describe('GetGoalAggregateUseCase', () => {
     const records = [createRecordFixture('rec-1'), createRecordFixture('rec-2')];
 
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const recordRepo = createMockRepo<IGoalRecordRepository>({
       findByGoalId: vi.fn().mockResolvedValue(records),
     });
 
     const useCase = new GetGoalAggregateUseCase(goalRepo, recordRepo);
-    const result = await useCase.execute('goal-id-1');
+    const result = await useCase.execute('goal-id-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -99,12 +99,12 @@ describe('GetGoalAggregateUseCase', () => {
 
   it('returns NOT_FOUND when goal does not exist', async () => {
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     const recordRepo = createMockRepo<IGoalRecordRepository>({});
 
     const useCase = new GetGoalAggregateUseCase(goalRepo, recordRepo);
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -113,16 +113,16 @@ describe('GetGoalAggregateUseCase', () => {
 
   it('passes includeChildren=true to repository', async () => {
     const goal = createGoalFixture();
-    const findById = vi.fn().mockResolvedValue(goal);
-    const goalRepo = createMockRepo<IGoalRepository>({ findById });
+    const findByIdForIdentity = vi.fn().mockResolvedValue(goal);
+    const goalRepo = createMockRepo<IGoalRepository>({ findByIdForIdentity });
     const recordRepo = createMockRepo<IGoalRecordRepository>({
       findByGoalId: vi.fn().mockResolvedValue([]),
     });
 
     const useCase = new GetGoalAggregateUseCase(goalRepo, recordRepo);
-    await useCase.execute('goal-id-1');
+    await useCase.execute('goal-id-1', 'identity-1');
 
-    expect(findById).toHaveBeenCalledWith('goal-id-1', { includeChildren: true });
+    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-id-1', { includeChildren: true });
   });
 
   it('returns empty arrays when goal has no children', async () => {
@@ -134,14 +134,14 @@ describe('GetGoalAggregateUseCase', () => {
       overallProgress: 0,
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const recordRepo = createMockRepo<IGoalRecordRepository>({
       findByGoalId: vi.fn().mockResolvedValue([]),
     });
 
     const useCase = new GetGoalAggregateUseCase(goalRepo, recordRepo);
-    const result = await useCase.execute('goal-id-1');
+    const result = await useCase.execute('goal-id-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -154,12 +154,12 @@ describe('GetGoalAggregateUseCase', () => {
     const goal = createGoalFixture();
     const findByGoalId = vi.fn().mockResolvedValue([]);
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const recordRepo = createMockRepo<IGoalRecordRepository>({ findByGoalId });
 
     const useCase = new GetGoalAggregateUseCase(goalRepo, recordRepo);
-    await useCase.execute('goal-id-1');
+    await useCase.execute('goal-id-1', 'identity-1');
 
     expect(findByGoalId).toHaveBeenCalledWith('goal-id-1', { orderBy: 'desc' });
   });

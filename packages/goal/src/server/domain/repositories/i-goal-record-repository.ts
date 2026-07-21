@@ -142,11 +142,21 @@ export interface IGoalRecordRepository {
   save(record: GoalRecord): Promise<void>;
 
   /**
-   * 删除记录
+   * 通过 identity + ID 查找记录（身份隔离读路径）
    *
+   * @param identityId 用户身份 ID
+   * @param recordId 记录 UUID
+   * @returns 实体，不存在或不属于该 identity 则返回 null
+   */
+  findByIdForIdentity(identityId: string, recordId: string): Promise<GoalRecord | null>;
+
+  /**
+   * 删除记录（必须同时匹配 identity）
+   *
+   * @param identityId 用户身份 ID
    * @param recordId 记录 UUID
    */
-  delete(recordId: string): Promise<void>;
+  delete(identityId: string, recordId: string): Promise<void>;
 
   /**
    * 批量删除记录

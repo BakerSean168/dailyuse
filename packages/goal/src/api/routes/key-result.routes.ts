@@ -63,7 +63,7 @@ export function registerKeyResultRoutes(
       },
     },
     [auth],
-    (req) => controller.getKeyResults(req.params!.id),
+    (req, ctx) => controller.getKeyResults(req.params!.id, ctx),
   );
 
   // POST /:id/key-results — 添加关键结果

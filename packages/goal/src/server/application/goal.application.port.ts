@@ -36,10 +36,10 @@ import type { ListGoalReviewsResult } from './use-cases/queries/list-goal-review
 /** Transport-neutral callable application surface. */
 export interface GoalApplicationPort {
   createGoal(input: CreateGoalReq, cx: ExecutionContext): Promise<Result<CreateGoalRes>>;
-  getGoal(id: string, includeChildren?: boolean): Promise<Result<GetGoalRes>>;
+  getGoal(id: string, identityId: string, includeChildren?: boolean): Promise<Result<GetGoalRes>>;
   listGoals(input: ListGoalsQuery): Promise<Result<QueryGoalsRes>>;
-  updateGoal(id: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
-  deleteGoal(id: string): Promise<Result<DeleteGoalRes>>;
+  updateGoal(id: string, identityId: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
+  deleteGoal(id: string, identityId: string): Promise<Result<DeleteGoalRes>>;
   permanentlyDeleteGoal(id: string): Promise<Result<{ id: string }>>;
   archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
   archiveExpiredGoals(identityId: string): Promise<Result<{ archivedCount: number }>>;
@@ -132,7 +132,7 @@ export interface GoalApplicationPort {
     identityId: string,
   ): Promise<Result<GoalRecordClientDTO>>;
   listRecords(params: ListGoalRecordsParams): Promise<Result<ListGoalRecordsResult>>;
-  deleteRecord(recordId: string): Promise<Result<void>>;
+  deleteRecord(recordId: string, identityId: string): Promise<Result<void>>;
 
   activateFocusMode(
     identityId: string,
@@ -142,7 +142,7 @@ export interface GoalApplicationPort {
   extendFocusMode(identityId: string, newEndTime: number): Promise<Result<FocusModeDTO>>;
   getCurrentFocusMode(identityId: string): Promise<Result<FocusModeDTO | null>>;
 
-  getGoalAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>>;
+  getGoalAggregate(goalId: string, identityId: string): Promise<Result<GetGoalAggregateRes>>;
   getGoalProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>>;
   cloneGoal(
     goalId: string,

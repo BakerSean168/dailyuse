@@ -181,7 +181,12 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id, parseBoolean(req.query?.includeChildren) ?? true),
+    (req, ctx) =>
+      controller.get(
+        req.params!.id,
+        ctx,
+        parseBoolean(req.query?.includeChildren) ?? true,
+      ),
   );
 
   // PUT /:id — 更新目标
@@ -200,7 +205,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // PATCH /:id — 更新目标（别名，跳过 OpenAPI 避免重复）
@@ -211,7 +216,7 @@ export function registerGoalCrudRoutes(
       skipOpenApi: true,
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // DELETE /:id — 删除目标（软删除）
@@ -227,7 +232,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.delete(req.params!.id),
+    (req, ctx) => controller.delete(req.params!.id, ctx),
   );
 
   // ==================== Goal Status Operations ====================
@@ -306,7 +311,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.getAggregate(req.params!.id),
+    (req, ctx) => controller.getAggregate(req.params!.id, ctx),
   );
 
   // GET /:id/progress-breakdown — 获取进度分解

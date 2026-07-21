@@ -35,16 +35,16 @@ describe('UpdateGoalUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new UpdateGoalUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should return NOT_FOUND when goal does not exist', async () => {
-    vi.mocked(goalRepo.findById).mockResolvedValue(null);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent', { name: 'Updated' });
+    const result = await useCase.execute('non-existent', 'identity-1', { name: 'Updated' });
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -52,9 +52,9 @@ describe('UpdateGoalUseCase', () => {
 
   it('should update the goal name', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, { name: 'Updated Title' });
+    const result = await useCase.execute(goal.id, 'identity-1', { name: 'Updated Title' });
 
     expect(result).toBeOk();
     expect(goal.name).toBe('Updated Title');
@@ -63,9 +63,9 @@ describe('UpdateGoalUseCase', () => {
 
   it('should update tags when provided', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, { tags: ['new-tag'] });
+    const result = await useCase.execute(goal.id, 'identity-1', { tags: ['new-tag'] });
 
     expect(result).toBeOk();
     expect(goal.tags).toEqual(['new-tag']);
@@ -73,10 +73,10 @@ describe('UpdateGoalUseCase', () => {
 
   it('should update time range when dates provided', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
     const targetDate = Date.parse('2026-12-31T00:00:00.000Z');
 
-    const result = await useCase.execute(goal.id, { targetDate });
+    const result = await useCase.execute(goal.id, 'identity-1', { targetDate });
 
     expect(result).toBeOk();
     expect(goal.targetDate).toBeDefined();
@@ -84,9 +84,9 @@ describe('UpdateGoalUseCase', () => {
 
   it('should update folder when folderId provided', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, { folderId: 'folder-123' as any });
+    const result = await useCase.execute(goal.id, 'identity-1', { folderId: 'folder-123' as any });
 
     expect(result).toBeOk();
   });
@@ -95,16 +95,16 @@ describe('UpdateGoalUseCase', () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
     goal.archive();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id, { name: 'Should fail' })).rejects.toThrow();
+    await expect(useCase.execute(goal.id, 'identity-1', { name: 'Should fail' })).rejects.toThrow();
   });
 
   it('should save the goal after update', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await useCase.execute(goal.id, { name: 'New Name' });
+    await useCase.execute(goal.id, 'identity-1', { name: 'New Name' });
 
     expect(goalRepo.save).toHaveBeenCalledWith(goal);
   });
