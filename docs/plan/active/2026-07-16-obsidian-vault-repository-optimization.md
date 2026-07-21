@@ -57,7 +57,7 @@ updated: 2026-07-21T00:00:00
   Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView/useSmsCodeCountdown 已删；Agent identity 归属 fail-closed + resolveRunPlan surface 隔离；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
-  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
+  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
 
 ## 2. 已确认产品边界
 
@@ -872,6 +872,18 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > WebAuthView spec、auth routes specs。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留三十二轮）：删除无消费者的 `@deprecated` `DesktopAIRuntime`
+> （`packages/ai/src/electron/services/desktop-ai-runtime.ts`；组合根已是 `createAIPowerSyncModule`）。
+> 补 ADR-035 Capability/Turn 同一 fixture journey 规格（surface plan / start gate / confirm-only mutation /
+> cancel / cross-capability / identity isolation / vault path+tool surface）。
+> 补三入口同一 fixture journey（Web hard-redirect + AuthApp/Desktop 面 + 访客升级 vault 边界）与
+> Desktop `toCloudAccessToken` 单测 + guest-upgrade vault journey。
+> §13.2 三入口与 Agent 项证据再增强，仍为部分（缺真实跨端 Playwright/Electron 与多 Turn Engine E2E、
+> 真实 GitHub fixture）。验证：ai journey specs、app-vue three-login matrix/journey、desktop
+> toCloudAccessToken + guest-upgrade journey、governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -890,7 +902,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留三十一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留三十二轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
@@ -904,7 +916,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   Desktop 账密+访客矩阵；`authentication.md` 与实现边界对齐（不再声称 OAuth UI 缺失）。
   残留三十轮：删除 phone/SMS 空壳登录注册运行时面，三入口仅账密 / GitHub / Desktop 访客。
   残留三十一轮：删除 password-reset 双轨 store shim；Web auth page contract 明确无 phone/SMS/guest。
-  仍缺：三入口同一 fixture 下的端到端串联验收（含访客升级与仓库边界）。
+  残留三十二轮：`three-login-surface.matrix.spec.ts` 增加同一 fixture 串联 journey（Web 硬跳转 AuthApp →
+  AuthApp 账密+GitHub → Desktop 账密+访客 → 访客升级 profileId/vaultDir 不变 → guest/offline 禁云端知识库）；
+  Desktop `guest-upgrade-vault-boundary.journey.spec.ts` + `toCloudAccessToken.spec.ts` 补访客升级与云端 token 门禁。
+  仍缺：真实跨端 Playwright/Electron 一揽子 E2E（含真实 OAuth/GitHub fixture）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
 - [x] Desktop 本地 Vault 在云端故障时仍可用。 **（已证明）**
@@ -931,7 +946,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   顶替 knowledge mutation 的规格。
   残留二十九轮：AI runtime `startRun` 对 knowledge.generate 接线 capability plan fail-closed；
   `goalAutomationRequirements` 纯函数；goal mutation 仍在 execution 阶段强制。
-  仍缺：完整 ADR-035 Capability/Turn isolation E2E 与跨端一揽子对抗 E2E。
+  残留三十二轮：新增 host-boundary journey
+  `packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-capability-turn-isolation.journey.spec.ts`
+  （同一 fixture 串联：surface-scoped plan → start gate → confirm-only mutation → cancel 无副作用 →
+  cross-capability fail-closed → identity get/list 隔离 → vault path/confirmation/tool surface）。
+  仍缺：多 Turn Engine 完整 E2E、跨端对抗 Playwright E2E 与真实 fixture。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**

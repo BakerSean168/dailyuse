@@ -1,0 +1,503 @@
+/**
+ * ADR-035 Capability / Turn isolation journey (stage-6 residual evidence).
+ *
+ * Chains the isolation invariants for one knowledge.generate turn in a single
+ * fixture series: capability plan → start gate → confirm-only mutation →
+ * cross-capability fail-closed → identity isolation → vault path safety →
+ * first-phase tool surface.
+ *
+ * This is host-boundary integration coverage (not a full Playwright E2E and not
+ * a multi-engine Turn Engine suite). Complements the scattered unit specs.
+ */
+import { describe, expect, it, vi } from 'vitest';
+import {
+  AgentToolNameSchema,
+  CreateKnowledgeNoteSchema,
+  goalAutomationRequirements,
+  knowledgeWriteRequirements,
+  resolveRunPlan,
+  type CapabilityOffer,
+} from '@dailyuse/contracts/ai';
+import type { AgentRunResult } from '@dailyuse/contracts/ai';
+import type { IAIProviderConfigRepository } from '../../../domain';
+import type {
+  IAgentRuntimePort,
+  IAIAutomationToolExecutorPort,
+  IKnowledgeNotePersistencePort,
+} from '../../../application/ports';
+import {
+  assertAgentStartCapabilityPlan,
+  buildAgentRuntimeCapabilityOffers,
+} from '../ai-runtime';
+import { createRemoteAIServiceRuntime } from '../remote-ai-service.runtime';
+import type { AIModuleDependencies } from '../../ai.module';
+import { createMockRepo } from '@dailyuse/test-utils/mocks';
+
+const FIXTURE = {
+  identity: 'identity-journey-1',
+  foreignIdentity: 'identity-foreign',
+  runId: 'run-journey-knowledge-1',
+  threadId: 'thread-journey-knowledge-1',
+  requestId: 'request-journey-1',
+  proposalId: 'proposal-journey-1',
+  revision: 1,
+} as const;
+
+function createMockAgentRuntimePort(): IAgentRuntimePort {
+  return {
+    listRuns: vi.fn(),
+    startRun: vi.fn(),
+    resumeRun: vi.fn(),
+    getRun: vi.fn(),
+    getEvents: vi.fn(),
+  };
+}
+
+function createProviderConfigRepository(): IAIProviderConfigRepository {
+  return {
+    save: vi.fn(),
+    findById: vi.fn(),
+    findDefaultByIdentityId: vi.fn().mockResolvedValue({
+      id: 'provider-1',
+      identityId: FIXTURE.identity,
+      name: 'Main provider',
+      providerType: 'openai_compatible',
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: 'plain-secret',
+      defaultModel: 'gpt-4o-mini',
+      availableModels: [],
+      isActive: true,
+      isDefault: true,
+      priority: 100,
+      version: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      deletedAt: null,
+    }),
+    findByIdentityId: vi.fn(),
+    findByIdentityIdAndName: vi.fn(),
+    delete: vi.fn(),
+    exists: vi.fn(),
+    clearDefaultForIdentity: vi.fn(),
+  } as unknown as IAIProviderConfigRepository;
+}
+
+function createKnowledgeNotePersistence(): IKnowledgeNotePersistencePort {
+  return {
+    createKnowledgeNote: vi.fn().mockResolvedValue({
+      note: {
+        id: 'resource-note-1',
+        repositoryScopeId: 'repo-1',
+        name: 'Journey-note.md',
+        path: 'notes/ai/Journey-note.md',
+        mimeType: 'text/markdown',
+        size: 42,
+        content: '# Journey note',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+    }),
+  };
+}
+
+function createDeps(overrides?: Partial<AIModuleDependencies>): AIModuleDependencies {
+  return {
+    conversationRepository: createMockRepo(),
+    providerConfigRepository: createProviderConfigRepository(),
+    ...overrides,
+  };
+}
+
+function baseRun(
+  status: AgentRunResult['run']['status'],
+  overrides?: Partial<AgentRunResult>,
+): AgentRunResult {
+  return {
+    run: {
+      runId: FIXTURE.runId,
+      threadId: FIXTURE.threadId,
+      conversationId: null,
+      identityId: FIXTURE.identity,
+      agentType: 'knowledge.generate',
+      status,
+      createdAt: 1,
+      updatedAt: 2,
+    },
+    state: {
+      stage:
+        status === 'waiting_approval'
+          ? 'approval'
+          : status === 'waiting_clarification'
+            ? 'clarify'
+            : status === 'completed'
+              ? 'result'
+              : 'execute',
+      intent: 'knowledge-generate',
+      messages: [],
+      artifacts: [],
+      citations: [],
+      retrievedContext: [],
+      pendingActions: [],
+      approvedActions: [],
+      executedActions: [],
+      usage: {},
+      errors: [],
+    },
+    events: [],
+    interrupts: [],
+    ...overrides,
+  };
+}
+
+const pendingCreateNoteAction = {
+  tool: 'create_knowledge_note' as const,
+  index: 0,
+  dependsOn: [],
+  rationale: 'Persist the approved knowledge note draft.',
+  payload: {
+    topic: 'Journey note',
+    title: 'Journey note',
+    contentArtifactId: `${FIXTURE.runId}:knowledge-note-draft`,
+    contentMarkdown: '# Journey note\n\nConfirmed write only.',
+    targetSubpath: 'notes/ai',
+    providerId: '550e8400-e29b-41d4-a716-446655440000',
+    model: 'gpt-4o-mini',
+  },
+};
+
+const noteDraftArtifact = {
+  artifactId: `${FIXTURE.runId}:knowledge-note-draft`,
+  kind: 'knowledge_note_draft' as const,
+  title: 'Journey note',
+  updatedAt: 2,
+  data: {
+    topic: 'Journey note',
+    title: 'Journey note',
+    markdown: '# Journey note\n\nConfirmed write only.',
+    targetSubpath: 'notes/ai',
+  },
+};
+
+describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
+  const proposal: CapabilityOffer = {
+    kind: 'tool.proposal',
+    providerId: 'proposal-kernel',
+    surface: 'any',
+    readonly: false,
+  };
+  const mutation: CapabilityOffer = {
+    kind: 'tool.mutation',
+    providerId: 'host-executor',
+    surface: 'any',
+    readonly: false,
+  };
+  const desktopVault: CapabilityOffer = {
+    kind: 'context.local_vault',
+    providerId: 'desktop-local-vault',
+    surface: 'desktop',
+    readonly: false,
+  };
+  const cloudRag: CapabilityOffer = {
+    kind: 'context.cloud_rag',
+    providerId: 'web-github-projection',
+    surface: 'web',
+    readonly: true,
+  };
+
+  it('step 1: fixes a surface-scoped ResolvedRunPlan without silent cross-surface expansion', () => {
+    const desktopPlan = resolveRunPlan({
+      engineId: 'knowledge.generate',
+      offers: [proposal, mutation, desktopVault, cloudRag],
+      requirements: knowledgeWriteRequirements('desktop'),
+      surface: 'desktop',
+    });
+    expect(desktopPlan.engineId).toBe('knowledge.generate');
+    expect(desktopPlan.offers.some((offer) => offer.kind === 'context.cloud_rag')).toBe(false);
+
+    const webWithoutCloud = resolveRunPlan({
+      engineId: 'knowledge.generate',
+      offers: [proposal, mutation, desktopVault],
+      requirements: knowledgeWriteRequirements('web'),
+      surface: 'web',
+    });
+    expect(webWithoutCloud.engineId).toBe('none');
+    expect(webWithoutCloud.missing.map((item) => item.kind)).toEqual(['context.cloud_rag']);
+
+    // Goal workflow offers never substitute for knowledge mutation requirements.
+    const goalOnly = resolveRunPlan({
+      engineId: 'knowledge.generate',
+      offers: [
+        proposal,
+        {
+          kind: 'workflow.goal',
+          providerId: 'goal',
+          surface: 'any',
+          readonly: false,
+        },
+      ],
+      requirements: knowledgeWriteRequirements('web'),
+      surface: 'web',
+    });
+    expect(goalOnly.engineId).toBe('none');
+    expect(goalOnly.missing.map((item) => item.kind).sort()).toEqual(
+      ['context.cloud_rag', 'tool.mutation'].sort(),
+    );
+  });
+
+  it('step 2: startRun capability gate fails closed without knowledge note / cloud_rag offers', () => {
+    const blocked = assertAgentStartCapabilityPlan(
+      'knowledge.generate',
+      buildAgentRuntimeCapabilityOffers({}),
+    );
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) {
+      expect(blocked.error.code).toBe('SERVICE_UNAVAILABLE');
+    }
+
+    const allowed = assertAgentStartCapabilityPlan(
+      'knowledge.generate',
+      buildAgentRuntimeCapabilityOffers({
+        knowledgeNoteUseCase: {} as never,
+      }),
+    );
+    expect(allowed.ok).toBe(true);
+
+    // goal.create planning may start without automation executor (mutation later).
+    expect(assertAgentStartCapabilityPlan('goal.create', buildAgentRuntimeCapabilityOffers({})).ok).toBe(
+      true,
+    );
+    expect(goalAutomationRequirements().map((item) => item.kind).sort()).toEqual(
+      ['tool.mutation', 'tool.proposal', 'workflow.goal'].sort(),
+    );
+  });
+
+  it('step 3–5: confirm-only mutation, cancel no-op, cross-capability tool fail-closed', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistence();
+    const automationToolExecutorPort: IAIAutomationToolExecutorPort = {
+      executeGoalAutomation: vi.fn(),
+    };
+
+    const waitingExecution = baseRun('waiting_execution', {
+      state: {
+        ...baseRun('waiting_execution').state,
+        approvedActions: [pendingCreateNoteAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: FIXTURE.runId,
+          threadId: FIXTURE.threadId,
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingCreateNoteAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+
+    const completed = baseRun('completed', {
+      state: {
+        ...baseRun('completed').state,
+        approvedActions: [pendingCreateNoteAction],
+        artifacts: [noteDraftArtifact],
+        executedActions: [
+          {
+            tool: 'create_knowledge_note',
+            status: 'executed',
+            message: 'created',
+          },
+        ],
+      },
+    });
+
+    // resume with confirm returns waiting_execution first, then host executes and resumes again.
+    vi.mocked(agentRuntimePort.resumeRun)
+      .mockResolvedValueOnce(waitingExecution)
+      .mockResolvedValueOnce(completed);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        automationToolExecutorPort,
+      }),
+    );
+
+    // Confirm path executes host mutation only after userDecision=confirm.
+    const confirm = await runtime.services.agentRuntimeService.resumeRun(
+      FIXTURE.runId,
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingCreateNoteAction],
+      },
+      { identityId: FIXTURE.identity },
+      FIXTURE.requestId,
+    );
+    expect(confirm.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).toHaveBeenCalledTimes(1);
+
+    // Cancel must not re-run side effects even if execution.required remains.
+    vi.mocked(knowledgeNotePersistence.createKnowledgeNote).mockClear();
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValueOnce(waitingExecution);
+    const cancel = await runtime.services.agentRuntimeService.resumeRun(
+      FIXTURE.runId,
+      { userDecision: 'cancel' },
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-cancel`,
+    );
+    expect(cancel.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(automationToolExecutorPort.executeGoalAutomation).not.toHaveBeenCalled();
+
+    // Cross-capability: knowledge executor fails closed on create_goal.
+    const crossCapAction = {
+      tool: 'create_goal' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Must not run through knowledge executor',
+      payload: { title: 'Should fail closed' },
+    };
+    const crossCapWaiting = baseRun('waiting_execution', {
+      state: {
+        ...baseRun('waiting_execution').state,
+        approvedActions: [crossCapAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: FIXTURE.runId,
+          threadId: FIXTURE.threadId,
+          agentType: 'knowledge.generate',
+          approvedActions: [crossCapAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+    vi.mocked(knowledgeNotePersistence.createKnowledgeNote).mockClear();
+    vi.mocked(agentRuntimePort.resumeRun)
+      .mockResolvedValueOnce(crossCapWaiting)
+      .mockResolvedValueOnce(baseRun('completed'));
+
+    const cross = await runtime.services.agentRuntimeService.resumeRun(
+      FIXTURE.runId,
+      {
+        userDecision: 'confirm',
+        approvedActions: [crossCapAction],
+      },
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-cross`,
+    );
+    expect(cross.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        payload: expect.objectContaining({
+          userDecision: 'confirm',
+          executedActions: [
+            expect.objectContaining({
+              tool: 'create_goal',
+              status: 'failed',
+            }),
+          ],
+        }),
+      }),
+    );
+  });
+
+  it('step 6: identity isolation on get/list for the same journey fixture', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(
+      baseRun('completed', {
+        run: {
+          ...baseRun('completed').run,
+          identityId: FIXTURE.foreignIdentity,
+        },
+      }),
+    );
+    vi.mocked(agentRuntimePort.listRuns).mockResolvedValueOnce([
+      {
+        runId: FIXTURE.runId,
+        threadId: FIXTURE.threadId,
+        conversationId: null,
+        identityId: FIXTURE.identity,
+        agentType: 'knowledge.generate',
+        status: 'completed',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+      {
+        runId: 'run-foreign',
+        threadId: 'thread-foreign',
+        conversationId: null,
+        identityId: FIXTURE.foreignIdentity,
+        agentType: 'knowledge.generate',
+        status: 'completed',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+    ]);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createDeps({
+        agentRuntimePort,
+      }),
+    );
+
+    const forbidden = await runtime.services.agentRuntimeService.getRun(
+      FIXTURE.runId,
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-get`,
+    );
+    expect(forbidden.ok).toBe(false);
+    if (!forbidden.ok) {
+      expect(forbidden.error.code).toBe('FORBIDDEN');
+    }
+
+    const listed = await runtime.services.agentRuntimeService.listRuns(
+      {},
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-list`,
+    );
+    expect(listed.ok).toBe(true);
+    if (listed.ok) {
+      expect(listed.data).toEqual([
+        expect.objectContaining({ runId: FIXTURE.runId, identityId: FIXTURE.identity }),
+      ]);
+    }
+  });
+
+  it('step 7: vault path + confirmation contract and first-phase tool surface stay closed', () => {
+    const confirmation = {
+      proposalId: FIXTURE.proposalId,
+      revision: FIXTURE.revision,
+      requestId: FIXTURE.requestId,
+    };
+
+    expect(
+      CreateKnowledgeNoteSchema.safeParse({
+        topic: 'Safe journey note',
+        targetSubpath: 'notes/ai',
+        confirmation,
+      }).success,
+    ).toBe(true);
+
+    for (const targetSubpath of ['/private', '../escape', 'notes/../../etc']) {
+      expect(
+        CreateKnowledgeNoteSchema.safeParse({
+          topic: 'Unsafe',
+          targetSubpath,
+          confirmation,
+        }).success,
+      ).toBe(false);
+    }
+
+    expect(CreateKnowledgeNoteSchema.safeParse({ topic: 'No confirmation' }).success).toBe(false);
+
+    expect(AgentToolNameSchema.safeParse('create_knowledge_note').success).toBe(true);
+    expect(AgentToolNameSchema.safeParse('update_knowledge_note').success).toBe(false);
+    expect(AgentToolNameSchema.safeParse('reindex_resource').success).toBe(false);
+    expect(AgentToolNameSchema.safeParse('bash').success).toBe(false);
+  });
+});

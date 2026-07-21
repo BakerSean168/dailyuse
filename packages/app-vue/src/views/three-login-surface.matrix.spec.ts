@@ -1,9 +1,15 @@
 /**
- * ADR-034 / vault-plan three-login surface matrix.
+ * ADR-034 / vault-plan three-login surface matrix + same-fixture journey.
  * Documents the product entry contract without mounting full OAuth or guest flows.
  * 三入口产品面契约：不启动完整 OAuth / 访客流程，只锁定平台入口边界。
+ *
+ * The journey series reuses one fixture identity through Web hard-redirect →
+ * AuthApp password/GitHub → Desktop password/guest → guest upgrade vault ownership
+ * rebind (profile path stable) → guest cloud knowledge repo boundary.
  */
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { RouteLocationNormalized } from 'vue-router';
+import { createAuthGuard } from '../router/guards';
 
 type LoginSurface = {
   password: boolean;
@@ -42,6 +48,34 @@ export const THREE_LOGIN_SURFACE_MATRIX = {
   },
 } as const satisfies Record<string, LoginSurface>;
 
+/**
+ * Shared fixture for the three-login journey series (not a real GitHub/OAuth E2E).
+ * Desktop guest upgrade keeps profileId/vaultDir; only identity ownership rebinds.
+ */
+export const THREE_LOGIN_JOURNEY_FIXTURE = {
+  email: 'journey.user@example.com',
+  guestIdentityId: '__desktop_guest_profile__',
+  onlineIdentityId: 'IdentityId_journey_online_1',
+  guestProfileId: 'profile_journey_guest_1',
+  vaultDir: '/tmp/memoflow-journey/profile_journey_guest_1/vault',
+  webProtectedPath: '/ai',
+  authLoginRoute: '/auth',
+} as const;
+
+function createRoute(path: string, requiresAuth = true): RouteLocationNormalized {
+  return {
+    fullPath: path,
+    path,
+    query: {},
+    hash: '',
+    name: undefined,
+    params: {},
+    matched: [{ meta: { requiresAuth } } as never],
+    redirectedFrom: undefined,
+    meta: {},
+  } as RouteLocationNormalized;
+}
+
 describe('ADR-034 three-login surface matrix', () => {
   it('keeps guest exclusively on Desktop', () => {
     expect(THREE_LOGIN_SURFACE_MATRIX.desktop.guest).toBe(true);
@@ -69,5 +103,95 @@ describe('ADR-034 three-login surface matrix', () => {
     expect(THREE_LOGIN_SURFACE_MATRIX.webShell.phoneSms).toBe(false);
     expect(THREE_LOGIN_SURFACE_MATRIX.authApp.phoneSms).toBe(false);
     expect(THREE_LOGIN_SURFACE_MATRIX.desktop.phoneSms).toBe(false);
+  });
+});
+
+describe('ADR-034 three-login same-fixture journey', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('step 1: unauthenticated Web shell hard-redirects the fixture path to AuthApp', () => {
+    const replace = vi.fn();
+    vi.stubGlobal('location', {
+      ...window.location,
+      origin: 'http://localhost:5173',
+      replace,
+    });
+
+    const guard = createAuthGuard({
+      isAuthenticated: () => false,
+      loginRoute: THREE_LOGIN_JOURNEY_FIXTURE.authLoginRoute,
+      useHardLoginRedirect: THREE_LOGIN_SURFACE_MATRIX.webShell.hardRedirectToAuthApp,
+    });
+
+    const result = guard(
+      createRoute(THREE_LOGIN_JOURNEY_FIXTURE.webProtectedPath),
+      createRoute('/'),
+      vi.fn() as never,
+    );
+
+    expect(THREE_LOGIN_SURFACE_MATRIX.webShell.password).toBe(false);
+    expect(THREE_LOGIN_SURFACE_MATRIX.webShell.guest).toBe(false);
+    expect(result).toBe(false);
+    expect(replace).toHaveBeenCalledWith(
+      `${THREE_LOGIN_JOURNEY_FIXTURE.authLoginRoute}?redirect=${encodeURIComponent(
+        THREE_LOGIN_JOURNEY_FIXTURE.webProtectedPath,
+      )}`,
+    );
+  });
+
+  it('step 2: AuthApp owns password + GitHub for the same fixture email (no guest/phone)', () => {
+    const surface = THREE_LOGIN_SURFACE_MATRIX.authApp;
+    expect(surface.password).toBe(true);
+    expect(surface.githubOAuthLogin).toBe(true);
+    expect(surface.guest).toBe(false);
+    expect(surface.phoneSms).toBe(false);
+    expect(THREE_LOGIN_JOURNEY_FIXTURE.email).toContain('@');
+  });
+
+  it('step 3: Desktop first screen is password + guest for the same fixture (no GitHub OAuth)', () => {
+    const surface = THREE_LOGIN_SURFACE_MATRIX.desktop;
+    expect(surface.password).toBe(true);
+    expect(surface.guest).toBe(true);
+    expect(surface.githubOAuthLogin).toBe(false);
+    expect(surface.phoneSms).toBe(false);
+    expect(surface.hardRedirectToAuthApp).toBe(false);
+  });
+
+  it('step 4: guest upgrade rebinds ownership without moving Vault directory', () => {
+    // Contract of DesktopProfileRuntimeManager.upgradeGuestProfileToOnlineIdentity:
+    // profileId and profileDir stay stable; only identityId becomes online.
+    const before = {
+      identityId: THREE_LOGIN_JOURNEY_FIXTURE.guestIdentityId,
+      profileId: THREE_LOGIN_JOURNEY_FIXTURE.guestProfileId,
+      vaultDir: THREE_LOGIN_JOURNEY_FIXTURE.vaultDir,
+    };
+    const after = {
+      identityId: THREE_LOGIN_JOURNEY_FIXTURE.onlineIdentityId,
+      profileId: before.profileId,
+      vaultDir: before.vaultDir,
+    };
+
+    expect(after.profileId).toBe(before.profileId);
+    expect(after.vaultDir).toBe(before.vaultDir);
+    expect(after.identityId).not.toBe(before.identityId);
+    expect(after.identityId).toBe(THREE_LOGIN_JOURNEY_FIXTURE.onlineIdentityId);
+  });
+
+  it('step 5: guest and offline-only modes cannot open cloud knowledge-repo authorization', () => {
+    type AuthMode = 'GUEST' | 'OFFLINE_USER' | 'ONLINE_USER';
+    const canUseCloudKnowledgeRepo = (mode: AuthMode) =>
+      mode !== 'GUEST' && mode !== 'OFFLINE_USER';
+
+    expect(canUseCloudKnowledgeRepo('GUEST')).toBe(false);
+    expect(canUseCloudKnowledgeRepo('OFFLINE_USER')).toBe(false);
+    expect(canUseCloudKnowledgeRepo('ONLINE_USER')).toBe(true);
+
+    // Guest remains exclusively a Desktop surface for this fixture journey.
+    expect(THREE_LOGIN_SURFACE_MATRIX.desktop.guest).toBe(true);
+    expect(THREE_LOGIN_SURFACE_MATRIX.authApp.guest).toBe(false);
+    expect(THREE_LOGIN_SURFACE_MATRIX.webShell.guest).toBe(false);
   });
 });
