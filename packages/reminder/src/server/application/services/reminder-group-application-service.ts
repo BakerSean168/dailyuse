@@ -38,12 +38,7 @@ export class ReminderGroupApplicationService {
     groupId: string,
     ctx: ExecutionContext,
   ): Promise<ReminderGroup | null> {
-    const group = await this.reminderGroupRepository.findById(groupId);
-    if (!group || String(group.identityId) !== ctx.identityId) {
-      return null;
-    }
-
-    return group;
+    return this.reminderGroupRepository.findByIdForIdentity(ctx.identityId, groupId);
   }
 
   async createGroup(

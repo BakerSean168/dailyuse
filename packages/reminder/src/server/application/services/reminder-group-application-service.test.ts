@@ -48,7 +48,7 @@ describe('ReminderGroupApplicationService', () => {
 
   beforeEach(() => {
     groupRepository = createMockRepo<IReminderGroupRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       findByIdentityId: vi.fn().mockResolvedValue([]),
       save: vi.fn().mockResolvedValue(undefined),
     });
@@ -98,7 +98,7 @@ describe('ReminderGroupApplicationService', () => {
 
   it('updates group state and syncs template effective flags', async () => {
     const existing = ReminderGroup.load(makeGroupState({ name: 'Original', description: 'old' }));
-    (groupRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(existing);
+    (groupRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(existing);
 
     const result = await service.updateGroup(
       existing.id,
@@ -117,7 +117,7 @@ describe('ReminderGroupApplicationService', () => {
 
   it('batches template state changes through repositories and domain sync', async () => {
     const group = ReminderGroup.load(makeGroupState());
-    (groupRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+    (groupRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
     const ownedTemplate = {
       id: 'template-1',
       identityId: IDENTITY_ID,

@@ -245,6 +245,22 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     return PowerSyncReminderTemplateMapper.toDomain(row, history);
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeHistory?: boolean; historyLimit?: number },
+  ): Promise<ReminderTemplate | null> {
+    const row = await this.db.getOptional<PowerSyncReminderTemplateRow>(
+      'SELECT * FROM reminder_templates WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
+    );
+    if (!row) return null;
+    const history = options?.includeHistory
+      ? await this.loadHistory(row.id, options.historyLimit)
+      : [];
+    return PowerSyncReminderTemplateMapper.toDomain(row, history);
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },

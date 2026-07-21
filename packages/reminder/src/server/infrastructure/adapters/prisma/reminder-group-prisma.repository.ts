@@ -60,6 +60,13 @@ export class ReminderGroupPrismaRepository
     return data ? this.mapToEntity(data) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<ReminderGroup | null> {
+    const data = await this.prisma.reminderGroup.findFirst({
+      where: { id, identityId },
+    });
+    return data ? this.mapToEntity(data) : null;
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: { includeDeleted?: boolean },

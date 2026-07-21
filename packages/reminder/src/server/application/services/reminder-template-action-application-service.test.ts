@@ -33,11 +33,11 @@ describe('ReminderTemplateActionApplicationService', () => {
 
   beforeEach(() => {
     reminderTemplateRepository = createMockRepo<IReminderTemplateRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
     reminderGroupRepository = createMockRepo<IReminderGroupRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     reminderDomainService = {
       syncTemplateEffectiveEnabled: vi.fn().mockResolvedValue(undefined),
@@ -58,7 +58,7 @@ describe('ReminderTemplateActionApplicationService', () => {
   it('enables a template and returns mapped DTO', async () => {
     const template = createTemplate();
     const dto = { id: 'template-1', name: 'Drink water' };
-    (reminderTemplateRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(template);
+    (reminderTemplateRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(template);
     templateMapper.toDTO.mockResolvedValue(dto);
 
     const result = await service.enableTemplate('template-1', { identityId: IDENTITY_ID });
@@ -75,8 +75,8 @@ describe('ReminderTemplateActionApplicationService', () => {
     const targetGroup = { id: 'group-new', identityId: IDENTITY_ID };
     const movedTemplate = createTemplate({ groupId: 'group-new' });
     const dto = { id: 'template-1', groupId: 'group-new' };
-    (reminderTemplateRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(template);
-    (reminderGroupRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(targetGroup);
+    (reminderTemplateRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(template);
+    (reminderGroupRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(targetGroup);
     reminderDomainService.assignTemplateToGroup.mockResolvedValue(movedTemplate);
     templateMapper.toDTO.mockResolvedValue(dto);
 
@@ -93,7 +93,7 @@ describe('ReminderTemplateActionApplicationService', () => {
     const template = createTemplate({
       getAllHistory: vi.fn().mockReturnValue([historyA, historyB]),
     });
-    (reminderTemplateRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(template);
+    (reminderTemplateRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(template);
 
     const result = await service.getTemplateHistory('template-1', { identityId: IDENTITY_ID });
 

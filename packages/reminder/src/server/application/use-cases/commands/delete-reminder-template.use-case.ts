@@ -21,8 +21,8 @@ export class DeleteReminderTemplateUseCase {
   ) {}
 
   async execute(id: string, cx: ExecutionContext): Promise<Result<void>> {
-    const template = await this.templateRepository.findById(id);
-    if (!template || String(template.identityId) !== cx.identityId) {
+    const template = await this.templateRepository.findByIdForIdentity(cx.identityId, id);
+    if (!template) {
       return error('NOT_FOUND', `Reminder Template ${id} not found`);
     }
 

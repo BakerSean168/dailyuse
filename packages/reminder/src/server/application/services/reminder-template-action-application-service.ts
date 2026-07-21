@@ -35,26 +35,20 @@ export class ReminderTemplateActionApplicationService {
   private async getOwnedTemplateOrFail(
     templateId: string,
     ctx: ExecutionContext,
-    options?: Parameters<IReminderTemplateRepository['findById']>[1],
+    options?: Parameters<IReminderTemplateRepository['findByIdForIdentity']>[2],
   ): Promise<ReminderTemplate | null> {
-    const template = await this.reminderTemplateRepository.findById(templateId, options);
-    if (!template || String(template.identityId) !== ctx.identityId) {
-      return null;
-    }
-
-    return template;
+    return this.reminderTemplateRepository.findByIdForIdentity(
+      ctx.identityId,
+      templateId,
+      options,
+    );
   }
 
   private async getOwnedGroupOrFail(
     groupId: string,
     ctx: ExecutionContext,
   ): Promise<ReminderGroup | null> {
-    const group = await this.reminderGroupRepository.findById(groupId);
-    if (!group || String(group.identityId) !== ctx.identityId) {
-      return null;
-    }
-
-    return group;
+    return this.reminderGroupRepository.findByIdForIdentity(ctx.identityId, groupId);
   }
 
   async enableTemplate(

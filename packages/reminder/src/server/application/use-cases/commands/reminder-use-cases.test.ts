@@ -33,6 +33,12 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
     return this.templates.get(id) ?? null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
+    const found = await this.findById(id, options);
+    if (!found) return null;
+    return String(found.identityId) === String(identityId) ? found : null;
+  }
+
   async findByIdentityId(identityId: string): Promise<any[]> {
     return Array.from(this.templates.values()).filter(
       (t) => t.identityId === identityId,
@@ -87,6 +93,12 @@ class MockReminderGroupRepository implements IReminderGroupRepository {
     return this.groups.get(id) ?? null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
+    const found = await this.findById(id, options);
+    if (!found) return null;
+    return String(found.identityId) === String(identityId) ? found : null;
+  }
+
   async findByIdentityId(): Promise<any[]> {
     return [];
   }
@@ -113,6 +125,12 @@ class MockReminderResponseRepository implements IReminderResponseRepository {
 
   async findById(id: string): Promise<any> {
     return this.responses.get(id) ?? null;
+  }
+
+  async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
+    const found = await this.findById(id, options);
+    if (!found) return null;
+    return String(found.identityId) === String(identityId) ? found : null;
   }
 
   async findByTemplateId(templateId: string): Promise<any[]> {

@@ -40,6 +40,16 @@ export interface IReminderTemplateRepository {
   ): Promise<ReminderTemplate | null>;
 
   /**
+   * 通过 identity + ID 查找聚合根（身份隔离读路径）
+   * 不存在或不属于该 identity 时返回 null
+   */
+  findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeHistory?: boolean; historyLimit?: number },
+  ): Promise<ReminderTemplate | null>;
+
+  /**
    * 通过身份 ID 查找所有提醒模板
    *
    * @param identityId 身份 ID

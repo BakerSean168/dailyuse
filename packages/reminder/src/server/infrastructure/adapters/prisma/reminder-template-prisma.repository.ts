@@ -115,6 +115,21 @@ export class ReminderTemplatePrismaRepository
     return this.mapToEntity(data, (data as PrismaReminderTemplateWithHistory).history);
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeHistory?: boolean; historyLimit?: number },
+  ): Promise<ReminderTemplate | null> {
+    const data = await this.prisma.reminderTemplate.findFirst({
+      where: { id, identityId },
+      include: options?.includeHistory
+        ? { history: { orderBy: { triggeredAt: 'desc' }, take: options.historyLimit } }
+        : undefined,
+    });
+    if (!data) return null;
+    return this.mapToEntity(data, (data as PrismaReminderTemplateWithHistory).history);
+  }
+
   async findByIdentityId(
     identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },

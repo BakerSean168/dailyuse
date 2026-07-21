@@ -40,8 +40,8 @@ export class UpdateReminderTemplateUseCase {
     request: UpdateReminderTemplateReq,
     cx: ExecutionContext,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    const template = await this.templateRepository.findById(id);
-    if (!template || String(template.identityId) !== cx.identityId) {
+    const template = await this.templateRepository.findByIdForIdentity(cx.identityId, id);
+    if (!template) {
       return error('NOT_FOUND', `Reminder Template ${id} not found`);
     }
 
@@ -49,14 +49,10 @@ export class UpdateReminderTemplateUseCase {
     const previousGroupId = template.groupId;
     const group =
       request.groupId !== undefined && request.groupId !== null
-        ? await this.groupRepository.findById(request.groupId)
+        ? await this.groupRepository.findByIdForIdentity(cx.identityId, request.groupId)
         : null;
 
-    if (
-      request.groupId !== undefined &&
-      request.groupId !== null &&
-      (!group || String(group.identityId) !== cx.identityId)
-    ) {
+    if (request.groupId !== undefined && request.groupId !== null && !group) {
       return error('NOT_FOUND', `Invalid groupId: ${request.groupId}`);
     }
 

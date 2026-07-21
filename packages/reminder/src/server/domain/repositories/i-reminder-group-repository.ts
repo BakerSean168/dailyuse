@@ -35,6 +35,11 @@ export interface IReminderGroupRepository {
   findById(id: string): Promise<ReminderGroup | null>;
 
   /**
+   * 通过 identity + ID 查找分组（身份隔离读路径）
+   */
+  findByIdForIdentity(identityId: string, id: string): Promise<ReminderGroup | null>;
+
+  /**
    * 通过身份 ID 查找所有提醒分组
    *
    * @param identityId 身份 ID

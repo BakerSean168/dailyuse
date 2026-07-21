@@ -136,13 +136,9 @@ async function getOwnedTemplateOrFail(
   reminderTemplateRepository: IReminderTemplateRepository,
   templateId: string,
   ctx: ExecutionContext,
-  options?: Parameters<IReminderTemplateRepository['findById']>[1],
+  options?: Parameters<IReminderTemplateRepository['findByIdForIdentity']>[2],
 ): Promise<ReminderTemplate | null> {
-  const template = await reminderTemplateRepository.findById(templateId, options);
-  if (!template || String(template.identityId) !== ctx.identityId) {
-    return null;
-  }
-  return template;
+  return reminderTemplateRepository.findByIdForIdentity(ctx.identityId, templateId, options);
 }
 
 export function createReminderModule(

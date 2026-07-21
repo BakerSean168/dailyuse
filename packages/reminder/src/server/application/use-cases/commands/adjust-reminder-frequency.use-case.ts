@@ -56,7 +56,10 @@ export class AdjustReminderFrequencyUseCase {
    * @returns 调整结果
    */
   async execute(request: AdjustFrequencyRequest): Promise<Result<AdjustmentResult>> {
-    const template = await this.templateRepository.findById(request.templateId);
+    const template = await this.templateRepository.findByIdForIdentity(
+      request.identityId,
+      request.templateId,
+    );
     if (!template) {
       return error('NOT_FOUND', `Template ${request.templateId} not found`);
     }
@@ -111,7 +114,7 @@ export class AdjustReminderFrequencyUseCase {
    * @param identityId - 账户 ID
    */
   async reject(templateId: string, identityId: string): Promise<Result<void>> {
-    const template = await this.templateRepository.findById(templateId);
+    const template = await this.templateRepository.findByIdForIdentity(identityId, templateId);
     if (!template) {
       return error('NOT_FOUND', `Template ${templateId} not found`);
     }
