@@ -33,29 +33,35 @@ function createScheduleTask(payload: Record<string, unknown> = {}) {
 
 describe('createGoalScheduleExecutionSource', () => {
   it('builds a notification draft for active goal reminders', async () => {
+    const findByIdForIdentity = vi.fn().mockResolvedValue({
+      id: 'GoalId_goal-1',
+      identityId: 'IdentityId_goal-owner',
+      name: 'Ship R06',
+      description: null,
+      deletedAt: null,
+      archivedAt: null,
+      completedAt: null,
+      status: 'Active',
+      reminderConfig: { enabled: true },
+    });
     const source = createGoalScheduleExecutionSource({
       goalRepository: {
-        findById: vi.fn().mockResolvedValue({
-          id: 'GoalId_goal-1',
-          identityId: 'IdentityId_goal-owner',
-          name: 'Ship R06',
-          description: null,
-          deletedAt: null,
-          archivedAt: null,
-          completedAt: null,
-          status: 'Active',
-          reminderConfig: { enabled: true },
-        }),
+        findById: vi.fn(),
+        findByIdForIdentity,
       },
     });
 
-    const outcome = await source.executeGoal(
-      createScheduleTask({
-        triggerType: 'RemainingDays',
-        triggerValue: 3,
-      }),
-    );
+    const task = createScheduleTask({
+      triggerType: 'RemainingDays',
+      triggerValue: 3,
+    });
+    const outcome = await source.executeGoal(task);
 
+    expect(findByIdForIdentity).toHaveBeenCalledWith(
+      String(task.identityId),
+      'GoalId_goal-1',
+      { includeChildren: true },
+    );
     expect(outcome).toEqual({
       nextRunAt: null,
       notification: {

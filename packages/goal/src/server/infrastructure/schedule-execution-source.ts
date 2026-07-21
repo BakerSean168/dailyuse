@@ -8,7 +8,7 @@ import type { IGoalRepository } from '../domain';
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
 
 export interface CreateGoalScheduleExecutionSourceDeps {
-  readonly goalRepository: Pick<IGoalRepository, 'findById'>;
+  readonly goalRepository: Pick<IGoalRepository, 'findById' | 'findByIdForIdentity'>;
 }
 
 export function createGoalScheduleExecutionSource(
@@ -16,9 +16,13 @@ export function createGoalScheduleExecutionSource(
 ): GoalScheduleExecutionSource {
   return {
     async executeGoal(task) {
-      const goal = await deps.goalRepository.findById(task.sourceEntityId, {
-        includeChildren: true,
-      });
+      const goal = await deps.goalRepository.findByIdForIdentity(
+        String(task.identityId),
+        task.sourceEntityId,
+        {
+          includeChildren: true,
+        },
+      );
 
       if (
         !goal ||

@@ -115,7 +115,11 @@ export function createGoalScheduleProjectionSource(deps: {
 }): GoalScheduleProjectionSource {
   return {
     async buildGoalPlan(goalId, identityId) {
-      const goal = await deps.goalRepository.findById(goalId, { includeChildren: true });
+      const goal = identityId
+        ? await deps.goalRepository.findByIdForIdentity(identityId, goalId, {
+            includeChildren: true,
+          })
+        : await deps.goalRepository.findById(goalId, { includeChildren: true });
       if (!goal) {
         return {
           selection: selectGoalProjection(goalId, identityId),

@@ -35,29 +35,37 @@ describe('createReminderScheduleExecutionSource', () => {
   it('records the trigger and builds a notification draft', async () => {
     const recordTrigger = vi.fn();
     const save = vi.fn().mockResolvedValue(undefined);
+    const findByIdForIdentity = vi.fn().mockResolvedValue({
+      id: 'ReminderTemplateId_template-1',
+      identityId: 'IdentityId_reminder-owner',
+      title: 'Drink Water',
+      description: 'Hydrate',
+      deletedAt: null,
+      nextTriggerAt: 1894257900000,
+      notificationConfig: {
+        title: null,
+        body: 'Hydrate',
+        channels: ['Push'],
+      },
+      isEffectivelyEnabled: () => true,
+      recordTrigger,
+    });
     const source = createReminderScheduleExecutionSource({
       reminderTemplateRepository: {
-        findById: vi.fn().mockResolvedValue({
-          id: 'ReminderTemplateId_template-1',
-          identityId: 'IdentityId_reminder-owner',
-          title: 'Drink Water',
-          description: 'Hydrate',
-          deletedAt: null,
-          nextTriggerAt: 1894257900000,
-          notificationConfig: {
-            title: null,
-            body: 'Hydrate',
-            channels: ['Push'],
-          },
-          isEffectivelyEnabled: () => true,
-          recordTrigger,
-        }),
+        findById: vi.fn(),
+        findByIdForIdentity,
         save,
       },
     });
 
-    const outcome = await source.executeReminder(createScheduleTask());
+    const task = createScheduleTask();
+    const outcome = await source.executeReminder(task);
 
+    expect(findByIdForIdentity).toHaveBeenCalledWith(
+      String(task.identityId),
+      'ReminderTemplateId_template-1',
+      { includeHistory: true },
+    );
     expect(recordTrigger).toHaveBeenCalledTimes(1);
     expect(save).toHaveBeenCalledTimes(1);
     expect(outcome).toEqual({

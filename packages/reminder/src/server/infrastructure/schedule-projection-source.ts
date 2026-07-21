@@ -60,9 +60,13 @@ export function createReminderScheduleProjectionSource(deps: {
 }): ReminderScheduleProjectionSource {
   return {
     async buildTemplatePlan(templateId, identityId) {
-      const template = await deps.reminderTemplateRepository.findById(templateId, {
-        includeHistory: true,
-      });
+      const template = identityId
+        ? await deps.reminderTemplateRepository.findByIdForIdentity(identityId, templateId, {
+            includeHistory: true,
+          })
+        : await deps.reminderTemplateRepository.findById(templateId, {
+            includeHistory: true,
+          });
 
       if (!template) {
         return {

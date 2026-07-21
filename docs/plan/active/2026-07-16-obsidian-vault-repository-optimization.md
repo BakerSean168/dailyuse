@@ -1666,6 +1666,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百三十轮）：Goal/Reminder schedule projection+execution
+> 身份隔离——有 identity 时用 `findByIdForIdentity`；execution 始终用 task.identityId。
+> 无 identity 的系统回退仍保留 bare findById。补 surface/specs。§13.2 仍部分。验证：
+> goal/reminder schedule source specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1777,6 +1785,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百二十七轮：reminder template/group get/update/delete/actions identity-scoped（findByIdForIdentity）。
   残留一百二十八轮：reminder findByGroupId identity-scoped（list/batch/domain stats）。
   残留一百二十九轮：reminder response stats/list/delete + frequency analyze identity-scoped。
+  残留一百三十轮：goal/reminder schedule projection+execution identity-scoped load。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
