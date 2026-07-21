@@ -75,9 +75,7 @@ function createProviderConfigRepository(): IAIProviderConfigRepository {
       deletedAt: null,
     }),
     findByIdentityId: vi.fn(),
-    findByIdentityIdAndName: vi.fn(),
     delete: vi.fn(),
-    exists: vi.fn(),
     clearDefaultForIdentity: vi.fn(),
   } as unknown as IAIProviderConfigRepository;
 }

@@ -75,13 +75,14 @@ describe('AIProviderConfigPrismaRepository', () => {
       const prisma = {
         aiProviderConfig: {
           count: vi.fn(async () => 0),
+          findFirst: vi.fn(async () => null),
           upsert: vi.fn(async () => undefined),
         },
       };
       // No cipher injected and no env key: construction must NOT throw (lazy),
       // and operations that never touch encrypted fields must work.
       const repository = new AIProviderConfigPrismaRepository(prisma as unknown as PrismaClient);
-      await expect(repository.exists('provider-1')).resolves.toBe(false);
+      await expect(repository.findById('provider-1')).resolves.toBeNull();
 
       // Only when we actually persist a secret does the missing key fail fast.
       await expect(

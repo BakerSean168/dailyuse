@@ -98,17 +98,6 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     return row ? this.toServerDTO(row) : null;
   }
 
-  async findByIdentityIdAndName(
-    identityId: string,
-    name: string,
-  ): Promise<AIProviderConfigServerDTO | null> {
-    const row = await this.prisma.aiProviderConfig.findFirst({
-      where: { identityId, name, deletedAt: null },
-    });
-
-    return row ? this.toServerDTO(row) : null;
-  }
-
   async delete(id: string): Promise<void> {
     await this.prisma.aiProviderConfig.update({
       where: { id },
@@ -117,14 +106,6 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
         deletedAt: new Date(),
       },
     });
-  }
-
-  async exists(id: string): Promise<boolean> {
-    const count = await this.prisma.aiProviderConfig.count({
-      where: { id, deletedAt: null },
-    });
-
-    return count > 0;
   }
 
   async clearDefaultForIdentity(identityId: string): Promise<void> {

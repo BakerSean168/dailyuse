@@ -34,23 +34,8 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
     );
   }
 
-  async findByIdentityIdAndName(
-    identityId: string,
-    name: string,
-  ): Promise<AIProviderConfigServerDTO | null> {
-    return (
-      Array.from(this.configs.values()).find(
-        (c) => c.identityId === identityId && c.name === name,
-      ) ?? null
-    );
-  }
-
   async delete(id: string): Promise<void> {
     this.configs.delete(id);
-  }
-
-  async exists(id: string): Promise<boolean> {
-    return this.configs.has(id);
   }
 
   async clearDefaultForIdentity(identityId: string): Promise<void> {

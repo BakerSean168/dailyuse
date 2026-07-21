@@ -25,9 +25,7 @@ export function createAIProviderConfigRepositoryStub(
     findById: async () => null,
     findByIdentityId: async () => [],
     findDefaultByIdentityId: async () => null,
-    findByIdentityIdAndName: async () => null,
     delete: async () => {},
-    exists: async () => false,
     clearDefaultForIdentity: async () => {},
     ...overrides,
   };

@@ -89,9 +89,7 @@ function createProviderConfigRepositoryWithProvider(): IAIProviderConfigReposito
     }),
     findDefaultByIdentityId: vi.fn(),
     findByIdentityId: vi.fn(),
-    findByIdentityIdAndName: vi.fn(),
     delete: vi.fn(),
-    exists: vi.fn(),
     clearDefaultForIdentity: vi.fn(),
   } as unknown as IAIProviderConfigRepository;
 }
@@ -1676,9 +1674,7 @@ describe('createRemoteAIServiceRuntime', () => {
       }),
       findDefaultByIdentityId: vi.fn(),
       findByIdentityId: vi.fn(),
-      findByIdentityIdAndName: vi.fn(),
-      delete: vi.fn(),
-      exists: vi.fn(),
+        delete: vi.fn(),
       clearDefaultForIdentity: vi.fn(),
     } as unknown as IAIProviderConfigRepository;
     vi.mocked(agentRuntimePort.startRun).mockResolvedValueOnce(
