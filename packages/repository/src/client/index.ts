@@ -26,10 +26,8 @@ import type {
   IRepositoryApiClient,
   IResultIpcClient,
 } from '../infrastructure-client/adapters/types';
-import type { Repository } from '../domain-client';
 
 export type {
-  Repository,
   RepositoryClientPort,
   RepositoryHttpAdapters,
   RepositoryIpcAdapters,

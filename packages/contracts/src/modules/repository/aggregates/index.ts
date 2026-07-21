@@ -1,17 +1,9 @@
-export type {
-  RepositoryServerDTO,
-} from './repository-server';
+/**
+ * Repository aggregate/DTO contracts still used by knowledge runtime and AI
+ * compatibility views. Server-side legacy Repository/Resource DTOs removed.
+ */
 
-export type {
-  RepositoryClientDTO,
-} from './repository-client';
-
-export type {
-  ResourceServerDTO,
-} from './resource-server';
-
-export type {
-  ResourceClientDTO,
-} from './resource-client';
+export type { RepositoryClientDTO } from './repository-client';
+export type { ResourceClientDTO } from './resource-client';
 export * from './knowledge-repository-connection';
 export * from './local-vault-binding';

@@ -44,8 +44,8 @@ updated: 2026-07-21T00:00:00
   app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
   path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
   **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**；repository 运行时组合根/
-  客户端面仅 knowledge + Local Vault；**legacy application use-case 栈与 Prisma/PowerSync/memory
-  Folder/Resource/Repository/Bookmark 适配器、`RepositoryRepositoryFactory` 已删除**。
+  客户端面仅 knowledge + Local Vault；**legacy application/adapters/domain-client 与 contracts
+  CRUD request 面已删除**（保留 `ResourceClientDTO` AI 兼容视图与 knowledge event）。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
@@ -712,6 +712,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：`repository:test` 129、`repository:typecheck`、`governance-check` 通过。domain 实体/值对象与
 > domain-client 仍保留（AI ResourceClientDTO 兼容视图与 FolderHierarchy 单测）。§13.2 未完成项不变。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留十二轮）：删除 `packages/repository` 遗留 `server/domain` 聚合/实体/
+> 仓储接口与 `domain-client`；保留空 `server/domain` 桶以满足 server-feature-shape 治理。收缩
+> `@dailyuse/contracts/repository`：去掉 Folder/Resource/Bookmark CRUD Zod/DTO、bookmark 实体、
+> tree/search、legacy lifecycle events；`RepositoryEventMap` 仅保留 `repository:resource:mutated`；
+> 保留 `ResourceClientDTO`/`RepositoryClientDTO` 与 AI/mock 依赖的 value objects。验证：
+> `repository:test` 17/119、`contracts:test` 11/94、两边 typecheck、`governance-check` 通过。
+> portable schema 与 data-portability 边界未动。§13.2 未完成项不变。状态保持 **实施中**；
+> PR readiness 仍为 no。
 
 ## 13. 测试与完成定义
 

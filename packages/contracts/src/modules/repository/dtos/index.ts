@@ -1,22 +1,9 @@
-export type { CreateResourceBookmarkRequestDTO } from './resource-bookmark.api-dto';
-export type { UpdateResourceBookmarkRequestDTO } from './resource-bookmark.api-dto';
-export type { ReorderResourceBookmarksRequestDTO } from './resource-bookmark.api-dto';
-export type { DeleteResourceBookmarkRequestDTO } from './resource-bookmark.api-dto';
-export type {
-  UploadOverwritePolicy,
-  UploadResourcesRequestDTO,
-  UploadResourceFileDTO,
-  UploadResourceSuccessDTO,
-  UploadResourceFailureDTO,
-  UploadResourcesResponseDTO,
-} from './upload-resource.api-dto';
-export type { FolderServerDTO, FolderClientDTO } from './folder';
-export type { TreeNode, TreeNodeType, FileTreeResponse } from './tree-node';
-export type {
-  SearchMode,
-  SearchRequest,
-  SearchMatch,
-  MatchType,
-  SearchResultItem,
-  SearchResponse,
-} from './search-contracts';
+/**
+ * Repository DTO barrel.
+ *
+ * Legacy Folder/Resource/Bookmark/upload/search request DTOs were removed with
+ * the Obsidian vault migration. Knowledge connection and projection contracts
+ * live under `./api`.
+ */
+
+export {};
