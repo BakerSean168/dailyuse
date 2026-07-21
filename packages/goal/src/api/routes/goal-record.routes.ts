@@ -21,7 +21,6 @@ import {
 import {
   GoalRecordClientDTOSchema,
   GoalRecordListResSchema,
-  DeleteSuccessResSchema,
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId, KeyResultId, GoalRecordId } from '@dailyuse/contracts/primitives';
@@ -151,7 +150,7 @@ export function registerRecordRoutes(
         }),
       },
       responses: {
-        200: successResponse(DeleteSuccessResSchema, '删除成功'),
+        200: successResponse(z.null(), '删除成功'),
         404: errorResponse('记录不存在'),
       },
     },

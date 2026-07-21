@@ -317,10 +317,6 @@ export const GoalReviewListResSchema = z.object({
 // Simple Response Schemas
 // ============================================================================
 
-/**
- * 删除操作成功响应 Schema
- */
-export const DeleteSuccessResSchema = z.object({ success: z.boolean() });
 
 /**
  * 归档过期目标响应 Schema

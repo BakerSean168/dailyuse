@@ -12,7 +12,7 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
-import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema, GoalReviewListResSchema, DeleteSuccessResSchema } from '@dailyuse/contracts/goal';
+import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema, GoalReviewListResSchema } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId, GoalReviewId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
@@ -113,7 +113,7 @@ export function registerReviewRoutes(
         }),
       },
       responses: {
-        200: successResponse(DeleteSuccessResSchema, '删除成功'),
+        200: successResponse(z.null(), '删除成功'),
         404: errorResponse('目标或复盘不存在'),
       },
     },

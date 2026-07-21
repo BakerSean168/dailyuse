@@ -12,6 +12,7 @@
  */
 
 import { ipcMain } from 'electron';
+import { ok } from '@dailyuse/contracts/result';
 import {
   GoalChannels,
   type IElectronModule,
@@ -194,7 +195,11 @@ export const GoalElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(GoalChannels.KEY_RESULT_DELETE, async (_, goalId, keyResultId) =>
-      withAuthenticatedValue(ctx, async () => goalController.deleteKeyResult(goalId, keyResultId)),
+      withAuthenticatedValue(ctx, async () => {
+        const result = await goalController.deleteKeyResult(goalId, keyResultId);
+        if (!result.ok) return result;
+        return ok(null);
+      }),
     );
     ipcMain.handle(GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS, (_, goalId, request) =>
       goalController.batchUpdateKeyResultWeights(goalId, request?.updates ?? []),
@@ -207,7 +212,11 @@ export const GoalElectronModule: IElectronModule = {
       withAuthenticatedValue(ctx, async () => goalController.updateReview(goalId, reviewId, dto)),
     );
     ipcMain.handle(GoalChannels.REVIEW_DELETE, async (_, goalId, reviewId) =>
-      withAuthenticatedValue(ctx, async () => goalController.deleteReview(goalId, reviewId)),
+      withAuthenticatedValue(ctx, async () => {
+        const result = await goalController.deleteReview(goalId, reviewId);
+        if (!result.ok) return result;
+        return ok(null);
+      }),
     );
     ipcMain.handle(GoalChannels.RECORD_CREATE, async (_, goalId, keyResultId, dto) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
@@ -221,7 +230,11 @@ export const GoalElectronModule: IElectronModule = {
       goalController.listRecordsByGoal(goalId, params ?? undefined),
     );
     ipcMain.handle(GoalChannels.RECORD_DELETE, async (_, _goalId, _keyResultId, recordId) =>
-      withAuthenticatedValue(ctx, async () => goalController.deleteRecord(recordId)),
+      withAuthenticatedValue(ctx, async () => {
+        const result = await goalController.deleteRecord(recordId);
+        if (!result.ok) return result;
+        return ok(null);
+      }),
     );
     ipcMain.handle(GoalChannels.FOLDER_LIST, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
@@ -241,9 +254,14 @@ export const GoalElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(GoalChannels.FOLDER_DELETE, async (_event, id) =>
-      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
-        goalFolderController.delete(id, requestContext as ExecutionContext),
-      ),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
+        const result = await goalFolderController.delete(
+          id,
+          requestContext as ExecutionContext,
+        );
+        if (!result.ok) return result;
+        return ok(null);
+      }),
     );
 
     logger.info('Goal module registered');

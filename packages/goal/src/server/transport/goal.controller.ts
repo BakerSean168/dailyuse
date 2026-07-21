@@ -308,8 +308,11 @@ export class GoalController {
     );
   }
 
-  async deleteKeyResult(goalId: string, krId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteKeyResult(goalId, krId);
+  async deleteKeyResult(goalId: string, krId: string): Promise<Result<null>> {
+    const result = await this.useCases.deleteKeyResult(goalId, krId);
+    if (!result.ok) return result;
+    // Serialize as data:null (no DeleteSuccess {success} / undefined dual-track).
+    return ok(null);
   }
 
   // ==================== Reviews ====================
@@ -362,8 +365,10 @@ export class GoalController {
     });
   }
 
-  async deleteReview(goalId: string, reviewId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteReview(goalId, reviewId);
+  async deleteReview(goalId: string, reviewId: string): Promise<Result<null>> {
+    const result = await this.useCases.deleteReview(goalId, reviewId);
+    if (!result.ok) return result;
+    return ok(null);
   }
 
   // ==================== Records ====================
@@ -420,8 +425,10 @@ export class GoalController {
     });
   }
 
-  async deleteRecord(recordId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteRecord(recordId);
+  async deleteRecord(recordId: string): Promise<Result<null>> {
+    const result = await this.useCases.deleteRecord(recordId);
+    if (!result.ok) return result;
+    return ok(null);
   }
 
   // ==================== Focus Mode ====================
