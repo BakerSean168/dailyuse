@@ -1118,6 +1118,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > desktop ipc/module-handler contracts + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留六十三轮）：删除 schedule 事件 throw-only 死通道
+> `schedule:complete`/`cancel`/`reschedule`；schedule electron `EventCh`/`TaskCh` 与
+> event/task adapters 本地 `SCHEDULE_*_CHANNELS` 折叠到 contracts `ScheduleChannels`。
+> 补 schedule electron/adapter + contracts schedule-surface specs。§13.2 仍为部分/外部阻塞。
+> 验证：schedule/contracts focused specs + desktop ipc/module-handler contracts + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
