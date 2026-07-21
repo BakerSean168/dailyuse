@@ -14,7 +14,6 @@ import { useTaskStore } from '@dailyuse/app-vue/modules/task';
 import { useScheduleStore } from '@dailyuse/app-vue/modules/schedule';
 import { useReminderStore } from '@dailyuse/app-vue/modules/reminder';
 import { useNotificationStore } from '@dailyuse/app-vue/modules/notification';
-import { useRepositoryStore } from '@dailyuse/app-vue/modules/repository';
 import { useUserSettingStore } from '@dailyuse/app-vue/modules/setting';
 import { useGovernanceStore } from '@dailyuse/app-vue/modules/governance';
 
@@ -105,13 +104,6 @@ const TABLE_TO_MODULE: Record<string, string> = {
   notification_history: 'notification',
   notification_preferences: 'notification',
   notification_templates: 'notification',
-  // Repository
-  repositories: 'repository',
-  repository_explorers: 'repository',
-  repository_statistics: 'repository',
-  folders: 'repository',
-  resources: 'repository',
-  repository_resources: 'repository',
   // Settings
   user_settings: 'setting',
   // Governance
@@ -132,7 +124,6 @@ const MODULE_INVALIDATORS: Record<string, () => void> = {
   schedule: () => useScheduleStore().setInitialized(false),
   reminder: () => useReminderStore().setInitialized(false),
   notification: () => useNotificationStore().setInitialized(false),
-  repository: () => useRepositoryStore().setInitialized(false),
   setting: () => useUserSettingStore().setInitialized(false),
   governance: () => useGovernanceStore().setInitialized(false),
 };

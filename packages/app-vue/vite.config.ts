@@ -65,7 +65,6 @@ export default defineConfig({
           __dirname,
           'src/modules/dashboard/adapters/index.ts',
         ),
-        'modules/editor/index': path.resolve(__dirname, 'src/modules/editor/index.ts'),
         'modules/ai/index': path.resolve(__dirname, 'src/modules/ai/index.ts'),
       },
       formats: ['es'],

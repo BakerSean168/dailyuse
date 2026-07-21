@@ -15,7 +15,6 @@ import type {
   IScheduleService,
   IReminderService,
   IRepositoryService,
-  IEditorService,
   INotificationService,
   ISettingService,
   IDataPortabilityService,
@@ -33,7 +32,6 @@ export const TASK_SERVICE_KEY: InjectionKey<ITaskService> = Symbol('TaskService'
 export const SCHEDULE_SERVICE_KEY: InjectionKey<IScheduleService> = Symbol('ScheduleService');
 export const REMINDER_SERVICE_KEY: InjectionKey<IReminderService> = Symbol('ReminderService');
 export const REPOSITORY_SERVICE_KEY: InjectionKey<IRepositoryService> = Symbol('RepositoryService');
-export const EDITOR_SERVICE_KEY: InjectionKey<IEditorService> = Symbol('EditorService');
 export const NOTIFICATION_SERVICE_KEY: InjectionKey<INotificationService> =
   Symbol('NotificationService');
 export const SETTING_SERVICE_KEY: InjectionKey<ISettingService> = Symbol('SettingService');

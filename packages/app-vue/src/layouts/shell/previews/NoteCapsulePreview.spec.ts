@@ -1,21 +1,24 @@
-/** @vitest-environment jsdom */
+/** @vitest-environment happy-dom */
+
 import { computed, ref } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import NoteCapsulePreview from './NoteCapsulePreview.vue';
 
-const resourcesRef = ref<Record<string, unknown>[]>([]);
+const notesRef = ref<
+  Array<{ id: string; title: string; path: string; updatedAt: number; source: 'projection' | 'local-vault' }>
+>([]);
 const errorRef = ref<string | null>(null);
-const initRepository = vi.fn().mockResolvedValue(undefined);
-const fetchResources = vi.fn().mockResolvedValue(undefined);
+const isLoadingRef = ref(false);
+const load = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('../../../modules/repository/composables/useRepository', () => ({
-  useRepository: () => ({
-    resources: computed(() => resourcesRef.value),
-    error: computed(() => errorRef.value),
-    initRepository,
-    fetchResources,
+vi.mock('../../../modules/repository/composables/useRecentKnowledgeNotes', () => ({
+  useRecentKnowledgeNotes: () => ({
+    notes: notesRef,
+    error: errorRef,
+    isLoading: isLoadingRef,
+    load,
   }),
 }));
 
@@ -40,20 +43,20 @@ function mountPreview() {
 
 describe('NoteCapsulePreview', () => {
   afterEach(() => {
-    resourcesRef.value = [];
+    notesRef.value = [];
     errorRef.value = null;
+    isLoadingRef.value = false;
     vi.clearAllMocks();
   });
 
-  it('loads recent resources and emits view-all', async () => {
-    resourcesRef.value = [
-      { id: 'n1', name: 'Alpha', type: 'markdown', updatedAt: 200 },
-      { id: 'n2', title: 'Beta', type: 'doc', updatedAt: 100 },
+  it('loads recent knowledge notes and emits view-all', async () => {
+    notesRef.value = [
+      { id: 'n1', title: 'Alpha', path: 'a.md', updatedAt: 200, source: 'projection' },
+      { id: 'n2', title: 'Beta', path: 'b.md', updatedAt: 100, source: 'projection' },
     ];
     const wrapper = mountPreview();
     await flushPromises();
-    expect(initRepository).toHaveBeenCalled();
-    expect(fetchResources).toHaveBeenCalled();
+    expect(load).toHaveBeenCalled();
     expect(wrapper.find('[data-testid="note-capsule-item-n1"]').exists()).toBe(true);
     await wrapper.get('[data-testid="note-capsule-view-all"]').trigger('click');
     expect(wrapper.emitted('view-all')).toBeTruthy();

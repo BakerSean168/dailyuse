@@ -9,9 +9,8 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   useAI: vi.fn(),
   useGoal: vi.fn(),
-  useRepository: vi.fn(),
+  useRecentKnowledgeNotes: vi.fn(),
   useUserSetting: vi.fn(),
-  useEditorWorkspaceActions: vi.fn(),
 }));
 
 vi.mock('vue-router', () => ({
@@ -35,16 +34,12 @@ vi.mock('../../goal/composables/useGoal', () => ({
   useGoal: mocks.useGoal,
 }));
 
-vi.mock('../../repository/composables/useRepository', () => ({
-  useRepository: mocks.useRepository,
+vi.mock('../../repository/composables/useRecentKnowledgeNotes', () => ({
+  useRecentKnowledgeNotes: mocks.useRecentKnowledgeNotes,
 }));
 
 vi.mock('../../setting/composables/useUserSetting', () => ({
   useUserSetting: mocks.useUserSetting,
-}));
-
-vi.mock('../../editor/composables', () => ({
-  useEditorWorkspaceActions: mocks.useEditorWorkspaceActions,
 }));
 
 import AIChatView from './AIChatView.vue';
@@ -1178,12 +1173,10 @@ describe('AIChatView', () => {
     mocks.toastError.mockReset();
     mocks.useAI.mockReset();
     mocks.useGoal.mockReset();
-    mocks.useRepository.mockReset();
+    mocks.useRecentKnowledgeNotes.mockReset();
     mocks.useUserSetting.mockReset();
-    mocks.useEditorWorkspaceActions.mockReset();
 
     const providers = ref<unknown[]>([]);
-    const resources = ref([]);
     const goals = ref([]);
     const aiService = {
       listConversations: vi.fn(),
@@ -1216,9 +1209,10 @@ describe('AIChatView', () => {
     const createGoal = vi.fn();
     const addKeyResult = vi.fn();
     const fetchGoals = vi.fn(async () => {});
-    const initRepository = vi.fn(async () => {});
-    const fetchResources = vi.fn(async () => {});
-    const requestOpenResource = vi.fn();
+    const recentNotes = ref<
+      Array<{ id: string; title: string; path: string; updatedAt: number; source: 'projection' | 'local-vault' }>
+    >([]);
+    const loadRecentKnowledgeNotes = vi.fn(async () => {});
 
     mocks.useAI.mockReturnValue({
       service: aiService,
@@ -1231,16 +1225,14 @@ describe('AIChatView', () => {
       createGoal,
       addKeyResult,
     });
-    mocks.useRepository.mockReturnValue({
-      initRepository,
-      fetchResources,
-      resources,
+    mocks.useRecentKnowledgeNotes.mockReturnValue({
+      notes: recentNotes,
+      error: ref(null),
+      isLoading: ref(false),
+      load: loadRecentKnowledgeNotes,
     });
     mocks.useUserSetting.mockReturnValue({
       getCategory: () => ({}),
-    });
-    mocks.useEditorWorkspaceActions.mockReturnValue({
-      requestOpenResource,
     });
 
     vi.spyOn(window, 'getComputedStyle').mockReturnValue({
@@ -1376,8 +1368,9 @@ describe('AIChatView', () => {
   it('loads recent goals and knowledge notes into the conversation sidebar', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     const { goals, fetchGoals } = mocks.useGoal.mock.results[0]?.value ?? mocks.useGoal();
-    const { resources, fetchResources } =
-      mocks.useRepository.mock.results[0]?.value ?? mocks.useRepository();
+    const recentKnowledge = mocks.useRecentKnowledgeNotes.mock.results[0]?.value
+      ?? mocks.useRecentKnowledgeNotes();
+    const { notes: recentNotes, load: loadRecentKnowledgeNotes } = recentKnowledge;
     goals.value = [
       {
         id: 'goal-old',
@@ -1407,50 +1400,20 @@ describe('AIChatView', () => {
         deletedAt: 40,
       },
     ];
-    resources.value = [
+    recentNotes.value = [
       {
         id: 'note-old',
-        name: 'Older Note.md',
+        title: 'Older Note.md',
         path: 'notes/older.md',
-        extension: '.md',
-        mimeType: 'text/markdown',
         updatedAt: 10,
-        deletedAt: null,
-        isDeleted: false,
-        isArchived: false,
+        source: 'projection',
       },
       {
         id: 'note-new',
-        name: 'Recent Note.md',
+        title: 'Recent Note.md',
         path: 'notes/recent.md',
-        extension: '.MD',
-        mimeType: 'text/markdown',
         updatedAt: 50,
-        deletedAt: null,
-        isDeleted: false,
-        isArchived: false,
-      },
-      {
-        id: 'note-archived',
-        name: 'Archived Note.md',
-        path: 'notes/archived.md',
-        extension: '.md',
-        mimeType: 'text/markdown',
-        updatedAt: 60,
-        deletedAt: null,
-        isDeleted: false,
-        isArchived: true,
-      },
-      {
-        id: 'image-1',
-        name: 'Diagram.png',
-        path: 'images/diagram.png',
-        extension: '.png',
-        mimeType: 'image/png',
-        updatedAt: 70,
-        deletedAt: null,
-        isDeleted: false,
-        isArchived: false,
+        source: 'projection',
       },
     ];
     service.listConversations.mockResolvedValue({ data: [] });
@@ -1460,7 +1423,7 @@ describe('AIChatView', () => {
     await flushPromises();
 
     expect(fetchGoals).toHaveBeenCalled();
-    expect(fetchResources).toHaveBeenCalled();
+    expect(loadRecentKnowledgeNotes).toHaveBeenCalled();
     const sidebar = wrapper.findComponent({ name: 'AIConversationSidebar' });
     expect(sidebar.props('recentGoals')).toEqual([
       {
@@ -1498,8 +1461,6 @@ describe('AIChatView', () => {
 
   it('opens selected recent goals and knowledge notes from the sidebar', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    const { requestOpenResource } =
-      mocks.useEditorWorkspaceActions.mock.results[0]?.value ?? mocks.useEditorWorkspaceActions();
     service.listConversations.mockResolvedValue({ data: [] });
     service.listMessages.mockResolvedValue({ data: [] });
 
@@ -1515,8 +1476,7 @@ describe('AIChatView', () => {
     sidebar.vm.$emit('select-knowledge-note', 'note-new');
     await flushPromises();
 
-    expect(requestOpenResource).toHaveBeenCalledWith('note-new');
-    expect(mocks.push).toHaveBeenCalledWith('/repository');
+    expect(mocks.push).toHaveBeenCalledWith({ path: '/repository', query: { note: 'note-new' } });
   });
 
   it('opens the mobile sidebar drawer and closes it after a sidebar selection', async () => {
@@ -3239,8 +3199,6 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    const { requestOpenResource } =
-      mocks.useEditorWorkspaceActions.mock.results[0]?.value ?? mocks.useEditorWorkspaceActions();
     service.listConversations.mockResolvedValue({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
     });
@@ -3254,7 +3212,6 @@ describe('AIChatView', () => {
     await wrapper.find('[data-testid="knowledge-citation-open"]').trigger('click');
     await flushPromises();
 
-    expect(requestOpenResource).toHaveBeenCalledWith('resource-1');
-    expect(mocks.push).toHaveBeenCalledWith('/repository');
+    expect(mocks.push).toHaveBeenCalledWith({ path: '/repository', query: { note: 'resource-1' } });
   });
 });

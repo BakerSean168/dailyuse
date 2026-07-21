@@ -1,15 +1,16 @@
 /**
  * Repository Module - Public Exports
  *
+ * Live surfaces: Local Vault (Desktop) and GitHub knowledge projections (Web).
+ * Legacy database Repository/Resource editing is intentionally absent.
+ *
  * @module modules/repository
  */
 
-// Store
-export { useRepositoryStore } from './stores/repository-store';
-export type { RepositoryStoreType } from './stores/repository-store';
-
 // Composables
-export { useRepository } from './composables/useRepository';
+export { useLocalVault } from './composables/useLocalVault';
+export { useRecentKnowledgeNotes } from './composables/useRecentKnowledgeNotes';
+export type { RecentKnowledgeNote } from './composables/useRecentKnowledgeNotes';
 
 // Routes
 export { repositoryRoutes } from './router';

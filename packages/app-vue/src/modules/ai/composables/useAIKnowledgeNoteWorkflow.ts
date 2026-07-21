@@ -28,9 +28,9 @@ export interface UseAIKnowledgeNoteWorkflowOptions {
   hasWorkflowMessages: Ref<boolean>;
   scrollMessagesToBottom: () => void;
   maybeRenameCurrentConversation: (name: string) => Promise<void>;
-  fetchResources: () => Promise<void>;
-  resources: Ref<Array<{ id: string; name: string; path?: string }>>;
-  requestOpenResource: (id: string) => Promise<unknown>;
+  refreshRecentNotes: () => Promise<void>;
+  recentNotes: Ref<Array<{ id: string; title: string; path: string }>>;
+  openKnowledgeNote: (id: string) => Promise<unknown>;
 }
 
 export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOptions) {
@@ -263,7 +263,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
         }
 
         noteSummary.value = summary;
-        await options.fetchResources();
+        await options.refreshRecentNotes();
         await options.maybeRenameCurrentConversation(
           summary.resource?.name?.replace(/\.md$/i, '') ||
             noteAgentDraftTitle.value ||
@@ -306,7 +306,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       }
 
       noteSummary.value = summary;
-      await options.fetchResources();
+      await options.refreshRecentNotes();
       await options.maybeRenameCurrentConversation(
         summary.resource?.name?.replace(/\.md$/i, '') ||
           noteAgentDraftTitle.value ||
@@ -392,18 +392,23 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     const resolvedPath = noteSummary.value?.resolvedPath;
     if (!resolvedPath) return;
 
-    if (!options.resources.value.length) {
-      await options.fetchResources();
+    if (!options.recentNotes.value.length) {
+      await options.refreshRecentNotes();
     }
 
-    const target = options.resources.value.find(
-      (item) => item.path === resolvedPath || item.name === noteSummary.value?.resource?.name,
+    const target = options.recentNotes.value.find(
+      (item) =>
+        item.path === resolvedPath ||
+        item.title === noteSummary.value?.resource?.name ||
+        item.path.endsWith(`/${noteSummary.value?.resource?.name ?? ''}`),
     );
 
     if (target) {
-      await options.requestOpenResource(target.id);
-      await router.push('/repository');
+      await options.openKnowledgeNote(target.id);
+      return;
     }
+
+    await router.push({ path: '/repository', query: { note: resolvedPath } });
   }
 
   return {

@@ -6,7 +6,6 @@ export {
   NOTIFICATION_SERVICE_KEY,
   REMINDER_SERVICE_KEY,
   REPOSITORY_SERVICE_KEY,
-  EDITOR_SERVICE_KEY,
   RULE_SERVICE_KEY,
   SCHEDULE_SERVICE_KEY,
   SETTING_SERVICE_KEY,
@@ -51,7 +50,6 @@ export { useTaskStore } from './modules/task';
 export { useScheduleStore } from './modules/schedule';
 export { useReminderStore } from './modules/reminder';
 export { useNotificationStore } from './modules/notification';
-export { useRepositoryStore } from './modules/repository';
 export { useUserSettingStore } from './modules/setting';
 export { useGovernanceStore } from './modules/governance';
 export { usePresentationPreferenceStore } from './modules/setting';
@@ -60,8 +58,6 @@ export { usePresentationPreferenceStore } from './modules/setting';
 export { createNotificationStartupHook } from './modules/notification';
 export { createGoalStartupHook } from './modules/goal';
 
-// ── Editor runtime ──
-export { setEditorRuntimeService } from './modules/editor';
 
 // ── Theme / presentation ──
 export { useLocaleSync, usePresentationBootstrap, useThemeSync } from './modules/setting';

@@ -92,12 +92,15 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   );
 
   const recentKnowledgeNoteList = computed<AIWorkspaceRecentKnowledgeNote[]>(() =>
-    recentKnowledgeNotes.notes.value.slice(0, 5).map((note) => ({
-      id: note.id,
-      title: note.title,
-      path: note.path,
-      updatedAt: note.updatedAt,
-    })),
+    [...recentKnowledgeNotes.notes.value]
+      .sort((left, right) => Number(right.updatedAt) - Number(left.updatedAt))
+      .slice(0, 5)
+      .map((note) => ({
+        id: note.id,
+        title: note.title,
+        path: note.path,
+        updatedAt: note.updatedAt,
+      })),
   );
 
   // ─── Composables ───────────────────────────────────────────────────
@@ -148,9 +151,9 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     hasWorkflowMessages: chatSession.hasWorkflowMessages,
     scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
     maybeRenameCurrentConversation,
-    fetchResources,
-    resources,
-    requestOpenResource,
+    refreshRecentNotes: fetchResources,
+    recentNotes: recentKnowledgeNotes.notes,
+    openKnowledgeNote: requestOpenResource,
   });
 
   // 5. Knowledge Q&A workflow

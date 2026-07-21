@@ -40,9 +40,9 @@ updated: 2026-07-21T00:00:00
   inert embeds、callouts、task lists 以及 heading/block navigation metadata；附件读取只允许安全媒体类型并限制为
   10 MiB；附件 blob 已按 `connectionId + blobSha` 建立短期共享 PostgreSQL cache，并保留每次读取的授权、投影
   版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
-- 阶段 6 残留：API 不再包含 legacy route builders；客户端 legacy CRUD 硬失败；MSW 与 E2E 对齐 knowledge-only 边界；
-  未引用 `RepositoryWorkspaceView` 已删除。`packages/app-vue` editor 模块与 `useRepository` 死代码仍待删除。
-  完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
+- 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 硬失败；MSW/E2E knowledge-only；
+  app-vue editor 模块与 `useRepository`/dead workspace components 已删除。`packages/editor` 包骨架仍在但
+  不作为 app-vue 运行时入口。完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
 ## 2. 已确认产品边界
 
@@ -650,6 +650,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 方法硬失败 `NOT_SUPPORTED`，不再请求未挂载端点或未注册 IPC channel；Web MSW 仅保留 knowledge connection/
 > projection 与 legacy 404 边界；删除未引用的 `RepositoryWorkspaceView`；E2E 补 `GET /repositories/current`
 > 与 folders 404。旧 editor 模块与 useRepository 死代码仍在，但运行时入口已切断。状态保持实施中。
+
+> 续进展 2026-07-21（阶段 6 残留三轮）：删除 `packages/app-vue` 整包 editor 模块与遗留 `useRepository`/
+> repository-store/dead components；public exports 与 Desktop PowerSync invalidation 不再引用旧 Resource
+> 表；AI/Note capsule 仅依赖 projection/local-vault 路径。`packages/editor` 服务端/包骨架仍在仓库中但
+> 不再作为 app-vue 运行时入口。状态保持实施中。
 
 ## 13. 测试与完成定义
 

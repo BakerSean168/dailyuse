@@ -1171,9 +1171,6 @@ importers:
       '@dailyuse/data-portability':
         specifier: workspace:*
         version: link:../data-portability
-      '@dailyuse/editor':
-        specifier: workspace:*
-        version: link:../editor
       '@dailyuse/goal':
         specifier: workspace:*
         version: link:../goal
