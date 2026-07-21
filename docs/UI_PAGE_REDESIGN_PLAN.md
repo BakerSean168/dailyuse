@@ -4,6 +4,8 @@
 >
 > **⚠️ 笔记边界更新（2026-07-16）**：§9/§10 中仍保留的跨端轻编辑、新建和保存描述已由 [ADR-034](./architecture/adr/ADR-034-obsidian-vault-repository.md) 取代。目标态为 Desktop 在 Obsidian 外部编辑；绑定 GitHub 知识仓库后 Web 可快捷创建新文件，但已有笔记编辑仍延期。本文相关内容只用于理解迁移前 UI。
 >
+> **⚠️ 路由/DTO 退役（2026-07-21）**：`/note/:id`、`EditorLinearView`、`ResourceClientDTO` 与旧 Repository CRUD 已从运行时删除；AI 打开笔记改为 repository projection / Local Vault 工作区。以 product 模块文档与 ADR-034 为准。
+>
 > 状态：~~实施方案~~ → 内容级参考。上游分析见 `docs/UI_REDESIGN_BRIEF.md`（下称 Brief），本文不重复分析，只给可执行的页面级方案。
 > 生成日期：2026-07-11。范围：`packages/app-vue`（Web 与 Desktop 共用前端层）。
 > 原则：**不追求花哨视觉；优先信息层级、业务清晰度、可维护性**。全部改动为现有能力的重排与减法，不新增业务功能（唯一例外：日程事件"查看详情"留位，Brief §8-P3 已定性为必须补的缺口）。

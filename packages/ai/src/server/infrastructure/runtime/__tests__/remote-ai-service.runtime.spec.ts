@@ -1053,6 +1053,293 @@ describe('createRemoteAIServiceRuntime', () => {
     );
   });
 
+  it('does not persist knowledge notes when the user cancels, even if execution.required remains', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    const pendingAction = {
+      tool: 'create_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Persist the approved knowledge note draft.',
+      payload: {
+        topic: 'Grounding knowledge answers',
+        title: 'Grounding knowledge answers',
+        contentMarkdown: '# Grounding knowledge answers\n\nUse cited repository excerpts.',
+        targetSubpath: 'notes/ai',
+        providerId: '550e8400-e29b-41d4-a716-446655440000',
+        model: 'gpt-4o-mini',
+      },
+    };
+    const noteDraftArtifact = {
+      artifactId: 'run-note-1:knowledge-note-draft',
+      kind: 'knowledge_note_draft' as const,
+      title: 'Grounding knowledge answers',
+      updatedAt: 2,
+      data: {
+        topic: 'Grounding knowledge answers',
+        title: 'Grounding knowledge answers',
+        markdown: '# Grounding knowledge answers\n\nUse cited repository excerpts.',
+        targetSubpath: 'notes/ai',
+      },
+    };
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      run: {
+        ...createAgentRunResult('waiting_execution').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-note-1',
+          threadId: 'thread-note-1',
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValueOnce(waitingExecution);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-note-1',
+      { userDecision: 'cancel' },
+      { identityId: 'identity-1' },
+      'request-note-cancel',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenCalledTimes(1);
+    expect(agentRuntimePort.resumeRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-note-1',
+      requestId: 'request-note-cancel',
+      signal: undefined,
+      payload: { userDecision: 'cancel' },
+    });
+  });
+
+  it('rejects vault-escaping knowledge note paths without persisting', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    const pendingAction = {
+      tool: 'create_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Attempt to write outside the vault.',
+      payload: {
+        topic: 'Escaped note',
+        title: 'Escaped note',
+        contentMarkdown: '# Escaped\n\nShould never land on disk.',
+        targetSubpath: '../secrets',
+        providerId: '550e8400-e29b-41d4-a716-446655440000',
+        model: 'gpt-4o-mini',
+      },
+    };
+    const noteDraftArtifact = {
+      artifactId: 'run-note-escape:knowledge-note-draft',
+      kind: 'knowledge_note_draft' as const,
+      title: 'Escaped note',
+      updatedAt: 2,
+      data: {
+        topic: 'Escaped note',
+        title: 'Escaped note',
+        markdown: '# Escaped\n\nShould never land on disk.',
+        targetSubpath: '../secrets',
+      },
+    };
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      run: {
+        ...createAgentRunResult('waiting_execution').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-note-escape',
+          threadId: 'thread-note-escape',
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+    const completed = createAgentRunResult('completed', {
+      run: {
+        ...createAgentRunResult('completed').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('completed').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        executedActions: [
+          {
+            tool: 'create_knowledge_note',
+            status: 'failed',
+            message: 'Knowledge note action payload is invalid: Knowledge note path cannot contain . or .. segments',
+          },
+        ],
+      },
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun)
+      .mockResolvedValueOnce(waitingExecution)
+      .mockResolvedValueOnce(completed);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-note-escape',
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingAction],
+      },
+      { identityId: 'identity-1' },
+      'request-note-escape',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            expect.objectContaining({
+              tool: 'create_knowledge_note',
+              status: 'failed',
+              message: expect.stringMatching(/vault-relative|\. or \.\.|invalid/i),
+            }),
+          ],
+        },
+      }),
+    );
+  });
+
+  it('does not execute unsupported knowledge agent tools such as note update / reindex expansion', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    // Schema-valid Agent tools that are not create_knowledge_note must fail closed.
+    const pendingAction = {
+      tool: 'update_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Attempt to expand agent capability beyond confirmed create.',
+      payload: {
+        path: 'notes/ai/Existing.md',
+        contentMarkdown: '# should not write',
+      },
+    };
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      run: {
+        ...createAgentRunResult('waiting_execution').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-note-update',
+          threadId: 'thread-note-update',
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingAction],
+          artifacts: [],
+        },
+      ],
+    });
+    const completed = createAgentRunResult('completed', {
+      run: {
+        ...createAgentRunResult('completed').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('completed').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        executedActions: [
+          {
+            tool: 'update_knowledge_note',
+            status: 'failed',
+            message:
+              'Agent action "update_knowledge_note" is not supported by the Knowledge Generation executor yet.',
+          },
+        ],
+      },
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun)
+      .mockResolvedValueOnce(waitingExecution)
+      .mockResolvedValueOnce(completed);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-note-update',
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingAction],
+      },
+      { identityId: 'identity-1' },
+      'request-note-update',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'update_knowledge_note',
+              status: 'failed',
+              message:
+                'Agent action "update_knowledge_note" is not supported by the Knowledge Generation executor yet.',
+            },
+          ],
+        },
+      }),
+    );
+  });
+
   it('records Agent runtime resume execution logs', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     const executionLogPort = createMockExecutionLogPort();

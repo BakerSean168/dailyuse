@@ -2,7 +2,8 @@
 
 > 状态：实施方案。**取代** `UI_PAGE_REDESIGN_PLAN.md`（下称 V1）的壳/导航/响应式/实施顺序体系；V1 各页面章节的**内容级结论**（主/次操作、信息删减清单、拆分退役清单）仍然有效，由本文 §6 引用为面板内容设计输入。
 > 2026-07-14 修订：Electron 实机诊断后的 Settings 独立场景、Schedule 统一分栏入口、动态面板、Global Composer 与胶囊预览方案，见 [`docs/plan/active/2026-07-14-ui-shell-diagnostic-followup.md`](plan/active/2026-07-14-ui-shell-diagnostic-followup.md)。冲突部分以该修订为准。
-> 上游分析仍见 `UI_REDESIGN_BRIEF.md`（下称 Brief）——其 §1–8（现状/问题/契约）与 §11–13（保留资产/风险/vault 专项）继续有效；§9/§10 的信息架构建议被本文取代。
+> 上游分析仍见 `UI_REDESIGN_BRIEF.md`（下称 Brief）——其 §1–8（现状/问题/契约）与 §11–13（保留资产/风险/vault 专项）继续有效，但 **知识/笔记现状以 Brief 顶部 2026-07-21 supersede 与 ADR-034 为准**（`/note/:id` 与 Resource DTO 已退役）；§9/§10 的信息架构建议被本文取代。
+> **2026-07-21**：文中 `openRecentKnowledgeNote→/note/:id` 深链描述已过时；当前着陆为 `/repository` 工作区 / Local Vault 投影。
 > 参照原型：`D:\home\projects\chatgpt-desktop-ui`（Vue3 + Tailwind，模仿 ChatGPT/Codex 桌面客户端）。
 > 生成日期：2026-07-12。范围：`packages/app-vue`（Web 与 Desktop 共用）+ 桌面宿主窗口改造。
 

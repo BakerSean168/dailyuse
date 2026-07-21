@@ -4,7 +4,14 @@
 >
 > **📌 决策固化（2026-07-16）**：§13 的 Obsidian Vault 方向已由 [ADR-034](./architecture/adr/ADR-034-obsidian-vault-repository.md) 正式采纳并在后续讨论中调整为“本地 Vault + 可选 GitHub private repository”。涉及登录、事实源、同步、Web 创建和 AI 写入路径时以 ADR-034 为准；本文 §13 的 Desktop 自定义上传、Web 永久只读和固定 `00-inbox` 只保留为历史调研方案。
 >
-> 状态：分析文档（不含实施）。所有结论均基于当前代码，引用路径以 `packages/`、`apps/` 为根。
+> **⚠️ 知识模块现状 supersede（2026-07-21）**：ADR-034 实施后，下列 Brief 现状描述**已退役，不得当作当前架构**：
+> - `ResourceClientDTO` / `RepositoryClientDTO` 与 DB Resource CRUD（contracts 已删除；创建面为 `KnowledgeNotePersistedRef`）
+> - `/note/:id`、`EditorLinearView`、`@dailyuse/editor`、`REPOSITORY_SERVICE_KEY` 旧仓储 DI 端口
+> - “在 Web/App 内编辑已有笔记”路径（首期关闭；Desktop 主编辑在 Obsidian）
+>
+> 当前真值：[`docs/product/modules/repository.md`](./product/modules/repository.md)、[`docs/product/modules/editor.md`](./product/modules/editor.md)、[`docs/product/module-index/repository-files.md`](./product/module-index/repository-files.md)、[ADR-034](./architecture/adr/ADR-034-obsidian-vault-repository.md)。本文 §1–§8/§11 中笔记/仓储段落仅作迁移前快照。
+>
+> 状态：分析文档（不含实施）。**除已标注 supersede 的知识/笔记段落外**，其余结论曾基于 2026-07-11 代码；冲突时以当前代码与 product 文档为准。
 > 生成日期：2026-07-11。分析范围：`packages/app-vue`（Web 与 Desktop 共用的前端应用层）。
 > 移动端（`apps/mobile`，React Native）有独立 UI，本文仅在风险章节涉及。
 

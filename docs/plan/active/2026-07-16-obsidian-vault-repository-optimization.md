@@ -52,6 +52,7 @@ updated: 2026-07-21T00:00:00
   退役顶层 `editor` locale 与无 UI 的 `setting.tabs`/`setting.editor` 文案已删；
   contracts 空 entities/dtos/value-objects 桶已移除；无调用的
   `createRepositoryPowerSyncModule` 已删；知识笔记 path resolver 应用层路径穿越 hardening；
+  Agent resume 仅 confirm 可执行 side-effect；过时 UI redesign 知识 DTO 声明已 supersede；
   knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
@@ -766,6 +767,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 外部阻塞）。验证：ai path-resolver + knowledge-note service specs、repository module tests、
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留十九轮）：Agent 隔离 hardening——`resumeRun` 仅在
+> `userDecision=confirm` 时解析 `execution.required` 并执行 side-effect（cancel/clarify 即使上游
+> 仍返回 interrupt 也不写入）；补 runtime 对抗用例（cancel 不落盘、vault-escaping path 失败、
+> 不支持的 `update_knowledge_note` 工具失败）；过时 UI redesign 文档对 `ResourceClientDTO`/`/note/:id` 加
+> supersede 横幅。§13.2 Agent 项证据增强但仍为部分（缺完整 Capability/Turn E2E 与真实 fixture）。
+> 验证：`remote-ai-service.runtime` focused specs、governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -802,8 +811,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**
   证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
   `.`/`..`（contracts dto specs）；`AIKnowledgeNotePathResolver` 应用层同样拒绝 vault-escaping
-  路径；runtime 仅在 `userDecision=confirm` 后执行 `create_knowledge_note`。仍缺：完整 ADR-035
-  Capability/Turn isolation E2E，以及代码执行/授权扩大的端到端对抗用例。
+  路径；runtime 仅在 `userDecision=confirm` 时解析 `execution.required` 并执行
+  `create_knowledge_note`（cancel 即使 interrupt 残留也不落盘）；runtime specs 覆盖 vault-escaping
+  path 失败与不支持工具（如 `update_knowledge_note`）失败且不落盘。仍缺：完整 ADR-035 Capability/Turn
+  isolation E2E，以及跨 Goal/Auth 授权扩大的端到端对抗用例。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（外部阻塞 + 部分验证）**

@@ -1063,12 +1063,18 @@ export function createAgentRuntimeService(
           requestId,
           signal,
         });
-        const resolvedResult = await resolveRuntimeExecutionInterrupt(result, {
-          runId,
-          identityId: cx.identityId,
-          requestId,
-          signal,
-        });
+        // Defense-in-depth: side-effect execution only follows an explicit confirm.
+        // cancel/clarify/edit/regenerate must not auto-run approvedActions even if the
+        // upstream graph still reports execution.required.
+        const resolvedResult =
+          payload.userDecision === 'confirm'
+            ? await resolveRuntimeExecutionInterrupt(result, {
+                runId,
+                identityId: cx.identityId,
+                requestId,
+                signal,
+              })
+            : result;
         await recordAgentRuntimeExecution({
           operation: 'resume',
           identityId: cx.identityId,
