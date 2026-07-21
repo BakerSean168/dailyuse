@@ -22,8 +22,8 @@ export interface ScheduleIpcAdapters {
 }
 
 /**
- * Create all Schedule IPC adapters from a single IIpcClient instance.
- * The concrete implementation (e.g. IpcClientImpl) is created at the App layer.
+ * Create all Schedule IPC adapters from a single IResultIpcClient instance.
+ * Desktop DI injects ResultIpcClient from createResultIpcClient().
  */
 export function createScheduleIpcAdapters(
   ipcClient: IResultIpcClient,

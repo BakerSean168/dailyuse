@@ -1,14 +1,11 @@
 /**
- * @dailyuse/ipc-client — 统一 IPC 客户端包
+ * @dailyuse/ipc-client — Result-mode Electron IPC client
  *
- * 提供 Result 模式的 IPC 客户端，与 @dailyuse/http-client 完美对称：
+ * Symmetric with `@dailyuse/http-client` ResultHttpClient:
+ * all invokes return `Promise<Result<T>>`, never throw, and require
+ * contracts IpcResult envelopes (no raw dual-track passthrough).
  *
- * | 风格             | HTTP 版                    | IPC 版                     |
- * |-----------------|----------------------------|----------------------------|
- * | Result 模式      | `ResultHttpClient`         | `ResultIpcClient`          |
- * | Result 工厂      | `createResultHttpClient()` | `createResultIpcClient()`  |
- *
- * 所有方法都返回 `Promise<Result<T>>`，永不抛出异常。
+ * Desktop DI uses `createResultIpcClient` only; throw-style dual client removed.
  *
  * @module @dailyuse/ipc-client
  *
@@ -20,9 +17,9 @@
  * const result = await ipc.invoke<Goal[]>('goal:list');
  *
  * if (result.ok) {
- *   console.log(result.data); // Goal[]
+ *   console.log(result.data);
  * } else {
- *   console.error(result.error.message); // 无需 try-catch
+ *   console.error(result.error.message);
  * }
  * ```
  */
@@ -32,23 +29,17 @@ export type {
   ElectronBridge,
   IpcClientConfig,
 } from './types';
-export {
-  IpcClientError,
-  DEFAULT_IPC_CLIENT_CONFIG,
-} from './types';
+export { DEFAULT_IPC_CLIENT_CONFIG } from './types';
 
 // ── Result IPC Client ──
 export { ResultIpcClient } from './result-ipc-client';
 
-// ── 便捷工厂函数 ──
+// ── Factory ──
 import type { IpcClientConfig } from './types';
 import { ResultIpcClient } from './result-ipc-client';
 
 /**
- * 创建 ResultIpcClient 实例
- *
- * 返回的实例所有方法都返回 `Promise<Result<T>>`，永不抛出异常。
- * 等价于 HTTP 侧的 `createResultHttpClient()`。
+ * Create a ResultIpcClient (never throws; returns Result envelopes).
  */
 export function createResultIpcClient(config: IpcClientConfig): ResultIpcClient {
   return new ResultIpcClient(config);

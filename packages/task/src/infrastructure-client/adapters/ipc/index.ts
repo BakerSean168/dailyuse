@@ -28,15 +28,13 @@ export interface TaskIpcAdapters {
 }
 
 /**
- * Create all Task IPC adapters from a single IIpcClient instance.
- * The concrete implementation (e.g. IpcClientImpl) is created at the App layer.
+ * Create all Task IPC adapters from a single IResultIpcClient instance.
+ * Desktop DI injects ResultIpcClient from createResultIpcClient().
  *
  * @example
  * ```ts
- * // apps/desktop/src/renderer/modules/task/infrastructure/ipc/index.ts
- * const ipcClient = createIpcClient();
+ * const ipcClient = createResultIpcClient({ bridge });
  * const adapters = createTaskIpcAdapters(ipcClient);
- * // register adapters in the app composition root
  * ```
  */
 export function createTaskIpcAdapters(ipcClient: IResultIpcClient): TaskIpcAdapters {

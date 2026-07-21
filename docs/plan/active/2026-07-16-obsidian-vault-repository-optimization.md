@@ -1250,6 +1250,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：http-client focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十一轮）：删除 throw 风格 `IpcClientImpl` / `IpcClient` /
+> `IpcClientError` 双轨（包入口本就只导出 ResultIpcClient；Desktop DI 仅用
+> createResultIpcClient）；修正 task/schedule IPC 工厂注释与 http-client 包说明以
+> Result 信封为主路径。§13.2 仍为部分/外部阻塞。验证：ipc-client focused +
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
