@@ -1484,6 +1484,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > utils express-adapter + ai surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百零九轮）：知识笔记 write-request 状态转移身份隔离——
+> `retryFailed` / `markCommitted` / `markFailed` 端口与 Prisma 仓储强制 `identityId` 过滤
+> （`updateMany where { id, identityId }`，禁止仅靠主键改写他人 ledger）；commit service
+> 调用透传 identityId。补 ownership surface 与 memory 单测。§13.2 Web 幂等创建/Agent 边界
+> 证据再增强，仍为部分。验证：repository commit specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1535,6 +1543,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [x] Desktop Git 同步具备离线恢复且不 force push。 **（已证明）**
 - [x] 冲突明确暂停并保留双方内容。 **（已证明）**
 - [x] Web 新建笔记产生唯一 Git commit，重复请求不重复创建。 **（已证明）**
+  残留一百零九轮：write-request status 转移 identity-scoped（retry/markCommitted/markFailed）。
 - [x] 已有笔记编辑在首期仍关闭。 **（已证明）**
 - [x] AI 无固定默认目录设置，完整写入提案必须获得用户确认。 **（已证明）**
 - [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**

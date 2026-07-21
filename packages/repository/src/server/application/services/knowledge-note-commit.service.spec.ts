@@ -163,9 +163,9 @@ class MemoryWriteRequestRepository implements IKnowledgeWriteRequestRepository {
     return true;
   }
 
-  async markCommitted(id: string, commitSha: string) {
+  async markCommitted(identityId: string, id: string, commitSha: string) {
     const row = this.rows.get(id);
-    if (!row) return;
+    if (!row || row.identityId !== identityId) return;
     this.rows.set(id, {
       ...row,
       status: 'Committed',
@@ -175,9 +175,9 @@ class MemoryWriteRequestRepository implements IKnowledgeWriteRequestRepository {
     });
   }
 
-  async retryFailed(id: string, updatedAt: number) {
+  async retryFailed(identityId: string, id: string, updatedAt: number) {
     const row = this.rows.get(id);
-    if (!row || row.status !== 'Failed') return false;
+    if (!row || row.identityId !== identityId || row.status !== 'Failed') return false;
     this.rows.set(id, {
       ...row,
       status: 'Pending',
@@ -190,9 +190,9 @@ class MemoryWriteRequestRepository implements IKnowledgeWriteRequestRepository {
     return true;
   }
 
-  async markFailed(id: string, code: string, message: string) {
+  async markFailed(identityId: string, id: string, code: string, message: string) {
     const row = this.rows.get(id);
-    if (!row) return;
+    if (!row || row.identityId !== identityId) return;
     this.rows.set(id, {
       ...row,
       status: 'Failed',
@@ -587,5 +587,43 @@ describe('KnowledgeNoteCommitService', () => {
     });
     expect(createFileCommit).not.toHaveBeenCalled();
     expect(state.writeRequestRepository.rows.size).toBe(0);
+  });
+});
+
+describe('Knowledge write request status ownership (residual 109)', () => {
+  it('memory repository refuses status transitions for foreign identity', async () => {
+    const repo = new MemoryWriteRequestRepository();
+    const record = {
+      id: 'kwr-1',
+      identityId: 'identity-1',
+      connectionId: 'conn-1',
+      requestId: 'req-1',
+      requestHash: 'hash',
+      relativePath: 'notes/a.md',
+      status: 'Pending' as const,
+      commitSha: null,
+      errorCode: null,
+      errorMessage: null,
+      createdAt: 1,
+      updatedAt: 1,
+      completedAt: null,
+    };
+    await repo.create(record);
+
+    await repo.markCommitted('identity-other', 'kwr-1', 'sha-foreign');
+    expect(repo.rows.get('kwr-1')).toMatchObject({ status: 'Pending', commitSha: null });
+
+    await repo.markFailed('identity-other', 'kwr-1', 'CONFLICT', 'nope');
+    expect(repo.rows.get('kwr-1')).toMatchObject({ status: 'Pending' });
+
+    await repo.markFailed('identity-1', 'kwr-1', 'CONFLICT', 'owned fail');
+    expect(repo.rows.get('kwr-1')).toMatchObject({ status: 'Failed', errorCode: 'CONFLICT' });
+
+    expect(await repo.retryFailed('identity-other', 'kwr-1', 2)).toBe(false);
+    expect(await repo.retryFailed('identity-1', 'kwr-1', 2)).toBe(true);
+    expect(repo.rows.get('kwr-1')).toMatchObject({ status: 'Pending' });
+
+    await repo.markCommitted('identity-1', 'kwr-1', 'sha-own');
+    expect(repo.rows.get('kwr-1')).toMatchObject({ status: 'Committed', commitSha: 'sha-own' });
   });
 });

@@ -185,7 +185,7 @@ export class KnowledgeNoteCommitService {
       record = existing;
     } else if (existing?.status === 'Failed') {
       await guard.ensureHeld();
-      if (!(await this.options.writeRequestRepository.retryFailed(existing.id, now))) {
+      if (!(await this.options.writeRequestRepository.retryFailed(identityId, existing.id, now))) {
         return fail({ code: 'CONFLICT', message: 'Knowledge note commit is already in progress' });
       }
       record = {
@@ -253,12 +253,12 @@ export class KnowledgeNoteCommitService {
       const code = status === 409 || status === 422 ? 'CONFLICT' : 'SERVICE_UNAVAILABLE';
       const message = error instanceof Error ? error.message : 'Knowledge note commit failed';
       await guard.ensureHeld();
-      await this.options.writeRequestRepository.markFailed(record.id, code, message);
+      await this.options.writeRequestRepository.markFailed(identityId, record.id, code, message);
       return fail({ code, message });
     }
 
     await guard.ensureHeld();
-    await this.options.writeRequestRepository.markCommitted(record.id, committed.commitSha);
+    await this.options.writeRequestRepository.markCommitted(identityId, record.id, committed.commitSha);
     const projection: KnowledgeNoteProjectionUpsert = {
       id: `knowledge-note-${createHash('sha256').update(`${connection.id}:${request.proposedPath}`).digest('hex')}`,
       connectionId: connection.id,

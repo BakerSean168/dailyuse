@@ -46,9 +46,9 @@ export class KnowledgeWriteRequestPrismaRepository implements IKnowledgeWriteReq
     }
   }
 
-  async markCommitted(id: string, commitSha: string): Promise<void> {
-    await this.db.knowledgeWriteRequest.update({
-      where: { id },
+  async markCommitted(identityId: string, id: string, commitSha: string): Promise<void> {
+    const updated = await this.db.knowledgeWriteRequest.updateMany({
+      where: { id, identityId },
       data: {
         status: 'Committed',
         commitSha,
@@ -57,11 +57,14 @@ export class KnowledgeWriteRequestPrismaRepository implements IKnowledgeWriteReq
         completedAt: new Date(),
       },
     });
+    if (updated.count !== 1) {
+      throw new Error('Knowledge write request not found for the current identity.');
+    }
   }
 
-  async retryFailed(id: string, updatedAt: number): Promise<boolean> {
+  async retryFailed(identityId: string, id: string, updatedAt: number): Promise<boolean> {
     const updated = await this.db.knowledgeWriteRequest.updateMany({
-      where: { id, status: 'Failed' },
+      where: { id, identityId, status: 'Failed' },
       data: {
         status: 'Pending',
         commitSha: null,
@@ -74,11 +77,14 @@ export class KnowledgeWriteRequestPrismaRepository implements IKnowledgeWriteReq
     return updated.count === 1;
   }
 
-  async markFailed(id: string, code: string, message: string): Promise<void> {
-    await this.db.knowledgeWriteRequest.update({
-      where: { id },
+  async markFailed(identityId: string, id: string, code: string, message: string): Promise<void> {
+    const updated = await this.db.knowledgeWriteRequest.updateMany({
+      where: { id, identityId },
       data: { status: 'Failed', errorCode: code, errorMessage: message },
     });
+    if (updated.count !== 1) {
+      throw new Error('Knowledge write request not found for the current identity.');
+    }
   }
 
   private toRecord(row: WriteRow): KnowledgeWriteRequestRecord | null {

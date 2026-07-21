@@ -114,7 +114,8 @@ export interface IKnowledgeWriteRequestRepository {
     requestId: string,
   ): Promise<KnowledgeWriteRequestRecord | null>;
   create(record: KnowledgeWriteRequestRecord): Promise<boolean>;
-  retryFailed(id: string, updatedAt: number): Promise<boolean>;
-  markCommitted(id: string, commitSha: string): Promise<void>;
-  markFailed(id: string, code: string, message: string): Promise<void>;
+  /** Status transitions must stay scoped to the owning identity (residual 109). */
+  retryFailed(identityId: string, id: string, updatedAt: number): Promise<boolean>;
+  markCommitted(identityId: string, id: string, commitSha: string): Promise<void>;
+  markFailed(identityId: string, id: string, code: string, message: string): Promise<void>;
 }
