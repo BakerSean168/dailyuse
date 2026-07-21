@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { AuthMode, AuthRuntimeState } from '@dailyuse/contracts/authentication';
+import { AuthChannels } from '@dailyuse/contracts/electron';
 import { ok, fail, toIpcResult, type IpcResult } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { WindowManager } from '../../lifecycle/window-manager';
@@ -17,35 +18,7 @@ import { AuthRemoteGateway } from './application/auth-remote-gateway';
 const logger = createLogger('DesktopAuthShell');
 const remoteGateway = new AuthRemoteGateway();
 
-const Ch = {
-  LOGIN: 'auth:login',
-  REGISTER: 'auth:register',
-  LOGOUT: 'auth:logout',
-  REFRESH_TOKEN: 'auth:refresh-token',
-  ENTER_GUEST_MODE: 'auth:enter-guest-mode',
-  GET_CURRENT_USER: 'auth:get-current-user',
-  GET_STATUS: 'auth:get-status',
-  GET_BOOTSTRAP_SNAPSHOT: 'auth:get-bootstrap-snapshot',
-  INITIALIZE: 'auth:initialize',
-  AUTO_LOGIN: 'auth:auto-login',
-  REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
-  REMEMBERED_ACCOUNTS_LOGIN: 'auth:remembered-accounts:login',
-  REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
-  SESSION_LIST: 'auth:session:list',
-  SESSION_REVOKE: 'auth:session:revoke',
-  FORGOT_PASSWORD: 'auth:forgot-password',
-  RESET_PASSWORD: 'auth:reset-password',
-  CHANGE_PASSWORD: 'auth:change-password',
-  SEND_EMAIL_CODE: 'auth:send-email-code',
-  VERIFY_EMAIL_CODE: 'auth:verify-email-code',
-  GET_OAUTH_URL: 'auth:get-oauth-url',
-  OAUTH_PROVIDERS: 'auth:oauth-providers',
-  OAUTH_CALLBACK: 'auth:oauth-callback',
-  OAUTH_BIND: 'auth:oauth-bind',
-  OAUTH_UNBIND: 'auth:oauth-unbind',
-} as const;
-
-const allChannels = Object.values(Ch);
+const allChannels = Object.values(AuthChannels);
 
 function unauthenticatedStatus() {
   return {
@@ -174,7 +147,7 @@ export function registerDesktopAuthShellHandlers(
 
   const currentAuthService = () => runtimeManager.getCurrentAuthService();
 
-  ipcMain.handle(Ch.LOGIN, async (_event, data) => {
+  ipcMain.handle(AuthChannels.LOGIN, async (_event, data) => {
     const existingProfile = await runtimeManager.findRegisteredProfileByIdentifier(String(data.email));
 
     try {
@@ -245,7 +218,7 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.REGISTER, async (_event, request: RegisterRequest) => {
+  ipcMain.handle(AuthChannels.REGISTER, async (_event, request: RegisterRequest) => {
     try {
       const result = await registerDesktopAccount(request, {
         isOnline: () => networkStateManager.isOnline(),
@@ -292,7 +265,7 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.LOGOUT, async () => {
+  ipcMain.handle(AuthChannels.LOGOUT, async () => {
     const service = runtimeManager.getActiveAuthService();
     const result: IpcResult<void> = service ? await service.logout() : toIpcResult(ok(undefined));
 
@@ -302,7 +275,7 @@ export function registerDesktopAuthShellHandlers(
     return result;
   });
 
-  ipcMain.handle(Ch.REFRESH_TOKEN, async () => {
+  ipcMain.handle(AuthChannels.REFRESH_TOKEN, async () => {
     const service = currentAuthService();
     if (!service) {
       return toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
@@ -310,7 +283,7 @@ export function registerDesktopAuthShellHandlers(
     return await service.refreshToken();
   });
 
-  ipcMain.handle(Ch.ENTER_GUEST_MODE, async () => {
+  ipcMain.handle(AuthChannels.ENTER_GUEST_MODE, async () => {
     try {
       await runtimeManager.prepareGuestProfile();
       const service = runtimeManager.getPreparedAuthService();
@@ -344,12 +317,12 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.GET_STATUS, async () => {
+  ipcMain.handle(AuthChannels.GET_STATUS, async () => {
     const service = currentAuthService();
     return service ? await service.getStatus() : unauthenticatedStatus();
   });
 
-  ipcMain.handle(Ch.GET_BOOTSTRAP_SNAPSHOT, async () => {
+  ipcMain.handle(AuthChannels.GET_BOOTSTRAP_SNAPSHOT, async () => {
     const service = currentAuthService();
     return service
       ? await service.buildBootstrapSnapshot()
@@ -359,7 +332,7 @@ export function registerDesktopAuthShellHandlers(
         };
   });
 
-  ipcMain.handle(Ch.INITIALIZE, async () => {
+  ipcMain.handle(AuthChannels.INITIALIZE, async () => {
     const service = currentAuthService();
     if (!service) {
       return {
@@ -371,7 +344,7 @@ export function registerDesktopAuthShellHandlers(
     return await service.initialize();
   });
 
-  ipcMain.handle(Ch.AUTO_LOGIN, async () => {
+  ipcMain.handle(AuthChannels.AUTO_LOGIN, async () => {
     const remembered = await rememberedAccountsService.getAutoLoginAccount();
     if (!remembered) {
       return { ok: true, authenticated: false };
@@ -403,12 +376,12 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LIST, async () => {
+  ipcMain.handle(AuthChannels.REMEMBERED_ACCOUNTS_LIST, async () => {
     const accounts = await rememberedAccountsService.list();
     return mapRememberedAccounts(accounts);
   });
 
-  ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LOGIN, async (_event, request) => {
+  ipcMain.handle(AuthChannels.REMEMBERED_ACCOUNTS_LOGIN, async (_event, request) => {
     try {
       await runtimeManager.prepareProfile(String(request.identityId), {
         displayName: request.identifier,
@@ -440,7 +413,7 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_REMOVE, async (_event, identityId: string) => {
+  ipcMain.handle(AuthChannels.REMEMBERED_ACCOUNTS_REMOVE, async (_event, identityId: string) => {
     try {
       await rememberedAccountsService.remove(IdentityId.of(identityId));
       await runtimeManager.removeProfile(identityId);
@@ -456,28 +429,28 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.GET_CURRENT_USER, async () => {
+  ipcMain.handle(AuthChannels.GET_CURRENT_USER, async () => {
     const service = currentAuthService();
     return service ? await service.getCurrentUser() : null;
   });
 
-  ipcMain.handle(Ch.SESSION_LIST, async () => {
+  ipcMain.handle(AuthChannels.SESSION_LIST, async () => {
     const service = currentAuthService();
     return service ? await service.listSessions() : { sessions: [] };
   });
-  ipcMain.handle(Ch.SESSION_REVOKE, async (_event, payload: string | { sessionId: string }) => {
+  ipcMain.handle(AuthChannels.SESSION_REVOKE, async (_event, payload: string | { sessionId: string }) => {
     const service = currentAuthService();
     return service
       ? await service.revokeSession(typeof payload === 'string' ? payload : payload?.sessionId)
       : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
   });
-  ipcMain.handle(Ch.FORGOT_PASSWORD, async (_event, data) =>
+  ipcMain.handle(AuthChannels.FORGOT_PASSWORD, async (_event, data) =>
     toIpcResult(await remoteGateway.forgotPassword(data)),
   );
-  ipcMain.handle(Ch.RESET_PASSWORD, async (_event, data) =>
+  ipcMain.handle(AuthChannels.RESET_PASSWORD, async (_event, data) =>
     toIpcResult(await remoteGateway.resetPassword(data)),
   );
-  ipcMain.handle(Ch.CHANGE_PASSWORD, async (_event, data) => {
+  ipcMain.handle(AuthChannels.CHANGE_PASSWORD, async (_event, data) => {
     const service = currentAuthService();
     const accessToken = service?.getAccessToken?.() ?? null;
     if (!accessToken) {
@@ -485,23 +458,23 @@ export function registerDesktopAuthShellHandlers(
     }
     return toIpcResult(await remoteGateway.changePassword(data, accessToken));
   });
-  ipcMain.handle(Ch.SEND_EMAIL_CODE, async (_event, data) => {
+  ipcMain.handle(AuthChannels.SEND_EMAIL_CODE, async (_event, data) => {
     const service = currentAuthService();
     const accessToken = service?.getAccessToken?.() ?? undefined;
     return toIpcResult(await remoteGateway.sendEmailCode(data, accessToken));
   });
-  ipcMain.handle(Ch.VERIFY_EMAIL_CODE, async (_event, data) => {
+  ipcMain.handle(AuthChannels.VERIFY_EMAIL_CODE, async (_event, data) => {
     const service = currentAuthService();
     const accessToken = service?.getAccessToken?.() ?? undefined;
     return toIpcResult(await remoteGateway.verifyEmailCode(data, accessToken));
   });
-  ipcMain.handle(Ch.GET_OAUTH_URL, async (_event, data) =>
+  ipcMain.handle(AuthChannels.GET_OAUTH_URL, async (_event, data) =>
     toIpcResult(await remoteGateway.getOAuthUrl(data)),
   );
-  ipcMain.handle(Ch.OAUTH_PROVIDERS, async () =>
+  ipcMain.handle(AuthChannels.OAUTH_PROVIDERS, async () =>
     toIpcResult(await remoteGateway.listOAuthProviders()),
   );
-  ipcMain.handle(Ch.OAUTH_CALLBACK, async (_event, data) => {
+  ipcMain.handle(AuthChannels.OAUTH_CALLBACK, async (_event, data) => {
     try {
       const remoteResult = await remoteGateway.oauthCallback(data);
       if (!remoteResult.ok) {
@@ -546,7 +519,7 @@ export function registerDesktopAuthShellHandlers(
       );
     }
   });
-  ipcMain.handle(Ch.OAUTH_BIND, async (_event, data) => {
+  ipcMain.handle(AuthChannels.OAUTH_BIND, async (_event, data) => {
     const service = currentAuthService();
     const accessToken = service?.getAccessToken?.() ?? null;
     if (!accessToken) {
@@ -554,7 +527,7 @@ export function registerDesktopAuthShellHandlers(
     }
     return toIpcResult(await remoteGateway.bindOAuth(data, accessToken));
   });
-  ipcMain.handle(Ch.OAUTH_UNBIND, async (_event, data) => {
+  ipcMain.handle(AuthChannels.OAUTH_UNBIND, async (_event, data) => {
     const service = currentAuthService();
     const accessToken = service?.getAccessToken?.() ?? null;
     if (!accessToken) {
