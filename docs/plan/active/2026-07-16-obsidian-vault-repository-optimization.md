@@ -54,7 +54,7 @@ updated: 2026-07-21T00:00:00
   `createRepositoryPowerSyncModule` 已删；知识笔记 path resolver 应用层路径穿越 hardening；
   Agent resume 仅 confirm 可执行 side-effect；首期 Agent 工具面不含 note update/reindex；AI index diagnostics 去掉 legacy-resource-metadata；访客/离线 token 不能扩 GitHub/PowerSync 云端授权；
   三入口 surface contract 单测（Desktop 账密+访客 / Web 账密+GitHub）与 goal↔knowledge 反向能力隔离；
-  Web 未认证硬跳转 AuthApp、遗留 AuthView 访客仅 Desktop；
+  Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView 已删；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
@@ -811,6 +811,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 作为 defense-in-depth。§13.2 三入口边界证据增强（仍缺同一 fixture 端到端串联）。
 > 验证：app-vue guards/AuthView specs、governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留二十五轮）：删除无运行时入口的旧 `LoginForm`/`RegisterForm`
+> （及 stories/specs）；Web 主壳 `/auth` 默认组件从遗留 `AuthView` 改为 `AuthPlatformEntry`
+> （full-page reload 进入 AuthApp/WebAuthView，杜绝 in-shell 访客 UI）；Desktop 仍注入
+> `DesktopAuthView`。§13.2 三入口边界再收口。验证：app-vue AuthPlatformEntry/router/guards specs、
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -829,15 +835,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留二十四轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留二十五轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
   残留二十三轮补 surface contract 单测：`packages/app-vue/src/views/DesktopAuthView.spec.ts`
   （账密 + guest-mode-button，无 login-github-button）；`apps/web/src/auth/WebAuthView.spec.ts`
   （账密 + 条件 login-github-button，无 guest-mode-button；OAuth 不可用时隐藏 GitHub）。
-  残留二十四轮：Web auth guard 硬跳转 AuthApp（`createAuthGuard` + hard redirect specs）；
-  遗留 `AuthView` 访客入口仅 Desktop（`AuthView.spec.ts`）。
+  残留二十四轮：Web auth guard 硬跳转 AuthApp（`createAuthGuard` + hard redirect specs）。
+  残留二十五轮：删除死 `LoginForm`/`RegisterForm`；Web 主壳 `/auth` 默认改为
+  `AuthPlatformEntry` full-page 进入 AuthApp（删除遗留 in-shell `AuthView`）。
   仍缺：三入口同一 fixture 下的端到端串联验收（含访客升级与仓库边界）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**

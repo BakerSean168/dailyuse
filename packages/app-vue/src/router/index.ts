@@ -43,7 +43,7 @@ export function createAppRouter(options?: {
     {
       path: '/auth',
       name: 'auth',
-      component: authView ?? (() => import('../views/AuthView.vue')),
+      component: authView ?? (() => import('../views/AuthPlatformEntry.vue')),
       meta: { requiresAuth: false, layout: 'auth' },
     },
     {
