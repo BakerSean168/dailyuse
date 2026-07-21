@@ -1354,6 +1354,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十四轮）：折叠 authentication void 成功双轨——logout /
+> revoke session / change-password / forgot-password / reset-password / send-email-code /
+> oauth unbind 在 controller 统一 `ok(null)`；OpenAPI unbind 从 `z.void()` 改为 `z.null()`
+> 与其它 void 端点一致。补 auth void-success envelope surface。§13.2 仍为部分/外部阻塞。
+> 验证：authentication focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

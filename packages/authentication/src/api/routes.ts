@@ -201,7 +201,7 @@ export function registerAuthenticationRoutes(
       summary: '解绑 OAuth 提供者（已登录）',
       request: { body: { content: { 'application/json': { schema: UnbindOAuthSchema } } } },
       responses: {
-        200: successResponse(z.void(), '解绑成功'),
+        200: successResponse(z.null(), '解绑成功'),
         401: errorResponse('未认证'),
         404: errorResponse('未找到绑定'),
         409: errorResponse('不能移除最后一条登录路径'),

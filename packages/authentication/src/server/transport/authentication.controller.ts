@@ -7,7 +7,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { AuthenticationApplicationPort } from '../application';
 import {
@@ -107,7 +107,7 @@ export class AuthenticationController {
     return this.api.bindOAuth(parsed.data, cx);
   }
 
-  async unbindOAuth(input: unknown, cx: Context): Promise<Result<void>> {
+  async unbindOAuth(input: unknown, cx: Context): Promise<Result<null>> {
     const parsed = UnbindOAuthSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -116,12 +116,17 @@ export class AuthenticationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.unbindOAuth(parsed.data, cx);
+    const result = await this.api.unbindOAuth(parsed.data, cx);
+    if (!result.ok) return result as Result<null>;
+    // Serialize as data:null (no Result.void / z.void dual-track).
+    return ok(null);
   }
 
 
-  async logout(cx: Context): Promise<Result<void>> {
-    return this.api.logout(cx);
+  async logout(cx: Context): Promise<Result<null>> {
+    const result = await this.api.logout(cx);
+    if (!result.ok) return result as Result<null>;
+    return ok(null);
   }
 
   async refreshToken(input: unknown, cx: Context): Promise<Result<RefreshTokenRes>> {
@@ -144,7 +149,7 @@ export class AuthenticationController {
     return this.api.listSessions(cx, sessionId);
   }
 
-  async revokeSession(input: unknown, cx: Context): Promise<Result<void>> {
+  async revokeSession(input: unknown, cx: Context): Promise<Result<null>> {
     const parsed = RevokeSessionSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -153,10 +158,12 @@ export class AuthenticationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.revokeSession(parsed.data, cx);
+    const result = await this.api.revokeSession(parsed.data, cx);
+    if (!result.ok) return result as Result<null>;
+    return ok(null);
   }
 
-  async changePassword(input: unknown, cx: Context): Promise<Result<void>> {
+  async changePassword(input: unknown, cx: Context): Promise<Result<null>> {
     const parsed = ChangePasswordSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -165,10 +172,12 @@ export class AuthenticationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.changePassword(parsed.data, cx);
+    const result = await this.api.changePassword(parsed.data, cx);
+    if (!result.ok) return result as Result<null>;
+    return ok(null);
   }
 
-  async forgotPassword(input: unknown): Promise<Result<void>> {
+  async forgotPassword(input: unknown): Promise<Result<null>> {
     const parsed = ForgotPasswordSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -177,10 +186,12 @@ export class AuthenticationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.forgotPassword(parsed.data);
+    const result = await this.api.forgotPassword(parsed.data);
+    if (!result.ok) return result as Result<null>;
+    return ok(null);
   }
 
-  async resetPassword(input: unknown): Promise<Result<void>> {
+  async resetPassword(input: unknown): Promise<Result<null>> {
     const parsed = ResetPasswordSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -189,10 +200,12 @@ export class AuthenticationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.resetPassword(parsed.data);
+    const result = await this.api.resetPassword(parsed.data);
+    if (!result.ok) return result as Result<null>;
+    return ok(null);
   }
 
-  async sendEmailCode(input: unknown, cx?: Context): Promise<Result<void>> {
+  async sendEmailCode(input: unknown, cx?: Context): Promise<Result<null>> {
     const parsed = SendEmailCodeSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -201,7 +214,9 @@ export class AuthenticationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.sendEmailCode(parsed.data, cx);
+    const result = await this.api.sendEmailCode(parsed.data, cx);
+    if (!result.ok) return result as Result<null>;
+    return ok(null);
   }
 
   async verifyEmailCode(input: unknown, cx?: Context): Promise<Result<VerifyEmailCodeRes>> {
