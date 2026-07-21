@@ -20,14 +20,19 @@ export interface IScheduleRepository {
   findById(id: string): Promise<CalendarEntry | null>;
 
   /**
+   * Find a schedule by UUID owned by the given identity
+   */
+  findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null>;
+
+  /**
    * Find all schedules for an account
    */
   findByIdentityId(identityId: string): Promise<CalendarEntry[]>;
 
   /**
-   * Delete schedule by UUID
+   * Delete schedule by UUID for the owning identity
    */
-  deleteById(id: string): Promise<void>;
+  deleteById(identityId: string, id: string): Promise<void>;
 
   /**
    * Domain-command delete — deletes persistently then publishes aggregate domain events.

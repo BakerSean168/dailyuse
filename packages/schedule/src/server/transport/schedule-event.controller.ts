@@ -46,8 +46,8 @@ export class ScheduleEventController {
     return this.api.createEvent(parsed.data, ctx);
   }
 
-  async get(id: string): Promise<Result<unknown>> {
-    return this.api.getEvent(id);
+  async get(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.api.getEvent(id, ctx);
   }
 
   async getByTimeRange(query: Record<string, unknown>, ctx: Context): Promise<Result<unknown>> {
@@ -71,7 +71,7 @@ export class ScheduleEventController {
     return this.api.listEvents(internalQuery, ctx);
   }
 
-  async update(id: string, input: unknown): Promise<Result<unknown>> {
+  async update(id: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = UpdateScheduleRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -80,11 +80,11 @@ export class ScheduleEventController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.updateEvent(id, parsed.data);
+    return this.api.updateEvent(id, parsed.data, ctx);
   }
 
-  async delete(id: string): Promise<Result<null>> {
-    const result = await this.api.deleteEvent(id);
+  async delete(id: string, ctx: Context): Promise<Result<null>> {
+    const result = await this.api.deleteEvent(id, ctx);
     if (!result.ok) return result as Result<null>;
     // Serialize as data:null (no Result.void / undefined dual-track).
     return ok(null);
@@ -92,8 +92,8 @@ export class ScheduleEventController {
 
   // ==================== Conflict Detection ====================
 
-  async getConflicts(id: string): Promise<Result<unknown>> {
-    return this.api.getConflicts(id);
+  async getConflicts(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.api.getConflicts(id, ctx);
   }
 
   async detectConflicts(input: unknown, ctx: Context): Promise<Result<unknown>> {
@@ -129,7 +129,7 @@ export class ScheduleEventController {
     return this.api.createEventWithConflictDetection(parsed.data, ctx);
   }
 
-  async resolveConflict(id: string, input: unknown): Promise<Result<unknown>> {
+  async resolveConflict(id: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = ResolveConflictRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -138,6 +138,6 @@ export class ScheduleEventController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.resolveConflict(id, parsed.data);
+    return this.api.resolveConflict(id, parsed.data, ctx);
   }
 }

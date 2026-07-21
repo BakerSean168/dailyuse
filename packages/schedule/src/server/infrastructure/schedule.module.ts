@@ -313,9 +313,9 @@ export function createScheduleModule(
           useCases.scheduleEventService.createSchedule(toCreateSchedulePayload(data, ctx.identityId)),
         'Failed to create schedule event',
       ),
-    getEvent: async (id) =>
+    getEvent: async (id, ctx) =>
       resultify(async () => {
-        const event = await useCases.scheduleEventService.getSchedule(id);
+        const event = await useCases.scheduleEventService.getSchedule(id, ctx.identityId);
         if (!event) {
           throw toResultErrorException({ code: 'NOT_FOUND', message: '日程不存在' }, 404);
         }
@@ -331,18 +331,26 @@ export function createScheduleModule(
           ),
         'Failed to list schedule events',
       ),
-    updateEvent: async (id, data) =>
+    updateEvent: async (id, data, ctx) =>
       resultify(
-        () => useCases.scheduleEventService.updateSchedule(id, toUpdateSchedulePayload(data)),
+        () =>
+          useCases.scheduleEventService.updateSchedule(
+            id,
+            ctx.identityId,
+            toUpdateSchedulePayload(data),
+          ),
         'Failed to update schedule event',
       ),
-    deleteEvent: async (id) =>
+    deleteEvent: async (id, ctx) =>
       resultify(async () => {
-        await useCases.scheduleEventService.deleteSchedule(id);
+        await useCases.scheduleEventService.deleteSchedule(id, ctx.identityId);
         return null;
       }, 'Failed to delete schedule event'),
-    getConflicts: async (id) =>
-      resultify(() => useCases.conflictResolutionService.getConflicts(id), 'Failed to get schedule conflicts'),
+    getConflicts: async (id, ctx) =>
+      resultify(
+        () => useCases.conflictResolutionService.getConflicts(id, ctx.identityId),
+        'Failed to get schedule conflicts',
+      ),
     detectConflicts: async (data) =>
       resultify(() => useCases.conflictResolutionService.detectConflicts(data), 'Failed to detect schedule conflicts'),
     createEventWithConflictDetection: async (data, ctx) =>
@@ -350,9 +358,9 @@ export function createScheduleModule(
         () => useCases.conflictResolutionService.createWithConflictDetection(data, ctx.identityId),
         'Failed to create schedule event with conflict detection',
       ),
-    resolveConflict: async (id, data) =>
+    resolveConflict: async (id, data, ctx) =>
       resultify(
-        () => useCases.conflictResolutionService.resolveConflict(id, data),
+        () => useCases.conflictResolutionService.resolveConflict(id, data, ctx.identityId),
         'Failed to resolve schedule conflict',
       ),
   };

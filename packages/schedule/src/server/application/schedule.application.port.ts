@@ -37,15 +37,15 @@ export interface ScheduleApplicationPort {
  */
 export interface ScheduleEventApplicationPort {
   createEvent(data: CreateScheduleRequest, ctx: Context): Promise<Result<unknown>>;
-  getEvent(id: string): Promise<Result<unknown>>;
+  getEvent(id: string, ctx: Context): Promise<Result<unknown>>;
   listEvents(query: GetSchedulesByTimeRangeInternalQuery, ctx: Context): Promise<Result<unknown>>;
-  updateEvent(id: string, data: UpdateScheduleRequest): Promise<Result<unknown>>;
-  deleteEvent(id: string): Promise<Result<unknown>>;
-  getConflicts(id: string): Promise<Result<unknown>>;
+  updateEvent(id: string, data: UpdateScheduleRequest, ctx: Context): Promise<Result<unknown>>;
+  deleteEvent(id: string, ctx: Context): Promise<Result<unknown>>;
+  getConflicts(id: string, ctx: Context): Promise<Result<unknown>>;
   detectConflicts(data: DetectConflictsInternalQuery): Promise<Result<unknown>>;
   createEventWithConflictDetection(
     data: CreateScheduleRequest,
     ctx: Context,
   ): Promise<Result<unknown>>;
-  resolveConflict(id: string, data: ResolveConflictRequest): Promise<Result<unknown>>;
+  resolveConflict(id: string, data: ResolveConflictRequest, ctx: Context): Promise<Result<unknown>>;
 }

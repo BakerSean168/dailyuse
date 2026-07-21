@@ -117,7 +117,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id),
+    (req, ctx) => controller.get(req.params!.id, ctx),
   );
 
   // PUT /:id — 更新日程
@@ -136,7 +136,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // PATCH /:id — 更新日程（别名）
@@ -147,7 +147,7 @@ export function registerScheduleEventRoutes(
       skipOpenApi: true,
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // DELETE /:id — 删除日程
@@ -163,7 +163,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.delete(req.params!.id),
+    (req, ctx) => controller.delete(req.params!.id, ctx),
   );
 
   // ==================== Conflict Detection Routes ====================
@@ -217,7 +217,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.getConflicts(req.params!.id),
+    (req, ctx) => controller.getConflicts(req.params!.id, ctx),
   );
 
   // POST /:id/resolve-conflict — 解决日程冲突
@@ -240,7 +240,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.resolveConflict(req.params!.id, req.body),
+    (req, ctx) => controller.resolveConflict(req.params!.id, req.body, ctx),
   );
 
   return router;

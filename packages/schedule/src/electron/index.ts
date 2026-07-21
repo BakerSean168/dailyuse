@@ -113,24 +113,32 @@ export function createScheduleElectronModule(
           eventController.getByTimeRange(params ?? {}, requestContext),
         ),
       );
-      ipcMain.handle(ScheduleChannels.GET, (_event, id) => eventController.get(id));
+      ipcMain.handle(ScheduleChannels.GET, async (_event, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          eventController.get(id, requestContext),
+        ),
+      );
       ipcMain.handle(ScheduleChannels.CREATE, async (_event, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           eventController.create(dto, requestContext),
         ),
       );
       ipcMain.handle(ScheduleChannels.UPDATE, async (_event, id, dto) =>
-        withAuthenticatedValue(ctx, async () => eventController.update(id, dto)),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          eventController.update(id, dto, requestContext),
+        ),
       );
       ipcMain.handle(ScheduleChannels.DELETE, async (_event, id) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await eventController.delete(id);
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await eventController.delete(id, requestContext);
           if (!result.ok) return result;
           return ok(null);
         }),
       );
       ipcMain.handle(ScheduleChannels.GET_CONFLICTS, async (_event, id) =>
-        withAuthenticatedValue(ctx, async () => eventController.getConflicts(id)),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          eventController.getConflicts(id, requestContext),
+        ),
       );
       ipcMain.handle(ScheduleChannels.DETECT_CONFLICTS, async (_event, params) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
@@ -143,8 +151,8 @@ export function createScheduleElectronModule(
         ),
       );
       ipcMain.handle(ScheduleChannels.RESOLVE_CONFLICT, async (_event, scheduleId, request) =>
-        withAuthenticatedValue(ctx, async () =>
-          eventController.resolveConflict(scheduleId, request),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          eventController.resolveConflict(scheduleId, request, requestContext),
         ),
       );
 
