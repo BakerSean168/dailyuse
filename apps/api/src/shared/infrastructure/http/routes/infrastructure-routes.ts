@@ -49,12 +49,6 @@ export function createInfrastructureRouter(metricsStore: MetricsStore): ExpressR
 
   router.post('/logs', logsController.capture);
 
-  // ============================================
-  // 向后兼容路由（可在未来版本移除）
-  // ============================================
-
-  router.get('/health', healthController.liveness);
-
   return router;
 }
 

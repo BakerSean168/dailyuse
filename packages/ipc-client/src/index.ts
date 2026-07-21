@@ -30,7 +30,6 @@
 // ── Types ──
 export type {
   ElectronBridge,
-  ElectronAPI,
   IpcClientConfig,
 } from './types';
 export {

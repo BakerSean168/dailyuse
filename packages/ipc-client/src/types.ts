@@ -45,11 +45,6 @@ export interface ElectronBridge {
   off(channel: string, callback: (...args: unknown[]) => void): void;
 }
 
-/**
- * 兼容别名 — 与 infrastructure-client 中已有的 ElectronAPI 类型一致
- */
-export type ElectronAPI = ElectronBridge;
-
 // ============================================================================
 // IPC Client Interface (Adapter 层使用)
 // ============================================================================

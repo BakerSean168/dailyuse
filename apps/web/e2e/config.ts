@@ -31,7 +31,7 @@ export const API_CONFIG = {
   /**
    * 健康检查端点
    */
-  HEALTH_ENDPOINT: '/health',
+  HEALTH_ENDPOINT: '/healthz',
 } as const;
 
 /**
