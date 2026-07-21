@@ -690,4 +690,40 @@ describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
       );
     }
   });
+
+  it('step 12: start gate fails closed when only multi-engine capability offers are present', () => {
+    const engineOnlyOffers: CapabilityOffer[] = [
+      {
+        kind: 'engine.direct_turn',
+        providerId: 'direct-chat-execution',
+        surface: 'any',
+        readonly: false,
+      },
+      {
+        kind: 'engine.pi_readonly',
+        providerId: 'pi-readonly',
+        surface: 'any',
+        readonly: true,
+      },
+      {
+        kind: 'engine.cli_readonly',
+        providerId: 'cli-readonly',
+        surface: 'any',
+        readonly: true,
+      },
+    ];
+
+    const blocked = assertAgentStartCapabilityPlan('knowledge.generate', engineOnlyOffers);
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) {
+      expect(blocked.error.message).toContain('missing capabilities');
+      expect(blocked.error.message).toContain('tool.proposal');
+      expect(blocked.error.message).toContain('tool.mutation');
+      expect(blocked.error.message).toContain('context.cloud_rag');
+    }
+
+    // Engine offers never unlock goal.create at start either without automation ports,
+    // but goal.create intentionally starts planning without mutation capability.
+    expect(assertAgentStartCapabilityPlan('goal.create', engineOnlyOffers).ok).toBe(true);
+  });
 });

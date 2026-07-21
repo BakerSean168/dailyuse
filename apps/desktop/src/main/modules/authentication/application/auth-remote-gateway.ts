@@ -57,38 +57,65 @@ export interface RefreshApiResult {
   data: AuthResponseDTO | { message?: string; error?: string };
 }
 
-type EnvelopeLike<T> =
-  | T
-  | {
-      data?: T;
-      message?: string;
-      error?:
-        | string
-        | {
-            code?: string;
-            message?: string;
-            context?: Record<string, unknown>;
-          };
-      code?: string;
-      ok?: boolean;
-    };
+/**
+ * First-party auth HTTP body. Memoflow API always serializes Result via HttpResponse
+ * envelope (`ok` + `data`/`error`). No raw dual-track payloads.
+ */
+type AuthHttpEnvelope<T = unknown> = {
+  ok?: boolean;
+  data?: T;
+  message?: string;
+  error?:
+    | string
+    | {
+        code?: string;
+        message?: string;
+        context?: Record<string, unknown>;
+      };
+  code?: string | number;
+};
 
-function unwrapEnvelope<T>(body: EnvelopeLike<T>): T {
-  if (body && typeof body === 'object' && 'data' in body && body.data !== undefined) {
-    return body.data as T;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
+
+function hasDataKey(body: unknown): body is AuthHttpEnvelope {
+  return isRecord(body) && 'data' in body;
+}
+
+function readEnvelopeData<T>(body: unknown): T | undefined {
+  if (!hasDataKey(body)) {
+    return undefined;
   }
-  return body as T;
+  return body.data as T | undefined;
+}
+
+function readErrorPayload(body: unknown): { message?: string; error?: string } {
+  if (!isRecord(body)) {
+    return {};
+  }
+  const nested = body.error;
+  const nestedMessage =
+    typeof nested === 'string'
+      ? nested
+      : nested && typeof nested === 'object' && typeof nested.message === 'string'
+        ? nested.message
+        : undefined;
+  const message =
+    (typeof body.message === 'string' && body.message) || nestedMessage || undefined;
+  return {
+    message,
+    error: typeof nested === 'string' ? nested : nestedMessage,
+  };
 }
 
 function toResultError(
   status: number,
-  body: EnvelopeLike<unknown>,
+  body: unknown,
   fallbackMessage: string,
 ): Result<never> {
   const nested =
-    body && typeof body === 'object' && 'error' in body
-      ? (body as { error?: unknown }).error
-      : undefined;
+    isRecord(body) && 'error' in body ? (body as AuthHttpEnvelope).error : undefined;
 
   if (nested && typeof nested === 'object' && nested !== null && 'code' in nested) {
     const err = nested as { code?: string; message?: string; context?: Record<string, unknown> };
@@ -101,9 +128,7 @@ function toResultError(
 
   const message =
     (typeof nested === 'string' && nested) ||
-    (body && typeof body === 'object' && typeof (body as { message?: string }).message === 'string'
-      ? (body as { message: string }).message
-      : undefined) ||
+    (isRecord(body) && typeof body.message === 'string' ? body.message : undefined) ||
     fallbackMessage;
 
   const code =
@@ -124,12 +149,16 @@ function toResultError(
   return fail({ code: code as never, message });
 }
 
-async function parseJson(response: Response): Promise<EnvelopeLike<unknown>> {
+async function parseJson(response: Response): Promise<unknown> {
   try {
-    return (await response.json()) as EnvelopeLike<unknown>;
+    return await response.json();
   } catch {
     return {};
   }
+}
+
+function protocolErrorData(message: string): { message: string; error: string } {
+  return { message, error: message };
 }
 
 export class AuthRemoteGateway {
@@ -202,15 +231,31 @@ export class AuthRemoteGateway {
       body: JSON.stringify(request),
     });
 
-    const body = (await response.json()) as
-      | RegisterApiResponse
-      | { data?: RegisterApiResponse; message?: string };
-    const data = 'data' in body && body.data ? body.data : (body as RegisterApiResponse);
+    const body = await parseJson(response);
+    if (response.ok) {
+      const data = readEnvelopeData<RegisterApiResponse>(body);
+      if (data === undefined || data === null) {
+        return {
+          ok: false,
+          status: response.status,
+          data: protocolErrorData('Auth register response missing data envelope'),
+        };
+      }
+      return {
+        ok: true,
+        status: response.status,
+        data,
+      };
+    }
 
     return {
-      ok: response.ok,
+      ok: false,
       status: response.status,
-      data,
+      data: {
+        ...readErrorPayload(body),
+        message:
+          readErrorPayload(body).message ?? `Registration failed (${response.status})`,
+      },
     };
   }
 
@@ -226,15 +271,30 @@ export class AuthRemoteGateway {
       body: JSON.stringify(request),
     });
 
-    const body = (await response.json()) as
-      | AuthResponseDTO
-      | { data?: AuthResponseDTO; message?: string; error?: string };
-    const data = 'data' in body && body.data ? body.data : body;
+    const body = await parseJson(response);
+    if (response.ok) {
+      const data = readEnvelopeData<AuthResponseDTO>(body);
+      if (data === undefined || data === null) {
+        return {
+          ok: false,
+          status: response.status,
+          data: protocolErrorData('Auth login response missing data envelope'),
+        };
+      }
+      return {
+        ok: true,
+        status: response.status,
+        data,
+      };
+    }
 
     return {
-      ok: response.ok,
+      ok: false,
       status: response.status,
-      data,
+      data: {
+        ...readErrorPayload(body),
+        message: readErrorPayload(body).message ?? `Login failed (${response.status})`,
+      },
     };
   }
 
@@ -250,15 +310,30 @@ export class AuthRemoteGateway {
       body: JSON.stringify(request),
     });
 
-    const body = (await response.json()) as
-      | AuthResponseDTO
-      | { data?: AuthResponseDTO; message?: string; error?: string };
-    const data = 'data' in body && body.data ? body.data : body;
+    const body = await parseJson(response);
+    if (response.ok) {
+      const data = readEnvelopeData<AuthResponseDTO>(body);
+      if (data === undefined || data === null) {
+        return {
+          ok: false,
+          status: response.status,
+          data: protocolErrorData('Auth refresh response missing data envelope'),
+        };
+      }
+      return {
+        ok: true,
+        status: response.status,
+        data,
+      };
+    }
 
     return {
-      ok: response.ok,
+      ok: false,
       status: response.status,
-      data,
+      data: {
+        ...readErrorPayload(body),
+        message: readErrorPayload(body).message ?? `Refresh failed (${response.status})`,
+      },
     };
   }
 
@@ -284,12 +359,19 @@ export class AuthRemoteGateway {
       return toResultError(response.status, payload, options.fallbackMessage);
     }
 
-    // Some endpoints return { ok:true, data: null/undefined }
-    if (payload && typeof payload === 'object' && 'ok' in payload && (payload as { ok?: boolean }).ok === false) {
+    if (!hasDataKey(payload)) {
+      return fail({
+        code: 'INTERNAL_ERROR',
+        message: `${options.fallbackMessage}: response missing data envelope`,
+      });
+    }
+
+    if (payload.ok === false) {
       return toResultError(response.status, payload, options.fallbackMessage);
     }
 
-    return ok(unwrapEnvelope(payload as EnvelopeLike<T>));
+    // Envelope success: data may be undefined for void Result payloads.
+    return ok(payload.data as T);
   }
 
   async forgotPassword(request: ForgotPasswordReq): Promise<Result<void>> {
@@ -349,14 +431,17 @@ export class AuthRemoteGateway {
     if (!response.ok) {
       return toResultError(response.status, body, 'Failed to list OAuth providers');
     }
-    if (body && typeof body === 'object' && 'ok' in body) {
-      const envelope = body as { ok?: boolean; data?: OAuthProvidersRes; error?: unknown };
-      if (envelope.ok && envelope.data) {
-        return ok(envelope.data);
-      }
+    if (!hasDataKey(body) || body.ok === false) {
       return toResultError(response.status, body, 'Failed to list OAuth providers');
     }
-    return ok(unwrapEnvelope(body) as OAuthProvidersRes);
+    const data = readEnvelopeData<OAuthProvidersRes>(body);
+    if (data === undefined || data === null) {
+      return fail({
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to list OAuth providers: response missing data envelope',
+      });
+    }
+    return ok(data);
   }
 
   async oauthCallback(request: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {

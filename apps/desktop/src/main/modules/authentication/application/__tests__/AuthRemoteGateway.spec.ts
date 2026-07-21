@@ -80,7 +80,7 @@ describe('AuthRemoteGateway', () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({ accessToken: 'new-token', expiresIn: 3600 }),
+      json: async () => ({ data: { accessToken: 'new-token', expiresIn: 3600 } }),
     });
 
     const gateway = new AuthRemoteGateway(
@@ -104,6 +104,30 @@ describe('AuthRemoteGateway', () => {
       ok: true,
       status: 200,
       data: { accessToken: 'new-token', expiresIn: 3600 },
+    });
+  });
+
+  it('fails closed when a successful auth response omits the data envelope', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ accessToken: 'raw-token', expiresIn: 3600 }),
+    });
+
+    const gateway = new AuthRemoteGateway(
+      fetchImpl as never,
+      ((path: string) => `https://api.test${path}`) as never,
+    );
+
+    const result = await gateway.refreshToken({
+      refreshToken: 'refresh-token',
+      sessionId: 'session-1',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(200);
+    expect(result.data).toMatchObject({
+      message: 'Auth refresh response missing data envelope',
     });
   });
 });

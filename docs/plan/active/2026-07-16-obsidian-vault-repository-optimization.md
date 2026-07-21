@@ -1212,6 +1212,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > data-portability ipc adapter + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留七十六轮）：Desktop `AuthRemoteGateway` 删除 auth HTTP raw
+> dual-track——register/login/refresh/listOAuthProviders/postResult 成功响应必须带 `data`
+> 信封，裸业务体 fail-closed；lifecycle `hasValidSession` 去掉可选 `ok` 兜底；ADR-035
+> journey 增 step 12（`assertAgentStartCapabilityPlan` 对仅 multi-engine offer 的
+> knowledge.generate fail-closed）。§13.2 仍为部分/外部阻塞。验证：desktop auth gateway +
+> login/register/refresh focused specs + ai journey + governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1288,7 +1297,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七十五轮：journey step 11 固化 multi-engine（direct_turn / pi_readonly / cli_readonly）
   offer 单独不能满足 knowledgeWriteRequirements，错误 engineId 在缺能力时仍为 `none`；
   server-held disclosure Web-only：`useDataPortability` + IPC adapter NOT_SUPPORTED +
-  three-login matrix step 8。仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
+  three-login matrix step 8。
+  残留七十六轮：journey step 12 固化 start gate 对仅 multi-engine offer 的 knowledge.generate
+  fail-closed；Desktop AuthRemoteGateway 成功响应强制 data 信封（无 raw dual-track）。
+  仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**

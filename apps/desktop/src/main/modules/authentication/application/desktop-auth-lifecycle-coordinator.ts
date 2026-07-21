@@ -118,7 +118,7 @@ export class DesktopAuthLifecycleCoordinator {
 
       return {
         ok: true,
-        hasValidSession: result.ok ?? false,
+        hasValidSession: result.ok,
         runtimeState: this.authState.runtimeState,
         identityId: result.identityId,
         sessionId: result.session?.id,
