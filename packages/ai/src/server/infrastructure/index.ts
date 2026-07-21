@@ -2,7 +2,7 @@
  * AI Module — Infrastructure Server exports.
  * AI 模块 — 基础设施服务端导出。
  *
- * Re-exports the composition root, adapters, and legacy classes.
+ * Re-exports the composition root, adapters, and runtime composition roots.
  * 重新导出组合根、适配器和遗留类。
  */
 

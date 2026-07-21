@@ -13,9 +13,9 @@
  *   - The connector obtains a PowerSync-specific RS256 JWT from the API's
  *     `/powersync/token` endpoint, authenticating via the existing HS256 access token.
  *   - CRUD uploads are batched to `/powersync/crud` in the API.
- *   - `connectPowerSync()` must be called AFTER the user is authenticated (i.e.
- *     the TokenManager has a valid access token). Call `disconnectPowerSync()`
- *     on logout or app shutdown.
+ *   - Profile runtime opens local-only first via `openPowerSyncLocalOnly()`, then
+ *     promotes to sync with `ensurePowerSyncSyncMode()` after authentication.
+ *     Use `shutdownPowerSync()` on profile teardown / app quit (data preserved).
  */
 
 import { PowerSyncDatabase } from '@powersync/node';
@@ -62,8 +62,7 @@ let powerSyncDb: PowerSyncDatabase | null = null;
 let syncConnected = false;
 let currentDbPath: string | null = null;
 
-// Concurrency guards — prevent duplicate instances when two callers race.
-let connectingPromise: Promise<PowerSyncDatabase> | null = null;
+// Concurrency guard — prevent duplicate local-only opens when two callers race.
 let openingPromise: Promise<PowerSyncDatabase> | null = null;
 
 // ──────────────────────────────────────────────
@@ -365,78 +364,6 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
 // ──────────────────────────────────────────────
 
 /**
- * Creates and connects the PowerSync database.
- * Call this AFTER the user has authenticated.
- *
- * Guarded against concurrent calls — if a connection is already in
- * progress the same promise is returned.
- */
-export async function connectPowerSync(
-  dbPath: string,
-  tokenManager: TokenManager,
-): Promise<PowerSyncDatabase> {
-  assertCompatibleDbPath(dbPath);
-
-  if (connectingPromise) {
-    console.log('[PowerSync] Connection already in progress, waiting…');
-    return connectingPromise;
-  }
-
-  if (powerSyncDb && syncConnected) {
-    console.log('[PowerSync] Already connected (sync mode)');
-    return powerSyncDb;
-  }
-
-  if (powerSyncDb && !syncConnected) {
-    connectingPromise = (async () => {
-      console.log('[PowerSync] Promoting existing local-only instance to sync mode');
-      await purgeNonSyncableLocalCrud(powerSyncDb!);
-      await purgePreHydrationBootstrapCrud(powerSyncDb!);
-      const connector = new DesktopPowerSyncConnector(tokenManager);
-      await powerSyncDb!.connect(connector);
-      syncConnected = true;
-      console.log('[PowerSync] Connected to PowerSync Service (promoted)');
-      return powerSyncDb!;
-    })();
-
-    try {
-      return await connectingPromise;
-    } finally {
-      connectingPromise = null;
-    }
-  }
-
-  connectingPromise = (async () => {
-    const resolvedDbPath = ensureDbDirectory(dbPath);
-    console.log(`[PowerSync] Initializing sync database: ${resolvedDbPath}`);
-
-    const db = createPowerSyncDatabase(resolvedDbPath);
-    await db.waitForReady();
-    await purgeNonSyncableLocalCrud(db);
-    await purgePreHydrationBootstrapCrud(db);
-
-    const connector = new DesktopPowerSyncConnector(tokenManager);
-    await db.connect(connector);
-
-    powerSyncDb = db;
-    syncConnected = true;
-    currentDbPath = resolvedDbPath;
-
-    // Start broadcasting table changes to renderer windows
-    startChangeBroadcast(db);
-
-    console.log('[PowerSync] Connected to PowerSync Service');
-    return db;
-  })();
-
-  try {
-    return await connectingPromise;
-  } finally {
-    connectingPromise = null;
-  }
-}
-
-/**
  * Opens the PowerSync database in local-only mode (no sync).
  *
  * Used for OFFLINE_USER and GUEST auth modes where no auth token is available
@@ -488,8 +415,8 @@ export async function openPowerSyncLocalOnly(dbPath: string): Promise<PowerSyncD
 /**
  * Ensures the PowerSync database is running in sync mode.
  *
- * If a local-only instance already exists, it is promoted by attaching a
- * connector. If no instance exists yet, a new sync-mode connection is created.
+ * Requires an already prepared local-only profile database (from
+ * `openPowerSyncLocalOnly`). Promotes it by attaching a connector.
  */
 export async function ensurePowerSyncSyncMode(
   tokenManager: TokenManager,
@@ -513,37 +440,6 @@ export async function ensurePowerSyncSyncMode(
 }
 
 /**
- * @deprecated Use ensurePowerSyncSyncMode() for a self-contained sync-mode entrypoint.
- */
-export async function promotePowerSyncToSync(tokenManager: TokenManager): Promise<void> {
-  await ensurePowerSyncSyncMode(tokenManager);
-}
-
-/**
- * Disconnects and cleans up the PowerSync database.
- * Wipes the local sync data — use on LOGOUT only.
- */
-export async function disconnectPowerSync(): Promise<void> {
-  if (!powerSyncDb) return;
-
-  try {
-    // Stop broadcasting before disconnecting
-    stopChangeBroadcast();
-    await powerSyncDb.disconnectAndClear();
-    console.log('[PowerSync] Disconnected and cleared');
-  } catch (error) {
-    console.error('[PowerSync] Error during disconnect:', error);
-  } finally {
-    syncConnected = false;
-    powerSyncDb = null;
-    currentDbPath = null;
-    // Clear concurrency guards to prevent stale in-flight opens from restoring old instances
-    openingPromise = null;
-    connectingPromise = null;
-  }
-}
-
-/**
  * Gracefully shuts down the PowerSync database WITHOUT wiping local data.
  * Use on app quit to preserve the sync cache for the next cold start.
  */
@@ -560,9 +456,8 @@ export async function shutdownPowerSync(): Promise<void> {
     syncConnected = false;
     powerSyncDb = null;
     currentDbPath = null;
-    // Clear concurrency guards to prevent stale in-flight opens from restoring old instances
+    // Clear concurrency guard to prevent stale in-flight opens from restoring old instances
     openingPromise = null;
-    connectingPromise = null;
   }
 }
 

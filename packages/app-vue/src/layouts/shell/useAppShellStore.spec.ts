@@ -165,11 +165,4 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.panelWidth).toBe(760);
   });
 
-  it('clampPanelWidthToViewport alias also preserves preferred width', () => {
-    const store = useAppShellStore();
-    store.setPanelWidth(700);
-    const effective = store.clampPanelWidthToViewport(1000, 260);
-    expect(effective).toBeLessThanOrEqual(700);
-    expect(store.panelWidth).toBe(700);
-  });
 });

@@ -296,13 +296,6 @@ export const useAppShellStore = defineStore('app-shell', {
       }).panelWidth;
     },
 
-    /**
-     * @deprecated 使用 resolvePanelWidth；保留别名以免外部残留调用。
-     * 不再回写 panelWidth。
-     */
-    clampPanelWidthToViewport(viewportWidth: number, sidebarOccupiedWidth: number): number {
-      return this.resolvePanelWidth(viewportWidth, sidebarOccupiedWidth);
-    },
   },
 
   persist: {

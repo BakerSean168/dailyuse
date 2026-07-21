@@ -324,24 +324,3 @@ export function isServerError(result: Result<unknown>): boolean {
   return status >= 500;
 }
 
-// ============================================================================
-// Legacy Compatibility (向后兼容)
-// ============================================================================
-
-/** @deprecated 使用 ResultCode */
-export const ResponseCode = ResultCode;
-
-/** @deprecated 使用 HttpResponse */
-export type ApiResponse<T = unknown> = HttpResponse<T>;
-
-/** @deprecated 使用 HttpResponse */
-export type SuccessResponse<T = unknown> = HttpResponse<T> & { ok: true };
-
-/** @deprecated 使用 HttpResponse */
-export type ErrorResponse = HttpResponse<never> & { ok: false };
-
-/** @deprecated 使用 HttpResponseBuilder */
-export const ResponseBuilder = HttpResponseBuilder;
-
-/** @deprecated 使用 createHttpResponseBuilder */
-export const createResponseBuilder = createHttpResponseBuilder;

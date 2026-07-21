@@ -132,18 +132,18 @@ import { AccountDTO } from '@dailyuse/contracts/account';
 
 根入口 (`@dailyuse/contracts`) 导出以下内容：
 
-### 响应系统
+### 响应系统（Result Pattern）
 
 ```typescript
 import {
-  ResponseCode,
-  ResponseStatus,
-  ResponseBuilder,
-  createResponseBuilder,
-  type ApiResponse,
-  type SuccessResponse,
-  type ErrorResponse,
+  ResultCode,
+  HttpResponseBuilder,
+  createHttpResponseBuilder,
+  type HttpResponse,
+  type Result,
 } from '@dailyuse/contracts';
+// 或更细粒度：
+// import { ResultCode, type HttpResponse } from '@dailyuse/contracts/result';
 ```
 
 ### 常用枚举
