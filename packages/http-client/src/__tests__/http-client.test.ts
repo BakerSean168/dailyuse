@@ -235,7 +235,7 @@ describe('ResultHttpClient', () => {
     }
   });
 
-  it('get() returns raw data when no envelope', async () => {
+  it('get() fails closed when response omits the Result envelope', async () => {
     const client = new ResultHttpClient({ baseURL: 'http://localhost' });
     const axios = client.getAxiosInstance();
 
@@ -248,9 +248,30 @@ describe('ResultHttpClient', () => {
     });
 
     const result = await client.get('/test');
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.data).toEqual({ plain: true });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('INTERNAL_ERROR');
+      expect(result.error.message).toMatch(/envelope|dual-track/i);
+    }
+  });
+
+  it('get() fails closed when ok:true envelope omits the data key', async () => {
+    const client = new ResultHttpClient({ baseURL: 'http://localhost' });
+    const axios = client.getAxiosInstance();
+
+    axios.defaults.adapter = async () => ({
+      data: { ok: true, message: 'ok' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    const result = await client.get('/test');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('INTERNAL_ERROR');
+      expect(result.error.message).toMatch(/envelope|dual-track/i);
     }
   });
 });

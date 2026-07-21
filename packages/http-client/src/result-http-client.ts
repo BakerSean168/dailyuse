@@ -7,8 +7,9 @@
  * 1. 统一返回 `Promise<Result<T>>`，不 reject
  * 2. HTTP 4xx/5xx / 网络异常 → `Result.fail`
  * 3. 成功响应 → 自动剥离 HttpResponse 信封 → `Result.ok(data)`
- * 4. 泛型安全，IDE 可精确推断 data 类型
- * 5. 401 自动 Token 刷新 + 登出处理
+ * 4. 非标准信封 fail-closed（无 raw dual-track 透传）
+ * 5. 泛型安全，IDE 可精确推断 data 类型
+ * 6. 401 自动 Token 刷新 + 登出处理
  *
  * @module @dailyuse/http-client
  *
@@ -26,7 +27,7 @@
 
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { Result, ResultError } from '@dailyuse/contracts/result';
-import { ok, fail, fromHttpResponse } from '@dailyuse/contracts/result';
+import { fail, fromHttpResponse } from '@dailyuse/contracts/result';
 import type { HttpResponse } from '@dailyuse/contracts/result';
 import type { AxiosHttpClientConfig, TokenProvider, TokenRefreshHandler } from './types';
 import { createAxiosInstance } from './axios-instance';
@@ -313,14 +314,17 @@ export class ResultHttpClient {
   private handleSuccess<T>(response: AxiosResponse): Result<T> {
     const data = response.data;
 
-    // 后端返回了标准 HttpResponse 信封
+    // First-party Memoflow APIs always serialize Result as HttpResponse.
+    // No raw dual-track passthrough for non-envelope bodies.
     if (this.isHttpResponseEnvelope(data)) {
-      // 利用 contracts 中已有的 fromHttpResponse 进行转换
       return fromHttpResponse<T>(data as HttpResponse<T>);
     }
 
-    // 非标准信封 → 直接包装为 Result.ok
-    return ok(data as T);
+    return fail({
+      code: 'INTERNAL_ERROR',
+      message:
+        'HTTP response missing standard Result envelope (raw dual-track payloads are not accepted)',
+    });
   }
 
   /**
@@ -357,14 +361,19 @@ export class ResultHttpClient {
   // Helpers
   // ────────────────────────────────────────
 
-  /** 判断是否为后端标准 HttpResponse 信封 */
+  /** 判断是否为后端标准 HttpResponse 信封（与 IpcResult 一样要求 ok + data/error 形状） */
   private isHttpResponseEnvelope(data: unknown): data is HttpResponse {
-    return (
-      data !== null &&
-      typeof data === 'object' &&
-      'ok' in (data as any) &&
-      typeof (data as any).ok === 'boolean'
-    );
+    if (data === null || typeof data !== 'object') {
+      return false;
+    }
+    const envelope = data as Record<string, unknown>;
+    if (typeof envelope.ok !== 'boolean') {
+      return false;
+    }
+    if (envelope.ok === true) {
+      return 'data' in envelope;
+    }
+    return 'error' in envelope || typeof envelope.message === 'string';
   }
 
   /** 创建网络异常的 Result.fail */

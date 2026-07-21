@@ -170,8 +170,18 @@ export function AppSessionProvider({ children }: PropsWithChildren) {
         return null;
       }
 
-      const json = (await response.json()) as { data?: AuthResponseDTO } | AuthResponseDTO;
-      const data = 'data' in json && json.data ? json.data : (json as AuthResponseDTO);
+      const json = (await response.json()) as {
+        ok?: boolean;
+        data?: AuthResponseDTO;
+      };
+      // First-party auth refresh must return HttpResponse data envelope (no raw dual-track).
+      if (!json || typeof json !== 'object' || !('data' in json) || !json.data) {
+        resetRemoteState();
+        void clearPersistedAuthSession();
+        setSessionKind('signed-out');
+        return null;
+      }
+      const data = json.data;
       applyAuthenticatedState({
         identity: data.identity,
         session: data.session,
