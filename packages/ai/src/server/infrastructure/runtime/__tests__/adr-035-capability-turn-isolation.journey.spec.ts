@@ -500,4 +500,102 @@ describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
     expect(AgentToolNameSchema.safeParse('reindex_resource').success).toBe(false);
     expect(AgentToolNameSchema.safeParse('bash').success).toBe(false);
   });
+  it('step 8: multi-turn second confirm does not double-create after completed turn', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistence();
+
+    const completed = baseRun('completed', {
+      state: {
+        ...baseRun('completed').state,
+        approvedActions: [pendingCreateNoteAction],
+        artifacts: [noteDraftArtifact],
+        executedActions: [
+          {
+            tool: 'create_knowledge_note',
+            status: 'executed',
+            message: 'created',
+          },
+        ],
+      },
+      interrupts: [],
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValue(completed);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+      }),
+    );
+
+    const first = await runtime.services.agentRuntimeService.resumeRun(
+      FIXTURE.runId,
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingCreateNoteAction],
+      },
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-turn1`,
+    );
+    expect(first.ok).toBe(true);
+    // Completed turn has no execution.required interrupt, so host must not mutate again.
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+
+    const second = await runtime.services.agentRuntimeService.resumeRun(
+      FIXTURE.runId,
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingCreateNoteAction],
+      },
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-turn2`,
+    );
+    expect(second.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+  });
+
+  it('step 9: Web surface cannot satisfy Desktop local_vault knowledge-write requirements', () => {
+    const webOnlyOffers: CapabilityOffer[] = [
+      {
+        kind: 'tool.proposal',
+        providerId: 'web-agent',
+        surface: 'web',
+        readonly: false,
+      },
+      {
+        kind: 'tool.mutation',
+        providerId: 'web-agent',
+        surface: 'web',
+        readonly: false,
+      },
+      {
+        kind: 'context.cloud_rag',
+        providerId: 'web-rag',
+        surface: 'web',
+        readonly: true,
+      },
+    ];
+
+    const desktopReqs = knowledgeWriteRequirements('desktop');
+    const webPlan = resolveRunPlan({
+      engineId: 'langgraph',
+      offers: webOnlyOffers,
+      requirements: desktopReqs,
+      surface: 'web',
+    });
+    expect(webPlan.engineId).toBe('none');
+    expect(webPlan.missing.some((item) => item.kind === 'context.local_vault')).toBe(true);
+
+    const webReqs = knowledgeWriteRequirements('web');
+    const okWeb = resolveRunPlan({
+      engineId: 'langgraph',
+      offers: webOnlyOffers,
+      requirements: webReqs,
+      surface: 'web',
+    });
+    expect(okWeb.engineId).toBe('langgraph');
+    expect(okWeb.missing).toEqual([]);
+  });
+
 });

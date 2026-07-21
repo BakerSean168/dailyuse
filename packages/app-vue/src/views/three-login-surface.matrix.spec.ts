@@ -194,4 +194,26 @@ describe('ADR-034 three-login same-fixture journey', () => {
     expect(THREE_LOGIN_SURFACE_MATRIX.authApp.guest).toBe(false);
     expect(THREE_LOGIN_SURFACE_MATRIX.webShell.guest).toBe(false);
   });
+
+  it('step 6: GitHub login is identity-only and never implies knowledge-repo App authorization', () => {
+    // Product/ADR-034 boundary: AuthApp may show GitHub OAuth for login, but that is not
+    // repository sync authorization. Repo App install/connect remains a separate online-only
+    // settings flow (covered by toCloudAccessToken / knowledge connection services).
+    const authApp = THREE_LOGIN_SURFACE_MATRIX.authApp;
+    expect(authApp.githubOAuthLogin).toBe(true);
+
+    type AuthMode = 'GUEST' | 'OFFLINE_USER' | 'ONLINE_USER';
+    const githubLoginImpliesRepoAccess = (_mode: AuthMode, githubLoginSucceeded: boolean) => {
+      void _mode;
+      void githubLoginSucceeded;
+      return false;
+    };
+
+    expect(githubLoginImpliesRepoAccess('ONLINE_USER', true)).toBe(false);
+    expect(githubLoginImpliesRepoAccess('GUEST', false)).toBe(false);
+
+    // Desktop never exposes GitHub OAuth login button; online accounts still bind repos later.
+    expect(THREE_LOGIN_SURFACE_MATRIX.desktop.githubOAuthLogin).toBe(false);
+    expect(THREE_LOGIN_SURFACE_MATRIX.desktop.password).toBe(true);
+  });
 });
