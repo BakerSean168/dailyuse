@@ -49,7 +49,8 @@ updated: 2026-07-21T00:00:00
   **`ResourceClientDTO`/`RepositoryClientDTO` 与相关 value objects / mock factories 已删除**；
   Web E2E 不再 mock 退役 editor/resource API；客户端 adapter 删除无调用的
   legacy hard-fail stub；app-vue repository locale 收缩为 projection/localVault 面；
-  knowledge event 保留。
+  退役顶层 `editor` locale 与无 UI 的 `setting.tabs`/`setting.editor` 文案已删；
+  contracts 空 entities/dtos/value-objects 桶已移除；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
@@ -750,6 +751,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > tabs/bookmarks 等死文案，仅保留 route/segments/projection/localVault。验证：repository adapter
 > specs、web handlers spec、governance-check。§13.2 未完成项不变。状态保持 **实施中**；
 > PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留十七轮）：删除 app-vue 顶层退役 `editor` 模块 locale（无
+> `editor.*` 运行时引用）；删除无 UI 挂载的 `setting.tabs` / `setting.editor` 文案；移除
+> contracts repository 空 `entities`/`dtos`/`value-objects` 桶导出。EditorSchema 与 portable
+> preferences.editor 字段仍保留（备份兼容）。验证：contracts test/typecheck、app-vue setting
+> focused specs、governance-check。§13.2 未完成项不变。状态保持 **实施中**；PR readiness 仍为 no。
 
 ## 13. 测试与完成定义
 
