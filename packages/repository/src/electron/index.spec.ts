@@ -116,8 +116,10 @@ describe('RepositoryElectronModule automatic synchronization lifecycle', () => {
     expect(connectionPort.disconnectKnowledgeRepository).toHaveBeenCalledWith('connection-1', true);
     expect(scheduler.refresh).toHaveBeenCalledTimes(4);
     expect(scheduler.refresh).toHaveBeenNthCalledWith(1, 'identity-1');
-    expect(mocks.handlers.has(RepositoryChannels.RESOURCE_UPDATE)).toBe(false);
-    expect(mocks.handlers.has(RepositoryChannels.RESOURCE_DELETE)).toBe(false);
+    expect(mocks.handlers.has('repository:resource:update')).toBe(false);
+    expect(mocks.handlers.has('repository:resource:delete')).toBe(false);
+    expect(mocks.handlers.has('repository:folder:list')).toBe(false);
+    expect(mocks.handlers.has('repository:current')).toBe(false);
 
     await module.destroy?.();
     module = null;

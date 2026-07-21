@@ -238,18 +238,7 @@ export const NotificationChannels = {
 } as const;
 
 export const RepositoryChannels = {
-  CURRENT: 'repository:current',
-  RESOURCE_LIST: 'repository:resource:list',
-  RESOURCE_GET: 'repository:resource:get',
-  RESOURCE_CREATE: 'repository:resource:create',
-  RESOURCE_UPLOAD: 'repository:resource:upload',
-  RESOURCE_UPDATE: 'repository:resource:update',
-  RESOURCE_DELETE: 'repository:resource:delete',
-  BOOKMARK_LIST: 'repository:bookmark:list',
-  BOOKMARK_CREATE: 'repository:bookmark:create',
-  BOOKMARK_UPDATE: 'repository:bookmark:update',
-  BOOKMARK_REORDER: 'repository:bookmark:reorder',
-  BOOKMARK_DELETE: 'repository:bookmark:delete',
+  // Knowledge repository + Local Vault only. Legacy resource/folder/bookmark CRUD IPC removed.
   KNOWLEDGE_CONNECTION_INSTALLATION_START: 'repository:knowledge-connection:installation:start',
   KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE:
     'repository:knowledge-connection:installation:complete',
@@ -262,11 +251,6 @@ export const RepositoryChannels = {
     'repository:knowledge-connection:reconciliation-execute',
   KNOWLEDGE_CONNECTION_SYNC: 'repository:knowledge-connection:sync',
   KNOWLEDGE_CONNECTION_DESKTOP_TOKEN: 'repository:knowledge-connection:desktop-token',
-  FOLDER_LIST: 'repository:folder:list',
-  FOLDER_CREATE: 'repository:folder:create',
-  FOLDER_UPDATE: 'repository:folder:update',
-  FOLDER_DELETE: 'repository:folder:delete',
-  SEARCH: 'repository:search',
   LOCAL_VAULT_GET: 'repository:local-vault:get',
   LOCAL_VAULT_SELECT: 'repository:local-vault:select',
   LOCAL_VAULT_DETACH: 'repository:local-vault:detach',
