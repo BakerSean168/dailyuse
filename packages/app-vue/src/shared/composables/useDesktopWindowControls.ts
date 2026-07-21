@@ -9,6 +9,7 @@
  * it for the auth-screen titlebar.
  */
 import { inject, reactive } from 'vue';
+import { isOk, type Result } from '@dailyuse/contracts/result';
 import { DESKTOP_BRIDGE_KEY, type DesktopBridge } from '../../di/keys';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 
@@ -24,6 +25,14 @@ function getBridge(): DesktopBridge | undefined {
     inject(DESKTOP_BRIDGE_KEY, undefined) ??
     ((window as { electronAPI?: DesktopBridge }).electronAPI as DesktopBridge | undefined)
   );
+}
+
+function readResultData<T>(response: unknown): T | null {
+  if (!response || typeof response !== 'object' || !('ok' in response)) {
+    return null;
+  }
+  const result = response as Result<T>;
+  return isOk(result) ? (result.data ?? null) : null;
 }
 
 export function useDesktopWindowControls() {
@@ -45,11 +54,8 @@ export function useDesktopWindowControls() {
   }
 
   async function syncState() {
-    const state = (await bridge?.invoke(WindowChannels.GET_CONTROLS_STATE)) as
-      | Partial<WindowControlsState>
-      | null
-      | undefined;
-    applyState(state);
+    const response = await bridge?.invoke(WindowChannels.GET_CONTROLS_STATE);
+    applyState(readResultData<Partial<WindowControlsState>>(response));
   }
 
   async function minimizeWindow() {
@@ -57,11 +63,8 @@ export function useDesktopWindowControls() {
   }
 
   async function toggleMaximize() {
-    const state = (await bridge?.invoke(WindowChannels.TOGGLE_MAXIMIZE)) as
-      | Partial<WindowControlsState>
-      | null
-      | undefined;
-    applyState(state);
+    const response = await bridge?.invoke(WindowChannels.TOGGLE_MAXIMIZE);
+    applyState(readResultData<Partial<WindowControlsState>>(response));
   }
 
   async function closeWindow() {

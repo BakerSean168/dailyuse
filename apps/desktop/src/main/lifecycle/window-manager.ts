@@ -15,6 +15,7 @@ import { BrowserWindow, ipcMain, app } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
+import { fail, ok } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
 import { startScheduleRuntime, stopScheduleRuntime } from '@dailyuse/schedule/electron';
 import { applyWindowChromeTheme, createNativeWindowChromeOptions } from './desktop-chrome';
@@ -614,43 +615,41 @@ export class WindowManager {
         throw new Error('No active profile available for main window transition');
       }
       await this.transitionToMainWindow(profileId, profileResolver.mainWindowStatePath);
-      return { success: true };
+      return ok(null);
     });
 
     // 登出 → 切换到登录窗口
     ipcMain.handle(WindowChannels.TRANSITION_TO_LOGIN, async () => {
       logger.info('IPC window:transition-to-login received');
       await this.transitionToLoginWindow();
-      return { success: true };
+      return ok(null);
     });
 
     // 获取当前窗口类型
     ipcMain.handle(WindowChannels.GET_TYPE, (event) => {
       const webContents = event.sender;
       if (this.loginWindow?.webContents === webContents) {
-        return 'login';
+        return ok('login' as const);
       }
       if (this.registerWindow?.webContents === webContents) {
-        return 'register';
+        return ok('register' as const);
       }
       if (this.mainWindow?.webContents === webContents) {
-        return 'main';
+        return ok('main' as const);
       }
-      return 'unknown';
+      return ok('unknown' as const);
     });
 
     ipcMain.handle(WindowChannels.OPEN_AUTH_REGISTER, async () => {
       this.openOrFocusRegisterWindow();
-      return { success: true };
+      return ok(null);
     });
 
-    ipcMain.handle(WindowChannels.CLOSE_AUTH_REGISTER, async () => ({
-      success: this.closeRegisterWindow(),
-    }));
+    ipcMain.handle(WindowChannels.CLOSE_AUTH_REGISTER, async () =>
+      ok(this.closeRegisterWindow()),
+    );
 
-    ipcMain.handle(WindowChannels.FOCUS_MAIN_WINDOW, async () => ({
-      success: this.focusMainWindow(),
-    }));
+    ipcMain.handle(WindowChannels.FOCUS_MAIN_WINDOW, async () => ok(this.focusMainWindow()));
 
     ipcMain.handle(WindowChannels.SYNC_CHROME_THEME, (event, theme: DesktopChromeTheme) => {
       if (theme !== 'light' && theme !== 'dark') {
@@ -659,31 +658,31 @@ export class WindowManager {
 
       const window = BrowserWindow.fromWebContents(event.sender);
       if (!window || window.isDestroyed()) {
-        return { success: false };
+        return fail({ code: 'UNAVAILABLE', message: 'Window is not available' });
       }
 
       applyWindowChromeTheme(window, theme);
-      return { success: true };
+      return ok(null);
     });
 
     ipcMain.handle(WindowChannels.MINIMIZE, (event) => {
       const window = this.getWindowForSender(event.sender.id);
       if (!window || window.isDestroyed() || !window.isMinimizable()) {
-        return { success: false };
+        return fail({ code: 'UNAVAILABLE', message: 'Window cannot be minimized' });
       }
 
       window.minimize();
-      return { success: true };
+      return ok(null);
     });
 
     ipcMain.handle(WindowChannels.TOGGLE_MAXIMIZE, (event) => {
       const window = this.getWindowForSender(event.sender.id);
       if (!window || window.isDestroyed()) {
-        return null;
+        return ok(null);
       }
 
       if (!window.isMaximizable() && !window.isFullScreen()) {
-        return this.getWindowControlsState(window);
+        return ok(this.getWindowControlsState(window));
       }
 
       if (window.isFullScreen()) {
@@ -694,26 +693,26 @@ export class WindowManager {
         window.maximize();
       }
 
-      return this.getWindowControlsState(window);
+      return ok(this.getWindowControlsState(window));
     });
 
     ipcMain.handle(WindowChannels.CLOSE, (event) => {
       const window = this.getWindowForSender(event.sender.id);
       if (!window || window.isDestroyed() || !window.isClosable()) {
-        return { success: false };
+        return fail({ code: 'UNAVAILABLE', message: 'Window cannot be closed' });
       }
 
       window.close();
-      return { success: true };
+      return ok(null);
     });
 
     ipcMain.handle(WindowChannels.GET_CONTROLS_STATE, (event) => {
       const window = this.getWindowForSender(event.sender.id);
       if (!window || window.isDestroyed()) {
-        return null;
+        return ok(null);
       }
 
-      return this.getWindowControlsState(window);
+      return ok(this.getWindowControlsState(window));
     });
   }
 
