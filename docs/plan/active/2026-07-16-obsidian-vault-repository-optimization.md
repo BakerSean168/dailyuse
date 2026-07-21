@@ -57,7 +57,7 @@ updated: 2026-07-21T00:00:00
   Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView/useSmsCodeCountdown 已删；Agent identity 归属 fail-closed + resolveRunPlan surface 隔离；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
-  完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
+  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
 
 ## 2. 已确认产品边界
 
@@ -655,7 +655,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 12. Agent 上下文隔离/不绕过确认 — **部分实现**：提案确认与 path 边界在位；完整 Agent Host 安全面仍由 ADR-035 plan 收口。
 > 13. webhook/read model/附件/RAG 可重建 — **已证明**：projection + reconciliation + AI index 专用表。
 > 14. Web Markdown 安全 — **已证明**：sanitizer/危险 URL 测试边界。
-> 15. lint/typecheck/test/E2E/governance/prod-like — **外部阻塞**：真实 GitHub fixture 缺凭据；local-deploy 曾 Docker 磁盘耗尽；本轮补最近单测验证。
+> 15. lint/typecheck/test/E2E/governance/prod-like — **部分验证 + 外部阻塞**：prod-like `docker:local:up` 残留二十七轮已绿（六服务 healthy）；真实 GitHub fixture 缺凭据；全量 PR 门禁套件未宣称通过。
 > **阶段 6 本轮代码收口**：删除未挂载的 legacy `folder/repository/resource` API route builders；壳层/AI 最近笔记改为
 > Web projection + Desktop Local Vault，不再调用已退役 Resource CRUD；`/repository?note=` 深链选中；Note capsule /
 > AI open 跳转 projection/local workspace。旧 `RepositoryWorkspaceView` 与 `packages/editor` 仍残留为非路由死代码，
@@ -824,6 +824,19 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > （缺完整 ADR-035 Capability/Turn E2E）。验证：contracts capabilities specs、ai runtime identity
 > isolation specs、governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留二十七轮）：本地 prod-like 验证链路解阻塞。package `project.json`
+> build 命令从 `pnpm exec tsup/tsc` 改为直接 `node ../../node_modules/...`，`.npmrc` 增加
+> `pm-on-fail=ignore`，避免 host Corepack/pnpm minor 不一致导致 package build 失败；
+> `tools/docker/local-compose.mjs` 优先 `corepack pnpm` 做 build-prep，并为缺失的
+> `REDIS_PASSWORD`/`JWT_SECRET`/`DB_PASSWORD` 注入本地校验默认值（非真实密钥）。
+> 删除无消费者的 `ai.diagnostics` locale 块（en-US/zh-CN）。
+> 验证：`nx build api`、`nx build web --configuration=production` 成功；
+> `node ./tools/docker/local-compose.mjs up` 成功；
+> `postgres/redis/ai-service/api/web/powersync` 六个服务均为 healthy；
+> Web `http://localhost:58080/` → 200，API `/health` → 200 `{"status":"ok"}`。
+> §13.2 第 15 项 prod-like 磁盘/启动阻塞解除，但仍缺全量 lint/typecheck/test/E2E/governance 与
+> 真实 GitHub fixture E2E。状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -842,7 +855,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留二十六轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留二十七轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
@@ -878,10 +891,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   仍缺：完整 ADR-035 Capability/Turn isolation E2E 与跨端一揽子对抗 E2E。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
-- [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（外部阻塞 + 部分验证）**
+- [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
-  Playwright 集合含 knowledge note boundary 与 AI goal-workflow。外部阻塞：prod-like
-  `docker:local:up` 曾因 Docker 磁盘耗尽失败；真实 GitHub App fixture E2E 缺凭据。
+  Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
+  `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
+  磁盘耗尽不再是阻塞。仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
+  真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
 ## 14. 相关资料
 
