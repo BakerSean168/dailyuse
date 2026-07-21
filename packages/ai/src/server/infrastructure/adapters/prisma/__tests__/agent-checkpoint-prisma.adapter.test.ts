@@ -129,3 +129,49 @@ describe('AgentCheckpointPrismaAdapter upsert ownership (residual 105)', () => {
     expect(update).not.toHaveBeenCalled();
   });
 });
+
+
+describe('AgentCheckpointPrismaAdapter get/list metadata ownership (residual 107)', () => {
+  it('get returns null when run metadata identity mismatches row owner', async () => {
+    const findFirst = vi.fn().mockResolvedValue({
+      runMetadata: {
+        ...baseRun,
+        identityId: 'identity-other',
+      },
+      stateSnapshot: null,
+      events: [],
+      interrupts: [],
+    });
+    const prisma = {
+      agentRunCheckpoint: { findFirst },
+    } as unknown as PrismaClient;
+    const adapter = new AgentCheckpointPrismaAdapter(prisma);
+
+    await expect(
+      adapter.get({ identityId: 'identity-1', runId: 'run-1' }),
+    ).resolves.toBeNull();
+    expect(findFirst).toHaveBeenCalledWith({
+      where: { runId: 'run-1', identityId: 'identity-1', deletedAt: null },
+    });
+  });
+
+  it('list filters out runs whose metadata identity does not match the query identity', async () => {
+    const findMany = vi.fn().mockResolvedValue([
+      {
+        runMetadata: { ...baseRun, runId: 'run-own', identityId: 'identity-1' },
+      },
+      {
+        runMetadata: { ...baseRun, runId: 'run-spoof', identityId: 'identity-other' },
+      },
+    ]);
+    const prisma = {
+      agentRunCheckpoint: { findMany },
+    } as unknown as PrismaClient;
+    const adapter = new AgentCheckpointPrismaAdapter(prisma);
+
+    const runs = await adapter.list({ identityId: 'identity-1' });
+    expect(runs).toEqual([
+      expect.objectContaining({ runId: 'run-own', identityId: 'identity-1' }),
+    ]);
+  });
+});

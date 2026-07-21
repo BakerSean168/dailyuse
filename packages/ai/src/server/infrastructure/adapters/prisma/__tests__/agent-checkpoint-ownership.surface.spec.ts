@@ -3,8 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Agent checkpoint ownership surface (stage-6 residual 105):
- * upsert must not overwrite foreign-owned runId via bare where:{runId} dual-track.
+ * Agent checkpoint ownership surface (stage-6 residual 105/107):
+ * upsert must not overwrite foreign-owned runId; get/list must not leak
+ * spoofed run.identityId metadata.
  */
 describe('agent checkpoint ownership surface', () => {
   const adapter = readFileSync(
@@ -20,7 +21,6 @@ describe('agent checkpoint ownership surface', () => {
     expect(block).toContain("code: 'FORBIDDEN'");
     expect(block).toContain('existing.identityId !== identityId');
     expect(block).toContain('findUnique');
-    // No bare upsert-by-runId without ownership gate.
     expect(block).not.toMatch(/agentRunCheckpoint\.upsert\(\{\s*where:\s*\{\s*runId/);
   });
 
@@ -29,5 +29,10 @@ describe('agent checkpoint ownership surface', () => {
     expect(adapter).toContain('async delete(');
     expect(adapter).toMatch(/async get\([\s\S]*?where:\s*\{[\s\S]*?identityId/);
     expect(adapter).toMatch(/async delete\([\s\S]*?where:\s*\{[\s\S]*?identityId/);
+  });
+
+  it('get/list defense-in-depth checks run.identityId against request identity', () => {
+    expect(adapter).toContain('run.identityId !== identityId');
+    expect(adapter).toContain('.filter((run) => run.identityId === identityId)');
   });
 });

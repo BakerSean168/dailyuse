@@ -129,6 +129,15 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
       }
 
       const run = AgentRunSchema.parse(checkpoint.runMetadata);
+      // Defense-in-depth: refuse metadata that spoofs another identity (residual 107).
+      if (run.identityId !== identityId) {
+        logger.warn('Agent checkpoint metadata identity mismatch; treating as not found', {
+          runId,
+          identityId,
+          metadataIdentityId: run.identityId,
+        });
+        return null;
+      }
       const state = checkpoint.stateSnapshot
         ? AgentStateSchema.parse(checkpoint.stateSnapshot)
         : undefined;
@@ -181,10 +190,10 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
         take: limit ?? undefined,
       });
 
-      return checkpoints.map((checkpoint) => {
-        const metadata = checkpoint.runMetadata as unknown as Record<string, unknown>;
-        return AgentRunSchema.parse(metadata);
-      });
+      // Defense-in-depth: drop rows whose run metadata spoofs another identity (residual 107).
+      return checkpoints
+        .map((checkpoint) => AgentRunSchema.parse(checkpoint.runMetadata))
+        .filter((run) => run.identityId === identityId);
     } catch (error) {
       logger.error('Failed to list agent checkpoints', error, {
         identityId,
