@@ -288,7 +288,13 @@ describe('ServerHeldDataDisclosureEnvelopeV1Schema', () => {
   });
 
   it('cannot be parsed as an importable user-data export', () => {
-    expect(parseUserDataExportEnvelope(disclosure).ok).toBe(false);
+    const result = parseUserDataExportEnvelope(disclosure);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/not importable/i);
+      expect(result.error).toMatch(/server-held data disclosure/i);
+      expect(result.error).toMatch(/memoflow\.user-data-export/i);
+    }
   });
 
   it('does not allow the scope to claim replayable GitHub authorization is included', () => {

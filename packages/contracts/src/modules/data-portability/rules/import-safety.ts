@@ -77,6 +77,21 @@ export type ParseUserDataExportEnvelopeResult =
  * and required a downstream cast, this returns a fully typed envelope on success.
  */
 export function parseUserDataExportEnvelope(raw: unknown): ParseUserDataExportEnvelopeResult {
+  // Server-held disclosure is a distinct, non-importable product envelope (residual 106).
+  // Fail closed with an explicit message before generic schema diagnostics.
+  if (
+    raw !== null &&
+    typeof raw === 'object' &&
+    !Array.isArray(raw) &&
+    (raw as { kind?: unknown }).kind === 'memoflow.server-held-data-disclosure'
+  ) {
+    return {
+      ok: false,
+      error:
+        'Server-held data disclosure is not importable. Export/import only memoflow.user-data-export business backups.',
+    };
+  }
+
   const result = UserDataExportEnvelopeV1Schema.safeParse(raw);
   if (!result.success) {
     const issue = result.error.issues[0];

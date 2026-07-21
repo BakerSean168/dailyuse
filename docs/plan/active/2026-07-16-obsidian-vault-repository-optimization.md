@@ -1459,6 +1459,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分。验证：ai checkpoint adapter/surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百零六轮）：服务端持有数据披露不可导入 hardening——
+> `parseUserDataExportEnvelope` 对 `memoflow.server-held-data-disclosure` 先于通用 schema
+> fail-closed 并给出明确 not-importable 文案；ImportUserData 用例 dryRun/正式导入均拒绝且
+> 不进入 importStore.transaction；补 contracts 断言、use-case 单测与 not-importable surface。
+> 保持可重新导入业务备份与披露边界分离。§13.2 仍为部分/外部阻塞。验证：contracts +
+> data-portability focused + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1500,6 +1509,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七十五轮：matrix step 8 固化 server-held data disclosure 为 Web-only（Desktop 不暴露）；
   残留一百零三轮：matrix step 9 固化 AuthPlatformEntry/DesktopAuthView/WebAuthView/
   useDataPortability 源码边界与矩阵一致。
+  残留一百零六轮：server-held disclosure import fail-closed（parse + ImportUserData 用例）。
   仍缺：真实跨端 Playwright/Electron 一揽子 E2E（含真实 OAuth/GitHub fixture）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
