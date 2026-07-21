@@ -21,9 +21,20 @@ test.describe('Legacy database note mutation boundary', () => {
     const headers = { Authorization: `Bearer ${token}` };
 
     await expectNotMounted(
+      request.get(`${API_CONFIG.FULL_URL}/repositories/current`, {
+        headers,
+      }),
+    );
+    await expectNotMounted(
       request.post(`${API_CONFIG.FULL_URL}/repositories/legacy-repository/resources`, {
         headers,
         data: { name: 'legacy.md', type: 'File', content: '# legacy' },
+      }),
+    );
+    await expectNotMounted(
+      request.post(`${API_CONFIG.FULL_URL}/repositories/legacy-repository/folders`, {
+        headers,
+        data: { name: 'legacy-folder' },
       }),
     );
     await expectNotMounted(
@@ -42,7 +53,7 @@ test.describe('Legacy database note mutation boundary', () => {
 });
 
 async function expectNotMounted(
-  responsePromise: ReturnType<APIRequestContext['put']>,
+  responsePromise: Promise<{ status(): number }>,
 ): Promise<void> {
   const response = await responsePromise;
   expect(response.status()).toBe(404);

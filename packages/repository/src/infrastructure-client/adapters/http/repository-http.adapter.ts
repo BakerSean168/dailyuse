@@ -5,14 +5,13 @@
  * Uses IResultHttpClient for making HTTP requests.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import { fail, type Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   IRepositoryApiClient,
   CreateFolderRequest,
   CreateResourceRequest,
   UpdateResourceRequest,
-  UploadFileLike,
   UploadResourcesRequest,
 } from '../types';
 import type {
@@ -23,7 +22,6 @@ import type {
   SearchRequest,
   SearchResponse,
   UploadResourcesResponseDTO,
-  UploadResourceFileDTO,
   ResourceBookmarkClientDTO,
   CreateResourceBookmarkRequestDTO,
   UpdateResourceBookmarkRequestDTO,
@@ -63,40 +61,7 @@ import type {
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
 } from '@dailyuse/contracts/repository';
-import { fail } from '@dailyuse/contracts/result';
 
-// Local aliases for Web API types not available in non-DOM tsconfig lib
-type BlobPart = ArrayBuffer | ArrayBufferView | Blob | string;
-interface BlobPropertyBag {
-  type?: string;
-  endings?: 'transparent' | 'native';
-}
-
-/**
- * Type guard to distinguish UploadResourceFileDTO from UploadFileLike.
- */
-function isUploadResourceFileDTO(
-  file: UploadFileLike | UploadResourceFileDTO,
-): file is UploadResourceFileDTO {
-  return 'contentBase64' in file;
-}
-
-/**
- * Safely access getAxiosInstance from an IResultHttpClient.
- */
-function getAxiosInstance(httpClient: IResultHttpClient): unknown | null {
-  const client = httpClient as IResultHttpClient & {
-    getAxiosInstance?: () => unknown;
-  };
-  return typeof client.getAxiosInstance === 'function' ? client.getAxiosInstance() : null;
-}
-
-function base64ToBytes(value: string): Uint8Array {
-  if (typeof atob === 'function') {
-    return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
-  }
-  return Uint8Array.from(Buffer.from(value, 'base64'));
-}
 
 /**
  * Repository HTTP Adapter
@@ -109,171 +74,113 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
 
   async getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>> {
-    return this.httpClient.get(`${this.baseUrl}/current`);
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  // ===== Folder Operations =====
+  // ===== Folder / Resource / Bookmark (removed runtime surface) =====
 
-  async createFolder(request: CreateFolderRequest): Promise<Result<FolderClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${request.repositoryId}/folders`, request);
+  async createFolder(_request: CreateFolderRequest): Promise<Result<FolderClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async getFolderContents(folderId: string): Promise<
+  async getFolderContents(_folderId: string): Promise<
     Result<{
       folders: FolderClientDTO[];
       resources: ResourceClientDTO[];
     }>
   > {
-    return this.httpClient.get(`/folders/${folderId}/contents`);
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async renameFolder(id: string, name: string): Promise<Result<FolderClientDTO>> {
-    return this.httpClient.patch(`/folders/${id}`, { name });
+  async renameFolder(_id: string, _name: string): Promise<Result<FolderClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>> {
-    return this.httpClient.post(`/folders/${id}/move`, { targetParentId });
+  async moveFolder(_id: string, _targetParentId: string): Promise<Result<FolderClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async deleteFolder(id: string): Promise<Result<void>> {
-    return this.httpClient.delete(`/folders/${id}`);
+  async deleteFolder(_id: string): Promise<Result<void>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  // ===== File Tree =====
-
-  async getFileTree(repositoryId: string): Promise<Result<FileTreeResponse>> {
-    return this.httpClient.get(`${this.baseUrl}/${repositoryId}/folders`);
+  async getFileTree(_repositoryId: string): Promise<Result<FileTreeResponse>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  // ===== Search =====
-
-  async search(request: SearchRequest): Promise<Result<SearchResponse>> {
-    return this.httpClient.post('/search', request);
+  async search(_request: SearchRequest): Promise<Result<SearchResponse>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  // ===== Resource Operations =====
-
-  async listResources(repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
-    return this.httpClient.get(`${this.baseUrl}/${repositoryId}/resources`);
+  async listResources(_repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async createResource(
-    repositoryId: string,
-    request: CreateResourceRequest,
+    _repositoryId: string,
+    _request: CreateResourceRequest,
   ): Promise<Result<ResourceClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${repositoryId}/resources`, request);
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async getResource(id: string): Promise<Result<ResourceClientDTO>> {
-    return this.httpClient.get(`/resources/${id}`);
+  async getResource(_id: string): Promise<Result<ResourceClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async updateResource(
-    id: string,
-    request: UpdateResourceRequest,
+    _id: string,
+    _request: UpdateResourceRequest,
   ): Promise<Result<ResourceClientDTO>> {
-    return this.httpClient.put(`/resources/${id}`, request);
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>> {
-    return this.httpClient.patch(`/resources/${id}`, { name });
+  async renameResource(_id: string, _name: string): Promise<Result<ResourceClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>> {
-    return this.httpClient.post(`/resources/${id}/move`, { targetFolderId });
+  async moveResource(_id: string, _targetFolderId: string): Promise<Result<ResourceClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async deleteResource(id: string): Promise<Result<void>> {
-    return this.httpClient.delete(`/resources/${id}`);
+  async deleteResource(_id: string): Promise<Result<void>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async uploadResources(
-    repositoryId: string,
-    request: UploadResourcesRequest,
+    _repositoryId: string,
+    _request: UploadResourcesRequest,
   ): Promise<Result<UploadResourcesResponseDTO>> {
-    const axios = getAxiosInstance(this.httpClient);
-    if (!axios) {
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: 'HTTP client does not support multipart uploads',
-      });
-    }
-
-    // Access web API constructors via globalThis — they may not be in scope
-    // depending on the runtime environment (Node vs browser).
-    const global = globalThis as unknown as {
-      FormData?: { new (): FormData };
-      Blob?: { new (parts: BlobPart[], options?: BlobPropertyBag): Blob };
-    };
-    const FormDataCtor = global.FormData;
-    const BlobCtor = global.Blob;
-    if (!FormDataCtor || !BlobCtor) {
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: 'Runtime does not support multipart uploads',
-      });
-    }
-    const formData = new FormDataCtor();
-    for (const file of request.files) {
-      if (isUploadResourceFileDTO(file)) {
-        const blob = new BlobCtor([base64ToBytes(file.contentBase64) as unknown as BlobPart], {
-          type: file.mimeType || 'application/octet-stream',
-        });
-        formData.append('files', blob, file.name);
-      } else {
-        const bytes = new Uint8Array(await file.arrayBuffer());
-        const blob = new BlobCtor([bytes as unknown as BlobPart], {
-          type: file.type || 'application/octet-stream',
-        });
-        formData.append('files', blob, file.name);
-      }
-    }
-    if (request.folderId) formData.append('folderId', request.folderId);
-    if (request.tags) formData.append('tags', JSON.stringify(request.tags));
-    if (request.overwritePolicy) formData.append('overwritePolicy', request.overwritePolicy);
-
-    const client = this.httpClient as IResultHttpClient & {
-      request: (config: unknown) => Promise<Result<UploadResourcesResponseDTO>>;
-    };
-    return client.request({
-      method: 'post',
-      url: `${this.baseUrl}/${repositoryId}/resources/upload`,
-      data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async listBookmarks(repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>> {
-    return this.httpClient.get(`${this.baseUrl}/${repositoryId}/bookmarks`);
+  async listBookmarks(_repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async createBookmark(
-    repositoryId: string,
-    request: CreateResourceBookmarkRequestDTO,
+    _repositoryId: string,
+    _request: CreateResourceBookmarkRequestDTO,
   ): Promise<Result<ResourceBookmarkClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${repositoryId}/bookmarks`, request);
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async updateBookmark(
-    repositoryId: string,
-    bookmarkId: string,
-    request: UpdateResourceBookmarkRequestDTO,
+    _repositoryId: string,
+    _bookmarkId: string,
+    _request: UpdateResourceBookmarkRequestDTO,
   ): Promise<Result<ResourceBookmarkClientDTO>> {
-    return this.httpClient.patch(
-      `${this.baseUrl}/${repositoryId}/bookmarks/${bookmarkId}`,
-      request,
-    );
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async reorderBookmarks(
-    repositoryId: string,
-    request: ReorderResourceBookmarksRequestDTO,
+    _repositoryId: string,
+    _request: ReorderResourceBookmarksRequestDTO,
   ): Promise<Result<ResourceBookmarkClientDTO[]>> {
-    return this.httpClient.post(`${this.baseUrl}/${repositoryId}/bookmarks/reorder`, request);
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${repositoryId}/bookmarks/${bookmarkId}`);
+  async deleteBookmark(_repositoryId: string, _bookmarkId: string): Promise<Result<void>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async startKnowledgeRepositoryInstallation(
@@ -396,6 +303,15 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
     request: CreateConfirmedKnowledgeNoteReq,
   ): Promise<Result<CreateConfirmedKnowledgeNoteResponse>> {
     return this.httpClient.post(`${this.baseUrl}/knowledge-notes`, request);
+  }
+
+
+  private legacyDatabaseRepositoryUnavailable<T>(): Result<T> {
+    return fail({
+      code: 'NOT_SUPPORTED',
+      message:
+        'Legacy database Repository/Folder/Resource APIs were removed; use Local Vault or GitHub knowledge projections',
+    });
   }
 
   private localVaultUnavailable<T>(): Result<T> {

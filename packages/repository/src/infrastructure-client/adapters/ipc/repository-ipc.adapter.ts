@@ -62,16 +62,6 @@ import type {
   ListKnowledgeAttachmentProjectionsReq,
 } from '@dailyuse/contracts/repository';
 
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-  if (typeof btoa === 'function') {
-    return btoa(binary);
-  }
-  return Buffer.from(bytes).toString('base64');
-}
 
 /**
  * Repository IPC Adapter
@@ -84,146 +74,113 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>> {
-    return this.ipcClient.invoke(`${this.channel}:current`);
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  // ===== Folder Operations =====
+  // ===== Folder / Resource / Bookmark (removed runtime surface) =====
 
-  async createFolder(request: CreateFolderRequest): Promise<Result<FolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:folder:create`, request);
+  async createFolder(_request: CreateFolderRequest): Promise<Result<FolderClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async getFolderContents(folderId: string): Promise<
+  async getFolderContents(_folderId: string): Promise<
     Result<{
       folders: FolderClientDTO[];
       resources: ResourceClientDTO[];
     }>
   > {
-    return this.ipcClient.invoke(`${this.channel}:folder:list`, { folderId });
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async renameFolder(id: string, name: string): Promise<Result<FolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:folder:update`, { id, name });
+  async renameFolder(_id: string, _name: string): Promise<Result<FolderClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:folder:update`, { id, parentId: targetParentId });
+  async moveFolder(_id: string, _targetParentId: string): Promise<Result<FolderClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async deleteFolder(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:folder:delete`, id);
+  async deleteFolder(_id: string): Promise<Result<void>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  // ===== File Tree =====
-
-  async getFileTree(repositoryId: string): Promise<Result<FileTreeResponse>> {
-    return this.ipcClient.invoke(`${this.channel}:folder:list`, { repositoryId });
+  async getFileTree(_repositoryId: string): Promise<Result<FileTreeResponse>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  // ===== Search =====
-
-  async search(request: SearchRequest): Promise<Result<SearchResponse>> {
-    return this.ipcClient.invoke(`${this.channel}:search`, request);
+  async search(_request: SearchRequest): Promise<Result<SearchResponse>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  // ===== Resource Operations =====
-
-  async listResources(repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
-    return this.ipcClient.invoke(`${this.channel}:resource:list`, repositoryId);
+  async listResources(_repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async createResource(
-    repositoryId: string,
-    request: CreateResourceRequest,
+    _repositoryId: string,
+    _request: CreateResourceRequest,
   ): Promise<Result<ResourceClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:resource:create`, { repositoryId, ...request });
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async getResource(id: string): Promise<Result<ResourceClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:resource:get`, id);
+  async getResource(_id: string): Promise<Result<ResourceClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async updateResource(
-    id: string,
-    request: UpdateResourceRequest,
+    _id: string,
+    _request: UpdateResourceRequest,
   ): Promise<Result<ResourceClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:resource:update`, { id, ...request });
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:resource:update`, { id, name });
+  async renameResource(_id: string, _name: string): Promise<Result<ResourceClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:resource:update`, { id, targetFolderId });
+  async moveResource(_id: string, _targetFolderId: string): Promise<Result<ResourceClientDTO>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async deleteResource(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:resource:delete`, id);
+  async deleteResource(_id: string): Promise<Result<void>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async uploadResources(
-    repositoryId: string,
-    request: UploadResourcesRequest,
+    _repositoryId: string,
+    _request: UploadResourcesRequest,
   ): Promise<Result<UploadResourcesResponseDTO>> {
-    const files = await Promise.all(
-      request.files.map(async (file) => {
-        if (typeof File !== 'undefined' && file instanceof File) {
-          const buffer = new Uint8Array(await file.arrayBuffer());
-          return {
-            name: file.name,
-            mimeType: file.type,
-            size: file.size,
-            contentBase64: bytesToBase64(buffer),
-          };
-        }
-        return file;
-      }),
-    );
-
-    return this.ipcClient.invoke(`${this.channel}:resource:upload`, {
-      repositoryId,
-      files,
-      metadata: {
-        folderId: request.folderId,
-        tags: request.tags,
-        overwritePolicy: request.overwritePolicy,
-      },
-    });
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async listBookmarks(repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>> {
-    return this.ipcClient.invoke(`${this.channel}:bookmark:list`, { repositoryId });
+  async listBookmarks(_repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async createBookmark(
-    repositoryId: string,
-    request: CreateResourceBookmarkRequestDTO,
+    _repositoryId: string,
+    _request: CreateResourceBookmarkRequestDTO,
   ): Promise<Result<ResourceBookmarkClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:bookmark:create`, { repositoryId, request });
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async updateBookmark(
-    repositoryId: string,
-    bookmarkId: string,
-    request: UpdateResourceBookmarkRequestDTO,
+    _repositoryId: string,
+    _bookmarkId: string,
+    _request: UpdateResourceBookmarkRequestDTO,
   ): Promise<Result<ResourceBookmarkClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:bookmark:update`, {
-      repositoryId,
-      bookmarkId,
-      request,
-    });
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async reorderBookmarks(
-    repositoryId: string,
-    request: ReorderResourceBookmarksRequestDTO,
+    _repositoryId: string,
+    _request: ReorderResourceBookmarksRequestDTO,
   ): Promise<Result<ResourceBookmarkClientDTO[]>> {
-    return this.ipcClient.invoke(`${this.channel}:bookmark:reorder`, { repositoryId, request });
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
-  async deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:bookmark:delete`, { repositoryId, bookmarkId });
+  async deleteBookmark(_repositoryId: string, _bookmarkId: string): Promise<Result<void>> {
+    return this.legacyDatabaseRepositoryUnavailable();
   }
 
   async startKnowledgeRepositoryInstallation(
@@ -368,6 +325,15 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
     request: ConfirmedLocalVaultWriteReq,
   ): Promise<Result<ConfirmedLocalVaultWriteRes>> {
     return this.ipcClient.invoke(`${this.channel}:local-vault:note:write-confirmed`, request);
+  }
+
+
+  private legacyDatabaseRepositoryUnavailable<T>(): Result<T> {
+    return fail({
+      code: 'NOT_SUPPORTED',
+      message:
+        'Legacy database Repository/Folder/Resource APIs were removed; use Local Vault or GitHub knowledge projections',
+    });
   }
 
   private serverProjectionUnavailable<T>(): Result<T> {
