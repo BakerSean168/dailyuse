@@ -319,35 +319,39 @@ export function registerDesktopAuthShellHandlers(
 
   ipcMain.handle(AuthChannels.GET_STATUS, async () => {
     const service = currentAuthService();
-    return service ? await service.getStatus() : unauthenticatedStatus();
+    const status = service ? await service.getStatus() : unauthenticatedStatus();
+    return toIpcResult(ok(status));
   });
 
   ipcMain.handle(AuthChannels.GET_BOOTSTRAP_SNAPSHOT, async () => {
     const service = currentAuthService();
-    return service
+    const snapshot = service
       ? await service.buildBootstrapSnapshot()
       : {
           status: unauthenticatedStatus(),
           currentUser: null,
         };
+    return toIpcResult(ok(snapshot));
   });
 
   ipcMain.handle(AuthChannels.INITIALIZE, async () => {
     const service = currentAuthService();
     if (!service) {
-      return {
-        ok: true,
-        hasValidSession: false,
-        runtimeState: AuthRuntimeState.UNAUTHENTICATED,
-      };
+      return toIpcResult(
+        ok({
+          ok: true,
+          hasValidSession: false,
+          runtimeState: AuthRuntimeState.UNAUTHENTICATED,
+        }),
+      );
     }
-    return await service.initialize();
+    return toIpcResult(ok(await service.initialize()));
   });
 
   ipcMain.handle(AuthChannels.AUTO_LOGIN, async () => {
     const remembered = await rememberedAccountsService.getAutoLoginAccount();
     if (!remembered) {
-      return { ok: true, authenticated: false };
+      return toIpcResult(ok({ ok: true, authenticated: false }));
     }
 
     try {
@@ -364,21 +368,26 @@ export function registerDesktopAuthShellHandlers(
       const result = await service.autoLogin();
       if (!result.ok || !result.authenticated) {
         await runtimeManager.discardPreparedProfile();
-        return result;
+        return toIpcResult(ok(result));
       }
 
       await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
-      return result;
+      return toIpcResult(ok(result));
     } catch (error) {
       await runtimeManager.discardPreparedProfile().catch(() => undefined);
       logger.error('Auto login failed in shell auth', { error });
-      return { ok: false, authenticated: false, error: String(error) };
+      return toIpcResult(
+        fail({
+          code: 'AUTO_LOGIN_ERROR',
+          message: error instanceof Error ? error.message : String(error),
+        }),
+      );
     }
   });
 
   ipcMain.handle(AuthChannels.REMEMBERED_ACCOUNTS_LIST, async () => {
     const accounts = await rememberedAccountsService.list();
-    return mapRememberedAccounts(accounts);
+    return toIpcResult(ok(mapRememberedAccounts(accounts)));
   });
 
   ipcMain.handle(AuthChannels.REMEMBERED_ACCOUNTS_LOGIN, async (_event, request) => {
@@ -431,12 +440,12 @@ export function registerDesktopAuthShellHandlers(
 
   ipcMain.handle(AuthChannels.GET_CURRENT_USER, async () => {
     const service = currentAuthService();
-    return service ? await service.getCurrentUser() : null;
+    return toIpcResult(ok(service ? await service.getCurrentUser() : null));
   });
 
   ipcMain.handle(AuthChannels.SESSION_LIST, async () => {
     const service = currentAuthService();
-    return service ? await service.listSessions() : { sessions: [] };
+    return toIpcResult(ok(service ? await service.listSessions() : { sessions: [] }));
   });
   ipcMain.handle(AuthChannels.SESSION_REVOKE, async (_event, payload: string | { sessionId: string }) => {
     const service = currentAuthService();

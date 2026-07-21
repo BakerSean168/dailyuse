@@ -5,7 +5,8 @@ import { AuthChannels } from '@dailyuse/contracts/electron';
 
 /**
  * Desktop auth shell surface (stage-6 residual):
- * Channel registration must use contracts AuthChannels only — no dual-track local Ch map.
+ * Channel registration must use contracts AuthChannels only — no dual-track local Ch map —
+ * and remaining read/lifecycle handlers return IpcResult envelopes.
  */
 describe('desktop-auth-shell channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'desktop-auth-shell.ts'), 'utf8');
@@ -25,5 +26,19 @@ describe('desktop-auth-shell channel surface', () => {
     expect(AuthChannels.GET_STATUS).toBe('auth:get-status');
     expect(AuthChannels.SESSION_LIST).toBe('auth:session:list');
     expect(AuthChannels.SESSION_REVOKE).toBe('auth:session:revoke');
+  });
+
+  it('returns IpcResult envelopes for previously raw dual-track handlers', () => {
+    expect(source).toContain('toIpcResult(ok(status))');
+    expect(source).toContain('toIpcResult(ok(snapshot))');
+    expect(source).toContain('toIpcResult(ok(await service.initialize()))');
+    expect(source).toContain('toIpcResult(ok({ ok: true, authenticated: false }))');
+    expect(source).toContain('toIpcResult(ok(mapRememberedAccounts(accounts)))');
+    expect(source).toContain('toIpcResult(ok(service ? await service.getCurrentUser() : null))');
+    expect(source).toContain(
+      'toIpcResult(ok(service ? await service.listSessions() : { sessions: [] }))',
+    );
+    expect(source).not.toMatch(/return service \? await service\.getStatus\(\)/);
+    expect(source).not.toMatch(/return \{ ok: true, authenticated: false \};/);
   });
 });

@@ -192,7 +192,7 @@ describe('desktop-auth-shell', () => {
     expect(authService.autoLogin).toHaveBeenCalledOnce();
     expect(runtimeManager.activatePreparedProfile).toHaveBeenCalledWith({ syncMode: 'online' });
     expect(windowManager.transitionToMainWindow).toHaveBeenCalledOnce();
-    expect(result).toEqual({ ok: true, authenticated: true });
+    expect(result).toEqual({ ok: true, data: { ok: true, authenticated: true } });
   });
 
   it('auth:remembered-accounts:login activates local mode for offline remembered logins', async () => {

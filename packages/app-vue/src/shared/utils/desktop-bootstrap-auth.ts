@@ -1,5 +1,6 @@
 import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { AuthBootstrapSnapshot } from '@dailyuse/contracts/authentication';
+import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
 
 export type DesktopBootstrapApi = {
@@ -15,13 +16,16 @@ export async function hydrateDesktopBootstrapAuthState(
   }
 
   const store = useAuthenticationStore();
-  const snapshot = (await api.invoke(AuthChannels.GET_BOOTSTRAP_SNAPSHOT)) as AuthBootstrapSnapshot;
+  const response = (await api.invoke(
+    AuthChannels.GET_BOOTSTRAP_SNAPSHOT,
+  )) as IpcResult<AuthBootstrapSnapshot>;
+  const result = fromIpcResult(response);
 
-  if (!snapshot?.status) {
+  if (!isOk(result) || !result.data?.status) {
     store.reset();
     return false;
   }
 
-  store.hydrateDesktopBootstrapSnapshot(snapshot);
+  store.hydrateDesktopBootstrapSnapshot(result.data);
   return true;
 }
