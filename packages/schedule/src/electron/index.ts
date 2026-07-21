@@ -5,6 +5,7 @@
  */
 
 import { ipcMain } from 'electron';
+import { ok } from '@dailyuse/contracts/result';
 import {
   ScheduleChannels,
   type IElectronModule,
@@ -122,7 +123,11 @@ export function createScheduleElectronModule(
         withAuthenticatedValue(ctx, async () => eventController.update(id, dto)),
       );
       ipcMain.handle(ScheduleChannels.DELETE, async (_event, id) =>
-        withAuthenticatedValue(ctx, async () => eventController.delete(id)),
+        withAuthenticatedValue(ctx, async () => {
+          const result = await eventController.delete(id);
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
       ipcMain.handle(ScheduleChannels.GET_CONFLICTS, async (_event, id) =>
         withAuthenticatedValue(ctx, async () => eventController.getConflicts(id)),
@@ -192,7 +197,11 @@ export function createScheduleElectronModule(
         withAuthenticatedValue(ctx, async () => taskController.cancelTask(taskId, { reason })),
       );
       ipcMain.handle(ScheduleChannels.TASK_DELETE, async (_event, taskId) =>
-        withAuthenticatedValue(ctx, async () => taskController.deleteTask(taskId)),
+        withAuthenticatedValue(ctx, async () => {
+          const result = await taskController.deleteTask(taskId);
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
       ipcMain.handle(ScheduleChannels.TASK_DELETE_BATCH, async (_event, taskIds) =>
         withAuthenticatedValue(ctx, async () => taskController.batchDeleteTasks({ taskIds })),

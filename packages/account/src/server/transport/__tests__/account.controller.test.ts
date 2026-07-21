@@ -196,12 +196,12 @@ describe('AccountController', () => {
   // closeAccount
   // =========================================================================
   describe('closeAccount', () => {
-    it('should validate input and call use case', async () => {
+    it('should validate input and normalize success to ok(null)', async () => {
       (api.closeAccount as ReturnType<typeof vi.fn>).mockResolvedValue(ok(undefined));
 
       const result = await controller.closeAccount({ reason: 'No longer needed' }, FAKE_CONTEXT);
 
-      expect(isOk(result)).toBe(true);
+      expect(result).toEqual(ok(null));
       expect(api.closeAccount).toHaveBeenCalledWith(
         expect.objectContaining({ reason: 'No longer needed' }),
         FAKE_CONTEXT,

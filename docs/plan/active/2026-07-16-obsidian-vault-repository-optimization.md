@@ -1345,6 +1345,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十三轮）：折叠 account/schedule void 删除双轨——账户注销
+> close 与 schedule task/event delete 在 controller/electron 统一 `ok(null)`（对齐 OpenAPI
+> `z.null()`）；`CloseAccountRes` 改为 `null`；删除零运行时消费者的 account
+> Import/Export data-transfer DTO（`success: boolean` 双轨，可移植备份已在
+> data-portability）。补 account/schedule void-success envelope surfaces。§13.2 仍为
+> 部分/外部阻塞。验证：account + schedule focused + governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

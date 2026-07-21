@@ -4,6 +4,7 @@
  * Owns desktop-main registration for the account runtime.
  */
 import { ipcMain } from 'electron';
+import { ok } from '@dailyuse/contracts/result';
 import {
   AccountChannels,
   type IElectronModule,
@@ -66,9 +67,11 @@ export const AccountElectronModule: IElectronModule = {
     );
 
     ipcMain.handle(AccountChannels.CLOSE, async (_event, payload: CloseAccountReq) => {
-      return withAuthenticatedIdentity(ctx, (identityId) =>
-        accountModule.api.closeAccount(payload, { identityId }),
-      );
+      return withAuthenticatedIdentity(ctx, async (identityId) => {
+        const result = await accountModule.api.closeAccount(payload, { identityId });
+        if (!result.ok) return result;
+        return ok(null);
+      });
     });
 
     logger.info('Account module registered');

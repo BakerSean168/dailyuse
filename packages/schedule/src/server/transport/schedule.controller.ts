@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { ScheduleApplicationPort } from '../application';
 import {
@@ -67,8 +67,11 @@ export class ScheduleController {
     return this.api.updateTask(id, parsed.data as unknown as UpdateScheduleTaskRequest);
   }
 
-  async deleteTask(id: string): Promise<Result<unknown>> {
-    return this.api.deleteTask(id);
+  async deleteTask(id: string): Promise<Result<null>> {
+    const result = await this.api.deleteTask(id);
+    if (!result.ok) return result as Result<null>;
+    // Serialize as data:null (no Result.void / undefined dual-track).
+    return ok(null);
   }
 
   // ==================== Task Actions ====================

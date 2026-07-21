@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { ScheduleEventApplicationPort } from '../application';
 import {
@@ -83,8 +83,11 @@ export class ScheduleEventController {
     return this.api.updateEvent(id, parsed.data);
   }
 
-  async delete(id: string): Promise<Result<unknown>> {
-    return this.api.deleteEvent(id);
+  async delete(id: string): Promise<Result<null>> {
+    const result = await this.api.deleteEvent(id);
+    if (!result.ok) return result as Result<null>;
+    // Serialize as data:null (no Result.void / undefined dual-track).
+    return ok(null);
   }
 
   // ==================== Conflict Detection ====================
