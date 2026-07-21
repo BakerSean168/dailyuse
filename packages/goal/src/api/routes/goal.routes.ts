@@ -378,11 +378,12 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) =>
+    (req, ctx) =>
       controller.batchUpdateKeyResultWeights(
         req.params!.id,
         (req.body as { updates?: Array<{ keyResultId: string; weight: number }> } | undefined)
           ?.updates ?? [],
+        ctx,
       ),
   );
 

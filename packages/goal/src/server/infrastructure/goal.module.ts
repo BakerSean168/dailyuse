@@ -309,19 +309,28 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     deleteGoalFolder: (id, identityId) => useCases.deleteGoalFolder.execute(id, identityId),
 
     // Key Result / 关键结果
-    addKeyResult: (goalId, keyResult) => useCases.addKeyResult.execute(goalId, keyResult),
-    updateKeyResult: (goalId, keyResultId, updates) =>
-      useCases.updateKeyResult.execute(goalId, keyResultId, updates),
-    updateKeyResultProgress: (goalId, keyResultId, currentValue, note) =>
-      useCases.updateKeyResultProgress.execute(goalId, keyResultId, currentValue, note),
-    deleteKeyResult: (goalId, keyResultId) => useCases.deleteKeyResult.execute(goalId, keyResultId),
+    addKeyResult: (goalId, identityId, keyResult) =>
+      useCases.addKeyResult.execute(goalId, identityId, keyResult),
+    updateKeyResult: (goalId, identityId, keyResultId, updates) =>
+      useCases.updateKeyResult.execute(goalId, identityId, keyResultId, updates),
+    updateKeyResultProgress: (goalId, identityId, keyResultId, currentValue, note) =>
+      useCases.updateKeyResultProgress.execute(
+        goalId,
+        identityId,
+        keyResultId,
+        currentValue,
+        note,
+      ),
+    deleteKeyResult: (goalId, identityId, keyResultId) =>
+      useCases.deleteKeyResult.execute(goalId, identityId, keyResultId),
 
     // Review / 复盘
-    addReview: (goalId, params) => useCases.addReview.execute(goalId, params),
-    listReviews: (goalId) => useCases.listReviews.execute(goalId),
-    updateReview: (goalId, reviewId, params) =>
-      useCases.updateReview.execute(goalId, reviewId, params),
-    deleteReview: (goalId, reviewId) => useCases.deleteReview.execute(goalId, reviewId),
+    addReview: (goalId, identityId, params) => useCases.addReview.execute(goalId, identityId, params),
+    listReviews: (goalId, identityId) => useCases.listReviews.execute(goalId, identityId),
+    updateReview: (goalId, identityId, reviewId, params) =>
+      useCases.updateReview.execute(goalId, identityId, reviewId, params),
+    deleteReview: (goalId, identityId, reviewId) =>
+      useCases.deleteReview.execute(goalId, identityId, reviewId),
 
     // Record / 进度记录
     createRecord: (goalId, keyResultId, params, identityId) =>
@@ -340,8 +349,8 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     getGoalAggregate: (goalId, identityId) => useCases.getGoalAggregate.execute(goalId, identityId),
     getGoalProgressBreakdown: (goalId) => useCases.getGoalProgressBreakdown.execute(goalId),
     cloneGoal: (goalId, params, cx) => useCases.cloneGoal.execute(goalId, params, cx),
-    batchUpdateKeyResultWeights: (goalId, updates) =>
-      useCases.batchUpdateKeyResultWeights.execute(goalId, updates),
+    batchUpdateKeyResultWeights: (goalId, identityId, updates) =>
+      useCases.batchUpdateKeyResultWeights.execute(goalId, identityId, updates),
   };
 
   return {

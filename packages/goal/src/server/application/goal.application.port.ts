@@ -66,6 +66,7 @@ export interface GoalApplicationPort {
 
   addKeyResult(
     goalId: string,
+    identityId: string,
     keyResult: {
       title: string;
       valueType: string;
@@ -79,6 +80,7 @@ export interface GoalApplicationPort {
   ): Promise<Result<KeyResultClientDTO>>;
   updateKeyResult(
     goalId: string,
+    identityId: string,
     keyResultId: string,
     updates: {
       title?: string;
@@ -92,14 +94,16 @@ export interface GoalApplicationPort {
   ): Promise<Result<KeyResultClientDTO>>;
   updateKeyResultProgress(
     goalId: string,
+    identityId: string,
     keyResultId: string,
     currentValue: number,
     note?: string,
   ): Promise<Result<KeyResultClientDTO>>;
-  deleteKeyResult(goalId: string, keyResultId: string): Promise<Result<void>>;
+  deleteKeyResult(goalId: string, identityId: string, keyResultId: string): Promise<Result<void>>;
 
   addReview(
     goalId: string,
+    identityId: string,
     params: {
       title: string;
       content: string;
@@ -110,9 +114,10 @@ export interface GoalApplicationPort {
       nextActions?: string;
     },
   ): Promise<Result<GoalReviewClientDTO>>;
-  listReviews(goalId: string): Promise<Result<ListGoalReviewsResult>>;
+  listReviews(goalId: string, identityId: string): Promise<Result<ListGoalReviewsResult>>;
   updateReview(
     goalId: string,
+    identityId: string,
     reviewId: string,
     params: {
       title?: string;
@@ -123,7 +128,7 @@ export interface GoalApplicationPort {
       nextActions?: string | null;
     },
   ): Promise<Result<GoalReviewClientDTO>>;
-  deleteReview(goalId: string, reviewId: string): Promise<Result<void>>;
+  deleteReview(goalId: string, identityId: string, reviewId: string): Promise<Result<void>>;
 
   createRecord(
     goalId: string,
@@ -151,6 +156,7 @@ export interface GoalApplicationPort {
   ): Promise<Result<GoalClientDTO>>;
   batchUpdateKeyResultWeights(
     goalId: string,
+    identityId: string,
     updates: Array<{ keyResultId: string; weight: number }>,
   ): Promise<Result<GetGoalRes>>;
 }

@@ -200,7 +200,9 @@ export const GoalElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(GoalChannels.KEY_RESULT_ADD, async (_, goalId, dto) =>
-      withAuthenticatedValue(ctx, async () => goalController.addKeyResult(goalId, dto)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.addKeyResult(goalId, dto, requestContext),
+      ),
     );
     ipcMain.handle(GoalChannels.KEY_RESULT_LIST, async (_, goalId) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
@@ -208,30 +210,44 @@ export const GoalElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(GoalChannels.KEY_RESULT_UPDATE, async (_, goalId, keyResultId, dto) =>
-      withAuthenticatedValue(ctx, async () =>
-        goalController.updateKeyResult(goalId, keyResultId, dto),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.updateKeyResult(goalId, keyResultId, dto, requestContext),
       ),
     );
     ipcMain.handle(GoalChannels.KEY_RESULT_DELETE, async (_, goalId, keyResultId) =>
-      withAuthenticatedValue(ctx, async () => {
-        const result = await goalController.deleteKeyResult(goalId, keyResultId);
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
+        const result = await goalController.deleteKeyResult(goalId, keyResultId, requestContext);
         if (!result.ok) return result;
         return ok(null);
       }),
     );
-    ipcMain.handle(GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS, (_, goalId, request) =>
-      goalController.batchUpdateKeyResultWeights(goalId, request?.updates ?? []),
+    ipcMain.handle(GoalChannels.KEY_RESULT_BATCH_UPDATE_WEIGHTS, async (_, goalId, request) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.batchUpdateKeyResultWeights(
+          goalId,
+          request?.updates ?? [],
+          requestContext,
+        ),
+      ),
     );
     ipcMain.handle(GoalChannels.REVIEW_CREATE, async (_, goalId, dto) =>
-      withAuthenticatedValue(ctx, async () => goalController.addReview(goalId, dto)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.addReview(goalId, dto, requestContext),
+      ),
     );
-    ipcMain.handle(GoalChannels.REVIEW_LIST, (_, goalId) => goalController.listReviews(goalId));
+    ipcMain.handle(GoalChannels.REVIEW_LIST, async (_, goalId) =>
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.listReviews(goalId, requestContext),
+      ),
+    );
     ipcMain.handle(GoalChannels.REVIEW_UPDATE, async (_, goalId, reviewId, dto) =>
-      withAuthenticatedValue(ctx, async () => goalController.updateReview(goalId, reviewId, dto)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.updateReview(goalId, reviewId, dto, requestContext),
+      ),
     );
     ipcMain.handle(GoalChannels.REVIEW_DELETE, async (_, goalId, reviewId) =>
-      withAuthenticatedValue(ctx, async () => {
-        const result = await goalController.deleteReview(goalId, reviewId);
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) => {
+        const result = await goalController.deleteReview(goalId, reviewId, requestContext);
         if (!result.ok) return result;
         return ok(null);
       }),

@@ -27,12 +27,12 @@ describe('DeleteGoalKeyResultUseCase', () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new DeleteGoalKeyResultUseCase(goalRepo, goalPolicy);
 
-    const result = await useCase.execute('goal-id-1', 'kr-1');
+    const result = await useCase.execute('goal-id-1', 'identity-1', 'kr-1');
 
     expect(result.ok).toBe(true);
     expect(goal.removeKeyResult).toHaveBeenCalledWith('kr-1');
@@ -43,12 +43,12 @@ describe('DeleteGoalKeyResultUseCase', () => {
   it('should return NOT_FOUND when goal does not exist', async () => {
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new DeleteGoalKeyResultUseCase(goalRepo, goalPolicy);
 
-    const result = await useCase.execute('non-existent', 'kr-1');
+    const result = await useCase.execute('non-existent', 'identity-1', 'kr-1');
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -65,26 +65,26 @@ describe('DeleteGoalKeyResultUseCase', () => {
       }),
     } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new DeleteGoalKeyResultUseCase(goalRepo, goalPolicy);
 
-    await expect(useCase.execute('goal-id-1', 'kr-1')).rejects.toThrow('Goal cannot be modified');
+    await expect(useCase.execute('goal-id-1', 'identity-1', 'kr-1')).rejects.toThrow('Goal cannot be modified');
     expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should call findById with includeChildren option', async () => {
+  it('should call findByIdForIdentity with includeChildren option', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new DeleteGoalKeyResultUseCase(goalRepo, goalPolicy);
 
-    await useCase.execute('goal-id-1', 'kr-1');
+    await useCase.execute('goal-id-1', 'identity-1', 'kr-1');
 
-    expect(goalRepo.findById).toHaveBeenCalledWith('goal-id-1', { includeChildren: true });
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-id-1', { includeChildren: true });
   });
 });

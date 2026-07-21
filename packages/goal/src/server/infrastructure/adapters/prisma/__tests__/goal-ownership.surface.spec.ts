@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Goal ownership surface (stage-6 residual 117/118):
- * get/update/delete + status mutations + record create/delete must identity-scope
+ * get/update/delete + status + KR/review mutations + record create/delete must identity-scope
  * repository reads — never authorize by bare goal/record primary key alone.
  */
 describe('goal ownership surface', () => {
@@ -74,6 +74,49 @@ describe('goal ownership surface', () => {
     ),
     'utf8',
   );
+  const addKeyResult = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/add-goal-key-result.use-case.ts',
+    ),
+    'utf8',
+  );
+  const deleteKeyResult = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/delete-goal-key-result.use-case.ts',
+    ),
+    'utf8',
+  );
+  const addReview = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/add-goal-review.use-case.ts',
+    ),
+    'utf8',
+  );
+  const deleteReview = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/delete-goal-review.use-case.ts',
+    ),
+    'utf8',
+  );
+  const listReviews = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/list-goal-reviews.use-case.ts',
+    ),
+    'utf8',
+  );
+  const keyResultRoutes = readFileSync(
+    resolve(__dirname, '../../../../../api/routes/key-result.routes.ts'),
+    'utf8',
+  );
+  const reviewRoutes = readFileSync(
+    resolve(__dirname, '../../../../../api/routes/review.routes.ts'),
+    'utf8',
+  );
   const routes = readFileSync(
     resolve(__dirname, '../../../../../api/routes/goal.routes.ts'),
     'utf8',
@@ -138,7 +181,18 @@ describe('goal ownership surface', () => {
     expect(permanentUseCase).toContain('delete(identityId, id)');
   });
 
+  it('key-result and review use cases load via findByIdForIdentity', () => {
+    expect(addKeyResult).toContain('findByIdForIdentity(identityId, goalId,');
+    expect(addKeyResult).toMatch(/goalId: string,\s*identityId: string,/);
+    expect(deleteKeyResult).toContain('findByIdForIdentity(identityId, goalId,');
+    expect(addReview).toContain('findByIdForIdentity(identityId, goalId,');
+    expect(deleteReview).toContain('findByIdForIdentity(identityId, goalId,');
+    expect(listReviews).toContain('findByIdForIdentity(identityId, goalId,');
+    expect(listReviews).toMatch(/execute\(goalId: string, identityId: string\)/);
+  });
+
   it('HTTP and Electron get/update/delete/record pass identity context', () => {
+
 
     expect(routes).toContain('controller.get(');
     expect(routes).toMatch(/controller\.get\(\s*req\.params!\.id,\s*ctx,/);
@@ -175,6 +229,31 @@ describe('goal ownership surface', () => {
     );
     expect(electron).toMatch(
       /GoalChannels\.COMPLETE[\s\S]*goalController\.complete\(id, requestContext\)/,
+    );
+    expect(keyResultRoutes).toContain(
+      'controller.addKeyResult(req.params!.id, req.body, ctx)',
+    );
+    expect(keyResultRoutes).toContain(
+      'controller.deleteKeyResult(req.params!.id, req.params!.krId, ctx)',
+    );
+    expect(reviewRoutes).toContain('controller.addReview(req.params!.id, req.body, ctx)');
+    expect(reviewRoutes).toContain(
+      'controller.deleteReview(req.params!.id, req.params!.reviewId, ctx)',
+    );
+    expect(electron).toMatch(
+      /KEY_RESULT_ADD[\s\S]*goalController\.addKeyResult\(goalId, dto, requestContext\)/,
+    );
+    expect(electron).toMatch(
+      /KEY_RESULT_DELETE[\s\S]*goalController\.deleteKeyResult\(goalId, keyResultId, requestContext\)/,
+    );
+    expect(electron).toMatch(
+      /REVIEW_CREATE[\s\S]*goalController\.addReview\(goalId, dto, requestContext\)/,
+    );
+    expect(electron).toMatch(
+      /REVIEW_DELETE[\s\S]*goalController\.deleteReview\(goalId, reviewId, requestContext\)/,
+    );
+    expect(electron).toMatch(
+      /KEY_RESULT_BATCH_UPDATE_WEIGHTS[\s\S]*requestContext/,
     );
   });
 });

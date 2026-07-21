@@ -19,8 +19,10 @@ export class ListGoalReviewsUseCase {
     private readonly goalRepository: IGoalRepository,
   ) {}
 
-  async execute(goalId: string): Promise<Result<ListGoalReviewsResult>> {
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+  async execute(goalId: string, identityId: string): Promise<Result<ListGoalReviewsResult>> {
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }

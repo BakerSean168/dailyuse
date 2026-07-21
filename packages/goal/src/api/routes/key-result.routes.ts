@@ -82,7 +82,7 @@ export function registerKeyResultRoutes(
       },
     },
     [auth],
-    (req) => controller.addKeyResult(req.params!.id, req.body),
+    (req, ctx) => controller.addKeyResult(req.params!.id, req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -102,7 +102,7 @@ export function registerKeyResultRoutes(
       },
     },
     [auth],
-    (req) => controller.updateKeyResult(req.params!.id, req.params!.krId, req.body),
+    (req, ctx) => controller.updateKeyResult(req.params!.id, req.params!.krId, req.body, ctx),
   );
 
   // PATCH /:id/key-results/:krId/progress — 更新关键结果进度
@@ -121,7 +121,8 @@ export function registerKeyResultRoutes(
       },
     },
     [auth],
-    (req) => controller.updateKeyResultProgress(req.params!.id, req.params!.krId, req.body),
+    (req, ctx) =>
+      controller.updateKeyResultProgress(req.params!.id, req.params!.krId, req.body, ctx),
   );
 
   // DELETE /:id/key-results/:krId — 删除关键结果
@@ -139,7 +140,7 @@ export function registerKeyResultRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteKeyResult(req.params!.id, req.params!.krId),
+    (req, ctx) => controller.deleteKeyResult(req.params!.id, req.params!.krId, ctx),
   );
 
   return router;

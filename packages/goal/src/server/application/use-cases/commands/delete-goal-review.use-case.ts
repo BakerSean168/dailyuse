@@ -15,8 +15,14 @@ export class DeleteGoalReviewUseCase {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(goalId: string, reviewId: string): Promise<Result<void>> {
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+  async execute(
+    goalId: string,
+    identityId: string,
+    reviewId: string,
+  ): Promise<Result<void>> {
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }

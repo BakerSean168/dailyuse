@@ -29,15 +29,15 @@ describe('ListGoalReviewsUseCase', () => {
     const review2 = createGoalReviewFixture({ id: 'review-2' });
     const goal = createGoalFixture({ goalReviews: [review1, review2] });
 
-    const findById = vi.fn().mockResolvedValue(goal);
+    const findByIdForIdentity = vi.fn().mockResolvedValue(goal);
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById,
+      findByIdForIdentity,
     });
     const useCase = new ListGoalReviewsUseCase(goalRepo);
 
-    const result = await useCase.execute('goal-1');
+    const result = await useCase.execute('goal-1', 'identity-1');
 
-    expect(findById).toHaveBeenCalledWith('goal-1', { includeChildren: true });
+    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-1', { includeChildren: true });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.data.total).toBe(2);
@@ -51,11 +51,11 @@ describe('ListGoalReviewsUseCase', () => {
 
   it('should return NOT_FOUND when goal does not exist', async () => {
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     const useCase = new ListGoalReviewsUseCase(goalRepo);
 
-    const result = await useCase.execute('missing-goal');
+    const result = await useCase.execute('missing-goal', 'identity-1');
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -66,11 +66,11 @@ describe('ListGoalReviewsUseCase', () => {
   it('should return empty result when goal has no reviews', async () => {
     const goal = createGoalFixture({ goalReviews: [] });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const useCase = new ListGoalReviewsUseCase(goalRepo);
 
-    const result = await useCase.execute('goal-1');
+    const result = await useCase.execute('goal-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
