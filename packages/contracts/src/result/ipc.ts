@@ -187,7 +187,7 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
  * @example
  * ```ts
  * // Renderer Process
- * const ipcClient = createIpcClient(window.electron.ipcRenderer);
+ * const ipcClient = createIpcClientWrapper(window.electron.ipcRenderer);
  *
  * const result = await ipcClient.invoke<User>('user:get', userId);
  * if (isOk(result)) {

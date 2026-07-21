@@ -10,8 +10,8 @@
 
 // Types (port interfaces + transport interfaces)
 export type {
-  IHttpClient,
-  IIpcClient,
+  IResultHttpClient,
+  IResultIpcClient,
   IAICapabilitiesApiClient,
   AIEvaluationReportApiClient,
   AIAgentRuntimeApiClient,

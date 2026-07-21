@@ -7,7 +7,6 @@
  * Types imported from @dailyuse/contracts/ai.
  */
 
-export type { IHttpClient } from '@dailyuse/http-client';
 export type { IResultHttpClient } from '@dailyuse/http-client';
 
 // Re-export port interfaces from application-client ports
@@ -26,12 +25,6 @@ export type {
 } from '../../application-client/ports/ai-api-client.port';
 
 // ============ Transport Client Interfaces ============
-
-// IHttpClient imported from @dailyuse/http-client
-
-export interface IIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
-}
 
 export interface IResultIpcClient {
   invoke<T = unknown>(

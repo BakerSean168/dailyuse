@@ -51,7 +51,7 @@
 
 ### 范式 C — 跨进程 / 网络（消息式 RPC）
 
-跨 Electron 主/渲染进程用 `@dailyuse/ipc-client` 的 `IpcClientImpl`（自动解包 `IpcResult` 信封、抛结构化 `IpcClientError`、支持超时）；Web↔API 用 HTTP client。两者作为 client-side adapter 出现在 `packages/<feature>/src/infrastructure-client/adapters/{ipc,http}/`，实现同一个 client Port，保证 UI 层写法不变。
+跨 Electron 主/渲染进程用 `@dailyuse/ipc-client` 的 `ResultIpcClient` / `createResultIpcClient`（自动识别 `IpcResult` 信封、返回 `Result<T>`、支持超时；无 throw 风格双轨客户端）；Web↔API 用 `ResultHttpClient`。两者作为 client-side adapter 出现在 `packages/<feature>/src/infrastructure-client/adapters/{ipc,http}/`，实现同一个 client Port，保证 UI 层写法不变。
 
 ### 明确弃用
 

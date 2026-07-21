@@ -1257,6 +1257,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十二轮）：清理残留双轨文档/注释与 AI 传输面——task HTTP
+> adapter 头注释 `IHttpClient`→`IResultHttpClient`；contracts `createIpcClient` 示例改为
+> `createIpcClientWrapper`；ADR-033 范式 C 改为 `ResultIpcClient`/`ResultHttpClient`；
+> AI infrastructure-client 删除未使用的 throw 风格 `IIpcClient` 与 `IHttpClient` 再导出，
+> 仅保留 `IResultIpcClient`/`IResultHttpClient`。AxiosHttpClient throw twin 仍有测试/下载
+> 面保留。§13.2 仍为部分/外部阻塞（无伪造 GitHub/OAuth fixture）。验证：contracts/ai
+> focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
