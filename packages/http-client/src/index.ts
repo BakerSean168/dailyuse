@@ -29,7 +29,6 @@
 // ── Types ──
 export type {
   IResultHttpClient,
-  HttpRequestOptions,
   HttpClientConfig,
   TokenProvider,
   TokenRefreshHandler,

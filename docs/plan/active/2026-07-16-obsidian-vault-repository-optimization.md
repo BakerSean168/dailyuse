@@ -1283,6 +1283,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十五轮）：删除零生产消费者的 `createIpcClientWrapper`
+> （Renderer 生产路径仅 `ResultIpcClient`/`createResultIpcClient`；保留 `toIpcResult`/
+> `fromIpcResult`/`isIpcResultEnvelope`）；contracts/utils 导出与 migrate 清单同步清理；
+> 删除 http-client 未使用的 `HttpRequestOptions`；transport specs 固化 raw dual-track
+> IPC `ok` 业务标志拒绝。§13.2 仍为部分/外部阻塞。验证：contracts + http-client +
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

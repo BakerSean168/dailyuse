@@ -47,7 +47,6 @@ export {
   // IPC
   toIpcResult,
   fromIpcResult,
-  createIpcClientWrapper,
 } from '@dailyuse/contracts/result';
 
 export type {

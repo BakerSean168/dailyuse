@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fail, ok } from './index';
 import { fromHttpResponse, toHttpResponse } from './http';
-import { createIpcClientWrapper, fromIpcResult, toIpcResult } from './ipc';
+import { fromIpcResult, isIpcResultEnvelope, toIpcResult } from './ipc';
 
 describe('result transport context support', () => {
   it('preserves error context through HTTP conversion', () => {
@@ -84,24 +84,21 @@ describe('result transport context support', () => {
     }
   });
 
-  it('createIpcClientWrapper.invoke returns fail Result without throwing', async () => {
-    const client = createIpcClientWrapper({
-      invoke: async () =>
-        toIpcResult(
-          fail({
-            code: 'UNAUTHORIZED',
-            message: '未授权，请登录',
-          }),
-        ),
-    });
+  it('rejects raw dual-track IPC payloads that only carry a business ok flag', () => {
+    expect(isIpcResultEnvelope({ ok: true, authenticated: false })).toBe(false);
+    expect(isIpcResultEnvelope({ ok: false, hasValidSession: false })).toBe(false);
 
-    const result = await client.invoke('auth:status');
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error).toMatchObject({
+    const failEnvelope = toIpcResult(
+      fail({
         code: 'UNAUTHORIZED',
         message: '未授权，请登录',
-      });
+      }),
+    );
+    expect(isIpcResultEnvelope(failEnvelope)).toBe(true);
+    const restored = fromIpcResult(failEnvelope);
+    expect(restored.ok).toBe(false);
+    if (!restored.ok) {
+      expect(restored.error.code).toBe('UNAUTHORIZED');
     }
   });
 });

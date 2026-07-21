@@ -15,14 +15,6 @@ import type { AxiosRequestConfig } from 'axios';
 // ============================================================================
 
 /**
- * HTTP 请求选项（ResultHttpClient 适配层参数）
- */
-export interface HttpRequestOptions {
-  params?: Record<string, unknown>;
-  headers?: Record<string, string>;
-}
-
-/**
  * Result HTTP Client 接口
  *
  * 所有方法返回 `Promise<Result<T>>`，永不抛出异常。

@@ -75,7 +75,6 @@ export {
   // IPC adapters
   toIpcResult,
   fromIpcResult,
-  createIpcClientWrapper,
   // HTTP adapters
   toHttpResponse,
   fromHttpResponse,

@@ -175,36 +175,3 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
 
   return fail(error, meta);
 }
-
-// ============================================================================
-// IPC Handler Utilities
-// ============================================================================
-
-/**
- * 创建 IPC 客户端调用包装器
- * 自动将 IpcResult 转换为 Result
- *
- * @example
- * ```ts
- * // Renderer Process
- * const ipcClient = createIpcClientWrapper(window.electron.ipcRenderer);
- *
- * const result = await ipcClient.invoke<User>('user:get', userId);
- * if (isOk(result)) {
- *   setUser(result.data);
- * }
- * ```
- */
-export function createIpcClientWrapper(invoker: {
-  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
-}) {
-  return {
-    /**
-     * 调用 IPC 并返回 Result
-     */
-    async invoke<T>(channel: string, ...args: unknown[]): Promise<Result<T, ResultError>> {
-      const ipcResult = (await invoker.invoke(channel, ...args)) as IpcResult<T>;
-      return fromIpcResult<T>(ipcResult);
-    },
-  };
-}
