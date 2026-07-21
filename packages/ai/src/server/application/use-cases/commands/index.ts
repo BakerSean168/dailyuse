@@ -21,11 +21,11 @@ export * from './ai-chat-helpers';
 export * from './send-ai-message.use-case';
 export * from './stream-ai-message.use-case';
 
-// AI Conversation individual use cases (from manage-ai-conversation decomposition)
-export * from './create-conversation-v2.use-case';
-export * from './get-conversation-v2.use-case';
-export * from './list-conversations-v2.use-case';
-export * from './delete-conversation-v2.use-case';
+// AI Conversation use cases
+export * from './create-conversation.use-case';
+export * from './get-conversation.use-case';
+export * from './list-conversations.use-case';
+export * from './delete-conversation.use-case';
 export * from './update-conversation.use-case';
 export * from './add-conversation-message.use-case';
 export * from './get-conversations-by-status.use-case';

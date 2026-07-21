@@ -3,12 +3,12 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { IAIConversationRepository } from '../../../domain/repositories/i-ai-conversation-repository';
 import { createLogger } from '@dailyuse/utils/logger';
 
-const logger = createLogger('DeleteConversationV2UseCase');
+const logger = createLogger('DeleteConversationUseCase');
 
 /**
  * 删除对话（软删除）
  */
-export class DeleteConversationV2UseCase {
+export class DeleteConversationUseCase {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   async execute(conversationId: string): Promise<Result<void>> {

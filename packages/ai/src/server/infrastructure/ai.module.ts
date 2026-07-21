@@ -80,10 +80,10 @@ import type {
   RefreshAIProviderModelsUseCase,
   SendAIMessageUseCase,
   StreamAIMessageUseCase,
-  CreateConversationV2UseCase,
-  GetConversationV2UseCase,
-  ListConversationsV2UseCase,
-  DeleteConversationV2UseCase,
+  CreateConversationUseCase,
+  GetConversationUseCase,
+  ListConversationsUseCase,
+  DeleteConversationUseCase,
   UpdateConversationUseCase,
   AddConversationMessageUseCase,
   GetConversationsByStatusUseCase,
@@ -178,13 +178,13 @@ export interface AIProviderServices {
 }
 
 /**
- * Conversation decomposed use cases (from ManageAIConversationUseCase).
+ * Conversation use cases (canonical host path).
  */
 export interface AIConversationServices {
-  readonly createConversationV2: CreateConversationV2UseCase;
-  readonly getConversationV2: GetConversationV2UseCase;
-  readonly listConversationsV2: ListConversationsV2UseCase;
-  readonly deleteConversationV2: DeleteConversationV2UseCase;
+  readonly createConversation: CreateConversationUseCase;
+  readonly getConversation: GetConversationUseCase;
+  readonly listConversations: ListConversationsUseCase;
+  readonly deleteConversation: DeleteConversationUseCase;
   readonly updateConversation: UpdateConversationUseCase;
   readonly addMessage: AddConversationMessageUseCase;
   readonly getByStatus: GetConversationsByStatusUseCase;
@@ -430,13 +430,13 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
 
     // -- Conversations --
     createConversation: (cx, name) =>
-      services.conversationServices.createConversationV2.execute(cx, name),
+      services.conversationServices.createConversation.execute(cx, name),
     updateConversation: (id, req) =>
       services.conversationServices.updateConversation.execute(id, req),
     listConversations: (cx, page, pageSize) =>
-      services.conversationServices.listConversationsV2.execute(cx, page, pageSize),
+      services.conversationServices.listConversations.execute(cx, page, pageSize),
     getConversation: async (id, includeMessages) => {
-      const result = await services.conversationServices.getConversationV2.execute(
+      const result = await services.conversationServices.getConversation.execute(
         id,
         includeMessages,
       );
@@ -446,7 +446,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       }
       return ok(result.data.toClientDTO());
     },
-    deleteConversation: (id) => services.conversationServices.deleteConversationV2.execute(id),
+    deleteConversation: (id) => services.conversationServices.deleteConversation.execute(id),
 
     // -- Chat --
     sendMessage: (conversationId, content, cx, providerId, model) =>

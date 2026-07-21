@@ -5,12 +5,12 @@ import type { IAIConversationRepository } from '../../../domain/repositories/i-a
 import type { ConversationListRes } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils/logger';
 
-const logger = createLogger('ListConversationsV2UseCase');
+const logger = createLogger('ListConversationsUseCase');
 
 /**
  * 获取用户的所有对话（列表视图 - 不包含消息）
  */
-export class ListConversationsV2UseCase {
+export class ListConversationsUseCase {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   async execute(

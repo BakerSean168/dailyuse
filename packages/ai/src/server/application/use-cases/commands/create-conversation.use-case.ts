@@ -6,12 +6,12 @@ import { AIConversation as AIConversationServer } from '../../../domain/aggregat
 import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils/logger';
 
-const logger = createLogger('CreateConversationV2UseCase');
+const logger = createLogger('CreateConversationUseCase');
 
 /**
  * 创建新对话
  */
-export class CreateConversationV2UseCase {
+export class CreateConversationUseCase {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   async execute(cx: ExecutionContext, title?: string): Promise<Result<AIConversationClientDTO>> {

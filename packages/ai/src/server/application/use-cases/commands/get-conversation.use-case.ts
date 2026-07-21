@@ -4,12 +4,12 @@ import type { IAIConversationRepository } from '../../../domain/repositories/i-a
 import { AIConversation as AIConversationServer } from '../../../domain/aggregates/ai-conversation';
 import { createLogger } from '@dailyuse/utils/logger';
 
-const logger = createLogger('GetConversationV2UseCase');
+const logger = createLogger('GetConversationUseCase');
 
 /**
  * 获取对话详情（包含消息）
  */
-export class GetConversationV2UseCase {
+export class GetConversationUseCase {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   async execute(
