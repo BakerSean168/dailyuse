@@ -23,7 +23,9 @@ export class RepositoryKnowledgeCloudDataPurgerAdapter {
       await tx.aiKnowledgeIndexEntry.deleteMany({
         where: { identityId, repositoryId: connection.id },
       });
-      await tx.knowledgeRepositoryConnection.delete({ where: { id: connection.id } });
+      await tx.knowledgeRepositoryConnection.deleteMany({
+        where: { id: connection.id, identityId },
+      });
       return true;
     });
   }

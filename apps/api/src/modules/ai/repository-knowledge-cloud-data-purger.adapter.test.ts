@@ -7,7 +7,7 @@ describe('RepositoryKnowledgeCloudDataPurgerAdapter', () => {
     const tx = {
       knowledgeRepositoryConnection: {
         findFirst: vi.fn(async () => ({ id: 'connection-1' })),
-        delete: vi.fn(async () => undefined),
+        deleteMany: vi.fn(async () => ({ count: 1 })),
       },
       aiKnowledgeIndexEntry: {
         deleteMany: vi.fn(async () => ({ count: 2 })),
@@ -26,11 +26,11 @@ describe('RepositoryKnowledgeCloudDataPurgerAdapter', () => {
     expect(tx.aiKnowledgeIndexEntry.deleteMany).toHaveBeenCalledWith({
       where: { identityId: 'identity-1', repositoryId: 'connection-1' },
     });
-    expect(tx.knowledgeRepositoryConnection.delete).toHaveBeenCalledWith({
-      where: { id: 'connection-1' },
+    expect(tx.knowledgeRepositoryConnection.deleteMany).toHaveBeenCalledWith({
+      where: { id: 'connection-1', identityId: 'identity-1' },
     });
     expect(tx.aiKnowledgeIndexEntry.deleteMany.mock.invocationCallOrder[0]).toBeLessThan(
-      tx.knowledgeRepositoryConnection.delete.mock.invocationCallOrder[0],
+      tx.knowledgeRepositoryConnection.deleteMany.mock.invocationCallOrder[0],
     );
   });
 
@@ -38,7 +38,7 @@ describe('RepositoryKnowledgeCloudDataPurgerAdapter', () => {
     const tx = {
       knowledgeRepositoryConnection: {
         findFirst: vi.fn(async () => null),
-        delete: vi.fn(),
+        deleteMany: vi.fn(),
       },
       aiKnowledgeIndexEntry: { deleteMany: vi.fn() },
     };
@@ -50,6 +50,6 @@ describe('RepositoryKnowledgeCloudDataPurgerAdapter', () => {
       new RepositoryKnowledgeCloudDataPurgerAdapter(db).purge('identity-2', 'connection-1'),
     ).resolves.toBe(false);
     expect(tx.aiKnowledgeIndexEntry.deleteMany).not.toHaveBeenCalled();
-    expect(tx.knowledgeRepositoryConnection.delete).not.toHaveBeenCalled();
+    expect(tx.knowledgeRepositoryConnection.deleteMany).not.toHaveBeenCalled();
   });
 });

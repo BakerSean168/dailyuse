@@ -303,8 +303,11 @@ export class KnowledgeRepositoryProjectionService {
       });
     }
 
-    const connection = await this.options.connectionRepository.findById(attachment.connectionId);
-    if (!connection || connection.identityId !== identityId || connection.deletedAt !== null) {
+    const connection = await this.options.connectionRepository.findByIdForIdentity(
+      identityId,
+      attachment.connectionId,
+    );
+    if (!connection || connection.deletedAt !== null) {
       return fail({ code: 'NOT_FOUND', message: 'Knowledge attachment was not found' });
     }
     try {

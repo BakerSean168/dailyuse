@@ -16,6 +16,17 @@ export class KnowledgeRepositoryConnectionPrismaRepository implements IKnowledge
     return this.toDTO(await this.db.knowledgeRepositoryConnection.findUnique({ where: { id } }));
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<KnowledgeRepositoryConnectionServerDTO | null> {
+    return this.toDTO(
+      await this.db.knowledgeRepositoryConnection.findFirst({
+        where: { id, identityId },
+      }),
+    );
+  }
+
   async findByIdentityId(identityId: string): Promise<KnowledgeRepositoryConnectionServerDTO[]> {
     const rows = await this.db.knowledgeRepositoryConnection.findMany({
       where: { identityId },

@@ -77,6 +77,10 @@ class MemoryConnectionRepository implements IKnowledgeRepositoryConnectionReposi
     return id === this.row.id ? this.row : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string) {
+    return id === this.row.id && identityId === this.row.identityId ? this.row : null;
+  }
+
   async findByIdentityId(identityId: string) {
     return identityId === this.row.identityId ? [this.row] : [];
   }

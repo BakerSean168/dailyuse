@@ -1508,6 +1508,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百一十二轮）：知识仓库 connection 读路径身份隔离——新增
+> `findByIdForIdentity(identityId, id)`（Prisma `findFirst where { id, identityId }`）；
+> connection/commit/attachment 服务身份操作改走该读路径；API cloud purger 删除
+> `deleteMany where { id, identityId }`。补 ownership surface 与 memory 单测。§13.2
+> GitHub App 授权边界证据再增强。验证：repository + api purger specs + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1556,6 +1564,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [x] Desktop 本地 Vault 在云端故障时仍可用。 **（已证明）**
 - [x] GitHub App 只访问用户明确授权的 knowledge repository。 **（已证明）**
   残留一百一十一轮：connection status 转移 identity-scoped（disconnect updateStatus id+identityId）。
+  残留一百一十二轮：connection 读路径 findByIdForIdentity + purger deleteMany id+identityId。
 - [x] private repo 可创建/连接，连接两个非空仓库不会自动覆盖。 **（已证明）**
 - [x] Desktop Git 同步具备离线恢复且不 force push。 **（已证明）**
 - [x] 冲突明确暂停并保留双方内容。 **（已证明）**

@@ -21,6 +21,11 @@ class MemoryConnectionRepository implements IKnowledgeRepositoryConnectionReposi
     return this.rows.get(id) ?? null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string) {
+    const row = this.rows.get(id);
+    return row && row.identityId === identityId ? row : null;
+  }
+
   async findByIdentityId(identityId: string) {
     return [...this.rows.values()].filter((row) => row.identityId === identityId);
   }
@@ -204,6 +209,34 @@ describe('KnowledgeRepositoryConnectionService', () => {
     });
     expect(JSON.stringify(connected)).not.toContain('short-lived-token');
     expect(repository.rows.size).toBe(1);
+  });
+
+  it('returns null from findByIdForIdentity when identity does not own the connection', async () => {
+    const repository = new MemoryConnectionRepository();
+    repository.rows.set('connection-1', {
+      id: 'connection-1',
+      identityId: 'identity-1',
+      githubUserId: 'github-user-1',
+      githubRepositoryId: 'repository-1',
+      githubRepositoryFullName: 'acme/notes',
+      installationId: 'installation-1',
+      defaultBranch: 'main',
+      status: 'Active',
+      lastSyncedCommitSha: null,
+      lastProjectedCommitSha: null,
+      lastErrorCode: null,
+      lastErrorMessage: null,
+      version: 1,
+      createdAt: 1_750_000_000_000 as never,
+      updatedAt: 1_750_000_000_000 as never,
+      deletedAt: null,
+    });
+
+    await expect(repository.findByIdForIdentity('identity-other', 'connection-1')).resolves.toBeNull();
+    await expect(repository.findByIdForIdentity('identity-1', 'connection-1')).resolves.toMatchObject({
+      id: 'connection-1',
+      identityId: 'identity-1',
+    });
   });
 
   it('refuses connection status updates when identityId does not match', async () => {

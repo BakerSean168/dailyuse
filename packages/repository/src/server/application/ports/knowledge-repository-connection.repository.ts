@@ -5,6 +5,10 @@ import type {
 
 export interface IKnowledgeRepositoryConnectionRepository {
   findById(id: string): Promise<KnowledgeRepositoryConnectionServerDTO | null>;
+  findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<KnowledgeRepositoryConnectionServerDTO | null>;
   findByIdentityId(identityId: string): Promise<KnowledgeRepositoryConnectionServerDTO[]>;
   findByGithubRepositoryId(
     githubRepositoryId: string,

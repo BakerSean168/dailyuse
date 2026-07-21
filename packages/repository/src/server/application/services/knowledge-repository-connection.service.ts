@@ -224,8 +224,11 @@ export class KnowledgeRepositoryConnectionService {
     connectionId: string,
     purgeCloudData = false,
   ): Promise<Result<null>> {
-    const connection = await this.options.connectionRepository.findById(connectionId);
-    if (!connection || connection.identityId !== identityId || connection.deletedAt !== null) {
+    const connection = await this.options.connectionRepository.findByIdForIdentity(
+      identityId,
+      connectionId,
+    );
+    if (!connection || connection.deletedAt !== null) {
       return fail({ code: 'NOT_FOUND', message: 'Knowledge repository connection was not found' });
     }
     if (purgeCloudData) {
@@ -252,13 +255,11 @@ export class KnowledgeRepositoryConnectionService {
     identityId: string,
     connectionId: string,
   ): Promise<Result<{ token: string; expiresAt: number; repositoryId: string }>> {
-    const connection = await this.options.connectionRepository.findById(connectionId);
-    if (
-      !connection ||
-      connection.identityId !== identityId ||
-      connection.status !== 'Active' ||
-      connection.deletedAt !== null
-    ) {
+    const connection = await this.options.connectionRepository.findByIdForIdentity(
+      identityId,
+      connectionId,
+    );
+    if (!connection || connection.status !== 'Active' || connection.deletedAt !== null) {
       return fail({
         code: 'NOT_FOUND',
         message: 'Active knowledge repository connection was not found',
@@ -302,13 +303,11 @@ export class KnowledgeRepositoryConnectionService {
     connectionId: string,
     request: PreviewKnowledgeRepositoryReconciliationReq,
   ): Promise<Result<KnowledgeRepositoryReconciliationPreview>> {
-    const connection = await this.options.connectionRepository.findById(connectionId);
-    if (
-      !connection ||
-      connection.identityId !== identityId ||
-      connection.status !== 'Active' ||
-      connection.deletedAt !== null
-    ) {
+    const connection = await this.options.connectionRepository.findByIdForIdentity(
+      identityId,
+      connectionId,
+    );
+    if (!connection || connection.status !== 'Active' || connection.deletedAt !== null) {
       return fail({
         code: 'NOT_FOUND',
         message: 'Active knowledge repository connection was not found',
@@ -370,13 +369,11 @@ export class KnowledgeRepositoryConnectionService {
     connectionId: string,
     request: ConfirmKnowledgeRepositoryHeadReq,
   ): Promise<Result<KnowledgeRepositoryConnectionClientDTO>> {
-    const connection = await this.options.connectionRepository.findById(connectionId);
-    if (
-      !connection ||
-      connection.identityId !== identityId ||
-      connection.status !== 'Active' ||
-      connection.deletedAt !== null
-    ) {
+    const connection = await this.options.connectionRepository.findByIdForIdentity(
+      identityId,
+      connectionId,
+    );
+    if (!connection || connection.status !== 'Active' || connection.deletedAt !== null) {
       return fail({
         code: 'NOT_FOUND',
         message: 'Active knowledge repository connection was not found',

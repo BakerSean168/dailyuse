@@ -151,13 +151,11 @@ export class KnowledgeNoteCommitService {
       }
     }
 
-    const connection = await this.options.connectionRepository.findById(request.connectionId);
-    if (
-      !connection ||
-      connection.identityId !== identityId ||
-      connection.status !== 'Active' ||
-      connection.deletedAt !== null
-    ) {
+    const connection = await this.options.connectionRepository.findByIdForIdentity(
+      identityId,
+      request.connectionId,
+    );
+    if (!connection || connection.status !== 'Active' || connection.deletedAt !== null) {
       return fail({
         code: 'NOT_FOUND',
         message: 'Active knowledge repository connection was not found',
