@@ -216,4 +216,10 @@ describe('ADR-034 three-login same-fixture journey', () => {
     expect(THREE_LOGIN_SURFACE_MATRIX.desktop.githubOAuthLogin).toBe(false);
     expect(THREE_LOGIN_SURFACE_MATRIX.desktop.password).toBe(true);
   });
+
+  it('step 7: phone/SMS is absent from all three login surfaces (not a first-party login path)', () => {
+    expect(THREE_LOGIN_SURFACE_MATRIX.webShell.phoneSms).toBe(false);
+    expect(THREE_LOGIN_SURFACE_MATRIX.authApp.phoneSms).toBe(false);
+    expect(THREE_LOGIN_SURFACE_MATRIX.desktop.phoneSms).toBe(false);
+  });
 });

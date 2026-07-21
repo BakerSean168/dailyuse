@@ -15,10 +15,8 @@ const createRepo = (
   save: vi.fn().mockResolvedValue(undefined),
   findById: vi.fn().mockResolvedValue(null),
   findByEmail: vi.fn().mockResolvedValue(null),
-  findByPhone: vi.fn().mockResolvedValue(null),
   findByOAuth: vi.fn().mockResolvedValue(null),
   existsByEmail: vi.fn().mockResolvedValue(false),
-  existsByPhone: vi.fn().mockResolvedValue(false),
   delete: vi.fn().mockResolvedValue(undefined),
   ...overrides,
 });

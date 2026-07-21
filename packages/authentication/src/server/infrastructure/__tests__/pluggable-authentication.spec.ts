@@ -45,9 +45,6 @@ class InMemoryIdentityRepo implements IAuthIdentityRepository {
     }
     return null;
   }
-  async findByPhone(): Promise<AuthIdentity | null> {
-    return null;
-  }
   async findByOAuth(
     provider: OAuthProvider,
     subjectId: string,
@@ -62,9 +59,6 @@ class InMemoryIdentityRepo implements IAuthIdentityRepository {
   }
   async existsByEmail(email: string): Promise<boolean> {
     return (await this.findByEmail(email)) !== null;
-  }
-  async existsByPhone(): Promise<boolean> {
-    return false;
   }
   async delete(identity: AuthIdentity): Promise<void> {
     this.byId.delete(identity.id);
