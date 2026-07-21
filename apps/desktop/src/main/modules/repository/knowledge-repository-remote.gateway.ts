@@ -16,6 +16,11 @@ import { fail, ok, type Result } from '@dailyuse/contracts/result';
 import { createApiUrl } from '../../utils/api-config';
 import { toCloudAccessToken } from '../authentication/infrastructure/session-types';
 
+/**
+ * First-party knowledge-repository HTTP body.
+ * Memoflow API serializes Result as HttpResponse (`ok` + `data`/`error`).
+ * No raw dual-track business payloads.
+ */
 interface HttpEnvelope<T> {
   ok?: boolean;
   data?: T;
@@ -25,6 +30,14 @@ interface HttpEnvelope<T> {
     context?: Record<string, unknown>;
   };
   message?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
+
+function hasDataKey(body: unknown): body is HttpEnvelope<unknown> {
+  return isRecord(body) && 'data' in body;
 }
 
 export interface KnowledgeRepositoryRemoteGatewayOptions {
@@ -149,7 +162,8 @@ export class KnowledgeRepositoryRemoteGateway {
         },
         body: options.body === undefined ? undefined : JSON.stringify(options.body),
       });
-      const payload = (await response.json().catch(() => ({}))) as HttpEnvelope<T>;
+      const raw = await response.json().catch(() => ({}));
+      const payload = (isRecord(raw) ? raw : {}) as HttpEnvelope<T>;
 
       if (!response.ok || payload.ok === false) {
         return fail({
@@ -162,7 +176,16 @@ export class KnowledgeRepositoryRemoteGateway {
         });
       }
 
-      return ok((payload.data === undefined ? payload : payload.data) as T);
+      if (!hasDataKey(payload)) {
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message:
+            'GitHub knowledge repository response missing data envelope (raw dual-track payloads are not accepted)',
+        });
+      }
+
+      // Envelope success: data may be undefined for void Result payloads.
+      return ok(payload.data as T);
     } catch {
       return fail({
         code: 'SERVICE_UNAVAILABLE',

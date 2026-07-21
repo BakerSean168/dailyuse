@@ -147,13 +147,18 @@ export class ProfileSnapshotService {
     }
 
     const payload = (await response.json()) as SnapshotManifestEnvelope | Record<string, unknown>;
-    const rawData =
-      'data' in payload &&
-      payload.data &&
-      typeof payload.data === 'object'
-        ? payload.data
-        : payload;
-    const data = this.toRecord(rawData);
+    // First-party snapshot API must use HttpResponse data envelope (no raw dual-track body).
+    if (!('data' in payload) || !payload.data || typeof payload.data !== 'object') {
+      logger.info('Profile snapshot manifest missing data envelope');
+      return {
+        available: false,
+        version: null,
+        downloadUrl: null,
+        checksumSha256: null,
+        generatedAt: null,
+      };
+    }
+    const data = this.toRecord(payload.data);
 
     const available = this.readBoolean(data, ['available', 'hasSnapshot'], false);
     const downloadUrl = this.readString(data, ['downloadUrl', 'url', 'download_path']);

@@ -216,4 +216,27 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
       },
     });
   });
+
+  it('fails closed when a successful response omits the data envelope', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      response({
+        // Raw dual-track body without data — rejected for first-party knowledge API.
+        installationUrl: 'https://github.com/apps/memoflow/installations/new',
+        expiresAt: 1_750_000_600_000,
+      }),
+    );
+    const gateway = new KnowledgeRepositoryRemoteGateway({
+      getAccessToken: () => 'dailyuse-access-token',
+      fetchImpl,
+      createApiUrl: (path) => path,
+    });
+
+    await expect(gateway.startKnowledgeRepositoryInstallation()).resolves.toMatchObject({
+      ok: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: expect.stringMatching(/data envelope|dual-track/i),
+      },
+    });
+  });
 });

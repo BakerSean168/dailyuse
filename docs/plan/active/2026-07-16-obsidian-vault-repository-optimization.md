@@ -1221,6 +1221,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留七十七轮）：Desktop 知识仓库远程网关与 profile snapshot 删除
+> HTTP raw dual-track——`KnowledgeRepositoryRemoteGateway` 成功响应必须带 `data` 信封（不再
+> `payload.data ?? payload`）；`ProfileSnapshotService` manifest 无 data 信封时 fail-closed
+> 为 snapshot-unavailable。补 gateway/snapshot focused specs。§13.2 仍为部分/外部阻塞。
+> 验证：desktop knowledge-repository-remote.gateway + ProfileSnapshotService specs +
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

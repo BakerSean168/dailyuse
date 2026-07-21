@@ -259,6 +259,31 @@ describe('ProfileSnapshotService', () => {
     expect(result.skippedReason).toBe('snapshot-unavailable');
   });
 
+  it('fails closed when manifest omits the data envelope (no raw dual-track body)', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(
+        JSON.stringify({
+          available: true,
+          version: 'v1',
+          downloadUrl: '/snapshots/profile.sqlite',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    });
+
+    const service = new ProfileSnapshotService(fetchMock);
+    const result = await service.hydrateIfNeeded({
+      sharedResolver,
+      profileResolver,
+      descriptor,
+      accessToken: 'token-123',
+    });
+
+    expect(result.hydrated).toBe(false);
+    expect(result.skippedReason).toBe('snapshot-unavailable');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('falls back gracefully when download fetch throws a network error', async () => {
     const fetchMock = vi.fn<typeof fetch>(async (input) => {
       const url = String(input);
