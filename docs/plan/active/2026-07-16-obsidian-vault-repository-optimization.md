@@ -45,8 +45,9 @@ updated: 2026-07-21T00:00:00
   path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
   **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**；repository 运行时组合根/
   客户端面仅 knowledge + Local Vault；**legacy application/adapters/domain-client 与 contracts
-  CRUD request 面已删除**；AI 确认创建返回 `KnowledgeNotePersistedRef`（`note`），不再用
-  `ResourceClientDTO` 作为 create 兼容面（`ResourceClientDTO` 仍供 mock/E2E 遗留形状）；knowledge event 保留。
+  CRUD request 面已删除**；AI 确认创建返回 `KnowledgeNotePersistedRef`（`note`）；
+  **`ResourceClientDTO`/`RepositoryClientDTO` 与相关 value objects / mock factories 已删除**；
+  Web E2E 不再 mock 退役 editor/resource API；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
@@ -733,6 +734,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > API/Desktop adapter、ai-runtime executedActions、app-vue NoteSummary/workflow/panel 与相关单测/E2E 载荷。
 > 验证：`contracts`/`ai` 知识笔记相关 test 与 api/desktop adapter specs（见提交说明）。§13.2 未完成项不变。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留十五轮）：删除已无运行时消费者的 `ResourceClientDTO` /
+> `RepositoryClientDTO`、配套 value objects 与 `createMockRepository`/`createMockResource`；
+> Web `goal-workflow` E2E 去掉退役 editor/session/tab/resource/current-repository 路由 mock，
+> citation open 仅依赖 `/repository` 导航。更新 `repository-files` 索引。验证：`contracts:test`、
+> `daily-use:governance-check`（见提交说明）。§13.2 未完成项不变。状态保持 **实施中**；
+> PR readiness 仍为 no。
 
 ## 13. 测试与完成定义
 

@@ -72,7 +72,6 @@ updated: 2026-07-21T00:00:00
 | --- | --- |
 | [`packages/contracts/src/modules/repository/`](../../../packages/contracts/src/modules/repository/) | knowledge / Local Vault / projection / confirmed create 契约 |
 | [`packages/contracts/src/modules/repository/protocol/repository-event-map.ts`](../../../packages/contracts/src/modules/repository/protocol/repository-event-map.ts) | 仅 `repository:resource:mutated` |
-| [`packages/contracts/src/modules/repository/aggregates/resource-client.ts`](../../../packages/contracts/src/modules/repository/aggregates/resource-client.ts) | AI 兼容 `ResourceClientDTO` 视图（非 CRUD 通道） |
 | [`packages/contracts/src/electron/ipc-channels.ts`](../../../packages/contracts/src/electron/ipc-channels.ts) | `RepositoryChannels`：knowledge connection + Local Vault |
 
 ## 可重新导入业务备份（非运行时编辑）
@@ -111,4 +110,4 @@ updated: 2026-07-21T00:00:00
 - 不要把 portable `editor_*`/`resources` 备份与 `memoflow.server-held-data-disclosure` 混为同一导出通道。
 - Web Markdown 必须继续走 sanitizer；禁止重新启用原始 HTML。
 - Desktop Git 同步禁止 force push；双非空仓库首次对账必须人工确认。
-- AI 写入路径必须用户确认；不要把 `ResourceClientDTO` 兼容视图当成可编辑资源 CRUD。
+- AI 写入路径必须用户确认；确认创建返回 `KnowledgeNotePersistedRef`，不要恢复 Resource CRUD DTO。

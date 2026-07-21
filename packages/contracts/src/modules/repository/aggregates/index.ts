@@ -1,9 +1,7 @@
 /**
- * Repository aggregate/DTO contracts still used by knowledge runtime and AI
- * compatibility views. Server-side legacy Repository/Resource DTOs removed.
+ * Repository aggregate/DTO contracts for knowledge runtime.
+ * Legacy Repository/Resource client DTOs removed after Obsidian vault migration.
  */
 
-export type { RepositoryClientDTO } from './repository-client';
-export type { ResourceClientDTO } from './resource-client';
 export * from './knowledge-repository-connection';
 export * from './local-vault-binding';

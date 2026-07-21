@@ -15,7 +15,6 @@
  *   createMockScheduleTask,
  *   createMockReminderTemplate,
  *   createMockNotification,
- *   createMockRepository,
  *   createMockRule,
  *   createMockRuleRevision,
  *   createMockUserSetting,
@@ -30,6 +29,5 @@ export * from './auth.mock';
 export * from './schedule.mock';
 export * from './reminder.mock';
 export * from './notification.mock';
-export * from './repository.mock';
 export * from './setting.mock';
 export * from './governance.mock';
