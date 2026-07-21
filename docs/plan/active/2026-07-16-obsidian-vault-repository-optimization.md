@@ -1291,6 +1291,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留八十六轮）：折叠 AI provider list 双轨响应——HTTP/Desktop
+> IPC/client 统一 contracts `ListAIProviderConfigsRes`（`{ data: [...] }`）；删除 IPC
+> adapter `Array.isArray ? data : data.data` 兼容分支；controller/electron 显式
+> `ok({ data })`。补 provider-list envelope surface。§13.2 仍为部分/外部阻塞。验证：
+> ai focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

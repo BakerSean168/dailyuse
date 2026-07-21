@@ -11,6 +11,7 @@ import {
   type UpdateAIProviderConfigReq,
   type UpdateAIProviderConfigRes,
   type AIProviderConfigClientDTO,
+  type ListAIProviderConfigsRes,
 } from '@dailyuse/contracts/ai';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -57,9 +58,10 @@ export class AIProviderConfigController {
     return this.service.updateProvider(id, parsed.data);
   }
 
-  async list(cx: ExecutionContext): Promise<Result<{ data: AIProviderConfigClientDTO[] }>> {
+  async list(cx: ExecutionContext): Promise<Result<ListAIProviderConfigsRes>> {
     const result = await this.service.listProviders(cx);
     if (!result.ok) return result;
+    // Single list envelope: contracts ListAIProviderConfigsRes (no bare-array dual-track).
     return ok({ data: result.data });
   }
 

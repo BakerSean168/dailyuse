@@ -2,6 +2,7 @@ import type { IAIProviderConfigApiClient, IResultHttpClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
   CreateAIProviderConfigReq,
+  ListAIProviderConfigsRes,
   SetDefaultAIProviderReq,
   TestAIProviderReq,
   TestAIProviderRes,
@@ -20,7 +21,7 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
   }
 
   async getProviders(): Promise<AIProviderConfigClientDTO[]> {
-    const result = await this.httpClient.get<{ data: AIProviderConfigClientDTO[] }>(this.baseUrl);
+    const result = await this.httpClient.get<ListAIProviderConfigsRes>(this.baseUrl);
     return unwrapResultOrThrow(result).data;
   }
 

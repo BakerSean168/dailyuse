@@ -143,9 +143,16 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         ),
       );
       ipcMain.handle(AIChannels.PROVIDER_LIST, async () =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.listProviders({ identityId: requestContext.identityId }),
-        ),
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.listProviders({
+            identityId: requestContext.identityId,
+          });
+          if (!result.ok) {
+            return result;
+          }
+          // Align Desktop IPC with contracts ListAIProviderConfigsRes / HTTP list envelope.
+          return ok({ data: result.data });
+        }),
       );
       ipcMain.handle(AIChannels.PROVIDER_GET, async (_, id) =>
         withAuthenticatedValue(ctx, async () => aiModule.api.getProvider(id)),

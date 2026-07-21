@@ -3,6 +3,7 @@ import { AIChannels } from '@dailyuse/contracts/electron';
 import type {
   AIProviderConfigClientDTO,
   CreateAIProviderConfigReq,
+  ListAIProviderConfigsRes,
   SetDefaultAIProviderReq,
   TestAIProviderReq,
   TestAIProviderRes,
@@ -22,13 +23,8 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
   }
 
   async getProviders(): Promise<AIProviderConfigClientDTO[]> {
-    const result = await this.ipcClient.invoke<
-      AIProviderConfigClientDTO[] | { data: AIProviderConfigClientDTO[] }
-    >(
-      AIChannels.PROVIDER_LIST,
-    );
-    const data = unwrapResultOrThrow(result);
-    return Array.isArray(data) ? data : data.data;
+    const result = await this.ipcClient.invoke<ListAIProviderConfigsRes>(AIChannels.PROVIDER_LIST);
+    return unwrapResultOrThrow(result).data;
   }
 
   async getProviderById(id: string): Promise<AIProviderConfigClientDTO> {
