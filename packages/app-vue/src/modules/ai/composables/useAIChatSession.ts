@@ -140,7 +140,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     syncModel(getConversationModelKey(String(item.id)));
 
     try {
-      const result = await loadService.listMessages(item.id, { page: 1, pageSize: 80 });
+      const result = unwrap(await loadService.listMessages(item.id, { page: 1, pageSize: 80 }));
       chatTimeline.value = (result.data ?? []).map((message, index) =>
         normalizeChatItem(message, index),
       );

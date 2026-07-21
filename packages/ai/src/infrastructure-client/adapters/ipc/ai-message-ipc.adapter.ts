@@ -1,6 +1,6 @@
 import { AIChannels, AIStreamChannels } from '@dailyuse/contracts/electron';
 import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
-import { unwrapOrThrowError } from '@dailyuse/contracts/result';
+import { unwrapOrThrowError, type Result } from '@dailyuse/contracts/result';
 import type { IAIMessageApiClient, IResultIpcClient } from '../types';
 import { createResultClientError, unwrapResultOrThrow } from '../result-client-error';
 
@@ -22,9 +22,8 @@ type StreamErrorPayload = {
 export class AIMessageIpcAdapter implements IAIMessageApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
-  async sendMessage(request: SendMessageReq): Promise<SendMessageRes> {
-    const result = await this.ipcClient.invoke<SendMessageRes>(AIChannels.MESSAGE_SEND, request);
-    return unwrapResultOrThrow(result);
+  async sendMessage(request: SendMessageReq): Promise<Result<SendMessageRes>> {
+    return this.ipcClient.invoke<SendMessageRes>(AIChannels.MESSAGE_SEND, request);
   }
 
   async streamMessage(
@@ -37,7 +36,7 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
   ): Promise<void> {
     const bridge = this.ipcClient.getBridge?.();
     if (!bridge) {
-      const result = await this.sendMessage(request);
+      const result = unwrapResultOrThrow(await this.sendMessage(request));
       handlers.onChunk?.({ role: 'assistant', content: result.assistantMessage.content });
       handlers.onDone?.(result);
       return;
@@ -160,12 +159,11 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
   async getMessages(
     conversationId: string,
     params?: { page?: number; pageSize?: number },
-  ): Promise<MessageListRes> {
-    const result = await this.ipcClient.invoke<MessageListRes>(AIChannels.MESSAGE_LIST, {
+  ): Promise<Result<MessageListRes>> {
+    return this.ipcClient.invoke<MessageListRes>(AIChannels.MESSAGE_LIST, {
       conversationId,
       ...params,
     });
-    return unwrapResultOrThrow(result);
   }
 }
 

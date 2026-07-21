@@ -65,7 +65,7 @@ export interface AIClientPort {
   getConversation(id: string): Promise<Result<AIConversationClientDTO>>;
   deleteConversation(id: string): Promise<Result<void>>;
 
-  sendMessage(request: SendMessageReq): Promise<SendMessageRes>;
+  sendMessage(request: SendMessageReq): Promise<Result<SendMessageRes>>;
   streamMessage(
     request: SendMessageReq,
     handlers: {
@@ -80,7 +80,7 @@ export interface AIClientPort {
     },
     signal?: AbortSignal,
   ): Promise<void>;
-  listMessages(conversationId: string, params?: { page?: number; pageSize?: number }): Promise<MessageListRes>;
+  listMessages(conversationId: string, params?: { page?: number; pageSize?: number }): Promise<Result<MessageListRes>>;
 
   queryKnowledge(request: QueryKnowledgeReq): Promise<Result<QueryKnowledgeRes>>;
   expandKnowledge(request: ExpandKnowledgeReq): Promise<Result<ExpandKnowledgeRes>>;

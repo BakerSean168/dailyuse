@@ -1398,6 +1398,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十九轮）：AI message send/list 客户端 Result 端口迁移——
+> `sendMessage` / `getMessages`/`listMessages` 改为 `Promise<Result<T>>`；HTTP/IPC 对应
+> 方法直接返回 Result；`streamMessage` 仍为 throw-based SSE/IPC 流（IPC 无 bridge 回退
+> 对 send Result 做 `unwrapResultOrThrow`）。Vue/React 在 list/send 边界 `unwrap`。补
+> `ai-message-result-port.surface`。agent runtime 仍 throw-unwrap。§13.2 仍为部分/外部
+> 阻塞。验证：ai typecheck + surfaces + AIChatView/useAI + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

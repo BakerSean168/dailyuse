@@ -1,10 +1,9 @@
 import type { IAIMessageApiClient, IResultHttpClient } from '../types';
-import type { ResultErrorDetail } from '@dailyuse/contracts/result';
+import type { Result, ResultErrorDetail } from '@dailyuse/contracts/result';
 import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
 import {
   createResultClientError,
   createResultClientErrorFromResponse,
-  unwrapResultOrThrow,
 } from '../result-client-error';
 
 export class AIMessageHttpAdapter implements IAIMessageApiClient {
@@ -13,9 +12,8 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async sendMessage(request: SendMessageReq): Promise<SendMessageRes> {
-    const result = await this.httpClient.post<SendMessageRes>(this.baseUrl, request);
-    return unwrapResultOrThrow(result);
+  async sendMessage(request: SendMessageReq): Promise<Result<SendMessageRes>> {
+    return this.httpClient.post<SendMessageRes>(this.baseUrl, request);
   }
 
   async streamMessage(
@@ -114,11 +112,10 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
   async getMessages(
     conversationId: string,
     params?: { page?: number; pageSize?: number },
-  ): Promise<MessageListRes> {
-    const result = await this.httpClient.get<MessageListRes>(this.baseUrl, {
+  ): Promise<Result<MessageListRes>> {
+    return this.httpClient.get<MessageListRes>(this.baseUrl, {
       params: { conversationId, ...params },
     });
-    return unwrapResultOrThrow(result);
   }
 }
 

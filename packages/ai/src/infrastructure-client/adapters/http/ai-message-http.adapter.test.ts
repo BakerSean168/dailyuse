@@ -39,7 +39,7 @@ function createCrlfSseEvent(event: string, data: unknown): string {
 }
 
 describe('AIMessageHttpAdapter', () => {
-  it('preserves result error code for sendMessage failures', async () => {
+  it('returns Result error envelope for sendMessage failures (no throw dual-track)', async () => {
     const httpClient = createHttpClientStub({
       post: vi.fn().mockResolvedValue({
         ok: false,
@@ -52,14 +52,19 @@ describe('AIMessageHttpAdapter', () => {
     });
     const adapter = new AIMessageHttpAdapter(httpClient);
 
-    await expect(
-      adapter.sendMessage({ conversationId: 'conv-1' as never, content: 'hi' }),
-    ).rejects.toMatchObject({
-      name: 'ResultErrorException',
+    const result = await adapter.sendMessage({
+      conversationId: 'conv-1' as never,
+      content: 'hi',
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      throw new Error('expected failure result');
+    }
+    expect(result.error).toMatchObject({
       code: 'UNAUTHORIZED',
       message: '未授权，请登录',
       details: [{ code: 'TOKEN_MISSING', message: 'missing token' }],
-    } satisfies Partial<ResultClientError>);
+    });
   });
 
   it('preserves HTTP envelope code for stream bootstrap failures', async () => {

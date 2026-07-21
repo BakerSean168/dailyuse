@@ -10,6 +10,8 @@ import type {
   AgentRun,
   AgentRunResult,
   ConversationListRes,
+  MessageListRes,
+  SendMessageRes,
   GoalAutomationReminderPreview,
   GoalAutomationTaskTemplatePreview,
   GoalClarificationDTO,
@@ -61,8 +63,6 @@ export type ChatItem = {
   errorMessage?: string;
 };
 
-type MessageListResponse = Awaited<ReturnType<IAIService['listMessages']>>;
-
 export type ConversationSummary = ConversationListRes['data'][number];
 
 export type ProviderListItem = {
@@ -84,9 +84,9 @@ export type ChatModelOption = {
   modelName: string;
 };
 
-export type StreamDoneResult = Awaited<ReturnType<IAIService['sendMessage']>>;
+export type StreamDoneResult = SendMessageRes;
 
-export type ConversationMessageSummary = MessageListResponse['data'][number];
+export type ConversationMessageSummary = MessageListRes['data'][number];
 
 export type AIChatService = Pick<
   IAIService,

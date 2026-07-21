@@ -273,7 +273,7 @@ export function useAIWorkspace() {
         return true;
       }
 
-      await service.sendMessage(request);
+      unwrap(await service.sendMessage(request));
       await loadWorkspace(String(conversation.id));
       return true;
     } catch (sendError) {

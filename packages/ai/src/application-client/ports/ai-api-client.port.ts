@@ -60,7 +60,7 @@ export interface IAIConversationApiClient {
 }
 
 export interface IAIMessageApiClient {
-  sendMessage(request: SendMessageReq): Promise<SendMessageRes>;
+  sendMessage(request: SendMessageReq): Promise<Result<SendMessageRes>>;
   streamMessage(
     request: SendMessageReq,
     handlers: {
@@ -78,7 +78,7 @@ export interface IAIMessageApiClient {
   getMessages(
     conversationId: string,
     params?: { page?: number; pageSize?: number },
-  ): Promise<MessageListRes>;
+  ): Promise<Result<MessageListRes>>;
 }
 
 export interface IAIStreamMessageApiClient {
