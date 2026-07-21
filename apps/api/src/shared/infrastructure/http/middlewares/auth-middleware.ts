@@ -160,26 +160,3 @@ export const optionalAuthMiddleware = (
   return authMiddleware(req, res, next);
 };
 
-/**
- * 检查用户是否已认证的辅助函数。
- *
- * @param req - AuthenticatedRequest 请求对象
- * @returns identityId 如果已认证
- * @throws Error 如果未认证
- */
-export const requireAuth = (req: AuthenticatedRequest): string => {
-  if (!req.user?.identityId) {
-    throw new Error('用户未认证，请先登录');
-  }
-  return req.user.identityId;
-};
-
-/**
- * 获取当前用户UUID的辅助函数。
- *
- * @param req - AuthenticatedRequest 请求对象
- * @returns identityId 或 null
- */
-export const getCurrentAccountId = (req: AuthenticatedRequest): string | null => {
-  return req.user?.identityId ?? null;
-};

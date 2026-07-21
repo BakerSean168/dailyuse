@@ -5,6 +5,7 @@
  */
 import { ipcMain } from 'electron';
 import {
+  SettingChannels,
   type IElectronModule,
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
@@ -15,15 +16,7 @@ import { withAuthenticatedIdentity } from './authenticated-ipc';
 
 const logger = createLogger('SettingElectron');
 
-const Ch = {
-  GET_ALL: 'setting:all',
-  PATCH: 'setting:patch',
-  RESET: 'setting:reset',
-  IMPORT: 'setting:import',
-  EXPORT: 'setting:export',
-} as const;
-
-const channels = Object.values(Ch);
+const allChannels = Object.values(SettingChannels);
 let activeSettingModule: SettingModuleInstance | null = null;
 
 export const SettingElectronModule: IElectronModule = {
@@ -34,11 +27,11 @@ export const SettingElectronModule: IElectronModule = {
     activeSettingModule = mod;
     mod.start();
 
-    ipcMain.handle(Ch.GET_ALL, () =>
+    ipcMain.handle(SettingChannels.GET_ALL, () =>
       withAuthenticatedIdentity(ctx, (identityId) => mod.api.getUserSetting(identityId)),
     );
 
-    ipcMain.handle(Ch.PATCH, (_event, dto) => {
+    ipcMain.handle(SettingChannels.PATCH, (_event, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
       const category = payload.category as string;
       const patch = (payload.patch as Record<string, unknown>) ?? {};
@@ -47,7 +40,7 @@ export const SettingElectronModule: IElectronModule = {
       );
     });
 
-    ipcMain.handle(Ch.RESET, (_event, params) => {
+    ipcMain.handle(SettingChannels.RESET, (_event, params) => {
       const payload = (params && typeof params === 'object' ? params : {}) as Record<
         string,
         unknown
@@ -58,7 +51,7 @@ export const SettingElectronModule: IElectronModule = {
       );
     });
 
-    ipcMain.handle(Ch.IMPORT, (_event, dto) => {
+    ipcMain.handle(SettingChannels.IMPORT, (_event, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
       const raw = payload.data;
       const data: Record<string, unknown> =
@@ -71,7 +64,7 @@ export const SettingElectronModule: IElectronModule = {
       );
     });
 
-    ipcMain.handle(Ch.EXPORT, () =>
+    ipcMain.handle(SettingChannels.EXPORT, () =>
       withAuthenticatedIdentity(ctx, async (identityId) => {
         const exported = await mod.api.exportSettings(identityId);
         return JSON.stringify(exported);
@@ -82,7 +75,7 @@ export const SettingElectronModule: IElectronModule = {
   },
 
   destroy(): void {
-    for (const ch of channels) {
+    for (const ch of allChannels) {
       ipcMain.removeHandler(ch);
     }
     activeSettingModule?.dispose();

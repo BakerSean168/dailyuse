@@ -3,38 +3,37 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { SettingChannels } from '@dailyuse/contracts/electron';
 import type { IResultIpcClient, ISettingApiClient } from '../types';
 import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 
 export class SettingIpcAdapter implements ISettingApiClient {
-  private readonly channel = 'setting';
-
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async getUserSettings(): Promise<Result<UserSettingClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:all`);
+    return this.ipcClient.invoke(SettingChannels.GET_ALL);
   }
 
   async patchCategory(
     category: PreferenceCategory,
     patch: Record<string, unknown>,
   ): Promise<Result<UserSettingClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:patch`, { category, patch });
+    return this.ipcClient.invoke(SettingChannels.PATCH, { category, patch });
   }
 
   async resetUserSettings(category?: string): Promise<Result<UserSettingClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:reset`, { category });
+    return this.ipcClient.invoke(SettingChannels.RESET, { category });
   }
 
   async exportSettings(): Promise<Result<string>> {
-    return this.ipcClient.invoke(`${this.channel}:export`);
+    return this.ipcClient.invoke(SettingChannels.EXPORT);
   }
 
   async importSettings(
     data: string,
     options?: { merge?: boolean },
   ): Promise<Result<UserSettingClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:import`, { data, options });
+    return this.ipcClient.invoke(SettingChannels.IMPORT, { data, options });
   }
 }
 

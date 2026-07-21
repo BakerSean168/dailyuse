@@ -1069,6 +1069,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > module-handler-contracts + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留五十六轮）：setting electron 本地 `Ch` 折叠到 contracts
+> `SettingChannels`；`SettingIpcAdapter` 去掉 `setting:` 字符串拼接双轨，统一 invoke
+> `SettingChannels.*`；删除 API `requireAuth`/`getCurrentAccountId` 无消费者辅助函数。
+> 补 setting electron/adapter surface specs。§13.2 仍为部分/外部阻塞。
+> 验证：setting focused specs + desktop ipc/module-handler contracts + api auth middleware
+> specs + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
