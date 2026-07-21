@@ -177,7 +177,7 @@ export function createNotificationModule(
           data as Parameters<NotificationMaintenanceApplicationService['batchDelete']>[0],
         );
       }
-      return ok({ success: true, affected: 0 });
+      return ok({ deletedCount: 0 });
     },
 
     cleanupOldNotifications: async (data) => {

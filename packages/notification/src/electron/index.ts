@@ -17,7 +17,7 @@ import {
   type IElectronModule,
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import { CreateNotificationUseCase } from '../commands';
 import type { ScheduleNotificationPort } from '../schedule-execution';
 import {
@@ -125,7 +125,11 @@ export const NotificationElectronModule: IElectronModule = {
     ipcMain.handle(NotificationChannels.MARK_ALL_READ, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) => controller.markAllAsRead(identityId));
     });
-    ipcMain.handle(NotificationChannels.DELETE, (_, id) => controller.delete(id));
+    ipcMain.handle(NotificationChannels.DELETE, async (_, id) => {
+      const result = await controller.delete(id);
+      if (!result.ok) return result;
+      return ok(null);
+    });
     ipcMain.handle(NotificationChannels.CLEAR_ALL, async (_, ids) => {
       if (Array.isArray(ids) && ids.length > 0) {
         return controller.batchDelete({ notificationIds: ids });

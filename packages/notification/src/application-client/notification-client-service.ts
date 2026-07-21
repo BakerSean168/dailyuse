@@ -8,8 +8,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
+import type { BatchOperationResultDTO, NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type {
   INotificationApiClient,
   CreateNotificationRequest,
@@ -26,10 +25,10 @@ export interface NotificationClientPort {
   findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>>;
   findNotificationById(id: string): Promise<Result<NotificationClientDTO>>;
   markAsRead(id: string): Promise<Result<NotificationClientDTO>>;
-  markAllAsRead(): Promise<Result<CountResult>>;
-  deleteNotification(id: string): Promise<Result<ActionResult>>;
-  batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>>;
-  dismissAll(ids: string[]): Promise<Result<CountResult>>;
+  markAllAsRead(): Promise<Result<{ count: number }>>;
+  deleteNotification(id: string): Promise<Result<null>>;
+  batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>>;
+  dismissAll(ids: string[]): Promise<Result<BatchOperationResultDTO>>;
   getUnreadCount(): Promise<Result<UnreadCountResponse>>;
 }
 
@@ -68,19 +67,19 @@ export class NotificationClientService implements NotificationClientPort {
     return this.notificationApi.markAsRead(id);
   }
 
-  async markAllAsRead(): Promise<Result<CountResult>> {
+  async markAllAsRead(): Promise<Result<{ count: number }>> {
     return this.notificationApi.markAllAsRead();
   }
 
-  async deleteNotification(id: string): Promise<Result<ActionResult>> {
+  async deleteNotification(id: string): Promise<Result<null>> {
     return this.notificationApi.deleteNotification(id);
   }
 
-  async batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>> {
+  async batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>> {
     return this.notificationApi.batchDeleteNotifications(ids);
   }
 
-  async dismissAll(ids: string[]): Promise<Result<CountResult>> {
+  async dismissAll(ids: string[]): Promise<Result<BatchOperationResultDTO>> {
     return this.notificationApi.batchDeleteNotifications(ids);
   }
 

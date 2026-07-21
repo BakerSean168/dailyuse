@@ -13,8 +13,7 @@ import type {
   NotificationListResponse,
   UnreadCountResponse,
 } from '../types';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
+import type { BatchOperationResultDTO, NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 /**
  * NotificationHttpAdapter
@@ -48,16 +47,16 @@ export class NotificationHttpAdapter implements INotificationApiClient {
     return this.httpClient.patch(`${this.baseUrl}/${id}/read`);
   }
 
-  async markAllAsRead(): Promise<Result<CountResult>> {
+  async markAllAsRead(): Promise<Result<{ count: number }>> {
     return this.httpClient.patch(`${this.baseUrl}/read-all`);
   }
 
-  async deleteNotification(id: string): Promise<Result<ActionResult>> {
+  async deleteNotification(id: string): Promise<Result<null>> {
     return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
-  async batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>> {
-    return this.httpClient.post(`${this.baseUrl}/batch-delete`, { ids });
+  async batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/batch-delete`, { notificationIds: ids });
   }
 
   async getUnreadCount(): Promise<Result<UnreadCountResponse>> {

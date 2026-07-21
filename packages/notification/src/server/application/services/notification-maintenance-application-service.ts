@@ -14,7 +14,7 @@ interface CleanupOldNotificationsCommand extends CleanupOldNotificationsReq {
 export class NotificationMaintenanceApplicationService {
   constructor(private readonly notificationRepository: INotificationRepository) {}
 
-  async deleteNotification(id: string): Promise<Result<undefined>> {
+  async deleteNotification(id: string): Promise<Result<void>> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       return fail({ code: 'NOT_FOUND', message: 'notification not found' });
@@ -28,7 +28,7 @@ export class NotificationMaintenanceApplicationService {
 
   async batchDelete(
     data: DeleteNotificationsBatchReq,
-  ): Promise<Result<{ success: true; affected: number }>> {
+  ): Promise<Result<{ deletedCount: number }>> {
     const notifications = await Promise.all(
       data.notificationIds.map((id) => this.notificationRepository.findById(id)),
     );
@@ -43,14 +43,13 @@ export class NotificationMaintenanceApplicationService {
     await this.notificationRepository.saveMany(existingNotifications);
 
     return ok({
-      success: true,
-      affected: data.notificationIds.length,
+      deletedCount: existingNotifications.length,
     });
   }
 
   async cleanupOldNotifications(
     data: CleanupOldNotificationsCommand,
-  ): Promise<Result<{ success: true; affected: number }>> {
+  ): Promise<Result<{ deletedCount: number }>> {
     const beforeTimestamp = Date.now() - data.beforeDays * 24 * 60 * 60 * 1000;
     const notifications = await this.notificationRepository.findByIdentityId(data.identityId, {
       includeDeleted: false,
@@ -67,8 +66,7 @@ export class NotificationMaintenanceApplicationService {
     }
 
     return ok({
-      success: true,
-      affected: expiredIds.length,
+      deletedCount: expiredIds.length,
     });
   }
 

@@ -1336,6 +1336,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十二轮）：折叠 notification void/batch 双轨——单条 delete
+> controller/electron `ok(null)`；batch delete/cleanup 对齐 contracts
+> `BatchOperationResultDTO`/`NotificationBatchResultSchema`（`deletedCount`，去掉
+> `{ success, affected }`）；mark-all/batch-read 将裸 `number` 规范为 `{ count }` /
+> `{ updatedCount }`；client 去掉嵌套 `ActionResult`/`CountResult`。补 notification
+> void-success envelope surface。§13.2 仍为部分/外部阻塞。验证：notification focused +
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { NotificationApplicationPort } from '../application';
 import {
@@ -59,8 +59,11 @@ export class NotificationController {
     return this.useCases.getNotification(id);
   }
 
-  async delete(id: string): Promise<Result<unknown>> {
-    return this.useCases.deleteNotification(id);
+  async delete(id: string): Promise<Result<null>> {
+    const result = await this.useCases.deleteNotification(id);
+    if (!result.ok) return result as Result<null>;
+    // Serialize as data:null (no ActionResult / undefined dual-track).
+    return ok(null);
   }
 
   // ==================== Read/Batch Operations ====================
@@ -69,15 +72,19 @@ export class NotificationController {
     return this.useCases.markAsRead(id);
   }
 
-  async markAllAsRead(identityId: string): Promise<Result<unknown>> {
-    return this.useCases.markAllAsRead(identityId);
+  async markAllAsRead(identityId: string): Promise<Result<{ count: number }>> {
+    const result = await this.useCases.markAllAsRead(identityId);
+    if (!result.ok) return result as Result<{ count: number }>;
+    // Align bare number Result with UnreadCountResponseSchema { count }.
+    const count = typeof result.data === 'number' ? result.data : 0;
+    return ok({ count });
   }
 
   async getUnreadCount(identityId: string): Promise<Result<unknown>> {
     return this.useCases.getUnreadCount(identityId);
   }
 
-  async batchMarkAsRead(input: unknown): Promise<Result<unknown>> {
+  async batchMarkAsRead(input: unknown): Promise<Result<{ updatedCount: number }>> {
     const parsed = MarkAsReadBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -86,10 +93,14 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.batchMarkAsRead(parsed.data);
+    const result = await this.useCases.batchMarkAsRead(parsed.data);
+    if (!result.ok) return result as Result<{ updatedCount: number }>;
+    // Align bare number Result with NotificationBatchResultSchema { updatedCount }.
+    const updatedCount = typeof result.data === 'number' ? result.data : 0;
+    return ok({ updatedCount });
   }
 
-  async batchDelete(input: unknown): Promise<Result<unknown>> {
+  async batchDelete(input: unknown): Promise<Result<{ deletedCount: number }>> {
     const parsed = DeleteNotificationsBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -98,10 +109,20 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.batchDelete(parsed.data);
+    const result = await this.useCases.batchDelete(parsed.data);
+    if (!result.ok) return result as Result<{ deletedCount: number }>;
+    // Normalize to BatchOperationResultDTO (no { success, affected } dual-track).
+    if (
+      result.data &&
+      typeof result.data === 'object' &&
+      'deletedCount' in (result.data as object)
+    ) {
+      return ok({ deletedCount: Number((result.data as { deletedCount: number }).deletedCount) });
+    }
+    return ok({ deletedCount: 0 });
   }
 
-  async cleanup(input: unknown, ctx: Context): Promise<Result<unknown>> {
+  async cleanup(input: unknown, ctx: Context): Promise<Result<{ deletedCount: number }>> {
     const parsed = CleanupOldNotificationsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -110,9 +131,18 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.cleanupOldNotifications({
+    const result = await this.useCases.cleanupOldNotifications({
       ...parsed.data,
       identityId: ctx.identityId,
     });
+    if (!result.ok) return result as Result<{ deletedCount: number }>;
+    if (
+      result.data &&
+      typeof result.data === 'object' &&
+      'deletedCount' in (result.data as object)
+    ) {
+      return ok({ deletedCount: Number((result.data as { deletedCount: number }).deletedCount) });
+    }
+    return ok({ deletedCount: 0 });
   }
 }

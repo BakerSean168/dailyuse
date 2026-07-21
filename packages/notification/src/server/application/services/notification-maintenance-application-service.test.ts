@@ -67,7 +67,7 @@ describe('NotificationMaintenanceApplicationService', () => {
     expect(result).toEqual({ ok: true, data: undefined });
   });
 
-  it('soft deletes found notifications in a batch and preserves the existing response surface', async () => {
+  it('soft deletes found notifications in a batch and returns deletedCount', async () => {
     const first = createNotificationRecord({ id: 'INotificationId_550e8400-e29b-41d4-a716-446655440001' });
     const second = createNotificationRecord({ id: 'INotificationId_550e8400-e29b-41d4-a716-446655440002' });
     (notificationRepository.findById as ReturnType<typeof vi.fn>)
@@ -83,7 +83,7 @@ describe('NotificationMaintenanceApplicationService', () => {
     expect(notificationRepository.saveMany).toHaveBeenCalledWith([first, second]);
     expect(result).toEqual({
       ok: true,
-      data: { success: true, affected: 2 },
+      data: { deletedCount: 2 },
     });
   });
 
@@ -127,7 +127,7 @@ describe('NotificationMaintenanceApplicationService', () => {
     ]);
     expect(result).toEqual({
       ok: true,
-      data: { success: true, affected: 1 },
+      data: { deletedCount: 1 },
     });
     vi.useRealTimers();
   });

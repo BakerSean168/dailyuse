@@ -14,8 +14,7 @@ import type {
   NotificationListResponse,
   UnreadCountResponse,
 } from '../types';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
+import type { BatchOperationResultDTO, NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 export class NotificationIpcAdapter implements INotificationApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
@@ -36,15 +35,15 @@ export class NotificationIpcAdapter implements INotificationApiClient {
     return this.ipcClient.invoke(NotificationChannels.MARK_READ, id);
   }
 
-  async markAllAsRead(): Promise<Result<CountResult>> {
+  async markAllAsRead(): Promise<Result<{ count: number }>> {
     return this.ipcClient.invoke(NotificationChannels.MARK_ALL_READ);
   }
 
-  async deleteNotification(id: string): Promise<Result<ActionResult>> {
+  async deleteNotification(id: string): Promise<Result<null>> {
     return this.ipcClient.invoke(NotificationChannels.DELETE, id);
   }
 
-  async batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>> {
+  async batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>> {
     return this.ipcClient.invoke(NotificationChannels.CLEAR_ALL, ids);
   }
 
