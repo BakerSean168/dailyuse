@@ -1436,6 +1436,89 @@ describe('createRemoteAIServiceRuntime', () => {
     );
   });
 
+  it('fails closed when an Agent run payload is not owned by the authenticated identity', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const foreignRun = createAgentRunResult('waiting_approval', {
+      run: {
+        ...createAgentRunResult('waiting_approval').run,
+        identityId: 'identity-other',
+      },
+    });
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(foreignRun);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.getRun(
+      'run-1',
+      { identityId: 'identity-1' },
+      'request-identity-isolation',
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('FORBIDDEN');
+      expect(result.error.message).toMatch(/not owned by the current identity/i);
+    }
+    expect(agentRuntimePort.getRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+      requestId: 'request-identity-isolation',
+      signal: undefined,
+    });
+  });
+
+  it('filters foreign identity runs out of list results as defense-in-depth', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    vi.mocked(agentRuntimePort.listRuns).mockResolvedValueOnce([
+      {
+        runId: 'run-own',
+        threadId: 'thread-1',
+        conversationId: null,
+        identityId: 'identity-1',
+        agentType: 'goal.create',
+        status: 'completed',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+      {
+        runId: 'run-foreign',
+        threadId: 'thread-2',
+        conversationId: null,
+        identityId: 'identity-other',
+        agentType: 'goal.create',
+        status: 'completed',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+    ]);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.listRuns(
+      {},
+      { identityId: 'identity-1' },
+      'request-list-isolation',
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual([
+        expect.objectContaining({ runId: 'run-own', identityId: 'identity-1' }),
+      ]);
+    }
+  });
+
+
   it('does not execute goal automation when the user cancels, even if execution.required remains', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     const automationToolExecutorPort = createMockAutomationToolExecutorPort();

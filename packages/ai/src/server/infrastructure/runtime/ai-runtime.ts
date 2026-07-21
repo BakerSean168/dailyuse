@@ -107,6 +107,20 @@ function unavailableResult<T>(message: string): Promise<Result<T>> {
   return Promise.resolve(error('SERVICE_UNAVAILABLE', message));
 }
 
+
+function ensureAgentRunOwnedByIdentity(
+  result: AgentRunResult,
+  identityId: string,
+): Result<AgentRunResult> {
+  if (result.run.identityId !== identityId) {
+    return error(
+      'FORBIDDEN',
+      'Agent run is not owned by the current identity.',
+    );
+  }
+  return ok(result);
+}
+
 function getStringInput(input: Record<string, unknown>, key: string): string | undefined {
   const value = input[key];
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
@@ -997,7 +1011,7 @@ export function createAgentRuntimeService(
           request: requestWithKnowledge.data,
           result: resolvedResult,
         });
-        return ok(resolvedResult);
+        return ensureAgentRunOwnedByIdentity(resolvedResult, cx.identityId);
       } catch (err) {
         await recordAgentRuntimeExecution({
           operation: 'start',
@@ -1052,7 +1066,7 @@ export function createAgentRuntimeService(
               request,
               result: resolvedSnapshot,
             });
-            return ok(resolvedSnapshot);
+            return ensureAgentRunOwnedByIdentity(resolvedSnapshot, cx.identityId);
           }
         }
 
@@ -1083,7 +1097,7 @@ export function createAgentRuntimeService(
           request,
           result: resolvedResult,
         });
-        return ok(resolvedResult);
+        return ensureAgentRunOwnedByIdentity(resolvedResult, cx.identityId);
       } catch (err) {
         await recordAgentRuntimeExecution({
           operation: 'resume',
@@ -1113,7 +1127,7 @@ export function createAgentRuntimeService(
           requestId,
           signal,
         })
-        .then(ok);
+        .then((result) => ensureAgentRunOwnedByIdentity(result, cx.identityId));
     },
     listRuns(
       params: AgentRunListParams,
@@ -1132,7 +1146,9 @@ export function createAgentRuntimeService(
           requestId,
           signal,
         })
-        .then(ok);
+        .then((runs) =>
+          ok(runs.filter((run) => run.identityId === cx.identityId)),
+        );
     },
     getEvents(
       runId: string,

@@ -54,7 +54,7 @@ updated: 2026-07-21T00:00:00
   `createRepositoryPowerSyncModule` 已删；知识笔记 path resolver 应用层路径穿越 hardening；
   Agent resume 仅 confirm 可执行 side-effect；首期 Agent 工具面不含 note update/reindex；AI index diagnostics 去掉 legacy-resource-metadata；访客/离线 token 不能扩 GitHub/PowerSync 云端授权；
   三入口 surface contract 单测（Desktop 账密+访客 / Web 账密+GitHub）与 goal↔knowledge 反向能力隔离；
-  Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView 已删；
+  Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView/useSmsCodeCountdown 已删；Agent identity 归属 fail-closed + resolveRunPlan surface 隔离；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
@@ -817,6 +817,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `DesktopAuthView`。§13.2 三入口边界再收口。验证：app-vue AuthPlatformEntry/router/guards specs、
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留二十六轮）：删除无消费者的 `useSmsCodeCountdown`；Agent runtime
+> 对 get/start/resume/list 增加 identity 归属 fail-closed（返回 `FORBIDDEN` / 过滤外 identity）；
+> contracts agent-host 增加纯函数 `resolveRunPlan`/`knowledgeWriteRequirements`（surface 隔离、
+> 缺能力 fail-closed、writable mutation 不可由 readonly 满足）。§13.2 Agent 项证据增强，仍为部分
+> （缺完整 ADR-035 Capability/Turn E2E）。验证：contracts capabilities specs、ai runtime identity
+> isolation specs、governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -835,7 +842,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留二十五轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留二十六轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
@@ -863,9 +870,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   （knowledge cancel 与 goal cancel 即使 interrupt 残留也不落盘/不跑 automation）；
   `AgentToolName` 首期不含 `update_knowledge_note`/`reindex_resource`；knowledge executor 对
   跨能力工具（如 `create_goal`）失败关闭；goal executor 对称地对 `create_knowledge_note`
-  fail-closed（不调用 goal automation / knowledge persistence）；Desktop `toCloudAccessToken`
-  阻止 guest/offline 占位 token 调用 GitHub knowledge App / PowerSync 云端 API，设置页仅
-  online 账户可发起连接。
+  fail-closed（不调用 goal automation / knowledge persistence）；Agent runtime get/start/resume
+  对非本 identity 的 run 返回 `FORBIDDEN`，list 过滤外 identity；contracts `resolveRunPlan`
+  按 surface fail-closed（Desktop 需 local_vault，Web 需 cloud_rag；readonly 不能顶替 mutation）；
+  Desktop `toCloudAccessToken` 阻止 guest/offline 占位 token 调用 GitHub knowledge App /
+  PowerSync 云端 API，设置页仅 online 账户可发起连接。
   仍缺：完整 ADR-035 Capability/Turn isolation E2E 与跨端一揽子对抗 E2E。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
