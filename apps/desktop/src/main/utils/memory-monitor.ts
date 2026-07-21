@@ -9,6 +9,7 @@
 
 import { ipcMain } from 'electron';
 import { DevChannels } from '@dailyuse/contracts/electron';
+import { ok } from '@dailyuse/contracts/result';
 import { isDesktopDevelopmentRuntime } from './dev-runtime';
 
 // ============ Types ============
@@ -269,15 +270,15 @@ export function registerMemoryMonitorIpcHandlers(): void {
   const monitor = getMemoryMonitor();
 
   ipcMain.handle(DevChannels.MEMORY_STATUS, async () => {
-    return monitor.getCurrentStatus();
+    return ok(monitor.getCurrentStatus());
   });
 
   ipcMain.handle(DevChannels.MEMORY_SNAPSHOTS, async () => {
-    return monitor.getSnapshots();
+    return ok(monitor.getSnapshots());
   });
 
   ipcMain.handle(DevChannels.MEMORY_FORCE_GC, async () => {
-    return monitor.forceGC();
+    return ok(monitor.forceGC());
   });
 
   console.log('[MemoryMonitor] IPC handlers registered');

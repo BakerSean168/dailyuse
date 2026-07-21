@@ -1165,6 +1165,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > app-vue focused surface specs + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留七十轮）：折叠 `SessionRestoreResult` 的 `success`/`ok` 双轨
+> （contracts 仅 `ok: boolean`；lifecycle 幂等重入路径改 `ok: true`）；dev memory-monitor
+> IPC 返回 Result `ok` 信封。补 contracts/desktop surface specs。§13.2 仍为部分/外部阻塞。
+> 验证：desktop lifecycle/memory focused specs + contracts surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

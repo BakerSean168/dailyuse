@@ -143,8 +143,7 @@ export interface TokenStatus {
  * Result of attempting to restore a session on app startup.
  */
 export interface SessionRestoreResult {
-  ok?: boolean;
-  success?: boolean;
+  ok: boolean;
   hasValidSession?: boolean;
   runtimeState?: AuthRuntimeState;
   identityId?: IdentityId;

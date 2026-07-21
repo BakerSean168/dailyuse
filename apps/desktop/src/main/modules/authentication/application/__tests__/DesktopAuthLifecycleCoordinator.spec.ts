@@ -212,7 +212,7 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
       const result = await coordinator.initialize();
 
-      expect(result.success).toBe(true);
+      expect(result.ok).toBe(true);
       expect(mockSessionManager.initialize).not.toHaveBeenCalled();
     });
 

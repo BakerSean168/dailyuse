@@ -74,7 +74,7 @@ export class DesktopAuthLifecycleCoordinator {
     if (this.isInitializedRef.value) {
       this.logger.warn('AuthDesktopApplicationService already initialized');
       return {
-        success: true,
+        ok: true,
         hasValidSession: this.sessionManager?.getCurrentSession()?.isValid() ?? false,
         runtimeState: this.authState.runtimeState,
       };
