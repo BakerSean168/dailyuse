@@ -4,7 +4,7 @@
  * Chains the isolation invariants for one knowledge.generate turn in a single
  * fixture series: capability plan → start gate → confirm-only mutation →
  * cross-capability fail-closed → identity isolation → vault path safety →
- * first-phase tool surface.
+ * first-phase tool surface → multi-engine fail-closed.
  *
  * This is host-boundary integration coverage (not a full Playwright E2E and not
  * a multi-engine Turn Engine suite). Complements the scattered unit specs.
@@ -637,5 +637,57 @@ describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
     expect(desktopMutation.missing.some((item) => item.kind === 'context.local_vault')).toBe(true);
   });
 
+  it('step 11: multi-engine offers alone cannot satisfy knowledge mutation requirements', () => {
+    // Engine capability kinds describe how a turn is executed; they never substitute for
+    // tool.proposal / tool.mutation / surface context required by knowledgeWriteRequirements.
+    const engineOnlyOffers: CapabilityOffer[] = [
+      {
+        kind: 'engine.direct_turn',
+        providerId: 'direct-chat-execution',
+        surface: 'any',
+        readonly: false,
+      },
+      {
+        kind: 'engine.pi_readonly',
+        providerId: 'pi-readonly',
+        surface: 'any',
+        readonly: true,
+      },
+      {
+        kind: 'engine.cli_readonly',
+        providerId: 'cli-readonly',
+        surface: 'any',
+        readonly: true,
+      },
+    ];
 
+    for (const engineId of [
+      'engine.direct_turn',
+      'engine.pi_readonly',
+      'engine.cli_readonly',
+      'knowledge.generate',
+    ] as const) {
+      const webPlan = resolveRunPlan({
+        engineId,
+        offers: engineOnlyOffers,
+        requirements: knowledgeWriteRequirements('web'),
+        surface: 'web',
+      });
+      expect(webPlan.engineId).toBe('none');
+      expect(webPlan.missing.map((item) => item.kind).sort()).toEqual(
+        ['context.cloud_rag', 'tool.mutation', 'tool.proposal'].sort(),
+      );
+
+      const desktopPlan = resolveRunPlan({
+        engineId,
+        offers: engineOnlyOffers,
+        requirements: knowledgeWriteRequirements('desktop'),
+        surface: 'desktop',
+      });
+      expect(desktopPlan.engineId).toBe('none');
+      expect(desktopPlan.missing.map((item) => item.kind).sort()).toEqual(
+        ['context.local_vault', 'tool.mutation', 'tool.proposal'].sort(),
+      );
+    }
+  });
 });

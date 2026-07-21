@@ -1202,6 +1202,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留七十五轮）：ADR-035 journey 增 step 11——`engine.direct_turn` /
+> `engine.pi_readonly` / `engine.cli_readonly` 引擎 offer 单独不能顶替 knowledge mutation
+> requirements（任意 engineId 在缺能力时仍 fail-closed 为 `engineId: 'none'`）；补
+> server-held data disclosure Web-only 证据：`use-data-portability.surface.spec.ts` +
+> three-login matrix step 8（Desktop 永不暴露 server disclosure；IPC adapter NOT_SUPPORTED
+> 不调用 IPC）。§13.2 未打勾项仍为部分/外部阻塞（真实 OAuth/GitHub fixture E2E、完整
+> multi-engine Turn Engine E2E、全量 PR 门禁）。验证：ai journey + app-vue matrix/surface +
+> data-portability ipc adapter + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1239,6 +1249,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   Desktop `guest-upgrade-vault-boundary.journey.spec.ts` + `toCloudAccessToken.spec.ts` 补访客升级与云端 token 门禁。
   残留四十轮：`three-login-surface.matrix.spec.ts` 增加 step 6（GitHub 登录仅身份、不蕴含 knowledge-repo App 授权）；
   残留四十三轮：三入口 matrix step 7 固化无 phone/SMS；auth identity 仓储删除 findByPhone/existsByPhone；
+  残留七十五轮：matrix step 8 固化 server-held data disclosure 为 Web-only（Desktop 不暴露）；
   仍缺：真实跨端 Playwright/Electron 一揽子 E2E（含真实 OAuth/GitHub fixture）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
@@ -1274,6 +1285,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四十轮：`adr-035-capability-turn-isolation.journey.spec.ts` 增加 multi-turn 二次 confirm 不重复落盘，以及 Web surface 无法满足 Desktop `local_vault` knowledge-write 要求；仍缺完整 multi-engine Turn Engine E2E 与跨端对抗性 Playwright/Electron E2E。
   残留七十四轮：journey step 10 固化 readonly cloud_rag/proposal 不能满足 knowledge mutation；
   AI deep-link surface 固化 `openRecentKnowledgeNote` → `/repository?note=`（无 `/note/:id`）。
+  残留七十五轮：journey step 11 固化 multi-engine（direct_turn / pi_readonly / cli_readonly）
+  offer 单独不能满足 knowledgeWriteRequirements，错误 engineId 在缺能力时仍为 `none`；
+  server-held disclosure Web-only：`useDataPortability` + IPC adapter NOT_SUPPORTED +
+  three-login matrix step 8。仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**

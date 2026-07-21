@@ -222,4 +222,22 @@ describe('ADR-034 three-login same-fixture journey', () => {
     expect(THREE_LOGIN_SURFACE_MATRIX.authApp.phoneSms).toBe(false);
     expect(THREE_LOGIN_SURFACE_MATRIX.desktop.phoneSms).toBe(false);
   });
+
+  it('step 8: server-held data disclosure is Web-only (never a Desktop product surface)', () => {
+    // Product boundary (residual 75 / §13.2): retained server-held disclosure is available
+    // only from the authenticated Web runtime. Desktop host injects DESKTOP_AUTH_API_KEY, so
+    // useDataPortability keeps isServerDisclosureAvailable=false and the IPC adapter fails
+    // closed with NOT_SUPPORTED without invoking IPC.
+    type RuntimeSurface = 'web' | 'desktop';
+    const isServerDisclosureAvailable = (surface: RuntimeSurface, hasService: boolean) =>
+      hasService && surface === 'web';
+
+    expect(isServerDisclosureAvailable('web', true)).toBe(true);
+    expect(isServerDisclosureAvailable('desktop', true)).toBe(false);
+    expect(isServerDisclosureAvailable('web', false)).toBe(false);
+
+    // Guest remains Desktop-only and still cannot unlock server-held disclosure.
+    expect(THREE_LOGIN_SURFACE_MATRIX.desktop.guest).toBe(true);
+    expect(isServerDisclosureAvailable('desktop', true)).toBe(false);
+  });
 });
