@@ -1,9 +1,3 @@
-export { RepositoryResolutionService } from './repository-resolution.service';
-export type { RepositoryResolutionServiceDependencies } from './repository-resolution.service';
-export { StoredResourceHydrationService } from './stored-resource-hydration.service';
-export type { StoredResourceHydrationServiceDependencies } from './stored-resource-hydration.service';
-export { ResourceMutationService } from './resource-mutation.service';
-export type { ResourceMutationServiceDependencies } from './resource-mutation.service';
 export { KnowledgeRepositoryConnectionService } from './knowledge-repository-connection.service';
 export type { KnowledgeRepositoryConnectionServiceOptions } from './knowledge-repository-connection.service';
 export {
@@ -16,3 +10,7 @@ export {
   KnowledgeNoteCommitService,
   type KnowledgeNoteCommitServiceOptions,
 } from './knowledge-note-commit.service';
+export {
+  publishRepositoryResourceMutation,
+  type RepositoryResourceMutationPayload,
+} from './repository-resource-mutation.publisher';

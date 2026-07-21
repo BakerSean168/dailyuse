@@ -44,9 +44,9 @@ updated: 2026-07-21T00:00:00
   app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
   path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
   **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**；repository 运行时组合根/
-  客户端面仅 knowledge + Local Vault。Prisma/PowerSync `editor_*`/`resources` 表与
-  data-portability 可再导入备份仍保留。完成定义审计见 §13.2；真实 GitHub fixture E2E 与
-  prod-like local-deploy 仍为外部阻塞。
+  客户端面仅 knowledge + Local Vault；**未挂载的 legacy application use-case/service 栈已删除**。
+  Prisma/PowerSync `editor_*`/`resources` 表与 data-portability 可再导入备份仍保留。完成定义审计见 §13.2；
+  真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
 ## 2. 已确认产品边界
 
@@ -695,6 +695,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > adapter 去掉 legacy CRUD 方法。残留 domain use-case 文件与 memory/PowerSync resource 适配器仍在仓库中
 > 但不再挂入运行时组合根。验证：repository focused module/client/knowledge suites 通过。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留十轮）：删除未挂载的 legacy application 层 Folder/Resource/Bookmark/
+> create-repository/upload/stats use-cases 与 `ResourceMutationService` /
+> `StoredResourceHydrationService` / `RepositoryResolutionService` 及对应单测；保留 knowledge 服务与
+> `publishRepositoryResourceMutation`。收紧 client/infrastructure-client 桶导出（去掉已删 CRUD request 类型）；
+> testing helper 收缩为 knowledge-only 模块壳。验证：`repository:test` 18 files / 129 tests、
+> `repository:typecheck`、`daily-use:governance-check` 通过。domain/PowerSync/Prisma resource 适配器与
+> portable 边界仍保留。§13.2 未完成项不变。状态保持 **实施中**；PR readiness 仍为 no。
 
 ## 13. 测试与完成定义
 

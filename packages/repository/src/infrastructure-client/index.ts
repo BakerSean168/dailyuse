@@ -7,10 +7,7 @@
 // Port Interfaces
 export type {
   IRepositoryApiClient,
-  CreateFolderRequest,
   IResultIpcClient,
-  UploadResourcesRequest,
-  UploadFileLike,
 } from './adapters/types';
 
 // HTTP Adapters
