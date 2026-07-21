@@ -24,9 +24,12 @@ export class ListScheduleTasksByStatusUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(status: ScheduleTaskStatus): Promise<Result<ScheduleTaskClientDTO[]>> {
-    // 1. 查询指定状态的所有任务
-    const tasks = await this.scheduleTaskRepository.findByStatus(status);
+  async execute(
+    status: ScheduleTaskStatus,
+    identityId: string,
+  ): Promise<Result<ScheduleTaskClientDTO[]>> {
+    // 1. 查询指定状态、当前 identity 的任务
+    const tasks = await this.scheduleTaskRepository.findByStatus(status, identityId);
 
     // 2. 转换为 Client DTO 列表
     return ok(tasks.map((t) => t.toClientDTO()));

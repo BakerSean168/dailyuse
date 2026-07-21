@@ -147,10 +147,27 @@ export class ScheduleTaskPrismaRepository
     return data ? this.toDomain(data) : null;
   }
 
-  async deleteById(id: string): Promise<void> {
-    await this.db.scheduleTask.delete({
-      where: { id },
+  async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleTask | null> {
+    const data = await this.db.scheduleTask.findFirst({
+      where: { id, identityId },
+      include: {
+        executions: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+      },
     });
+
+    return data ? this.toDomain(data) : null;
+  }
+
+  async deleteById(identityId: string, id: string): Promise<void> {
+    const deleted = await this.db.scheduleTask.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Schedule task not found for the current identity.');
+    }
   }
 
   // ===== Query Methods =====

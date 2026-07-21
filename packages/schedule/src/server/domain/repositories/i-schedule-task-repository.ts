@@ -44,10 +44,12 @@ export interface IScheduleTaskRepository {
    */
   findById(id: string): Promise<ScheduleTask | null>;
 
+  findByIdForIdentity(identityId: string, id: string): Promise<ScheduleTask | null>;
+
   /**
    * 鏍规嵁 UUID 鍒犻櫎 ScheduleTask
    */
-  deleteById(id: string): Promise<void>;
+  deleteById(identityId: string, id: string): Promise<void>;
 
   // ============ 鏌ヨ鏂规硶 ============
 

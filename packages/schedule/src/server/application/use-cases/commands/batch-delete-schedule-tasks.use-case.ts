@@ -17,7 +17,7 @@ export interface BatchScheduleTaskResult {
 export class BatchDeleteScheduleTasksUseCase {
   constructor(private readonly deleteScheduleTask: DeleteScheduleTaskUseCase) {}
 
-  async execute(ids: readonly string[]): Promise<Result<BatchScheduleTaskResult>> {
+  async execute(ids: readonly string[], identityId: string): Promise<Result<BatchScheduleTaskResult>> {
     const results: BatchScheduleTaskResult = {
       success: [],
       failed: [],
@@ -27,7 +27,7 @@ export class BatchDeleteScheduleTasksUseCase {
     };
 
     for (const id of ids) {
-      const result = await this.deleteScheduleTask.execute(id);
+      const result = await this.deleteScheduleTask.execute(id, identityId);
       if (isOk(result)) {
         results.success.push(id);
       } else {

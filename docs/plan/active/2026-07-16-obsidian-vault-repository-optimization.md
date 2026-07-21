@@ -1586,6 +1586,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百二十一轮）：Schedule task get/update/delete/actions 与
+> list-by-status/source 身份隔离——新增 `findByIdForIdentity`；deleteById 改为
+> `deleteMany where { id, identityId }`；HTTP/Electron task 读写透传 identity 上下文。补
+> ownership surface 与 schedule use-case 单测。§13.2 Agent/边界证据再增强，仍为部分。验证：
+> schedule ownership specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -1688,6 +1697,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百一十八轮：goal archive/activate/complete/permanent-delete identity-scoped（findByIdForIdentity）。
   残留一百一十九轮：goal key-result/review mutations + listReviews/clone identity-scoped（findByIdForIdentity）。
   残留一百二十轮：goal create-parent/focus/list-records/progress/cross-module identity-scoped（findByIdForIdentity）。
+  残留一百二十一轮：schedule task get/update/delete/actions + list identity-scoped（findByIdForIdentity）。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

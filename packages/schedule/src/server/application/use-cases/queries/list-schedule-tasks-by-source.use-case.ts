@@ -24,9 +24,17 @@ export class ListScheduleTasksBySourceUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(sourceModule: SourceModule, sourceId: string): Promise<Result<ScheduleTaskClientDTO[]>> {
-    // 1. 查询指定源的所有任务
-    const tasks = await this.scheduleTaskRepository.findBySourceEntity(sourceModule, sourceId);
+  async execute(
+    sourceModule: SourceModule,
+    sourceId: string,
+    identityId: string,
+  ): Promise<Result<ScheduleTaskClientDTO[]>> {
+    // 1. 查询指定源、当前 identity 的任务
+    const tasks = await this.scheduleTaskRepository.findBySourceEntity(
+      sourceModule,
+      sourceId,
+      identityId,
+    );
 
     // 2. 转换为 Client DTO 列表
     return ok(tasks.map((t) => t.toClientDTO()));

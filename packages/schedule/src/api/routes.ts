@@ -98,7 +98,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.batchOperation(req.body),
+    (req, ctx) => controller.batchOperation(req.body, ctx),
   );
 
   // POST /tasks/batch/delete — Batch delete tasks (must be before /tasks/:id)
@@ -118,7 +118,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.batchDeleteTasks(req.body),
+    (req, ctx) => controller.batchDeleteTasks(req.body, ctx),
   );
 
   // GET /tasks/due — Get due tasks (must be before /tasks/:id)
@@ -196,7 +196,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.getTask(req.params!.id),
+    (req, ctx) => controller.getTask(req.params!.id, ctx),
   );
 
   // PUT /tasks/:id — Update task
@@ -215,7 +215,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTask(req.params!.id, req.body),
+    (req, ctx) => controller.updateTask(req.params!.id, req.body, ctx),
   );
 
   // DELETE /tasks/:id — Delete task
@@ -231,7 +231,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteTask(req.params!.id),
+    (req, ctx) => controller.deleteTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/pause — Pause task
@@ -247,7 +247,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.pauseTask(req.params!.id),
+    (req, ctx) => controller.pauseTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/resume — Resume task
@@ -263,7 +263,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.resumeTask(req.params!.id),
+    (req, ctx) => controller.resumeTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/trigger — Trigger task
@@ -279,7 +279,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.triggerTask(req.params!.id),
+    (req, ctx) => controller.triggerTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/complete — Complete task
@@ -295,7 +295,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.completeTask(req.params!.id),
+    (req, ctx) => controller.completeTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/cancel — Cancel task
@@ -314,7 +314,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.cancelTask(req.params!.id, req.body),
+    (req, ctx) => controller.cancelTask(req.params!.id, req.body, ctx),
   );
 
   // PATCH /tasks/:id/metadata — Update task metadata
@@ -333,7 +333,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTaskMetadata(req.params!.id, req.body),
+    (req, ctx) => controller.updateTaskMetadata(req.params!.id, req.body, ctx),
   );
 
   return router;

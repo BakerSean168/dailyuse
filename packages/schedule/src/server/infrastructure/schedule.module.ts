@@ -263,36 +263,47 @@ export function createScheduleModule(
     },
     listTasks: async (query, ctx) => {
       if (query.status) {
-        return useCases.listScheduleTasksByStatus.execute(query.status as ScheduleTaskStatus);
+        return useCases.listScheduleTasksByStatus.execute(
+          query.status as ScheduleTaskStatus,
+          ctx.identityId,
+        );
       } else if (query.sourceModule && query.sourceEntityId) {
         return useCases.listScheduleTasksBySource.execute(
           query.sourceModule as SourceModule,
           query.sourceEntityId as string,
+          ctx.identityId,
         );
       } else {
         return useCases.listScheduleTasksByAccount.execute(ctx.identityId);
       }
     },
-    updateTask: async (id, data) => {
-      return useCases.updateScheduleTask.execute({
-        id,
-        scheduleConfig: data.schedule,
-        retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
-        enabled: data.enabled,
-        description: data.description,
-      });
+    updateTask: async (id, data, ctx) => {
+      return useCases.updateScheduleTask.execute(
+        {
+          id,
+          scheduleConfig: data.schedule,
+          retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
+          enabled: data.enabled,
+          description: data.description,
+        },
+        ctx.identityId,
+      );
     },
-    deleteTask: async (id) => useCases.deleteScheduleTask.execute(id),
-    pauseTask: async (id) => useCases.pauseScheduleTask.execute(id),
-    resumeTask: async (id) => useCases.resumeScheduleTask.execute(id),
-    triggerTask: async (id) => useCases.triggerScheduleTask.execute(id),
-    getTask: async (id) => useCases.getScheduleTask.execute(id),
-    completeTask: async (id) => useCases.completeScheduleTask.execute(id),
-    cancelTask: async (id, reason) => useCases.cancelScheduleTask.execute(id, reason),
+    deleteTask: async (id, ctx) => useCases.deleteScheduleTask.execute(id, ctx.identityId),
+    pauseTask: async (id, ctx) => useCases.pauseScheduleTask.execute(id, ctx.identityId),
+    resumeTask: async (id, ctx) => useCases.resumeScheduleTask.execute(id, ctx.identityId),
+    triggerTask: async (id, ctx) => useCases.triggerScheduleTask.execute(id, ctx.identityId),
+    getTask: async (id, ctx) => useCases.getScheduleTask.execute(id, ctx.identityId),
+    completeTask: async (id, ctx) => useCases.completeScheduleTask.execute(id, ctx.identityId),
+    cancelTask: async (id, reason, ctx) =>
+      useCases.cancelScheduleTask.execute(id, ctx.identityId, reason),
     getDueTasks: async () => useCases.getDueScheduleTasks.execute(),
-    batchOperateTasks: async (data) => useCases.batchOperateScheduleTasks.execute(data),
-    batchDeleteTasks: async (ids) => useCases.batchDeleteScheduleTasks.execute(ids),
-    updateTaskMetadata: async (id, metadata) => useCases.updateScheduleTaskMetadata.execute(id, metadata),
+    batchOperateTasks: async (data, ctx) =>
+      useCases.batchOperateScheduleTasks.execute(data, ctx.identityId),
+    batchDeleteTasks: async (ids, ctx) =>
+      useCases.batchDeleteScheduleTasks.execute(ids, ctx.identityId),
+    updateTaskMetadata: async (id, metadata, ctx) =>
+      useCases.updateScheduleTaskMetadata.execute(id, ctx.identityId, metadata),
   };
 
   const eventApi: ScheduleEventApplicationPort = {

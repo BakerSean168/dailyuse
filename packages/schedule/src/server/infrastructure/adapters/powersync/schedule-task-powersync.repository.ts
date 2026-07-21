@@ -233,8 +233,25 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     return PowerSyncScheduleTaskMapper.toDomain(row, executions);
   }
 
-  async deleteById(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM schedule_tasks WHERE id = ?', [id]);
+  async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleTask | null> {
+    const row = await this.db.getOptional<PowerSyncScheduleTaskRow>(
+      'SELECT * FROM schedule_tasks WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
+    );
+    if (!row) return null;
+    const executions = await this.loadExecutions(row.id, 10);
+    return PowerSyncScheduleTaskMapper.toDomain(row, executions);
+  }
+
+  async deleteById(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Schedule task not found for the current identity.');
+    }
+    await this.db.execute('DELETE FROM schedule_tasks WHERE id = ? AND identity_id = ?', [
+      id,
+      identityId,
+    ]);
   }
 
   async findByIdentityId(identityId: string): Promise<ScheduleTask[]> {

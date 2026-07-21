@@ -51,11 +51,11 @@ export class ScheduleController {
     return this.api.listTasks(parsed.data, ctx);
   }
 
-  async getTask(id: string): Promise<Result<unknown>> {
-    return this.api.getTask(id);
+  async getTask(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.api.getTask(id, ctx);
   }
 
-  async updateTask(id: string, input: unknown): Promise<Result<unknown>> {
+  async updateTask(id: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = UpdateScheduleTaskRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -64,11 +64,11 @@ export class ScheduleController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.updateTask(id, parsed.data as unknown as UpdateScheduleTaskRequest);
+    return this.api.updateTask(id, parsed.data as unknown as UpdateScheduleTaskRequest, ctx);
   }
 
-  async deleteTask(id: string): Promise<Result<null>> {
-    const result = await this.api.deleteTask(id);
+  async deleteTask(id: string, ctx: Context): Promise<Result<null>> {
+    const result = await this.api.deleteTask(id, ctx);
     if (!result.ok) return result as Result<null>;
     // Serialize as data:null (no Result.void / undefined dual-track).
     return ok(null);
@@ -76,35 +76,35 @@ export class ScheduleController {
 
   // ==================== Task Actions ====================
 
-  async pauseTask(id: string): Promise<Result<unknown>> {
-    return this.api.pauseTask(id);
+  async pauseTask(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.api.pauseTask(id, ctx);
   }
 
-  async resumeTask(id: string): Promise<Result<unknown>> {
-    return this.api.resumeTask(id);
+  async resumeTask(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.api.resumeTask(id, ctx);
   }
 
-  async triggerTask(id: string): Promise<Result<unknown>> {
-    return this.api.triggerTask(id);
+  async triggerTask(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.api.triggerTask(id, ctx);
   }
 
-  async completeTask(id: string): Promise<Result<unknown>> {
-    return this.api.completeTask(id);
+  async completeTask(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.api.completeTask(id, ctx);
   }
 
-  async cancelTask(id: string, input: unknown): Promise<Result<unknown>> {
+  async cancelTask(id: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const reason =
       typeof input === 'object' && input !== null && 'reason' in input
         ? String((input as { reason: unknown }).reason)
         : 'User cancelled';
-    return this.api.cancelTask(id, reason);
+    return this.api.cancelTask(id, reason, ctx);
   }
 
   async getDueTasks(ctx: Context): Promise<Result<unknown>> {
     return this.api.getDueTasks(ctx);
   }
 
-  async batchDeleteTasks(input: unknown): Promise<Result<unknown>> {
+  async batchDeleteTasks(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const ids =
       typeof input === 'object' && input !== null && 'taskIds' in input
         ? (input as { taskIds: unknown }).taskIds
@@ -112,10 +112,10 @@ export class ScheduleController {
     if (!Array.isArray(ids) || ids.length === 0) {
       return fail({ code: 'VALIDATION_ERROR', message: 'taskIds must be a non-empty array' });
     }
-    return this.api.batchDeleteTasks(ids);
+    return this.api.batchDeleteTasks(ids, ctx);
   }
 
-  async updateTaskMetadata(id: string, input: unknown): Promise<Result<unknown>> {
+  async updateTaskMetadata(id: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = UpdateTaskMetadataRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -124,12 +124,12 @@ export class ScheduleController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.api.updateTaskMetadata(id, parsed.data);
+    return this.api.updateTaskMetadata(id, parsed.data, ctx);
   }
 
   // ==================== Batch Operations ====================
 
-  async batchOperation(input: unknown): Promise<Result<unknown>> {
+  async batchOperation(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = BatchScheduleTaskOperationRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -139,6 +139,6 @@ export class ScheduleController {
       });
     }
 
-    return this.api.batchOperateTasks(parsed.data);
+    return this.api.batchOperateTasks(parsed.data, ctx);
   }
 }

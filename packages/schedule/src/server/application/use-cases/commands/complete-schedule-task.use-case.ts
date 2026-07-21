@@ -10,8 +10,8 @@ import type { IScheduleTaskRepository } from '../../../domain';
 export class CompleteScheduleTaskUseCase {
   constructor(private readonly scheduleTaskRepository: IScheduleTaskRepository) {}
 
-  async execute(id: string): Promise<Result<ScheduleTaskClientDTO>> {
-    const task = await this.scheduleTaskRepository.findById(id);
+  async execute(id: string, identityId: string): Promise<Result<ScheduleTaskClientDTO>> {
+    const task = await this.scheduleTaskRepository.findByIdForIdentity(identityId, id);
     if (!task) {
       return error('NOT_FOUND', `Schedule task ${id} not found`);
     }

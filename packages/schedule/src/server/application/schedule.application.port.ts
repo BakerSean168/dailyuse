@@ -18,18 +18,18 @@ import type {
 export interface ScheduleApplicationPort {
   createTask(data: CreateScheduleTaskRequest, ctx: Context): Promise<Result<unknown>>;
   listTasks(query: Record<string, unknown>, ctx: Context): Promise<Result<unknown>>;
-  getTask(id: string): Promise<Result<unknown>>;
-  updateTask(id: string, data: UpdateScheduleTaskRequest): Promise<Result<unknown>>;
-  deleteTask(id: string): Promise<Result<unknown>>;
-  pauseTask(id: string): Promise<Result<unknown>>;
-  resumeTask(id: string): Promise<Result<unknown>>;
-  triggerTask(id: string): Promise<Result<unknown>>;
-  completeTask(id: string): Promise<Result<unknown>>;
-  cancelTask(id: string, reason: string): Promise<Result<unknown>>;
+  getTask(id: string, ctx: Context): Promise<Result<unknown>>;
+  updateTask(id: string, data: UpdateScheduleTaskRequest, ctx: Context): Promise<Result<unknown>>;
+  deleteTask(id: string, ctx: Context): Promise<Result<unknown>>;
+  pauseTask(id: string, ctx: Context): Promise<Result<unknown>>;
+  resumeTask(id: string, ctx: Context): Promise<Result<unknown>>;
+  triggerTask(id: string, ctx: Context): Promise<Result<unknown>>;
+  completeTask(id: string, ctx: Context): Promise<Result<unknown>>;
+  cancelTask(id: string, reason: string, ctx: Context): Promise<Result<unknown>>;
   getDueTasks(ctx: Context): Promise<Result<unknown>>;
-  batchOperateTasks(data: BatchScheduleTaskOperationRequest): Promise<Result<unknown>>;
-  batchDeleteTasks(ids: string[]): Promise<Result<unknown>>;
-  updateTaskMetadata(id: string, metadata: UpdateTaskMetadataRequest): Promise<Result<unknown>>;
+  batchOperateTasks(data: BatchScheduleTaskOperationRequest, ctx: Context): Promise<Result<unknown>>;
+  batchDeleteTasks(ids: string[], ctx: Context): Promise<Result<unknown>>;
+  updateTaskMetadata(id: string, metadata: UpdateTaskMetadataRequest, ctx: Context): Promise<Result<unknown>>;
 }
 
 /**

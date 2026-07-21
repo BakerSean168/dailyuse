@@ -28,7 +28,11 @@ class MockScheduleTaskRepository implements IScheduleTaskRepository {
     return this.tasks.get(id) ?? null;
   }
 
-  async deleteById(id: string): Promise<void> {
+  async findByIdForIdentity(_identityId: string, id: string): Promise<any> {
+    return this.tasks.get(id) ?? null;
+  }
+
+  async deleteById(_identityId: string, id: string): Promise<void> {
     this.tasks.delete(id);
   }
 

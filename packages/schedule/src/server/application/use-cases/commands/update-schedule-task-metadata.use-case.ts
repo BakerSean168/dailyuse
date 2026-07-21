@@ -12,9 +12,10 @@ export class UpdateScheduleTaskMetadataUseCase {
 
   async execute(
     id: string,
+    identityId: string,
     metadata: UpdateTaskMetadataRequest,
   ): Promise<Result<ScheduleTaskClientDTO>> {
-    const task = await this.scheduleTaskRepository.findById(id);
+    const task = await this.scheduleTaskRepository.findByIdForIdentity(identityId, id);
     if (!task) {
       return error('NOT_FOUND', `Schedule task ${id} not found`);
     }
