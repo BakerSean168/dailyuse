@@ -865,7 +865,7 @@ describe('AIGoalWorkflowPanel', () => {
         noteSummary: {
           resolvedPath: 'notes/ai/Grounded Q&A Note.md',
           indexStatus: 'pending',
-          resource: {
+          note: {
             name: 'Grounded Q&A Note.md',
             content: '# Grounded Q&A Note\n\nSaved from the knowledge answer.',
           },

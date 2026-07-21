@@ -788,15 +788,15 @@ export function createAgentRuntimeService(
       executedActions.push({
         tool: action.tool,
         status: 'executed',
-        entityId: String(result.data.resource.id),
+        entityId: String(result.data.note.id),
         message: `Saved knowledge note to ${result.data.resolvedPath}.`,
         data: {
           resolvedPath: result.data.resolvedPath,
           indexStatus: result.data.indexStatus,
-          resource: {
-            id: String(result.data.resource.id),
-            name: result.data.resource.name,
-            content: result.data.resource.content,
+          note: {
+            id: String(result.data.note.id),
+            name: result.data.note.name,
+            content: result.data.note.content,
           },
         },
       });

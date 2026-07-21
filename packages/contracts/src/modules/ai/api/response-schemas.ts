@@ -256,25 +256,20 @@ export const ExpandKnowledgeResSchema = z.object({
   matchedResourceCount: z.number(),
 });
 
-const ResourceClientResSchema = z.object({
+const KnowledgeNotePersistedRefSchema = z.object({
   id: z.string(),
-  repositoryId: z.string(),
-  folderId: z.string().nullable(),
+  repositoryScopeId: z.string(),
   name: z.string(),
-  type: z.string(),
-  mimeType: z.string(),
   path: z.string(),
+  mimeType: z.string(),
   size: z.number(),
   content: z.string().nullable(),
-  status: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
-  version: z.number(),
 });
 
 export const CreateKnowledgeNoteResSchema = z.object({
-  resource: ResourceClientResSchema,
+  note: KnowledgeNotePersistedRefSchema,
   resolvedPath: z.string(),
   indexStatus: z.enum(['pending', 'indexed', 'failed']),
   tokenUsage: TokenUsageSchema,

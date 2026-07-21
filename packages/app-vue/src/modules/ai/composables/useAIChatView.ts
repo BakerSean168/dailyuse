@@ -365,7 +365,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   );
 
   const notePreview = computed(() => {
-    const content = noteWorkflow.noteSummary.value?.resource?.content;
+    const content = noteWorkflow.noteSummary.value?.note?.content;
     if (!content) return t('aiAssistant.dialogs.note.previewUnavailable');
     return content.slice(0, 280);
   });

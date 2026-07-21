@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import type { ResourceClientDTO } from '../../repository/aggregates/resource-client';
 
 function normalizeKnowledgeNoteTargetSubpath(value: string): string {
   return value
@@ -62,8 +61,25 @@ export type CreateKnowledgeNoteReq = z.infer<typeof CreateKnowledgeNoteSchema>;
 
 export type KnowledgeNoteIndexStatus = 'pending' | 'indexed' | 'failed';
 
+/**
+ * Persisted knowledge-note reference returned after confirmed create.
+ * Not a database Resource CRUD DTO — scoped to vault/projection note writes.
+ */
+export interface KnowledgeNotePersistedRef {
+  id: string;
+  /** Knowledge connection id, or local-vault-{identityId} scope. */
+  repositoryScopeId: string;
+  name: string;
+  path: string;
+  mimeType: string;
+  size: number;
+  content: string | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface CreateKnowledgeNoteRes {
-  resource: ResourceClientDTO;
+  note: KnowledgeNotePersistedRef;
   resolvedPath: string;
   indexStatus: KnowledgeNoteIndexStatus;
   tokenUsage: {

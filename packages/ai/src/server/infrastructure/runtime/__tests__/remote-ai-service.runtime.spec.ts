@@ -21,7 +21,6 @@ import type {
   KnowledgeSourceResource,
 } from '../../../application/ports';
 import { createRemoteAIServiceRuntime } from '../remote-ai-service.runtime';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 // ============================================================
 // Helpers
@@ -176,33 +175,20 @@ function createKnowledgeQueryBundleDeps(): {
 }
 
 function createKnowledgeNotePersistencePort(): IKnowledgeNotePersistencePort {
-  const resource: ResourceClientDTO = {
-    id: 'resource-note-1' as ResourceClientDTO['id'],
-    repositoryId: 'repo-1' as ResourceClientDTO['repositoryId'],
-    folderId: null,
+  const note = {
+    id: 'resource-note-1',
+    repositoryScopeId: 'repo-1',
     name: 'Grounding-knowledge-answers.md',
-    type: 'document' as ResourceClientDTO['type'],
-    mimeType: 'text/markdown',
     path: '/notes/notes/ai/Grounding-knowledge-answers.md',
+    mimeType: 'text/markdown',
     size: 42,
     content: '# Grounding knowledge answers',
-    metadata: {} as ResourceClientDTO['metadata'],
-    stats: {} as ResourceClientDTO['stats'],
-    status: 'active' as ResourceClientDTO['status'],
-    createdAt: 1 as ResourceClientDTO['createdAt'],
-    updatedAt: 2 as ResourceClientDTO['updatedAt'],
-    deletedAt: null,
-    version: 1,
-    isDeleted: false,
-    isArchived: false,
-    isActive: true,
-    isDraft: false,
-    extension: '.md',
-    icon: 'file-document',
+    createdAt: 1,
+    updatedAt: 2,
   };
 
   return {
-    createKnowledgeNote: vi.fn().mockResolvedValue({ resource }),
+    createKnowledgeNote: vi.fn().mockResolvedValue({ note }),
   };
 }
 
@@ -931,7 +917,7 @@ describe('createRemoteAIServiceRuntime', () => {
             data: {
               resolvedPath: '/notes/notes/ai/Grounding-knowledge-answers.md',
               indexStatus: 'pending',
-              resource: {
+              note: {
                 id: 'resource-note-1',
                 name: 'Grounding-knowledge-answers.md',
                 content: '# Grounding knowledge answers',
@@ -1021,7 +1007,7 @@ describe('createRemoteAIServiceRuntime', () => {
             data: {
               resolvedPath: 'notes/ai/Grounding-knowledge-answers.md',
               indexStatus: 'pending',
-              resource: {
+              note: {
                 id: 'resource-note-1',
                 name: 'Grounding-knowledge-answers.md',
                 content: '# Grounding knowledge answers',

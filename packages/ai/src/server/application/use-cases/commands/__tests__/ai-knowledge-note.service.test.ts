@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { AIProviderType } from '@dailyuse/contracts/ai';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 import type {
   AIExecutionLogInput,
@@ -62,7 +61,7 @@ class StubKnowledgeNotePersistencePort implements IKnowledgeNotePersistencePort 
   public readonly createKnowledgeNote = vi.fn<
     (input: CreateKnowledgeNotePersistenceInput) => Promise<CreateKnowledgeNotePersistenceResult>
   >(async (input) => ({
-    resource: createResource(input),
+    note: createPersistedNote(input),
   }));
 }
 
@@ -70,36 +69,17 @@ class StubExecutionLogPort implements IAIExecutionLogPort {
   public readonly record = vi.fn<(input: AIExecutionLogInput) => Promise<void>>(async () => {});
 }
 
-function createResource(input: CreateKnowledgeNotePersistenceInput): ResourceClientDTO {
+function createPersistedNote(input: CreateKnowledgeNotePersistenceInput) {
   return {
-    id: 'resource-1' as ResourceClientDTO['id'],
-    repositoryId: 'repository-1' as ResourceClientDTO['repositoryId'],
-    folderId: null,
+    id: 'note-1',
+    repositoryScopeId: 'repository-1',
     name: input.fileName,
-    type: 'note' as ResourceClientDTO['type'],
-    mimeType: 'text/markdown',
     path: input.path,
+    mimeType: 'text/markdown',
     size: input.content.length,
     content: input.content,
-    metadata: {} as ResourceClientDTO['metadata'],
-    stats: {} as ResourceClientDTO['stats'],
-    status: 'active' as ResourceClientDTO['status'],
-    createdAt: Date.now() as ResourceClientDTO['createdAt'],
-    updatedAt: Date.now() as ResourceClientDTO['updatedAt'],
-    deletedAt: null,
-    version: 1,
-    isDeleted: false,
-    isArchived: false,
-    isActive: true,
-    isDraft: false,
-    statusText: 'active',
-    typeText: 'note',
-    displayName: input.fileName,
-    formattedSize: '1 KB',
-    createdAtText: 'now',
-    updatedAtText: 'now',
-    extension: '.md',
-    icon: 'description',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   };
 }
 
@@ -182,6 +162,13 @@ describe('AIKnowledgeNoteService', () => {
     expect(result.data.tokenUsage.totalTokens).toBe(30);
     expect(result.data.resolvedPath).toBe('python/Python-Tooling.md');
     expect(result.data.indexStatus).toBe('pending');
+    expect(result.data.note).toMatchObject({
+      id: 'note-1',
+      repositoryScopeId: 'repository-1',
+      name: 'Python-Tooling.md',
+      path: 'python/Python-Tooling.md',
+      content: '# Python Tooling\n\nA concise note.',
+    });
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({
         taskType: 'KNOWLEDGE_NOTE_GENERATION',

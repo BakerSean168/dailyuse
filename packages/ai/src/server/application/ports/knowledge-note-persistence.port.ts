@@ -1,4 +1,4 @@
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import type { KnowledgeNotePersistedRef } from '@dailyuse/contracts/ai';
 
 export interface CreateKnowledgeNotePersistenceInput {
   identityId: string;
@@ -13,7 +13,7 @@ export interface CreateKnowledgeNotePersistenceInput {
 }
 
 export interface CreateKnowledgeNotePersistenceResult {
-  resource: ResourceClientDTO;
+  note: KnowledgeNotePersistedRef;
 }
 
 export interface IKnowledgeNotePersistencePort {

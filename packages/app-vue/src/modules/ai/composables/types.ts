@@ -158,7 +158,11 @@ export type GoalWorkflowStage =
 export type NoteSummary = {
   resolvedPath: string;
   indexStatus?: KnowledgeNoteIndexStatus;
-  resource?: { id?: string; name?: string; content?: string | null };
+  note?: {
+    id?: string;
+    name?: string;
+    content?: string | null;
+  };
 };
 
 export type EditableGoal = {

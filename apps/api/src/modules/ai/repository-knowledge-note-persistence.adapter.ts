@@ -1,9 +1,5 @@
 import { createHash } from 'node:crypto';
-import {
-  ResourceStatus,
-  ResourceType,
-  type ResourceClientDTO,
-} from '@dailyuse/contracts/repository';
+import type { KnowledgeNotePersistedRef } from '@dailyuse/contracts/ai';
 import type { RepositoryApplicationPort } from '@dailyuse/repository';
 import type {
   CreateKnowledgeNotePersistenceInput,
@@ -12,12 +8,8 @@ import type {
 } from '@dailyuse/ai/ports';
 
 /**
- * Server AI knowledge-note persistence.
- *
- * A generated note is committed through the Repository application port after
- * the immutable Agent confirmation metadata has been supplied. The returned
- * legacy ResourceClientDTO is a compatibility view over the projection; this
- * adapter never creates or updates a row in the old Resource table.
+ * Web/API AI notes are committed through knowledge repository confirmed create.
+ * Returns a knowledge-note ref over the projection write, not a Resource CRUD DTO.
  */
 export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNotePersistencePort {
   constructor(private readonly repositoryApi: RepositoryApplicationPort) {}
@@ -29,28 +21,26 @@ export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNote
       throw new Error('A confirmed knowledge-note proposal is required for GitHub writes');
     }
 
-    const connections = await this.repositoryApi.listKnowledgeRepositoryConnections({
+    const listed = await this.repositoryApi.listKnowledgeRepositoryConnections({
       identityId: input.identityId,
       deviceId: 'api-server',
     });
-    if (!connections.ok) {
-      throw new Error(connections.error.message);
+    if (!listed.ok) {
+      throw new Error(listed.error.message);
     }
 
-    const activeConnections = connections.data.connections.filter(
-      (connection) => connection.status === 'Active',
-    );
+    const active = listed.data.connections.filter((c) => c.status === 'Active');
     const connection = input.connectionId
-      ? activeConnections.find((candidate) => candidate.id === input.connectionId)
-      : activeConnections.length === 1
-        ? activeConnections[0]
+      ? active.find((c) => c.id === input.connectionId)
+      : active.length === 1
+        ? active[0]
         : undefined;
 
     if (!connection) {
       throw new Error(
         input.connectionId
           ? 'The selected knowledge repository connection is not active'
-          : activeConnections.length > 1
+          : active.length > 1
             ? 'An explicit knowledge repository connection is required'
             : 'No active knowledge repository connection is available',
       );
@@ -75,56 +65,29 @@ export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNote
     }
 
     return {
-      resource: toProjectionResourceDTO(input, connection.id),
+      note: toKnowledgeNoteRef(input, connection.id),
     };
   }
 }
 
-function toProjectionResourceDTO(
+function toKnowledgeNoteRef(
   input: CreateKnowledgeNotePersistenceInput,
   connectionId: string,
-): ResourceClientDTO {
+): KnowledgeNotePersistedRef {
   const now = Date.now();
   const id = `knowledge-note-${createHash('sha256')
     .update(`${connectionId}:${input.path}`)
     .digest('hex')}`;
-  const wordCount = input.content.split(/\s+/).filter(Boolean).length;
 
   return {
-    id: id as ResourceClientDTO['id'],
-    repositoryId: connectionId as ResourceClientDTO['repositoryId'],
-    folderId: null,
+    id,
+    repositoryScopeId: connectionId,
     name: input.fileName,
-    type: ResourceType.File,
-    mimeType: 'text/markdown',
     path: input.path,
+    mimeType: 'text/markdown',
     size: Buffer.byteLength(input.content, 'utf8'),
     content: input.content,
-    metadata: {
-      tags: [],
-      wordCount,
-      readingTime: null,
-      thumbnail: null,
-      sourceType: 'github-default-branch-projection',
-      connectionId,
-    },
-    stats: {
-      viewCount: 0,
-      editCount: 0,
-      linkCount: 0,
-      lastViewedAt: null,
-      lastEditedAt: now,
-    },
-    status: ResourceStatus.Active,
-    createdAt: now as ResourceClientDTO['createdAt'],
-    updatedAt: now as ResourceClientDTO['updatedAt'],
-    deletedAt: null,
-    version: 1,
-    isDeleted: false,
-    isArchived: false,
-    isActive: true,
-    isDraft: false,
-    extension: '.md',
-    icon: 'description',
+    createdAt: now,
+    updatedAt: now,
   };
 }

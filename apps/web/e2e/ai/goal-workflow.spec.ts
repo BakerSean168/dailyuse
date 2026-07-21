@@ -2060,7 +2060,7 @@ async function installGoalWorkflowMocks(
       entityId: 'resource-note-e2e-1',
       message: `Saved knowledge note to ${resolvedPath}.`,
       data: {
-        resource: {
+        note: {
           id: 'resource-note-e2e-1',
           name: resourceName,
           content: draft.markdown,
@@ -2181,21 +2181,16 @@ async function installGoalWorkflowMocks(
 
     const now = Date.now();
     await fulfillJson(route, {
-      resource: {
+      note: {
         id: 'resource-note-e2e-1',
-        repositoryId: 'repository-e2e-1',
-        folderId: null,
+        repositoryScopeId: 'connection-e2e-1',
         name: resourceName,
-        type: 'Markdown',
-        mimeType: 'text/markdown',
         path: resolvedPath,
+        mimeType: 'text/markdown',
         size: 124,
-        content: request.contentMarkdown,
-        status: 'Active',
+        content: request.contentMarkdown ?? null,
         createdAt: now,
         updatedAt: now,
-        deletedAt: null,
-        version: 1,
       },
       resolvedPath,
       indexStatus: 'indexed',

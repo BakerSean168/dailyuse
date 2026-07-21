@@ -625,7 +625,7 @@ const AIGoalWorkflowPanelStub = defineComponent({
         fragments.push(
           h('div', { 'data-testid': 'knowledge-note-summary-panel' }, [
             h('h3', 'Knowledge Note Created'),
-            h('p', props.noteSummary.resource?.name ?? ''),
+            h('p', props.noteSummary.note?.name ?? ''),
             h('p', props.noteSummary.resolvedPath ?? ''),
             h('p', props.noteSummary.indexStatus ?? ''),
             h('p', props.notePreview ?? ''),
@@ -939,7 +939,7 @@ function createKnowledgeQaAgentRunResult(overrides?: {
 
 function createKnowledgeNoteResult() {
   return {
-    resource: {
+    note: {
       id: 'note-resource-1',
       name: 'Grounded Q&A Note.md',
       content: '# Grounded Q&A Note\n\nSaved from the knowledge answer.',
@@ -1094,15 +1094,15 @@ function createSavedKnowledgeNoteAgentRunResult(overrides?: {
       {
         tool: 'create_knowledge_note',
         status: 'executed',
-        entityId: saved.resource.id,
+        entityId: saved.note.id,
         message: `Saved knowledge note to ${saved.resolvedPath}.`,
         data: {
           resolvedPath: saved.resolvedPath,
           indexStatus: saved.indexStatus,
-          resource: {
-            id: saved.resource.id,
-            name: saved.resource.name,
-            content: saved.resource.content,
+          note: {
+            id: saved.note.id,
+            name: saved.note.name,
+            content: saved.note.content,
           },
         },
       },

@@ -66,12 +66,12 @@ describe('DesktopKnowledgeNotePersistenceAdapter', () => {
       proposalRevision: 4,
       requestId: 'request-1',
     });
-    expect(result.resource).toMatchObject({
+    expect(result.note).toMatchObject({
       name: 'Approved.md',
       path: 'Research/Approved.md',
       content: '# Approved\n\nReviewed body',
       mimeType: 'text/markdown',
-      isActive: true,
+      repositoryScopeId: 'local-vault-identity-1',
     });
   });
 });

@@ -68,11 +68,11 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
     return {
       resolvedPath: summary.resolvedPath,
       indexStatus: summary.indexStatus,
-      resource: summary.resource
+      note: summary.note
         ? {
-            id: summary.resource.id,
-            name: summary.resource.name,
-            content: summary.resource.content?.slice(0, 280),
+            id: summary.note.id,
+            name: summary.note.name,
+            content: summary.note.content?.slice(0, 280),
           }
         : undefined,
     };

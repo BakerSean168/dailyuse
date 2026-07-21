@@ -104,7 +104,7 @@ export class ManageAIKnowledgeNoteUseCase {
       const persisted = await this.persistencePort.createKnowledgeNote(persistenceInput);
 
       const result: CreateKnowledgeNoteRes = {
-        resource: persisted.resource,
+        note: persisted.note,
         resolvedPath: pathInfo.path,
         indexStatus: 'pending',
         tokenUsage: completion.usage,
@@ -129,7 +129,7 @@ export class ManageAIKnowledgeNoteUseCase {
         },
         result: {
           resolvedPath: result.resolvedPath,
-          resourceId: String(result.resource.id),
+          resourceId: String(result.note.id),
           indexStatus: result.indexStatus,
         },
         tokenUsage: result.tokenUsage,

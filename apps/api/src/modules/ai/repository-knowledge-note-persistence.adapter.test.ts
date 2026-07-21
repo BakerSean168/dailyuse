@@ -84,16 +84,12 @@ describe('RepositoryKnowledgeNotePersistenceAdapter', () => {
         content: '# Approved\n\nReviewed body',
       }),
     );
-    expect(result.resource).toMatchObject({
+    expect(result.note).toMatchObject({
       name: 'Approved.md',
       path: 'notes/Approved.md',
       content: '# Approved\n\nReviewed body',
       mimeType: 'text/markdown',
-      isActive: true,
-      metadata: {
-        sourceType: 'github-default-branch-projection',
-        connectionId: 'connection-1',
-      },
+      repositoryScopeId: 'connection-1',
     });
   });
 

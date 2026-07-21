@@ -873,7 +873,7 @@
           {{ t('aiAssistant.chatPage.workflow.noteCreatedTitle') }}
         </p>
         <h2 class="mt-2 text-lg font-semibold text-foreground">
-          {{ noteSummary.resource?.name || t('aiAssistant.dialogs.note.newNoteCreated') }}
+          {{ noteSummary.note?.name || t('aiAssistant.dialogs.note.newNoteCreated') }}
         </h2>
       </div>
 

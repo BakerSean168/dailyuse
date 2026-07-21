@@ -114,20 +114,20 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     const resolvedPath = getRecordString(data, 'resolvedPath');
     if (!resolvedPath) return null;
 
-    const resourceData = isRecord(data.resource) ? data.resource : null;
-    const content = resourceData
-      ? resourceData.content === null || typeof resourceData.content === 'string'
-        ? resourceData.content
+    const noteData = isRecord(data.note) ? data.note : null;
+    const content = noteData
+      ? noteData.content === null || typeof noteData.content === 'string'
+        ? noteData.content
         : undefined
       : undefined;
 
     return {
       resolvedPath,
       indexStatus: normalizeIndexStatus(getRecordString(data, 'indexStatus')),
-      resource: resourceData
+      note: noteData
         ? {
-            id: getRecordString(resourceData, 'id') || undefined,
-            name: getRecordString(resourceData, 'name') || undefined,
+            id: getRecordString(noteData, 'id') || undefined,
+            name: getRecordString(noteData, 'name') || undefined,
             content,
           }
         : action.entityId
@@ -265,7 +265,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
         noteSummary.value = summary;
         await options.refreshRecentNotes();
         await options.maybeRenameCurrentConversation(
-          summary.resource?.name?.replace(/\.md$/i, '') ||
+          summary.note?.name?.replace(/\.md$/i, '') ||
             noteAgentDraftTitle.value ||
             buildKnowledgeNoteTitle(),
         );
@@ -308,7 +308,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       noteSummary.value = summary;
       await options.refreshRecentNotes();
       await options.maybeRenameCurrentConversation(
-        summary.resource?.name?.replace(/\.md$/i, '') ||
+        summary.note?.name?.replace(/\.md$/i, '') ||
           noteAgentDraftTitle.value ||
           buildKnowledgeNoteTitle(),
       );
@@ -399,8 +399,8 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     const target = options.recentNotes.value.find(
       (item) =>
         item.path === resolvedPath ||
-        item.title === noteSummary.value?.resource?.name ||
-        item.path.endsWith(`/${noteSummary.value?.resource?.name ?? ''}`),
+        item.title === noteSummary.value?.note?.name ||
+        item.path.endsWith(`/${noteSummary.value?.note?.name ?? ''}`),
     );
 
     if (target) {
