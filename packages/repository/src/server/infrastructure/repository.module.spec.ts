@@ -1,10 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ok } from '@dailyuse/contracts/result';
-import type { IRepositoryRepository } from '../domain/repositories/i-repository-repository';
-import type { IResourceRepository } from '../domain/repositories/i-resource-repository';
-import type { IFolderRepository } from '../domain/repositories/i-folder-repository';
-import type { IResourceBookmarkRepository } from '../domain/repositories/i-resource-bookmark-repository';
-import type { IStoragePort } from '../application/ports/i-storage-port';
 import type { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
 import { createRepositoryModule } from './repository.module';
 
@@ -35,11 +30,6 @@ function createModule() {
     confirmHead,
   } as unknown as KnowledgeRepositoryConnectionService;
   const module = createRepositoryModule({
-    repositoryRepository: {} as IRepositoryRepository,
-    resourceRepository: {} as IResourceRepository,
-    folderRepository: {} as IFolderRepository,
-    resourceBookmarkRepository: {} as IResourceBookmarkRepository,
-    storagePort: {} as IStoragePort,
     knowledgeRepositoryConnectionService: connectionService,
   });
   return {

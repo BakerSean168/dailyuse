@@ -9,23 +9,8 @@ import { fail, type Result } from '@dailyuse/contracts/result';
 import type {
   IResultIpcClient,
   IRepositoryApiClient,
-  CreateFolderRequest,
-  CreateResourceRequest,
-  UpdateResourceRequest,
-  UploadResourcesRequest,
 } from '../types';
 import type {
-  RepositoryClientDTO,
-  FolderClientDTO,
-  ResourceClientDTO,
-  FileTreeResponse,
-  SearchRequest,
-  SearchResponse,
-  UploadResourcesResponseDTO,
-  ResourceBookmarkClientDTO,
-  CreateResourceBookmarkRequestDTO,
-  UpdateResourceBookmarkRequestDTO,
-  ReorderResourceBookmarksRequestDTO,
   LocalVaultBindingClientDTO,
   SelectLocalVaultReq,
   ScanLocalVaultRes,
@@ -72,117 +57,6 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   private readonly channel = 'repository';
 
   constructor(private readonly ipcClient: IResultIpcClient) {}
-
-  async getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  // ===== Folder / Resource / Bookmark (removed runtime surface) =====
-
-  async createFolder(_request: CreateFolderRequest): Promise<Result<FolderClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async getFolderContents(_folderId: string): Promise<
-    Result<{
-      folders: FolderClientDTO[];
-      resources: ResourceClientDTO[];
-    }>
-  > {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async renameFolder(_id: string, _name: string): Promise<Result<FolderClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async moveFolder(_id: string, _targetParentId: string): Promise<Result<FolderClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async deleteFolder(_id: string): Promise<Result<void>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async getFileTree(_repositoryId: string): Promise<Result<FileTreeResponse>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async search(_request: SearchRequest): Promise<Result<SearchResponse>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async listResources(_repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async createResource(
-    _repositoryId: string,
-    _request: CreateResourceRequest,
-  ): Promise<Result<ResourceClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async getResource(_id: string): Promise<Result<ResourceClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async updateResource(
-    _id: string,
-    _request: UpdateResourceRequest,
-  ): Promise<Result<ResourceClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async renameResource(_id: string, _name: string): Promise<Result<ResourceClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async moveResource(_id: string, _targetFolderId: string): Promise<Result<ResourceClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async deleteResource(_id: string): Promise<Result<void>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async uploadResources(
-    _repositoryId: string,
-    _request: UploadResourcesRequest,
-  ): Promise<Result<UploadResourcesResponseDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async listBookmarks(_repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async createBookmark(
-    _repositoryId: string,
-    _request: CreateResourceBookmarkRequestDTO,
-  ): Promise<Result<ResourceBookmarkClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async updateBookmark(
-    _repositoryId: string,
-    _bookmarkId: string,
-    _request: UpdateResourceBookmarkRequestDTO,
-  ): Promise<Result<ResourceBookmarkClientDTO>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async reorderBookmarks(
-    _repositoryId: string,
-    _request: ReorderResourceBookmarksRequestDTO,
-  ): Promise<Result<ResourceBookmarkClientDTO[]>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
-  async deleteBookmark(_repositoryId: string, _bookmarkId: string): Promise<Result<void>> {
-    return this.legacyDatabaseRepositoryUnavailable();
-  }
-
   async startKnowledgeRepositoryInstallation(
     request: StartKnowledgeRepositoryInstallationReq = {},
   ): Promise<Result<StartKnowledgeRepositoryInstallationRes>> {

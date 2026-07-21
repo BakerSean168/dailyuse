@@ -43,7 +43,8 @@ updated: 2026-07-21T00:00:00
 - 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 硬失败；MSW/E2E knowledge-only；
   app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
   path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
-  **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**。Prisma/PowerSync `editor_*` 与
+  **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**；repository 运行时组合根/
+  客户端面仅 knowledge + Local Vault。Prisma/PowerSync `editor_*`/`resources` 表与
   data-portability 可再导入备份仍保留。完成定义审计见 §13.2；真实 GitHub fixture E2E 与
   prod-like local-deploy 仍为外部阻塞。
 
@@ -686,6 +687,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-21（阶段 6 残留八轮）：收缩 `RepositoryChannels` 为 knowledge connection + Local Vault；
 > 删除 resource/folder/bookmark/current/search 遗留 IPC 常量；`RepositoryRpcMap` 清空为无 runtime RPC。
 > Desktop IPC 与 Electron module 回归：repository electron 1、ipc-contracts 30、contracts typecheck 通过。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+> 续进展 2026-07-21（阶段 6 残留九轮）：`RepositoryApplicationPort` / `createRepositoryModule` /
+> Prisma 组合根收缩为 knowledge connection、projection、confirmed create、webhook 仅有面；
+> 删除 `RepositoryController` 与 module 级 resource-mutations 集成测试；客户端 port/service/HTTP/IPC
+> adapter 去掉 legacy CRUD 方法。残留 domain use-case 文件与 memory/PowerSync resource 适配器仍在仓库中
+> 但不再挂入运行时组合根。验证：repository focused module/client/knowledge suites 通过。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 ## 13. 测试与完成定义

@@ -25,6 +25,11 @@ export function createTestFsStorage(tempDir: string): FsStorageAdapter {
   return new FsStorageAdapter(tempDir);
 }
 
+/**
+ * @deprecated Legacy module no longer exposes database note CRUD. Prefer
+ * knowledge service unit tests. Returns knowledge-only module shell plus
+ * in-memory repositories for residual domain-unit tests.
+ */
 export function createRepositoryModuleForTests(options: {
   readonly tempDir: string;
   readonly autoCreateCanonicalRepository?: boolean;
@@ -41,10 +46,6 @@ export function createRepositoryModuleForTests(options: {
   return {
     ...repositories,
     storagePort,
-    module: createRepositoryModule({
-      ...repositories,
-      storagePort,
-      autoCreateCanonicalRepository: options.autoCreateCanonicalRepository,
-    }),
+    module: createRepositoryModule({}),
   };
 }
