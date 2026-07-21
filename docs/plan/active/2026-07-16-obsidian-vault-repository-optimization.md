@@ -50,7 +50,9 @@ updated: 2026-07-21T00:00:00
   Web E2E 不再 mock 退役 editor/resource API；客户端 adapter 删除无调用的
   legacy hard-fail stub；app-vue repository locale 收缩为 projection/localVault 面；
   退役顶层 `editor` locale 与无 UI 的 `setting.tabs`/`setting.editor` 文案已删；
-  contracts 空 entities/dtos/value-objects 桶已移除；knowledge event 保留。
+  contracts 空 entities/dtos/value-objects 桶已移除；无调用的
+  `createRepositoryPowerSyncModule` 已删；知识笔记 path resolver 应用层路径穿越 hardening；
+  knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
   完成定义审计见 §13.2；真实 GitHub fixture E2E 与 prod-like local-deploy 仍为外部阻塞。
 
@@ -758,6 +760,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > preferences.editor 字段仍保留（备份兼容）。验证：contracts test/typecheck、app-vue setting
 > focused specs、governance-check。§13.2 未完成项不变。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留十八轮）：删除无运行时调用的 `createRepositoryPowerSyncModule`
+> 兼容壳；知识笔记 `AIKnowledgeNotePathResolver` 增加 vault-escaping 路径拒绝（绝对路径/`.`/`..`）
+> 作为应用层 defense-in-depth，并补回归测试；§13.2 三项未勾选项补充当前证据指针（仍为部分/
+> 外部阻塞）。验证：ai path-resolver + knowledge-note service specs、repository module tests、
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -776,9 +784,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留十八轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
+  证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在。
+  仍缺：三入口同一 fixture 下的端到端串联验收（含访客升级与仓库边界）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
 - [x] Desktop 本地 Vault 在云端故障时仍可用。 **（已证明）**
@@ -790,9 +800,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [x] 已有笔记编辑在首期仍关闭。 **（已证明）**
 - [x] AI 无固定默认目录设置，完整写入提案必须获得用户确认。 **（已证明）**
 - [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**
+  证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
+  `.`/`..`（contracts dto specs）；`AIKnowledgeNotePathResolver` 应用层同样拒绝 vault-escaping
+  路径；runtime 仅在 `userDecision=confirm` 后执行 `create_knowledge_note`。仍缺：完整 ADR-035
+  Capability/Turn isolation E2E，以及代码执行/授权扩大的端到端对抗用例。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（外部阻塞 + 部分验证）**
+  证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
+  Playwright 集合含 knowledge note boundary 与 AI goal-workflow。外部阻塞：prod-like
+  `docker:local:up` 曾因 Docker 磁盘耗尽失败；真实 GitHub App fixture E2E 缺凭据。
 
 ## 14. 相关资料
 

@@ -18,10 +18,6 @@ export type { RepositoryApplicationPort } from '../application';
 
 // Convenience factories
 export {
-  createRepositoryPowerSyncModule,
-  type CreateRepositoryPowerSyncModuleOptions,
-} from './powersync';
-export {
   createRepositoryPrismaModule,
   createFsStorageAdapter,
   type CreateRepositoryPrismaModuleOptions,

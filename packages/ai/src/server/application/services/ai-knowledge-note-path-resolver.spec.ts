@@ -19,4 +19,11 @@ describe('AIKnowledgeNotePathResolver', () => {
       path: 'projects/daily/inbox/Daily-Review.md',
     });
   });
+
+  it.each(['/private', 'C:\\private', '../private', 'notes/../../private', 'notes/./secret'])(
+    'rejects vault-escaping subpaths at the application layer: %s',
+    (subpath) => {
+      expect(() => resolver.resolve(subpath, 'Escaped')).toThrow(/vault-relative|\. or \.\./i);
+    },
+  );
 });
