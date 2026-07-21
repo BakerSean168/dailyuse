@@ -6,6 +6,7 @@
  */
 
 import { fail, type Result } from '@dailyuse/contracts/result';
+import { RepositoryChannels } from '@dailyuse/contracts/electron';
 import type {
   IResultIpcClient,
   IRepositoryApiClient,
@@ -54,14 +55,12 @@ import type {
  * Implements IRepositoryApiClient using Electron IPC.
  */
 export class RepositoryIpcAdapter implements IRepositoryApiClient {
-  private readonly channel = 'repository';
-
   constructor(private readonly ipcClient: IResultIpcClient) {}
   async startKnowledgeRepositoryInstallation(
     request: StartKnowledgeRepositoryInstallationReq = {},
   ): Promise<Result<StartKnowledgeRepositoryInstallationRes>> {
     return this.ipcClient.invoke(
-      `${this.channel}:knowledge-connection:installation:start`,
+      RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_START,
       request,
     );
   }
@@ -70,7 +69,7 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
     request: CompleteKnowledgeRepositoryInstallationReq,
   ): Promise<Result<CompleteKnowledgeRepositoryInstallationRes>> {
     return this.ipcClient.invoke(
-      `${this.channel}:knowledge-connection:installation:complete`,
+      RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE,
       request,
     );
   }
@@ -78,20 +77,20 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   async listKnowledgeRepositoryConnections(): Promise<
     Result<ListKnowledgeRepositoryConnectionsRes>
   > {
-    return this.ipcClient.invoke(`${this.channel}:knowledge-connection:list`);
+    return this.ipcClient.invoke(RepositoryChannels.KNOWLEDGE_CONNECTION_LIST);
   }
 
   async connectKnowledgeRepository(
     request: CreateKnowledgeRepositoryConnectionReq,
   ): Promise<Result<KnowledgeRepositoryConnectionClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:knowledge-connection:connect`, request);
+    return this.ipcClient.invoke(RepositoryChannels.KNOWLEDGE_CONNECTION_CONNECT, request);
   }
 
   async disconnectKnowledgeRepository(
     connectionId: string,
     purgeCloudData = false,
   ): Promise<Result<DisconnectKnowledgeRepositoryConnectionRes>> {
-    return this.ipcClient.invoke(`${this.channel}:knowledge-connection:disconnect`, {
+    return this.ipcClient.invoke(RepositoryChannels.KNOWLEDGE_CONNECTION_DISCONNECT, {
       connectionId,
       purgeCloudData,
     });
@@ -100,7 +99,7 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   async previewKnowledgeRepositoryReconciliation(
     connectionId: string,
   ): Promise<Result<KnowledgeRepositoryReconciliationPreview>> {
-    return this.ipcClient.invoke(`${this.channel}:knowledge-connection:reconciliation-preview`, {
+    return this.ipcClient.invoke(RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW, {
       connectionId,
     });
   }
@@ -109,7 +108,7 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
     request: ExecuteKnowledgeRepositoryReconciliationReq,
   ): Promise<Result<ExecuteKnowledgeRepositoryReconciliationRes>> {
     return this.ipcClient.invoke(
-      `${this.channel}:knowledge-connection:reconciliation-execute`,
+      RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE,
       request,
     );
   }
@@ -117,13 +116,13 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   async syncKnowledgeRepository(
     request: SyncKnowledgeRepositoryReq,
   ): Promise<Result<SyncKnowledgeRepositoryRes>> {
-    return this.ipcClient.invoke(`${this.channel}:knowledge-connection:sync`, request);
+    return this.ipcClient.invoke(RepositoryChannels.KNOWLEDGE_CONNECTION_SYNC, request);
   }
 
   async issueDesktopKnowledgeRepositoryToken(
     connectionId: string,
   ): Promise<Result<KnowledgeRepositoryInstallationTokenRes>> {
-    return this.ipcClient.invoke(`${this.channel}:knowledge-connection:desktop-token`, {
+    return this.ipcClient.invoke(RepositoryChannels.KNOWLEDGE_CONNECTION_DESKTOP_TOKEN, {
       connectionId,
     });
   }
@@ -166,39 +165,39 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   }
 
   async getLocalVaultBinding(): Promise<Result<LocalVaultBindingClientDTO | null>> {
-    return this.ipcClient.invoke(`${this.channel}:local-vault:get`);
+    return this.ipcClient.invoke(RepositoryChannels.LOCAL_VAULT_GET);
   }
 
   async selectLocalVault(
     request: SelectLocalVaultReq = {},
   ): Promise<Result<LocalVaultBindingClientDTO | null>> {
-    return this.ipcClient.invoke(`${this.channel}:local-vault:select`, request);
+    return this.ipcClient.invoke(RepositoryChannels.LOCAL_VAULT_SELECT, request);
   }
 
   async detachLocalVault(): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:local-vault:detach`);
+    return this.ipcClient.invoke(RepositoryChannels.LOCAL_VAULT_DETACH);
   }
 
   async scanLocalVault(): Promise<Result<ScanLocalVaultRes>> {
-    return this.ipcClient.invoke(`${this.channel}:local-vault:scan`);
+    return this.ipcClient.invoke(RepositoryChannels.LOCAL_VAULT_SCAN);
   }
 
   async readLocalVaultNote(request: ReadLocalVaultNoteReq): Promise<Result<ReadLocalVaultNoteRes>> {
-    return this.ipcClient.invoke(`${this.channel}:local-vault:note:read`, request);
+    return this.ipcClient.invoke(RepositoryChannels.LOCAL_VAULT_NOTE_READ, request);
   }
 
   async searchLocalVault(request: SearchLocalVaultReq): Promise<Result<SearchLocalVaultRes>> {
-    return this.ipcClient.invoke(`${this.channel}:local-vault:search`, request);
+    return this.ipcClient.invoke(RepositoryChannels.LOCAL_VAULT_SEARCH, request);
   }
 
   async openLocalVaultInObsidian(request: OpenLocalVaultInObsidianReq): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:local-vault:open-obsidian`, request);
+    return this.ipcClient.invoke(RepositoryChannels.LOCAL_VAULT_OPEN_OBSIDIAN, request);
   }
 
   async writeConfirmedLocalVaultNote(
     request: ConfirmedLocalVaultWriteReq,
   ): Promise<Result<ConfirmedLocalVaultWriteRes>> {
-    return this.ipcClient.invoke(`${this.channel}:local-vault:note:write-confirmed`, request);
+    return this.ipcClient.invoke(RepositoryChannels.LOCAL_VAULT_NOTE_WRITE_CONFIRMED, request);
   }
 
 

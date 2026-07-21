@@ -32,31 +32,7 @@ export {
 
 const logger = createLogger('RepositoryElectron');
 
-const Ch = {
-  KNOWLEDGE_CONNECTION_INSTALLATION_START:
-    RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_START,
-  KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE:
-    RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE,
-  KNOWLEDGE_CONNECTION_LIST: RepositoryChannels.KNOWLEDGE_CONNECTION_LIST,
-  KNOWLEDGE_CONNECTION_CONNECT: RepositoryChannels.KNOWLEDGE_CONNECTION_CONNECT,
-  KNOWLEDGE_CONNECTION_DISCONNECT: RepositoryChannels.KNOWLEDGE_CONNECTION_DISCONNECT,
-  KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW:
-    RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW,
-  KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE:
-    RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE,
-  KNOWLEDGE_CONNECTION_SYNC: RepositoryChannels.KNOWLEDGE_CONNECTION_SYNC,
-  KNOWLEDGE_CONNECTION_DESKTOP_TOKEN: RepositoryChannels.KNOWLEDGE_CONNECTION_DESKTOP_TOKEN,
-  LOCAL_VAULT_GET: 'repository:local-vault:get',
-  LOCAL_VAULT_SELECT: 'repository:local-vault:select',
-  LOCAL_VAULT_DETACH: 'repository:local-vault:detach',
-  LOCAL_VAULT_SCAN: 'repository:local-vault:scan',
-  LOCAL_VAULT_NOTE_READ: 'repository:local-vault:note:read',
-  LOCAL_VAULT_SEARCH: 'repository:local-vault:search',
-  LOCAL_VAULT_OPEN_OBSIDIAN: 'repository:local-vault:open-obsidian',
-  LOCAL_VAULT_NOTE_WRITE_CONFIRMED: 'repository:local-vault:note:write-confirmed',
-} as const;
-
-const channels = Object.values(Ch);
+const allChannels = Object.values(RepositoryChannels);
 
 export interface RepositoryElectronModuleOptions {
   localVaultPort?: LocalVaultElectronPort;
@@ -143,24 +119,24 @@ export function createRepositoryElectronModule(
         return operation(knowledgeConnectionPort);
       };
 
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_INSTALLATION_START, (_, request) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_START, (_, request) =>
         withAuthenticatedValue(ctx, () =>
           withKnowledgeConnection((port) =>
             port.startKnowledgeRepositoryInstallation(request ?? {}),
           ),
         ),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE, (_, request) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE, (_, request) =>
         withAuthenticatedValue(ctx, () =>
           withKnowledgeConnection((port) => port.completeKnowledgeRepositoryInstallation(request)),
         ),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_LIST, (_) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_LIST, (_) =>
         withAuthenticatedValue(ctx, () =>
           withKnowledgeConnection((port) => port.listKnowledgeRepositoryConnections()),
         ),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_CONNECT, (_, request) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_CONNECT, (_, request) =>
         withAuthenticatedValue(ctx, async ({ identityId }) => {
           const result = await withKnowledgeConnection((port) =>
             port.connectKnowledgeRepository(request),
@@ -169,7 +145,7 @@ export function createRepositoryElectronModule(
           return result;
         }),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_DISCONNECT, (_, request) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_DISCONNECT, (_, request) =>
         withAuthenticatedValue(ctx, async ({ identityId }) => {
           const result = await withKnowledgeConnection((port) =>
             port.disconnectKnowledgeRepository(request.connectionId, request.purgeCloudData),
@@ -178,7 +154,7 @@ export function createRepositoryElectronModule(
           return result;
         }),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW, (_, request) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW, (_, request) =>
         withAuthenticatedValue(ctx, async ({ identityId }) => {
           if (!options.localVaultPort) {
             return fail({
@@ -195,7 +171,7 @@ export function createRepositoryElectronModule(
           );
         }),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE, (_, request) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE, (_, request) =>
         withAuthenticatedValue(ctx, async ({ identityId }) => {
           if (!options.knowledgeRepositoryReconciliationPort) {
             return fail({
@@ -211,7 +187,7 @@ export function createRepositoryElectronModule(
           return result;
         }),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_SYNC, (_, request) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_SYNC, (_, request) =>
         withAuthenticatedValue(ctx, async ({ identityId }) => {
           if (!options.knowledgeRepositorySyncPort) {
             return fail({
@@ -224,7 +200,7 @@ export function createRepositoryElectronModule(
           return result;
         }),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_CONNECTION_DESKTOP_TOKEN, (_, request) =>
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_DESKTOP_TOKEN, (_, request) =>
         withAuthenticatedValue(ctx, () =>
           withKnowledgeConnection((port) =>
             port.issueDesktopKnowledgeRepositoryToken(request.connectionId),
@@ -246,12 +222,12 @@ export function createRepositoryElectronModule(
         return invokeLocalVault(() => operation(localVault, identityId));
       };
 
-      ipcMain.handle(Ch.LOCAL_VAULT_GET, (_) =>
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_GET, (_) =>
         withAuthenticatedValue(ctx, ({ identityId }) =>
           withLocalVault(identityId, (port, ownerId) => port.getBinding(ownerId)),
         ),
       );
-      ipcMain.handle(Ch.LOCAL_VAULT_SELECT, (_, request) =>
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_SELECT, (_, request) =>
         withAuthenticatedValue(ctx, async ({ identityId }) => {
           const result = await withLocalVault(identityId, (port, ownerId) =>
             port.selectVault(ownerId, request),
@@ -260,7 +236,7 @@ export function createRepositoryElectronModule(
           return result;
         }),
       );
-      ipcMain.handle(Ch.LOCAL_VAULT_DETACH, (_) =>
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_DETACH, (_) =>
         withAuthenticatedValue(ctx, async ({ identityId }) => {
           const result = await withLocalVault(identityId, (port, ownerId) =>
             port.detachVault(ownerId),
@@ -269,27 +245,27 @@ export function createRepositoryElectronModule(
           return result;
         }),
       );
-      ipcMain.handle(Ch.LOCAL_VAULT_SCAN, (_) =>
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_SCAN, (_) =>
         withAuthenticatedValue(ctx, ({ identityId }) =>
           withLocalVault(identityId, (port, ownerId) => port.scanVault(ownerId)),
         ),
       );
-      ipcMain.handle(Ch.LOCAL_VAULT_NOTE_READ, (_, request) =>
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_NOTE_READ, (_, request) =>
         withAuthenticatedValue(ctx, ({ identityId }) =>
           withLocalVault(identityId, (port, ownerId) => port.readNote(ownerId, request)),
         ),
       );
-      ipcMain.handle(Ch.LOCAL_VAULT_SEARCH, (_, request) =>
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_SEARCH, (_, request) =>
         withAuthenticatedValue(ctx, ({ identityId }) =>
           withLocalVault(identityId, (port, ownerId) => port.searchVault(ownerId, request)),
         ),
       );
-      ipcMain.handle(Ch.LOCAL_VAULT_OPEN_OBSIDIAN, (_, request) =>
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_OPEN_OBSIDIAN, (_, request) =>
         withAuthenticatedValue(ctx, ({ identityId }) =>
           withLocalVault(identityId, (port, ownerId) => port.openInObsidian(ownerId, request)),
         ),
       );
-      ipcMain.handle(Ch.LOCAL_VAULT_NOTE_WRITE_CONFIRMED, (_, request) =>
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_NOTE_WRITE_CONFIRMED, (_, request) =>
         withAuthenticatedValue(ctx, ({ identityId }) =>
           withLocalVault(identityId, (port, ownerId) => port.writeConfirmedNote(ownerId, request)),
         ),
@@ -321,7 +297,7 @@ export function createRepositoryElectronModule(
           });
         }
       }
-      for (const ch of channels) {
+      for (const ch of allChannels) {
         ipcMain.removeHandler(ch);
       }
       logger.info('Repository module destroyed');
