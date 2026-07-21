@@ -4,7 +4,8 @@
  * Chains the isolation invariants for one knowledge.generate turn in a single
  * fixture series: capability plan → start gate → confirm-only mutation →
  * cross-capability fail-closed → identity isolation → vault path safety →
- * first-phase tool surface → multi-engine fail-closed.
+ * first-phase tool surface → multi-engine fail-closed → resume ownership before
+ * host side-effects.
  *
  * This is host-boundary integration coverage (not a full Playwright E2E and not
  * a multi-engine Turn Engine suite). Complements the scattered unit specs.
@@ -726,4 +727,77 @@ describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
     // but goal.create intentionally starts planning without mutation capability.
     expect(assertAgentStartCapabilityPlan('goal.create', engineOnlyOffers).ok).toBe(true);
   });
+
+  it('step 13: foreign identity resume is FORBIDDEN before host side-effects', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistence();
+
+    const foreignWaiting = baseRun('waiting_execution', {
+      run: {
+        ...baseRun('waiting_execution').run,
+        identityId: FIXTURE.foreignIdentity,
+      },
+      state: {
+        ...baseRun('waiting_execution').state,
+        approvedActions: [pendingCreateNoteAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: FIXTURE.runId,
+          threadId: FIXTURE.threadId,
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingCreateNoteAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+
+    // Explicit-approve path: resumeRun returns foreign-owned run.
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValueOnce(foreignWaiting);
+    // Confirm-shortcut path: getRun returns foreign-owned waiting_execution snapshot.
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(foreignWaiting);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+      }),
+    );
+
+    const approvePath = await runtime.services.agentRuntimeService.resumeRun(
+      FIXTURE.runId,
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingCreateNoteAction],
+      },
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-foreign-approve`,
+    );
+    expect(approvePath.ok).toBe(false);
+    if (!approvePath.ok) {
+      expect(approvePath.error.code).toBe('FORBIDDEN');
+    }
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+
+    const shortcutPath = await runtime.services.agentRuntimeService.resumeRun(
+      FIXTURE.runId,
+      { userDecision: 'confirm' },
+      { identityId: FIXTURE.identity },
+      `${FIXTURE.requestId}-foreign-shortcut`,
+    );
+    expect(shortcutPath.ok).toBe(false);
+    if (!shortcutPath.ok) {
+      expect(shortcutPath.error.code).toBe('FORBIDDEN');
+    }
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.getRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        identityId: FIXTURE.identity,
+        runId: FIXTURE.runId,
+      }),
+    );
+  });
+
 });

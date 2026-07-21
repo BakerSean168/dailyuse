@@ -1470,6 +1470,99 @@ describe('createRemoteAIServiceRuntime', () => {
     });
   });
 
+  it('resume refuses foreign-owned runs before host side-effects (residual 102)', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    const pendingAction = {
+      tool: 'create_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Persist the approved knowledge note draft.',
+      payload: {
+        topic: 'Foreign resume isolation',
+        title: 'Foreign resume isolation',
+        contentArtifactId: 'run-1:knowledge-note-draft',
+        contentMarkdown: '# Foreign resume isolation',
+        targetSubpath: 'notes/ai',
+        providerId: '550e8400-e29b-41d4-a716-446655440000',
+        model: 'gpt-4o-mini',
+      },
+    };
+    const noteDraftArtifact = {
+      artifactId: 'run-1:knowledge-note-draft',
+      kind: 'knowledge_note_draft' as const,
+      title: 'Foreign resume isolation',
+      updatedAt: 2,
+      data: {
+        topic: 'Foreign resume isolation',
+        title: 'Foreign resume isolation',
+        markdown: '# Foreign resume isolation',
+        targetSubpath: 'notes/ai',
+      },
+    };
+    const foreignWaiting = createAgentRunResult('waiting_execution', {
+      run: {
+        ...createAgentRunResult('waiting_execution').run,
+        agentType: 'knowledge.generate',
+        identityId: 'identity-other',
+      },
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-1',
+          threadId: 'thread-1',
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValueOnce(foreignWaiting);
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(foreignWaiting);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const withApprovals = await runtime.services.agentRuntimeService.resumeRun(
+      'run-1',
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingAction],
+      },
+      { identityId: 'identity-1' },
+      'request-foreign-resume-approve',
+    );
+    expect(withApprovals.ok).toBe(false);
+    if (!withApprovals.ok) {
+      expect(withApprovals.error.code).toBe('FORBIDDEN');
+    }
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+
+    const shortcut = await runtime.services.agentRuntimeService.resumeRun(
+      'run-1',
+      { userDecision: 'confirm' },
+      { identityId: 'identity-1' },
+      'request-foreign-resume-shortcut',
+    );
+    expect(shortcut.ok).toBe(false);
+    if (!shortcut.ok) {
+      expect(shortcut.error.code).toBe('FORBIDDEN');
+    }
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+  });
+
   it('filters foreign identity runs out of list results as defense-in-depth', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     vi.mocked(agentRuntimePort.listRuns).mockResolvedValueOnce([

@@ -1095,6 +1095,11 @@ export function createAgentRuntimeService(
           requestId,
           signal,
         });
+        // Ownership must fail closed before host side-effects (residual 102).
+        const ownership = ensureAgentRunOwnedByIdentity(result, cx.identityId);
+        if (!ownership.ok) {
+          return ownership;
+        }
         const resolvedResult = await resolveRuntimeExecutionInterrupt(result, {
           runId: req.runId,
           identityId: cx.identityId,
@@ -1149,6 +1154,11 @@ export function createAgentRuntimeService(
             requestId,
             signal,
           });
+          // Ownership must fail closed before host side-effects (residual 102).
+          const snapshotOwnership = ensureAgentRunOwnedByIdentity(snapshot, cx.identityId);
+          if (!snapshotOwnership.ok) {
+            return snapshotOwnership;
+          }
           if (hasResolvableExecutionInterrupt(snapshot)) {
             const resolvedSnapshot = await resolveRuntimeExecutionInterrupt(snapshot, {
               runId,
@@ -1175,6 +1185,11 @@ export function createAgentRuntimeService(
           requestId,
           signal,
         });
+        // Ownership must fail closed before host side-effects (residual 102).
+        const ownership = ensureAgentRunOwnedByIdentity(result, cx.identityId);
+        if (!ownership.ok) {
+          return ownership;
+        }
         // Defense-in-depth: side-effect execution only follows an explicit confirm.
         // cancel/clarify/edit/regenerate must not auto-run approvedActions even if the
         // upstream graph still reports execution.required.

@@ -1422,6 +1422,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `ai-client-result-port-surface` 固化 Result 端口完成态与禁止 stream 双接口回归。
 > §13.2 仍为部分/外部阻塞。验证：ai focused surfaces + typecheck + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+>
+>
+> 续进展 2026-07-21（阶段 6 残留一百零二轮）：Agent 隔离 hardening——`startRun`/`resumeRun` 在
+> host side-effect（`resolveRuntimeExecutionInterrupt`）之前强制 `ensureAgentRunOwnedByIdentity`
+> fail-closed，防止 foreign-owned run 在 FORBIDDEN 前触发 knowledge/goal 落盘；ADR-035 journey
+> 增 step 13（approve 路径 + confirm shortcut 双路径）；MSW governance DELETE 对齐
+> `DeleteRuleRes = null`（去掉 `{ success: true }` 双轨）。§13.2 Agent 证据增强，仍为部分
+> （缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron；真实 GitHub fixture
+> 外部阻塞）。验证：ai journey/runtime focused specs + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 ## 13. 测试与完成定义
@@ -1506,6 +1516,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
   残留一百/一百零一轮：AI 客户端 agent/list/start/resume 等 Result 端口与 dead stream 双接口清理
   已完成（transport 边界不再 throw-unwrap）；仍不替代完整 multi-engine Turn Engine E2E。
+  残留一百零二轮：journey step 13 + runtime 在 side-effect 前 ownership fail-closed；MSW
+  governance void delete 对齐 data:null。仍缺完整 multi-engine Turn Engine E2E 与跨端对抗
+  Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**
