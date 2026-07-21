@@ -37,19 +37,16 @@ import {
   AuthRuntimeState,
   type AuthResponseDTO,
   type GetCurrentUserRes,
-  type TokenStatus,
   type AuthStatus,
   type EmailLoginCredentials,
   type ListSessionsRes,
   type RememberedDesktopAccountDTO,
   type RememberedDesktopAccountLoginReq,
   type AuthBootstrapSnapshot,
-  type SessionInfo,
 } from '@dailyuse/contracts/authentication';
 import {
   TokenManager,
-  SessionManager,
-  type SessionStatus,
+  SessionManager
 } from '../infrastructure';
 import type { RememberedAccountsService, NetworkStateManager } from '../infrastructure';
 import { AuthRemoteGateway, type RegisterApiResponse } from './auth-remote-gateway';
@@ -344,9 +341,6 @@ export class AuthDesktopApplicationService {
   /**
    * 验证令牌
    */
-  async verifyToken(token: string): Promise<{ valid: boolean; error?: string }> {
-    return this.requireLifecycle().verifyToken(token);
-  }
 
   /**
    * 获取认证状态
@@ -362,9 +356,6 @@ export class AuthDesktopApplicationService {
   /**
    * 获取 Token 状态
    */
-  async getTokenStatus(): Promise<TokenStatus> {
-    return this.requireLifecycle().getTokenStatus();
-  }
 
   /**
    * Synchronous cached access token for online API calls from the desktop shell.
@@ -377,9 +368,6 @@ export class AuthDesktopApplicationService {
   /**
    * 获取会话状态
    */
-  async getSessionStatus(): Promise<SessionStatus | null> {
-    return this.requireLifecycle().getSessionStatus();
-  }
 
   // ============================================
   // Security Admin Methods (delegated)
@@ -393,17 +381,11 @@ export class AuthDesktopApplicationService {
     return this.requireSecurityAdmin().getCurrentUser();
   }
 
-  async getCurrentSession(): Promise<SessionInfo | null> {
-    return this.requireSecurityAdmin().getCurrentSession();
-  }
 
   async revokeSession(sessionId?: string): Promise<IpcResult<void>> {
     return this.requireSecurityAdmin().revokeSession(sessionId);
   }
 
-  async revokeAllSessions(): Promise<{ ok: boolean; count: number }> {
-    return this.requireSecurityAdmin().revokeAllSessions();
-  }
 
   // ============================================
   // Identity/Context Helpers (remain on facade)
@@ -487,9 +469,6 @@ export class AuthDesktopApplicationService {
   /**
    * 清理过期会话
    */
-  async cleanupExpiredSessions(): Promise<number> {
-    return this.requireLifecycle().cleanupExpiredSessions();
-  }
 
   /**
    * 清理资源

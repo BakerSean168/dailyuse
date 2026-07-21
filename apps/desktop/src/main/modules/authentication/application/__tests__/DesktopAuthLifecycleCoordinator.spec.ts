@@ -523,69 +523,10 @@ describe('DesktopAuthLifecycleCoordinator', () => {
   });
 
   // =============================================
-  // verifyToken
-  // =============================================
-
-  describe('verifyToken', () => {
-    it('returns valid when token matches', async () => {
-      mockTokenManager.getAccessToken.mockResolvedValue('current-token');
-
-      const coordinator = createCoordinator(
-        createMockLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
-        mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
-      );
-
-      const result = await coordinator.verifyToken('current-token');
-
-      expect(result.valid).toBe(true);
-    });
-
-    it('returns invalid when token does not match', async () => {
-      mockTokenManager.getAccessToken.mockResolvedValue('current-token');
-
-      const coordinator = createCoordinator(
-        createMockLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
-        mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
-      );
-
-      const result = await coordinator.verifyToken('wrong-token');
-
-      expect(result.valid).toBe(false);
-    });
-
-    it('returns invalid when no token is available', async () => {
-      mockTokenManager.getAccessToken.mockResolvedValue(null);
-
-      const coordinator = createCoordinator(
-        createMockLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
-        mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
-      );
-
-      const result = await coordinator.verifyToken('any-token');
-
-      expect(result.valid).toBe(false);
-      expect(result.error).toBe('No token available');
-    });
-  });
-
-  // =============================================
   // cleanup
   // =============================================
 
   describe('cleanup', () => {
-    it('cleanupExpiredSessions delegates to session manager', async () => {
-      mockSessionManager.cleanupExpiredSessions.mockResolvedValue(5);
-
-      const coordinator = createCoordinator(
-        createMockLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
-        mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
-      );
-
-      const count = await coordinator.cleanupExpiredSessions();
-
-      expect(count).toBe(5);
-    });
-
     it('cleanup resets state and calls session manager cleanup', async () => {
       const coordinator = createCoordinator(
         createMockLogger(), mockTokenManager, mockNetworkStateManager, mockSessionManager,
@@ -596,17 +537,6 @@ describe('DesktopAuthLifecycleCoordinator', () => {
 
       expect(mockSessionManager.cleanup).toHaveBeenCalledOnce();
       expect(isInitializedRef.value).toBe(false);
-    });
-
-    it('cleanupExpiredSessions returns 0 when no session manager', async () => {
-      const coordinator = createCoordinator(
-        createMockLogger(), mockTokenManager, mockNetworkStateManager, null,
-        mockProjectionService, mockRememberedAccountService, authState, isInitializedRef,
-      );
-
-      const count = await coordinator.cleanupExpiredSessions();
-
-      expect(count).toBe(0);
     });
   });
 });

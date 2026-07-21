@@ -31,14 +31,8 @@ const Ch = {
   REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
   REMEMBERED_ACCOUNTS_LOGIN: 'auth:remembered-accounts:login',
   REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
-  VERIFY_TOKEN: 'auth:verify-token',
-  TOKEN_STATUS: 'auth:token-status',
-  SESSION_STATUS: 'auth:session-status',
-  CLEANUP_SESSIONS: 'auth:cleanup-sessions',
   SESSION_LIST: 'auth:session:list',
-  SESSION_GET_CURRENT: 'auth:session:get-current',
   SESSION_REVOKE: 'auth:session:revoke',
-  SESSION_REVOKE_ALL: 'auth:session:revoke-all',
   FORGOT_PASSWORD: 'auth:forgot-password',
   RESET_PASSWORD: 'auth:reset-password',
   CHANGE_PASSWORD: 'auth:change-password',
@@ -467,35 +461,9 @@ export function registerDesktopAuthShellHandlers(
     return service ? await service.getCurrentUser() : null;
   });
 
-  ipcMain.handle(Ch.VERIFY_TOKEN, async (_event, token: string) => {
-    const service = currentAuthService();
-    return service ? await service.verifyToken(token) : { valid: false, error: 'AUTH_REQUIRED' };
-  });
-
-  ipcMain.handle(Ch.TOKEN_STATUS, async () => {
-    const service = currentAuthService();
-    return service
-      ? await service.getTokenStatus()
-      : unauthenticatedStatus().tokenStatus;
-  });
-
-  ipcMain.handle(Ch.SESSION_STATUS, async () => {
-    const service = currentAuthService();
-    return service ? await service.getSessionStatus() : null;
-  });
-
-  ipcMain.handle(Ch.CLEANUP_SESSIONS, async () => {
-    const service = currentAuthService();
-    return service ? await service.cleanupExpiredSessions() : 0;
-  });
-
   ipcMain.handle(Ch.SESSION_LIST, async () => {
     const service = currentAuthService();
     return service ? await service.listSessions() : { sessions: [] };
-  });
-  ipcMain.handle(Ch.SESSION_GET_CURRENT, async () => {
-    const service = currentAuthService();
-    return service ? await service.getCurrentSession() : null;
   });
   ipcMain.handle(Ch.SESSION_REVOKE, async (_event, payload: string | { sessionId: string }) => {
     const service = currentAuthService();
@@ -503,11 +471,6 @@ export function registerDesktopAuthShellHandlers(
       ? await service.revokeSession(typeof payload === 'string' ? payload : payload?.sessionId)
       : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
   });
-  ipcMain.handle(Ch.SESSION_REVOKE_ALL, async () => {
-    const service = currentAuthService();
-    return service ? await service.revokeAllSessions() : { ok: false, count: 0 };
-  });
-
   ipcMain.handle(Ch.FORGOT_PASSWORD, async (_event, data) =>
     toIpcResult(await remoteGateway.forgotPassword(data)),
   );

@@ -3,48 +3,57 @@ import { AuthChannels } from './ipc-channels';
 
 /**
  * Auth IPC surface (stage-6 residual):
- * 2FA, API-key, and device-management channels were dual-track stubs or
- * unused IPC with no renderer/app-vue consumers. Keep session/login live channels.
+ * Retired dual-track / unused diagnostic channels with no AuthIpcAdapter or
+ * renderer consumers. Keep login, guest, status, and session list/revoke.
  */
 describe('AuthChannels surface', () => {
-  it('does not expose retired 2FA, API-key, or device-management channels', () => {
-    expect(AuthChannels).not.toHaveProperty('TWO_FACTOR_ENABLE');
-    expect(AuthChannels).not.toHaveProperty('TWO_FACTOR_DISABLE');
-    expect(AuthChannels).not.toHaveProperty('TWO_FACTOR_VERIFY');
-    expect(AuthChannels).not.toHaveProperty('TWO_FACTOR_STATUS');
-    expect(AuthChannels).not.toHaveProperty('TWO_FACTOR_BACKUP_CODES');
-    expect(AuthChannels).not.toHaveProperty('API_KEY_CREATE');
-    expect(AuthChannels).not.toHaveProperty('API_KEY_LIST');
-    expect(AuthChannels).not.toHaveProperty('API_KEY_REVOKE');
-    expect(AuthChannels).not.toHaveProperty('API_KEY_ROTATE');
-    expect(AuthChannels).not.toHaveProperty('DEVICE_LIST');
-    expect(AuthChannels).not.toHaveProperty('DEVICE_GET_CURRENT');
-    expect(AuthChannels).not.toHaveProperty('DEVICE_REVOKE');
-    expect(AuthChannels).not.toHaveProperty('DEVICE_RENAME');
+  it('does not expose retired 2FA, API-key, device, or diagnostic channels', () => {
+    for (const key of [
+      'TWO_FACTOR_ENABLE',
+      'TWO_FACTOR_DISABLE',
+      'TWO_FACTOR_VERIFY',
+      'TWO_FACTOR_STATUS',
+      'TWO_FACTOR_BACKUP_CODES',
+      'API_KEY_CREATE',
+      'API_KEY_LIST',
+      'API_KEY_REVOKE',
+      'API_KEY_ROTATE',
+      'DEVICE_LIST',
+      'DEVICE_GET_CURRENT',
+      'DEVICE_REVOKE',
+      'DEVICE_RENAME',
+      'VERIFY_TOKEN',
+      'TOKEN_STATUS',
+      'SESSION_STATUS',
+      'CLEANUP_SESSIONS',
+      'SESSION_GET_CURRENT',
+      'SESSION_REVOKE_ALL',
+    ] as const) {
+      expect(AuthChannels).not.toHaveProperty(key);
+    }
 
     const values = Object.values(AuthChannels);
-    expect(values).not.toContain('auth:2fa:enable');
-    expect(values).not.toContain('auth:2fa:disable');
-    expect(values).not.toContain('auth:2fa:verify');
-    expect(values).not.toContain('auth:2fa:get-status');
-    expect(values).not.toContain('auth:2fa:generate-backup-codes');
-    expect(values).not.toContain('auth:api-key:create');
-    expect(values).not.toContain('auth:api-key:list');
-    expect(values).not.toContain('auth:api-key:revoke');
-    expect(values).not.toContain('auth:api-key:rotate');
-    expect(values).not.toContain('auth:device:list');
-    expect(values).not.toContain('auth:device:get-current');
-    expect(values).not.toContain('auth:device:revoke');
-    expect(values).not.toContain('auth:device:rename');
+    for (const channel of [
+      'auth:2fa:enable',
+      'auth:api-key:create',
+      'auth:device:list',
+      'auth:verify-token',
+      'auth:token-status',
+      'auth:session-status',
+      'auth:cleanup-sessions',
+      'auth:session:get-current',
+      'auth:session:revoke-all',
+    ]) {
+      expect(values).not.toContain(channel);
+    }
   });
 
-  it('keeps active auth session and login channels', () => {
+  it('keeps active auth session and login channels used by AuthIpcAdapter', () => {
     expect(AuthChannels.LOGIN).toBe('auth:login');
     expect(AuthChannels.ENTER_GUEST_MODE).toBe('auth:enter-guest-mode');
     expect(AuthChannels.GET_STATUS).toBe('auth:get-status');
     expect(AuthChannels.INITIALIZE).toBe('auth:initialize');
     expect(AuthChannels.SESSION_LIST).toBe('auth:session:list');
-    expect(AuthChannels.SESSION_GET_CURRENT).toBe('auth:session:get-current');
     expect(AuthChannels.SESSION_REVOKE).toBe('auth:session:revoke');
   });
 });

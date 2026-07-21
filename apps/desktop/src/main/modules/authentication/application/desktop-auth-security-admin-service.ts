@@ -16,7 +16,6 @@ import {
   type AuthSessionId,
   type GetCurrentUserRes,
   type ListSessionsRes,
-  type SessionInfo,
 } from '@dailyuse/contracts/authentication';
 import { SessionManager, TokenManager } from '../infrastructure';
 import type { AuthState } from './desktop-credential-auth-coordinator';
@@ -82,26 +81,6 @@ export class DesktopAuthSecurityAdminService {
     };
   }
 
-  async getCurrentSession(): Promise<SessionInfo | null> {
-    this.logger.debug('Get current session');
-
-    const session = this.sessionManager?.getCurrentSession();
-    if (!session) {
-      return null;
-    }
-
-    return {
-      id: session.id,
-      deviceName: session.deviceInfo?.deviceName ?? session.deviceInfo?.deviceId ?? 'Unknown',
-      deviceType: session.deviceInfo?.deviceType ?? 'DESKTOP',
-      ipAddress: session.deviceInfo?.ipAddress ?? '',
-      createdAt: new Date(session.createdAt).toISOString(),
-      lastActiveAt: new Date(session.lastActiveAt).toISOString(),
-      expiresAt: new Date(session.expiresAt).toISOString(),
-      isCurrentSession: true,
-    };
-  }
-
   async revokeSession(sessionId?: string): Promise<IpcResult<void>> {
     this.logger.debug('Revoke session', { sessionId });
 
@@ -134,27 +113,6 @@ export class DesktopAuthSecurityAdminService {
     } catch (error) {
       this.logger.error('Failed to revoke session', { error });
       return toIpcResult(fail({ code: 'REVOKE_ERROR', message: String(error) }));
-    }
-  }
-
-  async revokeAllSessions(): Promise<{ ok: boolean; count: number }> {
-    this.logger.debug('Revoke all sessions');
-
-    if (!this.sessionManager) {
-      return { ok: false, count: 0 };
-    }
-
-    try {
-      const currentSession = this.sessionManager.getCurrentSession();
-      if (!currentSession) {
-        return { ok: true, count: 0 };
-      }
-
-      const count = await this.sessionManager.cleanupOtherSessions(currentSession.identityId);
-      return { ok: true, count };
-    } catch (error) {
-      this.logger.error('Failed to revoke all sessions', { error });
-      return { ok: false, count: 0 };
     }
   }
 

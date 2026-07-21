@@ -14,7 +14,6 @@ import {
   AuthRuntimeState,
   ConnectionStatus,
   type AuthResponseDTO,
-  type TokenStatus,
   type UserInfo,
   type SessionInfo,
   type AuthStatus,
@@ -24,7 +23,6 @@ import {
 import {
   TokenManager,
   SessionManager,
-  type SessionStatus,
   NetworkStateManager,
 } from '../infrastructure';
 import type {
@@ -357,38 +355,6 @@ export class DesktopAuthLifecycleCoordinator {
       : null;
 
     return { status, currentUser };
-  }
-
-  async verifyToken(token: string): Promise<{ valid: boolean; error?: string }> {
-    this.logger.debug('Verify token');
-
-    try {
-      const currentToken = await this.tokenManager.getAccessToken();
-      if (!currentToken) {
-        return { valid: false, error: 'No token available' };
-      }
-      return { valid: token === currentToken };
-    } catch (error) {
-      return { valid: false, error: String(error) };
-    }
-  }
-
-  async getTokenStatus(): Promise<TokenStatus> {
-    return await this.tokenManager.getStatus();
-  }
-
-  async getSessionStatus(): Promise<SessionStatus | null> {
-    if (!this.sessionManager) {
-      return null;
-    }
-    return await this.sessionManager.getStatus();
-  }
-
-  async cleanupExpiredSessions(): Promise<number> {
-    if (!this.sessionManager) {
-      return 0;
-    }
-    return await this.sessionManager.cleanupExpiredSessions();
   }
 
   cleanup(): void {

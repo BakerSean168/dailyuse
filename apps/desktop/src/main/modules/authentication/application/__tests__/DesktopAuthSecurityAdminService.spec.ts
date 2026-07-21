@@ -154,20 +154,6 @@ describe('DesktopAuthSecurityAdminService', () => {
       }
     });
 
-    it('revokes all sessions except current', async () => {
-      mockSessionManager.getCurrentSession.mockReturnValue({
-        identityId: 'user-1',
-        id: 'session-1',
-      });
-      mockSessionManager.cleanupOtherSessions.mockResolvedValue(3);
-
-      const service = createService({ sessionManager: mockSessionManager });
-
-      const result = await service.revokeAllSessions();
-
-      expect(result.ok).toBe(true);
-      expect(result.count).toBe(3);
-    });
   });
 
   // =============================================
