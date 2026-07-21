@@ -15,7 +15,11 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import {
+  ReminderChannels,
+  type IElectronModule,
+  type IElectronModuleContext,
+} from '@dailyuse/contracts/electron';
 import { createReminderPowerSyncModule } from '../server/infrastructure';
 import { ReminderController } from '../server/transport/reminder.controller';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -25,30 +29,7 @@ import type { IReminderTemplateRepository } from '../server/domain/repositories/
 
 const logger = createLogger('ReminderElectron');
 
-const Ch = {
-  TEMPLATE_LIST: 'reminder:template:list',
-  TEMPLATE_GET: 'reminder:template:get',
-  TEMPLATE_CREATE: 'reminder:template:create',
-  TEMPLATE_UPDATE: 'reminder:template:update',
-  TEMPLATE_DELETE: 'reminder:template:delete',
-  TEMPLATE_TOGGLE_ENABLED: 'reminder:template:toggle-enabled',
-  TEMPLATE_MOVE_TO_GROUP: 'reminder:template:move-to-group',
-  TEMPLATE_GET_BY_USER: 'reminder:template:get-by-user',
-  UPCOMING_GET: 'reminder:upcoming:get',
-  TODAY_SCHEDULE_GET: 'reminder:today-schedule:get',
-  GROUP_LIST: 'reminder:group:list',
-  GROUP_GET: 'reminder:group:get',
-  GROUP_CREATE: 'reminder:group:create',
-  GROUP_UPDATE: 'reminder:group:update',
-  GROUP_DELETE: 'reminder:group:delete',
-  GROUP_GET_BY_USER: 'reminder:group:get-by-user',
-  GROUP_TOGGLE_STATUS: 'reminder:group:toggle-status',
-  GROUP_SWITCH_CONTROL_MODE: 'reminder:group:switch-control-mode',
-  PREFERENCES_GET: 'reminder:preferences:get',
-  PREFERENCES_UPDATE: 'reminder:preferences:update',
-} as const;
-
-const channels = Object.values(Ch);
+const allChannels = Object.values(ReminderChannels);
 let activeReminderModule: ReminderModuleInstance | null = null;
 
 export function getReminderTemplateRepository(): IReminderTemplateRepository {
@@ -77,32 +58,32 @@ export const ReminderElectronModule: IElectronModule = {
     //    IPC 处理器 — 精简的传输层映射
 
     // Template handlers / 模板处理器
-    ipcMain.handle(Ch.TEMPLATE_LIST, async () =>
+    ipcMain.handle(ReminderChannels.TEMPLATE_LIST, async () =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.listTemplates(requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_GET_BY_USER, async () =>
+    ipcMain.handle(ReminderChannels.TEMPLATE_GET_BY_USER, async () =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.listTemplates(requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_GET, async (_event, id) =>
+    ipcMain.handle(ReminderChannels.TEMPLATE_GET, async (_event, id) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.getTemplate(id, requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_CREATE, async (_event, dto) =>
+    ipcMain.handle(ReminderChannels.TEMPLATE_CREATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.createTemplate(dto, requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_UPDATE, async (_event, id, dto) =>
+    ipcMain.handle(ReminderChannels.TEMPLATE_UPDATE, async (_event, id, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.updateTemplate(id, dto, requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_DELETE, async (_event, id) =>
+    ipcMain.handle(ReminderChannels.TEMPLATE_DELETE, async (_event, id) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.deleteTemplate(id, requestContext),
       ),
@@ -110,72 +91,72 @@ export const ReminderElectronModule: IElectronModule = {
 
     // Toggle template enabled/paused state.
     // 切换模板启用/暂停状态。
-    ipcMain.handle(Ch.TEMPLATE_TOGGLE_ENABLED, async (_event, id) =>
+    ipcMain.handle(ReminderChannels.TEMPLATE_TOGGLE_ENABLED, async (_event, id) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.toggleTemplate(id, requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_MOVE_TO_GROUP, async (_event, id, payload) =>
+    ipcMain.handle(ReminderChannels.TEMPLATE_MOVE_TO_GROUP, async (_event, id, payload) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.moveTemplate(id, payload ?? {}, requestContext),
       ),
     );
-    ipcMain.handle(Ch.UPCOMING_GET, async (_event, params) =>
+    ipcMain.handle(ReminderChannels.UPCOMING_GET, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.getUpcomingReminders(params ?? {}, requestContext),
       ),
     );
-    ipcMain.handle(Ch.TODAY_SCHEDULE_GET, async (_event, params) =>
+    ipcMain.handle(ReminderChannels.TODAY_SCHEDULE_GET, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.getTodaySchedule(params ?? {}, requestContext),
       ),
     );
 
     // Group handlers / 分组处理器
-    ipcMain.handle(Ch.GROUP_LIST, async () =>
+    ipcMain.handle(ReminderChannels.GROUP_LIST, async () =>
       withAuthenticatedValue(ctx, async (requestContext) => controller.listGroups(requestContext)),
     );
-    ipcMain.handle(Ch.GROUP_GET_BY_USER, async () =>
+    ipcMain.handle(ReminderChannels.GROUP_GET_BY_USER, async () =>
       withAuthenticatedValue(ctx, async (requestContext) => controller.listGroups(requestContext)),
     );
-    ipcMain.handle(Ch.GROUP_GET, async (_event, id) =>
+    ipcMain.handle(ReminderChannels.GROUP_GET, async (_event, id) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.getGroup(id, requestContext),
       ),
     );
-    ipcMain.handle(Ch.GROUP_CREATE, async (_event, dto) =>
+    ipcMain.handle(ReminderChannels.GROUP_CREATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.createGroup(dto, requestContext),
       ),
     );
     // Accept requestContext for consistency; updateGroup does not use it yet.
     // 为一致性接收 requestContext；updateGroup 目前尚未使用。
-    ipcMain.handle(Ch.GROUP_UPDATE, async (_event, id, dto) =>
+    ipcMain.handle(ReminderChannels.GROUP_UPDATE, async (_event, id, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.updateGroup(id, dto, requestContext),
       ),
     );
-    ipcMain.handle(Ch.GROUP_DELETE, async (_event, id) =>
+    ipcMain.handle(ReminderChannels.GROUP_DELETE, async (_event, id) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.deleteGroup(id, requestContext),
       ),
     );
-    ipcMain.handle(Ch.GROUP_TOGGLE_STATUS, async (_event, id) =>
+    ipcMain.handle(ReminderChannels.GROUP_TOGGLE_STATUS, async (_event, id) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.toggleGroup(id, requestContext),
       ),
     );
-    ipcMain.handle(Ch.GROUP_SWITCH_CONTROL_MODE, async (_event, id, data) =>
+    ipcMain.handle(ReminderChannels.GROUP_SWITCH_CONTROL_MODE, async (_event, id, data) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.switchGroupControlMode(id, data, requestContext),
       ),
     );
-    ipcMain.handle(Ch.PREFERENCES_GET, async () =>
+    ipcMain.handle(ReminderChannels.PREFERENCES_GET, async () =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.getPreferences(requestContext),
       ),
     );
-    ipcMain.handle(Ch.PREFERENCES_UPDATE, async (_event, dto) =>
+    ipcMain.handle(ReminderChannels.PREFERENCES_UPDATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.updatePreferences(dto ?? {}, requestContext),
       ),
@@ -185,7 +166,7 @@ export const ReminderElectronModule: IElectronModule = {
   },
 
   destroy(): void {
-    for (const ch of channels) {
+    for (const ch of allChannels) {
       ipcMain.removeHandler(ch);
     }
     activeReminderModule?.dispose();
