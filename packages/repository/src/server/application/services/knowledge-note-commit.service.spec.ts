@@ -97,7 +97,7 @@ class MemoryConnectionRepository implements IKnowledgeRepositoryConnectionReposi
   }
 
   async save() {}
-  async updateStatus() {}
+  async updateStatus(_identityId: string, _id: string, _status: never) {}
 }
 
 class MemoryProjectionRepository implements IKnowledgeNoteProjectionRepository {

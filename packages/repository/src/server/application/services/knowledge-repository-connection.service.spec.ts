@@ -39,15 +39,18 @@ class MemoryConnectionRepository implements IKnowledgeRepositoryConnectionReposi
     this.rows.set(connection.id, connection);
   }
 
-  async updateStatus(id: string, status: KnowledgeRepositoryConnectionServerDTO['status']) {
+  async updateStatus(
+    identityId: string,
+    id: string,
+    status: KnowledgeRepositoryConnectionServerDTO['status'],
+  ) {
     const row = this.rows.get(id);
-    if (row) {
-      this.rows.set(id, {
-        ...row,
-        status,
-        deletedAt: status === 'Revoked' ? (1_750_000_000_000 as never) : null,
-      });
-    }
+    if (!row || row.identityId !== identityId) return;
+    this.rows.set(id, {
+      ...row,
+      status,
+      deletedAt: status === 'Revoked' ? (1_750_000_000_000 as never) : null,
+    });
   }
 }
 
@@ -203,7 +206,42 @@ describe('KnowledgeRepositoryConnectionService', () => {
     expect(repository.rows.size).toBe(1);
   });
 
+  it('refuses connection status updates when identityId does not match', async () => {
+    const repository = new MemoryConnectionRepository();
+    repository.rows.set('connection-1', {
+      id: 'connection-1',
+      identityId: 'identity-1',
+      githubUserId: 'github-user-1',
+      githubRepositoryId: 'repository-1',
+      githubRepositoryFullName: 'acme/notes',
+      installationId: 'installation-1',
+      defaultBranch: 'main',
+      status: 'Active',
+      lastSyncedCommitSha: null,
+      lastProjectedCommitSha: null,
+      lastErrorCode: null,
+      lastErrorMessage: null,
+      version: 1,
+      createdAt: 1_750_000_000_000 as never,
+      updatedAt: 1_750_000_000_000 as never,
+      deletedAt: null,
+    });
+
+    await repository.updateStatus('identity-other', 'connection-1', 'Revoked');
+    expect(repository.rows.get('connection-1')).toMatchObject({
+      status: 'Active',
+      deletedAt: null,
+    });
+
+    await repository.updateStatus('identity-1', 'connection-1', 'Revoked');
+    expect(repository.rows.get('connection-1')).toMatchObject({
+      status: 'Revoked',
+    });
+    expect(repository.rows.get('connection-1')?.deletedAt).not.toBeNull();
+  });
+
   it('keeps derived cloud data for the default reversible disconnect', async () => {
+
     const cloudDataPurger = { purge: vi.fn(async () => true) };
     const { service, repository } = createService(createGithubClient(), cloudDataPurger);
     await completeInstallation(service);

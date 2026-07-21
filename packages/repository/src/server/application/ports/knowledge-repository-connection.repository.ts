@@ -19,6 +19,7 @@ export interface IKnowledgeRepositoryConnectionRepository {
   ): Promise<KnowledgeRepositoryConnectionServerDTO[]>;
   save(connection: KnowledgeRepositoryConnectionServerDTO): Promise<void>;
   updateStatus(
+    identityId: string,
     id: string,
     status: KnowledgeRepositoryConnectionStatus,
     error?: { code: string; message: string } | null,

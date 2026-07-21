@@ -105,7 +105,7 @@ class MemoryConnectionRepository implements IKnowledgeRepositoryConnectionReposi
       : null;
   }
 
-  async updateStatus() {}
+  async updateStatus(_identityId: string, _id: string, _status: never) {}
 }
 
 class MemoryDeliveryRepository implements IGithubWebhookDeliveryRepository {

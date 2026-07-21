@@ -119,12 +119,13 @@ export class KnowledgeRepositoryConnectionPrismaRepository implements IKnowledge
   }
 
   async updateStatus(
+    identityId: string,
     id: string,
     status: KnowledgeRepositoryConnectionStatus,
     error?: { code: string; message: string } | null,
   ): Promise<void> {
-    await this.db.knowledgeRepositoryConnection.update({
-      where: { id },
+    const updated = await this.db.knowledgeRepositoryConnection.updateMany({
+      where: { id, identityId },
       data: {
         status,
         lastErrorCode: error?.code ?? null,
@@ -133,6 +134,9 @@ export class KnowledgeRepositoryConnectionPrismaRepository implements IKnowledge
         version: { increment: 1 },
       },
     });
+    if (updated.count !== 1) {
+      throw new Error('Knowledge repository connection not found for the current identity.');
+    }
   }
 
   private toDTO(row: ConnectionRow): KnowledgeRepositoryConnectionServerDTO | null {

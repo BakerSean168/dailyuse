@@ -1500,6 +1500,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：repository projection specs/surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百一十一轮）：知识仓库 connection 状态转移身份隔离——
+> `updateStatus` 端口与 Prisma 仓储强制 `identityId` 过滤（`updateMany where { id, identityId }`，
+> 禁止仅靠 connection 主键 revoke/改状态）；disconnect 透传 identityId。补 ownership surface
+> 与 memory 单测。§13.2 连接/授权边界证据再增强。验证：repository connection specs/surface +
+> governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1547,6 +1555,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
 - [x] Desktop 本地 Vault 在云端故障时仍可用。 **（已证明）**
 - [x] GitHub App 只访问用户明确授权的 knowledge repository。 **（已证明）**
+  残留一百一十一轮：connection status 转移 identity-scoped（disconnect updateStatus id+identityId）。
 - [x] private repo 可创建/连接，连接两个非空仓库不会自动覆盖。 **（已证明）**
 - [x] Desktop Git 同步具备离线恢复且不 force push。 **（已证明）**
 - [x] 冲突明确暂停并保留双方内容。 **（已证明）**

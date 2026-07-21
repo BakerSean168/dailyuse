@@ -243,7 +243,7 @@ export class KnowledgeRepositoryConnectionService {
         });
       }
     } else {
-      await this.options.connectionRepository.updateStatus(connectionId, 'Revoked', null);
+      await this.options.connectionRepository.updateStatus(identityId, connectionId, 'Revoked', null);
     }
     return ok(null);
   }
