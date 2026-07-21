@@ -31,7 +31,7 @@ updated: 2026-07-21T00:00:00
   - 账户页可 bind/unbind GitHub identity binding（与知识仓库 GitHub App 授权分离）
   - Desktop 远程 gateway/IPC 已暴露 OAuth 调用；登录首屏仍不提供 GitHub 入口
 - OAuthBinding 与 Daily Use session 分离；GitHub user access token 不写入业务 session。
-- 手机短信入口当前不可用；app-vue 认证 composable 已移除 `sendSmsCode` / phone login-register 客户端入口，无真实 SMS provider 时不暴露主登录面。
+- 手机/SMS 登录注册运行时入口已删除（API 路由、client port/adapters、Desktop IPC channel、MSW）；无真实 SMS provider 前不再保留 stub。`PhoneIdentifier` 领域类型仍保留用于既有标识符模型。
 - E2E：账密注册/登录流与 mock GitHub OAuth 流已覆盖；真实 GitHub fixture 仍依赖外部凭据。
 
 ## 3. 已采纳目标态
@@ -88,7 +88,7 @@ updated: 2026-07-21T00:00:00
 - 账户页 bind/unbind 已实现；账号合并冲突处置仍需产品确认。
 - 访客升级：Desktop login/register 在访客态重绑 profile ownership，保留 profileId/本地 Vault；目标 identity 已有其他 profile 时拒绝静默合并——边界测试可继续加厚。
 - GitHub 登录与知识仓库 GitHub App 授权在 contract/token/UI 上已分离；需在真实 fixture 下持续回归。
-- 手机短信和 2FA 无真实实现时不得作为主入口；遗留 SMS API 面应保持不可用或隐藏。
+- 手机短信和 2FA：运行时 stub 面已删除；未来若引入真实 SMS/2FA 再新增完整链路，不做空壳双轨。
 - 三入口同一 fixture 端到端串联（Web 账密/GitHub + Desktop 访客升级 + 仓库边界）仍未齐。
 
 ## 8. 风险点

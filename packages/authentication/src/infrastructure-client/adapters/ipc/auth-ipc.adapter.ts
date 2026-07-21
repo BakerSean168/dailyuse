@@ -12,13 +12,8 @@ import type {
   AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -50,21 +45,12 @@ export class AuthIpcAdapter implements IAuthApiClient {
     return this.ipcClient.invoke(AuthChannels.LOGIN, req);
   }
 
-  async loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>> {
-    return this.ipcClient.invoke(AuthChannels.LOGIN, req);
-  }
 
   async registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>> {
     return this.ipcClient.invoke(AuthChannels.REGISTER, req);
   }
 
-  async registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>> {
-    return this.ipcClient.invoke(AuthChannels.REGISTER, req);
-  }
 
-  async sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>> {
-    return this.ipcClient.invoke(AuthChannels.SEND_SMS_CODE, req);
-  }
 
   async refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>> {
     return this.ipcClient.invoke(AuthChannels.REFRESH_TOKEN, req);

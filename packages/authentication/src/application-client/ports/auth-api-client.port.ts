@@ -13,13 +13,8 @@ import type {
   AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -50,14 +45,11 @@ import type {
 export interface IAuthApiClient {
   // ========== Login ==========
   loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>>;
 
   // ========== Register ==========
   registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>>;
 
   // ========== SMS ==========
-  sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>>;
 
   // ========== Token ==========
   refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>>;

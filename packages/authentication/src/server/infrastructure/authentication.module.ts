@@ -22,13 +22,8 @@ import { fail } from '@dailyuse/contracts/result';
 import type {
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -193,10 +188,7 @@ export interface AuthenticationModuleUseCases {
  */
 export interface AuthenticationApplicationPort {
   register(data: RegisterByEmailReq, cx: ExecutionContext, deviceId: string): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(data: RegisterByPhoneReq, cx: ExecutionContext): Promise<Result<RegisterByPhoneRes>>;
   login(data: LoginByEmailReq, cx: ExecutionContext, deviceId: string): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(data: LoginByPhoneReq, cx: ExecutionContext): Promise<Result<LoginByPhoneRes>>;
-  sendSmsCode(data: SendSmsCodeReq): Promise<Result<void>>;
   logout(cx: ExecutionContext): Promise<Result<void>>;
   refreshToken(data: RefreshTokenReq, cx: ExecutionContext): Promise<Result<RefreshTokenRes>>;
   getCurrentUser(cx: ExecutionContext, sessionId?: string): Promise<Result<GetCurrentUserRes>>;
@@ -375,25 +367,10 @@ export function createAuthenticationModule(
   const api: AuthenticationApplicationPort = {
     register: (data, cx, deviceId) => useCases.register.execute(data, cx, deviceId),
 
-    registerByPhone: async (_data, _cx) =>
-      fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'Phone registration is not implemented on the server yet',
-      }),
 
     login: (data, cx, deviceId) => useCases.login.execute(data, cx, deviceId),
 
-    loginByPhone: async (_data, _cx) =>
-      fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'Phone login is not implemented on the server yet',
-      }),
 
-    sendSmsCode: async (_data) =>
-      fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'SMS verification is not implemented on the server yet',
-      }),
 
     logout: (cx) => useCases.logout.execute(undefined as void, cx),
 

@@ -15,8 +15,6 @@ export const authMockRoutes = {
   base: BASE,
   login: `${BASE}/login`,
   register: `${BASE}/register`,
-  loginPhone: `${BASE}/login/phone`,
-  registerPhone: `${BASE}/register/phone`,
   refresh: `${BASE}/refresh`,
   me: `${BASE}/me`,
   sessions: `${BASE}/sessions`,
@@ -67,21 +65,6 @@ export const authHandlers = [
     );
   }),
 
-  http.post(`${BASE}/register/phone`, () => {
-    return HttpResponse.json(
-      {
-        ok: false,
-        code: 503,
-        message: 'Phone registration is not implemented on the server yet',
-        error: {
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Phone registration is not implemented on the server yet',
-        },
-        timestamp: Date.now(),
-      },
-      { status: 503 },
-    );
-  }),
 
   http.post(`${BASE}/refresh`, () => {
     const mockAuth = createMockAuthResponse();
@@ -94,37 +77,7 @@ export const authHandlers = [
     });
   }),
 
-  http.post(`${BASE}/login/phone`, () => {
-    return HttpResponse.json(
-      {
-        ok: false,
-        code: 503,
-        message: 'Phone login is not implemented on the server yet',
-        error: {
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Phone login is not implemented on the server yet',
-        },
-        timestamp: Date.now(),
-      },
-      { status: 503 },
-    );
-  }),
 
-  http.post(`${BASE}/sms/send`, () => {
-    return HttpResponse.json(
-      {
-        ok: false,
-        code: 503,
-        message: 'SMS verification is not implemented on the server yet',
-        error: {
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'SMS verification is not implemented on the server yet',
-        },
-        timestamp: Date.now(),
-      },
-      { status: 503 },
-    );
-  }),
 
   http.get(`${BASE}/me`, () => {
     return HttpResponse.json({

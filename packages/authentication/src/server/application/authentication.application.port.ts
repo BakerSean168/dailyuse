@@ -3,13 +3,8 @@ import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type {
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -54,14 +49,11 @@ export interface AuthenticationApplicationPort {
     cx: ExecutionContext,
     deviceId: string,
   ): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(data: RegisterByPhoneReq, cx: ExecutionContext): Promise<Result<RegisterByPhoneRes>>;
   login(
     data: LoginByEmailReq,
     cx: ExecutionContext,
     deviceId: string,
   ): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(data: LoginByPhoneReq, cx: ExecutionContext): Promise<Result<LoginByPhoneRes>>;
-  sendSmsCode(data: SendSmsCodeReq): Promise<Result<void>>;
   logout(cx: ExecutionContext): Promise<Result<void>>;
   refreshToken(data: RefreshTokenReq, cx: ExecutionContext): Promise<Result<RefreshTokenRes>>;
   getCurrentUser(cx: ExecutionContext, sessionId?: string): Promise<Result<GetCurrentUserRes>>;

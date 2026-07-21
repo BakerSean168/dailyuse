@@ -56,7 +56,6 @@ const Ch = {
   FORGOT_PASSWORD: 'auth:forgot-password',
   RESET_PASSWORD: 'auth:reset-password',
   CHANGE_PASSWORD: 'auth:change-password',
-  SEND_SMS_CODE: 'auth:send-sms-code',
   SEND_EMAIL_CODE: 'auth:send-email-code',
   VERIFY_EMAIL_CODE: 'auth:verify-email-code',
   GET_OAUTH_URL: 'auth:get-oauth-url',
@@ -613,9 +612,6 @@ export function registerDesktopAuthShellHandlers(
     }
     return toIpcResult(await remoteGateway.changePassword(data, accessToken));
   });
-  ipcMain.handle(Ch.SEND_SMS_CODE, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'SMS not implemented' })),
-  );
   ipcMain.handle(Ch.SEND_EMAIL_CODE, async (_event, data) => {
     const service = currentAuthService();
     const accessToken = service?.getAccessToken?.() ?? undefined;

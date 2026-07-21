@@ -267,10 +267,7 @@ describe('desktop IPC contract alignment', () => {
     const adapter = new AuthIpcAdapter(recorder as never);
 
     await adapter.loginByEmail({} as never);
-    await adapter.loginByPhone({} as never);
     await adapter.registerByEmail({} as never);
-    await adapter.registerByPhone({} as never);
-    await adapter.sendSmsCode({} as never);
     await adapter.refreshToken({} as never);
     await adapter.logout();
     await adapter.getCurrentUser();

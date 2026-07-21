@@ -67,15 +67,12 @@ function getResponseStatuses(route: RegisteredRoute): string[] {
 function createStubs(): AuthenticationApplicationPort {
   return {
     register: vi.fn(),
-    registerByPhone: vi.fn(),
     login: vi.fn(),
-    loginByPhone: vi.fn(),
     oauthCallback: vi.fn(),
     getOAuthUrl: vi.fn(),
     listOAuthProviders: vi.fn(),
     bindOAuth: vi.fn(),
     unbindOAuth: vi.fn(),
-    sendSmsCode: vi.fn(),
     logout: vi.fn(),
     refreshToken: vi.fn(),
     getCurrentUser: vi.fn(),

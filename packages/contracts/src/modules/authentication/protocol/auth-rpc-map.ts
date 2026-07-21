@@ -6,14 +6,8 @@
 import type {
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
-  SendSmsCodeReq,
-  SendSmsCodeRes,
   GetCurrentUserReq,
   GetCurrentUserRes,
   RefreshTokenReq,
@@ -46,14 +40,10 @@ import type {
 
 export type AuthRpcMap = {
   // Registration
-  'auth:register': [
-    RegisterByEmailReq | RegisterByPhoneReq,
-    RegisterByEmailRes | RegisterByPhoneRes,
-  ];
+  'auth:register': [RegisterByEmailReq, RegisterByEmailRes];
 
   // Login
-  'auth:login': [LoginByEmailReq | LoginByPhoneReq, LoginByEmailRes | LoginByPhoneRes];
-  'auth:send-sms-code': [SendSmsCodeReq, SendSmsCodeRes];
+  'auth:login': [LoginByEmailReq, LoginByEmailRes];
 
   // Session
   'auth:get-current-user': [GetCurrentUserReq, GetCurrentUserRes];
@@ -80,4 +70,3 @@ export type AuthRpcMap = {
   'auth:get-oauth-url': [GetOAuthUrlReq, GetOAuthUrlRes];
   'auth:oauth-callback': [OAuthCallbackReq, OAuthCallbackRes];
 };
-

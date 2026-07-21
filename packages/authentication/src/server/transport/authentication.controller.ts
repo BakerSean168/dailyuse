@@ -14,15 +14,12 @@ import {
   ChangePasswordSchema,
   ForgotPasswordSchema,
   LoginByEmailSchema,
-  LoginByPhoneSchema,
   RevokeSessionSchema,
   ResetPasswordSchema,
   SendEmailCodeSchema,
   VerifyEmailCodeSchema,
   RegisterByEmailSchema,
-  RegisterByPhoneSchema,
   RefreshTokenSchema,
-  SendSmsCodeSchema,
   OAuthCallbackSchema,
   GetOAuthUrlSchema,
   BindOAuthSchema,
@@ -32,10 +29,8 @@ import type {
   GetCurrentUserRes,
   RegisterByEmailRes,
   LoginByEmailRes,
-  LoginByPhoneRes,
   ListSessionsRes,
   RefreshTokenRes,
-  RegisterByPhoneRes,
   OAuthCallbackRes,
   GetOAuthUrlRes,
   OAuthProvidersRes,
@@ -59,17 +54,6 @@ export class AuthenticationController {
     return this.api.register(parsed.data, cx, cx.deviceId);
   }
 
-  async registerByPhone(input: unknown, cx: Context): Promise<Result<RegisterByPhoneRes>> {
-    const parsed = RegisterByPhoneSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.api.registerByPhone(parsed.data, cx);
-  }
 
   async login(input: unknown, cx: Context): Promise<Result<LoginByEmailRes>> {
     const parsed = LoginByEmailSchema.safeParse(input);
@@ -83,17 +67,6 @@ export class AuthenticationController {
     return this.api.login(parsed.data, cx, cx.deviceId);
   }
 
-  async loginByPhone(input: unknown, cx: Context): Promise<Result<LoginByPhoneRes>> {
-    const parsed = LoginByPhoneSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.api.loginByPhone(parsed.data, cx);
-  }
 
   async getOAuthUrl(input: unknown): Promise<Result<GetOAuthUrlRes>> {
     const parsed = GetOAuthUrlSchema.safeParse(input);
@@ -146,17 +119,6 @@ export class AuthenticationController {
     return this.api.unbindOAuth(parsed.data, cx);
   }
 
-  async sendSmsCode(input: unknown): Promise<Result<void>> {
-    const parsed = SendSmsCodeSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.api.sendSmsCode(parsed.data);
-  }
 
   async logout(cx: Context): Promise<Result<void>> {
     return this.api.logout(cx);

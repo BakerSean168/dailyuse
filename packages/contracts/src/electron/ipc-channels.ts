@@ -170,7 +170,6 @@ export const AuthChannels = {
   FORGOT_PASSWORD: 'auth:forgot-password',
   RESET_PASSWORD: 'auth:reset-password',
   CHANGE_PASSWORD: 'auth:change-password',
-  SEND_SMS_CODE: 'auth:send-sms-code',
   SEND_EMAIL_CODE: 'auth:send-email-code',
   VERIFY_EMAIL_CODE: 'auth:verify-email-code',
   GET_OAUTH_URL: 'auth:get-oauth-url',

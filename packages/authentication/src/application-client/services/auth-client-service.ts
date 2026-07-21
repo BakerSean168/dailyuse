@@ -14,13 +14,8 @@ import type {
   AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -50,10 +45,7 @@ import type {
 /** High-level client-side operations for the authentication module. */
 export interface AuthenticationClientPort {
   loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>>;
   registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>>;
-  sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>>;
   refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>>;
   logout(): Promise<Result<void>>;
   getCurrentUser(): Promise<Result<GetCurrentUserRes>>;
@@ -81,10 +73,7 @@ export interface AuthenticationClientPort {
 export class AuthClientService implements AuthenticationClientPort {
   constructor(private readonly apiClient: IAuthApiClient) {
     this.loginByEmail = this.loginByEmail.bind(this);
-    this.loginByPhone = this.loginByPhone.bind(this);
     this.registerByEmail = this.registerByEmail.bind(this);
-    this.registerByPhone = this.registerByPhone.bind(this);
-    this.sendSmsCode = this.sendSmsCode.bind(this);
     this.refreshToken = this.refreshToken.bind(this);
     this.logout = this.logout.bind(this);
     this.getCurrentUser = this.getCurrentUser.bind(this);
@@ -113,9 +102,6 @@ export class AuthClientService implements AuthenticationClientPort {
     return this.apiClient.loginByEmail(req);
   }
 
-  async loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>> {
-    return this.apiClient.loginByPhone(req);
-  }
 
   // ========== Register ==========
 
@@ -123,15 +109,9 @@ export class AuthClientService implements AuthenticationClientPort {
     return this.apiClient.registerByEmail(req);
   }
 
-  async registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>> {
-    return this.apiClient.registerByPhone(req);
-  }
 
   // ========== SMS ==========
 
-  async sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>> {
-    return this.apiClient.sendSmsCode(req);
-  }
 
   // ========== Token ==========
 

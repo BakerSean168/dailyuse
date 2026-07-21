@@ -23,16 +23,13 @@ import {
   ChangePasswordSchema,
   ForgotPasswordSchema,
   RegisterByEmailSchema,
-  RegisterByPhoneSchema,
   LoginByEmailSchema,
-  LoginByPhoneSchema,
   RefreshTokenSchema,
   AuthResponseSchema,
   RevokeSessionSchema,
   ResetPasswordSchema,
   SendEmailCodeSchema,
   VerifyEmailCodeSchema,
-  SendSmsCodeSchema,
   OAuthCallbackSchema,
   GetOAuthUrlSchema,
   BindOAuthSchema,
@@ -93,22 +90,6 @@ export function registerAuthenticationRoutes(
     { requireAuth: false, successStatus: 201 },
   );
 
-  r.route(
-    {
-      method: 'post',
-      path: '/register/phone',
-      summary: '手机号注册',
-      request: { body: { content: { 'application/json': { schema: RegisterByPhoneSchema } } } },
-      responses: {
-        201: successResponse(AuthResponseSchema, '注册成功'),
-        400: errorResponse('参数错误'),
-        503: errorResponse('服务暂不可用'),
-      },
-    },
-    [],
-    (req, ctx) => controller.registerByPhone(req.body, ctx),
-    { requireAuth: false, successStatus: 201 },
-  );
 
   r.route(
     {
@@ -127,22 +108,6 @@ export function registerAuthenticationRoutes(
     { requireAuth: false },
   );
 
-  r.route(
-    {
-      method: 'post',
-      path: '/login/phone',
-      summary: '手机号登录',
-      request: { body: { content: { 'application/json': { schema: LoginByPhoneSchema } } } },
-      responses: {
-        200: successResponse(AuthResponseSchema, '登录成功'),
-        400: errorResponse('参数错误'),
-        503: errorResponse('服务暂不可用'),
-      },
-    },
-    [],
-    (req, ctx) => controller.loginByPhone(req.body, ctx),
-    { requireAuth: false },
-  );
 
   r.route(
     {
@@ -246,22 +211,6 @@ export function registerAuthenticationRoutes(
     (req, ctx) => controller.unbindOAuth(req.body, ctx),
   );
 
-  r.route(
-    {
-      method: 'post',
-      path: '/sms/send',
-      summary: '发送短信验证码',
-      request: { body: { content: { 'application/json': { schema: SendSmsCodeSchema } } } },
-      responses: {
-        200: successResponse(z.null(), '发送成功'),
-        400: errorResponse('参数错误'),
-        503: errorResponse('服务暂不可用'),
-      },
-    },
-    [],
-    (req) => controller.sendSmsCode(req.body),
-    { requireAuth: false },
-  );
 
   r.route(
     {
