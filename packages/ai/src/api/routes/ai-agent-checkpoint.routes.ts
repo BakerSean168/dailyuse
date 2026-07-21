@@ -76,7 +76,7 @@ export function registerAIAgentCheckpointRoutes(
         interrupts: body.interrupts,
         requestId: getRequestId(req),
       });
-      return ok(undefined);
+      return ok(null);
     },
     { successStatus: 204 },
   );
@@ -166,7 +166,7 @@ export function registerAIAgentCheckpointRoutes(
         runId: params.runId,
         requestId: getRequestId(req),
       });
-      return ok(undefined);
+      return ok(null);
     },
     { successStatus: 204 },
   );

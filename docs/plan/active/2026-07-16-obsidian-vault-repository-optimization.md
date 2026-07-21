@@ -1475,6 +1475,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 证据再增强，仍为部分。验证：ai checkpoint adapter/surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百零八轮）：HTTP 204 void 信封收口——`expressAdapter` /
+> `expressAdapterWithValidation` 对 `successStatus: 204` 发送无 body 的 No Content（不再
+> `json(success(...))` 双轨）；AI agent/langgraph checkpoint upsert/delete 路由统一
+> `ok(null)`（去掉 `ok(undefined)`）。补 utils express-adapter 单测与
+> `ai-checkpoint-void-204.surface`。§13.2 第 15 项证据再增强，仍为部分/外部阻塞。验证：
+> utils express-adapter + ai surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 
@@ -1574,7 +1583,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
   `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
-  磁盘耗尽不再是阻塞。仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
+  磁盘耗尽不再是阻塞。残留一百零八轮：HTTP 204 无 body + checkpoint void `ok(null)` 收口。
+  仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
 ## 14. 相关资料

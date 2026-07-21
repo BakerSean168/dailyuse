@@ -27,12 +27,17 @@ function createMockRes() {
   const res: any = {
     statusCode: 0,
     body: null,
+    ended: false,
     status(code: number) {
       res.statusCode = code;
       return res;
     },
     json(data: unknown) {
       res.body = data;
+      return res;
+    },
+    end() {
+      res.ended = true;
       return res;
     },
   };
@@ -108,6 +113,21 @@ describe('expressAdapter', () => {
     await handler(req, res);
 
     expect(res.statusCode).toBe(201);
+  });
+
+  it('should send empty 204 No Content without JSON body (residual 108)', async () => {
+    const controllerFn = vi.fn().mockResolvedValue(ok(null));
+    const handler = expressAdapter(controllerFn, { successStatus: 204 });
+
+    const req = createMockReq();
+    const res = createMockRes();
+
+    await handler(req, res);
+
+    expect(controllerFn).toHaveBeenCalled();
+    expect(res.statusCode).toBe(204);
+    expect(res.ended).toBe(true);
+    expect(res.body).toBeNull();
   });
 
   it('should return 401 when user is not authenticated and requireAuth is true', async () => {
@@ -321,6 +341,22 @@ describe('expressAdapterWithValidation', () => {
     await handler(req, res);
 
     expect(res.statusCode).toBe(201);
+  });
+
+  it('should send empty 204 No Content without JSON body for validated routes (residual 108)', async () => {
+    const schema = createMockSchema({});
+    const controllerFn = vi.fn().mockResolvedValue(ok(null));
+    const handler = expressAdapterWithValidation(schema, controllerFn, { successStatus: 204 });
+
+    const req = createMockReq({ body: {} });
+    const res = createMockRes();
+
+    await handler(req, res);
+
+    expect(controllerFn).toHaveBeenCalled();
+    expect(res.statusCode).toBe(204);
+    expect(res.ended).toBe(true);
+    expect(res.body).toBeNull();
   });
 
   it('should handle controller errors gracefully', async () => {

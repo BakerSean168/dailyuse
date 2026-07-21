@@ -68,6 +68,8 @@ interface ExpressLikeRequest {
 interface ExpressLikeResponse {
   status(code: number): this;
   json(data: unknown): this;
+  /** Used for 204 No Content success responses (no JSON body). */
+  end?(): this;
 }
 
 /**
@@ -226,6 +228,14 @@ export function expressAdapter<T>(
       const result = await controllerFn(req, context);
 
       if (isOk(result)) {
+        // HTTP 204 must not carry a JSON body (residual 108 void dual-track).
+        if (successStatus === 204) {
+          res.status(204);
+          if (typeof res.end === 'function') {
+            res.end();
+          }
+          return;
+        }
         res.status(successStatus).json(responseBuilder.success(result.data as T));
       } else {
         const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');
@@ -336,6 +346,14 @@ export function expressAdapterWithValidation<TInput, TOutput>(
       const result = await controllerFn(parsed.data, context, req);
 
       if (isOk(result)) {
+        // HTTP 204 must not carry a JSON body (residual 108 void dual-track).
+        if (successStatus === 204) {
+          res.status(204);
+          if (typeof res.end === 'function') {
+            res.end();
+          }
+          return;
+        }
         res.status(successStatus).json(responseBuilder.success(result.data as TOutput));
       } else {
         const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');

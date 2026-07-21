@@ -134,7 +134,7 @@ export function registerAILangGraphCheckpointRoutes(
         metadata: body.metadata,
         requestId: getRequestId(req),
       });
-      return ok(undefined);
+      return ok(null);
     },
     { successStatus: 204 },
   );
@@ -166,7 +166,7 @@ export function registerAILangGraphCheckpointRoutes(
         writes: body.writes,
         requestId: getRequestId(req),
       });
-      return ok(undefined);
+      return ok(null);
     },
     { successStatus: 204 },
   );
@@ -253,7 +253,7 @@ export function registerAILangGraphCheckpointRoutes(
         checkpointNs: query.checkpointNs,
         requestId: getRequestId(req),
       });
-      return ok(undefined);
+      return ok(null);
     },
     { successStatus: 204 },
   );
