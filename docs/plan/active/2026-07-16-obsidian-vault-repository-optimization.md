@@ -1492,6 +1492,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 证据再增强，仍为部分。验证：repository commit specs/surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-21（阶段 6 残留一百一十轮）：GitHub webhook delivery 状态转移 connection 隔离——
+> `updateStatus` 端口与 Prisma 仓储强制 `connectionId` 过滤（`updateMany where { id, connectionId }`，
+> 禁止仅靠 delivery 主键改写他人连接的投递状态）；projection service 调用透传
+> `delivery.connectionId`。补 ownership surface 与 memory 单测。§13.2 webhook 重建证据再增强。
+> 验证：repository projection specs/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 ## 13. 测试与完成定义
 

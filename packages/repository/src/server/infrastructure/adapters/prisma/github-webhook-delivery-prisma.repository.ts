@@ -49,17 +49,21 @@ export class GithubWebhookDeliveryPrismaRepository implements IGithubWebhookDeli
 
   async updateStatus(
     id: string,
+    connectionId: string,
     status: GithubWebhookDeliveryStatus,
     errorMessage: string | null = null,
   ): Promise<void> {
-    await this.db.githubWebhookDelivery.update({
-      where: { id },
+    const updated = await this.db.githubWebhookDelivery.updateMany({
+      where: { id, connectionId },
       data: {
         status,
         errorMessage,
         processedAt: ['Processed', 'Ignored', 'Failed'].includes(status) ? new Date() : null,
       },
     });
+    if (updated.count !== 1) {
+      throw new Error('GitHub webhook delivery not found for the current connection.');
+    }
   }
 
   private toRecord(row: DeliveryRow): GithubWebhookDeliveryRecord | null {

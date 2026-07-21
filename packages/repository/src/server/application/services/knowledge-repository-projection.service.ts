@@ -679,6 +679,7 @@ export class KnowledgeRepositoryProjectionService {
           await deliveryGuard.ensureHeld();
           await this.options.deliveryRepository.updateStatus(
             deliveryId,
+            delivery.connectionId,
             'Ignored',
             'Knowledge repository connection no longer exists',
           );
@@ -709,7 +710,11 @@ export class KnowledgeRepositoryProjectionService {
     guard: { ensureHeld(): Promise<void> },
   ): Promise<void> {
     await guard.ensureHeld();
-    await this.options.deliveryRepository.updateStatus(delivery.id, 'Processing');
+    await this.options.deliveryRepository.updateStatus(
+      delivery.id,
+      delivery.connectionId,
+      'Processing',
+    );
     try {
       if (delivery.forced) {
         await guard.ensureHeld();
@@ -721,6 +726,7 @@ export class KnowledgeRepositoryProjectionService {
         await guard.ensureHeld();
         await this.options.deliveryRepository.updateStatus(
           delivery.id,
+          delivery.connectionId,
           'Failed',
           'Force push requires full reconciliation',
         );
@@ -747,6 +753,7 @@ export class KnowledgeRepositoryProjectionService {
         await guard.ensureHeld();
         await this.options.deliveryRepository.updateStatus(
           delivery.id,
+          delivery.connectionId,
           'Failed',
           'Repository authorization is no longer valid',
         );
@@ -762,6 +769,7 @@ export class KnowledgeRepositoryProjectionService {
         await guard.ensureHeld();
         await this.options.deliveryRepository.updateStatus(
           delivery.id,
+          delivery.connectionId,
           'Failed',
           'Repository default branch changed',
         );
@@ -862,12 +870,17 @@ export class KnowledgeRepositoryProjectionService {
         updatedAt: this.now() as KnowledgeRepositoryConnectionServerDTO['updatedAt'],
       });
       await guard.ensureHeld();
-      await this.options.deliveryRepository.updateStatus(delivery.id, 'Processed');
+      await this.options.deliveryRepository.updateStatus(
+        delivery.id,
+        delivery.connectionId,
+        'Processed',
+      );
     } catch (error) {
       if (error instanceof KnowledgeRepositoryLeaseLostError) return;
       await guard.ensureHeld();
       await this.options.deliveryRepository.updateStatus(
         delivery.id,
+        delivery.connectionId,
         'Failed',
         error instanceof Error ? error.message : 'Projection ingestion failed',
       );

@@ -26,6 +26,7 @@ export interface IGithubWebhookDeliveryRepository {
   listPending(limit: number): Promise<GithubWebhookDeliveryRecord[]>;
   updateStatus(
     id: string,
+    connectionId: string,
     status: GithubWebhookDeliveryStatus,
     errorMessage?: string | null,
   ): Promise<void>;

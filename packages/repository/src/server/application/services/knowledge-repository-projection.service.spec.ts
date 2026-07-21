@@ -129,11 +129,12 @@ class MemoryDeliveryRepository implements IGithubWebhookDeliveryRepository {
 
   async updateStatus(
     id: string,
+    connectionId: string,
     status: GithubWebhookDeliveryStatus,
     errorMessage: string | null = null,
   ) {
     const row = this.rows.get(id);
-    if (!row) return;
+    if (!row || row.connectionId !== connectionId) return;
     this.rows.set(id, {
       ...row,
       status,
@@ -622,6 +623,37 @@ describe('KnowledgeRepositoryProjectionService', () => {
     expect(getMarkdownChanges).toHaveBeenCalledOnce();
     first.stop();
     second.stop();
+  });
+
+  it('refuses webhook delivery status updates when connectionId does not match', async () => {
+    const deliveryRepository = new MemoryDeliveryRepository();
+    await deliveryRepository.reserve({
+      id: 'delivery-owned',
+      connectionId: 'connection-1',
+      deliveryId: 'delivery-owned-id',
+      eventName: 'push',
+      beforeSha: 'before-sha',
+      afterSha: 'after-sha',
+      forced: false,
+      status: 'Received',
+      errorMessage: null,
+      receivedAt: 1_750_000_000_000,
+      processedAt: null,
+    });
+
+    await deliveryRepository.updateStatus(
+      'delivery-owned',
+      'connection-other',
+      'Processed',
+      null,
+    );
+    expect(deliveryRepository.rows.get('delivery-owned')).toMatchObject({
+      status: 'Received',
+      processedAt: null,
+    });
+
+    await deliveryRepository.updateStatus('delivery-owned', 'connection-1', 'Processing');
+    expect(deliveryRepository.rows.get('delivery-owned')?.status).toBe('Processing');
   });
 
   it('claims reconciliation for one instance while another observes the persisted lease', async () => {
