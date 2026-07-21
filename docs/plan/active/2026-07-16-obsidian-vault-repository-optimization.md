@@ -1172,6 +1172,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留七十一轮）：custom-notification IPC handlers 返回 Result
+> `ok` 信封；`notification:clicked` 字符串双轨折叠到 contracts `RendererEventChannels.NOTIFICATION_CLICKED`
+> （custom + native notification service）。补 surface specs。§13.2 仍为部分/外部阻塞。
+> 验证：desktop notification surfaces + contracts surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

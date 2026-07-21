@@ -274,6 +274,7 @@ export const RendererEventChannels = {
   SHORTCUT_TRIGGERED: 'shortcut:triggered',
   DB_CHANGED: 'db:changed',
   WINDOW_STATE_CHANGED: 'window-state:changed',
+  NOTIFICATION_CLICKED: 'notification:clicked',
 } as const;
 
 export const CacheChannels = {
