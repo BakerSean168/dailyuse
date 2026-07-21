@@ -81,24 +81,6 @@ export interface IAIMessageApiClient {
   ): Promise<Result<MessageListRes>>;
 }
 
-export interface IAIStreamMessageApiClient {
-  cancelStream(streamId: string): Promise<void>;
-  streamMessage(
-    request: SendMessageReq,
-    handlers: {
-      onChunk?: (chunk: { role: 'assistant'; content: string }) => void;
-      onDone?: (result: {
-        userMessage: SendMessageRes['userMessage'];
-        assistantMessage: SendMessageRes['assistantMessage'];
-        tokenUsage: SendMessageRes['tokenUsage'];
-        providerId: SendMessageRes['providerId'];
-        processingTimeMs: number;
-      }) => void;
-    },
-    signal?: AbortSignal,
-  ): Promise<void>;
-}
-
 export interface IAIGoalApiClient {
   generateGoal(request: GenerateGoalsReq): Promise<Result<GenerateGoalsRes>>;
 }

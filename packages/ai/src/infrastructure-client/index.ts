@@ -2,7 +2,7 @@
  * AI Module - Infrastructure Client
  *
  * Exports:
- * - Types: IAIConversationApiClient, IAIMessageApiClient, IAIGenerationTaskApiClient, etc.
+ * - Types: IAIConversationApiClient, IAIMessageApiClient, AIAgentRuntimeApiClient, etc.
  * - Adapters: HTTP and IPC implementations
  * - Providers: OpenAI and other LLM providers
  * - Prompts: AI prompt templates

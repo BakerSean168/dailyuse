@@ -13,7 +13,6 @@ export type { IResultHttpClient } from '@dailyuse/http-client';
 export type {
   IAIConversationApiClient,
   IAIMessageApiClient,
-  IAIStreamMessageApiClient,
   IAIGoalApiClient,
   IAICapabilitiesApiClient,
   AIEvaluationReportApiClient,
