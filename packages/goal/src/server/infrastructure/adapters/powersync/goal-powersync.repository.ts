@@ -243,7 +243,11 @@ export class GoalPowerSyncRepository
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Goal not found for the current identity.');
+    }
     await this.db.writeTransaction(async (tx) => {
       await tx.execute(`DELETE FROM goal_reviews WHERE goal_id = ?`, [id]);
       await tx.execute(
@@ -253,7 +257,7 @@ export class GoalPowerSyncRepository
       );
       await tx.execute(`DELETE FROM key_results WHERE goal_id = ?`, [id]);
       await tx.execute(`DELETE FROM key_result_weight_snapshots WHERE goal_id = ?`, [id]);
-      await tx.execute(`DELETE FROM goals WHERE id = ?`, [id]);
+      await tx.execute(`DELETE FROM goals WHERE id = ? AND identity_id = ?`, [id, identityId]);
     });
   }
 

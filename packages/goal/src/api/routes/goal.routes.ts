@@ -263,7 +263,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.archive(req.params!.id),
+    (req, ctx) => controller.archive(req.params!.id, ctx),
   );
 
   // POST /:id/activate — 激活目标
@@ -279,7 +279,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.activate(req.params!.id),
+    (req, ctx) => controller.activate(req.params!.id, ctx),
   );
 
   // POST /:id/complete — 完成目标
@@ -295,7 +295,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.complete(req.params!.id),
+    (req, ctx) => controller.complete(req.params!.id, ctx),
   );
 
   // GET /:id/aggregate — 获取目标聚合视图

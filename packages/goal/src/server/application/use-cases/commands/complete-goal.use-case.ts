@@ -20,8 +20,8 @@ export class CompleteGoalUseCase {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(id: string): Promise<Result<{ goal: GoalServerDTO }>> {
-    const goal = await this.goalRepository.findById(id);
+  async execute(id: string, identityId: string): Promise<Result<{ goal: GoalServerDTO }>> {
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, id);
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }

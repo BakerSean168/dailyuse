@@ -366,8 +366,13 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
 
   // ================= Delete Operations =================
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.goal.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const deleted = await this.prisma.goal.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Goal not found for the current identity.');
+    }
   }
 
   // ================= Utility Operations =================

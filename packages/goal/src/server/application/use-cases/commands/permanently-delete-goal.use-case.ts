@@ -32,8 +32,10 @@ export class PermanentlyDeleteGoalUseCase {
    * @param id - 目标 ID
    * @returns 成功返回被删除的目标 ID
    */
-  async execute(id: string): Promise<Result<{ id: string }>> {
-    const goal = await this.goalRepository.findById(id, { includeChildren: true });
+  async execute(id: string, identityId: string): Promise<Result<{ id: string }>> {
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, id, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }
@@ -42,7 +44,7 @@ export class PermanentlyDeleteGoalUseCase {
     this.goalPolicy.ensureGoalCanBePermanentlyDeleted(goal);
 
     // 执行物理删除（级联删除所有子实体）
-    await this.goalRepository.delete(id);
+    await this.goalRepository.delete(identityId, id);
 
     return ok({ id });
   }

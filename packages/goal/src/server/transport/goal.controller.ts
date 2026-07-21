@@ -185,16 +185,16 @@ export class GoalController {
 
   // ==================== Goal Status Operations ====================
 
-  async archive(id: string): Promise<Result<unknown>> {
-    return this.useCases.archiveGoal(id);
+  async archive(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.archiveGoal(id, cx.identityId);
   }
 
-  async activate(id: string): Promise<Result<unknown>> {
-    return this.useCases.activateGoal(id);
+  async activate(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.activateGoal(id, cx.identityId);
   }
 
-  async complete(id: string): Promise<Result<unknown>> {
-    const result = await this.useCases.completeGoal(id);
+  async complete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    const result = await this.useCases.completeGoal(id, cx.identityId);
     if (!result.ok) return result;
     return ok(result.data.goal);
   }

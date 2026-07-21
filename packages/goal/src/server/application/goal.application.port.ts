@@ -40,11 +40,11 @@ export interface GoalApplicationPort {
   listGoals(input: ListGoalsQuery): Promise<Result<QueryGoalsRes>>;
   updateGoal(id: string, identityId: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
   deleteGoal(id: string, identityId: string): Promise<Result<DeleteGoalRes>>;
-  permanentlyDeleteGoal(id: string): Promise<Result<{ id: string }>>;
-  archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
+  permanentlyDeleteGoal(id: string, identityId: string): Promise<Result<{ id: string }>>;
+  archiveGoal(id: string, identityId: string): Promise<Result<GoalClientDTO>>;
   archiveExpiredGoals(identityId: string): Promise<Result<{ archivedCount: number }>>;
-  activateGoal(id: string): Promise<Result<GoalClientDTO>>;
-  completeGoal(id: string): Promise<Result<{ goal: GoalServerDTO }>>;
+  activateGoal(id: string, identityId: string): Promise<Result<GoalClientDTO>>;
+  completeGoal(id: string, identityId: string): Promise<Result<{ goal: GoalServerDTO }>>;
   searchGoals(
     identityId: string,
     query: string,

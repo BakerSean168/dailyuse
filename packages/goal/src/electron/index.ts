@@ -131,13 +131,19 @@ export const GoalElectronModule: IElectronModule = {
     // Issue #4 fix: route archive through auth + controller validation
     // 问题 #4 修复：将归档操作路由到认证 + 控制器校验
     ipcMain.handle(GoalChannels.ARCHIVE, async (_, id) =>
-      withAuthenticatedValue(ctx, async () => goalController.archive(id)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.archive(id, requestContext),
+      ),
     );
     ipcMain.handle(GoalChannels.ACTIVATE, async (_, id) =>
-      withAuthenticatedValue(ctx, async () => goalController.activate(id)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.activate(id, requestContext),
+      ),
     );
     ipcMain.handle(GoalChannels.COMPLETE, async (_, id) =>
-      withAuthenticatedValue(ctx, async () => goalController.complete(id)),
+      withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>
+        goalController.complete(id, requestContext),
+      ),
     );
     ipcMain.handle(GoalChannels.SEARCH, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: ExecutionContext) =>

@@ -292,11 +292,11 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     listGoals: (input) => useCases.listGoals.execute(input),
     updateGoal: (id, identityId, input) => useCases.updateGoal.execute(id, identityId, input),
     deleteGoal: (id, identityId) => useCases.deleteGoal.execute(id, identityId),
-    permanentlyDeleteGoal: (id) => useCases.permanentlyDeleteGoal.execute(id),
-    archiveGoal: (id) => useCases.archiveGoal.execute(id),
+    permanentlyDeleteGoal: (id, identityId) => useCases.permanentlyDeleteGoal.execute(id, identityId),
+    archiveGoal: (id, identityId) => useCases.archiveGoal.execute(id, identityId),
     archiveExpiredGoals: (identityId) => useCases.archiveExpiredGoals.execute(identityId),
-    activateGoal: (id) => useCases.activateGoal.execute(id),
-    completeGoal: (id) => useCases.completeGoal.execute(id),
+    activateGoal: (id, identityId) => useCases.activateGoal.execute(id, identityId),
+    completeGoal: (id, identityId) => useCases.completeGoal.execute(id, identityId),
     searchGoals: (identityId, query, systemView) =>
       useCases.searchGoals.execute(identityId, query, systemView as GoalSystemView),
 
