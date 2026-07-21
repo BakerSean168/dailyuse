@@ -22,22 +22,6 @@ import {
 } from '../../../domain';
 import type { ResetPasswordReq } from '@dailyuse/contracts/authentication';
 
-/** @deprecated Prefer Result errors; kept for tests that catch by name. */
-export class InvalidResetCodeError extends Error {
-  constructor() {
-    super('Invalid or expired reset code.');
-    this.name = 'InvalidResetCodeError';
-  }
-}
-
-/** @deprecated Prefer Result errors; kept for tests that catch by name. */
-export class UserNotFoundError extends Error {
-  constructor(email: string) {
-    super(`User with email [${email}] not found.`);
-    this.name = 'UserNotFoundError';
-  }
-}
-
 export class ResetPasswordUseCase {
   constructor(
     private readonly identityRepository: IAuthIdentityRepository,

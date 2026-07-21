@@ -3,8 +3,6 @@ export { LoginService } from './login';
 export { LogoutService } from './logout';
 export type { IEmailSender } from './i-email-sender';
 export type { IPasswordHasher } from './i-password-hasher.service';
-/** @deprecated Prefer IVerificationChallengeStore */
-export type { IPasswordResetCodeStore } from './i-password-reset-code-store';
 export type {
   IVerificationChallengeStore,
   IssueVerificationChallengeParams,

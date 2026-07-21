@@ -146,6 +146,8 @@ describe('WebAuthView three-login surface contract', () => {
     expect(wrapper.find('[data-testid="login-submit-button"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="login-github-button"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="guest-mode-button"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="login-phone-input"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="send-sms-code-button"]').exists()).toBe(false);
 
     wrapper.unmount();
   });

@@ -83,7 +83,7 @@ updated: 2026-07-21T00:00:00
 
 - 邮箱验证与密码找回：**服务端 + Web 已闭环**；生产 SMTP、更完整 Unverified banner/Desktop 体验与更多 e2e 仍可加强。
 - 注销未级联：`closeAccount` 未同步禁用 Auth / 撤销全部 session（计划 Phase C）。
-- challenge 存储与 IP 限流为内存实现，多实例与生产需 Redis/外置。
+- challenge 存储与 IP 限流为内存实现，多实例与生产需 Redis/外置；旧 `IPasswordResetCodeStore` 双轨已删除，统一 `IVerificationChallengeStore`。
 - GitHub OAuth 登录主路径已接线；仍缺：真实 GitHub fixture E2E（外部凭据）、Desktop 系统浏览器 deep link 一等体验、跨账号安全合并确认 UX。
 - 账户页 bind/unbind 已实现；账号合并冲突处置仍需产品确认。
 - 访客升级：Desktop login/register 在访客态重绑 profile ownership，保留 profileId/本地 Vault；目标 identity 已有其他 profile 时拒绝静默合并——边界测试可继续加厚。

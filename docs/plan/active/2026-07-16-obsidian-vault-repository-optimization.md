@@ -865,6 +865,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留三十一轮）：删除认证双轨兼容残留——`IPasswordResetCodeStore` /
+> `InMemoryPasswordResetCodeStore`（已由 `IVerificationChallengeStore` + PasswordReset purpose 取代）
+> 以及 reset-password 未使用的 throw 型错误类。Web Auth 页面契约（e2e + WebAuthView 单测）明确
+> 无 phone/SMS/guest 入口。§13.2 三入口边界再收口。验证：authentication forgot/reset specs、
+> WebAuthView spec、auth routes specs。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
@@ -883,7 +890,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留三十轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-21（残留三十一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
@@ -896,6 +903,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二十八轮：`three-login-surface.matrix.spec.ts` 固化 Web shell 硬跳转 / AuthApp 账密+GitHub /
   Desktop 账密+访客矩阵；`authentication.md` 与实现边界对齐（不再声称 OAuth UI 缺失）。
   残留三十轮：删除 phone/SMS 空壳登录注册运行时面，三入口仅账密 / GitHub / Desktop 访客。
+  残留三十一轮：删除 password-reset 双轨 store shim；Web auth page contract 明确无 phone/SMS/guest。
   仍缺：三入口同一 fixture 下的端到端串联验收（含访客升级与仓库边界）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**

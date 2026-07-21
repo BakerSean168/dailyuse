@@ -35,6 +35,11 @@ test.describe('Web authentication page contract', () => {
       'Interface language',
     );
     await expect(page.getByTestId('guest-mode-button')).toHaveCount(0);
+    // ADR-034 three-login: Web AuthApp has password (+ optional GitHub), never guest/phone/SMS.
+    await expect(page.getByTestId('login-password-input')).toBeVisible();
+    await expect(page.locator('[data-testid="login-phone-input"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="send-sms-code-button"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="login-phone-button"]')).toHaveCount(0);
     await expect(page.getByTestId('login-forgot-link')).toBeVisible();
     await expect(page.getByTestId('auth-legal-footer')).toBeVisible();
     await expect(page.getByTestId('auth-terms-link')).toBeVisible();
