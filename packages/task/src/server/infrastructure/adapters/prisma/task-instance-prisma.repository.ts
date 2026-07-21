@@ -169,16 +169,21 @@ export class TaskInstancePrismaRepository
     });
   }
 
-  async deleteByTemplateId(templateId: string): Promise<void> {
+  async deleteByTemplateId(templateId: string, identityId: string): Promise<void> {
     await this.db.taskInstance.deleteMany({
-      where: { templateId },
+      where: { templateId, identityId },
     });
   }
 
-  async countFutureInstances(templateId: string, fromDate: number = Date.now()): Promise<number> {
+  async countFutureInstances(
+    templateId: string,
+    identityId: string,
+    fromDate: number = Date.now(),
+  ): Promise<number> {
     return this.db.taskInstance.count({
       where: {
         templateId,
+        identityId,
         instanceDate: { gte: new Date(fromDate) },
       },
     });
@@ -186,12 +191,14 @@ export class TaskInstancePrismaRepository
 
   async findByTemplateIdAndDateRange(
     templateId: string,
+    identityId: string,
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]> {
     const data = await this.db.taskInstance.findMany({
       where: {
         templateId,
+        identityId,
         instanceDate: {
           gte: new Date(startDate),
           lte: new Date(endDate),
@@ -203,7 +210,10 @@ export class TaskInstancePrismaRepository
     return data.map((record: PrismaTaskInstance) => this.mapToEntity(record));
   }
 
-  async getTemplateStats(templateIds: string[]): Promise<Record<string, TaskTemplateInstanceStats>> {
+  async getTemplateStats(
+    templateIds: string[],
+    identityId: string,
+  ): Promise<Record<string, TaskTemplateInstanceStats>> {
     if (templateIds.length === 0) {
       return {};
     }
@@ -212,6 +222,7 @@ export class TaskInstancePrismaRepository
       by: ['templateId', 'status'],
       where: {
         templateId: { in: templateIds },
+        identityId,
         deletedAt: null,
       },
       _count: {
@@ -259,10 +270,15 @@ export class TaskInstancePrismaRepository
     return stats;
   }
 
-  async deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number> {
+  async deleteIncompleteInstancesFrom(
+    templateId: string,
+    identityId: string,
+    fromDate: number,
+  ): Promise<number> {
     const result = await this.db.taskInstance.deleteMany({
       where: {
         templateId,
+        identityId,
         instanceDate: { gte: new Date(fromDate) },
         status: { in: ['Pending', 'InProgress'] },
       },

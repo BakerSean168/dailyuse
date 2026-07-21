@@ -46,7 +46,7 @@ export class DeleteTaskTemplateUseCase {
 
         template.softDelete();
         await templateRepository.save(template);
-        await instanceRepository.deleteByTemplateId(id);
+        await instanceRepository.deleteByTemplateId(id, identityId);
 
         if (!soft) {
           await templateRepository.delete(identityId, id);

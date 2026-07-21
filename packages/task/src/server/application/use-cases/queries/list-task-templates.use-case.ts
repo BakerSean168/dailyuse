@@ -60,7 +60,10 @@ export class ListTaskTemplatesUseCase {
     }
 
     const statsByTemplateId =
-      (await this.instanceRepository.getTemplateStats(templates.map((template) => template.id))) ??
+      (await this.instanceRepository.getTemplateStats(
+        templates.map((template) => template.id),
+        request.identityId,
+      )) ??
       {};
 
     return ok({

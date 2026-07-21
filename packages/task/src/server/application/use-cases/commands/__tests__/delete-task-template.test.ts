@@ -48,7 +48,7 @@ describe('DeleteTaskTemplateUseCase', () => {
 
     expect(result).toBeOk();
     expect(templateRepo.save).toHaveBeenCalledWith(template);
-    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
+    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id, template.identityId);
     expect(templateRepo.delete).toHaveBeenCalledWith(template.identityId, template.id);
   });
 
@@ -60,7 +60,7 @@ describe('DeleteTaskTemplateUseCase', () => {
 
     expect(result).toBeOk();
     expect(templateRepo.save).toHaveBeenCalledWith(template);
-    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
+    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id, template.identityId);
     expect(templateRepo.delete).not.toHaveBeenCalled();
   });
 

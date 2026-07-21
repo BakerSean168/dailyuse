@@ -36,7 +36,7 @@ export class GetTaskTemplateUseCase {
     const dto = template.toClientDTO(includeChildren);
 
     if (!includeChildren) {
-      let stats = ((await this.instanceRepository.getTemplateStats([id])) ?? {})[id];
+      let stats = ((await this.instanceRepository.getTemplateStats([id], identityId)) ?? {})[id];
 
       if (!stats) {
         const instances = (await this.instanceRepository.findByTemplateId(id, identityId)) ?? [];

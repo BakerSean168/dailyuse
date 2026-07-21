@@ -69,6 +69,7 @@ describe('PauseTaskTemplateUseCase', () => {
     expect(result).toBeOk();
     expect(instanceRepo.deleteIncompleteInstancesFrom).toHaveBeenCalledWith(
       template.id,
+      template.identityId,
       expect.any(Number),
     );
   });

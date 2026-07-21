@@ -175,30 +175,41 @@ export class PowerSyncTaskInstanceRepository
     await this.db.execute(`DELETE FROM task_instances WHERE id IN (${placeholders})`, ids);
   }
 
-  async deleteByTemplateId(templateId: string): Promise<void> {
-    await this.db.execute('DELETE FROM task_instances WHERE template_id = ?', [templateId]);
+  async deleteByTemplateId(templateId: string, identityId: string): Promise<void> {
+    await this.db.execute(
+      'DELETE FROM task_instances WHERE template_id = ? AND identity_id = ?',
+      [templateId, identityId],
+    );
   }
 
-  async countFutureInstances(templateId: string, fromDate: number = Date.now()): Promise<number> {
+  async countFutureInstances(
+    templateId: string,
+    identityId: string,
+    fromDate: number = Date.now(),
+  ): Promise<number> {
     const row = await this.db.get<{ count: number }>(
-      'SELECT COUNT(*) as count FROM task_instances WHERE template_id = ? AND instance_date >= ?',
-      [templateId, new Date(fromDate).toISOString()],
+      'SELECT COUNT(*) as count FROM task_instances WHERE template_id = ? AND identity_id = ? AND instance_date >= ?',
+      [templateId, identityId, new Date(fromDate).toISOString()],
     );
     return Number(row.count ?? 0);
   }
 
   async findByTemplateIdAndDateRange(
     templateId: string,
+    identityId: string,
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]> {
     return this.query(
-      `SELECT * FROM task_instances WHERE template_id = ? AND instance_date >= ? AND instance_date <= ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
-      [templateId, new Date(startDate).toISOString(), new Date(endDate).toISOString()],
+      `SELECT * FROM task_instances WHERE template_id = ? AND identity_id = ? AND instance_date >= ? AND instance_date <= ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
+      [templateId, identityId, new Date(startDate).toISOString(), new Date(endDate).toISOString()],
     );
   }
 
-  async getTemplateStats(templateIds: string[]): Promise<Record<string, TaskTemplateInstanceStats>> {
+  async getTemplateStats(
+    templateIds: string[],
+    identityId: string,
+  ): Promise<Record<string, TaskTemplateInstanceStats>> {
     if (templateIds.length === 0) {
       return {};
     }
@@ -212,9 +223,10 @@ export class PowerSyncTaskInstanceRepository
       `SELECT template_id as templateId, status, COUNT(*) as count
          FROM task_instances
         WHERE template_id IN (${placeholders})
+          AND identity_id = ?
           AND deleted_at IS NULL
         GROUP BY template_id, status`,
-      templateIds,
+      [...templateIds, identityId],
     );
 
     const stats: Record<string, TaskTemplateInstanceStats> = {};
@@ -257,22 +269,28 @@ export class PowerSyncTaskInstanceRepository
     return stats;
   }
 
-  async deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number> {
+  async deleteIncompleteInstancesFrom(
+    templateId: string,
+    identityId: string,
+    fromDate: number,
+  ): Promise<number> {
     const before = await this.db.get<{ count: number }>(
       `SELECT COUNT(*) as count
          FROM task_instances
         WHERE template_id = ?
+          AND identity_id = ?
           AND instance_date >= ?
           AND status IN ('Pending', 'InProgress')`,
-      [templateId, new Date(fromDate).toISOString()],
+      [templateId, identityId, new Date(fromDate).toISOString()],
     );
 
     await this.db.execute(
       `DELETE FROM task_instances
         WHERE template_id = ?
+          AND identity_id = ?
           AND instance_date >= ?
           AND status IN ('Pending', 'InProgress')`,
-      [templateId, new Date(fromDate).toISOString()],
+      [templateId, identityId, new Date(fromDate).toISOString()],
     );
 
     return Number(before?.count ?? 0);

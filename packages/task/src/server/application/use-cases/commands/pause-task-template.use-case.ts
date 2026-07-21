@@ -58,6 +58,7 @@ export class PauseTaskTemplateUseCase {
 
         const instancesDeleted = await instanceRepository.deleteIncompleteInstancesFrom(
           id,
+          identityId,
           effectiveFrom,
         );
 
