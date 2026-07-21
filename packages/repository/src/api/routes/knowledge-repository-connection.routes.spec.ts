@@ -35,7 +35,7 @@ function createApiStub(): RepositoryApplicationPort {
     completeKnowledgeRepositoryInstallation: vi.fn(),
     listKnowledgeRepositoryConnections: vi.fn(async () => ok({ connections: [] })),
     connectKnowledgeRepository: vi.fn(),
-    disconnectKnowledgeRepository: vi.fn(async () => ok({ disconnected: true })),
+    disconnectKnowledgeRepository: vi.fn(async () => ok(null)),
     previewKnowledgeRepositoryReconciliation: vi.fn(async () =>
       ok({
         connectionId: 'connection-1',

@@ -154,12 +154,9 @@ export const DisconnectKnowledgeRepositoryConnectionSchema =
 export type DisconnectKnowledgeRepositoryConnectionReq = z.infer<
   typeof DisconnectKnowledgeRepositoryConnectionSchema
 >;
-export const DisconnectKnowledgeRepositoryConnectionResponseSchema = z.object({
-  disconnected: z.literal(true),
-});
-export type DisconnectKnowledgeRepositoryConnectionRes = z.infer<
-  typeof DisconnectKnowledgeRepositoryConnectionResponseSchema
->;
+/** Void disconnect success body; transport serializes as `data: null`. */
+export const DisconnectKnowledgeRepositoryConnectionResponseSchema = z.null();
+export type DisconnectKnowledgeRepositoryConnectionRes = null;
 
 /**
  * Short-lived Git credential returned only to the Desktop runtime.

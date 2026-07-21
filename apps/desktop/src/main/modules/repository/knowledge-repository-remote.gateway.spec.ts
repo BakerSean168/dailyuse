@@ -72,7 +72,7 @@ describe('KnowledgeRepositoryRemoteGateway', () => {
   it('forwards the explicit cloud-data retention choice when disconnecting', async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
-      .mockResolvedValue(response({ ok: true, data: { disconnected: true } }));
+      .mockResolvedValue(response({ ok: true, data: null }));
     const gateway = new KnowledgeRepositoryRemoteGateway({
       getAccessToken: () => 'dailyuse-access-token',
       fetchImpl,

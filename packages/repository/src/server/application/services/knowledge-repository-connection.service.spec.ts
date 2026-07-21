@@ -215,7 +215,7 @@ describe('KnowledgeRepositoryConnectionService', () => {
 
     await expect(service.disconnect('identity-1', connected.data.id)).resolves.toEqual({
       ok: true,
-      data: { disconnected: true },
+      data: null,
     });
     expect(cloudDataPurger.purge).not.toHaveBeenCalled();
     expect(repository.rows.get(connected.data.id)).toMatchObject({
@@ -236,7 +236,7 @@ describe('KnowledgeRepositoryConnectionService', () => {
 
     await expect(service.disconnect('identity-1', connected.data.id, true)).resolves.toEqual({
       ok: true,
-      data: { disconnected: true },
+      data: null,
     });
     expect(cloudDataPurger.purge).toHaveBeenCalledWith('identity-1', connected.data.id);
   });

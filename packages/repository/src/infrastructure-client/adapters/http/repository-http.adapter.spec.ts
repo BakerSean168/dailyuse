@@ -9,7 +9,7 @@ function createResultHttpClientStub() {
     post: vi.fn(async () => ok({})),
     put: vi.fn(),
     patch: vi.fn(),
-    delete: vi.fn(async () => ok({ disconnected: true as const })),
+    delete: vi.fn(async () => ok(null)),
   } as unknown as IResultHttpClient;
 }
 

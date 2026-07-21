@@ -1361,6 +1361,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：authentication focused + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十五轮）：折叠 knowledge repository disconnect 成功双轨——
+> `DisconnectKnowledgeRepositoryConnectionRes` / OpenAPI 改为 `z.null()`；service/
+> controller/electron 成功路径 `ok(null)`（去掉 `{ disconnected: true }` 与 Result.ok
+> 重复表达）。UI 仅检查 `result.ok`，无 body 依赖。补 disconnect void-success envelope
+> surface。§13.2 仍为部分/外部阻塞。验证：repository focused + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

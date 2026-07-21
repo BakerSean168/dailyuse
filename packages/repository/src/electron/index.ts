@@ -150,8 +150,10 @@ export function createRepositoryElectronModule(
           const result = await withKnowledgeConnection((port) =>
             port.disconnectKnowledgeRepository(request.connectionId, request.purgeCloudData),
           );
-          if (result.ok) await refreshAutomaticSynchronization(identityId);
-          return result;
+          if (!result.ok) return result;
+          await refreshAutomaticSynchronization(identityId);
+          // Serialize as data:null (no { disconnected: true } dual-track).
+          return ok(null);
         }),
       );
       ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW, (_, request) =>

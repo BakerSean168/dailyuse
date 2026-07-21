@@ -1,5 +1,5 @@
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
   CompleteKnowledgeRepositoryInstallationSchema,
@@ -143,7 +143,7 @@ export class KnowledgeRepositoryConnectionController {
     return this.useCases.connectKnowledgeRepository(ctx, parsed.data);
   }
 
-  async disconnect(ctx: Context, input: unknown) {
+  async disconnect(ctx: Context, input: unknown): Promise<Result<null>> {
     const parsed = DisconnectKnowledgeRepositoryConnectionSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -152,11 +152,14 @@ export class KnowledgeRepositoryConnectionController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.disconnectKnowledgeRepository(
+    const result = await this.useCases.disconnectKnowledgeRepository(
       ctx,
       parsed.data.connectionId,
       parsed.data.purgeCloudData,
     );
+    if (!result.ok) return result as Result<null>;
+    // Serialize as data:null (no { disconnected: true } dual-track body).
+    return ok(null);
   }
 
   async issueDesktopToken(ctx: Context, input: unknown) {

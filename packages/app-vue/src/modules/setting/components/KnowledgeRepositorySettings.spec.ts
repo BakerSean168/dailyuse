@@ -317,7 +317,7 @@ describe('KnowledgeRepositorySettings', () => {
       .fn()
       .mockResolvedValueOnce(ok({ connections: [connection] }))
       .mockResolvedValue(ok({ connections: [] }));
-    const disconnectKnowledgeRepository = vi.fn(async () => ok({ disconnected: true as const }));
+    const disconnectKnowledgeRepository = vi.fn(async () => ok(null));
     const wrapper = mountSettings(
       createService({ listKnowledgeRepositoryConnections, disconnectKnowledgeRepository }),
     );

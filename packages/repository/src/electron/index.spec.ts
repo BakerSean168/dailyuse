@@ -59,7 +59,7 @@ describe('RepositoryElectronModule automatic synchronization lifecycle', () => {
       completeKnowledgeRepositoryInstallation: vi.fn(),
       listKnowledgeRepositoryConnections: vi.fn(),
       connectKnowledgeRepository: vi.fn(async () => ok({ id: 'connection-1' } as never)),
-      disconnectKnowledgeRepository: vi.fn(async () => ok({ disconnected: true as const })),
+      disconnectKnowledgeRepository: vi.fn(async () => ok(null)),
       issueDesktopKnowledgeRepositoryToken: vi.fn(),
       previewKnowledgeRepositoryReconciliation: vi.fn(),
     };

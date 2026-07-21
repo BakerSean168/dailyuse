@@ -223,7 +223,7 @@ export class KnowledgeRepositoryConnectionService {
     identityId: string,
     connectionId: string,
     purgeCloudData = false,
-  ): Promise<Result<{ disconnected: true }>> {
+  ): Promise<Result<null>> {
     const connection = await this.options.connectionRepository.findById(connectionId);
     if (!connection || connection.identityId !== identityId || connection.deletedAt !== null) {
       return fail({ code: 'NOT_FOUND', message: 'Knowledge repository connection was not found' });
@@ -245,7 +245,7 @@ export class KnowledgeRepositoryConnectionService {
     } else {
       await this.options.connectionRepository.updateStatus(connectionId, 'Revoked', null);
     }
-    return ok({ disconnected: true });
+    return ok(null);
   }
 
   async issueInstallationToken(
