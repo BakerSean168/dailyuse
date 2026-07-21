@@ -722,6 +722,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > portable schema 与 data-portability 边界未动。§13.2 未完成项不变。状态保持 **实施中**；
 > PR readiness 仍为 no。
 
+> 续进展 2026-07-21（阶段 6 残留十三轮）：重写过时的 `docs/product/module-index/repository-files.md`，
+> 对齐 knowledge + Local Vault 真值（删除已不存在的 CRUD 视图/route/use-case 路径）；更新
+> `feature-map` 资源库状态与 `repository.md` 日期。验证：`daily-use:governance-check`。
+> 代码边界无变更；§13.2 未完成项不变。状态保持 **实施中**；PR readiness 仍为 no。
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景

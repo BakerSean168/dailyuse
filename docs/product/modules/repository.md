@@ -5,7 +5,7 @@ tags:
   - repository
 description: 资源库模块当前实现、本地 Vault、可选 GitHub 同步与跨端边界
 created: 2026-06-02T00:00:00
-updated: 2026-07-20T00:00:00
+updated: 2026-07-21T00:00:00
 ---
 
 # 资源库模块说明
