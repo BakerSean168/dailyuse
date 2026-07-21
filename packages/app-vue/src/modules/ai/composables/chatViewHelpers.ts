@@ -5,6 +5,7 @@
  */
 
 import type { WorkflowMode, GoalWorkflowStage } from './types';
+import { unwrap } from '@dailyuse/contracts/result';
 
 /** Parameters for workflowStatusText computation. */
 export interface WorkflowStatusParams {
@@ -128,7 +129,7 @@ export async function maybeRenameConversation(
   if (!nextName || nextName === currentTitle) return;
   if (!conversationId) return;
   try {
-    await service.updateConversation(conversationId, { name: nextName });
+    unwrap(await service.updateConversation(conversationId, { name: nextName }));
     await reload();
   } catch (error) {
     console.warn('[AIChatView] failed to update conversation title', error);

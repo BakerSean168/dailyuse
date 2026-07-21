@@ -58,7 +58,7 @@ export function useAIWorkspace() {
 
   async function loadConversation(id: string) {
     try {
-      const conversation = await service.getConversation(id);
+      const conversation = unwrap(await service.getConversation(id));
       setActiveConversation(conversation);
     } catch (loadError) {
       setError(getErrorMessage(loadError));
@@ -82,12 +82,14 @@ export function useAIWorkspace() {
     setError(null);
 
     try {
-      const [list, providersResult, nextCapabilities] = await Promise.all([
+      const [listResult, providersResult, capabilitiesResult] = await Promise.all([
         service.listConversations({ page: 1, pageSize: 20 }),
         service.listProviders(),
         service.getCapabilities(),
       ]);
+      const list = unwrap(listResult);
       const nextProviders = unwrap(providersResult);
+      const nextCapabilities = unwrap(capabilitiesResult);
 
       setConversations(list.data);
       setProviders(nextProviders);
@@ -97,7 +99,7 @@ export function useAIWorkspace() {
       const targetId =
         preferredConversationId ?? activeConversation?.id ?? list.data[0]?.id ?? null;
       if (targetId) {
-        const conversation = await service.getConversation(String(targetId));
+        const conversation = unwrap(await service.getConversation(String(targetId)));
         setActiveConversation(conversation);
       } else {
         setActiveConversation(null);
@@ -126,7 +128,7 @@ export function useAIWorkspace() {
     setError(null);
 
     try {
-      const conversation = await service.createConversation({ name });
+      const conversation = unwrap(await service.createConversation({ name }));
       await loadWorkspace(String(conversation.id));
       return conversation;
     } catch (createError) {
@@ -177,9 +179,11 @@ export function useAIWorkspace() {
     try {
       const conversation =
         activeConversation ??
-        (await service.createConversation({
-          name: content.slice(0, 40) || 'New conversation',
-        }));
+        unwrap(
+          await service.createConversation({
+            name: content.slice(0, 40) || 'New conversation',
+          }),
+        );
 
       const request: SendMessageReq = {
         conversationId: conversation.id as SendMessageReq['conversationId'],

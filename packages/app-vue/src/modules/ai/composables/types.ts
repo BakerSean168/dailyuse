@@ -9,6 +9,7 @@ import type {
   AgentExecutedAction,
   AgentRun,
   AgentRunResult,
+  ConversationListRes,
   GoalAutomationReminderPreview,
   GoalAutomationTaskTemplatePreview,
   GoalClarificationDTO,
@@ -60,10 +61,9 @@ export type ChatItem = {
   errorMessage?: string;
 };
 
-type ConversationListResponse = Awaited<ReturnType<IAIService['listConversations']>>;
 type MessageListResponse = Awaited<ReturnType<IAIService['listMessages']>>;
 
-export type ConversationSummary = ConversationListResponse['data'][number];
+export type ConversationSummary = ConversationListRes['data'][number];
 
 export type ProviderListItem = {
   id: string;

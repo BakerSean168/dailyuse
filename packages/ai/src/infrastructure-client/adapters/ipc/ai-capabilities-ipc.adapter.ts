@@ -1,13 +1,16 @@
 import { AIChannels } from '@dailyuse/contracts/electron';
 import type { AICapabilities } from '@dailyuse/contracts/ai';
+import type { Result } from '@dailyuse/contracts/result';
 import type { IAICapabilitiesApiClient, IResultIpcClient } from '../types';
-import { unwrapResultOrThrow } from '../result-client-error';
 
+/**
+ * IPC adapter for AI capabilities.
+ * Returns Result envelopes — never throws (residual 97).
+ */
 export class AICapabilitiesIpcAdapter implements IAICapabilitiesApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
-  async getCapabilities(): Promise<AICapabilities> {
-    const result = await this.ipcClient.invoke<AICapabilities>(AIChannels.CAPABILITIES_GET);
-    return unwrapResultOrThrow(result);
+  async getCapabilities(): Promise<Result<AICapabilities>> {
+    return this.ipcClient.invoke<AICapabilities>(AIChannels.CAPABILITIES_GET);
   }
 }

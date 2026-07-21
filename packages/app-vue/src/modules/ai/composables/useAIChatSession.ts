@@ -9,6 +9,7 @@ import type {
   ConversationSummary,
   StreamDoneResult,
 } from './types';
+import { unwrap } from '@dailyuse/contracts/result';
 import { getAIErrorMessage } from './error';
 
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
@@ -107,7 +108,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   ) {
     conversationListLoading.value = true;
     try {
-      const result = await loadService.listConversations({ page: 1, pageSize: 24 });
+      const result = unwrap(await loadService.listConversations({ page: 1, pageSize: 24 }));
       conversationList.value = result.data ?? [];
 
       if (listOptions?.preserveSelection !== false && chatConversationId.value) {
@@ -156,7 +157,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     onClearModel: (id: string) => void,
   ) {
     try {
-      await loadService.deleteConversation(id as DeleteConversationId);
+      unwrap(await loadService.deleteConversation(id as DeleteConversationId));
       onClearWorkflow(id);
       onClearModel(id);
       if (chatConversationId.value === id) {
@@ -177,9 +178,11 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     conversationName: string,
   ) {
     if (chatConversationId.value) return chatConversationId.value;
-    const conversation = (await loadService.createConversation({
-      name: conversationName,
-    }));
+    const conversation = unwrap(
+      await loadService.createConversation({
+        name: conversationName,
+      }),
+    );
     chatConversationId.value = String(conversation.id);
     updateLastActiveConversation(String(conversation.id));
     options.onConversationCreated?.(String(conversation.id));

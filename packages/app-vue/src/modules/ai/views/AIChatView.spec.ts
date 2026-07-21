@@ -2,6 +2,7 @@ import { defineComponent, h, ref } from 'vue';
 import { flushPromises, shallowMount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ok } from '@dailyuse/contracts/result';
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
@@ -1278,9 +1279,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service, loadProviders } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     });
@@ -1324,9 +1325,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     });
@@ -1351,7 +1352,7 @@ describe('AIChatView', () => {
       updatedAt: 20,
     };
     service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({ data: [] });
+    service.listConversations.mockResolvedValue(ok({ data: [] }));
     service.listMessages.mockResolvedValue({ data: [] });
 
     const wrapper = mountView();
@@ -1414,7 +1415,7 @@ describe('AIChatView', () => {
         source: 'projection',
       },
     ];
-    service.listConversations.mockResolvedValue({ data: [] });
+    service.listConversations.mockResolvedValue(ok({ data: [] }));
     service.listMessages.mockResolvedValue({ data: [] });
 
     const wrapper = mountView();
@@ -1459,7 +1460,7 @@ describe('AIChatView', () => {
 
   it('opens selected recent goals and knowledge notes from the sidebar', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({ data: [] });
+    service.listConversations.mockResolvedValue(ok({ data: [] }));
     service.listMessages.mockResolvedValue({ data: [] });
 
     const wrapper = mountView();
@@ -1479,7 +1480,7 @@ describe('AIChatView', () => {
 
   it('opens the mobile sidebar drawer and closes it after a sidebar selection', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({ data: [] });
+    service.listConversations.mockResolvedValue(ok({ data: [] }));
     service.listMessages.mockResolvedValue({ data: [] });
 
     const wrapper = mountView();
@@ -1539,9 +1540,9 @@ describe('AIChatView', () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.listAgentRuns.mockRejectedValueOnce(new Error('run history unavailable'));
     service.getAgentRun.mockRejectedValueOnce(new Error('runtime snapshot unavailable'));
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-4', name: 'Runtime-only Knowledge Q&A session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({ data: [] });
 
     const wrapper = mountView();
@@ -1561,12 +1562,12 @@ describe('AIChatView', () => {
       updatedAt: 20,
     };
     service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [
         { id: 'conv-1', name: 'First session' },
         { id: 'conv-2', name: 'Agent session' },
       ],
-    });
+    }));
     service.listMessages.mockResolvedValue({ data: [] });
 
     const wrapper = mountView();
@@ -1591,9 +1592,9 @@ describe('AIChatView', () => {
       updatedAt: 30,
     };
     service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-3', name: 'Runtime-only Agent session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({ data: [] });
     service.getAgentRun.mockResolvedValueOnce(
       createAgentRunResult({
@@ -1647,9 +1648,9 @@ describe('AIChatView', () => {
       updatedAt: 40,
     };
     service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-4', name: 'Runtime-only Knowledge Q&A session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({ data: [] });
     service.getAgentRun.mockResolvedValueOnce(createKnowledgeQaAgentRunResult());
 
@@ -1710,9 +1711,9 @@ describe('AIChatView', () => {
     runWithoutAnswerArtifact.state.artifacts = [];
     runWithoutAnswerArtifact.state.citations = [];
     service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-4', name: 'Runtime-only Knowledge Q&A session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({ data: [] });
     service.getAgentRun.mockResolvedValueOnce(runWithoutAnswerArtifact);
 
@@ -1760,9 +1761,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     });
@@ -1806,9 +1807,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     });
@@ -2036,9 +2037,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Get fit' }],
     });
@@ -2131,9 +2132,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     });
@@ -2220,9 +2221,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     });
@@ -2353,9 +2354,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     });
@@ -2463,9 +2464,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
     });
@@ -2510,9 +2511,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [
         { id: 'm-1', role: 'user', content: 'What is older context?' },
@@ -2594,9 +2595,9 @@ describe('AIChatView', () => {
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.getAgentRun.mockRejectedValueOnce(new Error('runtime snapshot unavailable'));
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'What is the latest grounding rule?' }],
     });
@@ -2670,9 +2671,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'What does the repo say about unknown topic?' }],
     });
@@ -2752,9 +2753,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'What did we already ask?' }],
     });
@@ -2798,9 +2799,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'How should knowledge answers be grounded?' }],
     });
@@ -2902,9 +2903,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge note session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
     });
@@ -2996,9 +2997,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge note session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
     });
@@ -3023,9 +3024,9 @@ describe('AIChatView', () => {
       updatedAt: 70,
     };
     service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Runtime-only Knowledge note session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({ data: [] });
     service.getAgentRun.mockResolvedValueOnce(createSavedKnowledgeNoteAgentRunResult());
 
@@ -3076,9 +3077,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge note session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
     });
@@ -3138,9 +3139,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge note session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
     });
@@ -3197,9 +3198,9 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
+    }));
     service.listMessages.mockResolvedValue({
       data: [{ id: 'm-1', role: 'user', content: 'How should knowledge answers be grounded?' }],
     });

@@ -46,11 +46,17 @@ import type {
 import type { Result } from '@dailyuse/contracts/result';
 
 export interface IAIConversationApiClient {
-  createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO>;
-  updateConversation(id: string, request: UpdateConversationReq): Promise<AIConversationClientDTO>;
-  getConversations(params?: { page?: number; pageSize?: number }): Promise<ConversationListRes>;
-  getConversationById(id: string): Promise<AIConversationClientDTO>;
-  deleteConversation(id: string): Promise<void>;
+  createConversation(request: CreateConversationReq): Promise<Result<AIConversationClientDTO>>;
+  updateConversation(
+    id: string,
+    request: UpdateConversationReq,
+  ): Promise<Result<AIConversationClientDTO>>;
+  getConversations(params?: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<Result<ConversationListRes>>;
+  getConversationById(id: string): Promise<Result<AIConversationClientDTO>>;
+  deleteConversation(id: string): Promise<Result<void>>;
 }
 
 export interface IAIMessageApiClient {
@@ -98,7 +104,7 @@ export interface IAIGoalApiClient {
 }
 
 export interface IAICapabilitiesApiClient {
-  getCapabilities(): Promise<AICapabilities>;
+  getCapabilities(): Promise<Result<AICapabilities>>;
 }
 
 export interface AIEvaluationReportApiClient {

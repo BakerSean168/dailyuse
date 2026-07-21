@@ -1,12 +1,15 @@
 import type { AICapabilities } from '@dailyuse/contracts/ai';
+import type { Result } from '@dailyuse/contracts/result';
 import type { IAICapabilitiesApiClient, IResultHttpClient } from '../types';
-import { unwrapResultOrThrow } from '../result-client-error';
 
+/**
+ * HTTP adapter for AI capabilities.
+ * Returns Result envelopes — never throws (residual 97).
+ */
 export class AICapabilitiesHttpAdapter implements IAICapabilitiesApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async getCapabilities(): Promise<AICapabilities> {
-    const result = await this.httpClient.get<AICapabilities>('/ai/capabilities');
-    return unwrapResultOrThrow(result);
+  async getCapabilities(): Promise<Result<AICapabilities>> {
+    return this.httpClient.get<AICapabilities>('/ai/capabilities');
   }
 }

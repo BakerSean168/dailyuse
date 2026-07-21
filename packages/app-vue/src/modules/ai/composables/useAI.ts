@@ -14,8 +14,8 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 
 /**
  * AI provider/capabilities composable.
- * Provider-config methods consume Result ports (residual 96); other AI ports
- * still throw-unwrap at the adapter until migrated.
+ * Provider-config, capabilities, and conversation methods consume Result ports
+ * (residual 96/97); other AI ports still throw-unwrap until migrated.
  */
 export function useAI() {
   const service = useStrictInject(AI_SERVICE_KEY, 'AIService');
@@ -44,7 +44,7 @@ export function useAI() {
   async function loadCapabilities() {
     isLoadingCapabilities.value = true;
     try {
-      capabilities.value = await service.getCapabilities();
+      capabilities.value = unwrap(await service.getCapabilities());
       return capabilities.value;
     } finally {
       isLoadingCapabilities.value = false;

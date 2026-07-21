@@ -137,7 +137,7 @@ describe('useAI', () => {
     };
     const expandKnowledgeResult = createExpandKnowledgeResult();
     const { composable, service } = mountComposable({
-      getCapabilities: vi.fn().mockResolvedValue(capabilities),
+      getCapabilities: vi.fn().mockResolvedValue(ok(capabilities)),
       testProvider: vi.fn().mockResolvedValue(ok(providerTestResult)),
       expandKnowledge: vi.fn().mockResolvedValue(expandKnowledgeResult),
     });

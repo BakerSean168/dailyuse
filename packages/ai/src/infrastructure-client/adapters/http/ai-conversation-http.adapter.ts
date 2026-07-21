@@ -5,44 +5,42 @@ import type {
   CreateConversationReq,
   UpdateConversationReq,
 } from '@dailyuse/contracts/ai';
-import { unwrapResultOrThrow } from '../result-client-error';
+import type { Result } from '@dailyuse/contracts/result';
 
+/**
+ * HTTP adapter for AI conversations.
+ * Returns Result envelopes — never throws (residual 97).
+ */
 export class AIConversationHttpAdapter implements IAIConversationApiClient {
   private readonly baseUrl = '/ai/chat/conversations';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO> {
-    const result = await this.httpClient.post<AIConversationClientDTO>(this.baseUrl, request);
-    return unwrapResultOrThrow(result);
+  async createConversation(
+    request: CreateConversationReq,
+  ): Promise<Result<AIConversationClientDTO>> {
+    return this.httpClient.post<AIConversationClientDTO>(this.baseUrl, request);
   }
 
   async updateConversation(
     id: string,
     request: UpdateConversationReq,
-  ): Promise<AIConversationClientDTO> {
-    const result = await this.httpClient.patch<AIConversationClientDTO>(
-      `${this.baseUrl}/${id}`,
-      request,
-    );
-    return unwrapResultOrThrow(result);
+  ): Promise<Result<AIConversationClientDTO>> {
+    return this.httpClient.patch<AIConversationClientDTO>(`${this.baseUrl}/${id}`, request);
   }
 
   async getConversations(params?: {
     page?: number;
     pageSize?: number;
-  }): Promise<ConversationListRes> {
-    const result = await this.httpClient.get<ConversationListRes>(this.baseUrl, { params });
-    return unwrapResultOrThrow(result);
+  }): Promise<Result<ConversationListRes>> {
+    return this.httpClient.get<ConversationListRes>(this.baseUrl, { params });
   }
 
-  async getConversationById(id: string): Promise<AIConversationClientDTO> {
-    const result = await this.httpClient.get<AIConversationClientDTO>(`${this.baseUrl}/${id}`);
-    return unwrapResultOrThrow(result);
+  async getConversationById(id: string): Promise<Result<AIConversationClientDTO>> {
+    return this.httpClient.get<AIConversationClientDTO>(`${this.baseUrl}/${id}`);
   }
 
-  async deleteConversation(id: string): Promise<void> {
-    const result = await this.httpClient.delete<void>(`${this.baseUrl}/${id}`);
-    unwrapResultOrThrow(result);
+  async deleteConversation(id: string): Promise<Result<void>> {
+    return this.httpClient.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

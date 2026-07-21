@@ -36,7 +36,7 @@ import type {
 import type { Result } from '@dailyuse/contracts/result';
 
 export interface AIClientPort {
-  getCapabilities(): Promise<AICapabilities>;
+  getCapabilities(): Promise<Result<AICapabilities>>;
   getEvaluationOverview(request?: GetAIEvaluationOverviewReq): Promise<GetAIEvaluationOverviewRes>;
 
   createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
@@ -53,11 +53,17 @@ export interface AIClientPort {
 
   generateGoal(request: GenerateGoalsReq): Promise<GenerateGoalsRes>;
 
-  createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO>;
-  updateConversation(id: string, request: UpdateConversationReq): Promise<AIConversationClientDTO>;
-  listConversations(params?: { page?: number; pageSize?: number }): Promise<ConversationListRes>;
-  getConversation(id: string): Promise<AIConversationClientDTO>;
-  deleteConversation(id: string): Promise<void>;
+  createConversation(request: CreateConversationReq): Promise<Result<AIConversationClientDTO>>;
+  updateConversation(
+    id: string,
+    request: UpdateConversationReq,
+  ): Promise<Result<AIConversationClientDTO>>;
+  listConversations(params?: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<Result<ConversationListRes>>;
+  getConversation(id: string): Promise<Result<AIConversationClientDTO>>;
+  deleteConversation(id: string): Promise<Result<void>>;
 
   sendMessage(request: SendMessageReq): Promise<SendMessageRes>;
   streamMessage(

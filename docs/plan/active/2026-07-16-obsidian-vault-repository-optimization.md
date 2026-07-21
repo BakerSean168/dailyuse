@@ -1380,6 +1380,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+> 续进展 2026-07-21（阶段 6 残留九十七轮）：AI capabilities + conversation 客户端 Result
+> 端口迁移——`IAICapabilitiesApiClient` / `IAIConversationApiClient` 与 `AIClientPort` 对应
+> 方法改为 `Promise<Result<T>>`；HTTP/IPC adapters 去掉 `unwrapResultOrThrow`；Vue/React
+> (`useAI`/`useAIChatSession`/`chatViewHelpers`/`useAIWorkspace`) 在 composable 边界
+> `unwrap`。补 `ai-capabilities-conversation-result-port.surface`。message/agent 等 AI
+> ports 仍 throw-unwrap。§13.2 仍为部分/外部阻塞。
+> 验证：ai typecheck + focused surfaces + useAI/AIChatView specs + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 ## 13. 测试与完成定义
 
 ### 13.1 必测场景
