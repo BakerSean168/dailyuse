@@ -418,6 +418,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'Residual 591',
         // Residual 593: session restore dual-mirror exclusive task before focus.
         'Residual 593',
+        // Residual 595: live exclusive promote dual-mirrors before builders.
+        'Residual 595',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

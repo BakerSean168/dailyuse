@@ -1228,6 +1228,27 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).not.toContain('executeApproved');
   });
 
+  it('live exclusive promote dual-mirrors before builders (residual 595)', () => {
+    expect(helper).toContain('Residual 595');
+    const liveIdx = helper.indexOf('export function resolveLiveHostWorkbenchAgentRuns');
+    expect(liveIdx).toBeGreaterThan(-1);
+    const liveSlice = helper.slice(liveIdx, liveIdx + 1800);
+    expect(liveSlice).toContain('nextDualMirroredTaskAgentRun');
+    expect(liveSlice).toContain('Residual 595');
+    expect(liveSlice).toContain('dropStaleWhenGoalLeaves: false');
+    // dual-mirror before isPrimaryTaskHostAgentRun exclusive promote
+    const dualIdx = liveSlice.indexOf('nextDualMirroredTaskAgentRun');
+    const primaryIdx = liveSlice.indexOf('isPrimaryTaskHostAgentRun(dualMirroredTask)');
+    expect(dualIdx).toBeGreaterThan(-1);
+    expect(primaryIdx).toBeGreaterThan(dualIdx);
+    // nextDualMirroredTaskAgentRun documents dropStale opt for builders vs watch.
+    const nextIdx = helper.indexOf('export function nextDualMirroredTaskAgentRun');
+    expect(nextIdx).toBeGreaterThan(-1);
+    const nextSlice = helper.slice(nextIdx, nextIdx + 1800);
+    expect(nextSlice).toContain('dropStaleWhenGoalLeaves');
+    expect(helper).not.toContain('executeApproved');
+  });
+
 
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');

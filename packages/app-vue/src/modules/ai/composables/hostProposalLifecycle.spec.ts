@@ -3398,5 +3398,40 @@ describe('Host exclusive dual-mirror primary-task goal session (residual 589)', 
       }),
     ).toBe(completed);
   });
+
+  it('live exclusive promote dual-mirrors stale task before builders (residual 595)', () => {
+    const completed = primaryTaskGoal('completed');
+    const waiting = primaryTaskGoal('waiting_approval');
+    // Stale exclusive dual-mirror waiting + settled goal → exclusive uses completed.
+    const live = resolveLiveHostWorkbenchAgentRuns({
+      goalAgentRun: completed,
+      taskAgentRun: waiting,
+    });
+    expect(live.taskAgentRun?.run.status).toBe('completed');
+    expect(live.taskAgentRun?.run.runId).toBe('pt-589');
+    expect(live.goalAgentRun).toBeNull();
+    // Pending proposal builders must not keep waiting_approval row.
+    expect(
+      buildPendingHostProposalItems({
+        goalAgentRun: completed,
+        taskAgentRun: waiting,
+      }),
+    ).toEqual([]);
+    // Receipt builders surface completed exclusive task lane.
+    const receipts = buildHostExecutionReceiptItems({
+      goalAgentRun: completed,
+      taskAgentRun: waiting,
+    });
+    expect(receipts.some((item) => item.kind === 'task.create' && item.runStatus === 'completed')).toBe(
+      true,
+    );
+    // Process-local task.create still wins exclusive lane (residual 591).
+    const local = processLocalTask();
+    const liveLocal = resolveLiveHostWorkbenchAgentRuns({
+      goalAgentRun: completed,
+      taskAgentRun: local,
+    });
+    expect(liveLocal.taskAgentRun).toBe(local);
+  });
 });
 

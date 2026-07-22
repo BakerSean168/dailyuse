@@ -1043,19 +1043,29 @@ export function shouldDualMirrorPrimaryTaskGoalSession(
 }
 
 /**
- * Residual 589/591: next exclusive taskAgentRun dual-mirror after goal session sync.
+ * Residual 589/591/595: next exclusive taskAgentRun dual-mirror after goal session sync.
  * Residual 591: process-local AgentType task.create owns exclusive lane first —
  * never overwrite with a dual-mirrored primary-task goal session when both exist.
  * - process-local task.create → preserve (even if goal is dual-mirrorable)
  * - primary-task-shaped goal session → mirror that snapshot when lane empty / dual-mirrored
- * - otherwise drop dual-mirror primary-task only when goal no longer owns it
+ * - otherwise optionally drop dual-mirror primary-task when goal no longer owns it
+ *
+ * Residual 595: `dropStaleWhenGoalLeaves` defaults true for goalAgentRun watch / restore
+ * (goal cleared → clear dual-mirror). Builders/exclusive promote pass false so task-only
+ * exclusive snapshots are not dropped when goal is omitted from the call.
  */
 export function nextDualMirroredTaskAgentRun(input: {
   goalAgentRun?: AgentRunResult | null;
   taskAgentRun?: AgentRunResult | null;
+  /**
+   * When true (default): drop dual-mirrored primary-task if goal is not dual-mirrorable.
+   * When false: only refresh/preserve (resolveLiveHostWorkbenchAgentRuns builders).
+   */
+  dropStaleWhenGoalLeaves?: boolean;
 }): AgentRunResult | null {
   const goal = input.goalAgentRun ?? null;
   const task = input.taskAgentRun ?? null;
+  const dropStale = input.dropStaleWhenGoalLeaves !== false;
   // Residual 591: process-local task.create exclusive lane is never dual-mirrored over.
   if (task?.run?.agentType === 'task.create') {
     return task;
@@ -1064,16 +1074,25 @@ export function nextDualMirroredTaskAgentRun(input: {
     return goal;
   }
   if (!task?.run) return null;
-  // Drop stale dual-mirrored primary-task when goal session no longer owns it.
-  if (isPrimaryTaskHostAgentRun(task) && !shouldDualMirrorPrimaryTaskGoalSession(goal)) {
+  // Residual 589/595: drop stale dual-mirror only when session sync opts in (default).
+  if (
+    dropStale &&
+    isPrimaryTaskHostAgentRun(task) &&
+    !shouldDualMirrorPrimaryTaskGoalSession(goal)
+  ) {
     return null;
   }
   return task;
 }
 
 /**
- * Residual 423: derive exclusive Host workbench AgentRun inputs for live AIChatView.
+ * Residual 423/595: derive exclusive Host workbench AgentRun inputs for live AIChatView.
  * Primary task-shaped goal session runs promote into taskAgentRun and leave goal null.
+ *
+ * Residual 595: dual-mirror primary-task goal into exclusive task lane first
+ * (process-local task.create still wins via nextDualMirroredTaskAgentRun). Builders,
+ * ownership, and live workbench then exclusive-promote from a non-stale snapshot so
+ * settled goal sessions cannot keep a waiting_approval dual-mirror proposal row.
  */
 export function resolveLiveHostWorkbenchAgentRuns(input: {
   goalAgentRun?: AgentRunResult | null;
@@ -1085,9 +1104,16 @@ export function resolveLiveHostWorkbenchAgentRuns(input: {
   noteAgentRun: AgentRunResult | null;
   taskAgentRun: AgentRunResult | null;
 } {
+  // Residual 595: dual-mirror before exclusive promote (idempotent when already mirrored).
+  // dropStaleWhenGoalLeaves=false: task-only builder inputs must keep exclusive primary-task.
+  const dualMirroredTask = nextDualMirroredTaskAgentRun({
+    goalAgentRun: input.goalAgentRun,
+    taskAgentRun: input.taskAgentRun,
+    dropStaleWhenGoalLeaves: false,
+  });
   const explicitTask =
-    input.taskAgentRun && isPrimaryTaskHostAgentRun(input.taskAgentRun)
-      ? input.taskAgentRun
+    dualMirroredTask && isPrimaryTaskHostAgentRun(dualMirroredTask)
+      ? dualMirroredTask
       : null;
   const goal = input.goalAgentRun ?? null;
   const note = input.noteAgentRun ?? null;
