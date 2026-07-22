@@ -132,7 +132,7 @@ const i18n = createI18n({
               searchExistingGoals: 'Search Existing Goals',
               searchKnowledge: 'Search Knowledge',
               fetchGoalStats: 'Fetch Goal Stats',
-              fetchResource: 'Fetch Resource',
+              fetchResource: 'Fetch Note',
               findRelatedNotes: 'Find Related Notes',
             },
           },
@@ -196,7 +196,7 @@ const i18n = createI18n({
             citations: 'Citations',
             grounded: 'Grounded in repository citations',
             insufficientEvidence: 'Current knowledge base evidence is insufficient',
-            matchedResources: '{count} resource(s) matched in {ms} ms.',
+            matchedResources: '{count} note(s) matched in {ms} ms.',
             queryCompleted: 'Knowledge answer ready',
             queryFailed: 'Failed to query knowledge',
             relatedNotes: 'Related Notes',
@@ -541,7 +541,7 @@ const AIGoalWorkflowPanelStub = defineComponent({
             h('p', answer.answer ?? ''),
             h(
               'p',
-              `${answer.matchedResourceCount} resource(s) matched in ${answer.processingTimeMs} ms.`,
+              `${answer.matchedResourceCount} note(s) matched in ${answer.processingTimeMs} ms.`,
             ),
             ...(relatedNotes ?? []).map((note: Record<string, unknown>) =>
               h('div', [
@@ -2681,7 +2681,7 @@ describe('AIChatView', () => {
       createKnowledgeQaAgentRunResult({
         answer: createKnowledgeAnswer({
           question: 'What does the repo say about unknown topic?',
-          answer: 'No relevant repository resources were found for this question.',
+          answer: 'No relevant knowledge notes were found for this question.',
           citations: [],
         }),
         conversationId: 'conv-1',
@@ -2712,7 +2712,7 @@ describe('AIChatView', () => {
     expect(service.queryKnowledge).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('Current knowledge base evidence is insufficient');
     expect(wrapper.text()).toContain(
-      'No relevant repository resources were found for this question.',
+      'No relevant knowledge notes were found for this question.',
     );
     expect(wrapper.find('[data-testid="knowledge-citation-open"]').exists()).toBe(false);
     const draftNoteButton = wrapper.find('[data-testid="knowledge-qa-draft-note"]');

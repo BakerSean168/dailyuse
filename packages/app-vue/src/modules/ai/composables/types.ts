@@ -48,7 +48,7 @@ export interface UseAIKnowledgeQaWorkflowOptions {
   chatTimeline: Ref<ChatItem[]>;
   hasWorkflowUserMessages: Ref<boolean>;
   scrollMessagesToBottom: () => void;
-  requestOpenResource: (id: string) => Promise<unknown>;
+  requestOpenKnowledgeNote: (id: string) => Promise<unknown>;
 }
 
 export type WorkflowMode = 'chat' | 'goal-create' | 'knowledge-qa' | 'knowledge-generate';

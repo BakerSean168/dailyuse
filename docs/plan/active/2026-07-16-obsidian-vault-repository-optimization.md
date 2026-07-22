@@ -2184,6 +2184,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > enableTemplate。§13.2 未打勾项仍为部分/外部阻塞。验证：legacy-note-surface-docs surface +
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百零六轮）：退役 AI 知识面 Resource 双轨术语——用户可见文案与
+> 客户端 helper 统一为 knowledge note / 知识笔记（`requestOpenKnowledgeNote`、
+> `loadRecentKnowledgeNotes`、Fetch Note/读取笔记、matched note(s)/篇笔记、indexed knowledge notes）；
+> Agent 工具 id `fetch_resource` 协议保持不变（仅展示 label）；菜单 locale 删除无消费者的
+> openInNewTab/fileInfo/createSubfolder。补 `ai-knowledge-note-terminology.surface.spec.ts`。
+> §13.2 未打勾项仍为部分/外部阻塞。验证：terminology/deeplink/legacy-note surfaces +
+> AIGoalWorkflowPanel/AIChatView focused specs + governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
 
 
 
@@ -2449,6 +2458,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百零三轮：retire dual-track setting enum/definition value objects。
   残留二百零四轮：§13.2 core evidence suite re-run (157 tests, residuals 201–203 locks, no checkbox changes)。
   残留二百零五轮：align module-index + drop bookmark menu dual-track (no hard-fail stub claim)。
+  残留二百零六轮：retire AI Resource dual-track knowledge terminology (note wording + surface lock)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

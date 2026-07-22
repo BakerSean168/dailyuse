@@ -47,11 +47,11 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     await router.push({ path: '/repository', query: { note: noteId } });
   }
 
-  async function requestOpenResource(resourceId: string): Promise<void> {
+  async function requestOpenKnowledgeNote(resourceId: string): Promise<void> {
     await openKnowledgeNoteInRepository(resourceId);
   }
 
-  async function fetchResources(): Promise<void> {
+  async function loadRecentKnowledgeNotes(): Promise<void> {
     await recentKnowledgeNotes.load(20);
   }
 
@@ -152,9 +152,9 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     hasWorkflowMessages: chatSession.hasWorkflowMessages,
     scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
     maybeRenameCurrentConversation,
-    refreshRecentNotes: fetchResources,
+    refreshRecentNotes: loadRecentKnowledgeNotes,
     recentNotes: recentKnowledgeNotes.notes,
-    openKnowledgeNote: requestOpenResource,
+    openKnowledgeNote: requestOpenKnowledgeNote,
   });
 
   // 5. Knowledge Q&A workflow
@@ -166,7 +166,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     chatTimeline: chatSession.chatTimeline,
     hasWorkflowUserMessages: chatSession.hasWorkflowUserMessages,
     scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
-    requestOpenResource,
+    requestOpenKnowledgeNote,
   });
 
   // 6. Persistence
@@ -303,7 +303,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
 
   async function loadKnowledgeNoteList() {
     try {
-      await fetchResources();
+      await loadRecentKnowledgeNotes();
     } catch {
       // The AI workspace still works when the repository list is unavailable.
     }

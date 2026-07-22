@@ -148,7 +148,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
 
   async function openKnowledgeCitation(resourceId: string) {
     if (!resourceId) return;
-    await options.requestOpenResource(resourceId);
+    await options.requestOpenKnowledgeNote(resourceId);
     await router.push('/repository');
   }
 

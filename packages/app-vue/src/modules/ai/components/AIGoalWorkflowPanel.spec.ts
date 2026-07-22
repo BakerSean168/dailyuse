@@ -65,7 +65,7 @@ const i18n = createI18n({
             grounded: 'Grounded in repository citations',
             insufficientEvidence: 'Current knowledge base evidence is insufficient',
             question: 'Question',
-            matchedResources: '{count} resource(s) matched in {ms} ms.',
+            matchedResources: '{count} note(s) matched in {ms} ms.',
             citations: 'Citations',
             relatedNotes: 'Related Notes',
             openCitation: 'Open Source',
