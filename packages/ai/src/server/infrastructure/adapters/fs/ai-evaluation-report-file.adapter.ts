@@ -60,24 +60,28 @@ function buildHistoryEntry(
   };
 }
 
+/**
+ * On-disk eval reports are written by Python ai-service in snake_case only.
+ * Normalize to contracts camelCase without accepting camelCase dual-track files.
+ */
 function normalizeReportShape(raw: Record<string, unknown>): Record<string, unknown> {
   return {
-    generatedAt: raw.generatedAt ?? raw.generated_at,
+    generatedAt: raw.generated_at,
     mode: raw.mode,
     provider: raw.provider ?? undefined,
     model: raw.model ?? undefined,
-    baseUrl: raw.baseUrl ?? raw.base_url ?? undefined,
-    casesPath: raw.casesPath ?? raw.cases_path,
-    totalCases: raw.totalCases ?? raw.total_cases,
-    passedCases: raw.passedCases ?? raw.passed_cases,
-    failedCases: raw.failedCases ?? raw.failed_cases,
-    passRate: raw.passRate ?? raw.pass_rate,
-    byType: raw.byType ?? raw.by_type,
-    failedCaseIds: raw.failedCaseIds ?? raw.failed_case_ids,
-    gatePassed: raw.gatePassed ?? raw.gate_passed,
-    gateFailures: raw.gateFailures ?? raw.gate_failures,
-    baselinePath: raw.baselinePath ?? raw.baseline_path ?? undefined,
-    archivePath: raw.archivePath ?? raw.archive_path ?? undefined,
+    baseUrl: raw.base_url ?? undefined,
+    casesPath: raw.cases_path,
+    totalCases: raw.total_cases,
+    passedCases: raw.passed_cases,
+    failedCases: raw.failed_cases,
+    passRate: raw.pass_rate,
+    byType: raw.by_type,
+    failedCaseIds: raw.failed_case_ids,
+    gatePassed: raw.gate_passed,
+    gateFailures: raw.gate_failures,
+    baselinePath: raw.baseline_path ?? undefined,
+    archivePath: raw.archive_path ?? undefined,
     results: Array.isArray(raw.results)
       ? raw.results.map((result) => {
           if (!result || typeof result !== 'object') {
