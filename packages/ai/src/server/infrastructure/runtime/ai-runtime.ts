@@ -20,6 +20,7 @@ import {
 } from '@dailyuse/contracts/ai';
 import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
+import { CapabilityResolver } from '../capability-resolver';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import type {
@@ -189,15 +190,22 @@ export function buildAgentRuntimeCapabilityOffers(input: {
  */
 export function assertAgentStartCapabilityPlan(
   agentType: AgentStartRunRequest['agentType'],
-  offers: readonly CapabilityOffer[],
+  offersOrResolver: readonly CapabilityOffer[] | CapabilityResolver,
 ): Result<void> {
   if (agentType === 'knowledge.generate') {
-    const plan = resolveRunPlan({
-      engineId: 'knowledge.generate',
-      offers: [...offers],
-      requirements: knowledgeWriteRequirements('web'),
-      surface: 'web',
-    });
+    const requirements = knowledgeWriteRequirements('web');
+    // Residual 324: prefer production CapabilityResolver when provided.
+    let plan: import('@dailyuse/contracts/ai').ResolvedRunPlan;
+    if (offersOrResolver instanceof CapabilityResolver) {
+      plan = offersOrResolver.resolveFor('knowledge.generate', requirements, 'web');
+    } else {
+      plan = resolveRunPlan({
+        engineId: 'knowledge.generate',
+        offers: [...offersOrResolver],
+        requirements,
+        surface: 'web',
+      });
+    }
     if (plan.engineId === 'none') {
       return error(
         'SERVICE_UNAVAILABLE',
@@ -766,6 +774,8 @@ export function createAgentRuntimeService(
   knowledgeQueryUseCase?: QueryKnowledgeUseCase,
   knowledgeNoteUseCase?: ManageAIKnowledgeNoteUseCase | null,
   executionLogPort?: IAIExecutionLogPort,
+  /** Residual 324: shared Host CapabilityResolver for start-time fail-closed gating. */
+  capabilityResolver?: CapabilityResolver,
 ): AIAgentRuntimeService {
   const isAvailable = Boolean(port);
 
@@ -1076,11 +1086,16 @@ export function createAgentRuntimeService(
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      const capabilityOffers = buildAgentRuntimeCapabilityOffers({
-        knowledgeNoteUseCase,
-        automationToolExecutorPort,
-      });
-      const capabilityGate = assertAgentStartCapabilityPlan(req.agentType, capabilityOffers);
+      // Residual 324: use the module CapabilityResolver when wired; fall back to
+      // rebuilding offers only for legacy/test call sites without a resolver.
+      const capabilityGate = assertAgentStartCapabilityPlan(
+        req.agentType,
+        capabilityResolver ??
+          buildAgentRuntimeCapabilityOffers({
+            knowledgeNoteUseCase,
+            automationToolExecutorPort,
+          }),
+      );
       if (!capabilityGate.ok) {
         return capabilityGate;
       }

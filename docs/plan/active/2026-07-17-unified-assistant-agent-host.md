@@ -23,7 +23,7 @@ updated: 2026-07-22T00:00:00
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
 
-### 当前进展（2026-07-22，与 vault plan residual 305–322 对齐）
+### 当前进展（2026-07-22，与 vault plan residual 305–324 对齐）
 
 - **阶段 0 部分已落地（契约冻结）**：
   - `packages/contracts` agent-host：`ITurnEnginePort` / `ICapabilityResolverPort` /
@@ -38,10 +38,11 @@ updated: 2026-07-22T00:00:00
     `executeApproved` 仅 lifecycle receipt，不执行业务 mutation。
   - `module.proposalKernel` 在 direct/remote 均有值；`tool.proposal` providerId=`proposal-kernel`。
   - 统一助手 UI / Proposal 工作台产品面仍未落地。
-- **阶段 2 部分起步（residual 322）**：
+- **阶段 2 部分起步（residual 322/324）**：
   - 生产 `CapabilityResolver` 实现 `ICapabilityResolverPort`；fail-closed `resolveRunPlan`；
     不静默 expand `engine.*`。
   - `module.capabilityResolver` 由 runtime offers（+ remote workflow adapter offers）构造。
+  - residual 324：`createAgentRuntimeService`/`startRun` knowledge.generate 门禁使用共享 resolver。
 - **阶段 3 部分起步（residual 318）**：
   - 生产 `LangGraphWorkflowAdapter` 包装 `IAgentRuntimePort`；`module.workflowAdapter` 在 remote 有值。
   - workflow offers 永不含 `tool.mutation`/`tool.proposal`。

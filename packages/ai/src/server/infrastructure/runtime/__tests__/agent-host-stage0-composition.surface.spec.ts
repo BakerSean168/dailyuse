@@ -1,10 +1,11 @@
 /**
- * Residual 311/314/316/318/320/322: ADR-035 Agent Host composition.
+ * Residual 311/314/316/318/320/322/324: ADR-035 Agent Host composition.
  * Runtime capability offers never auto-emit engine.* labels.
  * Residual 314 wires the first production DirectTurnEngine on the module instance
  * and residual 316 routes open chat send/stream through that engine (no chatExecution bypass).
  * Residual 318 wires LangGraphWorkflowAdapter; residual 320 wires ProposalKernel;
- * residual 322 wires CapabilityResolver (fail-closed, no silent engine.*).
+ * residual 322 wires CapabilityResolver (fail-closed, no silent engine.*);
+ * residual 324 routes agent start gating through that shared resolver.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -115,6 +116,21 @@ describe('agent-host stage-0 composition surface', () => {
     expect(resolver).toContain('export class CapabilityResolver implements ICapabilityResolverPort');
     expect(resolver).toContain('resolveRunPlan');
     expect(resolver).toContain('Never silently expands');
+  });
+
+  it('agent start gate receives shared CapabilityResolver (residual 324)', () => {
+    const runtime = readFileSync(resolve(__dirname, '../ai-runtime.ts'), 'utf8');
+    const direct = readFileSync(resolve(__dirname, '../direct-provider-ai.runtime.ts'), 'utf8');
+    const remote = readFileSync(resolve(__dirname, '../remote-ai-service.runtime.ts'), 'utf8');
+    expect(runtime).toContain('capabilityResolver?: CapabilityResolver');
+    expect(runtime).toContain('capabilityResolver ??');
+    expect(runtime).toContain('offersOrResolver instanceof CapabilityResolver');
+    expect(runtime).toContain('resolveFor(');
+    // Both runtimes pass the same capabilityResolver instance into agent runtime service.
+    expect(direct).toContain('capabilityResolver,');
+    expect(remote).toContain('capabilityResolver,');
+    expect(remote).toMatch(/createAgentRuntimeService\([\s\S]*capabilityResolver/);
+    expect(direct).toMatch(/createAgentRuntimeService\([\s\S]*capabilityResolver/);
   });
 
 });

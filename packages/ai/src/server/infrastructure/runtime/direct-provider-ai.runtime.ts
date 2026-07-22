@@ -147,6 +147,11 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     advancedFeaturesReason: ADVANCED_AI_REASON,
   };
 
+  // Residual 322/324: fail-closed capability projection shared with agent start gate.
+  const capabilityResolver = new CapabilityResolver(
+    buildAgentRuntimeCapabilityOffers({ knowledgeNoteUseCase }),
+  );
+
   const services: AIModuleServices = {
     providerServices,
     conversationServices,
@@ -157,13 +162,18 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     knowledgeQueryServices: createKnowledgeQueryRuntimeServices(null, capabilities),
     analyticsQueryService: createAnalyticsRuntimeService(null, capabilities),
     evaluationReportService: createEvaluationRuntimeService(null),
-    agentRuntimeService: createAgentRuntimeService(undefined),
+    agentRuntimeService: createAgentRuntimeService(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      knowledgeNoteUseCase,
+      undefined,
+      capabilityResolver,
+    ),
   };
-
-  // Residual 322: fail-closed capability projection (no silent engine.*).
-  const capabilityResolver = new CapabilityResolver(
-    buildAgentRuntimeCapabilityOffers({ knowledgeNoteUseCase }),
-  );
 
   return {
     services,

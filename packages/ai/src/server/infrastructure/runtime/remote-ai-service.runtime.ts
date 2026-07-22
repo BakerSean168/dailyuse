@@ -275,6 +275,17 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
         : ADVANCED_AI_REASON,
   };
 
+  // Residual 322/324: fail-closed capability projection shared with agent start gate.
+  // Workflow adapter offers are explicit (not silent engine.*) when remote agent runtime is present.
+  const capabilityOffers = [
+    ...buildAgentRuntimeCapabilityOffers({
+      knowledgeNoteUseCase,
+      automationToolExecutorPort: dependencies.automationToolExecutorPort,
+    }),
+    ...(workflowAdapter ? workflowAdapter.toCapabilityOffers('any') : []),
+  ];
+  const capabilityResolver = new CapabilityResolver(capabilityOffers);
+
   // --- Assemble services ---
 
   const services: AIModuleServices = {
@@ -299,20 +310,8 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
       knowledgeQueryUseCases?.query,
       knowledgeNoteUseCase,
       dependencies.executionLogPort,
+      capabilityResolver,
     ),
   };
-
-  
-  // Residual 322: fail-closed capability projection.
-  // Workflow adapter offers are explicit (not silent engine.*) when remote agent runtime is present.
-  const capabilityOffers = [
-    ...buildAgentRuntimeCapabilityOffers({
-      knowledgeNoteUseCase,
-      automationToolExecutorPort: dependencies.automationToolExecutorPort,
-    }),
-    ...(workflowAdapter ? workflowAdapter.toCapabilityOffers('any') : []),
-  ];
-  const capabilityResolver = new CapabilityResolver(capabilityOffers);
-
   return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter, proposalKernel, capabilityResolver };
 }
