@@ -202,23 +202,26 @@ export class ReminderTemplateControlService {
   ): Promise<ITemplateEffectiveStatus[]> {
     const globalEnabledByIdentity = new Map<string, boolean>();
 
-    // 收集所有相关的分组 ID
-    const groupIds = new Set<string>();
+    // 按 identity 收集分组 ID，批量 owned 加载
+    const groupIdsByIdentity = new Map<string, Set<string>>();
     for (const template of templates) {
       const identityId = String(template.identityId);
       if (!globalEnabledByIdentity.has(identityId)) {
         globalEnabledByIdentity.set(identityId, await this.getGlobalReminderEnabled(identityId));
       }
       if (template.groupId) {
-        groupIds.add(template.groupId);
+        const set = groupIdsByIdentity.get(identityId) ?? new Set<string>();
+        set.add(template.groupId);
+        groupIdsByIdentity.set(identityId, set);
       }
     }
 
-    // 批量加载分组
-    const groups = await this.groupRepository.findByIds(Array.from(groupIds));
     const groupMap = new Map<string, ReminderGroup>();
-    for (const group of groups) {
-      groupMap.set(group.id, group);
+    for (const [identityId, groupIds] of groupIdsByIdentity) {
+      const groups = await this.groupRepository.findByIds(identityId, Array.from(groupIds));
+      for (const group of groups) {
+        groupMap.set(group.id, group);
+      }
     }
 
     // 计算每个模板的有效状态

@@ -61,10 +61,10 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
     return [];
   }
 
-  async findByIds(ids: string[]): Promise<any[]> {
+  async findByIds(identityId: string, ids: string[]): Promise<any[]> {
     return ids
       .map((id) => this.templates.get(id))
-      .filter((t) => !!t);
+      .filter((t) => !!t && String(t.identityId) === String(identityId));
   }
 
   async delete(id: string): Promise<void> {
@@ -326,7 +326,7 @@ describe('Reminder Use Cases', () => {
       expect(template1.ok).toBe(true);
       expect(template2.ok).toBe(true);
       if (template1.ok && template2.ok) {
-        const found = await templateRepository.findByIds([
+        const found = await templateRepository.findByIds(TEST_IDENTITY, [
           template1.data.id,
           template2.data.id,
         ]);

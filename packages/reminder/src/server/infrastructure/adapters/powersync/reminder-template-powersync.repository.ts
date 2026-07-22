@@ -320,14 +320,15 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
   }
 
   async findByIds(
+    identityId: string,
     ids: string[],
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]> {
     if (ids.length === 0) return [];
     const placeholders = ids.map(() => '?').join(', ');
     const rows = await this.db.getAll<PowerSyncReminderTemplateRow>(
-      `SELECT * FROM reminder_templates WHERE id IN (${placeholders})`,
-      ids,
+      `SELECT * FROM reminder_templates WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
     );
     const templates = await this.mapRows(
       rows,

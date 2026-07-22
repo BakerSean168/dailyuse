@@ -20,6 +20,10 @@ describe('reminder template ownership surface', () => {
     resolve(__dirname, '../reminder-template-prisma.repository.ts'),
     'utf8',
   );
+  const prismaGroup = readFileSync(
+    resolve(__dirname, '../reminder-group-prisma.repository.ts'),
+    'utf8',
+  );
   const getUseCase = readFileSync(
     resolve(
       __dirname,
@@ -86,6 +90,18 @@ describe('reminder template ownership surface', () => {
     expect(actionService).toContain('findByIdForIdentity(');
     expect(actionService).toContain('ctx.identityId');
     expect(module).toContain('findByIdForIdentity(ctx.identityId, templateId, options)');
+  });
+
+  it('findByIds requires identityId (residual 136)', () => {
+    expect(groupPort).toContain(
+      'findByIds(identityId: string, ids: string[]): Promise<ReminderGroup[]>;',
+    );
+    expect(templatePort).toContain('findByIds(');
+    expect(templatePort).toContain('identityId: string');
+    expect(prismaGroup).toContain('where: { id: { in: ids }, identityId }');
+    expect(prismaTemplate).toContain('where: { id: { in: ids }, identityId }');
+    expect(controlService).toContain('findByIds(identityId, Array.from(groupIds))');
+    expect(mapper).toContain('findByIds(identityId, Array.from(groupIds))');
   });
 
   it('domain/control/mapper loads are identity-scoped (residual 135)', () => {

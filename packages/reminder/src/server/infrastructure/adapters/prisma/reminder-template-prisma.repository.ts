@@ -217,13 +217,14 @@ export class ReminderTemplatePrismaRepository
   }
 
   async findByIds(
+    identityId: string,
     ids: string[],
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]> {
     if (ids.length === 0) return [];
 
     const data = await this.prisma.reminderTemplate.findMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
       include: options?.includeHistory
         ? { history: { orderBy: { triggeredAt: 'desc' }, take: options.historyLimit } }
         : undefined,

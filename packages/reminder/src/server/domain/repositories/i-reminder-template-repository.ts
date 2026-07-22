@@ -104,6 +104,7 @@ export interface IReminderTemplateRepository {
    * @returns 提醒模板列表
    */
   findByIds(
+    identityId: string,
     ids: string[],
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]>;

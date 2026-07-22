@@ -117,11 +117,11 @@ export class ReminderGroupPrismaRepository
     return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
   }
 
-  async findByIds(ids: string[]): Promise<ReminderGroup[]> {
+  async findByIds(identityId: string, ids: string[]): Promise<ReminderGroup[]> {
     if (ids.length === 0) return [];
 
     const data = await this.prisma.reminderGroup.findMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
       orderBy: { order: 'asc' },
     });
     return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));

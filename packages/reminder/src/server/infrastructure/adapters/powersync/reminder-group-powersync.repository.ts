@@ -144,12 +144,12 @@ export class ReminderGroupPowerSyncRepository
     return rows.map((row) => PowerSyncReminderGroupMapper.toDomain(row));
   }
 
-  async findByIds(ids: string[]): Promise<ReminderGroup[]> {
+  async findByIds(identityId: string, ids: string[]): Promise<ReminderGroup[]> {
     if (ids.length === 0) return [];
     const placeholders = ids.map(() => '?').join(', ');
     const rows = await this.db.getAll<PowerSyncReminderGroupRow>(
-      `SELECT * FROM reminder_groups WHERE id IN (${placeholders}) ORDER BY "order" ASC`,
-      ids,
+      `SELECT * FROM reminder_groups WHERE identity_id = ? AND id IN (${placeholders}) ORDER BY "order" ASC`,
+      [identityId, ...ids],
     );
     const map = new Map(rows.map((row) => [row.id, PowerSyncReminderGroupMapper.toDomain(row)]));
     return ids.map((id) => map.get(id)).filter((item): item is ReminderGroup => !!item);
