@@ -1,10 +1,11 @@
 /**
- * Residual 449: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
  *   start → confirm settle → get/list/events rehydrate
  *   identity fail-closed
+ *   runId identity binding (residual 451)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -207,4 +208,46 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(listed.data.some((run) => run.runId === 'run-journey-empty')).toBe(false);
     expect(port.startRun).not.toHaveBeenCalled();
   });
+
+  it('fails closed on foreign runId identity binding at start (residual 451)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+
+    const owned = await service.startRun(
+      {
+        runId: 'run-bound-451',
+        threadId: 'thread-bound-451',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Owned draft' },
+        identityId: 'ignored',
+      },
+      { identityId: 'owner-bound' } as any,
+    );
+    expect(owned.ok).toBe(true);
+
+    const takeover = await service.startRun(
+      {
+        runId: 'run-bound-451',
+        threadId: 'thread-intruder-451',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Intruder draft' },
+        identityId: 'ignored',
+      },
+      { identityId: 'intruder-bound' } as any,
+    );
+    expect(takeover.ok).toBe(false);
+    if (takeover.ok) return;
+    expect(takeover.error.code).toBe('FORBIDDEN');
+    expect(takeover.error.message).toMatch(/already bound to another identity/);
+
+    const stillOwned = await service.getRun('run-bound-451', { identityId: 'owner-bound' } as any);
+    expect(stillOwned.ok).toBe(true);
+    if (!stillOwned.ok) return;
+    expect(stillOwned.data.run.identityId).toBe('owner-bound');
+    expect(stillOwned.data.state.pendingActions[0]?.payload['title']).toBe('Owned draft');
+    expect(port.startRun).not.toHaveBeenCalled();
+  });
+
 });

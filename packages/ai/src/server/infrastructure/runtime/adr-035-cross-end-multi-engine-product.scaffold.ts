@@ -262,6 +262,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'host-task-create-product.journey',
         'start → edit → cancel',
         'start → confirm settle',
+        // Residual 451: process-local runId identity binding (fail-closed takeover).
+        'HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE',
+        'already bound to another identity',
       ],
       status: 'implemented_unit',
     },

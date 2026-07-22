@@ -367,6 +367,27 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+
+  it('task.create process-local runId identity binding (residual 451)', () => {
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(store).toContain('HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE');
+    expect(store).toContain('already bound to another identity');
+    expect(store).toContain('Residual 451');
+    expect(runtime).toContain('HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE');
+    expect(runtime).toContain("error('FORBIDDEN'");
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

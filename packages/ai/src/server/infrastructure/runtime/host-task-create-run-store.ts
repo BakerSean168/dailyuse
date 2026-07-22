@@ -1,5 +1,5 @@
 /**
- * Residual 435/447: process-local Host task.create run store foundation.
+ * Residual 435/447/451: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
@@ -8,6 +8,9 @@
  *
  * Residual 447: bound store size per process (evict oldest updatedAt first) so
  * long-lived API workers cannot grow unbounded from task.create Host traffic.
+ *
+ * Residual 451: runId is identity-bound — foreign identity cannot upsert/take over
+ * an existing process-local task.create entry (fail-closed Agent isolation).
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
@@ -22,6 +25,10 @@ const ACTIVE_STATUSES = new Set([
 
 /** Residual 447: process-local task.create run cap (not a durable retention policy). */
 export const HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES = 64;
+
+/** Residual 451: fail-closed message when runId is already bound to another identity. */
+export const HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE =
+  'Host task.create process-local runId is already bound to another identity.';
 
 export type HostTaskCreateRunStore = {
   upsert(result: AgentRunResult): void;
@@ -58,6 +65,11 @@ export function createHostTaskCreateRunStore(
     upsert(result: AgentRunResult) {
       if (result.run.agentType !== 'task.create') {
         return;
+      }
+      // Residual 451: process-local runId identity binding (no foreign takeover).
+      const existing = byRunId.get(result.run.runId);
+      if (existing && existing.run.identityId !== result.run.identityId) {
+        throw new Error(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE);
       }
       byRunId.set(result.run.runId, result);
       pruneOldest(byRunId, maxEntries);

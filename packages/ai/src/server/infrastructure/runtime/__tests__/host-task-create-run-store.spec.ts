@@ -115,3 +115,62 @@ describe('host-task-create-run-store bound (residual 447)', () => {
     expect(store.get('run-new', 'id-1')?.run.runId).toBe('run-new');
   });
 });
+
+describe('host-task-create-run-store identity binding (residual 451)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('fails closed when foreign identity tries to take over an existing runId', () => {
+    const store = createHostTaskCreateRunStore();
+    store.upsert(
+      buildHostTaskCreateStartResult({
+        request: request('run-bound', 'Owned'),
+        identityId: 'owner-1',
+        nowMs: 10,
+      }),
+    );
+
+    expect(() =>
+      store.upsert(
+        buildHostTaskCreateStartResult({
+          request: request('run-bound', 'Intruder'),
+          identityId: 'intruder',
+          nowMs: 20,
+        }),
+      ),
+    ).toThrow(/already bound to another identity/);
+
+    expect(store.get('run-bound', 'owner-1')?.run.identityId).toBe('owner-1');
+    expect(store.get('run-bound', 'intruder')).toBeNull();
+    expect(store.list('owner-1')).toHaveLength(1);
+    expect(store.list('intruder')).toHaveLength(0);
+  });
+
+  it('allows same-identity resume upsert and distinct runIds across identities', () => {
+    const store = createHostTaskCreateRunStore();
+    const owned = buildHostTaskCreateStartResult({
+      request: request('run-same', 'Owned'),
+      identityId: 'owner-1',
+      nowMs: 10,
+    });
+    store.upsert(owned);
+    const revised = {
+      ...owned,
+      run: { ...owned.run, updatedAt: 30 },
+    };
+    store.upsert(revised);
+    expect(store.get('run-same', 'owner-1')?.run.updatedAt).toBe(30);
+
+    store.upsert(
+      buildHostTaskCreateStartResult({
+        request: request('run-other', 'Other'),
+        identityId: 'owner-2',
+        nowMs: 40,
+      }),
+    );
+    expect(store.list('owner-1').map((run) => run.runId)).toEqual(['run-same']);
+    expect(store.list('owner-2').map((run) => run.runId)).toEqual(['run-other']);
+  });
+});
+

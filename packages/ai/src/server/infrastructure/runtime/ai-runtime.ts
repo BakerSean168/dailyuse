@@ -23,7 +23,10 @@ import type { Result } from '@dailyuse/contracts/result';
 import { CapabilityResolver } from '../capability-resolver';
 import { buildHostTaskCreateStartResult, resolveTaskCreateTitle } from './host-task-create-start';
 import { buildHostTaskCreateResumeResult } from './host-task-create-resume';
-import { getDefaultHostTaskCreateRunStore } from './host-task-create-run-store';
+import {
+  getDefaultHostTaskCreateRunStore,
+  HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE,
+} from './host-task-create-run-store';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import type {
@@ -1168,6 +1171,7 @@ export function createAgentRuntimeService(
             result: taskResult,
           });
           // Residual 435: register for process-local getRun/listRuns restore.
+          // Residual 451: upsert fails closed on foreign runId identity takeover.
           taskCreateRunStore.upsert(taskResult);
           return ownership;
         } catch (err) {
@@ -1179,6 +1183,12 @@ export function createAgentRuntimeService(
             request: requestWithKnowledge.data,
             error: err,
           });
+          if (
+            err instanceof Error &&
+            err.message.includes(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE)
+          ) {
+            return error('FORBIDDEN', err.message);
+          }
           throw err;
         }
       }
