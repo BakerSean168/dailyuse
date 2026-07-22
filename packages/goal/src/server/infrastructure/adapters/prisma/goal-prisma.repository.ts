@@ -377,14 +377,15 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
 
   // ================= Utility Operations =================
 
-  async exists(id: string): Promise<boolean> {
-    const count = await this.prisma.goal.count({ where: { id } });
+  async exists(identityId: string, id: string): Promise<boolean> {
+    const count = await this.prisma.goal.count({ where: { id, identityId } });
     return count > 0;
   }
 
-  async batchUpdateStatus(ids: string[], status: string): Promise<void> {
+  async batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void> {
+    if (ids.length === 0) return;
     await this.prisma.goal.updateMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
       data: { status, updatedAt: new Date() },
     });
   }

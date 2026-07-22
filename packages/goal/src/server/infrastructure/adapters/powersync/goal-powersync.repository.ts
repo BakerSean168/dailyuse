@@ -262,20 +262,16 @@ export class GoalPowerSyncRepository
     });
   }
 
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ value: number }>(
-      `SELECT 1 as value FROM goals WHERE id = ? LIMIT 1`,
-      [id],
-    );
-    return row !== null;
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
-  async batchUpdateStatus(ids: string[], status: string): Promise<void> {
+  async batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
     await this.db.execute(
-      `UPDATE goals SET status = ?, updated_at = ? WHERE id IN (${placeholders})`,
-      [status, toDbDateTime(new Date()), ...ids],
+      `UPDATE goals SET status = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})`,
+      [status, toDbDateTime(new Date()), identityId, ...ids],
     );
   }
 

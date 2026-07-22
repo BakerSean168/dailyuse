@@ -17,6 +17,10 @@ describe('goal ownership surface', () => {
     'utf8',
   );
   const prisma = readFileSync(resolve(__dirname, '../goal-prisma.repository.ts'), 'utf8');
+  const powersync = readFileSync(
+    resolve(__dirname, '../../powersync/goal-powersync.repository.ts'),
+    'utf8',
+  );
   const recordPrisma = readFileSync(
     resolve(__dirname, '../goal-record-prisma.repository.ts'),
     'utf8',
@@ -352,6 +356,26 @@ describe('goal ownership surface', () => {
     expect(recordPrisma).toContain('where: { id: { in: recordIds }, identityId }');
     expect(recordPowersync).toContain(
       'DELETE FROM goal_records WHERE identity_id = ? AND id IN (${placeholders})',
+    );
+  });
+
+
+  it('port exists/batchUpdateStatus require identityId (residual 158)', () => {
+    expect(port).toContain('exists(identityId: string, id: string): Promise<boolean>;');
+    expect(port).toContain(
+      'batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void>;',
+    );
+  });
+
+  it('prisma/powersync exists and batchUpdateStatus filter by identity (residual 158)', () => {
+    expect(prisma).toContain('async exists(identityId: string, id: string)');
+    expect(prisma).toContain('where: { id, identityId }');
+    expect(prisma).toContain(
+      'async batchUpdateStatus(identityId: string, ids: string[], status: string)',
+    );
+    expect(prisma).toContain('where: { id: { in: ids }, identityId }');
+    expect(powersync).toContain(
+      'UPDATE goals SET status = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})',
     );
   });
 

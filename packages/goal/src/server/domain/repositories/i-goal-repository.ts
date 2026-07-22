@@ -98,7 +98,7 @@ export interface IGoalRepository {
    *
    * @param id - 目标 ID
    */
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 
   /**
    * 批量更新状态
@@ -106,7 +106,7 @@ export interface IGoalRepository {
    * @param ids - 目标 ID 列表
    * @param status - 新状态
    */
-  batchUpdateStatus(ids: string[], status: string): Promise<void>;
+  batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void>;
 
   /**
    * 批量移动到文件夹
