@@ -51,6 +51,7 @@ describe('agent-host stage-0 composition surface', () => {
     expect(moduleSource).toContain('turnEngine: runtime.turnEngine');
     expect(moduleSource).toContain('readonlyTurnEngine: runtime.readonlyTurnEngine');
     expect(moduleSource).toContain('assistantFacade: runtime.assistantFacade');
+    expect(moduleSource).toContain('dispatchAssistant:');
     expect(moduleSource).toContain('workflowAdapter: runtime.workflowAdapter');
     expect(moduleSource).toContain('proposalKernel: runtime.proposalKernel');
     expect(moduleSource).toContain('capabilityResolver: runtime.capabilityResolver');

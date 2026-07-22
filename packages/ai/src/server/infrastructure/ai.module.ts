@@ -508,6 +508,16 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       services.agentRuntimeService.listRuns(params, cx, requestId, signal),
     getAgentEvents: (runId, cx, requestId, signal) =>
       services.agentRuntimeService.getEvents(runId, cx, requestId, signal),
+
+    // Residual 345: AssistantFacade transport surface (identity must already be set on command).
+    dispatchAssistant: async (command, onEvent, signal) => {
+      let eventCount = 0;
+      for await (const event of runtime.assistantFacade.dispatch(command, signal)) {
+        eventCount += 1;
+        onEvent(event);
+      }
+      return ok({ eventCount });
+    },
   };
 
   // Turn Engine comes from runtime (same instance that powers open chat use cases).

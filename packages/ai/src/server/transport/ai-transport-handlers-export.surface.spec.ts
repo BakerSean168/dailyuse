@@ -22,4 +22,12 @@ describe('AI transport handlers single-track surface', () => {
     expect(apiModule).toContain('const handlers = aiModule.api');
     expect(apiModule).not.toContain('createAITransportHandlers');
   });
+
+  it('wires AssistantFacade transport via handlers.dispatchAssistant (residual 345)', () => {
+    expect(index).toContain('AIAssistantFacadeController');
+    expect(apiModule).toContain('AIAssistantFacadeController');
+    expect(apiModule).toContain('dispatchAssistant: handlers.dispatchAssistant');
+    expect(apiModule).toContain("router.use('/ai/assistant'");
+    expect(apiModule).not.toContain('executeApproved');
+  });
 });

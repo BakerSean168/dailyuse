@@ -54,11 +54,13 @@ updated: 2026-07-22T00:00:00
     `module.readonlyTurnEngine` 接线；不接管 open chat 默认路径。
   - 开放式 chat/analysis only；ownership fail-closed + abort；不自动 emit `engine.*` capability offers。
   - `sendMessage`/`streamMessage` 已经同一 `DirectTurnEngine`（IOpenChatTurnPort）；统一助手 UI 未切换。
-- **AssistantFacade 部分起步（residual 343）**：
+- **AssistantFacade 部分起步（residual 343/345）**：
   - 生产 `AssistantFacade` 实现 `IAssistantFacadePort`；`module.assistantFacade` 在 direct/remote 均有值。
   - `message` 默认 DirectTurn open chat；`executionProfileId: pi_readonly` 走 ReadonlyAnalysis。
   - `approve_proposal`/`reject_proposal` 仅 ProposalKernel 生命周期，永不 `executeApproved`。
   - `cancel_run` 中止 primary + readonly + openChat。
+  - residual 345：`AIApplicationPort.dispatchAssistant` + `AIAssistantFacadeController` +
+    `POST /api/v1/ai/assistant/dispatch/sse`；identityId 仅 auth ExecutionContext。
   - 统一助手 UI 工作台仍未切换到 facade。
 - **阶段 6 部分起步（residual 337）**：
   - 生产 `CustomModelGateway` 实现 `IModelGatewayPort`；结果只回 `modelBindingId`，凭据仅请求作用域。

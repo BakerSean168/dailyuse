@@ -8,6 +8,8 @@ import type {
   AgentRunListParams,
   AgentRunResult,
   AgentStartRunRequest,
+  AssistantCommand,
+  AssistantEvent,
   AIConversationClientDTO,
   ConversationListRes,
   SendMessageRes,
@@ -157,4 +159,14 @@ export interface AIApplicationPort {
     requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentEvent[]>>;
+
+  /**
+   * AssistantFacade dispatch (residual 345). Streams Host-normalized AssistantEvent.
+   * Callers must set identityId from trusted ExecutionContext before invoking.
+   */
+  dispatchAssistant(
+    command: AssistantCommand,
+    onEvent: (event: AssistantEvent) => void,
+    signal?: AbortSignal,
+  ): Promise<Result<{ eventCount: number }>>;
 }

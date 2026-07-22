@@ -95,7 +95,7 @@ updated: 2026-07-22T00:00:00
 | [`packages/ai/src/server/infrastructure/security/ai-secret-cipher.ts`](../../../packages/ai/src/server/infrastructure/security/ai-secret-cipher.ts) | API key 加密（AES-256-GCM） |
 
 
-## ADR-035 Agent Host 生产适配（residual 314–343）
+## ADR-035 Agent Host 生产适配（residual 314–345）
 
 | 文件 | 说明 |
 | --- | --- |
@@ -108,6 +108,8 @@ updated: 2026-07-22T00:00:00
 | [`packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts`](../../../packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts) | CapabilityResolver fail-closed |
 | [`packages/ai/src/server/infrastructure/model-gateway/custom-model.gateway.ts`](../../../packages/ai/src/server/infrastructure/model-gateway/custom-model.gateway.ts) | 生产 CustomModelGateway（OpenAI-compatible Model Gateway） |
 | [`packages/ai/src/server/infrastructure/assistant-facade/assistant.facade.ts`](../../../packages/ai/src/server/infrastructure/assistant-facade/assistant.facade.ts) | 生产 AssistantFacade（统一 Host dispatch） |
+| [`packages/ai/src/server/transport/ai-assistant-facade.controller.ts`](../../../packages/ai/src/server/transport/ai-assistant-facade.controller.ts) | AssistantFacade 传输控制器（identity 仅 ExecutionContext） |
+| [`packages/ai/src/api/routes/ai-assistant.routes.ts`](../../../packages/ai/src/api/routes/ai-assistant.routes.ts) | AssistantFacade SSE 路由 `/ai/assistant/dispatch/sse` |
 | [`packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-capability-turn-isolation.journey.spec.ts`](../../../packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-capability-turn-isolation.journey.spec.ts) | ADR-035 isolation journey |
 | [`packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-product-docs-boundary.surface.spec.ts`](../../../packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-product-docs-boundary.surface.spec.ts) | product docs 边界锁 |
 

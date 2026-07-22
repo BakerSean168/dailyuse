@@ -49,6 +49,7 @@ import {
   registerAIChatRoutes,
   registerAIKnowledgeQueryRoutes,
   registerAIKnowledgeNoteRoutes,
+  registerAIAssistantRoutes,
 } from './routes';
 import { AICapabilitiesController } from '../server/transport/ai-capabilities.controller';
 import { AIAgentCheckpointController } from '../server/transport/ai-agent-checkpoint.controller';
@@ -61,6 +62,7 @@ import { AIProviderConfigController } from '../server/transport/ai-provider-conf
 import { AIChatController } from '../server/transport/ai-chat.controller';
 import { AIKnowledgeQueryController } from '../server/transport/ai-knowledge-query.controller';
 import { AIKnowledgeNoteController } from '../server/transport/ai-knowledge-note.controller';
+import { AIAssistantFacadeController } from '../server/transport/ai-assistant-facade.controller';
 import type {
   IAnalyticsReadPort,
   IAIAutomationToolExecutorPort,
@@ -205,6 +207,11 @@ export function createAIApiModule(options: {
         },
       );
 
+      // Residual 345: AssistantFacade Host dispatch (identity from auth only).
+      const assistantController = new AIAssistantFacadeController({
+        dispatchAssistant: handlers.dispatchAssistant,
+      });
+
       // Routes always register — unavailable capabilities return SERVICE_UNAVAILABLE
       // from the runtime service surface.
       // 路由始终注册 — 不可用的能力由运行时服务层返回 SERVICE_UNAVAILABLE。
@@ -252,6 +259,7 @@ export function createAIApiModule(options: {
         context.openApiRegistry,
       );
       const chatRoutes = registerAIChatRoutes(chatController, middleware, context.openApiRegistry);
+      const assistantRoutes = registerAIAssistantRoutes(assistantController, middleware);
       const knowledgeQueryRoutes = registerAIKnowledgeQueryRoutes(
         knowledgeQueryController,
         middleware,
@@ -288,6 +296,7 @@ export function createAIApiModule(options: {
       router.use('/ai', capabilityRoutes);
       router.use('/ai/agents', agentRuntimeRoutes);
       router.use('/ai/chat', chatRoutes);
+      router.use('/ai/assistant', assistantRoutes);
       router.use('/ai/knowledge', knowledgeQueryRoutes);
       router.use('/ai/knowledge-notes', knowledgeNoteRoutes);
       router.use('/ai/analytics', analyticsQueryRoutes);

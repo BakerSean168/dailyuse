@@ -47,6 +47,8 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
   `ReadonlyAnalysisTurnEngine` 不接管 open chat 默认路径。
 - 新工作台应经 `AssistantFacade.dispatch`（message / approve_proposal / reject_proposal /
   cancel_run）；approve 只做 ProposalKernel 生命周期，不自动 `executeApproved` 业务 mutation。
+- residual 345：HTTP `POST /api/v1/ai/assistant/dispatch/sse` 经 `AIAssistantFacadeController` →
+  `handlers.dispatchAssistant` → `module.assistantFacade`；`identityId` 仅来自 auth ExecutionContext。
 - direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
   不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；
