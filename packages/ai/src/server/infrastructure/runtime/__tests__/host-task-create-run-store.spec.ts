@@ -6,6 +6,7 @@ import {
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE,
+  HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE,
   matchesHostTaskCreateIdentity,
   matchesHostTaskCreateConversation,
   matchesHostTaskCreateThread,
@@ -542,5 +543,64 @@ describe('host-task-create-run-store threadId trim match (residual 511)', () => 
     );
     expect(store.size()).toBe(0);
     expect(HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE).toMatch(/threadId/);
+  });
+});
+
+describe('host-task-create-run-store conversationId upsert normalize (residual 513)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('upsert normalizes spaced conversationId and keeps binding', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: { ...request('run-conv-norm', 'Owned'), conversationId: 'conv-norm' },
+      identityId: 'owner-1',
+      nowMs: 10,
+    });
+    store.upsert(started);
+
+    const spacedSame = {
+      ...started,
+      run: { ...started.run, conversationId: '  conv-norm  ', updatedAt: 20 },
+    };
+    expect(() => store.upsert(spacedSame as typeof started)).not.toThrow();
+    expect(store.get('run-conv-norm', 'owner-1')?.run.conversationId).toBe('conv-norm');
+    expect(store.get('run-conv-norm', 'owner-1')?.run.updatedAt).toBe(20);
+  });
+
+  it('upsert rejects blank conversationId fail-closed', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-blank-conv', 'Blank conv'),
+      identityId: 'owner-1',
+      nowMs: 1,
+    });
+    const blank = {
+      ...started,
+      run: { ...started.run, conversationId: '   ' },
+    };
+    expect(() => store.upsert(blank as typeof started)).toThrow(
+      HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE,
+    );
+    expect(store.size()).toBe(0);
+    expect(HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE).toMatch(/conversationId/);
+  });
+
+  it('upsert rejects null conversationId fail-closed', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-null-conv', 'Null conv'),
+      identityId: 'owner-1',
+      nowMs: 1,
+    });
+    const nulled = {
+      ...started,
+      run: { ...started.run, conversationId: null },
+    };
+    expect(() => store.upsert(nulled as typeof started)).toThrow(
+      HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE,
+    );
+    expect(store.size()).toBe(0);
   });
 });

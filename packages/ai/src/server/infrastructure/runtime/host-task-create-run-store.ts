@@ -1,5 +1,5 @@
 /**
- * Residual 435/447/451/457/495/503/505/509/511: process-local Host task.create run store foundation.
+ * Residual 435/447/451/457/495/503/505/509/511/513: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
@@ -31,6 +31,9 @@
  * Residual 511: thread binding uses trimmed non-empty threadId (start residual 485
  * symmetry) so whitespace upsert cannot false-rebind or invent a second thread key;
  * blank threadId on upsert fails closed.
+ *
+ * Residual 513: conversationId on upsert is trimmed non-empty (start residual 483
+ * symmetry) and stored normalized; blank conversationId on upsert fails closed.
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
@@ -75,6 +78,10 @@ export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE =
 /** Residual 511: process-local store requires non-empty trimmed threadId binding. */
 export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE =
   'Host task.create process-local store requires a non-empty threadId for process-local binding.';
+
+/** Residual 513: process-local store requires non-empty trimmed conversationId binding. */
+export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE =
+  'Host task.create process-local store requires a non-empty conversationId for process-local binding.';
 
 /**
  * Residual 503: compare process-local identity with start-builder trim semantics.
@@ -162,15 +169,21 @@ export function createHostTaskCreateRunStore(
       if (!threadId) {
         throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE);
       }
+      // Residual 513: process-local conversationId is trimmed non-empty (start 483 symmetry).
+      const conversationId = resolveTaskCreateConversationId(result.run.conversationId);
+      if (!conversationId) {
+        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE);
+      }
       const needsNormalize =
         result.run.runId !== runId ||
         result.run.threadId !== threadId ||
+        result.run.conversationId !== conversationId ||
         result.events.some((event) => event.runId !== runId) ||
         result.interrupts.some((interrupt) => interrupt.runId !== runId);
       const normalized = needsNormalize
         ? {
             ...result,
-            run: { ...result.run, runId, threadId },
+            run: { ...result.run, runId, threadId, conversationId },
             events: result.events.map((event) =>
               event.runId === runId ? event : { ...event, runId },
             ),

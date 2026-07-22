@@ -1443,4 +1443,35 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(got.data.run.threadId).toBe('thread-journey-trim');
   });
 
+
+  it('process-local start stores normalized conversationId for list rehydrate (residual 513)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-conv-norm' } as const;
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-conv-norm',
+        threadId: 'thread-journey-conv-norm',
+        conversationId: '  conv-journey-norm  ',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Normalize conversation' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    // start builder + store upsert both normalize conversationId.
+    expect(started.data.run.conversationId).toBe('conv-journey-norm');
+
+    const listed = await service.listRuns(
+      { conversationId: 'conv-journey-norm' },
+      cx as any,
+    );
+    expect(listed.ok).toBe(true);
+    if (!listed.ok) return;
+    expect(listed.data.some((run) => run.runId === 'run-journey-conv-norm')).toBe(true);
+  });
+
 });

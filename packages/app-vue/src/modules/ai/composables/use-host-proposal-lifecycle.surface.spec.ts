@@ -960,6 +960,22 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local store conversation upsert normalizes (residual 513)', () => {
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE');
+    expect(store).toContain('resolveTaskCreateConversationId');
+    expect(store).toContain('Residual 513');
+    expect(store).toContain('const conversationId = resolveTaskCreateConversationId(result.run.conversationId)');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 
