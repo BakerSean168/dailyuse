@@ -1,10 +1,13 @@
 /**
- * Residual 435: process-local Host task.create run store foundation.
+ * Residual 435/447: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
  * same AI runtime process so conversation restore can rehydrate beyond client
  * localStorage alone. Not a cross-process durable database.
+ *
+ * Residual 447: bound store size per process (evict oldest updatedAt first) so
+ * long-lived API workers cannot grow unbounded from task.create Host traffic.
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
@@ -17,6 +20,9 @@ const ACTIVE_STATUSES = new Set([
   'waiting_execution',
 ]);
 
+/** Residual 447: process-local task.create run cap (not a durable retention policy). */
+export const HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES = 64;
+
 export type HostTaskCreateRunStore = {
   upsert(result: AgentRunResult): void;
   get(runId: string, identityId: string): AgentRunResult | null;
@@ -27,8 +33,26 @@ export type HostTaskCreateRunStore = {
   size(): number;
 };
 
-export function createHostTaskCreateRunStore(): HostTaskCreateRunStore {
+function pruneOldest(byRunId: Map<string, AgentRunResult>, maxEntries: number): void {
+  if (byRunId.size <= maxEntries) return;
+  const ordered = [...byRunId.entries()].sort(
+    (left, right) => left[1].run.updatedAt - right[1].run.updatedAt,
+  );
+  const overflow = byRunId.size - maxEntries;
+  for (let index = 0; index < overflow; index += 1) {
+    const key = ordered[index]?.[0];
+    if (key) byRunId.delete(key);
+  }
+}
+
+export function createHostTaskCreateRunStore(
+  options?: { maxEntries?: number },
+): HostTaskCreateRunStore {
   const byRunId = new Map<string, AgentRunResult>();
+  const maxEntries =
+    typeof options?.maxEntries === 'number' && options.maxEntries > 0
+      ? Math.floor(options.maxEntries)
+      : HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES;
 
   return {
     upsert(result: AgentRunResult) {
@@ -36,6 +60,7 @@ export function createHostTaskCreateRunStore(): HostTaskCreateRunStore {
         return;
       }
       byRunId.set(result.run.runId, result);
+      pruneOldest(byRunId, maxEntries);
     },
 
     get(runId: string, identityId: string): AgentRunResult | null {

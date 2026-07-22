@@ -3940,6 +3940,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留四百四十七轮）：§13.2 证据指针刷新 + process-local store 容量边界（仍不打勾）——
+> 复核 1/12/15 仍为部分/外部阻塞；Agent 项补充 residual 427–446 Host task.create 进程内路径证据
+> （start/store/resume/edit/focus/restore/linked-goal/session isolation，永不 `executeApproved`）；
+> `HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES` + 按 `updatedAt` 淘汰最旧条目；非跨进程 durable /
+> 非全量 PR 门禁 / 非跨端 multi-engine E2E。状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -4041,11 +4047,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留三百一十四轮刷新首个生产 DirectTurnEngine 指针；三入口 step 10 / harness 指针仍有效）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
-> 阶段 6 dual 收口（残留 250–300）：pure ClientPort duals 已 type-alias（setting/data-portability/auth/
-> repository/reminder/notification）；intentional facade/mapping duals 已 surface 锁定（account/goal/
-> task/schedule/ai）；dead unused `*Res` duals 再清（263/290）。focused evidence suite tip：**60 文件 /
-> 179 测试** + governance-check。不因此把三入口/Agent/E2E 未完成项打勾。
+> 审计时间 2026-07-22（残留四百四十七轮刷新：三入口/Agent/门禁仍为部分或外部阻塞；不改 checkbox）。
+> 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> focused evidence suite tip（残留四百四十六轮）：**104 文件 / 452 测试** + governance-check GOV_EXIT:0。
+> 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
+> 阶段 6 dual 收口（残留 250–300）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
+> Host task.create 进程内产品路径（残留 427–447）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
+> + history/session focus + linked goal restore + client settlement 会话隔离 + store 容量边界；永不 `executeApproved`。
+> 仍非跨进程 durable / 完整 Task LangGraph / 跨端 Playwright-Electron multi-engine E2E。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
 > webhook delivery（187）、auth session token（188）、notification template catalog（189）、
@@ -4478,6 +4487,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百四十四轮：§13.2 focused evidence suite re-run（449 tests，residuals 250–443 锁；不改 checkbox）。
   残留四百四十五轮：Host task.create linked goal restore + 会话 client settlement 隔离。
   残留四百四十六轮：§13.2 focused evidence suite re-run（452 tests，residuals 250–445 锁；不改 checkbox）。
+  残留四百四十七轮：§13.2 证据指针刷新 + task.create process-local store 容量边界（maxEntries 淘汰）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4619,6 +4629,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百四十四轮：§13.2 focused evidence suite re-run (449 tests, residuals 250–443 locks, no checkbox changes)。
   残留四百四十五轮：Host task.create linked goal restore + conversation client settlement isolation。
   残留四百四十六轮：§13.2 focused evidence suite re-run (452 tests, residuals 250–445 locks, no checkbox changes)。
+  残留四百四十七轮：§13.2 evidence pointer refresh + task.create process-local store size bound (maxEntries eviction)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4846,6 +4857,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百四十四轮：tip 上 449 项 focused evidence suite（含 residual 250–443 Host conversation restore workbench focus 锁）通过；仍不构成全量 PR 门禁证据。
   残留四百四十五轮：linked goal restore + client settlement 会话隔离落地；仍不构成跨端 Playwright/Electron multi-engine E2E 证据。
   残留四百四十六轮：tip 上 452 项 focused evidence suite（含 residual 250–445 Host linked goal restore + settlement isolation 锁）通过；仍不构成全量 PR 门禁证据。
+  残留四百四十七轮：§13.2 证据指针刷新 + process-local store 容量边界落地；仍不构成全量 PR 门禁/跨端 multi-engine E2E 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

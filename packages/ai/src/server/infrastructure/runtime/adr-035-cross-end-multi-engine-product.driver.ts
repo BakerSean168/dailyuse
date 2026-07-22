@@ -235,6 +235,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['syncLinkedGoalFromTaskAgentRun'];
     case 'clientSettledHostProposalIds.value = []':
       return ['clientSettledHostProposalIds.value = []', 'clientSettledHostProposalIds.value = []'];
+    case 'HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES':
+      return ['HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES'];
+    case 'pruneOldest':
+      return ['pruneOldest'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

@@ -350,6 +350,21 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local store size bound (residual 447)', () => {
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES');
+    expect(store).toContain('pruneOldest');
+    expect(store).toContain('maxEntries');
+    expect(store).toContain('Residual 447');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create linked goal restore + client settlement isolation (residual 445)', () => {
     expect(helper).toContain('resolveLinkedGoalIdFromTaskAgentRun');
     const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');

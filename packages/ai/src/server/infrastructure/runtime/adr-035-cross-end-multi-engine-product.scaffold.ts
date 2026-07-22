@@ -255,6 +255,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'resolveLinkedGoalIdFromTaskAgentRun',
         'syncLinkedGoalFromTaskAgentRun',
         'clientSettledHostProposalIds.value = []',
+        // Residual 447: process-local task.create store size bound.
+        'HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES',
+        'pruneOldest',
       ],
       status: 'implemented_unit',
     },
