@@ -205,6 +205,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     knowledgeQaWorkflow.resetKnowledgeAnswer();
     // Residual 427: clear dedicated task.create session field.
     taskAgentRun.value = null;
+    // Residual 433: clear task start local state (linked goal).
+    taskWorkflow.resetTaskWorkflowLocalState();
   }
 
   const persistence = useAIWorkflowPersistence({
@@ -269,11 +271,33 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       }
     }
 
+    // Residual 433: restore dedicated task.create session field.
+    // TS Host start is session-local (no Python checkpointer); keep snapshot on miss.
+    const taskRunId = taskAgentRun.value?.run.runId;
+    if (taskRunId) {
+      try {
+        const result = unwrap(await service.getAgentRun(taskRunId));
+        if (result?.run) {
+          syncSelectedAgentRun(result);
+        }
+      } catch {
+        if (taskAgentRun.value?.run.agentType === 'task.create') {
+          toolMode.value = 'task-create';
+        } else if (taskAgentRun.value && isPrimaryTaskHostAgentRun(taskAgentRun.value)) {
+          toolMode.value = 'task-create';
+        }
+      }
+    }
+
     persistence.persistWorkflowState(conversationId);
   }
 
   async function restoreWorkflowState(conversationId: string) {
     persistence.restoreWorkflowState(conversationId);
+    // Residual 433: re-align toolMode when a persisted task.create run owns the session.
+    if (taskAgentRun.value?.run.agentType === 'task.create') {
+      toolMode.value = 'task-create';
+    }
     await refreshRestoredAgentRun(conversationId);
   }
 

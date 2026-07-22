@@ -1,5 +1,6 @@
 /**
- * Residual 431: product start path for AgentType task.create.
+ * Residual 431/433: product start path for AgentType task.create.
+ * Residual 433: optional linked goalId at start; session restore owned by useAIChatView.
  * Host proposal + client createTemplate settle own mutation (residual 423–425).
  * Full Task LangGraph workflow is not claimed here.
  */
@@ -34,6 +35,8 @@ function createAgentId(prefix: string): string {
 export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   const { t, locale } = useI18n();
   const taskAgentLoading = ref(false);
+  /** Residual 433: optional goal link applied to create_task_template payload on start. */
+  const linkedGoalId = ref<string | null>(null);
 
   const canRunTaskAgent = computed(
     () =>
@@ -45,6 +48,17 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
         options.conversationTitle.value.trim().length > 0),
   );
 
+  function setLinkedGoalId(goalId: string | null | undefined) {
+    const next =
+      typeof goalId === 'string' && goalId.trim().length > 0 ? goalId.trim() : null;
+    linkedGoalId.value = next;
+  }
+
+  function resetTaskWorkflowLocalState() {
+    linkedGoalId.value = null;
+    taskAgentLoading.value = false;
+  }
+
   async function startTaskAgentRun() {
     if (!canRunTaskAgent.value) return;
     taskAgentLoading.value = true;
@@ -55,6 +69,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
         transcript ||
         options.conversationTitle.value.trim() ||
         t('aiAssistant.chatPage.shortcuts.taskCreate.prefill');
+      const goalId = linkedGoalId.value;
       const request: AgentStartRunClientRequest = {
         runId: createAgentId('run'),
         threadId: createAgentId('thread'),
@@ -65,6 +80,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
           idea,
           title: idea,
           conversationTitle: options.conversationTitle.value,
+          ...(goalId ? { goalId } : {}),
           ...(selectedModel
             ? {
                 provider_id: selectedModel.providerId,
@@ -87,7 +103,10 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
 
   return {
     taskAgentLoading,
+    linkedGoalId,
     canRunTaskAgent,
+    setLinkedGoalId,
+    resetTaskWorkflowLocalState,
     startTaskAgentRun,
   };
 }

@@ -188,6 +188,9 @@
             :can-send-message="canSendMessage"
             :task-agent-loading="taskAgentLoading"
             :can-run-task-agent="canRunTaskAgent"
+            :linked-goal-id="linkedGoalId"
+            :recent-goals="recentGoalList"
+            :set-linked-goal-id="setLinkedGoalId"
             :start-task-agent-run="startTaskAgentRun"
             :start-goal-agent-run="startGoalAgentRun"
             :submit-goal-agent-clarification="submitGoalAgentClarification"
@@ -539,7 +542,13 @@ const {
   openKnowledgeCitation,
 } = knowledgeQaWorkflow;
 
-const { taskAgentLoading, canRunTaskAgent, startTaskAgentRun } = taskWorkflow;
+const {
+  taskAgentLoading,
+  canRunTaskAgent,
+  linkedGoalId,
+  setLinkedGoalId,
+  startTaskAgentRun,
+} = taskWorkflow;
 
 
 const {

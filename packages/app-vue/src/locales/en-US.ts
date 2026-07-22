@@ -343,6 +343,8 @@ export default {
           'Describe the task in chat, then start the Task Agent. Host task.create proposals appear in the workbench for review.',
         taskAwaitingApprovalHint:
           'Review the Host task.create proposal, then approve to create the task template.',
+        taskLinkedGoalLabel: 'Link goal (optional)',
+        taskLinkedGoalNone: 'No linked goal',
         goalClarificationHint:
           'The draft needs a few clarifications before AI can generate a reliable goal.',
         goalDraftReadyHint:

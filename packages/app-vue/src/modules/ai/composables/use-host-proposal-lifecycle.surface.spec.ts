@@ -329,6 +329,24 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create session restore + linked goal start (residual 433)', () => {
+    const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatViewTs).toContain('Residual 433: restore dedicated task.create session field');
+    expect(chatViewTs).toContain('taskAgentRun.value?.run.runId');
+    expect(chatViewTs).toContain("toolMode.value = 'task-create'");
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(taskWorkflow).toContain('linkedGoalId');
+    expect(taskWorkflow).toContain('goalId');
+    expect(taskWorkflow).toContain('setLinkedGoalId');
+    const actionBar = readFileSync(
+      resolve(dir, '../components/AIWorkflowActionBar.vue'),
+      'utf8',
+    );
+    expect(actionBar).toContain('task-agent-linked-goal');
+    expect(actionBar).toContain('setLinkedGoalId');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create product start path (residual 431)', () => {
     const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
     expect(taskWorkflow).toContain("agentType: 'task.create'");

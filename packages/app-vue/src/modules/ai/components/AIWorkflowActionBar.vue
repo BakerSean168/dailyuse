@@ -23,7 +23,7 @@ import type {
   WorkflowMode,
 } from '../composables';
 
-defineProps<{
+const props = defineProps<{
   toolMode: WorkflowMode;
   workflowStatusText: string;
 
@@ -54,13 +54,17 @@ defineProps<{
   canRunWorkflowActions: boolean;
   canSendMessage: boolean;
 
-  // ── task-create 状态（residual 431） ──
+  // ── task-create 状态（residual 431/433） ──
   taskAgentLoading: boolean;
   canRunTaskAgent: boolean;
+  /** Residual 433: optional linked goal for task.create start. */
+  linkedGoalId: string | null;
+  recentGoals: Array<{ id: string; title: string }>;
 
   // ── 动作（函数 props：状态机处理器原样透传） ──
   startGoalAgentRun: () => void;
   startTaskAgentRun: () => void;
+  setLinkedGoalId: (goalId: string | null) => void;
   submitGoalAgentClarification: () => void;
   confirmGoalAgentRun: () => void;
   cancelGoalAgentRun: () => void;
@@ -78,6 +82,13 @@ defineProps<{
 }>();
 
 const { t } = useI18n();
+
+/** Residual 433: optional linked goal select for task.create start. */
+function onTaskLinkedGoalChange(event: Event) {
+  const target = event.target;
+  const value = target instanceof HTMLSelectElement ? target.value : '';
+  props.setLinkedGoalId(value || null);
+}
 </script>
 
 <template>
@@ -160,7 +171,23 @@ const { t } = useI18n();
       </template>
 
       <template v-else-if="toolMode === 'task-create'">
-        <!-- Residual 431: product start for AgentType task.create (Host proposal foundation). -->
+        <!-- Residual 431/433: product start + optional linked goal for task.create. -->
+        <label class="flex min-w-[12rem] flex-col gap-1 text-xs text-muted-foreground">
+          <span>{{ t('aiAssistant.chatPage.workflow.taskLinkedGoalLabel') }}</span>
+          <select
+            class="h-9 rounded-md border bg-background px-2 text-sm text-foreground"
+            data-testid="task-agent-linked-goal"
+            :value="linkedGoalId ?? ''"
+            @change="onTaskLinkedGoalChange"
+          >
+            <option value="">
+              {{ t('aiAssistant.chatPage.workflow.taskLinkedGoalNone') }}
+            </option>
+            <option v-for="goal in recentGoals" :key="goal.id" :value="goal.id">
+              {{ goal.title }}
+            </option>
+          </select>
+        </label>
         <Button
           variant="outline"
           :disabled="!canRunTaskAgent"

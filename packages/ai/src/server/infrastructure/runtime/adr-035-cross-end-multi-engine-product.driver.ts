@@ -1,5 +1,5 @@
 /**
- * Residual 407/417/421/423/425/427/429/431: ADR-035 cross-end multi-engine Host product unit driver.
+ * Residual 407/417/421/423/425/427/429/431/433: ADR-035 cross-end multi-engine Host product unit driver.
  *
  * Executes residual 405 scaffold `implemented_unit` steps as source-level
  * contract checks (HTTP SSE / Desktop IPC / Vue selectors / Host cancel +
@@ -193,6 +193,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['startTaskAgentRun'];
     case 'task-agent-start-run':
       return ['task-agent-start-run'];
+    case 'restore dedicated task.create session field':
+      return ['restore dedicated task.create session field', 'Residual 433'];
+    case 'task-agent-linked-goal':
+      return ['task-agent-linked-goal'];
+    case 'linkedGoalId':
+      return ['linkedGoalId'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

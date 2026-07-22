@@ -331,6 +331,8 @@ export default {
         goalCollectingHint: '继续通过对话补充背景，准备好后生成目标草稿。',
         taskCollectingHint: '在对话中描述任务，然后启动 Task Agent。Host task.create 提案会进入工作台审阅。',
         taskAwaitingApprovalHint: '请在 Host 工作台审阅 task.create 提案，确认后创建任务模板。',
+        taskLinkedGoalLabel: '关联目标（可选）',
+        taskLinkedGoalNone: '不关联目标',
         goalClarificationHint: '还需要补充几个关键信息，AI 才能生成可靠的目标草稿。',
         goalDraftReadyHint: '目标草稿已就绪，可以直接创建，或先展开编辑再确认。',
         noteCollectingHint: '继续通过对话整理笔记内容，确认后会直接创建到知识库。',
