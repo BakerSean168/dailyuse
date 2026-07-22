@@ -18,9 +18,10 @@ import type {
 } from './types';
 import { getAIErrorMessage } from './error';
 import { unwrap } from '@dailyuse/contracts/result';
+import { dispatchHostProposalDecision } from './hostProposalLifecycle';
 
 export interface UseAIKnowledgeNoteWorkflowOptions {
-  service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun'>;
+  service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
   selectedModel: Ref<ChatModelOption | null>;
   chatConversationId: Ref<string>;
   chatLoading: Ref<boolean>;
@@ -251,6 +252,12 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
       noteCreating.value = true;
       try {
+        // Residual 355: Host proposal lifecycle first; resume remains mutation executor.
+        await dispatchHostProposalDecision(options.service, {
+          decision: 'approve',
+          runId: noteAgentRun.value.run.runId,
+          kind: 'knowledge.write',
+        });
         const result = unwrap(await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
           userDecision: 'confirm',
           approvedActions,

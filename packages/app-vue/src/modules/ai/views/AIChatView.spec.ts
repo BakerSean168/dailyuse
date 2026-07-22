@@ -1191,7 +1191,27 @@ describe('AIChatView', () => {
       getAgentRun: vi.fn(),
       getAgentEvents: vi.fn(),
       createKnowledgeNote: vi.fn(),
-      dispatchAssistant: vi.fn(async () => undefined),
+      dispatchAssistant: vi.fn(async (command, handlers) => {
+        if (command?.type === 'approve_proposal') {
+          handlers?.onEvent?.({
+            type: 'proposal.approved',
+            runId: command.runId,
+            proposalId: command.proposalId,
+            revision: command.revision,
+          });
+          return;
+        }
+        if (command?.type === 'reject_proposal') {
+          handlers?.onEvent?.({
+            type: 'proposal.rejected',
+            runId: command.runId,
+            proposalId: command.proposalId,
+            revision: command.revision,
+            reason: command.reason,
+          });
+          return;
+        }
+      }),
     };
     const loadProviders = vi.fn(async () => {
       providers.value = [
@@ -1874,6 +1894,15 @@ describe('AIChatView', () => {
     await confirmButton!.trigger('click');
     await flushPromises();
 
+    expect(service.dispatchAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'approve_proposal',
+        runId: 'run-1',
+        proposalId: 'agent-run:run-1:goal.create',
+        revision: 1,
+      }),
+      expect.any(Object),
+    );
     expect(service.resumeAgentRun).toHaveBeenCalledTimes(1);
     expect(service.resumeAgentRun).toHaveBeenCalledWith(
       'run-1',

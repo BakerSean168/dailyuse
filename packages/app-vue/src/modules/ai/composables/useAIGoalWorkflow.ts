@@ -35,6 +35,7 @@ import {
   type AutomationContext,
 } from './goalAutomationHelpers';
 import { unwrap } from '@dailyuse/contracts/result';
+import { dispatchHostProposalDecision } from './hostProposalLifecycle';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -736,6 +737,16 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!goalAgentRun.value || goalAgentResuming.value) return;
     goalAgentResuming.value = true;
     try {
+      // Residual 355: Host ProposalKernel lifecycle via AssistantFacade first.
+      // resumeAgentRun remains the separate business mutation executor.
+      if (userDecision === 'confirm' || userDecision === 'cancel') {
+        await dispatchHostProposalDecision(options.service, {
+          decision: userDecision === 'confirm' ? 'approve' : 'reject',
+          runId: goalAgentRun.value.run.runId,
+          kind: 'goal.create',
+          reason: userDecision === 'cancel' ? 'user_cancel' : undefined,
+        });
+      }
       const payload = buildGoalAgentApprovalPayload(goalAgentRun.value, userDecision);
       const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload));
       syncGoalAgentRun(result);

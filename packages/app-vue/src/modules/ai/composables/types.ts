@@ -21,7 +21,7 @@ import type { IAIService } from '../../../di/types';
 
 /** Options for useAIGoalWorkflow composable. */
 export interface UseAIGoalWorkflowOptions {
-  service: Pick<AIChatService, 'generateGoal' | 'startAgentRun' | 'resumeAgentRun'>;
+  service: Pick<AIChatService, 'generateGoal' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
   selectedModel: Ref<ChatModelOption | null>;
   chatConversationId: Ref<string>;
   chatLoading: Ref<boolean>;

@@ -6,6 +6,10 @@
  * - approve_proposal / reject_proposal → ProposalKernel lifecycle only
  * - cancel_run → abort both production Turn Engines
  *
+ * Residual 355: agent-run bridge proposal ids (`agent-run:{runId}:{kind}`) are
+ * materialised as ready proposals on first approve/reject so legacy AgentRun
+ * waiting_approval UI can route lifecycle through the Host before executors.
+ *
  * Never executes business mutations. Proposal approve does not call executeApproved;
  * knowledge/goal/task side-effects still require explicit Host executors after approval.
  */
@@ -16,6 +20,10 @@ import type {
   IAssistantFacadePort,
   IProposalKernelPort,
   ITurnEnginePort,
+} from '@dailyuse/contracts/ai';
+import {
+  materializeAgentRunBridgeProposal,
+  parseAgentRunHostProposalId,
 } from '@dailyuse/contracts/ai';
 import type { IOpenChatTurnPort } from '../../application/ports';
 import { DIRECT_TURN_ENGINE_ID } from '../turn-engine/direct-turn.engine';
@@ -214,6 +222,7 @@ export class AssistantFacade implements IAssistantFacadePort {
     command: Extract<AssistantCommand, { type: 'approve_proposal' }>,
   ): AsyncGenerator<AssistantEvent, void, void> {
     // Lifecycle only — never executeApproved / business mutation here.
+    await this.ensureAgentRunBridgeProposal(command.runId, command.proposalId);
     const approved = await this.proposalKernel.approve(command.proposalId, command.revision);
     yield {
       type: 'proposal.approved',
@@ -226,6 +235,7 @@ export class AssistantFacade implements IAssistantFacadePort {
   private async *dispatchReject(
     command: Extract<AssistantCommand, { type: 'reject_proposal' }>,
   ): AsyncGenerator<AssistantEvent, void, void> {
+    await this.ensureAgentRunBridgeProposal(command.runId, command.proposalId);
     const rejected = await this.proposalKernel.reject(
       command.proposalId,
       command.revision,
@@ -238,6 +248,27 @@ export class AssistantFacade implements IAssistantFacadePort {
       revision: rejected.revision,
       reason: command.reason,
     };
+  }
+
+  /**
+   * Materialise legacy AgentRun bridge proposals into ProposalKernel on first use.
+   * Non-bridge ids are ignored (kernel remains source of truth).
+   */
+  private async ensureAgentRunBridgeProposal(runId: string, proposalId: string): Promise<void> {
+    const parsed = parseAgentRunHostProposalId(proposalId);
+    if (!parsed || parsed.runId !== runId) {
+      return;
+    }
+    try {
+      await this.proposalKernel.create(
+        materializeAgentRunBridgeProposal(parsed.runId, parsed.kind),
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (message !== 'PROPOSAL_ALREADY_EXISTS') {
+        throw error;
+      }
+    }
   }
 
   private async *dispatchCancel(

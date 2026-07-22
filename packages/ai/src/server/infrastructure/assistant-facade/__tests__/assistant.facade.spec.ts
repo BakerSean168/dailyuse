@@ -208,4 +208,75 @@ describe('AssistantFacade', () => {
     expect(readonlyEngine.abort).toHaveBeenCalledWith('run-c');
     expect(openChat.abort).toHaveBeenCalledWith('run-c');
   });
+
+  it('materialises agent-run bridge proposals on approve without executeApproved', async () => {
+    const kernel = createKernel({
+      create: vi.fn().mockImplementation(async (proposal) => proposal),
+      approve: vi.fn().mockImplementation(async (proposalId, revision) =>
+        proposal({
+          id: proposalId,
+          status: 'approved',
+          revision,
+          kind: 'goal.create',
+          title: 'bridged',
+        }),
+      ),
+    });
+    const facade = new AssistantFacade(
+      createOpenChat(),
+      createReadonlyEngine(),
+      kernel,
+      createReadonlyEngine(),
+    );
+
+    const events = await collect(facade, {
+      type: 'approve_proposal',
+      identityId: 'user-1',
+      runId: 'run-goal-1',
+      proposalId: 'agent-run:run-goal-1:goal.create',
+      revision: 1,
+    });
+
+    expect(kernel.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'agent-run:run-goal-1:goal.create',
+        kind: 'goal.create',
+        status: 'ready',
+      }),
+    );
+    expect(kernel.approve).toHaveBeenCalledWith('agent-run:run-goal-1:goal.create', 1);
+    expect(kernel.executeApproved).not.toHaveBeenCalled();
+    expect(events).toEqual([
+      {
+        type: 'proposal.approved',
+        runId: 'run-goal-1',
+        proposalId: 'agent-run:run-goal-1:goal.create',
+        revision: 1,
+      },
+    ]);
+  });
+
+  it('ignores non-bridge proposal ids on reject and still never executes mutations', async () => {
+    const kernel = createKernel();
+    const facade = new AssistantFacade(
+      createOpenChat(),
+      createReadonlyEngine(),
+      kernel,
+      createReadonlyEngine(),
+    );
+
+    await collect(facade, {
+      type: 'reject_proposal',
+      identityId: 'user-1',
+      runId: 'run-r',
+      proposalId: 'prop-1',
+      revision: 1,
+      reason: 'nope',
+    });
+
+    expect(kernel.create).not.toHaveBeenCalled();
+    expect(kernel.reject).toHaveBeenCalledWith('prop-1', 1, 'nope');
+    expect(kernel.executeApproved).not.toHaveBeenCalled();
+  });
+
 });
