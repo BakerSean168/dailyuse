@@ -2,16 +2,46 @@
  * @file metrics.controller.ts
  * @description 指标控制器 - 提供 Prometheus 兼容格式的性能指标
  * @date 2025-12-22
+ *
+ * Residual 623: GET /metrics/json uses Result/HttpResponse envelope only.
+ * Prometheus text (/metrics) stays text/plain for scrapers.
  */
 
 import type { Request, Response } from 'express';
 import type { MetricsStore } from '../middlewares/performance.middleware';
+import { createApiResponseBuilder } from '../response-builder.js';
+
+export type MetricsJsonPayload = {
+  summary: {
+    totalRequests: number;
+    overallAvgMs: number;
+    endpointCount: number;
+    slowEndpointCount: number;
+  };
+  slowEndpoints: Array<{
+    endpoint: string;
+    avgMs?: number;
+    p95Ms?: number;
+    p99Ms?: number;
+    maxMs?: number;
+  }>;
+  process: {
+    uptime: number;
+    memoryMB: {
+      heapUsed: number;
+      heapTotal: number;
+      rss: number;
+    };
+  };
+  allMetrics: ReturnType<MetricsStore['getAllStats']>;
+};
 
 /**
  * 指标控制器
  *
  * 提供以下端点：
  * - `/metrics` - Prometheus 格式的指标输出
+ * - `/metrics/json` - JSON 调试/仪表板指标（HttpResponse 信封）
  */
 export function createMetricsController(metricsStore: MetricsStore) {
   return {
@@ -70,10 +100,12 @@ export function createMetricsController(metricsStore: MetricsStore) {
 
     /**
      * 获取 JSON 格式的指标（用于调试和仪表板）
+     * Residual 621/623: HttpResponse envelope (no raw dual-track body).
      *
      * @route GET /metrics/json
      */
-    getJson: (_req: Request, res: Response): void => {
+    getJson: (req: Request, res: Response): void => {
+      const responseBuilder = createApiResponseBuilder(req);
       const metrics = metricsStore.getAllStats();
 
       const allEndpoints = Object.entries(metrics);
@@ -94,7 +126,7 @@ export function createMetricsController(metricsStore: MetricsStore) {
           maxMs: stats?.max,
         }));
 
-      res.status(200).json({
+      const payload: MetricsJsonPayload = {
         summary: {
           totalRequests,
           overallAvgMs: overallAvg,
@@ -111,7 +143,9 @@ export function createMetricsController(metricsStore: MetricsStore) {
           },
         },
         allMetrics: metrics,
-      });
+      };
+
+      res.status(200).json(responseBuilder.success(payload));
     },
   };
 }
