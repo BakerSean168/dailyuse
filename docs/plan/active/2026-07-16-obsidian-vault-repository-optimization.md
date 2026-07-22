@@ -3185,6 +3185,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 跨端 E2E、第二生产 Turn Engine、统一助手 UI、GitHub App fixture E2E、全量 PR 门禁。状态保持
 > **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百三十九轮）：feature-map 产品真值 + 死 public debug 页清理
+> （仍不打勾）——`docs/product/feature-map.md` 认证行去掉“GitHub 服务端骨架已落地”，改为三入口
+> 主路径已贯通 + identity-only scopes 与知识仓库 App 分离；AI 行对齐 ADR-035 Host 部分落地。
+> 删除 `apps/web/public/{schedule-test,sse-test}.html` 与 `debug-events.js`。新增
+> `product-feature-map-public.surface.spec.ts`。验证：contracts surface 5 + governance-check。
+> §13.2 仍为部分/外部阻塞。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3598,6 +3605,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百三十六轮：§13.2 focused evidence suite re-run（256 tests，residuals 250–335 锁；不改 checkbox）。
   残留三百三十七轮：生产 CustomModelGateway（IModelGatewayPort）+ direct adapters 接线 + 删除 editor-test.html。
   残留三百三十八轮：§13.2 focused evidence suite re-run（260 tests，residuals 250–337 锁；不改 checkbox）。
+  残留三百三十九轮：feature-map 认证/AI 真值 + 删除 web public debug 试页 + surface 锁。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3631,6 +3639,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百三十六轮：§13.2 focused evidence suite re-run (256 tests, residuals 250–335 locks, no checkbox changes)。
   残留三百三十七轮：production CustomModelGateway (IModelGatewayPort) + direct adapter wiring + remove editor-test.html。
   残留三百三十八轮：§13.2 focused evidence suite re-run (260 tests, residuals 250–337 locks, no checkbox changes)。
+  残留三百三十九轮：feature-map auth/AI truth + remove web public debug pages + surface lock。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3750,6 +3759,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百三十六轮：tip 上 256 项 focused evidence suite（含 residual 250–335 auth OAuth 索引锁）通过；仍不构成全量 PR 门禁证据。
   残留三百三十七轮：CustomModelGateway Host 适配 + editor-test 清理；仍不构成第二 Turn Engine/统一助手完成证据。
   残留三百三十八轮：tip 上 260 项 focused evidence suite（含 residual 250–337 CustomModelGateway 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百三十九轮：feature-map/public debug 收口；仍不构成全量 PR 门禁/跨端 OAuth E2E 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
