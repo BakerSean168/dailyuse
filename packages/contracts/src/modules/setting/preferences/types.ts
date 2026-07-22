@@ -12,7 +12,6 @@ import type {
   WorkflowSchema,
   PrivacySchema,
   NotificationSchema,
-  EditorSchema,
   ShortcutsSchema,
   ExperimentalSchema,
   UISchema,
@@ -37,8 +36,6 @@ export type PrivacyPreferences = z.infer<typeof PrivacySchema>;
 /** 通知设置 */
 export type NotificationPreferences = z.infer<typeof NotificationSchema>;
 
-/** 编辑器设置 */
-export type EditorPreferences = z.infer<typeof EditorSchema>;
 
 /** 快捷键设置 */
 export type ShortcutPreferences = z.infer<typeof ShortcutsSchema>;

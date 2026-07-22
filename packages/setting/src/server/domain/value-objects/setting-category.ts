@@ -23,7 +23,6 @@ export const SettingCategory = {
   // ================= 常量定义 =================
   
   Appearance: 'Appearance' as SettingCategory,
-  Editor: 'Editor' as SettingCategory,
   Task: 'Task' as SettingCategory,
   Goal: 'Goal' as SettingCategory,
   Repository: 'Repository' as SettingCategory,
@@ -59,13 +58,6 @@ export const SettingCategory = {
    */
   isAppearance(value: SettingCategory): boolean {
     return value === 'Appearance';
-  },
-
-  /**
-   * 判断是否为编辑器相关设置
-   */
-  isEditor(value: SettingCategory): boolean {
-    return value === 'Editor';
   },
 
   /**

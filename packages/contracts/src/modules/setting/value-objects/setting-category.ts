@@ -1,6 +1,5 @@
 export const SettingCategory = {
     Appearance: 'Appearance',
-    Editor: 'Editor',
     Task: 'Task',
     Goal: 'Goal',
     Repository: 'Repository',

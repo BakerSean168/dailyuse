@@ -2,7 +2,7 @@
  * Setting Registry — Simplified Zod-first validation
  *
  * Uses category Zod schemas for validation instead of per-key SettingDefinition lookup.
- * Only manages the 9 core preference categories.
+ * Only manages live preference categories (no retired in-app editor category).
  */
 
 import { z } from 'zod';

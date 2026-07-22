@@ -1114,14 +1114,7 @@ async function installGoalWorkflowMocks(
             sound: false,
             useCustomNotification: false,
           },
-          editor: {
-            theme: 'default',
-            fontSize: 14,
-            tabSize: 2,
-            wordWrap: true,
-            lineNumbers: true,
-            minimap: false,
-          },
+
           shortcuts: {
             enabled: true,
             custom: {},

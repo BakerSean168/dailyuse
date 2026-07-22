@@ -7,7 +7,7 @@ tags:
   - github
 description: ADR-034 - 本地 Obsidian Vault、可选 GitHub 仓库同步与多端知识笔记边界
 created: 2026-07-16T00:00:00
-updated: 2026-07-20T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库
@@ -27,7 +27,12 @@ Daily Use（Memory Flow）需要把用户知识资产接入 AI、目标和行动
 - 不再把 Web 永久限定为只读；绑定 GitHub 后，Web 可以安全地快捷创建新笔记。
 - 不再为 AI 笔记维护固定收件箱路径设置。
 
-当前代码尚未完成目标态：Desktop 仍使用应用 profile 下的 `storage/repository-storage`；Web 仍使用数据库 Repository 的通用编辑能力；GitHub App、Git 仓库同步和 Agent 知识写入提案契约尚未实现。因此，本 ADR 记录目标决策，不把它描述成已完成能力。
+实现状态（相对本 ADR 目标决策，2026-07-22 对齐代码）：
+
+- **已落地**：Desktop profile-owned 本地 Obsidian Vault（选择/扫描/搜索/预览/`obsidian://` 打开/确认后写入）；GitHub 登录与 GitHub App 知识仓库授权解耦；private 仓库连接、首次对账、Git 同步（禁 force-push、冲突暂停）、webhook 投影、Web 确认后新建笔记、AI 确认写入提案契约；旧数据库 Repository/Folder/Resource CRUD 与 `@dailyuse/editor` 运行时已从 host 摘除；用户设置不再保留退役的 in-app editor 偏好分类。
+- **仍部分 / 外部阻塞**：三入口与 Agent Host 完整跨端 E2E（含真实 OAuth/GitHub fixture 与 multi-engine Turn Engine）；Mobile 投影浏览；全量 PR 门禁一揽子验收。详见 active plan §13.2。
+
+本 ADR 仍记录目标决策；完成定义与 PR readiness 以 active plan 证据为准，不因本段对齐而宣称计划完成。
 
 ## 2. 决策
 
@@ -249,7 +254,7 @@ UI 不得把第一类文件称为“全部数据导出”，也不得暗示它�
 ### 需要承担的成本
 
 - 认证入口仍有三种，产品复杂度不会像 GitHub-only 那样大幅下降。
-- 需要实现 GitHub App、安装授权、短期 token、webhook 和 Git 冲突状态。
+- 需持续维护 GitHub App、安装授权、短期 token、webhook 和 Git 冲突状态（主体已实现；fixture E2E 仍外部阻塞）。
 - private repository 不是对 GitHub 或 Daily Use 服务端不可见的端到端加密，必须明确告知。
 - GitHub 故障、账号受限、仓库删除或授权撤销会影响跨端能力，但不能影响本地 Vault。
 - 大附件、仓库体积、Git LFS 和多设备冲突需要单独约束。

@@ -34,13 +34,13 @@ describe('ResetUserSetting', () => {
 
   it('should reset a specific category to defaults', async () => {
     const setting = UserSetting.create({ identityId });
-    setting.patchCategory('editor', { theme: 'dark', fontSize: 20 });
+    setting.patchCategory('appearance', { theme: 'dark' });
     vi.mocked(repo.findByIdentityId).mockResolvedValue(setting);
 
-    const result = await useCase.execute(identityId, 'editor');
+    const result = await useCase.execute(identityId, 'appearance');
 
     const defaults = getDefaultPreferences();
-    expect(result.preferences.editor).toEqual(defaults.editor);
+    expect(result.preferences.appearance).toEqual(defaults.appearance);
     expect(repo.save).toHaveBeenCalledTimes(1);
   });
 

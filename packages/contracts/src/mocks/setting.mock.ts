@@ -53,14 +53,6 @@ export function createMockUserSetting(
         sound: faker.datatype.boolean(),
         useCustomNotification: faker.datatype.boolean(),
       },
-      editor: {
-        theme: faker.helpers.arrayElement(['default', 'dark', 'monokai']),
-        fontSize: faker.helpers.arrayElement([12, 14, 16]),
-        tabSize: faker.helpers.arrayElement([2, 4]),
-        wordWrap: faker.datatype.boolean(),
-        lineNumbers: faker.datatype.boolean(),
-        minimap: faker.datatype.boolean(),
-      },
       shortcuts: {
         enabled: faker.datatype.boolean(),
         custom: {},

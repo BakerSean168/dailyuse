@@ -92,7 +92,6 @@ describe('setting enum-like value objects', () => {
 
     expect(SettingCategory.getAll()).toEqual([
       SettingCategory.Appearance,
-      SettingCategory.Editor,
       SettingCategory.Task,
       SettingCategory.Goal,
       SettingCategory.Repository,
@@ -104,7 +103,6 @@ describe('setting enum-like value objects', () => {
     expect(SettingCategory.isValid('Privacy')).toBe(true);
     expect(SettingCategory.isValid('Audio')).toBe(false);
     expect(SettingCategory.isAppearance(SettingCategory.Appearance)).toBe(true);
-    expect(SettingCategory.isEditor(SettingCategory.Editor)).toBe(true);
     expect(SettingCategory.isFeature(SettingCategory.Notification)).toBe(true);
     expect(SettingCategory.isFeature(SettingCategory.System)).toBe(false);
     expect(SettingCategory.isSecurity(SettingCategory.Privacy)).toBe(true);
