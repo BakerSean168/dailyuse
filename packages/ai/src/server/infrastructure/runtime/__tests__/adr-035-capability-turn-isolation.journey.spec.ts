@@ -5,10 +5,12 @@
  * fixture series: capability plan → start gate → confirm-only mutation →
  * cross-capability fail-closed → identity isolation → vault path safety →
  * first-phase tool surface → multi-engine fail-closed → resume ownership before
- * host side-effects → getEvents ownership isolation → owned getEvents passthrough.
+ * host side-effects → getEvents ownership isolation → owned getEvents passthrough →
+ * multi-engine offers never substitute mutation/context even when mixed/labeled
+ * as langgraph_workflow / direct_turn (residual 305).
  *
  * This is host-boundary integration coverage (not a full Playwright E2E and not
- * a multi-engine Turn Engine suite). Complements the scattered unit specs.
+ * a multi-engine Turn Engine conformance suite). Complements the scattered unit specs.
  */
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -881,5 +883,102 @@ describe('ADR-035 Capability/Turn isolation journey (same fixture)', () => {
     }
     expect(agentRuntimePort.getEvents).toHaveBeenCalledTimes(1);
   });
+
+
+  it('step 16: multi-engine labels never substitute mutation/context (residual 305)', () => {
+    // engine.langgraph_workflow / engine.direct_turn are execution labels only.
+    const engineLabels: CapabilityOffer[] = [
+      {
+        kind: 'engine.langgraph_workflow',
+        providerId: 'langgraph-workflow',
+        surface: 'any',
+        readonly: false,
+      },
+      {
+        kind: 'engine.direct_turn',
+        providerId: 'direct-chat-execution',
+        surface: 'any',
+        readonly: false,
+      },
+      {
+        kind: 'engine.pi_readonly',
+        providerId: 'pi-readonly',
+        surface: 'any',
+        readonly: true,
+      },
+      {
+        kind: 'engine.cli_readonly',
+        providerId: 'cli-readonly',
+        surface: 'any',
+        readonly: true,
+      },
+    ];
+
+    // Engine labels alone still fail closed for knowledge write on both surfaces.
+    for (const surface of ['web', 'desktop'] as const) {
+      const blocked = resolveRunPlan({
+        engineId: 'engine.direct_turn',
+        offers: engineLabels,
+        requirements: knowledgeWriteRequirements(surface),
+        surface,
+      });
+      expect(blocked.engineId).toBe('none');
+      expect(blocked.missing.map((item) => item.kind)).toEqual(
+        expect.arrayContaining(['tool.proposal', 'tool.mutation']),
+      );
+    }
+
+    // Readonly mutation offer cannot satisfy writable mutation even with engine labels.
+    const readonlyMutation: CapabilityOffer = {
+      kind: 'tool.mutation',
+      providerId: 'readonly-host',
+      surface: 'any',
+      readonly: true,
+    };
+    const proposal: CapabilityOffer = {
+      kind: 'tool.proposal',
+      providerId: 'proposal-kernel',
+      surface: 'any',
+      readonly: false,
+    };
+    const cloudRag: CapabilityOffer = {
+      kind: 'context.cloud_rag',
+      providerId: 'web-github-projection',
+      surface: 'web',
+      readonly: true,
+    };
+    const readonlyBlocked = resolveRunPlan({
+      engineId: 'engine.direct_turn',
+      offers: [...engineLabels, proposal, readonlyMutation, cloudRag],
+      requirements: knowledgeWriteRequirements('web'),
+      surface: 'web',
+    });
+    expect(readonlyBlocked.engineId).toBe('none');
+    expect(readonlyBlocked.missing.map((item) => item.kind)).toContain('tool.mutation');
+
+    // Full knowledge-write offers may resolve under an engine label, but the label does
+    // not drop mutation/proposal requirements — plan still carries host tool offers.
+    const writableMutation: CapabilityOffer = {
+      kind: 'tool.mutation',
+      providerId: 'host-executor',
+      surface: 'any',
+      readonly: false,
+    };
+    const okPlan = resolveRunPlan({
+      engineId: 'engine.direct_turn',
+      offers: [...engineLabels, proposal, writableMutation, cloudRag],
+      requirements: knowledgeWriteRequirements('web'),
+      surface: 'web',
+    });
+    expect(okPlan.engineId).toBe('engine.direct_turn');
+    expect(okPlan.missing).toEqual([]);
+    expect(okPlan.offers.some((offer) => offer.kind === 'tool.mutation' && !offer.readonly)).toBe(
+      true,
+    );
+    expect(okPlan.offers.some((offer) => offer.kind === 'tool.proposal')).toBe(true);
+    // Engine labels remain diagnostic only — still present, never the sole offer kinds.
+    expect(okPlan.offers.some((offer) => offer.kind.startsWith('engine.'))).toBe(true);
+  });
+
 
 });
