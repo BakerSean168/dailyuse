@@ -16,6 +16,10 @@ describe('goal folder ownership surface', () => {
     resolve(__dirname, '../goal-folder-prisma.repository.ts'),
     'utf8',
   );
+  const powersync = readFileSync(
+    resolve(__dirname, '../../powersync/goal-folder-powersync.repository.ts'),
+    'utf8',
+  );
   const getUseCase = readFileSync(
     resolve(
       __dirname,
@@ -61,4 +65,19 @@ describe('goal folder ownership surface', () => {
       /FOLDER_GET, \(_event, id\) => goalFolderController\.get\(id\)/,
     );
   });
+
+  it('port exists requires identityId (residual 152)', () => {
+    expect(port).toContain('exists(identityId: string, id: string): Promise<boolean>;');
+  });
+
+  it('prisma exists filters by id + identityId (residual 152)', () => {
+    expect(prisma).toContain('async exists(identityId: string, id: string)');
+    expect(prisma).toContain('where: { id, identityId }');
+  });
+
+  it('powersync exists uses findByIdForIdentity (residual 152)', () => {
+    expect(powersync).toContain('async exists(identityId: string, id: string)');
+    expect(powersync).toContain('return (await this.findByIdForIdentity(identityId, id)) !== null;');
+  });
+
 });

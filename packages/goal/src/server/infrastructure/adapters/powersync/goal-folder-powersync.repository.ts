@@ -133,12 +133,7 @@ export class GoalFolderPowerSyncRepository
     ]);
   }
 
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ value: number }>(
-      `SELECT 1 as value FROM goal_folders WHERE id = ? LIMIT 1`,
-      [id],
-    );
-
-    return row !== null;
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 }

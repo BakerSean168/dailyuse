@@ -120,9 +120,9 @@ export class GoalFolderPrismaRepository
   /**
    * Check if folder exists
    */
-  async exists(id: string): Promise<boolean> {
+  async exists(identityId: string, id: string): Promise<boolean> {
     const count = await this.prisma.goalFolder.count({
-      where: { id },
+      where: { id, identityId },
     });
     return count > 0;
   }

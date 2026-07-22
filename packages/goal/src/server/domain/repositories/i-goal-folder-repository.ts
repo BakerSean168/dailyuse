@@ -10,5 +10,5 @@ export interface IGoalFolderRepository {
   findByIdForIdentity(identityId: string, id: string): Promise<GoalFolder | null>;
   findByIdentityId(identityId: string): Promise<GoalFolder[]>;
   delete(identityId: string, id: string): Promise<void>;
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 }
