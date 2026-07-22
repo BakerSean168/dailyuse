@@ -338,6 +338,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'matchesHostTaskCreateIdentity',
         'Residual 503',
         'ensureAgentRunOwnedByIdentity',
+        // Residual 505: process-local store runId trim lookup (start 497 symmetry).
+        'HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE',
+        'Residual 505',
       ],
       status: 'implemented_unit',
     },

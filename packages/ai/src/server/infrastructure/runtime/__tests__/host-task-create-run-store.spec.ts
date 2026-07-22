@@ -4,6 +4,7 @@ import {
   resetDefaultHostTaskCreateRunStoreForTests,
   getDefaultHostTaskCreateRunStore,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
+  HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE,
   matchesHostTaskCreateIdentity,
 } from '../host-task-create-run-store';
 import { buildHostTaskCreateStartResult } from '../host-task-create-start';
@@ -352,3 +353,75 @@ describe('host-task-create-run-store identity trim match (residual 503)', () => 
   });
 });
 
+describe('host-task-create-run-store runId trim lookup (residual 505)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('get/getEvents honor trimmed runId query without false isolation miss', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-trim-key', 'Trim runId'),
+      identityId: 'owner-1',
+      nowMs: 10,
+    });
+    store.upsert(started);
+
+    expect(store.get('  run-trim-key  ', 'owner-1')?.run.runId).toBe('run-trim-key');
+    expect(store.getEvents(' run-trim-key ', 'owner-1')?.[0]?.runId).toBe('run-trim-key');
+    // blank runId still fail-closed
+    expect(store.get('   ', 'owner-1')).toBeNull();
+    expect(store.get('', 'owner-1')).toBeNull();
+    expect(store.getEvents('   ', 'owner-1')).toBeNull();
+  });
+
+  it('upsert normalizes spaced runId to one map key and keeps identity binding', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-space-key', 'Owned'),
+      identityId: 'owner-1',
+      nowMs: 10,
+    });
+    store.upsert(started);
+
+    const spacedSame = {
+      ...started,
+      run: { ...started.run, runId: '  run-space-key  ', updatedAt: 20 },
+    };
+    expect(() => store.upsert(spacedSame as typeof started)).not.toThrow();
+    expect(store.size()).toBe(1);
+    expect(store.get('run-space-key', 'owner-1')?.run.updatedAt).toBe(20);
+    expect(store.get('  run-space-key  ', 'owner-1')?.run.runId).toBe('run-space-key');
+
+    const foreignSpaced = {
+      ...started,
+      run: {
+        ...started.run,
+        runId: ' run-space-key ',
+        identityId: 'intruder',
+        updatedAt: 30,
+      },
+    };
+    expect(() => store.upsert(foreignSpaced as typeof started)).toThrow(
+      /already bound to another identity/,
+    );
+  });
+
+  it('upsert rejects blank runId fail-closed', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-blank-key', 'Blank'),
+      identityId: 'owner-1',
+      nowMs: 1,
+    });
+    const blank = {
+      ...started,
+      run: { ...started.run, runId: '   ' },
+    };
+    expect(() => store.upsert(blank as typeof started)).toThrow(
+      HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE,
+    );
+    expect(store.size()).toBe(0);
+    expect(HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE).toMatch(/runId/);
+  });
+});

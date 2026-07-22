@@ -1323,4 +1323,38 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
 
+
+  it('getRun/getEvents match trimmed runId query (residual 505)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-runid' } as const;
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-trim-runid',
+        threadId: 'thread-journey-trim-runid',
+        conversationId: 'conv-journey-trim-runid',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Trim runId match' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    expect(started.data.run.runId).toBe('run-journey-trim-runid');
+
+    const got = await service.getRun('  run-journey-trim-runid  ', cx as any);
+    expect(got.ok).toBe(true);
+    if (!got.ok) return;
+    expect(got.data.run.runId).toBe('run-journey-trim-runid');
+
+    const events = await service.getEvents(' run-journey-trim-runid ', cx as any);
+    expect(events.ok).toBe(true);
+    if (!events.ok) return;
+    expect(events.data.some((event) => event.runId === 'run-journey-trim-runid')).toBe(true);
+    expect(port.getRun).not.toHaveBeenCalled();
+    expect(port.getEvents).not.toHaveBeenCalled();
+  });
+
 });

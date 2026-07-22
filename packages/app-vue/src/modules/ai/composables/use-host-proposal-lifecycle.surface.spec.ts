@@ -886,6 +886,32 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local store runId lookup trims (residual 505)', () => {
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    const start = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+      ),
+      'utf8',
+    );
+    expect(store).toContain('resolveTaskCreateRunId');
+    expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE');
+    expect(store).toContain('Residual 505');
+    // get/upsert map key uses start-builder runId trim semantics.
+    expect(store).toContain('const key = resolveTaskCreateRunId(runId)');
+    expect(store).toContain('const runId = resolveTaskCreateRunId(result.run.runId)');
+    expect(start).toContain('resolveTaskCreateRunId');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

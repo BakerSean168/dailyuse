@@ -1,5 +1,5 @@
 /**
- * Residual 435/447/451/457/495/503: process-local Host task.create run store foundation.
+ * Residual 435/447/451/457/495/503/505: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
@@ -20,10 +20,16 @@
  * Residual 503: identity match uses trimmed non-empty identity (start residual 493
  * symmetry) so whitespace query/stored identity cannot isolate false-negative miss
  * or false-positive foreign accept.
+ *
+ * Residual 505: map key uses trimmed non-empty runId (start residual 497 symmetry)
+ * so whitespace get/upsert cannot false-miss or invent a second key for one run.
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
-import { resolveTaskCreateIdentityId } from './host-task-create-start';
+import {
+  resolveTaskCreateIdentityId,
+  resolveTaskCreateRunId,
+} from './host-task-create-start';
 
 const ACTIVE_STATUSES = new Set([
   'pending',
@@ -51,6 +57,10 @@ export const HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE =
 /** Residual 495: process-local store rejects non-task.create (no silent ignore). */
 export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE =
   'Host task.create process-local store only accepts agentType task.create.';
+
+/** Residual 505: process-local store requires non-empty trimmed runId map key. */
+export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE =
+  'Host task.create process-local store requires a non-empty runId for process-local binding.';
 
 /**
  * Residual 503: compare process-local identity with start-builder trim semantics.
@@ -102,29 +112,55 @@ export function createHostTaskCreateRunStore(
       if (result.run.agentType !== 'task.create') {
         throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE);
       }
+      // Residual 505: process-local runId map key is trimmed non-empty (start 497 symmetry).
+      const runId = resolveTaskCreateRunId(result.run.runId);
+      if (!runId) {
+        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE);
+      }
+      const normalized =
+        result.run.runId === runId &&
+        result.events.every((event) => event.runId === runId) &&
+        result.interrupts.every((interrupt) => interrupt.runId === runId)
+          ? result
+          : {
+              ...result,
+              run: { ...result.run, runId },
+              events: result.events.map((event) =>
+                event.runId === runId ? event : { ...event, runId },
+              ),
+              interrupts: result.interrupts.map((interrupt) =>
+                interrupt.runId === runId ? interrupt : { ...interrupt, runId },
+              ),
+            };
       // Residual 451/503: process-local runId identity binding (no foreign takeover;
       // compare trimmed non-empty identities).
-      const existing = byRunId.get(result.run.runId);
-      if (existing && !matchesHostTaskCreateIdentity(existing.run.identityId, result.run.identityId)) {
+      const existing = byRunId.get(runId);
+      if (
+        existing &&
+        !matchesHostTaskCreateIdentity(existing.run.identityId, normalized.run.identityId)
+      ) {
         throw new Error(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE);
       }
       // Residual 457: conversation/thread binding (no session rebinding via runId reuse).
       if (existing) {
         const existingConversation = existing.run.conversationId ?? null;
-        const nextConversation = result.run.conversationId ?? null;
+        const nextConversation = normalized.run.conversationId ?? null;
         if (existingConversation !== nextConversation) {
           throw new Error(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE);
         }
-        if (existing.run.threadId !== result.run.threadId) {
+        if (existing.run.threadId !== normalized.run.threadId) {
           throw new Error(HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE);
         }
       }
-      byRunId.set(result.run.runId, result);
+      byRunId.set(runId, normalized);
       pruneOldest(byRunId, maxEntries);
     },
 
     get(runId: string, identityId: string): AgentRunResult | null {
-      const result = byRunId.get(runId);
+      // Residual 505: trim map key; blank runId never hits a store entry.
+      const key = resolveTaskCreateRunId(runId);
+      if (!key) return null;
+      const result = byRunId.get(key);
       if (!result) return null;
       // Residual 503: trimmed identity isolation (blank query never matches).
       if (!matchesHostTaskCreateIdentity(result.run.identityId, identityId)) return null;
