@@ -5,7 +5,7 @@ tags:
   - authentication
 description: 认证模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 认证模块文件索引
@@ -27,8 +27,8 @@ updated: 2026-07-17T00:00:00
 | [`packages/app-vue/src/modules/authentication/composables/useRememberedAccounts.ts`](../../../packages/app-vue/src/modules/authentication/composables/useRememberedAccounts.ts) | 记住账号能力 |
 | [`packages/app-vue/src/modules/authentication/composables/useSession.ts`](../../../packages/app-vue/src/modules/authentication/composables/useSession.ts) | 会话管理 |
 | [`packages/app-vue/src/modules/authentication/composables/usePassword.ts`](../../../packages/app-vue/src/modules/authentication/composables/usePassword.ts) | 密码管理 |
-| [`packages/app-vue/src/modules/authentication/components/LoginForm.vue`](../../../packages/app-vue/src/modules/authentication/components/LoginForm.vue) | 登录表单 |
-| [`packages/app-vue/src/modules/authentication/components/RegisterForm.vue`](../../../packages/app-vue/src/modules/authentication/components/RegisterForm.vue) | 注册表单 |
+| [`packages/app-vue/src/views/DesktopAuthView.vue`](../../../packages/app-vue/src/views/DesktopAuthView.vue) | 登录表单 |
+| [`packages/app-vue/src/views/AuthPlatformEntry.vue`](../../../packages/app-vue/src/views/AuthPlatformEntry.vue) | 注册表单 |
 
 ## 客户端服务与传输适配器
 

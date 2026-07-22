@@ -5,7 +5,7 @@ tags:
   - account
 description: 账户模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 账户模块文件索引
@@ -17,7 +17,7 @@ updated: 2026-06-02T00:00:00
 | 文件 | 说明 |
 | --- | --- |
 | [`packages/app-vue/src/modules/account/router/index.ts`](../../../packages/app-vue/src/modules/account/router/index.ts) | Vue 账户模块路由，定义账户中心入口 |
-| [`packages/app-vue/src/modules/account/views/AccountCenterView.vue`](../../../packages/app-vue/src/modules/account/views/AccountCenterView.vue) | 账户中心页面 |
+| [`packages/app-vue/src/modules/account/components/AccountProfileSection.vue`](../../../packages/app-vue/src/modules/account/components/AccountProfileSection.vue) | 账户中心页面 |
 
 ## 前端状态、组合函数与组件
 
@@ -41,7 +41,7 @@ updated: 2026-06-02T00:00:00
 | --- | --- |
 | [`packages/account/src/api/routes.ts`](../../../packages/account/src/api/routes.ts) | 账户 HTTP routes（6 个端点） |
 | [`packages/account/src/api/module.ts`](../../../packages/account/src/api/module.ts) | 账户 API 模块定义 |
-| [`packages/account/src/controllers/account.controller.ts`](../../../packages/account/src/controllers/account.controller.ts) | 账户控制器 |
+| [`packages/account/src/server/transport/account.controller.ts`](../../../packages/account/src/server/transport/account.controller.ts) | 账户控制器 |
 | [`packages/account/src/infrastructure-client/adapters/http/account-http.adapter.ts`](../../../packages/account/src/infrastructure-client/adapters/http/account-http.adapter.ts) | 客户端 HTTP 适配器 |
 | [`packages/account/src/infrastructure-client/adapters/ipc/account-ipc.adapter.ts`](../../../packages/account/src/infrastructure-client/adapters/ipc/account-ipc.adapter.ts) | 客户端 IPC 适配器 |
 
@@ -49,13 +49,13 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/account/src/domain-server/aggregates/account.ts`](../../../packages/account/src/domain-server/aggregates/account.ts) | Account 聚合根 |
-| [`packages/account/src/domain-server/services/account-uniqueness-checker.ts`](../../../packages/account/src/domain-server/services/account-uniqueness-checker.ts) | 邮箱唯一性检查服务 |
-| [`packages/account/src/application-server/use-cases/commands/update-account-profile.use-case.ts`](../../../packages/account/src/application-server/use-cases/commands/update-account-profile.use-case.ts) | 更新资料用例 |
-| [`packages/account/src/application-server/use-cases/commands/update-account-settings.use-case.ts`](../../../packages/account/src/application-server/use-cases/commands/update-account-settings.use-case.ts) | 更新设置用例 |
-| [`packages/account/src/application-server/use-cases/queries/get-account-profile.use-case.ts`](../../../packages/account/src/application-server/use-cases/queries/get-account-profile.use-case.ts) | 获取资料查询 |
-| [`packages/account/src/application-server/handlers/identity-created.handler.ts`](../../../packages/account/src/application-server/handlers/identity-created.handler.ts) | 身份创建事件处理器 |
-| [`packages/account/src/infrastructure-server/account.module.ts`](../../../packages/account/src/infrastructure-server/account.module.ts) | 服务端账户模块组合根 |
+| [`packages/account/src/server/domain/aggregates/account.ts`](../../../packages/account/src/server/domain/aggregates/account.ts) | Account 聚合根 |
+| [`packages/account/src/server/domain/services/account-uniqueness-checker.ts`](../../../packages/account/src/server/domain/services/account-uniqueness-checker.ts) | 邮箱唯一性检查服务 |
+| [`packages/account/src/server/application/use-cases/commands/update-account-profile.use-case.ts`](../../../packages/account/src/server/application/use-cases/commands/update-account-profile.use-case.ts) | 更新资料用例 |
+| [`packages/account/src/server/application/use-cases/commands/update-account-settings.use-case.ts`](../../../packages/account/src/server/application/use-cases/commands/update-account-settings.use-case.ts) | 更新设置用例 |
+| [`packages/account/src/server/application/use-cases/queries/get-account-profile.use-case.ts`](../../../packages/account/src/server/application/use-cases/queries/get-account-profile.use-case.ts) | 获取资料查询 |
+| [`packages/account/src/server/application/handlers/identity-created.handler.ts`](../../../packages/account/src/server/application/handlers/identity-created.handler.ts) | 身份创建事件处理器 |
+| [`packages/account/src/server/infrastructure/account.module.ts`](../../../packages/account/src/server/infrastructure/account.module.ts) | 服务端账户模块组合根 |
 
 ## Contracts 与数据结构
 
@@ -73,9 +73,9 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/account/src/domain-server/aggregates/__tests__/Account.test.ts`](../../../packages/account/src/domain-server/aggregates/__tests__/Account.test.ts) | Account 聚合测试 |
-| [`packages/account/src/application-server/use-cases/commands/__tests__/update-account-profile.test.ts`](../../../packages/account/src/application-server/use-cases/commands/__tests__/update-account-profile.test.ts) | 更新资料测试 |
-| [`packages/account/src/application-server/handlers/__tests__/identity-created.handler.test.ts`](../../../packages/account/src/application-server/handlers/__tests__/identity-created.handler.test.ts) | 身份创建事件测试 |
+| [`packages/account/src/server/domain/aggregates/__tests__/Account.test.ts`](../../../packages/account/src/server/domain/aggregates/__tests__/Account.test.ts) | Account 聚合测试 |
+| [`packages/account/src/server/application/use-cases/commands/__tests__/update-account-profile.test.ts`](../../../packages/account/src/server/application/use-cases/commands/__tests__/update-account-profile.test.ts) | 更新资料测试 |
+| [`packages/account/src/server/application/handlers/__tests__/identity-created.handler.test.ts`](../../../packages/account/src/server/application/handlers/__tests__/identity-created.handler.test.ts) | 身份创建事件测试 |
 | [`packages/account/src/api/routes.spec.ts`](../../../packages/account/src/api/routes.spec.ts) | 账户 routes 测试 |
 | [`packages/app-vue/src/modules/account/stores/accountStore.spec.ts`](../../../packages/app-vue/src/modules/account/stores/accountStore.spec.ts) | 账户 store 测试 |
 

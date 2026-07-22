@@ -5,7 +5,7 @@ tags:
   - reminder
 description: 提醒模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 提醒模块文件索引
@@ -28,13 +28,13 @@ updated: 2026-06-02T00:00:00
 | [`packages/app-vue/src/modules/reminder/composables/useReminderTemplates.ts`](../../../packages/app-vue/src/modules/reminder/composables/useReminderTemplates.ts) | 提醒模板 CRUD 组合函数 |
 | [`packages/app-vue/src/modules/reminder/composables/useReminderGroups.ts`](../../../packages/app-vue/src/modules/reminder/composables/useReminderGroups.ts) | 提醒分组 CRUD 组合函数 |
 | [`packages/app-vue/src/modules/reminder/composables/useReminderPreferences.ts`](../../../packages/app-vue/src/modules/reminder/composables/useReminderPreferences.ts) | 提醒偏好组合函数 |
-| [`packages/app-vue/src/modules/reminder/components/TemplateDesktopCard.vue`](../../../packages/app-vue/src/modules/reminder/components/TemplateDesktopCard.vue) | 提醒模板卡片 |
+| [`packages/app-vue/src/modules/reminder/components/ReminderTemplateCard.vue`](../../../packages/app-vue/src/modules/reminder/components/ReminderTemplateCard.vue) | 提醒模板卡片 |
 | [`packages/app-vue/src/modules/reminder/components/TemplateDialog.vue`](../../../packages/app-vue/src/modules/reminder/components/TemplateDialog.vue) | 模板创建/编辑弹窗 |
 | [`packages/app-vue/src/modules/reminder/components/TemplateMoveDialog.vue`](../../../packages/app-vue/src/modules/reminder/components/TemplateMoveDialog.vue) | 模板移动弹窗 |
-| [`packages/app-vue/src/modules/reminder/components/GroupDesktopCard.vue`](../../../packages/app-vue/src/modules/reminder/components/GroupDesktopCard.vue) | 提醒分组卡片 |
+| [`packages/app-vue/src/modules/reminder/components/GroupDialog.vue`](../../../packages/app-vue/src/modules/reminder/components/GroupDialog.vue) | 提醒分组卡片 |
 | [`packages/app-vue/src/modules/reminder/components/GroupDialog.vue`](../../../packages/app-vue/src/modules/reminder/components/GroupDialog.vue) | 分组创建/编辑弹窗 |
-| [`packages/app-vue/src/modules/reminder/components/ReminderInstanceSidebar.vue`](../../../packages/app-vue/src/modules/reminder/components/ReminderInstanceSidebar.vue) | 提醒实例侧边栏 |
-| [`packages/app-vue/src/modules/reminder/components/ScheduleStatusCard.vue`](../../../packages/app-vue/src/modules/reminder/components/ScheduleStatusCard.vue) | 调度状态卡片 |
+| [`packages/app-vue/src/modules/reminder/views/ReminderLinearView.vue`](../../../packages/app-vue/src/modules/reminder/views/ReminderLinearView.vue) | 提醒实例侧边栏 |
+| [`packages/app-vue/src/modules/reminder/components/widgets/UpcomingRemindersWidget.vue`](../../../packages/app-vue/src/modules/reminder/components/widgets/UpcomingRemindersWidget.vue) | 调度状态卡片 |
 | [`packages/app-vue/src/modules/reminder/components/widgets/UpcomingRemindersWidget.vue`](../../../packages/app-vue/src/modules/reminder/components/widgets/UpcomingRemindersWidget.vue) | Dashboard 即将提醒小组件 |
 | [`packages/app-vue/src/modules/reminder/presentation/lifecycle-presentation.ts`](../../../packages/app-vue/src/modules/reminder/presentation/lifecycle-presentation.ts) | 生命周期展示辅助函数 |
 
@@ -53,9 +53,9 @@ updated: 2026-06-02T00:00:00
 | [`packages/reminder/src/api/routes/reminder-template.routes.ts`](../../../packages/reminder/src/api/routes/reminder-template.routes.ts) | 提醒模板 HTTP routes |
 | [`packages/reminder/src/api/routes/reminder-group.routes.ts`](../../../packages/reminder/src/api/routes/reminder-group.routes.ts) | 提醒分组 HTTP routes |
 | [`packages/reminder/src/api/routes/reminder-preferences.routes.ts`](../../../packages/reminder/src/api/routes/reminder-preferences.routes.ts) | 提醒偏好 HTTP routes |
-| [`packages/reminder/src/api/transport-handlers.ts`](../../../packages/reminder/src/api/transport-handlers.ts) | 传输层处理器 |
-| [`packages/reminder/src/api/schedule-runtime.ts`](../../../packages/reminder/src/api/schedule-runtime.ts) | 提醒 → 日程运行时贡献 |
-| [`packages/reminder/src/controllers/reminder.controller.ts`](../../../packages/reminder/src/controllers/reminder.controller.ts) | 提醒控制器 |
+| [`packages/reminder/src/server/transport/reminder.controller.ts`](../../../packages/reminder/src/server/transport/reminder.controller.ts) | 传输层处理器 |
+| [`packages/reminder/src/server/infrastructure/schedule-execution-source.ts`](../../../packages/reminder/src/server/infrastructure/schedule-execution-source.ts) | 提醒 → 日程运行时贡献 |
+| [`packages/reminder/src/server/transport/reminder.controller.ts`](../../../packages/reminder/src/server/transport/reminder.controller.ts) | 提醒控制器 |
 | [`packages/reminder/src/infrastructure-client/adapters/http/reminder-http.adapter.ts`](../../../packages/reminder/src/infrastructure-client/adapters/http/reminder-http.adapter.ts) | 客户端 HTTP 适配器 |
 | [`packages/reminder/src/infrastructure-client/adapters/ipc/reminder-ipc.adapter.ts`](../../../packages/reminder/src/infrastructure-client/adapters/ipc/reminder-ipc.adapter.ts) | 客户端 IPC 适配器 |
 
@@ -63,22 +63,22 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/reminder/src/domain-server/aggregates/reminder-template.ts`](../../../packages/reminder/src/domain-server/aggregates/reminder-template.ts) | ReminderTemplate 聚合根 |
-| [`packages/reminder/src/domain-server/aggregates/reminder-group.ts`](../../../packages/reminder/src/domain-server/aggregates/reminder-group.ts) | ReminderGroup 聚合根 |
-| [`packages/reminder/src/domain-server/aggregates/user-reminder-preferences.ts`](../../../packages/reminder/src/domain-server/aggregates/user-reminder-preferences.ts) | UserReminderPreferences 聚合根 |
-| [`packages/reminder/src/domain-server/entities/reminder-response.ts`](../../../packages/reminder/src/domain-server/entities/reminder-response.ts) | ReminderResponse 实体 |
-| [`packages/reminder/src/domain-server/entities/reminder-history.ts`](../../../packages/reminder/src/domain-server/entities/reminder-history.ts) | ReminderHistory 实体 |
-| [`packages/reminder/src/domain-server/services/reminder-domain-service.ts`](../../../packages/reminder/src/domain-server/services/reminder-domain-service.ts) | 提醒领域服务 |
-| [`packages/reminder/src/domain-server/services/reminder-template-control-service.ts`](../../../packages/reminder/src/domain-server/services/reminder-template-control-service.ts) | 模板控制服务（有效启用状态计算） |
-| [`packages/reminder/src/domain-server/services/reminder-trigger-service.ts`](../../../packages/reminder/src/domain-server/services/reminder-trigger-service.ts) | 触发执行服务 |
-| [`packages/reminder/src/domain-server/services/reminder-scheduler-service.ts`](../../../packages/reminder/src/domain-server/services/reminder-scheduler-service.ts) | 调度扫描服务 |
-| [`packages/reminder/src/application-server/use-cases/commands/create-reminder-template.use-case.ts`](../../../packages/reminder/src/application-server/use-cases/commands/create-reminder-template.use-case.ts) | 创建模板用例 |
-| [`packages/reminder/src/application-server/use-cases/commands/record-reminder-response.use-case.ts`](../../../packages/reminder/src/application-server/use-cases/commands/record-reminder-response.use-case.ts) | 记录响应用例 |
-| [`packages/reminder/src/application-server/use-cases/commands/adjust-reminder-frequency.use-case.ts`](../../../packages/reminder/src/application-server/use-cases/commands/adjust-reminder-frequency.use-case.ts) | 频率调整用例 |
-| [`packages/reminder/src/application-server/use-cases/queries/analyze-reminder-frequency.use-case.ts`](../../../packages/reminder/src/application-server/use-cases/queries/analyze-reminder-frequency.use-case.ts) | 频率分析查询 |
-| [`packages/reminder/src/infrastructure-server/reminder.module.ts`](../../../packages/reminder/src/infrastructure-server/reminder.module.ts) | 服务端提醒模块组合根 |
-| [`packages/reminder/src/infrastructure-server/cron/reminder-trigger-cron-job.ts`](../../../packages/reminder/src/infrastructure-server/cron/reminder-trigger-cron-job.ts) | 提醒触发定时任务 |
-| [`packages/reminder/src/infrastructure-server/adapters/prisma/reminder-template-prisma.repository.ts`](../../../packages/reminder/src/infrastructure-server/adapters/prisma/reminder-template-prisma.repository.ts) | Prisma 模板仓储 |
+| [`packages/reminder/src/server/domain/aggregates/reminder-template.ts`](../../../packages/reminder/src/server/domain/aggregates/reminder-template.ts) | ReminderTemplate 聚合根 |
+| [`packages/reminder/src/server/domain/aggregates/reminder-group.ts`](../../../packages/reminder/src/server/domain/aggregates/reminder-group.ts) | ReminderGroup 聚合根 |
+| [`packages/reminder/src/server/domain/aggregates/user-reminder-preferences.ts`](../../../packages/reminder/src/server/domain/aggregates/user-reminder-preferences.ts) | UserReminderPreferences 聚合根 |
+| [`packages/reminder/src/server/domain/entities/reminder-response.ts`](../../../packages/reminder/src/server/domain/entities/reminder-response.ts) | ReminderResponse 实体 |
+| [`packages/reminder/src/server/domain/entities/reminder-history.ts`](../../../packages/reminder/src/server/domain/entities/reminder-history.ts) | ReminderHistory 实体 |
+| [`packages/reminder/src/server/domain/services/reminder-domain-service.ts`](../../../packages/reminder/src/server/domain/services/reminder-domain-service.ts) | 提醒领域服务 |
+| [`packages/reminder/src/server/domain/services/reminder-template-control-service.ts`](../../../packages/reminder/src/server/domain/services/reminder-template-control-service.ts) | 模板控制服务（有效启用状态计算） |
+| [`packages/reminder/src/server/domain/services/reminder-trigger-service.ts`](../../../packages/reminder/src/server/domain/services/reminder-trigger-service.ts) | 触发执行服务 |
+| [`packages/reminder/src/server/domain/services/reminder-scheduler-service.ts`](../../../packages/reminder/src/server/domain/services/reminder-scheduler-service.ts) | 调度扫描服务 |
+| [`packages/reminder/src/server/application/use-cases/commands/create-reminder-template.use-case.ts`](../../../packages/reminder/src/server/application/use-cases/commands/create-reminder-template.use-case.ts) | 创建模板用例 |
+| [`packages/reminder/src/server/application/use-cases/commands/record-reminder-response.use-case.ts`](../../../packages/reminder/src/server/application/use-cases/commands/record-reminder-response.use-case.ts) | 记录响应用例 |
+| [`packages/reminder/src/server/application/use-cases/commands/adjust-reminder-frequency.use-case.ts`](../../../packages/reminder/src/server/application/use-cases/commands/adjust-reminder-frequency.use-case.ts) | 频率调整用例 |
+| [`packages/reminder/src/server/application/use-cases/queries/analyze-reminder-frequency.use-case.ts`](../../../packages/reminder/src/server/application/use-cases/queries/analyze-reminder-frequency.use-case.ts) | 频率分析查询 |
+| [`packages/reminder/src/server/infrastructure/reminder.module.ts`](../../../packages/reminder/src/server/infrastructure/reminder.module.ts) | 服务端提醒模块组合根 |
+| [`packages/reminder/src/server/infrastructure/cron/reminder-trigger-cron-job.ts`](../../../packages/reminder/src/server/infrastructure/cron/reminder-trigger-cron-job.ts) | 提醒触发定时任务 |
+| [`packages/reminder/src/server/infrastructure/adapters/prisma/reminder-template-prisma.repository.ts`](../../../packages/reminder/src/server/infrastructure/adapters/prisma/reminder-template-prisma.repository.ts) | Prisma 模板仓储 |
 
 ## Contracts 与数据结构
 
@@ -101,12 +101,12 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/reminder/src/domain-server/aggregates/__tests__/reminder-template.spec.ts`](../../../packages/reminder/src/domain-server/aggregates/__tests__/reminder-template.spec.ts) | ReminderTemplate 聚合测试 |
-| [`packages/reminder/src/domain-server/aggregates/__tests__/reminder-group.spec.ts`](../../../packages/reminder/src/domain-server/aggregates/__tests__/reminder-group.spec.ts) | ReminderGroup 聚合测试 |
-| [`packages/reminder/src/domain-server/services/__tests__/reminder-template-control.service.spec.ts`](../../../packages/reminder/src/domain-server/services/__tests__/reminder-template-control.service.spec.ts) | 模板控制服务测试 |
-| [`packages/reminder/src/domain-server/services/__tests__/reminder-trigger.service.spec.ts`](../../../packages/reminder/src/domain-server/services/__tests__/reminder-trigger.service.spec.ts) | 触发服务测试 |
-| [`packages/reminder/src/application-server/use-cases/commands/reminder-use-cases.test.ts`](../../../packages/reminder/src/application-server/use-cases/commands/reminder-use-cases.test.ts) | 命令用例测试 |
-| [`packages/reminder/src/application-server/use-cases/queries/analyze-reminder-frequency.spec.ts`](../../../packages/reminder/src/application-server/use-cases/queries/analyze-reminder-frequency.spec.ts) | 频率分析测试 |
+| [`packages/reminder/src/server/domain/aggregates/__tests__/reminder-template.spec.ts`](../../../packages/reminder/src/server/domain/aggregates/__tests__/reminder-template.spec.ts) | ReminderTemplate 聚合测试 |
+| [`packages/reminder/src/server/domain/aggregates/__tests__/reminder-group.spec.ts`](../../../packages/reminder/src/server/domain/aggregates/__tests__/reminder-group.spec.ts) | ReminderGroup 聚合测试 |
+| [`packages/reminder/src/server/domain/services/__tests__/reminder-template-control.service.spec.ts`](../../../packages/reminder/src/server/domain/services/__tests__/reminder-template-control.service.spec.ts) | 模板控制服务测试 |
+| [`packages/reminder/src/server/domain/services/__tests__/reminder-trigger.service.spec.ts`](../../../packages/reminder/src/server/domain/services/__tests__/reminder-trigger.service.spec.ts) | 触发服务测试 |
+| [`packages/reminder/src/server/application/use-cases/commands/reminder-use-cases.test.ts`](../../../packages/reminder/src/server/application/use-cases/commands/reminder-use-cases.test.ts) | 命令用例测试 |
+| [`packages/reminder/src/server/application/use-cases/queries/analyze-reminder-frequency.spec.ts`](../../../packages/reminder/src/server/application/use-cases/queries/analyze-reminder-frequency.spec.ts) | 频率分析测试 |
 | [`packages/reminder/src/api/routes/reminder-template.routes.spec.ts`](../../../packages/reminder/src/api/routes/reminder-template.routes.spec.ts) | 模板 routes 测试 |
 | [`packages/app-vue/src/modules/reminder/stores/reminderStore.spec.ts`](../../../packages/app-vue/src/modules/reminder/stores/reminderStore.spec.ts) | 提醒 store 测试 |
 | [`apps/web/e2e/reminder/reminder-template-crud.spec.ts`](../../../apps/web/e2e/reminder/reminder-template-crud.spec.ts) | Web 提醒模板 CRUD e2e |

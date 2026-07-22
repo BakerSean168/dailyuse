@@ -5,7 +5,7 @@ tags:
   - setting
 description: 设置模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 设置模块文件索引
@@ -51,7 +51,7 @@ updated: 2026-06-02T00:00:00
 | --- | --- |
 | [`packages/setting/src/api/routes.ts`](../../../packages/setting/src/api/routes.ts) | 设置 HTTP routes（6 个端点） |
 | [`packages/setting/src/api/module.ts`](../../../packages/setting/src/api/module.ts) | 设置 API 模块定义 |
-| [`packages/setting/src/controllers/setting.controller.ts`](../../../packages/setting/src/controllers/setting.controller.ts) | 设置控制器 |
+| [`packages/setting/src/server/transport/setting.controller.ts`](../../../packages/setting/src/server/transport/setting.controller.ts) | 设置控制器 |
 | [`packages/setting/src/infrastructure-client/adapters/http/setting-http.adapter.ts`](../../../packages/setting/src/infrastructure-client/adapters/http/setting-http.adapter.ts) | 客户端 HTTP 适配器 |
 | [`packages/setting/src/infrastructure-client/adapters/ipc/setting-ipc.adapter.ts`](../../../packages/setting/src/infrastructure-client/adapters/ipc/setting-ipc.adapter.ts) | 客户端 IPC 适配器 |
 
@@ -59,13 +59,13 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/setting/src/domain-server/aggregates/user-setting.ts`](../../../packages/setting/src/domain-server/aggregates/user-setting.ts) | UserSetting 聚合根 |
-| [`packages/setting/src/application-server/use-cases/commands/patch-user-setting.ts`](../../../packages/setting/src/application-server/use-cases/commands/patch-user-setting.ts) | Patch 设置用例 |
-| [`packages/setting/src/application-server/use-cases/commands/reset-user-setting.ts`](../../../packages/setting/src/application-server/use-cases/commands/reset-user-setting.ts) | 重置设置用例 |
-| [`packages/setting/src/application-server/use-cases/commands/import-settings.ts`](../../../packages/setting/src/application-server/use-cases/commands/import-settings.ts) | 导入设置用例 |
-| [`packages/setting/src/application-server/use-cases/queries/get-user-setting.ts`](../../../packages/setting/src/application-server/use-cases/queries/get-user-setting.ts) | 获取设置查询 |
-| [`packages/setting/src/application-server/use-cases/queries/export-settings.ts`](../../../packages/setting/src/application-server/use-cases/queries/export-settings.ts) | 导出设置查询 |
-| [`packages/setting/src/infrastructure-server/setting.module.ts`](../../../packages/setting/src/infrastructure-server/setting.module.ts) | 服务端设置模块组合根 |
+| [`packages/setting/src/server/domain/aggregates/user-setting.ts`](../../../packages/setting/src/server/domain/aggregates/user-setting.ts) | UserSetting 聚合根 |
+| [`packages/setting/src/server/application/use-cases/commands/patch-user-setting.ts`](../../../packages/setting/src/server/application/use-cases/commands/patch-user-setting.ts) | Patch 设置用例 |
+| [`packages/setting/src/server/application/use-cases/commands/reset-user-setting.ts`](../../../packages/setting/src/server/application/use-cases/commands/reset-user-setting.ts) | 重置设置用例 |
+| [`packages/setting/src/server/application/use-cases/commands/import-settings.ts`](../../../packages/setting/src/server/application/use-cases/commands/import-settings.ts) | 导入设置用例 |
+| [`packages/setting/src/server/application/use-cases/queries/get-user-setting.ts`](../../../packages/setting/src/server/application/use-cases/queries/get-user-setting.ts) | 获取设置查询 |
+| [`packages/setting/src/server/application/use-cases/queries/export-settings.ts`](../../../packages/setting/src/server/application/use-cases/queries/export-settings.ts) | 导出设置查询 |
+| [`packages/setting/src/server/infrastructure/setting.module.ts`](../../../packages/setting/src/server/infrastructure/setting.module.ts) | 服务端设置模块组合根 |
 
 ## Contracts 与数据结构
 
@@ -82,8 +82,8 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/setting/src/domain-server/aggregates/__tests__/user-setting.spec.ts`](../../../packages/setting/src/domain-server/aggregates/__tests__/user-setting.spec.ts) | UserSetting 聚合测试 |
-| [`packages/setting/src/application-server/use-cases/commands/__tests__/patch-user-setting.test.ts`](../../../packages/setting/src/application-server/use-cases/commands/__tests__/patch-user-setting.test.ts) | Patch 设置测试 |
+| [`packages/setting/src/server/domain/aggregates/__tests__/user-setting.spec.ts`](../../../packages/setting/src/server/domain/aggregates/__tests__/user-setting.spec.ts) | UserSetting 聚合测试 |
+| [`packages/setting/src/server/application/use-cases/commands/__tests__/patch-user-setting.test.ts`](../../../packages/setting/src/server/application/use-cases/commands/__tests__/patch-user-setting.test.ts) | Patch 设置测试 |
 | [`packages/setting/src/api/routes.spec.ts`](../../../packages/setting/src/api/routes.spec.ts) | 设置 routes 测试 |
 | [`packages/app-vue/src/modules/setting/stores/userSettingStore.spec.ts`](../../../packages/app-vue/src/modules/setting/stores/userSettingStore.spec.ts) | 设置 store 测试 |
 

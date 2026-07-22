@@ -53,8 +53,8 @@ updated: 2026-07-22T00:00:00
 | --- | --- |
 | [`packages/schedule/src/api/routes.ts`](../../../packages/schedule/src/api/routes.ts) | 日程任务 HTTP routes（14 个端点） |
 | [`packages/schedule/src/api/schedule-event.routes.ts`](../../../packages/schedule/src/api/schedule-event.routes.ts) | 日历条目 HTTP routes（9 个端点） |
-| [`packages/schedule/src/api/transport-handlers.ts`](../../../packages/schedule/src/api/transport-handlers.ts) | 传输层处理器 |
-| [`packages/schedule/src/controllers/schedule-event.controller.ts`](../../../packages/schedule/src/controllers/schedule-event.controller.ts) | 日历条目控制器 |
+| [`packages/schedule/src/server/transport/schedule.controller.ts`](../../../packages/schedule/src/server/transport/schedule.controller.ts) | 传输层处理器 |
+| [`packages/schedule/src/server/transport/schedule-event.controller.ts`](../../../packages/schedule/src/server/transport/schedule-event.controller.ts) | 日历条目控制器 |
 | [`packages/schedule/src/infrastructure-client/adapters/http/schedule-task-http.adapter.ts`](../../../packages/schedule/src/infrastructure-client/adapters/http/schedule-task-http.adapter.ts) | 客户端 HTTP 日程任务适配器 |
 | [`packages/schedule/src/infrastructure-client/adapters/http/schedule-event-http.adapter.ts`](../../../packages/schedule/src/infrastructure-client/adapters/http/schedule-event-http.adapter.ts) | 客户端 HTTP 日历条目适配器 |
 | [`packages/schedule/src/infrastructure-client/adapters/ipc/schedule-task-ipc.adapter.ts`](../../../packages/schedule/src/infrastructure-client/adapters/ipc/schedule-task-ipc.adapter.ts) | 客户端 IPC 日程任务适配器 |
@@ -64,23 +64,23 @@ updated: 2026-07-22T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/schedule/src/domain-server/aggregates/schedule-task.ts`](../../../packages/schedule/src/domain-server/aggregates/schedule-task.ts) | ScheduleTask 聚合根 |
-| [`packages/schedule/src/domain-server/aggregates/calendar-entry.ts`](../../../packages/schedule/src/domain-server/aggregates/calendar-entry.ts) | CalendarEntry 聚合根 |
-| [`packages/schedule/src/domain-server/entities/index.ts`](../../../packages/schedule/src/domain-server/entities/index.ts) | ScheduleExecution 领域实体 |
-| [`packages/schedule/src/domain-server/services/schedule-execution-engine.ts`](../../../packages/schedule/src/domain-server/services/schedule-execution-engine.ts) | 调度执行引擎接口 |
-| [`packages/schedule/src/application-server/use-cases/commands/create-schedule-task.use-case.ts`](../../../packages/schedule/src/application-server/use-cases/commands/create-schedule-task.use-case.ts) | 创建日程任务用例 |
-| [`packages/schedule/src/application-server/use-cases/commands/pause-schedule-task.use-case.ts`](../../../packages/schedule/src/application-server/use-cases/commands/pause-schedule-task.use-case.ts) | 暂停日程任务用例 |
-| [`packages/schedule/src/application-server/use-cases/commands/resume-schedule-task.use-case.ts`](../../../packages/schedule/src/application-server/use-cases/commands/resume-schedule-task.use-case.ts) | 恢复日程任务用例 |
-| [`packages/schedule/src/application-server/use-cases/commands/trigger-schedule-task.use-case.ts`](../../../packages/schedule/src/application-server/use-cases/commands/trigger-schedule-task.use-case.ts) | 手动触发用例 |
-| [`packages/schedule/src/application-server/use-cases/queries/get-due-schedule-tasks.use-case.ts`](../../../packages/schedule/src/application-server/use-cases/queries/get-due-schedule-tasks.use-case.ts) | 获取到期任务查询 |
-| [`packages/schedule/src/application-server/services/schedule-event-application-service.ts`](../../../packages/schedule/src/application-server/services/schedule-event-application-service.ts) | 日历条目应用服务 |
-| [`packages/schedule/src/application-server/services/schedule-conflict-detection-service.ts`](../../../packages/schedule/src/application-server/services/schedule-conflict-detection-service.ts) | 冲突检测服务 |
-| [`packages/schedule/src/application-server/services/schedule-conflict-resolution-service.ts`](../../../packages/schedule/src/application-server/services/schedule-conflict-resolution-service.ts) | 冲突解决服务 |
-| [`packages/schedule/src/application-server/scheduler/schedule-task-queue.ts`](../../../packages/schedule/src/application-server/scheduler/schedule-task-queue.ts) | 调度队列（最小堆） |
-| [`packages/schedule/src/infrastructure-server/schedule.module.ts`](../../../packages/schedule/src/infrastructure-server/schedule.module.ts) | 服务端日程模块组合根 |
-| [`packages/schedule/src/infrastructure-server/adapters/prisma/schedule-prisma.repository.ts`](../../../packages/schedule/src/infrastructure-server/adapters/prisma/schedule-prisma.repository.ts) | Prisma 日历条目仓储 |
-| [`packages/schedule/src/infrastructure-server/adapters/prisma/schedule-task-prisma.repository.ts`](../../../packages/schedule/src/infrastructure-server/adapters/prisma/schedule-task-prisma.repository.ts) | Prisma 日程任务仓储 |
-| [`packages/schedule/src/infrastructure-server/adapters/prisma/schedule-execution-prisma.repository.ts`](../../../packages/schedule/src/infrastructure-server/adapters/prisma/schedule-execution-prisma.repository.ts) | Prisma 执行记录仓储 |
+| [`packages/schedule/src/server/domain/aggregates/schedule-task.ts`](../../../packages/schedule/src/server/domain/aggregates/schedule-task.ts) | ScheduleTask 聚合根 |
+| [`packages/schedule/src/server/domain/aggregates/calendar-entry.ts`](../../../packages/schedule/src/server/domain/aggregates/calendar-entry.ts) | CalendarEntry 聚合根 |
+| [`packages/schedule/src/server/domain/entities/index.ts`](../../../packages/schedule/src/server/domain/entities/index.ts) | ScheduleExecution 领域实体 |
+| [`packages/schedule/src/server/domain/services/schedule-execution-engine.ts`](../../../packages/schedule/src/server/domain/services/schedule-execution-engine.ts) | 调度执行引擎接口 |
+| [`packages/schedule/src/server/application/use-cases/commands/create-schedule-task.use-case.ts`](../../../packages/schedule/src/server/application/use-cases/commands/create-schedule-task.use-case.ts) | 创建日程任务用例 |
+| [`packages/schedule/src/server/application/use-cases/commands/pause-schedule-task.use-case.ts`](../../../packages/schedule/src/server/application/use-cases/commands/pause-schedule-task.use-case.ts) | 暂停日程任务用例 |
+| [`packages/schedule/src/server/application/use-cases/commands/resume-schedule-task.use-case.ts`](../../../packages/schedule/src/server/application/use-cases/commands/resume-schedule-task.use-case.ts) | 恢复日程任务用例 |
+| [`packages/schedule/src/server/application/use-cases/commands/trigger-schedule-task.use-case.ts`](../../../packages/schedule/src/server/application/use-cases/commands/trigger-schedule-task.use-case.ts) | 手动触发用例 |
+| [`packages/schedule/src/server/application/use-cases/queries/get-due-schedule-tasks.use-case.ts`](../../../packages/schedule/src/server/application/use-cases/queries/get-due-schedule-tasks.use-case.ts) | 获取到期任务查询 |
+| [`packages/schedule/src/server/application/services/schedule-event-application-service.ts`](../../../packages/schedule/src/server/application/services/schedule-event-application-service.ts) | 日历条目应用服务 |
+| [`packages/schedule/src/server/application/services/schedule-conflict-detection-service.ts`](../../../packages/schedule/src/server/application/services/schedule-conflict-detection-service.ts) | 冲突检测服务 |
+| [`packages/schedule/src/server/application/services/schedule-conflict-resolution-service.ts`](../../../packages/schedule/src/server/application/services/schedule-conflict-resolution-service.ts) | 冲突解决服务 |
+| [`packages/schedule/src/server/application/scheduler/schedule-task-queue.ts`](../../../packages/schedule/src/server/application/scheduler/schedule-task-queue.ts) | 调度队列（最小堆） |
+| [`packages/schedule/src/server/infrastructure/schedule.module.ts`](../../../packages/schedule/src/server/infrastructure/schedule.module.ts) | 服务端日程模块组合根 |
+| [`packages/schedule/src/server/infrastructure/adapters/prisma/schedule-prisma.repository.ts`](../../../packages/schedule/src/server/infrastructure/adapters/prisma/schedule-prisma.repository.ts) | Prisma 日历条目仓储 |
+| [`packages/schedule/src/server/infrastructure/adapters/prisma/schedule-task-prisma.repository.ts`](../../../packages/schedule/src/server/infrastructure/adapters/prisma/schedule-task-prisma.repository.ts) | Prisma 日程任务仓储 |
+| [`packages/schedule/src/server/infrastructure/adapters/prisma/schedule-execution-prisma.repository.ts`](../../../packages/schedule/src/server/infrastructure/adapters/prisma/schedule-execution-prisma.repository.ts) | Prisma 执行记录仓储 |
 
 ## Contracts 与数据结构
 
@@ -110,27 +110,27 @@ updated: 2026-07-22T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/goal/src/api/schedule-runtime.ts`](../../../packages/goal/src/api/schedule-runtime.ts) | Goal → Schedule 运行时贡献 |
-| [`packages/task/src/api/schedule-runtime.ts`](../../../packages/task/src/api/schedule-runtime.ts) | Task → Schedule 运行时贡献 |
-| [`packages/reminder/src/api/schedule-runtime.ts`](../../../packages/reminder/src/api/schedule-runtime.ts) | Reminder → Schedule 运行时贡献 |
+| [`packages/goal/src/server/transport/goal.transport-handlers.ts`](../../../packages/goal/src/server/transport/goal.transport-handlers.ts) | Goal → Schedule 运行时贡献 |
+| [`packages/task/src/server/infrastructure/schedule-execution-source.ts`](../../../packages/task/src/server/infrastructure/schedule-execution-source.ts) | Task → Schedule 运行时贡献 |
+| [`packages/reminder/src/server/infrastructure/schedule-execution-source.ts`](../../../packages/reminder/src/server/infrastructure/schedule-execution-source.ts) | Reminder → Schedule 运行时贡献 |
 
 ## 测试入口
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/schedule/src/domain-server/aggregates/__tests__/schedule-task.spec.ts`](../../../packages/schedule/src/domain-server/aggregates/__tests__/schedule-task.spec.ts) | ScheduleTask 聚合测试 |
-| [`packages/schedule/src/domain-server/aggregates/__tests__/calendar-entry.spec.ts`](../../../packages/schedule/src/domain-server/aggregates/__tests__/calendar-entry.spec.ts) | CalendarEntry 聚合测试 |
-| [`packages/schedule/src/application-server/use-cases/commands/schedule-use-cases.test.ts`](../../../packages/schedule/src/application-server/use-cases/commands/schedule-use-cases.test.ts) | 命令用例测试 |
-| [`packages/schedule/src/application-server/use-cases/queries/schedule-query-use-cases.test.ts`](../../../packages/schedule/src/application-server/use-cases/queries/schedule-query-use-cases.test.ts) | 查询用例测试 |
-| [`packages/schedule/src/application-server/use-cases/calculate-next-run.test.ts`](../../../packages/schedule/src/application-server/use-cases/calculate-next-run.test.ts) | 下次运行计算测试 |
-| [`packages/schedule/src/application-server/services/schedule-conflict-resolution-service.spec.ts`](../../../packages/schedule/src/application-server/services/schedule-conflict-resolution-service.spec.ts) | 冲突解决服务测试 |
+| [`packages/schedule/src/server/domain/aggregates/__tests__/schedule-task.spec.ts`](../../../packages/schedule/src/server/domain/aggregates/__tests__/schedule-task.spec.ts) | ScheduleTask 聚合测试 |
+| [`packages/schedule/src/server/domain/aggregates/__tests__/calendar-entry.spec.ts`](../../../packages/schedule/src/server/domain/aggregates/__tests__/calendar-entry.spec.ts) | CalendarEntry 聚合测试 |
+| [`packages/schedule/src/server/application/use-cases/commands/schedule-use-cases.test.ts`](../../../packages/schedule/src/server/application/use-cases/commands/schedule-use-cases.test.ts) | 命令用例测试 |
+| [`packages/schedule/src/server/application/use-cases/queries/schedule-query-use-cases.test.ts`](../../../packages/schedule/src/server/application/use-cases/queries/schedule-query-use-cases.test.ts) | 查询用例测试 |
+| [`packages/schedule/src/server/application/use-cases/calculate-next-run.test.ts`](../../../packages/schedule/src/server/application/use-cases/calculate-next-run.test.ts) | 下次运行计算测试 |
+| [`packages/schedule/src/server/application/services/schedule-conflict-resolution-service.spec.ts`](../../../packages/schedule/src/server/application/services/schedule-conflict-resolution-service.spec.ts) | 冲突解决服务测试 |
 | [`packages/schedule/src/api/routes.spec.ts`](../../../packages/schedule/src/api/routes.spec.ts) | 任务 routes 测试 |
 | [`packages/schedule/src/api/schedule-event.routes.spec.ts`](../../../packages/schedule/src/api/schedule-event.routes.spec.ts) | 事件 routes 测试 |
 | [`packages/app-vue/src/modules/schedule/stores/scheduleStore.spec.ts`](../../../packages/app-vue/src/modules/schedule/stores/scheduleStore.spec.ts) | 日程 store 测试 |
 | [`packages/app-vue/src/modules/schedule/composables/useCalendarView.spec.ts`](../../../packages/app-vue/src/modules/schedule/composables/useCalendarView.spec.ts) | 日历视图组合函数测试 |
 | [`apps/web/e2e/schedule/schedule-crud.spec.ts`](../../../apps/web/e2e/schedule/schedule-crud.spec.ts) | Web 日程 CRUD e2e |
 | [`apps/web/e2e/schedule/schedule-calendar.spec.ts`](../../../apps/web/e2e/schedule/schedule-calendar.spec.ts) | Web 日历视图 e2e |
-| [`apps/web/e2e/schedule/schedule-week-view.spec.ts`](../../../apps/web/e2e/schedule/schedule-week-view.spec.ts) | Web 周视图 e2e |
+| [`apps/web/e2e/schedule/schedule-calendar.spec.ts`](../../../apps/web/e2e/schedule/schedule-calendar.spec.ts) | Web 周视图 e2e |
 
 ## 需要重点关注的改动风险
 

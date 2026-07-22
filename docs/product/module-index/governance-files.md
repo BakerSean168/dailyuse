@@ -5,7 +5,7 @@ tags:
   - governance
 description: 治理模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-07-06T00:00:00+08:00
+updated: 2026-07-22T00:00:00+08:00
 ---
 
 # 治理模块文件索引
@@ -33,8 +33,8 @@ updated: 2026-07-06T00:00:00+08:00
 | [`packages/app-vue/src/modules/governance/components/RevisionCard.vue`](../../../packages/app-vue/src/modules/governance/components/RevisionCard.vue) | 修订卡片组件 |
 | [`packages/app-vue/src/modules/governance/components/CodeSnippetView.vue`](../../../packages/app-vue/src/modules/governance/components/CodeSnippetView.vue) | 代码片段展示组件 |
 | [`packages/app-vue/src/modules/governance/components/RuleStatusBadge.vue`](../../../packages/app-vue/src/modules/governance/components/RuleStatusBadge.vue) | 规则状态徽章 |
-| [`packages/app-vue/src/modules/governance/components/SearchBar.vue`](../../../packages/app-vue/src/modules/governance/components/SearchBar.vue) | 搜索栏组件 |
-| [`packages/app-vue/src/modules/governance/components/TagFilterChips.vue`](../../../packages/app-vue/src/modules/governance/components/TagFilterChips.vue) | 标签筛选组件 |
+| [`packages/app-vue/src/modules/governance/components/GovernanceSearchBar.vue`](../../../packages/app-vue/src/modules/governance/components/GovernanceSearchBar.vue) | 搜索栏组件 |
+| [`packages/app-vue/src/modules/governance/components/RuleStatusBadge.vue`](../../../packages/app-vue/src/modules/governance/components/RuleStatusBadge.vue) | 标签筛选组件 |
 
 ## API、客户端与桌面接线
 

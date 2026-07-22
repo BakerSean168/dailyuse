@@ -3118,6 +3118,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、第二生产 Turn Engine、统一助手 UI、GitHub App fixture
 > E2E、全量 PR 门禁。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百三十一轮）：product module-index 路径全量对齐（仍不打勾）——
+> 批量修正 `docs/product/module-index/*-files.md` 过时 `domain-server`/`application-server`/
+> `infrastructure-server`/`controllers` 路径（141+22 处）到 `packages/*/src/server/*` 与现行 UI/
+> e2e 入口；删除 2 条已无文件的 dashboard e2e 行。新增 `product-module-index-paths.surface.spec.ts`
+> 锁：索引链接必须落盘且禁止 legacy server 段名。验证：contracts surface 1 + governance-check。
+> §13.2 仍为部分/外部阻塞。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3523,6 +3530,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十八轮：§13.2 focused evidence suite re-run（253 tests，residuals 250–327 锁；不改 checkbox）。
   残留三百二十九轮：ai-files 索引对齐 server/* Host adapters + surface 锁。
   残留三百三十轮：§13.2 focused evidence suite re-run（254 tests，residuals 250–329 锁；不改 checkbox）。
+  残留三百三十一轮：module-index 全量路径对齐 server/* + integrity surface。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3548,6 +3556,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十八轮：§13.2 focused evidence suite re-run (253 tests, residuals 250–327 locks, no checkbox changes)。
   残留三百二十九轮：ai-files module index path rewrite to server/* + ADR-035 Host adapter table; product-docs surface。
   残留三百三十轮：§13.2 focused evidence suite re-run (254 tests, residuals 250–329 locks, no checkbox changes)。
+  残留三百三十一轮：rewrite product module-index paths to server/* + live UI/e2e; path integrity surface。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3659,6 +3668,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十八轮：tip 上 253 项 focused evidence suite（含 residual 250–327 product-docs 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百二十九轮：ai-files 索引与 Host 生产路径对齐 + surface 锁；仍不构成全量 PR 门禁证据。
   残留三百三十轮：tip 上 254 项 focused evidence suite（含 residual 250–329 ai-files 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百三十一轮：module-index 全量路径对齐 + integrity surface；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

@@ -5,7 +5,7 @@ tags:
   - notification
 description: 通知模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 通知模块文件索引
@@ -45,9 +45,9 @@ updated: 2026-06-02T00:00:00
 | 文件 | 说明 |
 | --- | --- |
 | [`packages/notification/src/api/routes.ts`](../../../packages/notification/src/api/routes.ts) | 通知 HTTP routes（10 个端点） |
-| [`packages/notification/src/api/transport-handlers.ts`](../../../packages/notification/src/api/transport-handlers.ts) | 传输层处理器 |
+| [`packages/notification/src/server/transport/notification.controller.ts`](../../../packages/notification/src/server/transport/notification.controller.ts) | 传输层处理器 |
 | [`packages/notification/src/api/module.ts`](../../../packages/notification/src/api/module.ts) | 通知 API 模块定义 |
-| [`packages/notification/src/controllers/notification.controller.ts`](../../../packages/notification/src/controllers/notification.controller.ts) | 通知控制器 |
+| [`packages/notification/src/server/transport/notification.controller.ts`](../../../packages/notification/src/server/transport/notification.controller.ts) | 通知控制器 |
 | [`packages/notification/src/infrastructure-client/adapters/http/notification-http.adapter.ts`](../../../packages/notification/src/infrastructure-client/adapters/http/notification-http.adapter.ts) | 客户端 HTTP 适配器 |
 | [`packages/notification/src/infrastructure-client/adapters/ipc/notification-ipc.adapter.ts`](../../../packages/notification/src/infrastructure-client/adapters/ipc/notification-ipc.adapter.ts) | 客户端 IPC 适配器 |
 
@@ -55,20 +55,20 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/notification/src/domain-server/aggregates/notification.ts`](../../../packages/notification/src/domain-server/aggregates/notification.ts) | Notification 聚合根 |
-| [`packages/notification/src/domain-server/aggregates/notification-preference.ts`](../../../packages/notification/src/domain-server/aggregates/notification-preference.ts) | NotificationPreference 聚合根 |
-| [`packages/notification/src/domain-server/aggregates/notification-template.ts`](../../../packages/notification/src/domain-server/aggregates/notification-template.ts) | NotificationTemplate 聚合根 |
-| [`packages/notification/src/domain-server/entities/notification-channel.ts`](../../../packages/notification/src/domain-server/entities/notification-channel.ts) | NotificationChannel 实体 |
-| [`packages/notification/src/domain-server/entities/notification-history.ts`](../../../packages/notification/src/domain-server/entities/notification-history.ts) | NotificationHistory 实体 |
-| [`packages/notification/src/domain-server/services/notification-domain-service.ts`](../../../packages/notification/src/domain-server/services/notification-domain-service.ts) | 通知领域服务 |
-| [`packages/notification/src/domain-server/services/notification-policy.ts`](../../../packages/notification/src/domain-server/services/notification-policy.ts) | 通知策略（偏好、免打扰、频率限制检查） |
-| [`packages/notification/src/application-server/use-cases/commands/create-notification.use-case.ts`](../../../packages/notification/src/application-server/use-cases/commands/create-notification.use-case.ts) | 创建通知用例 |
-| [`packages/notification/src/application-server/use-cases/commands/mark-notification-as-read.use-case.ts`](../../../packages/notification/src/application-server/use-cases/commands/mark-notification-as-read.use-case.ts) | 标记已读用例 |
-| [`packages/notification/src/application-server/use-cases/queries/get-unread-notifications.use-case.ts`](../../../packages/notification/src/application-server/use-cases/queries/get-unread-notifications.use-case.ts) | 获取未读通知查询 |
-| [`packages/notification/src/application-server/use-cases/queries/get-user-notifications.use-case.ts`](../../../packages/notification/src/application-server/use-cases/queries/get-user-notifications.use-case.ts) | 获取用户通知查询 |
-| [`packages/notification/src/infrastructure-server/notification.module.ts`](../../../packages/notification/src/infrastructure-server/notification.module.ts) | 服务端通知模块组合根 |
-| [`packages/notification/src/infrastructure-server/adapters/prisma/notification-prisma.repository.ts`](../../../packages/notification/src/infrastructure-server/adapters/prisma/notification-prisma.repository.ts) | Prisma 通知仓储 |
-| [`packages/notification/src/infrastructure-server/adapters/prisma/notification-preference-prisma.repository.ts`](../../../packages/notification/src/infrastructure-server/adapters/prisma/notification-preference-prisma.repository.ts) | Prisma 偏好仓储 |
+| [`packages/notification/src/server/domain/aggregates/notification.ts`](../../../packages/notification/src/server/domain/aggregates/notification.ts) | Notification 聚合根 |
+| [`packages/notification/src/server/domain/aggregates/notification-preference.ts`](../../../packages/notification/src/server/domain/aggregates/notification-preference.ts) | NotificationPreference 聚合根 |
+| [`packages/notification/src/server/domain/aggregates/notification-template.ts`](../../../packages/notification/src/server/domain/aggregates/notification-template.ts) | NotificationTemplate 聚合根 |
+| [`packages/notification/src/server/domain/entities/notification-channel.ts`](../../../packages/notification/src/server/domain/entities/notification-channel.ts) | NotificationChannel 实体 |
+| [`packages/notification/src/server/domain/entities/notification-history.ts`](../../../packages/notification/src/server/domain/entities/notification-history.ts) | NotificationHistory 实体 |
+| [`packages/notification/src/server/domain/services/notification-domain-service.ts`](../../../packages/notification/src/server/domain/services/notification-domain-service.ts) | 通知领域服务 |
+| [`packages/notification/src/server/domain/services/notification-policy.ts`](../../../packages/notification/src/server/domain/services/notification-policy.ts) | 通知策略（偏好、免打扰、频率限制检查） |
+| [`packages/notification/src/server/application/use-cases/commands/create-notification.use-case.ts`](../../../packages/notification/src/server/application/use-cases/commands/create-notification.use-case.ts) | 创建通知用例 |
+| [`packages/notification/src/server/application/use-cases/commands/mark-notification-as-read.use-case.ts`](../../../packages/notification/src/server/application/use-cases/commands/mark-notification-as-read.use-case.ts) | 标记已读用例 |
+| [`packages/notification/src/server/application/use-cases/queries/get-unread-notifications.use-case.ts`](../../../packages/notification/src/server/application/use-cases/queries/get-unread-notifications.use-case.ts) | 获取未读通知查询 |
+| [`packages/notification/src/server/application/use-cases/queries/get-user-notifications.use-case.ts`](../../../packages/notification/src/server/application/use-cases/queries/get-user-notifications.use-case.ts) | 获取用户通知查询 |
+| [`packages/notification/src/server/infrastructure/notification.module.ts`](../../../packages/notification/src/server/infrastructure/notification.module.ts) | 服务端通知模块组合根 |
+| [`packages/notification/src/server/infrastructure/adapters/prisma/notification-prisma.repository.ts`](../../../packages/notification/src/server/infrastructure/adapters/prisma/notification-prisma.repository.ts) | Prisma 通知仓储 |
+| [`packages/notification/src/server/infrastructure/adapters/prisma/notification-preference-prisma.repository.ts`](../../../packages/notification/src/server/infrastructure/adapters/prisma/notification-preference-prisma.repository.ts) | Prisma 偏好仓储 |
 
 ## Contracts 与数据结构
 
@@ -91,12 +91,12 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/notification/src/domain-server/aggregates/__tests__/notification.spec.ts`](../../../packages/notification/src/domain-server/aggregates/__tests__/notification.spec.ts) | Notification 聚合测试 |
-| [`packages/notification/src/domain-server/aggregates/__tests__/notification-preference.spec.ts`](../../../packages/notification/src/domain-server/aggregates/__tests__/notification-preference.spec.ts) | NotificationPreference 聚合测试 |
-| [`packages/notification/src/domain-server/services/__tests__/notification-policy.spec.ts`](../../../packages/notification/src/domain-server/services/__tests__/notification-policy.spec.ts) | 通知策略测试 |
-| [`packages/notification/src/application-server/use-cases/commands/__tests__/create-notification.test.ts`](../../../packages/notification/src/application-server/use-cases/commands/__tests__/create-notification.test.ts) | 创建通知用例测试 |
-| [`packages/notification/src/application-server/use-cases/commands/__tests__/mark-notification-as-read.test.ts`](../../../packages/notification/src/application-server/use-cases/commands/__tests__/mark-notification-as-read.test.ts) | 标记已读用例测试 |
-| [`packages/notification/src/application-server/use-cases/queries/__tests__/get-unread-notifications.test.ts`](../../../packages/notification/src/application-server/use-cases/queries/__tests__/get-unread-notifications.test.ts) | 未读通知查询测试 |
+| [`packages/notification/src/server/domain/aggregates/__tests__/notification.spec.ts`](../../../packages/notification/src/server/domain/aggregates/__tests__/notification.spec.ts) | Notification 聚合测试 |
+| [`packages/notification/src/server/domain/aggregates/__tests__/notification-preference.spec.ts`](../../../packages/notification/src/server/domain/aggregates/__tests__/notification-preference.spec.ts) | NotificationPreference 聚合测试 |
+| [`packages/notification/src/server/domain/services/__tests__/notification-policy.spec.ts`](../../../packages/notification/src/server/domain/services/__tests__/notification-policy.spec.ts) | 通知策略测试 |
+| [`packages/notification/src/server/application/use-cases/commands/__tests__/create-notification.test.ts`](../../../packages/notification/src/server/application/use-cases/commands/__tests__/create-notification.test.ts) | 创建通知用例测试 |
+| [`packages/notification/src/server/application/use-cases/commands/__tests__/mark-notification-as-read.test.ts`](../../../packages/notification/src/server/application/use-cases/commands/__tests__/mark-notification-as-read.test.ts) | 标记已读用例测试 |
+| [`packages/notification/src/server/application/use-cases/queries/__tests__/get-unread-notifications.test.ts`](../../../packages/notification/src/server/application/use-cases/queries/__tests__/get-unread-notifications.test.ts) | 未读通知查询测试 |
 | [`packages/notification/src/api/routes.spec.ts`](../../../packages/notification/src/api/routes.spec.ts) | 通知 routes 测试 |
 | [`packages/app-vue/src/modules/notification/stores/notificationStore.spec.ts`](../../../packages/app-vue/src/modules/notification/stores/notificationStore.spec.ts) | 通知 store 测试 |
 | [`apps/web/e2e/notification/notification-center.spec.ts`](../../../apps/web/e2e/notification/notification-center.spec.ts) | Web 通知中心 e2e |
