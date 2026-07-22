@@ -845,6 +845,24 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create client complete settlement draft is create_task_template only (residual 501)', () => {
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(taskWorkflow).toContain('completeTaskAgentRun');
+    expect(taskWorkflow).toContain('Residual 501');
+    const completeIdx = taskWorkflow.indexOf('async function completeTaskAgentRun');
+    expect(completeIdx).toBeGreaterThan(-1);
+    const completeSlice = taskWorkflow.slice(completeIdx, completeIdx + 1600);
+    // Residual 501: find create_task_template draft — not blind pendingActions[0].
+    expect(completeSlice).toContain(".find((action) => action.tool === 'create_task_template')");
+    expect(completeSlice).toContain('Residual 501');
+    expect(completeSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+    // Still waiting_approval + templateId double-gates (residuals 489/465).
+    expect(completeSlice).toContain("run.run.status !== 'waiting_approval'");
+    expect(completeSlice).toContain('if (!templateId) return');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

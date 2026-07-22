@@ -1,9 +1,11 @@
 /**
- * Residual 431/433/437/439/445/461: product path for AgentType task.create.
+ * Residual 431/433/437/439/445/461/489/501: product path for AgentType task.create.
  * Residual 433: optional linked goalId at start; session restore owned by useAIChatView.
  * Residual 437: process-local cancel/complete resume after Host lifecycle decisions.
  * Residual 439: process-local edit revise after Host proposal revise.
  * Residual 445: re-align linkedGoalId from restored/synced taskAgentRun.
+ * Residual 489: complete only from waiting_approval (Host residual 475 symmetry).
+ * Residual 501: complete settlement draft must be create_task_template (no blind pending[0]).
  * Host proposal + client createTemplate settle own mutation (residual 423–425).
  * Full Task LangGraph workflow is not claimed here.
  */
@@ -161,6 +163,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
    * (residual 467/469). Residual 471: do not send approvedActions on confirm — process-local
    * draft is Host source of truth (edit is the only revise path).
    * Residual 489: only complete from waiting_approval (Host residual 475 also fail-closed).
+   * Residual 501: settlement draft source must be create_task_template (Host 471/491 symmetry).
    * This only records settlement for getRun/list/reopen.
    */
   async function completeTaskAgentRun(hostOptions?: {
@@ -178,6 +181,11 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
         ? hostOptions.templateId.trim()
         : undefined;
     if (!templateId) return;
+    // Residual 501: never spread a foreign tool's pending[0] payload into confirm settlement.
+    const pending =
+      run.state.pendingActions.find((action) => action.tool === 'create_task_template') ??
+      run.state.approvedActions.find((action) => action.tool === 'create_task_template');
+    if (!pending) return;
     taskAgentResuming.value = true;
     try {
       const title =
@@ -189,11 +197,10 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
           ? hostOptions.goalId.trim()
           : undefined;
 
-      const pending = run.state.pendingActions[0] ?? run.state.approvedActions[0];
       // Residual 471: settlement data may carry title/goalId for display, but Host draft
       // comes from process-local pending/approved only (ignore client approvedActions).
       const payloadBase: Record<string, unknown> = {
-        ...(pending?.payload ?? {}),
+        ...(pending.payload ?? {}),
       };
       // Residual 469: title stamp must match approved draft (Host fail-closes on rebind).
       if (title) payloadBase['title'] = title;

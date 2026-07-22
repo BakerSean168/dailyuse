@@ -331,6 +331,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'resolveTaskCreateRunId',
         // Residual 499: start builder agentType task.create fail-closed.
         'HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE',
+        // Residual 501: client complete settlement draft create_task_template only.
+        'Residual 501',
+        "action.tool === 'create_task_template'",
       ],
       status: 'implemented_unit',
     },
