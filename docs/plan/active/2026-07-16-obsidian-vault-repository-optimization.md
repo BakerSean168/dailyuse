@@ -1946,6 +1946,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：task dependency surface + dependency tests + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+>
+> 续进展 2026-07-22（阶段 6 残留一百六十七轮）：旧 editor/repository 运行时面审计——
+> API/Desktop/Vue 源码表面锁定仅 knowledge 路径；无 Editor module 注册；无
+> SyncRepositoryUseCase；contracts RepositoryRpcMap 为空；Vue 无 /note/:id。
+> 补 ownership/runtime surface。§13.2 仍部分。
+> 验证：legacy-editor-repository-runtime surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
+
+
 
 
 
@@ -2157,6 +2168,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百六十四轮：reminder findActive identity-required。
   残留一百六十五轮：schedule task query/count identity-required。
   残留一百六十六轮：task dependency findAggregateById identity-scoped。
+  残留一百六十七轮：legacy editor/repository runtime surface audit。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
