@@ -3089,6 +3089,84 @@ describe('resolveHostPanelOwnedProductRun (residual 569)', () => {
   });
 });
 
+
+describe('Host panel ownership dual-mirrors exclusive before match (residual 597)', () => {
+  function primaryTask(status: 'waiting_approval' | 'completed'): AgentRunResult {
+    return {
+      run: {
+        runId: 'pt-597',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create',
+        status,
+        createdAt: 1,
+        updatedAt: status === 'completed' ? 2 : 1,
+      },
+      state: {
+        pendingActions:
+          status === 'waiting_approval'
+            ? [
+                {
+                  tool: 'create_task_template',
+                  index: 0,
+                  dependsOn: [],
+                  payload: { title: 'Primary' },
+                  rationale: 'task',
+                },
+              ]
+            : [],
+        approvedActions: [],
+        executedActions:
+          status === 'completed'
+            ? [
+                {
+                  tool: 'create_task_template',
+                  status: 'executed',
+                  message: 'ok',
+                  entityId: 'tpl-597',
+                  data: { title: 'Primary' },
+                },
+              ]
+            : [],
+        artifacts: [{ kind: 'task_draft', id: 'td', data: { goalId: 'g-1' }, updatedAt: 1 }],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  it('ownership uses dual-mirrored settled exclusive over stale waiting dual-mirror', () => {
+    const completed = primaryTask('completed');
+    const waiting = primaryTask('waiting_approval');
+    const owned = resolveHostPanelOwnedProductRun({
+      source: 'task',
+      runId: 'pt-597',
+      goalAgentRun: completed,
+      taskAgentRun: waiting,
+    });
+    expect(owned?.productTool).toBe('create_task_template');
+    expect(owned?.run.run.status).toBe('completed');
+    // Approve gate fail-closed against settled dual-mirror (no waiting_approval).
+    expect(
+      canHostApproveProductAgentRun({
+        run: owned!.run,
+        productTool: owned!.productTool,
+      }),
+    ).toBe(false);
+  });
+
+  it('goal-source primary-task still resolves after exclusive promote', () => {
+    const waiting = primaryTask('waiting_approval');
+    const owned = resolveHostPanelOwnedProductRun({
+      source: 'goal',
+      runId: 'pt-597',
+      goalAgentRun: waiting,
+      taskAgentRun: null,
+    });
+    expect(owned?.productTool).toBe('create_task_template');
+    expect(owned?.run.run.runId).toBe('pt-597');
+  });
+});
+
 describe('Host panel settlement ownership classifiers (residual 581)', () => {
   function makeOwned(
     agentType: string,

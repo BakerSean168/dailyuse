@@ -420,6 +420,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'Residual 593',
         // Residual 595: live exclusive promote dual-mirrors before builders.
         'Residual 595',
+        // Residual 597: Host panel ownership dual-mirrors exclusive before match.
+        'Residual 597',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

@@ -1250,6 +1250,24 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('Host panel ownership dual-mirrors exclusive before match (residual 597)', () => {
+    expect(helper).toContain('Residual 597');
+    const resolveIdx = helper.indexOf('export function resolveHostPanelOwnedProductRun');
+    expect(resolveIdx).toBeGreaterThan(-1);
+    const resolveSlice = helper.slice(resolveIdx, resolveIdx + 2200);
+    expect(resolveSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
+    expect(resolveSlice).toContain('Residual 597');
+    // exclusive promote before goal/task ownership match
+    const exclusiveIdx = resolveSlice.indexOf('resolveLiveHostWorkbenchAgentRuns');
+    const sourceGoalIdx = resolveSlice.indexOf("input.source === 'goal'");
+    expect(exclusiveIdx).toBeGreaterThan(-1);
+    expect(sourceGoalIdx).toBeGreaterThan(exclusiveIdx);
+    // primary-task after exclusive still reachable from goal source
+    expect(resolveSlice).toContain("agentType !== 'task.create'");
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
     const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');

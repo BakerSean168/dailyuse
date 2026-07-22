@@ -294,13 +294,14 @@ export type HostPanelProductTool =
  * confirm/cancel (process-local task store is AgentType task.create only).
  * Residual 581: settlement classifiers isHostPanelProcessLocalTaskCreateOwned /
  * isHostPanelGoalSessionProductOwned keep approve/reject/revise from dual drift.
+ * Residual 597: dual-mirror + exclusive-promote session inputs before ownership match
+ * so gates/settlement never use a stale exclusive dual-mirror over settled goal.
  *
- * - goal → create_goal when goalAgentRun.runId matches and run is not primary-task;
- *   primary-task-shaped goal session → create_task_template
- * - knowledge → create_knowledge_note when noteAgentRun.runId matches
- * - task → create_task_template when task session owns runId as task.create OR
- *   primary-task-shaped; otherwise create_goal when goal session owns the same
- *   runId as a normal (non primary-task) goal run
+ * - goal → create_goal when exclusive goal lane matches and run is not primary-task;
+ *   primary-task-shaped (goal source or exclusive task dual-mirror) → create_task_template
+ * - knowledge → create_knowledge_note when exclusive note lane matches
+ * - task → create_task_template when exclusive task lane owns runId as task.create OR
+ *   primary-task-shaped; otherwise create_goal when exclusive/normal goal owns runId
  * - orphan task proposals (no AgentRun owner) → null (client-settle / domain fallback)
  */
 export function resolveHostPanelOwnedProductRun(input: {
@@ -313,8 +314,27 @@ export function resolveHostPanelOwnedProductRun(input: {
   const runId = typeof input.runId === 'string' ? input.runId : '';
   if (!runId) return null;
 
+  // Residual 597: dual-mirror then exclusive-promote before ownership match
+  // (idempotent when caller already passes liveHostWorkbenchAgentRuns).
+  const exclusive = resolveLiveHostWorkbenchAgentRuns({
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+    taskAgentRun: input.taskAgentRun,
+  });
+
   if (input.source === 'goal') {
-    const run = input.goalAgentRun?.run.runId === runId ? input.goalAgentRun : null;
+    // Prefer exclusive goal lane; primary-task exclusive lives on task lane after promote.
+    let run =
+      exclusive.goalAgentRun?.run.runId === runId ? exclusive.goalAgentRun : null;
+    if (
+      !run &&
+      exclusive.taskAgentRun?.run.runId === runId &&
+      isPrimaryTaskHostAgentRun(exclusive.taskAgentRun) &&
+      exclusive.taskAgentRun.run.agentType !== 'task.create'
+    ) {
+      // Residual 597/577: goal-source primary-task after exclusive promote.
+      run = exclusive.taskAgentRun;
+    }
     if (!run) return null;
     // Residual 577: primary-task-shaped goal session still owns task product tool.
     if (isPrimaryTaskHostAgentRun(run)) {
@@ -323,16 +343,17 @@ export function resolveHostPanelOwnedProductRun(input: {
     return { run, productTool: 'create_goal' };
   }
   if (input.source === 'knowledge') {
-    const run = input.noteAgentRun?.run.runId === runId ? input.noteAgentRun : null;
+    const run =
+      exclusive.noteAgentRun?.run.runId === runId ? exclusive.noteAgentRun : null;
     return run ? { run, productTool: 'create_knowledge_note' } : null;
   }
   if (input.source === 'task') {
-    const taskRun = input.taskAgentRun;
+    const taskRun = exclusive.taskAgentRun;
     if (taskRun?.run.runId === runId && isPrimaryTaskHostAgentRun(taskRun)) {
       // Residual 577: task.create AgentType OR primary-task-shaped (exclusive lane).
       return { run: taskRun, productTool: 'create_task_template' };
     }
-    const goalRun = input.goalAgentRun;
+    const goalRun = exclusive.goalAgentRun;
     if (goalRun?.run.runId === runId) {
       if (isPrimaryTaskHostAgentRun(goalRun)) {
         return { run: goalRun, productTool: 'create_task_template' };
