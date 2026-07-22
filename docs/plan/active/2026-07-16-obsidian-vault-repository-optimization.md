@@ -2978,6 +2978,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > composition/harness/journey + stage-0 freeze + governance-check（GOV_EXIT:0）。§13.2 Agent 仍为
 > **部分实现**。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百一十五轮）：§13.2 聚焦证据套件复跑（含 residual 250–314
+> dual/docs/disclosure/ADR-035/three-login/harness/composition/DirectTurnEngine 锁，不改 checkbox）——
+> **67 文件 / 223 测试**（app-vue 54、ai 51、repository 35、contracts 14、ipc-client 5、
+> http-client 5、governance 2、setting 5、data-portability 15、authentication 13、reminder 2、
+> notification 2、account 2、goal 2、schedule 2、dashboard 1、desktop 9、task 4）+
+> governance-check（GOV_EXIT:0）。相对 residual 312：ai +1 file / +7 tests（DirectTurnEngine）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、第二生产 Turn Engine / multi-engine 接线 E2E、
+> GitHub App fixture E2E、全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3379,6 +3388,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十二轮：§13.2 focused evidence suite re-run (216 tests, residuals 250–311 locks, no checkbox changes)。
   残留三百一十三轮：align Agent Host active plan stage-0 evidence pointers (status 实施中 partial; no DoD checkbox flips)。
   残留三百一十四轮：production DirectTurnEngine (engine.direct_turn) implements ITurnEnginePort; module.turnEngine wired; multi-engine still partial。
+  残留三百一十五轮：§13.2 focused evidence suite re-run (223 tests, residuals 250–314 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3466,6 +3476,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十二轮：tip 上 216 项 focused evidence suite（含 residual 250–311 dual/docs/disclosure/ADR-035/three-login/harness/composition 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百一十三轮：Agent Host plan stage-0 证据指针对齐 + governance-check；仍不构成生产 multi-engine/统一助手完成证据。
   残留三百一十四轮：DirectTurnEngine 生产首引擎 + module.turnEngine + stage-0 仅允许该引擎；仍不构成 multi-engine/统一助手完成证据。
+  残留三百一十五轮：tip 上 223 项 focused evidence suite（含 residual 250–314 dual/docs/disclosure/ADR-035/three-login/harness/composition/DirectTurnEngine 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
