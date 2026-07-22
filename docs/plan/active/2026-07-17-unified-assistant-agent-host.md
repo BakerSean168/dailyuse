@@ -19,7 +19,7 @@ updated: 2026-07-22T00:00:00
 
 本文执行 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)，承接 Open Design、`earendil-works/pi`、当前 TypeScript AI 模块、Python LangGraph runtime、checkpoint、tool executor 和 Obsidian/GitHub 知识仓库方案的专项调研。
 
-状态：**实施中**（阶段 0/1/2/3/4 部分起步 + 阶段 6 CustomModelGateway 部分；完成定义未宣称）。
+状态：**实施中**（阶段 0/1/2/3/4 部分起步 + AssistantFacade residual 343 + 阶段 6 CustomModelGateway 部分；完成定义未宣称）。
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
 
@@ -27,9 +27,11 @@ updated: 2026-07-22T00:00:00
 
 - **阶段 0 部分已落地（契约冻结）**：
   - `packages/contracts` agent-host：`ITurnEnginePort` / `ICapabilityResolverPort` /
-    `IWorkflowAdapterPort` / `IProposalKernelPort` + `resolveRunPlan` / capability kinds 已冻结。
-  - stage-0 surface：生产侧允许 `DirectTurnEngine` + `LangGraphWorkflowAdapter` + `ProposalKernel` +
-    `CapabilityResolver`。runtime `buildAgentRuntimeCapabilityOffers` 不静默 emit `engine.*`。
+    `IWorkflowAdapterPort` / `IProposalKernelPort` / `IModelGatewayPort` / `IAssistantFacadePort`
+    + `resolveRunPlan` / capability kinds 已冻结。
+  - stage-0 surface：生产侧允许 `DirectTurnEngine` + `ReadonlyAnalysisTurnEngine` +
+    `LangGraphWorkflowAdapter` + `ProposalKernel` + `CapabilityResolver` + `CustomModelGateway` +
+    `AssistantFacade`。runtime `buildAgentRuntimeCapabilityOffers` 不静默 emit `engine.*`。
   - ADR-035 journey（capability/turn isolation steps 1–16）+ multi-engine conformance harness
     （`engine.direct_turn` + `engine.langgraph_workflow` 同 suite isolation；**in-suite doubles only**）
     在 vault active plan residual 305/309/311 证据中通过。
@@ -46,13 +48,23 @@ updated: 2026-07-22T00:00:00
 - **阶段 3 部分起步（residual 318）**：
   - 生产 `LangGraphWorkflowAdapter` 包装 `IAgentRuntimePort`；`module.workflowAdapter` 在 remote 有值。
   - workflow offers 永不含 `tool.mutation`/`tool.proposal`。
-- **阶段 4 部分起步（residual 314/316）**：
+- **阶段 4 部分起步（residual 314/316/341）**：
   - 生产 `DirectTurnEngine`（`engine.direct_turn`）已实现 `ITurnEnginePort`，由 `createAIModule().turnEngine` 暴露。
+  - 第二生产 `ReadonlyAnalysisTurnEngine`（`engine.pi_readonly`）经 `CustomModelGateway`；
+    `module.readonlyTurnEngine` 接线；不接管 open chat 默认路径。
   - 开放式 chat/analysis only；ownership fail-closed + abort；不自动 emit `engine.*` capability offers。
   - `sendMessage`/`streamMessage` 已经同一 `DirectTurnEngine`（IOpenChatTurnPort）；统一助手 UI 未切换。
+- **AssistantFacade 部分起步（residual 343）**：
+  - 生产 `AssistantFacade` 实现 `IAssistantFacadePort`；`module.assistantFacade` 在 direct/remote 均有值。
+  - `message` 默认 DirectTurn open chat；`executionProfileId: pi_readonly` 走 ReadonlyAnalysis。
+  - `approve_proposal`/`reject_proposal` 仅 ProposalKernel 生命周期，永不 `executeApproved`。
+  - `cancel_run` 中止 primary + readonly + openChat。
+  - 统一助手 UI 工作台仍未切换到 facade。
+- **阶段 6 部分起步（residual 337）**：
+  - 生产 `CustomModelGateway` 实现 `IModelGatewayPort`；结果只回 `modelBindingId`，凭据仅请求作用域。
 - **仍未实现（不得勾完成定义）**：
-  - 第二生产 Turn Engine（langgraph/pi/cli）；Proposal Kernel 产品面/UI；
-    统一助手 UI；完整 multi-engine runtime E2E；CLI/Pi product path。
+  - 真实 Pi SDK/CLI 进程 adapter；Proposal Kernel 产品面/UI；
+    统一助手 UI 工作台；完整 multi-engine runtime E2E；CLI/Pi product path。
 - 更完整的 vault/知识仓库边界与 §13.2 证据见
   [2026-07-16-obsidian-vault-repository-optimization.md](./2026-07-16-obsidian-vault-repository-optimization.md)。
 
@@ -867,7 +879,7 @@ packages/contracts/src/modules/ai/
 
 ## 20. 完成定义
 
-- [ ] 用户只面对统一助手和右侧工作台。
+- [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343 生产 AssistantFacade.dispatch；统一助手 UI 工作台仍未切换）**
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。
 - [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
 - [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；UI 泄漏审计未齐）**

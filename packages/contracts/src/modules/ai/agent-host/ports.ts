@@ -128,3 +128,83 @@ export interface IModelGatewayPort {
   ): AsyncGenerator<{ content: string; finishReason?: string }, void, void>;
 }
 
+/**
+ * Assistant Facade — single dispatch surface for open chat, proposal lifecycle, and cancel.
+ * Assistant Facade —— 开放式 chat、提案生命周期与取消的统一 dispatch 面。
+ *
+ * Residual 343: production Host entry. Transport (HTTP/SSE/IPC) should call this instead of
+ * wiring Turn Engine / ProposalKernel directly in new workbench code.
+ * Residual 343：生产 Host 入口；新工作台传输层应调用本端口，不再直连底层 runtime ports。
+ */
+export type AssistantSurface = 'web' | 'desktop' | 'server';
+
+export type AssistantExecutionProfileId = 'direct_turn' | 'pi_readonly';
+
+export type AssistantCommand =
+  | {
+      type: 'message';
+      identityId: string;
+      conversationId: string;
+      content: string;
+      surface: AssistantSurface;
+      /** Optional client-supplied run id; Host generates one when omitted. */
+      runId?: string;
+      /**
+       * Engine profile. Default direct_turn (open chat). pi_readonly uses the
+       * second production ReadonlyAnalysisTurnEngine and never mutates product data.
+       */
+      executionProfileId?: AssistantExecutionProfileId;
+    }
+  | {
+      type: 'approve_proposal';
+      identityId: string;
+      runId: string;
+      proposalId: string;
+      revision: number;
+    }
+  | {
+      type: 'reject_proposal';
+      identityId: string;
+      runId: string;
+      proposalId: string;
+      revision: number;
+      reason?: string;
+    }
+  | {
+      type: 'cancel_run';
+      identityId: string;
+      runId: string;
+    };
+
+export type AssistantEvent =
+  | { type: 'run.started'; runId: string; engineId: string; profile: AssistantExecutionProfileId }
+  | { type: 'message.delta'; runId: string; content: string }
+  | {
+      type: 'message.completed';
+      runId: string;
+      status: 'completed' | 'aborted' | 'failed' | 'waiting_approval';
+      error?: string;
+      content?: string;
+    }
+  | { type: 'proposal.approved'; runId: string; proposalId: string; revision: number }
+  | {
+      type: 'proposal.rejected';
+      runId: string;
+      proposalId: string;
+      revision: number;
+      reason?: string;
+    }
+  | { type: 'run.cancelled'; runId: string }
+  | { type: 'error'; code: string; message: string; runId?: string };
+
+export interface IAssistantFacadePort {
+  /**
+   * Dispatch one assistant command and stream Host-normalized events.
+   * Business mutations still require separate executors after proposal approval.
+   */
+  dispatch(
+    command: AssistantCommand,
+    signal?: AbortSignal,
+  ): AsyncIterable<AssistantEvent>;
+}
+

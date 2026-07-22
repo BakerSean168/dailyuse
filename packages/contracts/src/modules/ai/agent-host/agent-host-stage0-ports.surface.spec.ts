@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
  * Stage 0 shapes stay frozen. Production allows:
  *   - DirectTurnEngine (ITurnEnginePort / engine.direct_turn) — residual 314/316
  *   - ReadonlyAnalysisTurnEngine (ITurnEnginePort / engine.pi_readonly) — residual 341
+ *   - AssistantFacade (IAssistantFacadePort) — residual 343
  *   - LangGraphWorkflowAdapter (IWorkflowAdapterPort wrapping IAgentRuntimePort) — residual 318
  *   - ProposalKernel (IProposalKernelPort / tool.proposal lifecycle) — residual 320
  *   - CapabilityResolver (ICapabilityResolverPort / fail-closed resolve) — residual 322
@@ -23,6 +24,8 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(ports).toContain('export interface ICapabilityResolverPort');
     expect(ports).toContain('export interface IWorkflowAdapterPort');
     expect(ports).toContain('export interface IModelGatewayPort');
+    expect(ports).toContain('export interface IAssistantFacadePort');
+    expect(ports).toContain('export type AssistantCommand');
     expect(ports).toContain('export interface IProposalKernelPort');
     expect(ports).toContain('Stage 0 freezes shapes only');
     expect(ports).toContain('startTurn(input: {');
@@ -57,12 +60,15 @@ describe('agent-host stage-0 ports freeze surface', () => {
       'packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts';
     const allowedModelGateway =
       'packages/ai/src/server/infrastructure/model-gateway/custom-model.gateway.ts';
+    const allowedAssistantFacade =
+      'packages/ai/src/server/infrastructure/assistant-facade/assistant.facade.ts';
     const forbiddenMarkers = [] as const;
     const turnEngines: string[] = [];
     const workflowAdapters: string[] = [];
     const proposalKernels: string[] = [];
     const capabilityResolvers: string[] = [];
     const modelGateways: string[] = [];
+    const assistantFacades: string[] = [];
     const forbidden: string[] = [];
     const skipDirs = new Set(['dist', 'node_modules', '__tests__', 'tests']);
 
@@ -99,6 +105,9 @@ describe('agent-host stage-0 ports freeze surface', () => {
         if (source.includes('implements IModelGatewayPort')) {
           modelGateways.push(rel);
         }
+        if (source.includes('implements IAssistantFacadePort')) {
+          assistantFacades.push(rel);
+        }
         if (forbiddenMarkers.some((marker) => source.includes(marker))) {
           forbidden.push(rel);
         }
@@ -111,6 +120,7 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(proposalKernels).toEqual([allowedProposal]);
     expect(capabilityResolvers).toEqual([allowedCapability]);
     expect(modelGateways).toEqual([allowedModelGateway]);
+    expect(assistantFacades).toEqual([allowedAssistantFacade]);
     expect(forbidden).toEqual([]);
 
     const direct = readFileSync(resolve(repoRoot, allowedTurnEngine), 'utf8');
@@ -162,6 +172,15 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(modelGateway).toContain('credentialsInEvents: false');
     expect(modelGateway).toContain('modelBindingId');
     expect(modelGateway).not.toContain("kind: 'tool.mutation'");
+
+    const assistantFacade = readFileSync(resolve(repoRoot, allowedAssistantFacade), 'utf8');
+    expect(assistantFacade).toContain("ASSISTANT_FACADE_ID = 'assistant.facade'");
+    expect(assistantFacade).toContain(
+      'export class AssistantFacade implements IAssistantFacadePort',
+    );
+    expect(assistantFacade).toContain('executeApproved');
+    expect(assistantFacade).toContain('never executeApproved');
+    expect(assistantFacade).not.toContain('executeApproved(');
   });
 
   it('points multi-engine conformance at the residual 309 harness (doubles + DirectTurnEngine note)', () => {

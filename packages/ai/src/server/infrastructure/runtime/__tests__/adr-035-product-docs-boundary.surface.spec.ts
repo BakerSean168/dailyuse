@@ -47,6 +47,7 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiProduct).toContain('confirmed-create');
     expect(aiProduct).toContain('DirectTurnEngine');
     expect(aiProduct).toContain('ReadonlyAnalysisTurnEngine');
+    expect(aiProduct).toContain('AssistantFacade');
     expect(aiProduct).toContain('LangGraphWorkflowAdapter');
     expect(aiProduct).toContain('ProposalKernel');
     expect(aiProduct).toContain('CapabilityResolver');
@@ -65,6 +66,8 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(composition).toContain('residual 324');
     expect(composition).toContain('modelGateway: runtime.modelGateway');
     expect(composition).toContain('residual 337');
+    expect(composition).toContain('assistantFacade: runtime.assistantFacade');
+    expect(composition).toContain('residual 343');
   });
   it('ai-files index points at server/* Host adapters and no legacy infrastructure-server paths', () => {
     expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts');
@@ -77,6 +80,9 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     );
     expect(aiFilesIndex).toContain(
       'packages/ai/src/server/infrastructure/model-gateway/custom-model.gateway.ts',
+    );
+    expect(aiFilesIndex).toContain(
+      'packages/ai/src/server/infrastructure/assistant-facade/assistant.facade.ts',
     );
     expect(aiFilesIndex).toContain(
       'packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts',

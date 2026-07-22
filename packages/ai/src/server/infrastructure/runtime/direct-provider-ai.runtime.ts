@@ -50,6 +50,7 @@ import {
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
 import { DirectTurnEngine, ReadonlyAnalysisTurnEngine } from '../turn-engine';
+import { AssistantFacade } from '../assistant-facade';
 import { ProposalKernel } from '../proposal-kernel';
 import { CapabilityResolver } from '../capability-resolver';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
@@ -114,6 +115,13 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
 
   // Residual 320: Host proposal lifecycle (no mutation execution).
   const proposalKernel = new ProposalKernel();
+  // Residual 343: unified Host dispatch (open chat default stays DirectTurnEngine).
+  const assistantFacade = new AssistantFacade(
+    turnEngine,
+    readonlyTurnEngine,
+    proposalKernel,
+    turnEngine,
+  );
 
   // Chat services
   const chatServices: AIChatServices = {
@@ -195,5 +203,6 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     proposalKernel,
     capabilityResolver,
     modelGateway,
+    assistantFacade,
   };
 }

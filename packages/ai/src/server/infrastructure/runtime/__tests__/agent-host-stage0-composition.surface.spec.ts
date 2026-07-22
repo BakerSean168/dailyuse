@@ -7,7 +7,8 @@
  * residual 322 wires CapabilityResolver (fail-closed, no silent engine.*);
  * residual 324 routes agent start gating through that shared resolver;
  * residual 337 wires CustomModelGateway (IModelGatewayPort) on both runtimes;
- * residual 341 wires ReadonlyAnalysisTurnEngine (second production Turn Engine).
+ * residual 341 wires ReadonlyAnalysisTurnEngine (second production Turn Engine);
+ * residual 343 wires AssistantFacade (unified Host dispatch).
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -49,6 +50,7 @@ describe('agent-host stage-0 composition surface', () => {
     expect(moduleSource).toContain('createDirectProviderAIRuntime');
     expect(moduleSource).toContain('turnEngine: runtime.turnEngine');
     expect(moduleSource).toContain('readonlyTurnEngine: runtime.readonlyTurnEngine');
+    expect(moduleSource).toContain('assistantFacade: runtime.assistantFacade');
     expect(moduleSource).toContain('workflowAdapter: runtime.workflowAdapter');
     expect(moduleSource).toContain('proposalKernel: runtime.proposalKernel');
     expect(moduleSource).toContain('capabilityResolver: runtime.capabilityResolver');
@@ -58,6 +60,7 @@ describe('agent-host stage-0 composition surface', () => {
     expect(moduleSource).toContain('IProposalKernelPort');
     expect(moduleSource).toContain('ICapabilityResolverPort');
     expect(moduleSource).toContain('IModelGatewayPort');
+    expect(moduleSource).toContain('IAssistantFacadePort');
     expect(moduleSource).not.toContain('implements ICapabilityResolverPort');
     expect(moduleSource).not.toContain('implements IProposalKernelPort');
   });
@@ -180,6 +183,27 @@ describe('agent-host stage-0 composition surface', () => {
     // Open chat remains DirectTurnEngine-only.
     expect(direct).toContain('new SendAIMessageUseCase(turnEngine');
     expect(direct).not.toContain('new SendAIMessageUseCase(readonlyTurnEngine');
+  });
+
+
+  it('both runtimes construct AssistantFacade over Host adapters (residual 343)', () => {
+    const direct = readFileSync(resolve(__dirname, '../direct-provider-ai.runtime.ts'), 'utf8');
+    const remote = readFileSync(resolve(__dirname, '../remote-ai-service.runtime.ts'), 'utf8');
+    for (const source of [direct, remote]) {
+      expect(source).toContain('new AssistantFacade(');
+      expect(source).toContain('assistantFacade');
+      expect(source).toMatch(/new AssistantFacade\(\s*turnEngine/);
+    }
+    const facade = readFileSync(
+      resolve(__dirname, '../../assistant-facade/assistant.facade.ts'),
+      'utf8',
+    );
+    expect(facade).toContain("ASSISTANT_FACADE_ID = 'assistant.facade'");
+    expect(facade).toContain('export class AssistantFacade implements IAssistantFacadePort');
+    expect(facade).toContain('never executeApproved');
+    expect(facade).not.toContain('executeApproved(');
+    // Open chat default remains DirectTurnEngine use cases, not only facade.
+    expect(direct).toContain('new SendAIMessageUseCase(turnEngine');
   });
 
 });

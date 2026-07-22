@@ -128,3 +128,8 @@ export {
   CUSTOM_MODEL_GATEWAY_ID,
 } from './model-gateway';
 
+// ---------------------------------------------------------------------------
+// Assistant Facade (ADR-035)
+// ---------------------------------------------------------------------------
+export { AssistantFacade, ASSISTANT_FACADE_ID } from './assistant-facade';
+

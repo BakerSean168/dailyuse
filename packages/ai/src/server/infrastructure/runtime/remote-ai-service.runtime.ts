@@ -67,6 +67,7 @@ import {
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
 import { DirectTurnEngine, ReadonlyAnalysisTurnEngine } from '../turn-engine';
+import { AssistantFacade } from '../assistant-facade';
 import { ProposalKernel } from '../proposal-kernel';
 import { CapabilityResolver } from '../capability-resolver';
 import { LangGraphWorkflowAdapter } from '../workflow';
@@ -137,6 +138,13 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
 
   // Residual 320: Host proposal lifecycle (no mutation execution).
   const proposalKernel = new ProposalKernel();
+  // Residual 343: unified Host dispatch (open chat default stays DirectTurnEngine).
+  const assistantFacade = new AssistantFacade(
+    turnEngine,
+    readonlyTurnEngine,
+    proposalKernel,
+    turnEngine,
+  );
 
   // Residual 318: wrap remote agent runtime with LangGraphWorkflowAdapter when present.
   const workflowAdapter = dependencies.agentRuntimePort
@@ -322,5 +330,5 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
       capabilityResolver,
     ),
   };
-  return { services, capabilities, runtimeContributions: [], turnEngine, readonlyTurnEngine, workflowAdapter, proposalKernel, capabilityResolver, modelGateway };
+  return { services, capabilities, runtimeContributions: [], turnEngine, readonlyTurnEngine, workflowAdapter, proposalKernel, capabilityResolver, modelGateway, assistantFacade };
 }

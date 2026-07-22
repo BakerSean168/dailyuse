@@ -121,6 +121,10 @@ export interface AIRuntimeOutput {
    * credentials request-scoped only (never on results/events).
    */
   readonly modelGateway: import('@dailyuse/contracts/ai').IModelGatewayPort;
+  /**
+   * Assistant Facade (residual 343). Unified Host dispatch over Turn Engines + ProposalKernel.
+   */
+  readonly assistantFacade: import('@dailyuse/contracts/ai').IAssistantFacadePort;
 }
 
 export function buildCapabilityUnavailableMessage(

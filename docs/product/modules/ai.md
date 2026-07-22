@@ -35,15 +35,18 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 `DirectTurnEngine`（开放式 chat）、`ReadonlyAnalysisTurnEngine`（readonly analysis /
 `engine.pi_readonly`，经 Model Gateway）、`LangGraphWorkflowAdapter`（remote workflow）、
 `ProposalKernel`（提案生命周期）、`CapabilityResolver`（fail-closed start gate）、
-`CustomModelGateway`（OpenAI-compatible Model Gateway，凭据仅请求作用域）。
-统一助手 UI、真实 Pi SDK/CLI 进程 adapter、完整 multi-engine runtime E2E 仍未完成。
+`CustomModelGateway`（OpenAI-compatible Model Gateway，凭据仅请求作用域）、
+`AssistantFacade`（统一 Host dispatch：message/approve/reject/cancel）。
+统一助手 UI 工作台、真实 Pi SDK/CLI 进程 adapter、完整 multi-engine runtime E2E 仍未完成。
 
-### 2.1 ADR-035 Host 当前边界（与 vault residual 314–337 对齐）
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–343 对齐）
 
 - 生产允许：`DirectTurnEngine`、`ReadonlyAnalysisTurnEngine`、`LangGraphWorkflowAdapter`、
-  `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`。
+  `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`、`AssistantFacade`。
 - open chat send/stream 经同一 `DirectTurnEngine`（`IOpenChatTurnPort`），不旁路 raw chatExecution；
   `ReadonlyAnalysisTurnEngine` 不接管 open chat 默认路径。
+- 新工作台应经 `AssistantFacade.dispatch`（message / approve_proposal / reject_proposal /
+  cancel_run）；approve 只做 ProposalKernel 生命周期，不自动 `executeApproved` 业务 mutation。
 - direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
   不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；
@@ -89,8 +92,8 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - Web 知识笔记已走 confirmed-create → Git commit；旧数据库 Repository 写路径不应再作为产品叙述。
 - 知识索引/webhook/幂等/删除后向量清理仍需持续 harden。
 - ADR-035 contracts 与 Host adapters（DirectTurn / ReadonlyAnalysisTurn / LangGraph workflow /
-  ProposalKernel / CapabilityResolver / CustomModelGateway）已部分落地；统一助手 UI、真实
-  Pi SDK/CLI 进程 adapter 与完整 multi-engine runtime E2E 仍未完成。
+  ProposalKernel / CapabilityResolver / CustomModelGateway / AssistantFacade）已部分落地；
+  统一助手 UI 工作台、真实 Pi SDK/CLI 进程 adapter 与完整 multi-engine runtime E2E 仍未完成。
 - 当前 `AgentAction` 的开放 payload、`supportsXxx` 布尔能力和 framework-oriented node event 仍需按新方案收敛。
 - 当前缺少 Pi Turn Engine、自定义 Model Gateway 收口和 Desktop local CLI adapter。
 
