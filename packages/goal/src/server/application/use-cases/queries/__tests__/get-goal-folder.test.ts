@@ -62,7 +62,7 @@ describe('GetGoalFolderUseCase', () => {
     }
   });
 
-  it('should call findById with the correct ID', async () => {
+  it('should call findByIdForIdentity with identity and id', async () => {
     const folder = createFolderFixture({ id: 'specific-id' });
     const findByIdForIdentity = vi.fn().mockResolvedValue(folder);
     const folderRepo = createMockRepo<IGoalFolderRepository>({

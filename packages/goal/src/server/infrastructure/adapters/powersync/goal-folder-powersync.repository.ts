@@ -91,15 +91,6 @@ export class GoalFolderPowerSyncRepository
     }
   }
 
-  async findById(id: string): Promise<GoalFolder | null> {
-    const row = await this.db.getOptional<Record<string, unknown>>(
-      `SELECT * FROM goal_folders WHERE id = ? LIMIT 1`,
-      [id],
-    );
-
-    return row ? PowerSyncGoalFolderMapper.toDomain(row) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<GoalFolder | null> {
     const row = await this.db.getOptional<Record<string, unknown>>(
       `SELECT * FROM goal_folders WHERE id = ? AND identity_id = ? LIMIT 1`,

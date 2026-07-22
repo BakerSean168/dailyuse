@@ -6,7 +6,6 @@ import type { GoalFolder } from '../aggregates/goal-folder';
 
 export interface IGoalFolderRepository {
   save(folder: GoalFolder): Promise<void>;
-  findById(id: string): Promise<GoalFolder | null>;
   findByIdForIdentity(identityId: string, id: string): Promise<GoalFolder | null>;
   findByIdentityId(identityId: string): Promise<GoalFolder[]>;
   delete(identityId: string, id: string): Promise<void>;

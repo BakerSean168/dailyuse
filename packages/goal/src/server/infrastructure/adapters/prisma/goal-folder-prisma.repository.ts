@@ -75,16 +75,6 @@ export class GoalFolderPrismaRepository
   }
 
   /**
-   * Find folder by ID
-   */
-  async findById(id: string): Promise<GoalFolder | null> {
-    const data = await this.prisma.goalFolder.findUnique({
-      where: { id },
-    });
-    return data ? this.mapToEntity(data) : null;
-  }
-
-  /**
    * Find folder by identity + ID
    */
   async findByIdForIdentity(identityId: string, id: string): Promise<GoalFolder | null> {

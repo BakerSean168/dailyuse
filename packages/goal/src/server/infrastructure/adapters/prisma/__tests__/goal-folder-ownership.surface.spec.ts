@@ -3,9 +3,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Goal folder ownership surface (stage-6 residual 116):
+ * Goal folder ownership surface (stage-6 residual 116/171):
  * get/update/delete must identity-scope repository reads —
  * never authorize by bare folder primary key alone.
+ * Residual 171 collapses dual findById.
  */
 describe('goal folder ownership surface', () => {
   const port = readFileSync(
@@ -41,6 +42,12 @@ describe('goal folder ownership surface', () => {
       'findByIdForIdentity(identityId: string, id: string): Promise<GoalFolder | null>;',
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
+  });
+
+  it('port drops bare findById dual method (residual 171)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<GoalFolder | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by id + identityId', () => {
