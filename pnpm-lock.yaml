@@ -994,6 +994,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
@@ -1028,6 +1031,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/repository':
         specifier: workspace:*
         version: link:../repository
@@ -1295,6 +1301,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
@@ -1397,6 +1406,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/notification':
         specifier: workspace:*
         version: link:../notification
@@ -1493,6 +1505,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
@@ -1584,6 +1599,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
@@ -1650,6 +1668,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
@@ -1684,6 +1705,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
@@ -1721,6 +1745,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
@@ -1783,6 +1810,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1814,6 +1844,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns

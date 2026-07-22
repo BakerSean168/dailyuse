@@ -30,6 +30,7 @@
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/ipc-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.2.1",
     "gray-matter": "4.0.3",

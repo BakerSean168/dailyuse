@@ -25,15 +25,8 @@ export type {
 
 // ============ Transport Client Interfaces ============
 
-export interface IResultIpcClient {
-  invoke<T = unknown>(
-    channel: string,
-    ...args: unknown[]
-  ): Promise<import('@dailyuse/contracts/result').Result<T>>;
-  getBridge?: () =>
-    | {
-        on(channel: string, callback: (...args: unknown[]) => void): void;
-        off(channel: string, callback: (...args: unknown[]) => void): void;
-      }
-    | undefined;
-}
+/**
+ * IPC Client interface (Result-returning).
+ * Canonical definition in @dailyuse/ipc-client (ResultIpcClient), including optional getBridge.
+ */
+export type { IResultIpcClient } from '@dailyuse/ipc-client';

@@ -15,9 +15,11 @@ import type {
 
 export type { IResultHttpClient };
 
-export interface IResultIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
-}
+/**
+ * IPC Client interface (Result-returning).
+ * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
+ */
+export type { IResultIpcClient } from '@dailyuse/ipc-client';
 
 export interface IDataPortabilityApiClient {
   exportUserData(data: ExportUserDataReq): Promise<Result<ExportUserDataRes>>;

@@ -38,7 +38,7 @@ import {
   type IpcResult,
   isIpcResultEnvelope,
 } from '@dailyuse/contracts/result';
-import type { ElectronBridge, IpcClientConfig } from './types';
+import type { ElectronBridge, IpcClientConfig, IResultIpcClient } from './types';
 import { DEFAULT_IPC_CLIENT_CONFIG } from './types';
 
 // ============================================================================
@@ -67,7 +67,7 @@ import { DEFAULT_IPC_CLIENT_CONFIG } from './types';
  * }
  * ```
  */
-export class ResultIpcClient {
+export class ResultIpcClient implements IResultIpcClient {
   private bridge: ElectronBridge | undefined;
   private readonly enableLogging: boolean;
   private readonly timeout: number;

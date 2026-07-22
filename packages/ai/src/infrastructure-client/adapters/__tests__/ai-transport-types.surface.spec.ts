@@ -13,7 +13,7 @@ describe('ai infrastructure-client transport types surface', () => {
 
   it('exports Result transport ports only', () => {
     expect(types).toContain('export type { IResultHttpClient }');
-    expect(types).toContain('export interface IResultIpcClient');
+    expect(types).toContain("export type { IResultIpcClient } from '@dailyuse/ipc-client'");
     expect(types).not.toContain('export type { IHttpClient }');
     expect(types).not.toMatch(/export interface IIpcClient\s*[{]/);
     expect(types).not.toMatch(/invoke<T = unknown>\(channel: string, \.\.\.args: unknown\[\]\): Promise<T>;/);

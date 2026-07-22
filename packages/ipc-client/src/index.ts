@@ -28,6 +28,7 @@
 export type {
   ElectronBridge,
   IpcClientConfig,
+  IResultIpcClient,
 } from './types';
 export { DEFAULT_IPC_CLIENT_CONFIG } from './types';
 

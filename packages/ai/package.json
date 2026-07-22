@@ -34,6 +34,7 @@
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/ipc-client": "workspace:*",
     "@dailyuse/repository": "workspace:*",
     "@dailyuse/setting": "workspace:*",
     "@dailyuse/utils": "workspace:*",

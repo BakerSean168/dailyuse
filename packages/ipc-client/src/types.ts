@@ -72,3 +72,26 @@ export const DEFAULT_IPC_CLIENT_CONFIG: Required<
   timeout: 30_000,
   retryOnTimeout: false,
 };
+
+// ============================================================================
+// Result IPC Client Interface
+// ============================================================================
+
+/**
+ * Result IPC Client interface
+ *
+ * All invokes return `Promise<Result<T>>` and never throw.
+ * Module IPC adapters depend on this interface; implementation is
+ * `ResultIpcClient` from `@dailyuse/ipc-client` (injected at the App layer).
+ *
+ * Optional `getBridge` supports push/event subscriptions (e.g. AI streaming).
+ * Simple invoke-only stubs may omit it.
+ */
+export interface IResultIpcClient {
+  invoke<T = unknown>(
+    channel: string,
+    ...args: unknown[]
+  ): Promise<import('@dailyuse/contracts/result').Result<T>>;
+  getBridge?: () => ElectronBridge | undefined;
+}
+
