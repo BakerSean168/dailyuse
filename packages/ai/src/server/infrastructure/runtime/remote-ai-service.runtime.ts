@@ -66,6 +66,7 @@ import {
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
 import { DirectTurnEngine } from '../turn-engine';
+import { ProposalKernel } from '../proposal-kernel';
 import { LangGraphWorkflowAdapter } from '../workflow';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
@@ -122,6 +123,9 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     providerConfigRepository,
     chatExecutionPort,
   );
+
+  // Residual 320: Host proposal lifecycle (no mutation execution).
+  const proposalKernel = new ProposalKernel();
 
   // Residual 318: wrap remote agent runtime with LangGraphWorkflowAdapter when present.
   const workflowAdapter = dependencies.agentRuntimePort
@@ -296,5 +300,5 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     ),
   };
 
-  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter };
+  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter, proposalKernel };
 }

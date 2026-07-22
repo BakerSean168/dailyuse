@@ -99,3 +99,11 @@ export {
   LANGGRAPH_WORKFLOW_ADAPTER_ID,
 } from './workflow';
 
+// ---------------------------------------------------------------------------
+// Proposal Kernel (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  ProposalKernel,
+  PROPOSAL_KERNEL_PROVIDER_ID,
+} from './proposal-kernel';
+

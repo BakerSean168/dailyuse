@@ -19,20 +19,25 @@ updated: 2026-07-22T00:00:00
 
 本文执行 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)，承接 Open Design、`earendil-works/pi`、当前 TypeScript AI 模块、Python LangGraph runtime、checkpoint、tool executor 和 Obsidian/GitHub 知识仓库方案的专项调研。
 
-状态：**实施中**（阶段 0 部分收口；后续阶段未宣称完成）。
+状态：**实施中**（阶段 0/1/3/4 部分起步；完成定义未宣称）。
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
 
-### 当前进展（2026-07-22，与 vault plan residual 305–312 对齐）
+### 当前进展（2026-07-22，与 vault plan residual 305–320 对齐）
 
 - **阶段 0 部分已落地（契约冻结）**：
   - `packages/contracts` agent-host：`ITurnEnginePort` / `ICapabilityResolverPort` /
     `IWorkflowAdapterPort` / `IProposalKernelPort` + `resolveRunPlan` / capability kinds 已冻结。
-  - stage-0 surface：生产侧尚无上述 Port 的 class 实现；runtime
-    `buildAgentRuntimeCapabilityOffers` 不静默 emit `engine.*`；`ai.module` 未注册 Turn Engine。
+  - stage-0 surface：生产侧允许 `DirectTurnEngine` + `LangGraphWorkflowAdapter` + `ProposalKernel`；
+    **仍禁止** `ICapabilityResolverPort`。runtime `buildAgentRuntimeCapabilityOffers` 不静默 emit `engine.*`。
   - ADR-035 journey（capability/turn isolation steps 1–16）+ multi-engine conformance harness
     （`engine.direct_turn` + `engine.langgraph_workflow` 同 suite isolation；**in-suite doubles only**）
     在 vault active plan residual 305/309/311 证据中通过。
+- **阶段 1 部分起步（residual 320）**：
+  - 生产 `ProposalKernel` 实现 `IProposalKernelPort`；revision 乐观并发 + `requestId` 幂等；
+    `executeApproved` 仅 lifecycle receipt，不执行业务 mutation。
+  - `module.proposalKernel` 在 direct/remote 均有值；`tool.proposal` providerId=`proposal-kernel`。
+  - 统一助手 UI / Proposal 工作台产品面仍未落地。
 - **阶段 3 部分起步（residual 318）**：
   - 生产 `LangGraphWorkflowAdapter` 包装 `IAgentRuntimePort`；`module.workflowAdapter` 在 remote 有值。
   - workflow offers 永不含 `tool.mutation`/`tool.proposal`。
@@ -41,8 +46,8 @@ updated: 2026-07-22T00:00:00
   - 开放式 chat/analysis only；ownership fail-closed + abort；不自动 emit `engine.*` capability offers。
   - `sendMessage`/`streamMessage` 已经同一 `DirectTurnEngine`（IOpenChatTurnPort）；统一助手 UI 未切换。
 - **仍未实现（不得勾完成定义）**：
-  - 第二生产 Turn Engine（langgraph/pi/cli）；LangGraphWorkflowAdapter；Proposal Kernel 产品面；统一助手 UI；
-    完整 multi-engine runtime E2E；CLI/Pi product path；统一助手 UI。
+  - 第二生产 Turn Engine（langgraph/pi/cli）；Capability Resolver；Proposal Kernel 产品面/UI；
+    统一助手 UI；完整 multi-engine runtime E2E；CLI/Pi product path。
 - 更完整的 vault/知识仓库边界与 §13.2 证据见
   [2026-07-16-obsidian-vault-repository-optimization.md](./2026-07-16-obsidian-vault-repository-optimization.md)。
 
@@ -753,15 +758,15 @@ packages/contracts/src/modules/ai/
 - 为当前 AgentRun/Action/Event 建立 contract tests 和当前行为 fixture。 **（部分：journey + ownership surfaces）**
 - 明确 Conversation 与 AgentRun 的关联和恢复路径。 **（部分：现有 AgentRun 模型；统一助手关联未做）**
 - 记录当前 direct/remote capability 差异。 **（部分：`buildAgentRuntimeCapabilityOffers` + assert start gate）**
-- Agent Host Port 形状冻结（Turn/Workflow/Capability/Proposal）+ 生产侧未实现锁。 **（已证明，residual 305/311）**
+- Agent Host Port 形状冻结（Turn/Workflow/Capability/Proposal）+ 生产侧仅允许 DirectTurn/LangGraph/ProposalKernel。 **（已证明，residual 305/311/314/318/320）**
 - multi-engine isolation conformance harness（同 suite 双引擎标签；test doubles only）。 **（部分：residual 309；非生产 adapter）**
 
 ### 阶段 1：统一助手与 Proposal Kernel
 
-- 定义 AssistantCommand/Event、AgentProposal、ExecutionReceipt。
+- 定义 AssistantCommand/Event、AgentProposal、ExecutionReceipt。 **（类型已冻结）**
 - 将 AgentAction 逐步收紧为 discriminated union。
-- 建立 Proposal revision、stale、precondition 和幂等规则。
-- 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。
+- 建立 Proposal revision、stale、precondition 和幂等规则。 **（ProposalKernel residual 320 部分：lifecycle + 幂等；precondition 产品规则仍待）**
+- 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。 **（未做）**
 - 保留现有 LangGraph 和 Provider 实现。
 
 ### 阶段 2：Host Tool/Context/Capability

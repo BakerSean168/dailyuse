@@ -141,9 +141,11 @@ export class SendAIMessageUseCase {
         processingMs: Date.now() - startedAt,
       });
       logger.error('[SendAIMessageUseCase] failed', { err, requestId });
-      return attachRequestIdToError(
-        error('INTERNAL_ERROR', err instanceof Error ? err.message : 'Chat execution failed'),
-        requestId,
+      // attachRequestIdToError returns Error, not Result — keep Result envelope.
+      const enriched = attachRequestIdToError(err, requestId);
+      return error(
+        'INTERNAL_ERROR',
+        enriched instanceof Error ? enriched.message : 'Chat execution failed',
       );
     }
   }

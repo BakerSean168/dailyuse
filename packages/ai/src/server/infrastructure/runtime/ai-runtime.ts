@@ -100,6 +100,11 @@ export interface AIRuntimeOutput {
    * Residual 318 — wraps IAgentRuntimePort without replacing Python graphs.
    */
   readonly workflowAdapter: import('@dailyuse/contracts/ai').IWorkflowAdapterPort | null;
+  /**
+   * Proposal Kernel lifecycle port (residual 320). Always present on the Host;
+   * does not execute business mutations.
+   */
+  readonly proposalKernel: import('@dailyuse/contracts/ai').IProposalKernelPort;
 }
 
 export function buildCapabilityUnavailableMessage(
@@ -128,7 +133,8 @@ export function buildAgentRuntimeCapabilityOffers(input: {
   const offers: CapabilityOffer[] = [
     {
       kind: 'tool.proposal',
-      providerId: 'agent-host-proposal',
+      // Align with production ProposalKernel provider id (residual 320).
+      providerId: 'proposal-kernel',
       surface: 'any',
       readonly: false,
     },

@@ -1,8 +1,9 @@
 /**
- * Residual 311/314/316/318: ADR-035 Agent Host composition.
+ * Residual 311/314/316/318/320: ADR-035 Agent Host composition.
  * Runtime capability offers never auto-emit engine.* labels.
  * Residual 314 wires the first production DirectTurnEngine on the module instance
  * and residual 316 routes open chat send/stream through that engine (no chatExecution bypass).
+ * Residual 318 wires LangGraphWorkflowAdapter; residual 320 wires ProposalKernel.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -39,15 +40,16 @@ describe('agent-host stage-0 composition surface', () => {
     expect(runtime).not.toMatch(/kind:\s*'engine\.cli_readonly'/);
   });
 
-  it('ai.module exposes turnEngine + workflowAdapter without Capability/Proposal ports', () => {
+  it('ai.module exposes turnEngine + workflowAdapter + proposalKernel without Capability Resolver', () => {
     const moduleSource = readFileSync(resolve(__dirname, '../../ai.module.ts'), 'utf8');
     expect(moduleSource).toContain('createDirectProviderAIRuntime');
     expect(moduleSource).toContain('turnEngine: runtime.turnEngine');
     expect(moduleSource).toContain('workflowAdapter: runtime.workflowAdapter');
+    expect(moduleSource).toContain('proposalKernel: runtime.proposalKernel');
     expect(moduleSource).toContain('ITurnEnginePort');
     expect(moduleSource).toContain('IWorkflowAdapterPort');
+    expect(moduleSource).toContain('IProposalKernelPort');
     expect(moduleSource).not.toContain('ICapabilityResolverPort');
-    expect(moduleSource).not.toContain('IProposalKernelPort');
     expect(moduleSource).not.toContain('implements ICapabilityResolverPort');
     expect(moduleSource).not.toContain('implements IProposalKernelPort');
   });
@@ -76,6 +78,23 @@ describe('agent-host stage-0 composition surface', () => {
     expect(direct).toContain('workflowAdapter: null');
     // Runtime offers still never silent-emit engine.* from adapter wiring.
     expect(remote).not.toMatch(/buildAgentRuntimeCapabilityOffers[\s\S]*engine\.langgraph_workflow/);
+  });
+
+  it('both runtimes construct ProposalKernel and never offer mutation via kernel', () => {
+    const direct = readFileSync(resolve(__dirname, '../direct-provider-ai.runtime.ts'), 'utf8');
+    const remote = readFileSync(resolve(__dirname, '../remote-ai-service.runtime.ts'), 'utf8');
+    for (const source of [direct, remote]) {
+      expect(source).toContain('new ProposalKernel()');
+      expect(source).toContain('proposalKernel');
+    }
+    const kernel = readFileSync(
+      resolve(__dirname, '../../proposal-kernel/proposal.kernel.ts'),
+      'utf8',
+    );
+    expect(kernel).toContain("PROPOSAL_KERNEL_PROVIDER_ID = 'proposal-kernel'");
+    expect(kernel).toContain("kind: 'tool.proposal'");
+    expect(kernel).not.toContain("kind: 'tool.mutation'");
+    expect(kernel).toContain('export class ProposalKernel implements IProposalKernelPort');
   });
 
 });

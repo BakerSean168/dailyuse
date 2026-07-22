@@ -3,11 +3,12 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 305/311/314/318: ADR-035 Agent Host ports.
+ * Residual 305/311/314/318/320: ADR-035 Agent Host ports.
  * Stage 0 shapes stay frozen. Production allows:
  *   - DirectTurnEngine (ITurnEnginePort / engine.direct_turn) — residual 314/316
  *   - LangGraphWorkflowAdapter (IWorkflowAdapterPort wrapping IAgentRuntimePort) — residual 318
- * Capability Resolver and Proposal Kernel remain unimplemented.
+ *   - ProposalKernel (IProposalKernelPort / tool.proposal lifecycle) — residual 320
+ * Capability Resolver remains unimplemented.
  * Multi-engine Turn Engine isolation still partial (no second Turn Engine production class).
  */
 describe('agent-host stage-0 ports freeze surface', () => {
@@ -35,7 +36,7 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(capabilities).toContain("engineId: missing.length > 0 ? 'none' : input.engineId");
   });
 
-  it('allows only DirectTurnEngine + LangGraphWorkflowAdapter as production Host adapters', () => {
+  it('allows DirectTurnEngine + LangGraphWorkflowAdapter + ProposalKernel as production Host adapters', () => {
     const roots = [
       resolve(repoRoot, 'packages/ai/src'),
       resolve(repoRoot, 'apps/ai-service'),
@@ -45,12 +46,14 @@ describe('agent-host stage-0 ports freeze surface', () => {
     const allowedTurnEngine = 'packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts';
     const allowedWorkflow =
       'packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts';
+    const allowedProposal =
+      'packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts';
     const forbiddenMarkers = [
       'implements ICapabilityResolverPort',
-      'implements IProposalKernelPort',
     ] as const;
     const turnEngines: string[] = [];
     const workflowAdapters: string[] = [];
+    const proposalKernels: string[] = [];
     const forbidden: string[] = [];
     const skipDirs = new Set(['dist', 'node_modules', '__tests__', 'tests']);
 
@@ -78,6 +81,9 @@ describe('agent-host stage-0 ports freeze surface', () => {
         if (source.includes('implements IWorkflowAdapterPort')) {
           workflowAdapters.push(rel);
         }
+        if (source.includes('implements IProposalKernelPort')) {
+          proposalKernels.push(rel);
+        }
         if (forbiddenMarkers.some((marker) => source.includes(marker))) {
           forbidden.push(rel);
         }
@@ -87,6 +93,7 @@ describe('agent-host stage-0 ports freeze surface', () => {
     for (const root of roots) walk(root);
     expect(turnEngines).toEqual([allowedTurnEngine]);
     expect(workflowAdapters).toEqual([allowedWorkflow]);
+    expect(proposalKernels).toEqual([allowedProposal]);
     expect(forbidden).toEqual([]);
 
     const direct = readFileSync(resolve(repoRoot, allowedTurnEngine), 'utf8');
@@ -107,6 +114,13 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(offeredKindsBlock).toContain("'engine.langgraph_workflow'");
     expect(offeredKindsBlock).not.toContain('tool.mutation');
     expect(offeredKindsBlock).not.toContain('tool.proposal');
+
+    const proposal = readFileSync(resolve(repoRoot, allowedProposal), 'utf8');
+    expect(proposal).toContain("PROPOSAL_KERNEL_PROVIDER_ID = 'proposal-kernel'");
+    expect(proposal).toContain('export class ProposalKernel implements IProposalKernelPort');
+    expect(proposal).toContain("kind: 'tool.proposal'");
+    expect(proposal).toContain('executeApproved');
+    expect(proposal).not.toContain("kind: 'tool.mutation'");
   });
 
   it('points multi-engine conformance at the residual 309 harness (doubles + DirectTurnEngine note)', () => {

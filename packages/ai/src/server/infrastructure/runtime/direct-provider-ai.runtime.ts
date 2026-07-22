@@ -49,6 +49,7 @@ import {
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
 import { DirectTurnEngine } from '../turn-engine';
+import { ProposalKernel } from '../proposal-kernel';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
 
@@ -98,6 +99,9 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     providerConfigRepository,
     chatExecutionPort,
   );
+
+  // Residual 320: Host proposal lifecycle (no mutation execution).
+  const proposalKernel = new ProposalKernel();
 
   // Chat services
   const chatServices: AIChatServices = {
@@ -154,5 +158,5 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     agentRuntimeService: createAgentRuntimeService(undefined),
   };
 
-  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter: null };
+  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter: null, proposalKernel };
 }
