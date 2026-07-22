@@ -24,3 +24,26 @@ describe('desktop-auth SessionRestoreResult surface', () => {
     expect(sample).not.toHaveProperty('success');
   });
 });
+
+/**
+ * Residual 637: generic AuthOperationResult dual envelope is retired.
+ * Desktop auth uses concrete typed *Result DTOs, not a catch-all { ok, error? }.
+ */
+describe('desktop-auth AuthOperationResult dual retired (residual 637)', () => {
+  const source = readFileSync(resolve(__dirname, 'desktop-auth.types.ts'), 'utf8');
+  const protocolIndex = readFileSync(resolve(__dirname, 'index.ts'), 'utf8');
+
+  it('does not define or export AuthOperationResult dual envelope', () => {
+    expect(source).toContain('Residual 637');
+    expect(source).not.toMatch(/export interface AuthOperationResult/);
+    expect(protocolIndex).not.toContain('AuthOperationResult');
+  });
+
+  it('keeps concrete typed auth result surfaces', () => {
+    expect(source).toMatch(/export interface SessionRestoreResult/);
+    expect(source).toMatch(/export interface TokenRefreshResult/);
+    expect(source).toMatch(/export interface AutoLoginResult/);
+    expect(source).toMatch(/export interface LoginResponse/);
+  });
+});
+

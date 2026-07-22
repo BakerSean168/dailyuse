@@ -21,7 +21,6 @@ export type {
   AuthStatus,
   AuthBootstrapSnapshot,
   AuthStatusDTO,
-  AuthOperationResult,
   EmailLoginCredentials,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,

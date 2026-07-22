@@ -295,13 +295,8 @@ export interface AuthStatusDTO {
   canSync: boolean;
 }
 
-/**
- * Generic auth operation result.
- */
-export interface AuthOperationResult {
-  ok: boolean;
-  error?: string;
-}
+// Residual 637: AuthOperationResult { ok, error? } generic dual envelope deleted.
+// Concrete desktop auth flows use typed *Result DTOs + Result/IpcResult envelopes.
 
 // ============================================================================
 // Login Credentials (from renderer)

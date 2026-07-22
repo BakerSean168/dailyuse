@@ -27,7 +27,6 @@ export type {
   LoginResponse,
   AuthMode,
   AuthStatusDTO,
-  AuthOperationResult,
   DeviceInfoClientDTO,
 } from '@dailyuse/contracts/authentication';
 
