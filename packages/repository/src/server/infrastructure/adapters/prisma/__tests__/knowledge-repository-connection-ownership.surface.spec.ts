@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
  * Knowledge repository connection ownership surface (stage-6 residual 111/112/113):
  * status transitions, identity-scoped reads, and save updates must include
  * identityId — never reassign ownership via bare connection primary key.
+ * Residual 137/186: bare findById is intentional webhook/reconcile bootstrap only;
+ * projection re-owns via findByIdForIdentity inside loadOwnedConnectionById.
  */
 describe('knowledge repository connection ownership surface', () => {
   const port = readFileSync(
@@ -110,6 +112,52 @@ describe('knowledge repository connection ownership surface', () => {
       /connectionRepository\.findById\(/g,
     );
     expect(bareLoads).toHaveLength(1);
+    expect(projectionService).not.toContain(
+      'const connection = await this.options.connectionRepository.findById(delivery.connectionId)',
+    );
+  });
+
+  it('bare findById remains only for projection bootstrap; auth paths use findByIdForIdentity (residual 186)', () => {
+    // Dual method kept intentionally: webhook/reconcile may load by connection id then re-own.
+    expect(port).toContain(
+      'findById(id: string): Promise<KnowledgeRepositoryConnectionServerDTO | null>;',
+    );
+    expect(port).toMatch(
+      /findByIdForIdentity\(\s*identityId: string,\s*id: string,\s*\): Promise</,
+    );
+    expect(prisma).toMatch(/async findById\(id: string\)/);
+    expect(prisma).toMatch(
+      /async findByIdForIdentity\(\s*identityId: string,\s*id: string/,
+    );
+    expect(prisma).toContain('where: { id, identityId }');
+
+    // Connection service never bare-loads by connectionId.
+    expect(service).toMatch(
+      /findByIdForIdentity\(\s*identityId,\s*connectionId,\s*\)/,
+    );
+    expect(service).not.toMatch(
+      /connectionRepository\.findById\(\s*connectionId\s*\)/,
+    );
+    expect(service).not.toMatch(
+      /connectionRepository\.findById\(/,
+    );
+
+    // Projection: exactly one bare findById, only inside loadOwnedConnectionById bootstrap.
+    expect(projectionService).toContain('private async loadOwnedConnectionById(');
+    expect(projectionService).toContain(
+      'const connection = await this.options.connectionRepository.findById(connectionId);',
+    );
+    expect(projectionService).toContain(
+      'return this.options.connectionRepository.findByIdForIdentity(',
+    );
+    expect(projectionService).toContain('String(connection.identityId)');
+    const bareLoads = projectionService.match(
+      /connectionRepository\.findById\(/g,
+    );
+    expect(bareLoads).toHaveLength(1);
+    // Call sites must re-own through the helper, never bare-load delivery.connectionId.
+    expect(projectionService).toContain('loadOwnedConnectionById(connectionId)');
+    expect(projectionService).toContain('loadOwnedConnectionById(delivery.connectionId)');
     expect(projectionService).not.toContain(
       'const connection = await this.options.connectionRepository.findById(delivery.connectionId)',
     );
