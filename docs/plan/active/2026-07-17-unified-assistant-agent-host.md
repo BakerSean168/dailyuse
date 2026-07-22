@@ -891,7 +891,7 @@ packages/contracts/src/modules/ai/
 - [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343/351 AssistantFacade + open chat dispatch；residual 355–387 Host Proposal/receipt/timeline 工作台部分落地；仍非全业务 Artifact 面）**
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。
 - [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
-- [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；UI 泄漏审计未齐）**
+- [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；residual 413 Host 工作台 allowlist/audit 落地，Goal workflow 面板 node.* 诊断泄漏仍在）**
 - [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双标签 isolation + 生产 DirectTurnEngine + ReadonlyAnalysisTurnEngine；完整 multi-engine runtime E2E/Pi SDK 仍缺）**
 - [ ] 自定义模型 API 不需要实现完整 Agent runtime。
 - [ ] 本地 CLI 不需要伪装成 Model Provider。
