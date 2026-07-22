@@ -2128,6 +2128,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > get 走 `executeOrCreate`；body 无 identity dual-track。§13.2 仍部分。
 > 验证：preference ownership/routes/electron surfaces + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百九十七轮）：notification preference 客户端面闭环——
+> `INotificationApiClient` / `NotificationClientService` 增加 get/updatePreferences；
+> HTTP `/preferences` + IPC PREFERENCES_*；客户端不传 identityId dual-track。§13.2 仍部分。
+> 验证：preference ownership + ipc adapter surfaces + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2213,7 +2219,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留一百九十六轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留一百九十七轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
 > webhook delivery（187）、auth session token（188）、notification template catalog（189）、
@@ -2380,6 +2386,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百九十四轮：notification preference update identityId required at call boundary。
   残留一百九十五轮：§13.2 core evidence suite re-run (107 tests, ownership/portable locks, no checkbox changes)。
   残留一百九十六轮：notification preference HTTP/Electron transport wired (ctx.identityId only)。
+  残留一百九十七轮：notification preference client port + HTTP/IPC adapters。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

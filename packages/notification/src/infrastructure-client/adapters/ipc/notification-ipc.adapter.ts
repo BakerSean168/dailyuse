@@ -14,7 +14,12 @@ import type {
   NotificationListResponse,
   UnreadCountResponse,
 } from '../types';
-import type { BatchOperationResultDTO, NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type {
+  BatchOperationResultDTO,
+  NotificationClientDTO,
+  NotificationPreferenceClientDTO,
+  UpdateNotificationPreferenceReq,
+} from '@dailyuse/contracts/notification';
 
 export class NotificationIpcAdapter implements INotificationApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
@@ -49,6 +54,16 @@ export class NotificationIpcAdapter implements INotificationApiClient {
 
   async getUnreadCount(): Promise<Result<UnreadCountResponse>> {
     return this.ipcClient.invoke(NotificationChannels.GET_UNREAD_COUNT);
+  }
+
+  async getPreferences(): Promise<Result<NotificationPreferenceClientDTO>> {
+    return this.ipcClient.invoke(NotificationChannels.PREFERENCES_GET);
+  }
+
+  async updatePreferences(
+    request: UpdateNotificationPreferenceReq,
+  ): Promise<Result<NotificationPreferenceClientDTO>> {
+    return this.ipcClient.invoke(NotificationChannels.PREFERENCES_UPDATE, request);
   }
 }
 

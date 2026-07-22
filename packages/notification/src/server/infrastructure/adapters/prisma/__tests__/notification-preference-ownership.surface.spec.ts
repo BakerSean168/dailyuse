@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 194: updatePreferences requires identityId at the call boundary
  * (no optional identity dual-track on the use-case input).
  * Residual 196: HTTP/Electron preference transport wired with ctx.identityId only.
+ * Residual 197: client port + HTTP/IPC adapters complete preference surface.
  */
 describe('notification preference ownership surface', () => {
   const port = readFileSync(
@@ -49,6 +50,27 @@ describe('notification preference ownership surface', () => {
     resolve(
       __dirname,
       '../../../../../../../contracts/src/electron/ipc-channels.ts',
+    ),
+    'utf8',
+  );
+  const clientPort = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../../application-client/ports/notification-api-client.port.ts',
+    ),
+    'utf8',
+  );
+  const httpAdapter = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../../infrastructure-client/adapters/http/notification-http.adapter.ts',
+    ),
+    'utf8',
+  );
+  const ipcAdapter = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../../infrastructure-client/adapters/ipc/notification-ipc.adapter.ts',
     ),
     'utf8',
   );
@@ -126,6 +148,22 @@ describe('notification preference ownership surface', () => {
     expect(electron).toContain('controller.getPreferences(requestContext)');
     expect(electron).toContain('controller.updatePreferences(dto ?? {}, requestContext)');
     expect(moduleSource).toContain('executeOrCreate(identityId)');
+  });
+
+
+  it('client port/adapters expose preference methods without body identity dual-track (residual 197)', () => {
+    expect(clientPort).toContain(
+      'getPreferences(): Promise<Result<NotificationPreferenceClientDTO>>;',
+    );
+    expect(clientPort).toMatch(
+      /updatePreferences\(\s*request: UpdateNotificationPreferenceReq,/,
+    );
+    expect(clientPort).not.toMatch(/getPreferences\(\s*identityId/);
+    expect(clientPort).not.toMatch(/updatePreferences\([\s\S]*identityId:\s*string/);
+    expect(httpAdapter).toContain('`${this.baseUrl}/preferences`');
+    expect(httpAdapter).toContain("this.httpClient.put(`${this.baseUrl}/preferences`, request)");
+    expect(ipcAdapter).toContain('NotificationChannels.PREFERENCES_GET');
+    expect(ipcAdapter).toContain('NotificationChannels.PREFERENCES_UPDATE');
   });
 
 });

@@ -13,7 +13,12 @@ import type {
   NotificationListResponse,
   UnreadCountResponse,
 } from '../types';
-import type { BatchOperationResultDTO, NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type {
+  BatchOperationResultDTO,
+  NotificationClientDTO,
+  NotificationPreferenceClientDTO,
+  UpdateNotificationPreferenceReq,
+} from '@dailyuse/contracts/notification';
 
 /**
  * NotificationHttpAdapter
@@ -61,6 +66,16 @@ export class NotificationHttpAdapter implements INotificationApiClient {
 
   async getUnreadCount(): Promise<Result<UnreadCountResponse>> {
     return this.httpClient.get(`${this.baseUrl}/unread-count`);
+  }
+
+  async getPreferences(): Promise<Result<NotificationPreferenceClientDTO>> {
+    return this.httpClient.get(`${this.baseUrl}/preferences`);
+  }
+
+  async updatePreferences(
+    request: UpdateNotificationPreferenceReq,
+  ): Promise<Result<NotificationPreferenceClientDTO>> {
+    return this.httpClient.put(`${this.baseUrl}/preferences`, request);
   }
 }
 

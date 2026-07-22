@@ -16,6 +16,8 @@ describe('NotificationIpcAdapter channel surface', () => {
     expect(source).toContain('NotificationChannels.LIST');
     expect(source).toContain('NotificationChannels.MARK_READ');
     expect(source).toContain('NotificationChannels.GET_UNREAD_COUNT');
+    expect(source).toContain('NotificationChannels.PREFERENCES_GET');
+    expect(source).toContain('NotificationChannels.PREFERENCES_UPDATE');
   });
 
   it('does not invoke custom renderer channels from the CRUD adapter', () => {

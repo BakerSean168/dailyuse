@@ -8,7 +8,12 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { BatchOperationResultDTO, NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type {
+  BatchOperationResultDTO,
+  NotificationClientDTO,
+  NotificationPreferenceClientDTO,
+  UpdateNotificationPreferenceReq,
+} from '@dailyuse/contracts/notification';
 
 // ============ Local Request/Response Types ============
 
@@ -57,4 +62,9 @@ export interface INotificationApiClient {
   deleteNotification(id: string): Promise<Result<null>>;
   batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>>;
   getUnreadCount(): Promise<Result<UnreadCountResponse>>;
+  /** Residual 197: identity comes from transport auth, not client body dual-track. */
+  getPreferences(): Promise<Result<NotificationPreferenceClientDTO>>;
+  updatePreferences(
+    request: UpdateNotificationPreferenceReq,
+  ): Promise<Result<NotificationPreferenceClientDTO>>;
 }

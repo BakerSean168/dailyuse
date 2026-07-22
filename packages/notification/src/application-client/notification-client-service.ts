@@ -8,7 +8,12 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { BatchOperationResultDTO, NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type {
+  BatchOperationResultDTO,
+  NotificationClientDTO,
+  NotificationPreferenceClientDTO,
+  UpdateNotificationPreferenceReq,
+} from '@dailyuse/contracts/notification';
 import type {
   INotificationApiClient,
   CreateNotificationRequest,
@@ -30,6 +35,10 @@ export interface NotificationClientPort {
   batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>>;
   dismissAll(ids: string[]): Promise<Result<BatchOperationResultDTO>>;
   getUnreadCount(): Promise<Result<UnreadCountResponse>>;
+  getPreferences(): Promise<Result<NotificationPreferenceClientDTO>>;
+  updatePreferences(
+    request: UpdateNotificationPreferenceReq,
+  ): Promise<Result<NotificationPreferenceClientDTO>>;
 }
 
 export class NotificationClientService implements NotificationClientPort {
@@ -43,6 +52,8 @@ export class NotificationClientService implements NotificationClientPort {
     this.batchDeleteNotifications = this.batchDeleteNotifications.bind(this);
     this.dismissAll = this.dismissAll.bind(this);
     this.getUnreadCount = this.getUnreadCount.bind(this);
+    this.getPreferences = this.getPreferences.bind(this);
+    this.updatePreferences = this.updatePreferences.bind(this);
   }
 
   // ===== Notification Operations =====
@@ -85,6 +96,16 @@ export class NotificationClientService implements NotificationClientPort {
 
   async getUnreadCount(): Promise<Result<UnreadCountResponse>> {
     return this.notificationApi.getUnreadCount();
+  }
+
+  async getPreferences(): Promise<Result<NotificationPreferenceClientDTO>> {
+    return this.notificationApi.getPreferences();
+  }
+
+  async updatePreferences(
+    request: UpdateNotificationPreferenceReq,
+  ): Promise<Result<NotificationPreferenceClientDTO>> {
+    return this.notificationApi.updatePreferences(request);
   }
 }
 
