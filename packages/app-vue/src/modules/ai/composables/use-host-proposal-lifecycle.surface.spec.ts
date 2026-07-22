@@ -1039,6 +1039,32 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('goal session primary-task confirm requires sole create_task_template (residual 575)', () => {
+    const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
+    expect(goal).toContain('Residual 575');
+    expect(goal).toContain('isPrimaryTaskHostAgentRun');
+    const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
+    expect(resumeIdx).toBeGreaterThan(-1);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 3600);
+    expect(resumeSlice).toContain('Residual 575');
+    expect(resumeSlice).toContain('isPrimaryTaskHostAgentRun');
+    expect(resumeSlice).toContain("action.tool === 'create_task_template'");
+    expect(resumeSlice).toContain("action.tool === 'create_goal'");
+    expect(resumeSlice).toContain('productDraftCount !== 1');
+    // Both product gates before Host lifecycle / confirm resume payload build.
+    const taskToolIdx = resumeSlice.indexOf("action.tool === 'create_task_template'");
+    const goalToolIdx = resumeSlice.indexOf("action.tool === 'create_goal'");
+    const hostIdx = resumeSlice.indexOf('dispatchHostProposalDecision');
+    const payloadIdx = resumeSlice.indexOf('buildGoalAgentApprovalPayload');
+    expect(taskToolIdx).toBeGreaterThan(-1);
+    expect(goalToolIdx).toBeGreaterThan(-1);
+    expect(hostIdx).toBeGreaterThan(taskToolIdx);
+    expect(hostIdx).toBeGreaterThan(goalToolIdx);
+    expect(payloadIdx).toBeGreaterThan(taskToolIdx);
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
     const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');
@@ -1046,11 +1072,11 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(knowledge).toContain('Residual 559');
     const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
     expect(resumeIdx).toBeGreaterThan(-1);
-    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 2400);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 4200);
     expect(resumeSlice).toContain('Residual 559');
     expect(resumeSlice).toContain("run.status !== 'waiting_approval'");
     expect(resumeSlice).toContain("userDecision === 'confirm' || userDecision === 'cancel'");
-    // Status gate before sole create_goal product draft gate and Host lifecycle.
+    // Status gate before sole product draft gates and Host lifecycle.
     const statusIdx = resumeSlice.indexOf("run.status !== 'waiting_approval'");
     const productIdx = resumeSlice.indexOf('productDraftCount !== 1');
     const hostIdx = resumeSlice.indexOf('dispatchHostProposalDecision');

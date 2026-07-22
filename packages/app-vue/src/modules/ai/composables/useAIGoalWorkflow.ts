@@ -1,5 +1,6 @@
 /**
  * Residual 557: goal.create confirm requires sole create_goal draftAction after
+ * Residual 575: primary-task Host path confirm requires sole create_task_template
  * single-product-draft gate (knowledge residual 555 / task residual 547 symmetry;
  * no multi product invent). Foreign companions (key_result/task_template/reminder)
  * may remain for executor context; multi create_goal is fail-closed.
@@ -815,16 +816,24 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
 
     // Residual 557: goal.create confirm requires sole create_goal draftAction after
     // single-product-draft gate (knowledge residual 555 / task residual 547 symmetry;
-    // no multi product invent). Primary task Host path keeps create_task_template gates.
-    // Foreign companions may remain for executor context.
-    if (userDecision === 'confirm' && !isPrimaryTaskHostAgentRun(goalAgentRun.value)) {
+    // no multi product invent). Foreign companions may remain for executor context.
+    // Residual 575: primary-task Host path requires sole create_task_template
+    // (task residual 547 / Host residual 563 symmetry; no multi invent).
+    if (userDecision === 'confirm') {
       const baseActions = goalAgentRun.value.state.pendingActions.length
         ? goalAgentRun.value.state.pendingActions
         : goalAgentRun.value.state.approvedActions;
-      const productDraftCount = baseActions.filter(
-        (action) => action.tool === 'create_goal',
-      ).length;
-      if (productDraftCount !== 1) return;
+      if (isPrimaryTaskHostAgentRun(goalAgentRun.value)) {
+        const productDraftCount = baseActions.filter(
+          (action) => action.tool === 'create_task_template',
+        ).length;
+        if (productDraftCount !== 1) return;
+      } else {
+        const productDraftCount = baseActions.filter(
+          (action) => action.tool === 'create_goal',
+        ).length;
+        if (productDraftCount !== 1) return;
+      }
     }
 
     goalAgentResuming.value = true;

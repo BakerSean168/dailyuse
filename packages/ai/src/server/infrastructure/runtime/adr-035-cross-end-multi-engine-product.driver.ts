@@ -408,6 +408,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ["owned?.productTool === 'create_task_template'"];
     case 'Residual 573':
       return ['Residual 573'];
+    case 'Residual 575':
+      return ['Residual 575'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':
