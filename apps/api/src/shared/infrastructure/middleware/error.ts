@@ -2,12 +2,17 @@
  * Error Handling Middleware
  *
  * 全局错误处理器，必须在所有路由注册之后挂载。
+ *
+ * Residual 627: 404 + global error responses use Result/HttpResponse
+ * envelope only (createApiResponseBuilder), matching expressAdapter.
+ * K8s probes remain dedicated non-Result ops shapes.
  */
 
 import type { Express, Request, Response, NextFunction } from 'express';
 import { mapPrismaError } from '@dailyuse/utils/errors';
 import { createLogger } from '@dailyuse/utils/logger';
 import { errorCodeToHttpStatus, extractStructuredResultError } from '@dailyuse/contracts/result';
+import { createApiResponseBuilder } from '../http/response-builder.js';
 
 const logger = createLogger('ErrorHandler');
 
@@ -37,13 +42,15 @@ function toErrorLike(err: unknown): ErrorLike | null {
  */
 export function applyErrorHandlers(app: Express): void {
   // 404 Not Found
-  app.use((_req: Request, res: Response) => {
-    res.status(404).json({ ok: false, code: 'NOT_FOUND', message: 'Not Found' });
+  app.use((req: Request, res: Response) => {
+    const responseBuilder = createApiResponseBuilder(req);
+    res.status(404).json(responseBuilder.notFound('Not Found'));
   });
 
   // Global error handler (must have 4 args for Express to recognize it)
-  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
     const errorLike = toErrorLike(err);
+    const responseBuilder = createApiResponseBuilder(req);
     logger.error('Express error handler caught error', err, {
       code: errorLike?.code,
       message: errorLike?.message,
@@ -51,11 +58,7 @@ export function applyErrorHandlers(app: Express): void {
 
     // 0. CORS rejections — expected client-side access control failures
     if (isCorsRejectionError(err)) {
-      res.status(403).json({
-        ok: false,
-        code: 'FORBIDDEN',
-        message: err.message,
-      });
+      res.status(403).json(responseBuilder.forbidden(err.message));
       return;
     }
 
@@ -63,32 +66,29 @@ export function applyErrorHandlers(app: Express): void {
     const structuredError = extractStructuredResultError(err);
     if (structuredError) {
       const status = structuredError.statusCode ?? errorCodeToHttpStatus(structuredError.code);
-      res.status(status).json({
-        ok: false,
-        code: structuredError.code,
-        message: structuredError.message,
-        ...(structuredError.details ? { details: structuredError.details } : {}),
-        ...(structuredError.context ? { context: structuredError.context } : {}),
-      });
+      res
+        .status(status)
+        .json(
+          responseBuilder.error(
+            structuredError.code,
+            structuredError.message,
+            structuredError.details,
+            structuredError.context,
+          ),
+        );
       return;
     }
 
     // 2. Prisma errors — map to safe generic messages
     const prismaMapping = mapPrismaError(err);
     if (prismaMapping) {
-      res.status(prismaMapping.httpStatus).json({
-        ok: false,
-        code: prismaMapping.resultCode,
-        message: prismaMapping.message,
-      });
+      res
+        .status(prismaMapping.httpStatus)
+        .json(responseBuilder.error(prismaMapping.resultCode, prismaMapping.message));
       return;
     }
 
     // 3. Everything else — never leak internal details
-    res.status(500).json({
-      ok: false,
-      code: 'INTERNAL_ERROR',
-      message: 'Internal server error',
-    });
+    res.status(500).json(responseBuilder.internalError('Internal server error'));
   });
 }
