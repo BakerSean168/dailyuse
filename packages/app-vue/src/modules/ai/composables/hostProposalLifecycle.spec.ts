@@ -1714,6 +1714,92 @@ describe('goal draft create_goal-only payload (residual 523)', () => {
   });
 });
 
+describe('workbench summary product-lane rationale (residual 525)', () => {
+  it('goal summary ignores foreign pending[0] tool rationale', () => {
+    const run = goalWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_task_template',
+        rationale: 'foreign task rationale',
+        payload: { title: 'Foreign Task' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_goal',
+        rationale: 'real goal rationale',
+        payload: { title: 'Real Goal' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ goalAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.summary).toBe('real goal rationale');
+  });
+
+  it('knowledge summary ignores foreign pending[0] tool rationale', () => {
+    const run = noteWaitingRun();
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign goal rationale',
+        payload: {},
+        dependsOn: [],
+      },
+      {
+        tool: 'create_knowledge_note',
+        rationale: 'real note rationale',
+        payload: { targetSubpath: 'notes/real', contentMarkdown: '# real' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.summary).toBe('real note rationale');
+  });
+
+  it('task summary ignores foreign pending[0] tool rationale', () => {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign goal rationale',
+        payload: { title: 'Foreign' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_task_template',
+        rationale: 'real task rationale',
+        payload: { title: 'Real Task', goalId: 'goal-real' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ taskAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.summary).toBe('real task rationale');
+  });
+
+  it('does not invent summary from foreign-only pending actions', () => {
+    const run = goalWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_task_template',
+        rationale: 'foreign-only rationale',
+        payload: { title: 'Only Foreign' },
+        dependsOn: [],
+      },
+    ];
+    run.state.approvedActions = [];
+    const items = buildPendingHostProposalItems({ goalAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.summary).toBe('');
+    expect(items[0]?.summary).not.toBe('foreign-only rationale');
+  });
+});
+
 
 
 describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {

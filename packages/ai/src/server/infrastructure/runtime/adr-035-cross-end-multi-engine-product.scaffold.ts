@@ -369,6 +369,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 523: client goal draft title/description create_goal only.
         'Residual 523',
         'firstCreateGoalAction',
+        // Residual 525: workbench summary product-lane tool rationale only.
+        'Residual 525',
+        "firstPendingRationale(goalRun, 'create_goal')",
       ],
       status: 'implemented_unit',
     },

@@ -1055,6 +1055,20 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('workbench summary rationale reads product-lane tool only (residual 525)', () => {
+    expect(helper).toContain('Residual 525');
+    const fnIdx = helper.indexOf('function firstPendingRationale');
+    expect(fnIdx).toBeGreaterThan(-1);
+    const fnSlice = helper.slice(fnIdx, fnIdx + 900);
+    expect(fnSlice).toContain('productTool');
+    expect(fnSlice).toContain("candidate.tool === productTool");
+    expect(fnSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+    // Call sites pass lane product tools — not bare firstPendingRationale(run).
+    expect(helper).toContain("firstPendingRationale(goalRun, 'create_goal')");
+    expect(helper).toContain("firstPendingRationale(noteRun, 'create_knowledge_note')");
+    expect(helper).toContain("firstPendingRationale(taskRun, 'create_task_template')");
+  });
+
 
 
 

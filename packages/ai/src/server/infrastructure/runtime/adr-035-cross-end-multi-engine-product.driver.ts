@@ -386,6 +386,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 523'];
     case 'firstCreateGoalAction':
       return ['firstCreateGoalAction'];
+    case 'Residual 525':
+      return ['Residual 525'];
+    case "firstPendingRationale(goalRun, 'create_goal')":
+      return ["firstPendingRationale(goalRun, 'create_goal')"];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
