@@ -99,7 +99,7 @@ def _token_usage_input(data: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _provider_config_input(data: dict[str, Any]) -> ProviderConfig | None:
-    raw = data.get("provider_config") or data.get("providerConfig")
+    raw = data.get("provider_config")
     if raw is None:
         return None
     if not isinstance(raw, dict):
@@ -108,20 +108,8 @@ def _provider_config_input(data: dict[str, Any]) -> ProviderConfig | None:
             detail='"provider_config" must be an object when provided.',
         )
 
-    normalized = dict(raw)
-    alias_pairs = {
-        "apiKey": "api_key",
-        "baseUrl": "base_url",
-        "maxTokens": "max_tokens",
-        "embeddingModel": "embedding_model",
-    }
-    for source_key, target_key in alias_pairs.items():
-        if source_key in normalized:
-            normalized.setdefault(target_key, normalized[source_key])
-            normalized.pop(source_key, None)
-
     try:
-        return ProviderConfig.model_validate(normalized)
+        return ProviderConfig.model_validate(raw)
     except ValidationError as exc:
         raise HTTPException(
             status_code=422,
@@ -153,7 +141,7 @@ def _related_resources_input(data: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _indexed_resources_input(data: dict[str, Any]) -> list[Any]:
-    raw = data.get("indexed_resources") or data.get("indexedResources")
+    raw = data.get("indexed_resources")
     if raw is None:
         return []
     if not isinstance(raw, list):
@@ -178,7 +166,7 @@ def _indexed_resources_input(data: dict[str, Any]) -> list[Any]:
 
 
 def _analytics_context_input(data: dict[str, Any]) -> dict[str, Any] | None:
-    raw = data.get("analytics_context") or data.get("analyticsContext")
+    raw = data.get("analytics_context")
     if raw is None:
         return None
     if not isinstance(raw, dict):
@@ -187,16 +175,8 @@ def _analytics_context_input(data: dict[str, Any]) -> dict[str, Any] | None:
             detail='"analytics_context" must be an object when provided.',
         )
 
-    normalized = dict(raw)
-    if "taskDashboard" in normalized:
-        normalized.setdefault("task_dashboard", normalized["taskDashboard"])
-        normalized.pop("taskDashboard", None)
-    if "goalSearchResults" in normalized:
-        normalized.setdefault("goal_search_results", normalized["goalSearchResults"])
-        normalized.pop("goalSearchResults", None)
-
     try:
-        return AnalyticsQueryContext.model_validate(normalized).model_dump(mode="json")
+        return AnalyticsQueryContext.model_validate(raw).model_dump(mode="json")
     except ValidationError as exc:
         raise HTTPException(
             status_code=422,
@@ -205,7 +185,7 @@ def _analytics_context_input(data: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _context_errors_input(data: dict[str, Any]) -> list[dict[str, str]]:
-    raw = data.get("context_errors") or data.get("contextErrors")
+    raw = data.get("context_errors")
     if not isinstance(raw, list):
         return []
     errors: list[dict[str, str]] = []

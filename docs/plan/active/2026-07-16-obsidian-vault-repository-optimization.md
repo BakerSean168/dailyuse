@@ -2254,6 +2254,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：index/source/terminology surfaces + query/goal/runtime/prisma specs +
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百一十五轮）：ai-service agent 入参 snake_case 单一真值——
+> 去掉 `providerConfig`/`indexedResources`/`analyticsContext`/`contextErrors` 顶层双轨及
+> provider/analytics 嵌套 camelCase 别名归一；TS runtime 只检查/写入
+> `analytics_context`/`related_resources`/`context_errors`；内部 `syncNotes` 字段命名；
+> e2e-style unit 用例改为 snake_case。`tokenUsage`/`token_usage` 双读暂留（contracts 响应面
+> 仍用 camelCase）。补 `ai-service-agent-input-snake-case.surface.spec.ts`。
+> §13.2 未打勾项仍为部分/外部阻塞。验证：snake-case/index/source surfaces + query/goal/
+> runtime focused specs + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2532,6 +2541,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百一十二轮：§13.2 core evidence suite re-run (204 tests, residual 211 locks, no checkbox changes)。
   残留二百一十三轮：AI knowledge source port Resource→Note naming (wire related_resources stable)。
   残留二百一十四轮：AI knowledge index/sync Resource→Note naming (wire indexed_resources stable)。
+  残留二百一十五轮：ai-service agent input snake_case only (drop camelCase dual-track keys)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

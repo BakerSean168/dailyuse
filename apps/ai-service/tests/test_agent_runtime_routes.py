@@ -248,16 +248,16 @@ def test_start_goal_create_agent_run_accepts_read_only_context(client):
                         "metadata": {"source": "test"},
                     }
                 ],
-                "analyticsContext": {
+                "analytics_context": {
                     "dashboard": {"stats": {"activeGoals": 2}},
-                    "taskDashboard": {"summary": {"totalTasks": 5}},
+                    "task_dashboard": {"summary": {"totalTasks": 5}},
                     "goals": [{"id": "goal-1", "title": "Existing Agent work"}],
-                    "goalSearchResults": [
+                    "goal_search_results": [
                         {"id": "goal-2", "title": "Similar workspace goal"}
                     ],
                     "extra": {"source": "test"},
                 },
-                "contextErrors": [
+                "context_errors": [
                     {
                         "tool": "fetch_goal_stats",
                         "message": "analytics unavailable",

@@ -442,7 +442,7 @@ async function withGoalAgentReadOnlyContext(
     }
   }
 
-  if (analyticsReadPort && !req.input['analytics_context'] && !req.input['analyticsContext']) {
+  if (analyticsReadPort && !req.input['analytics_context']) {
     try {
       inputPatch['analytics_context'] = toAIServiceAnalyticsContext(
         await analyticsReadPort.buildContext(identityId, query),

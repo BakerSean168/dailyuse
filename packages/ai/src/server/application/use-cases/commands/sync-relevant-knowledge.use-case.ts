@@ -18,7 +18,7 @@ import {
  * 同步相关知识资源
  */
 export class SyncRelevantKnowledgeUseCase {
-  private readonly syncResources: SyncKnowledgeNotesUseCase;
+  private readonly syncNotes: SyncKnowledgeNotesUseCase;
 
   constructor(
     private readonly knowledgeSourcePort: IKnowledgeSourcePort,
@@ -27,7 +27,7 @@ export class SyncRelevantKnowledgeUseCase {
     executionLogPort?: IAIExecutionLogPort,
     knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort,
   ) {
-    this.syncResources = new SyncKnowledgeNotesUseCase(
+    this.syncNotes = new SyncKnowledgeNotesUseCase(
       knowledgeIndexRepository,
       knowledgeIngestionPort,
       executionLogPort,
@@ -51,7 +51,7 @@ export class SyncRelevantKnowledgeUseCase {
       query,
       candidateLimit,
     );
-    const hydratedIndexedCandidates = mergeUniqueNotes(
+    const hydratedIndexedNotes = mergeUniqueNotes(
       (
         await Promise.all(
           indexedCandidates.map(async (resource) =>
@@ -60,24 +60,24 @@ export class SyncRelevantKnowledgeUseCase {
         )
       ).filter((resource): resource is KnowledgeSourceNote => resource !== null),
     );
-    const relevantResources =
-      hydratedIndexedCandidates.length >= Math.min(requestedLimit, 6)
+    const relevantNotes =
+      hydratedIndexedNotes.length >= Math.min(requestedLimit, 6)
         ? []
         : await this.knowledgeSourcePort.listRelevantNotes(
             cx.identityId,
             query,
             candidateLimit,
           );
-    const fallbackResources =
-      hydratedIndexedCandidates.length + relevantResources.length >= Math.min(requestedLimit, 6)
+    const fallbackNotes =
+      hydratedIndexedNotes.length + relevantNotes.length >= Math.min(requestedLimit, 6)
         ? []
         : await this.knowledgeSourcePort.listIndexableNotes(cx.identityId, candidateLimit);
     const resources = mergeUniqueNotes([
-      ...hydratedIndexedCandidates,
-      ...relevantResources,
-      ...fallbackResources,
+      ...hydratedIndexedNotes,
+      ...relevantNotes,
+      ...fallbackNotes,
     ]).slice(0, candidateLimit);
-    const sync = await this.syncResources.execute(resources, cx, options);
+    const sync = await this.syncNotes.execute(resources, cx, options);
     return {
       resources,
       sync,

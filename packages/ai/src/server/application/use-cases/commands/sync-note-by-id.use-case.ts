@@ -16,7 +16,7 @@ import type {
  * 按 ID 同步单个知识笔记
  */
 export class SyncNoteByIdUseCase {
-  private readonly syncResources: SyncKnowledgeNotesUseCase;
+  private readonly syncNotes: SyncKnowledgeNotesUseCase;
 
   constructor(
     private readonly knowledgeSourcePort: IKnowledgeSourcePort,
@@ -25,7 +25,7 @@ export class SyncNoteByIdUseCase {
     executionLogPort?: IAIExecutionLogPort,
     knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort,
   ) {
-    this.syncResources = new SyncKnowledgeNotesUseCase(
+    this.syncNotes = new SyncKnowledgeNotesUseCase(
       knowledgeIndexRepository,
       knowledgeIngestionPort,
       executionLogPort,
@@ -48,7 +48,7 @@ export class SyncNoteByIdUseCase {
 
     return {
       note: resource,
-      sync: await this.syncResources.execute([resource], cx, {
+      sync: await this.syncNotes.execute([resource], cx, {
         ...options,
         force: options?.force ?? true,
       }),

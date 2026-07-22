@@ -16,7 +16,7 @@ import type {
  * 重建全部知识索引
  */
 export class ReindexAllKnowledgeUseCase {
-  private readonly syncResources: SyncKnowledgeNotesUseCase;
+  private readonly syncNotes: SyncKnowledgeNotesUseCase;
 
   constructor(
     private readonly knowledgeSourcePort: IKnowledgeSourcePort,
@@ -25,7 +25,7 @@ export class ReindexAllKnowledgeUseCase {
     executionLogPort?: IAIExecutionLogPort,
     knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort,
   ) {
-    this.syncResources = new SyncKnowledgeNotesUseCase(
+    this.syncNotes = new SyncKnowledgeNotesUseCase(
       knowledgeIndexRepository,
       knowledgeIngestionPort,
       executionLogPort,
@@ -39,7 +39,7 @@ export class ReindexAllKnowledgeUseCase {
     options?: SyncKnowledgeNotesOptions,
   ): Promise<SyncKnowledgeNotesResult> {
     const resources = await this.knowledgeSourcePort.listIndexableNotes(cx.identityId, limit);
-    return this.syncResources.execute(resources, cx, {
+    return this.syncNotes.execute(resources, cx, {
       ...options,
       force: options?.force ?? true,
     });
