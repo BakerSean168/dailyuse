@@ -1549,6 +1549,55 @@ describe('resolveLinkedGoalIdFromTaskAgentRun (residual 445)', () => {
   });
 });
 
+describe('task draft create_task_template-only payload (residual 519)', () => {
+  it('ignores foreign pending[0] tool when reading title/goalId for workbench', () => {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    run.state.artifacts = [];
+    // Foreign tool first — must not steal title/goalId from create_task_template.
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign',
+        payload: { title: 'Foreign Goal Title', goalId: 'foreign-goal' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_task_template',
+        rationale: 'task',
+        payload: { title: 'Real Task Title', goalId: 'goal-real' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ taskAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.title).toBe('Real Task Title');
+    expect(items[0]?.goalId).toBe('goal-real');
+    expect(resolveLinkedGoalIdFromTaskAgentRun(run)).toBe('goal-real');
+  });
+
+  it('does not invent title/goalId from foreign-only pending actions', () => {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign-only',
+        payload: { title: 'Only Foreign', goalId: 'foreign-only' },
+        dependsOn: [],
+      },
+    ];
+    run.state.approvedActions = [];
+    const items = buildPendingHostProposalItems({ taskAgentRun: run });
+    expect(items).toHaveLength(1);
+    // Falls through to user message / empty — not foreign pending payload.
+    expect(items[0]?.title).not.toBe('Only Foreign');
+    expect(items[0]?.goalId).not.toBe('foreign-only');
+    expect(resolveLinkedGoalIdFromTaskAgentRun(run)).toBeNull();
+  });
+});
+
 describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {
   it('returns true only for dirty owned task.create sessions', () => {
     expect(

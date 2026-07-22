@@ -1,10 +1,11 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
  * snapshots and post-execution Host receipt rows. Never calls
  * ProposalKernel mutation execution from this module.
+ * Residual 519: task draft title/goalId read create_task_template only (no blind pending[0]).
  */
 import type {
   AgentAction,
@@ -566,7 +567,18 @@ function summarizeExecutedActions(run: AgentRunResult): {
  */
 
 /**
- * Residual 419: task.create draft title from artifact / pending action payload.
+ * Residual 519: product task draft action is create_task_template only
+ * (complete residual 501 / revise residual 507 symmetry). Never read foreign tool pending[0].
+ */
+function firstCreateTaskTemplateAction(run: AgentRunResult): AgentAction | undefined {
+  return (
+    run.state.pendingActions.find((action) => action.tool === 'create_task_template') ??
+    run.state.approvedActions.find((action) => action.tool === 'create_task_template')
+  );
+}
+
+/**
+ * Residual 419/519: task.create draft title from artifact / create_task_template payload.
  */
 function taskDraftTitle(run: AgentRunResult): string {
   const draft = run.state.artifacts.find(
@@ -580,7 +592,8 @@ function taskDraftTitle(run: AgentRunResult): string {
   }
   const dataTitle = draft?.data?.['title'];
   if (typeof dataTitle === 'string' && dataTitle.trim()) return dataTitle.trim();
-  const action = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+  // Residual 519: only create_task_template draft payload — not blind pending[0].
+  const action = firstCreateTaskTemplateAction(run);
   const payload = action?.payload;
   const fromPayload =
     payload && typeof payload === 'object'
@@ -591,7 +604,9 @@ function taskDraftTitle(run: AgentRunResult): string {
 
   // Residual 441: process-local terminal task.create (pending cleared) — recover title
   // from executedActions.data / approval events / user message content.
+  // Residual 519: prefer create_task_template executed settlement when present.
   for (const executed of run.state.executedActions ?? []) {
+    if (executed.tool && executed.tool !== 'create_task_template') continue;
     const data = executed.data;
     if (data && typeof data === 'object') {
       const title =
@@ -615,6 +630,9 @@ function taskDraftTitle(run: AgentRunResult): string {
   return '';
 }
 
+/**
+ * Residual 419/519: task.create linked goalId from artifact / create_task_template payload.
+ */
 function taskDraftGoalId(run: AgentRunResult): string | null {
   const draft = run.state.artifacts.find(
     (artifact) =>
@@ -625,7 +643,8 @@ function taskDraftGoalId(run: AgentRunResult): string | null {
   const fromData = draft?.data?.['goalId'];
   if (typeof fromData === 'string' && fromData.trim()) return fromData.trim();
   if (fromData === null) return null;
-  const action = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+  // Residual 519: only create_task_template draft payload — not blind pending[0].
+  const action = firstCreateTaskTemplateAction(run);
   const payload = action?.payload;
   const fromPayload =
     payload && typeof payload === 'object'

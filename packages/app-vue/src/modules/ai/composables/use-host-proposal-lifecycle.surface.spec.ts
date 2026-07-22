@@ -1005,6 +1005,25 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create draft title/goalId reads create_task_template only (residual 519)', () => {
+    const helper = readFileSync(resolve(dir, 'hostProposalLifecycle.ts'), 'utf8');
+    expect(helper).toContain('firstCreateTaskTemplateAction');
+    expect(helper).toContain('Residual 519');
+    // taskDraftTitle / taskDraftGoalId use create_task_template finder — not blind pending[0].
+    const titleIdx = helper.indexOf('function taskDraftTitle');
+    const goalIdx = helper.indexOf('function taskDraftGoalId');
+    expect(titleIdx).toBeGreaterThan(-1);
+    expect(goalIdx).toBeGreaterThan(-1);
+    const titleSlice = helper.slice(titleIdx, titleIdx + 900);
+    const goalSlice = helper.slice(goalIdx, goalIdx + 700);
+    expect(titleSlice).toContain('firstCreateTaskTemplateAction(run)');
+    expect(titleSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+    expect(goalSlice).toContain('firstCreateTaskTemplateAction(run)');
+    expect(goalSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

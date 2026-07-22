@@ -360,6 +360,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 517: listRuns remote ownership uses matchesHostTaskCreateIdentity.
         'Residual 517',
         'matchesHostTaskCreateIdentity(run.identityId, cx.identityId)',
+        // Residual 519: client task draft title/goalId create_task_template only.
+        'Residual 519',
+        'firstCreateTaskTemplateAction',
       ],
       status: 'implemented_unit',
     },
