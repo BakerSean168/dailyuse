@@ -112,6 +112,7 @@ export function resolveCrossEndMultiEngineProductStepSources(
         'packages/app-vue/src/modules/ai/composables/types.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-start.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+        'packages/ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
         'packages/ai/src/server/infrastructure/runtime/ai-runtime.ts',
         'packages/app-vue/src/modules/ai/components/AIWorkflowActionBar.vue',
         'packages/app-vue/src/modules/ai/components/AIHostProposalPanel.vue',
@@ -212,6 +213,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['cancelTaskAgentRun'];
     case 'completeTaskAgentRun':
       return ['completeTaskAgentRun'];
+    case 'reviseTaskAgentRun':
+      return ['reviseTaskAgentRun'];
+    case "userDecision: 'edit'":
+      return ["userDecision: 'edit'", "userDecision: 'edit'"];
+    case 'idempotent terminal resume':
+      return ['idempotent terminal resume'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

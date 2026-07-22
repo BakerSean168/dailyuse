@@ -6,7 +6,7 @@ import { createAgentRuntimeService } from '../ai-runtime';
 import { resetDefaultHostTaskCreateRunStoreForTests } from '../host-task-create-run-store';
 import type { IAgentRuntimePort } from '../../../application/ports/agent-runtime.port';
 
-describe('host task.create process-local resume runtime wire (residual 437)', () => {
+describe('host task.create process-local resume runtime wire (residual 437/439)', () => {
   beforeEach(() => {
     resetDefaultHostTaskCreateRunStoreForTests();
   });
@@ -131,4 +131,71 @@ describe('host task.create process-local resume runtime wire (residual 437)', ()
     expect(clarified.error.code).toBe('VALIDATION_ERROR');
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
+
+  it('edit revises stored pending payload without port; cancel stays idempotent', async () => {
+    const port: IAgentRuntimePort = {
+      startRun: vi.fn(),
+      resumeRun: vi.fn().mockRejectedValue(new Error('should not call port.resumeRun')),
+      getRun: vi.fn().mockRejectedValue(new Error('should not call port.getRun')),
+      listRuns: vi.fn().mockResolvedValue([]),
+      getEvents: vi.fn().mockResolvedValue([]),
+    };
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'identity-1' } as const;
+
+    await service.startRun(
+      {
+        runId: 'run-task-edit-1',
+        threadId: 'thread-task-edit-1',
+        conversationId: 'conv-1',
+        identityId: 'ignored',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Draft A' },
+      },
+      cx as any,
+    );
+
+    const edited = await service.resumeRun(
+      'run-task-edit-1',
+      {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'rev',
+            payload: { title: 'Draft B', goalId: 'g-1' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(edited.ok).toBe(true);
+    if (!edited.ok) return;
+    expect(edited.data.run.status).toBe('waiting_approval');
+    expect(edited.data.state.pendingActions[0]?.payload['title']).toBe('Draft B');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+
+    const cancelled = await service.resumeRun(
+      'run-task-edit-1',
+      { userDecision: 'cancel' },
+      cx as any,
+    );
+    expect(cancelled.ok).toBe(true);
+    if (!cancelled.ok) return;
+    expect(cancelled.data.run.status).toBe('cancelled');
+
+    const cancelledAgain = await service.resumeRun(
+      'run-task-edit-1',
+      { userDecision: 'cancel' },
+      cx as any,
+    );
+    expect(cancelledAgain.ok).toBe(true);
+    if (!cancelledAgain.ok) return;
+    expect(cancelledAgain.data.run.status).toBe('cancelled');
+    expect(cancelledAgain.data.events.filter((e) => e.data?.['userDecision'] === 'cancel')).toHaveLength(1);
+  });
+
 });

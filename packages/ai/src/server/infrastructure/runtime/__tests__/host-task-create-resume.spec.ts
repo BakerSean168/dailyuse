@@ -11,11 +11,11 @@ function request(runId: string): AgentStartRunRequest {
     identityId: 'identity-body',
     agentType: 'task.create',
     locale: 'en-US',
-    input: { title: 'Ship residual 437' },
+    input: { title: 'Ship residual 439' },
   };
 }
 
-describe('host-task-create-resume (residual 437)', () => {
+describe('host-task-create-resume (residual 437/439)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -61,6 +61,68 @@ describe('host-task-create-resume (residual 437)', () => {
     expect(completed.state.executedActions).toHaveLength(1);
     expect(completed.state.executedActions[0]?.entityId).toBe('tpl-1');
     expect(completed.interrupts).toEqual([]);
+  });
+
+  it('edit revises pending create_task_template and stays waiting_approval', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit'),
+      identityId: 'id-1',
+      nowMs: 10,
+    });
+    const edited = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'Revised',
+            payload: { title: 'Revised title', goalId: 'goal-9' },
+          },
+        ],
+      },
+      nowMs: 40,
+    });
+    expect(edited.run.status).toBe('waiting_approval');
+    expect(edited.state.pendingActions[0]?.payload['title']).toBe('Revised title');
+    expect(edited.state.pendingActions[0]?.payload['goalId']).toBe('goal-9');
+    expect(edited.interrupts[0]?.pendingActions[0]?.payload['title']).toBe('Revised title');
+    expect(edited.events.at(-1)?.type).toBe('approval.required');
+    expect(edited.events.at(-1)?.data?.['userDecision']).toBe('edit');
+  });
+
+  it('cancel/confirm are idempotent on terminal status', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-idemp'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const cancelled = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: { userDecision: 'cancel' },
+      nowMs: 2,
+    });
+    const again = buildHostTaskCreateResumeResult({
+      current: cancelled,
+      payload: { userDecision: 'cancel' },
+      nowMs: 3,
+    });
+    expect(again).toBe(cancelled);
+    expect(again.events.filter((e) => e.data?.['userDecision'] === 'cancel')).toHaveLength(1);
+
+    const completed = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: { userDecision: 'confirm' },
+      nowMs: 4,
+    });
+    const completeAgain = buildHostTaskCreateResumeResult({
+      current: completed,
+      payload: { userDecision: 'confirm' },
+      nowMs: 5,
+    });
+    expect(completeAgain).toBe(completed);
   });
 
   it('fails closed for unsupported userDecision', () => {

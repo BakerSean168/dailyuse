@@ -1263,7 +1263,11 @@ export function createAgentRuntimeService(
             request,
             error: err,
           });
-          if (err instanceof Error && err.message.includes('does not support userDecision')) {
+          if (
+            err instanceof Error &&
+            (err.message.includes('does not support userDecision') ||
+              err.message.includes('Host task.create'))
+          ) {
             return error('VALIDATION_ERROR', err.message);
           }
           throw err;

@@ -1,7 +1,8 @@
 /**
- * Residual 431/433/437: product path for AgentType task.create.
+ * Residual 431/433/437/439: product path for AgentType task.create.
  * Residual 433: optional linked goalId at start; session restore owned by useAIChatView.
  * Residual 437: process-local cancel/complete resume after Host lifecycle decisions.
+ * Residual 439: process-local edit revise after Host proposal revise.
  * Host proposal + client createTemplate settle own mutation (residual 423–425).
  * Full Task LangGraph workflow is not claimed here.
  */
@@ -17,6 +18,7 @@ import type {
 } from '@dailyuse/contracts/ai';
 import type { AIChatService, ChatModelOption, ChatItem } from './types';
 import { getAIErrorMessage } from './error';
+import { applyHostTaskPatchToAgentActions } from './hostProposalLifecycle';
 import { toast } from 'vue-sonner';
 
 export type UseAITaskWorkflowOptions = {
@@ -203,6 +205,40 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
     }
   }
 
+  /**
+   * Residual 439: Host revise → process-local edit resume (stay waiting_approval).
+   * Patches create_task_template pendingActions so getRun/selectAgentRun reopen revised draft.
+   */
+  async function reviseTaskAgentRun(hostOptions?: {
+    title?: string;
+    goalId?: string | null;
+  }) {
+    const run = options.taskAgentRun.value;
+    if (!run || run.run.agentType !== 'task.create' || taskAgentResuming.value) return;
+    if (run.run.status !== 'waiting_approval') return;
+    taskAgentResuming.value = true;
+    try {
+      const baseActions =
+        run.state.pendingActions.length > 0
+          ? run.state.pendingActions
+          : run.state.approvedActions;
+      const approvedActions = applyHostTaskPatchToAgentActions(baseActions, {
+        title: hostOptions?.title,
+        goalId: hostOptions?.goalId,
+      });
+      const payload: AgentResumePayload = {
+        userDecision: 'edit',
+        approvedActions,
+      };
+      const result = unwrap(await options.service.resumeAgentRun(run.run.runId, payload));
+      options.syncTaskAgentRun(result);
+    } catch (error) {
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
+    } finally {
+      taskAgentResuming.value = false;
+    }
+  }
+
   return {
     taskAgentLoading,
     taskAgentResuming,
@@ -213,5 +249,6 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
     startTaskAgentRun,
     cancelTaskAgentRun,
     completeTaskAgentRun,
+    reviseTaskAgentRun,
   };
 }

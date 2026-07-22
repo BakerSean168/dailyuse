@@ -550,6 +550,7 @@ const {
   startTaskAgentRun,
   cancelTaskAgentRun,
   completeTaskAgentRun,
+  reviseTaskAgentRun,
 } = taskWorkflow;
 
 
@@ -759,6 +760,18 @@ async function handleHostProposalRevise(payload: {
       contentMarkdown: payload.patch.contentMarkdown,
       goalId: payload.patch.goalId,
     });
+    // Residual 439: process-local task.create edit resume after Host ProposalKernel revise.
+    if (
+      payload.item.source === 'task' &&
+      payload.item.kind === 'task.create' &&
+      taskAgentRun.value?.run.runId === payload.item.runId &&
+      taskAgentRun.value.run.agentType === 'task.create'
+    ) {
+      await reviseTaskAgentRun({
+        title: payload.patch.title ?? payload.item.title,
+        goalId: payload.patch.goalId ?? payload.item.goalId,
+      });
+    }
   } finally {
     hostProposalBusy.value = false;
   }

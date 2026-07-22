@@ -350,6 +350,26 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local edit revise + idempotent terminal (residual 439)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    expect(resume).toContain("userDecision: 'edit'");
+    expect(resume).toContain('idempotent terminal resume');
+    expect(resume).toContain("status: 'waiting_approval'");
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(taskWorkflow).toContain('reviseTaskAgentRun');
+    expect(taskWorkflow).toContain("userDecision: 'edit'");
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(chatView).toContain('reviseTaskAgentRun');
+    expect(chatView).toContain('Residual 439');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local cancel/complete resume (residual 437)', () => {
     const resume = readFileSync(
       resolve(

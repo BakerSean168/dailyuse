@@ -240,6 +240,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'buildHostTaskCreateResumeResult',
         'cancelTaskAgentRun',
         'completeTaskAgentRun',
+        // Residual 439: process-local edit revise + idempotent terminal resume.
+        'reviseTaskAgentRun',
+        "userDecision: 'edit'",
+        'idempotent terminal resume',
       ],
       status: 'implemented_unit',
     },
