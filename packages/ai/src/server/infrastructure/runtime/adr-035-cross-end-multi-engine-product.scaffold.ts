@@ -258,6 +258,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 447: process-local task.create store size bound.
         'HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES',
         'pruneOldest',
+        // Residual 449: process-local product journey (start/edit/cancel/confirm + identity).
+        'host-task-create-product.journey',
+        'start → edit → cancel',
+        'start → confirm settle',
       ],
       status: 'implemented_unit',
     },

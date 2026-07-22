@@ -350,6 +350,23 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local product journey foundation (residual 449)', () => {
+    const journey = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/__tests__/host-task-create-product.journey.spec.ts',
+      ),
+      'utf8',
+    );
+    expect(journey).toContain('Host task.create process-local product journey (residual 449)');
+    expect(journey).toContain('start → edit → cancel');
+    expect(journey).toContain('start → confirm settle');
+    expect(journey).toContain('identity fail-closed');
+    expect(journey).toContain('port.startRun must not run for task.create');
+    expect(journey).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

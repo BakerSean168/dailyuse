@@ -113,6 +113,7 @@ export function resolveCrossEndMultiEngineProductStepSources(
         'packages/ai/src/server/infrastructure/runtime/host-task-create-start.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+        'packages/ai/src/server/infrastructure/runtime/__tests__/host-task-create-product.journey.spec.ts',
         'packages/ai/src/server/infrastructure/runtime/ai-runtime.ts',
         'packages/app-vue/src/modules/ai/components/AIWorkflowActionBar.vue',
         'packages/app-vue/src/modules/ai/components/AIHostProposalPanel.vue',
@@ -239,6 +240,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES'];
     case 'pruneOldest':
       return ['pruneOldest'];
+    case 'host-task-create-product.journey':
+      return ['host-task-create-product.journey', 'Host task.create process-local product journey'];
+    case 'start → edit → cancel':
+      return ['start → edit → cancel'];
+    case 'start → confirm settle':
+      return ['start → confirm settle'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
