@@ -2907,6 +2907,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine conformance E2E、
 > GitHub App fixture E2E、全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百零七轮）：三入口 §13.2 证据增强（仍不打勾）——
+> `three-login-surface.matrix.spec.ts` journey **step 10**：GitHub OAuth identity 永不授予
+> knowledge-repo App installation/token。源码锁：`AuthChannels` oauth vs `RepositoryChannels`
+> knowledge-connection 命名空间分离；`get-oauth-url` identity-only scopes（`read:user`/`user:email`，
+> 无 repo Contents）；HTTP `/oauth/*` vs `/knowledge-connections/*` 路径分离；product
+> `authentication.md` 与 AuthPlatformEntry/DesktopAuthView/WebAuthView 入口矩阵对齐。
+> **不**伪造 OAuth 凭据或 Playwright/Electron 跨端 E2E。验证：app-vue three-login matrix 15 +
+> DesktopAuthView/AuthPlatformEntry + contracts auth-surface + governance-check（GOV_EXIT:0）。
+> §13.2 三入口仍为 **部分实现**（缺真实 OAuth 跨端 E2E / GitHub fixture）。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
 
 
 
@@ -2991,7 +3002,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留三百零五轮刷新 Agent multi-engine 证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留三百零七轮刷新三入口 step 10 证据指针；残留三百零五轮 Agent multi-engine 指针仍有效）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 阶段 6 dual 收口（残留 250–300）：pure ClientPort duals 已 type-alias（setting/data-portability/auth/
 > repository/reminder/notification）；intentional facade/mapping duals 已 surface 锁定（account/goal/
 > task/schedule/ai）；dead unused `*Res` duals 再清（263/290）。focused evidence suite tip：**60 文件 /
@@ -3022,6 +3033,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七十五轮：matrix step 8 固化 server-held data disclosure 为 Web-only（Desktop 不暴露）；
   残留一百零三轮：matrix step 9 固化 AuthPlatformEntry/DesktopAuthView/WebAuthView/
   useDataPortability 源码边界与矩阵一致。
+  残留三百零七轮：matrix step 10 固化 GitHub OAuth identity 永不授予 knowledge-repo App installation/token
+  （IPC auth:oauth* vs repository:knowledge-connection*、get-oauth-url identity-only scopes、
+  HTTP /oauth/* vs /knowledge-connections/*、product authentication.md 与三入口 UI 源码对齐；15 通过）。
   残留一百零六轮：server-held disclosure import fail-closed（parse + ImportUserData 用例）。
   残留一百八十一轮：复跑 `three-login-surface.matrix.spec.ts`（14 通过）证据仍在；不因 dual-method 收口改写为已证明。
   残留二百零四轮：复跑 three-login matrix + repository/router notePanelAdaptation 等共 22 通过；仍为部分（缺真实 OAuth 跨端 E2E）。
@@ -3294,6 +3308,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百零四轮：§13.2 focused evidence suite re-run (193 tests, residuals 250–303 locks, no checkbox changes)。
   残留三百零五轮：ADR-035 journey step 16 multi-engine label isolation + stage-0 ITurnEnginePort freeze surface (Agent still partial)。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
+  残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3373,6 +3388,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百零四轮：tip 上 193 项 focused evidence suite（含 residual 250–303 dual/docs/disclosure 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百零五轮：ADR-035 multi-engine 标签隔离 journey/surface 增强（Agent 仍部分；无完整 Turn Engine conformance E2E）；仍不构成全量 PR 门禁证据。
   残留三百零六轮：tip 上 197 项 focused evidence suite（含 residual 250–305 dual/docs/disclosure/ADR-035 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百零七轮：three-login matrix 15 通过（step 10 identity≠knowledge-repo install/token 源码锁）+ nearest auth surfaces + governance-check；仍不构成全量 PR 门禁/跨端 OAuth E2E 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

@@ -5,7 +5,8 @@
  *
  * The journey series reuses one fixture identity through Web hard-redirect →
  * AuthApp password/GitHub → Desktop password/guest → guest upgrade vault ownership
- * rebind (profile path stable) → guest cloud knowledge repo boundary.
+ * rebind (profile path stable) → guest cloud knowledge repo boundary →
+ * GitHub OAuth identity transport never grants knowledge-repo App install/token.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -281,6 +282,108 @@ describe('ADR-034 three-login same-fixture journey', () => {
     expect(dataPortability).toContain(
       'const isServerDisclosureAvailable = ref(service !== undefined && desktopApi === undefined);',
     );
+  });
+
+  it('step 10: GitHub OAuth identity never grants knowledge-repo installation or token', () => {
+    // Code-local ADR-034 boundary (residual 307 / §13.2 three-login): GitHub login is
+    // identity-only. Repo App install, connection, and desktop token live on a separate
+    // repository transport. No fake OAuth credentials or Playwright cross-end E2E.
+    const ipcChannels = readFileSync(
+      resolve(__dirname, '../../../contracts/src/electron/ipc-channels.ts'),
+      'utf8',
+    );
+    const getOAuthUrl = readFileSync(
+      resolve(
+        __dirname,
+        '../../../authentication/src/server/application/use-cases/commands/get-oauth-url.use-case.ts',
+      ),
+      'utf8',
+    );
+    const authRoutes = readFileSync(
+      resolve(__dirname, '../../../authentication/src/api/routes.ts'),
+      'utf8',
+    );
+    const knowledgeRoutes = readFileSync(
+      resolve(
+        __dirname,
+        '../../../repository/src/api/routes/knowledge-repository-connection.routes.ts',
+      ),
+      'utf8',
+    );
+    const productAuth = readFileSync(
+      resolve(__dirname, '../../../../docs/product/modules/authentication.md'),
+      'utf8',
+    );
+    const webAuth = readFileSync(
+      resolve(__dirname, '../../../../apps/web/src/auth/WebAuthView.vue'),
+      'utf8',
+    );
+    const desktopAuth = readFileSync(resolve(__dirname, './DesktopAuthView.vue'), 'utf8');
+    const authPlatformEntry = readFileSync(
+      resolve(__dirname, './AuthPlatformEntry.vue'),
+      'utf8',
+    );
+
+    // IPC: auth OAuth identity channels stay under auth:; knowledge App install/token under repository:.
+    expect(ipcChannels).toContain("GET_OAUTH_URL: 'auth:get-oauth-url'");
+    expect(ipcChannels).toContain("OAUTH_CALLBACK: 'auth:oauth-callback'");
+    expect(ipcChannels).toContain("OAUTH_BIND: 'auth:oauth-bind'");
+    expect(ipcChannels).toContain(
+      "KNOWLEDGE_CONNECTION_INSTALLATION_START: 'repository:knowledge-connection:installation:start'",
+    );
+    expect(ipcChannels).toContain(
+      "KNOWLEDGE_CONNECTION_DESKTOP_TOKEN: 'repository:knowledge-connection:desktop-token'",
+    );
+    expect(ipcChannels).not.toMatch(/auth:[^'\n]*knowledge-connection/);
+    expect(ipcChannels).not.toMatch(/repository:[^'\n]*oauth/);
+
+    // Authorize URL scopes are identity-only (never repo Contents for login).
+    expect(getOAuthUrl).toContain(
+      'Identity-only scopes (ADR-034). Never request repo Contents here.',
+    );
+    expect(getOAuthUrl).toContain("['read:user', 'user:email']");
+    expect(getOAuthUrl).not.toContain("'repo'");
+    expect(getOAuthUrl).not.toContain("'contents'");
+    expect(getOAuthUrl).not.toContain("'write:repo'");
+
+    // HTTP route namespaces stay separate: /oauth/* vs /knowledge-connections/*.
+    expect(authRoutes).toContain("path: '/oauth/providers'");
+    expect(authRoutes).toContain("path: '/oauth/url'");
+    expect(authRoutes).toContain("path: '/oauth/callback'");
+    expect(authRoutes).toContain("path: '/oauth/bind'");
+    expect(authRoutes).not.toContain('knowledge-connections');
+    expect(knowledgeRoutes).toContain("path: '/knowledge-connections/installations/start'");
+    expect(knowledgeRoutes).toContain("path: '/knowledge-connections/installations/complete'");
+    expect(knowledgeRoutes).toContain("path: '/knowledge-connections/:connectionId/desktop-token'");
+    expect(knowledgeRoutes).not.toContain("path: '/oauth/");
+
+    // Product module doc keeps the three-login matrix wording aligned with sources.
+    expect(productAuth).toContain('GitHub 登录只解决');
+    expect(productAuth).toContain('不暴露 GitHub 登录按钮');
+    expect(productAuth).toContain('知识仓库仍需单独授权');
+    expect(productAuth).toContain('访客仅 Desktop');
+
+    // UI hosts: AuthApp owns GitHub OAuth callback scene; Desktop first screen is guest, not OAuth.
+    expect(webAuth).toContain('scene=oauth-callback');
+    expect(webAuth).toContain('data-testid="login-github-button"');
+    expect(webAuth).not.toContain('guest-mode-button');
+    expect(desktopAuth).toContain('data-testid="guest-mode-button"');
+    expect(desktopAuth).not.toContain('login-github-button');
+    expect(desktopAuth).not.toContain('oauth-callback');
+    expect(desktopAuth).not.toMatch(/Continue with GitHub/);
+    // Web shell entry still only hard-redirects; never mounts GitHub or guest.
+    expect(authPlatformEntry).toContain('window.location.replace');
+    expect(authPlatformEntry).not.toContain('login-github-button');
+    expect(authPlatformEntry).not.toContain('guest-mode-button');
+
+    // Journey matrix consistency for the same fixture identity.
+    expect(THREE_LOGIN_SURFACE_MATRIX.authApp.githubOAuthLogin).toBe(true);
+    expect(THREE_LOGIN_SURFACE_MATRIX.desktop.githubOAuthLogin).toBe(false);
+    expect(THREE_LOGIN_SURFACE_MATRIX.webShell.githubOAuthLogin).toBe(false);
+    expect(THREE_LOGIN_SURFACE_MATRIX.desktop.guest).toBe(true);
+    expect(THREE_LOGIN_SURFACE_MATRIX.authApp.guest).toBe(false);
+    expect(THREE_LOGIN_SURFACE_MATRIX.webShell.guest).toBe(false);
+    expect(THREE_LOGIN_JOURNEY_FIXTURE.email).toBe('journey.user@example.com');
   });
 
 });
