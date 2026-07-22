@@ -903,12 +903,14 @@ async function handleHostProposalApprove(payload: {
 
     if (payload.item.source === 'goal') {
       // Residual 579: includes primary-task-shaped ownership (create_task_template) on goal source.
+      // Residual 583: goalId must reach goal-session applyHostTaskPatch (no drop in resume).
       await confirmGoalAgentRun({
         skipHostLifecycle: true,
         revision,
         // Residual 365: pass Host-revised title/description into resumeAgentRun executor payload.
         title: payload.patch.title ?? payload.item.title,
         description: payload.patch.description ?? payload.item.description,
+        // Residual 583: Host-revised linked goalId for primary-task-shaped create_task_template.
         goalId: payload.patch.goalId ?? payload.item.goalId,
       });
       return;
@@ -929,6 +931,7 @@ async function handleHostProposalApprove(payload: {
       const goalId = payload.patch.goalId ?? payload.item.goalId;
       // Residual 427/571/579/581: goal-session product (create_goal or primary-task-shaped).
       if (isHostPanelGoalSessionProductOwned(owned)) {
+        // Residual 583: goal-session primary-task confirm receives Host-revised goalId.
         await confirmGoalAgentRun({
           skipHostLifecycle: true,
           revision,

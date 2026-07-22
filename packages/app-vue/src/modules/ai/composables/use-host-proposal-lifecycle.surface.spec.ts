@@ -1064,6 +1064,39 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('goal session primary-task confirm forwards Host-revised goalId (residual 583)', () => {
+    const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(goal).toContain('Residual 583');
+    expect(chatView).toContain('Residual 583');
+    const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
+    expect(resumeIdx).toBeGreaterThan(-1);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 4200);
+    expect(resumeSlice).toContain('Residual 583');
+    // Must forward goalId into payload builder (not title/description alone).
+    const payloadIdx = resumeSlice.indexOf('buildGoalAgentApprovalPayload');
+    expect(payloadIdx).toBeGreaterThan(-1);
+    const payloadCall = resumeSlice.slice(payloadIdx, payloadIdx + 450);
+    expect(payloadCall).toContain('title: hostOptions?.title');
+    expect(payloadCall).toContain('description: hostOptions?.description');
+    expect(payloadCall).toContain('goalId: hostOptions?.goalId');
+    // buildGoalAgentApprovalPayload applies goalId only on primary-task via applyHostTaskPatch.
+    const buildIdx = goal.indexOf('function buildGoalAgentApprovalPayload');
+    expect(buildIdx).toBeGreaterThan(-1);
+    const buildSlice = goal.slice(buildIdx, buildIdx + 1200);
+    expect(buildSlice).toContain('applyHostTaskPatchToAgentActions');
+    expect(buildSlice).toContain('goalId: hostOptions?.goalId');
+    // Host panel approve passes goalId on both goal-source and goal-session task paths.
+    const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
+    expect(approveIdx).toBeGreaterThan(-1);
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 7500);
+    expect(approveSlice).toContain('goalId: payload.patch.goalId ?? payload.item.goalId');
+    expect(approveSlice).toContain('confirmGoalAgentRun');
+    expect(approveSlice).toContain('isHostPanelGoalSessionProductOwned');
+    expect(helper).not.toContain('executeApproved');
+    expect(goal).not.toContain('executeApproved');
+  });
+
 
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');

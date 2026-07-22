@@ -420,6 +420,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['isHostPanelProcessLocalTaskCreateOwned'];
     case 'isHostPanelGoalSessionProductOwned':
       return ['isHostPanelGoalSessionProductOwned'];
+    case 'Residual 583':
+      return ['Residual 583'];
+    case 'goalId: hostOptions?.goalId':
+      return ['goalId: hostOptions?.goalId'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

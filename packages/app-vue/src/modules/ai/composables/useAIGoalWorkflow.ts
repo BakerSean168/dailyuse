@@ -6,6 +6,8 @@
  * may remain for executor context; multi create_goal is fail-closed.
  * Residual 559: goal.create confirm/cancel only from waiting_approval
  * (task residual 489/477 + knowledge cancel symmetry).
+ * Residual 583: goal session primary-task confirm forwards Host-revised goalId
+ * into applyHostTaskPatch (title/description residual 365 symmetry; no drop).
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -852,9 +854,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
           revision: hostOptions?.revision,
         });
       }
+      // Residual 583: forward Host-revised goalId for primary-task-shaped confirm
+      // (applyHostTaskPatchToAgentActions). Title/description residual 365; do not drop goalId.
       const payload = buildGoalAgentApprovalPayload(goalAgentRun.value, userDecision, {
         title: hostOptions?.title,
         description: hostOptions?.description,
+        goalId: hostOptions?.goalId,
       });
       const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload));
       syncGoalAgentRun(result);
