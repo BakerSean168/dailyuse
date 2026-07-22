@@ -5,8 +5,6 @@ import type {
 import type { Ref } from 'vue';
 import type {
   AgentAction,
-  AgentArtifact,
-  AgentExecutedAction,
   AgentRun,
   AgentRunResult,
   ConversationListRes,
@@ -126,12 +124,9 @@ export type AIWorkspaceRecentKnowledgeNote = {
   path: string;
   updatedAt: number;
 };
-export type GoalAgentArtifact = AgentArtifact;
 export type GoalAgentAction = AgentAction;
-export type GoalAgentExecutedAction = AgentExecutedAction;
 export type KnowledgeQaAgentRunResult = AgentRunResult;
 export type KnowledgeNoteAgentRunResult = AgentRunResult;
-export type KnowledgeNoteAgentArtifact = AgentArtifact;
 export type KnowledgeRelatedNote = {
   resourceId: string;
   resourcePath: string;

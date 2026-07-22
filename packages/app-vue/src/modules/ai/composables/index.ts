@@ -17,8 +17,6 @@ export type {
   EditableKeyResult,
   GoalAutomationResult,
   GoalAgentAction,
-  GoalAgentArtifact,
-  GoalAgentExecutedAction,
   GoalAgentRunResult,
   GoalClarification,
   GoalDraft,
