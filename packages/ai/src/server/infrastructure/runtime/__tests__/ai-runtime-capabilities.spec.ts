@@ -66,7 +66,7 @@ describe('AI runtime capability consistency', () => {
     const directRuntime = createDirectProviderAIRuntime(createMockDeps());
     const remoteRuntime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
@@ -83,7 +83,7 @@ describe('AI runtime capability consistency', () => {
 
   it('capability descriptor matches actual service surface', () => {
     const deps = createMockDeps({
-      knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+      knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
       knowledgeIndexRepository: createMockRepo(),
       knowledgeIngestionPort: { ingest: vi.fn() } as any,
       knowledgeQueryPort: { query: vi.fn() } as any,

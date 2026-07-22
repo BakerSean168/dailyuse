@@ -383,7 +383,7 @@ describe('createRemoteAIServiceRuntime', () => {
   it('enables knowledge query when all 4 dependencies are present', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
@@ -399,7 +399,7 @@ describe('createRemoteAIServiceRuntime', () => {
     // Missing knowledgeQueryPort
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
       }),
@@ -2662,7 +2662,7 @@ describe('createRemoteAIServiceRuntime', () => {
   it('clears advancedFeaturesReason when all advanced features are available', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
@@ -2688,7 +2688,7 @@ describe('createRemoteAIServiceRuntime', () => {
   it('capability flags match actual service availability', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
