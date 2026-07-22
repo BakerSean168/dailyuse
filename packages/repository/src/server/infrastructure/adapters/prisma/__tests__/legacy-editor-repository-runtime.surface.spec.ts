@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 182: root package.json scripts no longer list deleted editor Nx project.
  * Residual 183: coverage workflow drops deleted editor project.
  * Residual 184: ADR-031 audited package list excludes retired editor.
+ * Residual 193: portable editor_* backup import/export boundary stays (data-portability only).
  */
 describe('legacy editor/repository runtime surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../../');
@@ -179,5 +180,24 @@ describe('legacy editor/repository runtime surface', () => {
     expect(shapeAudit).toContain("'task'");
     expect(shapeAudit).not.toContain("'editor'");
   });
+
+
+  it('portable editor schema + prepare script remain for backup re-import only (residual 193)', () => {
+    expect(existsSync(resolve(repoRoot, 'packages/database/prisma/schema/editor.prisma'))).toBe(true);
+    expect(
+      existsSync(resolve(repoRoot, 'packages/database/scripts/prepare-editor-workspace-natural-key.ts')),
+    ).toBe(true);
+    expect(
+      existsSync(
+        resolve(
+          repoRoot,
+          'packages/data-portability/src/server/application/use-cases/importers/editor.importer.ts',
+        ),
+      ),
+    ).toBe(true);
+    // Runtime package stays deleted (import path is data-portability only).
+    expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
+  });
+
 
 });
