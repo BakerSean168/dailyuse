@@ -376,6 +376,8 @@ import {
   isHostPanelGoalSessionProductOwned,
   isHostPanelKnowledgeSessionProductOwned,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
+  shouldReviseKnowledgeSessionDraftBeforeConfirm,
+  shouldReviseGoalSessionDraftBeforeConfirm,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
   resolveLiveHostWorkbenchAgentRuns,
@@ -923,6 +925,32 @@ async function handleHostProposalApprove(payload: {
       kind: payload.item.kind,
       revision,
     });
+
+    // Residual 609: dirty approve process-local edit-revise before product confirm
+    // (task residual 459 symmetry for goal/knowledge sessions; reopen cannot rehydrate stale draft).
+    if (
+      shouldReviseGoalSessionDraftBeforeConfirm({
+        dirty: payload.dirty,
+        owned,
+      })
+    ) {
+      await reviseGoalAgentRun({
+        title: payload.patch.title ?? payload.item.title,
+        description: payload.patch.description ?? payload.item.description,
+        goalId: payload.patch.goalId ?? payload.item.goalId,
+      });
+    }
+    if (
+      shouldReviseKnowledgeSessionDraftBeforeConfirm({
+        dirty: payload.dirty,
+        owned,
+      })
+    ) {
+      await reviseKnowledgeNoteAgentRun({
+        targetPath: payload.patch.targetPath ?? payload.item.targetPath,
+        contentMarkdown: payload.patch.contentMarkdown ?? payload.item.contentMarkdown,
+      });
+    }
 
     if (payload.item.source === 'goal') {
       // Residual 579: includes primary-task-shaped ownership (create_task_template) on goal source.

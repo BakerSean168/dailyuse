@@ -1412,6 +1412,43 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('dirty approve process-local revise before goal/knowledge confirm (residual 609)', () => {
+    expect(helper).toContain('Residual 609');
+    expect(helper).toContain('shouldReviseKnowledgeSessionDraftBeforeConfirm');
+    expect(helper).toContain('shouldReviseGoalSessionDraftBeforeConfirm');
+    const knIdx = helper.indexOf('export function shouldReviseKnowledgeSessionDraftBeforeConfirm');
+    expect(knIdx).toBeGreaterThan(-1);
+    const knSlice = helper.slice(knIdx, knIdx + 700);
+    expect(knSlice).toContain('isHostPanelKnowledgeSessionProductOwned');
+    const goalIdx = helper.indexOf('export function shouldReviseGoalSessionDraftBeforeConfirm');
+    expect(goalIdx).toBeGreaterThan(-1);
+    const goalSlice = helper.slice(goalIdx, goalIdx + 700);
+    expect(goalSlice).toContain('isHostPanelGoalSessionProductOwned');
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(chatView).toContain('shouldReviseKnowledgeSessionDraftBeforeConfirm');
+    expect(chatView).toContain('shouldReviseGoalSessionDraftBeforeConfirm');
+    expect(chatView).toContain('Residual 609');
+    const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
+    expect(approveIdx).toBeGreaterThan(-1);
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 9000);
+    // After Host decision, before product confirm.
+    const decisionIdx = approveSlice.indexOf("decision: 'approve'");
+    const goalReviseIdx = approveSlice.indexOf('shouldReviseGoalSessionDraftBeforeConfirm');
+    const knReviseIdx = approveSlice.indexOf('shouldReviseKnowledgeSessionDraftBeforeConfirm');
+    const confirmGoalIdx = approveSlice.indexOf('confirmGoalAgentRun');
+    const createKnIdx = approveSlice.indexOf('createKnowledgeNoteFromConversation');
+    expect(decisionIdx).toBeGreaterThan(-1);
+    expect(goalReviseIdx).toBeGreaterThan(decisionIdx);
+    expect(knReviseIdx).toBeGreaterThan(decisionIdx);
+    expect(confirmGoalIdx).toBeGreaterThan(goalReviseIdx);
+    expect(createKnIdx).toBeGreaterThan(knReviseIdx);
+    expect(approveSlice).toContain('reviseGoalAgentRun');
+    expect(approveSlice).toContain('reviseKnowledgeNoteAgentRun');
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
     const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');
@@ -1685,7 +1722,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     ]) {
       const fnIdx = chatView.indexOf(fn);
       expect(fnIdx).toBeGreaterThan(-1);
-      const slice = chatView.slice(fnIdx, fnIdx + 5000);
+      const slice = chatView.slice(fnIdx, fnIdx + 9500);
       if (fn.includes('Revise')) {
         expect(slice).toContain('isHostPanelProcessLocalTaskCreateOwned');
       } else {
@@ -1721,7 +1758,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
       const fnIdx = chatView.indexOf(fn);
       expect(fnIdx).toBeGreaterThan(-1);
       // Residual 603: approve handler grew with knowledge classifier — keep full settlement body.
-      const slice = chatView.slice(fnIdx, fnIdx + 7500);
+      const slice = chatView.slice(fnIdx, fnIdx + 11000);
       expect(slice).toContain('resolveHostPanelOwnedProductRun');
       // Residual 581: settlement uses shared classifiers (not dual productTool re-branch invent).
       expect(slice).toContain('isHostPanelProcessLocalTaskCreateOwned');
@@ -1732,7 +1769,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     }
     // Task approve settlement: goal-session product confirms goal; process-local completes.
     const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
-    const approveSlice = chatView.slice(approveIdx, approveIdx + 7000);
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 11000);
     expect(approveSlice).toContain('isHostPanelGoalSessionProductOwned');
     expect(approveSlice).toContain('isHostPanelProcessLocalTaskCreateOwned');
     expect(approveSlice).toContain('isTaskAgentType');

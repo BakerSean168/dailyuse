@@ -1348,6 +1348,46 @@ export function shouldReviseProcessLocalTaskDraftBeforeDomainSettle(input: {
 }
 
 /**
+ * Residual 609: dirty Host approve for knowledge session must process-local edit-revise
+ * before confirm so getRun/reopen cannot rehydrate stale path/body if confirm fails mid-flight
+ * (task residual 459 / knowledge residual 605 symmetry).
+ * Presentation/decision helper only — never executes confirm or Host kernel.
+ */
+export function shouldReviseKnowledgeSessionDraftBeforeConfirm(input: {
+  dirty: boolean;
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined;
+}): boolean {
+  if (!input.dirty) return false;
+  return isHostPanelKnowledgeSessionProductOwned(input.owned);
+}
+
+/**
+ * Residual 609: dirty Host approve for goal-session product must process-local edit-revise
+ * before confirm so getRun/reopen cannot rehydrate stale title/description/goalId mid-flight
+ * (task residual 459 / goal residual 607 symmetry; includes primary-task-shaped).
+ * Presentation/decision helper only — never executes confirm or Host kernel.
+ */
+export function shouldReviseGoalSessionDraftBeforeConfirm(input: {
+  dirty: boolean;
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined;
+}): boolean {
+  if (!input.dirty) return false;
+  return isHostPanelGoalSessionProductOwned(input.owned);
+}
+
+/**
  * Residual 425: Host execution receipt for pure domain createTemplate fallback.
  * Presentation only — caller owns persistence/reactivity of the receipt list.
  * Never calls Host kernel mutation execution.

@@ -435,6 +435,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 607: goal-session process-local edit revise via classifier.
         'Residual 607',
         'reviseGoalAgentRun',
+        // Residual 609: dirty approve process-local revise before goal/knowledge confirm.
+        'Residual 609',
+        'shouldReviseKnowledgeSessionDraftBeforeConfirm',
+        'shouldReviseGoalSessionDraftBeforeConfirm',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

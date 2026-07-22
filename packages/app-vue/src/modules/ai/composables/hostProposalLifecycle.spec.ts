@@ -33,6 +33,8 @@ import {
   isTaskShapedHostAgentRun,
   resolveLiveHostWorkbenchAgentRuns,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
+  shouldReviseKnowledgeSessionDraftBeforeConfirm,
+  shouldReviseGoalSessionDraftBeforeConfirm,
   canHostApproveProductAgentRun,
   canHostRejectProductAgentRun,
   canHostReviseProductAgentRun,
@@ -2658,6 +2660,81 @@ describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', (
     ).toBe(false);
   });
 });
+
+describe('shouldReviseKnowledgeSessionDraftBeforeConfirm / goal (residual 609)', () => {
+  it('requires dirty + knowledge session ownership', () => {
+    const knowledgeOwned = {
+      run: { run: { agentType: 'knowledge.generate' } } as never,
+      productTool: 'create_knowledge_note' as const,
+    };
+    expect(
+      shouldReviseKnowledgeSessionDraftBeforeConfirm({
+        dirty: true,
+        owned: knowledgeOwned,
+      }),
+    ).toBe(true);
+    expect(
+      shouldReviseKnowledgeSessionDraftBeforeConfirm({
+        dirty: false,
+        owned: knowledgeOwned,
+      }),
+    ).toBe(false);
+    expect(
+      shouldReviseKnowledgeSessionDraftBeforeConfirm({
+        dirty: true,
+        owned: null,
+      }),
+    ).toBe(false);
+    expect(
+      shouldReviseKnowledgeSessionDraftBeforeConfirm({
+        dirty: true,
+        owned: {
+          run: { run: { agentType: 'goal.create' } } as never,
+          productTool: 'create_goal',
+        },
+      }),
+    ).toBe(false);
+  });
+
+  it('requires dirty + goal-session ownership (including primary-task-shaped)', () => {
+    const goalOwned = {
+      run: { run: { agentType: 'goal.create' } } as never,
+      productTool: 'create_goal' as const,
+    };
+    const primaryTaskShaped = {
+      run: { run: { agentType: 'goal.create' } } as never,
+      productTool: 'create_task_template' as const,
+    };
+    expect(
+      shouldReviseGoalSessionDraftBeforeConfirm({
+        dirty: true,
+        owned: goalOwned,
+      }),
+    ).toBe(true);
+    expect(
+      shouldReviseGoalSessionDraftBeforeConfirm({
+        dirty: true,
+        owned: primaryTaskShaped,
+      }),
+    ).toBe(true);
+    expect(
+      shouldReviseGoalSessionDraftBeforeConfirm({
+        dirty: false,
+        owned: goalOwned,
+      }),
+    ).toBe(false);
+    expect(
+      shouldReviseGoalSessionDraftBeforeConfirm({
+        dirty: true,
+        owned: {
+          run: { run: { agentType: 'task.create' } } as never,
+          productTool: 'create_task_template',
+        },
+      }),
+    ).toBe(false);
+  });
+});
+
 
 describe('canHostApproveProductAgentRun (residual 561/563)', () => {
   function runWith(
