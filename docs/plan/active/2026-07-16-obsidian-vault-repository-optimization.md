@@ -2389,6 +2389,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
 > 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百三十二轮）：schedule 单入口文档/E2E 对齐（接 residual 230）——
+> 删除 dual `schedule-week-view` E2E；`schedule-files.md` 去掉已不存在的
+> ScheduleDashboardView/ScheduleWeekView；UI redesign 文档去掉 week/dashboard redirect
+> 先例表述。扩展 schedule-router surface 锁 docs+e2e。§13.2 未打勾项仍为部分/外部阻塞。
+> 验证：surface + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2473,7 +2479,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留二百三十一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留二百三十二轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
 > webhook delivery（187）、auth session token（188）、notification template catalog（189）、
@@ -2695,6 +2701,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百二十九轮：AI runtime test mocks note port methods only (drop fetchAllResources stubs)。
   残留二百三十轮：schedule single calendar route + drop dead getBootstrapper dual-path + sourceNote fixture。
   残留二百三十一轮：§13.2 core evidence suite re-run (235 tests, residuals 229–230 locks, no checkbox changes)。
+  残留二百三十二轮：schedule docs/E2E align single calendar entry (drop dual week e2e + stale indexes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

@@ -98,7 +98,7 @@
 | `AppEmptyState.vue`   | §0.3                                                                                      |
 | `FilterBar.vue`       | 「状态 Tabs + 过滤下拉 + 搜索框」标准行（task / governance / notification 共用，slot 化） |
 
-**删除（孤儿 / 调试，Brief §3、§8-P3）**：`goal/views/FocusModeView.vue`、`goal/views/FocusCycle.vue`、`goal/views/WeightSnapshotView.vue`、`schedule/views/ScheduleWeekView.vue`（4 个孤儿视图，无路由无引用）；`/goals/rules-demo` 补 DEV 守卫（或直接删除）；AIChatView 中 legacy goal workflow 分支。
+**删除（孤儿 / 调试，Brief §3、§8-P3）**：`goal/views/FocusModeView.vue`、`goal/views/FocusCycle.vue`、`goal/views/WeightSnapshotView.vue`、`schedule/views/ScheduleWeekView.vue`（孤儿视图已删除；Vue 日程仅 `/schedule/calendar`）；`/goals/rules-demo` 补 DEV 守卫（或直接删除）；AIChatView 中 legacy goal workflow 分支。
 
 ### 0.6 全局不可破坏契约（每页默认适用，不再逐页重复）
 
@@ -106,7 +106,7 @@
 - `?dialog=goal&goalId=` URL 对话框契约；`/repository?note=`、`/goals/:id` 等 AI 工作流硬引用路径（`/note/:id` 已退役）。
 - 一切数据访问走 DI 端口与 composable 门面，布局重构不得直连 HTTP/IPC。
 - 每页改动在 Web + Electron 双端回归（Brief §12-1）。
-- 删除/改名路由一律先加 redirect（沿用 schedule 模块 `week/dashboard → calendar` 先例）。
+- 删除/改名路由若需过渡可加 redirect；**当前** Vue schedule 已收口为单一 `/schedule/calendar` 入口（不再保留 week/dashboard 双轨）。
 
 ---
 
@@ -421,7 +421,7 @@ FilterBar：[全部|进行中|已暂停|已归档](计数Tabs) [关系过滤▾]
 | ------ | -------------------------------------------------------- | ------------------------------------------------------------- |
 | 重命名 | `ScheduleDashboardView.vue` → `ScheduleCalendarView.vue` | 文件名含 "Dashboard" 与 `/dashboard` 心智冲突；路由 path 不变 |
 | 新增   | `EventDetailSheet.vue`                                   | 只读详情留位（见 5/6），参照 `DayDetailSheet` 实现            |
-| 删除   | `ScheduleWeekView.vue` 孤儿视图                          | §0.5；`week → calendar` redirect 路由名保留                   |
+| 删除   | `ScheduleWeekView.vue` 孤儿视图                          | §0.5；Vue 仅保留 `/schedule/calendar` 单入口（无 week redirect） |
 
 ---
 
@@ -757,7 +757,7 @@ RuleCard 列表（code + title + RuleStatusBadge + severity）
 
 1. 5 份 Playwright 配置全绿（`ai-workspace` 专项重点回归——testid 已随组件迁移）。
 2. Electron 桌面端手动回归：导航、`isDesktopEnvironment` 分支、桌面通知弹窗路由 `/custom-notification`、IPC 数据链路。
-3. 深链契约逐条验证：`?dialog=goal&goalId=`、`/repository?note=`、`/goals/:id`、`/ai/chat` redirect、`/account/center` redirect、schedule `week/dashboard` redirect。
+3. 深链契约逐条验证：`?dialog=goal&goalId=`、`/repository?note=`、`/goals/:id`、`/ai/chat` redirect、`/account/center` redirect、schedule `/schedule/calendar` 单入口。
 4. i18n：zh-CN / en-US 无缺 key（新增 `nav.group.*`、更名「笔记」「任务库」）。
 5. 断点走查：xl / lg / md / sm 四档，每页首屏无横向滚动、主操作可达。
 6. 移动端（RN）文案同步：模块更名（仓库→笔记、任务模板→任务库）通知 mobile 维护者（Brief §12-6）。

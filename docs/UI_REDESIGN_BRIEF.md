@@ -79,7 +79,7 @@
 | `/settings`                                                  | `setting/views/UserSettingsView.vue`                   | 底部导航         | 单页 10 个 Tab                                      |
 | `/account/center`                                            | `account/views/AccountCenterView.vue`                  | 底部导航         | 个人资料 + 登出                                     |
 
-**孤儿视图（存在于磁盘但无路由/无引用）**：`goal/views/FocusModeView.vue`、`goal/views/FocusCycle.vue`、`goal/views/WeightSnapshotView.vue`、`schedule/views/ScheduleWeekView.vue`（仅剩重定向路由名）。重构时应先删除或明确归宿。
+**孤儿视图（存在于磁盘但无路由/无引用）**：`goal/views/FocusModeView.vue`、`goal/views/FocusCycle.vue`、`goal/views/WeightSnapshotView.vue`、`schedule/views/ScheduleWeekView.vue`（已删除；Vue 日程仅统一 `/schedule/calendar` 入口）。重构时应先删除或明确归宿。
 
 主导航共 **10 个一级入口 + 2 个底部入口**（`packages/app-vue/src/di/navigation.ts:17-36`），纯文字按钮、无图标、无分组（`layouts/MainLayout.vue:47-62`）。
 
@@ -401,7 +401,7 @@
 
 1. **双端同源**：`app-vue` 同时服务 Web 与 Desktop（hash 路由 + IPC + 桌面通知弹窗路由 `/custom-notification`）。任何布局/导航改动都要在 Electron 下回归（尤其 `MainLayout.vue:12-16` 的 `isDesktopEnvironment` 分支——桌面端隐藏应用名，因为有系统标题栏）。
 2. **E2E 脆性**：5 份 Playwright 配置 + e2e 用例锚定 testid 与路由路径；导航重组（如删除 `/ai/chat`）会打断 `ai-workspace` 专项测试。建议先加路由 redirect 再删导航项。
-3. **深链兼容**：AI 工作流、通知点击、dashboard 卡片都以硬编码路径跳转；schedule 模块已有 `week/dashboard → calendar` 的兼容重定向先例（`schedule/router/index.ts:31-40`），删改路由时沿用该模式。
+3. **深链兼容**：AI 工作流、通知点击、dashboard 卡片都以硬编码路径跳转；schedule 模块当前**仅**暴露 `/schedule/calendar` 单入口（无 week/dashboard 双轨 redirect）。删改其它路由时优先直达新路径，避免长期兼容 redirect 双轨。
 4. **导航是 DI 可覆写的**：宿主可注入 `MAIN_NAVIGATION_KEY` 覆盖默认导航（`MainLayout.vue:18-19`）。改 NavigationItem 结构（加分组/图标）属于**破坏性接口变更**，需同步 web/desktop 两个宿主与 `di/types.ts`。
 5. **状态机 UI 的回归面**：AI goal-agent 的 6+ 等待态按钮互斥逻辑、编辑器未保存守卫、提醒组控制模式——这三处是"改布局时最容易改坏行为"的区域，迁移按钮位置时逻辑分支不要重写。
 6. **移动端不同步**：`apps/mobile` 是独立 React Native UI，本次重构范围外，但导航语义（模块命名、分组）若变，会造成两端心智不一致——命名变更需同步 mobile 文案。

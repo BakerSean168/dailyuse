@@ -5,7 +5,7 @@ tags:
   - schedule
 description: 日程模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 日程模块文件索引
@@ -16,9 +16,8 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/app-vue/src/modules/schedule/router/index.ts`](../../../packages/app-vue/src/modules/schedule/router/index.ts) | Vue 日程模块路由，定义日历视图入口 |
-| [`packages/app-vue/src/modules/schedule/views/ScheduleDashboardView.vue`](../../../packages/app-vue/src/modules/schedule/views/ScheduleDashboardView.vue) | 日程主视图，支持日/周/月切换 |
-| [`packages/app-vue/src/modules/schedule/views/ScheduleWeekView.vue`](../../../packages/app-vue/src/modules/schedule/views/ScheduleWeekView.vue) | 周视图（旧版，重定向到主视图） |
+| [`packages/app-vue/src/modules/schedule/router/index.ts`](../../../packages/app-vue/src/modules/schedule/router/index.ts) | Vue 日程模块路由：仅 `/schedule` → `/schedule/calendar` 单入口（无 week/dashboard 双轨 redirect） |
+| [`packages/app-vue/src/modules/schedule/views/ScheduleCalendarView.vue`](../../../packages/app-vue/src/modules/schedule/views/ScheduleCalendarView.vue) | 统一日程日历主视图（日/周/月切换在同一页面内完成） |
 
 ## 前端状态、组合函数与组件
 
