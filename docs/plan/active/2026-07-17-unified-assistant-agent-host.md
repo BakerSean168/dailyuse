@@ -19,7 +19,7 @@ updated: 2026-07-22T00:00:00
 
 本文执行 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)，承接 Open Design、`earendil-works/pi`、当前 TypeScript AI 模块、Python LangGraph runtime、checkpoint、tool executor 和 Obsidian/GitHub 知识仓库方案的专项调研。
 
-状态：**实施中**（阶段 0/1/2/3/4 部分起步；完成定义未宣称）。
+状态：**实施中**（阶段 0/1/2/3/4 部分起步 + 阶段 6 CustomModelGateway 部分；完成定义未宣称）。
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
 
@@ -805,7 +805,7 @@ packages/contracts/src/modules/ai/
 
 ### 阶段 6：Custom API 与本地 CLI
 
-- 将现有 OpenAI-compatible 配置收敛为 CustomModelGateway。
+- 将现有 OpenAI-compatible 配置收敛为 CustomModelGateway。 **（部分：residual 337 生产 `CustomModelGateway` + `IModelGatewayPort` + direct adapters；remote chat 仍可旁路）**
 - 实现一个 Codex 或 Claude Code CLI 只读 adapter。
 - probe 版本/登录、规范进程生命周期并显示执行限制。
 - 验证本地数据不发生未确认云 fallback。

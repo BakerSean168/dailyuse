@@ -3,20 +3,27 @@ import type {
   GoalPlanningResult,
   IGoalPlanningPort,
 } from '../../application/ports';
-import { OpenAICompatibleGateway } from '../gateways/openai-compatible.gateway';
+import type { IModelGatewayPort } from '@dailyuse/contracts/ai';
+import { CustomModelGateway } from '../model-gateway';
 import {
   buildGoalGenerationSystemPrompt,
   buildGoalGenerationUserPrompt,
   parseGoalPlanningResponse,
 } from './goal-planning-response';
 
+/**
+ * Residual 337: goal planning completions go through CustomModelGateway.
+ */
 export class DirectProviderGoalPlanningAdapter implements IGoalPlanningPort {
-  constructor(private readonly gateway: OpenAICompatibleGateway = new OpenAICompatibleGateway()) {}
+  constructor(private readonly modelGateway: IModelGatewayPort = new CustomModelGateway()) {}
 
   async plan(input: GoalPlanningInput): Promise<GoalPlanningResult> {
-    const completion = await this.gateway.complete({
-      baseUrl: input.providerConfig.baseUrl ?? 'https://api.openai.com/v1',
-      apiKey: input.providerConfig.apiKey,
+    const completion = await this.modelGateway.complete({
+      auth: {
+        bindingId: `${input.providerConfig.provider}:${input.providerConfig.model}`,
+        baseUrl: input.providerConfig.baseUrl ?? 'https://api.openai.com/v1',
+        apiKey: input.providerConfig.apiKey,
+      },
       model: input.providerConfig.model,
       temperature: input.providerConfig.temperature ?? 0.3,
       maxTokens: input.providerConfig.maxTokens,
@@ -52,4 +59,3 @@ export class DirectProviderGoalPlanningAdapter implements IGoalPlanningPort {
     };
   }
 }
-

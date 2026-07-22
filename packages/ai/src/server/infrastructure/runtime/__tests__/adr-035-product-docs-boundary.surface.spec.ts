@@ -49,6 +49,7 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiProduct).toContain('LangGraphWorkflowAdapter');
     expect(aiProduct).toContain('ProposalKernel');
     expect(aiProduct).toContain('CapabilityResolver');
+    expect(aiProduct).toContain('CustomModelGateway');
     expect(aiProduct).toContain('fail-closed');
     expect(aiProduct).toContain('ADR-035 Host 当前边界');
   });
@@ -61,12 +62,17 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     );
     expect(composition).toContain('capabilityResolver: runtime.capabilityResolver');
     expect(composition).toContain('residual 324');
+    expect(composition).toContain('modelGateway: runtime.modelGateway');
+    expect(composition).toContain('residual 337');
   });
   it('ai-files index points at server/* Host adapters and no legacy infrastructure-server paths', () => {
     expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts');
     expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts');
     expect(aiFilesIndex).toContain(
       'packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts',
+    );
+    expect(aiFilesIndex).toContain(
+      'packages/ai/src/server/infrastructure/model-gateway/custom-model.gateway.ts',
     );
     expect(aiFilesIndex).toContain(
       'packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts',

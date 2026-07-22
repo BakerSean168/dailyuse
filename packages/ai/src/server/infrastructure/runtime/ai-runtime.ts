@@ -111,6 +111,11 @@ export interface AIRuntimeOutput {
    * silent-emits engine.* labels.
    */
   readonly capabilityResolver: import('@dailyuse/contracts/ai').ICapabilityResolverPort;
+  /**
+   * Custom Model Gateway (residual 337). OpenAI-compatible catalog/complete/stream;
+   * credentials request-scoped only (never on results/events).
+   */
+  readonly modelGateway: import('@dailyuse/contracts/ai').IModelGatewayPort;
 }
 
 export function buildCapabilityUnavailableMessage(

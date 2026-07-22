@@ -53,3 +53,78 @@ export interface IWorkflowAdapterPort {
   /** Capability kinds this adapter can satisfy. */
   offeredKinds: Array<CapabilityOffer['kind']>;
 }
+
+/**
+ * Model Gateway port — model catalog + completion/stream for OpenAI-compatible endpoints.
+ * Model Gateway 端口 —— 模型目录与 completion/stream（OpenAI-compatible 自定义 API）。
+ *
+ * Residual 337: Host production port. Engines hold modelBindingId, not long-lived API keys
+ * in public events. Credentials are request-scoped server memory only.
+ * Residual 337：生产 Host 端口。Engine 持 modelBindingId，不在公共事件中长期携带 API key。
+ */
+export interface ModelGatewayDescriptor {
+  readonly gatewayId: string;
+  readonly kind: 'openai_compatible';
+  readonly placement: 'server';
+  /** Credentials never appear on ModelEvent / public state. */
+  readonly credentialsInEvents: false;
+}
+
+export interface ModelGatewayAuth {
+  /** Opaque binding id for audit logs (provider config id or label). */
+  readonly bindingId: string;
+  readonly baseUrl: string;
+  /** Server-only for the duration of the call; never returned on results. */
+  readonly apiKey: string;
+}
+
+export interface ModelGatewayMessage {
+  readonly role: 'system' | 'user' | 'assistant';
+  readonly content: string;
+}
+
+export interface ModelGatewayCompleteInput {
+  readonly auth: ModelGatewayAuth;
+  readonly model: string;
+  readonly messages: readonly ModelGatewayMessage[];
+  readonly temperature?: number;
+  readonly maxTokens?: number;
+  readonly responseFormat?: 'text' | 'json';
+  readonly signal?: AbortSignal;
+}
+
+export interface ModelGatewayUsage {
+  readonly promptTokens: number;
+  readonly completionTokens: number;
+  readonly totalTokens: number;
+}
+
+export interface ModelGatewayCompleteResult {
+  readonly content: string;
+  readonly model?: string;
+  readonly finishReason?: string;
+  readonly usage: ModelGatewayUsage;
+  /** Echo of bindingId only — never apiKey. */
+  readonly modelBindingId: string;
+}
+
+export interface ModelGatewayModelInfo {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly contextWindow?: number;
+}
+
+export interface IModelGatewayPort {
+  readonly descriptor: ModelGatewayDescriptor;
+  listModels(auth: Pick<ModelGatewayAuth, 'baseUrl' | 'apiKey'>): Promise<ModelGatewayModelInfo[]>;
+  complete(input: ModelGatewayCompleteInput): Promise<ModelGatewayCompleteResult>;
+  /**
+   * Stream model output. First production path may yield a single final chunk
+   * (parity with DirectProviderChatExecutionAdapter).
+   */
+  stream(
+    input: ModelGatewayCompleteInput,
+  ): AsyncGenerator<{ content: string; finishReason?: string }, void, void>;
+}
+

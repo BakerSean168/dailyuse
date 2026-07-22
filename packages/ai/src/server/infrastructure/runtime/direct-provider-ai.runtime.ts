@@ -54,6 +54,7 @@ import { ProposalKernel } from '../proposal-kernel';
 import { CapabilityResolver } from '../capability-resolver';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
+import { CustomModelGateway } from '../model-gateway';
 
 const ADVANCED_AI_REASON =
   'Advanced AI features require a remote ai-service runtime. Configure AI_SERVICE_BASE_URL and AI_SERVICE_SECRET to enable goal automation, knowledge retrieval, analytics, and reindexing.';
@@ -65,10 +66,14 @@ const ADVANCED_AI_REASON =
 export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies): AIRuntimeOutput {
   const { conversationRepository, providerConfigRepository } = dependencies;
 
-  // Direct-provider always uses local adapters
-  const chatExecutionPort = new DirectProviderChatExecutionAdapter();
-  const goalPlanningPort = new DirectProviderGoalPlanningAdapter();
-  const knowledgeNoteGenerationPort = new DirectProviderKnowledgeNoteGenerationAdapter();
+  // Residual 337: shared CustomModelGateway for Host + direct provider adapters.
+  const modelGateway = new CustomModelGateway();
+  // Direct-provider always uses local adapters through the Host Model Gateway.
+  const chatExecutionPort = new DirectProviderChatExecutionAdapter(modelGateway);
+  const goalPlanningPort = new DirectProviderGoalPlanningAdapter(modelGateway);
+  const knowledgeNoteGenerationPort = new DirectProviderKnowledgeNoteGenerationAdapter(
+    modelGateway,
+  );
   const modelCatalogPort = new OpenAICompatibleModelCatalogGateway();
 
   // Provider services
@@ -183,5 +188,6 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     workflowAdapter: null,
     proposalKernel,
     capabilityResolver,
+    modelGateway,
   };
 }

@@ -95,7 +95,7 @@ updated: 2026-07-22T00:00:00
 | [`packages/ai/src/server/infrastructure/security/ai-secret-cipher.ts`](../../../packages/ai/src/server/infrastructure/security/ai-secret-cipher.ts) | API key 加密（AES-256-GCM） |
 
 
-## ADR-035 Agent Host 生产适配（residual 314–324）
+## ADR-035 Agent Host 生产适配（residual 314–337）
 
 | 文件 | 说明 |
 | --- | --- |
@@ -105,6 +105,7 @@ updated: 2026-07-22T00:00:00
 | [`packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts`](../../../packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts) | LangGraph Workflow Adapter |
 | [`packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts`](../../../packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts) | ProposalKernel 生命周期 |
 | [`packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts`](../../../packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts) | CapabilityResolver fail-closed |
+| [`packages/ai/src/server/infrastructure/model-gateway/custom-model.gateway.ts`](../../../packages/ai/src/server/infrastructure/model-gateway/custom-model.gateway.ts) | 生产 CustomModelGateway（OpenAI-compatible Model Gateway） |
 | [`packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-capability-turn-isolation.journey.spec.ts`](../../../packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-capability-turn-isolation.journey.spec.ts) | ADR-035 isolation journey |
 | [`packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-product-docs-boundary.surface.spec.ts`](../../../packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-product-docs-boundary.surface.spec.ts) | product docs 边界锁 |
 

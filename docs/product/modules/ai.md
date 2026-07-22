@@ -33,13 +33,17 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 已采纳且部分落地的目标态：统一助手通过 Daily Use Agent Host 组合 Workflow Engine、Turn Engine 和 Model Gateway；右侧业务面板统一展示 Artifact、Proposal、审批和执行结果。
 当前仍保留 direct-provider / remote-ai-service 双运行时装配，但 ADR-035 Host 生产适配已部分接线：
 `DirectTurnEngine`（开放式 chat）、`LangGraphWorkflowAdapter`（remote workflow）、
-`ProposalKernel`（提案生命周期）、`CapabilityResolver`（fail-closed start gate）。
+`ProposalKernel`（提案生命周期）、`CapabilityResolver`（fail-closed start gate）、
+`CustomModelGateway`（OpenAI-compatible Model Gateway，凭据仅请求作用域）。
 统一助手 UI、第二生产 Turn Engine、完整 multi-engine runtime E2E 仍未完成。
 
-### 2.1 ADR-035 Host 当前边界（与 vault residual 314–324 对齐）
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–337 对齐）
 
-- 生产允许：`DirectTurnEngine`、`LangGraphWorkflowAdapter`、`ProposalKernel`、`CapabilityResolver`。
+- 生产允许：`DirectTurnEngine`、`LangGraphWorkflowAdapter`、`ProposalKernel`、`CapabilityResolver`、
+  `CustomModelGateway`。
 - open chat send/stream 经同一 `DirectTurnEngine`（`IOpenChatTurnPort`），不旁路 raw chatExecution。
+- direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
+  不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；
   workflow offers 永不含 `tool.mutation` / `tool.proposal`。
 - Engine 标签永不静默替代 mutation/context；CapabilityResolver 永不静默 expand `engine.*`。
@@ -82,9 +86,9 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - 知识索引的向量搜索能力和准确性需要进一步验证。
 - Web 知识笔记已走 confirmed-create → Git commit；旧数据库 Repository 写路径不应再作为产品叙述。
 - 知识索引/webhook/幂等/删除后向量清理仍需持续 harden。
-- ADR-035 contracts 与首批 Host adapters（DirectTurn / LangGraph workflow / ProposalKernel /
-  CapabilityResolver）已部分落地；统一助手 UI、第二 Turn Engine、Pi/CLI adapter 与完整
-  multi-engine runtime E2E 仍未完成。
+- ADR-035 contracts 与 Host adapters（DirectTurn / LangGraph workflow / ProposalKernel /
+  CapabilityResolver / CustomModelGateway）已部分落地；统一助手 UI、第二 Turn Engine、Pi/CLI
+  adapter 与完整 multi-engine runtime E2E 仍未完成。
 - 当前 `AgentAction` 的开放 payload、`supportsXxx` 布尔能力和 framework-oriented node event 仍需按新方案收敛。
 - 当前缺少 Pi Turn Engine、自定义 Model Gateway 收口和 Desktop local CLI adapter。
 

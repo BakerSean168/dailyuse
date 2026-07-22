@@ -42,7 +42,7 @@ import type {
 
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
-import type { ICapabilityResolverPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@dailyuse/contracts/ai';
+import type { ICapabilityResolverPort, IModelGatewayPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@dailyuse/contracts/ai';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -326,6 +326,10 @@ export interface AIModuleInstance {
    * Capability Resolver (stage 2 / residual 322). Fail-closed; no silent engine.* expansion.
    */
   readonly capabilityResolver: ICapabilityResolverPort;
+  /**
+   * Custom Model Gateway (stage 6 / residual 337). OpenAI-compatible catalog/complete/stream.
+   */
+  readonly modelGateway: IModelGatewayPort;
   start(): void;
   dispose(): void;
 }
@@ -507,6 +511,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     workflowAdapter: runtime.workflowAdapter,
     proposalKernel: runtime.proposalKernel,
     capabilityResolver: runtime.capabilityResolver,
+    modelGateway: runtime.modelGateway,
     start(): void {
       if (started) {
         return;

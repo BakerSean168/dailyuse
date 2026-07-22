@@ -5,7 +5,8 @@
  * and residual 316 routes open chat send/stream through that engine (no chatExecution bypass).
  * Residual 318 wires LangGraphWorkflowAdapter; residual 320 wires ProposalKernel;
  * residual 322 wires CapabilityResolver (fail-closed, no silent engine.*);
- * residual 324 routes agent start gating through that shared resolver.
+ * residual 324 routes agent start gating through that shared resolver;
+ * residual 337 wires CustomModelGateway (IModelGatewayPort) on both runtimes.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -49,10 +50,12 @@ describe('agent-host stage-0 composition surface', () => {
     expect(moduleSource).toContain('workflowAdapter: runtime.workflowAdapter');
     expect(moduleSource).toContain('proposalKernel: runtime.proposalKernel');
     expect(moduleSource).toContain('capabilityResolver: runtime.capabilityResolver');
+    expect(moduleSource).toContain('modelGateway: runtime.modelGateway');
     expect(moduleSource).toContain('ITurnEnginePort');
     expect(moduleSource).toContain('IWorkflowAdapterPort');
     expect(moduleSource).toContain('IProposalKernelPort');
     expect(moduleSource).toContain('ICapabilityResolverPort');
+    expect(moduleSource).toContain('IModelGatewayPort');
     expect(moduleSource).not.toContain('implements ICapabilityResolverPort');
     expect(moduleSource).not.toContain('implements IProposalKernelPort');
   });
@@ -131,6 +134,28 @@ describe('agent-host stage-0 composition surface', () => {
     expect(remote).toContain('capabilityResolver,');
     expect(remote).toMatch(/createAgentRuntimeService\([\s\S]*capabilityResolver/);
     expect(direct).toMatch(/createAgentRuntimeService\([\s\S]*capabilityResolver/);
+  });
+
+
+  it('both runtimes construct CustomModelGateway and route direct adapters through it (residual 337)', () => {
+    const direct = readFileSync(resolve(__dirname, '../direct-provider-ai.runtime.ts'), 'utf8');
+    const remote = readFileSync(resolve(__dirname, '../remote-ai-service.runtime.ts'), 'utf8');
+    for (const source of [direct, remote]) {
+      expect(source).toContain('new CustomModelGateway()');
+      expect(source).toContain('modelGateway');
+      expect(source).toContain('new DirectProviderChatExecutionAdapter(modelGateway)');
+    }
+    const gateway = readFileSync(
+      resolve(__dirname, '../../model-gateway/custom-model.gateway.ts'),
+      'utf8',
+    );
+    expect(gateway).toContain("CUSTOM_MODEL_GATEWAY_ID = 'model.openai_compatible'");
+    expect(gateway).toContain('export class CustomModelGateway implements IModelGatewayPort');
+    expect(gateway).toContain('credentialsInEvents: false');
+    expect(gateway).toContain('modelBindingId');
+    // Model Gateway is not a mutation surface.
+    expect(gateway).not.toContain("kind: 'tool.mutation'");
+    expect(gateway).not.toContain("kind: 'engine.");
   });
 
 });

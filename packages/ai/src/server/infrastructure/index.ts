@@ -115,3 +115,11 @@ export {
   CAPABILITY_RESOLVER_ENGINE_ID,
 } from './capability-resolver';
 
+// ---------------------------------------------------------------------------
+// Model Gateway (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  CustomModelGateway,
+  CUSTOM_MODEL_GATEWAY_ID,
+} from './model-gateway';
+
