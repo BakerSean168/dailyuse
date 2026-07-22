@@ -62,11 +62,15 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiProduct).toContain('CustomModelGateway');
     expect(aiProduct).toContain('fail-closed');
     expect(aiProduct).toContain('ADR-035 Host 当前边界');
-    expect(aiProduct).toContain('314–387');
+    expect(aiProduct).toContain('314–409');
     expect(aiProduct).toContain('Host Proposal 面板');
     expect(aiProduct).toContain('execution receipt');
     expect(aiProduct).toContain('时间线 Artifact');
     expect(aiProduct).toContain('residual 379–387');
+    expect(aiProduct).toContain('residual 405–407');
+    expect(aiProduct).toContain('residual 409');
+    expect(aiProduct).toContain('surface isolation');
+    expect(aiProduct).toContain('unit driver');
     expect(aiProduct).not.toMatch(/统一助手 UI 工作台[、,].*仍未完成/);
   });
 

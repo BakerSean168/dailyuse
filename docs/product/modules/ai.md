@@ -39,9 +39,9 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 `AssistantFacade`（统一 Host dispatch：message/approve/reject/cancel）。
 Host UI 工作台已部分落地（vault residual 355–387：Host Proposal 面板、approve/revise、
 execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK/CLI 进程 adapter、
-完整 multi-engine runtime E2E 与跨端 Playwright/Electron 仍未完成。
+完整 multi-engine runtime E2E 与跨端 Playwright/Electron 仍未完成（residual 405–407 仅 scaffold/unit driver，不宣称全绿）。
 
-### 2.1 ADR-035 Host 当前边界（与 vault residual 314–387 对齐）
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–409 对齐）
 
 - 生产允许：`DirectTurnEngine`、`ReadonlyAnalysisTurnEngine`、`LangGraphWorkflowAdapter`、
   `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`、`AssistantFacade`。
@@ -62,6 +62,11 @@ execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK
   `identityId`；未知 profile fail-closed。
 - residual 379–387：Host execution receipt 工作台（计数/actionLines/path/preview/entity deep-link）+
   Conversation 时间线 Artifact 卡 + 点击 focus/scroll 到对应 proposal/receipt 行。
+- residual 393–403：open-chat stop→`cancel_run`、mid-turn abort、multi-engine timeline badge、
+  open-chat turn session memory（会话内 stash/restore，不写浏览器存储）。
+- residual 405–407：跨端 multi-engine Host 产品 E2E scaffold + unit driver（源码契约校验
+  HTTP SSE/Desktop IPC/Vue selectors）；Playwright/Electron 全量 product E2E 与真实 Pi spawn 仍外部阻塞。
+- residual 409：Host 时间线 open_chat 与 AgentRun（proposal/receipt）surface isolation 分区与 fail-closed 审计。
 - direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
   不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；

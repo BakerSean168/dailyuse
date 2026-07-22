@@ -221,6 +221,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
 
   it('open-chat Host turns appear on timeline with engine badges (residual 401)', () => {
     expect(helper).toContain('buildHostOpenChatTimelineArtifactItems');
+    expect(helper).toContain('partitionHostTimelineArtifactsBySurface');
+    expect(helper).toContain('collectHostTimelineSurfaceIsolationViolations');
+    expect(helper).toContain('Residual 409');
     expect(helper).toContain("surface: 'open_chat'");
     expect(helper).toContain("kind: 'open_chat.turn'");
     expect(helper).toContain('HostOpenChatTurnSnapshot');

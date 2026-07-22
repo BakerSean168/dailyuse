@@ -907,3 +907,89 @@ export function resolveHostWorkbenchFocusFromTimeline(
     surface: item.surface,
   };
 }
+
+/**
+ * Residual 409: partition Host timeline Artifact cards into open_chat vs AgentRun
+ * (proposal/receipt) lanes. Presentation-only — never mutates Host kernel state.
+ */
+export function partitionHostTimelineArtifactsBySurface(
+  items: readonly HostTimelineArtifactItem[] | null | undefined,
+): {
+  openChat: HostTimelineArtifactItem[];
+  agentRun: HostTimelineArtifactItem[];
+} {
+  const openChat: HostTimelineArtifactItem[] = [];
+  const agentRun: HostTimelineArtifactItem[] = [];
+  for (const item of items ?? []) {
+    if (item.surface === 'open_chat') {
+      openChat.push(item);
+      continue;
+    }
+    if (item.surface === 'proposal' || item.surface === 'receipt') {
+      agentRun.push(item);
+    }
+  }
+  return { openChat, agentRun };
+}
+
+export type HostTimelineSurfaceIsolationViolation = {
+  itemId: string;
+  code:
+    | 'open_chat_kind_mismatch'
+    | 'open_chat_engine_agent_run'
+    | 'agent_run_kind_open_chat'
+    | 'agent_run_engine_turn';
+  detail: string;
+};
+
+/**
+ * Residual 409: fail-closed isolation audit for Host timeline surfaces.
+ * - open_chat cards: kind must be open_chat.turn; engineKey must not be agent_run.*
+ * - proposal/receipt cards: kind must not be open_chat.turn; engineKey must not be
+ *   engine.direct_turn / engine.pi_readonly (AgentRun lane owns those cards)
+ */
+export function collectHostTimelineSurfaceIsolationViolations(
+  items: readonly HostTimelineArtifactItem[] | null | undefined,
+): HostTimelineSurfaceIsolationViolation[] {
+  const violations: HostTimelineSurfaceIsolationViolation[] = [];
+  for (const item of items ?? []) {
+    if (item.surface === 'open_chat') {
+      if (item.kind !== 'open_chat.turn') {
+        violations.push({
+          itemId: item.id,
+          code: 'open_chat_kind_mismatch',
+          detail: `kind=${item.kind}`,
+        });
+      }
+      if (String(item.engineKey).startsWith('agent_run.')) {
+        violations.push({
+          itemId: item.id,
+          code: 'open_chat_engine_agent_run',
+          detail: `engineKey=${item.engineKey}`,
+        });
+      }
+      continue;
+    }
+
+    if (item.surface === 'proposal' || item.surface === 'receipt') {
+      if (item.kind === 'open_chat.turn') {
+        violations.push({
+          itemId: item.id,
+          code: 'agent_run_kind_open_chat',
+          detail: `surface=${item.surface}`,
+        });
+      }
+      if (
+        item.engineKey === 'engine.direct_turn'
+        || item.engineKey === 'engine.pi_readonly'
+      ) {
+        violations.push({
+          itemId: item.id,
+          code: 'agent_run_engine_turn',
+          detail: `engineKey=${item.engineKey}`,
+        });
+      }
+    }
+  }
+  return violations;
+}

@@ -16,6 +16,8 @@ import {
   dispatchHostProposalRevise,
   getRememberedHostProposalRevision,
   isHostProposalDraftDirty,
+  partitionHostTimelineArtifactsBySurface,
+  collectHostTimelineSurfaceIsolationViolations
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -971,5 +973,129 @@ describe('buildHostOpenChatTimelineArtifactItems (residual 401)', () => {
     ]);
     expect(card?.statusLabelKey).toBe('cancelled');
     expect(resolveHostWorkbenchFocusFromTimeline(card)).toBeNull();
+  });
+});
+
+describe('Host timeline surface isolation (residual 409)', () => {
+  it('partitions open_chat vs AgentRun proposal/receipt lanes', () => {
+    const openChat = buildHostOpenChatTimelineArtifactItems([
+      {
+        runId: 'oc-1',
+        executionProfileId: 'direct_turn',
+        status: 'completed',
+        title: 'Open',
+      },
+    ]);
+    const agentRun = buildHostTimelineArtifactItems({
+      proposals: [
+        {
+          runId: 'run-g',
+          proposalId: 'agent-run:run-g:goal.create',
+          revision: 1,
+          kind: 'goal.create',
+          source: 'goal',
+          runStatus: 'waiting_approval',
+          title: 'Goal draft',
+          summary: 's',
+          pendingActionCount: 1,
+        },
+        {
+          runId: 'run-k',
+          proposalId: 'agent-run:run-k:knowledge.write',
+          revision: 1,
+          kind: 'knowledge.write',
+          source: 'knowledge',
+          runStatus: 'waiting_approval',
+          title: 'Note draft',
+          summary: 'n',
+          pendingActionCount: 1,
+        },
+      ],
+    });
+    const mixed = [...openChat, ...agentRun];
+    const parts = partitionHostTimelineArtifactsBySurface(mixed);
+    expect(parts.openChat).toHaveLength(1);
+    expect(parts.agentRun).toHaveLength(2);
+    expect(parts.openChat[0]?.surface).toBe('open_chat');
+    expect(parts.agentRun.every((item) => item.surface !== 'open_chat')).toBe(true);
+  });
+
+  it('reports zero violations for builders-composed multi-engine Host timeline', () => {
+    const items = [
+      ...buildHostOpenChatTimelineArtifactItems([
+        {
+          runId: 'oc-d',
+          executionProfileId: 'direct_turn',
+          status: 'completed',
+          title: 'Direct',
+        },
+        {
+          runId: 'oc-r',
+          executionProfileId: 'pi_readonly',
+          status: 'aborted',
+          title: 'Readonly',
+        },
+      ]),
+      ...buildHostTimelineArtifactItems({
+        proposals: [
+          {
+            runId: 'run-g',
+            proposalId: 'agent-run:run-g:goal.create',
+            revision: 1,
+            kind: 'goal.create',
+            source: 'goal',
+            runStatus: 'waiting_approval',
+            title: 'Goal',
+            summary: '',
+            pendingActionCount: 1,
+          },
+        ],
+        // Even if open-chat profile is present, AgentRun kind owns the engine lane.
+        executionProfileId: 'pi_readonly',
+      }),
+    ];
+    expect(collectHostTimelineSurfaceIsolationViolations(items)).toEqual([]);
+  });
+
+  it('flags open_chat cards smuggling agent_run engine keys or wrong kind', () => {
+    const violations = collectHostTimelineSurfaceIsolationViolations([
+      {
+        id: 'bad-open',
+        surface: 'open_chat',
+        runId: 'x',
+        proposalId: 'open-chat:x',
+        kind: 'goal.create',
+        source: 'open_chat',
+        title: 'bad',
+        summary: '',
+        statusLabelKey: 'ok',
+        engineKey: 'agent_run.goal_create',
+      },
+    ]);
+    expect(violations.map((v) => v.code).sort()).toEqual([
+      'open_chat_engine_agent_run',
+      'open_chat_kind_mismatch',
+    ]);
+  });
+
+  it('flags AgentRun cards smuggling open_chat kind or turn engine badges', () => {
+    const violations = collectHostTimelineSurfaceIsolationViolations([
+      {
+        id: 'bad-proposal',
+        surface: 'proposal',
+        runId: 'y',
+        proposalId: 'p',
+        kind: 'open_chat.turn',
+        source: 'goal',
+        title: 'bad',
+        summary: '',
+        statusLabelKey: 'pending',
+        engineKey: 'engine.direct_turn',
+      },
+    ]);
+    expect(violations.map((v) => v.code).sort()).toEqual([
+      'agent_run_engine_turn',
+      'agent_run_kind_open_chat',
+    ]);
   });
 });
