@@ -493,7 +493,7 @@ export default {
         promptTokens: '{count} prompt',
         completionTokens: '{count} completion',
         totalTokens: '{count} total',
-        nodeTiming: 'Node Timing',
+        diagnosticWorkflowStepTiming: 'Workflow step timing',
         diagnosticWorkflowStepStarted: 'Workflow step started',
         diagnosticWorkflowStepCompleted: 'Workflow step completed',
         diagnosticToolCompleted: 'Tool completed',

@@ -476,7 +476,7 @@ export default {
         promptTokens: '{count} 输入',
         completionTokens: '{count} 输出',
         totalTokens: '{count} 总计',
-        nodeTiming: '节点耗时',
+        diagnosticWorkflowStepTiming: '工作流步骤耗时',
         diagnosticWorkflowStepStarted: '工作流步骤开始',
         diagnosticWorkflowStepCompleted: '工作流步骤完成',
         diagnosticToolCompleted: '工具完成',

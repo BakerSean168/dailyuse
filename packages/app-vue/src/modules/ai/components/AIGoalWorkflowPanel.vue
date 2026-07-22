@@ -1185,7 +1185,7 @@ function getAgentObservabilityItems(run: AgentRuntimeRun | null): AgentObservabi
       label:
         event.type === 'tool.completed'
           ? t('aiAssistant.dialogs.agent.toolTiming')
-          : t('aiAssistant.dialogs.agent.nodeTiming'),
+          : t('aiAssistant.dialogs.agent.diagnosticWorkflowStepTiming'),
       value: formatDurationMs(durationMs),
       detail: formatAgentEvent(event),
     });

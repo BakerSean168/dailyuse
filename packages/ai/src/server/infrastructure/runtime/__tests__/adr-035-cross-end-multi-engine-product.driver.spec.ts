@@ -27,8 +27,8 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
     const run = runCrossEndMultiEngineProductUnitDriver({ readSource: read, journey });
     const summary = summarizeCrossEndMultiEngineProductDriverRun(run);
 
-    expect(summary.total).toBe(16);
-    expect(summary.passed).toBe(13);
+    expect(summary.total).toBe(17);
+    expect(summary.passed).toBe(14);
     expect(summary.skippedExternal).toBe(3);
     expect(summary.failed).toBe(0);
     expect(summary.unitPathGreen).toBe(true);
@@ -103,7 +103,6 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
     expect(facade).not.toContain('process.pi_readonly_spike');
     expect(facade).not.toContain('PiReadonlyProcessAdapter');
   });
-});
 
   it('covers residual 417 isolation/composition/LangGraph sanitization unit steps', () => {
     const journey = buildCrossEndMultiEngineProductJourney();
@@ -117,7 +116,23 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
     expect(byId['ui.timeline_surface_isolation']?.status).toBe('passed');
     expect(byId['ui.workbench_timeline_composition']?.status).toBe('passed');
     expect(byId['ui.langgraph_diagnostic_sanitization']?.status).toBe('passed');
-    expect(run.passed).toBe(13);
+    expect(run.passed).toBe(14);
     expect(run.skippedExternal).toBe(3);
     expect(run.claimsFullProductE2E).toBe(false);
   });
+
+  it('covers residual 421 task.create proposal/receipt lane unit step', () => {
+    const journey = buildCrossEndMultiEngineProductJourney();
+    const ids = journey.map((step) => step.id);
+    expect(ids).toContain('ui.task_create_proposal_receipt_lane');
+
+    const run = runCrossEndMultiEngineProductUnitDriver({ readSource: read, journey });
+    const byId = Object.fromEntries(run.results.map((r) => [r.stepId, r]));
+    expect(byId['ui.task_create_proposal_receipt_lane']?.status).toBe('passed');
+    expect(byId['ui.task_create_proposal_receipt_lane']?.missingContracts).toEqual([]);
+    expect(run.passed).toBe(14);
+    expect(run.skippedExternal).toBe(3);
+    expect(run.claimsFullProductE2E).toBe(false);
+    expect(run.claimsRealPiSpawn).toBe(false);
+  });
+});

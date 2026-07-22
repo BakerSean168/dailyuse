@@ -72,6 +72,7 @@ describe('Host LangGraph UI leakage boundary surface (residual 413)', () => {
     expect(goalPanel).toContain('formatLangGraphVendorDiagnosticEventLabel');
     expect(goalPanel).toContain('formatAgentEvent');
     expect(goalPanel).toContain('diagnosticWorkflowStepCompleted');
+    expect(goalPanel).toContain('diagnosticWorkflowStepTiming');
     // Filtering may still inspect vendor types; presentation must use the formatter.
     expect(goalPanel).toContain("event.type !== 'node.completed'");
     expect(goalPanel).not.toMatch(/`\$\{event\.type\} ·/);

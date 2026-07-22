@@ -1,5 +1,5 @@
 /**
- * Residual 407/417: ADR-035 cross-end multi-engine Host product unit driver.
+ * Residual 407/417/421: ADR-035 cross-end multi-engine Host product unit driver.
  *
  * Executes residual 405 scaffold `implemented_unit` steps as source-level
  * contract checks (HTTP SSE / Desktop IPC / Vue selectors / Host cancel +
@@ -104,6 +104,13 @@ export function resolveCrossEndMultiEngineProductStepSources(
         'packages/app-vue/src/modules/ai/composables/hostLangGraphUiBoundary.ts',
         'packages/app-vue/src/modules/ai/components/AIGoalWorkflowPanel.vue',
       ];
+    case 'ui.task_create_proposal_receipt_lane':
+      return [
+        'packages/app-vue/src/modules/ai/composables/hostProposalLifecycle.ts',
+        'packages/app-vue/src/modules/ai/components/AIHostProposalPanel.vue',
+        'packages/app-vue/src/modules/ai/components/AIHostExecutionReceiptPanel.vue',
+        'packages/app-vue/src/modules/ai/views/AIChatView.vue',
+      ];
     case 'e2e.playwright_web_full':
     case 'e2e.electron_desktop_full':
     case 'e2e.real_pi_spawn':
@@ -163,6 +170,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['workflow_step_completed'];
     case 'no raw node.started UI label path':
       return ['formatLangGraphVendorDiagnosticEventLabel', 'workflow_step_started'];
+    case "kind: 'task.create'":
+      return ["kind: 'task.create'", 'task.create'];
+    case 'domain Task executor not wired':
+      return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
       return [contract];
   }
