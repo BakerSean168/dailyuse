@@ -317,20 +317,20 @@ export class PowerSyncTaskTemplateRepository
     return rows.filter((template) => template.isOverdue());
   }
 
-  async findByKeyResultId(keyResultId: string): Promise<TaskTemplate[]> {
+  async findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]> {
     const rows = await this.queryTemplates(
-      'SELECT * FROM task_templates WHERE goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
-      [],
+      'SELECT * FROM task_templates WHERE identity_id = ? AND goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
+      [identityId],
     );
     return rows.filter(
       (template) => template.toServerDTO().goalBinding?.keyResultId === keyResultId,
     );
   }
 
-  async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
+  async findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]> {
     return this.queryTemplates(
-      'SELECT * FROM task_templates WHERE parent_task_id = ? AND deleted_at IS NULL ORDER BY created_at ASC',
-      [parentTaskId],
+      'SELECT * FROM task_templates WHERE identity_id = ? AND parent_task_id = ? AND deleted_at IS NULL ORDER BY created_at ASC',
+      [identityId, parentTaskId],
     );
   }
 

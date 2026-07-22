@@ -260,9 +260,10 @@ export class TaskTemplatePrismaRepository
       .filter((template) => template.isOverdue());
   }
 
-  async findByKeyResultId(keyResultId: string): Promise<TaskTemplate[]> {
+  async findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
       where: {
+        identityId,
         goalBinding: { not: null },
         deletedAt: null,
       },
@@ -279,9 +280,9 @@ export class TaskTemplatePrismaRepository
       .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
+  async findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
-      where: { parentTaskId, deletedAt: null },
+      where: { identityId, parentTaskId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
     });
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));

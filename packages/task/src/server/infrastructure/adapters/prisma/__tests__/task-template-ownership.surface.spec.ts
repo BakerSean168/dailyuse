@@ -106,4 +106,18 @@ describe('task template ownership surface', () => {
     expect(listUseCase).not.toMatch(/findByFolderId\(request\.folderId\)/);
     expect(listUseCase).not.toMatch(/findByGoalId\(request\.goalId\)/);
   });
+
+  it('findByKeyResultId/findSubtasks require identityId (residual 142)', () => {
+    expect(port).toContain(
+      'findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]>;',
+    );
+    expect(port).toContain(
+      'findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]>;',
+    );
+    expect(prisma).toContain('async findByKeyResultId(identityId: string, keyResultId: string)');
+    expect(prisma).toContain('async findSubtasks(identityId: string, parentTaskId: string)');
+    expect(prisma).toContain('where: { identityId, parentTaskId, deletedAt: null }');
+    expect(prisma).toMatch(/identityId,\s*goalBinding: \{ not: null \}/);
+  });
+
 });

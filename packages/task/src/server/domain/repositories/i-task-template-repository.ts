@@ -127,14 +127,14 @@ export interface ITaskTemplateRepository {
   findOverdueTasks(identityId: string): Promise<TaskTemplate[]>;
 
   /**
-   * 根据关键结果查找任务
+   * 根据关键结果查找任务（identity-scoped）
    */
-  findByKeyResultId(keyResultId: string): Promise<TaskTemplate[]>;
+  findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]>;
 
   /**
-   * 查找子任务
+   * 查找子任务（identity-scoped）
    */
-  findSubtasks(parentTaskId: string): Promise<TaskTemplate[]>;
+  findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]>;
 
   /**
    * 查找被阻塞的任务
