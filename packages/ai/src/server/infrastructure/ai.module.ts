@@ -315,6 +315,11 @@ export interface AIModuleInstance {
    */
   readonly turnEngine: ITurnEnginePort;
   /**
+   * Second production Turn Engine (residual 341). Readonly analysis via Model
+   * Gateway (`engine.pi_readonly`); not the open-chat default.
+   */
+  readonly readonlyTurnEngine: ITurnEnginePort;
+  /**
    * LangGraph workflow adapter when remote agent runtime is present (stage 3 / residual 318).
    */
   readonly workflowAdapter: IWorkflowAdapterPort | null;
@@ -508,6 +513,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     services,
     api,
     turnEngine: runtime.turnEngine,
+    readonlyTurnEngine: runtime.readonlyTurnEngine,
     workflowAdapter: runtime.workflowAdapter,
     proposalKernel: runtime.proposalKernel,
     capabilityResolver: runtime.capabilityResolver,

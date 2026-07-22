@@ -792,6 +792,7 @@ packages/contracts/src/modules/ai/
 ### 阶段 4：首个 TurnEngine
 
 - 使用现有直连 Provider/ChatExecution 实现 DirectTurnEngine。 **（部分：生产 class + module.turnEngine；residual 314）**
+- 第二生产 Turn Engine：`ReadonlyAnalysisTurnEngine`（`engine.pi_readonly`，经 Model Gateway；residual 341）。 **（部分：生产 class + module.readonlyTurnEngine；Pi SDK spike 仍开）**
 - 验证流式事件、Abort、Context、Tool 和结构化输出契约。 **（部分：abort/ownership/complete 单测；stream/tool schema 未齐）**
 - 新的开放式 Chat 经 TurnEngine，不影响业务 Workflow。 **（部分：send/stream 经 DirectTurnEngine/IOpenChatTurnPort；统一助手 UI 未切换）**
 
@@ -870,7 +871,7 @@ packages/contracts/src/modules/ai/
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。
 - [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
 - [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；UI 泄漏审计未齐）**
-- [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双标签 isolation + 生产 DirectTurnEngine 首引擎；第二生产引擎仍缺）**
+- [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双标签 isolation + 生产 DirectTurnEngine + ReadonlyAnalysisTurnEngine；完整 multi-engine runtime E2E/Pi SDK 仍缺）**
 - [ ] 自定义模型 API 不需要实现完整 Agent runtime。
 - [ ] 本地 CLI 不需要伪装成 Model Provider。
 - [ ] Run 固定 ResolvedRunPlan 和 CapabilitySnapshot。

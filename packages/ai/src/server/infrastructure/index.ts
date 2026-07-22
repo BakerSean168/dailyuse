@@ -89,7 +89,12 @@ export {
 // ---------------------------------------------------------------------------
 // Turn Engine (ADR-035)
 // ---------------------------------------------------------------------------
-export { DirectTurnEngine, DIRECT_TURN_ENGINE_ID } from './turn-engine';
+export {
+  DirectTurnEngine,
+  DIRECT_TURN_ENGINE_ID,
+  ReadonlyAnalysisTurnEngine,
+  PI_READONLY_TURN_ENGINE_ID,
+} from './turn-engine';
 
 // ---------------------------------------------------------------------------
 // Workflow Adapter (ADR-035)

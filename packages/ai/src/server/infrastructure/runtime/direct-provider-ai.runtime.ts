@@ -49,7 +49,7 @@ import {
   DirectProviderGoalPlanningAdapter,
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
-import { DirectTurnEngine } from '../turn-engine';
+import { DirectTurnEngine, ReadonlyAnalysisTurnEngine } from '../turn-engine';
 import { ProposalKernel } from '../proposal-kernel';
 import { CapabilityResolver } from '../capability-resolver';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
@@ -105,6 +105,11 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     conversationRepository,
     providerConfigRepository,
     chatExecutionPort,
+  );
+  // Residual 341: second production Turn Engine (readonly analysis via Model Gateway).
+  const readonlyTurnEngine = new ReadonlyAnalysisTurnEngine(
+    providerConfigRepository,
+    modelGateway,
   );
 
   // Residual 320: Host proposal lifecycle (no mutation execution).
@@ -185,6 +190,7 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     capabilities,
     runtimeContributions: [],
     turnEngine,
+    readonlyTurnEngine,
     workflowAdapter: null,
     proposalKernel,
     capabilityResolver,

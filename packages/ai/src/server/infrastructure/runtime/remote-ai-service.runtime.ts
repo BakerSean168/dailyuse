@@ -66,7 +66,7 @@ import {
   DirectProviderGoalPlanningAdapter,
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
-import { DirectTurnEngine } from '../turn-engine';
+import { DirectTurnEngine, ReadonlyAnalysisTurnEngine } from '../turn-engine';
 import { ProposalKernel } from '../proposal-kernel';
 import { CapabilityResolver } from '../capability-resolver';
 import { LangGraphWorkflowAdapter } from '../workflow';
@@ -128,6 +128,11 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     conversationRepository,
     providerConfigRepository,
     chatExecutionPort,
+  );
+  // Residual 341: second production Turn Engine (readonly analysis via Model Gateway).
+  const readonlyTurnEngine = new ReadonlyAnalysisTurnEngine(
+    providerConfigRepository,
+    modelGateway,
   );
 
   // Residual 320: Host proposal lifecycle (no mutation execution).
@@ -317,5 +322,5 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
       capabilityResolver,
     ),
   };
-  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter, proposalKernel, capabilityResolver, modelGateway };
+  return { services, capabilities, runtimeContributions: [], turnEngine, readonlyTurnEngine, workflowAdapter, proposalKernel, capabilityResolver, modelGateway };
 }

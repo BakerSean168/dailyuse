@@ -95,13 +95,14 @@ updated: 2026-07-22T00:00:00
 | [`packages/ai/src/server/infrastructure/security/ai-secret-cipher.ts`](../../../packages/ai/src/server/infrastructure/security/ai-secret-cipher.ts) | API key 加密（AES-256-GCM） |
 
 
-## ADR-035 Agent Host 生产适配（residual 314–337）
+## ADR-035 Agent Host 生产适配（residual 314–341）
 
 | 文件 | 说明 |
 | --- | --- |
 | [`packages/contracts/src/modules/ai/agent-host/ports.ts`](../../../packages/contracts/src/modules/ai/agent-host/ports.ts) | Host Port 形状（Turn/Workflow/Capability/Proposal） |
 | [`packages/contracts/src/modules/ai/agent-host/capabilities.ts`](../../../packages/contracts/src/modules/ai/agent-host/capabilities.ts) | CapabilityOffer/Requirement + resolveRunPlan |
 | [`packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts`](../../../packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts) | 生产 DirectTurnEngine（开放式 chat） |
+| [`packages/ai/src/server/infrastructure/turn-engine/readonly-analysis.turn-engine.ts`](../../../packages/ai/src/server/infrastructure/turn-engine/readonly-analysis.turn-engine.ts) | 生产 ReadonlyAnalysisTurnEngine（engine.pi_readonly，Model Gateway） |
 | [`packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts`](../../../packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts) | LangGraph Workflow Adapter |
 | [`packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts`](../../../packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts) | ProposalKernel 生命周期 |
 | [`packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts`](../../../packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts) | CapabilityResolver fail-closed |

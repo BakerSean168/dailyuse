@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 305/311/314/318/320/322: ADR-035 Agent Host ports.
  * Stage 0 shapes stay frozen. Production allows:
  *   - DirectTurnEngine (ITurnEnginePort / engine.direct_turn) — residual 314/316
+ *   - ReadonlyAnalysisTurnEngine (ITurnEnginePort / engine.pi_readonly) — residual 341
  *   - LangGraphWorkflowAdapter (IWorkflowAdapterPort wrapping IAgentRuntimePort) — residual 318
  *   - ProposalKernel (IProposalKernelPort / tool.proposal lifecycle) — residual 320
  *   - CapabilityResolver (ICapabilityResolverPort / fail-closed resolve) — residual 322
@@ -46,6 +47,8 @@ describe('agent-host stage-0 ports freeze surface', () => {
       resolve(repoRoot, 'apps/desktop/src'),
     ];
     const allowedTurnEngine = 'packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts';
+    const allowedReadonlyTurnEngine =
+      'packages/ai/src/server/infrastructure/turn-engine/readonly-analysis.turn-engine.ts';
     const allowedWorkflow =
       'packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts';
     const allowedProposal =
@@ -103,7 +106,7 @@ describe('agent-host stage-0 ports freeze surface', () => {
     }
 
     for (const root of roots) walk(root);
-    expect(turnEngines).toEqual([allowedTurnEngine]);
+    expect(turnEngines.sort()).toEqual([allowedTurnEngine, allowedReadonlyTurnEngine].sort());
     expect(workflowAdapters).toEqual([allowedWorkflow]);
     expect(proposalKernels).toEqual([allowedProposal]);
     expect(capabilityResolvers).toEqual([allowedCapability]);
@@ -113,6 +116,15 @@ describe('agent-host stage-0 ports freeze surface', () => {
     const direct = readFileSync(resolve(repoRoot, allowedTurnEngine), 'utf8');
     expect(direct).toContain("DIRECT_TURN_ENGINE_ID = 'engine.direct_turn'");
     expect(direct).toContain('export class DirectTurnEngine implements ITurnEnginePort');
+
+    const readonlyTurn = readFileSync(resolve(repoRoot, allowedReadonlyTurnEngine), 'utf8');
+    expect(readonlyTurn).toContain("PI_READONLY_TURN_ENGINE_ID = 'engine.pi_readonly'");
+    expect(readonlyTurn).toContain(
+      'export class ReadonlyAnalysisTurnEngine implements ITurnEnginePort',
+    );
+    expect(readonlyTurn).toContain('IModelGatewayPort');
+    expect(readonlyTurn).toContain('cannot execute tools');
+    expect(readonlyTurn).not.toContain("kind: 'tool.mutation'");
 
     const workflow = readFileSync(resolve(repoRoot, allowedWorkflow), 'utf8');
     expect(workflow).toContain("LANGGRAPH_WORKFLOW_ADAPTER_ID = 'workflow.langgraph'");
@@ -163,7 +175,8 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(harnessText).toContain('engine.langgraph_workflow');
     expect(harnessText).toContain('createConformanceTurnEngine');
     expect(harnessText).toContain('ITurnEnginePort');
-    expect(harnessText).toContain('DirectTurnEngine only');
+    expect(harnessText).toContain('ReadonlyAnalysisTurnEngine');
+    expect(harnessText).toContain('engine.pi_readonly');
     expect(harnessText).toContain('multi-engine');
   });
 });

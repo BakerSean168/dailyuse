@@ -97,6 +97,11 @@ export interface AIRuntimeOutput {
   /** First production Turn Engine (DirectTurnEngine); also powers open chat use cases. */
   readonly turnEngine: import('@dailyuse/contracts/ai').ITurnEnginePort;
   /**
+   * Second production Turn Engine (ReadonlyAnalysisTurnEngine / engine.pi_readonly).
+   * Residual 341 — Model Gateway-backed readonly analysis; not open-chat default.
+   */
+  readonly readonlyTurnEngine: import('@dailyuse/contracts/ai').ITurnEnginePort;
+  /**
    * LangGraph workflow adapter when remote agent runtime is present; otherwise null.
    * Residual 318 — wraps IAgentRuntimePort without replacing Python graphs.
    */

@@ -46,6 +46,7 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiProduct).not.toMatch(/Host and adapters 尚未实现/);
     expect(aiProduct).toContain('confirmed-create');
     expect(aiProduct).toContain('DirectTurnEngine');
+    expect(aiProduct).toContain('ReadonlyAnalysisTurnEngine');
     expect(aiProduct).toContain('LangGraphWorkflowAdapter');
     expect(aiProduct).toContain('ProposalKernel');
     expect(aiProduct).toContain('CapabilityResolver');
@@ -67,6 +68,9 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
   });
   it('ai-files index points at server/* Host adapters and no legacy infrastructure-server paths', () => {
     expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts');
+    expect(aiFilesIndex).toContain(
+      'packages/ai/src/server/infrastructure/turn-engine/readonly-analysis.turn-engine.ts',
+    );
     expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts');
     expect(aiFilesIndex).toContain(
       'packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts',

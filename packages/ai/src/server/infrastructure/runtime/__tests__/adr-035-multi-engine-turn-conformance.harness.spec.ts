@@ -1,10 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 /**
  * ADR-035 multi-engine Turn Engine conformance harness (residual 309/314 / §13.2 Agent).
  *
  * Runs the same isolation invariants against two engine labels in one suite:
  * `engine.direct_turn` and `engine.langgraph_workflow`. Uses in-suite test doubles
- * for dual-label isolation. Production residual 314 adds DirectTurnEngine only;
- * a second production engine (langgraph/pi/cli) is still missing.
+ * for dual-label isolation. Production residual 314 adds DirectTurnEngine;
+ * residual 341 adds ReadonlyAnalysisTurnEngine (engine.pi_readonly) via Model Gateway.
+ * Full multi-engine runtime E2E and real Pi SDK/CLI process adapters remain open.
  *
  * This is not a Playwright/Electron E2E and does not claim production multi-engine
  * runtime wiring is complete.
@@ -280,12 +283,25 @@ describe('ADR-035 multi-engine Turn Engine conformance harness', () => {
     }
   });
 
-  it('documents residual 314: only DirectTurnEngine is production; multi-engine still partial', () => {
-    // Harness doubles still cover dual-label isolation. Production has DirectTurnEngine
-    // (engine.direct_turn) only — not a second Turn Engine adapter.
+  it('documents residual 314/341: two production Turn Engines; multi-engine runtime still partial', () => {
+    // Harness doubles still cover dual-label isolation. Production has:
+    // DirectTurnEngine (engine.direct_turn) + ReadonlyAnalysisTurnEngine (engine.pi_readonly).
     const productionNote =
-      'production has DirectTurnEngine only; multi-engine adapters still incomplete';
-    expect(productionNote).toContain('DirectTurnEngine only');
+      'production has DirectTurnEngine and ReadonlyAnalysisTurnEngine; multi-engine runtime E2E still incomplete';
+    expect(productionNote).toContain('DirectTurnEngine');
+    expect(productionNote).toContain('ReadonlyAnalysisTurnEngine');
     expect(ENGINE_IDS).toEqual(['engine.direct_turn', 'engine.langgraph_workflow']);
+
+    const direct = readFileSync(
+      resolve(__dirname, '../../turn-engine/direct-turn.engine.ts'),
+      'utf8',
+    );
+    const readonlyEngine = readFileSync(
+      resolve(__dirname, '../../turn-engine/readonly-analysis.turn-engine.ts'),
+      'utf8',
+    );
+    expect(direct).toContain("DIRECT_TURN_ENGINE_ID = 'engine.direct_turn'");
+    expect(readonlyEngine).toContain("PI_READONLY_TURN_ENGINE_ID = 'engine.pi_readonly'");
+    expect(readonlyEngine).toContain('export class ReadonlyAnalysisTurnEngine implements ITurnEnginePort');
   });
 });

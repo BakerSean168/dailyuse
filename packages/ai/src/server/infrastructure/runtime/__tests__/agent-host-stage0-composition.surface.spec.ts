@@ -6,7 +6,8 @@
  * Residual 318 wires LangGraphWorkflowAdapter; residual 320 wires ProposalKernel;
  * residual 322 wires CapabilityResolver (fail-closed, no silent engine.*);
  * residual 324 routes agent start gating through that shared resolver;
- * residual 337 wires CustomModelGateway (IModelGatewayPort) on both runtimes.
+ * residual 337 wires CustomModelGateway (IModelGatewayPort) on both runtimes;
+ * residual 341 wires ReadonlyAnalysisTurnEngine (second production Turn Engine).
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -47,6 +48,7 @@ describe('agent-host stage-0 composition surface', () => {
     const moduleSource = readFileSync(resolve(__dirname, '../../ai.module.ts'), 'utf8');
     expect(moduleSource).toContain('createDirectProviderAIRuntime');
     expect(moduleSource).toContain('turnEngine: runtime.turnEngine');
+    expect(moduleSource).toContain('readonlyTurnEngine: runtime.readonlyTurnEngine');
     expect(moduleSource).toContain('workflowAdapter: runtime.workflowAdapter');
     expect(moduleSource).toContain('proposalKernel: runtime.proposalKernel');
     expect(moduleSource).toContain('capabilityResolver: runtime.capabilityResolver');
@@ -156,6 +158,28 @@ describe('agent-host stage-0 composition surface', () => {
     // Model Gateway is not a mutation surface.
     expect(gateway).not.toContain("kind: 'tool.mutation'");
     expect(gateway).not.toContain("kind: 'engine.");
+  });
+
+
+  it('both runtimes construct ReadonlyAnalysisTurnEngine as second production Turn Engine (residual 341)', () => {
+    const direct = readFileSync(resolve(__dirname, '../direct-provider-ai.runtime.ts'), 'utf8');
+    const remote = readFileSync(resolve(__dirname, '../remote-ai-service.runtime.ts'), 'utf8');
+    for (const source of [direct, remote]) {
+      expect(source).toContain('new ReadonlyAnalysisTurnEngine(');
+      expect(source).toContain('readonlyTurnEngine');
+      expect(source).toContain('modelGateway');
+    }
+    const engine = readFileSync(
+      resolve(__dirname, '../../turn-engine/readonly-analysis.turn-engine.ts'),
+      'utf8',
+    );
+    expect(engine).toContain("PI_READONLY_TURN_ENGINE_ID = 'engine.pi_readonly'");
+    expect(engine).toContain('export class ReadonlyAnalysisTurnEngine implements ITurnEnginePort');
+    expect(engine).toContain('cannot execute tools');
+    expect(engine).not.toContain("kind: 'tool.mutation'");
+    // Open chat remains DirectTurnEngine-only.
+    expect(direct).toContain('new SendAIMessageUseCase(turnEngine');
+    expect(direct).not.toContain('new SendAIMessageUseCase(readonlyTurnEngine');
   });
 
 });
