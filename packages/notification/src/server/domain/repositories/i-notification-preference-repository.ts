@@ -1,61 +1,51 @@
-﻿/**
- * NotificationPreference 浠撳偍鎺ュ彛
+/**
+ * NotificationPreference repository interface.
  *
- * DDD 浠撳偍妯″紡锛?
- * - 鍙畾涔夋帴鍙ｏ紝涓嶅疄鐜?
- * - 鐢卞熀纭€璁炬柦灞傚疄鐜?
+ * DDD repository pattern:
+ * - Interface only; infrastructure implements
+ * - Each account has at most one preference document
  */
 
 import type { NotificationPreference } from '../aggregates/notification-preference';
 
-/**
- * INotificationPreferenceRepository 浠撳偍鎺ュ彛
- *
- * 鑱岃矗锛?
- * - 绠＄悊鐢ㄦ埛閫氱煡鍋忓ソ鐨勬寔涔呭寲
- * - 姣忎釜璐︽埛鍙湁涓€涓亸濂借缃?
- */
 export interface INotificationPreferenceRepository {
   /**
-   * 淇濆瓨鍋忓ソ璁剧疆锛堝垱寤烘垨鏇存柊锛?
+   * Save preference (create or update)
    */
   save(preference: NotificationPreference): Promise<void>;
 
   /**
-   * 閫氳繃 UUID 鏌ユ壘鍋忓ソ璁剧疆
+   * Find by primary key (system/internal paths; authorization-sensitive loads use findByIdForIdentity)
    */
   findById(id: string): Promise<NotificationPreference | null>;
 
   /**
-   * 閫氳繃璐︽埛 UUID 鏌ユ壘鍋忓ソ璁剧疆
-   *
-   * @param identityId 璐︽埛 UUID
-   * @returns 鍋忓ソ璁剧疆锛屼笉瀛樺湪鍒欒繑鍥?null
+   * Find by primary key scoped to identity
+   */
+  findByIdForIdentity(identityId: string, id: string): Promise<NotificationPreference | null>;
+
+  /**
+   * Find preference by account identity
    */
   findByIdentityId(identityId: string): Promise<NotificationPreference | null>;
 
   /**
-   * 鍒犻櫎鍋忓ソ璁剧疆
+   * Delete preference (must match identity)
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
-   * 妫€鏌ュ亸濂借缃槸鍚﹀瓨鍦?
+   * Check existence scoped to identity
    */
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 
   /**
-   * 妫€鏌ヨ处鎴锋槸鍚﹀凡鏈夊亸濂借缃?
-   *
-   * @param identityId 璐︽埛 UUID
+   * Check whether the account already has a preference
    */
   existsForIdentity(identityId: string): Promise<boolean>;
 
   /**
-   * 鑾峰彇鎴栧垱寤哄亸濂借缃?
-   *
-   * @param identityId 璐︽埛 UUID
-   * @returns 鍋忓ソ璁剧疆锛堝鏋滀笉瀛樺湪鍒欏垱寤洪粯璁よ缃級
+   * Get or create default preference for identity
    */
   getOrCreate(identityId: string): Promise<NotificationPreference>;
 }

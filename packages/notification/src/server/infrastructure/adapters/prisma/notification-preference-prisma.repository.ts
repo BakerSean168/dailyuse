@@ -55,6 +55,14 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
     return NotificationPreferencePrismaMapper.toDomain(row as unknown as PrismaNotificationPreferenceRow);
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<NotificationPreference | null> {
+    const row = await this.prisma.notificationPreference.findFirst({
+      where: { id, identityId },
+    });
+    if (!row) return null;
+    return NotificationPreferencePrismaMapper.toDomain(row as unknown as PrismaNotificationPreferenceRow);
+  }
+
   async findByIdentityId(identityId: string): Promise<NotificationPreference | null> {
     const row = await this.prisma.notificationPreference.findUnique({
       where: { identityId },
@@ -63,12 +71,19 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
     return NotificationPreferencePrismaMapper.toDomain(row as unknown as PrismaNotificationPreferenceRow);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.notificationPreference.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const result = await this.prisma.notificationPreference.deleteMany({
+      where: { id, identityId },
+    });
+    if (result.count === 0) {
+      throw new Error('Notification preference not found for the current identity.');
+    }
   }
 
-  async exists(id: string): Promise<boolean> {
-    const count = await this.prisma.notificationPreference.count({ where: { id } });
+  async exists(identityId: string, id: string): Promise<boolean> {
+    const count = await this.prisma.notificationPreference.count({
+      where: { id, identityId },
+    });
     return count > 0;
   }
 
