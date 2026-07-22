@@ -3078,6 +3078,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 真实 OAuth 跨端 E2E、第二生产 Turn Engine、统一助手 UI、GitHub App fixture E2E、全量 PR 门禁。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百二十六轮）：§13.2 证据指针刷新（仍不打勾）——将 residual
+> 305–325 ADR-035 Host 部分落地（DirectTurnEngine / LangGraphWorkflowAdapter /
+> ProposalKernel / CapabilityResolver + start-gate 热路径 + multi-engine harness doubles +
+> tip 71/247 focused suite）写入 §13.2 Agent 与全量门禁证据段；**不**把 Agent 或全量门禁改标
+> 为已证明。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3478,6 +3484,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十三轮：§13.2 focused evidence suite re-run（246 tests，residuals 250–322 锁；不改 checkbox）。
   残留三百二十四轮：`startRun` knowledge.generate 门禁经共享 CapabilityResolver.resolveFor（热路径）。
   残留三百二十五轮：§13.2 focused evidence suite re-run（247 tests，residuals 250–324 锁；不改 checkbox）。
+  残留三百二十六轮：§13.2 证据指针刷新（Host residual 305–325；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3498,9 +3505,18 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十三轮：§13.2 focused evidence suite re-run (246 tests, residuals 250–322 locks, no checkbox changes)。
   残留三百二十四轮：agent start gate uses shared CapabilityResolver.resolveFor (hot path); Agent still partial。
   残留三百二十五轮：§13.2 focused evidence suite re-run (247 tests, residuals 250–324 locks, no checkbox changes)。
+  残留三百二十六轮：§13.2 evidence-pointer refresh for residual 305–325 Host adapters/start-gate (no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
+  残留三百零五至三百二十五轮（ADR-035 Host 部分落地，仍不打勾）：
+  journey steps 1–16 + multi-engine conformance harness（in-suite doubles）；生产
+  `DirectTurnEngine`/`LangGraphWorkflowAdapter`/`ProposalKernel`/`CapabilityResolver`；
+  open-chat 经 DirectTurnEngine；`startRun` knowledge.generate 经共享 CapabilityResolver
+  fail-closed 热路径；stage-0 freeze 仅允许上述生产 adapter。
+  tip residual 325 focused suite：**71 文件 / 247 测试** + governance-check GOV_EXIT:0。
+  **仍缺**：第二生产 Turn Engine、统一助手 UI、完整 multi-engine runtime E2E、跨端对抗
+  Playwright/Electron 与真实 OAuth/GitHub fixture。
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
@@ -3596,6 +3612,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十三轮：tip 上 246 项 focused evidence suite（含 residual 250–322 CapabilityResolver 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百二十四轮：CapabilityResolver start-gate 热路径接线 + composition 锁通过；仍不构成 multi-engine/统一助手完成证据。
   残留三百二十五轮：tip 上 247 项 focused evidence suite（含 residual 250–324 start-gate 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百二十六轮：§13.2 Agent/全量门禁证据指针刷新（305–325 Host 部分）；仍不构成完成证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

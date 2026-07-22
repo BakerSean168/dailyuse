@@ -23,7 +23,7 @@ updated: 2026-07-22T00:00:00
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
 
-### 当前进展（2026-07-22，与 vault plan residual 305–324 对齐）
+### 当前进展（2026-07-22，与 vault plan residual 305–326 对齐）
 
 - **阶段 0 部分已落地（契约冻结）**：
   - `packages/contracts` agent-host：`ITurnEnginePort` / `ICapabilityResolverPort` /
