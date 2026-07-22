@@ -851,9 +851,11 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(taskWorkflow).toContain('Residual 501');
     const completeIdx = taskWorkflow.indexOf('async function completeTaskAgentRun');
     expect(completeIdx).toBeGreaterThan(-1);
-    const completeSlice = taskWorkflow.slice(completeIdx, completeIdx + 1600);
-    // Residual 501: find create_task_template draft — not blind pendingActions[0].
-    expect(completeSlice).toContain(".find((action) => action.tool === 'create_task_template')");
+    const completeSlice = taskWorkflow.slice(completeIdx, completeIdx + 2200);
+    // Residual 501/547: sole create_task_template draftAction — not blind pendingActions[0]/find invent.
+    expect(completeSlice).toContain("action.tool === 'create_task_template'");
+    expect(completeSlice).toContain('productDrafts.length !== 1');
+    expect(completeSlice).toContain('const draftAction = productDrafts[0]');
     expect(completeSlice).toContain('Residual 501');
     expect(completeSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
     // Still waiting_approval + templateId double-gates (residuals 489/465).
@@ -917,15 +919,39 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(taskWorkflow).toContain('Residual 507');
     const reviseIdx = taskWorkflow.indexOf('async function reviseTaskAgentRun');
     expect(reviseIdx).toBeGreaterThan(-1);
-    const reviseSlice = taskWorkflow.slice(reviseIdx, reviseIdx + 1600);
-    // Residual 507: find create_task_template draft — not blind source first-entry fallback.
-    expect(reviseSlice).toContain(".find((action) => action.tool === 'create_task_template')");
+    const reviseSlice = taskWorkflow.slice(reviseIdx, reviseIdx + 2200);
+    // Residual 507/547: sole create_task_template draftAction — not blind source first-entry/find invent.
+    expect(reviseSlice).toContain("action.tool === 'create_task_template'");
+    expect(reviseSlice).toContain('productDrafts.length !== 1');
+    expect(reviseSlice).toContain('const draftAction = productDrafts[0]');
     expect(reviseSlice).toContain('Residual 507');
     expect(reviseSlice).not.toContain('?? source[0]');
     expect(reviseSlice).not.toContain('source.find((action) => action.tool === \'create_task_template\') ?? source[0]');
     // Still waiting_approval double-gate (residual 481) and single approvedAction (475).
     expect(reviseSlice).toContain("run.run.status !== 'waiting_approval'");
     expect(reviseSlice).toContain('if (approvedActions.length !== 1) return');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+  it('task.create client complete/revise sole draftAction after single-product-draft gate (residual 547)', () => {
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(taskWorkflow).toContain('Residual 547');
+    expect(taskWorkflow).toContain('productDrafts.length !== 1');
+    expect(taskWorkflow).toContain('const draftAction = productDrafts[0]');
+    const completeIdx = taskWorkflow.indexOf('async function completeTaskAgentRun');
+    const reviseIdx = taskWorkflow.indexOf('async function reviseTaskAgentRun');
+    expect(completeIdx).toBeGreaterThan(-1);
+    expect(reviseIdx).toBeGreaterThan(-1);
+    const completeSlice = taskWorkflow.slice(completeIdx, completeIdx + 2400);
+    const reviseSlice = taskWorkflow.slice(reviseIdx, reviseIdx + 2400);
+    expect(completeSlice).toContain('const draftPool');
+    expect(completeSlice).toContain('productDrafts.length !== 1');
+    expect(completeSlice).toContain('draftAction.payload');
+    expect(reviseSlice).toContain('productDrafts.length !== 1');
+    expect(reviseSlice).toContain('applyHostTaskPatchToAgentActions([draftAction]');
+    // No multi-find invent on either product path.
+    expect(completeSlice).not.toContain(".find((action) => action.tool === 'create_task_template')");
+    expect(reviseSlice).not.toContain(".find((action) => action.tool === 'create_task_template')");
     expect(helper).not.toContain('executeApproved');
   });
 
