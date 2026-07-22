@@ -106,32 +106,3 @@ def build_run_history_store(
         return AgentRunHistoryStore()
     return AgentRunHistoryStore(Path(checkpoint_dir) / f"{name}-runs.json")
 
-
-def build_file_backed_saver(
-    *,
-    checkpoint_dir: str | Path | None,
-    name: str,
-) -> InMemorySaver:
-    """Legacy factory for file-backed checkpointer.
-
-    This function is kept for compatibility with existing code that doesn't
-    yet use the settings-based factory. New code should use build_checkpointer.
-    """
-    if checkpoint_dir is None:
-        return InMemorySaver()
-    return FileBackedInMemorySaver(Path(checkpoint_dir) / f"{name}.pkl")
-
-
-def build_file_backed_run_history_store(
-    *,
-    checkpoint_dir: str | Path | None,
-    name: str,
-) -> AgentRunHistoryStore:
-    """Legacy factory for file-backed run history store.
-
-    This function is kept for compatibility with existing code that doesn't
-    yet use the settings-based factory. New code should use build_run_history_store.
-    """
-    if checkpoint_dir is None:
-        return AgentRunHistoryStore()
-    return AgentRunHistoryStore(Path(checkpoint_dir) / f"{name}-runs.json")
