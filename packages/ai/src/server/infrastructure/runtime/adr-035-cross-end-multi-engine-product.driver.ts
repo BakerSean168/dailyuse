@@ -352,6 +352,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 505'];
     case 'Residual 507':
       return ['Residual 507'];
+    case 'matchesHostTaskCreateConversation':
+      return ['matchesHostTaskCreateConversation'];
+    case 'Residual 509':
+      return ['Residual 509'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

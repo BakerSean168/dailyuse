@@ -344,6 +344,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 507: client revise draft create_task_template only (no source[0]).
         'Residual 507',
         'reviseTaskAgentRun',
+        // Residual 509: process-local store conversationId trim list match.
+        'matchesHostTaskCreateConversation',
+        'Residual 509',
       ],
       status: 'implemented_unit',
     },

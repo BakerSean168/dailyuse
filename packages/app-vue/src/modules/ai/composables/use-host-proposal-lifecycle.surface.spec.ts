@@ -929,6 +929,22 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local store conversation list trims (residual 509)', () => {
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    expect(store).toContain('matchesHostTaskCreateConversation');
+    expect(store).toContain('resolveTaskCreateConversationId');
+    expect(store).toContain('Residual 509');
+    expect(store).toContain('matchesHostTaskCreateConversation(run.conversationId, queryConversationId)');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

@@ -1,5 +1,5 @@
 /**
- * Residual 435/447/451/457/495/503/505: process-local Host task.create run store foundation.
+ * Residual 435/447/451/457/495/503/505/509: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
@@ -23,10 +23,15 @@
  *
  * Residual 505: map key uses trimmed non-empty runId (start residual 497 symmetry)
  * so whitespace get/upsert cannot false-miss or invent a second key for one run.
+ *
+ * Residual 509: list conversationId filter uses trimmed non-empty conversationId
+ * (start residual 483/461 symmetry) so whitespace query cannot false-miss session runs;
+ * blank conversationId filter fails closed (matches nothing).
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
 import {
+  resolveTaskCreateConversationId,
   resolveTaskCreateIdentityId,
   resolveTaskCreateRunId,
 } from './host-task-create-start';
@@ -72,6 +77,19 @@ export function matchesHostTaskCreateIdentity(
 ): boolean {
   const stored = resolveTaskCreateIdentityId(storedIdentityId);
   const query = resolveTaskCreateIdentityId(queryIdentityId);
+  return Boolean(stored && query && stored === query);
+}
+
+/**
+ * Residual 509: compare process-local conversationId with start-builder trim semantics.
+ * Empty/whitespace query never matches (fail-closed session isolation).
+ */
+export function matchesHostTaskCreateConversation(
+  storedConversationId: string | null | undefined,
+  queryConversationId: string | null | undefined,
+): boolean {
+  const stored = resolveTaskCreateConversationId(storedConversationId);
+  const query = resolveTaskCreateConversationId(queryConversationId);
   return Boolean(stored && query && stored === query);
 }
 
@@ -143,8 +161,11 @@ export function createHostTaskCreateRunStore(
       }
       // Residual 457: conversation/thread binding (no session rebinding via runId reuse).
       if (existing) {
-        const existingConversation = existing.run.conversationId ?? null;
-        const nextConversation = normalized.run.conversationId ?? null;
+        // Residual 509: conversation binding compares trimmed session ids.
+        const existingConversation =
+          resolveTaskCreateConversationId(existing.run.conversationId) ?? null;
+        const nextConversation =
+          resolveTaskCreateConversationId(normalized.run.conversationId) ?? null;
         if (existingConversation !== nextConversation) {
           throw new Error(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE);
         }
@@ -176,8 +197,16 @@ export function createHostTaskCreateRunStore(
             run.agentType === 'task.create',
         );
 
-      if (params?.conversationId) {
-        runs = runs.filter((run) => run.conversationId === params.conversationId);
+      if (params?.conversationId !== undefined && params?.conversationId !== null) {
+        // Residual 509: trimmed conversation filter; blank query matches nothing.
+        const queryConversationId = resolveTaskCreateConversationId(params.conversationId);
+        if (!queryConversationId) {
+          runs = [];
+        } else {
+          runs = runs.filter((run) =>
+            matchesHostTaskCreateConversation(run.conversationId, queryConversationId),
+          );
+        }
       }
       if (params?.status?.length) {
         const allowed = new Set(params.status);

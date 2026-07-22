@@ -6,6 +6,7 @@ import {
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE,
   matchesHostTaskCreateIdentity,
+  matchesHostTaskCreateConversation,
 } from '../host-task-create-run-store';
 import { buildHostTaskCreateStartResult } from '../host-task-create-start';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
@@ -423,5 +424,62 @@ describe('host-task-create-run-store runId trim lookup (residual 505)', () => {
     );
     expect(store.size()).toBe(0);
     expect(HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE).toMatch(/runId/);
+  });
+});
+
+describe('host-task-create-run-store conversationId trim match (residual 509)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('matchesHostTaskCreateConversation trims and rejects empty', () => {
+    expect(matchesHostTaskCreateConversation('conv-1', '  conv-1  ')).toBe(true);
+    expect(matchesHostTaskCreateConversation('  conv-1  ', 'conv-1')).toBe(true);
+    expect(matchesHostTaskCreateConversation('conv-1', 'conv-2')).toBe(false);
+    expect(matchesHostTaskCreateConversation('conv-1', '   ')).toBe(false);
+    expect(matchesHostTaskCreateConversation('conv-1', '')).toBe(false);
+    expect(matchesHostTaskCreateConversation(null, 'conv-1')).toBe(false);
+  });
+
+  it('list honors trimmed conversationId without false isolation miss', () => {
+    const store = createHostTaskCreateRunStore();
+    store.upsert(
+      buildHostTaskCreateStartResult({
+        request: { ...request('run-conv-trim', 'Trim conv'), conversationId: 'conv-trim' },
+        identityId: 'owner-1',
+        nowMs: 10,
+      }),
+    );
+
+    expect(store.list('owner-1', { conversationId: '  conv-trim  ' })).toHaveLength(1);
+    expect(store.list('owner-1', { conversationId: 'conv-trim' })[0]?.runId).toBe('run-conv-trim');
+    // blank filter fails closed (matches nothing, not unfiltered)
+    expect(store.list('owner-1', { conversationId: '   ' })).toHaveLength(0);
+    expect(store.list('owner-1', { conversationId: '' })).toHaveLength(0);
+    expect(store.list('owner-1', { conversationId: 'other' })).toHaveLength(0);
+  });
+
+  it('upsert conversation rebind still fail-closed across whitespace-equivalent ids only', () => {
+    const store = createHostTaskCreateRunStore();
+    const owned = buildHostTaskCreateStartResult({
+      request: { ...request('run-conv-bound', 'Owned'), conversationId: 'conv-a' },
+      identityId: 'owner-1',
+      nowMs: 1,
+    });
+    store.upsert(owned);
+
+    const sameConvSpaced = {
+      ...owned,
+      run: { ...owned.run, conversationId: '  conv-a  ', updatedAt: 2 },
+    };
+    expect(() => store.upsert(sameConvSpaced as typeof owned)).not.toThrow();
+
+    const other = {
+      ...owned,
+      run: { ...owned.run, conversationId: 'conv-b', updatedAt: 3 },
+    };
+    expect(() => store.upsert(other as typeof owned)).toThrow(
+      /already bound to another conversation/,
+    );
   });
 });

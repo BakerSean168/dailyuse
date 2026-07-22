@@ -1357,4 +1357,40 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(port.getEvents).not.toHaveBeenCalled();
   });
 
+
+  it('listRuns match trimmed conversationId query (residual 509)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-conv' } as const;
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-trim-conv',
+        threadId: 'thread-journey-trim-conv',
+        conversationId: 'conv-journey-trim',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Trim conversation match' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    expect(started.data.run.conversationId).toBe('conv-journey-trim');
+
+    const listed = await service.listRuns(
+      { conversationId: '  conv-journey-trim  ' },
+      cx as any,
+    );
+    expect(listed.ok).toBe(true);
+    if (!listed.ok) return;
+    expect(listed.data.some((run) => run.runId === 'run-journey-trim-conv')).toBe(true);
+
+    const blank = await service.listRuns({ conversationId: '   ' }, cx as any);
+    expect(blank.ok).toBe(true);
+    if (!blank.ok) return;
+    // Blank conversation filter is fail-closed for process-local runs (still may consult port merge).
+    expect(blank.data.some((run) => run.runId === 'run-journey-trim-conv')).toBe(false);
+  });
+
 });
