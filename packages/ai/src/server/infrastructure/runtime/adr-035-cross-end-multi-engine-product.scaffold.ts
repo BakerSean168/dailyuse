@@ -341,6 +341,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 505: process-local store runId trim lookup (start 497 symmetry).
         'HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE',
         'Residual 505',
+        // Residual 507: client revise draft create_task_template only (no source[0]).
+        'Residual 507',
+        'reviseTaskAgentRun',
       ],
       status: 'implemented_unit',
     },

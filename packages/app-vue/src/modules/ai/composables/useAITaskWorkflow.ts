@@ -1,11 +1,12 @@
 /**
- * Residual 431/433/437/439/445/461/489/501: product path for AgentType task.create.
+ * Residual 431/433/437/439/445/461/489/501/507: product path for AgentType task.create.
  * Residual 433: optional linked goalId at start; session restore owned by useAIChatView.
  * Residual 437: process-local cancel/complete resume after Host lifecycle decisions.
  * Residual 439: process-local edit revise after Host proposal revise.
  * Residual 445: re-align linkedGoalId from restored/synced taskAgentRun.
  * Residual 489: complete only from waiting_approval (Host residual 475 symmetry).
  * Residual 501: complete settlement draft must be create_task_template (no blind pending[0]).
+ * Residual 507: revise draft must be create_task_template (no blind source[0]; residual 501 symmetry).
  * Host proposal + client createTemplate settle own mutation (residual 423–425).
  * Full Task LangGraph workflow is not claimed here.
  */
@@ -238,11 +239,12 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 439/455/473/475/481: Host revise → process-local edit resume (stay waiting_approval).
+   * Residual 439/455/473/475/481/507: Host revise → process-local edit resume (stay waiting_approval).
    * Residual 481: only revise from waiting_approval (Host also fail-closed).
    * Patches create_task_template pendingActions so getRun/selectAgentRun reopen revised draft.
    * Residual 455: blank title revise is refused client-side (Host also fail-closed).
    * Residual 473/475: send exactly one create_task_template approvedAction (Host single-draft).
+   * Residual 507: draft source must be create_task_template (no blind source[0]; residual 501 symmetry).
    */
   async function reviseTaskAgentRun(hostOptions?: {
     title?: string;
@@ -260,9 +262,9 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
         run.state.pendingActions.length > 0
           ? run.state.pendingActions
           : run.state.approvedActions;
+      // Residual 507: never patch a foreign tool's source[0] into Host edit resume.
       // Residual 475: product draft is a single create_task_template action only.
-      const primary =
-        source.find((action) => action.tool === 'create_task_template') ?? source[0];
+      const primary = source.find((action) => action.tool === 'create_task_template');
       if (!primary || primary.tool !== 'create_task_template') return;
       const approvedActions = applyHostTaskPatchToAgentActions([primary], {
         title: hostOptions?.title,
