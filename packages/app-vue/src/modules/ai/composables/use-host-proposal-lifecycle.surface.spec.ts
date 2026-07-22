@@ -1204,6 +1204,43 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('Host panel settlement reuses resolveHostPanelOwnedProductRun ownership (residual 571)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('Residual 571');
+    expect(chatView).toContain('Residual 571');
+    expect(chatView).toContain('Residual 569/571');
+    // Approve/reject/revise hoist owned for gate + settlement (no dual re-resolve).
+    for (const fn of [
+      'async function handleHostProposalApprove',
+      'async function handleHostProposalReject',
+      'async function handleHostProposalRevise',
+    ]) {
+      const fnIdx = chatView.indexOf(fn);
+      expect(fnIdx).toBeGreaterThan(-1);
+      const slice = chatView.slice(fnIdx, fnIdx + 4500);
+      expect(slice).toContain('resolveHostPanelOwnedProductRun');
+      expect(slice).toContain('owned?.productTool');
+      // Settlement paths bind productTool — not dual isTaskAgentType/liveHost re-resolve.
+      expect(slice).not.toContain(
+        'liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType',
+      );
+    }
+    // Task approve settlement: goal productTool confirms goal; task productTool completes.
+    const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 7000);
+    expect(approveSlice).toContain("owned?.productTool === 'create_goal'");
+    expect(approveSlice).toContain("owned?.productTool === 'create_task_template'");
+    expect(approveSlice).toContain("isTaskAgentType = owned?.productTool === 'create_task_template'");
+    // Reject settlement mirrors productTool ownership.
+    const rejectIdx = chatView.indexOf('async function handleHostProposalReject');
+    const rejectSlice = chatView.slice(rejectIdx, rejectIdx + 4500);
+    expect(rejectSlice).toContain("owned?.productTool === 'create_task_template'");
+    expect(rejectSlice).toContain("owned?.productTool === 'create_goal'");
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

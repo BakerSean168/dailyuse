@@ -278,6 +278,8 @@ export type HostPanelProductTool =
  * Residual 569: resolve session-owned product AgentRun for Host panel lifecycle
  * gates (approve/reject/revise). Single ownership map so panel actions cannot
  * drift across dual resolution paths.
+ * Residual 571: post-lifecycle settlement (confirm/cancel/complete/revise
+ * process-local) must reuse the same ownership result — no second dual resolve.
  *
  * - goal → create_goal when goalAgentRun.runId matches
  * - knowledge → create_knowledge_note when noteAgentRun.runId matches
