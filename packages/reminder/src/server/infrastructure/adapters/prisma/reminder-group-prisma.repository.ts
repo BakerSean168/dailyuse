@@ -53,13 +53,6 @@ export class ReminderGroupPrismaRepository
     });
   }
 
-  async findById(id: string): Promise<ReminderGroup | null> {
-    const data = await this.prisma.reminderGroup.findUnique({
-      where: { id },
-    });
-    return data ? this.mapToEntity(data) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<ReminderGroup | null> {
     const data = await this.prisma.reminderGroup.findFirst({
       where: { id, identityId },

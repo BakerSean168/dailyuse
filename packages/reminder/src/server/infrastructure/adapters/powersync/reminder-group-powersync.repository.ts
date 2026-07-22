@@ -91,14 +91,6 @@ export class ReminderGroupPowerSyncRepository
     }
   }
 
-  async findById(id: string): Promise<ReminderGroup | null> {
-    const row = await this.db.getOptional<PowerSyncReminderGroupRow>(
-      'SELECT * FROM reminder_groups WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return row ? PowerSyncReminderGroupMapper.toDomain(row) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<ReminderGroup | null> {
     const row = await this.db.getOptional<PowerSyncReminderGroupRow>(
       'SELECT * FROM reminder_groups WHERE id = ? AND identity_id = ? LIMIT 1',

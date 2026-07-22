@@ -26,15 +26,7 @@ export interface IReminderResponseRepository {
   save(response: ReminderResponse): Promise<void>;
 
   /**
-   * 通过 ID 查找响应记录（系统/内部路径；授权敏感路径请用 findByIdForIdentity）
-   *
-   * @param id 响应 ID
-   * @returns 响应实体，不存在则返回 null
-   */
-  findById(id: string): Promise<ReminderResponse | null>;
-
-  /**
-   * 通过 ID + identity 查找响应记录（授权敏感读路径）
+   * 通过 ID + identity 查找响应记录（唯一读路径）
    */
   findByIdForIdentity(identityId: string, id: string): Promise<ReminderResponse | null>;
 

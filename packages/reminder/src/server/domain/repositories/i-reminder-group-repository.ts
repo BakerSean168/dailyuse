@@ -27,15 +27,7 @@ export interface IReminderGroupRepository {
   save(group: ReminderGroup): Promise<void>;
 
   /**
-   * 通过 ID 查找聚合根
-   *
-   * @param id 提醒分组 ID
-   * @returns 聚合根实例，不存在则返回 null
-   */
-  findById(id: string): Promise<ReminderGroup | null>;
-
-  /**
-   * 通过 identity + ID 查找分组（身份隔离读路径）
+   * 通过 identity + ID 查找分组（唯一读路径）
    */
   findByIdForIdentity(identityId: string, id: string): Promise<ReminderGroup | null>;
 

@@ -91,12 +91,9 @@ class MockReminderGroupRepository implements IReminderGroupRepository {
     this.groups.set(group.id, group);
   }
 
-  async findById(id: string): Promise<any> {
-    return this.groups.get(id) ?? null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
-    const found = await this.findById(id, options);
+    void options;
+    const found = this.groups.get(id) ?? null;
     if (!found) return null;
     return String(found.identityId) === String(identityId) ? found : null;
   }
@@ -127,12 +124,9 @@ class MockReminderResponseRepository implements IReminderResponseRepository {
     this.responses.set(response.id, response);
   }
 
-  async findById(id: string): Promise<any> {
-    return this.responses.get(id) ?? null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
-    const found = await this.findById(id, options);
+    void options;
+    const found = this.responses.get(id) ?? null;
     if (!found) return null;
     return String(found.identityId) === String(identityId) ? found : null;
   }

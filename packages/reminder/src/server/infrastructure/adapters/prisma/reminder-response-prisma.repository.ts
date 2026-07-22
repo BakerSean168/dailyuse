@@ -46,13 +46,6 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
     });
   }
 
-  async findById(id: string): Promise<ReminderResponse | null> {
-    const data = await this.prisma.reminderResponse.findUnique({
-      where: { id },
-    });
-    return data ? this.mapToEntity(data) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<ReminderResponse | null> {
     const data = await this.prisma.reminderResponse.findFirst({
       where: { id, identityId },

@@ -3,9 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Reminder response ownership surface (stage-6 residual 129):
+ * Reminder response ownership surface (stage-6 residual 129/174):
  * response list/stats/delete and frequency analysis must never authorize by
- * bare template id alone.
+ * bare template id alone. Residual 174 collapses dual findById.
  */
 describe('reminder response ownership surface', () => {
   const port = readFileSync(
@@ -14,6 +14,10 @@ describe('reminder response ownership surface', () => {
   );
   const prisma = readFileSync(
     resolve(__dirname, '../reminder-response-prisma.repository.ts'),
+    'utf8',
+  );
+  const powersync = readFileSync(
+    resolve(__dirname, '../../powersync/reminder-response-powersync.repository.ts'),
     'utf8',
   );
   const analyze = readFileSync(
@@ -68,6 +72,12 @@ describe('reminder response ownership surface', () => {
     );
     expect(prisma).toContain('async findByIdForIdentity(identityId: string, id: string)');
     expect(prisma).toContain('where: { id, identityId }');
+  });
+
+  it('port drops bare findById dual method (residual 174)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<ReminderResponse | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
 });
