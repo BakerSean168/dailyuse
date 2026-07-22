@@ -2428,6 +2428,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：export surfaces + SessionManager/lifecycle/auth service specs + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百三十七轮）：§13.2 核心证据套件复跑（含 residual 235–236
+> desktop auth token/session/application export + AI provider barrel 锁，不改 checkbox）——
+> **52 文件 / 249 测试**（app-vue three-login/note/menu/schedule 32、ai journey/term/source/
+> index/python/snake/checkpoint/goal/usage/eval/mocks/adapter/query/provider-barrel 61、
+> repository 41、web MSW 4、contracts 22、ownership auth/account/notification/gov/schedule 70、
+> portable-editor 5、desktop guest+bootstrapper+auth export 12、reminder dto surface 2）+
+> governance-check。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
+> 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2512,7 +2522,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留二百三十六轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留二百三十七轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
 > webhook delivery（187）、auth session token（188）、notification template catalog（189）、
@@ -2741,6 +2751,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百三十四轮：§13.2 core evidence suite re-run (238 tests, residuals 232–233 locks, no checkbox changes)。
   残留二百三十五轮：desktop auth TokenStorageData/contracts-only types + drop AI domain ai-provider-config dual barrel。
   残留二百三十六轮：desktop auth application/session drop convenience dual re-exports (canonical imports only)。
+  残留二百三十七轮：§13.2 core evidence suite re-run (249 tests, residuals 235–236 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -2762,6 +2773,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百二十八轮：tip 上 231 项核心 evidence suite（含 residual 225–227 usage/runner/menu-labels 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百三十一轮：tip 上 235 项核心 evidence suite（含 residual 229–230 note mocks/schedule/bootstrapper 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百三十四轮：tip 上 238 项核心 evidence suite（含 residual 232–233 schedule docs/reminder DTO 锁）通过；仍不构成全量 PR 门禁证据。
+  残留二百三十七轮：tip 上 249 项核心 evidence suite（含 residual 235–236 auth export/provider barrel 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
