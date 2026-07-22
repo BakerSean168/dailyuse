@@ -2789,6 +2789,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > （无 protocol/call-site 消费者）。扩展 dead-res surface。§13.2 未打勾项仍为部分/外部阻塞。
 > 验证：contracts dead-res surface + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百九十一轮）：§13.2 聚焦证据套件复跑（含 residual 250–290
+> dual 锁，含 NotificationClientPort + dead *Res 扩展，不改 checkbox）——
+> **55 文件 / 169 测试**（app-vue 49、ai 24、repository 35、contracts 10、ipc-client 5、
+> http-client 5、governance 2、setting 5、data-portability 5、authentication 13、reminder 2、
+> notification 2、dashboard 1、desktop 9、task 2）+ governance-check（GOV_EXIT:0）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
+> 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3156,6 +3164,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百八十八轮：collapse NotificationClientPort to INotificationApiClient (drop dismissAll dual)。
   残留二百八十九轮：§13.2 focused evidence suite re-run (169 tests, residuals 250–288 locks, no checkbox changes)。
   残留二百九十轮：drop 6 more dead unused contracts *Res dual aliases (extend residual 263 surface)。
+  残留二百九十一轮：§13.2 focused evidence suite re-run (169 tests, residuals 250–290 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3219,6 +3228,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百八十八轮：NotificationClientPort dual 收口（去 dismissAll）+ surface 锁 + governance-check；仍不构成全量 PR 门禁证据。
   残留二百八十九轮：tip 上 169 项 focused evidence suite（含 residual 250–288 dual 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百九十轮：再删 6 项死 *Res dual + dead-res surface 扩展 + governance-check；仍不构成全量 PR 门禁证据。
+  残留二百九十一轮：tip 上 169 项 focused evidence suite（含 residual 250–290 dual 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
