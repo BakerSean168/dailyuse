@@ -231,7 +231,8 @@ function contractNeedles(contract: string): readonly string[] {
     case 'selectConversationBase':
       return ['selectConversationBase'];
     case 'hostProposalItems.value[0]?.proposalId':
-      return ['hostProposalItems.value[0]?.proposalId'];
+      // Residual 611: exclusive default focus supersedes raw items[0] token.
+      return ['resolveDefaultHostWorkbenchFocusProposalId'];
     case 'resolveLinkedGoalIdFromTaskAgentRun':
       return ['resolveLinkedGoalIdFromTaskAgentRun'];
     case 'syncLinkedGoalFromTaskAgentRun':
@@ -466,6 +467,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['shouldReviseKnowledgeSessionDraftBeforeConfirm'];
     case 'shouldReviseGoalSessionDraftBeforeConfirm':
       return ['shouldReviseGoalSessionDraftBeforeConfirm'];
+    case 'Residual 611':
+      return ['Residual 611'];
+    case 'resolveDefaultHostWorkbenchFocusProposalId':
+      return ['resolveDefaultHostWorkbenchFocusProposalId'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

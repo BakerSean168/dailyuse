@@ -247,10 +247,11 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 441: history reopen focuses Host proposal/receipt row.
         'resolveHostWorkbenchFocusFromAgentRun',
         'focusedHostProposalId.value = focus?.proposalId',
-        // Residual 443: conversation restore focus + default first proposal/receipt.
+        // Residual 443/611: conversation restore + exclusive default auto-focus.
         'resolveHostWorkbenchFocusFromSessionRuns',
         'selectConversationBase',
-        'hostProposalItems.value[0]?.proposalId',
+        'resolveDefaultHostWorkbenchFocusProposalId',
+        'Residual 611',
         // Residual 445: linked goal restore + client settlement isolation on switch.
         'resolveLinkedGoalIdFromTaskAgentRun',
         'syncLinkedGoalFromTaskAgentRun',
@@ -439,6 +440,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'Residual 609',
         'shouldReviseKnowledgeSessionDraftBeforeConfirm',
         'shouldReviseGoalSessionDraftBeforeConfirm',
+        // Residual 611: default Host workbench focus prefers exclusive session.
+        'Residual 611',
+        'resolveDefaultHostWorkbenchFocusProposalId',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

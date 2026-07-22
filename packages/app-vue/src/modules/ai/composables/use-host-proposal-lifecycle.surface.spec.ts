@@ -2109,7 +2109,40 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('resolveHostWorkbenchFocusFromSessionRuns');
     expect(chatView).toContain('selectConversationBase');
     expect(chatView).toContain('Residual 443');
-    expect(chatView).toContain('hostProposalItems.value[0]?.proposalId');
+    // Residual 611: default auto-focus no longer uses raw items[0] alone.
+    expect(chatView).toContain('resolveDefaultHostWorkbenchFocusProposalId');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+  it('default Host workbench focus prefers exclusive session (residual 611)', () => {
+    expect(helper).toContain('Residual 611');
+    expect(helper).toContain('resolveDefaultHostWorkbenchFocusProposalId');
+    const fnIdx = helper.indexOf('export function resolveDefaultHostWorkbenchFocusProposalId');
+    expect(fnIdx).toBeGreaterThan(-1);
+    const fnSlice = helper.slice(fnIdx, fnIdx + 1800);
+    expect(fnSlice).toContain('resolveHostWorkbenchFocusFromSessionRuns');
+    expect(fnSlice).toContain('proposalItems');
+    expect(fnSlice).toContain('receiptItems');
+    // Session exclusive call before firstProposal/firstReceipt fallbacks.
+    const sessionCallIdx = fnSlice.indexOf('const sessionFocus = resolveHostWorkbenchFocusFromSessionRuns');
+    const firstProposalIdx = fnSlice.indexOf('const firstProposal = input.proposalItems');
+    expect(sessionCallIdx).toBeGreaterThan(-1);
+    expect(firstProposalIdx).toBeGreaterThan(sessionCallIdx);
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(chatView).toContain('resolveDefaultHostWorkbenchFocusProposalId');
+    expect(chatView).toContain('Residual 611');
+    // Auto-open watch uses helper (not sole hostProposalItems[0]).
+    const watchIdx = chatView.indexOf('// Residual 371/379/443/611');
+    expect(watchIdx).toBeGreaterThan(-1);
+    const watchSlice = chatView.slice(watchIdx, watchIdx + 1200);
+    expect(watchSlice).toContain('resolveDefaultHostWorkbenchFocusProposalId');
+    expect(watchSlice).toContain('taskAgentRun: taskAgentRun.value');
+    expect(watchSlice).toContain('goalAgentRun: goalAgentRun.value');
+    expect(watchSlice).toContain('noteAgentRun: noteAgentRun.value');
+    expect(watchSlice).not.toMatch(
+      /focusedHostProposalId\.value\s*=\s*\n\s*hostProposalItems\.value\[0\]/,
+    );
+    expect(chatView).not.toContain('executeApproved');
     expect(helper).not.toContain('executeApproved');
   });
 

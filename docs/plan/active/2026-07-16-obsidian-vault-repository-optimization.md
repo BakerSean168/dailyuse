@@ -5026,6 +5026,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留六百一十一轮）：Host **default workbench focus exclusive session**（仍不打勾）——
+> `resolveDefaultHostWorkbenchFocusProposalId`（session exclusive task>goal>knowledge 优先，builder row 回退）；
+> residual 443 auto-open watch 经 helper；ADR-035 scaffold residual 443 token 收口；
+> unit + surface + scaffold/driver Residual 611 锁；非跨端 multi-engine E2E / 跨进程 durable。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -5759,6 +5765,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百零八轮：§13.2 focused evidence suite re-run (696 tests, residuals 250–607 locks, no checkbox changes)。
   残留六百零九轮：dirty approve process-local revise before goal/knowledge confirm.
   残留六百一十轮：§13.2 focused evidence suite re-run (699 tests, residuals 250–609 locks, no checkbox changes)。
+  残留六百一十一轮：default Host workbench focus prefers exclusive session.
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -5802,6 +5809,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百零八轮：§13.2 focused evidence suite re-run（696 tests，residuals 250–607 锁；不改 checkbox）。
   残留六百零九轮：dirty approve process-local revise before goal/knowledge confirm。
   残留六百一十轮：§13.2 focused evidence suite re-run（699 tests，residuals 250–609 锁；不改 checkbox）。
+  残留六百一十一轮：default Host workbench focus prefers exclusive session。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -6456,6 +6464,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百零八轮：tip 上 696 项 focused evidence suite（含 residual 250–607 goal-session process-local edit revise 锁）通过；仍不构成全量 PR 门禁证据。
   残留六百零九轮：dirty approve process-local revise before goal/knowledge confirm 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   残留六百一十轮：tip 上 699 项 focused evidence suite（含 residual 250–609 dirty approve process-local revise before confirm 锁）通过；仍不构成全量 PR 门禁证据。
+  残留六百一十一轮：default Host workbench focus prefers exclusive session 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

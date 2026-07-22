@@ -384,6 +384,7 @@ import {
   shouldOpenHostWorkbenchFromAgentRun,
   resolveHostWorkbenchFocusFromAgentRun,
   resolveHostWorkbenchFocusFromSessionRuns,
+  resolveDefaultHostWorkbenchFocusProposalId,
   dispatchHostProposalDecision,
   normalizeHostProposalRejectReason,
   dispatchHostProposalRevise,
@@ -1154,20 +1155,25 @@ const todayOverviewVisible = computed(
 );
 
 
-// Residual 371/379/443: auto-open right workbench for Host proposals or execution receipts.
-// Residual 443: default-focus first proposal/receipt when nothing is focused yet
-// (conversation restore + task.create start). Desktop already shows the rail;
-// mobile needs open=true to unhide the sheet.
+// Residual 371/379/443/611: auto-open right workbench for Host proposals or execution receipts.
+// Residual 443: default-focus when nothing is focused yet (conversation restore + task.create start).
+// Residual 611: exclusive session focus (task > goal > knowledge; dual-mirror + ghost rules)
+// matching residual 603 selectAgentRun / residual 443 selectConversation — not raw items[0]
+// (goal-first builder order would steal focus from exclusive task when both pending).
+// Desktop already shows the rail; mobile needs open=true to unhide the sheet.
 watch(
   [hasPendingHostProposals, hasHostExecutionReceipts, hostProposalItems, hostExecutionReceiptItems],
   ([pending, receipts]) => {
     if (pending || receipts) {
       contextPanelOpen.value = true;
       if (!focusedHostProposalId.value) {
-        focusedHostProposalId.value =
-          hostProposalItems.value[0]?.proposalId ??
-          hostExecutionReceiptItems.value[0]?.proposalId ??
-          null;
+        focusedHostProposalId.value = resolveDefaultHostWorkbenchFocusProposalId({
+          taskAgentRun: taskAgentRun.value,
+          goalAgentRun: goalAgentRun.value,
+          noteAgentRun: noteAgentRun.value,
+          proposalItems: hostProposalItems.value,
+          receiptItems: hostExecutionReceiptItems.value,
+        });
       }
     }
   },

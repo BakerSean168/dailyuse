@@ -42,6 +42,7 @@ import {
   isHostPanelGoalSessionProductOwned,
   isHostPanelProcessLocalTaskCreateOwned,
   isHostPanelKnowledgeSessionProductOwned,
+  resolveDefaultHostWorkbenchFocusProposalId,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -3767,6 +3768,73 @@ describe('Host exclusive dual-mirror primary-task goal session (residual 589)', 
       proposalId: 'agent-run:pt-589:task.create',
       surface: 'proposal',
     });
+  });
+});
+
+describe('resolveDefaultHostWorkbenchFocusProposalId (residual 611)', () => {
+  function run(overrides: Partial<AgentRunResult['run']> & { agentType: string; runId: string }): AgentRunResult {
+    return {
+      run: {
+        runId: overrides.runId,
+        agentType: overrides.agentType as never,
+        status: overrides.status ?? 'waiting_approval',
+        identityId: 'id-1',
+        conversationId: 'c1',
+        threadId: 't1',
+        createdAt: 1,
+        updatedAt: 1,
+      } as never,
+      state: {
+        pendingActions: [],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: overrides.agentType === 'task.create' || (overrides as any).primaryTask
+          ? [{ kind: 'task_draft', data: { title: 'T' } }]
+          : overrides.agentType === 'goal.create'
+            ? [{ kind: 'goal_draft', data: { title: 'G' } }]
+            : [{ kind: 'knowledge_note_draft', data: { title: 'N' } }],
+        messages: [],
+      } as never,
+      interrupts: [],
+      events: [],
+    } as AgentRunResult;
+  }
+
+  it('prefers exclusive task session over goal-first proposal list', () => {
+    const goal = run({ runId: 'goal-1', agentType: 'goal.create' });
+    const task = run({ runId: 'task-1', agentType: 'task.create' });
+    const proposalItems = [
+      { proposalId: 'agent-run:goal-1:goal.create' },
+      { proposalId: 'agent-run:task-1:task.create' },
+    ];
+    const id = resolveDefaultHostWorkbenchFocusProposalId({
+      goalAgentRun: goal,
+      taskAgentRun: task,
+      proposalItems,
+    });
+    expect(id).toBe('agent-run:task-1:task.create');
+    // Session exclusive matches residual 603 priority.
+    expect(
+      resolveHostWorkbenchFocusFromSessionRuns({
+        goalAgentRun: goal,
+        taskAgentRun: task,
+      })?.proposalId,
+    ).toBe('agent-run:task-1:task.create');
+  });
+
+  it('falls back to first proposal/receipt when session has no Host focus', () => {
+    expect(
+      resolveDefaultHostWorkbenchFocusProposalId({
+        proposalItems: [{ proposalId: 'p-1' }],
+        receiptItems: [{ proposalId: 'r-1' }],
+      }),
+    ).toBe('p-1');
+    expect(
+      resolveDefaultHostWorkbenchFocusProposalId({
+        receiptItems: [{ proposalId: 'r-1' }],
+      }),
+    ).toBe('r-1');
+    expect(resolveDefaultHostWorkbenchFocusProposalId({})).toBeNull();
   });
 });
 

@@ -1754,9 +1754,10 @@ export function resolveHostWorkbenchFocusFromAgentRun(
 }
 
 /**
- * Residual 443/593/601: pick Host workbench focus from live session AgentRun snapshots
- * after conversation restore (or start). Prefer exclusive task.create lane, then
- * goal, then knowledge. Returns null when no Host proposal/receipt should reopen.
+ * Residual 443/593/601/611: pick Host workbench focus from live session AgentRun snapshots
+ * after conversation restore (or start) and residual 611 default auto-focus.
+ * Prefer exclusive task.create lane, then goal, then knowledge. Returns null when no
+ * Host proposal/receipt should reopen.
  *
  * Residual 593/601: exclusive-promote via resolveLiveHostWorkbenchAgentRuns (which
  * dual-mirrors with dropStaleWhenGoalLeaves=false + residual 599/601 ghost drops).
@@ -1779,6 +1780,34 @@ export function resolveHostWorkbenchFocusFromSessionRuns(input: {
     resolveHostWorkbenchFocusFromAgentRun(exclusive.goalAgentRun) ??
     resolveHostWorkbenchFocusFromAgentRun(exclusive.noteAgentRun)
   );
+}
+
+/**
+ * Residual 611: default Host workbench focus when nothing is focused yet.
+ * Prefer exclusive session focus (task > goal > knowledge; dual-mirror + ghost rules
+ * via residual 601 resolveHostWorkbenchFocusFromSessionRuns) — same priority as
+ * residual 603 selectAgentRun / residual 443 selectConversation.
+ * Fall back to first exclusive builder row only when session focus is null
+ * (e.g. client-only receipt). Never invent focus from non-exclusive dual raw fields.
+ */
+export function resolveDefaultHostWorkbenchFocusProposalId(input: {
+  taskAgentRun?: AgentRunResult | null;
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  proposalItems?: readonly { proposalId: string }[] | null;
+  receiptItems?: readonly { proposalId: string }[] | null;
+}): string | null {
+  const sessionFocus = resolveHostWorkbenchFocusFromSessionRuns({
+    taskAgentRun: input.taskAgentRun,
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+  });
+  if (sessionFocus?.proposalId) return sessionFocus.proposalId;
+  const firstProposal = input.proposalItems?.[0]?.proposalId;
+  if (typeof firstProposal === 'string' && firstProposal.trim()) return firstProposal;
+  const firstReceipt = input.receiptItems?.[0]?.proposalId;
+  if (typeof firstReceipt === 'string' && firstReceipt.trim()) return firstReceipt;
+  return null;
 }
 
 /**
