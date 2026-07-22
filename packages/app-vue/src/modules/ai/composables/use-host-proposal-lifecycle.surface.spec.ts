@@ -879,10 +879,10 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(store).toContain('Residual 503');
     expect(store).toContain('matchesHostTaskCreateIdentity(result.run.identityId, identityId)');
     expect(store).toContain('matchesHostTaskCreateIdentity(run.identityId, identityId)');
-    // Runtime ownership helper is also trim-aware (getRun/list/resume isolation).
+    // Runtime ownership helper shares store trim matcher (getRun/list/resume isolation).
     expect(runtime).toContain('Residual 503');
     expect(runtime).toContain('function ensureAgentRunOwnedByIdentity');
-    expect(runtime).toContain('identityId.trim()');
+    expect(runtime).toContain('matchesHostTaskCreateIdentity(result.run.identityId, identityId)');
     expect(helper).not.toContain('executeApproved');
   });
 
@@ -989,6 +989,22 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(store).toContain('const identityId = resolveTaskCreateIdentityId(result.run.identityId)');
     expect(helper).not.toContain('executeApproved');
   });
+
+  it('task.create listRuns remote ownership trims identity (residual 517)', () => {
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(runtime).toContain('matchesHostTaskCreateIdentity');
+    expect(runtime).toContain('Residual 517');
+    expect(runtime).toContain(
+      'matchesHostTaskCreateIdentity(run.identityId, cx.identityId)',
+    );
+    // Ownership helper shares the same trim matcher.
+    expect(runtime).toContain('matchesHostTaskCreateIdentity(result.run.identityId, identityId)');
+    expect(helper).not.toContain('executeApproved');
+  });
+
 
 
 

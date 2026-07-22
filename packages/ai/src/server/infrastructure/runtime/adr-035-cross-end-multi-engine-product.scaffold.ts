@@ -357,6 +357,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 515: process-local store identityId upsert normalize + blank fail-closed.
         'HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE',
         'Residual 515',
+        // Residual 517: listRuns remote ownership uses matchesHostTaskCreateIdentity.
+        'Residual 517',
+        'matchesHostTaskCreateIdentity(run.identityId, cx.identityId)',
       ],
       status: 'implemented_unit',
     },

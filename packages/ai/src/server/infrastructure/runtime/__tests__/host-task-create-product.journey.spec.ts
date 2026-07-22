@@ -1507,4 +1507,60 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(listed.data.some((run) => run.runId === 'run-journey-id-norm')).toBe(true);
   });
 
+
+  it('listRuns remote merge ownership trims identity (residual 517)', async () => {
+    const port = makePort();
+    // Remote returns a run owned by same identity with whitespace and a foreign run.
+    (port.listRuns as any).mockResolvedValue([
+      {
+        runId: 'run-remote-owned',
+        threadId: 'thread-remote-owned',
+        conversationId: 'conv-remote',
+        identityId: '  owner-list-trim  ',
+        agentType: 'goal.create',
+        status: 'completed',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      {
+        runId: 'run-remote-foreign',
+        threadId: 'thread-remote-foreign',
+        conversationId: 'conv-remote',
+        identityId: 'intruder',
+        agentType: 'goal.create',
+        status: 'completed',
+        createdAt: 2,
+        updatedAt: 2,
+      },
+    ]);
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-list-trim' } as const;
+
+    // Seed a local task.create so merge path is exercised.
+    const started = await service.startRun(
+      {
+        runId: 'run-local-list-trim',
+        threadId: 'thread-local-list-trim',
+        conversationId: 'conv-local-list-trim',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Local list trim' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+
+    const listed = await service.listRuns({}, cx as any);
+    expect(listed.ok).toBe(true);
+    if (!listed.ok) return;
+    expect(listed.data.some((run) => run.runId === 'run-local-list-trim')).toBe(true);
+    // whitespace-equivalent remote identity is accepted
+    expect(listed.data.some((run) => run.runId === 'run-remote-owned')).toBe(true);
+    // foreign remote identity is fail-closed dropped
+    expect(listed.data.some((run) => run.runId === 'run-remote-foreign')).toBe(false);
+    expect(port.listRuns).toHaveBeenCalled();
+  });
+
 });

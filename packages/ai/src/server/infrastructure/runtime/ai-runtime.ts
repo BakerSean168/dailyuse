@@ -46,6 +46,7 @@ import {
   HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE,
   HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
+  matchesHostTaskCreateIdentity,
 } from './host-task-create-run-store';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
@@ -265,22 +266,15 @@ export function assertAgentStartCapabilityPlan(
 
 
 /**
- * Residual 503: ownership compare uses trimmed non-empty identity (process-local store symmetry).
+ * Residual 503/517: ownership compare uses trimmed non-empty identity
+ * (matchesHostTaskCreateIdentity — process-local store + list merge symmetry).
  * Blank/whitespace query never owns a run (fail-closed isolation).
  */
 function ensureAgentRunOwnedByIdentity(
   result: AgentRunResult,
   identityId: string,
 ): Result<AgentRunResult> {
-  const owned =
-    typeof result.run.identityId === 'string' && result.run.identityId.trim().length > 0
-      ? result.run.identityId.trim()
-      : undefined;
-  const query =
-    typeof identityId === 'string' && identityId.trim().length > 0
-      ? identityId.trim()
-      : undefined;
-  if (!owned || !query || owned !== query) {
+  if (!matchesHostTaskCreateIdentity(result.run.identityId, identityId)) {
     return error(
       'FORBIDDEN',
       'Agent run is not owned by the current identity.',
@@ -1512,7 +1506,11 @@ export function createAgentRuntimeService(
         requestId,
         signal,
       });
-      const ownedRemote = remoteRuns.filter((run) => run.identityId === cx.identityId);
+      // Residual 517: remote ownership uses trimmed identity match (store 503/515 symmetry).
+      // Blank/whitespace ExecutionContext never accepts foreign or unowned remote runs.
+      const ownedRemote = remoteRuns.filter((run) =>
+        matchesHostTaskCreateIdentity(run.identityId, cx.identityId),
+      );
       // Residual 435: merge process-local task.create runs; local wins on runId clash.
       const byId = new Map<string, (typeof ownedRemote)[number]>();
       for (const run of ownedRemote) {

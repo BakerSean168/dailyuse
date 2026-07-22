@@ -370,6 +370,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE'];
     case 'Residual 515':
       return ['Residual 515'];
+    case 'Residual 517':
+      return ['Residual 517'];
+    case 'matchesHostTaskCreateIdentity(run.identityId, cx.identityId)':
+      return ['matchesHostTaskCreateIdentity(run.identityId, cx.identityId)'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
