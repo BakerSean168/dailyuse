@@ -5,7 +5,7 @@ tags:
   - editor
 description: 编辑器模块相关文件索引（运行时包退役后的知识呈现面）
 created: 2026-06-02T00:00:00
-updated: 2026-07-21T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 编辑器模块文件索引
@@ -40,7 +40,7 @@ Desktop Obsidian 打开入口落在 repository 工作区与共享 Markdown 工�
 | --- | --- |
 | [`packages/repository/src/api/routes/knowledge-repository-connection.routes.ts`](../../../packages/repository/src/api/routes/knowledge-repository-connection.routes.ts) | knowledge connection / projection / confirmed create |
 | [`packages/repository/src/server/application/services/knowledge-note-commit.service.ts`](../../../packages/repository/src/server/application/services/knowledge-note-commit.service.ts) | Web 确认后唯一 commit 写入 |
-| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts) | 客户端 HTTP；legacy CRUD 硬失败 `NOT_SUPPORTED` |
+| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts) | 客户端 HTTP；knowledge + Local Vault 面 only（无 legacy CRUD 方法/硬失败 stub） |
 
 ## 可重新导入业务备份（非运行时编辑）
 
@@ -63,8 +63,11 @@ Desktop Obsidian 打开入口落在 repository 工作区与共享 Markdown 工�
 | [`packages/app-vue/src/shared/utils/safe-markdown.spec.ts`](../../../packages/app-vue/src/shared/utils/safe-markdown.spec.ts) | 安全 Markdown 边界 |
 | [`packages/app-vue/src/modules/repository/views/notePanelAdaptation.spec.ts`](../../../packages/app-vue/src/modules/repository/views/notePanelAdaptation.spec.ts) | 无 `/note/:id`、confirmed create 与深链 |
 | [`packages/app-vue/src/modules/repository/router/index.spec.ts`](../../../packages/app-vue/src/modules/repository/router/index.spec.ts) | repository 路由契约 |
+| [`packages/repository/src/server/infrastructure/adapters/prisma/__tests__/confirmed-create-only-note-boundary.surface.spec.ts`](../../../packages/repository/src/server/infrastructure/adapters/prisma/__tests__/confirmed-create-only-note-boundary.surface.spec.ts) | residual 201：confirmed-create-only / 已有笔记编辑关闭 |
+| [`packages/repository/src/server/infrastructure/adapters/prisma/__tests__/legacy-editor-repository-runtime.surface.spec.ts`](../../../packages/repository/src/server/infrastructure/adapters/prisma/__tests__/legacy-editor-repository-runtime.surface.spec.ts) | legacy editor/repository 运行时未挂载 |
+| [`packages/data-portability/src/server/application/use-cases/__tests__/portable-editor-backup-boundary.surface.spec.ts`](../../../packages/data-portability/src/server/application/use-cases/__tests__/portable-editor-backup-boundary.surface.spec.ts) | portable `editor_*` 备份边界 |
 | [`packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts`](../../../packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts) | Web 投影工作区 |
-| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts) | projection/confirmed-create 与 legacy 硬失败 |
+| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts) | projection/confirmed-create；断言无 legacy CRUD 方法 |
 
 ## 需要重点关注的改动风险
 

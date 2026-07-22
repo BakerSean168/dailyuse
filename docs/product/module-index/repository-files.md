@@ -5,7 +5,7 @@ tags:
   - repository
 description: 资源库模块相关文件索引（knowledge + Local Vault 真值）
 created: 2026-06-02T00:00:00
-updated: 2026-07-21T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 资源库模块文件索引
@@ -62,7 +62,7 @@ updated: 2026-07-21T00:00:00
 | [`packages/repository/src/server/application/services/knowledge-note-link-graph.ts`](../../../packages/repository/src/server/application/services/knowledge-note-link-graph.ts) | Markdown Link Graph 派生 |
 | [`packages/repository/src/server/infrastructure/repository.module.ts`](../../../packages/repository/src/server/infrastructure/repository.module.ts) | knowledge-only 组合根 |
 | [`packages/repository/src/application-client/repository-client.port.ts`](../../../packages/repository/src/application-client/repository-client.port.ts) | 客户端 port（knowledge + Local Vault） |
-| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts) | HTTP 适配器；legacy CRUD 硬失败 `NOT_SUPPORTED` |
+| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts) | HTTP 适配器；knowledge + Local Vault only（无 legacy CRUD 方法） |
 | [`packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.ts) | IPC 适配器；仅 knowledge + vault channels |
 | [`packages/repository/src/client/index.ts`](../../../packages/repository/src/client/index.ts) | 公共 client 缝 |
 
@@ -95,6 +95,7 @@ updated: 2026-07-21T00:00:00
 | --- | --- |
 | [`packages/app-vue/src/modules/repository/router/index.spec.ts`](../../../packages/app-vue/src/modules/repository/router/index.spec.ts) | 无 `/note/:id` 路由契约 |
 | [`packages/app-vue/src/modules/repository/views/notePanelAdaptation.spec.ts`](../../../packages/app-vue/src/modules/repository/views/notePanelAdaptation.spec.ts) | confirmed create 与深链 |
+| [`packages/repository/src/server/infrastructure/adapters/prisma/__tests__/confirmed-create-only-note-boundary.surface.spec.ts`](../../../packages/repository/src/server/infrastructure/adapters/prisma/__tests__/confirmed-create-only-note-boundary.surface.spec.ts) | residual 201：confirmed-create-only 边界 |
 | [`packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts`](../../../packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts) | Web 投影工作区 |
 | [`packages/app-vue/src/shared/utils/safe-markdown.spec.ts`](../../../packages/app-vue/src/shared/utils/safe-markdown.spec.ts) | Markdown 安全边界 |
 | [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts) | projection/confirmed-create 与 legacy 硬失败 |
