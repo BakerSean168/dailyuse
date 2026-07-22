@@ -3720,6 +3720,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Host Proposal/receipt/timeline/open-chat 源码面 fail-closed 审计；Goal workflow 面板
 > node.* 仍为 residual diagnostic 泄漏（非 Host 契约）。状态保持 **实施中**；不改 §13.2 checkbox。
 
+> 续进展 2026-07-22（阶段 6 残留四百一十四轮）：§13.2 聚焦证据套件复跑（含 residual 250–413
+> Host LangGraph UI leakage boundary 锁，不改 checkbox）——**98 文件 / 397 测试**（app-vue 25/122、
+> ai 28/142、repository 6/35、contracts 11/29、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`。
+> 相对 residual 412：app-vue +2 files / +7 tests（LangGraph boundary unit + surface）。仍为部分/外部阻塞：
+> 真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn 产品路径、
+> GitHub App fixture E2E、全量 PR 门禁。
+> 状态保持 **实施中**；PR 就绪仍为否。
+
 
 
 
@@ -4225,6 +4233,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百一十一轮：Host 工作台时间线 composition（compose + isolationOk；AIChatView 接线）。
   残留四百一十二轮：§13.2 focused evidence suite re-run（390 tests，residuals 250–411 锁；不改 checkbox）。
   残留四百一十三轮：Host 工作台 LangGraph UI 泄漏边界（allowlist + vendor diagnostic 审计）。
+  残留四百一十四轮：§13.2 focused evidence suite re-run（397 tests，residuals 250–413 锁；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4333,6 +4342,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百一十一轮：Host workbench timeline composition (compose + isolationOk; AIChatView wiring)。
   残留四百一十二轮：§13.2 focused evidence suite re-run (390 tests, residuals 250–411 locks, no checkbox changes)。
   残留四百一十三轮：Host workbench LangGraph UI leakage boundary (allowlist + vendor diagnostic audit)。
+  残留四百一十四轮：§13.2 focused evidence suite re-run (397 tests, residuals 250–413 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4527,6 +4537,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百一十一轮：Host 工作台时间线 composition 落地；仍不构成跨端 multi-engine E2E/真实 Pi spawn 证据。
   残留四百一十二轮：tip 上 390 项 focused evidence suite（含 residual 250–411 Host workbench timeline composition 锁）通过；仍不构成全量 PR 门禁证据。
   残留四百一十三轮：Host 工作台 LangGraph UI 泄漏边界落地；仍不构成跨端 multi-engine E2E/真实 Pi spawn 证据。
+  残留四百一十四轮：tip 上 397 项 focused evidence suite（含 residual 250–413 Host LangGraph UI leakage boundary 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
