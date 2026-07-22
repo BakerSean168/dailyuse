@@ -1,10 +1,7 @@
 import type { Result } from '@dailyuse/contracts/result';
-import type { IDashboardApiClient } from '../types';
 import type { DashboardData } from '@dailyuse/contracts/dashboard';
-
-interface IResultHttpClient {
-  get<T = unknown>(url: string): Promise<Result<T>>;
-}
+import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IDashboardApiClient } from '../types';
 
 export class DashboardHttpAdapter implements IDashboardApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
