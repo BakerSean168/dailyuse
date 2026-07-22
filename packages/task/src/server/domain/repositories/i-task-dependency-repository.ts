@@ -97,7 +97,7 @@ export interface ITaskDependencyRepository {
   /**
    * 批量删除任务的所有依赖关系
    */
-  deleteByTaskId(taskId: string): Promise<void>;
+  deleteByTaskId(identityId: string, taskId: string): Promise<void>;
 
   /**
    * 更新依赖关系（identity-scoped）

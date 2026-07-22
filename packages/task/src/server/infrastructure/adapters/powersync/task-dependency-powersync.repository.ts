@@ -163,10 +163,10 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
     return row ? PowerSyncTaskDependencyMapper.toAggregate(row) : null;
   }
 
-  async deleteByTaskId(taskId: string): Promise<void> {
+  async deleteByTaskId(identityId: string, taskId: string): Promise<void> {
     await this.db.execute(
-      'DELETE FROM task_dependencies WHERE predecessor_task_id = ? OR successor_task_id = ?',
-      [taskId, taskId],
+      'DELETE FROM task_dependencies WHERE identity_id = ? AND (predecessor_task_id = ? OR successor_task_id = ?)',
+      [identityId, taskId, taskId],
     );
   }
 

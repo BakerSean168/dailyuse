@@ -16,6 +16,10 @@ describe('task dependency ownership surface', () => {
     resolve(__dirname, '../task-dependency-prisma.repository.ts'),
     'utf8',
   );
+  const powersync = readFileSync(
+    resolve(__dirname, '../../powersync/task-dependency-powersync.repository.ts'),
+    'utf8',
+  );
   const deleteUseCase = readFileSync(
     resolve(
       __dirname,
@@ -76,4 +80,23 @@ describe('task dependency ownership surface', () => {
       /DEPENDENCY_LIST[\s\S]*getDependencies\(payload\?\.taskId, requestContext\.identityId\)/,
     );
   });
+
+  it('port deleteByTaskId requires identityId (residual 153)', () => {
+    expect(port).toContain(
+      'deleteByTaskId(identityId: string, taskId: string): Promise<void>;',
+    );
+  });
+
+  it('prisma deleteByTaskId filters by identityId (residual 153)', () => {
+    expect(prisma).toContain('async deleteByTaskId(identityId: string, taskId: string)');
+    expect(prisma).toContain('identityId,');
+    expect(prisma).toContain('OR: [{ predecessorTaskId: taskId }, { successorTaskId: taskId }]');
+  });
+
+  it('powersync deleteByTaskId filters by identity_id (residual 153)', () => {
+    expect(powersync).toContain(
+      'DELETE FROM task_dependencies WHERE identity_id = ? AND (predecessor_task_id = ? OR successor_task_id = ?)',
+    );
+  });
+
 });

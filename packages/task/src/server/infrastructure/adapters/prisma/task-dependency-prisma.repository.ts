@@ -202,9 +202,10 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
     return data ? PrismaTaskDependencyMapper.toAggregate(data) : null;
   }
 
-  async deleteByTaskId(taskId: string): Promise<void> {
+  async deleteByTaskId(identityId: string, taskId: string): Promise<void> {
     await this.prisma.taskDependency.deleteMany({
       where: {
+        identityId,
         OR: [{ predecessorTaskId: taskId }, { successorTaskId: taskId }],
       },
     });
