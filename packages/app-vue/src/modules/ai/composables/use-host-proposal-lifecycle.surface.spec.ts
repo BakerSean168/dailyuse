@@ -775,6 +775,29 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+
+  it('task.create edit/confirm tool gates use named constants (residual 491)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    expect(resume).toContain('HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE');
+    expect(resume).toContain('HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE');
+    expect(resume).toContain('Residual 491');
+    // Product path throws use constants, not ad-hoc invent strings.
+    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE)');
+    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE)');
+    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE)');
+    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE)');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

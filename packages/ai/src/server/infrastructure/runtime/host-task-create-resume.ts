@@ -39,6 +39,9 @@
  * Residual 481: edit only from waiting_approval via named constant (symmetric with
  * confirm/cancel product status; no ad-hoc status string invent).
  *
+ * Residual 491: edit/confirm remaining tool+empty-action fail-closed use named constants
+ * (no ad-hoc product-path invent for create_task_template tool/status gates).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -73,6 +76,22 @@ export const HOST_TASK_CREATE_CANCEL_REQUIRES_WAITING_APPROVAL_MESSAGE =
 /** Residual 481: edit outside waiting_approval is fail-closed (symmetric with confirm/cancel). */
 export const HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE =
   'Host task.create edit requires waiting_approval.';
+
+/** Residual 491: edit without approvedActions is fail-closed. */
+export const HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE =
+  'Host task.create edit requires non-empty approvedActions as revised pending actions.';
+
+/** Residual 491: edit tool must be create_task_template. */
+export const HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE =
+  'Host task.create edit approvedActions must use tool create_task_template.';
+
+/** Residual 491: confirm tool must be create_task_template. */
+export const HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE =
+  'Host task.create confirm executedActions must use tool create_task_template.';
+
+/** Residual 491: confirm executedActions must report status executed. */
+export const HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE =
+  'Host task.create confirm executedActions must report status executed.';
 
 /** Residual 463: confirm without recoverable settlement title is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE =
@@ -316,14 +335,10 @@ export function buildHostTaskCreateResumeResult(input: {
     }));
     for (const action of executedActions) {
       if (action.tool !== 'create_task_template') {
-        throw new Error(
-          'Host task.create confirm executedActions must use tool create_task_template.',
-        );
+        throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
       }
       if (action.status !== 'executed') {
-        throw new Error(
-          'Host task.create confirm executedActions must report status executed.',
-        );
+        throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE);
       }
     }
     // Residual 471: process-local draft only — ignore payload.approvedActions on confirm.
@@ -413,7 +428,7 @@ export function buildHostTaskCreateResumeResult(input: {
       throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE);
     }
     if (!input.payload.approvedActions || input.payload.approvedActions.length === 0) {
-      throw new Error('Host task.create edit requires non-empty approvedActions as revised pending actions.');
+      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE);
     }
     // Residual 473: product draft is a single create_task_template action (start/confirm symmetry).
     if (input.payload.approvedActions.length !== 1) {
@@ -422,9 +437,7 @@ export function buildHostTaskCreateResumeResult(input: {
     const pendingActions = cloneActions(input.payload.approvedActions);
     for (const action of pendingActions) {
       if (action.tool !== 'create_task_template') {
-        throw new Error(
-          'Host task.create edit approvedActions must use tool create_task_template.',
-        );
+        throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
       }
     }
     const rawTitle =

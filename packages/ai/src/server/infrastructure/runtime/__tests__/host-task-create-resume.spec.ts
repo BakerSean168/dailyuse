@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { buildHostTaskCreateStartResult } from '../host-task-create-start';
-import { buildHostTaskCreateResumeResult } from '../host-task-create-resume';
+import {
+  buildHostTaskCreateResumeResult,
+  HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE,
+  HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
+  HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
+  HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE,
+} from '../host-task-create-resume';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
 
 function request(runId: string): AgentStartRunRequest {
@@ -15,7 +21,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475/477/481)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475/477/481/491)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -893,6 +899,88 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/
         },
       }),
     ).toThrow(/edit requires waiting_approval/);
+  });
+
+
+  it('edit fails closed on missing approvedActions with named constant (residual 491)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit-empty-actions'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: { userDecision: 'edit' },
+      }),
+    ).toThrow(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE);
+
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: { userDecision: 'edit', approvedActions: [] },
+      }),
+    ).toThrow(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE);
+  });
+
+  it('edit/confirm tool and executed-status gates use named constants (residual 491)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit-tool-const'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'edit',
+          approvedActions: [
+            {
+              tool: 'create_goal',
+              index: 0,
+              dependsOn: [],
+              rationale: 'wrong tool',
+              payload: { title: 'Ok' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
+
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_goal',
+              status: 'executed',
+              message: 'wrong',
+              entityId: 'x',
+            },
+          ],
+        },
+      }),
+    ).toThrow(HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
+
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'failed',
+              message: 'not executed',
+              entityId: 'tpl-failed',
+              data: { title: 'Ship residual 439' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE);
   });
 
 });

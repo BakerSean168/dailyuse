@@ -314,6 +314,11 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 489: client complete only from waiting_approval (Host 475 symmetry).
         'Residual 489',
         'completeTaskAgentRun',
+        // Residual 491: edit/confirm tool+empty-action named constants.
+        'HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_ACTIONS_MESSAGE',
+        'HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE',
+        'HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE',
+        'HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE',
       ],
       status: 'implemented_unit',
     },
