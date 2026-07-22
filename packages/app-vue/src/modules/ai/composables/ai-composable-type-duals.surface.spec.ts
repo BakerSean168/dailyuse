@@ -53,7 +53,7 @@ describe('AI composable type dual alias single-track surface', () => {
     expect(index).not.toMatch(/\bGoalWorkflowDraftResultDTO\b/);
   });
 
-  it('call sites import AgentRunResult/AgentAction/AgentRun/SendMessageRes from contracts', () => {
+  it('call sites import AgentRunResult/AgentAction/AgentRun/AssistantEvent from contracts', () => {
     expect(goalWorkflow).toContain("from '@dailyuse/contracts/ai'");
     expect(goalWorkflow).toMatch(/\bAgentRunResult\b/);
     expect(goalWorkflow).toMatch(/\bAgentAction\b/);
@@ -61,7 +61,9 @@ describe('AI composable type dual alias single-track surface', () => {
     expect(goalWorkflow).not.toMatch(/\bGoalAgentAction\b/);
     expect(chatView).toMatch(/\bAgentRun\b/);
     expect(chatView).not.toMatch(/\bAgentRunSummary\b/);
-    expect(chatSession).toMatch(/\bSendMessageRes\b/);
+    // residual 351: open chat Host events replace SendMessageRes dual surface
+    expect(chatSession).toMatch(/\bAssistantEvent\b/);
+    expect(chatSession).not.toMatch(/\bSendMessageRes\b/);
     expect(chatSession).not.toMatch(/\bStreamDoneResult\b/);
   });
 
