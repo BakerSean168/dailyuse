@@ -127,8 +127,9 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 437: cancel Host task.create run (process-local resume → cancelled).
+   * Residual 437/477: cancel Host task.create run (process-local resume → cancelled).
    * Host ProposalKernel reject should run first when coming from workbench.
+   * Residual 477: only cancel from waiting_approval (Host also fail-closed).
    */
   async function cancelTaskAgentRun(hostOptions?: {
     skipHostLifecycle?: boolean;
@@ -136,6 +137,8 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }) {
     const run = options.taskAgentRun.value;
     if (!run || run.run.agentType !== 'task.create' || taskAgentResuming.value) return;
+    // Residual 477: product cancel only from waiting_approval.
+    if (run.run.status !== 'waiting_approval') return;
     taskAgentResuming.value = true;
     try {
       const payload: AgentResumePayload = { userDecision: 'cancel' };

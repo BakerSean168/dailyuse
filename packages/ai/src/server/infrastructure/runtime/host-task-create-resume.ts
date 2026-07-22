@@ -1,5 +1,5 @@
 /**
- * Residual 437/439/453/455/463/465/467/469/471/473/475: Host task.create process-local resume.
+ * Residual 437/439/453/455/463/465/467/469/471/473/475/477: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
@@ -33,6 +33,9 @@
  * Residual 475: confirm only from waiting_approval (product path never uses
  * waiting_execution for Host task.create settlement).
  *
+ * Residual 477: cancel only from waiting_approval (symmetric product status with
+ * confirm/edit; no waiting_execution/running/pending cancel side-door).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -59,6 +62,10 @@ export const HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE =
 /** Residual 475: confirm outside waiting_approval is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_WAITING_APPROVAL_MESSAGE =
   'Host task.create confirm requires waiting_approval.';
+
+/** Residual 477: cancel outside waiting_approval is fail-closed. */
+export const HOST_TASK_CREATE_CANCEL_REQUIRES_WAITING_APPROVAL_MESSAGE =
+  'Host task.create cancel requires waiting_approval.';
 
 /** Residual 463: confirm without recoverable settlement title is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE =
@@ -243,9 +250,10 @@ export function buildHostTaskCreateResumeResult(input: {
   }
 
   if (decision === 'cancel') {
-    if (status !== 'waiting_approval' && status !== 'waiting_execution' && status !== 'running' && status !== 'pending') {
+    // Residual 477: product cancel only from waiting_approval (start/edit product status).
+    if (status !== 'waiting_approval') {
       throw new Error(
-        `Host task.create cancel requires a non-terminal active run; current status is '${status}'.`,
+        `${HOST_TASK_CREATE_CANCEL_REQUIRES_WAITING_APPROVAL_MESSAGE} Current status is '${status}'.`,
       );
     }
     return AgentRunResultSchema.parse({

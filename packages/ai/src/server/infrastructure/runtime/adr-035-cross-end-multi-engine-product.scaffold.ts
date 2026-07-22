@@ -300,6 +300,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE',
         // Residual 475: confirm only from waiting_approval product status.
         'HOST_TASK_CREATE_CONFIRM_REQUIRES_WAITING_APPROVAL_MESSAGE',
+        // Residual 477: cancel only from waiting_approval product status.
+        'HOST_TASK_CREATE_CANCEL_REQUIRES_WAITING_APPROVAL_MESSAGE',
       ],
       status: 'implemented_unit',
     },

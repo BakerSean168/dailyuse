@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475/477: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -17,6 +17,7 @@
  *   confirm process-local draft only + single executed (residual 471)
  *   edit single approvedAction (residual 473)
  *   confirm waiting_approval only (residual 475)
+ *   cancel waiting_approval only (residual 477)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -730,6 +731,61 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillCancelled.ok).toBe(true);
     if (!stillCancelled.ok) return;
     expect(stillCancelled.data.run.status).toBe('cancelled');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
+  it('cancel fails closed after completed and only works from waiting_approval (residual 477)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-cancel-status' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-cancel-status',
+        threadId: 'thread-journey-cancel-status',
+        conversationId: 'conv-journey-cancel-status',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Cancel status' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    const completed = await service.resumeRun(
+      'run-journey-cancel-status',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created',
+            entityId: 'tpl-cancel-status',
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(completed.ok).toBe(true);
+    if (!completed.ok) return;
+    expect(completed.data.run.status).toBe('completed');
+
+    const failCancel = await service.resumeRun(
+      'run-journey-cancel-status',
+      { userDecision: 'cancel' },
+      cx as any,
+    );
+    expect(failCancel.ok).toBe(false);
+    if (failCancel.ok) return;
+    expect(failCancel.error.code).toBe('VALIDATION_ERROR');
+    expect(failCancel.error.message).toMatch(/cancel requires waiting_approval/);
+
+    const stillCompleted = await service.getRun('run-journey-cancel-status', cx as any);
+    expect(stillCompleted.ok).toBe(true);
+    if (!stillCompleted.ok) return;
+    expect(stillCompleted.data.run.status).toBe('completed');
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
 

@@ -635,6 +635,26 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create cancel requires waiting_approval only (residual 477)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_CANCEL_REQUIRES_WAITING_APPROVAL_MESSAGE');
+    expect(resume).toContain('cancel requires waiting_approval');
+    expect(resume).toContain('Residual 477');
+    expect(resume).not.toContain('non-terminal active run');
+    // Client cancel gates on waiting_approval product status.
+    expect(taskWorkflow).toContain('cancelTaskAgentRun');
+    expect(taskWorkflow).toContain('Residual 477');
+    expect(taskWorkflow).toContain("run.run.status !== 'waiting_approval'");
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

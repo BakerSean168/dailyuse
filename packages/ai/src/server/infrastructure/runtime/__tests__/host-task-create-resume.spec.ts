@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475/477)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -228,7 +228,7 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/
         current: completed,
         payload: { userDecision: 'cancel' },
       }),
-    ).toThrow(/cancel requires a non-terminal active run/);
+    ).toThrow(/cancel requires waiting_approval/);
   });
 
   it('fails closed for unsupported userDecision', () => {
@@ -778,6 +778,45 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/
         },
       }),
     ).toThrow(/confirm requires waiting_approval/);
+  });
+
+
+  it('cancel succeeds from waiting_approval (residual 477)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-cancel-waiting'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(started.run.status).toBe('waiting_approval');
+    const cancelled = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: { userDecision: 'cancel' },
+      nowMs: 2,
+    });
+    expect(cancelled.run.status).toBe('cancelled');
+    expect(cancelled.state.pendingActions).toEqual([]);
+    expect(cancelled.interrupts).toEqual([]);
+  });
+
+  it('cancel fails closed when status is waiting_execution (residual 477)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-cancel-exec-status'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const drifted = {
+      ...started,
+      run: {
+        ...started.run,
+        status: 'waiting_execution' as const,
+      },
+    };
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: drifted,
+        payload: { userDecision: 'cancel' },
+      }),
+    ).toThrow(/cancel requires waiting_approval/);
   });
 
 
