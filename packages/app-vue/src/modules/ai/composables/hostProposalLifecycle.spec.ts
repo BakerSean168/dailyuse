@@ -32,6 +32,7 @@ import {
   resolveLiveHostWorkbenchAgentRuns,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   canHostApproveProductAgentRun,
+  canHostRejectProductAgentRun,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -2652,6 +2653,44 @@ describe('canHostApproveProductAgentRun (residual 561/563)', () => {
         productTool: 'create_task_template',
       }),
     ).toBe(false);
+  });
+});
+
+describe('canHostRejectProductAgentRun (residual 565)', () => {
+  function runWith(status: AgentRunResult['run']['status']): AgentRunResult {
+    return {
+      run: {
+        runId: 'run-1',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'task.create',
+        status,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            payload: {},
+            rationale: 'draft',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  it('allows waiting_approval only', () => {
+    expect(canHostRejectProductAgentRun({ run: runWith('waiting_approval') })).toBe(true);
+    expect(canHostRejectProductAgentRun({ run: runWith('waiting_execution') })).toBe(false);
+    expect(canHostRejectProductAgentRun({ run: runWith('completed') })).toBe(false);
+    expect(canHostRejectProductAgentRun({ run: null })).toBe(false);
   });
 });
 

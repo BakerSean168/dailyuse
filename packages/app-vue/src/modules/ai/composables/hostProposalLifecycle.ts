@@ -239,6 +239,20 @@ export function canHostApproveProductAgentRun(input: {
 }
 
 /**
+ * Residual 565: Host panel reject for product-lane AgentRuns requires
+ * waiting_approval before Host lifecycle (cancel residual 477/559 + knowledge
+ * cancel symmetry). Prevents reject-then-silent-noop when cancel gates
+ * fail-closed. Orphan task proposals without AgentRun owner stay ungated
+ * (client-settle residual 425).
+ */
+export function canHostRejectProductAgentRun(input: {
+  run: AgentRunResult | null | undefined;
+}): boolean {
+  const run = input.run;
+  return Boolean(run && run.run.status === 'waiting_approval');
+}
+
+/**
  * Residual 527: workbench pending count from product-lane tool only
  * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
  * Foreign tools never inflate the Host proposal action count.

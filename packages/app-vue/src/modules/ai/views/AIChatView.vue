@@ -369,6 +369,7 @@ import {
   buildHostTaskClientExecutionReceipt,
   buildHostTaskCreateTemplateRequest,
   canHostApproveProductAgentRun,
+  canHostRejectProductAgentRun,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
@@ -986,6 +987,36 @@ async function handleHostProposalReject(payload: {
   reason?: string;
 }) {
   if (hostProposalBusy.value) return;
+
+  // Residual 565: product-lane Host reject requires waiting_approval before Host
+  // lifecycle (cancel residual 477/559 + knowledge cancel + residual 561/563
+  // approve symmetry). Avoids reject-then-silent-noop when cancel gates fail-closed.
+  // Orphan task proposals without AgentRun owner remain client-settle only.
+  if (payload.item.source === 'goal') {
+    const run =
+      goalAgentRun.value?.run.runId === payload.item.runId ? goalAgentRun.value : null;
+    if (!canHostRejectProductAgentRun({ run })) return;
+  }
+  if (payload.item.source === 'knowledge') {
+    const run =
+      noteAgentRun.value?.run.runId === payload.item.runId ? noteAgentRun.value : null;
+    if (!canHostRejectProductAgentRun({ run })) return;
+  }
+  if (payload.item.source === 'task') {
+    const ownedByTaskSession = taskAgentRun.value?.run.runId === payload.item.runId;
+    const isTaskAgentType =
+      taskAgentRun.value?.run.agentType === 'task.create' ||
+      liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType === 'task.create';
+    if (isTaskAgentType && ownedByTaskSession) {
+      if (!canHostRejectProductAgentRun({ run: taskAgentRun.value })) return;
+    } else if (
+      !isTaskAgentType &&
+      goalAgentRun.value?.run.runId === payload.item.runId
+    ) {
+      if (!canHostRejectProductAgentRun({ run: goalAgentRun.value })) return;
+    }
+  }
+
   hostProposalBusy.value = true;
   try {
     // Residual 397: freeform reject reason from Host proposal workbench (lifecycle only).

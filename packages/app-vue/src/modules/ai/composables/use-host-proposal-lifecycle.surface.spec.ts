@@ -1121,6 +1121,31 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('Host panel goal/knowledge/task reject gates waiting_approval before lifecycle (residual 565)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('canHostRejectProductAgentRun');
+    expect(helper).toContain('Residual 565');
+    expect(chatView).toContain('canHostRejectProductAgentRun');
+    expect(chatView).toContain('Residual 565');
+    const rejectIdx = chatView.indexOf('async function handleHostProposalReject');
+    expect(rejectIdx).toBeGreaterThan(-1);
+    const rejectSlice = chatView.slice(rejectIdx, rejectIdx + 3200);
+    expect(rejectSlice).toContain('canHostRejectProductAgentRun');
+    expect(rejectSlice).toContain("source === 'goal'");
+    expect(rejectSlice).toContain("source === 'knowledge'");
+    expect(rejectSlice).toContain("source === 'task'");
+    // Gate before Host lifecycle reject decision.
+    const gateIdx = rejectSlice.indexOf('canHostRejectProductAgentRun');
+    const decisionIdx = rejectSlice.indexOf('dispatchHostProposalDecision');
+    expect(gateIdx).toBeGreaterThan(-1);
+    expect(decisionIdx).toBeGreaterThan(gateIdx);
+    // Orphan task client-settle path remains after gates.
+    expect(rejectSlice).toContain('clientSettledHostProposalIds');
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
   it('task.create process-local store conversation list trims (residual 509)', () => {
     const store = readFileSync(
