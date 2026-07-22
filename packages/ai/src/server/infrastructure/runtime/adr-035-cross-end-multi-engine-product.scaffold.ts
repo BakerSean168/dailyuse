@@ -387,6 +387,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 535: receipt summary same-lane failed action message only.
         'Residual 535',
         'firstFailedMessage',
+        // Residual 537: receipt ok requires product-lane executed on completed.
+        'Residual 537',
+        'productLaneExecuted',
       ],
       status: 'implemented_unit',
     },

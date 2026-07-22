@@ -2231,6 +2231,81 @@ describe('receipt summary same-lane failed message only (residual 535)', () => {
   });
 });
 
+describe('receipt ok requires product-lane executed (residual 537)', () => {
+  it('marks completed goal ok when create_goal executed even if companion skipped', () => {
+    const run = goalWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'created',
+        entityId: 'goal-1',
+      },
+      {
+        tool: 'create_key_result',
+        status: 'skipped',
+        message: 'skipped',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ goalAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.ok).toBe(true);
+    expect(receipts[0]?.primaryEntityId).toBe('goal-1');
+  });
+
+  it('marks completed task not ok when only foreign tools executed', () => {
+    const run = taskWaitingRun();
+    run.run.status = 'completed';
+    run.state.pendingActions = [];
+    // Foreign-only is filtered (residual 533) so no receipt — pair with companion-only case.
+    run.state.executedActions = [
+      {
+        tool: 'create_task_template',
+        status: 'skipped',
+        message: 'skipped product',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ taskAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.ok).toBe(false);
+    expect(receipts[0]?.executedCount).toBe(0);
+    expect(receipts[0]?.skippedCount).toBe(1);
+  });
+
+  it('marks completed knowledge not ok when product tool failed then filtered companions only succeed is N/A', () => {
+    const run = noteWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'skipped',
+        message: 'note skipped',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ noteAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.ok).toBe(false);
+  });
+
+  it('marks completed with product executed and zero failures as ok', () => {
+    const run = noteWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        message: 'created',
+        entityId: 'note-ok-1',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ noteAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.ok).toBe(true);
+    expect(receipts[0]?.primaryEntityId).toBe('note-ok-1');
+  });
+});
+
 
 
 describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {

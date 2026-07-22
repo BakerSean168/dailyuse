@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529/531/533/535).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529/531/533/535/537).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -14,6 +14,7 @@
  * Residual 531: knowledge draft title read create_knowledge_note only (path/markdown residual 521 symmetry).
  * Residual 533: receipt summary excludes cross-lane foreign tools from counts/actionLines/entityIds.
  * Residual 535: receipt summary error text from same-lane failed action only (no blind errors[0]).
+ * Residual 537: receipt ok requires product-lane executed tool on completed runs.
  */
 import type {
   AgentAction,
@@ -597,10 +598,11 @@ function isCrossLaneForeignTool(
 }
 
 /**
- * Residual 529/533/535: receipt summary for product lane.
+ * Residual 529/533/535/537: receipt summary for product lane.
  * Residual 529: primaryEntityId from product-lane executed tool only.
  * Residual 533: cross-lane foreign tools never inflate counts/actionLines/entityIds.
  * Residual 535: summary error text from same-lane failed action only (no blind errors[0]).
+ * Residual 537: ok requires product-lane executed tool when run status is completed.
  * Same-lane companions (e.g. create_key_result on goal) remain for audit replay.
  */
 function summarizeExecutedActions(
@@ -649,7 +651,12 @@ function summarizeExecutedActions(
   }
   // Residual 529: leave primaryEntityId undefined when product-lane tool has no entityId
   // (do not fall back to foreign entityIds[0]).
-  const ok = run.run.status === 'completed' && failedCount === 0;
+  // Residual 537: completed receipts are ok only when product-lane tool executed
+  // (companions skipped/failed without product execution are not success).
+  const productLaneExecuted = actionLines.some(
+    (line) => line.tool === productTool && line.status === 'executed',
+  );
+  const ok = run.run.status === 'completed' && failedCount === 0 && productLaneExecuted;
   const parts = [
     `${executedCount} executed`,
     `${skippedCount} skipped`,

@@ -1126,11 +1126,25 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('Residual 535');
     const sumIdx = helper.indexOf('function summarizeExecutedActions');
     expect(sumIdx).toBeGreaterThan(-1);
-    const sumSlice = helper.slice(sumIdx, sumIdx + 2400);
+    const sumSlice = helper.slice(sumIdx, sumIdx + 3600);
     expect(sumSlice).toContain('firstFailedMessage');
     expect(sumSlice).toContain("line.status === 'failed'");
     expect(sumSlice).not.toContain('run.state.errors?.[0]');
     expect(sumSlice).not.toContain('const firstError = run.state.errors');
+  });
+
+  it('receipt ok requires product-lane executed on completed runs (residual 537)', () => {
+    expect(helper).toContain('Residual 537');
+    expect(helper).toContain('productLaneExecuted');
+    const sumIdx = helper.indexOf('function summarizeExecutedActions');
+    expect(sumIdx).toBeGreaterThan(-1);
+    const sumSlice = helper.slice(sumIdx, sumIdx + 3600);
+    expect(sumSlice).toContain('productLaneExecuted');
+    expect(sumSlice).toContain("line.tool === productTool && line.status === 'executed'");
+    expect(sumSlice).toContain('failedCount === 0 && productLaneExecuted');
+    expect(sumSlice).not.toContain(
+      "const ok = run.run.status === 'completed' && failedCount === 0;",
+    );
   });
 
 
