@@ -1710,6 +1710,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-22（阶段 6 残留一百三十五轮）：Reminder domain service / control /
+> mapper 身份隔离——`getTemplate`/`getGroup`/`delete*`/`assign`/`updateGroupStats`/
+> `toggle`/`syncByGroup` 要求 identityId；control 用 `findByIdForIdentity(task.identityId)`；
+> mapper 富化 group 走 owned load。§13.2 仍部分。
+> 验证：reminder domain/control/app/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
+
 
 
 
@@ -1830,6 +1840,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百三十二轮：task schedule projection+execution identity-scoped load。
   残留一百三十三轮：task findByTemplateId identity-scoped。
   残留一百三十四轮：task template-scoped instance queries identity-scoped。
+  残留一百三十五轮：reminder domain/control/mapper identity-scoped loads。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

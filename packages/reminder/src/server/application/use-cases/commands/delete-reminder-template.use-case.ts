@@ -27,7 +27,7 @@ export class DeleteReminderTemplateUseCase {
     }
 
     if (this.reminderDomainService) {
-      await this.reminderDomainService.deleteTemplate(id, true);
+      await this.reminderDomainService.deleteTemplate(cx.identityId, id, true);
       return ok(undefined);
     }
 

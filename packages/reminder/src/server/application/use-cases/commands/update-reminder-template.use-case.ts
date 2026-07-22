@@ -89,10 +89,10 @@ export class UpdateReminderTemplateUseCase {
     await this.templateRepository.save(template);
 
     if (previousGroupId && previousGroupId !== template.groupId) {
-      await this.reminderDomainService.updateGroupStats(previousGroupId);
+      await this.reminderDomainService.updateGroupStats(cx.identityId, previousGroupId);
     }
     if (template.groupId) {
-      await this.reminderDomainService.updateGroupStats(template.groupId);
+      await this.reminderDomainService.updateGroupStats(cx.identityId, template.groupId);
     }
 
     return ok(await this.templateMapper.toDTO(template));

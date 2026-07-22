@@ -49,6 +49,22 @@ describe('reminder template ownership surface', () => {
     'utf8',
   );
   const module = readFileSync(resolve(__dirname, '../../../reminder.module.ts'), 'utf8');
+  const domainService = readFileSync(
+    resolve(__dirname, '../../../../domain/services/reminder-domain-service.ts'),
+    'utf8',
+  );
+  const controlService = readFileSync(
+    resolve(__dirname, '../../../../domain/services/reminder-template-control-service.ts'),
+    'utf8',
+  );
+  const mapper = readFileSync(
+    resolve(__dirname, '../../../../application/mappers/reminder-template-client.mapper.ts'),
+    'utf8',
+  );
+  const groupApp = readFileSync(
+    resolve(__dirname, '../../../../application/services/reminder-group-application-service.ts'),
+    'utf8',
+  );
 
   it('ports require findByIdForIdentity(identityId, id)', () => {
     expect(templatePort).toContain(
@@ -70,6 +86,25 @@ describe('reminder template ownership surface', () => {
     expect(actionService).toContain('findByIdForIdentity(');
     expect(actionService).toContain('ctx.identityId');
     expect(module).toContain('findByIdForIdentity(ctx.identityId, templateId, options)');
+  });
+
+  it('domain/control/mapper loads are identity-scoped (residual 135)', () => {
+    expect(domainService).toContain(
+      'return this.reminderTemplateRepository.findByIdForIdentity(identityId, id, options);',
+    );
+    expect(domainService).toContain(
+      'return this.reminderGroupRepository.findByIdForIdentity(identityId, id);',
+    );
+    expect(domainService).toContain('deleteTemplate(');
+    expect(domainService).toContain('identityId: string');
+    expect(domainService).toContain('updateGroupStats(identityId: string, groupId: string)');
+    expect(controlService).toContain('findByIdForIdentity(');
+    expect(controlService).toContain('String(template.identityId)');
+    expect(mapper).toContain('findByIdForIdentity(');
+    expect(mapper).toContain('String(template.identityId)');
+    expect(deleteUseCase).toContain('deleteTemplate(cx.identityId, id, true)');
+    expect(groupApp).toContain('deleteGroup(ctx.identityId, id, false)');
+    expect(groupApp).toContain('syncTemplatesEffectiveEnabledByGroup(ctx.identityId, id)');
   });
 
   it('findByGroupId requires identityId and list uses identity-scoped query', () => {

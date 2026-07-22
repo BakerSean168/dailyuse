@@ -59,6 +59,7 @@ describe('ReminderTemplateControlService', () => {
   } as any;
   const groupRepository = {
     findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
     findByIds: vi.fn(),
   } as any;
   const preferenceRepository = {
@@ -70,7 +71,7 @@ describe('ReminderTemplateControlService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     preferenceRepository.findByIdentityId.mockResolvedValue(null);
-    groupRepository.findById.mockResolvedValue(null);
+    groupRepository.findByIdForIdentity.mockResolvedValue(null);
     groupRepository.findByIds.mockResolvedValue([]);
     service = new ReminderTemplateControlService(
       templateRepository,
@@ -106,7 +107,7 @@ describe('ReminderTemplateControlService', () => {
 
     const result = await service.calculateEffectiveStatus(template);
 
-    expect(groupRepository.findById).toHaveBeenCalledWith('missing-group');
+    expect(groupRepository.findByIdForIdentity).toHaveBeenCalled();
     expect(result.lifecycleSource).toBe('template');
     expect(result.statusReason).toBe('分组不存在，使用模板自身状态');
   });
@@ -170,13 +171,13 @@ describe('ReminderTemplateControlService', () => {
     });
     const ungrouped = createTemplate({ identityId });
 
-    groupRepository.findById.mockResolvedValue(group);
+    groupRepository.findByIdForIdentity.mockResolvedValue(group);
     groupRepository.findByIds.mockResolvedValue([group]);
     templateRepository.findByGroupId.mockResolvedValue([enabled, paused]);
     templateRepository.findByIdentityId.mockResolvedValue([enabled, paused, ungrouped]);
 
     const batch = await service.calculateEffectiveStatusBatch([enabled, paused, ungrouped]);
-    const inGroup = await service.getEffectivelyEnabledTemplatesInGroup(group.id);
+    const inGroup = await service.getEffectivelyEnabledTemplatesInGroup(String(group.identityId), group.id);
     const byIdentity = await service.getEffectivelyEnabledTemplatesByIdentityId(String(identityId));
 
     expect(batch).toHaveLength(3);

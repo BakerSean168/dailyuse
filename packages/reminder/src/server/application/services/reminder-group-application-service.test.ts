@@ -107,7 +107,7 @@ describe('ReminderGroupApplicationService', () => {
     );
 
     expect(groupRepository.save).toHaveBeenCalledTimes(1);
-    expect(reminderDomainService.syncTemplatesEffectiveEnabledByGroup).toHaveBeenCalledWith(existing.id);
+    expect(reminderDomainService.syncTemplatesEffectiveEnabledByGroup).toHaveBeenCalledWith(IDENTITY_ID, existing.id);
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.name).toBe('Updated');
@@ -138,7 +138,7 @@ describe('ReminderGroupApplicationService', () => {
     expect(ownedTemplate.enable).toHaveBeenCalledTimes(1);
     expect(reminderDomainService.syncTemplateEffectiveEnabled).toHaveBeenCalledTimes(1);
     expect(templateRepository.save).toHaveBeenCalledTimes(1);
-    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith(group.id);
+    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith(IDENTITY_ID, group.id);
     expect(result).toEqual({ ok: true, data: { successCount: 1, failedCount: 0 } });
   });
 });

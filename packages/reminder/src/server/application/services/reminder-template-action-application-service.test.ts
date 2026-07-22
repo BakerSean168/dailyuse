@@ -66,7 +66,7 @@ describe('ReminderTemplateActionApplicationService', () => {
     expect(template.enable).toHaveBeenCalledTimes(1);
     expect(reminderDomainService.syncTemplateEffectiveEnabled).toHaveBeenCalledWith(template);
     expect(reminderTemplateRepository.save).toHaveBeenCalledWith(template);
-    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith('group-1');
+    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith(IDENTITY_ID, 'group-1');
     expect(result).toEqual({ ok: true, data: dto });
   });
 
@@ -82,7 +82,7 @@ describe('ReminderTemplateActionApplicationService', () => {
 
     const result = await service.moveTemplate('template-1', 'group-new', { identityId: IDENTITY_ID });
 
-    expect(reminderDomainService.assignTemplateToGroup).toHaveBeenCalledWith('template-1', 'group-new');
+    expect(reminderDomainService.assignTemplateToGroup).toHaveBeenCalledWith(IDENTITY_ID, 'template-1', 'group-new');
     expect(reminderDomainService.updateGroupStats).not.toHaveBeenCalled();
     expect(result).toEqual({ ok: true, data: dto });
   });

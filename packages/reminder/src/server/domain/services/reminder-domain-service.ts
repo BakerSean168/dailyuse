@@ -25,10 +25,11 @@ type IdentityId = string & { readonly __brand: 'IdentityId' };
  * - 处理跨聚合的复杂业务规则和不变量。
  * - 封装核心业务流程，供 Application Service 调用。
  *
- * 关键原则：
+ * 设计原则：
  * - 无状态：领域服务自身不持有状态，所有状态通过仓储加载和持久化。
  * - 依赖于抽象：依赖于仓储接口（IRepository），而不是具体实现。
  * - 业务逻辑的内聚中心：将分散在应用服务中的业务逻辑下沉到此。
+ * - identity-scoped loads：聚合按 id 读取时必须携带 identityId。
  */
 export class ReminderDomainService {
   private readonly controlService: ReminderTemplateControlService;
@@ -69,13 +70,13 @@ export class ReminderDomainService {
     }
   }
 
-  public async syncTemplatesEffectiveEnabledByGroup(groupId: string): Promise<void> {
-    const group = await this.getGroup(groupId);
+  public async syncTemplatesEffectiveEnabledByGroup(
+    identityId: string,
+    groupId: string,
+  ): Promise<void> {
+    const group = await this.getGroup(identityId, groupId);
     if (!group) return;
-    const templates = await this.reminderTemplateRepository.findByGroupId(
-      groupId,
-      String(group.identityId),
-    );
+    const templates = await this.reminderTemplateRepository.findByGroupId(groupId, identityId);
     for (const template of templates) {
       await this.syncTemplateEffectiveEnabled(template);
       await this.reminderTemplateRepository.save(template);
@@ -107,8 +108,11 @@ export class ReminderDomainService {
     groupId?: string;
   }): Promise<ReminderTemplate> {
     if (params.groupId) {
-      const group = await this.reminderGroupRepository.findById(params.groupId);
-      if (!group || group.identityId !== params.identityId) {
+      const group = await this.reminderGroupRepository.findByIdForIdentity(
+        params.identityId,
+        params.groupId,
+      );
+      if (!group) {
         throw new Error(`Invalid groupId: ${params.groupId}`);
       }
     }
@@ -120,23 +124,27 @@ export class ReminderDomainService {
     await this.syncTemplateEffectiveEnabled(template);
     await this.reminderTemplateRepository.save(template);
 
-    // TODO: Update group stats if groupId is present
     if (params.groupId) {
-      await this.updateGroupStats(params.groupId);
+      await this.updateGroupStats(params.identityId, params.groupId);
     }
 
     return template;
   }
 
   public async getTemplate(
+    identityId: string,
     id: string,
     options?: { includeHistory?: boolean },
   ): Promise<ReminderTemplate | null> {
-    return this.reminderTemplateRepository.findById(id, options);
+    return this.reminderTemplateRepository.findByIdForIdentity(identityId, id, options);
   }
 
-  public async deleteTemplate(id: string, softDelete: boolean = true): Promise<void> {
-    const template = await this.getTemplate(id);
+  public async deleteTemplate(
+    identityId: string,
+    id: string,
+    softDelete: boolean = true,
+  ): Promise<void> {
+    const template = await this.getTemplate(identityId, id);
     if (!template) {
       throw new Error(`ReminderTemplate not found: ${id}`);
     }
@@ -151,7 +159,7 @@ export class ReminderDomainService {
     }
 
     if (groupId) {
-      await this.updateGroupStats(groupId);
+      await this.updateGroupStats(identityId, groupId);
     }
   }
 
@@ -179,21 +187,22 @@ export class ReminderDomainService {
     return group;
   }
 
-  public async getGroup(id: string): Promise<ReminderGroup | null> {
-    return this.reminderGroupRepository.findById(id);
+  public async getGroup(identityId: string, id: string): Promise<ReminderGroup | null> {
+    return this.reminderGroupRepository.findByIdForIdentity(identityId, id);
   }
 
-  public async deleteGroup(id: string, softDelete: boolean = true): Promise<void> {
-    const group = await this.getGroup(id);
+  public async deleteGroup(
+    identityId: string,
+    id: string,
+    softDelete: boolean = true,
+  ): Promise<void> {
+    const group = await this.getGroup(identityId, id);
     if (!group) {
       throw new Error(`ReminderGroup not found: ${id}`);
     }
 
     // Business Rule: Cannot delete a group that still contains templates.
-    const templatesInGroup = await this.reminderTemplateRepository.findByGroupId(
-      id,
-      String(group.identityId),
-    );
+    const templatesInGroup = await this.reminderTemplateRepository.findByGroupId(id, identityId);
     if (templatesInGroup.length > 0) {
       throw new Error(
         `Cannot delete group ${id} because it still contains ${templatesInGroup.length} templates.`,
@@ -211,10 +220,11 @@ export class ReminderDomainService {
   // --- Cross-Aggregate Methods ---
 
   public async assignTemplateToGroup(
+    identityId: string,
     templateId: string,
     groupId: string | null,
   ): Promise<ReminderTemplate> {
-    const template = await this.getTemplate(templateId);
+    const template = await this.getTemplate(identityId, templateId);
     if (!template) {
       throw new Error(`ReminderTemplate not found: ${templateId}`);
     }
@@ -222,53 +232,47 @@ export class ReminderDomainService {
     const oldGroupId = template.groupId;
 
     if (groupId) {
-      const group = await this.getGroup(groupId);
-      if (!group || group.identityId !== template.identityId) {
+      const group = await this.getGroup(identityId, groupId);
+      if (!group) {
         throw new Error(`Invalid groupId: ${groupId}`);
       }
     }
 
-    // This logic should be on the aggregate
     template.moveToGroup(groupId);
     await this.syncTemplateEffectiveEnabled(template);
-
     await this.reminderTemplateRepository.save(template);
 
-    // Update stats for both old and new groups
     if (oldGroupId) {
-      await this.updateGroupStats(oldGroupId);
+      await this.updateGroupStats(identityId, oldGroupId);
     }
     if (groupId) {
-      await this.updateGroupStats(groupId);
+      await this.updateGroupStats(identityId, groupId);
     }
 
     return template;
   }
 
-  public async toggleGroupAndTemplates(id: string): Promise<ReminderGroup> {
-    const group = await this.getGroup(id);
+  public async toggleGroupAndTemplates(
+    identityId: string,
+    id: string,
+  ): Promise<ReminderGroup> {
+    const group = await this.getGroup(identityId, id);
     if (!group) {
       throw new Error(`ReminderGroup not found: ${id}`);
     }
 
     group.toggle();
     await this.reminderGroupRepository.save(group);
-
-    await this.syncTemplatesEffectiveEnabledByGroup(id);
-
+    await this.syncTemplatesEffectiveEnabledByGroup(identityId, id);
     return group;
   }
 
-  public async updateGroupStats(groupId: string): Promise<void> {
-    const group = await this.getGroup(groupId);
+  public async updateGroupStats(identityId: string, groupId: string): Promise<void> {
+    const group = await this.getGroup(identityId, groupId);
     if (!group) return;
-    const templates = await this.reminderTemplateRepository.findByGroupId(
-      groupId,
-      String(group.identityId),
-      {
-        includeDeleted: false,
-      },
-    );
+    const templates = await this.reminderTemplateRepository.findByGroupId(groupId, identityId, {
+      includeDeleted: false,
+    });
 
     const stats = this.groupBusinessService.calculateGroupStatistics(templates);
     group.updateStats(

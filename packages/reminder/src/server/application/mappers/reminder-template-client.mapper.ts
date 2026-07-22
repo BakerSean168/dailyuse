@@ -15,7 +15,12 @@ export class ReminderTemplateClientMapper {
   ) {}
 
   async toDTO(template: ReminderTemplate): Promise<ReminderTemplateClientDTO> {
-    const group = template.groupId ? await this.reminderGroupRepository.findById(template.groupId) : null;
+    const group = template.groupId
+      ? await this.reminderGroupRepository.findByIdForIdentity(
+          String(template.identityId),
+          template.groupId,
+        )
+      : null;
     const effectiveStatus = await this.reminderDomainService
       .getControlService()
       .calculateEffectiveStatus(template, group);
@@ -35,8 +40,12 @@ export class ReminderTemplateClientMapper {
 
   async toDTOList(templates: ReminderTemplate[]): Promise<ReminderTemplateClientDTO[]> {
     const controlService = this.reminderDomainService.getControlService();
-    const groups = await this.reminderGroupRepository.findByIds(
-      Array.from(new Set(templates.map((template) => template.groupId).filter(Boolean) as string[])),
+    const groupIds = Array.from(
+      new Set(templates.map((template) => template.groupId).filter(Boolean) as string[]),
+    );
+    const identityIds = new Set(templates.map((template) => String(template.identityId)));
+    const groups = (await this.reminderGroupRepository.findByIds(groupIds)).filter((group) =>
+      identityIds.has(String(group.identityId)),
     );
     const groupMap = new Map(groups.map((group) => [group.id, group]));
     const effectiveStatuses = await controlService.calculateEffectiveStatusBatch(templates);

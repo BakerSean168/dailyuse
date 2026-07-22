@@ -120,10 +120,13 @@ export class ReminderTemplateControlService {
       };
     }
 
-    // 获取分组信息
+    // 获取分组信息（identity-scoped）
     let targetGroup = group;
     if (!targetGroup) {
-      targetGroup = await this.groupRepository.findById(groupId);
+      targetGroup = await this.groupRepository.findByIdForIdentity(
+        String(template.identityId),
+        groupId,
+      );
     }
 
     if (!targetGroup) {
@@ -340,15 +343,15 @@ export class ReminderTemplateControlService {
   /**
    * 获取分组下所有真正启用的模板
    */
-  async getEffectivelyEnabledTemplatesInGroup(groupId: string): Promise<ReminderTemplate[]> {
-    const group = await this.groupRepository.findById(groupId);
+  async getEffectivelyEnabledTemplatesInGroup(
+    identityId: string,
+    groupId: string,
+  ): Promise<ReminderTemplate[]> {
+    const group = await this.groupRepository.findByIdForIdentity(identityId, groupId);
     if (!group) {
       return [];
     }
-    const templates = await this.templateRepository.findByGroupId(
-      groupId,
-      String(group.identityId),
-    );
+    const templates = await this.templateRepository.findByGroupId(groupId, identityId);
     const statusResults = await this.calculateEffectiveStatusBatch(templates);
 
     const enabledTemplateIdSet = new Set(

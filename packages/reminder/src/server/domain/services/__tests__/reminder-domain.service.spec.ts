@@ -89,13 +89,15 @@ describe('ReminderDomainService', () => {
     vi.clearAllMocks();
     templateRepo = createMockRepo<IReminderTemplateRepository>({
       save: vi.fn().mockResolvedValue(undefined),
-      findById: vi.fn().mockResolvedValue(null),
+      findById: vi.fn(),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       findByGroupId: vi.fn().mockResolvedValue([]),
       delete: vi.fn().mockResolvedValue(undefined),
     });
     groupRepo = createMockRepo<IReminderGroupRepository>({
       save: vi.fn().mockResolvedValue(undefined),
-      findById: vi.fn().mockResolvedValue(null),
+      findById: vi.fn(),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       findByName: vi.fn().mockResolvedValue(null),
       delete: vi.fn().mockResolvedValue(undefined),
     });
@@ -133,7 +135,7 @@ describe('ReminderDomainService', () => {
     });
 
     it('should throw when groupId does not exist', async () => {
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
       await expect(
         service.createReminderTemplate({
@@ -159,11 +161,8 @@ describe('ReminderDomainService', () => {
       ).rejects.toThrow('Invalid groupId');
     });
 
-    it('should throw when group identity does not match', async () => {
-      const foreignGroup = ReminderGroup.load(
-        makeGroupState({ identityId: IdentityId.generate() }),
-      );
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(foreignGroup);
+    it('should throw when owned group lookup returns null (cross-identity)', async () => {
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
       await expect(
         service.createReminderTemplate({
@@ -184,14 +183,14 @@ describe('ReminderDomainService', () => {
             vibration: null,
             actions: null,
           },
-          groupId: foreignGroup.id,
+          groupId: 'foreign-group',
         }),
       ).rejects.toThrow('Invalid groupId');
     });
 
     it('should update group stats when groupId is provided', async () => {
       const group = ReminderGroup.load(makeGroupState());
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
 
       await service.createReminderTemplate({
         identityId: IDENTITY_ID,
@@ -229,10 +228,10 @@ describe('ReminderDomainService', () => {
           selfEnabled: true,
         }),
       );
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
       (templateRepo.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([template]);
 
-      await service.updateGroupStats(group.id);
+      await service.updateGroupStats(IDENTITY_ID, group.id);
 
       expect(groupRepo.save).toHaveBeenCalledTimes(1);
       const savedGroup = (groupRepo.save as ReturnType<typeof vi.fn>).mock.calls[0][0] as ReminderGroup;
@@ -248,27 +247,27 @@ describe('ReminderDomainService', () => {
   describe('deleteTemplate()', () => {
     it('should soft-delete and save the template', async () => {
       const template = ReminderTemplate.load(makeTemplateState());
-      (templateRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(template);
+      (templateRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(template);
 
-      await service.deleteTemplate(template.id);
+      await service.deleteTemplate(IDENTITY_ID, template.id);
 
       expect(templateRepo.save).toHaveBeenCalledTimes(1);
       expect(template.deletedAt).not.toBeNull();
     });
 
     it('should throw when template not found', async () => {
-      (templateRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (templateRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      await expect(service.deleteTemplate('missing-id')).rejects.toThrow(
+      await expect(service.deleteTemplate(IDENTITY_ID, 'missing-id')).rejects.toThrow(
         'ReminderTemplate not found',
       );
     });
 
     it('should hard-delete via repository when specified', async () => {
       const template = ReminderTemplate.load(makeTemplateState());
-      (templateRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(template);
+      (templateRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(template);
 
-      await service.deleteTemplate(template.id, false);
+      await service.deleteTemplate(IDENTITY_ID, template.id, false);
 
       expect(templateRepo.delete).toHaveBeenCalledWith(template.id);
     });
@@ -305,28 +304,28 @@ describe('ReminderDomainService', () => {
     it('should throw when group has templates', async () => {
       const group = ReminderGroup.load(makeGroupState());
       const template = ReminderTemplate.load(makeTemplateState());
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
       (templateRepo.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([template]);
 
-      await expect(service.deleteGroup(group.id)).rejects.toThrow('still contains');
+      await expect(service.deleteGroup(IDENTITY_ID, group.id)).rejects.toThrow('still contains');
     });
 
     it('should soft-delete when no templates in group', async () => {
       const group = ReminderGroup.load(makeGroupState());
       (templateRepo.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
 
-      await service.deleteGroup(group.id);
+      await service.deleteGroup(IDENTITY_ID, group.id);
 
       expect(groupRepo.save).toHaveBeenCalled();
     });
 
     it('should hard-delete via repository when specified', async () => {
       const group = ReminderGroup.load(makeGroupState());
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
       (templateRepo.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
-      await service.deleteGroup(group.id, false);
+      await service.deleteGroup(IDENTITY_ID, group.id, false);
 
       expect(groupRepo.delete).toHaveBeenCalledWith(group.id);
     });
@@ -339,38 +338,38 @@ describe('ReminderDomainService', () => {
     it('should move template to a new group', async () => {
       const template = ReminderTemplate.load(makeTemplateState({ groupId: null }));
       const group = ReminderGroup.load(makeGroupState());
-      (templateRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(template);
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (templateRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(template);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
 
-      const result = await service.assignTemplateToGroup(template.id, group.id);
+      const result = await service.assignTemplateToGroup(IDENTITY_ID, template.id, group.id);
 
       expect(result.groupId).toBe(group.id);
       expect(templateRepo.save).toHaveBeenCalled();
     });
 
     it('should throw when template not found', async () => {
-      (templateRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (templateRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      await expect(service.assignTemplateToGroup('missing', 'g1')).rejects.toThrow(
+      await expect(service.assignTemplateToGroup(IDENTITY_ID, 'missing', 'g1')).rejects.toThrow(
         'ReminderTemplate not found',
       );
     });
 
     it('should throw when target group is invalid', async () => {
       const template = ReminderTemplate.load(makeTemplateState());
-      (templateRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(template);
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (templateRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(template);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      await expect(service.assignTemplateToGroup(template.id, 'bad-group')).rejects.toThrow(
+      await expect(service.assignTemplateToGroup(IDENTITY_ID, template.id, 'bad-group')).rejects.toThrow(
         'Invalid groupId',
       );
     });
 
     it('should allow unassigning from group (null)', async () => {
       const template = ReminderTemplate.load(makeTemplateState({ groupId: 'old-group' }));
-      (templateRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(template);
+      (templateRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(template);
 
-      const result = await service.assignTemplateToGroup(template.id, null);
+      const result = await service.assignTemplateToGroup(IDENTITY_ID, template.id, null);
 
       expect(result.groupId).toBeNull();
     });
@@ -384,9 +383,9 @@ describe('ReminderDomainService', () => {
       const group = ReminderGroup.load(
         makeGroupState({ enabled: true, controlMode: ControlMode.Individual }),
       );
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
 
-      await service.toggleGroupAndTemplates(group.id);
+      await service.toggleGroupAndTemplates(IDENTITY_ID, group.id);
 
       expect(groupRepo.save).toHaveBeenCalled();
     });
@@ -400,19 +399,19 @@ describe('ReminderDomainService', () => {
         }),
       );
       const template = ReminderTemplate.load(makeTemplateState({ groupId: group.id }));
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
       (templateRepo.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([template]);
 
-      await service.toggleGroupAndTemplates(group.id);
+      await service.toggleGroupAndTemplates(IDENTITY_ID, group.id);
 
       // Group toggled -> paused, templates should be paused too
       expect(templateRepo.save).toHaveBeenCalled();
     });
 
     it('should throw when group not found', async () => {
-      (groupRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (groupRepo.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      await expect(service.toggleGroupAndTemplates('missing')).rejects.toThrow(
+      await expect(service.toggleGroupAndTemplates(IDENTITY_ID, 'missing')).rejects.toThrow(
         'ReminderGroup not found',
       );
     });

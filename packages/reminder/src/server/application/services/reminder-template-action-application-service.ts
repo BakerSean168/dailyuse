@@ -64,7 +64,7 @@ export class ReminderTemplateActionApplicationService {
     await this.reminderDomainService.syncTemplateEffectiveEnabled(template);
     await this.reminderTemplateRepository.save(template);
     if (template.groupId) {
-      await this.reminderDomainService.updateGroupStats(template.groupId);
+      await this.reminderDomainService.updateGroupStats(ctx.identityId, template.groupId);
     }
 
     return ok(await this.templateMapper.toDTO(template));
@@ -83,7 +83,7 @@ export class ReminderTemplateActionApplicationService {
     await this.reminderDomainService.syncTemplateEffectiveEnabled(template);
     await this.reminderTemplateRepository.save(template);
     if (template.groupId) {
-      await this.reminderDomainService.updateGroupStats(template.groupId);
+      await this.reminderDomainService.updateGroupStats(ctx.identityId, template.groupId);
     }
 
     return ok(await this.templateMapper.toDTO(template));
@@ -102,7 +102,7 @@ export class ReminderTemplateActionApplicationService {
     await this.reminderDomainService.syncTemplateEffectiveEnabled(template);
     await this.reminderTemplateRepository.save(template);
     if (template.groupId) {
-      await this.reminderDomainService.updateGroupStats(template.groupId);
+      await this.reminderDomainService.updateGroupStats(ctx.identityId, template.groupId);
     }
 
     return ok(await this.templateMapper.toDTO(template));
@@ -125,7 +125,7 @@ export class ReminderTemplateActionApplicationService {
       }
     }
 
-    const result = await this.reminderDomainService.assignTemplateToGroup(id, groupId);
+    const result = await this.reminderDomainService.assignTemplateToGroup(ctx.identityId, id, groupId);
     return ok(await this.templateMapper.toDTO(result));
   }
 

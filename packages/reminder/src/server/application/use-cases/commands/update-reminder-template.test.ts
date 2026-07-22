@@ -156,6 +156,6 @@ describe('UpdateReminderTemplateUseCase', () => {
       }),
     );
     expect(reminderDomainService.syncTemplateEffectiveEnabled).toHaveBeenCalledTimes(1);
-    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith('group-1');
+    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith(expect.any(String), 'group-1');
   });
 });
