@@ -251,6 +251,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'resolveHostWorkbenchFocusFromSessionRuns',
         'selectConversationBase',
         'hostProposalItems.value[0]?.proposalId',
+        // Residual 445: linked goal restore + client settlement isolation on switch.
+        'resolveLinkedGoalIdFromTaskAgentRun',
+        'syncLinkedGoalFromTaskAgentRun',
+        'clientSettledHostProposalIds.value = []',
       ],
       status: 'implemented_unit',
     },

@@ -298,7 +298,10 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     if (taskAgentRun.value?.run.agentType === 'task.create') {
       toolMode.value = 'task-create';
     }
+    // Residual 445: re-align linked goal before/after process-local refresh.
+    taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
     await refreshRestoredAgentRun(conversationId);
+    taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
   }
 
   function syncSelectedAgentRun(result: import("@dailyuse/contracts/ai").AgentRunResult) {
@@ -312,6 +315,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
         // Residual 429: product toolMode for AgentType task.create.
         toolMode.value = 'task-create';
         taskAgentRun.value = result;
+        // Residual 445: keep ActionBar linked goal aligned with process-local run.
+        taskWorkflow.syncLinkedGoalFromTaskAgentRun(result);
         return;
       }
       // Primary task-shaped goal.create: still lives in goal session for confirm resume,

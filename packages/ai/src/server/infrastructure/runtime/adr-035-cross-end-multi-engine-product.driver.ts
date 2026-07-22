@@ -229,6 +229,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['selectConversationBase'];
     case 'hostProposalItems.value[0]?.proposalId':
       return ['hostProposalItems.value[0]?.proposalId'];
+    case 'resolveLinkedGoalIdFromTaskAgentRun':
+      return ['resolveLinkedGoalIdFromTaskAgentRun'];
+    case 'syncLinkedGoalFromTaskAgentRun':
+      return ['syncLinkedGoalFromTaskAgentRun'];
+    case 'clientSettledHostProposalIds.value = []':
+      return ['clientSettledHostProposalIds.value = []', 'clientSettledHostProposalIds.value = []'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

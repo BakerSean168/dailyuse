@@ -12,6 +12,7 @@ import {
   shouldOpenHostWorkbenchFromAgentRun,
   resolveHostWorkbenchFocusFromAgentRun,
   resolveHostWorkbenchFocusFromSessionRuns,
+  resolveLinkedGoalIdFromTaskAgentRun,
   buildHostProposalPatchFromDraft,
   buildPendingHostProposalItems,
   dispatchHostProposalDecision,
@@ -1523,5 +1524,26 @@ describe('Host workbench focus from session restore (residual 443)', () => {
         noteAgentRun: null,
       }),
     ).toBeNull();
+  });
+});
+
+describe('resolveLinkedGoalIdFromTaskAgentRun (residual 445)', () => {
+  it('reads linked goalId from task.create pending create_task_template payload', () => {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    run.state.artifacts = [];
+    expect(resolveLinkedGoalIdFromTaskAgentRun(run)).toBe('goal-1');
+  });
+
+  it('returns null for non-task Host runs and empty payloads', () => {
+    expect(resolveLinkedGoalIdFromTaskAgentRun(null)).toBeNull();
+    const goal = goalWaitingRun();
+    expect(resolveLinkedGoalIdFromTaskAgentRun(goal)).toBeNull();
+    const bare = taskWaitingRun();
+    bare.run.agentType = 'task.create';
+    bare.state.artifacts = [];
+    bare.state.pendingActions = [];
+    bare.state.approvedActions = [];
+    expect(resolveLinkedGoalIdFromTaskAgentRun(bare)).toBeNull();
   });
 });

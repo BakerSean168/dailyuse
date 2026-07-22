@@ -462,7 +462,7 @@ const {
   openRecentKnowledgeNote,
   deleteConversation,
   loadConversationList,
-  startNewConversation,
+  startNewConversation: startNewConversationBase,
   executionProfileId,
   selectExecutionProfile,
   openChatHostTurns,
@@ -1151,6 +1151,16 @@ function closeMobileSidebar() {
   mobileSidebarOpen.value = false;
 }
 
+/**
+ * Residual 445: new conversation clears client Host settlement/receipts.
+ */
+function startNewConversation(mode: WorkflowMode | string = 'chat') {
+  clientSettledHostProposalIds.value = [];
+  clientTaskHostReceipts.value = [];
+  startNewConversationBase(mode);
+  focusedHostProposalId.value = null;
+}
+
 function startNewConversationFromMobile() {
   closeMobileSidebar();
   startNewConversation();
@@ -1167,6 +1177,10 @@ async function selectConversationFromMobile(item: ConversationSummary) {
  * restored session owns task/goal/knowledge Host rows (process-local task.create included).
  */
 async function selectConversation(item: ConversationSummary) {
+  // Residual 445: client Host settlement/receipts are session-scoped UI state —
+  // clear before restore so previous conversation rows cannot leak into the next.
+  clientSettledHostProposalIds.value = [];
+  clientTaskHostReceipts.value = [];
   await selectConversationBase(item);
   const focus = resolveHostWorkbenchFocusFromSessionRuns({
     taskAgentRun: taskAgentRun.value,

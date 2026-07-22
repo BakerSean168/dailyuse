@@ -1,8 +1,9 @@
 /**
- * Residual 431/433/437/439: product path for AgentType task.create.
+ * Residual 431/433/437/439/445: product path for AgentType task.create.
  * Residual 433: optional linked goalId at start; session restore owned by useAIChatView.
  * Residual 437: process-local cancel/complete resume after Host lifecycle decisions.
  * Residual 439: process-local edit revise after Host proposal revise.
+ * Residual 445: re-align linkedGoalId from restored/synced taskAgentRun.
  * Host proposal + client createTemplate settle own mutation (residual 423–425).
  * Full Task LangGraph workflow is not claimed here.
  */
@@ -18,7 +19,7 @@ import type {
 } from '@dailyuse/contracts/ai';
 import type { AIChatService, ChatModelOption, ChatItem } from './types';
 import { getAIErrorMessage } from './error';
-import { applyHostTaskPatchToAgentActions } from './hostProposalLifecycle';
+import { applyHostTaskPatchToAgentActions, resolveLinkedGoalIdFromTaskAgentRun } from './hostProposalLifecycle';
 import { toast } from 'vue-sonner';
 
 export type UseAITaskWorkflowOptions = {
@@ -62,6 +63,14 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
     const next =
       typeof goalId === 'string' && goalId.trim().length > 0 ? goalId.trim() : null;
     linkedGoalId.value = next;
+  }
+
+  /**
+   * Residual 445: re-align ActionBar linked goal from task.create AgentRun snapshot
+   * (conversation restore / process-local getRun refresh / history reopen).
+   */
+  function syncLinkedGoalFromTaskAgentRun(result: AgentRunResult | null | undefined) {
+    linkedGoalId.value = resolveLinkedGoalIdFromTaskAgentRun(result);
   }
 
   function resetTaskWorkflowLocalState() {
@@ -245,6 +254,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
     linkedGoalId,
     canRunTaskAgent,
     setLinkedGoalId,
+    syncLinkedGoalFromTaskAgentRun,
     resetTaskWorkflowLocalState,
     startTaskAgentRun,
     cancelTaskAgentRun,

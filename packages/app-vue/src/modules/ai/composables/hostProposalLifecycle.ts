@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -1199,6 +1199,21 @@ export function resolveHostWorkbenchFocusFromSessionRuns(input: {
     resolveHostWorkbenchFocusFromAgentRun(input.goalAgentRun) ??
     resolveHostWorkbenchFocusFromAgentRun(input.noteAgentRun)
   );
+}
+
+/**
+ * Residual 445: recover optional linked goalId from task.create / task-shaped Host run.
+ * Reads pending/approved create_task_template payload and task draft artifacts.
+ * Used to re-align ActionBar linkedGoalId after conversation restore.
+ */
+export function resolveLinkedGoalIdFromTaskAgentRun(
+  result: AgentRunResult | null | undefined,
+): string | null {
+  if (!result?.run) return null;
+  if (result.run.agentType !== 'task.create' && !isPrimaryTaskHostAgentRun(result)) {
+    return null;
+  }
+  return taskDraftGoalId(result);
 }
 
 /**

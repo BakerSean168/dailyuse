@@ -350,6 +350,21 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create linked goal restore + client settlement isolation (residual 445)', () => {
+    expect(helper).toContain('resolveLinkedGoalIdFromTaskAgentRun');
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(taskWorkflow).toContain('syncLinkedGoalFromTaskAgentRun');
+    expect(taskWorkflow).toContain('resolveLinkedGoalIdFromTaskAgentRun');
+    const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatViewTs).toContain('syncLinkedGoalFromTaskAgentRun');
+    expect(chatViewTs).toContain('Residual 445');
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(chatView).toContain('clientSettledHostProposalIds.value = []');
+    expect(chatView).toContain('clientTaskHostReceipts.value = []');
+    expect(chatView).toContain('Residual 445');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('conversation restore Host workbench focus (residual 443)', () => {
     expect(helper).toContain('resolveHostWorkbenchFocusFromSessionRuns');
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
