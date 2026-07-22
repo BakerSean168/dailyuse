@@ -11,7 +11,7 @@ describe('AI server knowledge note terminology surface', () => {
   const dir = __dirname;
   const query = readFileSync(resolve(dir, 'query-knowledge.use-case.ts'), 'utf8');
   const goal = readFileSync(resolve(dir, 'generate-ai-goal.use-case.ts'), 'utf8');
-  const sync = readFileSync(resolve(dir, 'sync-knowledge-resources.use-case.ts'), 'utf8');
+  const sync = readFileSync(resolve(dir, 'sync-knowledge-notes.use-case.ts'), 'utf8');
 
   it('empty knowledge answers use note wording', () => {
     expect(query).toContain(

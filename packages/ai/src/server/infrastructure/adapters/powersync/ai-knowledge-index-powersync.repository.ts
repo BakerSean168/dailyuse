@@ -4,7 +4,7 @@ import type {
   KnowledgeIndexDiagnostics,
   KnowledgeIndexFailureRecord,
   KnowledgeIndexedChunk,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
 } from '../../../application/ports';
 
 const KNOWLEDGE_INDEX_KEY = 'aiKnowledgeIndex';
@@ -134,7 +134,7 @@ function resolveMimeType(metadata: Record<string, unknown>, fallbackType: string
   return 'text/plain';
 }
 
-function scoreIndexedResource(resource: KnowledgeIndexedResource, query: string): number {
+function scoreIndexedResource(resource: KnowledgeIndexedNote, query: string): number {
   const trimmedQuery = query.trim().toLowerCase();
   if (trimmedQuery.length === 0) {
     return 1;
@@ -183,11 +183,11 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
     };
   }
 
-  async findRelevantResources(
+  async findRelevantNotes(
     identityId: string,
     query: string,
     limit: number,
-  ): Promise<KnowledgeIndexedResource[]> {
+  ): Promise<KnowledgeIndexedNote[]> {
     if (limit <= 0) {
       return [];
     }
@@ -199,8 +199,8 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
       [identityId],
     );
 
-    const indexedResources = rows
-      .map((row): KnowledgeIndexedResource | null => {
+    const indexedNotes = rows
+      .map((row): KnowledgeIndexedNote | null => {
         const metadata = parseJsonRecord(row.metadata);
         const stored = parseStoredIndex(metadata);
         if (!stored || stored.status !== 'indexed') {
@@ -220,15 +220,15 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
           embedding: stored.embedding ?? [],
           chunks: stored.chunks ?? [],
           metadata,
-        } satisfies KnowledgeIndexedResource;
+        } satisfies KnowledgeIndexedNote;
       })
-      .filter((item): item is KnowledgeIndexedResource => item !== null);
+      .filter((item): item is KnowledgeIndexedNote => item !== null);
 
     if (query.trim().length === 0) {
-      return indexedResources.slice(0, limit);
+      return indexedNotes.slice(0, limit);
     }
 
-    return indexedResources
+    return indexedNotes
       .map((resource) => ({
         resource,
         score: scoreIndexedResource(resource, query),
@@ -239,10 +239,10 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
       .map(({ resource }) => resource);
   }
 
-  async findByResourceIds(
+  async findByNoteIds(
     identityId: string,
     resourceIds: string[],
-  ): Promise<KnowledgeIndexedResource[]> {
+  ): Promise<KnowledgeIndexedNote[]> {
     if (resourceIds.length === 0) {
       return [];
     }
@@ -255,8 +255,8 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
       [identityId, ...resourceIds],
     );
 
-    const indexedResources = rows
-      .map((row): KnowledgeIndexedResource | null => {
+    const indexedNotes = rows
+      .map((row): KnowledgeIndexedNote | null => {
         const metadata = parseJsonRecord(row.metadata);
         const stored = parseStoredIndex(metadata);
         if (!stored || stored.status !== 'indexed') {
@@ -276,14 +276,14 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
           embedding: stored.embedding ?? [],
           chunks: stored.chunks ?? [],
           metadata,
-        } satisfies KnowledgeIndexedResource;
+        } satisfies KnowledgeIndexedNote;
       })
-      .filter((item): item is KnowledgeIndexedResource => item !== null);
+      .filter((item): item is KnowledgeIndexedNote => item !== null);
 
-    return indexedResources;
+    return indexedNotes;
   }
 
-  async upsert(resource: KnowledgeIndexedResource): Promise<void> {
+  async upsert(resource: KnowledgeIndexedNote): Promise<void> {
     const row = await this.db.getOptional<{ metadata: string | null }>(
       `SELECT metadata FROM resources WHERE id = ? AND identity_id = ? AND deleted_at IS NULL LIMIT 1`,
       [resource.resourceId, resource.identityId],
@@ -374,7 +374,7 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
     ]);
   }
 
-  async removeByResourceId(identityId: string, resourceId: string): Promise<void> {
+  async removeByNoteId(identityId: string, resourceId: string): Promise<void> {
     const row = await this.db.getOptional<{ metadata: string | null }>(
       `SELECT metadata FROM resources WHERE id = ? AND identity_id = ? LIMIT 1`,
       [resourceId, identityId],

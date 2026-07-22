@@ -49,11 +49,11 @@ import {
   UpdateConversationUseCase,
   GenerateAIGoalUseCase,
   ManageAIKnowledgeNoteUseCase,
-  SyncKnowledgeResourcesUseCase,
+  SyncKnowledgeNotesUseCase,
   ReindexAllKnowledgeUseCase,
   SyncRelevantKnowledgeUseCase,
-  SyncResourceByIdUseCase,
-  RemoveKnowledgeIndexResourceUseCase,
+  SyncNoteByIdUseCase,
+  RemoveKnowledgeIndexNoteUseCase,
   QueryKnowledgeUseCase,
   ExpandKnowledgeUseCase,
   ReindexKnowledgeUseCase,
@@ -164,7 +164,7 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     dependencies.knowledgeQueryPort
       ? (() => {
           knowledgeIndexServices = {
-            syncResources: new SyncKnowledgeResourcesUseCase(
+            syncResources: new SyncKnowledgeNotesUseCase(
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
@@ -184,14 +184,14 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
               dependencies.executionLogPort,
               dependencies.knowledgeIndexStatusPort,
             ),
-            syncById: new SyncResourceByIdUseCase(
+            syncById: new SyncNoteByIdUseCase(
               dependencies.knowledgeSourcePort!,
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
               dependencies.knowledgeIndexStatusPort,
             ),
-            removeById: new RemoveKnowledgeIndexResourceUseCase(
+            removeById: new RemoveKnowledgeIndexNoteUseCase(
               dependencies.knowledgeIndexRepository,
             ),
           };

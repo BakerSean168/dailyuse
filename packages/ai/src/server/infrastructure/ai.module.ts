@@ -84,11 +84,11 @@ import type {
   ListConversationsUseCase,
   DeleteConversationUseCase,
   UpdateConversationUseCase,
-  SyncKnowledgeResourcesUseCase,
+  SyncKnowledgeNotesUseCase,
   ReindexAllKnowledgeUseCase,
   SyncRelevantKnowledgeUseCase,
-  SyncResourceByIdUseCase,
-  RemoveKnowledgeIndexResourceUseCase,
+  SyncNoteByIdUseCase,
+  RemoveKnowledgeIndexNoteUseCase,
 } from '../application/use-cases';
 
 // ---------------------------------------------------------------------------
@@ -195,11 +195,11 @@ export interface AIChatServices {
  * Knowledge index decomposed use cases.
  */
 export interface AIKnowledgeIndexServices {
-  readonly syncResources: SyncKnowledgeResourcesUseCase;
+  readonly syncResources: SyncKnowledgeNotesUseCase;
   readonly reindexAll: ReindexAllKnowledgeUseCase;
   readonly syncRelevant: SyncRelevantKnowledgeUseCase;
-  readonly syncById: SyncResourceByIdUseCase;
-  readonly removeById: RemoveKnowledgeIndexResourceUseCase;
+  readonly syncById: SyncNoteByIdUseCase;
+  readonly removeById: RemoveKnowledgeIndexNoteUseCase;
 }
 
 /**

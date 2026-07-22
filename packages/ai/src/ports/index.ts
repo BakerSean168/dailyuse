@@ -26,7 +26,7 @@ export type {
   GoalAutomationPlanningResult,
   IKnowledgeIngestionPort,
   KnowledgeIndexedChunk,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
   KnowledgeIngestionInput,
   IKnowledgeIndexRepository,
   KnowledgeIndexDiagnostics,

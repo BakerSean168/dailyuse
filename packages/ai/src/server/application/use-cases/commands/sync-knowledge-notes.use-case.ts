@@ -5,22 +5,22 @@ import type {
   IKnowledgeIndexStatusPort,
   IKnowledgeIngestionPort,
   KnowledgeSourceNote,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
 } from '../../ports';
 import { createLogger } from '@dailyuse/utils/logger';
 import {
   resolveSourceContentHash,
   recordExecution,
-  type SyncKnowledgeResourcesOptions,
-  type SyncKnowledgeResourcesResult,
+  type SyncKnowledgeNotesOptions,
+  type SyncKnowledgeNotesResult,
 } from './ai-knowledge-index-helpers';
 
-const logger = createLogger('SyncKnowledgeResourcesUseCase');
+const logger = createLogger('SyncKnowledgeNotesUseCase');
 
 /**
- * 同步知识资源索引
+ * 同步知识笔记索引
  */
-export class SyncKnowledgeResourcesUseCase {
+export class SyncKnowledgeNotesUseCase {
   constructor(
     private readonly knowledgeIndexRepository: IKnowledgeIndexRepository,
     private readonly knowledgeIngestionPort: IKnowledgeIngestionPort,
@@ -31,11 +31,11 @@ export class SyncKnowledgeResourcesUseCase {
   async execute(
     resources: KnowledgeSourceNote[],
     cx: ExecutionContext,
-    options?: SyncKnowledgeResourcesOptions,
-  ): Promise<SyncKnowledgeResourcesResult> {
+    options?: SyncKnowledgeNotesOptions,
+  ): Promise<SyncKnowledgeNotesResult> {
     if (resources.length === 0) {
       return {
-        indexedResources: [],
+        indexedNotes: [],
         indexedCount: 0,
         reusedCount: 0,
         failedCount: 0,
@@ -44,7 +44,7 @@ export class SyncKnowledgeResourcesUseCase {
     }
 
     const requestedAt = Date.now();
-    const cachedResources = await this.knowledgeIndexRepository.findByResourceIds(
+    const cachedResources = await this.knowledgeIndexRepository.findByNoteIds(
       cx.identityId,
       resources.map((resource) => resource.resourceId),
     );
@@ -52,8 +52,8 @@ export class SyncKnowledgeResourcesUseCase {
       cachedResources.map((resource) => [resource.resourceId, resource] as const),
     );
 
-    const indexedResources: KnowledgeIndexedResource[] = [];
-    const results: SyncKnowledgeResourcesResult['results'] = [];
+    const indexedNotes: KnowledgeIndexedNote[] = [];
+    const results: SyncKnowledgeNotesResult['results'] = [];
     let indexedCount = 0;
     let reusedCount = 0;
     let failedCount = 0;
@@ -64,7 +64,7 @@ export class SyncKnowledgeResourcesUseCase {
       const canReuse = !options?.force && cached && cached.contentHash === sourceContentHash;
 
       if (canReuse && cached) {
-        indexedResources.push(cached);
+        indexedNotes.push(cached);
         results.push({
           resourceId: resource.resourceId,
           resourcePath: resource.resourcePath,
@@ -76,12 +76,12 @@ export class SyncKnowledgeResourcesUseCase {
       }
 
       try {
-        const indexed = await this.knowledgeIngestionPort.indexResource({
-          resource,
+        const indexed = await this.knowledgeIngestionPort.indexNote({
+          note: resource,
           providerConfig: options?.providerConfig,
         });
         await this.knowledgeIndexRepository.upsert(indexed);
-        indexedResources.push(indexed);
+        indexedNotes.push(indexed);
         results.push({
           resourceId: resource.resourceId,
           resourcePath: resource.resourcePath,
@@ -90,7 +90,7 @@ export class SyncKnowledgeResourcesUseCase {
         indexedCount += 1;
         await this.reportIndexStatus(cx.identityId, resource, sourceContentHash, 'indexed');
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to index resource';
+        const message = error instanceof Error ? error.message : 'Failed to index knowledge note';
         failedCount += 1;
         results.push({
           resourceId: resource.resourceId,
@@ -119,7 +119,7 @@ export class SyncKnowledgeResourcesUseCase {
         await this.reportIndexStatus(cx.identityId, resource, sourceContentHash, 'failed');
 
         if (cached) {
-          indexedResources.push(cached);
+          indexedNotes.push(cached);
         }
       }
     }
@@ -151,7 +151,7 @@ export class SyncKnowledgeResourcesUseCase {
     });
 
     return {
-      indexedResources,
+      indexedNotes,
       indexedCount,
       reusedCount,
       failedCount,

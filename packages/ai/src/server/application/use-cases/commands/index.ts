@@ -29,11 +29,11 @@ export * from './update-conversation.use-case';
 
 // AI Knowledge Index helpers and individual use cases
 export * from './ai-knowledge-index-helpers';
-export * from './sync-knowledge-resources.use-case';
+export * from './sync-knowledge-notes.use-case';
 export * from './reindex-all-knowledge.use-case';
 export * from './sync-relevant-knowledge.use-case';
-export * from './sync-resource-by-id.use-case';
-export * from './remove-knowledge-index-resource.use-case';
+export * from './sync-note-by-id.use-case';
+export * from './remove-knowledge-index-note.use-case';
 
 // AI Knowledge Query individual use cases
 export * from './query-knowledge.use-case';

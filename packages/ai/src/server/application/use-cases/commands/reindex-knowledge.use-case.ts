@@ -6,8 +6,8 @@ import { createLogger } from '@dailyuse/utils/logger';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type { ReindexAllKnowledgeUseCase } from './reindex-all-knowledge.use-case';
-import type { SyncResourceByIdUseCase } from './sync-resource-by-id.use-case';
-import type { SyncKnowledgeResourcesResult } from './ai-knowledge-index-helpers';
+import type { SyncNoteByIdUseCase } from './sync-note-by-id.use-case';
+import type { SyncKnowledgeNotesResult } from './ai-knowledge-index-helpers';
 import { attachRequestIdToError, createAIRequestId } from './ai-observability';
 import {
   resolveActiveProviderConfig,
@@ -23,7 +23,7 @@ export class ReindexKnowledgeUseCase {
   constructor(
     private readonly providerConfigRepository: IAIProviderConfigRepository,
     private readonly knowledgeIndexService: ReindexAllKnowledgeUseCase,
-    private readonly syncResourceById?: SyncResourceByIdUseCase,
+    private readonly syncNoteById?: SyncNoteByIdUseCase,
   ) {}
 
   async execute(
@@ -54,7 +54,7 @@ export class ReindexKnowledgeUseCase {
         providerConfig: executionProviderConfig,
       };
       const sync = request.resourceIds
-        ? await this.syncRequestedResources(request.resourceIds, cx, options)
+        ? await this.syncRequestedNotes(request.resourceIds, cx, options)
         : await this.knowledgeIndexService.execute(cx, request.limit ?? 200, options);
 
       return ok({
@@ -74,17 +74,17 @@ export class ReindexKnowledgeUseCase {
     }
   }
 
-  private async syncRequestedResources(
+  private async syncRequestedNotes(
     resourceIds: string[],
     cx: ExecutionContext,
-    options: Parameters<SyncResourceByIdUseCase['execute']>[2],
-  ): Promise<SyncKnowledgeResourcesResult> {
-    if (!this.syncResourceById) {
+    options: Parameters<SyncNoteByIdUseCase['execute']>[2],
+  ): Promise<SyncKnowledgeNotesResult> {
+    if (!this.syncNoteById) {
       throw new Error('Targeted knowledge indexing is unavailable');
     }
 
-    const merged: SyncKnowledgeResourcesResult = {
-      indexedResources: [],
+    const merged: SyncKnowledgeNotesResult = {
+      indexedNotes: [],
       indexedCount: 0,
       reusedCount: 0,
       failedCount: 0,
@@ -92,19 +92,19 @@ export class ReindexKnowledgeUseCase {
     };
 
     for (const resourceId of [...new Set(resourceIds)]) {
-      const result = await this.syncResourceById.execute(resourceId, cx, options);
-      if (!result.resource || !result.sync) {
+      const result = await this.syncNoteById.execute(resourceId, cx, options);
+      if (!result.note || !result.sync) {
         merged.failedCount += 1;
         merged.results.push({
           resourceId,
           resourcePath: resourceId,
           status: 'failed',
-          error: 'Repository resource not found',
+          error: 'Knowledge note not found',
         });
         continue;
       }
 
-      merged.indexedResources.push(...result.sync.indexedResources);
+      merged.indexedNotes.push(...result.sync.indexedNotes);
       merged.indexedCount += result.sync.indexedCount;
       merged.reusedCount += result.sync.reusedCount;
       merged.failedCount += result.sync.failedCount;

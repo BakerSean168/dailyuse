@@ -3,13 +3,13 @@ import { describe, expect, it, vi } from 'vitest';
 import type { PrismaClient } from '@dailyuse/database';
 
 import { AIKnowledgeIndexPrismaRepository } from '../ai-knowledge-index-prisma.repository';
-import type { KnowledgeIndexedResource } from '../../../../application/ports';
+import type { KnowledgeIndexedNote } from '../../../../application/ports';
 
 const NOW = new Date('2026-03-27T00:00:00.000Z');
 
 function createIndexedResource(
-  overrides: Partial<KnowledgeIndexedResource> = {},
-): KnowledgeIndexedResource {
+  overrides: Partial<KnowledgeIndexedNote> = {},
+): KnowledgeIndexedNote {
   return {
     identityId: 'identity-1',
     repositoryId: 'repo-1',
@@ -73,7 +73,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const result = await repository.findRelevantResources(
+    const result = await repository.findRelevantNotes(
       'identity-1',
       'How does grounding citation work?',
       5,
@@ -135,7 +135,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const result = await repository.findRelevantResources(
+    const result = await repository.findRelevantNotes(
       'identity-1',
       'How does grounding citation work?',
       5,
@@ -180,12 +180,12 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const first = await repository.findRelevantResources(
+    const first = await repository.findRelevantNotes(
       'identity-1',
       'How does grounding citation work?',
       5,
     );
-    const second = await repository.findRelevantResources(
+    const second = await repository.findRelevantNotes(
       'identity-1',
       'How does grounding citation work?',
       5,
@@ -287,7 +287,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const result = await repository.findByResourceIds('identity-1', ['resource-1', 'resource-2']);
+    const result = await repository.findByNoteIds('identity-1', ['resource-1', 'resource-2']);
 
     expect(result).toEqual([
       expect.objectContaining({
@@ -313,7 +313,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    await expect(repository.findByResourceIds('identity-1', ['resource-1'])).rejects.toThrow(
+    await expect(repository.findByNoteIds('identity-1', ['resource-1'])).rejects.toThrow(
       tableError.message,
     );
 

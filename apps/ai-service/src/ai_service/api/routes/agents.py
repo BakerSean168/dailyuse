@@ -130,7 +130,7 @@ def _provider_config_input(data: dict[str, Any]) -> ProviderConfig | None:
 
 
 def _related_resources_input(data: dict[str, Any]) -> list[dict[str, Any]]:
-    raw = data.get("related_resources") or data.get("relatedResources")
+    raw = data.get("related_resources")
     if raw is None:
         return []
     if not isinstance(raw, list):

@@ -7,7 +7,7 @@ import type {
   KnowledgeIndexDiagnostics,
   KnowledgeIndexFailureRecord,
   KnowledgeIndexedChunk,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
 } from '../../../application/ports';
 
 const RETRIEVAL_VECTOR_DIMENSION = 48;
@@ -142,7 +142,7 @@ function toPrismaJson(value: unknown): Prisma.InputJsonValue {
 
 function mapEntryRowToIndexedResource(
   row: KnowledgeIndexEntryRow,
-): KnowledgeIndexedResource | null {
+): KnowledgeIndexedNote | null {
   if (row.status !== 'indexed') {
     return null;
   }
@@ -161,11 +161,11 @@ function mapEntryRowToIndexedResource(
     embedding: toNumberArray(row.embedding),
     chunks: toChunkArray(row.chunks),
     metadata,
-  } satisfies KnowledgeIndexedResource;
+  } satisfies KnowledgeIndexedNote;
 }
 
 function scoreIndexedResource(
-  resource: KnowledgeIndexedResource,
+  resource: KnowledgeIndexedNote,
   query: string,
   semanticScore = 0,
 ): number {
@@ -203,7 +203,7 @@ function scoreIndexedResource(
   return score + semanticScore * 4;
 }
 
-function buildRetrievalEmbeddingSource(resource: KnowledgeIndexedResource): string {
+function buildRetrievalEmbeddingSource(resource: KnowledgeIndexedNote): string {
   return [
     resource.title ?? '',
     resource.resourcePath,
@@ -242,11 +242,11 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
     };
   }
 
-  async findRelevantResources(
+  async findRelevantNotes(
     identityId: string,
     query: string,
     limit: number,
-  ): Promise<KnowledgeIndexedResource[]> {
+  ): Promise<KnowledgeIndexedNote[]> {
     if (limit <= 0) {
       return [];
     }
@@ -275,15 +275,15 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
       take: scanLimit,
     })) as KnowledgeIndexEntryRow[];
 
-    const indexedResources = rows
+    const indexedNotes = rows
       .map((row) => mapEntryRowToIndexedResource(row))
-      .filter((item): item is KnowledgeIndexedResource => item !== null);
+      .filter((item): item is KnowledgeIndexedNote => item !== null);
 
     if (trimmedQuery.length === 0) {
-      return indexedResources.slice(0, limit);
+      return indexedNotes.slice(0, limit);
     }
 
-    return indexedResources
+    return indexedNotes
       .map((resource) => ({
         resource,
         score: scoreIndexedResource(resource, trimmedQuery),
@@ -294,10 +294,10 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
       .map(({ resource }) => resource);
   }
 
-  async findByResourceIds(
+  async findByNoteIds(
     identityId: string,
     resourceIds: string[],
-  ): Promise<KnowledgeIndexedResource[]> {
+  ): Promise<KnowledgeIndexedNote[]> {
     if (resourceIds.length === 0) {
       return [];
     }
@@ -311,10 +311,10 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
     })) as KnowledgeIndexEntryRow[];
     return rows
       .map((row) => mapEntryRowToIndexedResource(row))
-      .filter((item): item is KnowledgeIndexedResource => item !== null);
+      .filter((item): item is KnowledgeIndexedNote => item !== null);
   }
 
-  async upsert(resource: KnowledgeIndexedResource): Promise<void> {
+  async upsert(resource: KnowledgeIndexedNote): Promise<void> {
     await this.prisma.aiKnowledgeIndexEntry.upsert({
       where: { resourceId: resource.resourceId },
       create: {
@@ -421,7 +421,7 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
     await this.clearRetrievalVector(record.resourceId);
   }
 
-  async removeByResourceId(identityId: string, resourceId: string): Promise<void> {
+  async removeByNoteId(identityId: string, resourceId: string): Promise<void> {
     await this.prisma.aiKnowledgeIndexEntry.updateMany({
       where: { identityId, resourceId, deletedAt: null },
       data: { deletedAt: new Date() },
@@ -433,7 +433,7 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
     identityId: string,
     query: string,
     scanLimit: number,
-  ): Promise<KnowledgeIndexedResource[]> {
+  ): Promise<KnowledgeIndexedNote[]> {
     if (this.vectorSupportState === 'disabled') {
       return [];
     }
@@ -486,7 +486,7 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
           (
             item,
           ): item is {
-            resource: KnowledgeIndexedResource;
+            resource: KnowledgeIndexedNote;
             score: number;
           } => item !== null && item.score > 0.35,
         )
@@ -498,7 +498,7 @@ export class AIKnowledgeIndexPrismaRepository implements IKnowledgeIndexReposito
     }
   }
 
-  private async updateRetrievalVector(resource: KnowledgeIndexedResource): Promise<void> {
+  private async updateRetrievalVector(resource: KnowledgeIndexedNote): Promise<void> {
     if (this.vectorSupportState === 'disabled') {
       return;
     }

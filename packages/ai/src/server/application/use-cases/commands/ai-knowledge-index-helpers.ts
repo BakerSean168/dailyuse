@@ -2,20 +2,20 @@ import { createHash } from 'node:crypto';
 import type {
   IAIExecutionLogPort,
   KnowledgeSourceNote,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
 } from '../../ports';
 import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('AIKnowledgeIndexHelpers');
 
-export interface SyncKnowledgeResourcesOptions {
+export interface SyncKnowledgeNotesOptions {
   force?: boolean;
   requestId?: string;
   providerConfig?: import('../../ports').ChatExecutionProviderConfig;
 }
 
-export interface SyncKnowledgeResourcesResult {
-  indexedResources: KnowledgeIndexedResource[];
+export interface SyncKnowledgeNotesResult {
+  indexedNotes: KnowledgeIndexedNote[];
   indexedCount: number;
   reusedCount: number;
   failedCount: number;
@@ -27,12 +27,12 @@ export interface SyncKnowledgeResourcesResult {
   }>;
 }
 
-export interface SyncKnowledgeResourceByIdResult {
-  resource: KnowledgeSourceNote | null;
-  sync: SyncKnowledgeResourcesResult | null;
+export interface SyncKnowledgeNoteByIdResult {
+  note: KnowledgeSourceNote | null;
+  sync: SyncKnowledgeNotesResult | null;
 }
 
-export function mergeUniqueResources(
+export function mergeUniqueNotes(
   resources: KnowledgeSourceNote[],
 ): KnowledgeSourceNote[] {
   const seen = new Set<string>();

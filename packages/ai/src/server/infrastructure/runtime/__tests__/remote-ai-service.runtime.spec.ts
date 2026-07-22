@@ -16,7 +16,7 @@ import type {
   IKnowledgeNotePersistencePort,
   IKnowledgeQueryPort,
   IKnowledgeSourcePort,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
   KnowledgeQueryCitation,
   KnowledgeSourceNote,
 } from '../../../application/ports';
@@ -111,7 +111,7 @@ function createKnowledgeQueryBundleDeps(): {
     content: 'Knowledge answers should cite repository excerpts.',
     metadata: {},
   };
-  const indexedResource: KnowledgeIndexedResource = {
+  const indexedResource: KnowledgeIndexedNote = {
     ...sourceResource,
     contentHash: 'hash-1',
     summary: 'Knowledge answers should cite repository excerpts.',
@@ -147,14 +147,14 @@ function createKnowledgeQueryBundleDeps(): {
     },
     knowledgeIndexRepository: {
       getDiagnostics: vi.fn(),
-      findByResourceIds: vi.fn().mockResolvedValue([]),
-      findRelevantResources: vi.fn().mockResolvedValue([]),
+      findByNoteIds: vi.fn().mockResolvedValue([]),
+      findRelevantNotes: vi.fn().mockResolvedValue([]),
       upsert: vi.fn().mockResolvedValue(undefined),
       markRequested: vi.fn().mockResolvedValue(undefined),
       markFailed: vi.fn().mockResolvedValue(undefined),
     },
     knowledgeIngestionPort: {
-      indexResource: vi.fn().mockResolvedValue(indexedResource),
+      indexNote: vi.fn().mockResolvedValue(indexedResource),
     },
     knowledgeQueryPort: {
       query: vi.fn().mockResolvedValue({

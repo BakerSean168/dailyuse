@@ -73,7 +73,7 @@ export class QueryKnowledgeUseCase {
         },
       );
 
-      if (sync.resources.length === 0 || sync.sync.indexedResources.length === 0) {
+      if (sync.resources.length === 0 || sync.sync.indexedNotes.length === 0) {
         const emptyResult: QueryKnowledgeRes = {
           answer: 'No relevant knowledge notes were found for this question.',
           citations: [],
@@ -113,7 +113,7 @@ export class QueryKnowledgeUseCase {
         identityId: cx.identityId,
         providerConfig: executionProviderConfig,
         question: request.query,
-        indexedResources: sync.sync.indexedResources,
+        indexedNotes: sync.sync.indexedNotes,
         maxCitations: 3,
         requestId,
       });

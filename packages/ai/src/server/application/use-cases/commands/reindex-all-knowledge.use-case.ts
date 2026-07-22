@@ -6,17 +6,17 @@ import type {
   IKnowledgeIndexStatusPort,
   IKnowledgeSourcePort,
 } from '../../ports';
-import { SyncKnowledgeResourcesUseCase } from './sync-knowledge-resources.use-case';
+import { SyncKnowledgeNotesUseCase } from './sync-knowledge-notes.use-case';
 import type {
-  SyncKnowledgeResourcesOptions,
-  SyncKnowledgeResourcesResult,
+  SyncKnowledgeNotesOptions,
+  SyncKnowledgeNotesResult,
 } from './ai-knowledge-index-helpers';
 
 /**
  * 重建全部知识索引
  */
 export class ReindexAllKnowledgeUseCase {
-  private readonly syncResources: SyncKnowledgeResourcesUseCase;
+  private readonly syncResources: SyncKnowledgeNotesUseCase;
 
   constructor(
     private readonly knowledgeSourcePort: IKnowledgeSourcePort,
@@ -25,7 +25,7 @@ export class ReindexAllKnowledgeUseCase {
     executionLogPort?: IAIExecutionLogPort,
     knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort,
   ) {
-    this.syncResources = new SyncKnowledgeResourcesUseCase(
+    this.syncResources = new SyncKnowledgeNotesUseCase(
       knowledgeIndexRepository,
       knowledgeIngestionPort,
       executionLogPort,
@@ -36,8 +36,8 @@ export class ReindexAllKnowledgeUseCase {
   async execute(
     cx: ExecutionContext,
     limit = 200,
-    options?: SyncKnowledgeResourcesOptions,
-  ): Promise<SyncKnowledgeResourcesResult> {
+    options?: SyncKnowledgeNotesOptions,
+  ): Promise<SyncKnowledgeNotesResult> {
     const resources = await this.knowledgeSourcePort.listIndexableNotes(cx.identityId, limit);
     return this.syncResources.execute(resources, cx, {
       ...options,

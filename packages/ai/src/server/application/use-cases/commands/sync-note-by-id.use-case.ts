@@ -6,17 +6,17 @@ import type {
   IKnowledgeIndexStatusPort,
   IKnowledgeSourcePort,
 } from '../../ports';
-import { SyncKnowledgeResourcesUseCase } from './sync-knowledge-resources.use-case';
+import { SyncKnowledgeNotesUseCase } from './sync-knowledge-notes.use-case';
 import type {
-  SyncKnowledgeResourcesOptions,
-  SyncKnowledgeResourceByIdResult,
+  SyncKnowledgeNotesOptions,
+  SyncKnowledgeNoteByIdResult,
 } from './ai-knowledge-index-helpers';
 
 /**
- * 按 ID 同步单个知识资源
+ * 按 ID 同步单个知识笔记
  */
-export class SyncResourceByIdUseCase {
-  private readonly syncResources: SyncKnowledgeResourcesUseCase;
+export class SyncNoteByIdUseCase {
+  private readonly syncResources: SyncKnowledgeNotesUseCase;
 
   constructor(
     private readonly knowledgeSourcePort: IKnowledgeSourcePort,
@@ -25,7 +25,7 @@ export class SyncResourceByIdUseCase {
     executionLogPort?: IAIExecutionLogPort,
     knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort,
   ) {
-    this.syncResources = new SyncKnowledgeResourcesUseCase(
+    this.syncResources = new SyncKnowledgeNotesUseCase(
       knowledgeIndexRepository,
       knowledgeIngestionPort,
       executionLogPort,
@@ -36,18 +36,18 @@ export class SyncResourceByIdUseCase {
   async execute(
     resourceId: string,
     cx: ExecutionContext,
-    options?: SyncKnowledgeResourcesOptions,
-  ): Promise<SyncKnowledgeResourceByIdResult> {
+    options?: SyncKnowledgeNotesOptions,
+  ): Promise<SyncKnowledgeNoteByIdResult> {
     const resource = await this.knowledgeSourcePort.getNoteById(cx.identityId, resourceId);
     if (!resource) {
       return {
-        resource: null,
+        note: null,
         sync: null,
       };
     }
 
     return {
-      resource,
+      note: resource,
       sync: await this.syncResources.execute([resource], cx, {
         ...options,
         force: options?.force ?? true,

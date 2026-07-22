@@ -76,7 +76,7 @@ export type {
 export type {
   IKnowledgeIngestionPort,
   KnowledgeIndexedChunk,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
   KnowledgeIngestionInput,
   KnowledgeSourceNote,
 } from './knowledge-ingestion.port';

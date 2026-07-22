@@ -82,7 +82,7 @@ export class ExpandKnowledgeUseCase {
         providerConfig: executionProviderConfig,
         instruction: request.instruction,
         currentContent: request.currentContent,
-        indexedResources: sync.sync.indexedResources,
+        indexedNotes: sync.sync.indexedNotes,
         maxCitations: request.maxCitations ?? 4,
         requestId,
       });

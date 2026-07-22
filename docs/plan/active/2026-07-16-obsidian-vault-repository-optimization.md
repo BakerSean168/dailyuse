@@ -2244,6 +2244,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > ai-query/goal/runtime + api/desktop knowledge-source adapter specs + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百一十四轮）：AI knowledge index/sync 层 Resource→Note 命名——
+> `KnowledgeIndexedNote`、`SyncKnowledgeNotesUseCase`、`indexNote`/`findByNoteIds`/
+> `findRelevantNotes`/`removeByNoteId`、`indexedNotes`、`KnowledgeIngestionInput.note`；
+> 文件 `sync-knowledge-notes`/`sync-note-by-id`/`remove-knowledge-index-note`；ai-service
+> 入参只认 snake_case `related_resources`（去掉 camelCase 双轨）。Wire 键
+> `indexed_resources`/`related_resources` 与协议 `resourceId` 保持稳定。补
+> `knowledge-index-note.surface.spec.ts`。§13.2 未打勾项仍为部分/外部阻塞。
+> 验证：index/source/terminology surfaces + query/goal/runtime/prisma specs +
+> governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2521,6 +2531,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百一十一轮：module-index + goal-workflow e2e drop legacy hard-fail/debug dual-track claims。
   残留二百一十二轮：§13.2 core evidence suite re-run (204 tests, residual 211 locks, no checkbox changes)。
   残留二百一十三轮：AI knowledge source port Resource→Note naming (wire related_resources stable)。
+  残留二百一十四轮：AI knowledge index/sync Resource→Note naming (wire indexed_resources stable)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
