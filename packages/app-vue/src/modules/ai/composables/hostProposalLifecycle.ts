@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385/387/397/399/401).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -37,7 +37,7 @@ export function getRememberedHostProposalRevision(
 }
 
 
-export type HostProposalPanelSource = 'goal' | 'knowledge';
+export type HostProposalPanelSource = 'goal' | 'knowledge' | 'task';
 
 /**
  * Workbench-facing Host proposal row. Lifecycle only — mutation stays in executors.
@@ -59,6 +59,8 @@ export type HostProposalPanelItem = {
   contentMarkdown?: string;
   /** Residual 367: goal.create draft description. */
   description?: string;
+  /** Residual 419: task.create optional linked goal id. */
+  goalId?: string | null;
 };
 
 function collectEvents(
@@ -250,6 +252,8 @@ export function buildHostProposalPatchFromDraft(input: {
   targetPath?: string;
   contentMarkdown?: string;
   description?: string | null;
+  /** Residual 419: task.create optional goal link. */
+  goalId?: string | null;
 }): AssistantProposalPatch {
   if (input.kind === 'knowledge.write') {
     const patch: AssistantProposalPatch = {};
@@ -273,9 +277,13 @@ export function buildHostProposalPatchFromDraft(input: {
     return patch;
   }
 
+  // Residual 419: task.create (and unknown kinds fall through to title-only).
   const patch: AssistantProposalPatch = {};
   if (typeof input.title === 'string' && input.title.trim()) {
     patch.title = input.title.trim();
+  }
+  if (input.kind === 'task.create' && input.goalId !== undefined) {
+    patch.goalId = input.goalId;
   }
   return patch;
 }
@@ -286,6 +294,7 @@ export function isHostProposalDraftDirty(input: {
   targetPath?: string;
   contentMarkdown?: string;
   description?: string | null;
+  goalId?: string | null;
 }): boolean {
   if (input.item.kind === 'knowledge.write') {
     const nextPath = (input.targetPath ?? '').trim().split('\\').join('/');
@@ -299,6 +308,12 @@ export function isHostProposalDraftDirty(input: {
     const nextDescription = input.description ?? '';
     const baseDescription = input.item.description ?? '';
     return titleDirty || nextDescription !== baseDescription;
+  }
+  if (input.item.kind === 'task.create') {
+    const titleDirty = (input.title ?? '').trim() !== input.item.title.trim();
+    const nextGoalId = (input.goalId ?? '').trim();
+    const baseGoalId = (input.item.goalId ?? '').trim();
+    return titleDirty || nextGoalId !== baseGoalId;
   }
   return (input.title ?? '').trim() !== input.item.title.trim();
 }
@@ -549,9 +564,57 @@ function summarizeExecutedActions(run: AgentRunResult): {
  * waiting_approval / waiting_execution never produce receipts (still pending).
  * Does not call Host kernel mutation execution or any mutation port.
  */
+
+/**
+ * Residual 419: task.create draft title from artifact / pending action payload.
+ */
+function taskDraftTitle(run: AgentRunResult): string {
+  const draft = run.state.artifacts.find(
+    (artifact) =>
+      artifact.kind === 'task_draft' ||
+      artifact.kind === 'task' ||
+      artifact.kind === 'task_template_draft',
+  );
+  if (draft && typeof draft.title === 'string' && draft.title.trim()) {
+    return draft.title.trim();
+  }
+  const dataTitle = draft?.data?.['title'];
+  if (typeof dataTitle === 'string' && dataTitle.trim()) return dataTitle.trim();
+  const action = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['title']
+      : undefined;
+  return typeof fromPayload === 'string' ? fromPayload.trim() : '';
+}
+
+function taskDraftGoalId(run: AgentRunResult): string | null {
+  const draft = run.state.artifacts.find(
+    (artifact) =>
+      artifact.kind === 'task_draft' ||
+      artifact.kind === 'task' ||
+      artifact.kind === 'task_template_draft',
+  );
+  const fromData = draft?.data?.['goalId'];
+  if (typeof fromData === 'string' && fromData.trim()) return fromData.trim();
+  if (fromData === null) return null;
+  const action = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['goalId']
+      : undefined;
+  if (typeof fromPayload === 'string' && fromPayload.trim()) return fromPayload.trim();
+  if (fromPayload === null) return null;
+  return null;
+}
+
 export function buildHostExecutionReceiptItems(input: {
   goalAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;
+  /** Residual 419: optional task.create bridge run (fixture / future AgentType). */
+  taskAgentRun?: AgentRunResult | null;
 }): HostExecutionReceiptItem[] {
   const items: HostExecutionReceiptItem[] = [];
 
@@ -624,12 +687,45 @@ export function buildHostExecutionReceiptItems(input: {
     }
   }
 
+  const taskRun = input.taskAgentRun ?? null;
+  if (taskRun && HOST_RECEIPT_STATUSES.has(taskRun.run.status)) {
+    const status = taskRun.run.status as HostExecutionReceiptItem['runStatus'];
+    const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
+    const counts = summarizeExecutedActions(taskRun);
+    if (
+      counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
+      items.push({
+        runId: taskRun.run.runId,
+        proposalId: ref.proposalId,
+        revision: getRememberedHostProposalRevision(ref.proposalId, ref.revision),
+        kind: 'task.create',
+        source: 'task',
+        runStatus: status,
+        ok: counts.ok,
+        title: taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`,
+        summary: counts.summary,
+        executedCount: counts.executedCount,
+        failedCount: counts.failedCount,
+        skippedCount: counts.skippedCount,
+        entityIds: counts.entityIds,
+        actionLines: counts.actionLines,
+        primaryEntityId: counts.primaryEntityId,
+        receiptKey: `host-receipt:${ref.proposalId}`,
+      });
+    }
+  }
+
   return items;
 }
 
 export function buildPendingHostProposalItems(input: {
   goalAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;
+  /** Residual 419: optional task.create bridge run (fixture / future AgentType). */
+  taskAgentRun?: AgentRunResult | null;
 }): HostProposalPanelItem[] {
   const items: HostProposalPanelItem[] = [];
 
@@ -670,6 +766,26 @@ export function buildPendingHostProposalItems(input: {
     });
   }
 
+  // Residual 419: task.create Host proposal lane (presentation + lifecycle only).
+  const taskRun = input.taskAgentRun ?? null;
+  if (taskRun?.run.status === 'waiting_approval') {
+    const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
+    const title = taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`;
+    const goalId = taskDraftGoalId(taskRun);
+    items.push({
+      runId: taskRun.run.runId,
+      proposalId: ref.proposalId,
+      revision: ref.revision,
+      kind: 'task.create',
+      source: 'task',
+      runStatus: 'waiting_approval',
+      title,
+      summary: firstPendingRationale(taskRun),
+      pendingActionCount: pendingActionCount(taskRun),
+      ...(goalId !== null && goalId !== undefined ? { goalId } : {}),
+    });
+  }
+
   return items;
 }
 
@@ -688,7 +804,18 @@ export function resolveHostWorkbenchReopenFromAgentRun(
 ): HostWorkbenchReopenKind {
   if (!result?.run) return 'none';
   const agentType = result.run.agentType;
-  if (agentType !== 'goal.create' && agentType !== 'knowledge.generate') {
+  // Residual 419: task.create Host lane via task-shaped artifacts (no AgentType yet).
+  const looksLikeTaskHostRun = result.state.artifacts.some(
+    (artifact) =>
+      artifact.kind === 'task_draft' ||
+      artifact.kind === 'task' ||
+      artifact.kind === 'task_template_draft',
+  );
+  if (
+    agentType !== 'goal.create'
+    && agentType !== 'knowledge.generate'
+    && !looksLikeTaskHostRun
+  ) {
     return 'none';
   }
   if (result.run.status === 'waiting_approval') {
@@ -700,8 +827,9 @@ export function resolveHostWorkbenchReopenFromAgentRun(
     result.run.status === 'cancelled'
   ) {
     const items = buildHostExecutionReceiptItems({
-      goalAgentRun: agentType === 'goal.create' ? result : null,
+      goalAgentRun: agentType === 'goal.create' && !looksLikeTaskHostRun ? result : null,
       noteAgentRun: agentType === 'knowledge.generate' ? result : null,
+      taskAgentRun: looksLikeTaskHostRun ? result : null,
     });
     return items.length > 0 ? 'receipt' : 'none';
   }

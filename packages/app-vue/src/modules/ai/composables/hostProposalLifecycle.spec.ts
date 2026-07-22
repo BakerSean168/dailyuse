@@ -1154,3 +1154,107 @@ describe('composeHostWorkbenchTimelineArtifacts (residual 411)', () => {
     expect(composition.isolationOk).toBe(true);
   });
 });
+
+function taskWaitingRun(): AgentRunResult {
+  return {
+    run: {
+      runId: 'run-task-1',
+      threadId: 'thread-task-1',
+      conversationId: 'conv-task-1',
+      identityId: 'id-1',
+      agentType: 'goal.create',
+      status: 'waiting_approval',
+      createdAt: 1,
+      updatedAt: 2,
+    },
+    state: {
+      messages: [],
+      intent: 'task-create',
+      stage: 'approval',
+      artifacts: [
+        {
+          kind: 'task_draft',
+          title: 'Ship Host Task lane',
+          data: { goalId: 'goal-1' },
+        },
+      ],
+      pendingActions: [
+        {
+          tool: 'create_task_template',
+          rationale: 'Create a follow-up task',
+          payload: { title: 'Ship Host Task lane', goalId: 'goal-1' },
+          dependsOn: [],
+        },
+      ],
+      approvedActions: [],
+      executedActions: [],
+      errors: [],
+      usage: {},
+    },
+  } as AgentRunResult;
+}
+
+describe('Host task.create proposal lane (residual 419)', () => {
+  it('builds pending task Host proposal rows with title + goalId', () => {
+    const items = buildPendingHostProposalItems({ taskAgentRun: taskWaitingRun() });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      kind: 'task.create',
+      source: 'task',
+      runStatus: 'waiting_approval',
+      title: 'Ship Host Task lane',
+      goalId: 'goal-1',
+      proposalId: 'agent-run:run-task-1:task.create',
+    });
+  });
+
+  it('builds task Host execution receipts and reopens workbench for task-shaped runs', () => {
+    const completed = taskWaitingRun();
+    completed.run.status = 'completed';
+    completed.state.pendingActions = [];
+    completed.state.executedActions = [
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: 'created',
+        entityId: 'task-1',
+      },
+    ] as any;
+
+    const receipts = buildHostExecutionReceiptItems({ taskAgentRun: completed });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]).toMatchObject({
+      kind: 'task.create',
+      source: 'task',
+      title: 'Ship Host Task lane',
+      primaryEntityId: 'task-1',
+    });
+    expect(resolveHostWorkbenchReopenFromAgentRun(completed)).toBe('receipt');
+    expect(resolveHostWorkbenchReopenFromAgentRun(taskWaitingRun())).toBe('proposal');
+  });
+
+  it('patches and dirties task.create title + goalId', () => {
+    const [item] = buildPendingHostProposalItems({ taskAgentRun: taskWaitingRun() });
+    expect(item).toBeTruthy();
+    const patch = buildHostProposalPatchFromDraft({
+      kind: 'task.create',
+      title: 'Renamed task',
+      goalId: 'goal-2',
+    });
+    expect(patch).toEqual({ title: 'Renamed task', goalId: 'goal-2' });
+    expect(
+      isHostProposalDraftDirty({
+        item: item!,
+        title: 'Renamed task',
+        goalId: 'goal-1',
+      }),
+    ).toBe(true);
+    expect(
+      isHostProposalDraftDirty({
+        item: item!,
+        title: item!.title,
+        goalId: item!.goalId ?? null,
+      }),
+    ).toBe(false);
+  });
+});

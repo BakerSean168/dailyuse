@@ -48,6 +48,8 @@ type DraftState = {
   description: string;
   targetPath: string;
   contentMarkdown: string;
+  /** Residual 419: task.create optional goal link. */
+  goalId: string;
   /** Residual 397: optional freeform reject reason (not a Host mutation field). */
   rejectReason: string;
   revision: number;
@@ -55,6 +57,7 @@ type DraftState = {
   baselineDescription: string;
   baselineTargetPath: string;
   baselineContentMarkdown: string;
+  baselineGoalId: string;
 };
 
 /** Local draft fields + tracked Host revision per proposalId. */
@@ -66,12 +69,14 @@ function emptyDraft(item: HostProposalPanelItem): DraftState {
     description: item.description ?? '',
     targetPath: item.targetPath ?? '',
     contentMarkdown: item.contentMarkdown ?? '',
+    goalId: item.goalId ?? '',
     rejectReason: '',
     revision: item.revision,
     baselineTitle: item.title,
     baselineDescription: item.description ?? '',
     baselineTargetPath: item.targetPath ?? '',
     baselineContentMarkdown: item.contentMarkdown ?? '',
+    baselineGoalId: item.goalId ?? '',
   };
 }
 
@@ -103,6 +108,10 @@ watch(
         existing.contentMarkdown = item.contentMarkdown ?? '';
         existing.baselineContentMarkdown = item.contentMarkdown ?? '';
       }
+      if (existing.baselineGoalId === existing.goalId) {
+        existing.goalId = item.goalId ?? '';
+        existing.baselineGoalId = item.goalId ?? '';
+      }
       if (existing.revision < item.revision) {
         existing.revision = item.revision;
       }
@@ -132,6 +141,7 @@ function isDirty(item: HostProposalPanelItem): boolean {
     description: draft.description,
     targetPath: draft.targetPath,
     contentMarkdown: draft.contentMarkdown,
+    goalId: item.kind === 'task.create' ? draft.goalId || null : undefined,
   });
 }
 
@@ -309,6 +319,29 @@ watch(
                   class="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 font-mono text-xs text-foreground"
                   :disabled="busy"
                   :data-testid="`ai-host-proposal-content-${item.source}`"
+                />
+              </label>
+            </template>
+
+            <template v-else-if="item.kind === 'task.create'">
+              <label class="block text-xs font-medium text-foreground">
+                {{ t('aiAssistant.chatPage.hostProposals.editTitle') }}
+                <input
+                  v-model="draftFor(item).title"
+                  type="text"
+                  class="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground"
+                  :disabled="busy"
+                  :data-testid="`ai-host-proposal-title-${item.source}`"
+                />
+              </label>
+              <label class="block text-xs font-medium text-foreground">
+                {{ t('aiAssistant.chatPage.hostProposals.editGoalId') }}
+                <input
+                  v-model="draftFor(item).goalId"
+                  type="text"
+                  class="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground"
+                  :disabled="busy"
+                  :data-testid="`ai-host-proposal-goal-id-${item.source}`"
                 />
               </label>
             </template>

@@ -635,16 +635,20 @@ watch(
 );
 
 /**
- * Residual 385: deep-link from Host execution receipt primary entity.
- * Goal → /goals/:id; knowledge → repository note open path.
+ * Residual 385/419: deep-link from Host execution receipt primary entity.
+ * Goal → /goals/:id; knowledge → repository note open path; task → /tasks/:id.
  */
 async function openHostReceiptEntity(payload: {
-  source: 'goal' | 'knowledge';
+  source: 'goal' | 'knowledge' | 'task';
   entityId: string;
 }) {
   if (!payload.entityId) return;
   if (payload.source === 'goal') {
     await router.push(`/goals/${payload.entityId}`);
+    return;
+  }
+  if (payload.source === 'task') {
+    await router.push(`/tasks/${payload.entityId}`);
     return;
   }
   await openRecentKnowledgeNote(payload.entityId);
@@ -702,6 +706,7 @@ async function handleHostProposalRevise(payload: {
       description: payload.patch.description,
       targetPath: payload.patch.targetPath,
       contentMarkdown: payload.patch.contentMarkdown,
+      goalId: payload.patch.goalId,
     });
   } finally {
     hostProposalBusy.value = false;
@@ -737,6 +742,7 @@ async function handleHostProposalApprove(payload: {
         description: payload.patch.description,
         targetPath: payload.patch.targetPath,
         contentMarkdown: payload.patch.contentMarkdown,
+        goalId: payload.patch.goalId,
       });
     }
 
@@ -765,6 +771,11 @@ async function handleHostProposalApprove(payload: {
         targetPath: payload.patch.targetPath ?? payload.item.targetPath,
         contentMarkdown: payload.patch.contentMarkdown ?? payload.item.contentMarkdown,
       });
+      return;
+    }
+    // Residual 419: task.create Host lifecycle only — domain Task executor not wired yet.
+    if (payload.item.source === 'task') {
+      return;
     }
   } finally {
     hostProposalBusy.value = false;

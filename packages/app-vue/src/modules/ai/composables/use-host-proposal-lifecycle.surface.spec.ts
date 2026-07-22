@@ -264,4 +264,20 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).not.toMatch(/buildHostTimelineArtifactItems\(\{\s*proposals:/);
     expect(helper).not.toContain('executeApproved');
   });
+
+  it('Host task.create proposal/receipt lane foundation (residual 419)', () => {
+    expect(helper).toContain("source: 'task'");
+    expect(helper).toContain("kind: 'task.create'");
+    expect(helper).toContain('taskAgentRun');
+    expect(helper).toContain('taskDraftTitle');
+    expect(helper).toContain('taskDraftGoalId');
+    expect(helper).toContain('looksLikeTaskHostRun');
+    expect(panel).toContain("item.kind === 'task.create'");
+    expect(panel).toContain('editGoalId');
+    expect(panel).toContain('ai-host-proposal-goal-id-');
+    expect(receiptPanel).toContain('hostReceiptKindTask');
+    expect(chatView).toContain("source === 'task'");
+    expect(chatView).toContain('/tasks/');
+    expect(helper).not.toContain('executeApproved');
+  });
 });

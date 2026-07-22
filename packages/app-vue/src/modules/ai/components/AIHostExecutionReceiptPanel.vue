@@ -27,6 +27,7 @@ const { t } = useI18n();
 function kindLabel(kind: HostExecutionReceiptItem['kind']): string {
   if (kind === 'goal.create') return t('aiAssistant.chatPage.context.hostReceiptKindGoal');
   if (kind === 'knowledge.write') return t('aiAssistant.chatPage.context.hostReceiptKindKnowledge');
+  if (kind === 'task.create') return t('aiAssistant.chatPage.context.hostReceiptKindTask');
   return kind;
 }
 
