@@ -39,7 +39,16 @@ export async function deleteSelection(
     return;
   }
 
-  await scheduleTaskRepository.deleteBatch(existingTasks.map((task) => task.id));
+  const idsByIdentity = new Map<string, string[]>();
+  for (const task of existingTasks) {
+    const identityId = selection.identityId ?? task.identityId;
+    const ids = idsByIdentity.get(identityId) ?? [];
+    ids.push(task.id);
+    idsByIdentity.set(identityId, ids);
+  }
+  for (const [identityId, ids] of idsByIdentity) {
+    await scheduleTaskRepository.deleteBatch(identityId, ids);
+  }
   for (const task of existingTasks) {
     scheduleEvents.send('schedule:task-deleted', { taskId: task.id });
   }

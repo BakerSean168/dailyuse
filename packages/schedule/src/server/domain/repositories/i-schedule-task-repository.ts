@@ -107,7 +107,7 @@ export interface IScheduleTaskRepository {
   /**
    * 鎵归噺鍒犻櫎
    */
-  deleteBatch(ids: string[]): Promise<void>;
+  deleteBatch(identityId: string, ids: string[]): Promise<void>;
 
   // ============ 浜嬪姟鏀寔 ============
 

@@ -76,7 +76,7 @@ class MockScheduleTaskRepository implements IScheduleTaskRepository {
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
     for (const id of ids) {
       this.tasks.delete(id);
     }

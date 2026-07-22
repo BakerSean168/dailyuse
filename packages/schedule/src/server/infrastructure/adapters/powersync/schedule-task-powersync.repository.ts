@@ -386,10 +386,13 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
-    for (const id of ids) {
-      await this.deleteById(id);
-    }
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    const placeholders = ids.map(() => '?').join(', ');
+    await this.db.execute(
+      `DELETE FROM schedule_tasks WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
+    );
   }
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {

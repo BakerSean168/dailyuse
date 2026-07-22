@@ -16,6 +16,17 @@ describe('schedule task ownership surface', () => {
     resolve(__dirname, '../schedule-task-prisma.repository.ts'),
     'utf8',
   );
+  const powersync = readFileSync(
+    resolve(__dirname, '../../powersync/schedule-task-powersync.repository.ts'),
+    'utf8',
+  );
+  const sharedProjection = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../../../../schedule-orchestration/src/projectors/shared-projection.ts',
+    ),
+    'utf8',
+  );
   const getUseCase = readFileSync(
     resolve(
       __dirname,
@@ -84,4 +95,26 @@ describe('schedule task ownership surface', () => {
       /TASK_GET_BY_ID[\s\S]*async \(\) => taskController\.getTask\(taskId\)/,
     );
   });
+
+  it('port deleteBatch requires identityId (residual 155)', () => {
+    expect(port).toContain(
+      'deleteBatch(identityId: string, ids: string[]): Promise<void>;',
+    );
+  });
+
+  it('prisma/powersync deleteBatch filter by identity (residual 155)', () => {
+    expect(prisma).toContain('async deleteBatch(identityId: string, ids: string[])');
+    expect(prisma).toContain('identityId,');
+    expect(powersync).toContain(
+      'DELETE FROM schedule_tasks WHERE identity_id = ? AND id IN (${placeholders})',
+    );
+  });
+
+  it('shared projection deleteBatch is identity-scoped (residual 155)', () => {
+    expect(sharedProjection).toContain('deleteBatch(identityId, ids)');
+    expect(sharedProjection).not.toContain(
+      'deleteBatch(existingTasks.map((task) => task.id))',
+    );
+  });
+
 });
