@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -414,6 +414,14 @@ export function applyHostGoalPatchToAgentActions(
  * Residual 379: Host execution receipt workbench row.
  * Presentation of post-approve executor outcomes only — never Host kernel mutation execution.
  */
+/** Residual 385: one executed-action line for Host receipt replay. */
+export type HostExecutionActionLine = {
+  tool: string;
+  status: 'executed' | 'skipped' | 'failed';
+  message: string;
+  entityId?: string;
+};
+
 export type HostExecutionReceiptItem = {
   runId: string;
   proposalId: string;
@@ -428,17 +436,36 @@ export type HostExecutionReceiptItem = {
   failedCount: number;
   skippedCount: number;
   entityIds: string[];
+  /** Residual 385: goal description replay (when present). */
+  description?: string;
+  /** Residual 385: knowledge target path replay. */
+  targetPath?: string;
+  /** Residual 385: truncated knowledge body for read-only replay. */
+  contentPreview?: string;
+  /** Residual 385: ordered executed-action lines for audit replay. */
+  actionLines: HostExecutionActionLine[];
+  /** Residual 385: primary created entity for deep-link open. */
+  primaryEntityId?: string;
   /** Stable UI key; not a Host mutation request id. */
   receiptKey: string;
 };
 
 const HOST_RECEIPT_STATUSES = new Set(['completed', 'failed', 'cancelled']);
 
+function truncateHostContentPreview(text: string, max = 240): string {
+  const trimmed = text.trim();
+  if (!trimmed) return '';
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max).trimEnd()}…`;
+}
+
 function summarizeExecutedActions(run: AgentRunResult): {
   executedCount: number;
   failedCount: number;
   skippedCount: number;
   entityIds: string[];
+  actionLines: HostExecutionActionLine[];
+  primaryEntityId?: string;
   ok: boolean;
   summary: string;
 } {
@@ -447,13 +474,35 @@ function summarizeExecutedActions(run: AgentRunResult): {
   let failedCount = 0;
   let skippedCount = 0;
   const entityIds: string[] = [];
+  const actionLines: HostExecutionActionLine[] = [];
+  let primaryEntityId: string | undefined;
   for (const action of actions) {
     if (action.status === 'executed') executedCount += 1;
     else if (action.status === 'failed') failedCount += 1;
     else if (action.status === 'skipped') skippedCount += 1;
-    if (typeof action.entityId === 'string' && action.entityId.trim()) {
-      entityIds.push(action.entityId.trim());
+    const entityId =
+      typeof action.entityId === 'string' && action.entityId.trim()
+        ? action.entityId.trim()
+        : undefined;
+    if (entityId) {
+      entityIds.push(entityId);
+      if (
+        !primaryEntityId &&
+        (action.tool === 'create_goal' || action.tool === 'create_knowledge_note') &&
+        action.status === 'executed'
+      ) {
+        primaryEntityId = entityId;
+      }
     }
+    actionLines.push({
+      tool: action.tool,
+      status: action.status,
+      message: typeof action.message === 'string' ? action.message : '',
+      ...(entityId ? { entityId } : {}),
+    });
+  }
+  if (!primaryEntityId && entityIds[0]) {
+    primaryEntityId = entityIds[0];
   }
   const ok = run.run.status === 'completed' && failedCount === 0;
   const parts = [
@@ -465,7 +514,16 @@ function summarizeExecutedActions(run: AgentRunResult): {
   const summary = firstError
     ? `${parts.join(', ')}; ${firstError}`
     : parts.join(', ');
-  return { executedCount, failedCount, skippedCount, entityIds, ok, summary };
+  return {
+    executedCount,
+    failedCount,
+    skippedCount,
+    entityIds,
+    actionLines,
+    primaryEntityId,
+    ok,
+    summary,
+  };
 }
 
 /**
@@ -491,6 +549,7 @@ export function buildHostExecutionReceiptItems(input: {
       status === 'failed' ||
       status === 'cancelled'
     ) {
+      const description = goalDraftDescription(goalRun);
       items.push({
         runId: goalRun.run.runId,
         proposalId: ref.proposalId,
@@ -505,6 +564,9 @@ export function buildHostExecutionReceiptItems(input: {
         failedCount: counts.failedCount,
         skippedCount: counts.skippedCount,
         entityIds: counts.entityIds,
+        actionLines: counts.actionLines,
+        primaryEntityId: counts.primaryEntityId,
+        ...(description ? { description } : {}),
         receiptKey: `host-receipt:${ref.proposalId}`,
       });
     }
@@ -520,6 +582,8 @@ export function buildHostExecutionReceiptItems(input: {
       status === 'failed' ||
       status === 'cancelled'
     ) {
+      const targetPath = knowledgeDraftTargetPath(noteRun);
+      const contentPreview = truncateHostContentPreview(knowledgeDraftMarkdown(noteRun));
       items.push({
         runId: noteRun.run.runId,
         proposalId: ref.proposalId,
@@ -534,6 +598,10 @@ export function buildHostExecutionReceiptItems(input: {
         failedCount: counts.failedCount,
         skippedCount: counts.skippedCount,
         entityIds: counts.entityIds,
+        actionLines: counts.actionLines,
+        primaryEntityId: counts.primaryEntityId,
+        ...(targetPath ? { targetPath } : {}),
+        ...(contentPreview ? { contentPreview } : {}),
         receiptKey: `host-receipt:${ref.proposalId}`,
       });
     }

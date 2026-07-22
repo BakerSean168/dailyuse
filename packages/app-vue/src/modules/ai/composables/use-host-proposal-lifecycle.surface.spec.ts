@@ -153,4 +153,22 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(timelineStrip).not.toContain('resumeAgentRun');
     expect(timelineStrip).not.toContain('dispatchAssistant');
   });
+
+  it('Host receipt panel exposes rich replay + entity open (residual 385)', () => {
+    expect(helper).toContain('contentPreview');
+    expect(helper).toContain('actionLines');
+    expect(helper).toContain('primaryEntityId');
+    expect(helper).toContain('truncateHostContentPreview');
+    expect(receiptPanel).toContain('ai-host-execution-receipt-preview-');
+    expect(receiptPanel).toContain('ai-host-execution-receipt-path-');
+    expect(receiptPanel).toContain('ai-host-execution-receipt-actions-');
+    expect(receiptPanel).toContain('ai-host-execution-receipt-open-');
+    expect(receiptPanel).toContain('openEntity');
+    expect(receiptPanel).toContain('hostReceiptOpenGoal');
+    expect(receiptPanel).toContain('hostReceiptOpenNote');
+    expect(chatView).toContain('openHostReceiptEntity');
+    expect(chatView).toContain('@open-entity="openHostReceiptEntity"');
+    expect(chatView).toContain("router.push(`/goals/${payload.entityId}`)");
+    expect(chatView).toContain('openRecentKnowledgeNote(payload.entityId)');
+  });
 });

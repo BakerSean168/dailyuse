@@ -492,12 +492,27 @@ describe('buildHostExecutionReceiptItems (residual 379)', () => {
       runStatus: 'completed',
       ok: true,
       title: 'Ship Host Panel',
+      description: 'Initial goal description',
       executedCount: 1,
       skippedCount: 1,
       failedCount: 0,
       entityIds: ['goal-1'],
+      primaryEntityId: 'goal-1',
       receiptKey: 'host-receipt:agent-run:run-1:goal.create',
     });
+    expect(items[0]!.actionLines).toEqual([
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'created',
+        entityId: 'goal-1',
+      },
+      {
+        tool: 'create_key_result',
+        status: 'skipped',
+        message: 'skipped',
+      },
+    ]);
     expect(items[1]).toMatchObject({
       source: 'knowledge',
       kind: 'knowledge.write',
@@ -617,6 +632,72 @@ describe('buildHostTimelineArtifactItems (residual 383)', () => {
 
   it('returns empty when Host has no proposal or receipt rows', () => {
     expect(buildHostTimelineArtifactItems({})).toEqual([]);
+  });
+});
+
+describe('buildHostExecutionReceiptItems rich replay (residual 385)', () => {
+  it('includes knowledge path, body preview, action lines, and primary entity', () => {
+    const run = noteWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.approvedActions = [
+      {
+        tool: 'create_knowledge_note',
+        payload: { targetSubpath: 'notes/ai', contentMarkdown: '# body' },
+        rationale: 'Persist the approved knowledge note draft.',
+        index: 0,
+        dependsOn: [],
+      },
+    ];
+    run.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        entityId: 'note-42',
+        message: 'note created',
+      },
+    ];
+    const items = buildHostExecutionReceiptItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      kind: 'knowledge.write',
+      targetPath: 'notes/ai',
+      contentPreview: '# body',
+      primaryEntityId: 'note-42',
+      actionLines: [
+        {
+          tool: 'create_knowledge_note',
+          status: 'executed',
+          message: 'note created',
+          entityId: 'note-42',
+        },
+      ],
+    });
+  });
+
+  it('truncates long knowledge body previews for receipt replay', () => {
+    const run = noteWaitingRun('completed');
+    const longBody = 'x'.repeat(300);
+    run.state.artifacts = [
+      {
+        artifactId: 'n1',
+        kind: 'knowledge_note_draft',
+        title: 'AI Note Draft',
+        data: { title: 'AI Note Draft', markdown: longBody, targetSubpath: 'notes/long' },
+        updatedAt: 2,
+      },
+    ];
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        entityId: 'note-long',
+        message: 'ok',
+      },
+    ];
+    const items = buildHostExecutionReceiptItems({ noteAgentRun: run });
+    expect(items[0]!.contentPreview).toBe(`${'x'.repeat(240)}…`);
+    expect(items[0]!.targetPath).toBe('notes/long');
   });
 });
 

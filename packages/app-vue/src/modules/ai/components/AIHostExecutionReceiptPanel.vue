@@ -1,17 +1,21 @@
 <script setup lang="ts">
 /**
- * AIHostExecutionReceiptPanel — residual 379 Host execution-report workbench.
+ * AIHostExecutionReceiptPanel — residual 379/385 Host execution-report workbench.
  *
  * Mounted in AIContextPanel right rail after Host approve + domain executor.
- * Displays Host-shaped receipt rows derived from completed/failed/cancelled
- * AgentRun snapshots. Presentation only — never runs Host kernel mutation
- * execution or AgentRun resume itself.
+ * Residual 385 adds rich replay: description/path/body preview, action lines,
+ * and primary entity deep-link. Presentation only — never Host kernel mutation.
  */
 import { useI18n } from 'vue-i18n';
+import { Button } from '@dailyuse/ui-vue-shadcn';
 import type { HostExecutionReceiptItem } from '../composables/hostProposalLifecycle';
 
 const props = defineProps<{
   items: HostExecutionReceiptItem[];
+}>();
+
+const emit = defineEmits<{
+  openEntity: [payload: { source: HostExecutionReceiptItem['source']; entityId: string }];
 }>();
 
 const { t } = useI18n();
@@ -33,6 +37,17 @@ function statusLabel(item: HostExecutionReceiptItem): string {
     return t('aiAssistant.chatPage.context.hostReceiptStatusFailed');
   }
   return t('aiAssistant.chatPage.context.hostReceiptStatusCancelled');
+}
+
+function actionStatusLabel(status: HostExecutionReceiptItem['actionLines'][number]['status']): string {
+  if (status === 'executed') return t('aiAssistant.chatPage.context.hostReceiptActionExecuted');
+  if (status === 'failed') return t('aiAssistant.chatPage.context.hostReceiptActionFailed');
+  return t('aiAssistant.chatPage.context.hostReceiptActionSkipped');
+}
+
+function onOpenEntity(item: HostExecutionReceiptItem) {
+  if (!item.primaryEntityId) return;
+  emit('openEntity', { source: item.source, entityId: item.primaryEntityId });
 }
 </script>
 
@@ -91,6 +106,27 @@ function statusLabel(item: HostExecutionReceiptItem): string {
         {{ item.summary }}
       </p>
 
+      <!-- Residual 385: rich replay fields -->
+      <p
+        v-if="item.description"
+        class="mt-2 text-xs leading-5 text-foreground/90"
+        :data-testid="`ai-host-execution-receipt-description-${item.proposalId}`"
+      >
+        {{ item.description }}
+      </p>
+      <p
+        v-if="item.targetPath"
+        class="mt-2 truncate font-mono text-[11px] text-muted-foreground"
+        :data-testid="`ai-host-execution-receipt-path-${item.proposalId}`"
+      >
+        {{ item.targetPath }}
+      </p>
+      <pre
+        v-if="item.contentPreview"
+        class="mt-2 max-h-28 overflow-auto whitespace-pre-wrap break-words rounded-md border bg-muted/30 p-2 text-[11px] leading-5 text-muted-foreground"
+        :data-testid="`ai-host-execution-receipt-preview-${item.proposalId}`"
+      >{{ item.contentPreview }}</pre>
+
       <dl class="mt-2 grid grid-cols-3 gap-2 text-[11px] text-muted-foreground">
         <div>
           <dt>{{ t('aiAssistant.chatPage.context.hostReceiptExecuted') }}</dt>
@@ -111,17 +147,51 @@ function statusLabel(item: HostExecutionReceiptItem): string {
         </div>
       </dl>
 
-      <p
-        v-if="item.entityIds.length > 0"
-        class="mt-2 truncate text-[11px] text-muted-foreground"
-        :data-testid="`ai-host-execution-receipt-entities-${item.proposalId}`"
+      <ul
+        v-if="item.actionLines.length > 0"
+        class="mt-2 space-y-1"
+        :data-testid="`ai-host-execution-receipt-actions-${item.proposalId}`"
       >
-        {{
-          t('aiAssistant.chatPage.context.hostReceiptEntities', {
-            ids: item.entityIds.join(', '),
-          })
-        }}
-      </p>
+        <li
+          v-for="(line, index) in item.actionLines"
+          :key="`${item.receiptKey}:${index}:${line.tool}`"
+          class="rounded-md border border-dashed px-2 py-1 text-[11px] leading-5 text-muted-foreground"
+          :data-testid="`ai-host-execution-receipt-action-${item.proposalId}-${index}`"
+        >
+          <span class="font-medium text-foreground">{{ line.tool }}</span>
+          · {{ actionStatusLabel(line.status) }}
+          <span v-if="line.message"> — {{ line.message }}</span>
+          <span v-if="line.entityId" class="font-mono"> ({{ line.entityId }})</span>
+        </li>
+      </ul>
+
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <p
+          v-if="item.entityIds.length > 0"
+          class="truncate text-[11px] text-muted-foreground"
+          :data-testid="`ai-host-execution-receipt-entities-${item.proposalId}`"
+        >
+          {{
+            t('aiAssistant.chatPage.context.hostReceiptEntities', {
+              ids: item.entityIds.join(', '),
+            })
+          }}
+        </p>
+        <Button
+          v-if="item.primaryEntityId"
+          variant="outline"
+          size="sm"
+          class="h-7 px-2 text-[11px]"
+          :data-testid="`ai-host-execution-receipt-open-${item.proposalId}`"
+          @click="onOpenEntity(item)"
+        >
+          {{
+            item.source === 'goal'
+              ? t('aiAssistant.chatPage.context.hostReceiptOpenGoal')
+              : t('aiAssistant.chatPage.context.hostReceiptOpenNote')
+          }}
+        </Button>
+      </div>
 
       <p class="mt-1 truncate font-mono text-[10px] text-muted-foreground/80">
         {{ item.proposalId }} · r{{ item.revision }}

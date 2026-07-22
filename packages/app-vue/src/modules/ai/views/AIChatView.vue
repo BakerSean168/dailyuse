@@ -272,7 +272,10 @@
         @reject="handleHostProposalReject"
         @revise="handleHostProposalRevise"
       />
-      <AIHostExecutionReceiptPanel :items="hostExecutionReceiptItems" />
+      <AIHostExecutionReceiptPanel
+        :items="hostExecutionReceiptItems"
+        @open-entity="openHostReceiptEntity"
+      />
       <AIGoalWorkflowPanel
         :tool-mode="toolMode"
         :goal-clarification="goalClarification"
@@ -589,6 +592,22 @@ const hostTimelineArtifactItems = computed(() =>
 function openHostWorkbenchFromTimeline() {
   // Residual 383: timeline card reopens the right Host proposal/receipt workbench.
   contextPanelOpen.value = true;
+}
+
+/**
+ * Residual 385: deep-link from Host execution receipt primary entity.
+ * Goal → /goals/:id; knowledge → repository note open path.
+ */
+async function openHostReceiptEntity(payload: {
+  source: 'goal' | 'knowledge';
+  entityId: string;
+}) {
+  if (!payload.entityId) return;
+  if (payload.source === 'goal') {
+    await router.push(`/goals/${payload.entityId}`);
+    return;
+  }
+  await openRecentKnowledgeNote(payload.entityId);
 }
 
 /** Residual 371: pending Host proposals are first-class right-workbench context. */
