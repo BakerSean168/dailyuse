@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { notificationSound, reminderSound } from '@dailyuse/assets/audio';
-import { NotificationChannels } from '../shared/types/ipc-channels';
+import { NotificationChannels } from '@dailyuse/contracts/electron';
 
 interface ElectronBridge {
   invoke(channel: string, ...args: unknown[]): Promise<unknown>;

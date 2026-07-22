@@ -1,0 +1,32 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+/**
+ * Residual 256: desktop shared/types ipc-channels dual re-export barrel is gone.
+ * Callers import channels from @dailyuse/contracts/electron (and governance).
+ */
+describe('desktop shared ipc-channels dual single-track surface', () => {
+  const desktopSrc = resolve(__dirname, '..');
+  const dualFile = resolve(desktopSrc, 'shared/types/ipc-channels.ts');
+  const dualTypesIndex = resolve(desktopSrc, 'shared/types/index.ts');
+  const dualSharedIndex = resolve(desktopSrc, 'shared/index.ts');
+  const preload = resolve(desktopSrc, 'preload/allowed-channels.ts');
+  const notificationView = resolve(desktopSrc, 'renderer/CustomNotificationView.vue');
+
+  it('drops shared/types ipc-channels dual re-export barrel', () => {
+    expect(existsSync(dualFile)).toBe(false);
+    expect(existsSync(dualTypesIndex)).toBe(false);
+    expect(existsSync(dualSharedIndex)).toBe(false);
+  });
+
+  it('preload and notification view import channels from contracts', () => {
+    const preloadSrc = readFileSync(preload, 'utf8');
+    const viewSrc = readFileSync(notificationView, 'utf8');
+    expect(preloadSrc).toContain("from '@dailyuse/contracts/electron'");
+    expect(preloadSrc).toContain("from '@dailyuse/contracts/governance'");
+    expect(preloadSrc).not.toContain('shared/types/ipc-channels');
+    expect(viewSrc).toContain("from '@dailyuse/contracts/electron'");
+    expect(viewSrc).not.toContain('shared/types/ipc-channels');
+  });
+});

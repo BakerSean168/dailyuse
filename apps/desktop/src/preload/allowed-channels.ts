@@ -7,7 +7,6 @@ import {
   DataPortabilityChannels,
   DesktopFeatureChannels,
   GoalChannels,
-  GovernanceChannels,
   NotificationChannels,
   RendererEventChannels,
   ReminderChannels,
@@ -17,7 +16,8 @@ import {
   SystemChannels,
   TaskChannels,
   WindowChannels,
-} from '../shared/types/ipc-channels';
+} from '@dailyuse/contracts/electron';
+import { GovernanceChannels } from '@dailyuse/contracts/governance';
 
 export const SUPPORTED_REPOSITORY_CHANNELS = [
   RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_START,
