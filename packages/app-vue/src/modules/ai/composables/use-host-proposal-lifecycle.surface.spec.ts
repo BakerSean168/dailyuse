@@ -147,7 +147,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   it('mounts Host timeline Artifact cards in message workflow surface (residual 383)', () => {
     expect(chatView).toContain('AIHostTimelineArtifactStrip');
     expect(chatView).toContain('hostTimelineArtifactItems');
-    expect(chatView).toContain('buildHostTimelineArtifactItems');
+    // Residual 411: composition helper owns open-chat + AgentRun assembly.
+    expect(chatView).toContain('composeHostWorkbenchTimelineArtifacts');
     expect(chatView).toContain('openHostWorkbenchFromTimeline');
     expect(chatView).toContain('Residual 383');
     expect(timelineStrip).toContain('data-testid="ai-host-timeline-artifact-strip"');
@@ -221,15 +222,11 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
 
   it('open-chat Host turns appear on timeline with engine badges (residual 401)', () => {
     expect(helper).toContain('buildHostOpenChatTimelineArtifactItems');
-    expect(helper).toContain('partitionHostTimelineArtifactsBySurface');
-    expect(helper).toContain('collectHostTimelineSurfaceIsolationViolations');
-    expect(helper).toContain('Residual 409');
     expect(helper).toContain("surface: 'open_chat'");
     expect(helper).toContain("kind: 'open_chat.turn'");
     expect(helper).toContain('HostOpenChatTurnSnapshot');
     expect(session).toContain('openChatHostTurns');
     expect(session).toContain('upsertOpenChatHostTurn');
-    expect(chatView).toContain('buildHostOpenChatTimelineArtifactItems');
     expect(chatView).toContain('openChatHostTurns');
     expect(timelineStrip).toContain('hostTimelineOpenChat');
     expect(timelineStrip).toContain("item.surface === 'open_chat'");
@@ -247,5 +244,24 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(session).toContain('restoreOpenChatHostTurns');
     expect(session).toContain('rememberOpenChatHostTurnsForConversation');
     expect(session).toContain('forgetOpenChatHostTurnsForConversation');
+  });
+
+  it('composes Host workbench timeline with isolation (residual 411)', () => {
+    expect(helper).toContain('partitionHostTimelineArtifactsBySurface');
+    expect(helper).toContain('collectHostTimelineSurfaceIsolationViolations');
+    expect(helper).toContain('Residual 409');
+    expect(helper).toContain('composeHostWorkbenchTimelineArtifacts');
+    expect(helper).toContain('Residual 411');
+    expect(helper).toContain('isolationOk');
+    expect(helper).toContain('HostWorkbenchTimelineComposition');
+    expect(chatView).toContain('composeHostWorkbenchTimelineArtifacts');
+    expect(chatView).toContain('hostWorkbenchTimeline');
+    expect(chatView).toContain('hostTimelineArtifactItems');
+    // Live path must not reassemble open-chat + AgentRun builders ad hoc.
+    expect(chatView).not.toMatch(
+      /buildHostOpenChatTimelineArtifactItems\(openChatHostTurns\.value\)/,
+    );
+    expect(chatView).not.toMatch(/buildHostTimelineArtifactItems\(\{\s*proposals:/);
+    expect(helper).not.toContain('executeApproved');
   });
 });

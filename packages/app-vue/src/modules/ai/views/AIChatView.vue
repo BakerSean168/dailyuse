@@ -360,8 +360,7 @@ import { useAIChatView } from '../composables/useAIChatView';
 import {
   buildPendingHostProposalItems,
   buildHostExecutionReceiptItems,
-  buildHostTimelineArtifactItems,
-  buildHostOpenChatTimelineArtifactItems,
+  composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
   shouldOpenHostWorkbenchFromAgentRun,
   dispatchHostProposalDecision,
@@ -589,14 +588,18 @@ const hostExecutionReceiptItems = computed(() =>
   }),
 );
 
-/** Residual 383/399/401: Host Artifact cards + open-chat multi-engine turn badges. */
-const hostTimelineArtifactItems = computed(() => [
-  ...buildHostOpenChatTimelineArtifactItems(openChatHostTurns.value),
-  ...buildHostTimelineArtifactItems({
+/**
+ * Residual 383/399/401/409/411: Host Artifact cards + open-chat multi-engine badges
+ * via workbench composition (partition + fail-closed surface isolation audit).
+ */
+const hostWorkbenchTimeline = computed(() =>
+  composeHostWorkbenchTimelineArtifacts({
+    openChatTurns: openChatHostTurns.value,
     proposals: hostProposalItems.value,
     receipts: hostExecutionReceiptItems.value,
   }),
-]);
+);
+const hostTimelineArtifactItems = computed(() => hostWorkbenchTimeline.value.items);
 
 /** Residual 387: timeline card focus target (proposalId) for right workbench highlight. */
 const focusedHostProposalId = ref<string | null>(null);

@@ -17,7 +17,8 @@ import {
   getRememberedHostProposalRevision,
   isHostProposalDraftDirty,
   partitionHostTimelineArtifactsBySurface,
-  collectHostTimelineSurfaceIsolationViolations
+  collectHostTimelineSurfaceIsolationViolations,
+  composeHostWorkbenchTimelineArtifacts
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -1097,5 +1098,59 @@ describe('Host timeline surface isolation (residual 409)', () => {
       'agent_run_engine_turn',
       'agent_run_kind_open_chat',
     ]);
+  });
+});
+
+describe('composeHostWorkbenchTimelineArtifacts (residual 411)', () => {
+  it('composes open-chat + AgentRun lanes with isolationOk', () => {
+    const composition = composeHostWorkbenchTimelineArtifacts({
+      openChatTurns: [
+        {
+          runId: 'oc-1',
+          executionProfileId: 'direct_turn',
+          status: 'completed',
+          title: 'Hello',
+        },
+        {
+          runId: 'oc-2',
+          executionProfileId: 'pi_readonly',
+          status: 'aborted',
+          title: 'Readonly stop',
+        },
+      ],
+      proposals: [
+        {
+          runId: 'run-g',
+          proposalId: 'agent-run:run-g:goal.create',
+          revision: 1,
+          kind: 'goal.create',
+          source: 'goal',
+          runStatus: 'waiting_approval',
+          title: 'Goal draft',
+          summary: 's',
+          pendingActionCount: 1,
+        },
+      ],
+    });
+
+    expect(composition.items).toHaveLength(3);
+    expect(composition.openChat).toHaveLength(2);
+    expect(composition.agentRun).toHaveLength(1);
+    expect(composition.isolationOk).toBe(true);
+    expect(composition.isolationViolations).toEqual([]);
+    expect(composition.openChat.every((item) => item.surface === 'open_chat')).toBe(true);
+    expect(composition.agentRun[0]?.engineKey).toBe('agent_run.goal_create');
+    expect(composition.openChat.map((item) => item.engineKey).sort()).toEqual([
+      'engine.direct_turn',
+      'engine.pi_readonly',
+    ]);
+  });
+
+  it('keeps empty composition isolationOk without claiming product E2E', () => {
+    const composition = composeHostWorkbenchTimelineArtifacts({});
+    expect(composition.items).toEqual([]);
+    expect(composition.openChat).toEqual([]);
+    expect(composition.agentRun).toEqual([]);
+    expect(composition.isolationOk).toBe(true);
   });
 });

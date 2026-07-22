@@ -993,3 +993,44 @@ export function collectHostTimelineSurfaceIsolationViolations(
   }
   return violations;
 }
+
+/**
+ * Residual 411: compose Host workbench timeline from open-chat turns + AgentRun
+ * proposal/receipt rows, then partition and fail-closed audit surface isolation.
+ * Presentation only — never executes Host kernel mutations or domain executors.
+ */
+export type HostWorkbenchTimelineComposition = {
+  items: HostTimelineArtifactItem[];
+  openChat: HostTimelineArtifactItem[];
+  agentRun: HostTimelineArtifactItem[];
+  isolationViolations: HostTimelineSurfaceIsolationViolation[];
+  /** True when open_chat and AgentRun lanes do not smuggle each other. */
+  isolationOk: boolean;
+};
+
+export function composeHostWorkbenchTimelineArtifacts(input: {
+  openChatTurns?: HostOpenChatTurnSnapshot[] | null;
+  proposals?: HostProposalPanelItem[] | null;
+  receipts?: HostExecutionReceiptItem[] | null;
+  /** Optional open-chat profile override for non-AgentRun Host cards only. */
+  executionProfileId?: string | null;
+}): HostWorkbenchTimelineComposition {
+  const items: HostTimelineArtifactItem[] = [
+    ...buildHostOpenChatTimelineArtifactItems(input.openChatTurns),
+    ...buildHostTimelineArtifactItems({
+      proposals: input.proposals ?? undefined,
+      receipts: input.receipts ?? undefined,
+      executionProfileId: input.executionProfileId,
+    }),
+  ];
+  const { openChat, agentRun } = partitionHostTimelineArtifactsBySurface(items);
+  const isolationViolations = collectHostTimelineSurfaceIsolationViolations(items);
+  return {
+    items,
+    openChat,
+    agentRun,
+    isolationViolations,
+    isolationOk: isolationViolations.length === 0,
+  };
+}
+
