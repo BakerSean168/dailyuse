@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Schedule runtime ownership surface (stage-6 residual 131):
- * sync/execute reloads must prefer findByIdForIdentity when identity is known
+ * sync/execute reloads must prefer findByIdForIdentity when identity is known.
+ * Residual 180 locks bare findById as bootstrap-only fallback.
  * (queue item or event), not bare primary keys alone.
  */
 describe('schedule runtime ownership surface', () => {
@@ -41,4 +42,14 @@ describe('schedule runtime ownership surface', () => {
     );
     expect(runtime).toContain('event.identityId');
   });
+
+  it('bare findById is only the no-identity bootstrap path (residual 180)', () => {
+    expect(runtime).toContain('const task = await repository.findById(taskId);');
+    expect(runtime).toContain(
+      'return repository.findByIdForIdentity(String(task.identityId), taskId);',
+    );
+    // Prefer owned load when identity known:
+    expect(runtime).toContain('return repository.findByIdForIdentity(String(identityId), taskId);');
+  });
+
 });

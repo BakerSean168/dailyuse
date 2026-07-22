@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Schedule task ownership surface (stage-6 residual 121):
  * get/update/delete/actions and identity-filtered lists must never authorize
  * by bare schedule task primary key alone.
+ * Residual 180: bare findById is intentional runtime bootstrap only (residual 131).
  */
 describe('schedule task ownership surface', () => {
   const port = readFileSync(
@@ -168,6 +169,20 @@ describe('schedule task ownership surface', () => {
     expect(prisma).not.toContain('if (options.identityId) where.identityId = options.identityId;');
     expect(powersync).toContain("const clauses: string[] = ['identity_id = ?']");
     expect(powersync).toContain('const params: unknown[] = [options.identityId]');
+  });
+
+
+  it('bare findById remains only for runtime bootstrap; auth paths use findByIdForIdentity (residual 180)', () => {
+    // Dual method kept intentionally: system scheduler may load by id then re-own.
+    expect(port).toContain('findById(id: string): Promise<ScheduleTask | null>;');
+    expect(port).toContain(
+      'findByIdForIdentity(identityId: string, id: string): Promise<ScheduleTask | null>;',
+    );
+    // Authorization-sensitive use cases never call bare findById:
+    expect(getUseCase).toContain('findByIdForIdentity(identityId, id)');
+    expect(getUseCase).not.toContain('.findById(id)');
+    expect(deleteUseCase).toContain('findByIdForIdentity(identityId, id)');
+    expect(deleteUseCase).not.toContain('.findById(id)');
   });
 
 });

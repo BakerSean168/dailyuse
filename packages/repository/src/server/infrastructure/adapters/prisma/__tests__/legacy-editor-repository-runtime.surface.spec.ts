@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
  * Old database note CRUD and Editor runtime must stay unmounted across
  * API composition, Desktop electron registration, and Vue routes.
  * Portable backup import of historical rows remains in data-portability only.
+ * Residual 180: packages/editor package directory stays deleted (no runtime package).
  */
 describe('legacy editor/repository runtime surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../../');
@@ -107,4 +108,22 @@ describe('legacy editor/repository runtime surface', () => {
       ),
     ).toBe(false);
   });
+
+  it('packages/editor package directory stays deleted (residual 180)', () => {
+    expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
+    expect(existsSync(resolve(repoRoot, 'packages/editor/package.json'))).toBe(false);
+  });
+
+  it('app workspace package.json files do not depend on @dailyuse/editor (residual 180)', () => {
+    const rootPkg = readFileSync(resolve(repoRoot, 'package.json'), 'utf8');
+    expect(rootPkg).not.toContain('"@dailyuse/editor"');
+    // apps that historically mounted editor must not reintroduce the dep:
+    for (const rel of ['apps/api/package.json', 'apps/desktop/package.json', 'apps/web/package.json']) {
+      const pkgPath = resolve(repoRoot, rel);
+      if (!existsSync(pkgPath)) continue;
+      const pkg = readFileSync(pkgPath, 'utf8');
+      expect(pkg).not.toContain('"@dailyuse/editor"');
+    }
+  });
+
 });
