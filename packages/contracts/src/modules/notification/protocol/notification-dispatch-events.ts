@@ -4,8 +4,6 @@ import type { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { UrgencyLevel } from '../../../shared/value-objects/urgency';
 import type { IdentityId, NotificationId } from '../../../primitives';
 
-export type AssetImageKey = string;
-
 export interface NotificationDispatchBase {
   id: NotificationId;
   identityId: IdentityId;
@@ -23,7 +21,7 @@ export interface NotificationDispatchBase {
 }
 
 export interface NotificationDispatchDesktopEvent extends NotificationDispatchBase {
-  icon?: AssetImageKey | string | null;
+  icon?: string | null;
   silent?: boolean;
 }
 
