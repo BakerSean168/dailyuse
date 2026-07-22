@@ -575,6 +575,27 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create confirm uses process-local draft only (residual 471)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE');
+    expect(resume).toContain('resolveConfirmStoreDraftActions');
+    expect(resume).toContain('exactly one create_task_template executedAction');
+    expect(resume).toContain('Residual 471');
+    // Client confirm no longer sends approvedActions revise payload.
+    expect(taskWorkflow).toContain('completeTaskAgentRun');
+    expect(taskWorkflow).toContain('Residual 471');
+    expect(taskWorkflow).not.toContain("userDecision: 'confirm',\n        ...(approvedActions");
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

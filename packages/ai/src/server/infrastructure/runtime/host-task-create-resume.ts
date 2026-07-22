@@ -1,5 +1,5 @@
 /**
- * Residual 437/439/453/455/463/465/467/469: Host task.create process-local resume.
+ * Residual 437/439/453/455/463/465/467/469/471: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
@@ -22,6 +22,10 @@
  *
  * Residual 469: confirm settlement title must not rebind against the approved
  * create_task_template draft (approved title is source of truth when present).
+ *
+ * Residual 471: confirm draft source-of-truth is process-local pending/approved only
+ * (ignore client payload.approvedActions; edit is the only revise path). Confirm also
+ * requires exactly one create_task_template executedAction.
  *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
@@ -57,6 +61,14 @@ export const HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE =
 /** Residual 469: confirm must not rebind settlement title against approved draft. */
 export const HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE =
   'Host task.create confirm must not rebind settlement title against the approved create_task_template draft.';
+
+/** Residual 471: confirm without process-local store draft is fail-closed. */
+export const HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE =
+  'Host task.create confirm requires a process-local pending/approved create_task_template draft.';
+
+/** Residual 471: confirm multi-settlement executedActions is fail-closed. */
+export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE =
+  'Host task.create confirm requires exactly one create_task_template executedAction.';
 
 function nextSequence(events: AgentRunResult['events']): number {
   if (events.length === 0) return 0;
@@ -152,18 +164,20 @@ function resolveConfirmSettlementGoalId(
   return approvedGoalId ?? executedGoalId;
 }
 
-function resolveApprovedActions(
+/**
+ * Residual 471: confirm draft is process-local only.
+ * Client payload.approvedActions must not revise draft on confirm (edit owns revise).
+ */
+function resolveConfirmStoreDraftActions(
   current: AgentRunResult,
-  payload: AgentResumePayload,
 ): AgentRunResult['state']['approvedActions'] {
-  if (payload.approvedActions && payload.approvedActions.length > 0) {
-    return cloneActions(payload.approvedActions);
+  if (current.state.pendingActions.length > 0) {
+    return cloneActions(current.state.pendingActions);
   }
-  const pending = current.state.pendingActions;
-  if (pending.length > 0) {
-    return cloneActions(pending);
+  if (current.state.approvedActions.length > 0) {
+    return cloneActions(current.state.approvedActions);
   }
-  return cloneActions(current.state.approvedActions);
+  throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
 }
 
 function rebuildTaskCreateInterrupts(
@@ -263,6 +277,10 @@ export function buildHostTaskCreateResumeResult(input: {
     if (!input.payload.executedActions || input.payload.executedActions.length === 0) {
       throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE);
     }
+    // Residual 471: product settlement is a single create_task_template receipt.
+    if (input.payload.executedActions.length !== 1) {
+      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE);
+    }
     const executedActions: AgentExecutedAction[] = input.payload.executedActions.map((item) => ({
       ...item,
       ...(item.data && typeof item.data === 'object' && !Array.isArray(item.data)
@@ -281,9 +299,10 @@ export function buildHostTaskCreateResumeResult(input: {
         );
       }
     }
-    const approvedActions = resolveApprovedActions(current, input.payload);
-    // Residual 463/465/467/469: normalize recoverable settlement title + template entity id
-    // + non-rebinding goalId/title into executed data/entityId + completion event.
+    // Residual 471: process-local draft only — ignore payload.approvedActions on confirm.
+    const approvedActions = resolveConfirmStoreDraftActions(current);
+    // Residual 463/465/467/469/471: normalize recoverable settlement title + template entity id
+    // + non-rebinding goalId/title against process-local draft into executed data/entityId.
     let settlementTitle: string | undefined;
     let settlementTemplateId: string | undefined;
     let settlementGoalId: string | undefined;

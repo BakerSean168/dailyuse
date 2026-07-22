@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465/467/469: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467/469/471: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -14,6 +14,7 @@
  *   confirm settlement template id (residual 465)
  *   confirm settlement goalId no-rebind (residual 467)
  *   confirm settlement title no-rebind (residual 469)
+ *   confirm process-local draft only + single executed (residual 471)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -440,7 +441,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
   });
 
 
-  it('confirm normalizes settlement title and fails closed without recoverable title (residual 463)', async () => {
+  it('confirm normalizes settlement title from process-local draft (residual 463)', async () => {
     const port = makePort();
     const service = createAgentRuntimeService(port);
     const cx = { identityId: 'owner-title-settle' } as const;
@@ -478,26 +479,30 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!completed.ok) return;
     expect(completed.data.state.executedActions[0]?.data?.['title']).toBe('Recoverable title');
     expect(completed.data.events.at(-1)?.data?.['title']).toBe('Recoverable title');
+  });
 
-    // Fresh run with blank title payload after edit is blocked by residual 455;
-    // construct confirm without recoverable title by confirming after empty approvedActions wipe via edit fail path is unavailable.
-    // Use a second start + confirm with approvedActions empty title override.
-    const started2 = await service.startRun(
+  it('confirm ignores client approvedActions draft wipe and requires single executed (residual 471)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-store-draft' } as const;
+
+    const started = await service.startRun(
       {
-        runId: 'run-journey-title-fail',
-        threadId: 'thread-journey-title-fail',
-        conversationId: 'conv-journey-title-fail',
+        runId: 'run-journey-store-draft',
+        threadId: 'thread-journey-store-draft',
+        conversationId: 'conv-journey-store-draft',
         agentType: 'task.create',
         locale: 'en-US',
-        input: { title: 'Will be wiped' },
+        input: { title: 'Store draft title', goalId: 'goal-store' },
         identityId: 'ignored',
       },
       cx as any,
     );
-    expect(started2.ok).toBe(true);
+    expect(started.ok).toBe(true);
 
-    const failConfirm = await service.resumeRun(
-      'run-journey-title-fail',
+    // Client approvedActions try to wipe title/goal — process-local draft wins.
+    const completed = await service.resumeRun(
+      'run-journey-store-draft',
       {
         userDecision: 'confirm',
         approvedActions: [
@@ -513,7 +518,49 @@ describe('Host task.create process-local product journey (residual 449)', () => 
           {
             tool: 'create_task_template',
             status: 'executed',
-            message: 'Created without title',
+            message: 'Created task template',
+            entityId: 'tpl-journey-store',
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(completed.ok).toBe(true);
+    if (!completed.ok) return;
+    expect(completed.data.state.executedActions[0]?.data?.['title']).toBe('Store draft title');
+    expect(completed.data.state.executedActions[0]?.data?.['goalId']).toBe('goal-store');
+    expect(completed.data.state.approvedActions[0]?.payload?.['title']).toBe('Store draft title');
+
+    const started2 = await service.startRun(
+      {
+        runId: 'run-journey-multi-executed',
+        threadId: 'thread-journey-multi-executed',
+        conversationId: 'conv-journey-multi-executed',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Multi executed' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started2.ok).toBe(true);
+
+    const failConfirm = await service.resumeRun(
+      'run-journey-multi-executed',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'one',
+            entityId: 'tpl-a',
+          },
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'two',
+            entityId: 'tpl-b',
           },
         ],
       },
@@ -522,9 +569,9 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(failConfirm.ok).toBe(false);
     if (failConfirm.ok) return;
     expect(failConfirm.error.code).toBe('VALIDATION_ERROR');
-    expect(failConfirm.error.message).toMatch(/non-empty settlement title/);
+    expect(failConfirm.error.message).toMatch(/exactly one create_task_template executedAction/);
 
-    const stillWaiting = await service.getRun('run-journey-title-fail', cx as any);
+    const stillWaiting = await service.getRun('run-journey-multi-executed', cx as any);
     expect(stillWaiting.ok).toBe(true);
     if (!stillWaiting.ok) return;
     expect(stillWaiting.data.run.status).toBe('waiting_approval');

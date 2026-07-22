@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -546,6 +546,117 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469)', (
         },
       }),
     ).toThrow(/must not rebind settlement title/);
+  });
+
+
+  it('confirm uses process-local draft and ignores client approvedActions rebind (residual 471)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: {
+        ...request('run-store-draft'),
+        input: { title: 'Store draft title', goalId: 'goal-store' },
+      },
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const completed = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'confirm',
+        // Client tries to wipe/rebind draft via approvedActions — must be ignored.
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'forged',
+            payload: { title: 'Forged draft', goalId: 'goal-forged' },
+          },
+        ],
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            entityId: 'tpl-store-draft',
+            data: { title: 'Store draft title', goalId: 'goal-store' },
+          },
+        ],
+      },
+      nowMs: 2,
+    });
+    expect(completed.run.status).toBe('completed');
+    expect(completed.state.executedActions[0]?.data?.['title']).toBe('Store draft title');
+    expect(completed.state.executedActions[0]?.data?.['goalId']).toBe('goal-store');
+    expect(completed.state.approvedActions[0]?.payload?.['title']).toBe('Store draft title');
+    expect(completed.state.approvedActions[0]?.payload?.['goalId']).toBe('goal-store');
+  });
+
+  it('confirm fails closed when client approvedActions would rebind executed settlement (residual 471/469)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: {
+        ...request('run-store-rebind'),
+        input: { title: 'Store draft title', goalId: 'goal-store' },
+      },
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    // Client forges approvedActions AND matching executed title — still rebinds vs store draft.
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'confirm',
+          approvedActions: [
+            {
+              tool: 'create_task_template',
+              index: 0,
+              dependsOn: [],
+              rationale: 'forged',
+              payload: { title: 'Forged draft', goalId: 'goal-forged' },
+            },
+          ],
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'Created with forged title',
+              entityId: 'tpl-forged',
+              data: { title: 'Forged draft', goalId: 'goal-forged' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/must not rebind settlement title|must not rebind settlement goalId/);
+  });
+
+  it('confirm fails closed when executedActions is not exactly one (residual 471)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-multi-executed'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'one',
+              entityId: 'tpl-a',
+            },
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'two',
+              entityId: 'tpl-b',
+            },
+          ],
+        },
+      }),
+    ).toThrow(/exactly one create_task_template executedAction/);
   });
 
 

@@ -151,11 +151,13 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 437/453/463/465/467/469: mark process-local task.create run completed after client createTemplate.
+   * Residual 437/453/463/465/467/469/471: mark process-local task.create run completed after client createTemplate.
    * Domain mutation already happened; Host confirm requires these executedActions (no Host default),
    * a recoverable settlement title in data (residual 463), a non-empty template entity id
    * (residual 465) for receipt deep-link / reopen, and must not rebind approved goalId/title
-   * (residual 467/469). This only records settlement for getRun/list/reopen.
+   * (residual 467/469). Residual 471: do not send approvedActions on confirm — process-local
+   * draft is Host source of truth (edit is the only revise path).
+   * This only records settlement for getRun/list/reopen.
    */
   async function completeTaskAgentRun(hostOptions?: {
     templateId?: string | null;
@@ -182,6 +184,8 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
           : undefined;
 
       const pending = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+      // Residual 471: settlement data may carry title/goalId for display, but Host draft
+      // comes from process-local pending/approved only (ignore client approvedActions).
       const payloadBase: Record<string, unknown> = {
         ...(pending?.payload ?? {}),
       };
@@ -192,15 +196,6 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
       // Residual 465: always stamp domain template id into settlement data + entityId.
       payloadBase['templateId'] = templateId;
       payloadBase['entityId'] = templateId;
-
-      const approvedActions = pending
-        ? [
-            {
-              ...pending,
-              payload: payloadBase,
-            },
-          ]
-        : undefined;
 
       const executedActions: AgentExecutedAction[] = [
         {
@@ -214,9 +209,9 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
         },
       ];
 
+      // Residual 471: confirm payload is executedActions settlement only (no draft revise).
       const payload: AgentResumePayload = {
         userDecision: 'confirm',
-        ...(approvedActions ? { approvedActions } : {}),
         executedActions,
       };
       const result = unwrap(await options.service.resumeAgentRun(run.run.runId, payload));

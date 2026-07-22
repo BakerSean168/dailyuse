@@ -292,6 +292,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'resolveConfirmSettlementGoalId',
         // Residual 469: confirm settlement title must not rebind approved draft.
         'HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE',
+        // Residual 471: confirm process-local draft only + single executed settlement.
+        'HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE',
+        'HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE',
+        'resolveConfirmStoreDraftActions',
       ],
       status: 'implemented_unit',
     },
