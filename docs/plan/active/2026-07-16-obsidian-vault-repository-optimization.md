@@ -3824,6 +3824,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 完整 Task Agent start/runtime/LangGraph 仍未齐。
 > 状态保持 **实施中**；不改 §13.2 checkbox。
 
+> 续进展 2026-07-22（阶段 6 残留四百三十轮）：§13.2 聚焦证据套件复跑（含 residual 250–429
+> Host task.create 产品 toolMode 入口锁，不改 checkbox）——**99 文件 / 424 测试**（app-vue 26/147、
+> ai 28/144、repository 6/35、contracts 11/29、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`。
+> 相对 residual 428：app-vue +0 file / +1 test（task-create product entry surface）。仍为部分/外部阻塞：
+> 真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn 产品路径、
+> GitHub App fixture E2E、全量 PR 门禁、完整 Task Agent 工作流/工作台。
+> 状态保持 **实施中**；PR 就绪仍为否。
+
 
 
 
@@ -4345,6 +4353,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百二十七轮：Host AgentType task.create 基础 + 专用会话字段 taskAgentRun。
   残留四百二十八轮：§13.2 focused evidence suite re-run（423 tests，residuals 250–427 锁；不改 checkbox）。
   残留四百二十九轮：Host task.create 产品 toolMode task-create + Welcome/Footer 入口。
+  残留四百三十轮：§13.2 focused evidence suite re-run（424 tests，residuals 250–429 锁；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4469,6 +4478,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百二十七轮：Host AgentType task.create foundation + dedicated taskAgentRun session field。
   残留四百二十八轮：§13.2 focused evidence suite re-run (423 tests, residuals 250–427 locks, no checkbox changes)。
   残留四百二十九轮：Host task.create product toolMode task-create + Welcome/Footer entry。
+  残留四百三十轮：§13.2 focused evidence suite re-run (424 tests, residuals 250–429 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4679,6 +4689,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百二十七轮：Host AgentType task.create 基础 + taskAgentRun 落地；仍不构成完整 Task Agent 工作流/E2E 证据。
   残留四百二十八轮：tip 上 423 项 focused evidence suite（含 residual 250–427 Host AgentType task.create + taskAgentRun 锁）通过；仍不构成全量 PR 门禁证据。
   残留四百二十九轮：task.create 产品 toolMode/Welcome/Footer 落地；仍不构成完整 Task Agent 工作流/E2E 证据。
+  残留四百三十轮：tip 上 424 项 focused evidence suite（含 residual 250–429 Host task.create 产品 toolMode 入口锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
