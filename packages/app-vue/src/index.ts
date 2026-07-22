@@ -14,7 +14,7 @@ export {
   DASHBOARD_SERVICE_KEY,
   DESKTOP_AUTH_API_KEY,
   DESKTOP_BRIDGE_KEY,
-  type DesktopBridge,
+  type ElectronBridge,
   MODULE_CAPSULES_KEY,
   LOGOUT_HANDLER_KEY,
 } from './di/keys';

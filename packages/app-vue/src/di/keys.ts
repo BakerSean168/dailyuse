@@ -7,6 +7,7 @@
  */
 
 import type { InjectionKey, Ref, ShallowRef } from 'vue';
+import type { ElectronBridge } from '@dailyuse/ipc-client';
 import type {
   IAccountService,
   IAuthService,
@@ -52,17 +53,13 @@ export const USER_NAME_KEY: InjectionKey<string> = Symbol('UserName');
 export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandler');
 
 // ── Desktop Platform Keys ──
-export const DESKTOP_AUTH_API_KEY: InjectionKey<{
-  invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
-}> = Symbol('DesktopAuthApi');
+export const DESKTOP_AUTH_API_KEY: InjectionKey<Pick<ElectronBridge, 'invoke'>> =
+  Symbol('DesktopAuthApi');
 
-export interface DesktopBridge {
-  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
-  on: (channel: string, callback: (...args: unknown[]) => void) => void;
-  off: (channel: string, callback: (...args: unknown[]) => void) => void;
-}
+/** Desktop preload bridge — canonical type from @dailyuse/ipc-client. */
+export type { ElectronBridge };
 
-export const DESKTOP_BRIDGE_KEY: InjectionKey<DesktopBridge> = Symbol('DesktopBridge');
+export const DESKTOP_BRIDGE_KEY: InjectionKey<ElectronBridge> = Symbol('DesktopBridge');
 
 /** Shell-owned Global Composer teleport mount (HTMLElement). */
 export const SHELL_COMPOSER_MOUNT_KEY: InjectionKey<ShallowRef<HTMLElement | null>> =

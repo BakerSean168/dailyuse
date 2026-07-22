@@ -5,7 +5,7 @@
  * Acts as a security barrier, ensuring only authorized IPC channels can be accessed.
  * Follows Electron security best practices (context isolation, sandboxing).
  *
- * The exposed API matches the `ElectronAPI` type definition expected by `@dailyuse/infrastructure-client`.
+ * The exposed API matches `ElectronBridge` from `@dailyuse/ipc-client`.
  *
  * @module preload
  */
@@ -43,7 +43,7 @@ const eventListeners = new Map<string, Set<(...args: unknown[]) => void>>();
  * @constant electronAPI
  * @description The API exposed to the renderer process via `window.electronAPI`.
  *
- * Implements the `ElectronAPI` interface used by the frontend infrastructure client.
+ * Satisfies `ElectronBridge` used by ResultIpcClient and app-vue desktop DI.
  */
 const electronAPI = {
   /**
@@ -117,4 +117,4 @@ const electronAPI = {
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
 // Export type for TypeScript usage in renderer
-export type ElectronAPI = typeof electronAPI;
+export type { ElectronBridge } from '@dailyuse/ipc-client';

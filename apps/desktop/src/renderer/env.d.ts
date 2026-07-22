@@ -12,12 +12,12 @@ declare module '*.icns' {
   export default src;
 }
 
-interface ElectronAPI {
-  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
-  on: (channel: string, callback: (...args: unknown[]) => void) => void;
-  off: (channel: string, callback: (...args: unknown[]) => void) => void;
+import type { ElectronBridge } from '@dailyuse/ipc-client';
+
+declare global {
+  interface Window {
+    electronAPI?: ElectronBridge;
+  }
 }
 
-interface Window {
-  electronAPI?: ElectronAPI;
-}
+export {};

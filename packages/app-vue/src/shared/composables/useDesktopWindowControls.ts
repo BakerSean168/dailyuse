@@ -10,7 +10,7 @@
  */
 import { inject, reactive } from 'vue';
 import { isOk, type Result } from '@dailyuse/contracts/result';
-import { DESKTOP_BRIDGE_KEY, type DesktopBridge } from '../../di/keys';
+import { DESKTOP_BRIDGE_KEY, type ElectronBridge } from '../../di/keys';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 
 export interface WindowControlsState {
@@ -20,10 +20,10 @@ export interface WindowControlsState {
   isClosable: boolean;
 }
 
-function getBridge(): DesktopBridge | undefined {
+function getBridge(): ElectronBridge | undefined {
   return (
     inject(DESKTOP_BRIDGE_KEY, undefined) ??
-    ((window as { electronAPI?: DesktopBridge }).electronAPI as DesktopBridge | undefined)
+    ((window as { electronAPI?: ElectronBridge }).electronAPI as ElectronBridge | undefined)
   );
 }
 
