@@ -19,6 +19,5 @@ export {
   type RepositoryModuleDependencies,
   type RepositoryModuleInstance,
   type RepositoryModuleRuntimeContribution,
-  type RepositoryRuntimeContribution,
 } from './server';
 export type { RepositoryApplicationPort } from './server';

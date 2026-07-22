@@ -25,5 +25,4 @@ export {
   type TaskModuleUseCases,
   type TaskRuntimeContributionsInput,
   type CreateTaskPrismaModuleOptions,
-  type TaskRuntimeContribution,
 } from './server';

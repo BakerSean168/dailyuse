@@ -3,13 +3,11 @@ import type { SettingModuleRuntimeContribution } from '../setting.module';
 
 const logger = createLogger('SettingRuntime');
 
-export type SettingRuntimeContribution = SettingModuleRuntimeContribution;
-
 /**
  * Small, idempotent runtime owned by the setting module instance.
  * setting 模块实例拥有的小型 runtime；替代旧的全局初始化任务。
  */
-export function createSettingRuntimeContribution(): SettingRuntimeContribution {
+export function createSettingRuntimeContribution(): SettingModuleRuntimeContribution {
   let started = false;
 
   return {

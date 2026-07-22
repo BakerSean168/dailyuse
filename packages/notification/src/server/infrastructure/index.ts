@@ -48,5 +48,4 @@ export {
 } from './prisma';
 export {
   createNotificationRuntimeContribution,
-  type NotificationRuntimeContribution,
 } from './runtime';

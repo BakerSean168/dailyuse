@@ -24,5 +24,4 @@ export {
   type ReminderModuleRuntimeContribution,
   type ReminderModuleUseCases,
   type ReminderRuntimeContributionsInput,
-  type ReminderRuntimeContribution,
 } from './server';

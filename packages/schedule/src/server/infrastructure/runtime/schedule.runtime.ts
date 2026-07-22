@@ -13,10 +13,6 @@ import type { ScheduleModuleRuntimeContribution } from '../schedule.module';
 
 const logger = createLogger('ScheduleRuntime');
 
-export type ScheduleRuntimeContribution = ScheduleModuleRuntimeContribution;
-export type ScheduleRuntimeContributionsInput =
-  | ScheduleRuntimeContribution
-  | readonly ScheduleRuntimeContribution[];
 export type { ScheduleTaskExecutionResult, ScheduleTaskSourceExecutor };
 
 type SyncTaskEventName =
@@ -220,7 +216,7 @@ async function executeScheduledTask(
 
 export function createScheduleRuntimeContribution(
   deps: ScheduleRuntimeDependencies,
-): ScheduleRuntimeContribution {
+): ScheduleModuleRuntimeContribution {
   const queue = new ScheduleTaskQueue({
     taskLoader: {
       async loadActiveTasks() {

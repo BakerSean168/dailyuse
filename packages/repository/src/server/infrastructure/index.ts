@@ -27,7 +27,7 @@ export {
   resolveRepositoryStorageBaseDir,
   type ResolveRepositoryStorageBaseDirOptions,
 } from './storage-config';
-export { createRepositoryRuntimeContribution, type RepositoryRuntimeContribution } from './runtime';
+export { createRepositoryRuntimeContribution } from './runtime';
 
 // Storage
 export { FsStorageAdapter } from './adapters/fs/fs-storage.adapter';

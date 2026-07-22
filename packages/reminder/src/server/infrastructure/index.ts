@@ -68,5 +68,4 @@ export {
 } from './prisma';
 export {
   createReminderRuntimeContribution,
-  type ReminderRuntimeContribution,
 } from './runtime';

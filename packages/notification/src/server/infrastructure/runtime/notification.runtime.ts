@@ -3,9 +3,7 @@ import type { NotificationModuleRuntimeContribution } from '../notification.modu
 
 const logger = createLogger('NotificationRuntime');
 
-export type NotificationRuntimeContribution = NotificationModuleRuntimeContribution;
-
-export function createNotificationRuntimeContribution(): NotificationRuntimeContribution {
+export function createNotificationRuntimeContribution(): NotificationModuleRuntimeContribution {
   let started = false;
 
   return {

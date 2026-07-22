@@ -17,7 +17,6 @@ export { createPowerSyncDataPortabilityDependencies } from './powersync/powersyn
 export { PowerSyncDataPortabilityImportStore } from './powersync/powersync-import-store';
 export {
   createDataPortabilityRuntimeContribution,
-  type DataPortabilityRuntimeContribution,
 } from './runtime';
 export { PrismaServerHeldDataDisclosureSource } from './prisma-server-held-data-disclosure.source';
 export { createPrismaServerHeldDataDisclosureApplicationPort } from './server-held-data-disclosure';

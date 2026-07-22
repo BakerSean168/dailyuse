@@ -37,6 +37,5 @@ export {
 } from './powersync';
 export {
   createAccountRuntimeContributions,
-  type AccountRuntimeContribution,
   type AccountRuntimeContributionsInput,
 } from './runtime';
