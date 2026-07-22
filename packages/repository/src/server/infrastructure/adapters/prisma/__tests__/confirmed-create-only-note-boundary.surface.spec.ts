@@ -72,7 +72,9 @@ describe('confirmed-create-only note boundary surface', () => {
   );
 
   it('application and client ports expose confirmed create only (no existing-note update)', () => {
-    for (const source of [applicationPort, apiClientPort, clientPort]) {
+    // Method surface lives on the application port + IRepositoryApiClient.
+    // RepositoryClientPort is a residual-284 type alias (no dual method body).
+    for (const source of [applicationPort, apiClientPort]) {
       expect(source).toContain('createConfirmedKnowledgeNote');
       expect(source).not.toMatch(
         /updateKnowledgeNote(?!ProjectionIndexStatus)|updateConfirmedKnowledgeNote|saveKnowledgeNote|patchKnowledgeNote|editKnowledgeNote/,
@@ -80,8 +82,14 @@ describe('confirmed-create-only note boundary surface', () => {
       expect(source).not.toMatch(/updateLocalVaultNote|saveLocalVaultNote|patchLocalVaultNote/);
     }
 
+    expect(clientPort).toMatch(/export type RepositoryClientPort\s*=\s*IRepositoryApiClient/);
+    expect(clientPort).not.toMatch(/export interface RepositoryClientPort\s*\{/);
+    expect(clientPort).not.toMatch(
+      /updateKnowledgeNote(?!ProjectionIndexStatus)|updateConfirmedKnowledgeNote|saveKnowledgeNote|patchKnowledgeNote|editKnowledgeNote/,
+    );
+    expect(clientPort).not.toMatch(/updateLocalVaultNote|saveLocalVaultNote|patchLocalVaultNote/);
+
     expect(apiClientPort).toContain('writeConfirmedLocalVaultNote');
-    expect(clientPort).toContain('writeConfirmedLocalVaultNote');
     // Application port is server-side GitHub projection; Local Vault write is Desktop-only.
     expect(applicationPort).not.toContain('writeConfirmedLocalVaultNote');
   });

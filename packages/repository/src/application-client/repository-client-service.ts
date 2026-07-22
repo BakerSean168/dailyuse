@@ -42,9 +42,8 @@ import type {
   ListKnowledgeAttachmentProjectionsReq,
 } from '@dailyuse/contracts/repository';
 import type { IRepositoryApiClient } from './ports/repository-api-client.port';
-import type { RepositoryClientPort } from './repository-client.port';
 
-export class RepositoryClientService implements RepositoryClientPort {
+export class RepositoryClientService implements IRepositoryApiClient {
   constructor(private readonly repositoryApi: IRepositoryApiClient) {}
 
   startKnowledgeRepositoryInstallation(
