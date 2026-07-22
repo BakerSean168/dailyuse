@@ -41,7 +41,7 @@ Host UI 工作台已部分落地（vault residual 355–387：Host Proposal 面�
 execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK/CLI 进程 adapter、
 完整 multi-engine runtime E2E 与跨端 Playwright/Electron 仍未完成（residual 405–407 仅 scaffold/unit driver，不宣称全绿）。
 
-### 2.1 ADR-035 Host 当前边界（与 vault residual 314–413 对齐）
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–415 对齐）
 
 - 生产允许：`DirectTurnEngine`、`ReadonlyAnalysisTurnEngine`、`LangGraphWorkflowAdapter`、
   `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`、`AssistantFacade`。
@@ -69,6 +69,7 @@ execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK
 - residual 409：Host 时间线 open_chat 与 AgentRun（proposal/receipt）surface isolation 分区与 fail-closed 审计。
 - residual 411：`composeHostWorkbenchTimelineArtifacts` 接入 AIChatView 实时时间线（composition + isolationOk）。
 - residual 413：Host 工作台 LangGraph UI 泄漏边界（product event allowlist vs node/checkpoint 诊断；Host 面无 vendor 依赖）。
+- residual 415：Goal/Knowledge workflow 诊断事件展示脱敏（`formatLangGraphVendorDiagnosticEventLabel`；UI 不再直出 node.*）。
 - direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
   不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；

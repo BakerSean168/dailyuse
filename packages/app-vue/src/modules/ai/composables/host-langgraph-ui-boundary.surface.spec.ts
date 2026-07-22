@@ -54,14 +54,30 @@ describe('Host LangGraph UI leakage boundary surface (residual 413)', () => {
   });
 
   it('documents Goal workflow panel residual diagnostic node.* leakage (not Host contract)', () => {
-    // Known residual: legacy workflow panel still formats node.* for diagnostics.
+    // Residual 413/415: filtering may inspect vendor types; presentation is sanitized.
     expect(goalPanel).toContain('node.completed');
     expect(goalPanel).toMatch(/event\.type/);
-    // Host product surfaces above stay free; Goal panel is not Host workbench contract.
+    // Host product surfaces above stay free; Goal panel is diagnostic, not Host workbench contract.
     expect(hostLifecycle).not.toContain('node.started');
     expect(hostLifecycle).not.toContain('node.completed');
     expect(proposalPanel).not.toContain('node.started');
     expect(receiptPanel).not.toContain('node.started');
     expect(timelineStrip).not.toContain('node.started');
+  });
+
+  it('formats Goal workflow diagnostics without product UI depending on raw node.* (residual 415)', () => {
+    expect(boundary).toContain('formatLangGraphVendorDiagnosticEventLabel');
+    expect(boundary).toContain('classifyLangGraphVendorDiagnosticPresentationKind');
+    expect(boundary).toContain('workflow_step_completed');
+    expect(goalPanel).toContain('formatLangGraphVendorDiagnosticEventLabel');
+    expect(goalPanel).toContain('formatAgentEvent');
+    expect(goalPanel).toContain('diagnosticWorkflowStepCompleted');
+    // Filtering may still inspect vendor types; presentation must use the formatter.
+    expect(goalPanel).toContain("event.type !== 'node.completed'");
+    expect(goalPanel).not.toMatch(/`\$\{event\.type\} ·/);
+    expect(goalPanel).not.toMatch(/return detail \? `\$\{event\.type\}/);
+    // Host product surfaces remain free of vendor UI contracts.
+    expect(hostLifecycle).not.toContain('node.started');
+    expect(proposalPanel).not.toContain('node.started');
   });
 });

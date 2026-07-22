@@ -109,3 +109,61 @@ export function collectHostWorkbenchLangGraphLeakageViolations(
   }
   return violations;
 }
+
+/**
+ * Residual 415: classify vendor diagnostic event types for presentation.
+ * Host workbench still must not treat these as product UI contracts.
+ */
+export type LangGraphVendorDiagnosticPresentationKind =
+  | 'workflow_step_started'
+  | 'workflow_step_completed'
+  | 'tool_completed'
+  | 'checkpoint'
+  | 'vendor_diagnostic'
+  | 'unknown';
+
+export function classifyLangGraphVendorDiagnosticPresentationKind(
+  type: string | null | undefined,
+): LangGraphVendorDiagnosticPresentationKind {
+  if (typeof type !== 'string' || !type.trim()) return 'unknown';
+  const normalized = type.trim();
+  if (normalized === 'node.started') return 'workflow_step_started';
+  if (normalized === 'node.completed') return 'workflow_step_completed';
+  if (normalized === 'tool.completed') return 'tool_completed';
+  if (normalized === 'checkpoint' || normalized.startsWith('checkpoint.')) return 'checkpoint';
+  if (isLangGraphVendorDiagnosticEventType(normalized)) return 'vendor_diagnostic';
+  return 'unknown';
+}
+
+const DEFAULT_DIAGNOSTIC_LABELS: Record<LangGraphVendorDiagnosticPresentationKind, string> = {
+  workflow_step_started: 'Workflow step started',
+  workflow_step_completed: 'Workflow step completed',
+  tool_completed: 'Tool completed',
+  checkpoint: 'Checkpoint',
+  vendor_diagnostic: 'Vendor diagnostic',
+  unknown: 'Runtime event',
+};
+
+/**
+ * Residual 415: format vendor diagnostic events without leaking raw node.* type
+ * strings into product-facing diagnostic UI text.
+ */
+export function formatLangGraphVendorDiagnosticEventLabel(input: {
+  type: string;
+  detail?: string | null;
+  labels?: Partial<Record<LangGraphVendorDiagnosticPresentationKind, string>>;
+}): string {
+  const kind = classifyLangGraphVendorDiagnosticPresentationKind(input.type);
+  const labels = { ...DEFAULT_DIAGNOSTIC_LABELS, ...(input.labels ?? {}) };
+  const head = labels[kind] || DEFAULT_DIAGNOSTIC_LABELS.unknown;
+  const detail =
+    typeof input.detail === 'string' && input.detail.trim() ? input.detail.trim() : '';
+  // Never fall back to raw vendor type for known diagnostic kinds.
+  if (detail) return `${head} · ${detail}`;
+  if (kind === 'unknown' || kind === 'vendor_diagnostic') {
+    // Unknown/other vendor types keep a sanitized head only (no raw type leak preferred).
+    return head;
+  }
+  return head;
+}
+

@@ -40,6 +40,12 @@ const i18n = createI18n({
             totalTokens: '{count} total',
             nodeTiming: 'Node Timing',
             toolTiming: 'Tool Timing',
+            diagnosticWorkflowStepStarted: 'Workflow step started',
+            diagnosticWorkflowStepCompleted: 'Workflow step completed',
+            diagnosticToolCompleted: 'Tool completed',
+            diagnosticCheckpoint: 'Checkpoint',
+            diagnosticVendor: 'Vendor diagnostic',
+            diagnosticRuntimeEvent: 'Runtime event',
             durationMs: '{ms} ms',
             durationSec: '{sec} sec',
             pendingActions: 'Pending Actions',
@@ -321,7 +327,8 @@ describe('AIGoalWorkflowPanel', () => {
     expect(wrapper.text()).toContain('Node Timing');
     expect(wrapper.text()).toContain('31 ms');
     expect(wrapper.text()).toContain('Runtime Events');
-    expect(wrapper.text()).toContain('node.completed · search_knowledge');
+    expect(wrapper.text()).toContain('Workflow step completed · search_knowledge');
+    expect(wrapper.text()).not.toContain('node.completed');
   });
 
   it('renders knowledge note draft duplicate and index metadata', () => {
@@ -408,9 +415,12 @@ describe('AIGoalWorkflowPanel', () => {
     });
 
     expect(wrapper.text()).toContain('Runtime Events');
-    expect(wrapper.text()).toContain('node.started · draft_note');
-    expect(wrapper.text()).toContain('node.completed · draft_note');
-    expect(wrapper.text()).toContain('artifact.updated · knowledge_note_draft');
+    expect(wrapper.text()).toContain('Workflow step started · draft_note');
+    expect(wrapper.text()).toContain('Workflow step completed · draft_note');
+    expect(wrapper.text()).not.toContain('node.started');
+    expect(wrapper.text()).not.toContain('node.completed');
+    expect(wrapper.text()).toContain('Runtime event · knowledge_note_draft');
+    expect(wrapper.text()).not.toContain('artifact.updated');
     expect(wrapper.find('[data-testid="note-agent-observability"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('Observability');
     expect(wrapper.text()).toContain('Token Usage');
@@ -419,7 +429,8 @@ describe('AIGoalWorkflowPanel', () => {
     expect(wrapper.text()).toContain('24 ms');
     expect(wrapper.text()).toContain('Tool Timing');
     expect(wrapper.text()).toContain('1.3 sec');
-    expect(wrapper.text()).toContain('tool.completed · create_knowledge_note');
+    expect(wrapper.text()).toContain('Tool completed · create_knowledge_note');
+    expect(wrapper.text()).not.toContain('tool.completed ·');
   });
 
   it('renders Goal Agent action plan warnings before approval', () => {
@@ -847,7 +858,8 @@ describe('AIGoalWorkflowPanel', () => {
     expect(wrapper.text()).toContain('80 ms');
     expect(wrapper.text()).toContain('Tool Timing');
     expect(wrapper.text()).toContain('1.4 sec');
-    expect(wrapper.text()).toContain('tool.completed · create_goal');
+    expect(wrapper.text()).toContain('Tool completed · create_goal');
+    expect(wrapper.text()).not.toContain('tool.completed ·');
     expect(wrapper.find('[data-testid="goal-agent-execution-summary"]').text()).toBe(
       'Partial success: 1 executed, 0 skipped, 1 failed.',
     );

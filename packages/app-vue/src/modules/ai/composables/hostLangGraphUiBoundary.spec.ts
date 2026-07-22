@@ -5,6 +5,8 @@ import {
   HOST_WORKBENCH_UI_CONTRACT_EVENT_TYPES,
   isHostWorkbenchUiContractEventType,
   isLangGraphVendorDiagnosticEventType,
+  formatLangGraphVendorDiagnosticEventLabel,
+  classifyLangGraphVendorDiagnosticPresentationKind,
 } from './hostLangGraphUiBoundary';
 
 describe('hostLangGraphUiBoundary (residual 413)', () => {
@@ -50,5 +52,49 @@ describe('hostLangGraphUiBoundary (residual 413)', () => {
       'leaky:checkpoint',
       'leaky:node.started',
     ]);
+  });
+});
+
+describe('formatLangGraphVendorDiagnosticEventLabel (residual 415)', () => {
+  it('maps node/tool events to diagnostic labels without raw node.* type text', () => {
+    expect(
+      formatLangGraphVendorDiagnosticEventLabel({
+        type: 'node.completed',
+        detail: 'search_knowledge',
+      }),
+    ).toBe('Workflow step completed · search_knowledge');
+    expect(
+      formatLangGraphVendorDiagnosticEventLabel({
+        type: 'node.started',
+        detail: 'draft_note',
+      }),
+    ).toBe('Workflow step started · draft_note');
+    expect(
+      formatLangGraphVendorDiagnosticEventLabel({
+        type: 'tool.completed',
+        detail: 'create_knowledge_note',
+      }),
+    ).toBe('Tool completed · create_knowledge_note');
+
+    const started = formatLangGraphVendorDiagnosticEventLabel({ type: 'node.started' });
+    const completed = formatLangGraphVendorDiagnosticEventLabel({
+      type: 'node.completed',
+      detail: 'x',
+    });
+    expect(started).not.toContain('node.started');
+    expect(completed).not.toContain('node.completed');
+    expect(classifyLangGraphVendorDiagnosticPresentationKind('node.completed')).toBe(
+      'workflow_step_completed',
+    );
+  });
+
+  it('accepts localized label overrides', () => {
+    expect(
+      formatLangGraphVendorDiagnosticEventLabel({
+        type: 'node.completed',
+        detail: 'draft_note',
+        labels: { workflow_step_completed: '工作流步骤完成' },
+      }),
+    ).toBe('工作流步骤完成 · draft_note');
   });
 });

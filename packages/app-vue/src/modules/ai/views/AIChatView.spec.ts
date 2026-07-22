@@ -1756,7 +1756,8 @@ describe('AIChatView', () => {
     expect(wrapper.text()).toContain('notes/ai/grounded-answer.md');
     expect(wrapper.text()).toContain('Observability');
     expect(wrapper.text()).toContain('12 prompt · 8 completion · 20 total');
-    expect(wrapper.text()).toContain('node.completed · search_knowledge');
+    expect(wrapper.text()).toContain('Workflow step completed · search_knowledge');
+    expect(wrapper.text()).not.toContain('node.completed');
   });
 
   it('clears a stale Knowledge Q&A answer when the selected Agent run has no answer artifact', async () => {
@@ -2714,7 +2715,8 @@ describe('AIChatView', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('Restored Agent answer with runtime observability.');
-    expect(wrapper.text()).toContain('node.completed · search_knowledge');
+    expect(wrapper.text()).toContain('Workflow step completed · search_knowledge');
+    expect(wrapper.text()).not.toContain('node.completed');
 
     const askButton = wrapper
       .findAll('button')
@@ -2737,7 +2739,8 @@ describe('AIChatView', () => {
     expect(service.queryKnowledge).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('Agent runtime answer should own the visible answer panel.');
     expect(wrapper.text()).not.toContain('Restored Agent answer with runtime observability.');
-    expect(wrapper.text()).toContain('node.completed · search_knowledge');
+    expect(wrapper.text()).toContain('Workflow step completed · search_knowledge');
+    expect(wrapper.text()).not.toContain('node.completed');
   });
 
   it('shows insufficient evidence when the knowledge answer has no citations', async () => {

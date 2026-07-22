@@ -927,6 +927,7 @@ import type {
 } from '@dailyuse/contracts/ai';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { formatLangGraphVendorDiagnosticEventLabel } from '../composables/hostLangGraphUiBoundary';
 import {
   Button,
   Input,
@@ -1082,13 +1083,25 @@ function getAgentEventDataString(event: AgentRuntimeEvent, key: string): string 
 }
 
 function formatAgentEvent(event: AgentRuntimeEvent): string {
+  // Residual 415: diagnostic presentation only — never show raw LangGraph node.* types.
   const detail = [
     getAgentEventDataString(event, 'node'),
     getAgentEventDataString(event, 'tool'),
     getAgentEventDataString(event, 'kind'),
     getAgentEventDataString(event, 'status'),
   ].find(Boolean);
-  return detail ? `${event.type} · ${detail}` : event.type;
+  return formatLangGraphVendorDiagnosticEventLabel({
+    type: event.type,
+    detail,
+    labels: {
+      workflow_step_started: t('aiAssistant.dialogs.agent.diagnosticWorkflowStepStarted'),
+      workflow_step_completed: t('aiAssistant.dialogs.agent.diagnosticWorkflowStepCompleted'),
+      tool_completed: t('aiAssistant.dialogs.agent.diagnosticToolCompleted'),
+      checkpoint: t('aiAssistant.dialogs.agent.diagnosticCheckpoint'),
+      vendor_diagnostic: t('aiAssistant.dialogs.agent.diagnosticVendor'),
+      unknown: t('aiAssistant.dialogs.agent.diagnosticRuntimeEvent'),
+    },
+  });
 }
 
 function formatAgentActionNumber(index: number): string {
