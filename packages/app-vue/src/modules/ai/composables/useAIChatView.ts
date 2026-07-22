@@ -17,7 +17,11 @@ import { useAITaskWorkflow } from './useAITaskWorkflow';
 import { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 import { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 import { useAIFormatters } from './useAIFormatters';
-import { isPrimaryTaskHostAgentRun } from './hostProposalLifecycle';
+import {
+  isPrimaryTaskHostAgentRun,
+  nextDualMirroredTaskAgentRun,
+  shouldDualMirrorPrimaryTaskGoalSession,
+} from './hostProposalLifecycle';
 import { getToolLocaleKey, normalizeWorkflowMode } from './types';
 import {
   adjustComposerHeight as createAdjustComposerHeight,
@@ -321,6 +325,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       }
       // Primary task-shaped goal.create: still lives in goal session for confirm resume,
       // but also mirror into taskAgentRun for exclusive Host task lane wiring.
+      // Residual 589: subsequent goal-session settle re-mirrors via goalAgentRun watch.
       toolMode.value = 'goal-create';
       goalWorkflow.syncGoalAgentRun(result);
       taskAgentRun.value = result;
@@ -353,6 +358,24 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       knowledgeQaWorkflow.syncKnowledgeQaAgentRun(result);
     }
   }
+
+  // Residual 589: goal-session primary-task confirm/cancel only updates goalAgentRun.
+  // Keep exclusive task lane dual-mirror fresh so Host workbench does not keep a
+  // stale waiting_approval proposal after settle (ActionBar + Host panel paths).
+  watch(
+    () => goalWorkflow.goalAgentRun.value,
+    (run) => {
+      const next = nextDualMirroredTaskAgentRun({
+        goalAgentRun: run,
+        taskAgentRun: taskAgentRun.value,
+      });
+      if (next === taskAgentRun.value) return;
+      taskAgentRun.value = next;
+      if (next && shouldDualMirrorPrimaryTaskGoalSession(next)) {
+        taskWorkflow.syncLinkedGoalFromTaskAgentRun(next);
+      }
+    },
+  );
 
   syncTaskAgentRunFromStart = (result) => {
     syncSelectedAgentRun(result);

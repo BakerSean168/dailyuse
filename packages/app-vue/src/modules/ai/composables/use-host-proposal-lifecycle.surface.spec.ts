@@ -1161,6 +1161,31 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('dual-mirrors primary-task goal session settle into exclusive task lane (residual 589)', () => {
+    expect(helper).toContain('Residual 589');
+    expect(helper).toContain('shouldDualMirrorPrimaryTaskGoalSession');
+    expect(helper).toContain('nextDualMirroredTaskAgentRun');
+    const dualIdx = helper.indexOf('export function shouldDualMirrorPrimaryTaskGoalSession');
+    expect(dualIdx).toBeGreaterThan(-1);
+    const dualSlice = helper.slice(dualIdx, dualIdx + 900);
+    expect(dualSlice).toContain("agentType === 'task.create'");
+    expect(dualSlice).toContain('isPrimaryTaskHostAgentRun(result)');
+    const nextIdx = helper.indexOf('export function nextDualMirroredTaskAgentRun');
+    expect(nextIdx).toBeGreaterThan(-1);
+    const nextSlice = helper.slice(nextIdx, nextIdx + 1200);
+    expect(nextSlice).toContain('shouldDualMirrorPrimaryTaskGoalSession(goal)');
+    expect(nextSlice).toContain("agentType === 'task.create'");
+    // Chat view watches goal session and re-mirrors exclusive task lane.
+    const chatView = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatView).toContain('Residual 589');
+    expect(chatView).toContain('nextDualMirroredTaskAgentRun');
+    expect(chatView).toContain('shouldDualMirrorPrimaryTaskGoalSession');
+    expect(chatView).toContain('goalWorkflow.goalAgentRun.value');
+    expect(helper).not.toContain('executeApproved');
+    expect(chatView).not.toContain('executeApproved');
+  });
+
+
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
     const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');

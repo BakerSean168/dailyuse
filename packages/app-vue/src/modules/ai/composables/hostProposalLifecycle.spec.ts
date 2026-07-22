@@ -28,6 +28,8 @@ import {
   filterPendingHostProposalsByClientSettlement,
   mergeHostExecutionReceiptItems,
   isPrimaryTaskHostAgentRun,
+  shouldDualMirrorPrimaryTaskGoalSession,
+  nextDualMirroredTaskAgentRun,
   isTaskShapedHostAgentRun,
   resolveLiveHostWorkbenchAgentRuns,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
@@ -3161,6 +3163,120 @@ describe('Host workbench primary-task kind routing (residual 585)', () => {
     });
     expect(items).toHaveLength(1);
     expect(items[0]?.kind).toBe('task.create');
+  });
+});
+
+describe('Host exclusive dual-mirror primary-task goal session (residual 589)', () => {
+  function primaryTaskGoal(status: AgentRunResult['run']['status'] = 'waiting_approval'): AgentRunResult {
+    return {
+      run: {
+        runId: 'pt-589',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create',
+        status,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            payload: { title: 'Primary', goalId: 'g-1' },
+            rationale: 'task',
+          },
+        ],
+        approvedActions: [],
+        executedActions:
+          status === 'completed'
+            ? [
+                {
+                  tool: 'create_task_template',
+                  status: 'executed',
+                  message: 'ok',
+                  entityId: 'tpl-1',
+                  data: { title: 'Primary' },
+                },
+              ]
+            : [],
+        artifacts: [{ kind: 'task_draft', id: 'td', data: { goalId: 'g-1' }, updatedAt: 1 }],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  function processLocalTask(): AgentRunResult {
+    return {
+      run: {
+        runId: 'task-589',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'task.create',
+        status: 'waiting_approval',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            payload: { title: 'Local' },
+            rationale: 'task',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  it('classifies dual-mirror only for primary-task-shaped goal sessions', () => {
+    expect(shouldDualMirrorPrimaryTaskGoalSession(primaryTaskGoal())).toBe(true);
+    expect(shouldDualMirrorPrimaryTaskGoalSession(primaryTaskGoal('completed'))).toBe(true);
+    expect(shouldDualMirrorPrimaryTaskGoalSession(processLocalTask())).toBe(false);
+    expect(shouldDualMirrorPrimaryTaskGoalSession(null)).toBe(false);
+  });
+
+  it('re-mirrors settled primary-task into exclusive task lane (no stale waiting_approval)', () => {
+    const waiting = primaryTaskGoal('waiting_approval');
+    const completed = primaryTaskGoal('completed');
+    // Stale exclusive mirror still waiting while goal session already completed.
+    const next = nextDualMirroredTaskAgentRun({
+      goalAgentRun: completed,
+      taskAgentRun: waiting,
+    });
+    expect(next?.run.status).toBe('completed');
+    expect(next?.run.runId).toBe('pt-589');
+    // After exclusive promotion, no pending proposal remains for completed run.
+    const items = buildPendingHostProposalItems({
+      goalAgentRun: completed,
+      taskAgentRun: next,
+    });
+    expect(items).toEqual([]);
+  });
+
+  it('preserves process-local task.create and drops dual-mirror when goal leaves primary-task', () => {
+    const local = processLocalTask();
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: null,
+        taskAgentRun: local,
+      }),
+    ).toBe(local);
+
+    const waiting = primaryTaskGoal('waiting_approval');
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: null,
+        taskAgentRun: waiting,
+      }),
+    ).toBeNull();
   });
 });
 

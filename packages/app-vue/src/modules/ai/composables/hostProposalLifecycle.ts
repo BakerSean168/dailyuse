@@ -22,6 +22,8 @@
  * Residual 585: Host workbench focus/reopen/receipt routing uses isPrimaryTaskHostAgentRun
  * (not bare isTaskShaped) so normal goal.create + companion task drafts keep goal.create
  * proposalId; builders also exclusive-lane primary-task promotion.
+ * Residual 589: dual-mirror primary-task goal session into exclusive task lane after
+ * goal-session settle (prevents stale waiting_approval exclusive rows).
  */
 import type {
   AgentAction,
@@ -1024,6 +1026,45 @@ export function isPrimaryTaskHostAgentRun(
       artifact.kind === 'knowledge_draft',
   );
   return !hasGoalDraft && !hasNoteDraft;
+}
+
+/**
+ * Residual 589: whether exclusive task lane should dual-mirror a goal session run.
+ * AgentType task.create owns process-local lane independently — never dual-mirror from goal.
+ * Primary-task-shaped goal.create (exclusive workbench) must stay mirrored after confirm/cancel
+ * so resolveLiveHostWorkbenchAgentRuns does not keep a stale waiting_approval task snapshot.
+ */
+export function shouldDualMirrorPrimaryTaskGoalSession(
+  result: AgentRunResult | null | undefined,
+): boolean {
+  if (!result?.run) return false;
+  if (result.run.agentType === 'task.create') return false;
+  return isPrimaryTaskHostAgentRun(result);
+}
+
+/**
+ * Residual 589: next exclusive taskAgentRun dual-mirror after goal session sync.
+ * - primary-task-shaped goal session → mirror that snapshot
+ * - otherwise drop dual-mirror (agentType !== task.create primary-task) only;
+ *   process-local task.create is preserved.
+ */
+export function nextDualMirroredTaskAgentRun(input: {
+  goalAgentRun?: AgentRunResult | null;
+  taskAgentRun?: AgentRunResult | null;
+}): AgentRunResult | null {
+  const goal = input.goalAgentRun ?? null;
+  if (shouldDualMirrorPrimaryTaskGoalSession(goal)) {
+    return goal;
+  }
+  const task = input.taskAgentRun ?? null;
+  if (!task?.run) return null;
+  // Preserve process-local AgentType task.create exclusive lane.
+  if (task.run.agentType === 'task.create') return task;
+  // Drop stale dual-mirrored primary-task when goal session no longer owns it.
+  if (isPrimaryTaskHostAgentRun(task) && !shouldDualMirrorPrimaryTaskGoalSession(goal)) {
+    return null;
+  }
+  return task;
 }
 
 /**

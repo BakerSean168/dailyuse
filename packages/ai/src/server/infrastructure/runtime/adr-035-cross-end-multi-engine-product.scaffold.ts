@@ -411,6 +411,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 587: goal session Host lifecycle kind task.create for primary-task.
         'Residual 587',
         'kind: hostProposalKind',
+        // Residual 589: dual-mirror primary-task goal session into exclusive task lane.
+        'Residual 589',
+        'nextDualMirroredTaskAgentRun',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',
