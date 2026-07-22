@@ -146,7 +146,7 @@ class KnowledgeExpansionRequest(BaseModel):
 
 
 class KnowledgeExpansionResponse(BaseModel):
-    """Expanded note draft grounded in repository resources."""
+    """Expanded note draft grounded in knowledge notes."""
 
     model_config = ConfigDict(extra="forbid")
 

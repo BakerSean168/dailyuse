@@ -75,7 +75,7 @@ export class QueryKnowledgeUseCase {
 
       if (sync.resources.length === 0 || sync.sync.indexedResources.length === 0) {
         const emptyResult: QueryKnowledgeRes = {
-          answer: 'No relevant repository resources were found for this question.',
+          answer: 'No relevant knowledge notes were found for this question.',
           citations: [],
           providerId: provider.id,
           tokenUsage: {

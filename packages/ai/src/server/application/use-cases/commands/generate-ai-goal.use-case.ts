@@ -700,7 +700,7 @@ export class GenerateAIGoalUseCase {
     }
     if (failedActions.some((action) => action.tool === 'search_notes')) {
       suggestions.add(
-        'Refresh repository resources or narrow the note query before retrying execution.',
+        'Refresh knowledge notes or narrow the note query before retrying execution.',
       );
     }
     if (failedActions.some((action) => action.tool === 'fetch_stats')) {

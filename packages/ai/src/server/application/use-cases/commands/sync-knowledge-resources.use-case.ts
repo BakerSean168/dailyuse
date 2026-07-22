@@ -146,7 +146,7 @@ export class SyncKnowledgeResourcesUseCase {
         failedCount,
       },
       error:
-        failedCount > 0 ? `${failedCount} resource(s) failed during knowledge indexing` : undefined,
+        failedCount > 0 ? `${failedCount} note(s) failed during knowledge indexing` : undefined,
       processingMs: Date.now() - requestedAt,
     });
 

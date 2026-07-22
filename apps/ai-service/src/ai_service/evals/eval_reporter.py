@@ -152,7 +152,7 @@ def build_knowledge_grounding_eval_result(
             name="citations_reference_indexed_resources",
             passed=all(path in indexed_paths for path in cited_paths),
             detail=(
-                "All citations reference indexed repository resources."
+                "All citations reference indexed knowledge notes."
                 if all(path in indexed_paths for path in cited_paths)
                 else "Found citations that were not part of the indexed resource set."
             ),

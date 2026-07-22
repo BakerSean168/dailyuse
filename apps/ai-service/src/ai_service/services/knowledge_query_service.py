@@ -105,7 +105,7 @@ def _matching_query_embedding(
 
 
 class KnowledgeIndexingService:
-    """Chunk repository resources into a stable retrieval representation."""
+    """Chunk knowledge notes into a stable retrieval representation."""
 
     def __init__(self, chat_service: ChatService | None = None) -> None:
         self._chat_service = chat_service
@@ -456,7 +456,7 @@ class KnowledgeQueryService:
             return KnowledgeQueryResponse(
                 answer=(
                     "I could not find enough relevant knowledge in the "
-                    "provided repository resources."
+                    "provided knowledge notes."
                 ),
                 citations=[],
                 usage=None,

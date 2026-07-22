@@ -312,7 +312,7 @@ async def _search_notes_for_goal_planning(
         from ai_service.errors import StructuredOutputError
 
         raise StructuredOutputError(
-            detail="search_notes requires related repository resources."
+            detail="search_notes requires related knowledge notes."
         )
 
     if knowledge_indexing_service is None or knowledge_query_service is None:

@@ -158,7 +158,7 @@ def build_goal_automation_search_notes_tool() -> ChatToolDefinition:
             "function": {
                 "name": "search_notes",
                 "description": (
-                    "Search the provided repository resources for evidence that can "
+                    "Search the provided knowledge notes for evidence that can "
                     "improve the goal automation plan."
                 ),
                 "parameters": {

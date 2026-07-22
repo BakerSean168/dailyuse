@@ -2193,6 +2193,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > AIGoalWorkflowPanel/AIChatView focused specs + governance-check。状态保持 **实施中**；
 > PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百零七轮）：服务端/AI-service 产品文案对齐 knowledge notes——
+> 空检索回答、goal recovery 建议、索引失败消息与 goal_planning/search_notes 提示不再使用
+> “repository resources”；协议字段 `fetch_resource`/`matchedResourceCount`/`maxResources`/
+> `resourceId` 保持稳定。补 packages/ai terminology surface。§13.2 未打勾项仍为部分/外部阻塞。
+> 验证：ai-knowledge-note-terminology + query/goal focused specs + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2459,6 +2466,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百零四轮：§13.2 core evidence suite re-run (157 tests, residuals 201–203 locks, no checkbox changes)。
   残留二百零五轮：align module-index + drop bookmark menu dual-track (no hard-fail stub claim)。
   残留二百零六轮：retire AI Resource dual-track knowledge terminology (note wording + surface lock)。
+  残留二百零七轮：server/ai-service knowledge note terminology (no repository resources product copy)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

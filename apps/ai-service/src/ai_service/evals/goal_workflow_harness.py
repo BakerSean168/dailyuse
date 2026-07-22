@@ -619,7 +619,7 @@ def build_execution_recovery(
         )
     if any(action.get("tool") == "search_notes" for action in failed_actions):
         suggestions.append(
-            "Refresh repository resources or narrow the "
+            "Refresh knowledge notes or narrow the "
             "note query before retrying execution."
         )
     if any(action.get("tool") == "fetch_stats" for action in failed_actions):
