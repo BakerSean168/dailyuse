@@ -32,6 +32,8 @@ export interface UseAIWorkflowPersistenceOptions {
   goalAgentRun: Ref<AgentRunResult | null>;
   knowledgeQaAgentRun: Ref<AgentRunResult | null>;
   noteAgentRun: Ref<AgentRunResult | null>;
+  /** Residual 427: dedicated Host task.create AgentRun session field. */
+  taskAgentRun: Ref<AgentRunResult | null>;
   knowledgeAnswer: Ref<KnowledgeAnswer | null>;
   clarificationAnswers: Ref<string[]>;
   editableGoal: Ref<EditableGoal>;
@@ -119,6 +121,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
       goalAgentRun: options.goalAgentRun.value,
       knowledgeQaAgentRun: options.knowledgeQaAgentRun.value,
       noteAgentRun: options.noteAgentRun.value,
+      taskAgentRun: options.taskAgentRun.value,
       knowledgeAnswer: options.knowledgeAnswer.value,
       clarificationAnswers: [...options.clarificationAnswers.value],
       editableGoal: {
@@ -171,6 +174,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
     options.goalAgentRun.value = entry.goalAgentRun ?? null;
     options.knowledgeQaAgentRun.value = entry.knowledgeQaAgentRun ?? null;
     options.noteAgentRun.value = entry.noteAgentRun ?? null;
+    options.taskAgentRun.value = entry.taskAgentRun ?? null;
     options.knowledgeAnswer.value = entry.knowledgeAnswer ?? null;
     options.clarificationAnswers.value = [...(entry.clarificationAnswers ?? [])];
     options.editableGoal.value = {
@@ -203,6 +207,7 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
           JSON.stringify(options.goalAgentRun.value),
           JSON.stringify(options.knowledgeQaAgentRun.value),
           JSON.stringify(options.noteAgentRun.value),
+          JSON.stringify(options.taskAgentRun.value),
           JSON.stringify(options.knowledgeAnswer.value),
           JSON.stringify(options.clarificationAnswers.value),
           JSON.stringify(options.editableGoal.value),

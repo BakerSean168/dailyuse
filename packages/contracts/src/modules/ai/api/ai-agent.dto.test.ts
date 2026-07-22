@@ -16,6 +16,18 @@ import {
 } from './ai-goal-automation.dto';
 
 describe('AI agent contract schemas', () => {
+
+  it('accepts residual 427 AgentType task.create on start run client request', () => {
+    const parsed = AgentStartRunClientRequestSchema.parse({
+      runId: 'run-task-1',
+      threadId: 'thread-task-1',
+      conversationId: 'conv-task-1',
+      agentType: 'task.create',
+      locale: 'en-US',
+      input: { title: 'Ship task lane' },
+    });
+    expect(parsed.agentType).toBe('task.create');
+  });
   it.each(['update_knowledge_note', 'reindex_resource'] as const)(
     'rejects first-phase-closed knowledge mutation tools: %s',
     (tool) => {

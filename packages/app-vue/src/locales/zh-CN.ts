@@ -496,6 +496,7 @@ export default {
         typeLabels: {
           goalCreate: '目标智能体',
           knowledgeQa: '知识问答智能体',
+          taskCreate: '任务智能体',
           knowledgeGenerate: '知识笔记智能体',
         },
         statusLabels: {

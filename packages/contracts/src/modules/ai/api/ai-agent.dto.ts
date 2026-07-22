@@ -12,6 +12,8 @@ export const AgentTypeSchema = z.enum([
   'goal.create',
   'knowledge.qa',
   'knowledge.generate',
+  /** Residual 427: Host task.create AgentType foundation (session + Host lane). */
+  'task.create',
 ]);
 export type AgentType = z.infer<typeof AgentTypeSchema>;
 

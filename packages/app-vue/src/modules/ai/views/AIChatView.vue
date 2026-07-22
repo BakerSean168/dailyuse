@@ -443,6 +443,7 @@ const {
   conversationListLoading,
   agentRunList,
   agentRunListLoading,
+  taskAgentRun,
   recentGoalList,
   recentKnowledgeNoteList,
   messagesViewport,
@@ -590,6 +591,8 @@ const liveHostWorkbenchAgentRuns = computed(() =>
   resolveLiveHostWorkbenchAgentRuns({
     goalAgentRun: goalAgentRun.value,
     noteAgentRun: noteAgentRun.value,
+    // Residual 427: dedicated task.create session field preferred when present.
+    taskAgentRun: taskAgentRun.value,
   }),
 );
 
@@ -799,12 +802,21 @@ async function handleHostProposalApprove(payload: {
       });
       return;
     }
-    // Residual 423: task.create domain executor after Host lifecycle approve.
+    // Residual 423/427: task.create domain executor after Host lifecycle approve.
     if (payload.item.source === 'task') {
       const title = payload.patch.title ?? payload.item.title;
       const goalId = payload.patch.goalId ?? payload.item.goalId;
-      // Prefer AgentRun resume when the live goal session owns this task-shaped run.
-      if (goalAgentRun.value?.run.runId === payload.item.runId) {
+      const ownedByTaskSession = taskAgentRun.value?.run.runId === payload.item.runId;
+      const isTaskAgentType =
+        taskAgentRun.value?.run.agentType === 'task.create' ||
+        liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType === 'task.create';
+      // Residual 427: AgentType task.create always uses domain createTemplate + client settle.
+      // Primary task-shaped goal.create still prefers goal session confirm when owned there.
+      if (
+        !isTaskAgentType &&
+        !ownedByTaskSession &&
+        goalAgentRun.value?.run.runId === payload.item.runId
+      ) {
         await confirmGoalAgentRun({
           skipHostLifecycle: true,
           revision,
@@ -874,9 +886,15 @@ async function handleHostProposalReject(payload: {
       });
       return;
     }
-    // Residual 423/425: cancel primary task-shaped AgentRun via goal session when owned there.
+    // Residual 423/425/427: cancel task-shaped AgentRun via goal session when owned there.
     if (payload.item.source === 'task') {
-      if (goalAgentRun.value?.run.runId === payload.item.runId) {
+      const isTaskAgentType =
+        taskAgentRun.value?.run.agentType === 'task.create' ||
+        liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType === 'task.create';
+      if (
+        !isTaskAgentType &&
+        goalAgentRun.value?.run.runId === payload.item.runId
+      ) {
         await cancelGoalAgentRun({
           skipHostLifecycle: true,
           revision: payload.revision,

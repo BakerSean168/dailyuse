@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -633,7 +633,10 @@ export function isTaskShapedHostAgentRun(
 export function isPrimaryTaskHostAgentRun(
   result: AgentRunResult | null | undefined,
 ): boolean {
-  if (!isTaskShapedHostAgentRun(result) || !result) return false;
+  if (!result?.run) return false;
+  // Residual 427: first-class AgentType task.create always owns the Host task lane.
+  if (result.run.agentType === 'task.create') return true;
+  if (!isTaskShapedHostAgentRun(result)) return false;
   const hasGoalDraft = result.state.artifacts.some((artifact) => artifact.kind === 'goal_draft');
   const hasNoteDraft = result.state.artifacts.some(
     (artifact) =>
@@ -1091,8 +1094,9 @@ export function resolveHostWorkbenchReopenFromAgentRun(
 ): HostWorkbenchReopenKind {
   if (!result?.run) return 'none';
   const agentType = result.run.agentType;
-  // Residual 419/423: task.create Host lane via task-shaped artifacts (no AgentType yet).
-  const looksLikeTaskHostRun = isTaskShapedHostAgentRun(result);
+  // Residual 419/423/427: task.create Host lane via AgentType or task-shaped artifacts.
+  const looksLikeTaskHostRun =
+    result.run.agentType === 'task.create' || isTaskShapedHostAgentRun(result);
   if (
     agentType !== 'goal.create'
     && agentType !== 'knowledge.generate'

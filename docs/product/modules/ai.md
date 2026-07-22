@@ -41,7 +41,7 @@ Host UI 工作台已部分落地（vault residual 355–387：Host Proposal 面�
 execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK/CLI 进程 adapter、
 完整 multi-engine runtime E2E 与跨端 Playwright/Electron 仍未完成（residual 405–407 仅 scaffold/unit driver，不宣称全绿）。
 
-### 2.1 ADR-035 Host 当前边界（与 vault residual 314–425 对齐）
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–427 对齐）
 
 - 生产允许：`DirectTurnEngine`、`ReadonlyAnalysisTurnEngine`、`LangGraphWorkflowAdapter`、
   `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`、`AssistantFacade`。
@@ -75,6 +75,7 @@ execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK
 - residual 421：Goal 可观测性 i18n 去 LangGraph「node」产品语（`diagnosticWorkflowStepTiming`）；cross-end scaffold/driver 增 `ui.task_create_proposal_receipt_lane` unit 步（16→17）。
 - residual 423：Host **task.create** 实时 lane 接线 + 域 executor 基础（`resolveLiveHostWorkbenchAgentRuns`；approve 经 goal resume 或 `createTemplate` fallback；title/goalId 补丁）。
 - residual 425：Host **task.create** 客户端 settle + 执行回执（`createTemplate` fallback 后 `buildHostTaskClientExecutionReceipt`/`settledProposalIds`；receipt 深链 template id）。
+- residual 427：Host **AgentType task.create** 基础 + 专用会话字段 `taskAgentRun`；Host lane/`isPrimaryTaskHostAgentRun` 识别；start 能力门禁不阻塞；完整 Task Agent 工作流仍未齐。
 - direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
   不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；

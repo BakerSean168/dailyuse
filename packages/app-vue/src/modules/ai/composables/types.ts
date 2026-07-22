@@ -198,6 +198,8 @@ export type PersistedWorkflowEntry = {
   goalAgentRun?: AgentRunResult | null;
   knowledgeQaAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;
+  /** Residual 427: dedicated Host task.create AgentRun session field. */
+  taskAgentRun?: AgentRunResult | null;
   knowledgeAnswer?: KnowledgeAnswer | null;
   clarificationAnswers: string[];
   editableGoal: EditableGoal;

@@ -171,4 +171,12 @@ describe('Agent start capability plan gating', () => {
     );
     expect(result.ok).toBe(true);
   });
+
+  it('does not block residual 427 task.create at start (Host foundation)', () => {
+    const result = assertAgentStartCapabilityPlan(
+      'task.create',
+      buildAgentRuntimeCapabilityOffers({}),
+    );
+    expect(result.ok).toBe(true);
+  });
 });

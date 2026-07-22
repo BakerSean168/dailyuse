@@ -312,4 +312,20 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('clientTaskReceipts: clientTaskHostReceipts.value');
     expect(chatView).toContain('created?.template?.id');
   });
+
+  it('Host AgentType task.create foundation + dedicated session field (residual 427)', () => {
+    expect(helper).toContain("agentType === 'task.create'");
+    expect(helper).toContain('isPrimaryTaskHostAgentRun');
+    expect(chatView).toContain('taskAgentRun: taskAgentRun.value');
+    expect(chatView).toContain('isTaskAgentType');
+    const agentDto = readFileSync(
+      resolve(dir, '../../../../../contracts/src/modules/ai/api/ai-agent.dto.ts'),
+      'utf8',
+    );
+    expect(agentDto).toContain("'task.create'");
+    const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatViewTs).toContain("agentType === 'task.create'");
+    expect(chatViewTs).toContain('const taskAgentRun = ref');
+    expect(helper).not.toContain('executeApproved');
+  });
 });

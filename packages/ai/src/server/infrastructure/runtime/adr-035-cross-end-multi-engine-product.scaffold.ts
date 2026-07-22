@@ -1,5 +1,5 @@
 /**
- * Residual 405/417/421/423/425: ADR-035 cross-end multi-engine Host product E2E scaffold.
+ * Residual 405/417/421/423/425/427: ADR-035 cross-end multi-engine Host product E2E scaffold.
  *
  * Freezes the intended Web + Desktop product journey for multi-engine open chat
  * (DirectTurn + ReadonlyAnalysis), cancel_run stop, and timeline engine badges.
@@ -218,6 +218,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'buildHostTaskClientExecutionReceipt',
         'settledProposalIds',
         'clientTaskReceipts',
+        "agentType === 'task.create'",
+        'taskAgentRun',
       ],
       status: 'implemented_unit',
     },

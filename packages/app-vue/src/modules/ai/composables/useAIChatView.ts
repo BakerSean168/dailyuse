@@ -16,6 +16,7 @@ import { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
 import { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 import { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 import { useAIFormatters } from './useAIFormatters';
+import { isPrimaryTaskHostAgentRun } from './hostProposalLifecycle';
 import { getToolLocaleKey, normalizeWorkflowMode } from './types';
 import {
   adjustComposerHeight as createAdjustComposerHeight,
@@ -78,6 +79,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   const toolMode = ref<WorkflowMode>('chat');
   const agentRunList = ref<AgentRun[]>([]);
   const agentRunListLoading = ref(false);
+  /** Residual 427: dedicated Host task.create AgentRun session field. */
+  const taskAgentRun = ref<AgentRunResult | null>(null);
   const adjustComposerHeight = () => createAdjustComposerHeight(options.getComposerTextarea);
 
   const recentGoalList = computed<AIWorkspaceRecentGoal[]>(() =>
@@ -177,6 +180,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     goalWorkflow.resetGoalArtifacts();
     noteWorkflow.resetNoteArtifacts();
     knowledgeQaWorkflow.resetKnowledgeAnswer();
+    // Residual 427: clear dedicated task.create session field.
+    taskAgentRun.value = null;
   }
 
   const persistence = useAIWorkflowPersistence({
@@ -188,6 +193,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     goalAgentRun: goalWorkflow.goalAgentRun,
     knowledgeQaAgentRun: knowledgeQaWorkflow.knowledgeQaAgentRun,
     noteAgentRun: noteWorkflow.noteAgentRun,
+    taskAgentRun,
     knowledgeAnswer: knowledgeQaWorkflow.knowledgeAnswer,
     clarificationAnswers: goalWorkflow.clarificationAnswers,
     editableGoal: goalWorkflow.editableGoal,
@@ -249,9 +255,29 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   }
 
   function syncSelectedAgentRun(result: import("@dailyuse/contracts/ai").AgentRunResult) {
+    // Residual 427: first-class AgentType task.create owns dedicated session field.
+    if (result.run.agentType === 'task.create' || isPrimaryTaskHostAgentRun(result)) {
+      noteWorkflow.resetNoteArtifacts();
+      knowledgeQaWorkflow.resetKnowledgeAnswer();
+      // Keep goal artifacts only when this is a goal.create run dual-carrying task drafts.
+      if (result.run.agentType === 'task.create') {
+        goalWorkflow.resetGoalArtifacts();
+        toolMode.value = 'chat';
+        taskAgentRun.value = result;
+        return;
+      }
+      // Primary task-shaped goal.create: still lives in goal session for confirm resume,
+      // but also mirror into taskAgentRun for exclusive Host task lane wiring.
+      toolMode.value = 'goal-create';
+      goalWorkflow.syncGoalAgentRun(result);
+      taskAgentRun.value = result;
+      return;
+    }
+
     if (result.run.agentType === 'goal.create') {
       noteWorkflow.resetNoteArtifacts();
       knowledgeQaWorkflow.resetKnowledgeAnswer();
+      taskAgentRun.value = null;
       toolMode.value = 'goal-create';
       goalWorkflow.syncGoalAgentRun(result);
       return;
@@ -260,6 +286,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     if (result.run.agentType === 'knowledge.generate') {
       goalWorkflow.resetGoalArtifacts();
       knowledgeQaWorkflow.resetKnowledgeAnswer();
+      taskAgentRun.value = null;
       toolMode.value = 'knowledge-generate';
       noteWorkflow.syncKnowledgeNoteAgentRun(result);
       return;
@@ -268,6 +295,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     if (result.run.agentType === 'knowledge.qa') {
       goalWorkflow.resetGoalArtifacts();
       noteWorkflow.resetNoteArtifacts();
+      taskAgentRun.value = null;
       toolMode.value = 'knowledge-qa';
       knowledgeQaWorkflow.syncKnowledgeQaAgentRun(result);
     }
@@ -292,6 +320,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       syncAgentRunListItem(goalWorkflow.goalAgentRun.value?.run);
       syncAgentRunListItem(noteWorkflow.noteAgentRun.value?.run);
       syncAgentRunListItem(knowledgeQaWorkflow.knowledgeQaAgentRun.value?.run);
+      syncAgentRunListItem(taskAgentRun.value?.run);
       agentRunListLoading.value = false;
     }
   }
@@ -542,6 +571,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       conversationListLoading: chatSession.conversationListLoading,
       agentRunList,
       agentRunListLoading,
+      /** Residual 427: dedicated Host task.create AgentRun session field. */
+      taskAgentRun,
       recentGoalList,
       recentKnowledgeNoteList,
       messagesViewport: chatSession.messagesViewport,

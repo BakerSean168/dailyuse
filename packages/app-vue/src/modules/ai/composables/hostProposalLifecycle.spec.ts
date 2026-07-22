@@ -1395,3 +1395,20 @@ describe('Host task.create client settlement + receipt (residual 425)', () => {
   });
 });
 
+describe('Host AgentType task.create foundation (residual 427)', () => {
+  it('treats agentType task.create as primary Host task lane without artifacts', () => {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    run.state.artifacts = [];
+    expect(isTaskShapedHostAgentRun(run)).toBe(false);
+    expect(isPrimaryTaskHostAgentRun(run)).toBe(true);
+
+    const live = resolveLiveHostWorkbenchAgentRuns({ taskAgentRun: run });
+    expect(live.taskAgentRun?.run.agentType).toBe('task.create');
+    expect(live.goalAgentRun).toBeNull();
+
+    const reopen = resolveHostWorkbenchReopenFromAgentRun(run);
+    expect(reopen).toBe('proposal');
+  });
+});
+

@@ -513,6 +513,7 @@ export default {
         typeLabels: {
           goalCreate: 'Goal Agent',
           knowledgeQa: 'Knowledge Q&A Agent',
+          taskCreate: 'Task Agent',
           knowledgeGenerate: 'Knowledge Note Agent',
         },
         statusLabels: {

@@ -231,8 +231,9 @@ export function assertAgentStartCapabilityPlan(
     return ok(undefined);
   }
 
-  // goal.create may start planning without the TS automation executor; mutation
-  // capability is enforced when execution.required is resolved, not at start.
+  // goal.create / task.create may start planning without the TS automation executor;
+  // mutation capability is enforced when execution.required is resolved, not at start.
+  // Residual 427: task.create Host AgentType foundation is allowed at start.
   return ok(undefined);
 }
 
