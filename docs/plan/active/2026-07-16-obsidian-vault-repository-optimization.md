@@ -40,7 +40,7 @@ updated: 2026-07-22T00:00:00
   inert embeds、callouts、task lists 以及 heading/block navigation metadata；附件读取只允许安全媒体类型并限制为
   10 MiB；附件 blob 已按 `connectionId + blobSha` 建立短期共享 PostgreSQL cache，并保留每次读取的授权、投影
   版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
-- 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 硬失败；MSW/E2E knowledge-only；
+- 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 方法已删除（无 hard-fail stub 双轨）；MSW/E2E knowledge-only（无 legacy 404 stub）；
   app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
   path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
   **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**；repository 运行时组合根/
@@ -2216,6 +2216,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > §13.2 未打勾项仍为部分/外部阻塞。验证：repository.handlers.spec（4）+ goal generation
 > focused specs + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百一十轮）：计划摘要与代码边界对齐——阶段 6 总述去掉过时
+> “客户端 legacy CRUD 硬失败”表述（方法已删除，非 hard-fail 双轨），并注明 MSW 无 legacy
+> 404 stub。§13.2 未打勾项仍为部分/外部阻塞。验证：governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。不改 checkbox。
+
 
 
 
@@ -2487,6 +2492,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百零七轮：server/ai-service knowledge note terminology (no repository resources product copy)。
   残留二百零八轮：eval/fixture note terminology + §13.2 core evidence suite re-run (205 tests, no checkbox changes)。
   残留二百零九轮：drop MSW legacy Resource/Folder dual-track 404 stubs (knowledge-only handlers)。
+  残留二百一十轮：align plan stage-6 summary (no hard-fail CRUD dual-track claim; MSW knowledge-only)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
