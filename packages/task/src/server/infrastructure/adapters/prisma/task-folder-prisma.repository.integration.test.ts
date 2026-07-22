@@ -41,7 +41,7 @@ describe('TaskFolderPrismaRepository integration', () => {
 
     await repository.save(folder);
 
-    const saved = await repository.findById(folder.id);
+    const saved = await repository.findByIdForIdentity(identityId, folder.id);
 
     expect(saved).not.toBeNull();
     expect(saved?.identityId).toBe(identityId);

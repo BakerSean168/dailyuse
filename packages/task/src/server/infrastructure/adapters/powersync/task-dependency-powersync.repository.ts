@@ -60,14 +60,6 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
     };
   }
 
-  async findById(id: string): Promise<TaskDependencyServerDTO | null> {
-    const row = await this.db.getOptional<PowerSyncTaskDependencyRow>(
-      'SELECT * FROM task_dependencies WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return row ? PowerSyncTaskDependencyMapper.toDTO(row) : null;
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

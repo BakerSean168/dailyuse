@@ -58,13 +58,6 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
     return this.mapToDTO(dependency);
   }
 
-  async findById(id: string): Promise<TaskDependencyServerDTO | null> {
-    const dependency = await this.prisma.taskDependency.findUnique({
-      where: { id },
-    });
-    return dependency ? this.mapToDTO(dependency) : null;
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

@@ -42,13 +42,6 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
     });
   }
 
-  async findById(id: string): Promise<TaskFolderServerDTO | null> {
-    const data = await this.prisma.taskFolder.findUnique({
-      where: { id },
-    });
-    return data ? this.mapToDTO(data) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<TaskFolderServerDTO | null> {
     const data = await this.prisma.taskFolder.findFirst({
       where: { id, identityId },

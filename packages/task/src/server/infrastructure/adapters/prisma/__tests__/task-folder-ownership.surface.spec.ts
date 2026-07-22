@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Task folder ownership surface (stage-6 residual 143):
  * folder get/delete/exists must never authorize by bare folder primary key alone.
+ * Residual 176 collapses bare findById dual method.
  */
 describe('task folder ownership surface', () => {
   const port = readFileSync(
@@ -26,6 +27,12 @@ describe('task folder ownership surface', () => {
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
     expect(port).toContain('exists(identityId: string, id: string): Promise<boolean>;');
+  });
+
+  it('port drops bare findById dual method (residual 176)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<TaskFolderServerDTO | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by id + identityId', () => {

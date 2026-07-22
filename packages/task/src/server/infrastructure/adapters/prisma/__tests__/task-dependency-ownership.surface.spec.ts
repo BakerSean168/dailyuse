@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Task dependency ownership surface (stage-6 residual 125):
+ * Residual 176 collapses bare findById dual method.
  * list/get/update/delete/validate dependency paths must never authorize by
  * bare dependency/task id alone.
  */
@@ -43,6 +44,12 @@ describe('task dependency ownership surface', () => {
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
     expect(port).toContain('findBySuccessorId(taskId: string, identityId: string)');
+  });
+
+  it('port drops bare findById dual method (residual 176)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<TaskDependencyServerDTO | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by identityId on owned reads and deletes', () => {

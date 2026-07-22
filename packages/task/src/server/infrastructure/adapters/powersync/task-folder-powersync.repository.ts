@@ -69,14 +69,6 @@ export class PowerSyncTaskFolderRepository implements ITaskFolderRepository {
     }
   }
 
-  async findById(id: string): Promise<TaskFolderServerDTO | null> {
-    const row = await this.db.getOptional<PowerSyncTaskFolderRow>(
-      'SELECT * FROM task_folders WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return row ? PowerSyncTaskFolderMapper.toDTO(row) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<TaskFolderServerDTO | null> {
     const row = await this.db.getOptional<PowerSyncTaskFolderRow>(
       'SELECT * FROM task_folders WHERE id = ? AND identity_id = ? LIMIT 1',

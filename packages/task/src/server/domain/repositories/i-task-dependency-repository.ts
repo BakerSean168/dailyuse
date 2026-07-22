@@ -28,12 +28,7 @@ export interface ITaskDependencyRepository {
   }): Promise<TaskDependencyServerDTO>;
 
   /**
-   * 根据 ID 查找依赖关系
-   */
-  findById(id: string): Promise<TaskDependencyServerDTO | null>;
-
-  /**
-   * 根据 ID + identity 查找依赖关系
+   * 根据 ID + identity 查找依赖关系（唯一授权敏感读路径）
    */
   findByIdForIdentity(identityId: string, id: string): Promise<TaskDependencyServerDTO | null>;
 

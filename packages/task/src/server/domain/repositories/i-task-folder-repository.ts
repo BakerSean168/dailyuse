@@ -16,12 +16,7 @@ export interface ITaskFolderRepository {
   save(folder: TaskFolderServerDTO): Promise<void>;
 
   /**
-   * 根据 ID 查找任务文件夹（系统/内部路径；授权敏感路径请用 findByIdForIdentity）
-   */
-  findById(id: string): Promise<TaskFolderServerDTO | null>;
-
-  /**
-   * 根据 ID + identity 查找任务文件夹（授权敏感读路径）
+   * 根据 ID + identity 查找任务文件夹（唯一授权敏感读路径）
    */
   findByIdForIdentity(identityId: string, id: string): Promise<TaskFolderServerDTO | null>;
 
