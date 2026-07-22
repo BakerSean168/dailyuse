@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  applyHostKnowledgePatchToAgentActions,
   buildHostProposalPatchFromDraft,
   buildPendingHostProposalItems,
   dispatchHostProposalDecision,
@@ -7,6 +8,7 @@ import {
   getRememberedHostProposalRevision,
   isHostProposalDraftDirty,
 } from './hostProposalLifecycle';
+import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
 
 function goalWaitingRun(status: AgentRunResult['run']['status'] = 'waiting_approval'): AgentRunResult {
@@ -265,6 +267,56 @@ describe('dispatchHostProposalRevise (residual 359)', () => {
     });
     expect(result.revision).toBe(2);
     expect(getRememberedHostProposalRevision('agent-run:run-1:goal.create')).toBe(2);
+  });
+});
+
+describe('applyHostKnowledgePatchToAgentActions (residual 363)', () => {
+  it('overlays Host path/body onto create_knowledge_note executor actions only', () => {
+    const actions = [
+      {
+        tool: 'create_knowledge_note',
+        payload: {
+          topic: 't',
+          contentMarkdown: '# old',
+          targetSubpath: 'notes/old',
+        },
+        rationale: 'save',
+        index: 0,
+        dependsOn: [],
+      },
+      {
+        tool: 'search_knowledge',
+        payload: { query: 'x' },
+        rationale: 'search',
+        index: 1,
+        dependsOn: [],
+      },
+    ] as AgentAction[];
+
+    const patched = applyHostKnowledgePatchToAgentActions(actions, {
+      targetPath: 'notes/edited',
+      contentMarkdown: '# revised body',
+    });
+
+    expect(patched[0]).toMatchObject({
+      tool: 'create_knowledge_note',
+      payload: {
+        topic: 't',
+        targetSubpath: 'notes/edited',
+        targetPath: 'notes/edited',
+        contentMarkdown: '# revised body',
+        markdown: '# revised body',
+      },
+    });
+    expect(patched[1]).toMatchObject({
+      tool: 'search_knowledge',
+      payload: { query: 'x' },
+    });
+    // original actions remain untouched
+    expect(actions[0]?.payload).toMatchObject({
+      contentMarkdown: '# old',
+      targetSubpath: 'notes/old',
+    });
   });
 });
 

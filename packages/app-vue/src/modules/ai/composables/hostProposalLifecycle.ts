@@ -1,11 +1,12 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
  * snapshots. Never calls ProposalKernel mutation execution from this module.
  */
 import type {
+  AgentAction,
   AgentRunHostProposalKind,
   AgentRunResult,
   AssistantEvent,
@@ -295,6 +296,55 @@ function goalDraftTitle(run: AgentRunResult): string {
  * waiting_execution / completed runs are intentionally excluded so continue/retry
  * never re-enter Host approve lifecycle.
  */
+
+/**
+ * Residual 363: map Host-revised knowledge fields onto AgentRun executor actions.
+ * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
+ */
+export function applyHostKnowledgePatchToAgentActions(
+  actions: AgentAction[],
+  patch: {
+    targetPath?: string;
+    contentMarkdown?: string;
+  },
+): AgentAction[] {
+  const targetPath =
+    typeof patch.targetPath === 'string' && patch.targetPath.trim()
+      ? patch.targetPath.trim().split('\\').join('/')
+      : undefined;
+  // Fix: in JS file we need /\/g - write carefully below
+  const contentMarkdown =
+    typeof patch.contentMarkdown === 'string' && patch.contentMarkdown.trim()
+      ? patch.contentMarkdown
+      : undefined;
+
+  if (!targetPath && contentMarkdown === undefined) {
+    return actions.map((action) => ({ ...action, payload: { ...action.payload } }));
+  }
+
+  return actions.map((action) => {
+    if (action.tool !== 'create_knowledge_note') {
+      return {
+        ...action,
+        payload: { ...(action.payload ?? {}) },
+      };
+    }
+    const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
+    if (targetPath) {
+      payload.targetSubpath = targetPath;
+      payload.targetPath = targetPath;
+    }
+    if (contentMarkdown !== undefined) {
+      payload.contentMarkdown = contentMarkdown;
+      payload.markdown = contentMarkdown;
+    }
+    return {
+      ...action,
+      payload,
+    };
+  });
+}
+
 export function buildPendingHostProposalItems(input: {
   goalAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;

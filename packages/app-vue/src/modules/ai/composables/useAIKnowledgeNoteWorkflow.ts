@@ -18,7 +18,10 @@ import type {
 } from './types';
 import { getAIErrorMessage } from './error';
 import { unwrap } from '@dailyuse/contracts/result';
-import { dispatchHostProposalDecision } from './hostProposalLifecycle';
+import {
+  applyHostKnowledgePatchToAgentActions,
+  dispatchHostProposalDecision,
+} from './hostProposalLifecycle';
 
 export interface UseAIKnowledgeNoteWorkflowOptions {
   service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
@@ -244,14 +247,24 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
   async function createKnowledgeNoteFromConversation(hostOptions?: {
     skipHostLifecycle?: boolean;
     revision?: number;
+    /** Residual 363: Host-revised vault path applied to executor actions. */
+    targetPath?: string;
+    /** Residual 363: Host-revised markdown applied to executor actions. */
+    contentMarkdown?: string;
   }) {
     if (!options.hasWorkflowMessages.value && !noteAgentDraftMarkdown.value) return;
 
     if (noteAgentRun.value) {
-      const approvedActions = noteAgentRun.value.state.pendingActions.length
+      const baseActions = noteAgentRun.value.state.pendingActions.length
         ? noteAgentRun.value.state.pendingActions
         : noteAgentRun.value.state.approvedActions;
-      if (!approvedActions.length) return;
+      if (!baseActions.length) return;
+
+      // Residual 363: Host lifecycle may revise path/body; executor consumes patched actions.
+      const approvedActions = applyHostKnowledgePatchToAgentActions(baseActions, {
+        targetPath: hostOptions?.targetPath,
+        contentMarkdown: hostOptions?.contentMarkdown,
+      });
 
       noteCreating.value = true;
       try {

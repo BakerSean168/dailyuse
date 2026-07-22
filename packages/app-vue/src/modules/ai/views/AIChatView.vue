@@ -639,6 +639,9 @@ async function handleHostProposalApprove(payload: {
       await createKnowledgeNoteFromConversation({
         skipHostLifecycle: true,
         revision,
+        // Residual 363: pass Host-revised path/body into resumeAgentRun executor payload.
+        targetPath: payload.patch.targetPath ?? payload.item.targetPath,
+        contentMarkdown: payload.patch.contentMarkdown ?? payload.item.contentMarkdown,
       });
     }
   } finally {
