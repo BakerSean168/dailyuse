@@ -37,12 +37,7 @@ export interface ITaskTemplateRepository {
   save(template: TaskTemplate): Promise<void>;
 
   /**
-   * 根据 ID 查找任务模板
-   */
-  findById(id: string): Promise<TaskTemplate | null>;
-
-  /**
-   * 根据 ID + identity 查找任务模板
+   * 根据 ID + identity 查找任务模板（唯一授权敏感读路径）
    */
   findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null>;
 

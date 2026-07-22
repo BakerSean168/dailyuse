@@ -70,13 +70,6 @@ export class TaskTemplatePrismaRepository
     });
   }
 
-  async findById(id: string): Promise<TaskTemplate | null> {
-    const data = await this.db.taskTemplate.findUnique({
-      where: { id },
-    });
-    return data ? this.mapToEntity(data) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null> {
     const data = await this.db.taskTemplate.findFirst({
       where: { id, identityId },

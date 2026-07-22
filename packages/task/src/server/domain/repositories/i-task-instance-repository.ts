@@ -34,12 +34,7 @@ export interface ITaskInstanceRepository {
   saveMany(instances: TaskInstance[]): Promise<void>;
 
   /**
-   * 根据 ID 查找任务实例
-   */
-  findById(id: string): Promise<TaskInstance | null>;
-
-  /**
-   * 根据 ID + identity 查找任务实例
+   * 根据 ID + identity 查找任务实例（唯一授权敏感读路径）
    */
   findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null>;
 

@@ -83,13 +83,6 @@ export class TaskInstancePrismaRepository
     }
   }
 
-  async findById(id: string): Promise<TaskInstance | null> {
-    const data = await this.db.taskInstance.findUnique({
-      where: { id },
-    });
-    return data ? this.mapToEntity(data) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null> {
     const data = await this.db.taskInstance.findFirst({
       where: { id, identityId },

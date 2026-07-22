@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Task instance ownership surface (stage-6 residual 124):
+ * Residual 177 collapses bare findById dual method.
  * get/complete/skip/start/delete must never authorize by bare task instance
  * primary key alone.
  */
@@ -92,6 +93,12 @@ describe('task instance ownership surface', () => {
       'findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null>;',
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
+  });
+
+  it('port drops bare findById dual method (residual 177)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<TaskInstance | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('findByTemplateId requires identityId (residual 133)', () => {

@@ -42,7 +42,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
 
     await repository.save(template);
 
-    const saved = await repository.findById(template.id);
+    const saved = await repository.findByIdForIdentity(identityId, template.id);
 
     expect(saved).not.toBeNull();
     expect(saved?.id).toBe(template.id);
@@ -78,7 +78,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
 
     await repository.save(template);
 
-    const saved = await repository.findById(template.id);
+    const saved = await repository.findByIdForIdentity(identityId, template.id);
 
     expect(saved).not.toBeNull();
     expect(saved?.id).toBe(template.id);
@@ -142,7 +142,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
     });
 
     await repository.save(template);
-    const saved = await repository.findById(template.id);
+    const saved = await repository.findByIdForIdentity(identityId, template.id);
 
     expect(saved?.importance).toBe(ImportanceLevel.Important);
     expect(saved?.title).toBe('Important Task');
@@ -172,7 +172,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
 
     await repository.save(template);
 
-    const saved = await repository.findById(template.id);
+    const saved = await repository.findByIdForIdentity(identityId, template.id);
 
     expect(saved?.title).toBe('Updated Title');
   });
@@ -200,7 +200,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
     template.softDelete();
     await repository.save(template);
 
-    const saved = await repository.findById(template.id);
+    const saved = await repository.findByIdForIdentity(identityId, template.id);
 
     expect(saved?.deletedAt).not.toBeNull();
   });
@@ -223,7 +223,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
     });
 
     await repository.save(template);
-    const saved = await repository.findById(template.id);
+    const saved = await repository.findByIdForIdentity(identityId, template.id);
 
     expect(saved?.taskType).toBe('OneTime');
     expect(saved?.recurrenceRule).toBeNull();
@@ -252,7 +252,7 @@ describe('TaskTemplatePrismaRepository integration', () => {
     });
 
     await repository.save(original);
-    const loaded = await repository.findById(original.id);
+    const loaded = await repository.findByIdForIdentity(String(original.identityId), original.id);
 
     expect(loaded).toBeDefined();
     expect(loaded?.title).toBe(original.title);

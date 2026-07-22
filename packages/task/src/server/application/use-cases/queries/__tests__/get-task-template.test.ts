@@ -71,7 +71,7 @@ describe('GetTaskTemplateUseCase', () => {
     }
   });
 
-  it('should use findById when includeChildren is false (default)', async () => {
+  it('should use findByIdForIdentity when includeChildren is false (default)', async () => {
     const template = aOneTimeTask();
     vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 

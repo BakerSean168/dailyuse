@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Task template ownership surface (stage-6 residual 123 + 140):
  * get/update/delete/actions and list-instances-by-template must never authorize
  * by bare task template primary key alone; folder/goal list filters are identity-scoped.
+ * Residual 177 collapses bare findById dual method.
  */
 describe('task template ownership surface', () => {
   const port = readFileSync(
@@ -53,6 +54,12 @@ describe('task template ownership surface', () => {
       'findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null>;',
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
+  });
+
+  it('port drops bare findById dual method (residual 177)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<TaskTemplate | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by id + identityId', () => {

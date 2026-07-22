@@ -180,14 +180,6 @@ export class PowerSyncTaskTemplateRepository
     }
   }
 
-  async findById(id: string): Promise<TaskTemplate | null> {
-    const row = await this.db.getOptional<PowerSyncTaskTemplateRow>(
-      'SELECT * FROM task_templates WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return row ? PowerSyncTaskTemplateMapper.toDomain(row) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null> {
     const row = await this.db.getOptional<PowerSyncTaskTemplateRow>(
       'SELECT * FROM task_templates WHERE id = ? AND identity_id = ? LIMIT 1',
