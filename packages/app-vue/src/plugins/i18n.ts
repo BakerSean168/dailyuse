@@ -14,9 +14,6 @@
 
 import { createI18n } from 'vue-i18n';
 
-// Re-export useI18n for convenience
-export { useI18n } from 'vue-i18n';
-
 export type AppLocale = 'zh-CN' | 'en-US';
 
 type LocaleMessages = Record<string, unknown>;

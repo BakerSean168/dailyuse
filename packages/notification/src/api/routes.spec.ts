@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { NotificationUseCases } from '../server/transport/notification.controller';
+import type { NotificationApplicationPort } from '../server/application';
 import { registerNotificationRoutes } from './routes';
 
 type RegisteredRoute = {
@@ -23,7 +23,7 @@ class TestOpenApiRegistry implements OpenApiRegistryLike {
 
 const authMiddleware = ((_, __, next) => next()) as RequestHandler;
 
-function createControllerStub(): NotificationUseCases {
+function createControllerStub(): NotificationApplicationPort {
   return {
     createNotification: vi.fn(),
     listNotifications: vi.fn(),
@@ -37,7 +37,7 @@ function createControllerStub(): NotificationUseCases {
     cleanupOldNotifications: vi.fn(),
     getPreferences: vi.fn(),
     updatePreferences: vi.fn(),
-  } as unknown as NotificationUseCases;
+  } as unknown as NotificationApplicationPort;
 }
 
 function getRegisteredRoute(

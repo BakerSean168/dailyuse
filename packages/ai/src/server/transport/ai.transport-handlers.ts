@@ -8,21 +8,16 @@
  *
  * 这个文件把模块门面转换成控制器所需的函数签名。
  * HTTP 和 Electron 共用这一层，避免重复定义同样的 handler 映射。
+ *
+ * Residual 246: no dual AITransportHandlers type alias — returns AIApplicationPort.
  */
 
 import type { AIApplicationPort } from '../application';
 
 /**
- * Transport handler shape consumed by controllers.
- * 控制器消费的传输处理器形状。
- *
- * Currently identical to `AIApplicationPort`. We keep the indirection so
- * controllers never import the infrastructure layer directly.
- * 当前与 `AIApplicationPort` 完全一致。保留间接层使控制器
- * 永远不直接导入基础设施层。
+ * Shared transport mapping for HTTP and Electron controllers.
+ * Controllers depend on AIApplicationPort; this keeps mapping in one place.
  */
-export type AITransportHandlers = AIApplicationPort;
-
-export function createAITransportHandlers(api: AIApplicationPort): AITransportHandlers {
+export function createAITransportHandlers(api: AIApplicationPort): AIApplicationPort {
   return api;
 }

@@ -26,10 +26,6 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
-// ============ Use Case Port ============
-
-export type ReminderUseCases = ReminderApplicationPort;
-
 export class ReminderController {
   constructor(private readonly useCases: ReminderApplicationPort) {}
 

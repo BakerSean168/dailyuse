@@ -19,8 +19,6 @@ import {
 } from '@dailyuse/contracts/notification';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
-export type NotificationUseCases = NotificationApplicationPort;
-
 export class NotificationController {
   constructor(private readonly useCases: NotificationApplicationPort) {}
 
