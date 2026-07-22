@@ -1,11 +1,12 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
  * snapshots and post-execution Host receipt rows. Never calls
  * ProposalKernel mutation execution from this module.
  * Residual 519: task draft title/goalId read create_task_template only (no blind pending[0]).
+ * Residual 521: knowledge draft path/markdown read create_knowledge_note only (no blind pending[0]).
  */
 import type {
   AgentAction,
@@ -210,13 +211,28 @@ function knowledgeDraftArtifact(run: AgentRunResult) {
   return run.state.artifacts.find((artifact) => artifact.kind === 'knowledge_note_draft') ?? null;
 }
 
+/**
+ * Residual 521: product knowledge draft action is create_knowledge_note only
+ * (task residual 519 symmetry). Never read foreign tool pending[0].
+ */
+function firstCreateKnowledgeNoteAction(run: AgentRunResult): AgentAction | undefined {
+  return (
+    run.state.pendingActions.find((action) => action.tool === 'create_knowledge_note') ??
+    run.state.approvedActions.find((action) => action.tool === 'create_knowledge_note')
+  );
+}
+
+/**
+ * Residual 361/521: knowledge draft target path from artifact / create_knowledge_note payload.
+ */
 function knowledgeDraftTargetPath(run: AgentRunResult): string {
   const draft = knowledgeDraftArtifact(run);
   const fromData = draft?.data?.['targetSubpath'] ?? draft?.data?.['targetPath'];
   if (typeof fromData === 'string' && fromData.trim()) {
     return fromData.trim().split('\\').join('/');
   }
-  const action = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+  // Residual 521: only create_knowledge_note draft payload — not blind pending[0].
+  const action = firstCreateKnowledgeNoteAction(run);
   const payload = action?.payload;
   const fromPayload =
     payload && typeof payload === 'object'
@@ -229,11 +245,15 @@ function knowledgeDraftTargetPath(run: AgentRunResult): string {
   return '';
 }
 
+/**
+ * Residual 361/521: knowledge draft markdown from artifact / create_knowledge_note payload.
+ */
 function knowledgeDraftMarkdown(run: AgentRunResult): string {
   const draft = knowledgeDraftArtifact(run);
   const fromData = draft?.data?.['markdown'] ?? draft?.data?.['contentMarkdown'];
   if (typeof fromData === 'string' && fromData.trim()) return fromData;
-  const action = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+  // Residual 521: only create_knowledge_note draft payload — not blind pending[0].
+  const action = firstCreateKnowledgeNoteAction(run);
   const payload = action?.payload;
   const fromPayload =
     payload && typeof payload === 'object'

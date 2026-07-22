@@ -378,6 +378,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 519'];
     case 'firstCreateTaskTemplateAction':
       return ['firstCreateTaskTemplateAction'];
+    case 'Residual 521':
+      return ['Residual 521'];
+    case 'firstCreateKnowledgeNoteAction':
+      return ['firstCreateKnowledgeNoteAction'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

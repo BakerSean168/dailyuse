@@ -1023,6 +1023,23 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('knowledge.write draft path/markdown reads create_knowledge_note only (residual 521)', () => {
+    expect(helper).toContain('firstCreateKnowledgeNoteAction');
+    expect(helper).toContain('Residual 521');
+    const pathIdx = helper.indexOf('function knowledgeDraftTargetPath');
+    const mdIdx = helper.indexOf('function knowledgeDraftMarkdown');
+    expect(pathIdx).toBeGreaterThan(-1);
+    expect(mdIdx).toBeGreaterThan(-1);
+    const pathSlice = helper.slice(pathIdx, pathIdx + 700);
+    const mdSlice = helper.slice(mdIdx, mdIdx + 600);
+    expect(pathSlice).toContain('firstCreateKnowledgeNoteAction(run)');
+    expect(pathSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+    expect(mdSlice).toContain('firstCreateKnowledgeNoteAction(run)');
+    expect(mdSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

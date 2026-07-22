@@ -1598,6 +1598,77 @@ describe('task draft create_task_template-only payload (residual 519)', () => {
   });
 });
 
+describe('knowledge draft create_knowledge_note-only payload (residual 521)', () => {
+  it('ignores foreign pending[0] tool when reading path/markdown for workbench', () => {
+    const run = noteWaitingRun();
+    run.state.artifacts = [
+      {
+        artifactId: 'n1',
+        kind: 'knowledge_note_draft',
+        title: 'AI Note Draft',
+        data: { title: 'AI Note Draft' },
+        updatedAt: 2,
+      },
+    ];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign',
+        payload: {
+          targetSubpath: 'notes/foreign',
+          contentMarkdown: '# foreign body',
+        },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_knowledge_note',
+        rationale: 'note',
+        payload: {
+          targetSubpath: 'notes/real',
+          contentMarkdown: '# real body',
+        },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.targetPath).toBe('notes/real');
+    expect(items[0]?.contentMarkdown).toBe('# real body');
+  });
+
+  it('does not invent path/markdown from foreign-only pending actions', () => {
+    const run = noteWaitingRun();
+    run.state.artifacts = [
+      {
+        artifactId: 'n1',
+        kind: 'knowledge_note_draft',
+        title: 'AI Note Draft',
+        data: { title: 'AI Note Draft' },
+        updatedAt: 2,
+      },
+    ];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign-only',
+        payload: {
+          targetSubpath: 'notes/foreign-only',
+          contentMarkdown: '# only foreign',
+        },
+        dependsOn: [],
+      },
+    ];
+    run.state.approvedActions = [];
+    const items = buildPendingHostProposalItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.targetPath).not.toBe('notes/foreign-only');
+    expect(items[0]?.contentMarkdown).not.toBe('# only foreign');
+    expect(items[0]?.targetPath ?? '').toBe('');
+    expect(items[0]?.contentMarkdown ?? '').toBe('');
+  });
+});
+
+
 describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {
   it('returns true only for dirty owned task.create sessions', () => {
     expect(

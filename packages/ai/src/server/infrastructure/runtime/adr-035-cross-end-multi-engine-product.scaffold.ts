@@ -363,6 +363,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 519: client task draft title/goalId create_task_template only.
         'Residual 519',
         'firstCreateTaskTemplateAction',
+        // Residual 521: client knowledge draft path/markdown create_knowledge_note only.
+        'Residual 521',
+        'firstCreateKnowledgeNoteAction',
       ],
       status: 'implemented_unit',
     },
