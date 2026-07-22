@@ -48,7 +48,7 @@
         "resource_path": "docs/retrieval.md",
         "title": "Retrieval Notes",
         "mime_type": "text/markdown",
-        "content": "# Retrieval\n\nChunking happens before retrieval.\n\nCitations should reference repository resources so answers stay grounded.",
+        "content": "# Retrieval\n\nChunking happens before retrieval.\n\nCitations should reference knowledge notes so answers stay grounded.",
         "metadata": {}
       },
       {

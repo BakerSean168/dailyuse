@@ -122,7 +122,7 @@
         {
           "name": "citations_reference_indexed_resources",
           "passed": true,
-          "detail": "All citations reference indexed repository resources."
+          "detail": "All citations reference indexed knowledge notes."
         },
         {
           "name": "cites_expected_path:docs/retrieval.md",
@@ -163,7 +163,7 @@
         {
           "name": "citations_reference_indexed_resources",
           "passed": true,
-          "detail": "All citations reference indexed repository resources."
+          "detail": "All citations reference indexed knowledge notes."
         },
         {
           "name": "answer_mentions:could not find enough relevant knowledge",
@@ -174,7 +174,7 @@
       "metadata": {
         "citation_count": 0,
         "cited_paths": [],
-        "answer_preview": "I could not find enough relevant knowledge in the provided repository resources."
+        "answer_preview": "I could not find enough relevant knowledge in the provided knowledge notes."
       }
     }
   ]

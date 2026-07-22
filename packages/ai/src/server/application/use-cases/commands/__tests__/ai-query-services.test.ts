@@ -152,7 +152,7 @@ class StubKnowledgeQueryPort implements IKnowledgeQueryPort {
   public readonly expand = vi.fn<
     (input: KnowledgeExpansionInput) => Promise<KnowledgeExpansionResult>
   >(async () => ({
-    expandedContent: '# Expanded Note\n\nGrounded answers should cite repository resources.',
+    expandedContent: '# Expanded Note\n\nGrounded answers should cite knowledge notes.',
     citations: [
       {
         resourceId: 'resource-1',
@@ -429,7 +429,7 @@ describe('AIKnowledgeQueryService', () => {
         resourcePath: 'notes/repository-grounding.md',
         title: 'Repository Grounding',
         mimeType: 'text/markdown',
-        content: 'Grounded answers cite repository resources after retrieval.',
+        content: 'Grounded answers cite knowledge notes after retrieval.',
         metadata: {},
       },
     ]);
@@ -892,7 +892,7 @@ describe('AI knowledge auto-index runtime', () => {
     }
   });
 
-  it('removes deleted repository resources from the derived index', async () => {
+  it('removes deleted knowledge notes from the derived index', async () => {
     const sourcePort = new StubKnowledgeSourcePort();
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();

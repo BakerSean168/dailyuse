@@ -110,14 +110,14 @@
     "type": "agent_runtime_knowledge_qa",
     "description": "knowledge.qa runtime should preserve grounded citations and usage metadata in the answer artifact.",
     "question": "What should Agent runtime answers cite?",
-    "answer": "Agent runtime answers should cite repository resources and expose grounding evidence.",
+    "answer": "Agent runtime answers should cite knowledge notes and expose grounding evidence.",
     "citations": [
       {
         "resourceId": "resource-agent-runtime",
         "resourcePath": "docs/agent-runtime.md",
         "title": "Agent Runtime Notes",
         "chunkIndex": 0,
-        "excerpt": "Agent runtime answers cite repository resources when evidence exists.",
+        "excerpt": "Agent runtime answers cite knowledge notes when evidence exists.",
         "score": 0.93
       }
     ],
@@ -132,7 +132,7 @@
     "expected": {
       "evidence_status": "grounded",
       "expected_answer_substrings": [
-        "cite repository resources",
+        "cite knowledge notes",
         "grounding evidence"
       ],
       "expected_resource_paths": ["docs/agent-runtime.md"],
@@ -150,7 +150,7 @@
       "identity_id": "identity-1",
       "conversation_id": "conversation-knowledge-generate",
       "title": "Grounded knowledge answers",
-      "source": "Question: What should Agent runtime answers cite?\nAnswer: They should cite repository resources and expose grounding evidence.",
+      "source": "Question: What should Agent runtime answers cite?\nAnswer: They should cite knowledge notes and expose grounding evidence.",
       "target_subpath": "notes/ai",
       "provider_id": "provider-1",
       "model": "gpt-4o-mini"
@@ -162,7 +162,7 @@
       "expected_topic_substrings": ["repository citations"],
       "expected_markdown_substrings": [
         "Grounded knowledge answers",
-        "repository resources",
+        "knowledge notes",
         "grounding evidence"
       ],
       "expected_action_tools": ["create_knowledge_note"],

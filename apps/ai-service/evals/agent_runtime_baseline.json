@@ -131,9 +131,9 @@
           "detail": "Citation for \"docs/agent-runtime.md\" was returned."
         },
         {
-          "name": "answer_mentions:cite repository resources",
+          "name": "answer_mentions:cite knowledge notes",
           "passed": true,
-          "detail": "Answer mentions \"cite repository resources\"."
+          "detail": "Answer mentions \"cite knowledge notes\"."
         },
         {
           "name": "answer_mentions:grounding evidence",
@@ -160,7 +160,7 @@
           "docs/agent-runtime.md"
         ],
         "matched_resource_count": 1,
-        "answer_preview": "Agent runtime answers should cite repository resources and expose grounding evidence.",
+        "answer_preview": "Agent runtime answers should cite knowledge notes and expose grounding evidence.",
         "usage": {
           "promptTokens": 20,
           "completionTokens": 10,
@@ -226,9 +226,9 @@
           "detail": "Markdown mentions \"Grounded knowledge answers\"."
         },
         {
-          "name": "markdown_mentions:repository resources",
+          "name": "markdown_mentions:knowledge notes",
           "passed": true,
-          "detail": "Markdown mentions \"repository resources\"."
+          "detail": "Markdown mentions \"knowledge notes\"."
         },
         {
           "name": "markdown_mentions:grounding evidence",

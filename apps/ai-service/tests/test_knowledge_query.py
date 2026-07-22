@@ -263,7 +263,7 @@ async def test_hybrid_retrieval_scores_semantically_related_content():
                 title="Repository Grounding",
                 mime_type="text/markdown",
                 content=(
-                    "Citations should reference repository resources after chunk "
+                    "Citations should reference knowledge notes after chunk "
                     "selection so grounded answers stay traceable."
                 ),
                 metadata={},
@@ -312,7 +312,7 @@ async def test_provider_embeddings_override_local_vectors_when_available():
             mime_type="text/markdown",
             content=(
                 "# Repository Grounding\n\n"
-                "Grounded answers should cite repository resources after retrieval."
+                "Grounded answers should cite knowledge notes after retrieval."
             ),
             metadata={},
         ),
