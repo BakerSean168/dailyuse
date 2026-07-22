@@ -317,12 +317,35 @@ describe('ADR-035 production multi-engine Host journey (residual 375)', () => {
       env: {
         DAILYUSE_PI_SPIKE_ENABLED: '1',
         DAILYUSE_PI_BINARY: '/opt/pi/bin/pi',
+        OPENAI_API_KEY: 'sk-should-scrub',
+        DAILYUSE_VAULT_PATH: '/vault/path',
       },
       isExecutable: () => true,
+      processCwd: () => '/safe/host/cwd',
     });
 
     const probe = await spike.probe();
     expect(probe.status).toBe('available');
+
+    // Residual 391: dry-run plan is research-only and never enables spawn.
+    const plan = spike.buildDryRunSpawnPlan({
+      runId: 'run-spike',
+      identityId: FIXTURE.identity,
+      message: 'should not spawn',
+      requestedVaultPath: '/vault/path',
+      binaryPath: probe.status === 'available' ? probe.binaryPath : undefined,
+    });
+    expect(plan.spawnAllowed).toBe(false);
+    expect(plan.blockedReason).toBe('PI_SPIKE_SPAWN_BLOCKED');
+    expect(plan.cwd).toBe('/safe/host/cwd');
+    expect(plan.cwd).not.toBe('/vault/path');
+    expect(plan.vaultAsCwd).toBe(false);
+    expect(plan.env).not.toHaveProperty('OPENAI_API_KEY');
+    expect(plan.env).not.toHaveProperty('DAILYUSE_VAULT_PATH');
+    expect(plan.argv[0]).toBe('/opt/pi/bin/pi');
+    expect(plan.argv).toContain('--readonly');
+    expect(plan.argv).toContain('--no-write');
+
     const spikeTurn = await spike.startTurn({
       runId: 'run-spike',
       identityId: FIXTURE.identity,
@@ -330,6 +353,7 @@ describe('ADR-035 production multi-engine Host journey (residual 375)', () => {
     });
     expect(spikeTurn.status).toBe('failed');
     expect(spikeTurn.error).toMatch(/PI_SPIKE_SPAWN_BLOCKED/);
+    expect(spikeTurn.error).toMatch(/dry-run plan prepared/);
 
     // Host journey still uses production engines only.
     await collect(facade, {

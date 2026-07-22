@@ -11,5 +11,7 @@ export {
   PI_SPIKE_BINARY_ENV,
   PI_SPIKE_ENABLED_ENV,
 } from './pi-readonly-process.adapter';
-export type { PiReadonlyProcessAdapterOptions } from './pi-readonly-process.adapter';
-
+export type {
+  PiReadonlyProcessAdapterOptions,
+  PiReadonlyProcessDryRunSpawnPlan,
+} from './pi-readonly-process.adapter';

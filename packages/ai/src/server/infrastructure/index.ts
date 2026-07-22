@@ -100,6 +100,10 @@ export {
   PI_SPIKE_BINARY_ENV,
   PI_SPIKE_ENABLED_ENV,
 } from './turn-engine';
+export type {
+  PiReadonlyProcessAdapterOptions,
+  PiReadonlyProcessDryRunSpawnPlan,
+} from './turn-engine';
 
 // ---------------------------------------------------------------------------
 // Workflow Adapter (ADR-035)

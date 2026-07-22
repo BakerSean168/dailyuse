@@ -1,5 +1,5 @@
 /**
- * PiReadonlyProcessAdapter — ADR-035 stage 5/6 process-shaped spike (residual 373).
+ * PiReadonlyProcessAdapter — ADR-035 stage 5/6 process-shaped spike (residual 373 / 391).
  *
  * Occupies a process adapter surface for future Pi CLI isolation research.
  * This is intentionally NOT product default open chat and is NOT wired into
@@ -7,6 +7,7 @@
  *
  * Current spike policy (fail closed):
  * - Probe may report binary path availability via DAILYUSE_PI_BINARY
+ * - buildDryRunSpawnPlan builds argv + scrubbed env + non-vault cwd only
  * - startTurn never spawns a process (spawn blocked until security review)
  * - never sets cwd to a vault path
  * - never injects Daily Use / GitHub / Provider tokens into env
@@ -46,11 +47,37 @@ const FORBIDDEN_ENV_KEYS = [
   'NEXTAUTH_SECRET',
 ] as const;
 
+/**
+ * Residual 391: dry-run spawn plan for process isolation research.
+ * Always reports spawnAllowed:false — preparing a plan never enables spawn.
+ */
+export type PiReadonlyProcessDryRunSpawnPlan = {
+  readonly engineId: typeof PI_READONLY_PROCESS_ADAPTER_ID;
+  readonly productDefault: false;
+  readonly readonlyMode: true;
+  /** Always false until security review + product wiring (not this residual). */
+  readonly spawnAllowed: false;
+  readonly blockedReason: 'PI_SPIKE_SPAWN_BLOCKED';
+  readonly binaryPath: string;
+  /** Hypothetical argv only — never handed to an OS process launcher. */
+  readonly argv: readonly string[];
+  /** Scrubbed env snapshot (no tokens / vault path injection). */
+  readonly env: Readonly<Record<string, string>>;
+  /** Non-vault process cwd. */
+  readonly cwd: string;
+  /** Explicit invariant: vault directories are never used as cwd. */
+  readonly vaultAsCwd: false;
+  /** Forbidden cwd candidates that were rejected (for diagnostics). */
+  readonly forbiddenCwdCandidates: readonly string[];
+};
+
 export type PiReadonlyProcessAdapterOptions = {
   /** Override env lookup (tests). */
   env?: NodeJS.ProcessEnv;
   /** Override binary existence check (tests). */
   isExecutable?: (path: string) => boolean;
+  /** Override process cwd resolution (tests). */
+  processCwd?: () => string;
 };
 
 function defaultIsExecutable(path: string): boolean {
@@ -75,11 +102,13 @@ export class PiReadonlyProcessAdapter implements IExternalProcessTurnAdapterPort
 
   private readonly env: NodeJS.ProcessEnv;
   private readonly isExecutable: (path: string) => boolean;
+  private readonly processCwd: () => string;
   private readonly aborted = new Set<string>();
 
   constructor(options: PiReadonlyProcessAdapterOptions = {}) {
     this.env = options.env ?? process.env;
     this.isExecutable = options.isExecutable ?? defaultIsExecutable;
+    this.processCwd = options.processCwd ?? (() => process.cwd());
   }
 
   /**
@@ -103,7 +132,64 @@ export class PiReadonlyProcessAdapter implements IExternalProcessTurnAdapterPort
   /** Spike forbids using a real vault directory as process cwd. */
   resolveProcessCwd(_requestedVaultPath?: string): string {
     // Intentionally ignore vault path — use process cwd or tmp only in future spawn.
-    return process.cwd();
+    return this.processCwd();
+  }
+
+  /**
+   * Residual 391: prepare a dry-run spawn plan (argv + scrubbed env + non-vault cwd).
+   * Never enables spawn. startTurn must still fail closed with PI_SPIKE_SPAWN_BLOCKED.
+   */
+  buildDryRunSpawnPlan(input: {
+    runId: string;
+    identityId: string;
+    message: string;
+    requestedVaultPath?: string;
+    binaryPath?: string;
+  }): PiReadonlyProcessDryRunSpawnPlan {
+    const binaryPath =
+      (input.binaryPath ?? this.env[PI_SPIKE_BINARY_ENV] ?? '').trim() || 'pi';
+    const messagePreview = input.message.trim().slice(0, 500);
+    const argv = [
+      binaryPath,
+      'analyze',
+      '--readonly',
+      '--no-write',
+      '--no-spawn-tools',
+      '--run-id',
+      input.runId,
+      '--identity-id',
+      input.identityId,
+      '--message',
+      messagePreview,
+    ] as const;
+
+    const forbiddenCwdCandidates = [
+      input.requestedVaultPath,
+      this.env.DAILYUSE_VAULT_PATH,
+      this.env.OBSIDIAN_VAULT_PATH,
+    ].filter((value): value is string => Boolean(value?.trim()));
+
+    const cwd = this.resolveProcessCwd(input.requestedVaultPath);
+    for (const candidate of forbiddenCwdCandidates) {
+      if (candidate === cwd) {
+        // Hard invariant: never allow vault path equality with resolved cwd.
+        throw new Error('PI_SPIKE_VAULT_CWD_FORBIDDEN');
+      }
+    }
+
+    return {
+      engineId: PI_READONLY_PROCESS_ADAPTER_ID,
+      productDefault: false,
+      readonlyMode: true,
+      spawnAllowed: false,
+      blockedReason: 'PI_SPIKE_SPAWN_BLOCKED',
+      binaryPath,
+      argv,
+      env: this.buildScrubbedEnv(),
+      cwd,
+      vaultAsCwd: false,
+      forbiddenCwdCandidates,
+    };
   }
 
   async probe(): Promise<ExternalProcessProbeResult> {
@@ -156,11 +242,25 @@ export class PiReadonlyProcessAdapter implements IExternalProcessTurnAdapterPort
       return { status: 'failed', error: probe.reason };
     }
 
-    // Residual 373: spawn intentionally blocked — research spike only.
+    // Residual 391: dry-run plan is prepared for research, but spawn stays blocked.
+    const plan = this.buildDryRunSpawnPlan({
+      runId: input.runId,
+      identityId: input.identityId,
+      message: input.message,
+      binaryPath: probe.binaryPath,
+    });
+    if (plan.spawnAllowed !== false) {
+      return {
+        status: 'failed',
+        error: 'PI_SPIKE_SPAWN_BLOCKED: spawnAllowed must remain false',
+      };
+    }
+
+    // Residual 373/391: spawn intentionally blocked — research spike only.
     // Product path remains ReadonlyAnalysisTurnEngine (Model Gateway) / DirectTurnEngine.
     return {
       status: 'failed',
-      error: 'PI_SPIKE_SPAWN_BLOCKED: process adapter not product-ready; use engine.pi_readonly Model Gateway path',
+      error: `${plan.blockedReason}: process adapter not product-ready; dry-run plan prepared but spawn blocked; use engine.pi_readonly Model Gateway path`,
     };
   }
 }
