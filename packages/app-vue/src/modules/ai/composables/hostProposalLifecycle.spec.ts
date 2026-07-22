@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  buildHostProposalPatchFromDraft,
   buildPendingHostProposalItems,
   dispatchHostProposalDecision,
   dispatchHostProposalRevise,
   getRememberedHostProposalRevision,
+  isHostProposalDraftDirty,
 } from './hostProposalLifecycle';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
 
@@ -74,7 +76,7 @@ function noteWaitingRun(status: AgentRunResult['run']['status'] = 'waiting_appro
           artifactId: 'n1',
           kind: 'knowledge_note_draft',
           title: 'AI Note Draft',
-          data: { title: 'AI Note Draft', markdown: '# body' },
+          data: { title: 'AI Note Draft', markdown: '# body', targetSubpath: 'notes/ai' },
           updatedAt: 2,
         },
       ],
@@ -186,7 +188,40 @@ describe('buildPendingHostProposalItems (residual 357)', () => {
       kind: 'knowledge.write',
       proposalId: 'agent-run:note-run-1:knowledge.write',
       title: 'AI Note Draft',
+      targetPath: 'notes/ai',
+      contentMarkdown: '# body',
     });
+  });
+
+  it('builds knowledge patch and detects path/content dirty state (residual 361)', () => {
+    const items = buildPendingHostProposalItems({
+      noteAgentRun: noteWaitingRun('waiting_approval'),
+    });
+    const item = items[0]!;
+    expect(
+      buildHostProposalPatchFromDraft({
+        kind: 'knowledge.write',
+        targetPath: ' notes/edited ',
+        contentMarkdown: '# revised',
+      }),
+    ).toEqual({
+      targetPath: 'notes/edited',
+      contentMarkdown: '# revised',
+    });
+    expect(
+      isHostProposalDraftDirty({
+        item,
+        targetPath: item.targetPath,
+        contentMarkdown: item.contentMarkdown,
+      }),
+    ).toBe(false);
+    expect(
+      isHostProposalDraftDirty({
+        item,
+        targetPath: 'notes/edited',
+        contentMarkdown: item.contentMarkdown,
+      }),
+    ).toBe(true);
   });
 
   it('excludes waiting_execution and completed so continue/retry do not re-approve', () => {

@@ -25,6 +25,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('buildPendingHostProposalItems');
     expect(helper).toContain('dispatchHostProposalRevise');
     expect(helper).toContain("type: 'revise_proposal'");
+    expect(helper).toContain('buildHostProposalPatchFromDraft');
+    expect(helper).toContain('targetPath');
+    expect(helper).toContain('contentMarkdown');
     expect(helper).toContain("runStatus: 'waiting_approval'");
     expect(helper).not.toContain('executeApproved');
     expect(helper).not.toContain('resumeAgentRun');
@@ -61,6 +64,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(panel).toContain('ai-host-proposal-reject-');
     expect(panel).toContain('ai-host-proposal-revise-');
     expect(panel).toContain('ai-host-proposal-title-');
+    expect(panel).toContain('ai-host-proposal-target-path-');
+    expect(panel).toContain('ai-host-proposal-content-');
+    expect(panel).toContain('buildHostProposalPatchFromDraft');
     expect(panel).not.toContain('executeApproved');
     expect(panel).not.toContain('resumeAgentRun');
     expect(panel).not.toContain('dispatchAssistant');

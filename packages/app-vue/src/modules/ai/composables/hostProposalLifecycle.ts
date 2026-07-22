@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359).
+ * Host proposal lifecycle helpers (residual 355/357/359/361).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -51,6 +51,10 @@ export type HostProposalPanelItem = {
   title: string;
   summary: string;
   pendingActionCount: number;
+  /** Residual 361: knowledge.write draft path (vault-relative). */
+  targetPath?: string;
+  /** Residual 361: knowledge.write draft markdown body. */
+  contentMarkdown?: string;
 };
 
 function collectEvents(
@@ -178,6 +182,99 @@ function knowledgeDraftTitle(run: AgentRunResult): string {
   return typeof dataTitle === 'string' ? dataTitle.trim() : '';
 }
 
+function knowledgeDraftArtifact(run: AgentRunResult) {
+  return run.state.artifacts.find((artifact) => artifact.kind === 'knowledge_note_draft') ?? null;
+}
+
+function knowledgeDraftTargetPath(run: AgentRunResult): string {
+  const draft = knowledgeDraftArtifact(run);
+  const fromData = draft?.data?.['targetSubpath'] ?? draft?.data?.['targetPath'];
+  if (typeof fromData === 'string' && fromData.trim()) {
+    return fromData.trim().split('\\').join('/');
+  }
+  const action = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['targetSubpath'] ??
+        (payload as Record<string, unknown>)['targetPath']
+      : undefined;
+  if (typeof fromPayload === 'string' && fromPayload.trim()) {
+    return fromPayload.trim().split('\\').join('/');
+  }
+  return '';
+}
+
+function knowledgeDraftMarkdown(run: AgentRunResult): string {
+  const draft = knowledgeDraftArtifact(run);
+  const fromData = draft?.data?.['markdown'] ?? draft?.data?.['contentMarkdown'];
+  if (typeof fromData === 'string' && fromData.trim()) return fromData;
+  const action = run.state.pendingActions[0] ?? run.state.approvedActions[0];
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['contentMarkdown'] ??
+        (payload as Record<string, unknown>)['markdown']
+      : undefined;
+  return typeof fromPayload === 'string' ? fromPayload : '';
+}
+
+/**
+ * Build AssistantProposalPatch from panel draft fields (residual 359/361).
+ * Goal uses title/description; knowledge uses targetPath/contentMarkdown.
+ */
+export function buildHostProposalPatchFromDraft(input: {
+  kind: AgentRunHostProposalKind;
+  title?: string;
+  targetPath?: string;
+  contentMarkdown?: string;
+  description?: string | null;
+}): AssistantProposalPatch {
+  if (input.kind === 'knowledge.write') {
+    const patch: AssistantProposalPatch = {};
+    if (typeof input.targetPath === 'string' && input.targetPath.trim()) {
+      patch.targetPath = input.targetPath.trim().split('\\').join('/');
+    }
+    if (typeof input.contentMarkdown === 'string' && input.contentMarkdown.trim()) {
+      patch.contentMarkdown = input.contentMarkdown;
+    }
+    return patch;
+  }
+
+  if (input.kind === 'goal.create') {
+    const patch: AssistantProposalPatch = {};
+    if (typeof input.title === 'string' && input.title.trim()) {
+      patch.title = input.title.trim();
+    }
+    if (input.description !== undefined) {
+      patch.description = input.description;
+    }
+    return patch;
+  }
+
+  const patch: AssistantProposalPatch = {};
+  if (typeof input.title === 'string' && input.title.trim()) {
+    patch.title = input.title.trim();
+  }
+  return patch;
+}
+
+export function isHostProposalDraftDirty(input: {
+  item: HostProposalPanelItem;
+  title?: string;
+  targetPath?: string;
+  contentMarkdown?: string;
+}): boolean {
+  if (input.item.kind === 'knowledge.write') {
+    const nextPath = (input.targetPath ?? '').trim().split('\\').join('/');
+    const basePath = (input.item.targetPath ?? '').trim().split('\\').join('/');
+    const nextBody = input.contentMarkdown ?? '';
+    const baseBody = input.item.contentMarkdown ?? '';
+    return nextPath !== basePath || nextBody !== baseBody;
+  }
+  return (input.title ?? '').trim() !== input.item.title.trim();
+}
+
 function goalDraftTitle(run: AgentRunResult): string {
   const goalArtifact = run.state.artifacts.find(
     (artifact) =>
@@ -235,6 +332,8 @@ export function buildPendingHostProposalItems(input: {
       title,
       summary: firstPendingRationale(noteRun),
       pendingActionCount: pendingActionCount(noteRun),
+      targetPath: knowledgeDraftTargetPath(noteRun),
+      contentMarkdown: knowledgeDraftMarkdown(noteRun),
     });
   }
 

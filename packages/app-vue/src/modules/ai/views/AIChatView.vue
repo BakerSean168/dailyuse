@@ -542,7 +542,7 @@ const hasWorkflowContext = computed(
   () => toolMode.value !== 'chat' || hasWorkflowArtifact.value,
 );
 
-// Residual 357/359: Host proposal workbench rows (waiting_approval only).
+// Residual 357/359/361: Host proposal workbench rows (waiting_approval only).
 const hostProposalItems = computed(() =>
   buildPendingHostProposalItems({
     goalAgentRun: goalAgentRun.value,
@@ -553,27 +553,40 @@ const hostProposalBusy = ref(false);
 const hostProposalPanelRef = ref<{
   applyRevised: (
     proposalId: string,
-    next: { revision: number; title?: string },
+    next: {
+      revision: number;
+      title?: string;
+      targetPath?: string;
+      contentMarkdown?: string;
+    },
   ) => void;
 } | null>(null);
 
 async function handleHostProposalRevise(payload: {
   item: HostProposalPanelItem;
-  title: string;
   revision: number;
+  patch: {
+    title?: string;
+    targetPath?: string;
+    contentMarkdown?: string;
+    description?: string | null;
+  };
+  dirty: boolean;
 }) {
-  if (hostProposalBusy.value) return;
+  if (hostProposalBusy.value || !payload.dirty) return;
   hostProposalBusy.value = true;
   try {
     const result = await dispatchHostProposalRevise(aiHostService, {
       runId: payload.item.runId,
       kind: payload.item.kind,
       revision: payload.revision,
-      patch: { title: payload.title },
+      patch: payload.patch,
     });
     hostProposalPanelRef.value?.applyRevised(payload.item.proposalId, {
       revision: result.revision,
-      title: payload.title,
+      title: payload.patch.title,
+      targetPath: payload.patch.targetPath,
+      contentMarkdown: payload.patch.contentMarkdown,
     });
   } finally {
     hostProposalBusy.value = false;
@@ -582,25 +595,32 @@ async function handleHostProposalRevise(payload: {
 
 async function handleHostProposalApprove(payload: {
   item: HostProposalPanelItem;
-  title: string;
   revision: number;
+  patch: {
+    title?: string;
+    targetPath?: string;
+    contentMarkdown?: string;
+    description?: string | null;
+  };
+  dirty: boolean;
 }) {
   if (hostProposalBusy.value) return;
   hostProposalBusy.value = true;
   try {
     let revision = payload.revision;
-    const dirty = payload.title.trim() !== payload.item.title.trim();
-    if (dirty) {
+    if (payload.dirty) {
       const revised = await dispatchHostProposalRevise(aiHostService, {
         runId: payload.item.runId,
         kind: payload.item.kind,
         revision,
-        patch: { title: payload.title },
+        patch: payload.patch,
       });
       revision = revised.revision;
       hostProposalPanelRef.value?.applyRevised(payload.item.proposalId, {
         revision,
-        title: payload.title,
+        title: payload.patch.title,
+        targetPath: payload.patch.targetPath,
+        contentMarkdown: payload.patch.contentMarkdown,
       });
     }
 

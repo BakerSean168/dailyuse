@@ -345,6 +345,8 @@ export default {
         revision: 'Rev {revision}',
         pendingActions: '{count} pending action(s)',
         editTitle: 'Proposal title',
+        editTargetPath: 'Vault-relative path',
+        editContent: 'Note markdown',
         revise: 'Save revision',
         approve: 'Approve',
         reject: 'Reject',
