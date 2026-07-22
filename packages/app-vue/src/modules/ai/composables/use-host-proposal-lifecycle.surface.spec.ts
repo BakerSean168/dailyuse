@@ -329,6 +329,27 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local run store foundation (residual 435)', () => {
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    expect(store).toContain('createHostTaskCreateRunStore');
+    expect(store).toContain('getDefaultHostTaskCreateRunStore');
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(runtime).toContain('taskCreateRunStore');
+    expect(runtime).toContain('taskCreateRunStore.upsert');
+    expect(runtime).toContain('taskCreateRunStore.get');
+    expect(runtime).toContain('taskCreateRunStore.list');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create session restore + linked goal start (residual 433)', () => {
     const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
     expect(chatViewTs).toContain('Residual 433: restore dedicated task.create session field');

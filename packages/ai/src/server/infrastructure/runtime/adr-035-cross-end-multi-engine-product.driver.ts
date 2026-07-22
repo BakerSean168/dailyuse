@@ -1,5 +1,5 @@
 /**
- * Residual 407/417/421/423/425/427/429/431/433: ADR-035 cross-end multi-engine Host product unit driver.
+ * Residual 407/417/421/423/425/427/429/431/433/435: ADR-035 cross-end multi-engine Host product unit driver.
  *
  * Executes residual 405 scaffold `implemented_unit` steps as source-level
  * contract checks (HTTP SSE / Desktop IPC / Vue selectors / Host cancel +
@@ -111,6 +111,7 @@ export function resolveCrossEndMultiEngineProductStepSources(
         'packages/app-vue/src/modules/ai/composables/useAITaskWorkflow.ts',
         'packages/app-vue/src/modules/ai/composables/types.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+        'packages/ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
         'packages/ai/src/server/infrastructure/runtime/ai-runtime.ts',
         'packages/app-vue/src/modules/ai/components/AIWorkflowActionBar.vue',
         'packages/app-vue/src/modules/ai/components/AIHostProposalPanel.vue',
@@ -199,6 +200,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['task-agent-linked-goal'];
     case 'linkedGoalId':
       return ['linkedGoalId'];
+    case 'taskCreateRunStore':
+      return ['taskCreateRunStore'];
+    case 'createHostTaskCreateRunStore':
+      return ['createHostTaskCreateRunStore'];
+    case 'taskCreateRunStore.upsert':
+      return ['taskCreateRunStore.upsert', 'taskCreateRunStore.upsert('];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

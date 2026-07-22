@@ -206,7 +206,7 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
       id: 'ui.task_create_proposal_receipt_lane',
       surface: 'shared',
       transport: 'ui',
-      title: 'Host task.create live lane + product start + restore/linked goal',
+      title: 'Host task.create live lane + product start + process-local store',
       contracts: [
         'taskAgentRun',
         "kind: 'task.create'",
@@ -232,6 +232,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'restore dedicated task.create session field',
         'task-agent-linked-goal',
         'linkedGoalId',
+        // Residual 435: process-local task.create run store for get/list restore.
+        'taskCreateRunStore',
+        'createHostTaskCreateRunStore',
+        'taskCreateRunStore.upsert',
       ],
       status: 'implemented_unit',
     },

@@ -41,7 +41,7 @@ Host UI 工作台已部分落地（vault residual 355–387：Host Proposal 面�
 execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK/CLI 进程 adapter、
 完整 multi-engine runtime E2E 与跨端 Playwright/Electron 仍未完成（residual 405–407 仅 scaffold/unit driver，不宣称全绿）。
 
-### 2.1 ADR-035 Host 当前边界（与 vault residual 314–433 对齐）
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–435 对齐）
 
 - 生产允许：`DirectTurnEngine`、`ReadonlyAnalysisTurnEngine`、`LangGraphWorkflowAdapter`、
   `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`、`AssistantFacade`。
@@ -79,6 +79,7 @@ execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK
 - residual 429：Host **task.create** 产品 toolMode `task-create` + Welcome/Footer 入口；AgentType 同步 toolMode；完整 Task Agent start/runtime 仍未齐。
 - residual 431：Host **task.create** 产品 start 基础（TS `buildHostTaskCreateStartResult` waiting_approval + create_task_template；客户端 `startTaskAgentRun`）；完整 LangGraph Task 工作流仍未齐。
 - residual 433：Host **task.create** 会话 restore/refresh + 启动时可选关联 `goalId`（`task-agent-linked-goal`）；完整 LangGraph 仍未齐。
+- residual 435：Host **task.create** 进程内 run store 基础（`taskCreateRunStore` 支持 get/list/events 再水合；非跨进程 durable DB）；完整 LangGraph 仍未齐。
 - direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
   不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；

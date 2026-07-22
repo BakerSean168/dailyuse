@@ -22,6 +22,7 @@ import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
 import { CapabilityResolver } from '../capability-resolver';
 import { buildHostTaskCreateStartResult, resolveTaskCreateTitle } from './host-task-create-start';
+import { getDefaultHostTaskCreateRunStore } from './host-task-create-run-store';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import type {
@@ -234,7 +235,7 @@ export function assertAgentStartCapabilityPlan(
 
   // goal.create / task.create may start planning without the TS automation executor;
   // mutation capability is enforced when execution.required is resolved, not at start.
-  // Residual 427/431: task.create Host AgentType + TS start foundation is allowed at start.
+  // Residual 427/431/435: task.create Host AgentType + TS start + process-local store is allowed at start.
   return ok(undefined);
 }
 
@@ -794,6 +795,8 @@ export function createAgentRuntimeService(
   capabilityResolver?: CapabilityResolver,
 ): AIAgentRuntimeService {
   const isAvailable = Boolean(port);
+  // Residual 435: process-local task.create run registry for get/list/events restore.
+  const taskCreateRunStore = getDefaultHostTaskCreateRunStore();
 
   async function resolveExecutionInterrupt(
     result: AgentRunResult,
@@ -1163,6 +1166,8 @@ export function createAgentRuntimeService(
             request: requestWithKnowledge.data,
             result: taskResult,
           });
+          // Residual 435: register for process-local getRun/listRuns restore.
+          taskCreateRunStore.upsert(taskResult);
           return ownership;
         } catch (err) {
           await recordAgentRuntimeExecution({
@@ -1312,45 +1317,76 @@ export function createAgentRuntimeService(
         throw err;
       }
     },
-    getRun(
+    async getRun(
       runId: string,
       cx: ExecutionContext,
       requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      // Residual 435: process-local task.create store before remote port lookup.
+      const stored = taskCreateRunStore.get(runId, cx.identityId);
+      if (stored) {
+        return ensureAgentRunOwnedByIdentity(stored, cx.identityId);
+      }
+
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port
-        .getRun({
-          identityId: cx.identityId,
-          runId,
-          requestId,
-          signal,
-        })
-        .then((result) => ensureAgentRunOwnedByIdentity(result, cx.identityId));
+      const result = await port.getRun({
+        identityId: cx.identityId,
+        runId,
+        requestId,
+        signal,
+      });
+      return ensureAgentRunOwnedByIdentity(result, cx.identityId);
     },
-    listRuns(
+    async listRuns(
       params: AgentRunListParams,
       cx: ExecutionContext,
       requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRun[]>> {
+      // Residual 435: load unscoped-by-limit local runs, merge, then apply limit once.
+      const { limit: listLimit, ...listFilters } = params;
+      const localTaskRuns = taskCreateRunStore.list(cx.identityId, listFilters);
+
       if (!port) {
+        if (localTaskRuns.length > 0) {
+          const limitedLocal =
+            typeof listLimit === 'number' && listLimit > 0
+              ? localTaskRuns.slice(0, listLimit)
+              : localTaskRuns;
+          return ok(limitedLocal);
+        }
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port
-        .listRuns({
-          ...params,
-          identityId: cx.identityId,
-          requestId,
-          signal,
-        })
-        .then((runs) =>
-          ok(runs.filter((run) => run.identityId === cx.identityId)),
-        );
+      const remoteRuns = await port.listRuns({
+        ...listFilters,
+        // Fetch a wider remote window when merging local task.create runs.
+        ...(typeof listLimit === 'number' && listLimit > 0
+          ? { limit: Math.max(listLimit, localTaskRuns.length + listLimit) }
+          : {}),
+        identityId: cx.identityId,
+        requestId,
+        signal,
+      });
+      const ownedRemote = remoteRuns.filter((run) => run.identityId === cx.identityId);
+      // Residual 435: merge process-local task.create runs; local wins on runId clash.
+      const byId = new Map<string, (typeof ownedRemote)[number]>();
+      for (const run of ownedRemote) {
+        byId.set(run.runId, run);
+      }
+      for (const run of localTaskRuns) {
+        byId.set(run.runId, run);
+      }
+      const merged = [...byId.values()].sort((left, right) => right.updatedAt - left.updatedAt);
+      const limited =
+        typeof listLimit === 'number' && listLimit > 0
+          ? merged.slice(0, listLimit)
+          : merged;
+      return ok(limited);
     },
     async getEvents(
       runId: string,
@@ -1358,6 +1394,12 @@ export function createAgentRuntimeService(
       requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentEvent[]>> {
+      // Residual 435: process-local task.create events.
+      const storedEvents = taskCreateRunStore.getEvents(runId, cx.identityId);
+      if (storedEvents) {
+        return ok(storedEvents);
+      }
+
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
