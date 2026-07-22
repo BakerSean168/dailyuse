@@ -33,8 +33,6 @@ export interface SelectLocalVaultReq {
   suggestedPath?: string;
 }
 
-export type SelectLocalVaultRes = LocalVaultBindingClientDTO | null;
-
 export interface LocalVaultNoteSummaryDTO {
   relativePath: string;
   title: string;

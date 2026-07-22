@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 263: drop unused contracts *Res identity dual aliases that had no
+ * Residual 263/290: drop unused contracts *Res identity dual aliases that had no
  * protocol/call-site consumers (canonical *DTO / operation types only).
  */
 describe('contracts dead *Res dual single-track surface', () => {
@@ -43,6 +43,23 @@ describe('contracts dead *Res dual single-track surface', () => {
     [
       resolve(modules, 'governance/api/rule-revisions.ts'),
       ['GetRuleRevisionRes'],
+    ],
+    // residual 290
+    [
+      resolve(goalApi, 'goal-crud.dto.ts'),
+      ['BatchUpdateGoalStatusRes', 'BatchMoveGoalsRes', 'BatchDeleteGoalsRes'],
+    ],
+    [
+      resolve(modules, 'repository/aggregates/local-vault-binding.ts'),
+      ['SelectLocalVaultRes'],
+    ],
+    [
+      resolve(modules, 'authentication/api/oauth.dto.ts'),
+      ['UnbindOAuthRes'],
+    ],
+    [
+      resolve(modules, 'authentication/api/session.dto.ts'),
+      ['LogoutRes'],
     ],
   ];
 

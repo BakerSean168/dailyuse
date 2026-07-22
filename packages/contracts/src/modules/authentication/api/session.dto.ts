@@ -34,7 +34,6 @@ export type RefreshTokenRes = AuthResponseDTO;
  * 登出
  */
 export type LogoutReq = void;
-export type LogoutRes = void;
 
 // ============================================================================
 // Token Validation

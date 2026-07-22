@@ -189,7 +189,6 @@ export const BatchUpdateGoalStatusSchema = z.object({
 });
 
 export type BatchUpdateGoalStatusReq = z.infer<typeof BatchUpdateGoalStatusSchema>;
-export type BatchUpdateGoalStatusRes = GoalClientDTO[];
 
 /**
  * 批量移动目标 Schema
@@ -200,7 +199,6 @@ export const BatchMoveGoalsSchema = z.object({
 });
 
 export type BatchMoveGoalsReq = z.infer<typeof BatchMoveGoalsSchema>;
-export type BatchMoveGoalsRes = GoalClientDTO[];
 
 /**
  * 批量删除目标 Schema
@@ -211,7 +209,6 @@ export const BatchDeleteGoalsSchema = z.object({
 });
 
 export type BatchDeleteGoalsReq = z.infer<typeof BatchDeleteGoalsSchema>;
-export type BatchDeleteGoalsRes = void;
 
 // ============================================================================
 // IMPORT/EXPORT Operations

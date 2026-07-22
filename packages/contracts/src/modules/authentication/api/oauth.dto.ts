@@ -95,7 +95,6 @@ export const UnbindOAuthSchema = z.object({
 });
 
 export type UnbindOAuthReq = z.infer<typeof UnbindOAuthSchema>;
-export type UnbindOAuthRes = void;
 
 // ============================================================================
 // OAuth providers availability (UI gating, no state issuance)
