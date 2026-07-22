@@ -81,14 +81,6 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     });
   }
 
-  async findById(id: string): Promise<AIProviderConfigServerDTO | null> {
-    const row = await this.prisma.aiProviderConfig.findFirst({
-      where: { id, deletedAt: null },
-    });
-
-    return row ? this.toServerDTO(row) : null;
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

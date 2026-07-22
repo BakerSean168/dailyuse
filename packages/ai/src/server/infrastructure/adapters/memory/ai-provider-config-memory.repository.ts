@@ -23,10 +23,6 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
     this.configs.set(String(config.id), config);
   }
 
-  async findById(id: string): Promise<AIProviderConfigServerDTO | null> {
-    return this.configs.get(id) ?? null;
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

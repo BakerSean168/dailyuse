@@ -95,20 +95,6 @@ export class PowerSyncAIConversationRepository implements IAIConversationReposit
     flushDomainEvents(aiEventPublisher, conversation);
   }
 
-  async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
-    const row = await this.db.getOptional<PowerSyncAIConversationRow>(
-      `SELECT * FROM ai_conversations WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
-      [id],
-    );
-
-    if (!row) {
-      return null;
-    }
-
-    const messages = options?.includeChildren ? await this.loadMessages(row.id) : [];
-    return PowerSyncAIConversationMapper.toDomain(row, messages);
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

@@ -40,6 +40,6 @@ describe('AIProviderConfigMemoryRepository ownership', () => {
     ).rejects.toThrow(/current identity/);
     await expect(repo.delete('identity-other', 'provider-1')).rejects.toThrow(/current identity/);
     await expect(repo.delete('identity-1', 'provider-1')).resolves.toBeUndefined();
-    await expect(repo.findById('provider-1')).resolves.toBeNull();
+    await expect(repo.findByIdForIdentity('identity-1', 'provider-1')).resolves.toBeNull();
   });
 });

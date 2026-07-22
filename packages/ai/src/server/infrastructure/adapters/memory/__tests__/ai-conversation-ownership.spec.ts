@@ -32,6 +32,6 @@ describe('AIConversationMemoryRepository ownership', () => {
     await expect(repo.save(foreign)).rejects.toThrow(/current identity/);
     await expect(repo.delete('identity-other', String(owned.id))).rejects.toThrow(/current identity/);
     await expect(repo.delete('identity-1', String(owned.id))).resolves.toBeUndefined();
-    await expect(repo.findById(String(owned.id))).resolves.toBeNull();
+    await expect(repo.findByIdForIdentity('identity-1', String(owned.id))).resolves.toBeNull();
   });
 });

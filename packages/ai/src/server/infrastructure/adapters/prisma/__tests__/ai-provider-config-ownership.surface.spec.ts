@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * AI provider config ownership surface (stage-6 residual 115):
+ * AI provider config ownership surface (stage-6 residual 115/169):
  * get/update/delete must identity-scope reads and deletes —
  * never authorize by bare provider primary key alone.
  */
@@ -33,6 +33,11 @@ describe('ai provider config ownership surface', () => {
       /findByIdForIdentity\(\s*identityId: string,\s*id: string/,
     );
     expect(port).toMatch(/delete\(identityId: string, id: string\)/);
+  });
+
+  it('port drops bare findById dual method (residual 169)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<AIProviderConfigServerDTO | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by id + identityId', () => {

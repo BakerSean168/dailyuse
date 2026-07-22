@@ -31,13 +31,11 @@ class StubProviderConfigRepository {
     },
   ) {}
 
-  async findById(id: string) {
-    return id === this.provider.id ? this.provider : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string) {
-    const provider = await this.findById(id);
-    return provider && String(provider.identityId) === identityId ? provider : null;
+    if (this.provider.id !== id || this.provider.identityId !== identityId) {
+      return null;
+    }
+    return this.provider;
   }
 
   async findDefaultByIdentityId() {

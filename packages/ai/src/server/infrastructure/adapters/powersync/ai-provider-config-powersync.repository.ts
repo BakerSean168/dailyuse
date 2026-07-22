@@ -92,14 +92,6 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
     }
   }
 
-  async findById(id: string): Promise<AIProviderConfigServerDTO | null> {
-    const row = await this.db.getOptional<PowerSyncAIProviderConfigRow>(
-      `SELECT * FROM ai_provider_configs WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
-      [id],
-    );
-    return row ? PowerSyncAIProviderConfigMapper.toDTO(row, this.secretCipher) : null;
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

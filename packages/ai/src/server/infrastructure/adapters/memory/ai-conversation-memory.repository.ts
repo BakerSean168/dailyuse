@@ -23,11 +23,6 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
     this.conversations.set(String(conversation.id), conversation);
   }
 
-  async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
-    void options;
-    return this.conversations.get(id) ?? null;
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

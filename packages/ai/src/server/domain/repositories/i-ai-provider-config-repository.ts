@@ -24,12 +24,7 @@ export interface IAIProviderConfigRepository {
   save(config: AIProviderConfigServerDTO): Promise<void>;
 
   /**
-   * 根据 UUID 查找配置
-   */
-  findById(id: string): Promise<AIProviderConfigServerDTO | null>;
-
-  /**
-   * 按账户 + 配置 ID 查找（身份隔离读路径）
+   * 按账户 + 配置 ID 查找（唯一读路径；禁止 bare PK 授权）
    */
   findByIdForIdentity(
     identityId: string,

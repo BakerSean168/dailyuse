@@ -102,21 +102,6 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     flushDomainEvents(aiEventPublisher, conversation);
   }
 
-  async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
-    const row = await this.prisma.aiConversation.findFirst({
-      where: { id, deletedAt: null },
-      include: options?.includeChildren
-        ? { messages: { orderBy: { createdAt: 'asc' } } }
-        : undefined,
-    });
-
-    if (!row) {
-      return null;
-    }
-
-    return this.toDomain(row, Boolean(options?.includeChildren));
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

@@ -33,13 +33,7 @@ export interface IAIConversationRepository {
   save(conversation: AIConversation): Promise<void>;
 
   /**
-   * 根据 UUID 查找对话
-   * @param options.includeChildren 是否加载消息（默认 false）
-   */
-  findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null>;
-
-  /**
-   * 按账户 + 对话 ID 查找（身份隔离读路径）
+   * 按账户 + 对话 ID 查找（唯一读路径；禁止 bare PK 授权）
    */
   findByIdForIdentity(
     identityId: string,

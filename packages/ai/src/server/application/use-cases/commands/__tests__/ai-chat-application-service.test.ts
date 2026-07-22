@@ -21,10 +21,6 @@ class InMemoryConversationRepository {
     this.conversation = conversation;
   }
 
-  async findById(): Promise<AIConversation | null> {
-    return this.conversation;
-  }
-
   async findByIdForIdentity(
     identityId: string,
     _id: string,
@@ -47,13 +43,11 @@ class StubProviderConfigRepository {
     },
   ) {}
 
-  async findById(id: string) {
-    return id === this.selectedProvider.id ? this.selectedProvider : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string) {
-    const provider = await this.findById(id);
-    return provider && provider.identityId === identityId ? provider : null;
+    if (this.selectedProvider.id !== id || this.selectedProvider.identityId !== identityId) {
+      return null;
+    }
+    return this.selectedProvider;
   }
 
   async findDefaultByIdentityId() {

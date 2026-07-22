@@ -10,7 +10,6 @@ export function createAIConversationRepositoryStub(
 ): IAIConversationRepository {
   return {
     save: async () => {},
-    findById: async () => null,
     findByIdForIdentity: async () => null,
     findByIdentityId: async () => [],
     delete: async () => {},
@@ -23,7 +22,6 @@ export function createAIProviderConfigRepositoryStub(
 ): IAIProviderConfigRepository {
   return {
     save: async () => {},
-    findById: async () => null,
     findByIdForIdentity: async () => null,
     findByIdentityId: async () => [],
     findDefaultByIdentityId: async () => null,

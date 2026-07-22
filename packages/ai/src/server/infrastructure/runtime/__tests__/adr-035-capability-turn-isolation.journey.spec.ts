@@ -57,7 +57,7 @@ function createMockAgentRuntimePort(): IAgentRuntimePort {
 function createProviderConfigRepository(): IAIProviderConfigRepository {
   return {
     save: vi.fn(),
-    findById: vi.fn(),
+    findByIdForIdentity: vi.fn(),
     findDefaultByIdentityId: vi.fn().mockResolvedValue({
       id: 'provider-1',
       identityId: FIXTURE.identity,

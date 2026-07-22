@@ -3,9 +3,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * AI conversation ownership surface (stage-6 residual 114):
+ * AI conversation ownership surface (stage-6 residual 114/169):
  * get/update/delete must identity-scope reads and hard deletes —
  * never authorize by bare conversation primary key alone.
+ * Residual 169 collapses dual findById to findByIdForIdentity only.
  */
 describe('ai conversation ownership surface', () => {
   const port = readFileSync(
@@ -33,6 +34,15 @@ describe('ai conversation ownership surface', () => {
       /findByIdForIdentity\(\s*identityId: string,\s*id: string/,
     );
     expect(port).toMatch(/delete\(identityId: string, id: string\)/);
+  });
+
+  it('port drops bare findById dual method (residual 169)', () => {
+    expect(port).not.toMatch(
+      /findById\(id: string, options\?: AIConversationQueryOptions\)/,
+    );
+    expect(prisma).not.toMatch(
+      /async findById\(id: string, options\?: AIConversationQueryOptions\)/,
+    );
   });
 
   it('prisma filters by id + identityId', () => {

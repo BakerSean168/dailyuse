@@ -35,7 +35,7 @@ describe('AIProviderConfigPrismaRepository', () => {
 
     const repository = new AIProviderConfigPrismaRepository(prisma as unknown as PrismaClient, cipher);
 
-    const provider = await repository.findById('provider-1');
+    const provider = await repository.findByIdForIdentity('identity-1', 'provider-1');
 
     expect(provider?.apiKey).toBe('plain-secret');
 
@@ -84,7 +84,7 @@ describe('AIProviderConfigPrismaRepository', () => {
       // No cipher injected and no env key: construction must NOT throw (lazy),
       // and operations that never touch encrypted fields must work.
       const repository = new AIProviderConfigPrismaRepository(prisma as unknown as PrismaClient);
-      await expect(repository.findById('provider-1')).resolves.toBeNull();
+      await expect(repository.findByIdForIdentity('identity-1', 'provider-1')).resolves.toBeNull();
 
       // Only when we actually persist a secret does the missing key fail fast.
       await expect(

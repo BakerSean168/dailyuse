@@ -70,7 +70,7 @@ function createMockAutomationToolExecutorPort(): IAIAutomationToolExecutorPort {
 function createProviderConfigRepositoryWithProvider(): IAIProviderConfigRepository {
   return {
     save: vi.fn(),
-    findById: vi.fn().mockResolvedValue({
+    findByIdForIdentity: vi.fn().mockResolvedValue({
       id: 'provider-1',
       identityId: 'identity-1',
       name: 'Main provider',
@@ -736,7 +736,10 @@ describe('createRemoteAIServiceRuntime', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(providerConfigRepository.findById).toHaveBeenCalledWith('provider-1');
+    expect(providerConfigRepository.findByIdForIdentity).toHaveBeenCalledWith(
+      'identity-1',
+      'provider-1',
+    );
     expect(knowledgeDeps.knowledgeQueryPort.query).toHaveBeenCalledWith(
       expect.objectContaining({
         identityId: 'identity-1',
@@ -1838,7 +1841,7 @@ describe('createRemoteAIServiceRuntime', () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     const providerConfigRepository = {
       save: vi.fn(),
-      findById: vi.fn().mockResolvedValue({
+      findByIdForIdentity: vi.fn().mockResolvedValue({
         id: 'provider-1',
         identityId: 'identity-1',
         name: 'Main provider',
@@ -1889,7 +1892,10 @@ describe('createRemoteAIServiceRuntime', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(providerConfigRepository.findById).toHaveBeenCalledWith('provider-1');
+    expect(providerConfigRepository.findByIdForIdentity).toHaveBeenCalledWith(
+      'identity-1',
+      'provider-1',
+    );
     expect(agentRuntimePort.startRun).toHaveBeenCalledWith({
       request: {
         runId: 'run-1',
