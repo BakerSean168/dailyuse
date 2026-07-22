@@ -2843,6 +2843,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > type alias。补 surface。§13.2 未打勾项仍为部分/外部阻塞。
 > 验证：schedule facade dual surface + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百九十九轮）：ai `AIClientPort` 有意 multi-API thin facade dual 锁定——
+> 聚合 capabilities/provider/conversation/message/knowledge/agent 等多 API ports，Result
+> pass-through（无 domain FromDTO），但**不等于**任一单一 `I*ApiClient`；**不**收成 type alias。
+> 补 surface。§13.2 未打勾项仍为部分/外部阻塞。
+> 验证：ai facade dual surface + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3218,6 +3224,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百九十六轮：lock TaskClientPort intentional multi-API mapping facade dual (do not type-alias collapse)。
   残留二百九十七轮：§13.2 focused evidence suite re-run (175 tests, residuals 250–296 locks, no checkbox changes)。
   残留二百九十八轮：lock ScheduleClientPort intentional multi-API mapping facade dual (do not type-alias collapse)。
+  残留二百九十九轮：lock AIClientPort intentional multi-API thin facade dual (do not type-alias collapse)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3289,6 +3296,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百九十六轮：TaskClientPort 有意 facade dual surface 锁 + governance-check；仍不构成全量 PR 门禁证据。
   残留二百九十七轮：tip 上 175 项 focused evidence suite（含 residual 250–296 dual 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百九十八轮：ScheduleClientPort 有意 facade dual surface 锁 + governance-check；仍不构成全量 PR 门禁证据。
+  残留二百九十九轮：AIClientPort 有意 multi-API facade dual surface 锁 + governance-check；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
