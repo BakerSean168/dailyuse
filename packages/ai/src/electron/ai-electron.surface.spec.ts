@@ -18,6 +18,8 @@ describe('AIElectronModule channel surface', () => {
     expect(source).not.toMatch(/const Ch = \{/);
     expect(source).toContain('Object.values(AIChannels)');
     expect(source).toContain('AIChannels.MESSAGE_STREAM_START');
+    expect(source).toContain('AIChannels.ASSISTANT_DISPATCH_START');
+    expect(source).toContain('AIStreamChannels.ASSISTANT_DISPATCH_EVENT');
     expect(source).toContain('AIChannels.AGENT_RUN_START');
     expect(source).toContain('AIStreamChannels.MESSAGE_STREAM_CHUNK');
   });

@@ -341,6 +341,93 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
           return ok(null);
         }),
       );
+
+      // Residual 353: AssistantFacade Host dispatch stream (open chat / approve / cancel).
+      ipcMain.handle(AIChannels.ASSISTANT_DISPATCH_START, async (event, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const payload = dto as {
+            streamId?: unknown;
+            command?: unknown;
+          };
+          const streamId = String(payload.streamId ?? '');
+          if (!streamId) {
+            return fail({ code: 'VALIDATION_ERROR', message: 'Missing streamId' });
+          }
+          if (!payload.command || typeof payload.command !== 'object') {
+            return fail({ code: 'VALIDATION_ERROR', message: 'Missing assistant command' });
+          }
+          if ('identityId' in (payload.command as object)) {
+            return fail({
+              code: 'VALIDATION_ERROR',
+              message: 'identityId must not be sent in assistant client commands',
+            });
+          }
+
+          const abortController = new AbortController();
+          activeStreamSessions.set(streamId, {
+            abortController,
+            webContentsId: event.sender.id,
+          });
+
+          void (async () => {
+            try {
+              const result = await aiModule.api.dispatchAssistant(
+                {
+                  ...(payload.command as object),
+                  identityId: requestContext.identityId,
+                } as Parameters<typeof aiModule.api.dispatchAssistant>[0],
+                (assistantEvent) => {
+                  if (!event.sender.isDestroyed()) {
+                    event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_EVENT, {
+                      streamId,
+                      event: assistantEvent,
+                    });
+                  }
+                },
+                abortController.signal,
+              );
+
+              if (!event.sender.isDestroyed()) {
+                if (!result.ok) {
+                  event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_ERROR, {
+                    streamId,
+                    code: result.error.code,
+                    message: result.error.message,
+                    details: result.error.details,
+                  });
+                } else {
+                  event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_DONE, {
+                    streamId,
+                    result: result.data,
+                  });
+                }
+              }
+            } catch (error) {
+              if (!event.sender.isDestroyed()) {
+                event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_ERROR, {
+                  streamId,
+                  code: 'INTERNAL_ERROR',
+                  message: error instanceof Error ? error.message : 'Assistant dispatch failed',
+                });
+              }
+            } finally {
+              activeStreamSessions.delete(streamId);
+            }
+          })();
+
+          return ok(null);
+        }),
+      );
+      ipcMain.handle(AIChannels.ASSISTANT_DISPATCH_CANCEL, async (event, streamId) =>
+        withAuthenticatedValue(ctx, async () => {
+          const session = activeStreamSessions.get(String(streamId));
+          if (session && session.webContentsId === event.sender.id) {
+            session.abortController.abort();
+            activeStreamSessions.delete(String(streamId));
+          }
+          return ok(null);
+        }),
+      );
       ipcMain.handle(AIChannels.MESSAGE_LIST, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) => {
           const result = await aiModule.api.getConversation(

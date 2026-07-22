@@ -7,10 +7,18 @@ import { AIChannels, AIStreamChannels } from './ipc-channels';
  */
 describe('AIChannels / AIStreamChannels surface', () => {
   it('keeps stream push events off AIChannels request surface', () => {
-    for (const key of ['MESSAGE_STREAM_CHUNK', 'MESSAGE_STREAM_DONE', 'MESSAGE_STREAM_ERROR'] as const) {
+    for (const key of [
+      'MESSAGE_STREAM_CHUNK',
+      'MESSAGE_STREAM_DONE',
+      'MESSAGE_STREAM_ERROR',
+      'ASSISTANT_DISPATCH_EVENT',
+      'ASSISTANT_DISPATCH_DONE',
+      'ASSISTANT_DISPATCH_ERROR',
+    ] as const) {
       expect(AIChannels).not.toHaveProperty(key);
     }
     expect(Object.values(AIChannels)).not.toContain('ai:chat:message:stream:chunk');
+    expect(Object.values(AIChannels)).not.toContain('ai:assistant:dispatch:event');
   });
 
   it('keeps stream start/cancel on AIChannels and chunk/done/error on AIStreamChannels', () => {
@@ -19,5 +27,10 @@ describe('AIChannels / AIStreamChannels surface', () => {
     expect(AIStreamChannels.MESSAGE_STREAM_CHUNK).toBe('ai:chat:message:stream:chunk');
     expect(AIStreamChannels.MESSAGE_STREAM_DONE).toBe('ai:chat:message:stream:done');
     expect(AIStreamChannels.MESSAGE_STREAM_ERROR).toBe('ai:chat:message:stream:error');
+    expect(AIChannels.ASSISTANT_DISPATCH_START).toBe('ai:assistant:dispatch:start');
+    expect(AIChannels.ASSISTANT_DISPATCH_CANCEL).toBe('ai:assistant:dispatch:cancel');
+    expect(AIStreamChannels.ASSISTANT_DISPATCH_EVENT).toBe('ai:assistant:dispatch:event');
+    expect(AIStreamChannels.ASSISTANT_DISPATCH_DONE).toBe('ai:assistant:dispatch:done');
+    expect(AIStreamChannels.ASSISTANT_DISPATCH_ERROR).toBe('ai:assistant:dispatch:error');
   });
 });

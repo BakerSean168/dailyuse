@@ -39,7 +39,7 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 `AssistantFacade`（统一 Host dispatch：message/approve/reject/cancel）。
 统一助手 UI 工作台、真实 Pi SDK/CLI 进程 adapter、完整 multi-engine runtime E2E 仍未完成。
 
-### 2.1 ADR-035 Host 当前边界（与 vault residual 314–351 对齐）
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–353 对齐）
 
 - 生产允许：`DirectTurnEngine`、`ReadonlyAnalysisTurnEngine`、`LangGraphWorkflowAdapter`、
   `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`、`AssistantFacade`。
@@ -49,8 +49,8 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
   cancel_run）；approve 只做 ProposalKernel 生命周期，不自动 `executeApproved` 业务 mutation。
 - residual 345：HTTP `POST /api/v1/ai/assistant/dispatch/sse` 经 `AIAssistantFacadeController` →
   `handlers.dispatchAssistant` → `module.assistantFacade`；`identityId` 仅来自 auth ExecutionContext。
-- residual 347：客户端 `AIClientPort.dispatchAssistant` + `AIAssistantHttpAdapter`（Web SSE）；
-  Desktop IPC 适配器 fail-closed `NOT_SUPPORTED`（流通道未注册）；body 永不带 `identityId`。
+- residual 347/353：客户端 `AIClientPort.dispatchAssistant` + `AIAssistantHttpAdapter`（Web SSE）+
+  Desktop `AIAssistantIpcAdapter` stream（`ASSISTANT_DISPATCH_*` 通道）；body 永不带 `identityId`。
 - residual 349：Vue `useAssistantDispatch` 薄入口（message/approve/reject/cancel）；body 永不带 `identityId`。
 - residual 351：open chat 默认发送路径经 `dispatchAssistant`/`AssistantFacade`（live `message.delta` +
   model selection）；不再走 `AIChatService.streamMessage` 旁路。

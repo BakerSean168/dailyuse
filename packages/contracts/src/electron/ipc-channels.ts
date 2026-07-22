@@ -177,6 +177,9 @@ export const AIChannels = {
   MESSAGE_LIST: 'ai:chat:message:list',
   MESSAGE_STREAM_START: 'ai:chat:message:stream:start',
   MESSAGE_STREAM_CANCEL: 'ai:chat:message:stream:cancel',
+  /** Residual 353: AssistantFacade dispatch stream start/cancel. */
+  ASSISTANT_DISPATCH_START: 'ai:assistant:dispatch:start',
+  ASSISTANT_DISPATCH_CANCEL: 'ai:assistant:dispatch:cancel',
   KNOWLEDGE_EXPAND: 'ai:knowledge:expand',
   KNOWLEDGE_QUERY: 'ai:knowledge:query',
   KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
@@ -194,6 +197,10 @@ export const AIStreamChannels = {
   MESSAGE_STREAM_CHUNK: 'ai:chat:message:stream:chunk',
   MESSAGE_STREAM_DONE: 'ai:chat:message:stream:done',
   MESSAGE_STREAM_ERROR: 'ai:chat:message:stream:error',
+  /** Residual 353: AssistantFacade Host event stream. */
+  ASSISTANT_DISPATCH_EVENT: 'ai:assistant:dispatch:event',
+  ASSISTANT_DISPATCH_DONE: 'ai:assistant:dispatch:done',
+  ASSISTANT_DISPATCH_ERROR: 'ai:assistant:dispatch:error',
 } as const;
 
 export const NotificationChannels = {

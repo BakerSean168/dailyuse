@@ -61,8 +61,8 @@ updated: 2026-07-22T00:00:00
   - `cancel_run` 中止 primary + readonly + openChat。
   - residual 345：`AIApplicationPort.dispatchAssistant` + `AIAssistantFacadeController` +
     `POST /api/v1/ai/assistant/dispatch/sse`；identityId 仅 auth ExecutionContext。
-  - residual 347：`AIClientPort.dispatchAssistant` + Web HTTP/SSE adapter；Desktop IPC
-    fail-closed `NOT_SUPPORTED`（流通道未注册）。
+  - residual 347/353：`AIClientPort.dispatchAssistant` + Web HTTP/SSE + Desktop IPC stream
+    （`ASSISTANT_DISPATCH_*`）。
   - residual 349：Vue `useAssistantDispatch` 薄入口。
   - residual 351：open chat 默认发送经 `dispatchAssistant`（live delta + model selection）；
     完整右侧工作台/Proposal UI 仍未切换。
