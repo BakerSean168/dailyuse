@@ -414,6 +414,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 589: dual-mirror primary-task goal session into exclusive task lane.
         'Residual 589',
         'nextDualMirroredTaskAgentRun',
+        // Residual 591: process-local task.create precedes dual-mirror overwrite.
+        'Residual 591',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

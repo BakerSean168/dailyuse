@@ -3278,5 +3278,31 @@ describe('Host exclusive dual-mirror primary-task goal session (residual 589)', 
       }),
     ).toBeNull();
   });
+
+  it('does not overwrite process-local task.create with dual-mirrored goal (residual 591)', () => {
+    const local = processLocalTask();
+    const completed = primaryTaskGoal('completed');
+    const waiting = primaryTaskGoal('waiting_approval');
+    // Concurrent process-local + dual-mirrorable goal: process-local wins.
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: completed,
+        taskAgentRun: local,
+      }),
+    ).toBe(local);
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: waiting,
+        taskAgentRun: local,
+      }),
+    ).toBe(local);
+    // Empty exclusive lane still dual-mirrors primary-task goal.
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: completed,
+        taskAgentRun: null,
+      }),
+    ).toBe(completed);
+  });
 });
 

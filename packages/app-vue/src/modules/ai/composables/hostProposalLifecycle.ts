@@ -1043,23 +1043,27 @@ export function shouldDualMirrorPrimaryTaskGoalSession(
 }
 
 /**
- * Residual 589: next exclusive taskAgentRun dual-mirror after goal session sync.
- * - primary-task-shaped goal session → mirror that snapshot
- * - otherwise drop dual-mirror (agentType !== task.create primary-task) only;
- *   process-local task.create is preserved.
+ * Residual 589/591: next exclusive taskAgentRun dual-mirror after goal session sync.
+ * Residual 591: process-local AgentType task.create owns exclusive lane first —
+ * never overwrite with a dual-mirrored primary-task goal session when both exist.
+ * - process-local task.create → preserve (even if goal is dual-mirrorable)
+ * - primary-task-shaped goal session → mirror that snapshot when lane empty / dual-mirrored
+ * - otherwise drop dual-mirror primary-task only when goal no longer owns it
  */
 export function nextDualMirroredTaskAgentRun(input: {
   goalAgentRun?: AgentRunResult | null;
   taskAgentRun?: AgentRunResult | null;
 }): AgentRunResult | null {
   const goal = input.goalAgentRun ?? null;
+  const task = input.taskAgentRun ?? null;
+  // Residual 591: process-local task.create exclusive lane is never dual-mirrored over.
+  if (task?.run?.agentType === 'task.create') {
+    return task;
+  }
   if (shouldDualMirrorPrimaryTaskGoalSession(goal)) {
     return goal;
   }
-  const task = input.taskAgentRun ?? null;
   if (!task?.run) return null;
-  // Preserve process-local AgentType task.create exclusive lane.
-  if (task.run.agentType === 'task.create') return task;
   // Drop stale dual-mirrored primary-task when goal session no longer owns it.
   if (isPrimaryTaskHostAgentRun(task) && !shouldDualMirrorPrimaryTaskGoalSession(goal)) {
     return null;

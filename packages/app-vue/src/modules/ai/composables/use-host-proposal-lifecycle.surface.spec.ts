@@ -1185,6 +1185,21 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).not.toContain('executeApproved');
   });
 
+  it('process-local task.create precedes dual-mirror overwrite (residual 591)', () => {
+    expect(helper).toContain('Residual 591');
+    const nextIdx = helper.indexOf('export function nextDualMirroredTaskAgentRun');
+    expect(nextIdx).toBeGreaterThan(-1);
+    const nextSlice = helper.slice(nextIdx, nextIdx + 1500);
+    // Residual 591: process-local gate must run before dual-mirror goal return.
+    const localIdx = nextSlice.indexOf("agentType === 'task.create'");
+    const dualIdx = nextSlice.indexOf('shouldDualMirrorPrimaryTaskGoalSession(goal)');
+    expect(localIdx).toBeGreaterThan(-1);
+    expect(dualIdx).toBeGreaterThan(-1);
+    expect(localIdx).toBeLessThan(dualIdx);
+    expect(nextSlice).toContain('Residual 591');
+    expect(helper).not.toContain('executeApproved');
+  });
+
 
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
