@@ -1373,6 +1373,44 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(knowledge).not.toContain('executeApproved');
   });
 
+  it('goal-session process-local edit revise via classifier (residual 607)', () => {
+    const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(goal).toContain('Residual 607');
+    expect(goal).toContain('reviseGoalAgentRun');
+    expect(goal).toContain("userDecision: 'edit'");
+    expect(goal).toContain('applyHostGoalPatchToAgentActions');
+    expect(goal).toContain('applyHostTaskPatchToAgentActions');
+    const reviseIdx = goal.indexOf('async function reviseGoalAgentRun');
+    expect(reviseIdx).toBeGreaterThan(-1);
+    const reviseSlice = goal.slice(reviseIdx, reviseIdx + 2800);
+    expect(reviseSlice).toContain("status !== 'waiting_approval'");
+    expect(reviseSlice).toContain("productTool = primaryTask ? 'create_task_template' : 'create_goal'");
+    expect(reviseSlice).toContain('title: hostOptions?.title');
+    expect(reviseSlice).toContain('description: hostOptions?.description');
+    expect(reviseSlice).toContain('goalId: hostOptions?.goalId');
+    // buildGoalAgentApprovalPayload also accepts edit for confirm symmetry.
+    const payloadIdx = goal.indexOf('function buildGoalAgentApprovalPayload');
+    expect(payloadIdx).toBeGreaterThan(-1);
+    const payloadSlice = goal.slice(payloadIdx, payloadIdx + 900);
+    expect(payloadSlice).toContain("userDecision !== 'edit'");
+    expect(payloadSlice).toContain('Residual 607');
+    // Host panel revise settles goal-session via classifier + process-local edit.
+    expect(chatView).toContain('reviseGoalAgentRun');
+    expect(chatView).toContain('Residual 607');
+    const hostReviseIdx = chatView.indexOf('async function handleHostProposalRevise');
+    expect(hostReviseIdx).toBeGreaterThan(-1);
+    const hostReviseSlice = chatView.slice(hostReviseIdx, hostReviseIdx + 4800);
+    expect(hostReviseSlice).toContain('isHostPanelGoalSessionProductOwned(owned)');
+    expect(hostReviseSlice).toContain('reviseGoalAgentRun');
+    // Classifier comment locks residual 607 revise path.
+    expect(helper).toContain('Residual 581/607');
+    expect(helper).toContain('Residual 607');
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+    expect(goal).not.toContain('executeApproved');
+  });
+
 
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');

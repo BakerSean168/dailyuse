@@ -10,6 +10,9 @@
  * into applyHostTaskPatch (title/description residual 365 symmetry; no drop).
  * Residual 587: goal session Host lifecycle kind is task.create for primary-task-shaped
  * (residual 585 exclusive workbench rows/focus) — not always goal.create.
+ * Residual 607: process-local edit revise after Host proposal revise (task residual 439
+ * + knowledge residual 605 symmetry). Patches sole create_goal or primary-task
+ * create_task_template so getRun/selectAgentRun reopen revised title/body/goalId.
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -692,11 +695,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       goalId?: string | null;
     },
   ): AgentResumePayload {
-    if (userDecision !== 'confirm') {
+    // Residual 607: edit also carries Host-revised sole product draft (confirm residual 365 symmetry).
+    if (userDecision !== 'confirm' && userDecision !== 'edit') {
       return { userDecision };
     }
 
-    // Residual 365/423: Host lifecycle may revise fields; executor consumes patched actions.
+    // Residual 365/423/607: Host lifecycle may revise fields; executor / reopen consume patched actions.
     const baseActions = buildEditedApprovedActions(run);
     const approvedActions = isPrimaryTaskHostAgentRun(run)
       ? applyHostTaskPatchToAgentActions(baseActions, {
@@ -790,6 +794,65 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.startFailed'));
     } finally {
       goalAgentLoading.value = false;
+    }
+  }
+
+  /**
+   * Residual 607: Host revise → process-local edit resume (stay waiting_approval).
+   * Patches sole create_goal (or primary-task create_task_template) so getRun/selectAgentRun
+   * reopen revised draft (task residual 439 / knowledge residual 605 symmetry).
+   * Residual 559: product revise only from waiting_approval.
+   * Residual 557/575: sole product draftAction only (foreign companions OK).
+   * Host lifecycle revise is dispatched by AIChatView first; this is the AgentRun edit path.
+   */
+  async function reviseGoalAgentRun(hostOptions?: {
+    title?: string;
+    description?: string | null;
+    goalId?: string | null;
+  }) {
+    if (!goalAgentRun.value || goalAgentResuming.value) return;
+    // Residual 559/607: product revise only from waiting_approval.
+    if (goalAgentRun.value.run.status !== 'waiting_approval') return;
+    // Refuse blank title revise (task residual 455 / Host title fail-closed symmetry).
+    if (typeof hostOptions?.title === 'string' && !hostOptions.title.trim()) return;
+
+    const source =
+      goalAgentRun.value.state.pendingActions.length > 0
+        ? goalAgentRun.value.state.pendingActions
+        : goalAgentRun.value.state.approvedActions;
+    const primaryTask = isPrimaryTaskHostAgentRun(goalAgentRun.value);
+    const productTool = primaryTask ? 'create_task_template' : 'create_goal';
+    // Residual 557/575/607: sole product draftAction (no multi invent).
+    const productDraftCount = source.filter((action) => action.tool === productTool).length;
+    if (productDraftCount !== 1) return;
+
+    // Residual 365/423/551/607: Host-revised fields; keep foreign companions for executor context.
+    const approvedActions = primaryTask
+      ? applyHostTaskPatchToAgentActions(source, {
+          title: hostOptions?.title,
+          goalId: hostOptions?.goalId,
+        })
+      : applyHostGoalPatchToAgentActions(source, {
+          title: hostOptions?.title,
+          description: hostOptions?.description,
+        });
+
+    goalAgentResuming.value = true;
+    try {
+      const payload: AgentResumePayload = {
+        userDecision: 'edit',
+        approvedActions,
+        editedArtifacts: buildEditedGoalAgentArtifacts(goalAgentRun.value, approvedActions),
+        approvedPlan: buildEditedGoalAgentApprovedPlan(goalAgentRun.value, approvedActions),
+      };
+      const result = unwrap(
+        await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload),
+      );
+      syncGoalAgentRun(result);
+    } catch (error) {
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
+    } finally {
+      goalAgentResuming.value = false;
     }
   }
 
@@ -1095,6 +1158,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       description?: string | null;
       goalId?: string | null;
     }) => resumeGoalAgentRun('cancel', hostOptions),
+    reviseGoalAgentRun,
     continueGoalAgentExecution,
     retryGoalAgentExecution,
     syncGoalAgentRun,

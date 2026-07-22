@@ -511,6 +511,7 @@ const {
   submitGoalAgentClarification,
   confirmGoalAgentRun,
   cancelGoalAgentRun,
+  reviseGoalAgentRun,
   continueGoalAgentExecution,
   retryGoalAgentExecution,
   openAutomatedGoal,
@@ -809,6 +810,15 @@ async function handleHostProposalRevise(payload: {
       contentMarkdown: payload.patch.contentMarkdown,
       goalId: payload.patch.goalId,
     });
+    // Residual 607: goal-session product process-local edit via shared classifier
+    // (task residual 439 + knowledge residual 605 symmetry; primary-task-shaped included).
+    if (isHostPanelGoalSessionProductOwned(owned)) {
+      await reviseGoalAgentRun({
+        title: payload.patch.title ?? payload.item.title,
+        description: payload.patch.description ?? payload.item.description,
+        goalId: payload.patch.goalId ?? payload.item.goalId,
+      });
+    }
     // Residual 439/571/581: process-local task.create edit only via shared classifier.
     // Residual 579: primary-task-shaped (goal session) applies Host patch at confirm.
     if (

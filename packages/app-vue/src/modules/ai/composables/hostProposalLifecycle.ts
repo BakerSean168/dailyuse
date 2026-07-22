@@ -386,9 +386,12 @@ export function isHostPanelProcessLocalTaskCreateOwned(
 }
 
 /**
- * Residual 581: Host panel goal-session product settlement ownership.
+ * Residual 581/607: Host panel goal-session product settlement ownership.
  * Normal create_goal, or primary-task-shaped create_task_template
  * (residual 577/579 — not process-local task.create store).
+ * Residual 607: Host revise also process-local edit-resumes via this classifier
+ * (task residual 439 / knowledge residual 605 symmetry) so getRun/reopen cannot
+ * rehydrate stale title/description/goalId.
  */
 export function isHostPanelGoalSessionProductOwned(
   owned:
