@@ -1069,6 +1069,20 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain("firstPendingRationale(taskRun, 'create_task_template')");
   });
 
+  it('workbench pendingActionCount counts product-lane tool only (residual 527)', () => {
+    expect(helper).toContain('Residual 527');
+    const fnIdx = helper.indexOf('function pendingActionCount');
+    expect(fnIdx).toBeGreaterThan(-1);
+    const fnSlice = helper.slice(fnIdx, fnIdx + 900);
+    expect(fnSlice).toContain('productTool');
+    expect(fnSlice).toContain('candidate.tool === productTool');
+    expect(fnSlice).not.toContain('return run.state.pendingActions.length');
+    expect(fnSlice).not.toContain('return run.state.approvedActions.length');
+    expect(helper).toContain("pendingActionCount(goalRun, 'create_goal')");
+    expect(helper).toContain("pendingActionCount(noteRun, 'create_knowledge_note')");
+    expect(helper).toContain("pendingActionCount(taskRun, 'create_task_template')");
+  });
+
 
 
 

@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -9,6 +9,7 @@
  * Residual 521: knowledge draft path/markdown read create_knowledge_note only (no blind pending[0]).
  * Residual 523: goal draft title/description read create_goal only (no blind pending[0]).
  * Residual 525: workbench summary rationale reads product-lane tool only (no blind pending[0]).
+ * Residual 527: workbench pendingActionCount counts product-lane tool only (no foreign tools).
  */
 import type {
   AgentAction,
@@ -190,9 +191,21 @@ export async function dispatchHostProposalRevise(
   };
 }
 
-function pendingActionCount(run: AgentRunResult): number {
-  if (run.state.pendingActions.length) return run.state.pendingActions.length;
-  return run.state.approvedActions.length;
+/**
+ * Residual 527: workbench pending count from product-lane tool only
+ * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
+ * Foreign tools never inflate the Host proposal action count.
+ */
+function pendingActionCount(
+  run: AgentRunResult,
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+): number {
+  // Residual 527: only product-lane tool actions — not all pending/approved tools.
+  const pending = run.state.pendingActions.filter(
+    (candidate) => candidate.tool === productTool,
+  ).length;
+  if (pending > 0) return pending;
+  return run.state.approvedActions.filter((candidate) => candidate.tool === productTool).length;
 }
 
 /**
@@ -1144,7 +1157,7 @@ export function buildPendingHostProposalItems(input: {
       title,
       description: goalDraftDescription(goalRun),
       summary: firstPendingRationale(goalRun, 'create_goal'),
-      pendingActionCount: pendingActionCount(goalRun),
+      pendingActionCount: pendingActionCount(goalRun, 'create_goal'),
     });
   }
 
@@ -1161,7 +1174,7 @@ export function buildPendingHostProposalItems(input: {
       runStatus: 'waiting_approval',
       title,
       summary: firstPendingRationale(noteRun, 'create_knowledge_note'),
-      pendingActionCount: pendingActionCount(noteRun),
+      pendingActionCount: pendingActionCount(noteRun, 'create_knowledge_note'),
       targetPath: knowledgeDraftTargetPath(noteRun),
       contentMarkdown: knowledgeDraftMarkdown(noteRun),
     });
@@ -1182,7 +1195,7 @@ export function buildPendingHostProposalItems(input: {
       runStatus: 'waiting_approval',
       title,
       summary: firstPendingRationale(taskRun, 'create_task_template'),
-      pendingActionCount: pendingActionCount(taskRun),
+      pendingActionCount: pendingActionCount(taskRun, 'create_task_template'),
       ...(goalId !== null && goalId !== undefined ? { goalId } : {}),
     });
   }

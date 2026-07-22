@@ -372,6 +372,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 525: workbench summary product-lane tool rationale only.
         'Residual 525',
         "firstPendingRationale(goalRun, 'create_goal')",
+        // Residual 527: workbench pendingActionCount product-lane tool only.
+        'Residual 527',
+        "pendingActionCount(goalRun, 'create_goal')",
       ],
       status: 'implemented_unit',
     },

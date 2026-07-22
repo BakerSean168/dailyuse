@@ -1800,6 +1800,103 @@ describe('workbench summary product-lane rationale (residual 525)', () => {
   });
 });
 
+describe('workbench pendingActionCount product-lane only (residual 527)', () => {
+  it('goal count ignores foreign pending tools', () => {
+    const run = goalWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_task_template',
+        rationale: 'foreign',
+        payload: { title: 'Foreign Task' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_goal',
+        rationale: 'goal',
+        payload: { title: 'Real Goal' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_task_template',
+        rationale: 'foreign-2',
+        payload: { title: 'Foreign Task 2' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ goalAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.pendingActionCount).toBe(1);
+  });
+
+  it('knowledge count ignores foreign pending tools', () => {
+    const run = noteWaitingRun();
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign',
+        payload: {},
+        dependsOn: [],
+      },
+      {
+        tool: 'create_knowledge_note',
+        rationale: 'note',
+        payload: { targetSubpath: 'notes/real', contentMarkdown: '# real' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.pendingActionCount).toBe(1);
+  });
+
+  it('task count ignores foreign pending tools', () => {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign',
+        payload: { title: 'Foreign' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_task_template',
+        rationale: 'task',
+        payload: { title: 'Real Task', goalId: 'goal-real' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_knowledge_note',
+        rationale: 'foreign-note',
+        payload: {},
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ taskAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.pendingActionCount).toBe(1);
+  });
+
+  it('returns 0 when only foreign tools are pending', () => {
+    const run = goalWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_task_template',
+        rationale: 'foreign-only',
+        payload: { title: 'Only Foreign' },
+        dependsOn: [],
+      },
+    ];
+    run.state.approvedActions = [];
+    const items = buildPendingHostProposalItems({ goalAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.pendingActionCount).toBe(0);
+  });
+});
+
 
 
 describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {
