@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  REPOSITORY_RESOURCE_MUTATED_EVENT,
-  RepositoryResourceMutationType,
+  REPOSITORY_NOTE_MUTATED_EVENT,
+  RepositoryNoteMutationType,
 } from '@dailyuse/contracts/repository';
 import { eventBus } from '@dailyuse/utils/domain';
 
@@ -862,12 +862,12 @@ describe('AI knowledge auto-index runtime', () => {
     aiModule.start();
 
     try {
-      eventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
+      eventBus.send(REPOSITORY_NOTE_MUTATED_EVENT, {
         identityId: 'identity-1',
         repositoryId: 'repo-1',
         resourceId: 'resource-1',
         resourcePath: 'notes/python-ai.md',
-        mutation: RepositoryResourceMutationType.ContentUpdated,
+        mutation: RepositoryNoteMutationType.ContentUpdated,
         timestamp: Date.now(),
       });
 
@@ -914,12 +914,12 @@ describe('AI knowledge auto-index runtime', () => {
     aiModule.start();
 
     try {
-      eventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
+      eventBus.send(REPOSITORY_NOTE_MUTATED_EVENT, {
         identityId: 'identity-1',
         repositoryId: 'repo-1',
         resourceId: 'resource-1',
         resourcePath: 'notes/python-ai.md',
-        mutation: RepositoryResourceMutationType.Deleted,
+        mutation: RepositoryNoteMutationType.Deleted,
         timestamp: Date.now(),
       });
 

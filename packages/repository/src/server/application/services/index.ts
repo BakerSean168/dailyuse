@@ -11,6 +11,6 @@ export {
   type KnowledgeNoteCommitServiceOptions,
 } from './knowledge-note-commit.service';
 export {
-  publishRepositoryResourceMutation,
-  type RepositoryResourceMutationPayload,
-} from './repository-resource-mutation.publisher';
+  publishRepositoryNoteMutation,
+  type RepositoryNoteMutationPayload,
+} from './repository-note-mutation.publisher';

@@ -7,7 +7,7 @@ import {
   type CreateConfirmedKnowledgeNoteReq,
   type CreateConfirmedKnowledgeNoteResponse,
   type GitHubInstallationRepositoryDTO,
-  RepositoryResourceMutationType,
+  RepositoryNoteMutationType,
 } from '@dailyuse/contracts/repository';
 import type { IdentityId, RepositoryId, ResourceId } from '@dailyuse/contracts/primitives';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -21,9 +21,9 @@ import type {
   KnowledgeWriteRequestRecord,
 } from '../ports/knowledge-note-projection.repository';
 import {
-  publishRepositoryResourceMutation,
-  type RepositoryResourceMutationPayload,
-} from './repository-resource-mutation.publisher';
+  publishRepositoryNoteMutation,
+  type RepositoryNoteMutationPayload,
+} from './repository-note-mutation.publisher';
 import {
   KnowledgeRepositoryLeaseCoordinator,
   KnowledgeRepositoryLeaseLostError,
@@ -39,7 +39,7 @@ export interface KnowledgeNoteCommitServiceOptions {
   writeRequestRepository: IKnowledgeWriteRequestRepository;
   githubAppClient: IGitHubAppClient;
   now?: () => number;
-  publishMutation?: (event: RepositoryResourceMutationPayload) => void;
+  publishMutation?: (event: RepositoryNoteMutationPayload) => void;
   leaseRepository?: IKnowledgeRepositoryLeaseRepository;
   leaseTtlMs?: number;
   leaseRenewalIntervalMs?: number;
@@ -52,7 +52,7 @@ export interface KnowledgeNoteCommitServiceOptions {
  */
 export class KnowledgeNoteCommitService {
   private readonly now: () => number;
-  private readonly publishMutation: (event: RepositoryResourceMutationPayload) => void;
+  private readonly publishMutation: (event: RepositoryNoteMutationPayload) => void;
   private readonly inFlight = new Map<
     string,
     {
@@ -65,7 +65,7 @@ export class KnowledgeNoteCommitService {
 
   constructor(private readonly options: KnowledgeNoteCommitServiceOptions) {
     this.now = options.now ?? Date.now;
-    this.publishMutation = options.publishMutation ?? publishRepositoryResourceMutation;
+    this.publishMutation = options.publishMutation ?? publishRepositoryNoteMutation;
     this.leaseCoordinator = new KnowledgeRepositoryLeaseCoordinator(options.leaseRepository, {
       now: this.now,
       ttlMs: options.leaseTtlMs,
@@ -281,7 +281,7 @@ export class KnowledgeNoteCommitService {
         repositoryId: connection.id as RepositoryId,
         resourceId: projection.id as ResourceId,
         resourcePath: projection.relativePath,
-        mutation: RepositoryResourceMutationType.Created,
+        mutation: RepositoryNoteMutationType.Created,
       });
     } catch (error) {
       logger.warn('Knowledge note committed but immediate projection update failed', {

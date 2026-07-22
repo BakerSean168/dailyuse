@@ -71,7 +71,7 @@ updated: 2026-07-22T00:00:00
 | 文件 | 说明 |
 | --- | --- |
 | [`packages/contracts/src/modules/repository/`](../../../packages/contracts/src/modules/repository/) | knowledge / Local Vault / projection / confirmed create 契约 |
-| [`packages/contracts/src/modules/repository/protocol/repository-event-map.ts`](../../../packages/contracts/src/modules/repository/protocol/repository-event-map.ts) | 仅 `repository:resource:mutated` |
+| [`packages/contracts/src/modules/repository/protocol/repository-event-map.ts`](../../../packages/contracts/src/modules/repository/protocol/repository-event-map.ts) | 仅 `repository:note:mutated` |
 | [`packages/contracts/src/electron/ipc-channels.ts`](../../../packages/contracts/src/electron/ipc-channels.ts) | `RepositoryChannels`：knowledge connection + Local Vault |
 
 ## 可重新导入业务备份（非运行时编辑）

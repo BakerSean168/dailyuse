@@ -5,7 +5,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { fail, ok } from '@dailyuse/contracts/result';
 import {
   MAX_KNOWLEDGE_ATTACHMENT_BYTES,
-  RepositoryResourceMutationType,
+  RepositoryNoteMutationType,
 } from '@dailyuse/contracts/repository';
 import type {
   KnowledgeAttachmentContentResponse,
@@ -45,9 +45,9 @@ import type {
 } from '../ports/knowledge-attachment-content-cache.port';
 import type { IKnowledgeRepositoryLeaseRepository } from '../ports/knowledge-repository-lease.repository';
 import {
-  publishRepositoryResourceMutation,
-  type RepositoryResourceMutationPayload,
-} from './repository-resource-mutation.publisher';
+  publishRepositoryNoteMutation,
+  type RepositoryNoteMutationPayload,
+} from './repository-note-mutation.publisher';
 import { buildKnowledgeNoteLinkGraph } from './knowledge-note-link-graph';
 import {
   KnowledgeRepositoryLeaseCoordinator,
@@ -100,7 +100,7 @@ export interface KnowledgeRepositoryProjectionServiceOptions {
   attachmentCacheTtlMs?: number;
   githubAppClient: IGitHubAppClient;
   now?: () => number;
-  publishMutation?: (event: RepositoryResourceMutationPayload) => void;
+  publishMutation?: (event: RepositoryNoteMutationPayload) => void;
   reconciliationIntervalMs?: number;
   reconciliationBatchSize?: number;
   leaseRepository?: IKnowledgeRepositoryLeaseRepository;
@@ -116,7 +116,7 @@ export interface KnowledgeRepositoryProjectionServiceOptions {
  */
 export class KnowledgeRepositoryProjectionService {
   private readonly now: () => number;
-  private readonly publishMutation: (event: RepositoryResourceMutationPayload) => void;
+  private readonly publishMutation: (event: RepositoryNoteMutationPayload) => void;
   private readonly reconciliationIntervalMs: number;
   private readonly reconciliationBatchSize: number;
   private readonly attachmentCacheTtlMs: number;
@@ -132,7 +132,7 @@ export class KnowledgeRepositoryProjectionService {
 
   constructor(private readonly options: KnowledgeRepositoryProjectionServiceOptions) {
     this.now = options.now ?? Date.now;
-    this.publishMutation = options.publishMutation ?? publishRepositoryResourceMutation;
+    this.publishMutation = options.publishMutation ?? publishRepositoryNoteMutation;
     this.reconciliationIntervalMs =
       options.reconciliationIntervalMs ?? DEFAULT_RECONCILIATION_INTERVAL_MS;
     this.reconciliationBatchSize = options.reconciliationBatchSize ?? 50;
@@ -876,8 +876,8 @@ export class KnowledgeRepositoryProjectionService {
             connection,
             projection,
             change.status === 'added'
-              ? RepositoryResourceMutationType.Created
-              : RepositoryResourceMutationType.ContentUpdated,
+              ? RepositoryNoteMutationType.Created
+              : RepositoryNoteMutationType.ContentUpdated,
           );
           if (change.previousPath) {
             this.publishDeletedProjectionMutation(connection, change.previousPath);
@@ -987,7 +987,7 @@ export class KnowledgeRepositoryProjectionService {
       this.publishProjectionMutation(
         connection,
         projection,
-        RepositoryResourceMutationType.ContentUpdated,
+        RepositoryNoteMutationType.ContentUpdated,
       ),
     );
     deleted.forEach((projection) =>
@@ -996,7 +996,7 @@ export class KnowledgeRepositoryProjectionService {
         repositoryId: connection.id as RepositoryId,
         resourceId: projection.id as ResourceId,
         resourcePath: projection.relativePath,
-        mutation: RepositoryResourceMutationType.Deleted,
+        mutation: RepositoryNoteMutationType.Deleted,
       }),
     );
   }
@@ -1013,7 +1013,7 @@ export class KnowledgeRepositoryProjectionService {
   private publishProjectionMutation(
     connection: KnowledgeRepositoryConnectionServerDTO,
     projection: KnowledgeNoteProjectionUpsert,
-    mutation: RepositoryResourceMutationPayload['mutation'],
+    mutation: RepositoryNoteMutationPayload['mutation'],
   ): void {
     this.publishMutation({
       identityId: connection.identityId as IdentityId,
@@ -1034,7 +1034,7 @@ export class KnowledgeRepositoryProjectionService {
       repositoryId: connection.id as RepositoryId,
       resourceId: projectionId as ResourceId,
       resourcePath: relativePath,
-      mutation: RepositoryResourceMutationType.Deleted,
+      mutation: RepositoryNoteMutationType.Deleted,
     });
   }
 
