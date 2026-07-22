@@ -15,6 +15,8 @@
  * Residual 533: receipt summary excludes cross-lane foreign tools from counts/actionLines/entityIds.
  * Residual 535: receipt summary error text from same-lane failed action only (no blind errors[0]).
  * Residual 537: receipt ok requires product-lane executed tool on completed runs.
+ * Residual 549: product draft readers use sole product-lane draftAction after
+ * single-product-draft gate (client residual 547 productDrafts symmetry; no multi-find invent).
  */
 import type {
   AgentAction,
@@ -197,6 +199,27 @@ export async function dispatchHostProposalRevise(
 }
 
 /**
+ * Residual 549: sole product-lane draftAction after single-product-draft gate
+ * (client residual 547 productDrafts symmetry; no multi-find invent).
+ * Prefer process-local pending pool; fall back to approved when pending empty.
+ * Foreign tools in the pool are ignored when counting product drafts.
+ */
+function soleProductDraftAction(
+  run: AgentRunResult,
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+): AgentAction | undefined {
+  const draftPool =
+    run.state.pendingActions.length > 0
+      ? run.state.pendingActions
+      : run.state.approvedActions;
+  const productDrafts = draftPool.filter((action) => action.tool === productTool);
+  if (productDrafts.length !== 1) return undefined;
+  const draftAction = productDrafts[0];
+  if (!draftAction || draftAction.tool !== productTool) return undefined;
+  return draftAction;
+}
+
+/**
  * Residual 527: workbench pending count from product-lane tool only
  * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
  * Foreign tools never inflate the Host proposal action count.
@@ -222,10 +245,8 @@ function firstPendingRationale(
   run: AgentRunResult,
   productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
 ): string {
-  // Residual 525: only product-lane tool rationale — not blind pending[0].
-  const action =
-    run.state.pendingActions.find((candidate) => candidate.tool === productTool) ??
-    run.state.approvedActions.find((candidate) => candidate.tool === productTool);
+  // Residual 525/549: sole product-lane draftAction rationale — not multi-find invent.
+  const action = soleProductDraftAction(run, productTool);
   if (!action) return '';
   return typeof action.rationale === 'string' ? action.rationale.trim() : '';
 }
@@ -261,10 +282,8 @@ function knowledgeDraftArtifact(run: AgentRunResult) {
  * (task residual 519 symmetry). Never read foreign tool pending[0].
  */
 function firstCreateKnowledgeNoteAction(run: AgentRunResult): AgentAction | undefined {
-  return (
-    run.state.pendingActions.find((action) => action.tool === 'create_knowledge_note') ??
-    run.state.approvedActions.find((action) => action.tool === 'create_knowledge_note')
-  );
+  // Residual 521/549: sole create_knowledge_note draftAction (no multi-find invent).
+  return soleProductDraftAction(run, 'create_knowledge_note');
 }
 
 /**
@@ -389,10 +408,8 @@ export function isHostProposalDraftDirty(input: {
  * (task residual 519 / knowledge residual 521 symmetry). Never read foreign tool pending[0].
  */
 function firstCreateGoalAction(run: AgentRunResult): AgentAction | undefined {
-  return (
-    run.state.pendingActions.find((action) => action.tool === 'create_goal') ??
-    run.state.approvedActions.find((action) => action.tool === 'create_goal')
-  );
+  // Residual 523/549: sole create_goal draftAction (no multi-find invent).
+  return soleProductDraftAction(run, 'create_goal');
 }
 
 /**
@@ -700,10 +717,8 @@ function summarizeExecutedActions(
  * (complete residual 501 / revise residual 507 symmetry). Never read foreign tool pending[0].
  */
 function firstCreateTaskTemplateAction(run: AgentRunResult): AgentAction | undefined {
-  return (
-    run.state.pendingActions.find((action) => action.tool === 'create_task_template') ??
-    run.state.approvedActions.find((action) => action.tool === 'create_task_template')
-  );
+  // Residual 519/549: sole create_task_template draftAction (no multi-find invent).
+  return soleProductDraftAction(run, 'create_task_template');
 }
 
 /**

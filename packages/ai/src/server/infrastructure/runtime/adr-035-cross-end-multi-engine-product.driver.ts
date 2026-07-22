@@ -358,6 +358,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['productDrafts.length !== 1'];
     case 'const draftAction = productDrafts[0]':
       return ['const draftAction = productDrafts[0]'];
+    case 'Residual 549':
+      return ['Residual 549'];
+    case 'function soleProductDraftAction':
+      return ['function soleProductDraftAction'];
+    case 'soleProductDraftAction(run, productTool)':
+      return ['soleProductDraftAction(run, productTool)'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

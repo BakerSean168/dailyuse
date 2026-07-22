@@ -1598,6 +1598,85 @@ describe('task draft create_task_template-only payload (residual 519)', () => {
   });
 });
 
+describe('product draft sole draftAction gate (residual 549)', () => {
+  it('does not invent task title/goalId when multiple create_task_template drafts exist', () => {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_task_template',
+        rationale: 'first',
+        payload: { title: 'First Task', goalId: 'goal-1' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_task_template',
+        rationale: 'second',
+        payload: { title: 'Second Task', goalId: 'goal-2' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ taskAgentRun: run });
+    expect(items).toHaveLength(1);
+    // Residual 549: multi product drafts fail-closed (no multi-find invent of first).
+    expect(items[0]?.title).not.toBe('First Task');
+    expect(items[0]?.title).not.toBe('Second Task');
+    expect(items[0]?.goalId).not.toBe('goal-1');
+    expect(items[0]?.goalId).not.toBe('goal-2');
+    expect(resolveLinkedGoalIdFromTaskAgentRun(run)).toBeNull();
+  });
+
+  it('still reads sole create_task_template when foreign tools also pending', () => {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign',
+        payload: { title: 'Foreign Goal', goalId: 'foreign-goal' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_task_template',
+        rationale: 'task',
+        payload: { title: 'Sole Task', goalId: 'goal-sole' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ taskAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.title).toBe('Sole Task');
+    expect(items[0]?.goalId).toBe('goal-sole');
+  });
+
+  it('does not invent knowledge path when multiple create_knowledge_note drafts exist', () => {
+    const run = noteWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_knowledge_note',
+        rationale: 'first',
+        payload: { targetSubpath: 'notes/first', contentMarkdown: '# first', title: 'First' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_knowledge_note',
+        rationale: 'second',
+        payload: { targetSubpath: 'notes/second', contentMarkdown: '# second', title: 'Second' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.targetPath).not.toBe('notes/first');
+    expect(items[0]?.targetPath).not.toBe('notes/second');
+    expect(items[0]?.title).not.toBe('First');
+    expect(items[0]?.title).not.toBe('Second');
+  });
+});
+
 describe('knowledge draft create_knowledge_note-only payload (residual 521)', () => {
   it('ignores foreign pending[0] tool when reading path/markdown for workbench', () => {
     const run = noteWaitingRun();

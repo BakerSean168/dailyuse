@@ -348,6 +348,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'Residual 547',
         'productDrafts.length !== 1',
         'const draftAction = productDrafts[0]',
+        // Residual 549: workbench product draft readers soleProductDraftAction (no multi-find invent).
+        'Residual 549',
+        'function soleProductDraftAction',
+        'soleProductDraftAction(run, productTool)',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

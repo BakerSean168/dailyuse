@@ -955,6 +955,31 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('workbench product draft readers use soleProductDraftAction (residual 549)', () => {
+    expect(helper).toContain('Residual 549');
+    expect(helper).toContain('function soleProductDraftAction');
+    expect(helper).toContain('productDrafts.length !== 1');
+    expect(helper).toContain('const draftAction = productDrafts[0]');
+    // Product-lane draft resolvers delegate to soleProductDraftAction (no multi-find invent).
+    const taskFn = helper.indexOf('function firstCreateTaskTemplateAction');
+    const knowledgeFn = helper.indexOf('function firstCreateKnowledgeNoteAction');
+    const goalFn = helper.indexOf('function firstCreateGoalAction');
+    const rationaleFn = helper.indexOf('function firstPendingRationale');
+    expect(taskFn).toBeGreaterThan(-1);
+    expect(knowledgeFn).toBeGreaterThan(-1);
+    expect(goalFn).toBeGreaterThan(-1);
+    expect(rationaleFn).toBeGreaterThan(-1);
+    expect(helper.slice(taskFn, taskFn + 280)).toContain("soleProductDraftAction(run, 'create_task_template')");
+    expect(helper.slice(knowledgeFn, knowledgeFn + 280)).toContain("soleProductDraftAction(run, 'create_knowledge_note')");
+    expect(helper.slice(goalFn, goalFn + 280)).toContain("soleProductDraftAction(run, 'create_goal')");
+    expect(helper.slice(rationaleFn, rationaleFn + 350)).toContain('soleProductDraftAction(run, productTool)');
+    expect(helper.slice(taskFn, taskFn + 280)).not.toContain('.find(');
+    expect(helper.slice(knowledgeFn, knowledgeFn + 280)).not.toContain('.find(');
+    expect(helper.slice(goalFn, goalFn + 280)).not.toContain('.find(');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('task.create process-local store conversation list trims (residual 509)', () => {
     const store = readFileSync(
       resolve(
@@ -1097,7 +1122,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(fnIdx).toBeGreaterThan(-1);
     const fnSlice = helper.slice(fnIdx, fnIdx + 900);
     expect(fnSlice).toContain('productTool');
-    expect(fnSlice).toContain("candidate.tool === productTool");
+    // Residual 549: rationale delegates to soleProductDraftAction (no multi-find invent).
+    expect(fnSlice).toContain('soleProductDraftAction(run, productTool)');
     expect(fnSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
     // Call sites pass lane product tools — not bare firstPendingRationale(run).
     expect(helper).toContain("firstPendingRationale(goalRun, 'create_goal')");
