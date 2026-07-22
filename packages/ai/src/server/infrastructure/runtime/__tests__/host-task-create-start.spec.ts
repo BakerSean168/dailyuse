@@ -6,6 +6,8 @@ import {
   resolveTaskCreateConversationId,
   HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
+  resolveTaskCreateThreadId,
 } from '../host-task-create-start';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
 
@@ -124,5 +126,33 @@ describe('host-task-create-start conversationId fail-closed (residual 483)', () 
       nowMs: 1000,
     });
     expect(ok.run.conversationId).toBe('conv-trim');
+  });
+});
+
+describe('host-task-create-start threadId fail-closed (residual 485)', () => {
+  it('resolveTaskCreateThreadId trims and rejects empty', () => {
+    expect(resolveTaskCreateThreadId('  thread-1  ')).toBe('thread-1');
+    expect(resolveTaskCreateThreadId('')).toBeUndefined();
+    expect(resolveTaskCreateThreadId('   ')).toBeUndefined();
+    expect(resolveTaskCreateThreadId(null)).toBeUndefined();
+    expect(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE).toMatch(/threadId/);
+  });
+
+  it('buildHostTaskCreateStartResult throws without inventing blank threadId', () => {
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: { ...baseRequest({ title: 'Needs thread' }), threadId: '   ' },
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE);
+
+    const ok = buildHostTaskCreateStartResult({
+      request: { ...baseRequest({ title: 'Bound' }), threadId: '  thread-trim  ' },
+      identityId: 'identity-server',
+      nowMs: 1000,
+    });
+    expect(ok.run.threadId).toBe('thread-trim');
+    expect(ok.interrupts[0]?.threadId).toBe('thread-trim');
   });
 });

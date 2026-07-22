@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475/477/479/481/483: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475/477/479/481/483/485: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -21,6 +21,7 @@
  *   start non-empty title fail-closed (residual 479)
  *   edit waiting_approval only (residual 481)
  *   start conversationId builder fail-closed (residual 483)
+ *   start threadId builder fail-closed (residual 485)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -481,6 +482,37 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!listed.ok) return;
     expect(listed.data.some((run) => run.runId === 'run-journey-no-conv')).toBe(false);
     expect(listed.data.some((run) => run.runId === 'run-journey-blank-conv')).toBe(false);
+    expect(port.startRun).not.toHaveBeenCalled();
+  });
+
+
+
+  it('rejects blank threadId at start without store registration (residual 485)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-thread' } as const;
+
+    const rejected = await service.startRun(
+      {
+        runId: 'run-journey-blank-thread',
+        threadId: '   ',
+        conversationId: 'conv-journey-blank-thread',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Needs thread' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(rejected.ok).toBe(false);
+    if (rejected.ok) return;
+    expect(rejected.error.code).toBe('VALIDATION_ERROR');
+    expect(rejected.error.message).toMatch(/non-empty threadId/);
+
+    const listed = await service.listRuns({}, cx as any);
+    expect(listed.ok).toBe(true);
+    if (!listed.ok) return;
+    expect(listed.data.some((run) => run.runId === 'run-journey-blank-thread')).toBe(false);
     expect(port.startRun).not.toHaveBeenCalled();
   });
 

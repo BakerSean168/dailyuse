@@ -725,6 +725,29 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+
+  it('task.create start requires non-empty threadId in builder (residual 485)', () => {
+    const start = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(start).toContain('HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE');
+    expect(start).toContain('resolveTaskCreateThreadId');
+    expect(start).toContain('Residual 485');
+    expect(runtime).toContain('HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE');
+    expect(runtime).toContain('resolveTaskCreateThreadId');
+    expect(runtime).toContain('Residual 485');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

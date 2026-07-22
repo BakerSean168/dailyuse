@@ -25,8 +25,10 @@ import {
   buildHostTaskCreateStartResult,
   resolveTaskCreateTitle,
   resolveTaskCreateConversationId,
+  resolveTaskCreateThreadId,
   HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
 } from './host-task-create-start';
 import { buildHostTaskCreateResumeResult } from './host-task-create-resume';
 import {
@@ -1168,6 +1170,13 @@ export function createAgentRuntimeService(
             HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
           );
         }
+        // Residual 485: process-local thread binding — blank/whitespace threadId fail-closed.
+        if (!resolveTaskCreateThreadId(requestWithKnowledge.data.threadId)) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
+          );
+        }
         const startedAt = Date.now();
         try {
           const taskResult = buildHostTaskCreateStartResult({
@@ -1210,10 +1219,11 @@ export function createAgentRuntimeService(
             ) {
               return error('VALIDATION_ERROR', err.message);
             }
-            // Residual 479/483: builder title/conversation fail-closed maps to validation.
+            // Residual 479/483/485: builder title/conversation/thread fail-closed maps to validation.
             if (
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE) ||
-              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE)
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE)
             ) {
               return error('VALIDATION_ERROR', err.message);
             }

@@ -308,6 +308,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE',
         // Residual 483: start builder conversationId fail-closed (no silent null).
         'Residual 483',
+        // Residual 485: start builder threadId fail-closed (trim non-empty).
+        'HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE',
+        'resolveTaskCreateThreadId',
       ],
       status: 'implemented_unit',
     },

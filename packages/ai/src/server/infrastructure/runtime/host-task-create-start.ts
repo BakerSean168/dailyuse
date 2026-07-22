@@ -1,11 +1,12 @@
 /**
- * Residual 431/461/479/483: Host task.create start foundation (TS runtime).
+ * Residual 431/461/479/483/485: Host task.create start foundation (TS runtime).
  *
  * Builds a waiting_approval AgentRunResult with one create_task_template action.
  * Host lifecycle + client createTemplate settlement (residual 423–425) own mutation.
  * Residual 461: product path requires non-empty conversationId (session-bound).
  * Residual 479: start builder requires non-empty title (no 'New task' default).
  * Residual 483: start builder requires non-empty conversationId (no silent null invent).
+ * Residual 485: start builder requires non-empty trimmed threadId (process-local binding).
  * Not a full LangGraph Task Agent workflow.
  */
 
@@ -27,6 +28,10 @@ export const HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE =
 export const HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE =
   'Host task.create start requires a non-empty title, idea, message, or conversationTitle.';
 
+/** Residual 485: fail-closed when task.create start lacks a recoverable threadId. */
+export const HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE =
+  'Host task.create start requires a non-empty threadId for process-local binding.';
+
 /**
  * Residual 461: resolve non-empty conversationId for product task.create start.
  */
@@ -34,6 +39,15 @@ export function resolveTaskCreateConversationId(
   conversationId: string | null | undefined,
 ): string | undefined {
   return asNonEmptyString(conversationId ?? undefined);
+}
+
+/**
+ * Residual 485: resolve non-empty threadId for product task.create start.
+ */
+export function resolveTaskCreateThreadId(
+  threadId: string | null | undefined,
+): string | undefined {
+  return asNonEmptyString(threadId ?? undefined);
 }
 
 /**
@@ -59,6 +73,7 @@ export function resolveTaskCreateGoalId(input: Record<string, unknown>): string 
  * identityId must come from server ExecutionContext — never trust client body identity.
  * Residual 479: empty title fails closed (no silent 'New task' invent).
  * Residual 483: empty conversationId fails closed (no silent null invent).
+ * Residual 485: empty/blank threadId fails closed (no untrimmed pass-through).
  */
 export function buildHostTaskCreateStartResult(input: {
   request: AgentStartRunRequest;
@@ -75,6 +90,11 @@ export function buildHostTaskCreateStartResult(input: {
   if (!conversationId) {
     throw new Error(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE);
   }
+  // Residual 485: thread binding fail-closed in builder (whitespace is empty).
+  const threadId = resolveTaskCreateThreadId(input.request.threadId);
+  if (!threadId) {
+    throw new Error(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE);
+  }
   const goalId = resolveTaskCreateGoalId(input.request.input);
   const runId = input.request.runId;
   const payload: Record<string, unknown> = { title };
@@ -83,7 +103,7 @@ export function buildHostTaskCreateStartResult(input: {
   return AgentRunResultSchema.parse({
     run: {
       runId,
-      threadId: input.request.threadId,
+      threadId,
       conversationId,
       identityId: input.identityId,
       agentType: 'task.create',
@@ -135,7 +155,7 @@ export function buildHostTaskCreateStartResult(input: {
     interrupts: [
       {
         runId,
-        threadId: input.request.threadId,
+        threadId,
         agentType: 'task.create',
         pendingActions: [
           {
