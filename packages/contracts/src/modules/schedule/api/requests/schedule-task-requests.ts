@@ -188,11 +188,6 @@ export interface BatchScheduleTaskOperationRequest {
 // ============ Response Types ============
 
 /**
- * 任务详情响应（单个）
- */
-export type ScheduleTaskDTO = ScheduleTaskClientDTO;
-
-/**
  * 任务列表响应
  */
 export interface ScheduleTaskListResponseDTO {

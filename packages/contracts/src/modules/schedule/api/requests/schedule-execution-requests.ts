@@ -41,11 +41,6 @@ export interface ScheduleExecutionQueryParamsDTO {
 // ============ Response Types ============
 
 /**
- * 执行记录详情响应（单个）
- */
-export type ScheduleExecutionDTO = ScheduleExecutionClientDTO;
-
-/**
  * 执行记录列表响应
  */
 export interface ScheduleExecutionListResponseDTO {
