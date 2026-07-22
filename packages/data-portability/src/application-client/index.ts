@@ -17,15 +17,13 @@ import { createDataPortabilityHttpAdapter } from '../infrastructure-client';
 
 export type { IDataPortabilityApiClient } from './ports/data-portability-api-client.port';
 
-export interface DataPortabilityClientPort {
-  exportUserData(data: ExportUserDataReq): Promise<Result<ExportUserDataRes>>;
-  exportServerHeldDataDisclosure(
-    data: ExportServerHeldDataDisclosureReq,
-  ): Promise<Result<ExportServerHeldDataDisclosureRes>>;
-  importUserData(data: ImportUserDataReq): Promise<Result<ImportUserDataRes>>;
-}
+/**
+ * Application-facing client port.
+ * Identical to IDataPortabilityApiClient for this module (no separate dual surface).
+ */
+export type DataPortabilityClientPort = IDataPortabilityApiClient;
 
-export class DataPortabilityClientService implements DataPortabilityClientPort {
+export class DataPortabilityClientService implements IDataPortabilityApiClient {
   constructor(private readonly apiClient: IDataPortabilityApiClient) {
     this.exportUserData = this.exportUserData.bind(this);
     this.exportServerHeldDataDisclosure = this.exportServerHeldDataDisclosure.bind(this);
