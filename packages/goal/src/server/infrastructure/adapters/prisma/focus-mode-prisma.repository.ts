@@ -53,11 +53,6 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
     });
   }
 
-  async findById(id: string): Promise<FocusMode | null> {
-    const data = await this.prisma.focusMode.findUnique({ where: { id } });
-    return data ? this.mapToValueObject(data) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<FocusMode | null> {
     const data = await this.prisma.focusMode.findFirst({
       where: { id, identityId },

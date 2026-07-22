@@ -3,8 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Focus session ownership surface (stage-6 residual 145):
+ * Focus session ownership surface (stage-6 residual 145/172):
  * session get/list-by-goal/delete/exists must never authorize by bare primary key alone.
+ * Residual 172 collapses dual findById.
  */
 describe('focus session ownership surface', () => {
   const port = readFileSync(
@@ -25,6 +26,11 @@ describe('focus session ownership surface', () => {
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
     expect(port).toContain('exists(identityId: string, id: string): Promise<boolean>;');
+  });
+
+  it('port drops bare findById dual method (residual 172)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<FocusSession | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by identityId', () => {

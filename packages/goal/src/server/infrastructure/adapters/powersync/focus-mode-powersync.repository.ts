@@ -79,14 +79,6 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
     });
   }
 
-  async findById(id: string): Promise<FocusMode | null> {
-    const row = await this.db.getOptional<Record<string, unknown>>(
-      `SELECT * FROM focus_modes WHERE id = ? LIMIT 1`,
-      [id],
-    );
-    return row ? PowerSyncFocusModeMapper.toDomain(row) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<FocusMode | null> {
     const row = await this.db.getOptional<Record<string, unknown>>(
       `SELECT * FROM focus_modes WHERE id = ? AND identity_id = ? LIMIT 1`,

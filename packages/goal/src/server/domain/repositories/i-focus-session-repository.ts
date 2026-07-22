@@ -28,15 +28,7 @@ export interface IFocusSessionRepository {
   save(session: FocusSession): Promise<void>;
 
   /**
-   * 通过 ID 查找聚合根（系统/内部路径；授权敏感路径请用 findByIdForIdentity）
-   *
-   * @param id - 会话 ID
-   * @returns 聚合根实例，不存在则返回 null
-   */
-  findById(id: string): Promise<FocusSession | null>;
-
-  /**
-   * 通过 ID + identity 查找聚合根（授权敏感读路径）
+   * 通过 ID + identity 查找聚合根（唯一读路径）
    */
   findByIdForIdentity(identityId: string, id: string): Promise<FocusSession | null>;
 

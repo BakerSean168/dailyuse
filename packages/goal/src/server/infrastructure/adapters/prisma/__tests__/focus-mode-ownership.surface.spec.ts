@@ -3,9 +3,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Focus mode ownership surface (stage-6 residual 146):
+ * Focus mode ownership surface (stage-6 residual 146/172):
  * focus mode get/delete must never authorize by bare primary key alone.
  * Active-path reads already use findActiveByIdentityId.
+ * Residual 172 collapses dual findById.
  */
 describe('focus mode ownership surface', () => {
   const port = readFileSync(
@@ -26,6 +27,12 @@ describe('focus mode ownership surface', () => {
       'findByIdForIdentity(identityId: string, id: string): Promise<FocusMode | null>;',
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
+  });
+
+  it('port drops bare findById dual method (residual 172)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<FocusMode | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by id + identityId', () => {

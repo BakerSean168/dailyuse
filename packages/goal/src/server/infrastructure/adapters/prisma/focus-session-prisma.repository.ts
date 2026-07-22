@@ -65,16 +65,6 @@ export class FocusSessionPrismaRepository
     });
   }
 
-  /**
-   * Find session by ID
-   */
-  async findById(id: string): Promise<FocusSession | null> {
-    const data = await this.prisma.focusSession.findUnique({
-      where: { id },
-    });
-    return data ? this.mapToEntity(data) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<FocusSession | null> {
     const data = await this.prisma.focusSession.findFirst({
       where: { id, identityId },

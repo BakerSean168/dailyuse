@@ -1979,6 +1979,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 补 ownership/surface。§13.2 仍部分。
 > 验证：goal-folder ownership surface + get-folder focused specs + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百七十二轮）：Focus mode/session 身份隔离——
+> 删除 bare `findById` 双轨，唯一读路径 `findByIdForIdentity`（mode 含 powersync；
+> session prisma）。`deactivateExpired` 系统路径保留。补 ownership/surface。§13.2 仍部分。
+> 验证：focus mode/session ownership surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2199,6 +2205,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百六十九轮：AI conversation/provider findById dual-method collapse。
   残留一百七十轮：calendar schedule findById dual-method collapse。
   残留一百七十一轮：goal folder findById dual-method collapse。
+  残留一百七十二轮：focus mode/session findById dual-method collapse。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
