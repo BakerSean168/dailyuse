@@ -2918,6 +2918,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > §13.2 三入口仍为 **部分实现**（缺真实 OAuth 跨端 E2E / GitHub fixture）。状态保持 **实施中**；
 > PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百零八轮）：§13.2 聚焦证据套件复跑（含 residual 250–307
+> dual/docs/disclosure/ADR-035/three-login step 10 锁，不改 checkbox）——
+> **64 文件 / 198 测试**（app-vue 54、ai 27、repository 35、contracts 13、ipc-client 5、
+> http-client 5、governance 2、setting 5、data-portability 15、authentication 13、reminder 2、
+> notification 2、account 2、goal 2、schedule 2、dashboard 1、desktop 9、task 4）+
+> governance-check（GOV_EXIT:0）。相对 residual 306：app-vue +1 test（three-login step 10）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine conformance E2E、
+> GitHub App fixture E2E、全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3309,6 +3318,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百零五轮：ADR-035 journey step 16 multi-engine label isolation + stage-0 ITurnEnginePort freeze surface (Agent still partial)。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
+  残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3389,6 +3399,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百零五轮：ADR-035 multi-engine 标签隔离 journey/surface 增强（Agent 仍部分；无完整 Turn Engine conformance E2E）；仍不构成全量 PR 门禁证据。
   残留三百零六轮：tip 上 197 项 focused evidence suite（含 residual 250–305 dual/docs/disclosure/ADR-035 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百零七轮：three-login matrix 15 通过（step 10 identity≠knowledge-repo install/token 源码锁）+ nearest auth surfaces + governance-check；仍不构成全量 PR 门禁/跨端 OAuth E2E 证据。
+  残留三百零八轮：tip 上 198 项 focused evidence suite（含 residual 250–307 dual/docs/disclosure/ADR-035/three-login step 10 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
