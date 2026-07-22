@@ -1,8 +1,8 @@
 import {
   getDashboardData,
-  type DashboardData,
   type DashboardTaskInstanceRecord,
 } from '@dailyuse/dashboard';
+import type { DashboardData } from '@dailyuse/contracts/dashboard';
 import { createLogger } from '@dailyuse/utils/logger';
 import { getGoalRepository } from '@dailyuse/goal/electron';
 import {

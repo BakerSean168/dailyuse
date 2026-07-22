@@ -8,19 +8,11 @@
  * - API: Prisma-backed adapter in `apps/api/src/modules/dashboard/`
  * - Desktop: PowerSync-backed adapter in `apps/desktop/src/main/services/`
  *
+ * Contract DTO types (`DashboardData`, etc.) come from
+ * `@dailyuse/contracts/dashboard` — not re-exported here.
+ *
  * @module @dailyuse/dashboard
  */
-
-// Contract types (re-exported for convenience)
-export type { DashboardData } from '@dailyuse/contracts/dashboard';
-export type {
-  DashboardStats,
-  ActivityItem,
-  TrendDay,
-  GoalProgressItem,
-  TaskBoardSummary,
-  ScheduleItem,
-} from '@dailyuse/contracts/dashboard';
 
 // Domain: port interface + record types
 export type {

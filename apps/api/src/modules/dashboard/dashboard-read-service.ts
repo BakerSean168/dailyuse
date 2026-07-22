@@ -1,9 +1,9 @@
 import type { PrismaClient } from '@dailyuse/database';
 import {
   getDashboardData,
-  type DashboardData,
   type DashboardTaskInstanceRecord,
 } from '@dailyuse/dashboard';
+import type { DashboardData } from '@dailyuse/contracts/dashboard';
 import { createGoalPrismaRepositories } from '@dailyuse/goal';
 import { createTaskPrismaRepositories } from '@dailyuse/task';
 import { createSchedulePrismaModule } from '@dailyuse/schedule';
