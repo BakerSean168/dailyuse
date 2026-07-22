@@ -5118,6 +5118,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留六百二十五轮）：API `GET /info` **Result 信封收口**（仍不打勾）——
+> `info.controller` 使用 `createApiResponseBuilder`/`HttpResponse`；payload 在 `data`；
+> K8s `/healthz`/`/readyz` 保持非 Result 探针形状；unit + surface Residual 625 锁。
+> 非跨端 multi-engine E2E / 全量 PR 门禁。状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -5865,6 +5870,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百二十二轮：§13.2 focused evidence suite re-run (716 tests, residuals 250–621 locks, no checkbox changes)。
   残留六百二十三轮：API GET /metrics/json Result/HttpResponse envelope (Prometheus text unchanged).
   残留六百二十四轮：§13.2 focused evidence suite re-run (720 tests, residuals 250–623 locks, no checkbox changes)。
+  残留六百二十五轮：API GET /info Result/HttpResponse envelope (health probes non-Result).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -5922,6 +5928,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百二十二轮：§13.2 focused evidence suite re-run（716 tests，residuals 250–621 锁；不改 checkbox）。
   残留六百二十三轮：API GET /metrics/json Result/HttpResponse 信封收口（Prometheus text 不变）。
   残留六百二十四轮：§13.2 focused evidence suite re-run（720 tests，residuals 250–623 锁；不改 checkbox）。
+  残留六百二十五轮：API GET /info Result/HttpResponse 信封收口（探针非 Result）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -6590,6 +6597,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百二十二轮：tip 上 716 项 focused evidence suite（含 residual 250–621 POST /logs Result envelope 锁）通过；仍不构成全量 PR 门禁证据。
   残留六百二十三轮：API GET /metrics/json Result 信封收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留六百二十四轮：tip 上 720 项 focused evidence suite（含 residual 250–623 /metrics/json Result envelope 锁）通过；仍不构成全量 PR 门禁证据。
+  残留六百二十五轮：API GET /info Result 信封收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

@@ -2,6 +2,9 @@
  * @file info.controller.ts
  * @description 应用信息控制器 - 提供版本、构建和运行时信息
  * @date 2025-12-22
+ *
+ * Residual 625: GET /info uses Result/HttpResponse envelope only
+ * (no raw dual-track body; ops probes /healthz stay non-Result).
  */
 
 import { readFileSync } from 'node:fs';
@@ -9,6 +12,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Request, Response } from 'express';
 import { env } from '../../config/env.js';
+import { createApiResponseBuilder } from '../response-builder.js';
 
 const controllerDir = dirname(fileURLToPath(import.meta.url));
 
@@ -47,9 +51,9 @@ function loadApiPackageInfo(): { name: string; version: string; description?: st
 const startTime = Date.now();
 
 /**
- * 应用信息响应
+ * 应用信息响应 payload（放在 HttpResponse.data）
  */
-interface AppInfoResponse {
+export interface AppInfoPayload {
   name: string;
   version: string;
   description: string;
@@ -78,34 +82,35 @@ function formatUptime(seconds: number): string {
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
-  
+
   const parts: string[] = [];
   if (days > 0) parts.push(`${days}d`);
   if (hours > 0) parts.push(`${hours}h`);
   if (minutes > 0) parts.push(`${minutes}m`);
   parts.push(`${secs}s`);
-  
+
   return parts.join(' ');
 }
 
 /**
  * 应用信息控制器
- * 
+ *
  * 提供以下端点：
  * - `/info` - 应用版本、环境、运行时信息
  */
 export const infoController = {
   /**
    * 获取应用信息
-   * 
+   *
    * @route GET /info
    */
-  getInfo: (_req: Request, res: Response): void => {
+  getInfo: (req: Request, res: Response): void => {
+    const responseBuilder = createApiResponseBuilder(req);
     const packageInfo = loadApiPackageInfo();
     const uptimeSeconds = Math.floor((Date.now() - startTime) / 1000);
     const memoryUsage = process.memoryUsage();
-    
-    const response: AppInfoResponse = {
+
+    const payload: AppInfoPayload = {
       name: packageInfo.name,
       version: packageInfo.version,
       description: packageInfo.description || 'Memoflow API Server',
@@ -116,21 +121,21 @@ export const infoController = {
         formatted: formatUptime(uptimeSeconds),
       },
       memory: {
-        heapUsedMB: Math.round(memoryUsage.heapUsed / 1024 / 1024 * 100) / 100,
-        heapTotalMB: Math.round(memoryUsage.heapTotal / 1024 / 1024 * 100) / 100,
-        rssMB: Math.round(memoryUsage.rss / 1024 / 1024 * 100) / 100,
+        heapUsedMB: Math.round((memoryUsage.heapUsed / 1024 / 1024) * 100) / 100,
+        heapTotalMB: Math.round((memoryUsage.heapTotal / 1024 / 1024) * 100) / 100,
+        rssMB: Math.round((memoryUsage.rss / 1024 / 1024) * 100) / 100,
       },
     };
-    
+
     // 如果有构建信息环境变量，添加到响应中
     if (env.BUILD_TIMESTAMP || env.GIT_COMMIT) {
-      response.build = {
+      payload.build = {
         timestamp: env.BUILD_TIMESTAMP,
         commit: env.GIT_COMMIT,
       };
     }
-    
-    res.status(200).json(response);
+
+    res.status(200).json(responseBuilder.success(payload));
   },
 };
 
