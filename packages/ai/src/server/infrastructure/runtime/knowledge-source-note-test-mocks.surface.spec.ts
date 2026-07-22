@@ -23,5 +23,7 @@ describe('AI knowledge source note test mock surface', () => {
       expect(src).not.toContain('fetchAllResources');
       expect(src).not.toContain('listRelevantResources');
     }
+    expect(remote).toContain('sourceNote');
+    expect(remote).not.toContain('sourceResource');
   });
 });

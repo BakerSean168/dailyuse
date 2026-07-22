@@ -101,7 +101,7 @@ function createKnowledgeQueryBundleDeps(): {
   knowledgeQueryPort: IKnowledgeQueryPort;
   citation: KnowledgeQueryCitation;
 } {
-  const sourceResource: KnowledgeSourceNote = {
+  const sourceNote: KnowledgeSourceNote = {
     identityId: 'identity-1',
     repositoryId: 'repo-1',
     resourceId: 'resource-1',
@@ -112,7 +112,7 @@ function createKnowledgeQueryBundleDeps(): {
     metadata: {},
   };
   const indexedResource: KnowledgeIndexedNote = {
-    ...sourceResource,
+    ...sourceNote,
     contentHash: 'hash-1',
     summary: 'Knowledge answers should cite repository excerpts.',
     keywords: ['knowledge', 'citations'],
@@ -120,10 +120,10 @@ function createKnowledgeQueryBundleDeps(): {
     chunks: [
       {
         chunkIndex: 0,
-        content: sourceResource.content,
+        content: sourceNote.content,
         contentHash: 'hash-1',
         startOffset: 0,
-        endOffset: sourceResource.content.length,
+        endOffset: sourceNote.content.length,
         headingPath: ['Grounded Answer'],
         keywords: ['knowledge', 'citations'],
         embedding: [],
@@ -141,9 +141,9 @@ function createKnowledgeQueryBundleDeps(): {
 
   return {
     knowledgeSourcePort: {
-      listRelevantNotes: vi.fn().mockResolvedValue([sourceResource]),
-      listIndexableNotes: vi.fn().mockResolvedValue([sourceResource]),
-      getNoteById: vi.fn().mockResolvedValue(sourceResource),
+      listRelevantNotes: vi.fn().mockResolvedValue([sourceNote]),
+      listIndexableNotes: vi.fn().mockResolvedValue([sourceNote]),
+      getNoteById: vi.fn().mockResolvedValue(sourceNote),
     },
     knowledgeIndexRepository: {
       getDiagnostics: vi.fn(),

@@ -12,7 +12,6 @@
  * @module desktop-main-runtime
  */
 
-import type { ElectronBootstrapper } from './bootstrap';
 import { DesktopAuthContextProvider } from './auth/desktop-auth-context';
 import type { DesktopProfileRuntimeManager } from './profile';
 import type { WindowManager } from './lifecycle/window-manager';
@@ -50,11 +49,6 @@ export class DesktopMainRuntime {
 
   setDesktopFeaturesRuntime(runtime: DesktopFeaturesRuntime): void {
     this._desktopFeaturesRuntime = runtime;
-  }
-
-  /** Convenience accessor for backward-compatible shutdown path. */
-  getBootstrapper(): ElectronBootstrapper | null {
-    return this.profileRuntimeManager.getBootstrapper() ?? null;
   }
 
   /**

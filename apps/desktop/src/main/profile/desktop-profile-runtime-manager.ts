@@ -114,10 +114,6 @@ export class DesktopProfileRuntimeManager {
     return this.activeRuntime?.descriptor.profileId ?? null;
   }
 
-  getBootstrapper(): ElectronBootstrapper | null {
-    return this.activeRuntime?.bootstrapper ?? null;
-  }
-
   getPreparedAuthService(): AuthDesktopApplicationService | null {
     return this.preparedRuntime?.authService ?? null;
   }

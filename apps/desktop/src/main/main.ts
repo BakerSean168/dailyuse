@@ -281,9 +281,3 @@ async function initializeShellRuntime(): Promise<void> {
 
 registerAppLifecycleHandlers(initializeShellRuntime, () => mainRuntime, windowManager);
 
-/**
- * Expose bootstrapper for graceful shutdown from lifecycle manager.
- */
-export function getBootstrapper(): ElectronBootstrapper | null {
-  return mainRuntime?.getBootstrapper() ?? null;
-}

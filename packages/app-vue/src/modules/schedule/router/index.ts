@@ -27,17 +27,6 @@ export const scheduleRoutes: RouteRecordRaw[] = [
           requiresAuth: true,
         },
       },
-      // Keep week view route for backward compatibility, redirect to calendar
-      {
-        path: 'week',
-        name: 'ScheduleWeekView',
-        redirect: '/schedule/calendar',
-      },
-      {
-        path: 'dashboard',
-        name: 'ScheduleDashboard',
-        redirect: '/schedule/calendar',
-      },
     ],
   },
 ];

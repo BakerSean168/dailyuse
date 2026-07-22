@@ -21,8 +21,8 @@ test.describe('Schedule Week View', () => {
     await page.waitForURL(`${baseUrl}/`);
     await page.waitForTimeout(1000);
     
-    // 导航到日程周视图
-    await page.goto(`${baseUrl}/schedule/week`);
+    // 导航到统一日程日历（含周视图组件）
+    await page.goto(`${baseUrl}/schedule/calendar`);
     await page.waitForTimeout(2000);
   });
 
