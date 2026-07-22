@@ -371,6 +371,7 @@ import {
   canHostApproveProductAgentRun,
   canHostRejectProductAgentRun,
   canHostReviseProductAgentRun,
+  resolveHostPanelOwnedProductRun,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
@@ -751,28 +752,25 @@ async function handleHostProposalRevise(payload: {
 }) {
   if (hostProposalBusy.value || !payload.dirty) return;
 
-  // Residual 567: product-lane Host revise requires waiting_approval before Host
-  // lifecycle (edit residual 481 + residual 565 reject / 561 approve symmetry).
-  // Avoids revise-then-silent-noop when process-local revise gates fail-closed.
-  if (payload.item.source === 'goal') {
-    const run =
-      goalAgentRun.value?.run.runId === payload.item.runId ? goalAgentRun.value : null;
-    if (!canHostReviseProductAgentRun({ run })) return;
-  }
-  if (payload.item.source === 'knowledge') {
-    const run =
-      noteAgentRun.value?.run.runId === payload.item.runId ? noteAgentRun.value : null;
-    if (!canHostReviseProductAgentRun({ run })) return;
-  }
-  if (payload.item.source === 'task') {
-    const ownedByTaskSession =
-      taskAgentRun.value?.run.runId === payload.item.runId &&
-      taskAgentRun.value.run.agentType === 'task.create';
-    if (ownedByTaskSession) {
-      if (!canHostReviseProductAgentRun({ run: taskAgentRun.value })) return;
-    } else if (goalAgentRun.value?.run.runId === payload.item.runId) {
-      if (!canHostReviseProductAgentRun({ run: goalAgentRun.value })) return;
-    }
+  // Residual 567: product-lane Host revise waiting_approval before Host lifecycle.
+  // Residual 569: shared resolveHostPanelOwnedProductRun ownership for revise.
+  // Edit residual 481 + residual 565 reject / 561 approve symmetry.
+  // Avoids revise-then-silent-noop + dual ownership drift.
+  if (
+    payload.item.source === 'goal' ||
+    payload.item.source === 'knowledge' ||
+    payload.item.source === 'task'
+  ) {
+    const owned = resolveHostPanelOwnedProductRun({
+      source: payload.item.source,
+      runId: payload.item.runId,
+      goalAgentRun: goalAgentRun.value,
+      noteAgentRun: noteAgentRun.value,
+      taskAgentRun: taskAgentRun.value,
+    });
+    // goal/knowledge must own a session run; task orphan Host-only revise stays ungated.
+    if (payload.item.source !== 'task' && !owned) return;
+    if (owned && !canHostReviseProductAgentRun({ run: owned.run })) return;
   }
 
   hostProposalBusy.value = true;
@@ -822,57 +820,32 @@ async function handleHostProposalApprove(payload: {
 }) {
   if (hostProposalBusy.value) return;
 
-  // Residual 561: goal/knowledge Host approve requires waiting_approval + sole
-  // product draftAction before Host lifecycle (confirm residual 555/557/559
-  // symmetry). Avoids approve-then-silent-noop when product gates fail-closed.
-  if (payload.item.source === 'goal') {
-    const run =
-      goalAgentRun.value?.run.runId === payload.item.runId ? goalAgentRun.value : null;
-    if (!canHostApproveProductAgentRun({ run, productTool: 'create_goal' })) return;
-  }
-  if (payload.item.source === 'knowledge') {
-    const run =
-      noteAgentRun.value?.run.runId === payload.item.runId ? noteAgentRun.value : null;
+  // Residual 561: goal/knowledge Host approve sole product + waiting_approval.
+  // Residual 563: session-owned task.create Host approve sole create_task_template.
+  // Residual 569: shared resolveHostPanelOwnedProductRun ownership for approve.
+  // Product draftAction before Host lifecycle (confirm residual 555/557/559 +
+  // complete 547/489 symmetry). Pure domain createTemplate fallback stays ungated.
+  if (
+    payload.item.source === 'goal' ||
+    payload.item.source === 'knowledge' ||
+    payload.item.source === 'task'
+  ) {
+    const owned = resolveHostPanelOwnedProductRun({
+      source: payload.item.source,
+      runId: payload.item.runId,
+      goalAgentRun: goalAgentRun.value,
+      noteAgentRun: noteAgentRun.value,
+      taskAgentRun: taskAgentRun.value,
+    });
+    if (payload.item.source !== 'task' && !owned) return;
     if (
+      owned &&
       !canHostApproveProductAgentRun({
-        run,
-        productTool: 'create_knowledge_note',
+        run: owned.run,
+        productTool: owned.productTool,
       })
     ) {
       return;
-    }
-  }
-  // Residual 563: session-owned task.create Host approve requires waiting_approval
-  // + sole create_task_template before Host lifecycle (complete residual 547/489
-  // + residual 561 symmetry). Pure domain createTemplate fallback stays ungated.
-  // Task-shaped goal.create owned by goal session gates create_goal the same way.
-  if (payload.item.source === 'task') {
-    const ownedByTaskSession = taskAgentRun.value?.run.runId === payload.item.runId;
-    const isTaskAgentType =
-      taskAgentRun.value?.run.agentType === 'task.create' ||
-      liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType === 'task.create';
-    if (isTaskAgentType && ownedByTaskSession) {
-      if (
-        !canHostApproveProductAgentRun({
-          run: taskAgentRun.value,
-          productTool: 'create_task_template',
-        })
-      ) {
-        return;
-      }
-    } else if (
-      !isTaskAgentType &&
-      !ownedByTaskSession &&
-      goalAgentRun.value?.run.runId === payload.item.runId
-    ) {
-      if (
-        !canHostApproveProductAgentRun({
-          run: goalAgentRun.value,
-          productTool: 'create_goal',
-        })
-      ) {
-        return;
-      }
     }
   }
 
@@ -1014,33 +987,24 @@ async function handleHostProposalReject(payload: {
 }) {
   if (hostProposalBusy.value) return;
 
-  // Residual 565: product-lane Host reject requires waiting_approval before Host
-  // lifecycle (cancel residual 477/559 + knowledge cancel + residual 561/563
-  // approve symmetry). Avoids reject-then-silent-noop when cancel gates fail-closed.
-  // Orphan task proposals without AgentRun owner remain client-settle only.
-  if (payload.item.source === 'goal') {
-    const run =
-      goalAgentRun.value?.run.runId === payload.item.runId ? goalAgentRun.value : null;
-    if (!canHostRejectProductAgentRun({ run })) return;
-  }
-  if (payload.item.source === 'knowledge') {
-    const run =
-      noteAgentRun.value?.run.runId === payload.item.runId ? noteAgentRun.value : null;
-    if (!canHostRejectProductAgentRun({ run })) return;
-  }
-  if (payload.item.source === 'task') {
-    const ownedByTaskSession = taskAgentRun.value?.run.runId === payload.item.runId;
-    const isTaskAgentType =
-      taskAgentRun.value?.run.agentType === 'task.create' ||
-      liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType === 'task.create';
-    if (isTaskAgentType && ownedByTaskSession) {
-      if (!canHostRejectProductAgentRun({ run: taskAgentRun.value })) return;
-    } else if (
-      !isTaskAgentType &&
-      goalAgentRun.value?.run.runId === payload.item.runId
-    ) {
-      if (!canHostRejectProductAgentRun({ run: goalAgentRun.value })) return;
-    }
+  // Residual 565: product-lane Host reject waiting_approval before Host lifecycle.
+  // Residual 569: shared resolveHostPanelOwnedProductRun ownership for reject.
+  // Cancel residual 477/559 + residual 561/563 approve symmetry.
+  // Orphan task proposals remain client-settle only.
+  if (
+    payload.item.source === 'goal' ||
+    payload.item.source === 'knowledge' ||
+    payload.item.source === 'task'
+  ) {
+    const owned = resolveHostPanelOwnedProductRun({
+      source: payload.item.source,
+      runId: payload.item.runId,
+      goalAgentRun: goalAgentRun.value,
+      noteAgentRun: noteAgentRun.value,
+      taskAgentRun: taskAgentRun.value,
+    });
+    if (payload.item.source !== 'task' && !owned) return;
+    if (owned && !canHostRejectProductAgentRun({ run: owned.run })) return;
   }
 
   hostProposalBusy.value = true;

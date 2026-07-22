@@ -398,6 +398,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 567'];
     case 'canHostReviseProductAgentRun':
       return ['canHostReviseProductAgentRun'];
+    case 'Residual 569':
+      return ['Residual 569'];
+    case 'resolveHostPanelOwnedProductRun':
+      return ['resolveHostPanelOwnedProductRun'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

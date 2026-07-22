@@ -1087,8 +1087,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(approveIdx).toBeGreaterThan(-1);
     const approveSlice = chatView.slice(approveIdx, approveIdx + 3600);
     expect(approveSlice).toContain('canHostApproveProductAgentRun');
-    expect(approveSlice).toContain("productTool: 'create_goal'");
-    expect(approveSlice).toContain("productTool: 'create_knowledge_note'");
+    expect(approveSlice).toContain('resolveHostPanelOwnedProductRun');
+    expect(approveSlice).toContain('owned.productTool');
     // Gate before Host lifecycle approve decision.
     const gateIdx = approveSlice.indexOf('canHostApproveProductAgentRun');
     const decisionIdx = approveSlice.indexOf('dispatchHostProposalDecision');
@@ -1102,21 +1102,22 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
     expect(helper).toContain('Residual 563');
     expect(chatView).toContain('Residual 563');
-    expect(chatView).toContain("productTool: 'create_task_template'");
+    // Ownership maps task.create to create_task_template (residual 569 resolver).
+    expect(helper).toContain("productTool: 'create_task_template'");
+    expect(helper).toContain("agentType === 'task.create'");
     const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
     expect(approveIdx).toBeGreaterThan(-1);
     const approveSlice = chatView.slice(approveIdx, approveIdx + 7000);
     expect(approveSlice).toContain('Residual 563');
-    expect(approveSlice).toContain("productTool: 'create_task_template'");
-    expect(approveSlice).toContain('ownedByTaskSession');
-    expect(approveSlice).toContain("agentType === 'task.create'");
+    expect(approveSlice).toContain('resolveHostPanelOwnedProductRun');
+    expect(approveSlice).toContain('owned.productTool');
     // Pure domain createTemplate fallback remains after gates (ungated when no session owner).
     expect(approveSlice).toContain('buildHostTaskCreateTemplateRequest');
-    // Task product gate before Host lifecycle decision.
-    const taskGateIdx = approveSlice.indexOf("productTool: 'create_task_template'");
+    // Ownership resolve before Host lifecycle decision.
+    const resolveIdx = approveSlice.indexOf('resolveHostPanelOwnedProductRun');
     const decisionIdx = approveSlice.indexOf('dispatchHostProposalDecision');
-    expect(taskGateIdx).toBeGreaterThan(-1);
-    expect(decisionIdx).toBeGreaterThan(taskGateIdx);
+    expect(resolveIdx).toBeGreaterThan(-1);
+    expect(decisionIdx).toBeGreaterThan(resolveIdx);
     expect(chatView).not.toContain('executeApproved');
     expect(helper).not.toContain('executeApproved');
   });
@@ -1169,6 +1170,40 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).not.toContain('executeApproved');
     expect(helper).not.toContain('executeApproved');
   });
+
+  it('Host panel approve/reject/revise share resolveHostPanelOwnedProductRun ownership (residual 569)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('resolveHostPanelOwnedProductRun');
+    expect(helper).toContain('Residual 569');
+    expect(chatView).toContain('resolveHostPanelOwnedProductRun');
+    expect(chatView).toContain('Residual 569');
+    // All three Host panel lifecycle handlers resolve ownership through the shared helper.
+    for (const fn of [
+      'async function handleHostProposalApprove',
+      'async function handleHostProposalReject',
+      'async function handleHostProposalRevise',
+    ]) {
+      const fnIdx = chatView.indexOf(fn);
+      expect(fnIdx).toBeGreaterThan(-1);
+      const slice = chatView.slice(fnIdx, fnIdx + 2800);
+      expect(slice).toContain('resolveHostPanelOwnedProductRun');
+      // Gate / resolve before Host lifecycle decision or revise dispatch.
+      const resolveIdx = slice.indexOf('resolveHostPanelOwnedProductRun');
+      expect(resolveIdx).toBeGreaterThan(-1);
+      if (fn.includes('Revise')) {
+        expect(slice.indexOf('dispatchHostProposalRevise')).toBeGreaterThan(resolveIdx);
+      } else {
+        expect(slice.indexOf('dispatchHostProposalDecision')).toBeGreaterThan(resolveIdx);
+      }
+    }
+    // Ownership map is product-tool explicit (no multi-index invent).
+    expect(helper).toContain("productTool: 'create_goal'");
+    expect(helper).toContain("productTool: 'create_knowledge_note'");
+    expect(helper).toContain("productTool: 'create_task_template'");
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
 
 
 

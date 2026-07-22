@@ -34,6 +34,7 @@ import {
   canHostApproveProductAgentRun,
   canHostRejectProductAgentRun,
   canHostReviseProductAgentRun,
+  resolveHostPanelOwnedProductRun,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -2734,6 +2735,86 @@ describe('canHostReviseProductAgentRun (residual 567)', () => {
     expect(canHostReviseProductAgentRun({ run: runWith('waiting_approval') })).toBe(
       canHostRejectProductAgentRun({ run: runWith('waiting_approval') }),
     );
+  });
+});
+
+describe('resolveHostPanelOwnedProductRun (residual 569)', () => {
+  function makeRun(
+    runId: string,
+    agentType: string,
+  ): AgentRunResult {
+    return {
+      run: {
+        runId,
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType,
+        status: 'waiting_approval',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  it('maps goal/knowledge/task session ownership to sole product tools', () => {
+    const goal = makeRun('g-1', 'goal.create');
+    const note = makeRun('n-1', 'knowledge.generate');
+    const task = makeRun('t-1', 'task.create');
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'goal',
+        runId: 'g-1',
+        goalAgentRun: goal,
+      })?.productTool,
+    ).toBe('create_goal');
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'knowledge',
+        runId: 'n-1',
+        noteAgentRun: note,
+      })?.productTool,
+    ).toBe('create_knowledge_note');
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'task',
+        runId: 't-1',
+        taskAgentRun: task,
+      })?.productTool,
+    ).toBe('create_task_template');
+  });
+
+  it('maps task-shaped goal-owned run and leaves orphan task null', () => {
+    const goal = makeRun('shared-1', 'goal.create');
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'task',
+        runId: 'shared-1',
+        goalAgentRun: goal,
+        taskAgentRun: null,
+      })?.productTool,
+    ).toBe('create_goal');
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'task',
+        runId: 'orphan-1',
+        goalAgentRun: goal,
+        taskAgentRun: null,
+      }),
+    ).toBeNull();
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'goal',
+        runId: 'missing',
+        goalAgentRun: goal,
+      }),
+    ).toBeNull();
   });
 });
 

@@ -265,6 +265,61 @@ export function canHostReviseProductAgentRun(input: {
   return canHostRejectProductAgentRun(input);
 }
 
+/** Residual 569: Host panel product source for owned AgentRun resolution. */
+export type HostPanelProductSource = 'goal' | 'knowledge' | 'task';
+
+/** Residual 569: product tool bound to a Host panel product source. */
+export type HostPanelProductTool =
+  | 'create_goal'
+  | 'create_knowledge_note'
+  | 'create_task_template';
+
+/**
+ * Residual 569: resolve session-owned product AgentRun for Host panel lifecycle
+ * gates (approve/reject/revise). Single ownership map so panel actions cannot
+ * drift across dual resolution paths.
+ *
+ * - goal → create_goal when goalAgentRun.runId matches
+ * - knowledge → create_knowledge_note when noteAgentRun.runId matches
+ * - task → create_task_template when task.create session run matches;
+ *   otherwise create_goal when goal session owns the same runId
+ * - orphan task proposals (no AgentRun owner) → null (client-settle / domain fallback)
+ */
+export function resolveHostPanelOwnedProductRun(input: {
+  source: HostPanelProductSource;
+  runId: string;
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  taskAgentRun?: AgentRunResult | null;
+}): { run: AgentRunResult; productTool: HostPanelProductTool } | null {
+  const runId = typeof input.runId === 'string' ? input.runId : '';
+  if (!runId) return null;
+
+  if (input.source === 'goal') {
+    const run = input.goalAgentRun?.run.runId === runId ? input.goalAgentRun : null;
+    return run ? { run, productTool: 'create_goal' } : null;
+  }
+  if (input.source === 'knowledge') {
+    const run = input.noteAgentRun?.run.runId === runId ? input.noteAgentRun : null;
+    return run ? { run, productTool: 'create_knowledge_note' } : null;
+  }
+  if (input.source === 'task') {
+    const taskRun = input.taskAgentRun;
+    if (
+      taskRun?.run.runId === runId &&
+      taskRun.run.agentType === 'task.create'
+    ) {
+      return { run: taskRun, productTool: 'create_task_template' };
+    }
+    const goalRun = input.goalAgentRun;
+    if (goalRun?.run.runId === runId) {
+      return { run: goalRun, productTool: 'create_goal' };
+    }
+    return null;
+  }
+  return null;
+}
+
 /**
  * Residual 527: workbench pending count from product-lane tool only
  * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).

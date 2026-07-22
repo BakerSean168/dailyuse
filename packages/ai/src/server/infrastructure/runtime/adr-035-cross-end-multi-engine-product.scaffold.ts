@@ -380,6 +380,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 567: Host panel product revise pre-lifecycle waiting_approval-only.
         'Residual 567',
         'canHostReviseProductAgentRun',
+        // Residual 569: Host panel approve/reject/revise shared ownership resolver.
+        'Residual 569',
+        'resolveHostPanelOwnedProductRun',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',
