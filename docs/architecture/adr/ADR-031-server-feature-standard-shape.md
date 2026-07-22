@@ -7,11 +7,16 @@ Accepted
 2026-05-25
 
 ## Context
-The monorepo has 13 business feature packages (account, ai, authentication, data-portability, editor, goal, governance, notification, reminder, repository, schedule, setting, task) that share a common internal structure. However, there is no formal documentation of this shape, leading to inconsistent new modules and confusion about where code belongs.
+The monorepo has **12** audited business feature packages (account, ai, authentication,
+data-portability, goal, governance, notification, reminder, repository, schedule, setting, task)
+that share a common internal structure. The former `editor` feature package was retired under
+ADR-034 (Obsidian Vault / GitHub knowledge repository); portable `editor_*` tables remain only
+for re-importable business backups, not as a live feature package. This ADR documents the shape
+so new modules stay consistent.
 
 Additionally, `dashboard` is a read-model module that intentionally does NOT follow the full server feature shape — it has no write side, no controllers, no infrastructure-server.
 
-`schedule-orchestration` is also not one of the 13 business feature packages.
+`schedule-orchestration` is also not one of the 12 business feature packages.
 It is a cross-feature orchestration package that owns schedule projection and
 source-execution wiring between feature modules. Its current `ports/`,
 `projectors/`, `runtime/`, `execution/`, and `infrastructure-server/` shape is

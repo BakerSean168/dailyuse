@@ -93,7 +93,7 @@ should be constrained to:
 - **Shared layout components**
 
 Feature-module code should be imported directly from the feature subpath
-(e.g., `@dailyuse/app-vue/modules/editor`), not from the root barrel.
+(e.g., `@dailyuse/app-vue/modules/repository`), not from the root barrel.
 
 ## Consequences
 

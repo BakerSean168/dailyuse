@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 180: packages/editor package directory stays deleted (no runtime package).
  * Residual 182: root package.json scripts no longer list deleted editor Nx project.
  * Residual 183: coverage workflow drops deleted editor project.
+ * Residual 184: ADR-031 audited package list excludes retired editor.
  */
 describe('legacy editor/repository runtime surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../../');
@@ -154,6 +155,29 @@ describe('legacy editor/repository runtime surface', () => {
       /GOVERNED_DOMAIN_COVERAGE_PROJECTS:\s*'[^']*\beditor\b[^']*'/,
     );
     expect(coverageWorkflow).toContain('domain-shared,goal,governance');
+  });
+
+
+  it('ADR-031 and server-feature-shape audit list 12 live packages without editor (residual 184)', () => {
+    const adr031 = readFileSync(
+      resolve(repoRoot, 'docs/architecture/adr/ADR-031-server-feature-standard-shape.md'),
+      'utf8',
+    );
+    const shapeAudit = readFileSync(
+      resolve(repoRoot, 'tools/governance/server-feature-shape-audit.mjs'),
+      'utf8',
+    );
+    expect(adr031).toContain('**12** audited business feature packages');
+    expect(adr031).toMatch(/account, ai, authentication/);
+    expect(adr031).toMatch(/data-portability, goal, governance/);
+    expect(adr031).toMatch(/repository, schedule, setting, task/);
+    expect(adr031).not.toMatch(/data-portability, editor, goal/);
+    expect(adr031).not.toMatch(/\b13 business feature packages\b/);
+    expect(adr031).toMatch(/former `editor` feature package was retired/);
+    // Keep audit source of truth aligned with ADR:
+    expect(shapeAudit).toContain("'account'");
+    expect(shapeAudit).toContain("'task'");
+    expect(shapeAudit).not.toContain("'editor'");
   });
 
 });
