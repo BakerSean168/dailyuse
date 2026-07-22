@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TaskForDAGViewModel } from '../types';
+import type { TaskForDAG } from '../../types/task-dag.types';
 import { useI18n } from 'vue-i18n';
 import {
   Card,
@@ -102,13 +102,13 @@ import { formatTaskDuration } from '../../utils/format-task-duration';
 interface CriticalPathResultViewModel {
   projectDuration: number;
   criticalPath: string[];
-  criticalTasks: TaskForDAGViewModel[];
+  criticalTasks: TaskForDAG[];
   suggestions: Array<{ type: string; description: string; priority: string; impact: number }>;
 }
 
 const props = defineProps<{
   result: CriticalPathResultViewModel | null;
-  allTasks: TaskForDAGViewModel[];
+  allTasks: TaskForDAG[];
 }>();
 
 const { t, locale } = useI18n();

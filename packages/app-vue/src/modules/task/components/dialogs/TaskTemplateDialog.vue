@@ -87,7 +87,8 @@ import {
 import { Pencil, PlusCircle } from '@lucide/vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import DependencyManager from '../dependency/DependencyManager.vue';
-import type { TaskForDAGViewModel, TaskTemplateViewModel } from '../types';
+import type { TaskTemplateViewModel } from '../types';
+import type { TaskForDAG } from '../../types/task-dag.types';
 import { TaskType, type DependencyType, type TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
 import { defaultNamedColor } from '../../../../shared/constants/color-palette';
 import { useTaskGoalBindingOptions } from '../../composables/useTaskGoalBindingOptions';
@@ -136,7 +137,7 @@ const props = withDefaults(
     mode?: 'create' | 'edit';
     saving?: boolean;
     availableTemplates?: TaskTemplateViewModel[];
-    graphTasks?: TaskForDAGViewModel[];
+    graphTasks?: TaskForDAG[];
     dependencies?: TaskGraphDependencyDTO[];
     onCreateDependency?: (dependency: {
       predecessorTaskId: string;

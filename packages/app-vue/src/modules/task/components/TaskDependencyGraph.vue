@@ -140,7 +140,10 @@ import { useI18n } from 'vue-i18n';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
 import { TaskGraphEdgeKind } from '@dailyuse/task/client';
-import type { TaskForDAGViewModel, TaskGraphDataViewModel } from './types';
+import type {
+  TaskForDAG,
+  TaskGraphData,
+} from '../types/task-dag.types';
 import {
   Card,
   CardHeader,
@@ -172,7 +175,7 @@ import {
 // Props
 const props = withDefaults(
   defineProps<{
-    graphData: TaskGraphDataViewModel;
+    graphData: TaskGraphData;
     height?: number;
   }>(),
   {
@@ -304,7 +307,7 @@ const criticalPathInfo = computed(() => {
   return calculateCriticalPath();
 });
 
-const getTaskColor = (task: TaskForDAGViewModel): string => {
+const getTaskColor = (task: TaskForDAG): string => {
   if (task.status === 'COMPLETED') return '#4CAF50';
   if (task.isBlocked || task.dependencyStatus === 'Blocked') return '#F97316';
   if (task.status === 'IN_PROGRESS') return '#2196F3';
@@ -367,7 +370,7 @@ function updateChart() {
         formatter: (params: Record<string, unknown>) => {
           if (params.dataType === 'node') {
             const data = params.data as Record<string, unknown>;
-            const task = data.task as TaskForDAGViewModel | undefined;
+            const task = data.task as TaskForDAG | undefined;
             if (!task) return '';
             return `<div style="padding: 8px;">
               <div style="font-weight: bold;">${task.title}</div>

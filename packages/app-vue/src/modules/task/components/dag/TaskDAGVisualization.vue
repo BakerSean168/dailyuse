@@ -72,13 +72,17 @@ import type { ECElementEvent, GraphSeriesOption } from 'echarts';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@dailyuse/ui-vue-shadcn';
 import { Network, AlertTriangle, Download } from '@lucide/vue';
 import { TaskGraphEdgeKind } from '@dailyuse/task/client';
-import type { TaskForDAGViewModel, TaskGraphDataViewModel, TaskGraphEdgeViewModel } from '../types';
+import type {
+  TaskForDAG,
+  TaskGraphData,
+  TaskGraphEdge,
+} from '../../types/task-dag.types';
 
 use([GraphChart, TitleComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
 const props = withDefaults(
   defineProps<{
-    graphData: TaskGraphDataViewModel;
+    graphData: TaskGraphData;
     activeNodeId?: string | null;
     compact?: boolean;
   }>(),
@@ -91,7 +95,7 @@ const props = withDefaults(
 const { t } = useI18n();
 
 const emit = defineEmits<{
-  (e: 'node-click', task: TaskForDAGViewModel): void;
+  (e: 'node-click', task: TaskForDAG): void;
 }>();
 
 const layoutType = ref<'force' | 'hierarchical'>('force');
@@ -199,7 +203,7 @@ const hierarchyDepths = computed(() => {
 });
 
 const hierarchicalPositions = computed(() => {
-  const nodesByDepth = new Map<number, TaskForDAGViewModel[]>();
+  const nodesByDepth = new Map<number, TaskForDAG[]>();
 
   props.graphData.nodes.forEach((task) => {
     const depth = hierarchyDepths.value.get(task.id) ?? 0;
@@ -287,7 +291,7 @@ const dagOption = computed(() => {
       formatter: (params: ECElementEvent) => {
         const data = params.data as Record<string, unknown> | undefined;
         if (params.dataType === 'node' && data?.task) {
-          const task = data.task as TaskForDAGViewModel;
+          const task = data.task as TaskForDAG;
           const dependencyLine = task.dependencyStatus
             ? `<br/>Dependency ${task.dependencyStatus}`
             : '';
@@ -295,7 +299,7 @@ const dagOption = computed(() => {
           return `<div><b>${task.title}</b><br/>${t('task.dagVisualization.statusTooltip')} ${task.status || 'UNKNOWN'}<br/>${t('task.dagVisualization.durationTooltip')} ${task.estimatedMinutes || 0} ${t('task.dagVisualization.minuteUnit')}${dependencyLine}${blockedLine}</div>`;
         }
         if (params.dataType === 'edge' && data?.edge) {
-          const edge = data.edge as TaskGraphEdgeViewModel;
+          const edge = data.edge as TaskGraphEdge;
           const relation =
             edge.kind === TaskGraphEdgeKind.Hierarchy
               ? 'Hierarchy'
@@ -333,7 +337,7 @@ const handleNodeClick = (params: unknown) => {
   const event = params as ECElementEvent;
   const data = event.data as Record<string, unknown> | undefined;
   if (data?.task) {
-    emit('node-click', data.task as TaskForDAGViewModel);
+    emit('node-click', data.task as TaskForDAG);
   }
 };
 
