@@ -1393,4 +1393,54 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(blank.data.some((run) => run.runId === 'run-journey-trim-conv')).toBe(false);
   });
 
+
+  it('resume edit keeps process-local thread binding across whitespace-equivalent threadId (residual 511)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-thread' } as const;
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-trim-thread',
+        threadId: 'thread-journey-trim',
+        conversationId: 'conv-journey-trim-thread',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Trim thread match' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    expect(started.data.run.threadId).toBe('thread-journey-trim');
+
+    // edit resume stays on process-local store (thread binding must hold).
+    const edited = await service.resumeRun(
+      'run-journey-trim-thread',
+      {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'revise',
+            payload: { title: 'Trim thread match revised' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(edited.ok).toBe(true);
+    if (!edited.ok) return;
+    expect(edited.data.run.threadId).toBe('thread-journey-trim');
+    expect(edited.data.run.status).toBe('waiting_approval');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+
+    const got = await service.getRun('run-journey-trim-thread', cx as any);
+    expect(got.ok).toBe(true);
+    if (!got.ok) return;
+    expect(got.data.run.threadId).toBe('thread-journey-trim');
+  });
+
 });

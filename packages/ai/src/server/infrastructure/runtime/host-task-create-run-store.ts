@@ -1,5 +1,5 @@
 /**
- * Residual 435/447/451/457/495/503/505/509: process-local Host task.create run store foundation.
+ * Residual 435/447/451/457/495/503/505/509/511: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
@@ -27,6 +27,10 @@
  * Residual 509: list conversationId filter uses trimmed non-empty conversationId
  * (start residual 483/461 symmetry) so whitespace query cannot false-miss session runs;
  * blank conversationId filter fails closed (matches nothing).
+ *
+ * Residual 511: thread binding uses trimmed non-empty threadId (start residual 485
+ * symmetry) so whitespace upsert cannot false-rebind or invent a second thread key;
+ * blank threadId on upsert fails closed.
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
@@ -34,6 +38,7 @@ import {
   resolveTaskCreateConversationId,
   resolveTaskCreateIdentityId,
   resolveTaskCreateRunId,
+  resolveTaskCreateThreadId,
 } from './host-task-create-start';
 
 const ACTIVE_STATUSES = new Set([
@@ -67,6 +72,10 @@ export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE =
 export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE =
   'Host task.create process-local store requires a non-empty runId for process-local binding.';
 
+/** Residual 511: process-local store requires non-empty trimmed threadId binding. */
+export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE =
+  'Host task.create process-local store requires a non-empty threadId for process-local binding.';
+
 /**
  * Residual 503: compare process-local identity with start-builder trim semantics.
  * Empty/whitespace query never matches (fail-closed isolation).
@@ -90,6 +99,19 @@ export function matchesHostTaskCreateConversation(
 ): boolean {
   const stored = resolveTaskCreateConversationId(storedConversationId);
   const query = resolveTaskCreateConversationId(queryConversationId);
+  return Boolean(stored && query && stored === query);
+}
+
+/**
+ * Residual 511: compare process-local threadId with start-builder trim semantics.
+ * Empty/whitespace query never matches (fail-closed session isolation).
+ */
+export function matchesHostTaskCreateThread(
+  storedThreadId: string | null | undefined,
+  queryThreadId: string | null | undefined,
+): boolean {
+  const stored = resolveTaskCreateThreadId(storedThreadId);
+  const query = resolveTaskCreateThreadId(queryThreadId);
   return Boolean(stored && query && stored === query);
 }
 
@@ -135,21 +157,28 @@ export function createHostTaskCreateRunStore(
       if (!runId) {
         throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE);
       }
-      const normalized =
-        result.run.runId === runId &&
-        result.events.every((event) => event.runId === runId) &&
-        result.interrupts.every((interrupt) => interrupt.runId === runId)
-          ? result
-          : {
-              ...result,
-              run: { ...result.run, runId },
-              events: result.events.map((event) =>
-                event.runId === runId ? event : { ...event, runId },
-              ),
-              interrupts: result.interrupts.map((interrupt) =>
-                interrupt.runId === runId ? interrupt : { ...interrupt, runId },
-              ),
-            };
+      // Residual 511: process-local threadId binding is trimmed non-empty (start 485 symmetry).
+      const threadId = resolveTaskCreateThreadId(result.run.threadId);
+      if (!threadId) {
+        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE);
+      }
+      const needsNormalize =
+        result.run.runId !== runId ||
+        result.run.threadId !== threadId ||
+        result.events.some((event) => event.runId !== runId) ||
+        result.interrupts.some((interrupt) => interrupt.runId !== runId);
+      const normalized = needsNormalize
+        ? {
+            ...result,
+            run: { ...result.run, runId, threadId },
+            events: result.events.map((event) =>
+              event.runId === runId ? event : { ...event, runId },
+            ),
+            interrupts: result.interrupts.map((interrupt) =>
+              interrupt.runId === runId ? interrupt : { ...interrupt, runId },
+            ),
+          }
+        : result;
       // Residual 451/503: process-local runId identity binding (no foreign takeover;
       // compare trimmed non-empty identities).
       const existing = byRunId.get(runId);
@@ -159,7 +188,7 @@ export function createHostTaskCreateRunStore(
       ) {
         throw new Error(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE);
       }
-      // Residual 457: conversation/thread binding (no session rebinding via runId reuse).
+      // Residual 457/509/511: conversation/thread binding (no session rebinding via runId reuse).
       if (existing) {
         // Residual 509: conversation binding compares trimmed session ids.
         const existingConversation =
@@ -169,7 +198,8 @@ export function createHostTaskCreateRunStore(
         if (existingConversation !== nextConversation) {
           throw new Error(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE);
         }
-        if (existing.run.threadId !== normalized.run.threadId) {
+        // Residual 511: thread binding compares trimmed thread ids.
+        if (!matchesHostTaskCreateThread(existing.run.threadId, normalized.run.threadId)) {
           throw new Error(HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE);
         }
       }

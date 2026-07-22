@@ -5,8 +5,10 @@ import {
   getDefaultHostTaskCreateRunStore,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE,
+  HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE,
   matchesHostTaskCreateIdentity,
   matchesHostTaskCreateConversation,
+  matchesHostTaskCreateThread,
 } from '../host-task-create-run-store';
 import { buildHostTaskCreateStartResult } from '../host-task-create-start';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
@@ -481,5 +483,64 @@ describe('host-task-create-run-store conversationId trim match (residual 509)', 
     expect(() => store.upsert(other as typeof owned)).toThrow(
       /already bound to another conversation/,
     );
+  });
+});
+
+describe('host-task-create-run-store threadId trim match (residual 511)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('matchesHostTaskCreateThread trims and rejects empty', () => {
+    expect(matchesHostTaskCreateThread('thread-1', '  thread-1  ')).toBe(true);
+    expect(matchesHostTaskCreateThread('  thread-1  ', 'thread-1')).toBe(true);
+    expect(matchesHostTaskCreateThread('thread-1', 'thread-2')).toBe(false);
+    expect(matchesHostTaskCreateThread('thread-1', '   ')).toBe(false);
+    expect(matchesHostTaskCreateThread('thread-1', '')).toBe(false);
+    expect(matchesHostTaskCreateThread(null, 'thread-1')).toBe(false);
+  });
+
+  it('upsert normalizes spaced threadId and keeps thread binding', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: { ...request('run-thread-trim', 'Owned'), threadId: 'thread-trim' },
+      identityId: 'owner-1',
+      nowMs: 10,
+    });
+    store.upsert(started);
+
+    const spacedSame = {
+      ...started,
+      run: { ...started.run, threadId: '  thread-trim  ', updatedAt: 20 },
+    };
+    expect(() => store.upsert(spacedSame as typeof started)).not.toThrow();
+    expect(store.get('run-thread-trim', 'owner-1')?.run.threadId).toBe('thread-trim');
+    expect(store.get('run-thread-trim', 'owner-1')?.run.updatedAt).toBe(20);
+
+    const other = {
+      ...started,
+      run: { ...started.run, threadId: 'thread-other', updatedAt: 30 },
+    };
+    expect(() => store.upsert(other as typeof started)).toThrow(
+      /already bound to another thread/,
+    );
+  });
+
+  it('upsert rejects blank threadId fail-closed', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-blank-thread', 'Blank thread'),
+      identityId: 'owner-1',
+      nowMs: 1,
+    });
+    const blank = {
+      ...started,
+      run: { ...started.run, threadId: '   ' },
+    };
+    expect(() => store.upsert(blank as typeof started)).toThrow(
+      HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE,
+    );
+    expect(store.size()).toBe(0);
+    expect(HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE).toMatch(/threadId/);
   });
 });

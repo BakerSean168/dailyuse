@@ -347,6 +347,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',
+        // Residual 511: process-local store threadId trim binding (start 485 symmetry).
+        'matchesHostTaskCreateThread',
+        'HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE',
+        'Residual 511',
       ],
       status: 'implemented_unit',
     },
