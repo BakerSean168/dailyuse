@@ -23,7 +23,7 @@ updated: 2026-07-22T00:00:00
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
 
-### 当前进展（2026-07-22，与 vault plan residual 305–329 对齐）
+### 当前进展（2026-07-22，与 vault plan residual 305–387 对齐）
 
 - **阶段 0 部分已落地（契约冻结）**：
   - `packages/contracts` agent-host：`ITurnEnginePort` / `ICapabilityResolverPort` /
@@ -39,7 +39,8 @@ updated: 2026-07-22T00:00:00
   - 生产 `ProposalKernel` 实现 `IProposalKernelPort`；revision 乐观并发 + `requestId` 幂等；
     `executeApproved` 仅 lifecycle receipt，不执行业务 mutation。
   - `module.proposalKernel` 在 direct/remote 均有值；`tool.proposal` providerId=`proposal-kernel`。
-  - 统一助手 UI / Proposal 工作台产品面仍未落地。
+  - Host Proposal UI 工作台已部分落地（vault residual 355–371 approve/revise/workbench；
+    仍非完整 Artifact 编辑器/全业务面切换）。
 - **阶段 2 部分起步（residual 322/324）**：
   - 生产 `CapabilityResolver` 实现 `ICapabilityResolverPort`；fail-closed `resolveRunPlan`；
     不静默 expand `engine.*`。
@@ -64,14 +65,15 @@ updated: 2026-07-22T00:00:00
   - residual 347/353：`AIClientPort.dispatchAssistant` + Web HTTP/SSE + Desktop IPC stream
     （`ASSISTANT_DISPATCH_*`）。
   - residual 349：Vue `useAssistantDispatch` 薄入口。
-  - residual 351：open chat 默认发送经 `dispatchAssistant`（live delta + model selection）；
-    完整右侧工作台/Proposal UI 仍未切换。
-  - 统一助手 UI 工作台（右侧结构化面板）仍未完整切换到 facade。
+  - residual 351：open chat 默认发送经 `dispatchAssistant`（live delta + model selection）。
+  - residual 355–387：Host 右侧工作台部分落地——Proposal 面板、execution receipt 富回放、
+    时间线 Artifact 卡、focus/scroll；仍缺 Task 共用 Artifact、真实 Pi spawn、跨端 multi-engine E2E。
 - **阶段 6 部分起步（residual 337）**：
   - 生产 `CustomModelGateway` 实现 `IModelGatewayPort`；结果只回 `modelBindingId`，凭据仅请求作用域。
-- **仍未实现（不得勾完成定义）**：
-  - 真实 Pi SDK/CLI 进程 adapter；Proposal Kernel 产品面/UI；
-    统一助手 UI 工作台；完整 multi-engine runtime E2E；CLI/Pi product path。
+- **仍未实现 / 仍仅部分（不得勾完成定义）**：
+  - 真实 Pi SDK/CLI 进程 adapter 与 product spawn 路径；
+  - Host UI 完整 Artifact 富编辑与 Task 共用工作台（Goal/Knowledge Host 路径已部分落地）；
+  - 完整 multi-engine runtime E2E 与跨端 Playwright/Electron。
 - 更完整的 vault/知识仓库边界与 §13.2 证据见
   [2026-07-16-obsidian-vault-repository-optimization.md](./2026-07-16-obsidian-vault-repository-optimization.md)。
 
@@ -790,7 +792,7 @@ packages/contracts/src/modules/ai/
 - 定义 AssistantCommand/Event、AgentProposal、ExecutionReceipt。 **（类型已冻结）**
 - 将 AgentAction 逐步收紧为 discriminated union。
 - 建立 Proposal revision、stale、precondition 和幂等规则。 **（ProposalKernel residual 320 部分：lifecycle + 幂等；precondition 产品规则仍待）**
-- 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。 **（未做）**
+- 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。 **（部分：residual 355–387 Host Proposal/receipt/timeline；Task 共用与富编辑未齐）**
 - 保留现有 LangGraph 和 Provider 实现。
 
 ### 阶段 2：Host Tool/Context/Capability
@@ -886,7 +888,7 @@ packages/contracts/src/modules/ai/
 
 ## 20. 完成定义
 
-- [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343/351 生产 AssistantFacade + open chat 默认 dispatch；统一助手右侧工作台仍未完整切换）**
+- [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343/351 AssistantFacade + open chat dispatch；residual 355–387 Host Proposal/receipt/timeline 工作台部分落地；仍非全业务 Artifact 面）**
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。
 - [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
 - [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；UI 泄漏审计未齐）**

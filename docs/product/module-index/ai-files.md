@@ -36,6 +36,11 @@ updated: 2026-07-22T00:00:00
 | [`packages/app-vue/src/modules/ai/components/AIFooterComposer.vue`](../../../packages/app-vue/src/modules/ai/components/AIFooterComposer.vue) | 消息输入组件 |
 | [`packages/app-vue/src/modules/ai/components/AIGoalWorkflowPanel.vue`](../../../packages/app-vue/src/modules/ai/components/AIGoalWorkflowPanel.vue) | Goal workflow UI 面板 |
 | [`packages/app-vue/src/modules/ai/components/AIGoalDraftEditor.vue`](../../../packages/app-vue/src/modules/ai/components/AIGoalDraftEditor.vue) | Goal draft 编辑器 |
+| [`packages/app-vue/src/modules/ai/components/AIHostProposalPanel.vue`](../../../packages/app-vue/src/modules/ai/components/AIHostProposalPanel.vue) | Host Proposal 审批工作台（residual 357+） |
+| [`packages/app-vue/src/modules/ai/components/AIHostExecutionReceiptPanel.vue`](../../../packages/app-vue/src/modules/ai/components/AIHostExecutionReceiptPanel.vue) | Host 执行报告富回放（residual 379/385） |
+| [`packages/app-vue/src/modules/ai/components/AIHostTimelineArtifactStrip.vue`](../../../packages/app-vue/src/modules/ai/components/AIHostTimelineArtifactStrip.vue) | Conversation 时间线 Host Artifact 卡（residual 383/387） |
+| [`packages/app-vue/src/modules/ai/components/AIContextPanel.vue`](../../../packages/app-vue/src/modules/ai/components/AIContextPanel.vue) | 右侧上下文/Host 工作台容器 |
+| [`packages/app-vue/src/modules/ai/composables/hostProposalLifecycle.ts`](../../../packages/app-vue/src/modules/ai/composables/hostProposalLifecycle.ts) | Host proposal/receipt/timeline/focus 生命周期辅助 |
 
 ## 移动端入口
 

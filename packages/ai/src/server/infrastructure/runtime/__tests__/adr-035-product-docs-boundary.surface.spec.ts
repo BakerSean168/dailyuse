@@ -3,7 +3,8 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 327: product AI docs stay aligned with ADR-034/035 runtime boundaries.
+ * Residual 327/389: product AI docs stay aligned with ADR-034/035 runtime boundaries.
+ * Residual 389: Host UI workbench partial (355–387) must be documented honestly.
  * Do not reintroduce "writes database Repository" or "Host adapters unimplemented".
  */
 describe('ADR-035 / ADR-034 product AI docs boundary', () => {
@@ -61,6 +62,12 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiProduct).toContain('CustomModelGateway');
     expect(aiProduct).toContain('fail-closed');
     expect(aiProduct).toContain('ADR-035 Host 当前边界');
+    expect(aiProduct).toContain('314–387');
+    expect(aiProduct).toContain('Host Proposal 面板');
+    expect(aiProduct).toContain('execution receipt');
+    expect(aiProduct).toContain('时间线 Artifact');
+    expect(aiProduct).toContain('residual 379–387');
+    expect(aiProduct).not.toMatch(/统一助手 UI 工作台[、,].*仍未完成/);
   });
 
   it('product host boundary claims match production classes', () => {
@@ -101,4 +108,21 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiFilesIndex).toContain('ADR-035 Agent Host 生产适配');
   });
 
+
+  it('documents Host UI workbench files and rejects stale "workbench not landed" claim (residual 389)', () => {
+    expect(aiFilesIndex).toContain('AIHostProposalPanel.vue');
+    expect(aiFilesIndex).toContain('AIHostExecutionReceiptPanel.vue');
+    expect(aiFilesIndex).toContain('AIHostTimelineArtifactStrip.vue');
+    expect(aiFilesIndex).toContain('hostProposalLifecycle.ts');
+    expect(aiFilesIndex).toContain('AIContextPanel.vue');
+
+    const hostPlan = readFileSync(
+      resolve(repoRoot, 'docs/plan/active/2026-07-17-unified-assistant-agent-host.md'),
+      'utf8',
+    );
+    expect(hostPlan).toContain('residual 355–387');
+    expect(hostPlan).toContain('Host Proposal UI 工作台已部分落地');
+    expect(hostPlan).not.toContain('统一助手 UI / Proposal 工作台产品面仍未落地');
+    expect(hostPlan).toMatch(/右侧工作台统一承载 Goal\/Knowledge Artifact 与审批。 \*\*（部分/);
+  });
 });

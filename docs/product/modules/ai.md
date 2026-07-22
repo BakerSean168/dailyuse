@@ -37,9 +37,11 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 `ProposalKernel`（提案生命周期）、`CapabilityResolver`（fail-closed start gate）、
 `CustomModelGateway`（OpenAI-compatible Model Gateway，凭据仅请求作用域）、
 `AssistantFacade`（统一 Host dispatch：message/approve/reject/cancel）。
-统一助手 UI 工作台、真实 Pi SDK/CLI 进程 adapter、完整 multi-engine runtime E2E 仍未完成。
+Host UI 工作台已部分落地（vault residual 355–387：Host Proposal 面板、approve/revise、
+execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK/CLI 进程 adapter、
+完整 multi-engine runtime E2E 与跨端 Playwright/Electron 仍未完成。
 
-### 2.1 ADR-035 Host 当前边界（与 vault residual 314–353 对齐）
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–387 对齐）
 
 - 生产允许：`DirectTurnEngine`、`ReadonlyAnalysisTurnEngine`、`LangGraphWorkflowAdapter`、
   `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`、`AssistantFacade`。
@@ -54,6 +56,12 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - residual 349：Vue `useAssistantDispatch` 薄入口（message/approve/reject/cancel）；body 永不带 `identityId`。
 - residual 351：open chat 默认发送路径经 `dispatchAssistant`/`AssistantFacade`（live `message.delta` +
   model selection）；不再走 `AIChatService.streamMessage` 旁路。
+- residual 355–371：Host Proposal 生命周期 UI（approve/reject/revise）+ 右侧工作台 auto-open；
+  knowledge/goal Host patch 映射到 AgentRun executor 的 approvedActions。
+- residual 377：`executionProfileId: pi_readonly` 经 controller/HTTP/IPC 全路径转发；body 永不带
+  `identityId`；未知 profile fail-closed。
+- residual 379–387：Host execution receipt 工作台（计数/actionLines/path/preview/entity deep-link）+
+  Conversation 时间线 Artifact 卡 + 点击 focus/scroll 到对应 proposal/receipt 行。
 - direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
   不把 API key 写入结果/事件。
 - `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；
@@ -100,14 +108,16 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - 知识索引/webhook/幂等/删除后向量清理仍需持续 harden。
 - ADR-035 contracts 与 Host adapters（DirectTurn / ReadonlyAnalysisTurn / LangGraph workflow /
   ProposalKernel / CapabilityResolver / CustomModelGateway / AssistantFacade）已部分落地；
-  统一助手 UI 工作台、真实 Pi SDK/CLI 进程 adapter 与完整 multi-engine runtime E2E 仍未完成。
+  Host UI 工作台已部分落地（Proposal/receipt/timeline/focus，residual 355–387）；真实 Pi SDK/CLI
+  进程 adapter 与完整 multi-engine runtime E2E 仍未完成。
 - 当前 `AgentAction` 的开放 payload、`supportsXxx` 布尔能力和 framework-oriented node event 仍需按新方案收敛。
 - 当前缺少 Pi Turn Engine、自定义 Model Gateway 收口和 Desktop local CLI adapter。
 
 ## 7. 优化机会
 
-- 在已落地的 Proposal Kernel / Capability Resolver 之上补齐 AssistantFacade 与统一助手 UI 工作台。
-- 将右侧业务面板升级为 Goal/Knowledge/Task 共用的 Artifact 与审批工作台。
+- 在已落地的 AssistantFacade + Host Proposal/receipt 工作台之上补齐 Task Artifact 共用面与
+  完整 Artifact 富编辑/回放。
+- 将右侧业务面板继续收敛为 Goal/Knowledge/Task 共用的 Artifact 与审批工作台（当前 Goal/Knowledge Host 路径已部分接线）。
 - 梳理 AI 模块与业务模块的写入边界，建立更清晰的“AI 建议 → 用户确认 → 业务写入”链路。
 - 为知识索引提供更好的管理和维护能力。
 - 考虑 AI 模块的缓存和成本控制策略。

@@ -750,3 +750,70 @@ describe('resolveHostWorkbenchFocusFromTimeline (residual 387)', () => {
   });
 });
 
+describe('Host workbench composition journey (residual 389)', () => {
+  it('chains proposal → timeline → focus for waiting_approval Host rows', () => {
+    const proposals = buildPendingHostProposalItems({
+      goalAgentRun: goalWaitingRun('waiting_approval'),
+      noteAgentRun: noteWaitingRun('waiting_approval'),
+    });
+    expect(proposals).toHaveLength(2);
+    const cards = buildHostTimelineArtifactItems({ proposals });
+    expect(cards).toHaveLength(2);
+    expect(cards.map((card) => card.surface)).toEqual(['proposal', 'proposal']);
+    expect(resolveHostWorkbenchFocusFromTimeline(cards[0])).toEqual({
+      proposalId: proposals[0]!.proposalId,
+      surface: 'proposal',
+    });
+    expect(resolveHostWorkbenchFocusFromTimeline(cards[1])).toEqual({
+      proposalId: proposals[1]!.proposalId,
+      surface: 'proposal',
+    });
+  });
+
+  it('chains receipt rich replay → timeline → focus after terminal Host execution', () => {
+    const completed = goalWaitingRun('completed');
+    completed.state.pendingActions = [];
+    completed.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        entityId: 'goal-99',
+        message: 'created',
+      },
+    ];
+    const noteDone = noteWaitingRun('completed');
+    noteDone.state.pendingActions = [];
+    noteDone.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        entityId: 'note-99',
+        message: 'created',
+      },
+    ];
+    const receipts = buildHostExecutionReceiptItems({
+      goalAgentRun: completed,
+      noteAgentRun: noteDone,
+    });
+    expect(receipts).toHaveLength(2);
+    expect(receipts[0]).toMatchObject({
+      primaryEntityId: 'goal-99',
+      description: 'Initial goal description',
+    });
+    expect(receipts[1]).toMatchObject({
+      primaryEntityId: 'note-99',
+      targetPath: 'notes/ai',
+      contentPreview: '# body',
+    });
+    const cards = buildHostTimelineArtifactItems({ receipts });
+    expect(cards).toHaveLength(2);
+    expect(cards.every((card) => card.surface === 'receipt')).toBe(true);
+    expect(resolveHostWorkbenchFocusFromTimeline(cards[0])?.proposalId).toBe(
+      receipts[0]!.proposalId,
+    );
+    expect(resolveHostWorkbenchFocusFromTimeline(cards[1])?.proposalId).toBe(
+      receipts[1]!.proposalId,
+    );
+  });
+});
+
