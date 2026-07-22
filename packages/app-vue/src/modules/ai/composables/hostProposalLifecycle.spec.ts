@@ -1655,6 +1655,100 @@ describe('Host workbench focus from session restore (residual 443)', () => {
       }),
     ).toBeNull();
   });
+
+  it('dual-mirrors stale exclusive primary-task before session focus (residual 593)', () => {
+    const completed = {
+      run: {
+        runId: 'pt-593',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create' as const,
+        status: 'completed' as const,
+        createdAt: 1,
+        updatedAt: 2,
+      },
+      state: {
+        pendingActions: [],
+        approvedActions: [],
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'ok',
+            entityId: 'tpl-593',
+            data: { title: 'Primary' },
+          },
+        ],
+        artifacts: [{ kind: 'task_draft', id: 'td', data: { goalId: 'g-1' }, updatedAt: 1 }],
+        interrupts: [],
+      },
+    } as import('@dailyuse/contracts/ai').AgentRunResult;
+    const staleWaiting = {
+      ...completed,
+      run: { ...completed.run, status: 'waiting_approval' as const, updatedAt: 1 },
+      state: {
+        ...completed.state,
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            payload: { title: 'Primary', goalId: 'g-1' },
+            rationale: 'task',
+          },
+        ],
+        executedActions: [],
+      },
+    } as import('@dailyuse/contracts/ai').AgentRunResult;
+
+    // Stale dual-mirror waiting while goal session already completed → receipt, not proposal.
+    const focus = resolveHostWorkbenchFocusFromSessionRuns({
+      taskAgentRun: staleWaiting,
+      goalAgentRun: completed,
+      noteAgentRun: null,
+    });
+    expect(focus).toEqual({
+      proposalId: 'agent-run:pt-593:task.create',
+      surface: 'receipt',
+    });
+
+    // Process-local task.create still wins over dual-mirrorable goal (residual 591).
+    const local = {
+      run: {
+        runId: 'task-593-local',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'task.create' as const,
+        status: 'waiting_approval' as const,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            payload: { title: 'Local' },
+            rationale: 'task',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [],
+        interrupts: [],
+      },
+    } as import('@dailyuse/contracts/ai').AgentRunResult;
+    const localFocus = resolveHostWorkbenchFocusFromSessionRuns({
+      taskAgentRun: local,
+      goalAgentRun: completed,
+      noteAgentRun: null,
+    });
+    expect(localFocus).toEqual({
+      proposalId: 'agent-run:task-593-local:task.create',
+      surface: 'proposal',
+    });
+  });
 });
 
 describe('resolveLinkedGoalIdFromTaskAgentRun (residual 445)', () => {

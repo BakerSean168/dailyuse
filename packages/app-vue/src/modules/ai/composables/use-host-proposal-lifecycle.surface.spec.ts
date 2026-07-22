@@ -1200,6 +1200,34 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('session restore dual-mirrors exclusive task before focus (residual 593)', () => {
+    expect(helper).toContain('Residual 593');
+    const focusIdx = helper.indexOf('export function resolveHostWorkbenchFocusFromSessionRuns');
+    expect(focusIdx).toBeGreaterThan(-1);
+    const focusSlice = helper.slice(focusIdx, focusIdx + 1800);
+    expect(focusSlice).toContain('nextDualMirroredTaskAgentRun');
+    expect(focusSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
+    // dual-mirror before exclusive promote
+    const dualIdx = focusSlice.indexOf('nextDualMirroredTaskAgentRun');
+    const exclusiveIdx = focusSlice.indexOf('resolveLiveHostWorkbenchAgentRuns');
+    expect(dualIdx).toBeGreaterThan(-1);
+    expect(exclusiveIdx).toBeGreaterThan(dualIdx);
+    const chatView = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatView).toContain('Residual 593');
+    const restoreIdx = chatView.indexOf('async function restoreWorkflowState');
+    expect(restoreIdx).toBeGreaterThan(-1);
+    const restoreSlice = chatView.slice(restoreIdx, restoreIdx + 1600);
+    expect(restoreSlice).toContain('nextDualMirroredTaskAgentRun');
+    expect(restoreSlice).toContain('await refreshRestoredAgentRun');
+    // dual-mirror re-apply after refresh
+    const refreshIdx = restoreSlice.indexOf('await refreshRestoredAgentRun');
+    const dualRestoreIdx = restoreSlice.indexOf('nextDualMirroredTaskAgentRun');
+    expect(refreshIdx).toBeGreaterThan(-1);
+    expect(dualRestoreIdx).toBeGreaterThan(refreshIdx);
+    expect(helper).not.toContain('executeApproved');
+    expect(chatView).not.toContain('executeApproved');
+  });
+
 
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');

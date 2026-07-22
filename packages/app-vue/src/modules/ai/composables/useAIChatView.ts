@@ -305,6 +305,17 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     // Residual 445: re-align linked goal before/after process-local refresh.
     taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
     await refreshRestoredAgentRun(conversationId);
+    // Residual 593: persistence assigns goal then task — task assignment overwrites
+    // the goalAgentRun dual-mirror watch with a possibly stale exclusive snapshot.
+    // Re-apply nextDualMirroredTaskAgentRun after storage + optional server refresh
+    // (process-local task.create preserved; primary-task goal settle wins dual-mirror).
+    const dualMirroredTask = nextDualMirroredTaskAgentRun({
+      goalAgentRun: goalWorkflow.goalAgentRun.value,
+      taskAgentRun: taskAgentRun.value,
+    });
+    if (dualMirroredTask !== taskAgentRun.value) {
+      taskAgentRun.value = dualMirroredTask;
+    }
     taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
   }
 

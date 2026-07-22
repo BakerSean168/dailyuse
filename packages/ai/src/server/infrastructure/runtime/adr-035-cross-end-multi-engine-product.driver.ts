@@ -438,6 +438,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['nextDualMirroredTaskAgentRun'];
     case 'Residual 591':
       return ['Residual 591'];
+    case 'Residual 593':
+      return ['Residual 593'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

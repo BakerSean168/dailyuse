@@ -1626,19 +1626,35 @@ export function resolveHostWorkbenchFocusFromAgentRun(
 }
 
 /**
- * Residual 443: pick Host workbench focus from live session AgentRun snapshots
+ * Residual 443/593: pick Host workbench focus from live session AgentRun snapshots
  * after conversation restore (or start). Prefer exclusive task.create lane, then
  * goal, then knowledge. Returns null when no Host proposal/receipt should reopen.
+ *
+ * Residual 593: dual-mirror primary-task goal into exclusive task lane first
+ * (process-local task.create still wins via nextDualMirroredTaskAgentRun), then
+ * exclusive-promote via resolveLiveHostWorkbenchAgentRuns so focus kind/surface
+ * matches residual 423/585 live builders — not a stale dual-mirror waiting_approval.
  */
 export function resolveHostWorkbenchFocusFromSessionRuns(input: {
   taskAgentRun?: AgentRunResult | null;
   goalAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;
 }): HostWorkbenchFocusTarget | null {
+  // Residual 593: storage restore can leave stale exclusive dual-mirror; re-mirror
+  // before exclusive promote so focus surface follows settled goal session.
+  const dualMirroredTask = nextDualMirroredTaskAgentRun({
+    goalAgentRun: input.goalAgentRun,
+    taskAgentRun: input.taskAgentRun,
+  });
+  const exclusive = resolveLiveHostWorkbenchAgentRuns({
+    taskAgentRun: dualMirroredTask,
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+  });
   return (
-    resolveHostWorkbenchFocusFromAgentRun(input.taskAgentRun) ??
-    resolveHostWorkbenchFocusFromAgentRun(input.goalAgentRun) ??
-    resolveHostWorkbenchFocusFromAgentRun(input.noteAgentRun)
+    resolveHostWorkbenchFocusFromAgentRun(exclusive.taskAgentRun) ??
+    resolveHostWorkbenchFocusFromAgentRun(exclusive.goalAgentRun) ??
+    resolveHostWorkbenchFocusFromAgentRun(exclusive.noteAgentRun)
   );
 }
 
