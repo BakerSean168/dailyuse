@@ -2055,6 +2055,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 12 个（去掉已退役 `editor`），与 `server-feature-shape-audit` `AUDITED_PACKAGES` 一致；ADR-032
 > 示例改为 repository 模块。补 legacy-editor surface。§13.2 仍部分。
 > 验证：legacy-editor surface + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百八十五轮）：§13.2 核心证据套件复跑（不改 checkbox）——
+> `safe-markdown`（15）、knowledge connection/write-request ownership、legacy-editor（13）、
+> three-login matrix（14）、adr-035 journey（13）共 66 通过；`daily-use:governance-check` 通过。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
+> 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2140,7 +2146,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留一百八十一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留一百八十五轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除，仅保留
 > schedule-task runtime bootstrap（残留 180 surface 锁定）、notification template 系统全局、account/auth identity 主键路径。
 > 不因此把三入口/Agent/E2E 未完成项打勾。
@@ -2293,6 +2299,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百八十二轮：root package.json drop deleted editor Nx project from scripts。
   残留一百八十三轮：CI coverage.yml drop deleted editor Nx project。
   残留一百八十四轮：ADR-031/032 + surface lock exclude retired editor package。
+  残留一百八十五轮：§13.2 core evidence suite re-run (66 tests, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
