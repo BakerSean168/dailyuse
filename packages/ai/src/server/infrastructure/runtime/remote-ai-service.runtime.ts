@@ -65,6 +65,7 @@ import {
   DirectProviderGoalPlanningAdapter,
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
+import { DirectTurnEngine } from '../turn-engine';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
 
@@ -113,21 +114,17 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     updateConversation: new UpdateConversationUseCase(conversationRepository),
   };
 
-  // --- Chat bundle (always present — falls back to direct) ---
+  // --- Chat bundle via DirectTurnEngine (residual 316) ---
+
+  const turnEngine = new DirectTurnEngine(
+    conversationRepository,
+    providerConfigRepository,
+    chatExecutionPort,
+  );
 
   const chatServices: AIChatServices = {
-    send: new SendAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
-    stream: new StreamAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
+    send: new SendAIMessageUseCase(turnEngine, dependencies.executionLogPort),
+    stream: new StreamAIMessageUseCase(turnEngine, dependencies.executionLogPort),
   };
 
   // --- Goal generation bundle (always present — falls back to direct) ---
@@ -292,5 +289,5 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     ),
   };
 
-  return { services, capabilities, runtimeContributions: [] };
+  return { services, capabilities, runtimeContributions: [], turnEngine };
 }

@@ -93,6 +93,8 @@ export interface AIRuntimeOutput {
   readonly services: AIModuleServices;
   readonly capabilities: AICapabilities;
   readonly runtimeContributions: readonly AIModuleRuntimeContribution[];
+  /** First production Turn Engine (DirectTurnEngine); also powers open chat use cases. */
+  readonly turnEngine: import('@dailyuse/contracts/ai').ITurnEnginePort;
 }
 
 export function buildCapabilityUnavailableMessage(

@@ -36,10 +36,10 @@ updated: 2026-07-22T00:00:00
 - **阶段 4 部分起步（residual 314）**：
   - 生产 `DirectTurnEngine`（`engine.direct_turn`）已实现 `ITurnEnginePort`，由 `createAIModule().turnEngine` 暴露。
   - 开放式 chat/analysis only；ownership fail-closed + abort；不自动 emit `engine.*` capability offers。
-  - 现有 `sendMessage`/`streamMessage` 路径仍经 chat use cases；统一助手 UI 未切换。
+  - `sendMessage`/`streamMessage` 已经同一 `DirectTurnEngine`（IOpenChatTurnPort）；统一助手 UI 未切换。
 - **仍未实现（不得勾完成定义）**：
   - 第二生产 Turn Engine（langgraph/pi/cli）；LangGraphWorkflowAdapter；Proposal Kernel 产品面；统一助手 UI；
-    完整 multi-engine runtime E2E；CLI/Pi product path；开放式 Chat 全面经 TurnEngine。
+    完整 multi-engine runtime E2E；CLI/Pi product path；统一助手 UI。
 - 更完整的 vault/知识仓库边界与 §13.2 证据见
   [2026-07-16-obsidian-vault-repository-optimization.md](./2026-07-16-obsidian-vault-repository-optimization.md)。
 
@@ -780,7 +780,7 @@ packages/contracts/src/modules/ai/
 
 - 使用现有直连 Provider/ChatExecution 实现 DirectTurnEngine。 **（部分：生产 class + module.turnEngine；residual 314）**
 - 验证流式事件、Abort、Context、Tool 和结构化输出契约。 **（部分：abort/ownership/complete 单测；stream/tool schema 未齐）**
-- 新的开放式 Chat 经 TurnEngine，不影响业务 Workflow。 **（未完成：chat use cases 仍直连 IAIChatExecutionPort）**
+- 新的开放式 Chat 经 TurnEngine，不影响业务 Workflow。 **（部分：send/stream 经 DirectTurnEngine/IOpenChatTurnPort；统一助手 UI 未切换）**
 
 ### 阶段 5：Pi 只读 Spike
 

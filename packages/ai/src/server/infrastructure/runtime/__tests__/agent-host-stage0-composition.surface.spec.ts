@@ -1,8 +1,8 @@
 /**
- * Residual 311/314: ADR-035 Agent Host composition.
+ * Residual 311/314/316: ADR-035 Agent Host composition.
  * Runtime capability offers never auto-emit engine.* labels.
  * Residual 314 wires the first production DirectTurnEngine on the module instance
- * without registering Workflow/Capability/Proposal ports or silent engine offers.
+ * and residual 316 routes open chat send/stream through that engine (no chatExecution bypass).
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -42,8 +42,7 @@ describe('agent-host stage-0 composition surface', () => {
   it('ai.module wires DirectTurnEngine only (no Workflow/Capability/Proposal ports)', () => {
     const moduleSource = readFileSync(resolve(__dirname, '../../ai.module.ts'), 'utf8');
     expect(moduleSource).toContain('createDirectProviderAIRuntime');
-    expect(moduleSource).toContain('DirectTurnEngine');
-    expect(moduleSource).toContain('turnEngine');
+    expect(moduleSource).toContain('turnEngine: runtime.turnEngine');
     expect(moduleSource).toContain('ITurnEnginePort');
     expect(moduleSource).not.toContain('IWorkflowAdapterPort');
     expect(moduleSource).not.toContain('ICapabilityResolverPort');
@@ -52,4 +51,19 @@ describe('agent-host stage-0 composition surface', () => {
     expect(moduleSource).not.toContain('implements ICapabilityResolverPort');
     expect(moduleSource).not.toContain('implements IProposalKernelPort');
   });
+
+  it('open chat send/stream use cases route through DirectTurnEngine in both runtimes', () => {
+    const direct = readFileSync(resolve(__dirname, '../direct-provider-ai.runtime.ts'), 'utf8');
+    const remote = readFileSync(resolve(__dirname, '../remote-ai-service.runtime.ts'), 'utf8');
+    for (const source of [direct, remote]) {
+      expect(source).toContain('new DirectTurnEngine(');
+      expect(source).toContain('new SendAIMessageUseCase(turnEngine');
+      expect(source).toContain('new StreamAIMessageUseCase(turnEngine');
+      // No parallel bypass: chat use cases no longer take raw IAIChatExecutionPort ctor arity.
+      expect(source).not.toMatch(
+        /new SendAIMessageUseCase\(\s*conversationRepository[\s\S]*?chatExecutionPort/,
+      );
+    }
+  });
+
 });

@@ -64,6 +64,12 @@ export type {
   IAIChatExecutionPort,
 } from './chat-execution.port';
 export type {
+  IOpenChatTurnPort,
+  OpenChatTurnInput,
+  OpenChatTurnResult,
+} from './open-chat-turn.port';
+
+export type {
   GoalPlanningInput,
   GoalPlanningResult,
   IGoalPlanningPort,

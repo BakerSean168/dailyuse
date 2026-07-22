@@ -2987,6 +2987,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、第二生产 Turn Engine / multi-engine 接线 E2E、
 > GitHub App fixture E2E、全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百一十六轮）：开放式 Chat 经 DirectTurnEngine（仍不打勾 Agent）——
+> 新增 `IOpenChatTurnPort`；`SendAIMessageUseCase`/`StreamAIMessageUseCase` 改为依赖 open-chat
+> turn 而非 raw `IAIChatExecutionPort`；direct/remote runtime 均以同一 `DirectTurnEngine` 实例驱动
+> chat + `module.turnEngine`。execution log 记录 `engineId`。验证：chat/application + direct-turn +
+> composition + journey/harness + governance-check（GOV_EXIT:0）。§13.2 Agent 仍为 **部分实现**
+> （缺第二生产引擎 / 统一助手 UI）。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3379,6 +3386,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百零九轮：`adr-035-multi-engine-turn-conformance.harness.spec.ts` 双引擎同 suite isolation harness（14 通过；in-suite doubles only）。
   残留三百一十一轮：Agent Host stage-0 composition freeze（runtime offers 无 engine.*；module 未注册 Turn Engine ports；生产 port 实现仍为空）。
   残留三百一十四轮：生产 `DirectTurnEngine`（engine.direct_turn）实现 ITurnEnginePort 并挂到 `createAIModule().turnEngine`；仍无第二引擎/Workflow adapter。
+  残留三百一十六轮：Send/Stream open chat use cases 经同一 DirectTurnEngine（IOpenChatTurnPort）；不再直连 chatExecution ctor 旁路。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3389,6 +3397,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十三轮：align Agent Host active plan stage-0 evidence pointers (status 实施中 partial; no DoD checkbox flips)。
   残留三百一十四轮：production DirectTurnEngine (engine.direct_turn) implements ITurnEnginePort; module.turnEngine wired; multi-engine still partial。
   残留三百一十五轮：§13.2 focused evidence suite re-run (223 tests, residuals 250–314 locks, no checkbox changes)。
+  残留三百一十六轮：open chat send/stream routes through DirectTurnEngine (IOpenChatTurnPort); multi-engine still partial。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3477,6 +3486,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十三轮：Agent Host plan stage-0 证据指针对齐 + governance-check；仍不构成生产 multi-engine/统一助手完成证据。
   残留三百一十四轮：DirectTurnEngine 生产首引擎 + module.turnEngine + stage-0 仅允许该引擎；仍不构成 multi-engine/统一助手完成证据。
   残留三百一十五轮：tip 上 223 项 focused evidence suite（含 residual 250–314 dual/docs/disclosure/ADR-035/three-login/harness/composition/DirectTurnEngine 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百一十六轮：open chat 经 DirectTurnEngine + IOpenChatTurnPort + composition surface；仍不构成 multi-engine/统一助手完成证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

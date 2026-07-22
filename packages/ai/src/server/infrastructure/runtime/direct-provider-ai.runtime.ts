@@ -48,6 +48,7 @@ import {
   DirectProviderGoalPlanningAdapter,
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
+import { DirectTurnEngine } from '../turn-engine';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
 
@@ -91,20 +92,17 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     updateConversation: new UpdateConversationUseCase(conversationRepository),
   };
 
+  // Open chat routes through DirectTurnEngine (residual 316).
+  const turnEngine = new DirectTurnEngine(
+    conversationRepository,
+    providerConfigRepository,
+    chatExecutionPort,
+  );
+
   // Chat services
   const chatServices: AIChatServices = {
-    send: new SendAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
-    stream: new StreamAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
+    send: new SendAIMessageUseCase(turnEngine, dependencies.executionLogPort),
+    stream: new StreamAIMessageUseCase(turnEngine, dependencies.executionLogPort),
   };
 
   // Goal generation
@@ -156,5 +154,5 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     agentRuntimeService: createAgentRuntimeService(undefined),
   };
 
-  return { services, capabilities, runtimeContributions: [] };
+  return { services, capabilities, runtimeContributions: [], turnEngine };
 }

@@ -6,6 +6,7 @@ import type { IAIConversationRepository } from '../../../../domain/repositories/
 import type { IAIProviderConfigRepository } from '../../../../domain/repositories/i-ai-provider-config-repository';
 import { SendAIMessageUseCase } from '../send-ai-message.use-case';
 import { StreamAIMessageUseCase } from '../stream-ai-message.use-case';
+import { DirectTurnEngine } from '../../../../infrastructure/turn-engine';
 import type {
   AIExecutionLogInput,
   ChatExecutionCompleteInput,
@@ -118,12 +119,12 @@ describe('SendAIMessageUseCase', () => {
     const executionPort = new StubChatExecutionPort();
     const executionLogPort = new StubExecutionLogPort();
 
-    const useCase = new SendAIMessageUseCase(
+    const turnEngine = new DirectTurnEngine(
       conversationRepository as unknown as IAIConversationRepository,
       providerRepository as unknown as IAIProviderConfigRepository,
       executionPort,
-      executionLogPort,
     );
+    const useCase = new SendAIMessageUseCase(turnEngine, executionLogPort);
 
     const result = await useCase.execute(
       String(conversation.id),
@@ -136,27 +137,30 @@ describe('SendAIMessageUseCase', () => {
     const data = (result as any).data;
 
     expect(executionPort.complete).toHaveBeenCalledTimes(1);
-    expect(executionPort.complete).toHaveBeenCalledWith({
-      identityId,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a helpful assistant.',
-        },
-        {
-          role: 'user',
-          content: 'Hello from user',
-        },
-      ],
-      providerConfig: {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        apiKey: 'secret-key',
-        baseUrl: 'https://api.openai.com/v1',
-        temperature: 0.7,
-      },
-      requestId: expect.any(String),
-    });
+    expect(executionPort.complete).toHaveBeenCalledWith(
+      expect.objectContaining({
+        identityId,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant.',
+          },
+          {
+            role: 'user',
+            content: 'Hello from user',
+          },
+        ],
+        providerConfig: expect.objectContaining({
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          apiKey: 'secret-key',
+          baseUrl: 'https://api.openai.com/v1',
+          temperature: 0.7,
+        }),
+        requestId: expect.any(String),
+        signal: expect.any(AbortSignal),
+      }),
+    );
 
     expect(data.assistantMessage.content).toBe('Assistant reply from ai-service');
     expect(data.providerId).toBe('provider-1');
@@ -214,12 +218,12 @@ describe('StreamAIMessageUseCase', () => {
     );
     const executionLogPort = new StubExecutionLogPort();
 
-    const useCase = new StreamAIMessageUseCase(
+    const turnEngine = new DirectTurnEngine(
       conversationRepository as unknown as IAIConversationRepository,
       providerRepository as unknown as IAIProviderConfigRepository,
       executionPort,
-      executionLogPort,
     );
+    const useCase = new StreamAIMessageUseCase(turnEngine, executionLogPort);
 
     const streamAbortController = new AbortController();
     streamAbortController.abort();
