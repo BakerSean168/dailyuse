@@ -9,6 +9,10 @@ import { describe, expect, it } from 'vitest';
 describe('ADR-035 / ADR-034 product AI docs boundary', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../');
   const aiProduct = readFileSync(resolve(repoRoot, 'docs/product/modules/ai.md'), 'utf8');
+  const aiFilesIndex = readFileSync(
+    resolve(repoRoot, 'docs/product/module-index/ai-files.md'),
+    'utf8',
+  );
   const composition = readFileSync(
     resolve(__dirname, './agent-host-stage0-composition.surface.spec.ts'),
     'utf8',
@@ -58,4 +62,20 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(composition).toContain('capabilityResolver: runtime.capabilityResolver');
     expect(composition).toContain('residual 324');
   });
+  it('ai-files index points at server/* Host adapters and no legacy infrastructure-server paths', () => {
+    expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts');
+    expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts');
+    expect(aiFilesIndex).toContain(
+      'packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts',
+    );
+    expect(aiFilesIndex).toContain(
+      'packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts',
+    );
+    expect(aiFilesIndex).toContain('packages/ai/src/server/infrastructure/ai.module.ts');
+    expect(aiFilesIndex).not.toContain('infrastructure-server');
+    expect(aiFilesIndex).not.toContain('domain-server');
+    expect(aiFilesIndex).not.toContain('application-server');
+    expect(aiFilesIndex).toContain('ADR-035 Agent Host 生产适配');
+  });
+
 });
