@@ -19,6 +19,13 @@ import {
   isHostOpenChatCancelledEvent,
 } from './hostOpenChatCancel';
 import type { HostOpenChatTurnSnapshot } from './hostProposalLifecycle';
+import type { OpenChatHostTurnMemory } from './hostOpenChatTurnMemory';
+import {
+  forgetOpenChatHostTurnsForConversation,
+  rememberOpenChatHostTurnsForConversation,
+  restoreOpenChatHostTurnsForConversation,
+  upsertOpenChatHostTurnList,
+} from './hostOpenChatTurnMemory';
 
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
 type DeleteConversationId = Parameters<AIChatService['deleteConversation']>[0];
@@ -48,6 +55,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   const activeHostRunId = ref<string | null>(null);
   /** Residual 401: recent open-chat Host turns for timeline multi-engine badges. */
   const openChatHostTurns = ref<HostOpenChatTurnSnapshot[]>([]);
+  /** Residual 403: per-conversation session memory for open-chat Host turn badges. */
+  let openChatHostTurnMemory: OpenChatHostTurnMemory = {};
   /** Residual 369: Host open-chat engine profile (Facade routes DirectTurn vs ReadonlyAnalysis). */
   const executionProfileId = ref<'direct_turn' | 'pi_readonly'>('direct_turn');
 
@@ -55,12 +64,34 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     executionProfileId.value = profile === 'pi_readonly' ? 'pi_readonly' : 'direct_turn';
   }
 
-  /** Residual 401: keep a short ring of open-chat Host turns for timeline badges. */
+  /** Residual 401/403: keep a short ring of open-chat Host turns + remember by conversation. */
   function upsertOpenChatHostTurn(next: HostOpenChatTurnSnapshot) {
-    const runId = next.runId.trim();
-    if (!runId) return;
-    const rest = openChatHostTurns.value.filter((turn) => turn.runId !== runId);
-    openChatHostTurns.value = [{ ...next, runId }, ...rest].slice(0, 8);
+    openChatHostTurns.value = upsertOpenChatHostTurnList(openChatHostTurns.value, next);
+    if (chatConversationId.value) {
+      openChatHostTurnMemory = rememberOpenChatHostTurnsForConversation(
+        openChatHostTurnMemory,
+        chatConversationId.value,
+        openChatHostTurns.value,
+      );
+    }
+  }
+
+  /** Residual 403: stash current conversation turns before switching away. */
+  function stashOpenChatHostTurnsForCurrentConversation() {
+    if (!chatConversationId.value) return;
+    openChatHostTurnMemory = rememberOpenChatHostTurnsForConversation(
+      openChatHostTurnMemory,
+      chatConversationId.value,
+      openChatHostTurns.value,
+    );
+  }
+
+  /** Residual 403: restore remembered turns for a conversation (empty when unknown). */
+  function restoreOpenChatHostTurns(conversationId: string) {
+    openChatHostTurns.value = restoreOpenChatHostTurnsForConversation(
+      openChatHostTurnMemory,
+      conversationId,
+    );
   }
 
   const hasWorkflowMessages = computed(() =>
@@ -179,11 +210,14 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     getConversationModelKey: (id?: string) => string,
   ) {
     abortActiveStream();
+    // Residual 403: keep open-chat multi-engine badges across conversation switches.
+    stashOpenChatHostTurnsForCurrentConversation();
     chatConversationId.value = item.id;
     conversationTitle.value =
       item.name || t('aiAssistant.dialogs.chat.defaultConversationName');
     updateLastActiveConversation(String(item.id));
     syncModel(getConversationModelKey(String(item.id)));
+    restoreOpenChatHostTurns(String(item.id));
 
     try {
       const result = unwrap(await loadService.listMessages(item.id, { page: 1, pageSize: 80 }));
@@ -206,6 +240,11 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       unwrap(await loadService.deleteConversation(id as DeleteConversationId));
       onClearWorkflow(id);
       onClearModel(id);
+      // Residual 403: drop session open-chat turn memory for deleted conversation.
+      openChatHostTurnMemory = forgetOpenChatHostTurnsForConversation(
+        openChatHostTurnMemory,
+        id,
+      );
       if (chatConversationId.value === id) {
         startNewConversation();
       }
@@ -236,6 +275,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   }
 
   function resetChatSession(mode: string = 'chat', getDefaultName: (m: string) => string) {
+    // Residual 403: stash current conversation badges before leaving the thread.
+    stashOpenChatHostTurnsForCurrentConversation();
     chatConversationId.value = '';
     chatTimeline.value = [];
     chatMessage.value = '';

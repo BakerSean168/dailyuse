@@ -18,6 +18,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   const receiptPanel = readFileSync(resolve(dir, '../components/AIHostExecutionReceiptPanel.vue'), 'utf8');
   const timelineStrip = readFileSync(resolve(dir, '../components/AIHostTimelineArtifactStrip.vue'), 'utf8');
   const session = readFileSync(resolve(dir, 'useAIChatSession.ts'), 'utf8');
+  const turnMemory = readFileSync(resolve(dir, 'hostOpenChatTurnMemory.ts'), 'utf8');
   const contextPanel = readFileSync(resolve(dir, '../components/AIContextPanel.vue'), 'utf8');
 
   it('routes confirm/cancel lifecycle via dispatchAssistant Host commands', () => {
@@ -230,5 +231,18 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(timelineStrip).toContain('hostTimelineOpenChat');
     expect(timelineStrip).toContain("item.surface === 'open_chat'");
     expect(timelineStrip).not.toContain('executeApproved');
+  });
+
+  it('persists open-chat Host turn badges per conversation in session (residual 403)', () => {
+    expect(turnMemory).toContain('rememberOpenChatHostTurnsForConversation');
+    expect(turnMemory).toContain('restoreOpenChatHostTurnsForConversation');
+    expect(turnMemory).toContain('forgetOpenChatHostTurnsForConversation');
+    expect(turnMemory).toContain('upsertOpenChatHostTurnList');
+    expect(turnMemory).not.toContain('localStorage');
+    expect(session).toContain('openChatHostTurnMemory');
+    expect(session).toContain('stashOpenChatHostTurnsForCurrentConversation');
+    expect(session).toContain('restoreOpenChatHostTurns');
+    expect(session).toContain('rememberOpenChatHostTurnsForConversation');
+    expect(session).toContain('forgetOpenChatHostTurnsForConversation');
   });
 });
