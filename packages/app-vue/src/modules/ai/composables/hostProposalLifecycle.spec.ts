@@ -3,6 +3,8 @@ import {
   applyHostGoalPatchToAgentActions,
   applyHostKnowledgePatchToAgentActions,
   buildHostExecutionReceiptItems,
+  resolveHostWorkbenchReopenFromAgentRun,
+  shouldOpenHostWorkbenchFromAgentRun,
   buildHostProposalPatchFromDraft,
   buildPendingHostProposalItems,
   dispatchHostProposalDecision,
@@ -526,6 +528,43 @@ describe('buildHostExecutionReceiptItems (residual 379)', () => {
       ok: false,
       kind: 'goal.create',
     });
+  });
+});
+
+describe('resolveHostWorkbenchReopenFromAgentRun (residual 381)', () => {
+  it('reopens proposal workbench for waiting_approval goal/knowledge runs', () => {
+    expect(resolveHostWorkbenchReopenFromAgentRun(goalWaitingRun('waiting_approval'))).toBe(
+      'proposal',
+    );
+    expect(resolveHostWorkbenchReopenFromAgentRun(noteWaitingRun('waiting_approval'))).toBe(
+      'proposal',
+    );
+    expect(shouldOpenHostWorkbenchFromAgentRun(goalWaitingRun('waiting_approval'))).toBe(true);
+  });
+
+  it('reopens receipt workbench for terminal Host runs with execution outcomes', () => {
+    const completed = goalWaitingRun('completed');
+    completed.state.pendingActions = [];
+    completed.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        entityId: 'goal-1',
+        message: 'created',
+      },
+    ];
+    expect(resolveHostWorkbenchReopenFromAgentRun(completed)).toBe('receipt');
+    expect(shouldOpenHostWorkbenchFromAgentRun(completed)).toBe(true);
+  });
+
+  it('does not open Host workbench for knowledge.qa or mid-execution without Host rows', () => {
+    const qa = goalWaitingRun('completed');
+    qa.run.agentType = 'knowledge.qa';
+    expect(resolveHostWorkbenchReopenFromAgentRun(qa)).toBe('none');
+    expect(resolveHostWorkbenchReopenFromAgentRun(goalWaitingRun('waiting_execution'))).toBe(
+      'none',
+    );
+    expect(shouldOpenHostWorkbenchFromAgentRun(null)).toBe(false);
   });
 });
 

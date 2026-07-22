@@ -27,6 +27,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('buildPendingHostProposalItems');
     expect(helper).toContain('buildHostExecutionReceiptItems');
     expect(helper).toContain('HostExecutionReceiptItem');
+    expect(helper).toContain('resolveHostWorkbenchReopenFromAgentRun');
+    expect(helper).toContain('shouldOpenHostWorkbenchFromAgentRun');
     expect(helper).toContain('dispatchHostProposalRevise');
     expect(helper).toContain("type: 'revise_proposal'");
     expect(helper).toContain('buildHostProposalPatchFromDraft');
@@ -120,5 +122,18 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(contextPanel).toContain('hostExecutionReceiptCount');
     expect(contextPanel).toContain('ai-context-host-receipt-count');
     expect(contextPanel).toContain('hostReceiptPending');
+  });
+
+  it('reopens Host workbench from Conversation AgentRun history (residual 381)', () => {
+    expect(chatView).toContain('shouldOpenHostWorkbenchFromAgentRun');
+    expect(chatView).toContain('selectAgentRunBase');
+    expect(chatView).toContain('contextPanelOpen.value = true');
+    expect(chatView).toContain('Residual 381');
+    expect(chatView).toContain('AgentRun history');
+    // useAIChatView returns restored snapshot for Host reopen decision.
+    const chatViewComposable = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatViewComposable).toContain('return result');
+    expect(chatViewComposable).toContain('Residual 381');
+    expect(chatViewComposable).toMatch(/selectAgentRun\(run: AgentRun\).*Promise/);
   });
 });

@@ -430,9 +430,9 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     }
   }
 
-  async function selectAgentRun(run: AgentRun) {
+  async function selectAgentRun(run: AgentRun): Promise<import('@dailyuse/contracts/ai').AgentRunResult | null> {
     const conversationId = run.conversationId;
-    if (!conversationId) return;
+    if (!conversationId) return null;
 
     let conversation = chatSession.conversationList.value.find(
       (item) => item.id === conversationId,
@@ -449,10 +449,13 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       if (result?.run) {
         syncSelectedAgentRun(result);
         persistence.persistWorkflowState(conversationId);
+        // Residual 381: return restored snapshot so Host workbench can reopen.
+        return result;
       }
     } catch {
       // Keep the conversation selection even when the runtime snapshot is gone.
     }
+    return null;
   }
 
   async function openRecentGoal(goalId: string) {

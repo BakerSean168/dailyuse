@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -586,4 +586,45 @@ export function buildPendingHostProposalItems(input: {
   }
 
   return items;
+}
+
+/**
+ * Residual 381: Host workbench reopen kind when restoring an AgentRun from history.
+ * proposal = waiting_approval bridge rows; receipt = terminal Host execution report.
+ */
+export type HostWorkbenchReopenKind = 'proposal' | 'receipt' | 'none';
+
+/**
+ * Residual 381: decide whether Conversation AgentRun history should reopen the
+ * Host proposal or execution-report workbench. knowledge.qa never owns Host rows.
+ */
+export function resolveHostWorkbenchReopenFromAgentRun(
+  result: AgentRunResult | null | undefined,
+): HostWorkbenchReopenKind {
+  if (!result?.run) return 'none';
+  const agentType = result.run.agentType;
+  if (agentType !== 'goal.create' && agentType !== 'knowledge.generate') {
+    return 'none';
+  }
+  if (result.run.status === 'waiting_approval') {
+    return 'proposal';
+  }
+  if (
+    result.run.status === 'completed' ||
+    result.run.status === 'failed' ||
+    result.run.status === 'cancelled'
+  ) {
+    const items = buildHostExecutionReceiptItems({
+      goalAgentRun: agentType === 'goal.create' ? result : null,
+      noteAgentRun: agentType === 'knowledge.generate' ? result : null,
+    });
+    return items.length > 0 ? 'receipt' : 'none';
+  }
+  return 'none';
+}
+
+export function shouldOpenHostWorkbenchFromAgentRun(
+  result: AgentRunResult | null | undefined,
+): boolean {
+  return resolveHostWorkbenchReopenFromAgentRun(result) !== 'none';
 }

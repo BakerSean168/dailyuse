@@ -242,9 +242,10 @@
     </section>
 
     <!--
-      Artifact rail / Host proposal + execution-report workbench (residual 371/379):
+      Artifact rail / Host proposal + execution-report workbench (residual 371/379/381):
       AIContextPanel is the structured right workbench for Goal/Knowledge artifacts,
       waiting_approval Host proposals, and post-approve Host execution receipts.
+      Residual 381 reopens this rail from Conversation AgentRun history.
       Actions near composer remain lifecycle shortcuts; Host revise/approve/reject
       and receipt presentation live here.
     -->
@@ -346,6 +347,7 @@ import { useAIChatView } from '../composables/useAIChatView';
 import {
   buildPendingHostProposalItems,
   buildHostExecutionReceiptItems,
+  shouldOpenHostWorkbenchFromAgentRun,
   dispatchHostProposalDecision,
   dispatchHostProposalRevise,
   type HostProposalPanelItem,
@@ -416,7 +418,7 @@ const {
   recentKnowledgeNoteList,
   messagesViewport,
   selectConversation,
-  selectAgentRun,
+  selectAgentRun: selectAgentRunBase,
   openRecentGoal,
   openRecentKnowledgeNote,
   deleteConversation,
@@ -891,6 +893,21 @@ function startNewConversationFromMobile() {
 async function selectConversationFromMobile(item: ConversationSummary) {
   closeMobileSidebar();
   await selectConversation(item);
+}
+
+/**
+ * Residual 381: AgentRun history (Conversation sidebar) reopens Host proposal
+ * or execution-report workbench when the restored snapshot owns Host rows.
+ */
+async function selectAgentRun(run: AgentRun) {
+  const result = await selectAgentRunBase(run);
+  if (
+    shouldOpenHostWorkbenchFromAgentRun(result) ||
+    hasPendingHostProposals.value ||
+    hasHostExecutionReceipts.value
+  ) {
+    contextPanelOpen.value = true;
+  }
 }
 
 async function selectAgentRunFromMobile(run: AgentRun) {
