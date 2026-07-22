@@ -89,14 +89,12 @@ describe('ReminderDomainService', () => {
     vi.clearAllMocks();
     templateRepo = createMockRepo<IReminderTemplateRepository>({
       save: vi.fn().mockResolvedValue(undefined),
-      findById: vi.fn(),
       findByIdForIdentity: vi.fn().mockResolvedValue(null),
       findByGroupId: vi.fn().mockResolvedValue([]),
       delete: vi.fn().mockResolvedValue(undefined),
     });
     groupRepo = createMockRepo<IReminderGroupRepository>({
       save: vi.fn().mockResolvedValue(undefined),
-      findById: vi.fn(),
       findByIdForIdentity: vi.fn().mockResolvedValue(null),
       findByName: vi.fn().mockResolvedValue(null),
       delete: vi.fn().mockResolvedValue(undefined),
@@ -269,7 +267,7 @@ describe('ReminderDomainService', () => {
 
       await service.deleteTemplate(IDENTITY_ID, template.id, false);
 
-      expect(templateRepo.delete).toHaveBeenCalledWith(template.id);
+      expect(templateRepo.delete).toHaveBeenCalledWith(IDENTITY_ID, template.id);
     });
   });
 
@@ -327,7 +325,7 @@ describe('ReminderDomainService', () => {
 
       await service.deleteGroup(IDENTITY_ID, group.id, false);
 
-      expect(groupRepo.delete).toHaveBeenCalledWith(group.id);
+      expect(groupRepo.delete).toHaveBeenCalledWith(IDENTITY_ID, group.id);
     });
   });
 

@@ -17,11 +17,9 @@ describe('createReminderScheduleProjectionSource', () => {
       isEffectivelyEnabled: vi.fn().mockReturnValue(true),
     };
     const findByIdForIdentity = vi.fn().mockResolvedValue(template);
-    const findById = vi.fn();
 
     const source = createReminderScheduleProjectionSource({
       reminderTemplateRepository: {
-        findById,
         findByIdForIdentity,
       } as never,
     });
@@ -36,7 +34,6 @@ describe('createReminderScheduleProjectionSource', () => {
       'ReminderTemplateId_template-1',
       { includeHistory: true },
     );
-    expect(findById).not.toHaveBeenCalled();
     expect(plan.selection.sourceModule).toBe(SourceModule.Reminder);
     expect(plan.selection.sourceEntityId).toBe('ReminderTemplateId_template-1');
     expect(plan.nextTasks).toHaveLength(1);
@@ -47,11 +44,9 @@ describe('createReminderScheduleProjectionSource', () => {
   });
 
   it('loads missing template via findByIdForIdentity and returns empty plan', async () => {
-    const findById = vi.fn();
     const findByIdForIdentity = vi.fn().mockResolvedValue(null);
     const source = createReminderScheduleProjectionSource({
       reminderTemplateRepository: {
-        findById,
         findByIdForIdentity,
       } as never,
     });
@@ -66,7 +61,6 @@ describe('createReminderScheduleProjectionSource', () => {
       'ReminderTemplateId_missing',
       { includeHistory: true },
     );
-    expect(findById).not.toHaveBeenCalled();
     expect(plan.nextTasks).toEqual([]);
     expect(plan.selection.identityId).toBe('IdentityId_reminder-owner');
   });

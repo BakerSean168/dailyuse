@@ -52,7 +52,6 @@ describe('createReminderScheduleExecutionSource', () => {
     });
     const source = createReminderScheduleExecutionSource({
       reminderTemplateRepository: {
-        findById: vi.fn(),
         findByIdForIdentity,
         save,
       },

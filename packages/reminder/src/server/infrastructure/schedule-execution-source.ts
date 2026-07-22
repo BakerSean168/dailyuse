@@ -10,7 +10,7 @@ import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 export interface CreateReminderScheduleExecutionSourceDeps {
   readonly reminderTemplateRepository: Pick<
     IReminderTemplateRepository,
-    'findById' | 'findByIdForIdentity' | 'save'
+    'findByIdForIdentity' | 'save'
   >;
 }
 

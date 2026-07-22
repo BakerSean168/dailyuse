@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
  * get/update/delete/actions and group-scoped list/batch must never authorize
  * by bare template/group primary key alone.
  * Residual 174 collapses group bare findById dual method.
+ * Residual 175 collapses template bare findById dual method.
  */
 describe('reminder template ownership surface', () => {
   const templatePort = readFileSync(
@@ -93,6 +94,14 @@ describe('reminder template ownership surface', () => {
     expect(groupPort).not.toContain('findById(id: string): Promise<ReminderGroup | null>;');
     expect(prismaGroup).not.toMatch(/async findById\(id: string\)/);
     expect(powersyncGroup).not.toMatch(/async findById\(id: string\)/);
+  });
+
+  it('template port drops bare findById dual method (residual 175)', () => {
+    expect(templatePort).not.toContain(
+      'findById(\n    id: string,\n    options?: { includeHistory?: boolean; historyLimit?: number },\n  ): Promise<ReminderTemplate | null>;',
+    );
+    expect(prismaTemplate).not.toMatch(/async findById\(\n    id: string,/);
+    expect(powersyncTemplate).not.toMatch(/async findById\(\n    id: string,/);
   });
 
   it('prisma template filters by id + identityId', () => {

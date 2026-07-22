@@ -58,8 +58,7 @@ describe('ReminderTemplateControlService', () => {
     findByIdentityId: vi.fn(),
   } as any;
   const groupRepository = {
-    findById: vi.fn(),
-      findByIdForIdentity: vi.fn(),
+    findByIdForIdentity: vi.fn(),
     findByIds: vi.fn(),
   } as any;
   const preferenceRepository = {

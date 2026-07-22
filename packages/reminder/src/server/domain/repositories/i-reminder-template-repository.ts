@@ -28,18 +28,6 @@ export interface IReminderTemplateRepository {
   save(template: ReminderTemplate): Promise<void>;
 
   /**
-   * 通过 ID 查找聚合根
-   *
-   * @param id 提醒模板 ID
-   * @param options.includeHistory 是否加载历史记录（默认 false，懒加载）
-   * @returns 聚合根实例，不存在则返回 null
-   */
-  findById(
-    id: string,
-    options?: { includeHistory?: boolean; historyLimit?: number },
-  ): Promise<ReminderTemplate | null>;
-
-  /**
    * 通过 identity + ID 查找聚合根（身份隔离读路径）
    * 不存在或不属于该 identity 时返回 null
    */

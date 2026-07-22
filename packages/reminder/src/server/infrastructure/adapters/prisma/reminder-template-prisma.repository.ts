@@ -101,20 +101,6 @@ export class ReminderTemplatePrismaRepository
     });
   }
 
-  async findById(
-    id: string,
-    options?: { includeHistory?: boolean; historyLimit?: number },
-  ): Promise<ReminderTemplate | null> {
-    const data = await this.prisma.reminderTemplate.findUnique({
-      where: { id },
-      include: options?.includeHistory
-        ? { history: { orderBy: { triggeredAt: 'desc' }, take: options.historyLimit } }
-        : undefined,
-    });
-    if (!data) return null;
-    return this.mapToEntity(data, (data as PrismaReminderTemplateWithHistory).history);
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

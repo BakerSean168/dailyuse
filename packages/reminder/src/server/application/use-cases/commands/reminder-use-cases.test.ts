@@ -29,12 +29,9 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
     this.templates.set(template.id, template);
   }
 
-  async findById(id: string): Promise<any> {
-    return this.templates.get(id) ?? null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
-    const found = await this.findById(id, options);
+    void options;
+    const found = this.templates.get(id) ?? null;
     if (!found) return null;
     return String(found.identityId) === String(identityId) ? found : null;
   }
@@ -239,7 +236,7 @@ describe('Reminder Use Cases', () => {
       const result = await useCase.execute(request, { identityId: TEST_IDENTITY });
       expect(result.ok).toBe(true);
       if (result.ok) {
-        const persisted = await templateRepository.findById(result.data.id);
+        const persisted = await templateRepository.findByIdForIdentity(TEST_IDENTITY, result.data.id);
         expect(persisted).toBeDefined();
         expect(persisted.title).toBe(request.title);
       }
@@ -292,7 +289,7 @@ describe('Reminder Use Cases', () => {
 
         expect(result.ok).toBe(true);
 
-        const deleted = await templateRepository.findById(created.data.id);
+        const deleted = await templateRepository.findByIdForIdentity(TEST_IDENTITY, created.data.id);
         // Note: soft delete, so entity still exists but marked as deleted
         expect(deleted).toBeDefined();
       }
