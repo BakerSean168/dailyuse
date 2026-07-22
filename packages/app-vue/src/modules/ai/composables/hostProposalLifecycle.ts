@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529/531/533).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529/531/533/535).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -13,6 +13,7 @@
  * Residual 529: receipt primaryEntityId prefers product-lane executed tool only (no foreign entityIds[0]).
  * Residual 531: knowledge draft title read create_knowledge_note only (path/markdown residual 521 symmetry).
  * Residual 533: receipt summary excludes cross-lane foreign tools from counts/actionLines/entityIds.
+ * Residual 535: receipt summary error text from same-lane failed action only (no blind errors[0]).
  */
 import type {
   AgentAction,
@@ -596,9 +597,10 @@ function isCrossLaneForeignTool(
 }
 
 /**
- * Residual 529/533: receipt summary for product lane.
+ * Residual 529/533/535: receipt summary for product lane.
  * Residual 529: primaryEntityId from product-lane executed tool only.
  * Residual 533: cross-lane foreign tools never inflate counts/actionLines/entityIds.
+ * Residual 535: summary error text from same-lane failed action only (no blind errors[0]).
  * Same-lane companions (e.g. create_key_result on goal) remain for audit replay.
  */
 function summarizeExecutedActions(
@@ -653,9 +655,19 @@ function summarizeExecutedActions(
     `${skippedCount} skipped`,
     `${failedCount} failed`,
   ];
-  const firstError = run.state.errors?.[0];
-  const summary = firstError
-    ? `${parts.join(', ')}; ${firstError}`
+  // Residual 535: same-lane failed action message only — never blind run.state.errors[0]
+  // (foreign-lane failures may still sit in errors[] after residual 533 filtering).
+  const firstFailedMessage =
+    actionLines
+      .find(
+        (line) =>
+          line.status === 'failed' &&
+          typeof line.message === 'string' &&
+          line.message.trim().length > 0,
+      )
+      ?.message.trim() ?? '';
+  const summary = firstFailedMessage
+    ? `${parts.join(', ')}; ${firstFailedMessage}`
     : parts.join(', ');
   return {
     executedCount,

@@ -406,6 +406,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 533'];
     case 'isCrossLaneForeignTool':
       return ['isCrossLaneForeignTool'];
+    case 'Residual 535':
+      return ['Residual 535'];
+    case 'firstFailedMessage':
+      return ['firstFailedMessage'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

@@ -384,6 +384,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 533: receipt summary excludes cross-lane foreign tools.
         'Residual 533',
         'isCrossLaneForeignTool',
+        // Residual 535: receipt summary same-lane failed action message only.
+        'Residual 535',
+        'firstFailedMessage',
       ],
       status: 'implemented_unit',
     },

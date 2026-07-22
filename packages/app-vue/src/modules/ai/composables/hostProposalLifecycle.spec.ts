@@ -2162,6 +2162,75 @@ describe('receipt summary excludes cross-lane foreign tools (residual 533)', () 
   });
 });
 
+describe('receipt summary same-lane failed message only (residual 535)', () => {
+  it('ignores foreign run.state.errors[0] when same-lane actions all succeed', () => {
+    const run = taskWaitingRun();
+    run.run.status = 'completed';
+    run.state.pendingActions = [];
+    run.state.errors = ['foreign-lane boom'];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'failed',
+        message: 'foreign failed',
+        entityId: 'foreign-goal-1',
+      },
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: 'created',
+        entityId: 'task-real-1',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ taskAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.summary).toBe('1 executed, 0 skipped, 0 failed');
+    expect(receipts[0]?.summary).not.toContain('foreign-lane boom');
+    expect(receipts[0]?.summary).not.toContain('foreign failed');
+  });
+
+  it('uses same-lane failed action message for receipt summary', () => {
+    const run = noteWaitingRun('failed');
+    run.state.pendingActions = [];
+    run.state.errors = ['stale foreign error first'];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'failed',
+        message: 'foreign fail text',
+      },
+      {
+        tool: 'create_knowledge_note',
+        status: 'failed',
+        message: 'write denied by policy',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ noteAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.summary).toContain('write denied by policy');
+    expect(receipts[0]?.summary).not.toContain('stale foreign error first');
+    expect(receipts[0]?.summary).not.toContain('foreign fail text');
+  });
+
+  it('does not invent summary error when same-lane has no failed message', () => {
+    const run = goalWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.errors = ['orphan error without failed action'];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'created',
+        entityId: 'goal-1',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ goalAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.summary).toBe('1 executed, 0 skipped, 0 failed');
+    expect(receipts[0]?.summary).not.toContain('orphan error');
+  });
+});
+
 
 
 describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {
