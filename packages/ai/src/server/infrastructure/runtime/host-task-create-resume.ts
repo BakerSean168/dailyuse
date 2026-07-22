@@ -1,9 +1,12 @@
 /**
- * Residual 437/439: Host task.create process-local resume.
+ * Residual 437/439/453: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
  * cancel/confirm are idempotent when already terminal.
+ *
+ * Residual 453: confirm requires client-owned executedActions settlement
+ * (create_task_template + executed). Host must not invent default execution receipts.
  *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
@@ -15,6 +18,10 @@ import {
   type AgentResumePayload,
   type AgentRunResult,
 } from '@dailyuse/contracts/ai';
+
+/** Residual 453: confirm without client settlement receipts is fail-closed. */
+export const HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE =
+  'Host task.create confirm requires non-empty client executedActions settlement (create_task_template).';
 
 function nextSequence(events: AgentRunResult['events']): number {
   if (events.length === 0) return 0;
@@ -43,18 +50,6 @@ function resolveApprovedActions(
     return cloneActions(pending);
   }
   return cloneActions(current.state.approvedActions);
-}
-
-function defaultExecutedFromApproved(
-  approved: AgentRunResult['state']['approvedActions'],
-): AgentExecutedAction[] {
-  return approved.map((action) => ({
-    tool: action.tool,
-    status: 'executed' as const,
-    message: 'Task template settlement recorded by Host task.create resume.',
-    entityId: null,
-    data: { ...(action.payload ?? {}) },
-  }));
 }
 
 function rebuildTaskCreateInterrupts(
@@ -150,11 +145,26 @@ export function buildHostTaskCreateResumeResult(input: {
         `Host task.create confirm requires waiting_approval/waiting_execution; current status is '${status}'.`,
       );
     }
+    // Residual 453: client owns createTemplate mutation — Host records settlement only.
+    if (!input.payload.executedActions || input.payload.executedActions.length === 0) {
+      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE);
+    }
+    const executedActions: AgentExecutedAction[] = input.payload.executedActions.map((item) => ({
+      ...item,
+    }));
+    for (const action of executedActions) {
+      if (action.tool !== 'create_task_template') {
+        throw new Error(
+          'Host task.create confirm executedActions must use tool create_task_template.',
+        );
+      }
+      if (action.status !== 'executed') {
+        throw new Error(
+          'Host task.create confirm executedActions must report status executed.',
+        );
+      }
+    }
     const approvedActions = resolveApprovedActions(current, input.payload);
-    const executedActions =
-      input.payload.executedActions && input.payload.executedActions.length > 0
-        ? input.payload.executedActions.map((item) => ({ ...item }))
-        : defaultExecutedFromApproved(approvedActions);
 
     return AgentRunResultSchema.parse({
       run: {

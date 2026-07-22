@@ -265,6 +265,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 451: process-local runId identity binding (fail-closed takeover).
         'HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE',
         'already bound to another identity',
+        // Residual 453: confirm requires client-owned executedActions settlement.
+        'HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE',
+        'requires non-empty client executedActions settlement',
       ],
       status: 'implemented_unit',
     },

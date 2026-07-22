@@ -388,6 +388,28 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+
+  it('task.create confirm requires client settlement executedActions (residual 453)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE');
+    expect(resume).toContain('requires non-empty client executedActions settlement');
+    expect(resume).toContain('Residual 453');
+    expect(resume).not.toContain('defaultExecutedFromApproved');
+    expect(resume).not.toContain('Task template settlement recorded by Host task.create resume.');
+    // Client complete path still owns createTemplate settlement payload.
+    expect(taskWorkflow).toContain("userDecision: 'confirm'");
+    expect(taskWorkflow).toContain('executedActions');
+    expect(taskWorkflow).toContain('create_task_template');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

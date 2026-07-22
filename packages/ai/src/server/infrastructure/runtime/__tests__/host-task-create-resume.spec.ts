@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439)', () => {
+describe('host-task-create-resume (residual 437/439/453)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -114,7 +114,17 @@ describe('host-task-create-resume (residual 437/439)', () => {
 
     const completed = buildHostTaskCreateResumeResult({
       current: started,
-      payload: { userDecision: 'confirm' },
+      payload: {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            entityId: 'tpl-idemp',
+          },
+        ],
+      },
       nowMs: 4,
     });
     const completeAgain = buildHostTaskCreateResumeResult({
@@ -123,6 +133,102 @@ describe('host-task-create-resume (residual 437/439)', () => {
       nowMs: 5,
     });
     expect(completeAgain).toBe(completed);
+  });
+
+  it('confirm fails closed without client executedActions settlement (residual 453)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-no-settlement'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: { userDecision: 'confirm' },
+      }),
+    ).toThrow(/requires non-empty client executedActions settlement/);
+
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'other_tool',
+              status: 'executed',
+              message: 'nope',
+            },
+          ],
+        },
+      }),
+    ).toThrow(/must use tool create_task_template/);
+
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'failed',
+              message: 'nope',
+            },
+          ],
+        },
+      }),
+    ).toThrow(/must report status executed/);
+  });
+
+  it('cross-terminal cancel/confirm after opposite terminal fails closed (residual 453)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-cross-terminal'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const cancelled = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: { userDecision: 'cancel' },
+      nowMs: 2,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: cancelled,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'Created',
+            },
+          ],
+        },
+      }),
+    ).toThrow(/confirm requires waiting_approval/);
+
+    const completed = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created',
+            entityId: 'tpl-x',
+          },
+        ],
+      },
+      nowMs: 3,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: completed,
+        payload: { userDecision: 'cancel' },
+      }),
+    ).toThrow(/cancel requires a non-terminal active run/);
   });
 
   it('fails closed for unsupported userDecision', () => {

@@ -1,11 +1,12 @@
 /**
- * Residual 449/451: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
  *   start → confirm settle → get/list/events rehydrate
  *   identity fail-closed
  *   runId identity binding (residual 451)
+ *   confirm requires client settlement (residual 453)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -248,6 +249,43 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillOwned.data.run.identityId).toBe('owner-bound');
     expect(stillOwned.data.state.pendingActions[0]?.payload['title']).toBe('Owned draft');
     expect(port.startRun).not.toHaveBeenCalled();
+  });
+
+
+  it('fails closed when confirm omits client settlement executedActions (residual 453)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-settlement' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-settlement',
+        threadId: 'thread-journey-settlement',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Needs client settle' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    const bareConfirm = await service.resumeRun(
+      'run-journey-settlement',
+      { userDecision: 'confirm' },
+      cx as any,
+    );
+    expect(bareConfirm.ok).toBe(false);
+    if (bareConfirm.ok) return;
+    expect(bareConfirm.error.code).toBe('VALIDATION_ERROR');
+    expect(bareConfirm.error.message).toMatch(/client executedActions settlement/);
+
+    const stillWaiting = await service.getRun('run-journey-settlement', cx as any);
+    expect(stillWaiting.ok).toBe(true);
+    if (!stillWaiting.ok) return;
+    expect(stillWaiting.data.run.status).toBe('waiting_approval');
+    expect(stillWaiting.data.state.executedActions).toEqual([]);
+    expect(port.resumeRun).not.toHaveBeenCalled();
   });
 
 });

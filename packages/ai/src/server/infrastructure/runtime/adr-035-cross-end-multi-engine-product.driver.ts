@@ -250,6 +250,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE'];
     case 'already bound to another identity':
       return ['already bound to another identity'];
+    case 'HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE':
+      return ['HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE'];
+    case 'requires non-empty client executedActions settlement':
+      return ['requires non-empty client executedActions settlement'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
