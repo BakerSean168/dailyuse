@@ -374,13 +374,12 @@ async function withAgentProviderConfig(
   if (
     req.agentType !== 'goal.create' ||
     !providerConfigRepository ||
-    request.input['provider_config'] ||
-    request.input['providerConfig']
+    request.input['provider_config']
   ) {
     return request;
   }
 
-  const providerId = getStringInput(request.input, 'providerId');
+  const providerId = getStringInput(request.input, 'provider_id');
   const modelOverride = getStringInput(request.input, 'model');
   if (!providerId && !modelOverride) {
     return request;
@@ -488,7 +487,7 @@ async function withKnowledgeQaAnswer(
     return ok(req);
   }
 
-  const providerId = getStringInput(req.input, 'providerId');
+  const providerId = getStringInput(req.input, 'provider_id');
   const maxResources = getPositiveIntegerInput(req.input, 'maxResources');
   const queryRequest: QueryKnowledgeReq = {
     query,
@@ -509,10 +508,10 @@ async function withKnowledgeQaAnswer(
         : {}),
       answer: queryResult.data.answer,
       citations: toAgentCitations(queryResult.data.citations),
-      providerId: queryResult.data.providerId,
-      tokenUsage: queryResult.data.tokenUsage,
-      processingTimeMs: queryResult.data.processingTimeMs,
-      matchedResourceCount: queryResult.data.matchedResourceCount,
+      provider_id: queryResult.data.providerId,
+      token_usage: queryResult.data.tokenUsage,
+      processing_time_ms: queryResult.data.processingTimeMs,
+      matched_resource_count: queryResult.data.matchedResourceCount,
     },
   });
 }

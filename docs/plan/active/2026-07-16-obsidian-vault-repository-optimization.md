@@ -2271,6 +2271,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
 > 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百一十七轮）：ai-service agent 入参剩余 camelCase 双轨收口——
+> `token_usage`/`provider_id`/`processing_time_ms`/`matched_resource_count` 单一真值（去掉
+> tokenUsage/providerId/processingTimeMs/matchedResourceCount 双读）；TS knowledge.qa 富化与
+> goal provider 解析写/读 snake_case；app-vue knowledge.qa/generate/goal 工作流入参对齐；
+> 扩展 snake-case surface。artifact/响应面仍用 camelCase（contracts）。§13.2 未打勾项仍为
+> 部分/外部阻塞。验证：snake-case surface + remote runtime + ADR-035 journey + AIChatView
+> + pytest test_agent_runtime_routes（27）+ governance-check。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
 
 
 
@@ -2355,7 +2364,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留二百一十六轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留二百一十七轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
 > webhook delivery（187）、auth session token（188）、notification template catalog（189）、
@@ -2553,6 +2562,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百一十四轮：AI knowledge index/sync Resource→Note naming (wire indexed_resources stable)。
   残留二百一十五轮：ai-service agent input snake_case only (drop camelCase dual-track keys)。
   残留二百一十六轮：§13.2 core evidence suite re-run (212 tests, residuals 213–215 locks, no checkbox changes)。
+  残留二百一十七轮：ai-service agent input residual duals → snake_case only (token/provider/processing/matched)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

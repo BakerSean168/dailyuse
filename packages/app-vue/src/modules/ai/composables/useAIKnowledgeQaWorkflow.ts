@@ -128,7 +128,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
         locale: locale.value === 'en-US' ? 'en-US' : 'zh-CN',
         input: {
           question,
-          providerId: selectedModel.providerId,
+          provider_id: selectedModel.providerId,
           maxResources: 8,
         },
       };

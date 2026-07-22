@@ -77,13 +77,13 @@ def _citation_input(data: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _token_usage_input(data: dict[str, Any]) -> dict[str, Any] | None:
-    raw = data.get("tokenUsage") or data.get("token_usage")
+    raw = data.get("token_usage")
     if raw is None:
         return None
     if not isinstance(raw, dict):
         raise HTTPException(
             status_code=422,
-            detail='"tokenUsage" must be an object when provided.',
+            detail='"token_usage" must be an object when provided.',
         )
 
     try:
@@ -94,7 +94,7 @@ def _token_usage_input(data: dict[str, Any]) -> dict[str, Any] | None:
     except ValidationError as exc:
         raise HTTPException(
             status_code=422,
-            detail=f"Invalid tokenUsage: {exc}",
+            detail=f"Invalid token_usage: {exc}",
         ) from exc
 
 
@@ -233,17 +233,14 @@ async def start_agent_run(
             question=question,
             answer=_string_input(request.input, "answer"),
             citations=_citation_input(request.input),
-            provider_id=_string_input(request.input, "providerId")
-            or _string_input(request.input, "provider_id"),
+            provider_id=_string_input(request.input, "provider_id"),
             token_usage=_token_usage_input(request.input),
             processing_time_ms=_nonnegative_int_input(
                 request.input,
-                "processingTimeMs",
                 "processing_time_ms",
             ),
             matched_resource_count=_nonnegative_int_input(
                 request.input,
-                "matchedResourceCount",
                 "matched_resource_count",
             ),
         )
@@ -270,8 +267,7 @@ async def start_agent_run(
             title=_string_input(request.input, "title"),
             source=_string_input(request.input, "source"),
             target_subpath=_string_input(request.input, "targetSubpath"),
-            provider_id=_string_input(request.input, "providerId")
-            or _string_input(request.input, "provider_id"),
+            provider_id=_string_input(request.input, "provider_id"),
             model=_string_input(request.input, "model"),
             provider_config=_provider_config_input(request.input),
             indexed_resources=_indexed_resources_input(request.input),

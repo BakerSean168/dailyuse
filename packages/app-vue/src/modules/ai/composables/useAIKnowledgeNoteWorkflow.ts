@@ -351,7 +351,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
           ...(input.title ? { title: input.title } : {}),
           ...(selectedModel
             ? {
-                providerId: selectedModel.providerId,
+                provider_id: selectedModel.providerId,
                 model: selectedModel.modelId,
               }
             : {}),

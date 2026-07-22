@@ -714,7 +714,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
           conversationTitle: options.conversationTitle.value,
           ...(selectedModel
             ? {
-                providerId: selectedModel.providerId,
+                provider_id: selectedModel.providerId,
                 model: selectedModel.modelId,
               }
             : {}),

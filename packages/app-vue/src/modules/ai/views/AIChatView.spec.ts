@@ -1847,7 +1847,7 @@ describe('AIChatView', () => {
         input: expect.objectContaining({
           idea: 'User: Help me design an AI goal.',
           conversationTitle: 'Goal session',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o-mini',
         }),
       }),
@@ -2544,7 +2544,7 @@ describe('AIChatView', () => {
         agentType: 'knowledge.qa',
         input: expect.objectContaining({
           question: 'How should knowledge answers be grounded?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
         }),
       }),
@@ -2631,7 +2631,7 @@ describe('AIChatView', () => {
         agentType: 'knowledge.qa',
         input: expect.objectContaining({
           question: 'What is the latest grounding rule?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
         }),
       }),
@@ -2704,7 +2704,7 @@ describe('AIChatView', () => {
         agentType: 'knowledge.qa',
         input: expect.objectContaining({
           question: 'What does the repo say about unknown topic?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
         }),
       }),
@@ -2835,7 +2835,7 @@ describe('AIChatView', () => {
             'Question: How should knowledge answers be grounded? Answer: Use cited repository excerpts to answer the question. Sources: Grounded Answer',
           title: 'How should knowledge answers be grounded?',
           source: expect.stringContaining('Question: How should knowledge answers be grounded?'),
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o-mini',
         }),
       }),
@@ -2932,7 +2932,7 @@ describe('AIChatView', () => {
           topic: 'Summarize agent notes.',
           source: 'User: Summarize agent notes.',
           title: 'Knowledge note session',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o-mini',
         }),
       }),

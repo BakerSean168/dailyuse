@@ -727,7 +727,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'knowledge.qa',
         input: {
           question: 'How should knowledge answers be grounded?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
         },
       },
@@ -759,17 +759,17 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'knowledge.qa',
         input: {
           question: 'How should knowledge answers be grounded?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
           answer: 'Use cited repository excerpts to answer the question.',
           citations: [knowledgeDeps.citation],
-          tokenUsage: {
+          token_usage: {
             promptTokens: 20,
             completionTokens: 10,
             totalTokens: 30,
           },
-          processingTimeMs: expect.any(Number),
-          matchedResourceCount: 1,
+          processing_time_ms: expect.any(Number),
+          matched_resource_count: 1,
         },
       },
       requestId: 'request-knowledge-query',
@@ -1883,7 +1883,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: {
           idea: 'Ship the AI Agent workspace',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o',
         },
       },
@@ -1905,7 +1905,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: {
           idea: 'Ship the AI Agent workspace',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o',
           provider_config: {
             provider: 'openai',

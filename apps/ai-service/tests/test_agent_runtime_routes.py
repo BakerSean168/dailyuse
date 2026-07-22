@@ -72,14 +72,14 @@ def _start_knowledge_run(
             "input": {
                 "question": "What do my notes say about grounded answers?",
                 "answer": "Use repository citations when evidence exists.",
-                "providerId": "provider-1",
-                "tokenUsage": {
+                "provider_id": "provider-1",
+                "token_usage": {
                     "promptTokens": 20,
                     "completionTokens": 10,
                     "totalTokens": 30,
                 },
-                "processingTimeMs": 1234,
-                "matchedResourceCount": 4,
+                "processing_time_ms": 1234,
+                "matched_resource_count": 4,
                 "citations": [
                     {
                         "resourceId": "resource-1",
@@ -138,7 +138,7 @@ def _start_knowledge_generate_run(
                 ),
                 "title": "Grounding knowledge answers",
                 "targetSubpath": "notes/ai",
-                "providerId": "provider-1",
+                "provider_id": "provider-1",
                 "model": "gpt-4o-mini",
             },
         },
