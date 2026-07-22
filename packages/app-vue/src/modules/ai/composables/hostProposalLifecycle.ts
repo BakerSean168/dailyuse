@@ -1484,11 +1484,45 @@ export function buildHostExecutionReceiptItems(input: {
 
   // Residual 585: exclusive primary-task lane before product-tool receipt routing
   // (fail-closed against dual goal+task rows / create_goal mis-label for primary-task).
+  // Residual 613: emit receipts in exclusive session priority (task > goal > knowledge)
+  // matching residual 611 default focus / residual 603 selectAgentRun — not goal-first.
   const exclusive = resolveLiveHostWorkbenchAgentRuns({
     goalAgentRun: input.goalAgentRun,
     noteAgentRun: input.noteAgentRun,
     taskAgentRun: input.taskAgentRun,
   });
+  const taskRun = exclusive.taskAgentRun;
+  if (taskRun && HOST_RECEIPT_STATUSES.has(taskRun.run.status)) {
+    const status = taskRun.run.status as HostExecutionReceiptItem['runStatus'];
+    const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
+    const counts = summarizeExecutedActions(taskRun, 'create_task_template');
+    if (
+      counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
+      items.push({
+        runId: taskRun.run.runId,
+        proposalId: ref.proposalId,
+        revision: getRememberedHostProposalRevision(ref.proposalId, ref.revision),
+        kind: 'task.create',
+        source: 'task',
+        runStatus: status,
+        ok: counts.ok,
+        title: taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`,
+        summary: counts.summary,
+        executedCount: counts.executedCount,
+        failedCount: counts.failedCount,
+        skippedCount: counts.skippedCount,
+        entityIds: counts.entityIds,
+        actionLines: counts.actionLines,
+        primaryEntityId: counts.primaryEntityId,
+        receiptKey: `host-receipt:${ref.proposalId}`,
+      });
+    }
+  }
+
+  // Residual 425: merge client domain task receipts (createTemplate fallback).
   const goalRun = exclusive.goalAgentRun;
   if (goalRun && HOST_RECEIPT_STATUSES.has(goalRun.run.status)) {
     const status = goalRun.run.status as HostExecutionReceiptItem['runStatus'];
@@ -1558,38 +1592,6 @@ export function buildHostExecutionReceiptItems(input: {
     }
   }
 
-  const taskRun = exclusive.taskAgentRun;
-  if (taskRun && HOST_RECEIPT_STATUSES.has(taskRun.run.status)) {
-    const status = taskRun.run.status as HostExecutionReceiptItem['runStatus'];
-    const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
-    const counts = summarizeExecutedActions(taskRun, 'create_task_template');
-    if (
-      counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
-      status === 'failed' ||
-      status === 'cancelled'
-    ) {
-      items.push({
-        runId: taskRun.run.runId,
-        proposalId: ref.proposalId,
-        revision: getRememberedHostProposalRevision(ref.proposalId, ref.revision),
-        kind: 'task.create',
-        source: 'task',
-        runStatus: status,
-        ok: counts.ok,
-        title: taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`,
-        summary: counts.summary,
-        executedCount: counts.executedCount,
-        failedCount: counts.failedCount,
-        skippedCount: counts.skippedCount,
-        entityIds: counts.entityIds,
-        actionLines: counts.actionLines,
-        primaryEntityId: counts.primaryEntityId,
-        receiptKey: `host-receipt:${ref.proposalId}`,
-      });
-    }
-  }
-
-  // Residual 425: merge client domain task receipts (createTemplate fallback).
   return mergeHostExecutionReceiptItems(items, input.clientTaskReceipts);
 }
 
@@ -1608,11 +1610,34 @@ export function buildPendingHostProposalItems(input: {
 
   // Residual 585: exclusive primary-task lane before product-tool proposal rows
   // (same promotion as live workbench; idempotent when caller already exclusive).
+  // Residual 613: emit rows in exclusive session priority (task > goal > knowledge)
+  // matching residual 611 default focus / residual 603 selectAgentRun — not goal-first.
   const exclusive = resolveLiveHostWorkbenchAgentRuns({
     goalAgentRun: input.goalAgentRun,
     noteAgentRun: input.noteAgentRun,
     taskAgentRun: input.taskAgentRun,
   });
+
+  // Residual 419/613: task.create Host proposal lane first (presentation + lifecycle only).
+  const taskRun = exclusive.taskAgentRun;
+  if (taskRun?.run.status === 'waiting_approval') {
+    const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
+    const title = taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`;
+    const goalId = taskDraftGoalId(taskRun);
+    items.push({
+      runId: taskRun.run.runId,
+      proposalId: ref.proposalId,
+      revision: ref.revision,
+      kind: 'task.create',
+      source: 'task',
+      runStatus: 'waiting_approval',
+      title,
+      summary: firstPendingRationale(taskRun, 'create_task_template'),
+      pendingActionCount: pendingActionCount(taskRun, 'create_task_template'),
+      ...(goalId !== null && goalId !== undefined ? { goalId } : {}),
+    });
+  }
+
   const goalRun = exclusive.goalAgentRun;
   if (goalRun?.run.status === 'waiting_approval') {
     const ref = buildAgentRunHostProposalRef(goalRun.run.runId, 'goal.create');
@@ -1647,26 +1672,6 @@ export function buildPendingHostProposalItems(input: {
       pendingActionCount: pendingActionCount(noteRun, 'create_knowledge_note'),
       targetPath: knowledgeDraftTargetPath(noteRun),
       contentMarkdown: knowledgeDraftMarkdown(noteRun),
-    });
-  }
-
-  // Residual 419: task.create Host proposal lane (presentation + lifecycle only).
-  const taskRun = exclusive.taskAgentRun;
-  if (taskRun?.run.status === 'waiting_approval') {
-    const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
-    const title = taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`;
-    const goalId = taskDraftGoalId(taskRun);
-    items.push({
-      runId: taskRun.run.runId,
-      proposalId: ref.proposalId,
-      revision: ref.revision,
-      kind: 'task.create',
-      source: 'task',
-      runStatus: 'waiting_approval',
-      title,
-      summary: firstPendingRationale(taskRun, 'create_task_template'),
-      pendingActionCount: pendingActionCount(taskRun, 'create_task_template'),
-      ...(goalId !== null && goalId !== undefined ? { goalId } : {}),
     });
   }
 

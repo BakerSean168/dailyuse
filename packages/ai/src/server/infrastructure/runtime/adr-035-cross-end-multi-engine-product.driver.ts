@@ -471,6 +471,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 611'];
     case 'resolveDefaultHostWorkbenchFocusProposalId':
       return ['resolveDefaultHostWorkbenchFocusProposalId'];
+    case 'Residual 613':
+      return ['Residual 613'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

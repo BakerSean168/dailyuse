@@ -443,6 +443,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 611: default Host workbench focus prefers exclusive session.
         'Residual 611',
         'resolveDefaultHostWorkbenchFocusProposalId',
+        // Residual 613: Host proposal/receipt builders emit exclusive session order.
+        'Residual 613',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

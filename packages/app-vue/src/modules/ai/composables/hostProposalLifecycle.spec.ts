@@ -3838,3 +3838,69 @@ describe('resolveDefaultHostWorkbenchFocusProposalId (residual 611)', () => {
   });
 });
 
+describe('Host workbench exclusive list order (residual 613)', () => {
+  /** Process-local AgentType task.create — never dual-mirror ghost-dropped beside normal goal. */
+  function processLocalTaskWaitingRun(): AgentRunResult {
+    const run = taskWaitingRun();
+    run.run.agentType = 'task.create';
+    return run;
+  }
+
+  it('buildPendingHostProposalItems emits task before goal before knowledge', () => {
+    const task = processLocalTaskWaitingRun();
+    const goal = goalWaitingRun('waiting_approval');
+    const note = noteWaitingRun('waiting_approval');
+    const items = buildPendingHostProposalItems({
+      goalAgentRun: goal,
+      noteAgentRun: note,
+      taskAgentRun: task,
+    });
+    expect(items.map((row) => row.source)).toEqual(['task', 'goal', 'knowledge']);
+    // First row matches exclusive default focus priority (residual 611).
+    expect(items[0]?.kind).toBe('task.create');
+    expect(
+      resolveDefaultHostWorkbenchFocusProposalId({
+        goalAgentRun: goal,
+        noteAgentRun: note,
+        taskAgentRun: task,
+        proposalItems: items,
+      }),
+    ).toBe(items[0]?.proposalId);
+  });
+
+  it('buildHostExecutionReceiptItems emits task before goal before knowledge', () => {
+    const goal = goalWaitingRun('completed');
+    goal.state.pendingActions = [];
+    goal.state.executedActions = [
+      { tool: 'create_goal', status: 'executed', entityId: 'goal-1', message: 'ok' },
+    ];
+    const note = noteWaitingRun('completed');
+    note.state.pendingActions = [];
+    note.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        entityId: 'note-1',
+        message: 'ok',
+      },
+    ];
+    const task = processLocalTaskWaitingRun();
+    task.run.status = 'completed';
+    task.state.pendingActions = [];
+    task.state.executedActions = [
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        entityId: 'tpl-1',
+        message: 'ok',
+      },
+    ];
+    const items = buildHostExecutionReceiptItems({
+      goalAgentRun: goal,
+      noteAgentRun: note,
+      taskAgentRun: task,
+    });
+    expect(items.map((row) => row.source)).toEqual(['task', 'goal', 'knowledge']);
+    expect(items[0]?.kind).toBe('task.create');
+  });
+});

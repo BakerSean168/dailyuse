@@ -1126,8 +1126,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     const receiptIdx = helper.indexOf('export function buildHostExecutionReceiptItems');
     expect(pendingIdx).toBeGreaterThan(-1);
     expect(receiptIdx).toBeGreaterThan(-1);
-    const pendingSlice = helper.slice(pendingIdx, pendingIdx + 900);
-    const receiptSlice = helper.slice(receiptIdx, receiptIdx + 900);
+    // Residual 613 comments grow builder headers — keep exclusive promote in slice.
+    const pendingSlice = helper.slice(pendingIdx, pendingIdx + 1600);
+    const receiptSlice = helper.slice(receiptIdx, receiptIdx + 1600);
     expect(pendingSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
     expect(receiptSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
     expect(helper).not.toContain('executeApproved');
@@ -2145,6 +2146,34 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).not.toContain('executeApproved');
     expect(helper).not.toContain('executeApproved');
   });
+
+  it('Host proposal/receipt builders emit exclusive session order (residual 613)', () => {
+    expect(helper).toContain('Residual 613');
+    // Pending proposals: task block before goal before knowledge.
+    const pendingIdx = helper.indexOf('export function buildPendingHostProposalItems');
+    expect(pendingIdx).toBeGreaterThan(-1);
+    const pendingSlice = helper.slice(pendingIdx, pendingIdx + 4200);
+    expect(pendingSlice).toContain('Residual 613');
+    const taskDecl = pendingSlice.indexOf('const taskRun = exclusive.taskAgentRun');
+    const goalDecl = pendingSlice.indexOf('const goalRun = exclusive.goalAgentRun');
+    const noteDecl = pendingSlice.indexOf('const noteRun = exclusive.noteAgentRun');
+    expect(taskDecl).toBeGreaterThan(-1);
+    expect(goalDecl).toBeGreaterThan(taskDecl);
+    expect(noteDecl).toBeGreaterThan(goalDecl);
+    // Receipts same exclusive priority.
+    const receiptIdx = helper.indexOf('export function buildHostExecutionReceiptItems');
+    expect(receiptIdx).toBeGreaterThan(-1);
+    const receiptSlice = helper.slice(receiptIdx, receiptIdx + 5500);
+    expect(receiptSlice).toContain('Residual 613');
+    const rTask = receiptSlice.indexOf('const taskRun = exclusive.taskAgentRun');
+    const rGoal = receiptSlice.indexOf('const goalRun = exclusive.goalAgentRun');
+    const rNote = receiptSlice.indexOf('const noteRun = exclusive.noteAgentRun');
+    expect(rTask).toBeGreaterThan(-1);
+    expect(rGoal).toBeGreaterThan(rTask);
+    expect(rNote).toBeGreaterThan(rGoal);
+    expect(helper).not.toContain('executeApproved');
+  });
+
 
   it('AgentRun history Host workbench focus for task.create reopen (residual 441)', () => {
     expect(helper).toContain('resolveHostWorkbenchFocusFromAgentRun');
