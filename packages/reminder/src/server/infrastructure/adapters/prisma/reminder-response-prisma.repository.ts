@@ -53,6 +53,13 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
     return data ? this.mapToEntity(data) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<ReminderResponse | null> {
+    const data = await this.prisma.reminderResponse.findFirst({
+      where: { id, identityId },
+    });
+    return data ? this.mapToEntity(data) : null;
+  }
+
   async findByTemplateId(
     templateId: string,
     identityId: string,

@@ -61,4 +61,13 @@ describe('reminder response ownership surface', () => {
       'recordReminderResponse.getResponseStats(templateId, ctx.identityId)',
     );
   });
+
+  it('findByIdForIdentity requires identityId (residual 148)', () => {
+    expect(port).toContain(
+      'findByIdForIdentity(identityId: string, id: string): Promise<ReminderResponse | null>;',
+    );
+    expect(prisma).toContain('async findByIdForIdentity(identityId: string, id: string)');
+    expect(prisma).toContain('where: { id, identityId }');
+  });
+
 });

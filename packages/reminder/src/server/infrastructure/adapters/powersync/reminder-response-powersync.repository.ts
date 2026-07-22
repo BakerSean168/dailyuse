@@ -58,6 +58,14 @@ export class ReminderResponsePowerSyncRepository implements IReminderResponseRep
     return row ? PowerSyncReminderResponseMapper.toDomain(row) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<ReminderResponse | null> {
+    const row = await this.db.getOptional<PowerSyncReminderResponseRow>(
+      'SELECT * FROM reminder_responses WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
+    );
+    return row ? PowerSyncReminderResponseMapper.toDomain(row) : null;
+  }
+
   async findByTemplateId(
     templateId: string,
     identityId: string,
