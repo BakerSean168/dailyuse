@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -7,6 +7,7 @@
  * ProposalKernel mutation execution from this module.
  * Residual 519: task draft title/goalId read create_task_template only (no blind pending[0]).
  * Residual 521: knowledge draft path/markdown read create_knowledge_note only (no blind pending[0]).
+ * Residual 523: goal draft title/description read create_goal only (no blind pending[0]).
  */
 import type {
   AgentAction,
@@ -339,6 +340,20 @@ export function isHostProposalDraftDirty(input: {
   return (input.title ?? '').trim() !== input.item.title.trim();
 }
 
+/**
+ * Residual 523: product goal draft action is create_goal only
+ * (task residual 519 / knowledge residual 521 symmetry). Never read foreign tool pending[0].
+ */
+function firstCreateGoalAction(run: AgentRunResult): AgentAction | undefined {
+  return (
+    run.state.pendingActions.find((action) => action.tool === 'create_goal') ??
+    run.state.approvedActions.find((action) => action.tool === 'create_goal')
+  );
+}
+
+/**
+ * Residual 367/523: goal draft title from artifact / create_goal payload.
+ */
 function goalDraftTitle(run: AgentRunResult): string {
   const goalArtifact = run.state.artifacts.find(
     (artifact) =>
@@ -349,19 +364,23 @@ function goalDraftTitle(run: AgentRunResult): string {
   if (goalArtifact && typeof goalArtifact.title === 'string' && goalArtifact.title.trim()) {
     return goalArtifact.title.trim();
   }
-  const createGoal = (run.state.pendingActions[0] ?? run.state.approvedActions[0])?.payload;
+  // Residual 523: only create_goal draft payload — not blind pending[0].
+  const createGoal = firstCreateGoalAction(run)?.payload;
   const title = createGoal && typeof createGoal['title'] === 'string' ? createGoal['title'] : '';
   return title.trim();
 }
 
-/** Residual 367: extract goal draft description for Host proposal panel. */
+/**
+ * Residual 367/523: goal draft description from artifact / create_goal payload.
+ */
 function goalDraftDescription(run: AgentRunResult): string {
   const goalArtifact = run.state.artifacts.find(
     (artifact) => artifact.kind === 'goal_draft' || artifact.kind === 'goal',
   );
   const fromData = goalArtifact?.data?.['description'];
   if (typeof fromData === 'string') return fromData;
-  const createGoal = (run.state.pendingActions[0] ?? run.state.approvedActions[0])?.payload;
+  // Residual 523: only create_goal draft payload — not blind pending[0].
+  const createGoal = firstCreateGoalAction(run)?.payload;
   const description =
     createGoal && typeof createGoal['description'] === 'string' ? createGoal['description'] : '';
   return description;

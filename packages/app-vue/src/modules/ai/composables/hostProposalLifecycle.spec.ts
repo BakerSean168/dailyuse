@@ -1668,6 +1668,53 @@ describe('knowledge draft create_knowledge_note-only payload (residual 521)', ()
   });
 });
 
+describe('goal draft create_goal-only payload (residual 523)', () => {
+  it('ignores foreign pending[0] tool when reading title/description for workbench', () => {
+    const run = goalWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_task_template',
+        rationale: 'foreign',
+        payload: { title: 'Foreign Task Title', description: 'Foreign task desc' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_goal',
+        rationale: 'goal',
+        payload: { title: 'Real Goal Title', description: 'Real goal description' },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ goalAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.title).toBe('Real Goal Title');
+    expect(items[0]?.description).toBe('Real goal description');
+  });
+
+  it('does not invent title/description from foreign-only pending actions', () => {
+    const run = goalWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_task_template',
+        rationale: 'foreign-only',
+        payload: { title: 'Only Foreign', description: 'Only foreign desc' },
+        dependsOn: [],
+      },
+    ];
+    run.state.approvedActions = [];
+    const items = buildPendingHostProposalItems({ goalAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.title).not.toBe('Only Foreign');
+    expect(items[0]?.description).not.toBe('Only foreign desc');
+    // Falls through to empty title fallback label, not foreign payload.
+    expect(items[0]?.title).toContain('Goal run');
+    expect(items[0]?.description ?? '').toBe('');
+  });
+});
+
+
 
 describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {
   it('returns true only for dirty owned task.create sessions', () => {

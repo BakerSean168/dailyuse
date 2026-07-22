@@ -1039,6 +1039,23 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('goal.create draft title/description reads create_goal only (residual 523)', () => {
+    expect(helper).toContain('firstCreateGoalAction');
+    expect(helper).toContain('Residual 523');
+    const titleIdx = helper.indexOf('function goalDraftTitle');
+    const descIdx = helper.indexOf('function goalDraftDescription');
+    expect(titleIdx).toBeGreaterThan(-1);
+    expect(descIdx).toBeGreaterThan(-1);
+    const titleSlice = helper.slice(titleIdx, titleIdx + 700);
+    const descSlice = helper.slice(descIdx, descIdx + 600);
+    expect(titleSlice).toContain('firstCreateGoalAction(run)');
+    expect(titleSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+    expect(descSlice).toContain('firstCreateGoalAction(run)');
+    expect(descSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

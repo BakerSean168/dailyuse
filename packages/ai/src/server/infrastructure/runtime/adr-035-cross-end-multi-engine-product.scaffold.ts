@@ -366,6 +366,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 521: client knowledge draft path/markdown create_knowledge_note only.
         'Residual 521',
         'firstCreateKnowledgeNoteAction',
+        // Residual 523: client goal draft title/description create_goal only.
+        'Residual 523',
+        'firstCreateGoalAction',
       ],
       status: 'implemented_unit',
     },
