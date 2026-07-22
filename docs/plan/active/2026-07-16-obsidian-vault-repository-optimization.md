@@ -3266,6 +3266,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 真实 OAuth 跨端 E2E、完整 multi-engine runtime E2E、统一助手 UI 工作台、Desktop IPC stream、
 > 真实 Pi SDK/CLI、GitHub App fixture E2E、全量 PR 门禁。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百四十九轮）：Vue AssistantFacade 薄入口（仍不打勾）——
+> `useAssistantDispatch`（message/approve/reject/cancel）经 `dispatchAssistant`；body 永不带
+> `identityId`；open chat 默认路径仍为既有 chat session。验证：app-vue composable/surface +
+> product-docs + module-index + governance-check。§13.2 Agent 仍为部分。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
+
 
 
 
@@ -3695,6 +3702,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百四十六轮：§13.2 focused evidence suite re-run（277 tests，residuals 250–345 锁；不改 checkbox）。
   残留三百四十七轮：AssistantFacade 客户端 dispatchAssistant（HTTP SSE + IPC NOT_SUPPORTED）。
   残留三百四十八轮：§13.2 focused evidence suite re-run（281 tests，residuals 250–347 锁；不改 checkbox）。
+  残留三百四十九轮：Vue useAssistantDispatch 薄入口（仍不切换完整 open chat 默认路径）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3738,6 +3746,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百四十六轮：§13.2 focused evidence suite re-run (277 tests, residuals 250–345 locks, no checkbox changes)。
   残留三百四十七轮：AssistantFacade client dispatchAssistant (HTTP SSE + IPC NOT_SUPPORTED)。
   残留三百四十八轮：§13.2 focused evidence suite re-run (281 tests, residuals 250–347 locks, no checkbox changes)。
+  残留三百四十九轮：Vue useAssistantDispatch thin entry (open chat default path unchanged)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3867,6 +3876,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百四十六轮：tip 上 277 项 focused evidence suite（含 residual 250–345 AssistantFacade transport 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百四十七轮：AssistantFacade 客户端 HTTP/SSE 适配落地；仍不构成统一助手 UI 工作台/Desktop IPC stream 证据。
   残留三百四十八轮：tip 上 281 项 focused evidence suite（含 residual 250–347 AssistantFacade client 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百四十九轮：Vue useAssistantDispatch 薄入口落地；仍不构成统一助手 UI 工作台/完整 open chat 切换证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

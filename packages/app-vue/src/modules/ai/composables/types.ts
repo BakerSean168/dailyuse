@@ -91,6 +91,7 @@ export type AIChatService = Pick<
   | 'updateConversation'
   | 'deleteConversation'
   | 'streamMessage'
+  | 'dispatchAssistant'
   | 'generateGoal'
   | 'queryKnowledge'
   | 'listAgentRuns'
