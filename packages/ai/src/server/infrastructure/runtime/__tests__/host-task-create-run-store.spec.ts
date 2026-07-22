@@ -174,3 +174,96 @@ describe('host-task-create-run-store identity binding (residual 451)', () => {
   });
 });
 
+describe('host-task-create-run-store conversation/thread binding (residual 457)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('fails closed when same identity rebinds runId to another conversation', () => {
+    const store = createHostTaskCreateRunStore();
+    store.upsert(
+      buildHostTaskCreateStartResult({
+        request: { ...request('run-conv', 'Owned'), conversationId: 'conv-a' },
+        identityId: 'owner-1',
+        nowMs: 10,
+      }),
+    );
+
+    expect(() =>
+      store.upsert(
+        buildHostTaskCreateStartResult({
+          request: { ...request('run-conv', 'Other conv'), conversationId: 'conv-b' },
+          identityId: 'owner-1',
+          nowMs: 20,
+        }),
+      ),
+    ).toThrow(/already bound to another conversation/);
+
+    expect(store.get('run-conv', 'owner-1')?.run.conversationId).toBe('conv-a');
+    expect(store.list('owner-1', { conversationId: 'conv-a' })).toHaveLength(1);
+    expect(store.list('owner-1', { conversationId: 'conv-b' })).toHaveLength(0);
+  });
+
+  it('fails closed when same identity rebinds runId to another thread', () => {
+    const store = createHostTaskCreateRunStore();
+    store.upsert(
+      buildHostTaskCreateStartResult({
+        request: { ...request('run-thread', 'Owned'), threadId: 'thread-a' },
+        identityId: 'owner-1',
+        nowMs: 10,
+      }),
+    );
+
+    expect(() =>
+      store.upsert(
+        buildHostTaskCreateStartResult({
+          request: { ...request('run-thread', 'Other thread'), threadId: 'thread-b' },
+          identityId: 'owner-1',
+          nowMs: 20,
+        }),
+      ),
+    ).toThrow(/already bound to another thread/);
+
+    expect(store.get('run-thread', 'owner-1')?.run.threadId).toBe('thread-a');
+  });
+
+  it('allows same-identity resume upsert with matching conversation/thread', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: {
+        ...request('run-same-session', 'Owned'),
+        conversationId: 'conv-1',
+        threadId: 'thread-1',
+      },
+      identityId: 'owner-1',
+      nowMs: 10,
+    });
+    store.upsert(started);
+    const updated = {
+      ...started,
+      run: { ...started.run, updatedAt: 30, status: 'cancelled' as const },
+    };
+    store.upsert(updated);
+    expect(store.get('run-same-session', 'owner-1')?.run.status).toBe('cancelled');
+    expect(store.get('run-same-session', 'owner-1')?.run.conversationId).toBe('conv-1');
+  });
+
+  it('activeOnly excludes terminal runs after cancel/complete (residual 457)', () => {
+    const store = createHostTaskCreateRunStore();
+    const waiting = buildHostTaskCreateStartResult({
+      request: { ...request('run-active', 'Active'), conversationId: 'conv-1' },
+      identityId: 'owner-1',
+      nowMs: 10,
+    });
+    store.upsert(waiting);
+    expect(store.list('owner-1', { conversationId: 'conv-1', activeOnly: true })).toHaveLength(1);
+
+    store.upsert({
+      ...waiting,
+      run: { ...waiting.run, status: 'completed', updatedAt: 20 },
+    });
+    expect(store.list('owner-1', { conversationId: 'conv-1', activeOnly: true })).toHaveLength(0);
+    expect(store.list('owner-1', { conversationId: 'conv-1', status: ['completed'] })).toHaveLength(1);
+  });
+});
+

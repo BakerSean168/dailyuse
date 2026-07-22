@@ -1,5 +1,5 @@
 /**
- * Residual 435/447/451: process-local Host task.create run store foundation.
+ * Residual 435/447/451/457: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
@@ -11,6 +11,9 @@
  *
  * Residual 451: runId is identity-bound — foreign identity cannot upsert/take over
  * an existing process-local task.create entry (fail-closed Agent isolation).
+ *
+ * Residual 457: runId is conversation/thread-bound — same identity cannot rebind an
+ * existing runId to a different conversation or thread (session isolation).
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
@@ -29,6 +32,14 @@ export const HOST_TASK_CREATE_RUN_STORE_MAX_ENTRIES = 64;
 /** Residual 451: fail-closed message when runId is already bound to another identity. */
 export const HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE =
   'Host task.create process-local runId is already bound to another identity.';
+
+/** Residual 457: fail-closed when runId conversation binding would change. */
+export const HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE =
+  'Host task.create process-local runId is already bound to another conversation.';
+
+/** Residual 457: fail-closed when runId thread binding would change. */
+export const HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE =
+  'Host task.create process-local runId is already bound to another thread.';
 
 export type HostTaskCreateRunStore = {
   upsert(result: AgentRunResult): void;
@@ -70,6 +81,17 @@ export function createHostTaskCreateRunStore(
       const existing = byRunId.get(result.run.runId);
       if (existing && existing.run.identityId !== result.run.identityId) {
         throw new Error(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE);
+      }
+      // Residual 457: conversation/thread binding (no session rebinding via runId reuse).
+      if (existing) {
+        const existingConversation = existing.run.conversationId ?? null;
+        const nextConversation = result.run.conversationId ?? null;
+        if (existingConversation !== nextConversation) {
+          throw new Error(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE);
+        }
+        if (existing.run.threadId !== result.run.threadId) {
+          throw new Error(HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE);
+        }
       }
       byRunId.set(result.run.runId, result);
       pruneOldest(byRunId, maxEntries);

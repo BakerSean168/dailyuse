@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -8,6 +8,7 @@
  *   runId identity binding (residual 451)
  *   confirm requires client settlement (residual 453)
  *   edit requires non-empty title (residual 455)
+ *   conversation/thread runId binding (residual 457)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -335,6 +336,67 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillOriginal.data.run.status).toBe('waiting_approval');
     expect(stillOriginal.data.state.pendingActions[0]?.payload['title']).toBe('Keep original');
     expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
+
+  it('fails closed on same-identity conversation rebinding of runId (residual 457)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-session' } as const;
+
+    const first = await service.startRun(
+      {
+        runId: 'run-journey-session',
+        threadId: 'thread-session-a',
+        conversationId: 'conv-session-a',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Session A draft' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(first.ok).toBe(true);
+
+    const rebind = await service.startRun(
+      {
+        runId: 'run-journey-session',
+        threadId: 'thread-session-a',
+        conversationId: 'conv-session-b',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Session B takeover' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(rebind.ok).toBe(false);
+    if (rebind.ok) return;
+    expect(rebind.error.code).toBe('VALIDATION_ERROR');
+    expect(rebind.error.message).toMatch(/already bound to another conversation/);
+
+    const listedA = await service.listRuns(
+      { conversationId: 'conv-session-a', activeOnly: true },
+      cx as any,
+    );
+    expect(listedA.ok).toBe(true);
+    if (!listedA.ok) return;
+    expect(listedA.data.some((run) => run.runId === 'run-journey-session')).toBe(true);
+
+    const listedB = await service.listRuns(
+      { conversationId: 'conv-session-b' },
+      cx as any,
+    );
+    expect(listedB.ok).toBe(true);
+    if (!listedB.ok) return;
+    expect(listedB.data.some((run) => run.runId === 'run-journey-session')).toBe(false);
+
+    const stillA = await service.getRun('run-journey-session', cx as any);
+    expect(stillA.ok).toBe(true);
+    if (!stillA.ok) return;
+    expect(stillA.data.run.conversationId).toBe('conv-session-a');
+    expect(stillA.data.state.pendingActions[0]?.payload['title']).toBe('Session A draft');
+    expect(port.startRun).not.toHaveBeenCalled();
   });
 
 });

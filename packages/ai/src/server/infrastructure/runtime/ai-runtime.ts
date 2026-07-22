@@ -26,6 +26,8 @@ import { buildHostTaskCreateResumeResult } from './host-task-create-resume';
 import {
   getDefaultHostTaskCreateRunStore,
   HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE,
+  HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE,
+  HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE,
 } from './host-task-create-run-store';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
@@ -1183,11 +1185,17 @@ export function createAgentRuntimeService(
             request: requestWithKnowledge.data,
             error: err,
           });
-          if (
-            err instanceof Error &&
-            err.message.includes(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE)
-          ) {
-            return error('FORBIDDEN', err.message);
+          if (err instanceof Error) {
+            if (err.message.includes(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE)) {
+              return error('FORBIDDEN', err.message);
+            }
+            // Residual 457: conversation/thread rebinding is fail-closed (validation, not auth).
+            if (
+              err.message.includes(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE)
+            ) {
+              return error('VALIDATION_ERROR', err.message);
+            }
           }
           throw err;
         }

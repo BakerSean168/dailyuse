@@ -271,6 +271,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 455: edit revise requires non-empty title.
         'HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE',
         'requires a non-empty revised title',
+        // Residual 457: conversation/thread runId binding + activeOnly isolation.
+        'HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE',
+        'HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE',
+        'already bound to another conversation',
       ],
       status: 'implemented_unit',
     },

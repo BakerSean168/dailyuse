@@ -258,6 +258,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE'];
     case 'requires a non-empty revised title':
       return ['requires a non-empty revised title'];
+    case 'HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE':
+      return ['HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE'];
+    case 'HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE':
+      return ['HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE'];
+    case 'already bound to another conversation':
+      return ['already bound to another conversation'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
