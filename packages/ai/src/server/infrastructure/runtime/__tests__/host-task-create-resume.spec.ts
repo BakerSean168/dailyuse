@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475/477)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475/477/481)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -819,5 +819,80 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/
     ).toThrow(/cancel requires waiting_approval/);
   });
 
+
+
+  it('edit fails closed when status is waiting_execution (residual 481)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit-exec-status'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const drifted = {
+      ...started,
+      run: {
+        ...started.run,
+        status: 'waiting_execution' as const,
+      },
+    };
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: drifted,
+        payload: {
+          userDecision: 'edit',
+          approvedActions: [
+            {
+              tool: 'create_task_template',
+              index: 0,
+              dependsOn: [],
+              rationale: 'Revise',
+              payload: { title: 'Should not apply' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/edit requires waiting_approval/);
+  });
+
+  it('edit fails closed after completed (residual 481)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit-after-complete'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const completed = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created',
+            entityId: 'tpl-edit-after',
+            data: { title: 'Ship residual 439' },
+          },
+        ],
+      },
+      nowMs: 2,
+    });
+    expect(completed.run.status).toBe('completed');
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: completed,
+        payload: {
+          userDecision: 'edit',
+          approvedActions: [
+            {
+              tool: 'create_task_template',
+              index: 0,
+              dependsOn: [],
+              rationale: 'Revise after complete',
+              payload: { title: 'Should not apply' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/edit requires waiting_approval/);
+  });
 
 });

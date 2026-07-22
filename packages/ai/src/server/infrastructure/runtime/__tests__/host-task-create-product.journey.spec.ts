@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475/477/479: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475/477/479/481: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -19,6 +19,7 @@
  *   confirm waiting_approval only (residual 475)
  *   cancel waiting_approval only (residual 477)
  *   start non-empty title fail-closed (residual 479)
+ *   edit waiting_approval only (residual 481)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -808,6 +809,96 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillCompleted.data.run.status).toBe('completed');
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
+
+
+  it('edit fails closed after completed and only works from waiting_approval (residual 481)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-edit-status' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-edit-status',
+        threadId: 'thread-journey-edit-status',
+        conversationId: 'conv-journey-edit-status',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Edit status' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    // Happy path revise from waiting_approval.
+    const edited = await service.resumeRun(
+      'run-journey-edit-status',
+      {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'Revise title',
+            payload: { title: 'Edited status title' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(edited.ok).toBe(true);
+    if (!edited.ok) return;
+    expect(edited.data.run.status).toBe('waiting_approval');
+    expect(edited.data.state.pendingActions[0]?.payload['title']).toBe('Edited status title');
+
+    const completed = await service.resumeRun(
+      'run-journey-edit-status',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created',
+            entityId: 'tpl-edit-status',
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(completed.ok).toBe(true);
+    if (!completed.ok) return;
+    expect(completed.data.run.status).toBe('completed');
+
+    const failEdit = await service.resumeRun(
+      'run-journey-edit-status',
+      {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'Should fail',
+            payload: { title: 'After complete' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(failEdit.ok).toBe(false);
+    if (failEdit.ok) return;
+    expect(failEdit.error.code).toBe('VALIDATION_ERROR');
+    expect(failEdit.error.message).toMatch(/edit requires waiting_approval/);
+
+    const stillCompleted = await service.getRun('run-journey-edit-status', cx as any);
+    expect(stillCompleted.ok).toBe(true);
+    if (!stillCompleted.ok) return;
+    expect(stillCompleted.data.run.status).toBe('completed');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
 
   it('confirm normalizes settlement template id and fails closed without recoverable id (residual 465)', async () => {
     const port = makePort();

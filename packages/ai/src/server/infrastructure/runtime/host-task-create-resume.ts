@@ -36,6 +36,9 @@
  * Residual 477: cancel only from waiting_approval (symmetric product status with
  * confirm/edit; no waiting_execution/running/pending cancel side-door).
  *
+ * Residual 481: edit only from waiting_approval via named constant (symmetric with
+ * confirm/cancel product status; no ad-hoc status string invent).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -66,6 +69,10 @@ export const HOST_TASK_CREATE_CONFIRM_REQUIRES_WAITING_APPROVAL_MESSAGE =
 /** Residual 477: cancel outside waiting_approval is fail-closed. */
 export const HOST_TASK_CREATE_CANCEL_REQUIRES_WAITING_APPROVAL_MESSAGE =
   'Host task.create cancel requires waiting_approval.';
+
+/** Residual 481: edit outside waiting_approval is fail-closed (symmetric with confirm/cancel). */
+export const HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE =
+  'Host task.create edit requires waiting_approval.';
 
 /** Residual 463: confirm without recoverable settlement title is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE =
@@ -243,11 +250,8 @@ export function buildHostTaskCreateResumeResult(input: {
   if (decision === 'confirm' && status === 'completed') {
     return current;
   }
-  if (decision === 'edit' && (status === 'cancelled' || status === 'completed' || status === 'failed')) {
-    throw new Error(
-      `Host task.create edit requires an active approval run; current status is '${status}'.`,
-    );
-  }
+  // Residual 481: edit has no terminal idempotent resume — fail-closed via waiting_approval
+  // gate in the edit branch (completed/cancelled/failed/waiting_execution all rejected).
 
   if (decision === 'cancel') {
     // Residual 477: product cancel only from waiting_approval (start/edit product status).
@@ -402,12 +406,11 @@ export function buildHostTaskCreateResumeResult(input: {
     });
   }
 
-  // Residual 439/455/473: Host revise → keep waiting_approval with single patched pending action.
+  // Residual 439/455/473/481: Host revise → keep waiting_approval with single patched pending action.
   if (decision === 'edit') {
+    // Residual 481: product revise only from waiting_approval (start/confirm/cancel symmetry).
     if (status !== 'waiting_approval') {
-      throw new Error(
-        `Host task.create edit requires waiting_approval; current status is '${status}'.`,
-      );
+      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE);
     }
     if (!input.payload.approvedActions || input.payload.approvedActions.length === 0) {
       throw new Error('Host task.create edit requires non-empty approvedActions as revised pending actions.');
