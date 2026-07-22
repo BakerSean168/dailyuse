@@ -5,6 +5,7 @@ import { toast } from 'vue-sonner';
 import type {
   AgentArtifact,
   AgentExecutedAction,
+  AgentRunResult,
   AgentStartRunClientRequest,
 } from '@dailyuse/contracts/ai';
 import type { Ref } from 'vue';
@@ -13,7 +14,6 @@ import type {
   ChatItem,
   ChatModelOption,
   KnowledgeAnswer,
-  KnowledgeNoteAgentRunResult,
   NoteSummary,
 } from './types';
 import { getAIErrorMessage } from './error';
@@ -137,7 +137,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     };
   }
 
-  function noteSummaryFromAgentRun(run: KnowledgeNoteAgentRunResult): NoteSummary | null {
+  function noteSummaryFromAgentRun(run: AgentRunResult): NoteSummary | null {
     for (const action of run.state.executedActions) {
       const summary = noteSummaryFromExecutedAction(action);
       if (summary) return summary;
@@ -145,12 +145,12 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     return null;
   }
 
-  function syncKnowledgeNoteAgentRun(run: KnowledgeNoteAgentRunResult) {
+  function syncKnowledgeNoteAgentRun(run: AgentRunResult) {
     noteAgentRun.value = run;
     noteSummary.value = noteSummaryFromAgentRun(run);
   }
 
-  function getKnowledgeNoteSaveFailure(run: KnowledgeNoteAgentRunResult): string {
+  function getKnowledgeNoteSaveFailure(run: AgentRunResult): string {
     return (
       run.state.executedActions.find(
         (action) => action.tool === 'create_knowledge_note' && action.status === 'failed',

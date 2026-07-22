@@ -1,18 +1,16 @@
 import { ref, watch, type Ref } from 'vue';
+import type { AgentRunResult } from '@dailyuse/contracts/ai';
 import {
   createEmptyGoalDraft,
   type EditableGoal,
   type EditableKeyResult,
   type EditableGoalReminder,
   type EditableGoalTaskTemplate,
-  type GoalAgentRunResult,
   type GoalAutomationResult,
   type GoalClarification,
   type GoalDraft,
   type GoalWorkflowStage,
   type KnowledgeAnswer,
-  type KnowledgeQaAgentRunResult,
-  type KnowledgeNoteAgentRunResult,
   type NoteSummary,
   type PersistedWorkflowEntry,
   type WorkflowMode,
@@ -29,9 +27,9 @@ export interface UseAIWorkflowPersistenceOptions {
   goalDraft: Ref<GoalDraft | null>;
   goalClarification: Ref<GoalClarification | null>;
   goalAutomationResult: Ref<GoalAutomationResult | null>;
-  goalAgentRun: Ref<GoalAgentRunResult | null>;
-  knowledgeQaAgentRun: Ref<KnowledgeQaAgentRunResult | null>;
-  noteAgentRun: Ref<KnowledgeNoteAgentRunResult | null>;
+  goalAgentRun: Ref<AgentRunResult | null>;
+  knowledgeQaAgentRun: Ref<AgentRunResult | null>;
+  noteAgentRun: Ref<AgentRunResult | null>;
   knowledgeAnswer: Ref<KnowledgeAnswer | null>;
   clarificationAnswers: Ref<string[]>;
   editableGoal: Ref<EditableGoal>;

@@ -3,9 +3,11 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import type {
+  AgentAction,
   AgentActionPlan,
   AgentArtifact,
   AgentResumePayload,
+  AgentRunResult,
   AgentStartRunClientRequest,
   GeneratedGoalDraft,
   KeyResultPreview,
@@ -19,8 +21,6 @@ import {
   type EditableGoalReminder,
   type EditableGoalTaskTemplate,
   type GoalAutomationResult,
-  type GoalAgentAction,
-  type GoalAgentRunResult,
   type GoalClarification,
   type GoalDraft,
   type GoalWorkflowStage,
@@ -73,7 +73,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   const creatingGoal = ref(false);
   const automationLoading = ref(false);
   const automationExecuting = ref(false);
-  const goalAgentRun = ref<GoalAgentRunResult | null>(null);
+  const goalAgentRun = ref<AgentRunResult | null>(null);
   const goalAgentLoading = ref(false);
   const goalAgentResuming = ref(false);
   const editableGoal = ref<EditableGoal>(createEmptyGoalDraft());
@@ -196,7 +196,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return `${prefix}-${randomId}`;
   }
 
-  function syncGoalAgentStage(result: GoalAgentRunResult) {
+  function syncGoalAgentStage(result: AgentRunResult) {
     if (result.run.status === 'waiting_clarification') {
       goalWorkflowStage.value = 'clarification';
       return;
@@ -216,7 +216,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     goalWorkflowStage.value = 'plan';
   }
 
-  function getGoalAgentClarification(result: GoalAgentRunResult): GoalClarification | null {
+  function getGoalAgentClarification(result: AgentRunResult): GoalClarification | null {
     const interrupt = result.interrupts.find(
       (item) => isRecord(item) && item.type === 'clarification.required',
     );
@@ -242,7 +242,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     };
   }
 
-  function syncGoalAgentRun(result: GoalAgentRunResult) {
+  function syncGoalAgentRun(result: AgentRunResult) {
     const previousRun = goalAgentRun.value;
     goalAgentRun.value = result;
     if (result.run.status === 'waiting_clarification') {
@@ -359,16 +359,16 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       .filter((item) => item.title);
   }
 
-  function findGoalAgentArtifactData(run: GoalAgentRunResult, kind: string): Record<string, unknown> {
+  function findGoalAgentArtifactData(run: AgentRunResult, kind: string): Record<string, unknown> {
     const artifact = run.state.artifacts.find((item) => item.kind === kind);
     return isRecord(artifact?.data) ? artifact.data : {};
   }
 
-  function findGoalAgentArtifact(run: GoalAgentRunResult, kind: AgentArtifact['kind']) {
+  function findGoalAgentArtifact(run: AgentRunResult, kind: AgentArtifact['kind']) {
     return run.state.artifacts.find((item) => item.kind === kind) ?? null;
   }
 
-  function getGoalAgentExecutionRecovery(run: GoalAgentRunResult): Record<string, unknown> | null {
+  function getGoalAgentExecutionRecovery(run: AgentRunResult): Record<string, unknown> | null {
     const data = findGoalAgentArtifactData(run, 'execution_timeline');
     return isRecord(data.recovery) ? data.recovery : null;
   }
@@ -389,7 +389,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function syncEditableDraftFromGoalAgentRun(
-    result: GoalAgentRunResult,
+    result: AgentRunResult,
     options: { force: boolean },
   ) {
     if (
@@ -429,7 +429,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableReminders.value = coerceReminders(goalData.reminders);
   }
 
-  function buildEditedGoalDraftData(run: GoalAgentRunResult): Record<string, unknown> {
+  function buildEditedGoalDraftData(run: AgentRunResult): Record<string, unknown> {
     const goalData = findGoalAgentArtifactData(run, 'goal_draft');
     const now = Date.now();
     const startDate = editableGoal.value.startDate ?? getNumber(goalData, 'suggestedStartDate', now);
@@ -486,12 +486,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     };
   }
 
-  function getGoalAgentActionPlanSummary(run: GoalAgentRunResult): string {
+  function getGoalAgentActionPlanSummary(run: AgentRunResult): string {
     const actionPlanData = findGoalAgentArtifactData(run, 'action_plan');
     return getString(actionPlanData, 'summary') || 'Execute approved Agent goal action plan.';
   }
 
-  function buildEditedApprovedActions(run: GoalAgentRunResult): GoalAgentAction[] {
+  function buildEditedApprovedActions(run: AgentRunResult): AgentAction[] {
     const sourceActions = run.state.pendingActions.length
       ? run.state.pendingActions
       : run.state.approvedActions;
@@ -582,7 +582,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function normalizePreservedActionDependsOn(
-    action: GoalAgentAction,
+    action: AgentAction,
     keyResultCount: number,
   ): number[] {
     if (action.tool === 'create_task_template') {
@@ -595,8 +595,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function buildEditedGoalAgentArtifacts(
-    run: GoalAgentRunResult,
-    approvedActions: GoalAgentAction[],
+    run: AgentRunResult,
+    approvedActions: AgentAction[],
   ): AgentArtifact[] {
     const now = Date.now();
     const draftData = buildEditedGoalDraftData(run);
@@ -626,8 +626,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function buildEditedGoalAgentApprovedPlan(
-    run: GoalAgentRunResult,
-    approvedActions: GoalAgentAction[],
+    run: AgentRunResult,
+    approvedActions: AgentAction[],
   ): AgentActionPlan {
     const actionPlanData = findGoalAgentArtifactData(run, 'action_plan');
     return {
@@ -638,7 +638,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function buildGoalAgentApprovalPayload(
-    run: GoalAgentRunResult,
+    run: AgentRunResult,
     userDecision: AgentResumePayload['userDecision'],
   ): AgentResumePayload {
     if (userDecision !== 'confirm') {

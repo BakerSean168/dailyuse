@@ -1,5 +1,12 @@
+import type {
+  AgentAction,
+} from '@dailyuse/contracts/ai';
 import { useI18n } from 'vue-i18n';
-import type { GoalAgentAction, GoalAutomationResult, GoalExecutedAction, ChatItem } from './types';
+import type {
+  GoalAutomationResult,
+  GoalExecutedAction,
+  ChatItem,
+} from './types';
 
 export function useAIFormatters() {
   const { t } = useI18n();
@@ -26,7 +33,7 @@ export function useAIFormatters() {
     return labels[tool];
   }
 
-  function formatAgentTool(tool: GoalAgentAction['tool'] | string): string {
+  function formatAgentTool(tool: AgentAction['tool'] | string): string {
     const labels: Record<string, string> = {
       create_goal: t('aiAssistant.dialogs.automation.toolLabels.createGoal'),
       create_key_result: t('aiAssistant.dialogs.automation.toolLabels.createKeyResult'),

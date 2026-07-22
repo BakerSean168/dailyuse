@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { AgentAction, AgentRunResult } from '@dailyuse/contracts/ai';
 /**
  * AIWorkflowActionBar — 工作流生命周期操作条（V2 §6.0）
  *
@@ -15,10 +16,9 @@ import { AlertTriangle } from '@lucide/vue';
 import type {
   GoalClarification,
   KnowledgeAnswer,
-  KnowledgeNoteAgentRunResult,
   NoteSummary,
   WorkflowMode,
-} from '../composables/types';
+} from '../composables';
 
 defineProps<{
   toolMode: WorkflowMode;
@@ -39,7 +39,7 @@ defineProps<{
   goalAgentWaitingForExecution: boolean;
 
   // ── knowledge note / qa 状态 ──
-  noteAgentRun: KnowledgeNoteAgentRunResult | null;
+  noteAgentRun: AgentRunResult | null;
   noteSummary: NoteSummary | null;
   noteAgentLoading: boolean;
   noteCreating: boolean;

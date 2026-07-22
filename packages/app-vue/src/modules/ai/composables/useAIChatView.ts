@@ -1,4 +1,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import type {
+  AgentRun,
+  AgentRunResult,
+} from '@dailyuse/contracts/ai';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
@@ -22,7 +26,6 @@ import {
 } from './chatViewHelpers';
 import { unwrap } from '@dailyuse/contracts/result';
 import type {
-  AgentRunSummary,
   AIWorkspaceRecentGoal,
   AIWorkspaceRecentKnowledgeNote,
   ConversationSummary,
@@ -73,7 +76,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   }
 
   const toolMode = ref<WorkflowMode>('chat');
-  const agentRunList = ref<AgentRunSummary[]>([]);
+  const agentRunList = ref<AgentRun[]>([]);
   const agentRunListLoading = ref(false);
   const adjustComposerHeight = () => createAdjustComposerHeight(options.getComposerTextarea);
 
@@ -270,7 +273,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     }
   }
 
-  function syncAgentRunListItem(run: AgentRunSummary | null | undefined) {
+  function syncAgentRunListItem(run: AgentRun | null | undefined) {
     if (!run) return;
     agentRunList.value = agentRunList.value.filter((item) => item.runId !== run.runId);
     agentRunList.value = [run, ...agentRunList.value]
@@ -427,7 +430,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     }
   }
 
-  async function selectAgentRun(run: AgentRunSummary) {
+  async function selectAgentRun(run: AgentRun) {
     const conversationId = run.conversationId;
     if (!conversationId) return;
 

@@ -4,12 +4,10 @@ import type {
 } from '@dailyuse/contracts/goal';
 import type { Ref } from 'vue';
 import type {
-  AgentAction,
   AgentRun,
   AgentRunResult,
   ConversationListRes,
   MessageListRes,
-  SendMessageRes,
   GoalAutomationReminderPreview,
   GoalAutomationTaskTemplatePreview,
   GoalClarificationDTO,
@@ -82,7 +80,6 @@ export type ChatModelOption = {
   modelName: string;
 };
 
-export type StreamDoneResult = SendMessageRes;
 
 export type ConversationMessageSummary = MessageListRes['data'][number];
 
@@ -108,8 +105,6 @@ export type GoalDraft = GoalWorkflowDraftResultDTO;
 export type GoalClarification = GoalClarificationDTO;
 export type GoalAutomationResult = Extract<GenerateGoalsRes, { state: 'confirm' | 'result' }>;
 export type GoalExecutedAction = Extract<GenerateGoalsRes, { state: 'result' }>['executedActions'][number];
-export type GoalAgentRunResult = AgentRunResult;
-export type AgentRunSummary = AgentRun;
 export type AIWorkspaceRecentGoal = {
   id: string;
   title: string;
@@ -124,9 +119,6 @@ export type AIWorkspaceRecentKnowledgeNote = {
   path: string;
   updatedAt: number;
 };
-export type GoalAgentAction = AgentAction;
-export type KnowledgeQaAgentRunResult = AgentRunResult;
-export type KnowledgeNoteAgentRunResult = AgentRunResult;
 export type KnowledgeRelatedNote = {
   resourceId: string;
   resourcePath: string;
@@ -205,9 +197,9 @@ export type PersistedWorkflowEntry = {
   goalDraft: GoalDraft | null;
   goalClarification: GoalClarification | null;
   goalAutomationResult: GoalAutomationResult | null;
-  goalAgentRun?: GoalAgentRunResult | null;
-  knowledgeQaAgentRun?: KnowledgeQaAgentRunResult | null;
-  noteAgentRun?: KnowledgeNoteAgentRunResult | null;
+  goalAgentRun?: AgentRunResult | null;
+  knowledgeQaAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
   knowledgeAnswer?: KnowledgeAnswer | null;
   clarificationAnswers: string[];
   editableGoal: EditableGoal;

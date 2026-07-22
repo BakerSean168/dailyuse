@@ -1,4 +1,7 @@
 import { computed, nextTick, ref } from 'vue';
+import type {
+  SendMessageRes,
+} from '@dailyuse/contracts/ai';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type {
@@ -7,7 +10,6 @@ import type {
   ChatModelOption,
   ConversationMessageSummary,
   ConversationSummary,
-  StreamDoneResult,
 } from './types';
 import { unwrap } from '@dailyuse/contracts/result';
 import { getAIErrorMessage } from './error';
@@ -250,7 +252,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
             }
           },
           onDone: async (result: unknown) => {
-            const resolved = (result ?? {}) as StreamDoneResult;
+            const resolved = (result ?? {}) as SendMessageRes;
             const assistantIndex = chatTimeline.value.findIndex(
               (item) => item.id === assistantDraftId,
             );

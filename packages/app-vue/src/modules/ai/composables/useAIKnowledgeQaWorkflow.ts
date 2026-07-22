@@ -2,11 +2,13 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
-import type { AgentStartRunClientRequest } from '@dailyuse/contracts/ai';
+import type {
+  AgentRunResult,
+  AgentStartRunClientRequest,
+} from '@dailyuse/contracts/ai';
 import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
 import type {
   KnowledgeAnswer,
-  KnowledgeQaAgentRunResult,
   UseAIKnowledgeQaWorkflowOptions,
 } from './types';
 import { getAIErrorMessage } from './error';
@@ -20,7 +22,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
 
   const knowledgeQueryLoading = ref(false);
   const knowledgeAnswer = ref<KnowledgeAnswer | null>(null);
-  const knowledgeQaAgentRun = ref<KnowledgeQaAgentRunResult | null>(null);
+  const knowledgeQaAgentRun = ref<AgentRunResult | null>(null);
 
   const canAskKnowledge = computed(
     () =>
@@ -66,7 +68,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
     return [...notesByResourceId.values()];
   }
 
-  function syncKnowledgeQaAgentRun(result: KnowledgeQaAgentRunResult) {
+  function syncKnowledgeQaAgentRun(result: AgentRunResult) {
     resetKnowledgeAnswer();
     knowledgeQaAgentRun.value = result;
 
