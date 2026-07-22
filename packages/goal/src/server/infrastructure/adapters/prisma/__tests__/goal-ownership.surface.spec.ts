@@ -21,6 +21,10 @@ describe('goal ownership surface', () => {
     resolve(__dirname, '../goal-record-prisma.repository.ts'),
     'utf8',
   );
+  const recordPowersync = readFileSync(
+    resolve(__dirname, '../../powersync/goal-record-powersync.repository.ts'),
+    'utf8',
+  );
   const getUseCase = readFileSync(
     resolve(__dirname, '../../../../application/use-cases/queries/get-goal.use-case.ts'),
     'utf8',
@@ -332,6 +336,23 @@ describe('goal ownership surface', () => {
       'async findByFolderId(identityId: string, folderId: string)',
     );
     expect(prisma).toContain('where: { identityId, folderId, deletedAt: null, archivedAt: null }');
+  });
+
+
+  it('record port deleteMany requires identityId (residual 154)', () => {
+    expect(recordPort).toContain(
+      'deleteMany(identityId: string, recordIds: string[]): Promise<void>;',
+    );
+  });
+
+  it('record prisma/powersync deleteMany filter by identity (residual 154)', () => {
+    expect(recordPrisma).toContain(
+      'async deleteMany(identityId: string, recordIds: string[])',
+    );
+    expect(recordPrisma).toContain('where: { id: { in: recordIds }, identityId }');
+    expect(recordPowersync).toContain(
+      'DELETE FROM goal_records WHERE identity_id = ? AND id IN (${placeholders})',
+    );
   });
 
 });

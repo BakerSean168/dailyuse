@@ -216,10 +216,13 @@ export class GoalRecordPowerSyncRepository
     ]);
   }
 
-  async deleteMany(recordIds: string[]): Promise<void> {
+  async deleteMany(identityId: string, recordIds: string[]): Promise<void> {
     if (recordIds.length === 0) return;
     const placeholders = recordIds.map(() => '?').join(', ');
-    await this.db.execute(`DELETE FROM goal_records WHERE id IN (${placeholders})`, recordIds);
+    await this.db.execute(
+      `DELETE FROM goal_records WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...recordIds],
+    );
   }
 
   // Mapping lives in mappers/powersync-goal-record.mapper.ts

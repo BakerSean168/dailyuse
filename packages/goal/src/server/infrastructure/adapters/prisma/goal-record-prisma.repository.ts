@@ -193,9 +193,10 @@ export class GoalRecordPrismaRepository
   /**
    * Delete multiple records by IDs
    */
-  async deleteMany(recordIds: string[]): Promise<void> {
+  async deleteMany(identityId: string, recordIds: string[]): Promise<void> {
+    if (recordIds.length === 0) return;
     await this.prisma.goalRecord.deleteMany({
-      where: { id: { in: recordIds } },
+      where: { id: { in: recordIds }, identityId },
     });
   }
 }

@@ -166,5 +166,5 @@ export interface IGoalRecordRepository {
    *
    * @param recordIds 记录 UUID 列表
    */
-  deleteMany(recordIds: string[]): Promise<void>;
+  deleteMany(identityId: string, recordIds: string[]): Promise<void>;
 }
