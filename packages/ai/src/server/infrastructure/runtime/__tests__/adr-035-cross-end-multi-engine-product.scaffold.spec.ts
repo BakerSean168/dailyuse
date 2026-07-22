@@ -32,12 +32,15 @@ describe('ADR-035 cross-end multi-engine product E2E scaffold (residual 405)', (
       'ui.stop_cancel_run',
       'host.mid_turn_cancel',
       'ui.conversation_switch_badge_memory',
+      'ui.timeline_surface_isolation',
+      'ui.workbench_timeline_composition',
+      'ui.langgraph_diagnostic_sanitization',
       'e2e.playwright_web_full',
       'e2e.electron_desktop_full',
       'e2e.real_pi_spawn',
     ]);
-    expect(summary.total).toBe(13);
-    expect(summary.implementedUnit).toBe(10);
+    expect(summary.total).toBe(16);
+    expect(summary.implementedUnit).toBe(13);
     expect(summary.externalBlocked).toBe(3);
     expect(summary.readyForDriver).toBe(true);
     expect(

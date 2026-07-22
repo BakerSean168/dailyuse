@@ -27,8 +27,8 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
     const run = runCrossEndMultiEngineProductUnitDriver({ readSource: read, journey });
     const summary = summarizeCrossEndMultiEngineProductDriverRun(run);
 
-    expect(summary.total).toBe(13);
-    expect(summary.passed).toBe(10);
+    expect(summary.total).toBe(16);
+    expect(summary.passed).toBe(13);
     expect(summary.skippedExternal).toBe(3);
     expect(summary.failed).toBe(0);
     expect(summary.unitPathGreen).toBe(true);
@@ -104,3 +104,20 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
     expect(facade).not.toContain('PiReadonlyProcessAdapter');
   });
 });
+
+  it('covers residual 417 isolation/composition/LangGraph sanitization unit steps', () => {
+    const journey = buildCrossEndMultiEngineProductJourney();
+    const ids = journey.map((step) => step.id);
+    expect(ids).toContain('ui.timeline_surface_isolation');
+    expect(ids).toContain('ui.workbench_timeline_composition');
+    expect(ids).toContain('ui.langgraph_diagnostic_sanitization');
+
+    const run = runCrossEndMultiEngineProductUnitDriver({ readSource: read, journey });
+    const byId = Object.fromEntries(run.results.map((r) => [r.stepId, r]));
+    expect(byId['ui.timeline_surface_isolation']?.status).toBe('passed');
+    expect(byId['ui.workbench_timeline_composition']?.status).toBe('passed');
+    expect(byId['ui.langgraph_diagnostic_sanitization']?.status).toBe('passed');
+    expect(run.passed).toBe(13);
+    expect(run.skippedExternal).toBe(3);
+    expect(run.claimsFullProductE2E).toBe(false);
+  });

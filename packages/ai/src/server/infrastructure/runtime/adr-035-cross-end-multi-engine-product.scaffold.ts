@@ -1,5 +1,5 @@
 /**
- * Residual 405: ADR-035 cross-end multi-engine Host product E2E scaffold.
+ * Residual 405/417: ADR-035 cross-end multi-engine Host product E2E scaffold.
  *
  * Freezes the intended Web + Desktop product journey for multi-engine open chat
  * (DirectTurn + ReadonlyAnalysis), cancel_run stop, and timeline engine badges.
@@ -162,6 +162,42 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'openChatHostTurnMemory',
         'rememberOpenChatHostTurnsForConversation',
         'restoreOpenChatHostTurnsForConversation',
+      ],
+      status: 'implemented_unit',
+    },
+    {
+      id: 'ui.timeline_surface_isolation',
+      surface: 'shared',
+      transport: 'ui',
+      title: 'Host timeline open_chat vs AgentRun surface isolation audit',
+      contracts: [
+        'partitionHostTimelineArtifactsBySurface',
+        'collectHostTimelineSurfaceIsolationViolations',
+        'isolationOk',
+      ],
+      status: 'implemented_unit',
+    },
+    {
+      id: 'ui.workbench_timeline_composition',
+      surface: 'shared',
+      transport: 'ui',
+      title: 'AIChatView composes Host timeline via workbench helper',
+      contracts: [
+        'composeHostWorkbenchTimelineArtifacts',
+        'hostWorkbenchTimeline',
+        'openChatHostTurns',
+      ],
+      status: 'implemented_unit',
+    },
+    {
+      id: 'ui.langgraph_diagnostic_sanitization',
+      surface: 'shared',
+      transport: 'ui',
+      title: 'Goal workflow diagnostics sanitize LangGraph node.* labels',
+      contracts: [
+        'formatLangGraphVendorDiagnosticEventLabel',
+        'workflow_step_completed',
+        'no raw node.started UI label path',
       ],
       status: 'implemented_unit',
     },

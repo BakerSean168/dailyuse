@@ -1,5 +1,5 @@
 /**
- * Residual 407: ADR-035 cross-end multi-engine Host product unit driver.
+ * Residual 407/417: ADR-035 cross-end multi-engine Host product unit driver.
  *
  * Executes residual 405 scaffold `implemented_unit` steps as source-level
  * contract checks (HTTP SSE / Desktop IPC / Vue selectors / Host cancel +
@@ -89,6 +89,21 @@ export function resolveCrossEndMultiEngineProductStepSources(
         'packages/app-vue/src/modules/ai/composables/hostOpenChatTurnMemory.ts',
         'packages/app-vue/src/modules/ai/composables/useAIChatSession.ts',
       ];
+    case 'ui.timeline_surface_isolation':
+      return [
+        'packages/app-vue/src/modules/ai/composables/hostProposalLifecycle.ts',
+        'packages/app-vue/src/modules/ai/composables/hostProposalLifecycle.spec.ts',
+      ];
+    case 'ui.workbench_timeline_composition':
+      return [
+        'packages/app-vue/src/modules/ai/composables/hostProposalLifecycle.ts',
+        'packages/app-vue/src/modules/ai/views/AIChatView.vue',
+      ];
+    case 'ui.langgraph_diagnostic_sanitization':
+      return [
+        'packages/app-vue/src/modules/ai/composables/hostLangGraphUiBoundary.ts',
+        'packages/app-vue/src/modules/ai/components/AIGoalWorkflowPanel.vue',
+      ];
     case 'e2e.playwright_web_full':
     case 'e2e.electron_desktop_full':
     case 'e2e.real_pi_spawn':
@@ -130,6 +145,24 @@ function contractNeedles(contract: string): readonly string[] {
       return ['cancel_run'];
     case 'openChatHostTurnMemory':
       return ['OpenChatHostTurnMemory', 'openChatHostTurnMemory'];
+    case 'partitionHostTimelineArtifactsBySurface':
+      return ['partitionHostTimelineArtifactsBySurface'];
+    case 'collectHostTimelineSurfaceIsolationViolations':
+      return ['collectHostTimelineSurfaceIsolationViolations'];
+    case 'isolationOk':
+      return ['isolationOk'];
+    case 'composeHostWorkbenchTimelineArtifacts':
+      return ['composeHostWorkbenchTimelineArtifacts'];
+    case 'hostWorkbenchTimeline':
+      return ['hostWorkbenchTimeline'];
+    case 'openChatHostTurns':
+      return ['openChatHostTurns'];
+    case 'formatLangGraphVendorDiagnosticEventLabel':
+      return ['formatLangGraphVendorDiagnosticEventLabel'];
+    case 'workflow_step_completed':
+      return ['workflow_step_completed'];
+    case 'no raw node.started UI label path':
+      return ['formatLangGraphVendorDiagnosticEventLabel', 'workflow_step_started'];
     default:
       return [contract];
   }
