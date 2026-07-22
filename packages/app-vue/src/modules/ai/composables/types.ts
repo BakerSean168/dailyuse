@@ -47,7 +47,7 @@ export interface UseAIKnowledgeQaWorkflowOptions {
   requestOpenKnowledgeNote: (id: string) => Promise<unknown>;
 }
 
-export type WorkflowMode = 'chat' | 'goal-create' | 'knowledge-qa' | 'knowledge-generate';
+export type WorkflowMode = 'chat' | 'goal-create' | 'task-create' | 'knowledge-qa' | 'knowledge-generate';
 
 export type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
 
@@ -250,6 +250,7 @@ export function getToolLocaleKey(mode: WorkflowMode): string {
   return {
     chat: 'chat',
     'goal-create': 'goalCreate',
+    'task-create': 'taskCreate',
     'knowledge-qa': 'knowledgeQa',
     'knowledge-generate': 'knowledgeGenerate',
   }[mode];
@@ -259,7 +260,14 @@ export function normalizeWorkflowMode(mode: string | null | undefined): Workflow
   // One-way map for previously persisted short mode ids; no dual-track type surface.
   if (mode === 'goal') return 'goal-create';
   if (mode === 'knowledge-note') return 'knowledge-generate';
-  if (mode === 'goal-create' || mode === 'knowledge-qa' || mode === 'knowledge-generate') {
+  // Residual 429: task.create product toolMode id (AgentType uses task.create).
+  if (mode === 'task' || mode === 'task.create') return 'task-create';
+  if (
+    mode === 'goal-create'
+    || mode === 'task-create'
+    || mode === 'knowledge-qa'
+    || mode === 'knowledge-generate'
+  ) {
     return mode;
   }
   return 'chat';

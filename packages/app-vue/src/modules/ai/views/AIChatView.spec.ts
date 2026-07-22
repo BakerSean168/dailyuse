@@ -253,6 +253,7 @@ const i18n = createI18n({
           shortcuts: {
             chat: { title: 'Just chat', description: 'Chat', prefill: 'chat prefill' },
             goalCreate: { title: 'Plan a goal', description: 'Goal', prefill: 'goal prefill' },
+            taskCreate: { title: 'Create a task', description: 'Task', prefill: 'task prefill' },
             knowledgeGenerate: {
               title: 'Write a note',
               description: 'Note',
@@ -309,12 +310,14 @@ const i18n = createI18n({
             startAnotherNote: 'Start another note',
             defaultConversationNames: {
               goalCreate: 'Goal conversation',
+              taskCreate: 'Task conversation',
               knowledgeQa: 'Knowledge Q&A conversation',
               knowledgeGenerate: 'Knowledge note conversation',
             },
             tools: {
               chat: 'Chat',
               goalCreate: 'Goal',
+              taskCreate: 'Task',
               knowledgeQa: 'Knowledge Q&A',
               knowledgeGenerate: 'Knowledge note',
             },

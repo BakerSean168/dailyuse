@@ -300,6 +300,11 @@ export default {
           description:
             'Use the conversation to clarify the topic, source, and key takeaways, then create the markdown note directly in the background.',
         },
+        taskCreate: {
+          title: 'Plan A Task',
+          description:
+            'Clarify the task title, optional goal link, and acceptance notes, then review a Host task.create proposal before creation.',
+        },
       },
       shortcuts: {
         chat: {
@@ -311,6 +316,11 @@ export default {
           title: 'Plan a goal',
           description: 'Clarify scope, success criteria, and timing, then draft a structured goal.',
           prefill: 'Help me plan a goal:',
+        },
+        taskCreate: {
+          title: 'Create a task',
+          description: 'Draft a task with optional goal link and confirm via the Host workbench.',
+          prefill: 'Help me create a task:',
         },
         knowledgeGenerate: {
           title: 'Write a knowledge note',
@@ -329,6 +339,8 @@ export default {
         toolButton: 'Intent',
         goalCollectingHint:
           'Keep adding context in chat, then generate a structured goal draft when ready.',
+        taskCollectingHint:
+          'Describe the task in chat. Host task.create proposals appear in the workbench for review; full Task Agent start is not wired yet.',
         goalClarificationHint:
           'The draft needs a few clarifications before AI can generate a reliable goal.',
         goalDraftReadyHint:
@@ -359,11 +371,13 @@ export default {
         tools: {
           chat: 'Chat',
           goalCreate: 'Create Goal',
+          taskCreate: 'Create Task',
           knowledgeQa: 'Ask Knowledge Base',
           knowledgeGenerate: 'Create Knowledge Note',
         },
         defaultConversationNames: {
           goalCreate: 'Goal Planning',
+          taskCreate: 'Task Planning',
           knowledgeQa: 'Knowledge Q&A',
           knowledgeGenerate: 'Knowledge Note',
         },

@@ -154,6 +154,7 @@ const { t } = useI18n();
         </Button>
       </template>
 
+      <!-- Residual 429: task-create product entry — status + shared exit; Agent start not wired yet. -->
       <template v-else-if="toolMode === 'knowledge-generate'">
         <Button
           v-if="canRetryKnowledgeNoteAgentExecution"

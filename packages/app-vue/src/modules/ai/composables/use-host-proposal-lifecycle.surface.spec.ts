@@ -328,4 +328,28 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatViewTs).toContain('const taskAgentRun = ref');
     expect(helper).not.toContain('executeApproved');
   });
+
+  it('task.create product toolMode + welcome/footer entry (residual 429)', () => {
+    const types = readFileSync(resolve(dir, 'types.ts'), 'utf8');
+    expect(types).toContain("'task-create'");
+    expect(types).toContain("mode === 'task-create'");
+    const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatViewTs).toContain("toolMode.value = 'task-create'");
+    const messagePanel = readFileSync(
+      resolve(dir, '../components/AIMessagePanel.vue'),
+      'utf8',
+    );
+    expect(messagePanel).toContain("mode: 'task-create'");
+    expect(messagePanel).toContain("ai-welcome-entry-");
+    const footer = readFileSync(
+      resolve(dir, '../components/AIFooterComposer.vue'),
+      'utf8',
+    );
+    expect(footer).toContain('ai-chat-tool-task-create');
+    expect(footer).toContain("'task-create'");
+    const chatViewVue = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(chatViewVue).toContain("'task-create': 'aiAssistant.chatPage.shortcuts.taskCreate.prefill'");
+    expect(chatViewVue).toContain("toolMode.value === 'task-create'");
+    expect(helper).not.toContain('executeApproved');
+  });
 });

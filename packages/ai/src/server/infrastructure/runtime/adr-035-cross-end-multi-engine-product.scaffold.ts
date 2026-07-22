@@ -206,7 +206,7 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
       id: 'ui.task_create_proposal_receipt_lane',
       surface: 'shared',
       transport: 'ui',
-      title: 'Host task.create live lane + client receipt settlement',
+      title: 'Host task.create live lane + client receipt + product toolMode entry',
       contracts: [
         'taskAgentRun',
         "kind: 'task.create'",
@@ -220,6 +220,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'clientTaskReceipts',
         "agentType === 'task.create'",
         'taskAgentRun',
+        // Residual 429: product toolMode + welcome/footer entry (no full Task Agent start).
+        "'task-create'",
+        'ai-chat-tool-task-create',
+        "toolMode.value = 'task-create'",
       ],
       status: 'implemented_unit',
     },

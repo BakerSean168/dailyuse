@@ -69,6 +69,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const normalizedMode = normalizeWorkflowMode(mode);
     if (normalizedMode === 'goal-create')
       return t('aiAssistant.chatPage.workflow.defaultConversationNames.goalCreate');
+    if (normalizedMode === 'task-create')
+      return t('aiAssistant.chatPage.workflow.defaultConversationNames.taskCreate');
     if (normalizedMode === 'knowledge-generate')
       return t('aiAssistant.chatPage.workflow.defaultConversationNames.knowledgeGenerate');
     if (normalizedMode === 'knowledge-qa')
@@ -262,7 +264,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       // Keep goal artifacts only when this is a goal.create run dual-carrying task drafts.
       if (result.run.agentType === 'task.create') {
         goalWorkflow.resetGoalArtifacts();
-        toolMode.value = 'chat';
+        // Residual 429: product toolMode for AgentType task.create.
+        toolMode.value = 'task-create';
         taskAgentRun.value = result;
         return;
       }

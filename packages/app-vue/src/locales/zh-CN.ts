@@ -292,6 +292,10 @@ export default {
           title: '开始创建知识笔记',
           description: '先把主题、来源和想保留的重点聊清楚，确认后会直接在后台创建 Markdown 笔记。',
         },
+        taskCreate: {
+          title: '规划任务',
+          description: '澄清任务标题、可选目标关联与验收说明，再在 Host 工作台审阅 task.create 提案。',
+        },
       },
       shortcuts: {
         chat: {
@@ -303,6 +307,11 @@ export default {
           title: '规划一个目标',
           description: '用对话澄清范围、成功标准与时间，再生成结构化草稿。',
           prefill: '帮我规划一个目标：',
+        },
+        taskCreate: {
+          title: '创建一个任务',
+          description: '起草任务并可关联目标，经 Host 工作台确认后创建。',
+          prefill: '帮我创建一个任务：',
         },
         knowledgeGenerate: {
           title: '写一篇知识笔记',
@@ -320,6 +329,7 @@ export default {
         activeMode: '当前意图',
         toolButton: '意图',
         goalCollectingHint: '继续通过对话补充背景，准备好后生成目标草稿。',
+        taskCollectingHint: '在对话中描述任务。Host task.create 提案会进入工作台审阅；完整 Task Agent 启动尚未接线。',
         goalClarificationHint: '还需要补充几个关键信息，AI 才能生成可靠的目标草稿。',
         goalDraftReadyHint: '目标草稿已就绪，可以直接创建，或先展开编辑再确认。',
         noteCollectingHint: '继续通过对话整理笔记内容，确认后会直接创建到知识库。',
@@ -345,11 +355,13 @@ export default {
         tools: {
           chat: '普通对话',
           goalCreate: '创建目标',
+          taskCreate: '创建任务',
           knowledgeQa: '查询知识库',
           knowledgeGenerate: '创建知识笔记',
         },
         defaultConversationNames: {
           goalCreate: '目标规划',
+          taskCreate: '任务规划',
           knowledgeQa: '知识库问答',
           knowledgeGenerate: '知识笔记',
         },

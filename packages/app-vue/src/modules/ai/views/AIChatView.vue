@@ -582,6 +582,11 @@ const hasWorkflowArtifact = computed(() => {
     return Boolean(noteAgentRun.value || noteSummary.value);
   }
 
+  // Residual 429: task.create product toolMode owns dedicated taskAgentRun artifacts.
+  if (toolMode.value === 'task-create') {
+    return Boolean(taskAgentRun.value);
+  }
+
   return false;
 });
 
@@ -958,6 +963,7 @@ function handleWelcomeShortcut(mode: WorkflowMode) {
   const prefillKey = {
     chat: 'aiAssistant.chatPage.shortcuts.chat.prefill',
     'goal-create': 'aiAssistant.chatPage.shortcuts.goalCreate.prefill',
+    'task-create': 'aiAssistant.chatPage.shortcuts.taskCreate.prefill',
     'knowledge-generate': 'aiAssistant.chatPage.shortcuts.knowledgeGenerate.prefill',
     'knowledge-qa': 'aiAssistant.chatPage.shortcuts.knowledgeQa.prefill',
   }[mode];

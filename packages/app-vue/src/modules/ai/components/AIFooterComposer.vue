@@ -62,6 +62,13 @@
                   {{ t('aiAssistant.chatPage.workflow.tools.goalCreate') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  data-testid="ai-chat-tool-task-create"
+                  @click="$emit('start-conversation', 'task-create')"
+                >
+                  <ClipboardCheck class="mr-2 h-4 w-4" />
+                  {{ t('aiAssistant.chatPage.workflow.tools.taskCreate') }}
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   data-testid="ai-chat-tool-knowledge-qa"
                   @click="$emit('start-conversation', 'knowledge-qa')"
                 >

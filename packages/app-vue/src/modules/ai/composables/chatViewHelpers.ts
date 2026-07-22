@@ -60,6 +60,9 @@ export function getWorkflowStatusText(
     if (params.noteAgentDraftReady) return t('aiAssistant.chatPage.workflow.noteDraftReadyHint');
     return t('aiAssistant.chatPage.workflow.noteCollectingHint');
   }
+  if (params.toolMode === 'task-create') {
+    return t('aiAssistant.chatPage.workflow.taskCollectingHint');
+  }
   if (params.toolMode === 'knowledge-qa') {
     if (params.knowledgeQueryLoading) return t('aiAssistant.dialogs.knowledge.searching');
     if (params.noteAgentLoading) return t('aiAssistant.dialogs.note.drafting');
