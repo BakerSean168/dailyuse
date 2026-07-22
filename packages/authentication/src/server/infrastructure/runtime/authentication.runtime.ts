@@ -43,12 +43,6 @@ const authenticationEvents = createTypedEventSubscriber<AuthenticationObservedEv
 const accountEvents = createTypedEventSubscriber<AccountEventMap>(eventBus);
 
 /**
- * Runtime contribution contract used by module transports.
- * 模块传输层使用的运行时贡献契约。
- */
-export type AuthenticationRuntimeContribution = AuthenticationModuleRuntimeContribution;
-
-/**
  * Logging-only subscribers for authentication domain events.
  * 认证领域事件的日志型订阅器。
  *
@@ -108,7 +102,7 @@ export interface CreateAuthenticationRuntimeContributionOptions {
  */
 export function createAuthenticationRuntimeContribution(
   options: CreateAuthenticationRuntimeContributionOptions = {},
-): AuthenticationRuntimeContribution {
+): AuthenticationModuleRuntimeContribution {
   let started = false;
   const disableOnClose =
     options.identityRepository && options.sessionRepository

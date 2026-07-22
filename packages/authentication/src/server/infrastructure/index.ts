@@ -68,6 +68,6 @@ export {
 } from './prisma';
 export {
   createAuthenticationRuntimeContribution,
-  type AuthenticationRuntimeContribution,
+  type CreateAuthenticationRuntimeContributionOptions,
 } from './runtime';
 
