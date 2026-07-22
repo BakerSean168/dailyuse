@@ -1064,7 +1064,7 @@ export function shouldDualMirrorPrimaryTaskGoalSession(
 }
 
 /**
- * Residual 589/591/595: next exclusive taskAgentRun dual-mirror after goal session sync.
+ * Residual 589/591/595/599: next exclusive taskAgentRun dual-mirror after goal session sync.
  * Residual 591: process-local AgentType task.create owns exclusive lane first —
  * never overwrite with a dual-mirrored primary-task goal session when both exist.
  * - process-local task.create → preserve (even if goal is dual-mirrorable)
@@ -1074,13 +1074,20 @@ export function shouldDualMirrorPrimaryTaskGoalSession(
  * Residual 595: `dropStaleWhenGoalLeaves` defaults true for goalAgentRun watch / restore
  * (goal cleared → clear dual-mirror). Builders/exclusive promote pass false so task-only
  * exclusive snapshots are not dropped when goal is omitted from the call.
+ *
+ * Residual 599: even with dropStaleWhenGoalLeaves=false, drop dual-mirrored primary-task
+ * ghosts when a non-primary-task goal session is present so exclusive builders/ownership
+ * cannot show normal goal.create + stale dual-mirror task.create rows together.
+ * Process-local task.create is never treated as a dual-mirror ghost.
  */
 export function nextDualMirroredTaskAgentRun(input: {
   goalAgentRun?: AgentRunResult | null;
   taskAgentRun?: AgentRunResult | null;
   /**
-   * When true (default): drop dual-mirrored primary-task if goal is not dual-mirrorable.
-   * When false: only refresh/preserve (resolveLiveHostWorkbenchAgentRuns builders).
+   * When true (default): drop dual-mirrored primary-task if goal is not dual-mirrorable
+   * (including goal null). When false: preserve task-only dual-mirror for builders, but
+   * still drop dual-mirror ghosts when a non-primary-task goal session is present
+   * (residual 599).
    */
   dropStaleWhenGoalLeaves?: boolean;
 }): AgentRunResult | null {
@@ -1095,11 +1102,15 @@ export function nextDualMirroredTaskAgentRun(input: {
     return goal;
   }
   if (!task?.run) return null;
-  // Residual 589/595: drop stale dual-mirror only when session sync opts in (default).
+  const isDualMirroredPrimaryTask =
+    isPrimaryTaskHostAgentRun(task) && task.run.agentType !== 'task.create';
+  // Residual 589/595/599: drop dual-mirror primary-task when:
+  // - session sync (dropStale): goal left primary-task or is absent
+  // - builders (dropStale false): only when a non-primary-task goal session is present
   if (
-    dropStale &&
-    isPrimaryTaskHostAgentRun(task) &&
-    !shouldDualMirrorPrimaryTaskGoalSession(goal)
+    isDualMirroredPrimaryTask &&
+    !shouldDualMirrorPrimaryTaskGoalSession(goal) &&
+    (dropStale || Boolean(goal?.run))
   ) {
     return null;
   }

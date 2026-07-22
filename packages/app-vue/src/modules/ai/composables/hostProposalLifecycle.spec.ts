@@ -3511,5 +3511,81 @@ describe('Host exclusive dual-mirror primary-task goal session (residual 589)', 
     });
     expect(liveLocal.taskAgentRun).toBe(local);
   });
+
+  it('drops dual-mirror primary-task ghost beside normal goal session (residual 599)', () => {
+    const ghost = primaryTaskGoal('waiting_approval');
+    const normalGoal = {
+      run: {
+        runId: 'g-599',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create' as const,
+        status: 'waiting_approval' as const,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_goal',
+            index: 0,
+            dependsOn: [],
+            payload: { title: 'Normal Goal' },
+            rationale: 'goal',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [{ kind: 'goal_draft', id: 'gd', data: {}, updatedAt: 1 }],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+
+    // Builders (dropStale false): ghost dual-mirror must not ride beside normal goal.
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: normalGoal,
+        taskAgentRun: ghost,
+        dropStaleWhenGoalLeaves: false,
+      }),
+    ).toBeNull();
+
+    const live = resolveLiveHostWorkbenchAgentRuns({
+      goalAgentRun: normalGoal,
+      taskAgentRun: ghost,
+    });
+    expect(live.taskAgentRun).toBeNull();
+    expect(live.goalAgentRun?.run.runId).toBe('g-599');
+
+    const items = buildPendingHostProposalItems({
+      goalAgentRun: normalGoal,
+      taskAgentRun: ghost,
+    });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      kind: 'goal.create',
+      source: 'goal',
+      proposalId: 'agent-run:g-599:goal.create',
+    });
+
+    // Task-only dual-mirror still preserved for builders (no goal session).
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: null,
+        taskAgentRun: ghost,
+        dropStaleWhenGoalLeaves: false,
+      }),
+    ).toBe(ghost);
+
+    // Process-local still rides beside normal goal (not a dual-mirror ghost).
+    const local = processLocalTask();
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: normalGoal,
+        taskAgentRun: local,
+        dropStaleWhenGoalLeaves: false,
+      }),
+    ).toBe(local);
+  });
 });
 

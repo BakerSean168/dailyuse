@@ -444,6 +444,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 595'];
     case 'Residual 597':
       return ['Residual 597'];
+    case 'Residual 599':
+      return ['Residual 599'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

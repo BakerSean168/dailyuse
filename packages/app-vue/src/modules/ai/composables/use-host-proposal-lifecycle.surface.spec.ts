@@ -1268,6 +1268,21 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('drops dual-mirror primary-task ghost beside normal goal (residual 599)', () => {
+    expect(helper).toContain('Residual 599');
+    const nextIdx = helper.indexOf('export function nextDualMirroredTaskAgentRun');
+    expect(nextIdx).toBeGreaterThan(-1);
+    // Include JSDoc above export (Residual 599 documents ghost drop).
+    const nextSlice = helper.slice(Math.max(0, nextIdx - 900), nextIdx + 2200);
+    expect(nextSlice).toContain('isDualMirroredPrimaryTask');
+    expect(nextSlice).toContain('Residual 599');
+    // Ghost drop when non-primary goal present even for builders (dropStale false path).
+    expect(nextSlice).toContain('dropStale || Boolean(goal?.run)');
+    expect(nextSlice).toContain("agentType !== 'task.create'");
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
     const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');

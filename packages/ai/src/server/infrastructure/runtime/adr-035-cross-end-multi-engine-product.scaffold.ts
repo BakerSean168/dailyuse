@@ -422,6 +422,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'Residual 595',
         // Residual 597: Host panel ownership dual-mirrors exclusive before match.
         'Residual 597',
+        // Residual 599: drop dual-mirror primary-task ghost beside normal goal.
+        'Residual 599',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',
