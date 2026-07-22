@@ -424,6 +424,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'Residual 597',
         // Residual 599: drop dual-mirror primary-task ghost beside normal goal.
         'Residual 599',
+        // Residual 601: knowledge ghost drop + focus exclusive-only.
+        'Residual 601',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

@@ -3587,5 +3587,71 @@ describe('Host exclusive dual-mirror primary-task goal session (residual 589)', 
       }),
     ).toBe(local);
   });
+
+  it('drops dual-mirror ghost beside knowledge note session (residual 601)', () => {
+    const ghost = primaryTaskGoal('waiting_approval');
+    const note = {
+      run: {
+        runId: 'n-601',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'knowledge.generate' as const,
+        status: 'waiting_approval' as const,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_knowledge_note',
+            index: 0,
+            dependsOn: [],
+            payload: { targetPath: 'a.md', contentMarkdown: 'x' },
+            rationale: 'note',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [{ kind: 'note_draft', id: 'nd', data: {}, updatedAt: 1 }],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+
+    expect(
+      nextDualMirroredTaskAgentRun({
+        goalAgentRun: null,
+        noteAgentRun: note,
+        taskAgentRun: ghost,
+        dropStaleWhenGoalLeaves: false,
+      }),
+    ).toBeNull();
+
+    const live = resolveLiveHostWorkbenchAgentRuns({
+      goalAgentRun: null,
+      noteAgentRun: note,
+      taskAgentRun: ghost,
+    });
+    expect(live.taskAgentRun).toBeNull();
+    expect(live.noteAgentRun?.run.runId).toBe('n-601');
+
+    const items = buildPendingHostProposalItems({
+      goalAgentRun: null,
+      noteAgentRun: note,
+      taskAgentRun: ghost,
+    });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.kind).toBe('knowledge.write');
+
+    // Focus exclusive-only keeps task-only dual-mirror (no dropStale wipe).
+    const focus = resolveHostWorkbenchFocusFromSessionRuns({
+      taskAgentRun: ghost,
+      goalAgentRun: null,
+      noteAgentRun: null,
+    });
+    expect(focus).toEqual({
+      proposalId: 'agent-run:pt-589:task.create',
+      surface: 'proposal',
+    });
+  });
 });
 

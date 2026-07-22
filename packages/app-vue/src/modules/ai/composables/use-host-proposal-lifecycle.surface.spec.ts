@@ -1200,25 +1200,23 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
-  it('session restore dual-mirrors exclusive task before focus (residual 593)', () => {
+  it('session restore dual-mirrors exclusive task before focus (residual 593/601)', () => {
     expect(helper).toContain('Residual 593');
     const focusIdx = helper.indexOf('export function resolveHostWorkbenchFocusFromSessionRuns');
     expect(focusIdx).toBeGreaterThan(-1);
-    const focusSlice = helper.slice(focusIdx, focusIdx + 1800);
-    expect(focusSlice).toContain('nextDualMirroredTaskAgentRun');
+    const focusSlice = helper.slice(Math.max(0, focusIdx - 700), focusIdx + 1400);
+    // Residual 601: focus uses exclusive-only (dual-mirror lives inside resolveLive).
     expect(focusSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
-    // dual-mirror before exclusive promote
-    const dualIdx = focusSlice.indexOf('nextDualMirroredTaskAgentRun');
-    const exclusiveIdx = focusSlice.indexOf('resolveLiveHostWorkbenchAgentRuns');
-    expect(dualIdx).toBeGreaterThan(-1);
-    expect(exclusiveIdx).toBeGreaterThan(dualIdx);
+    expect(focusSlice).toContain('Residual 601');
+    expect(focusSlice).not.toContain('nextDualMirroredTaskAgentRun({');
     const chatView = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
     expect(chatView).toContain('Residual 593');
     const restoreIdx = chatView.indexOf('async function restoreWorkflowState');
     expect(restoreIdx).toBeGreaterThan(-1);
-    const restoreSlice = chatView.slice(restoreIdx, restoreIdx + 1600);
+    const restoreSlice = chatView.slice(restoreIdx, restoreIdx + 1800);
     expect(restoreSlice).toContain('nextDualMirroredTaskAgentRun');
     expect(restoreSlice).toContain('await refreshRestoredAgentRun');
+    expect(restoreSlice).toContain('noteAgentRun: noteWorkflow.noteAgentRun.value');
     // dual-mirror re-apply after refresh
     const refreshIdx = restoreSlice.indexOf('await refreshRestoredAgentRun');
     const dualRestoreIdx = restoreSlice.indexOf('nextDualMirroredTaskAgentRun');
@@ -1232,10 +1230,11 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('Residual 595');
     const liveIdx = helper.indexOf('export function resolveLiveHostWorkbenchAgentRuns');
     expect(liveIdx).toBeGreaterThan(-1);
-    const liveSlice = helper.slice(liveIdx, liveIdx + 1800);
+    const liveSlice = helper.slice(liveIdx, liveIdx + 2000);
     expect(liveSlice).toContain('nextDualMirroredTaskAgentRun');
     expect(liveSlice).toContain('Residual 595');
     expect(liveSlice).toContain('dropStaleWhenGoalLeaves: false');
+    expect(liveSlice).toContain('noteAgentRun: input.noteAgentRun');
     // dual-mirror before isPrimaryTaskHostAgentRun exclusive promote
     const dualIdx = liveSlice.indexOf('nextDualMirroredTaskAgentRun');
     const primaryIdx = liveSlice.indexOf('isPrimaryTaskHostAgentRun(dualMirroredTask)');
@@ -1273,13 +1272,34 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     const nextIdx = helper.indexOf('export function nextDualMirroredTaskAgentRun');
     expect(nextIdx).toBeGreaterThan(-1);
     // Include JSDoc above export (Residual 599 documents ghost drop).
-    const nextSlice = helper.slice(Math.max(0, nextIdx - 900), nextIdx + 2200);
+    const nextSlice = helper.slice(Math.max(0, nextIdx - 900), nextIdx + 2400);
     expect(nextSlice).toContain('isDualMirroredPrimaryTask');
     expect(nextSlice).toContain('Residual 599');
-    // Ghost drop when non-primary goal present even for builders (dropStale false path).
-    expect(nextSlice).toContain('dropStale || Boolean(goal?.run)');
+    // Ghost drop when non-primary goal / knowledge present even for builders.
+    expect(nextSlice).toContain('otherProductSessionPresent');
     expect(nextSlice).toContain("agentType !== 'task.create'");
     expect(helper).not.toContain('executeApproved');
+  });
+
+  it('drops dual-mirror ghost beside knowledge + focus exclusive-only (residual 601)', () => {
+    expect(helper).toContain('Residual 601');
+    const nextIdx = helper.indexOf('export function nextDualMirroredTaskAgentRun');
+    expect(nextIdx).toBeGreaterThan(-1);
+    const nextSlice = helper.slice(Math.max(0, nextIdx - 900), nextIdx + 2400);
+    expect(nextSlice).toContain('noteAgentRun');
+    expect(nextSlice).toContain('otherProductSessionPresent');
+    expect(nextSlice).toContain('Boolean(note?.run)');
+    const focusIdx = helper.indexOf('export function resolveHostWorkbenchFocusFromSessionRuns');
+    const focusSlice = helper.slice(Math.max(0, focusIdx - 700), focusIdx + 1200);
+    expect(focusSlice).toContain('Residual 601');
+    expect(focusSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
+    // No pre-dual-mirror with default dropStale that wipes task-only exclusive.
+    expect(focusSlice).not.toContain('nextDualMirroredTaskAgentRun({');
+    const chatView = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatView).toContain('Residual 601');
+    expect(chatView).toContain('noteAgentRun: noteWorkflow.noteAgentRun.value');
+    expect(helper).not.toContain('executeApproved');
+    expect(chatView).not.toContain('executeApproved');
   });
 
 

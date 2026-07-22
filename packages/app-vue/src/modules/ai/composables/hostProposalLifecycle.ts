@@ -1064,7 +1064,7 @@ export function shouldDualMirrorPrimaryTaskGoalSession(
 }
 
 /**
- * Residual 589/591/595/599: next exclusive taskAgentRun dual-mirror after goal session sync.
+ * Residual 589/591/595/599/601: next exclusive taskAgentRun dual-mirror after goal session sync.
  * Residual 591: process-local AgentType task.create owns exclusive lane first —
  * never overwrite with a dual-mirrored primary-task goal session when both exist.
  * - process-local task.create → preserve (even if goal is dual-mirrorable)
@@ -1078,21 +1078,25 @@ export function shouldDualMirrorPrimaryTaskGoalSession(
  * Residual 599: even with dropStaleWhenGoalLeaves=false, drop dual-mirrored primary-task
  * ghosts when a non-primary-task goal session is present so exclusive builders/ownership
  * cannot show normal goal.create + stale dual-mirror task.create rows together.
+ * Residual 601: same ghost drop when a knowledge note session is present (noteAgentRun).
  * Process-local task.create is never treated as a dual-mirror ghost.
  */
 export function nextDualMirroredTaskAgentRun(input: {
   goalAgentRun?: AgentRunResult | null;
   taskAgentRun?: AgentRunResult | null;
+  /** Residual 601: knowledge note session — dual-mirror ghosts must not ride beside it. */
+  noteAgentRun?: AgentRunResult | null;
   /**
    * When true (default): drop dual-mirrored primary-task if goal is not dual-mirrorable
    * (including goal null). When false: preserve task-only dual-mirror for builders, but
-   * still drop dual-mirror ghosts when a non-primary-task goal session is present
-   * (residual 599).
+   * still drop dual-mirror ghosts when a non-primary-task goal or knowledge session is
+   * present (residual 599/601).
    */
   dropStaleWhenGoalLeaves?: boolean;
 }): AgentRunResult | null {
   const goal = input.goalAgentRun ?? null;
   const task = input.taskAgentRun ?? null;
+  const note = input.noteAgentRun ?? null;
   const dropStale = input.dropStaleWhenGoalLeaves !== false;
   // Residual 591: process-local task.create exclusive lane is never dual-mirrored over.
   if (task?.run?.agentType === 'task.create') {
@@ -1104,13 +1108,14 @@ export function nextDualMirroredTaskAgentRun(input: {
   if (!task?.run) return null;
   const isDualMirroredPrimaryTask =
     isPrimaryTaskHostAgentRun(task) && task.run.agentType !== 'task.create';
-  // Residual 589/595/599: drop dual-mirror primary-task when:
+  // Residual 589/595/599/601: drop dual-mirror primary-task when:
   // - session sync (dropStale): goal left primary-task or is absent
-  // - builders (dropStale false): only when a non-primary-task goal session is present
+  // - builders (dropStale false): when a non-primary-task goal or knowledge session is present
+  const otherProductSessionPresent = Boolean(goal?.run) || Boolean(note?.run);
   if (
     isDualMirroredPrimaryTask &&
     !shouldDualMirrorPrimaryTaskGoalSession(goal) &&
-    (dropStale || Boolean(goal?.run))
+    (dropStale || otherProductSessionPresent)
   ) {
     return null;
   }
@@ -1136,11 +1141,13 @@ export function resolveLiveHostWorkbenchAgentRuns(input: {
   noteAgentRun: AgentRunResult | null;
   taskAgentRun: AgentRunResult | null;
 } {
-  // Residual 595: dual-mirror before exclusive promote (idempotent when already mirrored).
+  // Residual 595/601: dual-mirror before exclusive promote (idempotent when already mirrored).
   // dropStaleWhenGoalLeaves=false: task-only builder inputs must keep exclusive primary-task.
+  // Residual 601: pass noteAgentRun so knowledge session drops dual-mirror ghosts.
   const dualMirroredTask = nextDualMirroredTaskAgentRun({
     goalAgentRun: input.goalAgentRun,
     taskAgentRun: input.taskAgentRun,
+    noteAgentRun: input.noteAgentRun,
     dropStaleWhenGoalLeaves: false,
   });
   const explicitTask =
@@ -1684,28 +1691,23 @@ export function resolveHostWorkbenchFocusFromAgentRun(
 }
 
 /**
- * Residual 443/593: pick Host workbench focus from live session AgentRun snapshots
+ * Residual 443/593/601: pick Host workbench focus from live session AgentRun snapshots
  * after conversation restore (or start). Prefer exclusive task.create lane, then
  * goal, then knowledge. Returns null when no Host proposal/receipt should reopen.
  *
- * Residual 593: dual-mirror primary-task goal into exclusive task lane first
- * (process-local task.create still wins via nextDualMirroredTaskAgentRun), then
- * exclusive-promote via resolveLiveHostWorkbenchAgentRuns so focus kind/surface
- * matches residual 423/585 live builders — not a stale dual-mirror waiting_approval.
+ * Residual 593/601: exclusive-promote via resolveLiveHostWorkbenchAgentRuns (which
+ * dual-mirrors with dropStaleWhenGoalLeaves=false + residual 599/601 ghost drops).
+ * Do not pre-dual-mirror with default dropStale=true — that wiped task-only dual-mirror
+ * exclusive snapshots before exclusive promote could preserve them.
  */
 export function resolveHostWorkbenchFocusFromSessionRuns(input: {
   taskAgentRun?: AgentRunResult | null;
   goalAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;
 }): HostWorkbenchFocusTarget | null {
-  // Residual 593: storage restore can leave stale exclusive dual-mirror; re-mirror
-  // before exclusive promote so focus surface follows settled goal session.
-  const dualMirroredTask = nextDualMirroredTaskAgentRun({
-    goalAgentRun: input.goalAgentRun,
-    taskAgentRun: input.taskAgentRun,
-  });
+  // Residual 601: single exclusive path (dual-mirror + ghost drop + promote).
   const exclusive = resolveLiveHostWorkbenchAgentRuns({
-    taskAgentRun: dualMirroredTask,
+    taskAgentRun: input.taskAgentRun,
     goalAgentRun: input.goalAgentRun,
     noteAgentRun: input.noteAgentRun,
   });

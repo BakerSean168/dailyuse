@@ -312,6 +312,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const dualMirroredTask = nextDualMirroredTaskAgentRun({
       goalAgentRun: goalWorkflow.goalAgentRun.value,
       taskAgentRun: taskAgentRun.value,
+      // Residual 601: knowledge note session drops dual-mirror ghosts on restore.
+      noteAgentRun: noteWorkflow.noteAgentRun.value,
     });
     if (dualMirroredTask !== taskAgentRun.value) {
       taskAgentRun.value = dualMirroredTask;
