@@ -232,8 +232,8 @@ export class NotificationDomainService {
   /**
    * 标记通知为已读
    */
-  public async markAsRead(id: string): Promise<void> {
-    const notification = await this.notificationRepo.findById(id);
+  public async markAsRead(identityId: string, id: string): Promise<void> {
+    const notification = await this.notificationRepo.findByIdForIdentity(identityId, id);
     if (!notification) {
       throw new Error(`Notification not found: ${id}`);
     }
@@ -253,9 +253,9 @@ export class NotificationDomainService {
   /**
    * 批量标记为已读
    */
-  public async markManyAsRead(ids: string[]): Promise<void> {
+  public async markManyAsRead(identityId: string, ids: string[]): Promise<void> {
     const notifications = (
-      await Promise.all(ids.map((id) => this.notificationRepo.findById(id)))
+      await Promise.all(ids.map((id) => this.notificationRepo.findByIdForIdentity(identityId, id)))
     ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
 
     for (const notification of notifications) {
@@ -281,13 +281,13 @@ export class NotificationDomainService {
   /**
    * 删除通知
    */
-  public async deleteNotification(id: string, soft = true): Promise<void> {
-    if (soft) {
-      const notification = await this.notificationRepo.findById(id);
-      if (!notification) {
-        throw new Error(`Notification not found: ${id}`);
-      }
+  public async deleteNotification(identityId: string, id: string, soft = true): Promise<void> {
+    const notification = await this.notificationRepo.findByIdForIdentity(identityId, id);
+    if (!notification) {
+      throw new Error(`Notification not found: ${id}`);
+    }
 
+    if (soft) {
       notification.softDelete();
       await this.notificationRepo.save(notification);
     } else {
@@ -298,17 +298,22 @@ export class NotificationDomainService {
   /**
    * 批量删除通知
    */
-  public async deleteManyNotifications(ids: string[], soft = true): Promise<void> {
+  public async deleteManyNotifications(
+    identityId: string,
+    ids: string[],
+    soft = true,
+  ): Promise<void> {
+    const notifications = (
+      await Promise.all(ids.map((id) => this.notificationRepo.findByIdForIdentity(identityId, id)))
+    ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
+
     if (soft) {
-      const notifications = (
-        await Promise.all(ids.map((id) => this.notificationRepo.findById(id)))
-      ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
       for (const notification of notifications) {
         notification.softDelete();
       }
       await this.notificationRepo.saveMany(notifications);
     } else {
-      await this.notificationRepo.deleteMany(ids);
+      await this.notificationRepo.deleteMany(notifications.map((notification) => String(notification.id)));
     }
   }
 
@@ -316,10 +321,11 @@ export class NotificationDomainService {
    * 获取通知详情
    */
   public async getNotification(
+    identityId: string,
     id: string,
     options?: { includeChildren?: boolean },
   ): Promise<Notification | null> {
-    return await this.notificationRepo.findById(id, options);
+    return await this.notificationRepo.findByIdForIdentity(identityId, id, options);
   }
 
   /**
@@ -371,10 +377,14 @@ export class NotificationDomainService {
    * 执行通知操作
    */
   public async executeNotificationAction(
+    identityId: string,
     notificationId: string,
     actionId: string,
   ): Promise<void> {
-    const notification = await this.notificationRepo.findById(notificationId);
+    const notification = await this.notificationRepo.findByIdForIdentity(
+      identityId,
+      notificationId,
+    );
     if (!notification) {
       throw new Error(`Notification not found: ${notificationId}`);
     }

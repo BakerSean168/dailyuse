@@ -33,6 +33,29 @@ describe('notification ownership surface', () => {
   const routes = readFileSync(resolve(__dirname, '../../../../../api/routes.ts'), 'utf8');
   const electron = readFileSync(resolve(__dirname, '../../../../../electron/index.ts'), 'utf8');
   const module = readFileSync(resolve(__dirname, '../../../notification.module.ts'), 'utf8');
+  const domainService = readFileSync(
+    resolve(__dirname, '../../../../domain/services/notification-domain-service.ts'),
+    'utf8',
+  );
+
+  it('domain service loads via findByIdForIdentity (residual 138)', () => {
+    expect(domainService).toContain('findByIdForIdentity(identityId, id)');
+    expect(domainService).toContain(
+      'public async markAsRead(identityId: string, id: string)',
+    );
+    expect(domainService).toContain(
+      'public async deleteNotification(identityId: string, id: string, soft = true)',
+    );
+    expect(domainService).toContain(
+      'public async getNotification(\n    identityId: string,\n    id: string,',
+    );
+    expect(domainService).toContain(
+      'public async executeNotificationAction(\n    identityId: string,\n    notificationId: string,',
+    );
+    expect(domainService).not.toMatch(
+      /markAsRead\(id: string\): Promise<void>/,
+    );
+  });
 
   it('port findByIdForIdentity requires identityId', () => {
     expect(port).toContain('findByIdForIdentity(');
