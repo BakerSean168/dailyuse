@@ -385,7 +385,7 @@ FilterBar：[全部|进行中|已暂停|已归档](计数Tabs) [关系过滤▾]
 
 ---
 
-## 7. 日程 `/schedule/calendar`（`ScheduleDashboardView.vue`）
+## 7. 日程 `/schedule/calendar`（`ScheduleCalendarView.vue`）
 
 **1) 页面目标**："执行"分组默认入口——以日/周/月日历查看**日程事件 + 任务实例投影**，在日历里直接完成任务、创建日程。它是"我今天/本周要做什么"的正解页面。
 

@@ -25,9 +25,6 @@ import type {
   UpcomingReminderDTO,
 } from '@dailyuse/contracts/reminder';
 
-// Re-export for existing consumers (DTO now lives in @dailyuse/contracts/reminder)
-export type { UpcomingReminderDTO };
-
 const REMINDER_CALCULATION_DEBUG =
   typeof process !== 'undefined' && process.env.DEBUG_REMINDER_CALCULATION === 'true';
 

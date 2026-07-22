@@ -151,7 +151,7 @@ AppShell
 | Note 笔记 | 胶囊 3 | Knowledge projection / Local Vault 工作区 + **Governance 并入为"规范"区**（`/note/:id` 已退役） | `/repository`（`?note=` 深链）、`/governance/**` |
 | Reminder 提醒 | 胶囊 4 | `ReminderLinearView` | `/reminders` 不变 |
 | Notification 通知 | 胶囊 5（未读角标） | `NotificationListPage`（预览浮层承担 V1 的"铃铛弹层"职责） | `/notifications` 不变 |
-| Schedule 日程 | 当前时段胶囊 | `ScheduleDashboardView`（日/周/月日历） | `/schedule/**` 不变 |
+| Schedule 日程 | 当前时段胶囊 | `ScheduleCalendarView`（日/周/月日历） | `/schedule` → `/schedule/calendar` 单入口 |
 | Settings 设置 | 侧栏底部头像 | `UserSettingsView`（含账户中心迁入，沿 V1 §13 分组方案）——**默认以 STATE C 打开**（配置页不需要与 AI 并排） | `/settings` 不变 |
 | Dashboard 仪表盘 | **退役** | 今日概览职责由 AI 欢迎态/空闲态承接（§6.0）；趋势图/活动时间线随页退役（数据层保留，后续按需加回） | `/dashboard` → `redirect: '/'` |
 | Account 账户 | 并入 Settings | — | `/account/center` → `redirect: '/settings?tab=account'` |
@@ -206,7 +206,7 @@ AppShell
 |---|---|---|
 | Goal | §3 §4 §5 | 模块内第二侧栏（系统视图/文件夹）在 split 窄档收为顶部下拉，focus 档恢复侧栏；专注模式缩为一行按钮的拍板不变 |
 | Task | §6 | 「任务库」更名、FilterBar、图谱视图模式、全部删除入危险区——全部照做；拖拽建依赖仅 focus 档启用（split 档 450px 内拖拽误操作率高） |
-| Schedule | §7 | 日历天然要宽度：**进入即建议 focus 档**（split 档只渲染日视图）；`EventDetailSheet` 补位照做；`ScheduleDashboardView` 更名 `ScheduleCalendarView` 照做 |
+| Schedule | §7 | 日历天然要宽度：**进入即建议 focus 档**（split 档只渲染日视图）；`EventDetailSheet` 补位照做；主视图为 `ScheduleCalendarView`（已更名） |
 | Reminder | §8 | 分组侧栏在 split 窄档收为下拉；全局开关任何档位保持面板头可达 |
 | Note | §9 §10 + §12 | 阶段 0 收缩（退役多标签/分屏/导出/批量导入）照做；**Governance 以"规范"分区并入**：面板内顶部切换 [笔记 \| 规范]，`/governance/**` 路由渲染到规范分区，V1 §12 的 FilterBar 收敛照做 |
 | Notification | §11 | 胶囊预览浮层 = V1 的铃铛弹层（最近 N 条 + 全部已读 + 查看全部）；完整面板 = 信箱归档页 |
@@ -273,7 +273,7 @@ V1 §0.4 的 xl/lg/md/sm 页面断点作废。V2 的宽度适配对象是**面�
 ### 验收清单（S1 切换 PR 的门槛）
 
 1. 5 份 Playwright 配置全绿（布局断言按新壳更新，路由与 testid 锚定不变）。
-2. 深链逐条验证：`?dialog=goal&goalId=`、`/repository?note=`、`/goals/:id`、三个 redirect、schedule `week/dashboard` redirect。
+2. 深链逐条验证：`?dialog=goal&goalId=`、`/repository?note=`、`/goals/:id`、三个 redirect、schedule `/schedule/calendar` 单入口。
 3. Electron 手动回归：无边框拖拽/窗口控制、桌面通知弹窗、IPC 数据链路、启动水合。
 4. Web 回归：无窗饰形态、浏览器前进后退与面板历史一致。
 5. AI 三工作流端到端各跑一遍（目标创建全生命周期 / 知识笔记 / 知识问答）。

@@ -69,7 +69,7 @@
 | `/tasks`                                                     | `task/views/TaskManagementView.vue`                    | 主导航「任务」   | 任务模板管理（卡片网格）                            |
 | `/tasks/dependency-validation-demo`                          | `DependencyValidationDemoView.vue`                     | 仅 DEV           | 演示页                                              |
 | `/tasks/:id`                                                 | `task/views/TaskDetailView.vue`                        | —                | 模板详情（含依赖/父子关系）                         |
-| `/schedule` → `/schedule/calendar`                           | `schedule/views/ScheduleDashboardView.vue`             | 主导航「日程」   | 日/周/月三视图；`week`、`dashboard` 为兼容重定向    |
+| `/schedule` → `/schedule/calendar`                           | `schedule/views/ScheduleCalendarView.vue`              | 主导航「日程」   | 日/周/月三视图统一入口（无 week/dashboard 双轨 redirect） |
 | `/reminders`                                                 | `reminder/views/ReminderLinearView.vue`                | 主导航「提醒」   | 分组侧边栏 + 模板列表 + 全局总开关                  |
 | `/repository`                                                | `repository/views/RepositoryWorkspaceView.vue`         | 主导航「仓库」   | Obsidian 风格工作区                                 |
 | `/note/:id`                                                  | `editor/views/EditorLinearView.vue`                    | —                | 单笔记编辑页（AI 知识笔记落点），meta `hideSidebar` |
@@ -183,9 +183,9 @@
 
 **模型级问题**：UI 直接暴露"模板/实例"系统概念——用户在 `/tasks` 管理的是模板，而"今天要做的事"（实例）只出现在仪表盘 widget 和日历里，没有一个"今日任务清单"主页面（`DailyTodoWidget` 是最接近的，但只在 dashboard）。
 
-### 4.5 日程（`/schedule/calendar` → `ScheduleDashboardView.vue`）
+### 4.5 日程（`/schedule/calendar` → `ScheduleCalendarView.vue`）
 
-**业务目标**：以日/周/月日历查看**日程事件 + 任务实例投影**（`useCalendarView.events` 中 `event.source === 'task'`，可直接在日历完成任务实例 `handleCompleteTask` → `task.completeInstance`，`ScheduleDashboardView.vue:139-156`），并创建日程。
+**业务目标**：以日/周/月日历查看**日程事件 + 任务实例投影**（`useCalendarView.events` 中 `event.source === 'task'`，可直接在日历完成任务实例 `handleCompleteTask` → `task.completeInstance`，`ScheduleCalendarView.vue`），并创建日程。
 **数据**：`useCalendarView()`（窗口范围拉取）、`useSchedule()`、`useTask()`。
 
 | 分类               | 内容                                                                                                                                                                                                       |
@@ -194,7 +194,7 @@
 | 可弱化             | —                                                                                                                                                                                                          |
 | 可隐藏             | `DevScheduleDebugPanel`（仅 DEV 渲染，保持）                                                                                                                                                               |
 | 可移入详情         | 月视图点击某天 → `DayDetailSheet`（右滑抽屉）已是正确模式；任务事件 → `TaskEventActionPanel` 底部面板保留                                                                                                  |
-| 不可删除的交互状态 | 视图窗口换页时的范围拉取（day/week/month change）；任务事件的"完成"动作及完成后窗口刷新；非任务事件目前仅 toast（`ScheduleDashboardView.vue:144`——**日程事件本身没有详情/编辑 UI，是功能缺口而非可删项**） |
+| 不可删除的交互状态 | 视图窗口换页时的范围拉取（day/week/month change）；任务事件的"完成"动作及完成后窗口刷新；非任务事件详情见 `EventDetailSheet`（历史 toast 断层已在 redesign 中补位） |
 
 ### 4.6 提醒（`/reminders` → `ReminderLinearView.vue`）
 
@@ -304,7 +304,7 @@
 - **P3 演示/调试路由混入生产**：`/goals/rules-demo` 无 DEV 守卫；孤儿视图 4 个（§3）；`DevScheduleDebugPanel`、legacy goal workflow 开关等调试面散落。
 - **P3 硬编码中文 vs i18n 混用**：repository 路由 meta `title: '仓库'`、`note-edit: '编辑笔记'`（`repository/router/index.ts:14,26`）绕过 i18n key 体系。
 - **P3 通知一级化**：§4.8。
-- **P3 日程事件无详情/编辑**：非任务日历事件点击仅 toast（`ScheduleDashboardView.vue:144`），创建后不可改——体验断层（此为功能缺口，改版时至少给"查看详情"留位）。
+- **P3 日程事件无详情/编辑（历史）**：非任务日历事件曾仅 toast；当前以 `ScheduleCalendarView` + `EventDetailSheet` 为主路径（以代码为准）。
 
 ---
 

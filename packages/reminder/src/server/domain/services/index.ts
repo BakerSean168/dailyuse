@@ -30,7 +30,7 @@ export type {
 
 // 即将到来的提醒计算服务
 export { UpcomingReminderCalculationService } from './upcoming-reminder-calculation-service';
-export type { UpcomingReminderDTO } from './upcoming-reminder-calculation-service';
+export type { UpcomingReminderDTO } from '@dailyuse/contracts/reminder';
 
 // 旧的服务（待废弃）
 export { ReminderTemplateControlService } from './reminder-template-control-service';
