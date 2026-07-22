@@ -4,12 +4,16 @@
 >
 > **📌 决策固化（2026-07-16）**：§13 的 Obsidian Vault 方向已由 [ADR-034](./architecture/adr/ADR-034-obsidian-vault-repository.md) 正式采纳并在后续讨论中调整为“本地 Vault + 可选 GitHub private repository”。涉及登录、事实源、同步、Web 创建和 AI 写入路径时以 ADR-034 为准；本文 §13 的 Desktop 自定义上传、Web 永久只读和固定 `00-inbox` 只保留为历史调研方案。
 >
-> **⚠️ 知识模块现状 supersede（2026-07-21）**：ADR-034 实施后，下列 Brief 现状描述**已退役，不得当作当前架构**：
+> **⚠️ 知识模块现状 supersede（2026-07-21；残留 301 澄清）**：ADR-034 实施后，下列 Brief 现状描述**已退役，不得当作当前架构**：
 > - `ResourceClientDTO` / `RepositoryClientDTO` 与 DB Resource CRUD（contracts 已删除；创建面为 `KnowledgeNotePersistedRef`）
-> - `/note/:id`、`EditorLinearView`、`@dailyuse/editor`、`REPOSITORY_SERVICE_KEY` 旧仓储 DI 端口
+> - `/note/:id`、`EditorLinearView`、`@dailyuse/editor`、旧 `RepositoryServiceLike` / `useRepository` CRUD 端口形态
 > - “在 Web/App 内编辑已有笔记”路径（首期关闭；Desktop 主编辑在 Obsidian）
+> - 旧 `RepositoryWorkspaceView` 自建工作区（运行时已删；现为 `RepositoryEntryView` → projection / Local Vault）
 >
-> 当前真值：[`docs/product/modules/repository.md`](./product/modules/repository.md)、[`docs/product/modules/editor.md`](./product/modules/editor.md)、[`docs/product/module-index/repository-files.md`](./product/module-index/repository-files.md)、[ADR-034](./architecture/adr/ADR-034-obsidian-vault-repository.md)。本文 §1–§8/§11 中笔记/仓储段落仅作迁移前快照。
+> **仍有效的 DI 名**：`REPOSITORY_SERVICE_KEY` 现在绑定 knowledge `RepositoryClientPort`（非旧 CRUD 端口）。
+> AI `openRecentKnowledgeNote` 着陆 `/repository?note=`，**永不** `/note/:id`。
+>
+> 当前真值：[`docs/product/modules/repository.md`](./product/modules/repository.md)、[`docs/product/modules/editor.md`](./product/modules/editor.md)、[`docs/product/module-index/repository-files.md`](./product/module-index/repository-files.md)、[ADR-034](./architecture/adr/ADR-034-obsidian-vault-repository.md)。本文 §1–§8/§11 中笔记/仓储段落仅作**迁移前历史快照**。
 >
 > 状态：分析文档（不含实施）。**除已标注 supersede 的知识/笔记段落外**，其余结论曾基于 2026-07-11 代码；冲突时以当前代码与 product 文档为准。
 > 生成日期：2026-07-11。分析范围：`packages/app-vue`（Web 与 Desktop 共用的前端应用层）。
@@ -209,7 +213,13 @@
 | 可移入详情         | 分组策略详情文案（`getGroupPolicyText`）                                                                                |
 | 不可删除的交互状态 | 全局开关与保存中禁用态；分组控制模式（决定模板开关是否被组接管）；模板/分组的创建对话框                                 |
 
-### 4.7 仓储 + 编辑器（`/repository`、`/note/:id`）
+### 4.7 仓储 + 编辑器（`/repository`、`/note/:id`）— **历史快照（已 supersede）**
+
+> **历史快照**：本节描述 2026-07-11 前后的自建编辑器 + DB Resource 架构。当前运行时以 ADR-034 / product 文档为准：
+> - 路由：`/repository`（`RepositoryEntryView` → `KnowledgeProjectionWorkspaceView` / `LocalVaultWorkspaceView`）
+> - 无 `/note/:id`、无 `EditorLinearView`、无 `RepositoryWorkspaceView`
+> - AI 打开笔记：`openRecentKnowledgeNote` → `/repository?note=`
+
 
 **业务目标**：个人 markdown 知识库——文件树/搜索/书签三模式侧栏、多标签页、CodeMirror6 编辑（源码/分屏/预览）、`[[wikilink]]` 双链与反链、链接图谱、图片/附件引用、失效引用修复、自包含导出、批量导入。
 **数据/模型**：Resource 是 **DB 实体**（`content: string | null`、`version`、`ResourceClientDTO`，`packages/contracts/src/modules/repository/aggregates/resource-client.ts:23-49`）；前端经 DI 端口 `REPOSITORY_SERVICE_KEY` 访问（接口 `RepositoryServiceLike`，`useRepository.ts:32-71`）；Web 注 HTTP 实现、Desktop 注 IPC 实现（`apps/web/src/platform/di-app.ts:116`、`apps/desktop/src/renderer/platform/di-app.ts:67`）。链接索引/反链/图谱**全部在客户端**由资源全文即时计算（`editor/utils/link-index.ts`、`wiki-links.ts:17` `\[\[([^\]]+)\]\]`，支持 `[[目标|别名]]` 与 `#小节`）。知识笔记有服务端 RAG 索引（`indexStatus: 'pending'|'indexed'|'failed'`）。

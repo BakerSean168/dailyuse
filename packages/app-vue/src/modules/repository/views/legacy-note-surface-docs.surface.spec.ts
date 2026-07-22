@@ -3,9 +3,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residuals 205/209/211: product module indexes, MSW, and goal-workflow e2e stay
- * aligned with knowledge-only note surface — no hard-fail CRUD dual-track,
- * no MSW legacy Resource/Folder stubs, no legacy-goal-workflow debug dual-track.
+ * Residuals 205/209/211/301: product module indexes, MSW, goal-workflow e2e, and
+ * UI redesign docs stay aligned with knowledge-only note surface — no hard-fail
+ * CRUD dual-track, no MSW legacy Resource/Folder stubs, no /note/:id runtime,
+ * redesign historical sections clearly superseded.
  */
 describe('legacy note surface docs and menu dual-track retirement', () => {
   const repoRoot = resolve(__dirname, '../../../../../../');
@@ -32,6 +33,15 @@ describe('legacy note surface docs and menu dual-track retirement', () => {
   );
   const goalWorkflowE2e = readFileSync(
     resolve(repoRoot, 'apps/web/e2e/ai/goal-workflow.spec.ts'),
+    'utf8',
+  );
+  const redesignBrief = readFileSync(resolve(repoRoot, 'docs/UI_REDESIGN_BRIEF.md'), 'utf8');
+  const pageRedesignPlan = readFileSync(
+    resolve(repoRoot, 'docs/UI_PAGE_REDESIGN_PLAN.md'),
+    'utf8',
+  );
+  const repositoryRouter = readFileSync(
+    resolve(repoRoot, 'packages/app-vue/src/modules/repository/router/index.ts'),
     'utf8',
   );
 
@@ -78,4 +88,31 @@ describe('legacy note surface docs and menu dual-track retirement', () => {
       expect(locale).toContain('enableTemplate:');
     }
   });
+
+  it('UI redesign docs supersede retired note editor runtime (residual 301)', () => {
+    expect(redesignBrief).toContain('知识模块现状 supersede');
+    expect(redesignBrief).toContain('openRecentKnowledgeNote');
+    expect(redesignBrief).toContain('/repository?note=');
+    expect(redesignBrief).toContain('历史快照');
+    expect(redesignBrief).toContain('RepositoryEntryView');
+    expect(redesignBrief).toContain('KnowledgeProjectionWorkspaceView');
+    // DI key remains for knowledge RepositoryClientPort; do not call it retired.
+    expect(redesignBrief).toContain('REPOSITORY_SERVICE_KEY');
+    expect(redesignBrief).toContain('RepositoryClientPort');
+    expect(redesignBrief).not.toMatch(
+      /REPOSITORY_SERVICE_KEY` 旧仓储 DI 端口/,
+    );
+
+    expect(pageRedesignPlan).toContain('RepositoryWorkspaceView.vue');
+    expect(pageRedesignPlan).toContain('历史方案（已 supersede）');
+    expect(pageRedesignPlan).toContain('KnowledgeProjectionWorkspaceView');
+    expect(pageRedesignPlan).toContain('LocalVaultWorkspaceView');
+    expect(pageRedesignPlan).toContain('/repository?note=');
+
+    expect(repositoryRouter).toContain("path: '/repository'");
+    expect(repositoryRouter).toContain('RepositoryEntryView');
+    expect(repositoryRouter).not.toContain('RepositoryWorkspaceView');
+    expect(repositoryRouter).not.toContain("path: '/note");
+  });
+
 });
