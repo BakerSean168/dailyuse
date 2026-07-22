@@ -6,7 +6,6 @@
  */
 
 import { z } from 'zod';
-import type { ReminderTemplateId } from '../../../primitives';
 import type { ReminderGroupClientDTO } from '../aggregates/reminder-group-client';
 import { ControlMode } from '../value-objects/control-mode';
 
@@ -80,27 +79,6 @@ export interface ReminderGroupListRes {
   hasMore: boolean;
 }
 
-// ============================================================================
-// REMINDER OPERATION Types
-// ============================================================================
-
-export interface ReminderOperationRes {
-  ok: boolean;
-  message?: string;
-  affectedCount?: number;
-}
-
-export interface ReminderTriggerRes {
-  ok: boolean;
-  triggeredAt: number;
-  nextTriggerAt?: number | null;
-  message?: string;
-}
-
-export interface TemplateScheduleStatusRes {
-  templateId: ReminderTemplateId;
-  hasSchedule: boolean;
-  nextExecutionTime?: number | null;
-  lastExecutionTime?: number | null;
-  status: string;
-}
+// Residual 635: ReminderOperationRes / ReminderTriggerRes { ok } dual envelopes
+// and unused TemplateScheduleStatusRes dead surface deleted.
+// Reminder control success bodies use DTO / void / Result envelopes only.
