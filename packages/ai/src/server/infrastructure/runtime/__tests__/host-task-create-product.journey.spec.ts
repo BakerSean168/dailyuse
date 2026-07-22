@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465/467/469/471/473: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -16,6 +16,7 @@
  *   confirm settlement title no-rebind (residual 469)
  *   confirm process-local draft only + single executed (residual 471)
  *   edit single approvedAction (residual 473)
+ *   confirm waiting_approval only (residual 475)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -669,6 +670,66 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillWaiting.data.run.status).toBe('waiting_approval');
     expect(stillWaiting.data.state.pendingActions).toHaveLength(1);
     expect(stillWaiting.data.state.pendingActions[0]?.payload['title']).toBe('Edit multi');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
+  it('confirm fails closed when run status is not waiting_approval (residual 475)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-confirm-status' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-confirm-status',
+        threadId: 'thread-journey-confirm-status',
+        conversationId: 'conv-journey-confirm-status',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Status guard' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    expect(started.data.run.status).toBe('waiting_approval');
+
+    // Cancel first → terminal cancelled; confirm must fail closed (not waiting_approval).
+    const cancelled = await service.resumeRun(
+      'run-journey-confirm-status',
+      { userDecision: 'cancel' },
+      cx as any,
+    );
+    expect(cancelled.ok).toBe(true);
+    if (!cancelled.ok) return;
+    expect(cancelled.data.run.status).toBe('cancelled');
+
+    const failConfirm = await service.resumeRun(
+      'run-journey-confirm-status',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created',
+            entityId: 'tpl-status',
+          },
+        ],
+      },
+      cx as any,
+    );
+    // Idempotent confirm on completed uses different path; cancelled confirm is not idempotent completed.
+    // After cancel, status is cancelled — confirm should fail (not waiting_approval) rather than complete.
+    expect(failConfirm.ok).toBe(false);
+    if (failConfirm.ok) return;
+    expect(failConfirm.error.code).toBe('VALIDATION_ERROR');
+    expect(failConfirm.error.message).toMatch(/confirm requires waiting_approval|does not support|cancel/);
+
+    const stillCancelled = await service.getRun('run-journey-confirm-status', cx as any);
+    expect(stillCancelled.ok).toBe(true);
+    if (!stillCancelled.ok) return;
+    expect(stillCancelled.data.run.status).toBe('cancelled');
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
 

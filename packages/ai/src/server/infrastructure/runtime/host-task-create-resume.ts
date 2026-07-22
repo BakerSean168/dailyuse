@@ -1,5 +1,5 @@
 /**
- * Residual 437/439/453/455/463/465/467/469/471/473: Host task.create process-local resume.
+ * Residual 437/439/453/455/463/465/467/469/471/473/475: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
@@ -30,6 +30,9 @@
  * Residual 473: edit revise requires exactly one create_task_template approvedAction
  * (symmetric single-draft product model with start/confirm).
  *
+ * Residual 475: confirm only from waiting_approval (product path never uses
+ * waiting_execution for Host task.create settlement).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -52,6 +55,10 @@ export const HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE =
 /** Residual 473: edit multi-action revise is fail-closed. */
 export const HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE =
   'Host task.create edit requires exactly one create_task_template approvedAction.';
+
+/** Residual 475: confirm outside waiting_approval is fail-closed. */
+export const HOST_TASK_CREATE_CONFIRM_REQUIRES_WAITING_APPROVAL_MESSAGE =
+  'Host task.create confirm requires waiting_approval.';
 
 /** Residual 463: confirm without recoverable settlement title is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE =
@@ -275,9 +282,10 @@ export function buildHostTaskCreateResumeResult(input: {
   }
 
   if (decision === 'confirm') {
-    if (status !== 'waiting_approval' && status !== 'waiting_execution') {
+    // Residual 475: product settlement only from waiting_approval (start/edit product status).
+    if (status !== 'waiting_approval') {
       throw new Error(
-        `Host task.create confirm requires waiting_approval/waiting_execution; current status is '${status}'.`,
+        `${HOST_TASK_CREATE_CONFIRM_REQUIRES_WAITING_APPROVAL_MESSAGE} Current status is '${status}'.`,
       );
     }
     // Residual 453: client owns createTemplate mutation — Host records settlement only.

@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -721,6 +721,63 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/
         },
       }),
     ).toThrow(/exactly one create_task_template approvedAction/);
+  });
+
+
+  it('confirm succeeds only from waiting_approval (residual 475)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-confirm-waiting'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(started.run.status).toBe('waiting_approval');
+    const completed = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created',
+            entityId: 'tpl-wait',
+          },
+        ],
+      },
+      nowMs: 2,
+    });
+    expect(completed.run.status).toBe('completed');
+  });
+
+  it('confirm fails closed when status is waiting_execution (residual 475)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-confirm-exec-status'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const drifted = {
+      ...started,
+      run: {
+        ...started.run,
+        status: 'waiting_execution' as const,
+      },
+    };
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: drifted,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'Created',
+              entityId: 'tpl-exec-status',
+            },
+          ],
+        },
+      }),
+    ).toThrow(/confirm requires waiting_approval/);
   });
 
 

@@ -615,6 +615,26 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create confirm requires waiting_approval only (residual 475)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_WAITING_APPROVAL_MESSAGE');
+    expect(resume).toContain('confirm requires waiting_approval');
+    expect(resume).toContain('Residual 475');
+    expect(resume).not.toContain('waiting_approval/waiting_execution');
+    // Client revise still gates on waiting_approval and sends single create_task_template.
+    expect(taskWorkflow).toContain("run.run.status !== 'waiting_approval'");
+    expect(taskWorkflow).toContain("action.tool === 'create_task_template'");
+    expect(taskWorkflow).toContain('Residual 475');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

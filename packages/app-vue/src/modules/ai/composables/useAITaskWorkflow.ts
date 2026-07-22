@@ -225,10 +225,10 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 439/455/473: Host revise → process-local edit resume (stay waiting_approval).
+   * Residual 439/455/473/475: Host revise → process-local edit resume (stay waiting_approval).
    * Patches create_task_template pendingActions so getRun/selectAgentRun reopen revised draft.
    * Residual 455: blank title revise is refused client-side (Host also fail-closed).
-   * Residual 473: Host requires exactly one create_task_template approvedAction (single-draft).
+   * Residual 473/475: send exactly one create_task_template approvedAction (Host single-draft).
    */
   async function reviseTaskAgentRun(hostOptions?: {
     title?: string;
@@ -241,14 +241,19 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
     if (typeof hostOptions?.title === 'string' && !hostOptions.title.trim()) return;
     taskAgentResuming.value = true;
     try {
-      const baseActions =
+      const source =
         run.state.pendingActions.length > 0
           ? run.state.pendingActions
           : run.state.approvedActions;
-      const approvedActions = applyHostTaskPatchToAgentActions(baseActions, {
+      // Residual 475: product draft is a single create_task_template action only.
+      const primary =
+        source.find((action) => action.tool === 'create_task_template') ?? source[0];
+      if (!primary || primary.tool !== 'create_task_template') return;
+      const approvedActions = applyHostTaskPatchToAgentActions([primary], {
         title: hostOptions?.title,
         goalId: hostOptions?.goalId,
       });
+      if (approvedActions.length !== 1) return;
       const payload: AgentResumePayload = {
         userDecision: 'edit',
         approvedActions,
