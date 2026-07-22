@@ -1,9 +1,11 @@
 <script setup lang="ts">
 /**
- * AIHostProposalPanel — residual 357/359/361 Host Proposal workbench strip.
+ * AIHostProposalPanel — residual 357/359/361/367/371 Host Proposal workbench.
  *
+ * Mounted in AIContextPanel right rail as the structured Host approval surface.
  * Lists waiting_approval bridge proposals with edit/revise + approve/reject.
  * Goal edits title + description (residual 367); knowledge edits targetPath + contentMarkdown (residual 361).
+ * Residual 371 auto-opens the right workbench when items are pending.
  * Handlers must route through AssistantFacade lifecycle first; this panel
  * never runs Host mutation execution or agent resume itself.
  */

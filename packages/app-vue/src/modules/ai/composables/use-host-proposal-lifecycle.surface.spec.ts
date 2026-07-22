@@ -15,6 +15,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   const types = readFileSync(resolve(dir, 'types.ts'), 'utf8');
   const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
   const panel = readFileSync(resolve(dir, '../components/AIHostProposalPanel.vue'), 'utf8');
+  const contextPanel = readFileSync(resolve(dir, '../components/AIContextPanel.vue'), 'utf8');
 
   it('routes confirm/cancel lifecycle via dispatchAssistant Host commands', () => {
     expect(helper).toContain("type: 'approve_proposal'");
@@ -68,6 +69,11 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('handleHostProposalRevise');
     expect(chatView).toContain('dispatchHostProposalRevise');
     expect(chatView).toContain('skipHostLifecycle');
+    // Residual 371: Host proposals activate right workbench context panel.
+    expect(chatView).toContain('hasPendingHostProposals');
+    expect(chatView).toContain('hasPendingHostProposals.value');
+    expect(chatView).toContain(':host-proposal-count="hostProposalItems.length"');
+    expect(chatView).toContain('auto-open right workbench when Host proposals');
     expect(chatView).toContain('targetPath: payload.patch.targetPath');
     expect(chatView).toContain('contentMarkdown: payload.patch.contentMarkdown');
     expect(chatView).toContain('title: payload.patch.title ?? payload.item.title');
@@ -89,5 +95,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(panel).not.toContain('executeApproved');
     expect(panel).not.toContain('resumeAgentRun');
     expect(panel).not.toContain('dispatchAssistant');
+    expect(contextPanel).toContain('hostProposalCount');
+    expect(contextPanel).toContain('ai-context-host-proposal-count');
+    expect(contextPanel).toContain('hostWorkbenchTitle');
   });
 });

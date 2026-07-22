@@ -233,6 +233,8 @@ export default {
       emptyModels: '当前没有可用模型，可以前往设置配置 AI 提供方和模型。',
       context: {
         title: '上下文',
+        hostWorkbenchTitle: 'Host 提案工作台',
+        hostProposalPending: '{count} 个提案待审批',
         show: '显示上下文',
         hide: '隐藏上下文',
         todayOverview: '今日概览',

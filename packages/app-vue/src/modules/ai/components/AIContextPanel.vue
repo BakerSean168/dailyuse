@@ -10,24 +10,36 @@
  * 以维持 `ai-context-panel` / `ai-context-panel-close` testid 契约
  * 与 AIChatView.spec 状态机断言。空闲态右栏不再渲染。
  *
+ * Residual 371: when hostProposalCount > 0, header marks the rail as Host
+ * Proposal workbench (structured approval surface).
+ *
  * 布局容器不持有工作流状态——产物由 AIChatView 通过 slot 注入。
  */
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { X } from '@lucide/vue';
 
-defineProps<{
+const props = defineProps<{
   /** 是否有激活的工作流上下文（决定是否渲染） */
   hasWorkflowContext: boolean;
   /** <md 时浮层是否展开 */
   open: boolean;
   /** 面板标题下的当前工具名 */
   toolLabel: string;
+  /** Residual 371: pending Host proposal count for workbench header. */
+  hostProposalCount?: number;
 }>();
 
 defineEmits<{ close: [] }>();
 
 const { t } = useI18n();
+
+const pendingHostCount = computed(() =>
+  typeof props.hostProposalCount === 'number' && props.hostProposalCount > 0
+    ? props.hostProposalCount
+    : 0,
+);
 </script>
 
 <template>
@@ -40,10 +52,25 @@ const { t } = useI18n();
     <div class="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4">
       <div class="min-w-0">
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          {{ t('aiAssistant.chatPage.context.title') }}
+          {{
+            pendingHostCount > 0
+              ? t('aiAssistant.chatPage.context.hostWorkbenchTitle')
+              : t('aiAssistant.chatPage.context.title')
+          }}
         </p>
         <p class="truncate text-sm font-medium text-foreground">
           {{ toolLabel }}
+        </p>
+        <p
+          v-if="pendingHostCount > 0"
+          class="mt-0.5 text-[11px] text-muted-foreground"
+          data-testid="ai-context-host-proposal-count"
+        >
+          {{
+            t('aiAssistant.chatPage.context.hostProposalPending', {
+              count: pendingHostCount,
+            })
+          }}
         </p>
       </div>
       <Button

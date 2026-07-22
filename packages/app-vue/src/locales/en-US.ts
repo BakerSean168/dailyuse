@@ -238,6 +238,8 @@ export default {
         'No model is available yet. Open Settings to configure an AI provider and sync models.',
       context: {
         title: 'Context',
+        hostWorkbenchTitle: 'Host Proposal Workbench',
+        hostProposalPending: '{count} proposal(s) waiting for approval',
         show: 'Show context',
         hide: 'Hide context',
         todayOverview: 'Today',

@@ -242,14 +242,17 @@
     </section>
 
     <!--
-      Artifact rail: keeps `ai-context-panel` + AIGoalWorkflowPanel contracts for
-      state-machine specs (Brief §11). Actions no longer live here (moved above composer).
+      Artifact rail / Host proposal workbench (residual 371):
+      AIContextPanel is the structured right workbench for Goal/Knowledge artifacts
+      and waiting_approval Host proposals. Actions near composer remain lifecycle
+      shortcuts; Host revise/approve/reject live here.
     -->
     <AIContextPanel
       v-show="!composerOnly"
       :has-workflow-context="hasWorkflowContext"
       :open="contextPanelOpen"
       :tool-label="currentToolLabel"
+      :host-proposal-count="hostProposalItems.length"
       @close="closeContextPanel"
     >
       <AIHostProposalPanel
@@ -304,7 +307,7 @@
         @start-new-conversation="startNewConversation"
       />
       <div
-        v-if="!hasWorkflowArtifact"
+        v-if="!hasWorkflowArtifact && hostProposalItems.length === 0"
         class="rounded-lg border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground"
         data-testid="ai-context-empty-state"
       >
@@ -544,16 +547,22 @@ const hasWorkflowArtifact = computed(() => {
   return false;
 });
 
-const hasWorkflowContext = computed(
-  () => toolMode.value !== 'chat' || hasWorkflowArtifact.value,
-);
-
-// Residual 357/359/361: Host proposal workbench rows (waiting_approval only).
+// Residual 357/359/361/367: Host proposal workbench rows (waiting_approval only).
 const hostProposalItems = computed(() =>
   buildPendingHostProposalItems({
     goalAgentRun: goalAgentRun.value,
     noteAgentRun: noteAgentRun.value,
   }),
+);
+
+/** Residual 371: pending Host proposals are first-class right-workbench context. */
+const hasPendingHostProposals = computed(() => hostProposalItems.value.length > 0);
+
+const hasWorkflowContext = computed(
+  () =>
+    toolMode.value !== 'chat' ||
+    hasWorkflowArtifact.value ||
+    hasPendingHostProposals.value,
 );
 const hostProposalBusy = ref(false);
 const hostProposalPanelRef = ref<{
@@ -697,6 +706,19 @@ async function handleHostProposalReject(payload: {
 const { goalProgress, isLoading: dashboardLoading, fetchDashboard } = useDashboard();
 const todayOverviewVisible = computed(
   () => chatTimeline.value.length === 0 && !hasWorkflowContext.value,
+);
+
+
+// Residual 371: auto-open right workbench when Host proposals wait for approval.
+// Desktop already shows the rail; mobile needs open=true to unhide the sheet.
+watch(
+  hasPendingHostProposals,
+  (pending) => {
+    if (pending) {
+      contextPanelOpen.value = true;
+    }
+  },
+  { immediate: true },
 );
 
 watch(

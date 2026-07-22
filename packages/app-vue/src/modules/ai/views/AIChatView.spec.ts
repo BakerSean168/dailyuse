@@ -214,6 +214,8 @@ const i18n = createI18n({
           emptyModels: 'No models available',
           context: {
             title: 'Context',
+            hostWorkbenchTitle: 'Host Proposal Workbench',
+            hostProposalPending: '{count} proposal(s) waiting for approval',
             show: 'Show context',
             hide: 'Hide context',
             todayOverview: 'Today',
