@@ -3,10 +3,12 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 305: ADR-035 Agent Host ports remain stage-0 shape freezes.
- * ITurnEnginePort / ICapabilityResolverPort / IWorkflowAdapterPort are contracts
- * only — production packages do not implement multi-engine Turn Engine adapters yet.
- * Multi-engine isolation is enforced at capability resolve/start gates instead.
+ * Residual 305 + 311: ADR-035 Agent Host ports remain stage-0 shape freezes.
+ * ITurnEnginePort / ICapabilityResolverPort / IWorkflowAdapterPort / IProposalKernelPort
+ * are contracts only — production packages do not implement multi-engine Turn Engine,
+ * Workflow Adapter, Capability Resolver, or Proposal Kernel adapters yet.
+ * Multi-engine isolation is enforced at capability resolve/start gates and the
+ * multi-engine Turn Engine conformance harness (in-suite doubles only).
  */
 describe('agent-host stage-0 ports freeze surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../');
@@ -33,13 +35,19 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(capabilities).toContain("engineId: missing.length > 0 ? 'none' : input.engineId");
   });
 
-  it('has no production class implementing ITurnEnginePort yet', () => {
+  it('has no production class implementing Agent Host stage-0 ports yet', () => {
     const roots = [
       resolve(repoRoot, 'packages/ai/src'),
       resolve(repoRoot, 'apps/ai-service'),
       resolve(repoRoot, 'apps/api/src'),
       resolve(repoRoot, 'apps/desktop/src'),
     ];
+    const portMarkers = [
+      'implements ITurnEnginePort',
+      'implements IWorkflowAdapterPort',
+      'implements ICapabilityResolverPort',
+      'implements IProposalKernelPort',
+    ] as const;
     const offenders: string[] = [];
     const skipDirs = new Set(['dist', 'node_modules', '__tests__', 'tests']);
 
@@ -56,23 +64,41 @@ describe('agent-host stage-0 ports freeze surface', () => {
         if (!entry.name.endsWith('.ts') && !entry.name.endsWith('.tsx')) continue;
         if (entry.name.includes('.spec.') || entry.name.includes('.test.')) continue;
         if (entry.name.endsWith('.surface.spec.ts')) continue;
-        const text = readFileSync(full, 'utf8');
+        if (entry.name.includes('.harness.spec.')) continue;
+        const source = readFileSync(full, 'utf8');
+        // Allow the port definition itself and pure type re-exports.
+        if (full.endsWith(`${'agent-host'}/ports.ts`)) continue;
+        if (source.includes('export interface ITurnEnginePort')) continue;
+        const hit = portMarkers.some((marker) => source.includes(marker));
+        const turnTyped =
+          source.includes(': ITurnEnginePort') && source.includes('startTurn') && source.includes('class ');
+        if (!hit && !turnTyped) continue;
         if (
-          text.includes('implements ITurnEnginePort') ||
-          text.includes(': ITurnEnginePort') && text.includes('startTurn')
+          source.includes('export type') &&
+          !source.includes('class ') &&
+          portMarkers.some((marker) => source.includes(marker.replace('implements ', '')))
         ) {
-          // Allow the port definition itself and pure type re-exports.
-          if (full.endsWith(`${'agent-host'}/ports.ts`)) continue;
-          if (text.includes('export interface ITurnEnginePort')) continue;
-          if (text.includes('export type') && text.includes('ITurnEnginePort') && !text.includes('class ')) {
-            continue;
-          }
-          offenders.push(full.replace(repoRoot + '/', ''));
+          continue;
         }
+        offenders.push(full.replace(repoRoot + '/', ''));
       }
     }
 
     for (const root of roots) walk(root);
     expect(offenders).toEqual([]);
+  });
+
+  it('points multi-engine conformance at the residual 309 harness (doubles only)', () => {
+    const harness = resolve(
+      repoRoot,
+      'packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-multi-engine-turn-conformance.harness.spec.ts',
+    );
+    expect(existsSync(harness)).toBe(true);
+    const harnessText = readFileSync(harness, 'utf8');
+    expect(harnessText).toContain("engine.direct_turn");
+    expect(harnessText).toContain("engine.langgraph_workflow");
+    expect(harnessText).toContain('createConformanceTurnEngine');
+    expect(harnessText).toContain('ITurnEnginePort');
+    expect(harnessText).toContain('production packages still do not implement');
   });
 });
