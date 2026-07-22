@@ -60,9 +60,9 @@ describe('createGoalScheduleProjectionSource', () => {
     vi.useRealTimers();
   });
 
-  it('falls back to bare findById when identity is omitted', async () => {
-    const findById = vi.fn().mockResolvedValue(null);
-    const findByIdForIdentity = vi.fn();
+  it('loads missing goal via findByIdForIdentity and returns empty plan', async () => {
+    const findById = vi.fn();
+    const findByIdForIdentity = vi.fn().mockResolvedValue(null);
     const source = createGoalScheduleProjectionSource({
       goalRepository: {
         findById,
@@ -70,10 +70,15 @@ describe('createGoalScheduleProjectionSource', () => {
       } as never,
     });
 
-    const plan = await source.buildGoalPlan('GoalId_missing');
+    const plan = await source.buildGoalPlan('GoalId_missing', 'IdentityId_goal-owner');
 
-    expect(findById).toHaveBeenCalledWith('GoalId_missing', { includeChildren: true });
-    expect(findByIdForIdentity).not.toHaveBeenCalled();
+    expect(findByIdForIdentity).toHaveBeenCalledWith(
+      'IdentityId_goal-owner',
+      'GoalId_missing',
+      { includeChildren: true },
+    );
+    expect(findById).not.toHaveBeenCalled();
     expect(plan.nextTasks).toEqual([]);
+    expect(plan.selection.identityId).toBe('IdentityId_goal-owner');
   });
 });

@@ -65,7 +65,7 @@ function shouldScheduleGoal(goal: GoalServerDTO): boolean {
 
 export interface GoalScheduleProjectionSelection {
   readonly sourceModule: SourceModule;
-  readonly identityId?: string;
+  readonly identityId: string;
   readonly sourceEntityId?: string;
   matches(task: ScheduleTask): boolean;
 }
@@ -76,13 +76,13 @@ export interface GoalScheduleProjectionPlan {
 }
 
 export interface GoalScheduleProjectionSource {
-  buildGoalPlan(goalId: string, identityId?: string): Promise<GoalScheduleProjectionPlan>;
-  buildGoalDeletionSelection(goalId: string, identityId?: string): GoalScheduleProjectionSelection;
+  buildGoalPlan(goalId: string, identityId: string): Promise<GoalScheduleProjectionPlan>;
+  buildGoalDeletionSelection(goalId: string, identityId: string): GoalScheduleProjectionSelection;
 }
 
 export interface GoalScheduleProjectionHandlers {
-  upsertGoal(goalId: string, identityId?: string): Promise<void>;
-  deleteGoal(goalId: string, identityId?: string): Promise<void>;
+  upsertGoal(goalId: string, identityId: string): Promise<void>;
+  deleteGoal(goalId: string, identityId: string): Promise<void>;
 }
 
 export type GoalScheduleProjectionEventMap = Pick<
@@ -98,7 +98,7 @@ export type GoalScheduleProjectionEventMap = Pick<
 
 function selectGoalProjection(
   goalId: string,
-  identityId?: string,
+  identityId: string,
 ): GoalScheduleProjectionSelection {
   return {
     sourceModule: SourceModule.Goal,
@@ -115,11 +115,9 @@ export function createGoalScheduleProjectionSource(deps: {
 }): GoalScheduleProjectionSource {
   return {
     async buildGoalPlan(goalId, identityId) {
-      const goal = identityId
-        ? await deps.goalRepository.findByIdForIdentity(identityId, goalId, {
-            includeChildren: true,
-          })
-        : await deps.goalRepository.findById(goalId, { includeChildren: true });
+      const goal = await deps.goalRepository.findByIdForIdentity(identityId, goalId, {
+        includeChildren: true,
+      });
       if (!goal) {
         return {
           selection: selectGoalProjection(goalId, identityId),

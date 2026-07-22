@@ -46,9 +46,9 @@ describe('createReminderScheduleProjectionSource', () => {
     );
   });
 
-  it('falls back to bare findById when identity is omitted', async () => {
-    const findById = vi.fn().mockResolvedValue(null);
-    const findByIdForIdentity = vi.fn();
+  it('loads missing template via findByIdForIdentity and returns empty plan', async () => {
+    const findById = vi.fn();
+    const findByIdForIdentity = vi.fn().mockResolvedValue(null);
     const source = createReminderScheduleProjectionSource({
       reminderTemplateRepository: {
         findById,
@@ -56,12 +56,18 @@ describe('createReminderScheduleProjectionSource', () => {
       } as never,
     });
 
-    const plan = await source.buildTemplatePlan('ReminderTemplateId_missing');
+    const plan = await source.buildTemplatePlan(
+      'ReminderTemplateId_missing',
+      'IdentityId_reminder-owner',
+    );
 
-    expect(findById).toHaveBeenCalledWith('ReminderTemplateId_missing', {
-      includeHistory: true,
-    });
-    expect(findByIdForIdentity).not.toHaveBeenCalled();
+    expect(findByIdForIdentity).toHaveBeenCalledWith(
+      'IdentityId_reminder-owner',
+      'ReminderTemplateId_missing',
+      { includeHistory: true },
+    );
+    expect(findById).not.toHaveBeenCalled();
     expect(plan.nextTasks).toEqual([]);
+    expect(plan.selection.identityId).toBe('IdentityId_reminder-owner');
   });
 });

@@ -5,7 +5,7 @@ import type { IReminderTemplateRepository } from '../domain/repositories/i-remin
 
 export interface ReminderScheduleProjectionSelection {
   readonly sourceModule: SourceModule;
-  readonly identityId?: string;
+  readonly identityId: string;
   readonly sourceEntityId?: string;
   matches(task: ScheduleTask): boolean;
 }
@@ -18,17 +18,17 @@ export interface ReminderScheduleProjectionPlan {
 export interface ReminderScheduleProjectionSource {
   buildTemplatePlan(
     templateId: string,
-    identityId?: string,
+    identityId: string,
   ): Promise<ReminderScheduleProjectionPlan>;
   buildTemplateDeletionSelection(
     templateId: string,
-    identityId?: string,
+    identityId: string,
   ): ReminderScheduleProjectionSelection;
 }
 
 export interface ReminderScheduleProjectionHandlers {
-  upsertTemplate(templateId: string, identityId?: string): Promise<void>;
-  deleteTemplate(templateId: string, identityId?: string): Promise<void>;
+  upsertTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteTemplate(templateId: string, identityId: string): Promise<void>;
 }
 
 export type ReminderScheduleProjectionEventMap = Pick<
@@ -43,7 +43,7 @@ export type ReminderScheduleProjectionEventMap = Pick<
 
 function selectReminderProjection(
   templateId: string,
-  identityId?: string,
+  identityId: string,
 ): ReminderScheduleProjectionSelection {
   return {
     sourceModule: SourceModule.Reminder,
@@ -60,13 +60,13 @@ export function createReminderScheduleProjectionSource(deps: {
 }): ReminderScheduleProjectionSource {
   return {
     async buildTemplatePlan(templateId, identityId) {
-      const template = identityId
-        ? await deps.reminderTemplateRepository.findByIdForIdentity(identityId, templateId, {
-            includeHistory: true,
-          })
-        : await deps.reminderTemplateRepository.findById(templateId, {
-            includeHistory: true,
-          });
+      const template = await deps.reminderTemplateRepository.findByIdForIdentity(
+        identityId,
+        templateId,
+        {
+          includeHistory: true,
+        },
+      );
 
       if (!template) {
         return {

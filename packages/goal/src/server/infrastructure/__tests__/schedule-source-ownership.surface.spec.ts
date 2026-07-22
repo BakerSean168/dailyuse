@@ -3,9 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Goal/reminder schedule source ownership (stage-6 residual 130):
- * projection with identity and execution must load aggregates via
- * findByIdForIdentity, not bare primary keys alone.
+ * Goal/reminder schedule source ownership (stage-6 residual 130/168):
+ * projection requires identityId and loads only via findByIdForIdentity;
+ * execution must load aggregates via findByIdForIdentity, not bare PKs.
  */
 describe('schedule source ownership surface', () => {
   const goalProjection = readFileSync(
@@ -31,9 +31,15 @@ describe('schedule source ownership surface', () => {
     'utf8',
   );
 
-  it('goal projection prefers findByIdForIdentity when identity present', () => {
-    expect(goalProjection).toContain('findByIdForIdentity(identityId, goalId');
-    expect(goalProjection).toContain('findById(goalId, { includeChildren: true })');
+  it('goal projection requires identityId and never bare findById (residual 168)', () => {
+    expect(goalProjection).toContain(
+      'buildGoalPlan(goalId: string, identityId: string): Promise<GoalScheduleProjectionPlan>;',
+    );
+    expect(goalProjection).toContain('readonly identityId: string;');
+    expect(goalProjection).toContain(
+      'findByIdForIdentity(identityId, goalId, {\n        includeChildren: true,\n      })',
+    );
+    expect(goalProjection).not.toContain('findById(goalId, { includeChildren: true })');
   });
 
   it('goal execution loads via findByIdForIdentity(task.identityId)', () => {
@@ -44,9 +50,15 @@ describe('schedule source ownership surface', () => {
     );
   });
 
-  it('reminder projection prefers findByIdForIdentity when identity present', () => {
-    expect(reminderProjection).toContain('findByIdForIdentity(identityId, templateId');
-    expect(reminderProjection).toContain('findById(templateId, {');
+  it('reminder projection requires identityId and never bare findById (residual 168)', () => {
+    expect(reminderProjection).toContain(
+      'identityId: string,\n  ): Promise<ReminderScheduleProjectionPlan>;',
+    );
+    expect(reminderProjection).toContain('readonly identityId: string;');
+    expect(reminderProjection).toContain(
+      'findByIdForIdentity(\n        identityId,\n        templateId,',
+    );
+    expect(reminderProjection).not.toContain('findById(templateId, {');
   });
 
   it('reminder execution loads via findByIdForIdentity(task.identityId)', () => {

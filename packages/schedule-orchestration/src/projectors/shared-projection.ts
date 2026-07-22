@@ -4,7 +4,7 @@ import type { Publisher } from '@dailyuse/utils/domain';
 
 export interface ProjectionSelection {
   readonly sourceModule: SourceModule;
-  readonly identityId?: string;
+  readonly identityId: string;
   readonly sourceEntityId?: string;
   matches(task: ScheduleTask): boolean;
 }
@@ -18,12 +18,6 @@ export async function findMatchingTasks(
   scheduleTaskRepository: IScheduleTaskRepository,
   selection: ProjectionSelection,
 ): Promise<readonly ScheduleTask[]> {
-  if (!selection.identityId) {
-    throw new Error(
-      'Projection selection requires identityId for identity-scoped schedule task loads.',
-    );
-  }
-
   const existingTasks = selection.sourceEntityId
     ? await scheduleTaskRepository.findBySourceEntity(
         selection.sourceModule,
@@ -50,7 +44,7 @@ export async function deleteSelection(
 
   const idsByIdentity = new Map<string, string[]>();
   for (const task of existingTasks) {
-    const identityId = selection.identityId ?? task.identityId;
+    const identityId = selection.identityId;
     const ids = idsByIdentity.get(identityId) ?? [];
     ids.push(task.id);
     idsByIdentity.set(identityId, ids);

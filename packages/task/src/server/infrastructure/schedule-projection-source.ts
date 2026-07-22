@@ -135,7 +135,7 @@ function isSchedulableInstance(instance: {
 
 export interface TaskScheduleProjectionSelection {
   readonly sourceModule: SourceModule;
-  readonly identityId?: string;
+  readonly identityId: string;
   readonly sourceEntityId?: string;
   matches(task: ScheduleTask): boolean;
 }
@@ -146,15 +146,15 @@ export interface TaskScheduleProjectionPlan {
 }
 
 export interface TaskScheduleProjectionSource {
-  buildTemplatePlan(templateId: string, identityId?: string): Promise<TaskScheduleProjectionPlan>;
-  buildTemplateDeletionSelection(templateId: string, identityId?: string): TaskScheduleProjectionSelection;
-  buildInstanceDeletionSelection(instanceId: string, identityId?: string): TaskScheduleProjectionSelection;
+  buildTemplatePlan(templateId: string, identityId: string): Promise<TaskScheduleProjectionPlan>;
+  buildTemplateDeletionSelection(templateId: string, identityId: string): TaskScheduleProjectionSelection;
+  buildInstanceDeletionSelection(instanceId: string, identityId: string): TaskScheduleProjectionSelection;
 }
 
 export interface TaskScheduleProjectionHandlers {
-  upsertTemplate(templateId: string, identityId?: string): Promise<void>;
-  deleteTemplate(templateId: string, identityId?: string): Promise<void>;
-  deleteInstance(instanceId: string, identityId?: string): Promise<void>;
+  upsertTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteInstance(instanceId: string, identityId: string): Promise<void>;
 }
 
 export type TaskScheduleProjectionEventMap = Pick<
@@ -188,7 +188,7 @@ export const taskScheduleProjectionEventNames = [
 
 function selectTemplateProjection(
   templateId: string,
-  identityId?: string,
+  identityId: string,
 ): TaskScheduleProjectionSelection {
   return {
     sourceModule: SourceModule.Task,
@@ -201,7 +201,7 @@ function selectTemplateProjection(
 
 function selectInstanceProjection(
   instanceId: string,
-  identityId?: string,
+  identityId: string,
 ): TaskScheduleProjectionSelection {
   return {
     sourceModule: SourceModule.Task,
@@ -219,9 +219,10 @@ export function createTaskScheduleProjectionSource(deps: {
 }): TaskScheduleProjectionSource {
   return {
     async buildTemplatePlan(templateId, identityId) {
-      const template = identityId
-        ? await deps.taskTemplateRepository.findByIdForIdentity(identityId, templateId)
-        : await deps.taskTemplateRepository.findById(templateId);
+      const template = await deps.taskTemplateRepository.findByIdForIdentity(
+        identityId,
+        templateId,
+      );
       if (!template) {
         return {
           selection: selectTemplateProjection(templateId, identityId),

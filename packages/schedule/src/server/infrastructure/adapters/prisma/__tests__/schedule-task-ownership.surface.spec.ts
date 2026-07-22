@@ -151,11 +151,10 @@ describe('schedule task ownership surface', () => {
     );
   });
 
-  it('shared projection requires selection.identityId (residual 162)', () => {
-    expect(sharedProjection).toContain(
-      "Projection selection requires identityId for identity-scoped schedule task loads.",
-    );
-    expect(sharedProjection).toContain('if (!selection.identityId)');
+  it('shared projection requires selection.identityId (residual 162/168)', () => {
+    expect(sharedProjection).toContain('readonly identityId: string;');
+    expect(sharedProjection).not.toContain('readonly identityId?: string;');
+    expect(sharedProjection).toContain('const identityId = selection.identityId;');
   });
 
 

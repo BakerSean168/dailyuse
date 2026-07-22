@@ -7,8 +7,8 @@ import type { Publisher } from '@dailyuse/utils/domain';
 import { deleteSelection, replaceSelection } from './shared-projection';
 
 export interface ReminderProjector {
-  upsertTemplate(templateId: string, identityId?: string): Promise<void>;
-  deleteTemplate(templateId: string, identityId?: string): Promise<void>;
+  upsertTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteTemplate(templateId: string, identityId: string): Promise<void>;
 }
 
 export interface CreateReminderProjectorDeps {

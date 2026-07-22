@@ -12,7 +12,7 @@ tags:
   - security
 description: 本地 Obsidian Vault、可选 GitHub 私有仓库同步、Web 快捷创建与 Agent 知识写入边界的实施方案
 created: 2026-07-16T00:00:00
-updated: 2026-07-21T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # Obsidian Vault 与 GitHub 知识仓库后续优化方案
@@ -1953,6 +1953,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 补 ownership/runtime surface。§13.2 仍部分。
 > 验证：legacy-editor-repository-runtime surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百六十八轮）：Schedule projection 身份隔离——
+> task/goal/reminder projection source 与 orchestration projector 强制 `identityId`；
+> 删除 bare `findById` 双轨回退；`ProjectionSelection.identityId` 必填。
+> 补 ownership/surface specs。§13.2 仍部分。
+> 验证：task/goal/reminder projection + ownership surface + schedule ownership surface +
+> governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2169,6 +2177,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百六十五轮：schedule task query/count identity-required。
   残留一百六十六轮：task dependency findAggregateById identity-scoped。
   残留一百六十七轮：legacy editor/repository runtime surface audit。
+  残留一百六十八轮：schedule projection source identity-required (no bare findById)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

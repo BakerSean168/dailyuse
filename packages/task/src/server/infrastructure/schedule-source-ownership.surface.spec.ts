@@ -3,17 +3,21 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Task schedule source ownership (stage-6 residual 132):
- * projection with identity and execution must load aggregates via
- * findByIdForIdentity, not bare primary keys alone.
+ * Task schedule source ownership (stage-6 residual 132/168):
+ * projection requires identityId and loads only via findByIdForIdentity;
+ * execution must load aggregates via findByIdForIdentity, not bare PKs.
  */
 describe('task schedule source ownership surface', () => {
   const projection = readFileSync(resolve(__dirname, './schedule-projection-source.ts'), 'utf8');
   const execution = readFileSync(resolve(__dirname, './schedule-execution-source.ts'), 'utf8');
 
-  it('projection prefers findByIdForIdentity when identity present', () => {
-    expect(projection).toContain('findByIdForIdentity(identityId, templateId)');
-    expect(projection).toContain('findById(templateId)');
+  it('projection requires identityId and never bare findById (residual 168)', () => {
+    expect(projection).toContain(
+      'buildTemplatePlan(templateId: string, identityId: string): Promise<TaskScheduleProjectionPlan>;',
+    );
+    expect(projection).toContain('readonly identityId: string;');
+    expect(projection).toContain('findByIdForIdentity(\n        identityId,\n        templateId,');
+    expect(projection).not.toContain('findById(templateId)');
     expect(projection).toContain('findByTemplateId(');
     expect(projection).toContain('String(templateDTO.identityId)');
   });

@@ -129,14 +129,9 @@ describe('task schedule projection source', () => {
   });
 
 
-  it('falls back to bare findById when identity is omitted', async () => {
-    const template = aRecurringTask({
-      reminderConfig: aRelativeReminder(15),
-    });
-    template.pause();
-
-    const findById = vi.fn().mockResolvedValue(template);
-    const findByIdForIdentity = vi.fn();
+  it('loads missing template via findByIdForIdentity and returns empty plan', async () => {
+    const findById = vi.fn();
+    const findByIdForIdentity = vi.fn().mockResolvedValue(null);
     const taskTemplateRepository = createMockRepo<ITaskTemplateRepository>({
       findById,
       findByIdForIdentity,
@@ -150,11 +145,12 @@ describe('task schedule projection source', () => {
       taskInstanceRepository,
     });
 
-    const plan = await source.buildTemplatePlan(template.id);
+    const plan = await source.buildTemplatePlan('TaskTemplateId_missing', 'identity-1');
 
-    expect(findById).toHaveBeenCalledWith(template.id);
-    expect(findByIdForIdentity).not.toHaveBeenCalled();
+    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'TaskTemplateId_missing');
+    expect(findById).not.toHaveBeenCalled();
     expect(plan.nextTasks).toEqual([]);
+    expect(plan.selection.identityId).toBe('identity-1');
   });
 
   it('builds an instance deletion selection by exact source entity id', () => {
