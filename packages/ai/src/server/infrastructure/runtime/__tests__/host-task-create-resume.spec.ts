@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453)', () => {
+describe('host-task-create-resume (residual 437/439/453/455)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -244,4 +244,75 @@ describe('host-task-create-resume (residual 437/439/453)', () => {
       }),
     ).toThrow(/does not support userDecision/);
   });
+
+  it('edit fails closed on blank title or non create_task_template tool (residual 455)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit-blank'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'edit',
+          approvedActions: [
+            {
+              tool: 'create_task_template',
+              index: 0,
+              dependsOn: [],
+              rationale: 'blank',
+              payload: { title: '   ' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/requires a non-empty revised title/);
+
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'edit',
+          approvedActions: [
+            {
+              tool: 'other_tool',
+              index: 0,
+              dependsOn: [],
+              rationale: 'wrong',
+              payload: { title: 'Ok title' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/must use tool create_task_template/);
+  });
+
+  it('edit trims revised title into pending payload (residual 455)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit-trim'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const edited = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'trim',
+            payload: { title: '  Trimmed draft  ', goalId: '  goal-trim  ' },
+          },
+        ],
+      },
+      nowMs: 9,
+    });
+    expect(edited.state.pendingActions[0]?.payload['title']).toBe('Trimmed draft');
+    expect(edited.state.pendingActions[0]?.payload['goalId']).toBe('goal-trim');
+    expect(edited.events.at(-1)?.data?.['title']).toBe('Trimmed draft');
+  });
+
 });

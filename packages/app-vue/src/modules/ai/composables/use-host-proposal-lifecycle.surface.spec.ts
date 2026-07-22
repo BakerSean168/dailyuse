@@ -410,6 +410,26 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+
+  it('task.create edit requires non-empty revised title (residual 455)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE');
+    expect(resume).toContain('requires a non-empty revised title');
+    expect(resume).toContain('Residual 455');
+    expect(resume).toContain('must use tool create_task_template');
+    // Client revise path still patches create_task_template actions only.
+    expect(taskWorkflow).toContain("userDecision: 'edit'");
+    expect(taskWorkflow).toContain('applyHostTaskPatchToAgentActions');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

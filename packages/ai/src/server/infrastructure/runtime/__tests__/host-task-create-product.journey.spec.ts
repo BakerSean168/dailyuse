@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -7,6 +7,7 @@
  *   identity fail-closed
  *   runId identity binding (residual 451)
  *   confirm requires client settlement (residual 453)
+ *   edit requires non-empty title (residual 455)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -285,6 +286,54 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!stillWaiting.ok) return;
     expect(stillWaiting.data.run.status).toBe('waiting_approval');
     expect(stillWaiting.data.state.executedActions).toEqual([]);
+    expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
+
+  it('fails closed on blank edit title without mutating stored draft (residual 455)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-edit-title' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-edit-blank',
+        threadId: 'thread-journey-edit-blank',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Keep original' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    const blankEdit = await service.resumeRun(
+      'run-journey-edit-blank',
+      {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'blank',
+            payload: { title: '   ' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(blankEdit.ok).toBe(false);
+    if (blankEdit.ok) return;
+    expect(blankEdit.error.code).toBe('VALIDATION_ERROR');
+    expect(blankEdit.error.message).toMatch(/non-empty revised title/);
+
+    const stillOriginal = await service.getRun('run-journey-edit-blank', cx as any);
+    expect(stillOriginal.ok).toBe(true);
+    if (!stillOriginal.ok) return;
+    expect(stillOriginal.data.run.status).toBe('waiting_approval');
+    expect(stillOriginal.data.state.pendingActions[0]?.payload['title']).toBe('Keep original');
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
 

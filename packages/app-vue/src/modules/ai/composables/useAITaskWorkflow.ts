@@ -216,8 +216,9 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 439: Host revise → process-local edit resume (stay waiting_approval).
+   * Residual 439/455: Host revise → process-local edit resume (stay waiting_approval).
    * Patches create_task_template pendingActions so getRun/selectAgentRun reopen revised draft.
+   * Residual 455: blank title revise is refused client-side (Host also fail-closed).
    */
   async function reviseTaskAgentRun(hostOptions?: {
     title?: string;
@@ -226,6 +227,8 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
     const run = options.taskAgentRun.value;
     if (!run || run.run.agentType !== 'task.create' || taskAgentResuming.value) return;
     if (run.run.status !== 'waiting_approval') return;
+    // Residual 455: do not submit blank revise (Host rejects; avoid noisy VALIDATION_ERROR).
+    if (typeof hostOptions?.title === 'string' && !hostOptions.title.trim()) return;
     taskAgentResuming.value = true;
     try {
       const baseActions =

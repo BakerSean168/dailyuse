@@ -254,6 +254,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE'];
     case 'requires non-empty client executedActions settlement':
       return ['requires non-empty client executedActions settlement'];
+    case 'HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE':
+      return ['HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE'];
+    case 'requires a non-empty revised title':
+      return ['requires a non-empty revised title'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

@@ -1,5 +1,5 @@
 /**
- * Residual 437/439/453: Host task.create process-local resume.
+ * Residual 437/439/453/455: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
@@ -7,6 +7,9 @@
  *
  * Residual 453: confirm requires client-owned executedActions settlement
  * (create_task_template + executed). Host must not invent default execution receipts.
+ *
+ * Residual 455: edit revise requires create_task_template + non-empty trimmed title
+ * (fail-closed blank revise; same title invariant as start).
  *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
@@ -22,6 +25,10 @@ import {
 /** Residual 453: confirm without client settlement receipts is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE =
   'Host task.create confirm requires non-empty client executedActions settlement (create_task_template).';
+
+/** Residual 455: edit revise without a non-empty title is fail-closed. */
+export const HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE =
+  'Host task.create edit requires a non-empty revised title on create_task_template.';
 
 function nextSequence(events: AgentRunResult['events']): number {
   if (events.length === 0) return 0;
@@ -200,7 +207,7 @@ export function buildHostTaskCreateResumeResult(input: {
     });
   }
 
-  // Residual 439: Host revise → keep waiting_approval with patched pending create_task_template.
+  // Residual 439/455: Host revise → keep waiting_approval with patched pending create_task_template.
   if (decision === 'edit') {
     if (status !== 'waiting_approval') {
       throw new Error(
@@ -211,16 +218,49 @@ export function buildHostTaskCreateResumeResult(input: {
       throw new Error('Host task.create edit requires non-empty approvedActions as revised pending actions.');
     }
     const pendingActions = cloneActions(input.payload.approvedActions);
-    const title =
+    for (const action of pendingActions) {
+      if (action.tool !== 'create_task_template') {
+        throw new Error(
+          'Host task.create edit approvedActions must use tool create_task_template.',
+        );
+      }
+    }
+    const rawTitle =
       typeof pendingActions[0]?.payload?.['title'] === 'string'
         ? String(pendingActions[0].payload['title'])
         : typeof pendingActions[0]?.payload?.['name'] === 'string'
           ? String(pendingActions[0].payload['name'])
           : undefined;
-    const goalId =
-      typeof pendingActions[0]?.payload?.['goalId'] === 'string'
-        ? String(pendingActions[0].payload['goalId'])
-        : undefined;
+    const title = rawTitle?.trim() ? rawTitle.trim() : undefined;
+    // Residual 455: blank revise is fail-closed (same title invariant as start).
+    if (!title) {
+      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE);
+    }
+    // Normalize trimmed title into pending payload so getRun/list rehydrate clean values.
+    const firstPayload = {
+      ...(pendingActions[0]?.payload ?? {}),
+      title,
+    };
+    const rawGoalId = firstPayload['goalId'] ?? firstPayload['goal_id'];
+    let goalId: string | undefined;
+    if (typeof rawGoalId === 'string' && rawGoalId.trim()) {
+      goalId = rawGoalId.trim();
+      firstPayload['goalId'] = goalId;
+    } else if (rawGoalId === null || rawGoalId === '') {
+      delete firstPayload['goalId'];
+      delete firstPayload['goal_id'];
+      goalId = undefined;
+    } else if (typeof rawGoalId === 'string') {
+      delete firstPayload['goalId'];
+      delete firstPayload['goal_id'];
+      goalId = undefined;
+    }
+    if (pendingActions[0]) {
+      pendingActions[0] = {
+        ...pendingActions[0],
+        payload: firstPayload,
+      };
+    }
 
     return AgentRunResultSchema.parse({
       run: {

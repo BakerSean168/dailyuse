@@ -268,6 +268,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 453: confirm requires client-owned executedActions settlement.
         'HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE',
         'requires non-empty client executedActions settlement',
+        // Residual 455: edit revise requires non-empty title.
+        'HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE',
+        'requires a non-empty revised title',
       ],
       status: 'implemented_unit',
     },
