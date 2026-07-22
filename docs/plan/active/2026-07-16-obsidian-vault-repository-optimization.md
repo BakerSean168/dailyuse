@@ -2029,6 +2029,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `packages/editor` 目录与 `@dailyuse/editor` 依赖保持删除。portable editor_* 备份导入边界未动。
 > §13.2 仍部分（三入口/Agent multi-engine/真实 GitHub fixture E2E 仍缺）。验证：schedule-task/runtime
 > + legacy-editor surfaces + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百八十一轮）：§13.2 未打勾项诚实证据重审（不改 checkbox）——
+> 1) 三入口仍为 **部分**：`three-login-surface.matrix.spec.ts`（14）+ Desktop/Web auth surface 通过；
+>    仍缺真实 OAuth/跨端 Playwright-Electron 一揽子。
+> 2) Agent 隔离仍为 **部分**：`adr-035-capability-turn-isolation.journey.spec.ts`（13）通过
+>   （confirm-only / cancel 无副作用 / cross-capability fail-closed / identity isolation）；
+>    仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 E2E。
+> 3) 门禁验收仍为 **部分+外部阻塞**：本分支 focused vitest + `daily-use:governance-check` 绿；
+>    真实 GitHub App fixture E2E 缺凭据；不伪造。
+> 身份隔离 dual-method 波次 169–179 已收口 + 180 锁定；不因此宣称 plan 完成。
+> 验证：matrix + adr-035 journey + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2114,7 +2125,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留一百七十九轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留一百八十一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除，仅保留
 > schedule-task runtime bootstrap（残留 180 surface 锁定）、notification template 系统全局、account/auth identity 主键路径。
 > 不因此把三入口/Agent/E2E 未完成项打勾。
@@ -2140,6 +2151,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百零三轮：matrix step 9 固化 AuthPlatformEntry/DesktopAuthView/WebAuthView/
   useDataPortability 源码边界与矩阵一致。
   残留一百零六轮：server-held disclosure import fail-closed（parse + ImportUserData 用例）。
+  残留一百八十一轮：复跑 `three-login-surface.matrix.spec.ts`（14 通过）证据仍在；不因 dual-method 收口改写为已证明。
   仍缺：真实跨端 Playwright/Electron 一揽子 E2E（含真实 OAuth/GitHub fixture）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
@@ -2175,6 +2187,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   `packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-capability-turn-isolation.journey.spec.ts`
   （同一 fixture 串联：surface-scoped plan → start gate → confirm-only mutation → cancel 无副作用 →
   cross-capability fail-closed → identity get/list 隔离 → vault path/confirmation/tool surface）。
+  残留一百八十一轮：复跑 `adr-035-capability-turn-isolation.journey.spec.ts`（13 通过）；证据强化但仍为部分实现。
   仍缺：多 Turn Engine 完整 E2E、跨端对抗 Playwright E2E 与真实 fixture。
   残留四十轮：`adr-035-capability-turn-isolation.journey.spec.ts` 增加 multi-turn 二次 confirm 不重复落盘，以及 Web surface 无法满足 Desktop `local_vault` knowledge-write 要求；仍缺完整 multi-engine Turn Engine E2E 与跨端对抗性 Playwright/Electron E2E。
   残留七十四轮：journey step 10 固化 readonly cloud_rag/proposal 不能满足 knowledge mutation；
@@ -2261,6 +2274,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百七十八轮：goal/notification/preference findById dual-method collapse。
   残留一百七十九轮：schedule execution findById dual-method collapse。
   残留一百八十轮：schedule-task bootstrap dual lock + packages/editor absence lock。
+  残留一百八十一轮：§13.2 partial-item evidence re-audit (no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -2269,6 +2283,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
   `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
   磁盘耗尽不再是阻塞。残留一百零八轮：HTTP 204 无 body + checkpoint void `ok(null)` 收口。
+  残留一百八十一轮：tip 上 `daily-use:governance-check` + focused ownership/journey specs 通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
