@@ -52,17 +52,6 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
 
   // ================= Read Operations =================
 
-  async findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
-    const row = await this.prisma.goal.findUnique({
-      where: { id },
-      include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
-    });
-    if (!row) return null;
-
-    const dto = PrismaGoalMapper.toDomainDTO(row);
-    return Goal.load(rawDataToGoalState(dto));
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

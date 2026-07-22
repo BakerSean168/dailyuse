@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Goal ownership surface (stage-6 residual 117/118):
+ * Residual 178 collapses bare findById dual method.
  * goal aggregate + status + KR/review + create parent + focus + records/progress must identity-scope
  * repository reads — never authorize by bare goal/record primary key alone.
  */
@@ -184,6 +185,14 @@ describe('goal ownership surface', () => {
     expect(recordPort).toContain(
       'delete(identityId: string, recordId: string): Promise<void>;',
     );
+  });
+
+  it('port drops bare findById dual method (residual 178)', () => {
+    expect(port).not.toContain(
+      'findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null>;',
+    );
+    expect(prisma).not.toMatch(/async findById\(id: string, options\?/);
+    expect(powersync).not.toMatch(/async findById\(id: string, options\?/);
   });
 
   it('prisma filters by id + identityId', () => {

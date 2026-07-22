@@ -46,7 +46,6 @@ describe('createGoalScheduleExecutionSource', () => {
     });
     const source = createGoalScheduleExecutionSource({
       goalRepository: {
-        findById: vi.fn(),
         findByIdForIdentity,
       },
     });

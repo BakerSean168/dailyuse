@@ -34,11 +34,9 @@ describe('createGoalScheduleProjectionSource', () => {
       }),
     };
     const findByIdForIdentity = vi.fn().mockResolvedValue(goalAggregate);
-    const findById = vi.fn();
 
     const source = createGoalScheduleProjectionSource({
       goalRepository: {
-        findById,
         findByIdForIdentity,
       } as never,
     });
@@ -50,7 +48,6 @@ describe('createGoalScheduleProjectionSource', () => {
       'GoalId_goal-1',
       { includeChildren: true },
     );
-    expect(findById).not.toHaveBeenCalled();
     expect(plan.selection.sourceModule).toBe(SourceModule.Goal);
     expect(plan.selection.sourceEntityId).toBe('GoalId_goal-1');
     expect(plan.nextTasks).toHaveLength(1);
@@ -61,11 +58,9 @@ describe('createGoalScheduleProjectionSource', () => {
   });
 
   it('loads missing goal via findByIdForIdentity and returns empty plan', async () => {
-    const findById = vi.fn();
     const findByIdForIdentity = vi.fn().mockResolvedValue(null);
     const source = createGoalScheduleProjectionSource({
       goalRepository: {
-        findById,
         findByIdForIdentity,
       } as never,
     });
@@ -77,7 +72,6 @@ describe('createGoalScheduleProjectionSource', () => {
       'GoalId_missing',
       { includeChildren: true },
     );
-    expect(findById).not.toHaveBeenCalled();
     expect(plan.nextTasks).toEqual([]);
     expect(plan.selection.identityId).toBe('IdentityId_goal-owner');
   });

@@ -47,14 +47,6 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
     });
   }
 
-  async findById(id: string): Promise<NotificationPreference | null> {
-    const row = await this.prisma.notificationPreference.findUnique({
-      where: { id },
-    });
-    if (!row) return null;
-    return NotificationPreferencePrismaMapper.toDomain(row as unknown as PrismaNotificationPreferenceRow);
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<NotificationPreference | null> {
     const row = await this.prisma.notificationPreference.findFirst({
       where: { id, identityId },

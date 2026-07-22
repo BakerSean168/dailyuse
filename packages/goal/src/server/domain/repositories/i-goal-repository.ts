@@ -31,15 +31,6 @@ export interface IGoalRepository {
   save(goal: Goal): Promise<void>;
 
   /**
-   * 通过 ID 查找聚合根
-   *
-   * @param id - 目标 ID
-   * @param options.includeChildren - 是否加载子实体（默认 false，懒加载）
-   * @returns 聚合根实例，不存在则返回 null
-   */
-  findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null>;
-
-  /**
    * 通过 identity + ID 查找聚合根（身份隔离读路径）
    *
    * @param identityId - 用户身份 ID

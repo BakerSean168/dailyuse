@@ -15,11 +15,6 @@ export interface INotificationPreferenceRepository {
   save(preference: NotificationPreference): Promise<void>;
 
   /**
-   * Find by primary key (system/internal paths; authorization-sensitive loads use findByIdForIdentity)
-   */
-  findById(id: string): Promise<NotificationPreference | null>;
-
-  /**
    * Find by primary key scoped to identity
    */
   findByIdForIdentity(identityId: string, id: string): Promise<NotificationPreference | null>;

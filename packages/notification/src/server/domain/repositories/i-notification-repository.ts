@@ -36,15 +36,6 @@ export interface INotificationRepository {
   saveMany(notifications: Notification[]): Promise<void>;
 
   /**
-   * 閫氳繃 UUID 鏌ユ壘鑱氬悎鏍?
-   *
-   * @param id 閫氱煡 UUID
-   * @param options.includeChildren 鏄惁鍔犺浇瀛愬疄浣擄紙榛樿 false锛屾噿鍔犺浇锛?
-   * @returns 鑱氬悎鏍瑰疄渚嬶紝涓嶅瓨鍦ㄥ垯杩斿洖 null
-   */
-  findById(id: string, options?: { includeChildren?: boolean }): Promise<Notification | null>;
-
-  /**
    * Find notification by id + identity (ownership fence).
    * Returns null when missing or not owned by identityId.
    */

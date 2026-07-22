@@ -66,7 +66,7 @@ export class GoalProgressCalculator {
    * @example
    * ```typescript
    * // 在 ApplicationService 中使用
-   * const goal = await this.goalRepository.findById(goalId);
+   * const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId);
    * const result = await this.progressCalculator.recalculateKeyResultProgress(goal, keyResultId);
    * if (result.changed) {
    *   await this.goalRepository.save(goal);

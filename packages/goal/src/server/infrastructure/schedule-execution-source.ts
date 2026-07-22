@@ -8,7 +8,7 @@ import type { IGoalRepository } from '../domain';
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
 
 export interface CreateGoalScheduleExecutionSourceDeps {
-  readonly goalRepository: Pick<IGoalRepository, 'findById' | 'findByIdForIdentity'>;
+  readonly goalRepository: Pick<IGoalRepository, 'findByIdForIdentity'>;
 }
 
 export function createGoalScheduleExecutionSource(

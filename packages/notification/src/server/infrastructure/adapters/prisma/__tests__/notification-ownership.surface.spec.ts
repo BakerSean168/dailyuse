@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Notification ownership surface (stage-6 residual 126):
+ * Residual 178 collapses bare findById dual method.
  * get/mark-read/update/delete/batch paths must never authorize by bare
  * notification primary key alone.
  */
@@ -66,6 +67,15 @@ describe('notification ownership surface', () => {
     expect(domainService).not.toMatch(
       /markAsRead\(id: string\): Promise<void>/,
     );
+  });
+
+  it('port drops bare findById dual method (residual 178)', () => {
+    expect(port).not.toMatch(/findById\(\s*\n\s*id: string,/);
+    expect(port).not.toContain(
+      'findById(id: string, options?: { includeChildren?: boolean }): Promise<Notification | null>;',
+    );
+    expect(prisma).not.toMatch(/async findById\(\s*\n\s*id: string,/);
+    expect(powersync).not.toMatch(/async findById\(\s*\n\s*id: string,/);
   });
 
   it('port findByIdForIdentity requires identityId', () => {

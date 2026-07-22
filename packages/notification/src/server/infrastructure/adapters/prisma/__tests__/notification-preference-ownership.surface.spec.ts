@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Notification preference ownership surface (stage-6 residual 147):
+ * Residual 178 collapses bare findById dual method.
  * preference get-by-id/delete/exists must never authorize by bare preference
  * primary key alone. Runtime get/update paths already use findByIdentityId.
  */
@@ -27,6 +28,12 @@ describe('notification preference ownership surface', () => {
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
     expect(port).toContain('exists(identityId: string, id: string): Promise<boolean>;');
+  });
+
+  it('port drops bare findById dual method (residual 178)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<NotificationPreference | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by id + identityId', () => {

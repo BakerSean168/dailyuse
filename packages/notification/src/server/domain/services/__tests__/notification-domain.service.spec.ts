@@ -28,7 +28,6 @@ describe('NotificationDomainService', () => {
     notificationRepo = createMockRepo<INotificationRepository>({
       save: vi.fn().mockResolvedValue(undefined),
       saveMany: vi.fn().mockResolvedValue(undefined),
-      findById: vi.fn(),
       findByIdForIdentity: vi.fn(),
       findByIdentityId: vi.fn().mockResolvedValue([]),
       findUnread: vi.fn().mockResolvedValue([]),
