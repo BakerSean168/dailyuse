@@ -4574,6 +4574,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > unit + scaffold/driver Residual 543 锁；非跨端 multi-engine E2E / 跨进程 durable。
 > 状态保持 **实施中**；不改 §13.2 checkbox。
 
+> 续进展 2026-07-22（阶段 6 残留五百四十四轮）：§13.2 聚焦证据套件复跑（含 residual 250–543
+> Host confirm settlementAction 锁，不改 checkbox）——**105 文件 / 629 测试**（app-vue 26/241、
+> ai 34/252、repository 6/35、contracts 11/29、data-portability 4/18、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`。
+> 相对 residual 542：ai +0 file / +1 test（confirm settlementAction unit +1）；app-vue/data-portability 不变。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
+> GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
+> 状态保持 **实施中**；PR 就绪仍为否。
+
 
 
 
@@ -4687,13 +4695,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留五百四十二轮刷新：三入口/Agent/门禁仍为部分或外部阻塞；不改 checkbox）。
+> 审计时间 2026-07-22（残留五百四十四轮刷新：三入口/Agent/门禁仍为部分或外部阻塞；不改 checkbox）。
 > 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
-> focused evidence suite tip（残留五百四十二轮）：**105 文件 / 628 测试** + governance-check GOV_EXIT:0。
+> focused evidence suite tip（残留五百四十四轮）：**105 文件 / 629 测试** + governance-check GOV_EXIT:0。
 > 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
 > 阶段 6 dual 收口（残留 250–300；四百八十七轮补 task DAG *ViewModel 消费者收口；五百三十九轮 portable editor_* / knowledge routes / /note strip 再锁）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
-> Host task.create 进程内产品路径（残留 427–491 + 501–541）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
-> + history/session focus + linked goal restore + client settlement 会话隔离 + store 容量边界 + process-local product journey + runId 身份/会话/thread 绑定 + confirm 必须 client executedActions + edit 非空 title + dirty approve 先 process-local revise + start 必须 conversationId（runtime+builder fail-closed，无 silent null）+ start 必须 threadId（trim 非空 fail-closed）+ start 非空 title（builder fail-closed，无静默默认）+ confirm settlement title/templateId 可回收 + confirm goalId/title 禁重绑 + confirm 仅 process-local draft + 单 executed + edit 单 approvedAction + edit/confirm tool+empty-action 命名常量 fail-closed + cancel/confirm/edit 仅 waiting_approval（Host+client complete 双门禁）+ edit draftAction 单 create_task_template（541）；永不 `executeApproved`。
+> Host task.create 进程内产品路径（残留 427–491 + 501–543）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
+> + history/session focus + linked goal restore + client settlement 会话隔离 + store 容量边界 + process-local product journey + runId 身份/会话/thread 绑定 + confirm 必须 client executedActions + edit 非空 title + dirty approve 先 process-local revise + start 必须 conversationId（runtime+builder fail-closed，无 silent null）+ start 必须 threadId（trim 非空 fail-closed）+ start 非空 title（builder fail-closed，无静默默认）+ confirm settlement title/templateId 可回收 + confirm goalId/title 禁重绑 + confirm 仅 process-local draft + 单 executed + edit 单 approvedAction + edit/confirm tool+empty-action 命名常量 fail-closed + cancel/confirm/edit 仅 waiting_approval（Host+client complete 双门禁）+ edit draftAction 单 create_task_template（541）+ confirm settlementAction 单 create_task_template（543）；永不 `executeApproved`。
 > Client product-lane isolation（残留 501/507/519–537）：complete/revise/draft title·path·markdown·summary·pendingCount·primaryEntityId·receipt cross-lane·failed message·ok 均 product-tool 门禁。
 > 仍非跨进程 durable / 完整 Task LangGraph / 跨端 Playwright-Electron multi-engine E2E。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
@@ -5226,6 +5234,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百四十一轮：§13.2 证据审计刷新 + Host edit draftAction 单 create_task_template（禁 multi-index invent）。
   残留五百四十二轮：§13.2 focused evidence suite re-run（628 tests，residuals 250–541 锁；不改 checkbox）。
   残留五百四十三轮：Host task.create confirm settlementAction 单 create_task_template（禁 multi-index invent）。
+  残留五百四十四轮：§13.2 focused evidence suite re-run（629 tests，residuals 250–543 锁；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -5464,6 +5473,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百四十一轮：§13.2 evidence-audit refresh + Host edit draftAction sole create_task_template (no multi-index invent)。
   残留五百四十二轮：§13.2 focused evidence suite re-run (628 tests, residuals 250–541 locks, no checkbox changes)。
   残留五百四十三轮：Host task.create confirm settlementAction sole create_task_template (no multi-index invent)。
+  残留五百四十四轮：§13.2 focused evidence suite re-run (629 tests, residuals 250–543 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。  残留五百四十一轮：Host edit draftAction 单 create_task_template + Client product-lane isolation 501–537 + tip suite 627 证据指针刷新；仍不构成跨端 Playwright/Electron multi-engine E2E / 真实 Pi spawn 证据。
 
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
@@ -5789,6 +5799,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百四十一轮：§13.2 证据审计刷新 + Host edit draftAction 锁；tip suite 仍 627（本轮无 suite re-run）；仍不构成全量 PR 门禁证据。
   残留五百四十二轮：tip 上 628 项 focused evidence suite（含 residual 250–541 Host edit draftAction 锁）通过；仍不构成全量 PR 门禁证据。
   残留五百四十三轮：Host confirm settlementAction 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
+  残留五百四十四轮：tip 上 629 项 focused evidence suite（含 residual 250–543 Host confirm settlementAction 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
