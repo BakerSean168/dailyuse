@@ -386,6 +386,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 571: Host panel settlement reuses shared ownership (no dual re-resolve).
         'Residual 571',
         "owned?.productTool === 'create_task_template'",
+        // Residual 573: Host panel revise sole product + waiting_approval (approve symmetry).
+        'Residual 573',
+        'canHostReviseProductAgentRun',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

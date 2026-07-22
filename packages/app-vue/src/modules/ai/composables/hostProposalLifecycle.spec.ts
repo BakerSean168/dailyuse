@@ -2696,8 +2696,11 @@ describe('canHostRejectProductAgentRun (residual 565)', () => {
   });
 });
 
-describe('canHostReviseProductAgentRun (residual 567)', () => {
-  function runWith(status: AgentRunResult['run']['status']): AgentRunResult {
+describe('canHostReviseProductAgentRun (residual 567/573)', () => {
+  function runWith(
+    status: AgentRunResult['run']['status'],
+    tools: string[] = ['create_task_template'],
+  ): AgentRunResult {
     return {
       run: {
         runId: 'run-1',
@@ -2709,15 +2712,13 @@ describe('canHostReviseProductAgentRun (residual 567)', () => {
         updatedAt: 1,
       },
       state: {
-        pendingActions: [
-          {
-            tool: 'create_task_template',
-            index: 0,
-            dependsOn: [],
-            payload: {},
-            rationale: 'draft',
-          },
-        ],
+        pendingActions: tools.map((tool, index) => ({
+          tool,
+          index,
+          dependsOn: [],
+          payload: {},
+          rationale: tool,
+        })),
         approvedActions: [],
         executedActions: [],
         artifacts: [],
@@ -2726,15 +2727,74 @@ describe('canHostReviseProductAgentRun (residual 567)', () => {
     } as AgentRunResult;
   }
 
-  it('mirrors reject waiting_approval-only gate', () => {
-    expect(canHostReviseProductAgentRun({ run: runWith('waiting_approval') })).toBe(true);
-    expect(canHostReviseProductAgentRun({ run: runWith('waiting_execution') })).toBe(false);
-    expect(canHostReviseProductAgentRun({ run: runWith('completed') })).toBe(false);
-    expect(canHostReviseProductAgentRun({ run: null })).toBe(false);
-    // Same predicate as residual 565 reject helper.
-    expect(canHostReviseProductAgentRun({ run: runWith('waiting_approval') })).toBe(
-      canHostRejectProductAgentRun({ run: runWith('waiting_approval') }),
+  it('requires waiting_approval (residual 567)', () => {
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('waiting_approval'),
+        productTool: 'create_task_template',
+      }),
+    ).toBe(true);
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('waiting_execution'),
+        productTool: 'create_task_template',
+      }),
+    ).toBe(false);
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('completed'),
+        productTool: 'create_task_template',
+      }),
+    ).toBe(false);
+    expect(
+      canHostReviseProductAgentRun({
+        run: null,
+        productTool: 'create_task_template',
+      }),
+    ).toBe(false);
+  });
+
+  it('requires sole product draftAction (residual 573 approve symmetry)', () => {
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('waiting_approval', ['create_task_template', 'search_knowledge']),
+        productTool: 'create_task_template',
+      }),
+    ).toBe(true);
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('waiting_approval', ['create_task_template', 'create_task_template']),
+        productTool: 'create_task_template',
+      }),
+    ).toBe(false);
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('waiting_approval', ['create_goal', 'create_key_result']),
+        productTool: 'create_goal',
+      }),
+    ).toBe(true);
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('waiting_approval', ['create_goal', 'create_goal']),
+        productTool: 'create_goal',
+      }),
+    ).toBe(false);
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('waiting_approval', ['create_knowledge_note']),
+        productTool: 'create_knowledge_note',
+      }),
+    ).toBe(true);
+    // Reject remains WA-only; revise is stricter (sole product).
+    expect(canHostRejectProductAgentRun({ run: runWith('waiting_approval', ['create_task_template', 'create_task_template']) })).toBe(
+      true,
     );
+    expect(
+      canHostReviseProductAgentRun({
+        run: runWith('waiting_approval', ['create_task_template', 'create_task_template']),
+        productTool: 'create_task_template',
+      }),
+    ).toBe(false);
   });
 });
 

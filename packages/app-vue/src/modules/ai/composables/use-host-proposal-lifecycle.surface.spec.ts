@@ -1171,6 +1171,34 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('Host panel revise requires sole product draftAction before lifecycle (residual 573)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('Residual 573');
+    expect(helper).toContain('canHostReviseProductAgentRun');
+    expect(chatView).toContain('Residual 573');
+    const reviseIdx = chatView.indexOf('async function handleHostProposalRevise');
+    expect(reviseIdx).toBeGreaterThan(-1);
+    const reviseSlice = chatView.slice(reviseIdx, reviseIdx + 3600);
+    expect(reviseSlice).toContain('canHostReviseProductAgentRun');
+    expect(reviseSlice).toContain('owned.productTool');
+    expect(reviseSlice).toContain('productTool: owned.productTool');
+    // Gate before Host lifecycle revise dispatch.
+    const gateIdx = reviseSlice.indexOf('canHostReviseProductAgentRun');
+    const dispatchIdx = reviseSlice.indexOf('dispatchHostProposalRevise');
+    expect(gateIdx).toBeGreaterThan(-1);
+    expect(dispatchIdx).toBeGreaterThan(gateIdx);
+    // Helper signature requires productTool (approve residual 561 symmetry).
+    const helperFn = helper.indexOf('export function canHostReviseProductAgentRun');
+    expect(helperFn).toBeGreaterThan(-1);
+    const helperSlice = helper.slice(helperFn, helperFn + 900);
+    expect(helperSlice).toContain('productTool');
+    expect(helperSlice).toContain('canHostApproveProductAgentRun');
+    expect(helperSlice).toContain('Residual 573');
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('Host panel approve/reject/revise share resolveHostPanelOwnedProductRun ownership (residual 569)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
     expect(helper).toContain('resolveHostPanelOwnedProductRun');

@@ -255,14 +255,17 @@ export function canHostRejectProductAgentRun(input: {
 /**
  * Residual 567: Host panel revise for product-lane AgentRuns requires
  * waiting_approval before Host lifecycle (edit residual 481 + residual 565
- * reject symmetry). Prevents revise-then-silent-noop when process-local
- * revise/edit gates fail-closed. Same status predicate as reject; named
- * separately for Host panel action symmetry and scaffold locks.
+ * reject symmetry). Named separately for Host panel action symmetry.
+ * Residual 573: also requires sole product draftAction (approve residual
+ * 561/563 symmetry). Prevents Host revise-then-process-local silent-noop
+ * when client revise/edit sole-product gates fail-closed (task 547/481).
  */
 export function canHostReviseProductAgentRun(input: {
   run: AgentRunResult | null | undefined;
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template';
 }): boolean {
-  return canHostRejectProductAgentRun(input);
+  // Residual 573: WA + sole product (same predicate family as canHostApprove).
+  return canHostApproveProductAgentRun(input);
 }
 
 /** Residual 569: Host panel product source for owned AgentRun resolution. */

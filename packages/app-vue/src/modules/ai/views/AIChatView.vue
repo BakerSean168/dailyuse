@@ -753,6 +753,7 @@ async function handleHostProposalRevise(payload: {
   if (hostProposalBusy.value || !payload.dirty) return;
 
   // Residual 567: product-lane Host revise waiting_approval before Host lifecycle.
+  // Residual 573: sole product draftAction (approve residual 561/563 symmetry).
   // Residual 569/571: shared resolveHostPanelOwnedProductRun for gate + settlement.
   // Edit residual 481 + residual 565 reject / 561 approve symmetry.
   // Avoids revise-then-silent-noop + dual ownership drift.
@@ -775,7 +776,16 @@ async function handleHostProposalRevise(payload: {
   ) {
     return;
   }
-  if (owned && !canHostReviseProductAgentRun({ run: owned.run })) return;
+  // Residual 573: sole product draftAction + waiting_approval (approve symmetry).
+  if (
+    owned &&
+    !canHostReviseProductAgentRun({
+      run: owned.run,
+      productTool: owned.productTool,
+    })
+  ) {
+    return;
+  }
 
   hostProposalBusy.value = true;
   try {
