@@ -2709,6 +2709,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 补 surface。§13.2 未打勾项仍为部分/外部阻塞。验证：data-portability surfaces/adapters + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百七十九轮）：§13.2 聚焦证据套件复跑（含 residual 250–278
+> dual 锁，含 DataPortabilityClientPort，不改 checkbox）——
+> **50 文件 / 159 测试**（app-vue 49、ai 24、repository 33、contracts 10、ipc-client 5、
+> http-client 5、governance 2、setting 3、data-portability 5、dashboard 1、authentication 11、
+> desktop 9、task 2）+ governance-check（GOV_EXIT:0）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
+> 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3064,6 +3072,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百七十六轮：move ISettingApiClient/IDataPortabilityApiClient into application-client ports。
   残留二百七十七轮：§13.2 focused evidence suite re-run (157 tests, residuals 250–276 locks, no checkbox changes)。
   残留二百七十八轮：collapse DataPortabilityClientPort to IDataPortabilityApiClient type alias。
+  残留二百七十九轮：§13.2 focused evidence suite re-run (159 tests, residuals 250–278 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3115,6 +3124,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百七十六轮：setting/data-portability API port dual 收口 + surface 锁 + governance-check；仍不构成全量 PR 门禁证据。
   残留二百七十七轮：tip 上 157 项 focused evidence suite（含 residual 250–276 dual 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百七十八轮：DataPortabilityClientPort dual 收口 + surface 锁 + governance-check；仍不构成全量 PR 门禁证据。
+  残留二百七十九轮：tip 上 159 项 focused evidence suite（含 residual 250–278 dual 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
