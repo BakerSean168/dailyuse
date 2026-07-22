@@ -17,7 +17,7 @@ import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
  * ScheduleTask 鏌ヨ閫夐」
  */
 export interface IScheduleTaskQueryOptions {
-  identityId?: string;
+  identityId: string;
   sourceModule?: SourceModule;
   sourceEntityId?: string;
   status?: ScheduleTaskStatus;

@@ -48,7 +48,7 @@ function isScheduleTaskRootDb(db: ScheduleTaskDb | ScheduleTaskRootDb): db is Sc
  * Query options for ScheduleTask.
  */
 interface IScheduleTaskQueryOptions {
-  identityId?: string;
+  identityId: string;
   sourceModule?: SourceModule;
   sourceEntityId?: string;
   status?: ScheduleTaskStatus;
@@ -285,9 +285,10 @@ export class ScheduleTaskPrismaRepository
   }
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
-    const where: Prisma.ScheduleTaskWhereInput = {};
+    const where: Prisma.ScheduleTaskWhereInput = {
+      identityId: options.identityId,
+    };
 
-    if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;
     if (options.sourceEntityId) where.sourceEntityId = options.sourceEntityId;
     if (options.status) where.status = options.status;
@@ -309,9 +310,10 @@ export class ScheduleTaskPrismaRepository
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
-    const where: Prisma.ScheduleTaskWhereInput = {};
+    const where: Prisma.ScheduleTaskWhereInput = {
+      identityId: options.identityId,
+    };
 
-    if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;
     if (options.sourceEntityId) where.sourceEntityId = options.sourceEntityId;
     if (options.status) where.status = options.status;

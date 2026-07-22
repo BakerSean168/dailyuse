@@ -158,4 +158,17 @@ describe('schedule task ownership surface', () => {
     expect(sharedProjection).toContain('if (!selection.identityId)');
   });
 
+
+  it('query options require identityId (residual 165)', () => {
+    expect(port).toContain('export interface IScheduleTaskQueryOptions {\n  identityId: string;');
+    expect(port).not.toContain('identityId?: string;');
+  });
+
+  it('prisma/powersync query/count always filter identityId (residual 165)', () => {
+    expect(prisma).toContain('identityId: options.identityId,');
+    expect(prisma).not.toContain('if (options.identityId) where.identityId = options.identityId;');
+    expect(powersync).toContain("const clauses: string[] = ['identity_id = ?']");
+    expect(powersync).toContain('const params: unknown[] = [options.identityId]');
+  });
+
 });

@@ -305,13 +305,9 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
   }
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
-    const clauses: string[] = [];
-    const params: unknown[] = [];
+    const clauses: string[] = ['identity_id = ?'];
+    const params: unknown[] = [options.identityId];
 
-    if (options.identityId) {
-      clauses.push('identity_id = ?');
-      params.push(options.identityId);
-    }
     if (options.sourceModule) {
       clauses.push('source_module = ?');
       params.push(options.sourceModule);
@@ -329,10 +325,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
       params.push(options.isEnabled ? 1 : 0);
     }
 
-    let sql = 'SELECT * FROM schedule_tasks';
-    if (clauses.length > 0) {
-      sql += ` WHERE ${clauses.join(' AND ')}`;
-    }
+    let sql = `SELECT * FROM schedule_tasks WHERE ${clauses.join(' AND ')}`;
     sql += ' ORDER BY next_run_at ASC';
     if (options.limit) {
       sql += ' LIMIT ?';
@@ -347,13 +340,9 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
-    const clauses: string[] = [];
-    const params: unknown[] = [];
+    const clauses: string[] = ['identity_id = ?'];
+    const params: unknown[] = [options.identityId];
 
-    if (options.identityId) {
-      clauses.push('identity_id = ?');
-      params.push(options.identityId);
-    }
     if (options.sourceModule) {
       clauses.push('source_module = ?');
       params.push(options.sourceModule);
@@ -371,13 +360,9 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
       params.push(options.isEnabled ? 1 : 0);
     }
 
-    let sql = 'SELECT COUNT(*) as count FROM schedule_tasks';
-    if (clauses.length > 0) {
-      sql += ` WHERE ${clauses.join(' AND ')}`;
-    }
-
-    const result = await this.db.get<{ count: number }>(sql, params);
-    return Number(result.count ?? 0);
+    const sql = `SELECT COUNT(*) as count FROM schedule_tasks WHERE ${clauses.join(' AND ')}`;
+    const row = await this.db.getOptional<{ count: number }>(sql, params);
+    return Number(row?.count ?? 0);
   }
 
   async saveBatch(tasks: ScheduleTask[]): Promise<void> {
