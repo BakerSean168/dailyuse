@@ -980,6 +980,25 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('applyHost*Patch uses sole product draftAction only (residual 551)', () => {
+    expect(helper).toContain('Residual 551');
+    expect(helper).toContain('productDraftCount !== 1');
+    const knowledgeFn = helper.indexOf('export function applyHostKnowledgePatchToAgentActions');
+    const goalFn = helper.indexOf('export function applyHostGoalPatchToAgentActions');
+    const taskFn = helper.indexOf('export function applyHostTaskPatchToAgentActions');
+    expect(knowledgeFn).toBeGreaterThan(-1);
+    expect(goalFn).toBeGreaterThan(-1);
+    expect(taskFn).toBeGreaterThan(-1);
+    expect(helper.slice(knowledgeFn, knowledgeFn + 900)).toContain("action.tool === 'create_knowledge_note'");
+    expect(helper.slice(knowledgeFn, knowledgeFn + 900)).toContain('productDraftCount !== 1');
+    expect(helper.slice(goalFn, goalFn + 800)).toContain("action.tool === 'create_goal'");
+    expect(helper.slice(goalFn, goalFn + 800)).toContain('productDraftCount !== 1');
+    expect(helper.slice(taskFn, taskFn + 900)).toContain("action.tool === 'create_task_template'");
+    expect(helper.slice(taskFn, taskFn + 900)).toContain('productDraftCount !== 1');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('task.create process-local store conversation list trims (residual 509)', () => {
     const store = readFileSync(
       resolve(

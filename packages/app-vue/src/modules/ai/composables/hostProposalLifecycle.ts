@@ -17,6 +17,8 @@
  * Residual 537: receipt ok requires product-lane executed tool on completed runs.
  * Residual 549: product draft readers use sole product-lane draftAction after
  * single-product-draft gate (client residual 547 productDrafts symmetry; no multi-find invent).
+ * Residual 551: applyHost*Patch only patches sole product-lane draftAction
+ * (no multi-index invent of identical Host fields across product tools).
  */
 import type {
   AgentAction,
@@ -454,7 +456,9 @@ function goalDraftDescription(run: AgentRunResult): string {
  */
 
 /**
- * Residual 363: map Host-revised knowledge fields onto AgentRun executor actions.
+ * Residual 363/551: map Host-revised knowledge fields onto AgentRun executor actions.
+ * Residual 551: only patches when exactly one create_knowledge_note draftAction is present
+ * (no multi-index invent of identical Host path/body across product tools).
  * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
  */
 export function applyHostKnowledgePatchToAgentActions(
@@ -468,14 +472,24 @@ export function applyHostKnowledgePatchToAgentActions(
     typeof patch.targetPath === 'string' && patch.targetPath.trim()
       ? patch.targetPath.trim().split('\\').join('/')
       : undefined;
-  // Fix: in JS file we need /\/g - write carefully below
   const contentMarkdown =
     typeof patch.contentMarkdown === 'string' && patch.contentMarkdown.trim()
       ? patch.contentMarkdown
       : undefined;
 
   if (!targetPath && contentMarkdown === undefined) {
-    return actions.map((action) => ({ ...action, payload: { ...action.payload } }));
+    return actions.map((action) => ({ ...action, payload: { ...(action.payload ?? {}) } }));
+  }
+
+  // Residual 551: sole create_knowledge_note draftAction only (residual 547/549 symmetry).
+  const productDraftCount = actions.filter(
+    (action) => action.tool === 'create_knowledge_note',
+  ).length;
+  if (productDraftCount !== 1) {
+    return actions.map((action) => ({
+      ...action,
+      payload: { ...(action.payload ?? {}) },
+    }));
   }
 
   return actions.map((action) => {
@@ -503,7 +517,9 @@ export function applyHostKnowledgePatchToAgentActions(
 
 
 /**
- * Residual 365: map Host-revised goal title/description onto AgentRun executor actions.
+ * Residual 365/551: map Host-revised goal title/description onto AgentRun executor actions.
+ * Residual 551: only patches when exactly one create_goal draftAction is present
+ * (no multi-index invent of identical Host title/description across product tools).
  * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
  */
 export function applyHostGoalPatchToAgentActions(
@@ -519,7 +535,16 @@ export function applyHostGoalPatchToAgentActions(
   const description = hasDescription ? patch.description : undefined;
 
   if (!title && !hasDescription) {
-    return actions.map((action) => ({ ...action, payload: { ...action.payload } }));
+    return actions.map((action) => ({ ...action, payload: { ...(action.payload ?? {}) } }));
+  }
+
+  // Residual 551: sole create_goal draftAction only (residual 547/549 symmetry).
+  const productDraftCount = actions.filter((action) => action.tool === 'create_goal').length;
+  if (productDraftCount !== 1) {
+    return actions.map((action) => ({
+      ...action,
+      payload: { ...(action.payload ?? {}) },
+    }));
   }
 
   return actions.map((action) => {
@@ -542,6 +567,7 @@ export function applyHostGoalPatchToAgentActions(
     };
   });
 }
+
 
 /**
  * Residual 379: Host execution receipt workbench row.
@@ -889,7 +915,9 @@ export function resolveLiveHostWorkbenchAgentRuns(input: {
 }
 
 /**
- * Residual 423: map Host-revised task title/goalId onto create_task_template executor actions.
+ * Residual 423/551: map Host-revised task title/goalId onto create_task_template executor actions.
+ * Residual 551: only patches when exactly one create_task_template draftAction is present
+ * (no multi-index invent of identical Host title/goalId across product tools).
  * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
  */
 export function applyHostTaskPatchToAgentActions(
@@ -911,6 +939,17 @@ export function applyHostTaskPatchToAgentActions(
 
   if (!title && !hasGoalId) {
     return actions.map((action) => ({ ...action, payload: { ...(action.payload ?? {}) } }));
+  }
+
+  // Residual 551: sole create_task_template draftAction only (residual 547/549 symmetry).
+  const productDraftCount = actions.filter(
+    (action) => action.tool === 'create_task_template',
+  ).length;
+  if (productDraftCount !== 1) {
+    return actions.map((action) => ({
+      ...action,
+      payload: { ...(action.payload ?? {}) },
+    }));
   }
 
   return actions.map((action) => {

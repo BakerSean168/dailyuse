@@ -472,6 +472,127 @@ describe('applyHostGoalPatchToAgentActions (residual 365)', () => {
   });
 });
 
+describe('applyHost*Patch sole product draftAction (residual 551)', () => {
+  it('does not invent identical Host knowledge patch across multi create_knowledge_note drafts', () => {
+    const actions = [
+      {
+        tool: 'create_knowledge_note',
+        payload: { contentMarkdown: '# a', targetSubpath: 'notes/a' },
+        rationale: 'a',
+        index: 0,
+        dependsOn: [],
+      },
+      {
+        tool: 'create_knowledge_note',
+        payload: { contentMarkdown: '# b', targetSubpath: 'notes/b' },
+        rationale: 'b',
+        index: 1,
+        dependsOn: [],
+      },
+    ] as AgentAction[];
+
+    const patched = applyHostKnowledgePatchToAgentActions(actions, {
+      targetPath: 'notes/edited',
+      contentMarkdown: '# revised',
+    });
+
+    expect(patched[0]?.payload).toMatchObject({
+      contentMarkdown: '# a',
+      targetSubpath: 'notes/a',
+    });
+    expect(patched[1]?.payload).toMatchObject({
+      contentMarkdown: '# b',
+      targetSubpath: 'notes/b',
+    });
+    expect(patched[0]?.payload).not.toMatchObject({ targetSubpath: 'notes/edited' });
+  });
+
+  it('does not invent identical Host goal patch across multi create_goal drafts', () => {
+    const actions = [
+      {
+        tool: 'create_goal',
+        payload: { title: 'A', description: 'da' },
+        rationale: 'a',
+        index: 0,
+        dependsOn: [],
+      },
+      {
+        tool: 'create_goal',
+        payload: { title: 'B', description: 'db' },
+        rationale: 'b',
+        index: 1,
+        dependsOn: [],
+      },
+    ] as AgentAction[];
+
+    const patched = applyHostGoalPatchToAgentActions(actions, {
+      title: 'Host revised',
+      description: 'Host desc',
+    });
+
+    expect(patched[0]?.payload).toMatchObject({ title: 'A', description: 'da' });
+    expect(patched[1]?.payload).toMatchObject({ title: 'B', description: 'db' });
+  });
+
+  it('does not invent identical Host task patch across multi create_task_template drafts', () => {
+    const actions = [
+      {
+        tool: 'create_task_template',
+        payload: { title: 'A', goalId: 'g-a' },
+        rationale: 'a',
+        index: 0,
+        dependsOn: [],
+      },
+      {
+        tool: 'create_task_template',
+        payload: { title: 'B', goalId: 'g-b' },
+        rationale: 'b',
+        index: 1,
+        dependsOn: [],
+      },
+    ] as AgentAction[];
+
+    const patched = applyHostTaskPatchToAgentActions(actions, {
+      title: 'Host Task',
+      goalId: 'goal-host',
+    });
+
+    expect(patched[0]?.payload).toMatchObject({ title: 'A', goalId: 'g-a' });
+    expect(patched[1]?.payload).toMatchObject({ title: 'B', goalId: 'g-b' });
+  });
+
+  it('still patches sole create_task_template when foreign tools accompany it', () => {
+    const actions = [
+      {
+        tool: 'create_goal',
+        payload: { title: 'Goal' },
+        rationale: 'g',
+        index: 0,
+        dependsOn: [],
+      },
+      {
+        tool: 'create_task_template',
+        payload: { title: 'Old', goalId: 'g0' },
+        rationale: 't',
+        index: 1,
+        dependsOn: [],
+      },
+    ] as AgentAction[];
+
+    const patched = applyHostTaskPatchToAgentActions(actions, {
+      title: 'New Task',
+      goalId: 'goal-42',
+    });
+
+    expect(patched[0]?.payload).toEqual({ title: 'Goal' });
+    expect(patched[1]?.payload).toMatchObject({
+      title: 'New Task',
+      name: 'New Task',
+      goalId: 'goal-42',
+    });
+  });
+});
+
 describe('buildHostExecutionReceiptItems (residual 379)', () => {
   function goalCompletedRun(): AgentRunResult {
     const run = goalWaitingRun('completed');
