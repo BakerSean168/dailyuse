@@ -288,6 +288,18 @@ const i18n = createI18n({
             },
             noteTopicFallback: 'New note topic',
           },
+          hostProposals: {
+            title: 'Host Proposals',
+            lifecycleOnly: 'Host lifecycle only — business execution runs after approval.',
+            kindGoal: 'Goal create',
+            kindKnowledge: 'Knowledge write',
+            kindTask: 'Task create',
+            revision: 'Rev {revision}',
+            pendingActions: '{count} pending action(s)',
+            approve: 'Approve',
+            reject: 'Reject',
+            busy: 'Updating...',
+          },
         },
         actions: {
           automateGoalSetup: 'Automate goal setup',
@@ -1159,6 +1171,8 @@ function mountView() {
         // goal-agent-* / ai-context-panel 等契约断言依赖其真实模板。
         AIContextPanel: false,
         AIWorkflowActionBar: false,
+        // Residual 357: Host proposal panel real template for ai-host-proposal-* contracts.
+        AIHostProposalPanel: false,
       },
     },
   });
@@ -1876,6 +1890,8 @@ describe('AIChatView', () => {
     expect(wrapper.text()).toContain('waiting_approval');
     expect(wrapper.text()).toContain('Agent AI Goal');
     expect(wrapper.text()).toContain('Create the approved goal draft after user confirmation.');
+    expect(wrapper.find('[data-testid="ai-host-proposal-panel"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ai-host-proposal-approve-goal"]').exists()).toBe(true);
 
     const toggleEditorButton = wrapper.find('[data-testid="goal-agent-toggle-editor"]');
     expect(toggleEditorButton.exists()).toBe(true);

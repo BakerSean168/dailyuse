@@ -335,6 +335,19 @@ export default {
           knowledgeGenerate: 'Knowledge Note',
         },
       },
+      hostProposals: {
+        title: 'Host Proposals',
+        lifecycleOnly:
+          'Host lifecycle only — business execution runs after approval through the existing executor.',
+        kindGoal: 'Goal create',
+        kindKnowledge: 'Knowledge write',
+        kindTask: 'Task create',
+        revision: 'Rev {revision}',
+        pendingActions: '{count} pending action(s)',
+        approve: 'Approve',
+        reject: 'Reject',
+        busy: 'Updating...',
+      },
     },
     actions: {
       generateGoal: 'Generate Goal',

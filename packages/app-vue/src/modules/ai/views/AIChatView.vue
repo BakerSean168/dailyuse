@@ -248,6 +248,12 @@
       :tool-label="currentToolLabel"
       @close="closeContextPanel"
     >
+      <AIHostProposalPanel
+        :items="hostProposalItems"
+        :busy="goalAgentResuming || noteCreating"
+        @approve="handleHostProposalApprove"
+        @reject="handleHostProposalReject"
+      />
       <AIGoalWorkflowPanel
         :tool-mode="toolMode"
         :goal-clarification="goalClarification"
@@ -315,6 +321,7 @@ import AIFooterComposer from '../components/AIFooterComposer.vue';
 import AIGoalWorkflowPanel from '../components/AIGoalWorkflowPanel.vue';
 import AIWorkflowActionBar from '../components/AIWorkflowActionBar.vue';
 import AIContextPanel from '../components/AIContextPanel.vue';
+import AIHostProposalPanel from '../components/AIHostProposalPanel.vue';
 import DailyTodoWidget from '../../task/components/widgets/DailyTodoWidget.vue';
 import UpcomingRemindersWidget from '../../reminder/components/widgets/UpcomingRemindersWidget.vue';
 import GoalProgressWidget from '../../goal/components/widgets/GoalProgressWidget.vue';
@@ -323,6 +330,10 @@ import { useAppShellStore } from '../../../layouts/shell/useAppShellStore';
 import { SHELL_COMPOSER_DENSITY_KEY, SHELL_COMPOSER_MOUNT_KEY } from '../../../di/keys';
 import type { ComposerDensity } from '../../../layouts/shell/panel-geometry';
 import { useAIChatView } from '../composables/useAIChatView';
+import {
+  buildPendingHostProposalItems,
+  type HostProposalPanelItem,
+} from '../composables/hostProposalLifecycle';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
 
 const { t } = useI18n();
@@ -458,6 +469,7 @@ const {
   createKnowledgeNoteFromConversation,
   startKnowledgeNoteAgentRunFromKnowledgeAnswer,
   retryKnowledgeNoteAgentExecution,
+  cancelKnowledgeNoteAgentRun,
   openCreatedNote,
 } = noteWorkflow;
 
@@ -523,6 +535,34 @@ const hasWorkflowArtifact = computed(() => {
 const hasWorkflowContext = computed(
   () => toolMode.value !== 'chat' || hasWorkflowArtifact.value,
 );
+
+// Residual 357: Host proposal workbench rows (waiting_approval only).
+const hostProposalItems = computed(() =>
+  buildPendingHostProposalItems({
+    goalAgentRun: goalAgentRun.value,
+    noteAgentRun: noteAgentRun.value,
+  }),
+);
+
+function handleHostProposalApprove(item: HostProposalPanelItem) {
+  if (item.source === 'goal') {
+    confirmGoalAgentRun();
+    return;
+  }
+  if (item.source === 'knowledge') {
+    void createKnowledgeNoteFromConversation();
+  }
+}
+
+function handleHostProposalReject(item: HostProposalPanelItem) {
+  if (item.source === 'goal') {
+    cancelGoalAgentRun();
+    return;
+  }
+  if (item.source === 'knowledge') {
+    void cancelKnowledgeNoteAgentRun();
+  }
+}
 
 // ── Welcome / idle: Today overview under shortcut cards (V2 §6.0) ──
 const { goalProgress, isLoading: dashboardLoading, fetchDashboard } = useDashboard();

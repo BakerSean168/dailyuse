@@ -396,6 +396,37 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     });
   }
 
+  /**
+   * Residual 357: Host reject lifecycle then cancel the AgentRun executor path.
+   * Does not run ProposalKernel mutation execution or write knowledge notes.
+   */
+  async function cancelKnowledgeNoteAgentRun() {
+    if (!noteAgentRun.value || noteCreating.value || noteAgentLoading.value) return;
+    if (noteAgentRun.value.run.status !== 'waiting_approval') return;
+
+    noteCreating.value = true;
+    try {
+      await dispatchHostProposalDecision(options.service, {
+        decision: 'reject',
+        runId: noteAgentRun.value.run.runId,
+        kind: 'knowledge.write',
+        reason: 'user_cancel',
+      });
+      const result = unwrap(
+        await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
+          userDecision: 'cancel',
+        }),
+      );
+      noteAgentRun.value = result;
+      toast.success(t('aiAssistant.dialogs.agent.cancelled'));
+      options.scrollMessagesToBottom();
+    } catch (error) {
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
+    } finally {
+      noteCreating.value = false;
+    }
+  }
+
   async function openCreatedNote() {
     const resolvedPath = noteSummary.value?.resolvedPath;
     if (!resolvedPath) return;
@@ -442,6 +473,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     startKnowledgeNoteAgentRunFromKnowledgeAnswer,
     createKnowledgeNoteFromConversation,
     retryKnowledgeNoteAgentExecution,
+    cancelKnowledgeNoteAgentRun,
     openCreatedNote,
   };
 }

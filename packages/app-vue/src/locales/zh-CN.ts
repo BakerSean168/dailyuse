@@ -321,6 +321,18 @@ export default {
           knowledgeGenerate: '知识笔记',
         },
       },
+      hostProposals: {
+        title: 'Host 提案',
+        lifecycleOnly: '仅 Host 生命周期 — 业务执行仍在批准后由既有 executor 完成。',
+        kindGoal: '创建目标',
+        kindKnowledge: '写入知识笔记',
+        kindTask: '创建任务',
+        revision: '版本 {revision}',
+        pendingActions: '{count} 个待处理动作',
+        approve: '批准',
+        reject: '拒绝',
+        busy: '处理中...',
+      },
     },
     actions: {
       generateGoal: '生成目标',
