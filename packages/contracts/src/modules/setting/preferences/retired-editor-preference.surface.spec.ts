@@ -17,12 +17,12 @@ import {
 describe('retired editor preference category surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../');
   const schemasIndex = readFileSync(resolve(__dirname, 'schemas/index.ts'), 'utf8');
-  const settingCategory = readFileSync(
-    resolve(__dirname, '../value-objects/setting-category.ts'),
-    'utf8',
-  );
   const mockSetting = readFileSync(
     resolve(repoRoot, 'packages/contracts/src/mocks/setting.mock.ts'),
+    'utf8',
+  );
+  const valueObjectsIndex = readFileSync(
+    resolve(__dirname, '../value-objects/index.ts'),
     'utf8',
   );
 
@@ -52,16 +52,10 @@ describe('retired editor preference category surface', () => {
     expect(parsed.appearance.theme).toBe('dark');
   });
 
-  it('SettingCategory enum and mock generators drop retired Editor category', () => {
-    expect(settingCategory).not.toContain("Editor: 'Editor'");
+  it('mock generators drop editor blobs; packages/editor stays deleted', () => {
     expect(mockSetting).not.toMatch(/\beditor:\s*\{/);
     expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
-
-    const domainCategory = readFileSync(
-      resolve(repoRoot, 'packages/setting/src/server/domain/value-objects/setting-category.ts'),
-      'utf8',
-    );
-    expect(domainCategory).not.toContain("Editor: 'Editor'");
-    expect(domainCategory).not.toContain('isEditor');
+    expect(valueObjectsIndex).not.toContain('FontSize');
+    expect(valueObjectsIndex).not.toContain('SettingCategory');
   });
 });
