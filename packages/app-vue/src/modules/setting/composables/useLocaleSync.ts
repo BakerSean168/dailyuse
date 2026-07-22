@@ -5,14 +5,12 @@
  * It watches `userSettingStore.getValue('locale.language')` and
  * syncs the value to:
  *   1. vue-i18n's `locale` ref
- *   2. `setMenuLocale()` (backward compat for ActionableWrapper)
- *   3. `document.documentElement.lang` attribute
+ *   2. `document.documentElement.lang` attribute
  */
 
 import { watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
-import { setMenuLocale } from '../../../components/shared/menu-labels';
 import type { SupportedLocale } from '../../../components/shared/menu-labels';
 import { setI18nLocale } from '../../../plugins/i18n';
 
@@ -34,7 +32,6 @@ export function useLocaleSync() {
         await setI18nLocale(lang);
       }
 
-      setMenuLocale(lang);
       document.documentElement.lang = lang;
     }
   };
