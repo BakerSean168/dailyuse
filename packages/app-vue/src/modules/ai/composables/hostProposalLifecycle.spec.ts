@@ -3043,3 +3043,124 @@ describe('Host panel settlement ownership classifiers (residual 581)', () => {
   });
 });
 
+describe('Host workbench primary-task kind routing (residual 585)', () => {
+  function primaryTaskWaiting(): AgentRunResult {
+    return {
+      run: {
+        runId: 'pt-585',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create',
+        status: 'waiting_approval',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            payload: { title: 'Primary', goalId: 'g-9' },
+            rationale: 'task only',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [{ kind: 'task_draft', id: 'td', data: { goalId: 'g-9' }, updatedAt: 1 }],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  function normalGoalWithTaskCompanion(): AgentRunResult {
+    return {
+      run: {
+        runId: 'g-585',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create',
+        status: 'waiting_approval',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_goal',
+            index: 0,
+            dependsOn: [],
+            payload: { title: 'Goal' },
+            rationale: 'goal',
+          },
+          {
+            tool: 'create_task_template',
+            index: 1,
+            dependsOn: [0],
+            payload: { title: 'Companion' },
+            rationale: 'task',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [
+          { kind: 'goal_draft', id: 'gd', data: {}, updatedAt: 1 },
+          { kind: 'task_draft', id: 'td', data: {}, updatedAt: 1 },
+        ],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  it('focus/proposalId uses goal.create for normal goal with companion task drafts', () => {
+    const run = normalGoalWithTaskCompanion();
+    expect(isTaskShapedHostAgentRun(run)).toBe(true);
+    expect(isPrimaryTaskHostAgentRun(run)).toBe(false);
+    const focus = resolveHostWorkbenchFocusFromAgentRun(run);
+    expect(focus).toEqual({
+      proposalId: 'agent-run:g-585:goal.create',
+      surface: 'proposal',
+    });
+    const items = buildPendingHostProposalItems({ goalAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      kind: 'goal.create',
+      source: 'goal',
+      proposalId: 'agent-run:g-585:goal.create',
+    });
+    // Focus proposalId matches the pending workbench row (no task.create drift).
+    expect(focus?.proposalId).toBe(items[0]?.proposalId);
+  });
+
+  it('primary-task-shaped goal input promotes to task product row + focus kind', () => {
+    const run = primaryTaskWaiting();
+    expect(isPrimaryTaskHostAgentRun(run)).toBe(true);
+    // Exclusive builder promotion: goal input alone still yields task.create row.
+    const items = buildPendingHostProposalItems({ goalAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      kind: 'task.create',
+      source: 'task',
+      proposalId: 'agent-run:pt-585:task.create',
+      title: 'Primary',
+      goalId: 'g-9',
+    });
+    const focus = resolveHostWorkbenchFocusFromAgentRun(run);
+    expect(focus).toEqual({
+      proposalId: 'agent-run:pt-585:task.create',
+      surface: 'proposal',
+    });
+    expect(focus?.proposalId).toBe(items[0]?.proposalId);
+  });
+
+  it('dual-mirrored primary-task does not emit duplicate goal+task proposal rows', () => {
+    const run = primaryTaskWaiting();
+    const items = buildPendingHostProposalItems({
+      goalAgentRun: run,
+      taskAgentRun: run,
+    });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.kind).toBe('task.create');
+  });
+});
+

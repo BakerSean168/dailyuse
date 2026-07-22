@@ -424,6 +424,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 583'];
     case 'goalId: hostOptions?.goalId':
       return ['goalId: hostOptions?.goalId'];
+    case 'Residual 585':
+      return ['Residual 585'];
+    case 'isPrimaryTaskHostAgentRun(result)':
+      return ['isPrimaryTaskHostAgentRun(result)'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

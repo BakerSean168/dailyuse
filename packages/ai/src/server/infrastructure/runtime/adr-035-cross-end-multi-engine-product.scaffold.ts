@@ -405,6 +405,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 583: goal session primary-task confirm forwards Host-revised goalId.
         'Residual 583',
         'goalId: hostOptions?.goalId',
+        // Residual 585: Host workbench focus/proposal exclusive primary-task kind routing.
+        'Residual 585',
+        'isPrimaryTaskHostAgentRun(result)',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

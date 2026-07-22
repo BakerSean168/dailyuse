@@ -4851,6 +4851,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留五百八十五轮）：Host workbench **primary-task exclusive kind routing**（仍不打勾）——
+> focus/reopen 用 `isPrimaryTaskHostAgentRun`（禁 bare `isTaskShaped` 把 normal goal+companion 误标 task.create proposalId）；
+> proposal/receipt builders 内化 exclusive lane（防 dual row / create_goal 误标 primary-task）；unit + surface + scaffold/driver Residual 585 锁；
+> 非跨端 multi-engine E2E / 跨进程 durable。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -4978,14 +4984,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留五百八十四轮刷新：三入口/Agent/门禁仍为部分或外部阻塞；不改 checkbox）。
+> 审计时间 2026-07-22（残留五百八十五轮刷新：三入口/Agent/门禁仍为部分或外部阻塞；不改 checkbox）。
 > 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
-> focused evidence suite tip（残留五百八十四轮）：**105 文件 / 670 测试** + governance-check GOV_EXIT:0。
+> focused evidence suite tip（残留五百八十四轮）：**105 文件 / 670 测试** + governance-check GOV_EXIT:0（五百八十五轮 feature 后待 586 复跑）。
 > 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
 > 阶段 6 dual 收口（残留 250–300；四百八十七轮补 task DAG *ViewModel 消费者收口；五百三十九轮 portable editor_* / knowledge routes / /note strip 再锁）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
-> Host task.create 进程内产品路径（残留 427–491 + 501–583）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
-> + history/session focus + linked goal restore + client settlement 会话隔离 + store 容量边界 + process-local product journey + runId 身份/会话/thread 绑定 + confirm 必须 client executedActions + edit 非空 title + dirty approve 先 process-local revise + start 必须 conversationId（runtime+builder fail-closed，无 silent null）+ start 必须 threadId（trim 非空 fail-closed）+ start 非空 title（builder fail-closed，无静默默认）+ confirm settlement title/templateId 可回收 + confirm goalId/title 禁重绑 + confirm 仅 process-local draft + 单 executed + edit 单 approvedAction + edit/confirm tool+empty-action 命名常量 fail-closed + cancel/confirm/edit 仅 waiting_approval（Host+client complete 双门禁）+ edit draftAction 单 create_task_template（541）+ confirm settlementAction 单 create_task_template（543）+ confirm store draftAction 单 create_task_template（545）+ client complete/revise sole draftAction（547）+ workbench soleProductDraftAction（549）+ applyHost*Patch sole product draftAction（551）+ confirm store draft resolve sole create_task_template（553）+ knowledge.write confirm sole create_knowledge_note（555）+ goal.create confirm sole create_goal（557）+ goal confirm/cancel + knowledge confirm waiting_approval-only（559）+ Host panel goal/knowledge approve pre-lifecycle product gate（561）+ Host panel task.create approve pre-lifecycle sole create_task_template（563）+ Host panel product reject pre-lifecycle waiting_approval（565）+ Host panel product revise pre-lifecycle waiting_approval（567）+ Host panel shared product ownership resolver（569）+ Host panel settlement reuses shared ownership（571）+ Host panel revise sole product draftAction（573）+ goal session primary-task confirm sole create_task_template（575）+ Host panel primary-task-shaped ownership → create_task_template（577）+ Host panel primary-task-shaped settlement via goal session（579）+ Host panel settlement ownership classifiers（581）+ goal session primary-task confirm forwards Host-revised goalId（583）；永不 `executeApproved`。
-> Client product-lane isolation（残留 501/507/519–537/547/549/551/555/557/559/561/563/565/567/569/571/573/575/577/579/581/583）：complete/revise/draft title·path·markdown·summary·pendingCount·primaryEntityId·receipt cross-lane·failed message·ok 均 product-tool 门禁。
+> Host task.create 进程内产品路径（残留 427–491 + 501–585）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
+> + history/session focus + linked goal restore + client settlement 会话隔离 + store 容量边界 + process-local product journey + runId 身份/会话/thread 绑定 + confirm 必须 client executedActions + edit 非空 title + dirty approve 先 process-local revise + start 必须 conversationId（runtime+builder fail-closed，无 silent null）+ start 必须 threadId（trim 非空 fail-closed）+ start 非空 title（builder fail-closed，无静默默认）+ confirm settlement title/templateId 可回收 + confirm goalId/title 禁重绑 + confirm 仅 process-local draft + 单 executed + edit 单 approvedAction + edit/confirm tool+empty-action 命名常量 fail-closed + cancel/confirm/edit 仅 waiting_approval（Host+client complete 双门禁）+ edit draftAction 单 create_task_template（541）+ confirm settlementAction 单 create_task_template（543）+ confirm store draftAction 单 create_task_template（545）+ client complete/revise sole draftAction（547）+ workbench soleProductDraftAction（549）+ applyHost*Patch sole product draftAction（551）+ confirm store draft resolve sole create_task_template（553）+ knowledge.write confirm sole create_knowledge_note（555）+ goal.create confirm sole create_goal（557）+ goal confirm/cancel + knowledge confirm waiting_approval-only（559）+ Host panel goal/knowledge approve pre-lifecycle product gate（561）+ Host panel task.create approve pre-lifecycle sole create_task_template（563）+ Host panel product reject pre-lifecycle waiting_approval（565）+ Host panel product revise pre-lifecycle waiting_approval（567）+ Host panel shared product ownership resolver（569）+ Host panel settlement reuses shared ownership（571）+ Host panel revise sole product draftAction（573）+ goal session primary-task confirm sole create_task_template（575）+ Host panel primary-task-shaped ownership → create_task_template（577）+ Host panel primary-task-shaped settlement via goal session（579）+ Host panel settlement ownership classifiers（581）+ goal session primary-task confirm forwards Host-revised goalId（583）+ Host workbench primary-task exclusive kind routing（585）；永不 `executeApproved`。
+> Client product-lane isolation（残留 501/507/519–537/547/549/551/555/557/559/561/563/565/567/569/571/573/575/577/579/581/583/585）：complete/revise/draft title·path·markdown·summary·pendingCount·primaryEntityId·receipt cross-lane·failed message·ok 均 product-tool 门禁。
 > 仍非跨进程 durable / 完整 Task LangGraph / 跨端 Playwright-Electron multi-engine E2E。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
@@ -5558,6 +5564,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百八十二轮：§13.2 focused evidence suite re-run (669 tests, residuals 250–581 locks, no checkbox changes)。
   残留五百八十三轮：goal session primary-task confirm forwards Host-revised goalId.
   残留五百八十四轮：§13.2 focused evidence suite re-run (670 tests, residuals 250–583 locks, no checkbox changes)。
+  残留五百八十五轮：Host workbench primary-task exclusive kind routing (focus/reopen/builders).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -5575,6 +5582,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百八十二轮：§13.2 focused evidence suite re-run（669 tests，residuals 250–581 锁；不改 checkbox）。
   残留五百八十三轮：goal session primary-task confirm 转发 Host-revised goalId。
   残留五百八十四轮：§13.2 focused evidence suite re-run（670 tests，residuals 250–583 锁；不改 checkbox）。
+  残留五百八十五轮：Host workbench primary-task exclusive kind routing（focus/reopen/builders）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -6203,6 +6211,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百八十二轮：tip 上 669 项 focused evidence suite（含 residual 250–581 settlement classifiers 锁）通过；仍不构成全量 PR 门禁证据。
   残留五百八十三轮：goal session primary-task confirm 转发 Host-revised goalId 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   残留五百八十四轮：tip 上 670 项 focused evidence suite（含 residual 250–583 primary-task goalId forward 锁）通过；仍不构成全量 PR 门禁证据。
+  残留五百八十五轮：Host workbench primary-task exclusive kind routing 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

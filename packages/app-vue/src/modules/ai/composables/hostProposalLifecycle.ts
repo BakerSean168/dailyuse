@@ -19,6 +19,9 @@
  * single-product-draft gate (client residual 547 productDrafts symmetry; no multi-find invent).
  * Residual 551: applyHost*Patch only patches sole product-lane draftAction
  * (no multi-index invent of identical Host fields across product tools).
+ * Residual 585: Host workbench focus/reopen/receipt routing uses isPrimaryTaskHostAgentRun
+ * (not bare isTaskShaped) so normal goal.create + companion task drafts keep goal.create
+ * proposalId; builders also exclusive-lane primary-task promotion.
  */
 import type {
   AgentAction,
@@ -1306,7 +1309,14 @@ export function buildHostExecutionReceiptItems(input: {
 }): HostExecutionReceiptItem[] {
   const items: HostExecutionReceiptItem[] = [];
 
-  const goalRun = input.goalAgentRun ?? null;
+  // Residual 585: exclusive primary-task lane before product-tool receipt routing
+  // (fail-closed against dual goal+task rows / create_goal mis-label for primary-task).
+  const exclusive = resolveLiveHostWorkbenchAgentRuns({
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+    taskAgentRun: input.taskAgentRun,
+  });
+  const goalRun = exclusive.goalAgentRun;
   if (goalRun && HOST_RECEIPT_STATUSES.has(goalRun.run.status)) {
     const status = goalRun.run.status as HostExecutionReceiptItem['runStatus'];
     const ref = buildAgentRunHostProposalRef(goalRun.run.runId, 'goal.create');
@@ -1340,7 +1350,7 @@ export function buildHostExecutionReceiptItems(input: {
     }
   }
 
-  const noteRun = input.noteAgentRun ?? null;
+  const noteRun = exclusive.noteAgentRun;
   if (noteRun && HOST_RECEIPT_STATUSES.has(noteRun.run.status)) {
     const status = noteRun.run.status as HostExecutionReceiptItem['runStatus'];
     const ref = buildAgentRunHostProposalRef(noteRun.run.runId, 'knowledge.write');
@@ -1375,7 +1385,7 @@ export function buildHostExecutionReceiptItems(input: {
     }
   }
 
-  const taskRun = input.taskAgentRun ?? null;
+  const taskRun = exclusive.taskAgentRun;
   if (taskRun && HOST_RECEIPT_STATUSES.has(taskRun.run.status)) {
     const status = taskRun.run.status as HostExecutionReceiptItem['runStatus'];
     const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
@@ -1423,7 +1433,14 @@ export function buildPendingHostProposalItems(input: {
 }): HostProposalPanelItem[] {
   const items: HostProposalPanelItem[] = [];
 
-  const goalRun = input.goalAgentRun ?? null;
+  // Residual 585: exclusive primary-task lane before product-tool proposal rows
+  // (same promotion as live workbench; idempotent when caller already exclusive).
+  const exclusive = resolveLiveHostWorkbenchAgentRuns({
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+    taskAgentRun: input.taskAgentRun,
+  });
+  const goalRun = exclusive.goalAgentRun;
   if (goalRun?.run.status === 'waiting_approval') {
     const ref = buildAgentRunHostProposalRef(goalRun.run.runId, 'goal.create');
     const title = goalDraftTitle(goalRun) || `Goal run ${goalRun.run.runId}`;
@@ -1441,7 +1458,7 @@ export function buildPendingHostProposalItems(input: {
     });
   }
 
-  const noteRun = input.noteAgentRun ?? null;
+  const noteRun = exclusive.noteAgentRun;
   if (noteRun?.run.status === 'waiting_approval') {
     const ref = buildAgentRunHostProposalRef(noteRun.run.runId, 'knowledge.write');
     const title = knowledgeDraftTitle(noteRun) || `Knowledge run ${noteRun.run.runId}`;
@@ -1461,7 +1478,7 @@ export function buildPendingHostProposalItems(input: {
   }
 
   // Residual 419: task.create Host proposal lane (presentation + lifecycle only).
-  const taskRun = input.taskAgentRun ?? null;
+  const taskRun = exclusive.taskAgentRun;
   if (taskRun?.run.status === 'waiting_approval') {
     const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
     const title = taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`;
@@ -1499,13 +1516,13 @@ export function resolveHostWorkbenchReopenFromAgentRun(
 ): HostWorkbenchReopenKind {
   if (!result?.run) return 'none';
   const agentType = result.run.agentType;
-  // Residual 419/423/427: task.create Host lane via AgentType or task-shaped artifacts.
-  const looksLikeTaskHostRun =
-    result.run.agentType === 'task.create' || isTaskShapedHostAgentRun(result);
+  // Residual 419/423/427/585: exclusive Host task lane via isPrimaryTaskHostAgentRun
+  // (not bare isTaskShaped — normal goal.create may companion task drafts).
+  const primaryTask = isPrimaryTaskHostAgentRun(result);
   if (
     agentType !== 'goal.create'
     && agentType !== 'knowledge.generate'
-    && !looksLikeTaskHostRun
+    && !primaryTask
   ) {
     return 'none';
   }
@@ -1518,9 +1535,9 @@ export function resolveHostWorkbenchReopenFromAgentRun(
     result.run.status === 'cancelled'
   ) {
     const items = buildHostExecutionReceiptItems({
-      goalAgentRun: agentType === 'goal.create' && !looksLikeTaskHostRun ? result : null,
-      noteAgentRun: agentType === 'knowledge.generate' ? result : null,
-      taskAgentRun: looksLikeTaskHostRun ? result : null,
+      goalAgentRun: agentType === 'goal.create' && !primaryTask ? result : null,
+      noteAgentRun: agentType === 'knowledge.generate' && !primaryTask ? result : null,
+      taskAgentRun: primaryTask ? result : null,
     });
     return items.length > 0 ? 'receipt' : 'none';
   }
@@ -1544,10 +1561,10 @@ export function resolveHostWorkbenchFocusFromAgentRun(
   const reopen = resolveHostWorkbenchReopenFromAgentRun(result);
   if (reopen === 'none' || !result?.run) return null;
 
-  const looksLikeTaskHostRun =
-    result.run.agentType === 'task.create' || isTaskShapedHostAgentRun(result);
+  // Residual 585: proposalId kind must match exclusive product row builders.
+  // Bare isTaskShaped would mis-label normal goal.create + companion task drafts as task.create.
   let kind: AgentRunHostProposalKind | null = null;
-  if (looksLikeTaskHostRun) {
+  if (isPrimaryTaskHostAgentRun(result)) {
     kind = 'task.create';
   } else if (result.run.agentType === 'goal.create') {
     kind = 'goal.create';

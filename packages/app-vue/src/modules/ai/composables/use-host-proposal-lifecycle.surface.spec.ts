@@ -271,7 +271,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('taskAgentRun');
     expect(helper).toContain('taskDraftTitle');
     expect(helper).toContain('taskDraftGoalId');
-    expect(helper).toContain('looksLikeTaskHostRun');
+    // Residual 585: exclusive primary-task lane (not bare isTaskShaped alias).
+    expect(helper).toContain('isPrimaryTaskHostAgentRun');
+    expect(helper).not.toContain('looksLikeTaskHostRun');
     expect(panel).toContain("item.kind === 'task.create'");
     expect(panel).toContain('editGoalId');
     expect(panel).toContain('ai-host-proposal-goal-id-');
@@ -1095,6 +1097,37 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(approveSlice).toContain('isHostPanelGoalSessionProductOwned');
     expect(helper).not.toContain('executeApproved');
     expect(goal).not.toContain('executeApproved');
+  });
+
+
+  it('Host workbench focus/proposal builders use primary-task exclusive kind (residual 585)', () => {
+    expect(helper).toContain('Residual 585');
+    expect(helper).toContain('isPrimaryTaskHostAgentRun');
+    // Focus kind selection uses primary-task exclusive, not bare isTaskShaped.
+    const focusIdx = helper.indexOf('export function resolveHostWorkbenchFocusFromAgentRun');
+    expect(focusIdx).toBeGreaterThan(-1);
+    const focusSlice = helper.slice(focusIdx, focusIdx + 1200);
+    expect(focusSlice).toContain('isPrimaryTaskHostAgentRun(result)');
+    expect(focusSlice).toContain("kind = 'task.create'");
+    expect(focusSlice).toContain("kind = 'goal.create'");
+    expect(focusSlice).not.toContain('isTaskShapedHostAgentRun(result)');
+    // Reopen receipt routing also exclusive primary-task.
+    const reopenIdx = helper.indexOf('export function resolveHostWorkbenchReopenFromAgentRun');
+    expect(reopenIdx).toBeGreaterThan(-1);
+    const reopenSlice = helper.slice(reopenIdx, reopenIdx + 1600);
+    expect(reopenSlice).toContain('isPrimaryTaskHostAgentRun(result)');
+    expect(reopenSlice).toContain('primaryTask');
+    expect(reopenSlice).not.toContain('isTaskShapedHostAgentRun(result)');
+    // Proposal/receipt builders internalize exclusive live workbench promotion.
+    const pendingIdx = helper.indexOf('export function buildPendingHostProposalItems');
+    const receiptIdx = helper.indexOf('export function buildHostExecutionReceiptItems');
+    expect(pendingIdx).toBeGreaterThan(-1);
+    expect(receiptIdx).toBeGreaterThan(-1);
+    const pendingSlice = helper.slice(pendingIdx, pendingIdx + 900);
+    const receiptSlice = helper.slice(receiptIdx, receiptIdx + 900);
+    expect(pendingSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
+    expect(receiptSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
+    expect(helper).not.toContain('executeApproved');
   });
 
 
