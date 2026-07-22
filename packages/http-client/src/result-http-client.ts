@@ -29,7 +29,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosReq
 import type { Result, ResultError } from '@dailyuse/contracts/result';
 import { fail, fromHttpResponse } from '@dailyuse/contracts/result';
 import type { HttpResponse } from '@dailyuse/contracts/result';
-import type { HttpClientConfig, TokenProvider, TokenRefreshHandler } from './types';
+import type { HttpClientConfig, IResultHttpClient, TokenProvider, TokenRefreshHandler } from './types';
 import { createAxiosInstance } from './axios-instance';
 import {
   classifyNetworkErrorMessage,
@@ -69,7 +69,7 @@ import {
  * }
  * ```
  */
-export class ResultHttpClient {
+export class ResultHttpClient implements IResultHttpClient {
   private readonly axios: AxiosInstance;
   private readonly enableLogging: boolean;
   private readonly onTokenRefresh?: TokenRefreshHandler;
