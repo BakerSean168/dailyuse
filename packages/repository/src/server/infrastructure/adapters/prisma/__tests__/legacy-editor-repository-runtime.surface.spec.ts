@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
  * Portable backup import of historical rows remains in data-portability only.
  * Residual 180: packages/editor package directory stays deleted (no runtime package).
  * Residual 182: root package.json scripts no longer list deleted editor Nx project.
+ * Residual 183: coverage workflow drops deleted editor project.
  */
 describe('legacy editor/repository runtime surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../../');
@@ -140,6 +141,19 @@ describe('legacy editor/repository runtime surface', () => {
     // Positive: scripts still target live domain packages
     expect(integration).toContain('task');
     expect(coverage).toContain('goal');
+  });
+
+
+  it('coverage workflow does not target deleted editor Nx project (residual 183)', () => {
+    const coverageWorkflow = readFileSync(
+      resolve(repoRoot, '.github/workflows/coverage.yml'),
+      'utf8',
+    );
+    expect(coverageWorkflow).toContain('GOVERNED_DOMAIN_COVERAGE_PROJECTS:');
+    expect(coverageWorkflow).not.toMatch(
+      /GOVERNED_DOMAIN_COVERAGE_PROJECTS:\s*'[^']*\beditor\b[^']*'/,
+    );
+    expect(coverageWorkflow).toContain('domain-shared,goal,governance');
   });
 
 });

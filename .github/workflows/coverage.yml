@@ -20,7 +20,7 @@ env:
   CI: 'true'
   NODE_ENV: test
   PRISMA_HIDE_UPDATE_MESSAGE: 'true'
-  GOVERNED_DOMAIN_COVERAGE_PROJECTS: 'account,ai,authentication,domain-shared,editor,goal,governance,notification,reminder,schedule,setting,task'
+  GOVERNED_DOMAIN_COVERAGE_PROJECTS: 'account,ai,authentication,domain-shared,goal,governance,notification,reminder,schedule,setting,task'
   APP_VUE_STORE_COVERAGE_PROJECTS: 'app-vue'
   USE_CASES_COVERAGE_PROJECTS: 'task,goal,reminder,schedule'
   PRISMA_MAPPERS_COVERAGE_PROJECTS: 'task,goal,reminder,schedule'

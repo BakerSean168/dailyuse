@@ -158,5 +158,5 @@ export * from './components/custom/form';
 export * from './components/custom/linear';
 
 // NOTE: All business components (account, authentication, task, schedule,
-// reminder, repository, notification, governance, editor, setting, application)
+// reminder, repository, notification, governance, setting, application)
 // have been migrated to @dailyuse/app-vue.

@@ -2045,6 +2045,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `package.json` 的 `test:integration` / `test:coverage:domain` 不再包含已删除的 `editor` project。
 > portable `editor_*` 表 bootstrap 脚本保留。补 legacy-editor surface。§13.2 仍部分。
 > 验证：legacy-editor surface + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百八十三轮）：CI coverage 清理删除的 editor Nx 工程——
+> `.github/workflows/coverage.yml` 的 `GOVERNED_DOMAIN_COVERAGE_PROJECTS` 去掉 `editor`。
+> 补 legacy-editor surface。§13.2 仍部分。验证：legacy-editor surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2281,6 +2286,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百八十轮：schedule-task bootstrap dual lock + packages/editor absence lock。
   残留一百八十一轮：§13.2 partial-item evidence re-audit (no checkbox changes)。
   残留一百八十二轮：root package.json drop deleted editor Nx project from scripts。
+  残留一百八十三轮：CI coverage.yml drop deleted editor Nx project。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
