@@ -3,9 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Task template ownership surface (stage-6 residual 123):
+ * Task template ownership surface (stage-6 residual 123 + 140):
  * get/update/delete/actions and list-instances-by-template must never authorize
- * by bare task template primary key alone.
+ * by bare task template primary key alone; folder/goal list filters are identity-scoped.
  */
 describe('task template ownership surface', () => {
   const port = readFileSync(
@@ -36,6 +36,13 @@ describe('task template ownership surface', () => {
   );
   const electron = readFileSync(resolve(__dirname, '../../../../../electron/index.ts'), 'utf8');
   const module = readFileSync(resolve(__dirname, '../../../task.module.ts'), 'utf8');
+  const listUseCase = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/queries/list-task-templates.use-case.ts',
+    ),
+    'utf8',
+  );
 
   it('port findByIdForIdentity and delete require identityId', () => {
     expect(port).toContain(
@@ -78,5 +85,25 @@ describe('task template ownership surface', () => {
     expect(electron).not.toMatch(
       /TEMPLATE_GET[\s\S]*templateController\.getTemplate\(\s*payload\?\.id \?\? payload,\s*payload\?\.includeChildren/,
     );
+  });
+
+  it('list findByFolderId/findByGoalId require identityId (residual 140)', () => {
+    expect(port).toContain(
+      'findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]>;',
+    );
+    expect(port).toContain(
+      'findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]>;',
+    );
+    expect(prisma).toContain('where: { identityId, folderId, deletedAt: null }');
+    expect(prisma).toContain('async findByFolderId(identityId: string, folderId: string)');
+    expect(prisma).toContain('async findByGoalId(identityId: string, goalId: string)');
+    expect(listUseCase).toContain(
+      'findByFolderId(request.identityId, request.folderId)',
+    );
+    expect(listUseCase).toContain(
+      'findByGoalId(request.identityId, request.goalId)',
+    );
+    expect(listUseCase).not.toMatch(/findByFolderId\(request\.folderId\)/);
+    expect(listUseCase).not.toMatch(/findByGoalId\(request\.goalId\)/);
   });
 });

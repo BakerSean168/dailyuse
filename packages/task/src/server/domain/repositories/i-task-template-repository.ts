@@ -75,14 +75,14 @@ export interface ITaskTemplateRepository {
   findActiveTemplates(identityId: string): Promise<TaskTemplate[]>;
 
   /**
-   * 根据文件夹查找任务模板
+   * 根据文件夹查找任务模板（identity-scoped）
    */
-  findByFolderId(folderId: string): Promise<TaskTemplate[]>;
+  findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]>;
 
   /**
-   * 根据目标查找任务模板
+   * 根据目标查找任务模板（identity-scoped）
    */
-  findByGoalId(goalId: string): Promise<TaskTemplate[]>;
+  findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]>;
 
   /**
    * 根据标签查找任务模板

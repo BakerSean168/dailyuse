@@ -87,7 +87,7 @@ describe('ListTaskTemplatesUseCase', () => {
         folderId: 'folder-1' as any,
       });
 
-      expect(templateRepo.findByFolderId).toHaveBeenCalledWith('folder-1');
+      expect(templateRepo.findByFolderId).toHaveBeenCalledWith(testIdentityId, 'folder-1');
     });
 
     it('should filter by goalId when provided (and no status/folderId)', async () => {
@@ -96,7 +96,7 @@ describe('ListTaskTemplatesUseCase', () => {
         goalId: 'goal-1' as any,
       });
 
-      expect(templateRepo.findByGoalId).toHaveBeenCalledWith('goal-1');
+      expect(templateRepo.findByGoalId).toHaveBeenCalledWith(testIdentityId, 'goal-1');
     });
 
     it('should filter by tags when provided (and no status/folderId/goalId)', async () => {

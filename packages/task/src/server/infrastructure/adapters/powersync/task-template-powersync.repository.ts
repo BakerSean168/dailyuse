@@ -245,17 +245,17 @@ export class PowerSyncTaskTemplateRepository
     return this.findByStatus(identityId, 'Active' as TaskTemplateStatus);
   }
 
-  async findByFolderId(folderId: string): Promise<TaskTemplate[]> {
+  async findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]> {
     return this.queryTemplates(
-      'SELECT * FROM task_templates WHERE folder_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
-      [folderId],
+      'SELECT * FROM task_templates WHERE identity_id = ? AND folder_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
+      [identityId, folderId],
     );
   }
 
-  async findByGoalId(goalId: string): Promise<TaskTemplate[]> {
+  async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
     const rows = await this.queryTemplates(
-      'SELECT * FROM task_templates WHERE goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
-      [],
+      'SELECT * FROM task_templates WHERE identity_id = ? AND goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
+      [identityId],
     );
     return rows.filter((template) => template.toServerDTO().goalBinding?.goalId === goalId);
   }

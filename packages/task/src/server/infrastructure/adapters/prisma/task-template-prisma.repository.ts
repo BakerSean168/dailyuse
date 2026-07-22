@@ -134,17 +134,18 @@ export class TaskTemplatePrismaRepository
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findByFolderId(folderId: string): Promise<TaskTemplate[]> {
+  async findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
-      where: { folderId, deletedAt: null },
+      where: { identityId, folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findByGoalId(goalId: string): Promise<TaskTemplate[]> {
+  async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
       where: {
+        identityId,
         goalBinding: { not: null },
         deletedAt: null,
       },
