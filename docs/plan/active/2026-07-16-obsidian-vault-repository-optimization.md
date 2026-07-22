@@ -4490,6 +4490,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留五百三十一轮）：Client **knowledge.write draft title 仅 create_knowledge_note**（仍不打勾）——
+> knowledgeDraftTitle 经 firstCreateKnowledgeNoteAction payload fallback，禁 blind pending[0]（与 residual 521 path/markdown 对称）；
+> unit + surface/scaffold/driver Residual 531 锁；非跨端 multi-engine E2E / 跨进程 durable。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -5127,6 +5132,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百二十八轮：§13.2 focused evidence suite re-run（602 tests，residuals 250–527 锁；不改 checkbox）。
   残留五百二十九轮：Client receipt primaryEntityId 仅 product-lane executed tool（禁 foreign entityIds[0]）。
   残留五百三十轮：§13.2 focused evidence suite re-run（607 tests，residuals 250–529 锁；不改 checkbox）。
+  残留五百三十一轮：Client knowledge.write draft title 仅 create_knowledge_note（禁 blind pending[0]）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -5352,6 +5358,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百二十八轮：§13.2 focused evidence suite re-run (602 tests, residuals 250–527 locks, no checkbox changes)。
   残留五百二十九轮：Client receipt primaryEntityId product-lane executed tool only (no foreign entityIds[0])。
   残留五百三十轮：§13.2 focused evidence suite re-run (607 tests, residuals 250–529 locks, no checkbox changes)。
+  残留五百三十一轮：Client knowledge.write draft title create_knowledge_note only (no blind pending[0])。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -5663,6 +5670,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百二十八轮：tip 上 602 项 focused evidence suite（含 residual 250–527 pendingActionCount product-lane 锁）通过；仍不构成全量 PR 门禁证据。
   残留五百二十九轮：client receipt primaryEntityId product-lane 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   残留五百三十轮：tip 上 607 项 focused evidence suite（含 residual 250–529 primaryEntityId product-lane 锁）通过；仍不构成全量 PR 门禁证据。
+  残留五百三十一轮：client knowledge draft title create_knowledge_note-only 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

@@ -1039,6 +1039,16 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('knowledge.write draft title reads create_knowledge_note only (residual 531)', () => {
+    expect(helper).toContain('Residual 531');
+    const titleIdx = helper.indexOf('function knowledgeDraftTitle');
+    expect(titleIdx).toBeGreaterThan(-1);
+    const titleSlice = helper.slice(titleIdx, titleIdx + 900);
+    expect(titleSlice).toContain('firstCreateKnowledgeNoteAction(run)');
+    expect(titleSlice).toContain("['title']");
+    expect(titleSlice).not.toContain('pendingActions[0] ?? run.state.approvedActions[0]');
+  });
+
   it('goal.create draft title/description reads create_goal only (residual 523)', () => {
     expect(helper).toContain('firstCreateGoalAction');
     expect(helper).toContain('Residual 523');

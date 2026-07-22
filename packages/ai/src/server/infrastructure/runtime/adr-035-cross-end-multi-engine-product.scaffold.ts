@@ -378,6 +378,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 529: receipt primaryEntityId product-lane executed tool only.
         'Residual 529',
         "summarizeExecutedActions(goalRun, 'create_goal')",
+        // Residual 531: knowledge draft title create_knowledge_note only.
+        'Residual 531',
+        'function knowledgeDraftTitle',
       ],
       status: 'implemented_unit',
     },

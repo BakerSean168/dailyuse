@@ -1668,6 +1668,87 @@ describe('knowledge draft create_knowledge_note-only payload (residual 521)', ()
   });
 });
 
+describe('knowledge draft title create_knowledge_note-only payload (residual 531)', () => {
+  it('reads title from create_knowledge_note payload when artifact title is empty', () => {
+    const run = noteWaitingRun();
+    run.state.artifacts = [
+      {
+        artifactId: 'n1',
+        kind: 'knowledge_note_draft',
+        data: {},
+        updatedAt: 2,
+      },
+    ];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign',
+        payload: { title: 'Foreign Goal Title' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_knowledge_note',
+        rationale: 'note',
+        payload: {
+          title: 'Real Note Title',
+          targetSubpath: 'notes/real',
+          contentMarkdown: '# real',
+        },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.title).toBe('Real Note Title');
+    expect(items[0]?.title).not.toBe('Foreign Goal Title');
+  });
+
+  it('ignores foreign pending[0] tool when reading title for workbench', () => {
+    const run = noteWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign',
+        payload: { title: 'Foreign Goal Title' },
+        dependsOn: [],
+      },
+      {
+        tool: 'create_knowledge_note',
+        rationale: 'note',
+        payload: {
+          title: 'Real Note From Payload',
+          targetSubpath: 'notes/real',
+          contentMarkdown: '# real',
+        },
+        dependsOn: [],
+      },
+    ];
+    const items = buildPendingHostProposalItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.title).toBe('Real Note From Payload');
+  });
+
+  it('does not invent title from foreign-only pending actions', () => {
+    const run = noteWaitingRun();
+    run.state.artifacts = [];
+    run.state.pendingActions = [
+      {
+        tool: 'create_goal',
+        rationale: 'foreign-only',
+        payload: { title: 'Only Foreign Title' },
+        dependsOn: [],
+      },
+    ];
+    run.state.approvedActions = [];
+    const items = buildPendingHostProposalItems({ noteAgentRun: run });
+    expect(items).toHaveLength(1);
+    expect(items[0]?.title).not.toBe('Only Foreign Title');
+    // Falls through to empty title fallback label, not foreign payload.
+    expect(items[0]?.title).toContain('Knowledge run');
+  });
+});
+
 describe('goal draft create_goal-only payload (residual 523)', () => {
   it('ignores foreign pending[0] tool when reading title/description for workbench', () => {
     const run = goalWaitingRun();

@@ -398,6 +398,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 529'];
     case "summarizeExecutedActions(goalRun, 'create_goal')":
       return ["summarizeExecutedActions(goalRun, 'create_goal')"];
+    case 'Residual 531':
+      return ['Residual 531'];
+    case 'function knowledgeDraftTitle':
+      return ['function knowledgeDraftTitle'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

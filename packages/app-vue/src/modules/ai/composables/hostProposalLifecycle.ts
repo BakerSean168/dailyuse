@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529/531).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -11,6 +11,7 @@
  * Residual 525: workbench summary rationale reads product-lane tool only (no blind pending[0]).
  * Residual 527: workbench pendingActionCount counts product-lane tool only (no foreign tools).
  * Residual 529: receipt primaryEntityId prefers product-lane executed tool only (no foreign entityIds[0]).
+ * Residual 531: knowledge draft title read create_knowledge_note only (path/markdown residual 521 symmetry).
  */
 import type {
   AgentAction,
@@ -226,12 +227,26 @@ function firstPendingRationale(
   return typeof action.rationale === 'string' ? action.rationale.trim() : '';
 }
 
+/**
+ * Residual 361/531: knowledge draft title from artifact / create_knowledge_note payload.
+ * Residual 531: payload fallback is create_knowledge_note only (path/markdown residual 521 symmetry).
+ */
 function knowledgeDraftTitle(run: AgentRunResult): string {
-  const draft = run.state.artifacts.find((artifact) => artifact.kind === 'knowledge_note_draft');
-  if (!draft) return '';
-  if (typeof draft.title === 'string' && draft.title.trim()) return draft.title.trim();
-  const dataTitle = draft.data?.['title'];
-  return typeof dataTitle === 'string' ? dataTitle.trim() : '';
+  const draft = knowledgeDraftArtifact(run);
+  if (draft) {
+    if (typeof draft.title === 'string' && draft.title.trim()) return draft.title.trim();
+    const dataTitle = draft.data?.['title'];
+    if (typeof dataTitle === 'string' && dataTitle.trim()) return dataTitle.trim();
+  }
+  // Residual 531: only create_knowledge_note draft payload — not blind pending[0].
+  const action = firstCreateKnowledgeNoteAction(run);
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['title']
+      : undefined;
+  if (typeof fromPayload === 'string' && fromPayload.trim()) return fromPayload.trim();
+  return '';
 }
 
 function knowledgeDraftArtifact(run: AgentRunResult) {
