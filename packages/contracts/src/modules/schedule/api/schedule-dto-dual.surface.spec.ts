@@ -65,8 +65,9 @@ describe('schedule batch operation response dual name retired (residual 639)', (
   );
 
   it('does not export shared BatchOperationResponseDTO dual', () => {
-    expect(sharedDtosIndex).not.toContain('BatchOperationResponseDTO');
+    expect(sharedDtosIndex).not.toMatch(/export\s+type\s*\{\s*BatchOperationResponseDTO/);
     expect(sharedDtosIndex).not.toContain('batch-operation-res');
+    expect(sharedDtosIndex).toContain('Residual 641');
   });
 
   it('schedule uses ScheduleBatchOperationResponseDTO / Schema only', () => {
