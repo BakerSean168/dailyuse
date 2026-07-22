@@ -9,13 +9,19 @@
 
 import { AuthSession } from '@dailyuse/authentication/electron';
 import { DeviceInfo } from '@dailyuse/authentication/electron';
-import type { IdentityId, AuthSessionId, DeviceInfoClientDTO, DeviceInfoDTO } from '@dailyuse/contracts/authentication';
+import type {
+  IdentityId,
+  AuthSessionId,
+  DeviceInfoClientDTO,
+  DeviceInfoDTO,
+  TokenStorageData,
+} from '@dailyuse/contracts/authentication';
 import { DeviceType } from '@dailyuse/contracts/authentication';
 import type { IAuthSessionRepository } from '@dailyuse/authentication/electron';
 import type { ILogger } from '@dailyuse/utils/logger';
 import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 import { generateUUID } from '@dailyuse/utils/shared';
-import type { TokenManager, TokenData } from './token-manager';
+import type { TokenManager } from './token-manager';
 import { GUEST_ACCESS_TOKEN } from './session-types';
 
 function toIdentityId(value: string | IdentityId): IdentityId {
@@ -171,7 +177,7 @@ export class GuestIdentityHelper {
   }
 
   private async restoreRuntimeSessionFromToken(
-    tokenData: TokenData,
+    tokenData: TokenStorageData,
     getDeviceInfo: () => DeviceInfoClientDTO,
   ): Promise<AuthSession> {
     const deviceInfo = getDeviceInfo();

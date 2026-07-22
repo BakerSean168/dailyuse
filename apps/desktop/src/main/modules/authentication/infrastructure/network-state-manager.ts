@@ -20,9 +20,6 @@ import type {
 } from '@dailyuse/contracts/authentication';
 import { EventEmitter } from 'events';
 
-// Re-export for convenience
-export type { NetworkStatus, NetworkStateChangeEvent, NetworkCheckConfig };
-
 /**
  * NetworkStateManager 配置（内部使用，扩展基础配置）
  */

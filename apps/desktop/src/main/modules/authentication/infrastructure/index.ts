@@ -9,12 +9,15 @@
  * 类型定义统一从 @dailyuse/contracts/authentication 导入
  */
 
-// Re-export types from contracts for convenience
+// Contracts types: single import path (no manager dual re-export track).
 export type {
   TokenStorageData,
   SaveTokenRequest,
   TokenRefreshResult,
   TokenStatus,
+  NetworkStatus,
+  NetworkStateChangeEvent,
+  NetworkCheckConfig,
   SessionRestoreResult as ContractSessionRestoreResult,
   AutoLoginResult as ContractAutoLoginResult,
   SessionStatusDTO,
@@ -33,14 +36,6 @@ export { TokenManager } from './token-manager';
 export { SessionManager } from './session-manager';
 export type { SessionRestoreResult, AutoLoginResult, SessionStatus } from './session-manager';
 export { NetworkStateManager } from './network-state-manager';
+export type { NetworkStateManagerConfig } from './network-state-manager';
 export { RememberedAccountsService } from './remembered-accounts-service';
-export type {
-  NetworkStatus,
-  NetworkStateChangeEvent,
-  NetworkStateManagerConfig,
-} from './network-state-manager';
-
-// Export local types
-export type { TokenData } from './token-manager';
-
 export type { RememberedAccountRecord } from './remembered-accounts-service';

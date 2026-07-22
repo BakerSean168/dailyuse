@@ -22,10 +22,6 @@ import type {
   TokenStatus,
 } from '@dailyuse/contracts/authentication';
 
-// ============ Type Re-exports (for convenience) ============
-export type { TokenStorageData, SaveTokenRequest, TokenRefreshResult, TokenStatus };
-
-// 内部类型别名（同时导出供其他模块使用）
 // ============ Constants ============
 
 /** 提前刷新时间：10 分钟（毫秒） */
