@@ -169,5 +169,5 @@ export interface ITaskTemplateRepository {
   /**
    * 批量删除任务
    */
-  deleteBatch(ids: string[]): Promise<void>;
+  deleteBatch(identityId: string, ids: string[]): Promise<void>;
 }

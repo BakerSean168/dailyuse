@@ -16,6 +16,10 @@ describe('task template ownership surface', () => {
     resolve(__dirname, '../task-template-prisma.repository.ts'),
     'utf8',
   );
+  const powersync = readFileSync(
+    resolve(__dirname, '../../powersync/task-template-powersync.repository.ts'),
+    'utf8',
+  );
   const getUseCase = readFileSync(
     resolve(
       __dirname,
@@ -118,6 +122,21 @@ describe('task template ownership surface', () => {
     expect(prisma).toContain('async findSubtasks(identityId: string, parentTaskId: string)');
     expect(prisma).toContain('where: { identityId, parentTaskId, deletedAt: null }');
     expect(prisma).toMatch(/identityId,\s*goalBinding: \{ not: null \}/);
+  });
+
+
+  it('port deleteBatch requires identityId (residual 156)', () => {
+    expect(port).toContain(
+      'deleteBatch(identityId: string, ids: string[]): Promise<void>;',
+    );
+  });
+
+  it('prisma/powersync deleteBatch filter by identity (residual 156)', () => {
+    expect(prisma).toContain('async deleteBatch(identityId: string, ids: string[])');
+    expect(prisma).toContain('where: { id: { in: ids }, identityId }');
+    expect(powersync).toContain(
+      'DELETE FROM task_templates WHERE identity_id = ? AND id IN (${placeholders})',
+    );
   });
 
 });

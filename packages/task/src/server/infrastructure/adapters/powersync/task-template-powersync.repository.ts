@@ -379,10 +379,13 @@ export class PowerSyncTaskTemplateRepository
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
-    await this.db.execute(`DELETE FROM task_templates WHERE id IN (${placeholders})`, ids);
+    await this.db.execute(
+      `DELETE FROM task_templates WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
+    );
   }
 
   private async queryByType(

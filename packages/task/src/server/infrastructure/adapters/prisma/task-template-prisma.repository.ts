@@ -349,9 +349,10 @@ export class TaskTemplatePrismaRepository
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
     await this.db.taskTemplate.deleteMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
     });
   }
 }
