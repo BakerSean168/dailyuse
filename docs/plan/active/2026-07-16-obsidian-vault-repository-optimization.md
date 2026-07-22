@@ -2954,6 +2954,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > ai composition 3 + harness 14 + governance-check（GOV_EXIT:0）。§13.2 Agent 仍为 **部分实现**。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百一十二轮）：§13.2 聚焦证据套件复跑（含 residual 250–311
+> dual/docs/disclosure/ADR-035/three-login/harness/composition 锁，不改 checkbox）——
+> **66 文件 / 216 测试**（app-vue 54、ai 44、repository 35、contracts 14、ipc-client 5、
+> http-client 5、governance 2、setting 5、data-portability 15、authentication 13、reminder 2、
+> notification 2、account 2、goal 2、schedule 2、dashboard 1、desktop 9、task 4）+
+> governance-check（GOV_EXIT:0）。相对 residual 310：ai +1 file / +3 tests（composition surface）；
+> contracts stage-0 +1 test（harness pointer）。仍为部分/外部阻塞：真实 OAuth 跨端 E2E、生产
+> multi-engine 接线 E2E、GitHub App fixture E2E、全量 PR 门禁一揽子。状态保持 **实施中**；
+> PR readiness 仍为 no。
+
 
 
 
@@ -3351,6 +3361,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百零九轮：ADR-035 multi-engine Turn Engine conformance harness (direct_turn + langgraph_workflow same-suite isolation; in-suite doubles only; Agent still partial)。
   残留三百一十轮：§13.2 focused evidence suite re-run (212 tests, residuals 250–309 locks, no checkbox changes)。
   残留三百一十一轮：ADR-035 Agent Host stage-0 composition freeze (no production port impls; runtime offers never emit engine.*; module does not register Turn Engines; Agent still partial)。
+  残留三百一十二轮：§13.2 focused evidence suite re-run (216 tests, residuals 250–311 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3435,6 +3446,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百零九轮：multi-engine Turn Engine conformance harness 14 通过（双引擎同 suite isolation + ownership；生产 adapter 仍缺）+ journey/stage-0 + governance-check；仍不构成全量 multi-engine runtime E2E 证据。
   残留三百一十轮：tip 上 212 项 focused evidence suite（含 residual 250–309 dual/docs/disclosure/ADR-035/three-login/harness 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百一十一轮：Agent Host stage-0 composition/port freeze surfaces 通过（生产 adapter 仍缺；runtime 不静默 emit engine.*）+ governance-check；仍不构成生产 multi-engine 接线 E2E 证据。
+  残留三百一十二轮：tip 上 216 项 focused evidence suite（含 residual 250–311 dual/docs/disclosure/ADR-035/three-login/harness/composition 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
