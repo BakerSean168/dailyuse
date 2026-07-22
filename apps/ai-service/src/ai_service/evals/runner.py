@@ -15,12 +15,6 @@ from ai_service.evals.agent_runtime_harness import (
     run_agent_runtime_knowledge_generate_case,
     run_agent_runtime_knowledge_qa_case,
 )
-from ai_service.evals.eval_case_loader import (
-    filter_eval_cases,
-    load_eval_cases,
-    load_policy,
-    load_report,
-)
 from ai_service.evals.eval_models import (
     DEFAULT_PROVIDER,
     AgentRuntimeGoalCreateEvalCase,
@@ -30,7 +24,6 @@ from ai_service.evals.eval_models import (
     EvalCase,
     EvalCheck,
     EvalMode,
-    EvalPolicy,
     EvalResult,
     GoalPlanningEvalCase,
     KnowledgeGroundingEvalCase,
@@ -38,7 +31,6 @@ from ai_service.evals.eval_models import (
     StubChatService,
 )
 from ai_service.evals.eval_reporter import (
-    archive_report,
     build_agent_runtime_goal_create_eval_result,
     build_agent_runtime_knowledge_generate_eval_result,
     build_agent_runtime_knowledge_qa_eval_result,
@@ -46,11 +38,8 @@ from ai_service.evals.eval_reporter import (
     build_eval_result,
     build_goal_planning_eval_result,
     build_knowledge_grounding_eval_result,
-    build_report,
     ensure_live_chat_service,
     ensure_live_provider_config,
-    evaluate_quality_gate,
-    write_report,
 )
 from ai_service.evals.eval_workflow_checks import (
     check_action_tools,
@@ -80,38 +69,12 @@ from ai_service.services.knowledge_query_service import (
     KnowledgeQueryService,
 )
 
-# Re-export for backward compatibility
 __all__ = [
-    "DEFAULT_PROVIDER",
-    "ChatSanityEvalCase",
-    "EvalCase",
-    "EvalCheck",
-    "EvalMode",
-    "EvalPolicy",
-    "EvalResult",
-    "GoalPlanningEvalCase",
-    "KnowledgeGroundingEvalCase",
-    "LiveEvalConfig",
-    "StubChatService",
-    "archive_report",
-    "build_agent_runtime_goal_create_eval_result",
-    "build_agent_runtime_knowledge_generate_eval_result",
-    "build_agent_runtime_knowledge_qa_eval_result",
-    "build_chat_eval_result",
-    "build_eval_result",
-    "build_goal_planning_eval_result",
-    "build_knowledge_grounding_eval_result",
     "build_goal_workflow_eval_result",
-    "build_report",
     "evaluate_cases",
     "evaluate_cases_with_mode",
-    "evaluate_quality_gate",
-    "filter_eval_cases",
-    "load_eval_cases",
-    "load_policy",
-    "load_report",
-    "write_report",
 ]
+
 
 
 # ── Evaluators ──────────────────────────────────────────────────────────────

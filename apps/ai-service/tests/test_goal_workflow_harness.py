@@ -13,7 +13,7 @@ from ai_service.evals.goal_workflow_harness import (
     build_execution_summary,
     run_goal_workflow_case,
 )
-from ai_service.evals.runner import DEFAULT_PROVIDER
+from ai_service.evals.eval_models import DEFAULT_PROVIDER
 
 
 def load_goal_workflow_cases() -> list[GoalWorkflowEvalCase]:
