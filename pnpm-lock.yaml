@@ -1542,6 +1542,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/ipc-client':
+        specifier: workspace:*
+        version: link:../ipc-client
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
