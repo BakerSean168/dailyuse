@@ -285,6 +285,8 @@ export type HostPanelProductTool =
  * process-local) must reuse the same ownership result — no second dual resolve.
  * Residual 577: primary-task-shaped runs map to create_task_template (not create_goal),
  * matching exclusive task Host lane + residual 575 sole-product confirm.
+ * Residual 579: Host panel settlement for primary-task-shaped must use goal-session
+ * confirm/cancel (process-local task store is AgentType task.create only).
  *
  * - goal → create_goal when goalAgentRun.runId matches and run is not primary-task;
  *   primary-task-shaped goal session → create_task_template

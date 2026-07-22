@@ -395,6 +395,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 577: Host panel ownership primary-task-shaped → create_task_template.
         'Residual 577',
         'isPrimaryTaskHostAgentRun',
+        // Residual 579: primary-task-shaped settlement via goal session confirm/cancel.
+        'Residual 579',
+        "owned.run.run.agentType !== 'task.create'",
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

@@ -805,11 +805,13 @@ async function handleHostProposalRevise(payload: {
       contentMarkdown: payload.patch.contentMarkdown,
       goalId: payload.patch.goalId,
     });
-    // Residual 439/571: process-local task.create edit only when ownership maps task.create.
+    // Residual 439/571: process-local task.create edit only for AgentType task.create.
+    // Residual 579: primary-task-shaped (goal session) applies Host patch at confirm.
     if (
       payload.item.source === 'task' &&
       payload.item.kind === 'task.create' &&
-      owned?.productTool === 'create_task_template'
+      owned?.productTool === 'create_task_template' &&
+      owned.run.run.agentType === 'task.create'
     ) {
       await reviseTaskAgentRun({
         title: payload.patch.title ?? payload.item.title,
@@ -899,12 +901,14 @@ async function handleHostProposalApprove(payload: {
     });
 
     if (payload.item.source === 'goal') {
+      // Residual 579: includes primary-task-shaped ownership (create_task_template) on goal source.
       await confirmGoalAgentRun({
         skipHostLifecycle: true,
         revision,
         // Residual 365: pass Host-revised title/description into resumeAgentRun executor payload.
         title: payload.patch.title ?? payload.item.title,
         description: payload.patch.description ?? payload.item.description,
+        goalId: payload.patch.goalId ?? payload.item.goalId,
       });
       return;
     }
@@ -922,7 +926,7 @@ async function handleHostProposalApprove(payload: {
     if (payload.item.source === 'task') {
       const title = payload.patch.title ?? payload.item.title;
       const goalId = payload.patch.goalId ?? payload.item.goalId;
-      // Residual 427/571: task-shaped goal.create prefers goal session confirm when owned there.
+      // Residual 427/571: normal goal.create owned by goal session confirms via goal path.
       if (owned?.productTool === 'create_goal') {
         await confirmGoalAgentRun({
           skipHostLifecycle: true,
@@ -932,8 +936,24 @@ async function handleHostProposalApprove(payload: {
         });
         return;
       }
-      // Residual 571: task.create ownership from shared resolver productTool (not dual flags).
-      const isTaskAgentType = owned?.productTool === 'create_task_template';
+      // Residual 579: primary-task-shaped maps create_task_template but still goal-session confirm
+      // (process-local task store only for AgentType task.create; residual 575 sole product).
+      if (
+        owned?.productTool === 'create_task_template' &&
+        owned.run.run.agentType !== 'task.create'
+      ) {
+        await confirmGoalAgentRun({
+          skipHostLifecycle: true,
+          revision,
+          title,
+          goalId,
+        });
+        return;
+      }
+      // Residual 571: AgentType task.create ownership from shared resolver productTool.
+      const isTaskAgentType =
+        owned?.productTool === 'create_task_template' &&
+        owned.run.run.agentType === 'task.create';
       const ownedByTaskSession = isTaskAgentType;
       // Residual 459: dirty approve must revise process-local draft before domain createTemplate
       // so getRun/reopen cannot rehydrate a stale title if mutation fails mid-flight.
@@ -1046,9 +1066,12 @@ async function handleHostProposalReject(payload: {
       });
       return;
     }
-    // Residual 423/425/427/437/571: cancel path from shared ownership productTool.
+    // Residual 423/425/427/437/571/579: cancel path from shared ownership productTool.
     if (payload.item.source === 'task') {
-      if (owned?.productTool === 'create_task_template') {
+      if (
+        owned?.productTool === 'create_task_template' &&
+        owned.run.run.agentType === 'task.create'
+      ) {
         // Residual 437: process-local cancel resume (store → cancelled).
         await cancelTaskAgentRun({
           skipHostLifecycle: true,
@@ -1060,7 +1083,12 @@ async function handleHostProposalReject(payload: {
             payload.item.proposalId,
           ];
         }
-      } else if (owned?.productTool === 'create_goal') {
+      } else if (
+        owned?.productTool === 'create_goal' ||
+        // Residual 579: primary-task-shaped → goal session cancel (not silent task.create noop).
+        (owned?.productTool === 'create_task_template' &&
+          owned.run.run.agentType !== 'task.create')
+      ) {
         await cancelGoalAgentRun({
           skipHostLifecycle: true,
           revision: payload.revision,

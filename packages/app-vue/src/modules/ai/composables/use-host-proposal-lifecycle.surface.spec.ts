@@ -1291,6 +1291,38 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('Host panel primary-task-shaped settlement uses goal session confirm/cancel (residual 579)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('Residual 579');
+    expect(chatView).toContain('Residual 579');
+    // Approve: primary-task-shaped create_task_template → confirmGoalAgentRun (not process-local complete).
+    const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
+    expect(approveIdx).toBeGreaterThan(-1);
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 7500);
+    expect(approveSlice).toContain('Residual 579');
+    expect(approveSlice).toContain("owned.run.run.agentType !== 'task.create'");
+    expect(approveSlice).toContain('confirmGoalAgentRun');
+    // process-local task complete only for AgentType task.create.
+    expect(approveSlice).toContain("owned.run.run.agentType === 'task.create'");
+    expect(approveSlice).toContain('completeTaskAgentRun');
+    // Reject: primary-task-shaped cancelGoalAgentRun (cancelTaskAgentRun is task.create-only).
+    const rejectIdx = chatView.indexOf('async function handleHostProposalReject');
+    expect(rejectIdx).toBeGreaterThan(-1);
+    const rejectSlice = chatView.slice(rejectIdx, rejectIdx + 4500);
+    expect(rejectSlice).toContain('Residual 579');
+    expect(rejectSlice).toContain('cancelGoalAgentRun');
+    expect(rejectSlice).toContain("owned.run.run.agentType === 'task.create'");
+    expect(rejectSlice).toContain('cancelTaskAgentRun');
+    // Revise process-local only for AgentType task.create.
+    const reviseIdx = chatView.indexOf('async function handleHostProposalRevise');
+    const reviseSlice = chatView.slice(reviseIdx, reviseIdx + 3600);
+    expect(reviseSlice).toContain("owned.run.run.agentType === 'task.create'");
+    expect(reviseSlice).toContain('reviseTaskAgentRun');
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
   it('Host panel settlement reuses resolveHostPanelOwnedProductRun ownership (residual 571)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
@@ -1318,7 +1350,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     const approveSlice = chatView.slice(approveIdx, approveIdx + 7000);
     expect(approveSlice).toContain("owned?.productTool === 'create_goal'");
     expect(approveSlice).toContain("owned?.productTool === 'create_task_template'");
-    expect(approveSlice).toContain("isTaskAgentType = owned?.productTool === 'create_task_template'");
+    // Residual 579: process-local task lane requires AgentType task.create, not only productTool.
+    expect(approveSlice).toContain('isTaskAgentType');
+    expect(approveSlice).toContain("owned.run.run.agentType === 'task.create'");
     // Reject settlement mirrors productTool ownership.
     const rejectIdx = chatView.indexOf('async function handleHostProposalReject');
     const rejectSlice = chatView.slice(rejectIdx, rejectIdx + 4500);
