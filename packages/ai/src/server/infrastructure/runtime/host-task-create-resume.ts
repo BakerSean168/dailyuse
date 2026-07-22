@@ -42,6 +42,9 @@
  * Residual 491: edit/confirm remaining tool+empty-action fail-closed use named constants
  * (no ad-hoc product-path invent for create_task_template tool/status gates).
  *
+ * Residual 495: resume agentType + unsupported userDecision fail-closed use named constants
+ * (no ad-hoc product-path invent for agent isolation / decision surface).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -92,6 +95,14 @@ export const HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE =
 /** Residual 491: confirm executedActions must report status executed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE =
   'Host task.create confirm executedActions must report status executed.';
+
+/** Residual 495: resume with non-task.create agentType is fail-closed. */
+export const HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE =
+  'Host task.create resume requires agentType task.create.';
+
+/** Residual 495: clarify/regenerate/etc are not Host task.create product decisions. */
+export const HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE =
+  'Host task.create resume does not support userDecision. Use cancel, confirm, or edit.';
 
 /** Residual 463: confirm without recoverable settlement title is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE =
@@ -253,7 +264,7 @@ export function buildHostTaskCreateResumeResult(input: {
 }): AgentRunResult {
   const current = input.current;
   if (current.run.agentType !== 'task.create') {
-    throw new Error('buildHostTaskCreateResumeResult requires agentType task.create');
+    throw new Error(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE);
   }
 
   const now = input.nowMs ?? Date.now();
@@ -512,8 +523,8 @@ export function buildHostTaskCreateResumeResult(input: {
     });
   }
 
-  // Fail closed: clarify/regenerate are not part of Host task.create foundation.
+  // Residual 495: clarify/regenerate are not part of Host task.create foundation.
   throw new Error(
-    `Host task.create resume does not support userDecision '${decision}'. Use cancel, confirm, or edit.`,
+    `${HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE} Received '${String(decision)}'.`,
   );
 }

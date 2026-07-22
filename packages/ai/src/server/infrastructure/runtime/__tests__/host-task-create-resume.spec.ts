@@ -6,6 +6,8 @@ import {
   HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
   HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
   HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE,
+  HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE,
+  HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE,
 } from '../host-task-create-resume';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
 
@@ -21,7 +23,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475/477/481/491)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473/475/477/481/491/495)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -237,7 +239,7 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/
     ).toThrow(/cancel requires waiting_approval/);
   });
 
-  it('fails closed for unsupported userDecision', () => {
+  it('fails closed for unsupported userDecision (residual 495)', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-bad'),
       identityId: 'id-1',
@@ -248,7 +250,29 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/
         current: started,
         payload: { userDecision: 'clarify', clarificationAnswers: ['x'] },
       }),
-    ).toThrow(/does not support userDecision/);
+    ).toThrow(HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE);
+    expect(HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE).toMatch(
+      /does not support userDecision/,
+    );
+  });
+
+  it('fails closed when current agentType is not task.create (residual 495)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-wrong-agent'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const foreign = {
+      ...started,
+      run: { ...started.run, agentType: 'goal.create' as const },
+    };
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: foreign as typeof started,
+        payload: { userDecision: 'cancel' },
+      }),
+    ).toThrow(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE);
+    expect(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE).toMatch(/agentType task\.create/);
   });
 
   it('edit fails closed on blank title or non create_task_template tool (residual 455)', () => {

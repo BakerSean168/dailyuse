@@ -3,6 +3,7 @@ import {
   createHostTaskCreateRunStore,
   resetDefaultHostTaskCreateRunStoreForTests,
   getDefaultHostTaskCreateRunStore,
+  HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
 } from '../host-task-create-run-store';
 import { buildHostTaskCreateStartResult } from '../host-task-create-start';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
@@ -264,6 +265,31 @@ describe('host-task-create-run-store conversation/thread binding (residual 457)'
     });
     expect(store.list('owner-1', { conversationId: 'conv-1', activeOnly: true })).toHaveLength(0);
     expect(store.list('owner-1', { conversationId: 'conv-1', status: ['completed'] })).toHaveLength(1);
+  });
+});
+
+describe('host-task-create-run-store agentType fail-closed (residual 495)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('rejects non-task.create upsert without silent ignore', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-foreign-agent', 'Should not store'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const foreign = {
+      ...started,
+      run: { ...started.run, agentType: 'goal.create' as const },
+    };
+    expect(() => store.upsert(foreign as typeof started)).toThrow(
+      HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
+    );
+    expect(store.size()).toBe(0);
+    expect(store.get('run-foreign-agent', 'id-1')).toBeNull();
+    expect(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE).toMatch(/task\.create/);
   });
 });
 

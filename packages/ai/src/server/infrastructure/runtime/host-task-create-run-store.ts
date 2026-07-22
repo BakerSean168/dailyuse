@@ -1,5 +1,5 @@
 /**
- * Residual 435/447/451/457: process-local Host task.create run store foundation.
+ * Residual 435/447/451/457/495: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
@@ -14,6 +14,8 @@
  *
  * Residual 457: runId is conversation/thread-bound — same identity cannot rebind an
  * existing runId to a different conversation or thread (session isolation).
+ *
+ * Residual 495: upsert rejects non-task.create agentType (no silent ignore).
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
@@ -40,6 +42,10 @@ export const HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE =
 /** Residual 457: fail-closed when runId thread binding would change. */
 export const HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE =
   'Host task.create process-local runId is already bound to another thread.';
+
+/** Residual 495: process-local store rejects non-task.create (no silent ignore). */
+export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE =
+  'Host task.create process-local store only accepts agentType task.create.';
 
 export type HostTaskCreateRunStore = {
   upsert(result: AgentRunResult): void;
@@ -74,8 +80,9 @@ export function createHostTaskCreateRunStore(
 
   return {
     upsert(result: AgentRunResult) {
+      // Residual 495: fail-closed — do not silently ignore foreign agent types.
       if (result.run.agentType !== 'task.create') {
-        return;
+        throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE);
       }
       // Residual 451: process-local runId identity binding (no foreign takeover).
       const existing = byRunId.get(result.run.runId);

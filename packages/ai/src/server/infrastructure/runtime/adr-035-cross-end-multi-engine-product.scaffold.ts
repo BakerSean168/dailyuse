@@ -322,6 +322,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE',
         'HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE',
         'HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE',
+        // Residual 495: resume agentType + unsupported decision + store agentType.
+        'HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE',
+        'HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE',
+        'HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE',
       ],
       status: 'implemented_unit',
     },

@@ -772,6 +772,39 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('task.create resume agentType + unsupported decision use named constants (residual 495)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(resume).toContain('HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE');
+    expect(resume).toContain('HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE');
+    expect(resume).toContain('Residual 495');
+    expect(resume).toContain('throw new Error(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE)');
+    expect(resume).toContain('HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE');
+    expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE');
+    expect(store).toContain('Residual 495');
+    expect(store).not.toMatch(/agentType !== 'task\.create'\)\s*\{\s*return;/);
+    expect(runtime).toContain('HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE');
+    expect(runtime).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
   it('task.create client complete requires waiting_approval only (residual 489)', () => {
     const resume = readFileSync(
