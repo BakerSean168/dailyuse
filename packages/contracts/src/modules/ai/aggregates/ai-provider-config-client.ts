@@ -61,15 +61,3 @@ export interface AIModelInfo {
   outputCostPer1M?: number;
 }
 
-/**
- * AI Provider 配置摘要
- * 用于列表展示和选择器
- */
-export interface AIProviderConfigSummary {
-  id: AiProviderConfigId;
-  name: string;
-  providerType: AIProviderType;
-  defaultModel: string | null;
-  isActive: boolean;
-  isDefault: boolean;
-}

@@ -10,7 +10,6 @@ export type {
 
 export type {
   GoalClientDTO,
-  GoalTimeRangeSummary,
 } from './goal-client';
 
 // GoalFolder 聚合根

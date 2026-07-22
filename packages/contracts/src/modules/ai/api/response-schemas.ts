@@ -190,14 +190,8 @@ export const AIProviderConfigClientDTOSchema = z.object({
   deletedAt: z.number().nullable(),
 });
 
-export const AIProviderConfigSummarySchema = z.object({
-  id: brandedId<AiProviderConfigId>(),
-  name: z.string(),
-  providerType: z.enum(Object.values(AIProviderType)),
-  defaultModel: z.string().nullable(),
-  isActive: z.boolean(),
-  isDefault: z.boolean(),
-});
+// Residual 647: AIProviderConfigSummarySchema dual-track retired.
+// List/get envelopes use AIProviderConfigClientDTOSchema only.
 
 export const SendMessageResSchema = z.object({
   userMessage: MessageClientDTOSchema,

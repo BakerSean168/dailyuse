@@ -11,7 +11,6 @@ export type {
 export type {
   AIProviderConfigClientDTO,
   AIModelInfo,
-  AIProviderConfigSummary,
 } from './ai-provider-config-client';
 
 export type {

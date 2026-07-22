@@ -15,17 +15,7 @@ import type { GoalReviewClientDTO } from '../entities/goal-review-client';
 import type { GoalReminderConfigDTO } from '../value-objects';
 
 // ============ Transfer DTO ============
-
-/** Goal time range summary for UI display. */
-export interface GoalTimeRangeSummary {
-  startDate: TransferDate | null;
-  targetDate: TransferDate | null;
-  actualStartDate: TransferDate | null;
-  actualEndDate: TransferDate | null;
-  durationDays: number | null;
-  elapsedDays: number | null;
-  remainingDays: number | null;
-}
+// Residual 647: GoalTimeRangeSummary dead dual retired (fields live on GoalClientDTO).
 
 /**
  * Goal Client DTO
