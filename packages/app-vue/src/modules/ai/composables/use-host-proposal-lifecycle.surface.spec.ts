@@ -999,6 +999,25 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('knowledge.write confirm requires sole create_knowledge_note draftAction (residual 555)', () => {
+    const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');
+    expect(knowledge).toContain('Residual 555');
+    expect(knowledge).toContain('productDraftCount !== 1');
+    expect(knowledge).toContain("action.tool === 'create_knowledge_note'");
+    const createIdx = knowledge.indexOf('async function createKnowledgeNoteFromConversation');
+    expect(createIdx).toBeGreaterThan(-1);
+    const createSlice = knowledge.slice(createIdx, createIdx + 2200);
+    expect(createSlice).toContain('productDraftCount !== 1');
+    expect(createSlice).toContain('applyHostKnowledgePatchToAgentActions');
+    // Gate before Host patch / confirm resume.
+    const gateIdx = createSlice.indexOf('productDraftCount !== 1');
+    const patchIdx = createSlice.indexOf('applyHostKnowledgePatchToAgentActions');
+    expect(gateIdx).toBeGreaterThan(-1);
+    expect(patchIdx).toBeGreaterThan(gateIdx);
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('task.create process-local store conversation list trims (residual 509)', () => {
     const store = readFileSync(
       resolve(

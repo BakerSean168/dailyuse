@@ -109,6 +109,7 @@ export function resolveCrossEndMultiEngineProductStepSources(
         'packages/app-vue/src/modules/ai/composables/hostProposalLifecycle.ts',
         'packages/app-vue/src/modules/ai/composables/useAIChatView.ts',
         'packages/app-vue/src/modules/ai/composables/useAITaskWorkflow.ts',
+        'packages/app-vue/src/modules/ai/composables/useAIKnowledgeNoteWorkflow.ts',
         'packages/app-vue/src/modules/ai/composables/types.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-start.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
@@ -374,6 +375,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['function resolveConfirmStoreDraftActions'];
     case 'return productDrafts':
       return ['return productDrafts'];
+    case 'Residual 555':
+      return ['Residual 555'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

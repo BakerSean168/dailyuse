@@ -1,3 +1,9 @@
+/**
+ * Residual 555: knowledge.write confirm requires sole create_knowledge_note
+ * draftAction after single-product-draft gate (task residual 547 / Host residual
+ * 553 symmetry; no multi product invent). Foreign companions may remain in the
+ * approvedActions payload for executor context; multi create_knowledge_note is fail-closed.
+ */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -260,7 +266,15 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
         : noteAgentRun.value.state.approvedActions;
       if (!baseActions.length) return;
 
-      // Residual 363: Host lifecycle may revise path/body; executor consumes patched actions.
+      // Residual 555: sole create_knowledge_note draftAction after single-product-draft gate
+      // (task residual 547 / Host residual 553 symmetry; no multi product invent).
+      // Foreign companions (e.g. search_knowledge) may remain for executor context.
+      const productDraftCount = baseActions.filter(
+        (action) => action.tool === 'create_knowledge_note',
+      ).length;
+      if (productDraftCount !== 1) return;
+
+      // Residual 363/551: Host lifecycle may revise path/body; sole product patch only.
       const approvedActions = applyHostKnowledgePatchToAgentActions(baseActions, {
         targetPath: hostOptions?.targetPath,
         contentMarkdown: hostOptions?.contentMarkdown,
