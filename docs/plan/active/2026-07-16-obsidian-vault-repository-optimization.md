@@ -3092,6 +3092,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 验证：ai product-docs 2 + contracts retired-editor 4 + governance-check。§13.2 未打勾项仍为
 > 部分/外部阻塞。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百二十八轮）：§13.2 聚焦证据套件复跑（含 residual 250–327
+> dual/docs/disclosure/ADR-035/three-login/harness/composition/Host adapters/start-gate/
+> product-docs 边界锁，不改 checkbox）——**73 文件 / 253 测试**（app-vue 54、ai 77、repository 35、
+> contracts 18、ipc-client 5、http-client 5、governance 2、setting 5、data-portability 15、
+> authentication 13、reminder 2、notification 2、account 2、goal 2、schedule 2、dashboard 1、
+> desktop 9、task 4）+ governance-check（GOV_EXIT:0）。相对 residual 325：ai +1 file / +2 tests
+> （product-docs boundary）；contracts +1 file / +4 tests（retired-editor product setting 锁）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、第二生产 Turn Engine、统一助手 UI、GitHub App fixture
+> E2E、全量 PR 门禁。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3494,6 +3504,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十五轮：§13.2 focused evidence suite re-run（247 tests，residuals 250–324 锁；不改 checkbox）。
   残留三百二十六轮：§13.2 证据指针刷新（Host residual 305–325；不改 checkbox）。
   残留三百二十七轮：产品 ai/setting 文档对齐 ADR-034/035 runtime + surface 锁。
+  残留三百二十八轮：§13.2 focused evidence suite re-run（253 tests，residuals 250–327 锁；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3516,6 +3527,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十五轮：§13.2 focused evidence suite re-run (247 tests, residuals 250–324 locks, no checkbox changes)。
   残留三百二十六轮：§13.2 evidence-pointer refresh for residual 305–325 Host adapters/start-gate (no checkbox changes)。
   残留三百二十七轮：align product ai/setting docs with ADR-034/035 runtime (Host partial + retired editor category); surface locks。
+  残留三百二十八轮：§13.2 focused evidence suite re-run (253 tests, residuals 250–327 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3624,6 +3636,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十五轮：tip 上 247 项 focused evidence suite（含 residual 250–324 start-gate 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百二十六轮：§13.2 Agent/全量门禁证据指针刷新（305–325 Host 部分）；仍不构成完成证据。
   残留三百二十七轮：product ai/setting 文档与 runtime 边界对齐 + surface 锁；仍不构成全量 PR 门禁证据。
+  残留三百二十八轮：tip 上 253 项 focused evidence suite（含 residual 250–327 product-docs 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
