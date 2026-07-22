@@ -27,10 +27,12 @@ import {
   resolveTaskCreateConversationId,
   resolveTaskCreateThreadId,
   resolveTaskCreateIdentityId,
+  resolveTaskCreateRunId,
   HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
 } from './host-task-create-start';
 import {
   buildHostTaskCreateResumeResult,
@@ -1171,6 +1173,13 @@ export function createAgentRuntimeService(
             HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
           );
         }
+        // Residual 497: process-local runId fail-closed (builder also throws; no silent empty).
+        if (!resolveTaskCreateRunId(requestWithKnowledge.data.runId)) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
+          );
+        }
         // Residual 479: title fail-closed (builder also throws; no silent 'New task').
         if (!resolveTaskCreateTitle(requestWithKnowledge.data.input)) {
           return error(
@@ -1238,12 +1247,13 @@ export function createAgentRuntimeService(
             ) {
               return error('VALIDATION_ERROR', err.message);
             }
-            // Residual 479/483/485/493: builder title/conversation/thread/identity fail-closed maps to validation.
+            // Residual 479/483/485/493/497: builder title/conversation/thread/identity/runId fail-closed maps to validation.
             if (
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE) ||
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE) ||
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE) ||
-              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE)
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE)
             ) {
               return error('VALIDATION_ERROR', err.message);
             }

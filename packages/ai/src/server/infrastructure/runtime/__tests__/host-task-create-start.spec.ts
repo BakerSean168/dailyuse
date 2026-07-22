@@ -8,8 +8,10 @@ import {
   HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
   resolveTaskCreateThreadId,
   resolveTaskCreateIdentityId,
+  resolveTaskCreateRunId,
 } from '../host-task-create-start';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
 
@@ -192,6 +194,44 @@ describe('host-task-create-start identityId fail-closed (residual 493)', () => {
       nowMs: 1000,
     });
     expect(ok.run.identityId).toBe('identity-trim');
+  });
+});
+
+describe('host-task-create-start runId fail-closed (residual 497)', () => {
+  it('resolveTaskCreateRunId trims and rejects empty', () => {
+    expect(resolveTaskCreateRunId('  run-1  ')).toBe('run-1');
+    expect(resolveTaskCreateRunId('')).toBeUndefined();
+    expect(resolveTaskCreateRunId('   ')).toBeUndefined();
+    expect(resolveTaskCreateRunId(null)).toBeUndefined();
+    expect(resolveTaskCreateRunId(undefined)).toBeUndefined();
+    expect(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE).toMatch(/runId/);
+  });
+
+  it('buildHostTaskCreateStartResult throws without inventing blank runId', () => {
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: { ...baseRequest({ title: 'Needs runId' }), runId: '   ' },
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE);
+
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: { ...baseRequest({ title: 'Needs runId' }), runId: '' },
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(/non-empty runId/);
+
+    const ok = buildHostTaskCreateStartResult({
+      request: { ...baseRequest({ title: 'Bound' }), runId: '  run-trim  ' },
+      identityId: 'identity-server',
+      nowMs: 1000,
+    });
+    expect(ok.run.runId).toBe('run-trim');
+    expect(ok.interrupts[0]?.runId).toBe('run-trim');
+    expect(ok.events[0]?.runId).toBe('run-trim');
   });
 });
 

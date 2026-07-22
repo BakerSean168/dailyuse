@@ -804,6 +804,28 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create start requires non-empty runId in builder (residual 497)', () => {
+    const start = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(start).toContain('HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE');
+    expect(start).toContain('resolveTaskCreateRunId');
+    expect(start).toContain('Residual 497');
+    expect(runtime).toContain('HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE');
+    expect(runtime).toContain('resolveTaskCreateRunId');
+    expect(runtime).toContain('Residual 497');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
   it('task.create client complete requires waiting_approval only (residual 489)', () => {

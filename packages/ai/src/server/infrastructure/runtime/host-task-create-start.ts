@@ -1,5 +1,5 @@
 /**
- * Residual 431/461/479/483/485/493: Host task.create start foundation (TS runtime).
+ * Residual 431/461/479/483/485/493/497: Host task.create start foundation (TS runtime).
  *
  * Builds a waiting_approval AgentRunResult with one create_task_template action.
  * Host lifecycle + client createTemplate settlement (residual 423–425) own mutation.
@@ -9,6 +9,8 @@
  * Residual 485: start builder requires non-empty trimmed threadId (process-local binding).
  * Residual 493: start builder requires non-empty trimmed identityId (ExecutionContext only;
  * never trust client body identity; no silent empty invent).
+ * Residual 497: start builder requires non-empty trimmed runId (process-local map key;
+ * no silent empty invent).
  * Not a full LangGraph Task Agent workflow.
  */
 
@@ -37,6 +39,10 @@ export const HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE =
 /** Residual 493: fail-closed when task.create start lacks ExecutionContext identityId. */
 export const HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE =
   'Host task.create start requires a non-empty identityId from ExecutionContext.';
+
+/** Residual 497: fail-closed when task.create start lacks a recoverable runId. */
+export const HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE =
+  'Host task.create start requires a non-empty runId for process-local binding.';
 
 /**
  * Residual 461: resolve non-empty conversationId for product task.create start.
@@ -67,6 +73,15 @@ export function resolveTaskCreateIdentityId(
 }
 
 /**
+ * Residual 497: resolve non-empty runId for product task.create start.
+ */
+export function resolveTaskCreateRunId(
+  runId: string | null | undefined,
+): string | undefined {
+  return asNonEmptyString(runId ?? undefined);
+}
+
+/**
  * Derive task title from start input (title / idea / message / conversationTitle).
  */
 export function resolveTaskCreateTitle(input: Record<string, unknown>): string | undefined {
@@ -91,6 +106,7 @@ export function resolveTaskCreateGoalId(input: Record<string, unknown>): string 
  * Residual 483: empty conversationId fails closed (no silent null invent).
  * Residual 485: empty/blank threadId fails closed (no untrimmed pass-through).
  * Residual 493: empty/blank identityId fails closed (no silent empty invent).
+ * Residual 497: empty/blank runId fails closed (no silent empty invent).
  */
 export function buildHostTaskCreateStartResult(input: {
   request: AgentStartRunRequest;
@@ -102,6 +118,11 @@ export function buildHostTaskCreateStartResult(input: {
   const identityId = resolveTaskCreateIdentityId(input.identityId);
   if (!identityId) {
     throw new Error(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE);
+  }
+  // Residual 497: process-local runId map key fail-closed in builder.
+  const runId = resolveTaskCreateRunId(input.request.runId);
+  if (!runId) {
+    throw new Error(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE);
   }
   const title = resolveTaskCreateTitle(input.request.input);
   if (!title) {
@@ -118,7 +139,6 @@ export function buildHostTaskCreateStartResult(input: {
     throw new Error(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE);
   }
   const goalId = resolveTaskCreateGoalId(input.request.input);
-  const runId = input.request.runId;
   const payload: Record<string, unknown> = { title };
   if (goalId) payload['goalId'] = goalId;
 

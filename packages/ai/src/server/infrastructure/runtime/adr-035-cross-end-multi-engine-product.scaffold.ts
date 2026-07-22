@@ -326,6 +326,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE',
         'HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE',
         'HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE',
+        // Residual 497: start builder runId fail-closed (trim non-empty).
+        'HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE',
+        'resolveTaskCreateRunId',
       ],
       status: 'implemented_unit',
     },
