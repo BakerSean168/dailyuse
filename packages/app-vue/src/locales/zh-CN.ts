@@ -661,4 +661,32 @@ export default {
       selectNoteDescription: '笔记在此安全预览，编辑继续由 Obsidian 完成。',
     },
   },
+
+  // ── 设置 ───────────────────────────────────────────────
+  setting: {
+    notifications: {
+      title: '通知',
+      description: '配置 Memoflow 如何送达系统与业务模块通知。',
+      useCustomNotification: '使用自定义桌面通知',
+      useCustomNotificationDescription:
+        '开启后，Desktop 使用 Memoflow 自定义通知窗口，而不是系统默认通知。',
+      moduleChannelsTitle: '模块渠道',
+      moduleChannelsDescription:
+        '按业务模块启用应用内与桌面推送。身份由服务端从当前会话解析，界面不传 identityId。',
+      loadPreferencesFailed: '加载通知偏好失败',
+      updatePreferencesFailed: '更新通知偏好失败',
+      channels: {
+        inApp: '应用内',
+        push: '桌面推送',
+      },
+      modules: {
+        task: '任务',
+        goal: '目标',
+        schedule: '日程',
+        reminder: '提醒',
+        account: '账户',
+        system: '系统',
+      },
+    },
+  },
 } as const;

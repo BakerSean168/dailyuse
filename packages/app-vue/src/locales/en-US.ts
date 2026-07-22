@@ -689,4 +689,32 @@ export default {
       selectNoteDescription: 'Preview notes here and continue editing them in Obsidian.',
     },
   },
+
+  // ── Settings ───────────────────────────────────────────
+  setting: {
+    notifications: {
+      title: 'Notifications',
+      description: 'Choose how Memoflow delivers system and module notifications.',
+      useCustomNotification: 'Use custom desktop notifications',
+      useCustomNotificationDescription:
+        'When enabled, Desktop shows Memoflow custom notification windows instead of OS defaults.',
+      moduleChannelsTitle: 'Module channels',
+      moduleChannelsDescription:
+        'Enable in-app and desktop push delivery per business module. Identity is applied by the server from your session.',
+      loadPreferencesFailed: 'Failed to load notification preferences',
+      updatePreferencesFailed: 'Failed to update notification preferences',
+      channels: {
+        inApp: 'In-app',
+        push: 'Desktop push',
+      },
+      modules: {
+        task: 'Tasks',
+        goal: 'Goals',
+        schedule: 'Schedule',
+        reminder: 'Reminders',
+        account: 'Account',
+        system: 'System',
+      },
+    },
+  },
 } as const;
