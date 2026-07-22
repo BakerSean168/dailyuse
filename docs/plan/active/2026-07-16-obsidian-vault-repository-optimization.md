@@ -4569,6 +4569,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留五百四十三轮）：Host task.create **confirm settlementAction 单工具 fail-closed**（仍不打勾）——
+> host-task-create-resume confirm 经 single-executed + create_task_template + executed 后唯一 settlementAction 规范化 title/templateId/goalId（与 residual 541 draftAction 对称）；
+> unit + scaffold/driver Residual 543 锁；非跨端 multi-engine E2E / 跨进程 durable。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -5220,6 +5225,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百四十轮：§13.2 focused evidence suite re-run（627 tests，residuals 250–539 锁；不改 checkbox）。
   残留五百四十一轮：§13.2 证据审计刷新 + Host edit draftAction 单 create_task_template（禁 multi-index invent）。
   残留五百四十二轮：§13.2 focused evidence suite re-run（628 tests，residuals 250–541 锁；不改 checkbox）。
+  残留五百四十三轮：Host task.create confirm settlementAction 单 create_task_template（禁 multi-index invent）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -5457,6 +5463,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百四十轮：§13.2 focused evidence suite re-run (627 tests, residuals 250–539 locks, no checkbox changes)。
   残留五百四十一轮：§13.2 evidence-audit refresh + Host edit draftAction sole create_task_template (no multi-index invent)。
   残留五百四十二轮：§13.2 focused evidence suite re-run (628 tests, residuals 250–541 locks, no checkbox changes)。
+  残留五百四十三轮：Host task.create confirm settlementAction sole create_task_template (no multi-index invent)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。  残留五百四十一轮：Host edit draftAction 单 create_task_template + Client product-lane isolation 501–537 + tip suite 627 证据指针刷新；仍不构成跨端 Playwright/Electron multi-engine E2E / 真实 Pi spawn 证据。
 
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
@@ -5781,6 +5788,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留五百四十轮：tip 上 627 项 focused evidence suite（含 residual 250–539 stage-6 portable boundary 锁）通过；仍不构成全量 PR 门禁证据。
   残留五百四十一轮：§13.2 证据审计刷新 + Host edit draftAction 锁；tip suite 仍 627（本轮无 suite re-run）；仍不构成全量 PR 门禁证据。
   残留五百四十二轮：tip 上 628 项 focused evidence suite（含 residual 250–541 Host edit draftAction 锁）通过；仍不构成全量 PR 门禁证据。
+  残留五百四十三轮：Host confirm settlementAction 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

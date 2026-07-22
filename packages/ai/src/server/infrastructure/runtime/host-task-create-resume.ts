@@ -48,6 +48,9 @@
  * Residual 541: edit revise uses the sole create_task_template draftAction after
  * single-action + tool gates (no blind multi-index invent).
  *
+ * Residual 543: confirm uses the sole create_task_template settlementAction after
+ * single-executed + tool/status gates (edit draftAction residual 541 symmetry).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -355,48 +358,54 @@ export function buildHostTaskCreateResumeResult(input: {
         throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE);
       }
     }
+    // Residual 543: after length===1 + create_task_template + executed gates, the sole
+    // product settlement action is the only receipt source (edit draftAction 541 symmetry).
+    const settlementAction = executedActions[0];
+    if (
+      !settlementAction ||
+      settlementAction.tool !== 'create_task_template' ||
+      settlementAction.status !== 'executed'
+    ) {
+      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
+    }
     // Residual 471: process-local draft only — ignore payload.approvedActions on confirm.
     const approvedActions = resolveConfirmStoreDraftActions(current);
-    // Residual 463/465/467/469/471: normalize recoverable settlement title + template entity id
-    // + non-rebinding goalId/title against process-local draft into executed data/entityId.
-    let settlementTitle: string | undefined;
-    let settlementTemplateId: string | undefined;
-    let settlementGoalId: string | undefined;
-    for (let index = 0; index < executedActions.length; index += 1) {
-      const action = executedActions[index]!;
-      const title = resolveConfirmSettlementTitle(action, approvedActions);
-      if (!title) {
-        throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE);
-      }
-      const templateId = resolveConfirmSettlementTemplateId(action);
-      if (!templateId) {
-        throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE);
-      }
-      const goalId = resolveConfirmSettlementGoalId(action, approvedActions);
-      settlementTitle = settlementTitle ?? title;
-      settlementTemplateId = settlementTemplateId ?? templateId;
-      settlementGoalId = settlementGoalId ?? goalId;
-      const data: Record<string, unknown> = {
-        ...(action.data && typeof action.data === 'object' && !Array.isArray(action.data)
-          ? (action.data as Record<string, unknown>)
-          : {}),
-        title,
-        templateId,
-        entityId: templateId,
-      };
-      if (goalId) {
-        data['goalId'] = goalId;
-        delete data['goal_id'];
-      } else {
-        delete data['goalId'];
-        delete data['goal_id'];
-      }
-      executedActions[index] = {
-        ...action,
-        entityId: templateId,
-        data,
-      };
+    // Residual 463/465/467/469/471/543: normalize recoverable settlement title + template entity id
+    // + non-rebinding goalId/title against process-local draft into sole settlementAction.
+    const title = resolveConfirmSettlementTitle(settlementAction, approvedActions);
+    if (!title) {
+      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE);
     }
+    const templateId = resolveConfirmSettlementTemplateId(settlementAction);
+    if (!templateId) {
+      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE);
+    }
+    const goalId = resolveConfirmSettlementGoalId(settlementAction, approvedActions);
+    const settlementTitle = title;
+    const settlementTemplateId = templateId;
+    const settlementGoalId = goalId;
+    const data: Record<string, unknown> = {
+      ...(settlementAction.data &&
+      typeof settlementAction.data === 'object' &&
+      !Array.isArray(settlementAction.data)
+        ? (settlementAction.data as Record<string, unknown>)
+        : {}),
+      title,
+      templateId,
+      entityId: templateId,
+    };
+    if (goalId) {
+      data['goalId'] = goalId;
+      delete data['goal_id'];
+    } else {
+      delete data['goalId'];
+      delete data['goal_id'];
+    }
+    executedActions[0] = {
+      ...settlementAction,
+      entityId: templateId,
+      data,
+    };
 
     return AgentRunResultSchema.parse({
       run: {

@@ -1031,3 +1031,29 @@ describe('edit draftAction sole product draft (residual 541)', () => {
   });
 });
 
+
+describe('confirm settlementAction sole product receipt (residual 543)', () => {
+  it('source uses settlementAction after single-executed + create_task_template gates', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const src = readFileSync(
+      resolve(__dirname, '../host-task-create-resume.ts'),
+      'utf8',
+    );
+    expect(src).toContain('Residual 543');
+    expect(src).toContain('const settlementAction = executedActions[0]');
+    expect(src).toContain("settlementAction.tool !== 'create_task_template'");
+    expect(src).toContain("settlementAction.status !== 'executed'");
+    expect(src).toContain('...settlementAction');
+    const confirmIdx = src.indexOf("if (decision === 'confirm')");
+    expect(confirmIdx).toBeGreaterThan(-1);
+    const confirmSlice = src.slice(confirmIdx, confirmIdx + 3200);
+    expect(confirmSlice).toContain('resolveConfirmSettlementTitle(settlementAction');
+    expect(confirmSlice).toContain('resolveConfirmSettlementTemplateId(settlementAction)');
+    expect(confirmSlice).toContain('resolveConfirmSettlementGoalId(settlementAction');
+    // No multi-index invent after single-executed gate.
+    expect(confirmSlice).not.toContain('executedActions[1]');
+    expect(confirmSlice).not.toContain('for (let index = 0; index < executedActions.length');
+  });
+});
+
