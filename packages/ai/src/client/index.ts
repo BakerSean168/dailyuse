@@ -23,6 +23,7 @@ import {
   AIKnowledgeQueryHttpAdapter,
   AIMessageHttpAdapter,
   AIProviderConfigHttpAdapter,
+  AIAssistantHttpAdapter,
   createAIHttpAdapters,
   type AIHttpAdapters,
 } from '../infrastructure-client/adapters/http';
@@ -37,6 +38,7 @@ import {
   AIKnowledgeQueryIpcAdapter,
   AIMessageIpcAdapter,
   AIProviderConfigIpcAdapter,
+  AIAssistantIpcAdapter,
   createAIIpcAdapters,
   type AIIpcAdapters,
 } from '../infrastructure-client/adapters/ipc';
@@ -51,6 +53,7 @@ import type {
   IAIGoalApiClient,
   IAIMessageApiClient,
   IAIProviderConfigApiClient,
+  IAIAssistantApiClient,
   IResultIpcClient,
 } from '../infrastructure-client/adapters/types';
 
@@ -68,6 +71,7 @@ export type {
   IAIGoalApiClient,
   IAIMessageApiClient,
   IAIProviderConfigApiClient,
+  IAIAssistantApiClient,
   IResultHttpClient,
   IResultIpcClient,
 };
@@ -85,6 +89,7 @@ export function createAIHttpClient(httpClient: IResultHttpClient): AIClientPort 
     adapters.knowledgeNote,
     adapters.analytics,
     adapters.agentRuntime,
+    adapters.assistant,
   );
 }
 
@@ -101,6 +106,7 @@ export function createAIIpcClient(ipcClient: IResultIpcClient): AIClientPort {
     adapters.knowledgeNote,
     adapters.analytics,
     adapters.agentRuntime,
+    adapters.assistant,
   );
 }
 
@@ -126,6 +132,8 @@ export {
   AIMessageIpcAdapter,
   AIProviderConfigHttpAdapter,
   AIProviderConfigIpcAdapter,
+  AIAssistantHttpAdapter,
+  AIAssistantIpcAdapter,
   createAIClientService,
   createAIHttpAdapters,
   createAIIpcAdapters,

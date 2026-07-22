@@ -21,6 +21,7 @@ export type {
   AIAnalyticsQueryApiClient,
   AIAgentRuntimeApiClient,
   IAIProviderConfigApiClient,
+  IAIAssistantApiClient,
 } from '../../application-client/ports/ai-api-client.port';
 
 // ============ Transport Client Interfaces ============

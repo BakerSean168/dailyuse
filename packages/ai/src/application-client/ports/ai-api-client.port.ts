@@ -42,6 +42,8 @@ import type {
   AgentResumePayload,
   AgentRunResult,
   AgentStartRunClientRequest,
+  AssistantClientCommand,
+  AssistantEvent,
 } from '@dailyuse/contracts/ai';
 import type { Result } from '@dailyuse/contracts/result';
 
@@ -132,3 +134,19 @@ export interface IAIProviderConfigApiClient {
   setDefaultProvider(request: SetDefaultAIProviderReq): Promise<Result<void>>;
   refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>>;
 }
+
+export interface IAIAssistantApiClient {
+  /**
+   * Dispatch AssistantFacade command over transport SSE/stream.
+   * identityId is never part of the client body.
+   */
+  dispatchAssistant(
+    command: AssistantClientCommand,
+    handlers: {
+      onEvent?: (event: AssistantEvent) => void;
+      onDone?: (result: { eventCount: number }) => void;
+    },
+    signal?: AbortSignal,
+  ): Promise<void>;
+}
+

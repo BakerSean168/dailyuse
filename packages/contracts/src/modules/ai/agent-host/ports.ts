@@ -197,6 +197,17 @@ export type AssistantEvent =
   | { type: 'run.cancelled'; runId: string }
   | { type: 'error'; code: string; message: string; runId?: string };
 
+/**
+ * Client-facing Assistant command body. identityId is never accepted from the client;
+ * HTTP/IPC transport injects it from the authenticated ExecutionContext.
+ * 客户端 Assistant 命令体；永不接受 body 中的 identityId，由传输层从认证上下文注入。
+ */
+export type AssistantClientCommand =
+  | Omit<Extract<AssistantCommand, { type: 'message' }>, 'identityId'>
+  | Omit<Extract<AssistantCommand, { type: 'approve_proposal' }>, 'identityId'>
+  | Omit<Extract<AssistantCommand, { type: 'reject_proposal' }>, 'identityId'>
+  | Omit<Extract<AssistantCommand, { type: 'cancel_run' }>, 'identityId'>;
+
 export interface IAssistantFacadePort {
   /**
    * Dispatch one assistant command and stream Host-normalized events.

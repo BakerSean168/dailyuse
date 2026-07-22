@@ -23,6 +23,7 @@ import type {
   IAIConversationApiClient,
   IAIMessageApiClient,
   IAIProviderConfigApiClient,
+  IAIAssistantApiClient,
 } from './ports/ai-api-client.port';
 import type {
   CreateAIProviderConfigReq,
@@ -42,6 +43,7 @@ import type {
   AgentResumePayload,
   AgentRunListParams,
   AgentStartRunClientRequest,
+  AssistantClientCommand,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -62,6 +64,7 @@ export class AIClientService implements AIClientPort {
     private readonly knowledgeNoteApi: AIKnowledgeNoteApiClient,
     private readonly analyticsQueryApi: AIAnalyticsQueryApiClient,
     private readonly agentRuntimeApi: AIAgentRuntimeApiClient,
+    private readonly assistantApi: IAIAssistantApiClient,
   ) {
     this.getCapabilities = this.getCapabilities.bind(this);
     this.getEvaluationOverview = this.getEvaluationOverview.bind(this);
@@ -92,6 +95,7 @@ export class AIClientService implements AIClientPort {
     this.resumeAgentRun = this.resumeAgentRun.bind(this);
     this.getAgentRun = this.getAgentRun.bind(this);
     this.getAgentEvents = this.getAgentEvents.bind(this);
+    this.dispatchAssistant = this.dispatchAssistant.bind(this);
   }
 
   getCapabilities() {
@@ -214,6 +218,14 @@ export class AIClientService implements AIClientPort {
   getAgentEvents(runId: string) {
     return this.agentRuntimeApi.getAgentEvents(runId);
   }
+
+  dispatchAssistant(
+    command: AssistantClientCommand,
+    handlers: Parameters<IAIAssistantApiClient['dispatchAssistant']>[1],
+    signal?: AbortSignal,
+  ) {
+    return this.assistantApi.dispatchAssistant(command, handlers, signal);
+  }
 }
 
 // ===== Factory =====
@@ -229,6 +241,7 @@ export function createAIClientService(
   knowledgeNoteApi: AIKnowledgeNoteApiClient,
   analyticsQueryApi: AIAnalyticsQueryApiClient,
   agentRuntimeApi: AIAgentRuntimeApiClient,
+  assistantApi: IAIAssistantApiClient,
 ): AIClientService {
   return new AIClientService(
     capabilitiesApi,
@@ -241,5 +254,6 @@ export function createAIClientService(
     knowledgeNoteApi,
     analyticsQueryApi,
     agentRuntimeApi,
+    assistantApi,
   );
 }

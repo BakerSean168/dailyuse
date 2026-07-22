@@ -13,6 +13,7 @@ import { AIProviderConfigHttpAdapter } from './ai-provider-config-http.adapter';
 import { AIGoalHttpAdapter } from './ai-goal-http.adapter';
 import { AIKnowledgeQueryHttpAdapter } from './ai-knowledge-query-http.adapter';
 import { AIKnowledgeNoteHttpAdapter } from './ai-knowledge-note-http.adapter';
+import { AIAssistantHttpAdapter } from './ai-assistant-http.adapter';
 
 export { AICapabilitiesHttpAdapter } from './ai-capabilities-http.adapter';
 export { AIAgentRuntimeHttpAdapter } from './ai-agent-runtime-http.adapter';
@@ -24,6 +25,7 @@ export { AIProviderConfigHttpAdapter } from './ai-provider-config-http.adapter';
 export { AIGoalHttpAdapter } from './ai-goal-http.adapter';
 export { AIKnowledgeQueryHttpAdapter } from './ai-knowledge-query-http.adapter';
 export { AIKnowledgeNoteHttpAdapter } from './ai-knowledge-note-http.adapter';
+export { AIAssistantHttpAdapter } from './ai-assistant-http.adapter';
 
 export interface AIHttpAdapters {
   capabilities: AICapabilitiesHttpAdapter;
@@ -36,6 +38,7 @@ export interface AIHttpAdapters {
   goal: AIGoalHttpAdapter;
   knowledge: AIKnowledgeQueryHttpAdapter;
   knowledgeNote: AIKnowledgeNoteHttpAdapter;
+  assistant: AIAssistantHttpAdapter;
 }
 
 export function createAIHttpAdapters(httpClient: IResultHttpClient): AIHttpAdapters {
@@ -50,5 +53,6 @@ export function createAIHttpAdapters(httpClient: IResultHttpClient): AIHttpAdapt
     goal: new AIGoalHttpAdapter(httpClient),
     knowledge: new AIKnowledgeQueryHttpAdapter(httpClient),
     knowledgeNote: new AIKnowledgeNoteHttpAdapter(httpClient),
+    assistant: new AIAssistantHttpAdapter(httpClient),
   };
 }

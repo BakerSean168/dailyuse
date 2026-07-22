@@ -20,6 +20,7 @@ describe('ai client port intentional multi-API facade dual surface', () => {
     expect(apis).toContain('export interface IAIMessageApiClient');
     expect(apis).toContain('export interface AIKnowledgeNoteApiClient');
     expect(apis).toContain('export interface AIAgentRuntimeApiClient');
+    expect(apis).toContain('export interface IAIAssistantApiClient');
   });
 
   it('AIClientPort is multi-API facade, not type alias of one ApiClient', () => {
@@ -32,9 +33,11 @@ describe('ai client port intentional multi-API facade dual surface', () => {
     expect(service).toContain('private readonly messageApi: IAIMessageApiClient');
     expect(service).toContain('private readonly knowledgeNoteApi: AIKnowledgeNoteApiClient');
     expect(service).toContain('private readonly agentRuntimeApi: AIAgentRuntimeApiClient');
+    expect(service).toContain('private readonly assistantApi: IAIAssistantApiClient');
     // thin pass-through style
     expect(service).toContain('return this.capabilitiesApi.getCapabilities()');
     expect(service).toContain('streamMessage');
+    expect(service).toContain('dispatchAssistant');
     expect(service).not.toContain('function goalFromDTO');
   });
 });

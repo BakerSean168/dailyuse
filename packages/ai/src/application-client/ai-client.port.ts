@@ -32,6 +32,8 @@ import type {
   AgentResumePayload,
   AgentRunResult,
   AgentStartRunClientRequest,
+  AssistantClientCommand,
+  AssistantEvent,
 } from '@dailyuse/contracts/ai';
 import type { Result } from '@dailyuse/contracts/result';
 
@@ -94,4 +96,14 @@ export interface AIClientPort {
   resumeAgentRun(runId: string, payload: AgentResumePayload): Promise<Result<AgentRunResult>>;
   getAgentRun(runId: string): Promise<Result<AgentRunResult>>;
   getAgentEvents(runId: string): Promise<Result<AgentEvent[]>>;
+
+  /** Residual 347: AssistantFacade client dispatch (no identityId in body). */
+  dispatchAssistant(
+    command: AssistantClientCommand,
+    handlers: {
+      onEvent?: (event: AssistantEvent) => void;
+      onDone?: (result: { eventCount: number }) => void;
+    },
+    signal?: AbortSignal,
+  ): Promise<void>;
 }

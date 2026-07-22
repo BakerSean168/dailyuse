@@ -26,6 +26,7 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(ports).toContain('export interface IModelGatewayPort');
     expect(ports).toContain('export interface IAssistantFacadePort');
     expect(ports).toContain('export type AssistantCommand');
+    expect(ports).toContain('export type AssistantClientCommand');
     expect(ports).toContain('export interface IProposalKernelPort');
     expect(ports).toContain('Stage 0 freezes shapes only');
     expect(ports).toContain('startTurn(input: {');

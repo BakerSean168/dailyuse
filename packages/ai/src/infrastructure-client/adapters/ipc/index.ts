@@ -13,6 +13,7 @@ import { AIProviderConfigIpcAdapter } from './ai-provider-config-ipc.adapter';
 import { AIGoalIpcAdapter } from './ai-goal-ipc.adapter';
 import { AIKnowledgeQueryIpcAdapter } from './ai-knowledge-query-ipc.adapter';
 import { AIKnowledgeNoteIpcAdapter } from './ai-knowledge-note-ipc.adapter';
+import { AIAssistantIpcAdapter } from './ai-assistant-ipc.adapter';
 
 export { AICapabilitiesIpcAdapter } from './ai-capabilities-ipc.adapter';
 export { AIAgentRuntimeIpcAdapter } from './ai-agent-runtime-ipc.adapter';
@@ -24,6 +25,7 @@ export { AIProviderConfigIpcAdapter } from './ai-provider-config-ipc.adapter';
 export { AIGoalIpcAdapter } from './ai-goal-ipc.adapter';
 export { AIKnowledgeQueryIpcAdapter } from './ai-knowledge-query-ipc.adapter';
 export { AIKnowledgeNoteIpcAdapter } from './ai-knowledge-note-ipc.adapter';
+export { AIAssistantIpcAdapter } from './ai-assistant-ipc.adapter';
 
 export interface AIIpcAdapters {
   capabilities: AICapabilitiesIpcAdapter;
@@ -36,6 +38,7 @@ export interface AIIpcAdapters {
   goal: AIGoalIpcAdapter;
   knowledge: AIKnowledgeQueryIpcAdapter;
   knowledgeNote: AIKnowledgeNoteIpcAdapter;
+  assistant: AIAssistantIpcAdapter;
 }
 
 export function createAIIpcAdapters(ipcClient: IResultIpcClient): AIIpcAdapters {
@@ -50,5 +53,6 @@ export function createAIIpcAdapters(ipcClient: IResultIpcClient): AIIpcAdapters 
     goal: new AIGoalIpcAdapter(ipcClient),
     knowledge: new AIKnowledgeQueryIpcAdapter(ipcClient),
     knowledgeNote: new AIKnowledgeNoteIpcAdapter(ipcClient),
+    assistant: new AIAssistantIpcAdapter(ipcClient),
   };
 }
