@@ -426,6 +426,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'Residual 599',
         // Residual 601: knowledge ghost drop + focus exclusive-only.
         'Residual 601',
+        // Residual 603: knowledge classifier + AgentRun history session focus.
+        'Residual 603',
+        'isHostPanelKnowledgeSessionProductOwned',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

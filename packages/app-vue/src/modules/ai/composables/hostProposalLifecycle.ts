@@ -409,6 +409,24 @@ export function isHostPanelGoalSessionProductOwned(
 }
 
 /**
+ * Residual 603: Host panel knowledge-session product settlement ownership.
+ * create_knowledge_note product tool from shared resolveHostPanelOwnedProductRun —
+ * mirrors residual 581 process-local / goal-session classifiers so knowledge
+ * approve/reject/revise settlement cannot drift from ownership productTool.
+ */
+export function isHostPanelKnowledgeSessionProductOwned(
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined,
+): boolean {
+  return owned?.productTool === 'create_knowledge_note';
+}
+
+/**
  * Residual 527: workbench pending count from product-lane tool only
  * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
  * Foreign tools never inflate the Host proposal action count.

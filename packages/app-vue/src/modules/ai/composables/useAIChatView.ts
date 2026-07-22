@@ -375,12 +375,14 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   // Residual 589: goal-session primary-task confirm/cancel only updates goalAgentRun.
   // Keep exclusive task lane dual-mirror fresh so Host workbench does not keep a
   // stale waiting_approval proposal after settle (ActionBar + Host panel paths).
+  // Residual 603: pass note session so knowledge ghost drop (residual 601) applies on watch.
   watch(
     () => goalWorkflow.goalAgentRun.value,
     (run) => {
       const next = nextDualMirroredTaskAgentRun({
         goalAgentRun: run,
         taskAgentRun: taskAgentRun.value,
+        noteAgentRun: noteWorkflow.noteAgentRun.value,
       });
       if (next === taskAgentRun.value) return;
       taskAgentRun.value = next;

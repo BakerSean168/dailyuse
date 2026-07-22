@@ -448,6 +448,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 599'];
     case 'Residual 601':
       return ['Residual 601'];
+    case 'Residual 603':
+      return ['Residual 603'];
+    case 'isHostPanelKnowledgeSessionProductOwned':
+      return ['isHostPanelKnowledgeSessionProductOwned'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

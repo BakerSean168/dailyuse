@@ -1303,6 +1303,45 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('knowledge classifier + AgentRun history session focus (residual 603)', () => {
+    expect(helper).toContain('Residual 603');
+    expect(helper).toContain('isHostPanelKnowledgeSessionProductOwned');
+    const knIdx = helper.indexOf('export function isHostPanelKnowledgeSessionProductOwned');
+    expect(knIdx).toBeGreaterThan(-1);
+    const knSlice = helper.slice(knIdx, knIdx + 700);
+    expect(knSlice).toContain("productTool === 'create_knowledge_note'");
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(chatView).toContain('isHostPanelKnowledgeSessionProductOwned');
+    expect(chatView).toContain('Residual 603');
+    // Approve/reject knowledge settle use classifier.
+    const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 4500);
+    expect(approveSlice).toContain('isHostPanelKnowledgeSessionProductOwned(owned)');
+    const rejectIdx = chatView.indexOf('async function handleHostProposalReject');
+    const rejectSlice = chatView.slice(rejectIdx, rejectIdx + 3500);
+    expect(rejectSlice).toContain('isHostPanelKnowledgeSessionProductOwned(owned)');
+    // AgentRun history prefers session exclusive focus.
+    const selectIdx = chatView.indexOf('async function selectAgentRun');
+    expect(selectIdx).toBeGreaterThan(-1);
+    const selectSlice = chatView.slice(selectIdx, selectIdx + 900);
+    expect(selectSlice).toContain('resolveHostWorkbenchFocusFromSessionRuns');
+    expect(selectSlice).toContain('resolveHostWorkbenchFocusFromAgentRun(result)');
+    const sessionIdx = selectSlice.indexOf('resolveHostWorkbenchFocusFromSessionRuns');
+    const singleIdx = selectSlice.indexOf('resolveHostWorkbenchFocusFromAgentRun(result)');
+    expect(sessionIdx).toBeGreaterThan(-1);
+    expect(singleIdx).toBeGreaterThan(sessionIdx);
+    // Goal watch passes note for residual 601 ghost drop.
+    const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatViewTs).toContain('Residual 603');
+    const watchIdx = chatViewTs.indexOf('// Residual 589: goal-session primary-task');
+    expect(watchIdx).toBeGreaterThan(-1);
+    const watchSlice = chatViewTs.slice(watchIdx, watchIdx + 900);
+    expect(watchSlice).toContain('noteAgentRun: noteWorkflow.noteAgentRun.value');
+    expect(helper).not.toContain('executeApproved');
+    expect(chatView).not.toContain('executeApproved');
+  });
+
+
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
     const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');
@@ -1611,7 +1650,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     ]) {
       const fnIdx = chatView.indexOf(fn);
       expect(fnIdx).toBeGreaterThan(-1);
-      const slice = chatView.slice(fnIdx, fnIdx + 4500);
+      // Residual 603: approve handler grew with knowledge classifier — keep full settlement body.
+      const slice = chatView.slice(fnIdx, fnIdx + 7500);
       expect(slice).toContain('resolveHostPanelOwnedProductRun');
       // Residual 581: settlement uses shared classifiers (not dual productTool re-branch invent).
       expect(slice).toContain('isHostPanelProcessLocalTaskCreateOwned');

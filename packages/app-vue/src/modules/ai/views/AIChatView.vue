@@ -374,6 +374,7 @@ import {
   resolveHostPanelOwnedProductRun,
   isHostPanelProcessLocalTaskCreateOwned,
   isHostPanelGoalSessionProductOwned,
+  isHostPanelKnowledgeSessionProductOwned,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
@@ -915,7 +916,11 @@ async function handleHostProposalApprove(payload: {
       });
       return;
     }
-    if (payload.item.source === 'knowledge') {
+    // Residual 603: knowledge settle via shared ownership classifier (581 symmetry).
+    if (
+      payload.item.source === 'knowledge' &&
+      isHostPanelKnowledgeSessionProductOwned(owned)
+    ) {
       await createKnowledgeNoteFromConversation({
         skipHostLifecycle: true,
         revision,
@@ -1047,7 +1052,11 @@ async function handleHostProposalReject(payload: {
       await cancelGoalAgentRun({ skipHostLifecycle: true, revision: payload.revision });
       return;
     }
-    if (payload.item.source === 'knowledge') {
+    // Residual 603: knowledge cancel via shared ownership classifier (581 symmetry).
+    if (
+      payload.item.source === 'knowledge' &&
+      isHostPanelKnowledgeSessionProductOwned(owned)
+    ) {
       await cancelKnowledgeNoteAgentRun({
         skipHostLifecycle: true,
         revision: payload.revision,
@@ -1309,9 +1318,10 @@ async function selectConversation(item: ConversationSummary) {
 }
 
 /**
- * Residual 381/441: AgentRun history (Conversation sidebar) reopens Host proposal
- * or execution-report workbench when the restored snapshot owns Host rows.
- * Residual 441: also focus the matching proposal/receipt row (task.create process-local reopen).
+ * Residual 381/441/603: AgentRun history (Conversation sidebar) reopens Host workbench.
+ * Residual 441: also focus the matching proposal/receipt row.
+ * Residual 603: prefer session exclusive focus (dual-mirror + ghost rules) after
+ * syncSelectedAgentRun, fall back to single-run focus when session has no Host row.
  */
 async function selectAgentRun(run: AgentRun) {
   const result = await selectAgentRunBase(run);
@@ -1321,7 +1331,12 @@ async function selectAgentRun(run: AgentRun) {
     hasHostExecutionReceipts.value
   ) {
     contextPanelOpen.value = true;
-    const focus = resolveHostWorkbenchFocusFromAgentRun(result);
+    const focus =
+      resolveHostWorkbenchFocusFromSessionRuns({
+        taskAgentRun: taskAgentRun.value,
+        goalAgentRun: goalAgentRun.value,
+        noteAgentRun: noteAgentRun.value,
+      }) ?? resolveHostWorkbenchFocusFromAgentRun(result);
     focusedHostProposalId.value = focus?.proposalId ?? null;
   } else {
     focusedHostProposalId.value = null;

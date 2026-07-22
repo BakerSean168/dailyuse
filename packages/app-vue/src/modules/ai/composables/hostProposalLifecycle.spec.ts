@@ -39,6 +39,7 @@ import {
   resolveHostPanelOwnedProductRun,
   isHostPanelGoalSessionProductOwned,
   isHostPanelProcessLocalTaskCreateOwned,
+  isHostPanelKnowledgeSessionProductOwned,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -3211,9 +3212,46 @@ describe('Host panel settlement ownership classifiers (residual 581)', () => {
     const knowledge = makeOwned('knowledge.generate', 'create_knowledge_note');
     expect(isHostPanelProcessLocalTaskCreateOwned(knowledge)).toBe(false);
     expect(isHostPanelGoalSessionProductOwned(knowledge)).toBe(false);
+    expect(isHostPanelKnowledgeSessionProductOwned(knowledge)).toBe(true);
 
     expect(isHostPanelProcessLocalTaskCreateOwned(null)).toBe(false);
     expect(isHostPanelGoalSessionProductOwned(null)).toBe(false);
+    expect(isHostPanelKnowledgeSessionProductOwned(null)).toBe(false);
+    expect(isHostPanelKnowledgeSessionProductOwned(processLocal)).toBe(false);
+    expect(isHostPanelKnowledgeSessionProductOwned(normalGoal)).toBe(false);
+  });
+});
+
+describe('Host panel knowledge classifier + session focus (residual 603)', () => {
+  it('classifies knowledge-session product ownership only for create_knowledge_note', () => {
+    const knowledge = {
+      productTool: 'create_knowledge_note' as const,
+      run: {
+        run: {
+          runId: 'n-1',
+          threadId: 't',
+          conversationId: 'c',
+          agentType: 'knowledge.generate',
+          status: 'waiting_approval' as const,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        state: {
+          pendingActions: [],
+          approvedActions: [],
+          executedActions: [],
+          artifacts: [],
+          interrupts: [],
+        },
+      } as import('@dailyuse/contracts/ai').AgentRunResult,
+    };
+    expect(isHostPanelKnowledgeSessionProductOwned(knowledge)).toBe(true);
+    expect(
+      isHostPanelKnowledgeSessionProductOwned({
+        productTool: 'create_goal',
+        run: knowledge.run,
+      }),
+    ).toBe(false);
   });
 });
 
