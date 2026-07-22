@@ -1,5 +1,9 @@
 import { ref, watch, type Ref } from 'vue';
-import type { AgentRunResult } from '@dailyuse/contracts/ai';
+import type {
+  AgentRunResult,
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
+} from '@dailyuse/contracts/ai';
 import {
   createEmptyGoalDraft,
   type EditableGoal,
@@ -7,8 +11,6 @@ import {
   type EditableGoalReminder,
   type EditableGoalTaskTemplate,
   type GoalAutomationResult,
-  type GoalClarification,
-  type GoalDraft,
   type GoalWorkflowStage,
   type KnowledgeAnswer,
   type NoteSummary,
@@ -24,8 +26,8 @@ const REMINDER_TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 export interface UseAIWorkflowPersistenceOptions {
   toolMode: Ref<WorkflowMode>;
   goalWorkflowStage: Ref<GoalWorkflowStage>;
-  goalDraft: Ref<GoalDraft | null>;
-  goalClarification: Ref<GoalClarification | null>;
+  goalDraft: Ref<GoalWorkflowDraftResultDTO | null>;
+  goalClarification: Ref<GoalClarificationDTO | null>;
   goalAutomationResult: Ref<GoalAutomationResult | null>;
   goalAgentRun: Ref<AgentRunResult | null>;
   knowledgeQaAgentRun: Ref<AgentRunResult | null>;

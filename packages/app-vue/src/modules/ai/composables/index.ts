@@ -16,8 +16,6 @@ export type {
   EditableGoal,
   EditableKeyResult,
   GoalAutomationResult,
-  GoalClarification,
-  GoalDraft,
   GoalExecutedAction,
   GoalWorkflowStage,
   KnowledgeAnswer,

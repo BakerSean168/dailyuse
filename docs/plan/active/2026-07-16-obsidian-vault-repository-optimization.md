@@ -2545,6 +2545,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
 > 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百五十四轮）：AI composable GoalDraft/GoalClarification dual alias 收口——
+> 删除 `GoalDraft`/`GoalClarification` identity 别名；调用方改用 contracts
+> `GoalWorkflowDraftResultDTO`/`GoalClarificationDTO`（不经 composables barrel 再导出）。
+> 保留 UI 标识 `createEmptyGoalDraft`/`GoalDraftState`/`applyGoalDraft`/`showGoalDraftEditor` 等非 dual。
+> 扩展 `ai-composable-type-duals.surface.spec.ts`。§13.2 未打勾项仍为部分/外部阻塞。
+> 验证：AI composable dual surface + AIGoalWorkflowPanel.spec + residual dual surfaces + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2901,6 +2909,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百四十五轮：tip 上 262 项核心 evidence suite（含 residual 242–244 electron/runtime/dashboard 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百四十九轮：tip 上 270 项核心 evidence suite（含 residual 246–248 transport/task/AI dual 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百五十三轮：tip 上 100 项 focused evidence suite（含 residual 250–252 dual 锁）通过；仍不构成全量 PR 门禁证据。
+  残留二百五十四轮：GoalDraft/GoalClarification dual 收口 + dual surface 锁 + governance-check；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

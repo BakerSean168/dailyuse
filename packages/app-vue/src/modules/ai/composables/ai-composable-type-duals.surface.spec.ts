@@ -3,16 +3,27 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 248/252: AI composable types drop identity dual aliases.
- * Agent run/action types use @dailyuse/contracts/ai names directly.
+ * Residual 248/252/254: AI composable types drop identity dual aliases.
+ * Agent run/action and goal draft/clarification types use @dailyuse/contracts/ai names directly.
  */
 describe('AI composable type dual alias single-track surface', () => {
   const dir = __dirname;
   const types = readFileSync(resolve(dir, 'types.ts'), 'utf8');
   const index = readFileSync(resolve(dir, 'index.ts'), 'utf8');
   const goalWorkflow = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
+  const goalDraftHelpers = readFileSync(resolve(dir, 'goalDraftHelpers.ts'), 'utf8');
+  const goalAutomationHelpers = readFileSync(resolve(dir, 'goalAutomationHelpers.ts'), 'utf8');
+  const workflowPersistence = readFileSync(resolve(dir, 'useAIWorkflowPersistence.ts'), 'utf8');
   const chatView = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
   const chatSession = readFileSync(resolve(dir, 'useAIChatSession.ts'), 'utf8');
+  const goalPanel = readFileSync(
+    resolve(dir, '../components/AIGoalWorkflowPanel.vue'),
+    'utf8',
+  );
+  const actionBar = readFileSync(
+    resolve(dir, '../components/AIWorkflowActionBar.vue'),
+    'utf8',
+  );
 
   it('does not define unused Goal/KnowledgeNote AgentArtifact dual aliases', () => {
     expect(types).not.toContain('export type GoalAgentArtifact');
@@ -33,6 +44,15 @@ describe('AI composable type dual alias single-track surface', () => {
     expect(index).not.toMatch(/\bKnowledgeNoteAgentRunResult\b/);
   });
 
+  it('does not dual-alias GoalDraft/GoalClarification identity types', () => {
+    expect(types).not.toMatch(/export type GoalDraft\s*=/);
+    expect(types).not.toMatch(/export type GoalClarification\s*=/);
+    expect(index).not.toMatch(/\bGoalDraft\b/);
+    expect(index).not.toMatch(/\bGoalClarification\b/);
+    expect(index).not.toMatch(/\bGoalClarificationDTO\b/);
+    expect(index).not.toMatch(/\bGoalWorkflowDraftResultDTO\b/);
+  });
+
   it('call sites import AgentRunResult/AgentAction/AgentRun/SendMessageRes from contracts', () => {
     expect(goalWorkflow).toContain("from '@dailyuse/contracts/ai'");
     expect(goalWorkflow).toMatch(/\bAgentRunResult\b/);
@@ -43,5 +63,31 @@ describe('AI composable type dual alias single-track surface', () => {
     expect(chatView).not.toMatch(/\bAgentRunSummary\b/);
     expect(chatSession).toMatch(/\bSendMessageRes\b/);
     expect(chatSession).not.toMatch(/\bStreamDoneResult\b/);
+  });
+
+  it('call sites import GoalWorkflowDraftResultDTO/GoalClarificationDTO from contracts', () => {
+    for (const source of [
+      goalWorkflow,
+      goalDraftHelpers,
+      goalAutomationHelpers,
+      workflowPersistence,
+      goalPanel,
+      actionBar,
+    ]) {
+      expect(source).toContain("from '@dailyuse/contracts/ai'");
+      expect(source).toMatch(/\bGoalClarificationDTO\b/);
+    }
+    for (const source of [
+      goalWorkflow,
+      goalDraftHelpers,
+      goalAutomationHelpers,
+      workflowPersistence,
+      goalPanel,
+    ]) {
+      expect(source).toMatch(/\bGoalWorkflowDraftResultDTO\b/);
+    }
+    // UI helper identifiers that end with GoalDraft are not type duals.
+    expect(goalDraftHelpers).toMatch(/\bcreateEmptyGoalDraft\b|\bGoalDraftState\b|\bapplyGoalDraft\b/);
+    expect(types).toMatch(/\bcreateEmptyGoalDraft\b/);
   });
 });

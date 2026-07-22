@@ -917,7 +917,14 @@
 </template>
 
 <script setup lang="ts">
-import type { AgentAction, AgentArtifact, AgentExecutedAction, AgentRunResult } from '@dailyuse/contracts/ai';
+import type {
+  AgentAction,
+  AgentArtifact,
+  AgentExecutedAction,
+  AgentRunResult,
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
+} from '@dailyuse/contracts/ai';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
@@ -937,8 +944,6 @@ import type {
   EditableGoalReminder,
   EditableGoalTaskTemplate,
   GoalAutomationResult,
-  GoalClarification,
-  GoalDraft,
   GoalExecutedAction,
   KnowledgeAnswer,
   NoteSummary,
@@ -947,8 +952,8 @@ import type {
 
 const props = defineProps<{
   toolMode: WorkflowMode;
-  goalClarification: GoalClarification | null;
-  goalDraft: GoalDraft | null;
+  goalClarification: GoalClarificationDTO | null;
+  goalDraft: GoalWorkflowDraftResultDTO | null;
   goalAutomationResult: GoalAutomationResult | null;
   goalAgentRun: AgentRunResult | null;
   goalAgentPendingActions: AgentAction[];

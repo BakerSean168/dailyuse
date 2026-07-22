@@ -10,6 +10,8 @@ import type {
   AgentRunResult,
   AgentStartRunClientRequest,
   GeneratedGoalDraft,
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
   KeyResultPreview,
 } from '@dailyuse/contracts/ai';
 import {
@@ -21,8 +23,6 @@ import {
   type EditableGoalReminder,
   type EditableGoalTaskTemplate,
   type GoalAutomationResult,
-  type GoalClarification,
-  type GoalDraft,
   type GoalWorkflowStage,
   type UseAIGoalWorkflowOptions,
 } from './types';
@@ -65,8 +65,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   const router = useRouter();
   const goalDraftLoading = ref(false);
   const goalWorkflowStage = ref<GoalWorkflowStage>('collect');
-  const goalDraft = ref<GoalDraft | null>(null);
-  const goalClarification = ref<GoalClarification | null>(null);
+  const goalDraft = ref<GoalWorkflowDraftResultDTO | null>(null);
+  const goalClarification = ref<GoalClarificationDTO | null>(null);
   const goalAutomationResult = ref<GoalAutomationResult | null>(null);
   const clarificationAnswers = ref<string[]>([]);
   const showGoalDraftEditor = ref(false);
@@ -216,7 +216,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     goalWorkflowStage.value = 'plan';
   }
 
-  function getGoalAgentClarification(result: AgentRunResult): GoalClarification | null {
+  function getGoalAgentClarification(result: AgentRunResult): GoalClarificationDTO | null {
     const interrupt = result.interrupts.find(
       (item) => isRecord(item) && item.type === 'clarification.required',
     );
@@ -937,8 +937,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     canResumeGoalAgentClarification,
     canContinueGoalAgentExecution,
     canRetryGoalAgentExecution,
-    applyGoalDraft: (nextDraft: GoalDraft) => applyGoalDraftHelper(draftState, nextDraft),
-    applyGoalClarification: (next: GoalClarification) => applyGoalClarificationHelper(draftState, next),
+    applyGoalDraft: (nextDraft: GoalWorkflowDraftResultDTO) => applyGoalDraftHelper(draftState, nextDraft),
+    applyGoalClarification: (next: GoalClarificationDTO) => applyGoalClarificationHelper(draftState, next),
     clearGoalAutomationResult: () => clearHelper(draftState),
     resetGoalArtifacts: () => {
       resetHelper(draftState);

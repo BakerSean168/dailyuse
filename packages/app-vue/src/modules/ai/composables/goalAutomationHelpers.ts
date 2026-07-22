@@ -8,6 +8,8 @@ import type { Ref } from 'vue';
 import type {
   GenerateGoalsReq,
   GenerateGoalsRes,
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
 } from '@dailyuse/contracts/ai';
 import type {
   AIChatService,
@@ -15,7 +17,6 @@ import type {
   EditableGoal,
   EditableKeyResult,
   GoalAutomationResult,
-  GoalDraft,
   GoalWorkflowStage,
 } from './types';
 import { unwrap } from '@dailyuse/contracts/result';
@@ -36,7 +37,7 @@ export interface GenerateDraftContext {
   buildConversationTranscript: () => string;
   conversationTitle: Ref<string>;
   hasWorkflowUserMessages: Ref<boolean>;
-  goalClarification: Ref<import('./types').GoalClarification | null>;
+  goalClarification: Ref<GoalClarificationDTO | null>;
   canSubmitGoalClarification: Ref<boolean>;
   clarificationAnswers: Ref<string[]>;
 }
@@ -66,7 +67,7 @@ export async function generateGoalDraft(
 export function buildDraftContext(
   editableGoal: EditableGoal,
   editableKeyResults: EditableKeyResult[],
-  goalDraft: GoalDraft | null,
+  goalDraft: GoalWorkflowDraftResultDTO | null,
   conversationTitle: string,
 ): GenerateGoalsReq['draftContext'] {
   return {
@@ -157,7 +158,7 @@ export async function executeGoalAutomation(
 /** Context for automation handler operations. */
 export interface AutomationHandlerContext {
   selectedModel: Ref<ChatModelOption | null>;
-  goalDraft: Ref<GoalDraft | null>;
+  goalDraft: Ref<GoalWorkflowDraftResultDTO | null>;
   goalAutomationResult: Ref<GoalAutomationResult | null>;
   goalWorkflowStage: { value: GoalWorkflowStage };
   automationLoading: Ref<boolean>;

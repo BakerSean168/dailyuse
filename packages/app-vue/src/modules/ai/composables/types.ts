@@ -101,8 +101,6 @@ export type AIChatService = Pick<
   | 'createKnowledgeNote'
 >;
 
-export type GoalDraft = GoalWorkflowDraftResultDTO;
-export type GoalClarification = GoalClarificationDTO;
 export type GoalAutomationResult = Extract<GenerateGoalsRes, { state: 'confirm' | 'result' }>;
 export type GoalExecutedAction = Extract<GenerateGoalsRes, { state: 'result' }>['executedActions'][number];
 export type AIWorkspaceRecentGoal = {
@@ -194,8 +192,8 @@ export type PersistedWorkflowEntry = {
   /** Canonical WorkflowMode; unknown/legacy values are normalized on read. */
   mode: string;
   goalWorkflowStage?: GoalWorkflowStage;
-  goalDraft: GoalDraft | null;
-  goalClarification: GoalClarification | null;
+  goalDraft: GoalWorkflowDraftResultDTO | null;
+  goalClarification: GoalClarificationDTO | null;
   goalAutomationResult: GoalAutomationResult | null;
   goalAgentRun?: AgentRunResult | null;
   knowledgeQaAgentRun?: AgentRunResult | null;

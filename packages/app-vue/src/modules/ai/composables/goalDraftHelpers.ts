@@ -11,6 +11,10 @@ import {
   type CreateGoalReq,
 } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type {
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
+} from '@dailyuse/contracts/ai';
 import {
   createEmptyGoalDraft,
   type EditableGoal,
@@ -18,16 +22,14 @@ import {
   type EditableGoalReminder,
   type EditableGoalTaskTemplate,
   type GoalAutomationResult,
-  type GoalClarification,
-  type GoalDraft,
   type GoalWorkflowStage,
 } from './types';
 
 /** Mutable state for goal workflow operations. */
 export interface GoalDraftState {
   goalWorkflowStage: GoalWorkflowStage;
-  goalDraft: GoalDraft | null;
-  goalClarification: GoalClarification | null;
+  goalDraft: GoalWorkflowDraftResultDTO | null;
+  goalClarification: GoalClarificationDTO | null;
   goalAutomationResult: GoalAutomationResult | null;
   clarificationAnswers: string[];
   showGoalDraftEditor: boolean;
@@ -40,8 +42,8 @@ export interface GoalDraftState {
 /** Vue refs that back the GoalDraftState proxy. */
 export interface GoalDraftRefs {
   goalWorkflowStage: import('vue').Ref<GoalWorkflowStage>;
-  goalDraft: import('vue').Ref<GoalDraft | null>;
-  goalClarification: import('vue').Ref<GoalClarification | null>;
+  goalDraft: import('vue').Ref<GoalWorkflowDraftResultDTO | null>;
+  goalClarification: import('vue').Ref<GoalClarificationDTO | null>;
   goalAutomationResult: import('vue').Ref<GoalAutomationResult | null>;
   clarificationAnswers: import('vue').Ref<string[]>;
   showGoalDraftEditor: import('vue').Ref<boolean>;
@@ -78,7 +80,7 @@ export function createDraftStateProxy(refs: GoalDraftRefs): GoalDraftState {
 }
 
 /** Applies a goal draft to the workflow state. */
-export function applyGoalDraft(state: GoalDraftState, nextDraft: GoalDraft): void {
+export function applyGoalDraft(state: GoalDraftState, nextDraft: GoalWorkflowDraftResultDTO): void {
   state.goalWorkflowStage = 'draft';
   state.goalClarification = null;
   state.goalAutomationResult = null;
@@ -119,7 +121,7 @@ export function applyGoalDraft(state: GoalDraftState, nextDraft: GoalDraft): voi
 /** Applies a goal clarification to the workflow state. */
 export function applyGoalClarification(
   state: GoalDraftState,
-  nextClarification: GoalClarification,
+  nextClarification: GoalClarificationDTO,
 ): void {
   state.goalWorkflowStage = 'clarification';
   state.goalDraft = null;

@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { AgentAction, AgentRunResult } from '@dailyuse/contracts/ai';
+import type {
+  AgentAction,
+  AgentRunResult,
+  GoalClarificationDTO,
+} from '@dailyuse/contracts/ai';
 /**
  * AIWorkflowActionBar — 工作流生命周期操作条（V2 §6.0）
  *
@@ -14,7 +18,6 @@ import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { AlertTriangle } from '@lucide/vue';
 import type {
-  GoalClarification,
   KnowledgeAnswer,
   NoteSummary,
   WorkflowMode,
@@ -25,7 +28,7 @@ defineProps<{
   workflowStatusText: string;
 
   // ── goal-create 状态 ──
-  goalClarification: GoalClarification | null;
+  goalClarification: GoalClarificationDTO | null;
   automatedGoalId: string | null;
   goalAgentLoading: boolean;
   goalAgentResuming: boolean;
