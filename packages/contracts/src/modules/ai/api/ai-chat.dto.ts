@@ -61,8 +61,6 @@ export type StreamMessageChunk = {
   content: string;
 };
 
-export type StreamMessageDonePayload = SendMessageRes;
-
 export const ListMessagesSchema = z.object({
   conversationId: brandedId<AiConversationId>(),
   page: positiveIntFromQuery.optional().default(1),
