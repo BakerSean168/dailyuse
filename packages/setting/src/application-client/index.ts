@@ -8,10 +8,10 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
-import type { ISettingApiClient } from '../infrastructure-client/adapters/types';
+import type { ISettingApiClient } from './ports/setting-api-client.port';
 
 // Re-export the port so consumers can import from the application layer.
-export type { ISettingApiClient } from '../infrastructure-client/adapters/types';
+export type { ISettingApiClient } from './ports/setting-api-client.port';
 
 // ─── Client Application Port ────────────────────────────────────────────────
 

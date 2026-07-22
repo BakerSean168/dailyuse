@@ -12,10 +12,10 @@ import type {
   ImportUserDataReq,
   ImportUserDataRes,
 } from '@dailyuse/contracts/data-portability';
-import type { IDataPortabilityApiClient } from '../infrastructure-client/adapters/types';
+import type { IDataPortabilityApiClient } from './ports/data-portability-api-client.port';
 import { createDataPortabilityHttpAdapter } from '../infrastructure-client';
 
-export type { IDataPortabilityApiClient } from '../infrastructure-client/adapters/types';
+export type { IDataPortabilityApiClient } from './ports/data-portability-api-client.port';
 
 export interface DataPortabilityClientPort {
   exportUserData(data: ExportUserDataReq): Promise<Result<ExportUserDataRes>>;

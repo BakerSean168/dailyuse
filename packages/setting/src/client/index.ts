@@ -21,10 +21,8 @@ import {
   createSettingIpcAdapters,
   type SettingIpcAdapters,
 } from '../infrastructure-client/adapters/ipc';
-import type {
-  IResultIpcClient,
-  ISettingApiClient,
-} from '../infrastructure-client/adapters/types';
+import type { IResultIpcClient } from '@dailyuse/ipc-client';
+import type { ISettingApiClient } from '../application-client/ports/setting-api-client.port';
 
 export type {
   IResultHttpClient,
