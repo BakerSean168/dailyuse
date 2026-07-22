@@ -408,6 +408,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 585: Host workbench focus/proposal exclusive primary-task kind routing.
         'Residual 585',
         'isPrimaryTaskHostAgentRun(result)',
+        // Residual 587: goal session Host lifecycle kind task.create for primary-task.
+        'Residual 587',
+        'kind: hostProposalKind',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

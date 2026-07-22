@@ -50,7 +50,10 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('resumeAgentRun');
 
     expect(goal).toContain('dispatchHostProposalDecision');
-    expect(goal).toContain("kind: 'goal.create'");
+    // Residual 587: Host lifecycle kind is hostProposalKind (task.create for primary-task).
+    expect(goal).toContain('kind: hostProposalKind');
+    expect(goal).toContain("? 'task.create'");
+    expect(goal).toContain(": 'goal.create'");
     expect(goal).toContain("decision: userDecision === 'confirm' ? 'approve' : 'reject'");
     expect(goal).toContain('resumeAgentRun');
     expect(goal).toContain('applyHostGoalPatchToAgentActions');
@@ -1026,7 +1029,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(goal).toContain("action.tool === 'create_goal'");
     const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
     expect(resumeIdx).toBeGreaterThan(-1);
-    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 3200);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 4800);
     expect(resumeSlice).toContain('Residual 557');
     expect(resumeSlice).toContain('productDraftCount !== 1');
     expect(resumeSlice).toContain("action.tool === 'create_goal'");
@@ -1047,7 +1050,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(goal).toContain('isPrimaryTaskHostAgentRun');
     const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
     expect(resumeIdx).toBeGreaterThan(-1);
-    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 3600);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 4800);
     expect(resumeSlice).toContain('Residual 575');
     expect(resumeSlice).toContain('isPrimaryTaskHostAgentRun');
     expect(resumeSlice).toContain("action.tool === 'create_task_template'");
@@ -1128,6 +1131,33 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(pendingSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
     expect(receiptSlice).toContain('resolveLiveHostWorkbenchAgentRuns');
     expect(helper).not.toContain('executeApproved');
+  });
+
+
+  it('goal session Host lifecycle kind is task.create for primary-task (residual 587)', () => {
+    const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
+    expect(goal).toContain('Residual 587');
+    const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
+    expect(resumeIdx).toBeGreaterThan(-1);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 4800);
+    expect(resumeSlice).toContain('Residual 587');
+    expect(resumeSlice).toContain('hostProposalKind');
+    expect(resumeSlice).toContain('isPrimaryTaskHostAgentRun(goalAgentRun.value)');
+    expect(resumeSlice).toContain("? 'task.create'");
+    expect(resumeSlice).toContain(": 'goal.create'");
+    // dispatchHostProposalDecision must receive hostProposalKind, not a bare goal.create literal alone.
+    const dispatchIdx = resumeSlice.indexOf('dispatchHostProposalDecision');
+    expect(dispatchIdx).toBeGreaterThan(-1);
+    const dispatchCall = resumeSlice.slice(dispatchIdx, dispatchIdx + 450);
+    expect(dispatchCall).toContain('kind: hostProposalKind');
+    expect(dispatchCall).not.toMatch(/kind:\s*'goal\.create'/);
+    // Host panel primary-task path still uses payload.item.kind (task.create after exclusive).
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 3500);
+    expect(approveSlice).toContain('kind: payload.item.kind');
+    expect(helper).not.toContain('executeApproved');
+    expect(goal).not.toContain('executeApproved');
   });
 
 

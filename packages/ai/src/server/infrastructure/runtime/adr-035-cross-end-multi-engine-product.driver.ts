@@ -428,6 +428,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 585'];
     case 'isPrimaryTaskHostAgentRun(result)':
       return ['isPrimaryTaskHostAgentRun(result)'];
+    case 'Residual 587':
+      return ['Residual 587'];
+    case 'kind: hostProposalKind':
+      return ['kind: hostProposalKind'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

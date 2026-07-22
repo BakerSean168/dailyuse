@@ -8,6 +8,8 @@
  * (task residual 489/477 + knowledge cancel symmetry).
  * Residual 583: goal session primary-task confirm forwards Host-revised goalId
  * into applyHostTaskPatch (title/description residual 365 symmetry; no drop).
+ * Residual 587: goal session Host lifecycle kind is task.create for primary-task-shaped
+ * (residual 585 exclusive workbench rows/focus) — not always goal.create.
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -846,10 +848,16 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         !hostOptions?.skipHostLifecycle &&
         (userDecision === 'confirm' || userDecision === 'cancel')
       ) {
+        // Residual 587: primary-task-shaped exclusive Host kind is task.create
+        // (residual 585 workbench proposalId/focus). ActionBar confirm/cancel must
+        // share that bridge id with Host panel — not invent goal.create.
+        const hostProposalKind = isPrimaryTaskHostAgentRun(goalAgentRun.value)
+          ? 'task.create'
+          : 'goal.create';
         await dispatchHostProposalDecision(options.service, {
           decision: userDecision === 'confirm' ? 'approve' : 'reject',
           runId: goalAgentRun.value.run.runId,
-          kind: 'goal.create',
+          kind: hostProposalKind,
           reason: userDecision === 'cancel' ? 'user_cancel' : undefined,
           revision: hostOptions?.revision,
         });
