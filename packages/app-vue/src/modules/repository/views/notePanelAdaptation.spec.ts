@@ -72,4 +72,28 @@ describe('Note single-page architecture', () => {
     expect(localVaultSource).toContain('route.query.note');
     expect(localVaultSource).toContain('applyNoteQuerySelection');
   });
+
+  it('keeps projection create dialog confirmed-only; editDraft is draft-stage back (residual 201)', () => {
+    expect(projectionSource).toContain('function editDraft()');
+    expect(projectionSource).toContain("stage.value = 'draft'");
+    expect(projectionSource).toContain("stage.value = 'review'");
+    expect(projectionSource).toContain('function confirmCreate()');
+    expect(projectionSource).toContain('createConfirmedKnowledgeNote');
+    expect(projectionSource).toContain('confirmImmutable');
+
+    const editDraftBody = projectionSource.match(
+      /function editDraft\(\):\s*void\s*\{([\s\S]*?)\n\}/,
+    )?.[1];
+    expect(editDraftBody).toBeTruthy();
+    expect(editDraftBody).toContain("stage.value = 'draft'");
+    expect(editDraftBody).not.toMatch(/selectedNoteId|projectionId|update|save|write/);
+
+    expect(projectionSource).not.toMatch(
+      /updateKnowledgeNote|saveKnowledgeNote|writeConfirmedLocalVaultNote|editExistingNote/,
+    );
+    expect(localVaultSource).toContain('openInObsidian');
+    expect(localVaultSource).not.toMatch(
+      /updateLocalVaultNote|saveLocalVaultNote|editExistingNote|createConfirmedKnowledgeNote/,
+    );
+  });
 });

@@ -2150,6 +2150,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > NotificationSettings/composable/surface + preference ownership/routes focused specs 通过；
 > 三入口/Agent/全量门禁仍为部分/外部阻塞。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百零一轮）：confirmed-create-only / 已有笔记编辑关闭边界 surface 锁定——
+> 应用/客户端 port 仅 `createConfirmedKnowledgeNote` + Desktop `writeConfirmedLocalVaultNote`；
+> HTTP knowledge-notes 仅 GET 列表/详情 + POST 确认创建；Local Vault `wx` 独占创建；
+> Vue 无 `/note/:id`/`note-edit`；projection `editDraft` 仅回 draft 阶段；AI `CreateKnowledgeNoteSchema`
+> 强制 confirmation；`packages/editor` 仍删除、portable `editor_*` 备份边界保留。§13.2 项 10 证据增强
+> （checkbox 已证明，不改）。验证：confirmed-create-only surface + notePanelAdaptation + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2234,7 +2242,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留二百轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留二百零一轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
 > webhook delivery（187）、auth session token（188）、notification template catalog（189）、
@@ -2277,6 +2285,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [x] Web 新建笔记产生唯一 Git commit，重复请求不重复创建。 **（已证明）**
   残留一百零九轮：write-request status 转移 identity-scoped（retry/markCommitted/markFailed）。
 - [x] 已有笔记编辑在首期仍关闭。 **（已证明）**
+  残留二百零一轮：`confirmed-create-only-note-boundary.surface.spec.ts` +
+  `notePanelAdaptation.spec.ts` 锁定 confirmed-create-only 写面、无现有笔记 update API、
+  projection `editDraft` 仅 draft 回退、Local Vault 独占创建与 Obsidian 外链编辑。
 - [x] AI 无固定默认目录设置，完整写入提案必须获得用户确认。 **（已证明）**
 - [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**
   证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
@@ -2405,6 +2416,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百九十八轮：§13.2 core evidence suite re-run (118 tests, preference transport/client, no checkbox changes)。
   残留一百九十九轮：Settings UI wires notification module channel preferences (no identity dual-track)。
   残留二百轮：preference UI focused evidence re-run (no checkbox changes)。
+  残留二百零一轮：confirmed-create-only / existing-note-edit-closed surface lock。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
