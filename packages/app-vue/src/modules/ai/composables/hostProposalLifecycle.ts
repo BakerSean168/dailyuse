@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -56,6 +56,8 @@ export type HostProposalPanelItem = {
   targetPath?: string;
   /** Residual 361: knowledge.write draft markdown body. */
   contentMarkdown?: string;
+  /** Residual 367: goal.create draft description. */
+  description?: string;
 };
 
 function collectEvents(
@@ -265,6 +267,7 @@ export function isHostProposalDraftDirty(input: {
   title?: string;
   targetPath?: string;
   contentMarkdown?: string;
+  description?: string | null;
 }): boolean {
   if (input.item.kind === 'knowledge.write') {
     const nextPath = (input.targetPath ?? '').trim().split('\\').join('/');
@@ -272,6 +275,12 @@ export function isHostProposalDraftDirty(input: {
     const nextBody = input.contentMarkdown ?? '';
     const baseBody = input.item.contentMarkdown ?? '';
     return nextPath !== basePath || nextBody !== baseBody;
+  }
+  if (input.item.kind === 'goal.create') {
+    const titleDirty = (input.title ?? '').trim() !== input.item.title.trim();
+    const nextDescription = input.description ?? '';
+    const baseDescription = input.item.description ?? '';
+    return titleDirty || nextDescription !== baseDescription;
   }
   return (input.title ?? '').trim() !== input.item.title.trim();
 }
@@ -289,6 +298,19 @@ function goalDraftTitle(run: AgentRunResult): string {
   const createGoal = (run.state.pendingActions[0] ?? run.state.approvedActions[0])?.payload;
   const title = createGoal && typeof createGoal['title'] === 'string' ? createGoal['title'] : '';
   return title.trim();
+}
+
+/** Residual 367: extract goal draft description for Host proposal panel. */
+function goalDraftDescription(run: AgentRunResult): string {
+  const goalArtifact = run.state.artifacts.find(
+    (artifact) => artifact.kind === 'goal_draft' || artifact.kind === 'goal',
+  );
+  const fromData = goalArtifact?.data?.['description'];
+  if (typeof fromData === 'string') return fromData;
+  const createGoal = (run.state.pendingActions[0] ?? run.state.approvedActions[0])?.payload;
+  const description =
+    createGoal && typeof createGoal['description'] === 'string' ? createGoal['description'] : '';
+  return description;
 }
 
 /**
@@ -405,6 +427,7 @@ export function buildPendingHostProposalItems(input: {
       source: 'goal',
       runStatus: 'waiting_approval',
       title,
+      description: goalDraftDescription(goalRun),
       summary: firstPendingRationale(goalRun),
       pendingActionCount: pendingActionCount(goalRun),
     });

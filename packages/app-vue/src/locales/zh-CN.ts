@@ -330,6 +330,7 @@ export default {
         revision: '版本 {revision}',
         pendingActions: '{count} 个待处理动作',
         editTitle: '提案标题',
+        editDescription: '目标描述',
         editTargetPath: '库相对路径',
         editContent: '笔记 Markdown',
         revise: '保存修订',

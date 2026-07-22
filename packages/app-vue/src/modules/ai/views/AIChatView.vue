@@ -585,6 +585,7 @@ async function handleHostProposalRevise(payload: {
     hostProposalPanelRef.value?.applyRevised(payload.item.proposalId, {
       revision: result.revision,
       title: payload.patch.title,
+      description: payload.patch.description,
       targetPath: payload.patch.targetPath,
       contentMarkdown: payload.patch.contentMarkdown,
     });
@@ -619,6 +620,7 @@ async function handleHostProposalApprove(payload: {
       hostProposalPanelRef.value?.applyRevised(payload.item.proposalId, {
         revision,
         title: payload.patch.title,
+        description: payload.patch.description,
         targetPath: payload.patch.targetPath,
         contentMarkdown: payload.patch.contentMarkdown,
       });
@@ -637,7 +639,7 @@ async function handleHostProposalApprove(payload: {
         revision,
         // Residual 365: pass Host-revised title/description into resumeAgentRun executor payload.
         title: payload.patch.title ?? payload.item.title,
-        description: payload.patch.description,
+        description: payload.patch.description ?? payload.item.description,
       });
       return;
     }

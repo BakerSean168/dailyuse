@@ -3,7 +3,7 @@
  * AIHostProposalPanel — residual 357/359/361 Host Proposal workbench strip.
  *
  * Lists waiting_approval bridge proposals with edit/revise + approve/reject.
- * Goal edits title; knowledge edits targetPath + contentMarkdown (residual 361).
+ * Goal edits title + description (residual 367); knowledge edits targetPath + contentMarkdown (residual 361).
  * Handlers must route through AssistantFacade lifecycle first; this panel
  * never runs Host mutation execution or agent resume itself.
  */
@@ -39,10 +39,12 @@ const { t } = useI18n();
 
 type DraftState = {
   title: string;
+  description: string;
   targetPath: string;
   contentMarkdown: string;
   revision: number;
   baselineTitle: string;
+  baselineDescription: string;
   baselineTargetPath: string;
   baselineContentMarkdown: string;
 };
@@ -53,10 +55,12 @@ const drafts = reactive<Record<string, DraftState>>({});
 function emptyDraft(item: HostProposalPanelItem): DraftState {
   return {
     title: item.title,
+    description: item.description ?? '',
     targetPath: item.targetPath ?? '',
     contentMarkdown: item.contentMarkdown ?? '',
     revision: item.revision,
     baselineTitle: item.title,
+    baselineDescription: item.description ?? '',
     baselineTargetPath: item.targetPath ?? '',
     baselineContentMarkdown: item.contentMarkdown ?? '',
   };
@@ -77,6 +81,10 @@ watch(
       if (existing.baselineTitle === existing.title) {
         existing.title = item.title;
         existing.baselineTitle = item.title;
+      }
+      if (existing.baselineDescription === existing.description) {
+        existing.description = item.description ?? '';
+        existing.baselineDescription = item.description ?? '';
       }
       if (existing.baselineTargetPath === existing.targetPath) {
         existing.targetPath = item.targetPath ?? '';
@@ -112,6 +120,7 @@ function isDirty(item: HostProposalPanelItem): boolean {
   return isHostProposalDraftDirty({
     item,
     title: draft.title,
+    description: draft.description,
     targetPath: draft.targetPath,
     contentMarkdown: draft.contentMarkdown,
   });
@@ -122,6 +131,7 @@ function buildPayload(item: HostProposalPanelItem): HostProposalPanelActionPaylo
   const patch = buildHostProposalPatchFromDraft({
     kind: item.kind,
     title: draft.title,
+    description: draft.description,
     targetPath: draft.targetPath,
     contentMarkdown: draft.contentMarkdown,
   });
@@ -155,6 +165,7 @@ function applyRevised(
   next: {
     revision: number;
     title?: string;
+    description?: string | null;
     targetPath?: string;
     contentMarkdown?: string;
   },
@@ -167,6 +178,15 @@ function applyRevised(
     draft.baselineTitle = draft.title;
   } else {
     draft.baselineTitle = draft.title.trim();
+  }
+  if (typeof next.description === 'string') {
+    draft.description = next.description;
+    draft.baselineDescription = draft.description;
+  } else if (next.description === null) {
+    draft.description = '';
+    draft.baselineDescription = '';
+  } else {
+    draft.baselineDescription = draft.description;
   }
   if (typeof next.targetPath === 'string') {
     draft.targetPath = next.targetPath.trim();
@@ -209,21 +229,30 @@ defineExpose({ applyRevised });
       >
         <div class="space-y-2">
           <div class="min-w-0 space-y-2">
-            <label
-              v-if="item.kind !== 'knowledge.write'"
-              class="block text-xs font-medium text-foreground"
-            >
-              {{ t('aiAssistant.chatPage.hostProposals.editTitle') }}
-              <input
-                v-model="draftFor(item).title"
-                type="text"
-                class="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground"
-                :disabled="busy"
-                :data-testid="`ai-host-proposal-title-${item.source}`"
-              />
-            </label>
+            <template v-if="item.kind === 'goal.create'">
+              <label class="block text-xs font-medium text-foreground">
+                {{ t('aiAssistant.chatPage.hostProposals.editTitle') }}
+                <input
+                  v-model="draftFor(item).title"
+                  type="text"
+                  class="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground"
+                  :disabled="busy"
+                  :data-testid="`ai-host-proposal-title-${item.source}`"
+                />
+              </label>
+              <label class="block text-xs font-medium text-foreground">
+                {{ t('aiAssistant.chatPage.hostProposals.editDescription') }}
+                <textarea
+                  v-model="draftFor(item).description"
+                  rows="3"
+                  class="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground"
+                  :disabled="busy"
+                  :data-testid="`ai-host-proposal-description-${item.source}`"
+                />
+              </label>
+            </template>
 
-            <template v-else>
+            <template v-else-if="item.kind === 'knowledge.write'">
               <p class="truncate text-sm font-medium text-foreground">
                 {{ item.title }}
               </p>
@@ -248,6 +277,20 @@ defineExpose({ applyRevised });
                 />
               </label>
             </template>
+
+            <label
+              v-else
+              class="block text-xs font-medium text-foreground"
+            >
+              {{ t('aiAssistant.chatPage.hostProposals.editTitle') }}
+              <input
+                v-model="draftFor(item).title"
+                type="text"
+                class="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground"
+                :disabled="busy"
+                :data-testid="`ai-host-proposal-title-${item.source}`"
+              />
+            </label>
 
             <p class="text-xs text-muted-foreground">
               {{ kindLabel(item.kind) }}

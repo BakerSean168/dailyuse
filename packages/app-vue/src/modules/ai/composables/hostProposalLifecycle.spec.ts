@@ -33,7 +33,7 @@ function goalWaitingRun(status: AgentRunResult['run']['status'] = 'waiting_appro
           artifactId: 'a1',
           kind: 'goal_draft',
           title: 'Ship Host Panel',
-          data: {},
+          data: { description: 'Initial goal description' },
           updatedAt: 2,
         },
       ],
@@ -42,7 +42,7 @@ function goalWaitingRun(status: AgentRunResult['run']['status'] = 'waiting_appro
       pendingActions: [
         {
           tool: 'create_goal',
-          payload: { title: 'Ship Host Panel' },
+          payload: { title: 'Ship Host Panel', description: 'Initial goal description' },
           rationale: 'Create the approved goal draft after user confirmation.',
           index: 0,
           dependsOn: [],
@@ -184,6 +184,7 @@ describe('buildPendingHostProposalItems (residual 357)', () => {
       proposalId: 'agent-run:run-1:goal.create',
       revision: 1,
       title: 'Ship Host Panel',
+      description: 'Initial goal description',
       pendingActionCount: 1,
     });
     expect(items[1]).toMatchObject({
@@ -223,6 +224,44 @@ describe('buildPendingHostProposalItems (residual 357)', () => {
         item,
         targetPath: 'notes/edited',
         contentMarkdown: item.contentMarkdown,
+      }),
+    ).toBe(true);
+  });
+
+  it('builds goal patch and detects title/description dirty state (residual 367)', () => {
+    const items = buildPendingHostProposalItems({
+      goalAgentRun: goalWaitingRun('waiting_approval'),
+    });
+    const item = items[0]!;
+    expect(
+      buildHostProposalPatchFromDraft({
+        kind: 'goal.create',
+        title: ' Revised goal ',
+        description: 'Edited description',
+      }),
+    ).toEqual({
+      title: 'Revised goal',
+      description: 'Edited description',
+    });
+    expect(
+      isHostProposalDraftDirty({
+        item,
+        title: item.title,
+        description: item.description,
+      }),
+    ).toBe(false);
+    expect(
+      isHostProposalDraftDirty({
+        item,
+        title: item.title,
+        description: 'Edited description',
+      }),
+    ).toBe(true);
+    expect(
+      isHostProposalDraftDirty({
+        item,
+        title: 'Different title',
+        description: item.description,
       }),
     ).toBe(true);
   });
