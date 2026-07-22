@@ -61,10 +61,18 @@ export class PowerSyncScheduleExecutionRepository implements IScheduleExecutionR
     return row ? PowerSyncScheduleExecutionMapper.toDomain(row) : null;
   }
 
-  async findByTaskId(taskId: string): Promise<ScheduleExecution[]> {
+  async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleExecution | null> {
+    const row = await this.db.getOptional<PowerSyncScheduleExecutionRow>(
+      'SELECT * FROM schedule_executions WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
+    );
+    return row ? PowerSyncScheduleExecutionMapper.toDomain(row) : null;
+  }
+
+  async findByTaskId(identityId: string, taskId: string): Promise<ScheduleExecution[]> {
     const rows = await this.db.getAll<PowerSyncScheduleExecutionRow>(
-      'SELECT * FROM schedule_executions WHERE task_id = ? ORDER BY execution_time DESC',
-      [taskId],
+      'SELECT * FROM schedule_executions WHERE identity_id = ? AND task_id = ? ORDER BY execution_time DESC',
+      [identityId, taskId],
     );
     return rows.map((row) => PowerSyncScheduleExecutionMapper.toDomain(row));
   }

@@ -1,22 +1,26 @@
-﻿import type { ScheduleExecution } from '../entities/schedule-execution';
+import type { ScheduleExecution } from '../entities/schedule-execution';
 
 /**
  * IScheduleExecutionRepository - Repository Interface
- * ScheduleExecution 浠撳偍鎺ュ彛
  */
 export interface IScheduleExecutionRepository {
   /**
-   * 淇濆瓨 ScheduleExecution 瀹炰綋
+   * Save ScheduleExecution entity
    */
   save(execution: ScheduleExecution): Promise<void>;
 
   /**
-   * 鏍规嵁 UUID 鏌ユ壘 ScheduleExecution
+   * Find by id (system/internal paths; authorization-sensitive loads use findByIdForIdentity)
    */
   findById(id: string): Promise<ScheduleExecution | null>;
 
   /**
-   * 鏍规嵁 Task UUID 鏌ユ壘鎵€鏈夋墽琛岃褰?
+   * Find by id scoped to identity
    */
-  findByTaskId(taskId: string): Promise<ScheduleExecution[]>;
+  findByIdForIdentity(identityId: string, id: string): Promise<ScheduleExecution | null>;
+
+  /**
+   * Find all executions for a task scoped to identity
+   */
+  findByTaskId(identityId: string, taskId: string): Promise<ScheduleExecution[]>;
 }
