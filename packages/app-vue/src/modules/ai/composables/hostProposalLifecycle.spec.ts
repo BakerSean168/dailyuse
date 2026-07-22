@@ -5,6 +5,7 @@ import {
   buildHostExecutionReceiptItems,
   buildHostTimelineArtifactItems,
   resolveHostWorkbenchFocusFromTimeline,
+  normalizeHostProposalRejectReason,
   resolveHostWorkbenchReopenFromAgentRun,
   shouldOpenHostWorkbenchFromAgentRun,
   buildHostProposalPatchFromDraft,
@@ -164,6 +165,31 @@ describe('dispatchHostProposalDecision', () => {
       revision: 1,
       reason: 'user_cancel',
     });
+
+    const freeformDispatch = vi.fn(async (command, handlers) => {
+      handlers.onEvent?.({
+        type: 'proposal.rejected',
+        runId: command.runId,
+        proposalId: command.proposalId,
+        revision: command.revision,
+        reason: command.reason,
+      });
+    });
+    await dispatchHostProposalDecision(
+      { dispatchAssistant: freeformDispatch },
+      {
+        decision: 'reject',
+        runId: 'run-free',
+        kind: 'goal.create',
+        reason: normalizeHostProposalRejectReason('  vault path invalid  '),
+      },
+    );
+    expect(freeformDispatch.mock.calls[0][0]).toMatchObject({
+      type: 'reject_proposal',
+      runId: 'run-free',
+      reason: 'vault path invalid',
+    });
+    expect(freeformDispatch.mock.calls[0][0]).not.toHaveProperty('identityId');
 
     const silent = vi.fn(async () => undefined);
     await expect(
@@ -817,3 +843,20 @@ describe('Host workbench composition journey (residual 389)', () => {
   });
 });
 
+describe('normalizeHostProposalRejectReason (residual 397)', () => {
+  it('falls back to user_cancel for empty/whitespace and scrubs control chars', () => {
+    expect(normalizeHostProposalRejectReason(undefined)).toBe('user_cancel');
+    expect(normalizeHostProposalRejectReason(null)).toBe('user_cancel');
+    expect(normalizeHostProposalRejectReason('')).toBe('user_cancel');
+    expect(normalizeHostProposalRejectReason('   ')).toBe('user_cancel');
+    expect(normalizeHostProposalRejectReason('\u0000bad\u0007 reason')).toBe('bad reason');
+  });
+
+  it('trims and caps freeform reason at 500 chars without identity smuggling fields', () => {
+    const long = `  ${'x'.repeat(600)}  `;
+    const normalized = normalizeHostProposalRejectReason(long);
+    expect(normalized).toHaveLength(500);
+    expect(normalized).toBe('x'.repeat(500));
+    expect(normalizeHostProposalRejectReason('  path looks wrong  ')).toBe('path looks wrong');
+  });
+});

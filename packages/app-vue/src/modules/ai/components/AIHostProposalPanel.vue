@@ -7,6 +7,7 @@
  * Goal edits title + description (residual 367); knowledge edits targetPath + contentMarkdown (residual 361).
  * Residual 371 auto-opens the right workbench when items are pending.
  * Residual 387: focusedProposalId highlights/scrolls the matching row.
+ * Residual 397: optional freeform reject reason (lifecycle only).
  * Handlers must route through AssistantFacade lifecycle first; this panel
  * never runs Host mutation execution or agent resume itself.
  */
@@ -36,7 +37,7 @@ export type HostProposalPanelActionPayload = {
 
 const emit = defineEmits<{
   approve: [payload: HostProposalPanelActionPayload];
-  reject: [payload: { item: HostProposalPanelItem; revision: number }];
+  reject: [payload: { item: HostProposalPanelItem; revision: number; reason?: string }];
   revise: [payload: HostProposalPanelActionPayload];
 }>();
 
@@ -47,6 +48,8 @@ type DraftState = {
   description: string;
   targetPath: string;
   contentMarkdown: string;
+  /** Residual 397: optional freeform reject reason (not a Host mutation field). */
+  rejectReason: string;
   revision: number;
   baselineTitle: string;
   baselineDescription: string;
@@ -63,6 +66,7 @@ function emptyDraft(item: HostProposalPanelItem): DraftState {
     description: item.description ?? '',
     targetPath: item.targetPath ?? '',
     contentMarkdown: item.contentMarkdown ?? '',
+    rejectReason: '',
     revision: item.revision,
     baselineTitle: item.title,
     baselineDescription: item.description ?? '',
@@ -158,9 +162,11 @@ function onApprove(item: HostProposalPanelItem) {
 
 function onReject(item: HostProposalPanelItem) {
   const draft = draftFor(item);
+  const reason = draft.rejectReason.trim();
   emit('reject', {
     item,
     revision: draft.revision,
+    ...(reason ? { reason } : {}),
   });
 }
 
@@ -343,6 +349,17 @@ watch(
               }}
             </p>
           </div>
+          <label class="flex flex-col gap-1 text-xs text-muted-foreground">
+            <span>{{ t('aiAssistant.chatPage.hostProposals.rejectReason') }}</span>
+            <textarea
+              v-model="draftFor(item).rejectReason"
+              rows="2"
+              class="min-h-[3rem] w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground"
+              :disabled="busy"
+              :data-testid="`ai-host-proposal-reject-reason-${item.source}`"
+              :placeholder="t('aiAssistant.chatPage.hostProposals.rejectReasonPlaceholder')"
+            />
+          </label>
           <div class="flex flex-wrap gap-2">
             <Button
               variant="outline"

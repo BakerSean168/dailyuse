@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385/387).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385/387/397).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -79,6 +79,23 @@ function collectEvents(
       }
       return events;
     });
+}
+
+/**
+ * Residual 397: normalize freeform Host reject reason for ProposalKernel lifecycle.
+ * Empty/whitespace falls back to user_cancel; max 500 chars; strips control chars.
+ * Lifecycle-only — never executes business mutations.
+ */
+export function normalizeHostProposalRejectReason(
+  reason?: string | null,
+  fallback: string = 'user_cancel',
+): string {
+  const raw = typeof reason === 'string' ? reason : '';
+  const scrubbed = raw
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .trim();
+  if (!scrubbed) return fallback;
+  return scrubbed.length > 500 ? scrubbed.slice(0, 500) : scrubbed;
 }
 
 export async function dispatchHostProposalDecision(

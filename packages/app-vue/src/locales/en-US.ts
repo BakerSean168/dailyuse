@@ -381,6 +381,8 @@ export default {
         revise: 'Save revision',
         approve: 'Approve',
         reject: 'Reject',
+        rejectReason: 'Reject reason (optional)',
+        rejectReasonPlaceholder: 'Why is this proposal being rejected?',
         busy: 'Updating...',
       },
     },

@@ -188,4 +188,19 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(receiptPanel).toContain('data-host-focus-id');
     expect(receiptPanel).toContain('scrollIntoView');
   });
+
+  it('Host proposal panel collects freeform reject reason (residual 397)', () => {
+    expect(helper).toContain('normalizeHostProposalRejectReason');
+    expect(helper).toContain("fallback: string = 'user_cancel'");
+    expect(panel).toContain('ai-host-proposal-reject-reason-');
+    expect(panel).toContain('rejectReason');
+    expect(panel).toContain('rejectReasonPlaceholder');
+    expect(panel).not.toContain('executeApproved');
+    expect(panel).not.toContain('resumeAgentRun');
+    expect(chatView).toContain('normalizeHostProposalRejectReason');
+    expect(chatView).toContain('handleHostProposalReject');
+    expect(chatView).toContain('payload.reason');
+    // Lifecycle-only path: freeform reason never becomes a mutation executor call.
+    expect(chatView).toMatch(/decision:\s*'reject'/);
+  });
 });

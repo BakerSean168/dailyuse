@@ -364,6 +364,7 @@ import {
   resolveHostWorkbenchFocusFromTimeline,
   shouldOpenHostWorkbenchFromAgentRun,
   dispatchHostProposalDecision,
+  normalizeHostProposalRejectReason,
   dispatchHostProposalRevise,
   type HostProposalPanelItem,
   type HostTimelineArtifactItem,
@@ -762,16 +763,18 @@ async function handleHostProposalApprove(payload: {
 async function handleHostProposalReject(payload: {
   item: HostProposalPanelItem;
   revision: number;
+  reason?: string;
 }) {
   if (hostProposalBusy.value) return;
   hostProposalBusy.value = true;
   try {
+    // Residual 397: freeform reject reason from Host proposal workbench (lifecycle only).
     await dispatchHostProposalDecision(aiHostService, {
       decision: 'reject',
       runId: payload.item.runId,
       kind: payload.item.kind,
       revision: payload.revision,
-      reason: 'user_cancel',
+      reason: normalizeHostProposalRejectReason(payload.reason),
     });
 
     if (payload.item.source === 'goal') {

@@ -366,6 +366,8 @@ export default {
         revise: '保存修订',
         approve: '批准',
         reject: '拒绝',
+        rejectReason: '拒绝原因（可选）',
+        rejectReasonPlaceholder: '为什么拒绝该提案？',
         busy: '处理中...',
       },
     },
