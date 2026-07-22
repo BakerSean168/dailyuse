@@ -30,6 +30,7 @@ import {
   isPrimaryTaskHostAgentRun,
   isTaskShapedHostAgentRun,
   resolveLiveHostWorkbenchAgentRuns,
+  shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -1547,3 +1548,52 @@ describe('resolveLinkedGoalIdFromTaskAgentRun (residual 445)', () => {
     expect(resolveLinkedGoalIdFromTaskAgentRun(bare)).toBeNull();
   });
 });
+
+describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {
+  it('returns true only for dirty owned task.create sessions', () => {
+    expect(
+      shouldReviseProcessLocalTaskDraftBeforeDomainSettle({
+        dirty: true,
+        isTaskAgentType: true,
+        ownedByTaskSession: true,
+        agentType: 'task.create',
+      }),
+    ).toBe(true);
+  });
+
+  it('returns false when not dirty, not owned, or not task.create', () => {
+    expect(
+      shouldReviseProcessLocalTaskDraftBeforeDomainSettle({
+        dirty: false,
+        isTaskAgentType: true,
+        ownedByTaskSession: true,
+        agentType: 'task.create',
+      }),
+    ).toBe(false);
+    expect(
+      shouldReviseProcessLocalTaskDraftBeforeDomainSettle({
+        dirty: true,
+        isTaskAgentType: true,
+        ownedByTaskSession: false,
+        agentType: 'task.create',
+      }),
+    ).toBe(false);
+    expect(
+      shouldReviseProcessLocalTaskDraftBeforeDomainSettle({
+        dirty: true,
+        isTaskAgentType: false,
+        ownedByTaskSession: true,
+        agentType: 'task.create',
+      }),
+    ).toBe(false);
+    expect(
+      shouldReviseProcessLocalTaskDraftBeforeDomainSettle({
+        dirty: true,
+        isTaskAgentType: true,
+        ownedByTaskSession: true,
+        agentType: 'goal.create',
+      }),
+    ).toBe(false);
+  });
+});
+

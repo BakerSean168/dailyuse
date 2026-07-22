@@ -833,6 +833,22 @@ export function buildHostTaskCreateTemplateRequest(input: {
 
 
 /**
+ * Residual 459: dirty Host approve for task.create must revise process-local draft
+ * before domain createTemplate so session restore cannot rehydrate a stale title.
+ * Presentation/decision helper only — never executes createTemplate or Host kernel.
+ */
+export function shouldReviseProcessLocalTaskDraftBeforeDomainSettle(input: {
+  dirty: boolean;
+  isTaskAgentType: boolean;
+  ownedByTaskSession: boolean;
+  agentType?: string | null;
+}): boolean {
+  if (!input.dirty) return false;
+  if (!input.isTaskAgentType || !input.ownedByTaskSession) return false;
+  return input.agentType === 'task.create';
+}
+
+/**
  * Residual 425: Host execution receipt for pure domain createTemplate fallback.
  * Presentation only — caller owns persistence/reactivity of the receipt list.
  * Never calls Host kernel mutation execution.

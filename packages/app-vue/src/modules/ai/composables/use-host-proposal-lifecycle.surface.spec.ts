@@ -454,6 +454,21 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+
+  it('task.create dirty approve revises process-local draft before domain settle (residual 459)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('shouldReviseProcessLocalTaskDraftBeforeDomainSettle');
+    expect(helper).toContain('Residual 459');
+    expect(chatView).toContain('shouldReviseProcessLocalTaskDraftBeforeDomainSettle');
+    expect(chatView).toContain('Residual 459');
+    expect(chatView).toContain('reviseTaskAgentRun');
+    // Dirty approve still domain-settles via createTemplate + completeTaskAgentRun, never executeApproved.
+    expect(chatView).toContain('createTaskTemplate');
+    expect(chatView).toContain('completeTaskAgentRun');
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

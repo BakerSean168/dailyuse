@@ -264,6 +264,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE'];
     case 'already bound to another conversation':
       return ['already bound to another conversation'];
+    case 'shouldReviseProcessLocalTaskDraftBeforeDomainSettle':
+      return ['shouldReviseProcessLocalTaskDraftBeforeDomainSettle'];
+    case 'dirty approve must revise process-local draft':
+      return ['dirty approve must revise process-local draft', 'Residual 459'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

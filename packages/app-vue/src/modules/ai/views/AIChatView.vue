@@ -368,6 +368,7 @@ import {
   buildHostExecutionReceiptItems,
   buildHostTaskClientExecutionReceipt,
   buildHostTaskCreateTemplateRequest,
+  shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
   resolveLiveHostWorkbenchAgentRuns,
@@ -862,6 +863,21 @@ async function handleHostProposalApprove(payload: {
           goalId,
         });
         return;
+      }
+      // Residual 459: dirty approve must revise process-local draft before domain createTemplate
+      // so getRun/reopen cannot rehydrate a stale title if mutation fails mid-flight.
+      if (
+        shouldReviseProcessLocalTaskDraftBeforeDomainSettle({
+          dirty: payload.dirty,
+          isTaskAgentType,
+          ownedByTaskSession: taskAgentRun.value?.run.runId === payload.item.runId,
+          agentType: taskAgentRun.value?.run.agentType,
+        })
+      ) {
+        await reviseTaskAgentRun({
+          title,
+          goalId,
+        });
       }
       // Fallback: pure domain Task template create (no AgentRun resume owner).
       // Residual 425: settle proposal + client Host receipt with deep-link entity id.
