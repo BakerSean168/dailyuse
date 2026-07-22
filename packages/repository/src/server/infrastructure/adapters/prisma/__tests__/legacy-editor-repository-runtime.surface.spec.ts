@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
  * API composition, Desktop electron registration, and Vue routes.
  * Portable backup import of historical rows remains in data-portability only.
  * Residual 180: packages/editor package directory stays deleted (no runtime package).
+ * Residual 182: root package.json scripts no longer list deleted editor Nx project.
  */
 describe('legacy editor/repository runtime surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../../');
@@ -124,6 +125,21 @@ describe('legacy editor/repository runtime surface', () => {
       const pkg = readFileSync(pkgPath, 'utf8');
       expect(pkg).not.toContain('"@dailyuse/editor"');
     }
+  });
+
+
+  it('root package.json scripts do not target deleted editor Nx project (residual 182)', () => {
+    const rootPkg = JSON.parse(readFileSync(resolve(repoRoot, 'package.json'), 'utf8')) as {
+      scripts?: Record<string, string>;
+    };
+    const integration = rootPkg.scripts?.['test:integration'] ?? '';
+    const coverage = rootPkg.scripts?.['test:coverage:domain'] ?? '';
+    // Match comma/equals-delimited project tokens only (avoid false positives on "editor_*" words).
+    expect(integration).not.toMatch(/(?:^|[=,])editor(?:,|$|\s)/);
+    expect(coverage).not.toMatch(/(?:^|[=,])editor(?:,|$|\s)/);
+    // Positive: scripts still target live domain packages
+    expect(integration).toContain('task');
+    expect(coverage).toContain('goal');
   });
 
 });
