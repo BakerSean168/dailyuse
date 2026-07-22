@@ -17,9 +17,8 @@ import type {
   GetTaskInstancesByRangeReq,
   GetTaskInstancesByRangeRes,
   CompleteTaskInstanceReq,
-  CompleteTaskInstanceRes,
   SkipTaskInstanceReq,
-  SkipTaskInstanceRes,
+  TaskInstanceOperationRes,
   RescheduleTaskReq,
   RescheduleTaskRes,
 } from '../api';
@@ -34,7 +33,7 @@ export type TaskRpcMap = {
   'task:bind-goal': [BindToGoalReq, BindToGoalRes];
   'task:unbind-goal': [UnbindFromGoalReq, UnbindFromGoalRes];
   'task:get-instances-by-range': [GetTaskInstancesByRangeReq, GetTaskInstancesByRangeRes];
-  'task:complete-instance': [CompleteTaskInstanceReq, CompleteTaskInstanceRes];
-  'task:skip-instance': [SkipTaskInstanceReq, SkipTaskInstanceRes];
+  'task:complete-instance': [CompleteTaskInstanceReq, TaskInstanceOperationRes];
+  'task:skip-instance': [SkipTaskInstanceReq, TaskInstanceOperationRes];
   'task:reschedule-instance': [RescheduleTaskReq, RescheduleTaskRes];
 };

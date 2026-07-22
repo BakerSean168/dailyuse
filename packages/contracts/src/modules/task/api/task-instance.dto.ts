@@ -49,5 +49,3 @@ export interface TaskInstanceOperationRes {
   instance: TaskInstanceClientDTO;
 }
 
-export type CompleteTaskInstanceRes = TaskInstanceOperationRes;
-export type SkipTaskInstanceRes = TaskInstanceOperationRes;
