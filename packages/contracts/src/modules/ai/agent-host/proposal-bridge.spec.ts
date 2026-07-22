@@ -3,6 +3,7 @@ import {
   AGENT_RUN_HOST_PROPOSAL_REVISION,
   buildAgentRunHostProposalId,
   buildAgentRunHostProposalRef,
+  applyAgentRunBridgeProposalPatch,
   materializeAgentRunBridgeProposal,
   parseAgentRunHostProposalId,
 } from './proposal-bridge';
@@ -43,6 +44,20 @@ describe('agent-run Host proposal bridge', () => {
       id: 'agent-run:run-k:knowledge.write',
       status: 'ready',
       targetPath: '_host_bridge/run-k.md',
+    });
+  });
+
+  it('applies Host patch fields without changing kind', () => {
+    const base = materializeAgentRunBridgeProposal('run-g', 'goal.create', 1);
+    const patched = applyAgentRunBridgeProposalPatch(base, {
+      title: '  Edited Goal  ',
+      description: 'desc',
+    });
+    expect(patched).toMatchObject({
+      kind: 'goal.create',
+      title: 'Edited Goal',
+      description: 'desc',
+      status: 'ready',
     });
   });
 });

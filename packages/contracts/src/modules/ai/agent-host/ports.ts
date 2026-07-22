@@ -140,6 +140,15 @@ export type AssistantSurface = 'web' | 'desktop' | 'server';
 
 export type AssistantExecutionProfileId = 'direct_turn' | 'pi_readonly';
 
+/** Lifecycle edit fields for revise_proposal (residual 359). */
+export type AssistantProposalPatch = {
+  title?: string;
+  description?: string | null;
+  targetPath?: string;
+  contentMarkdown?: string;
+  goalId?: string | null;
+};
+
 export type AssistantCommand =
   | {
       type: 'message';
@@ -164,6 +173,18 @@ export type AssistantCommand =
       runId: string;
       proposalId: string;
       revision: number;
+    }
+  | {
+      /**
+       * Residual 359: edit a Host proposal before approve (lifecycle only).
+       * revision is the expected current revision (optimistic concurrency).
+       */
+      type: 'revise_proposal';
+      identityId: string;
+      runId: string;
+      proposalId: string;
+      revision: number;
+      patch: AssistantProposalPatch;
     }
   | {
       type: 'reject_proposal';
@@ -194,6 +215,15 @@ export type AssistantEvent =
     }
   | { type: 'proposal.approved'; runId: string; proposalId: string; revision: number }
   | {
+      type: 'proposal.revised';
+      runId: string;
+      proposalId: string;
+      revision: number;
+      kind: AgentProposal['kind'];
+      title?: string;
+      targetPath?: string;
+    }
+  | {
       type: 'proposal.rejected';
       runId: string;
       proposalId: string;
@@ -211,6 +241,7 @@ export type AssistantEvent =
 export type AssistantClientCommand =
   | Omit<Extract<AssistantCommand, { type: 'message' }>, 'identityId'>
   | Omit<Extract<AssistantCommand, { type: 'approve_proposal' }>, 'identityId'>
+  | Omit<Extract<AssistantCommand, { type: 'revise_proposal' }>, 'identityId'>
   | Omit<Extract<AssistantCommand, { type: 'reject_proposal' }>, 'identityId'>
   | Omit<Extract<AssistantCommand, { type: 'cancel_run' }>, 'identityId'>;
 

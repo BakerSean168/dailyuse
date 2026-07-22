@@ -59,6 +59,16 @@ describe('ProposalKernel', () => {
     await expect(kernel.create(knowledgeDraft())).rejects.toThrow('PROPOSAL_ALREADY_EXISTS');
   });
 
+  it('rejects revise when expected revision does not match current', async () => {
+    await kernel.create(knowledgeDraft({ status: 'ready' }));
+    await expect(
+      kernel.revise('prop-1', {
+        ...knowledgeDraft({ status: 'ready', contentMarkdown: '# x' }),
+        revision: 9,
+      }),
+    ).rejects.toThrow('PROPOSAL_REVISION_CONFLICT');
+  });
+
   it('revises with optimistic new revision and invalidates prior approval path', async () => {
     await kernel.create(knowledgeDraft({ status: 'ready' }));
     const approved = await kernel.approve('prop-1', 1);

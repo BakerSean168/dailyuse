@@ -103,3 +103,67 @@ export function materializeAgentRunBridgeProposal(
     goalId: null,
   };
 }
+
+/**
+ * Apply Host lifecycle edit patch onto a bridge proposal snapshot.
+ * Kind is immutable; empty strings are ignored for optional fields.
+ */
+export function applyAgentRunBridgeProposalPatch(
+  base: AgentProposal,
+  patch: {
+    title?: string;
+    description?: string | null;
+    targetPath?: string;
+    contentMarkdown?: string;
+    goalId?: string | null;
+  },
+): AgentProposal {
+  if (base.kind === 'goal.create') {
+    const title =
+      typeof patch.title === 'string' && patch.title.trim()
+        ? patch.title.trim()
+        : base.title;
+    const description =
+      patch.description === undefined
+        ? base.description
+        : patch.description === null
+          ? null
+          : patch.description.trim() || null;
+    return {
+      ...base,
+      kind: 'goal.create',
+      status: 'ready',
+      title,
+      description,
+    };
+  }
+
+  if (base.kind === 'knowledge.write') {
+    const targetPath =
+      typeof patch.targetPath === 'string' && patch.targetPath.trim()
+        ? patch.targetPath.trim().split('\\').join('/')
+        : base.targetPath;
+    const contentMarkdown =
+      typeof patch.contentMarkdown === 'string' && patch.contentMarkdown.trim()
+        ? patch.contentMarkdown
+        : base.contentMarkdown;
+    return {
+      ...base,
+      kind: 'knowledge.write',
+      status: 'ready',
+      targetPath,
+      contentMarkdown,
+    };
+  }
+
+  const title =
+    typeof patch.title === 'string' && patch.title.trim() ? patch.title.trim() : base.title;
+  const goalId = patch.goalId === undefined ? base.goalId : patch.goalId;
+  return {
+    ...base,
+    kind: 'task.create',
+    status: 'ready',
+    title,
+    goalId,
+  };
+}

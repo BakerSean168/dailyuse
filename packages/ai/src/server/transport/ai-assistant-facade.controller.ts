@@ -40,6 +40,21 @@ export const AssistantClientCommandSchema = z.discriminatedUnion('type', [
     revision: z.number().int().positive(),
   }),
   z.object({
+    type: z.literal('revise_proposal'),
+    runId: z.string().min(1),
+    proposalId: z.string().min(1),
+    revision: z.number().int().positive(),
+    patch: z
+      .object({
+        title: z.string().optional(),
+        description: z.string().nullable().optional(),
+        targetPath: z.string().optional(),
+        contentMarkdown: z.string().optional(),
+        goalId: z.string().nullable().optional(),
+      })
+      .default({}),
+  }),
+  z.object({
     type: z.literal('reject_proposal'),
     runId: z.string().min(1),
     proposalId: z.string().min(1),
@@ -86,6 +101,15 @@ function toHostCommand(
         runId: client.runId,
         proposalId: client.proposalId,
         revision: client.revision,
+      };
+    case 'revise_proposal':
+      return {
+        type: 'revise_proposal',
+        identityId,
+        runId: client.runId,
+        proposalId: client.proposalId,
+        revision: client.revision,
+        patch: client.patch ?? {},
       };
     case 'reject_proposal':
       return {

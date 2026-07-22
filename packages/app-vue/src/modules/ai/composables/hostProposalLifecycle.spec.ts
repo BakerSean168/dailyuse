@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   buildPendingHostProposalItems,
   dispatchHostProposalDecision,
+  dispatchHostProposalRevise,
+  getRememberedHostProposalRevision,
 } from './hostProposalLifecycle';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
 
@@ -195,3 +197,39 @@ describe('buildPendingHostProposalItems (residual 357)', () => {
     expect(items).toEqual([]);
   });
 });
+
+describe('dispatchHostProposalRevise (residual 359)', () => {
+  it('revises via revise_proposal and remembers the new revision', async () => {
+    const dispatchAssistant = vi.fn(async (command, handlers) => {
+      handlers.onEvent?.({
+        type: 'proposal.revised',
+        runId: command.runId,
+        proposalId: command.proposalId,
+        revision: command.revision + 1,
+        kind: 'goal.create',
+        title: command.patch?.title,
+      });
+    });
+
+    const result = await dispatchHostProposalRevise(
+      { dispatchAssistant },
+      {
+        runId: 'run-1',
+        kind: 'goal.create',
+        revision: 1,
+        patch: { title: 'Edited' },
+      },
+    );
+
+    expect(dispatchAssistant.mock.calls[0][0]).toEqual({
+      type: 'revise_proposal',
+      runId: 'run-1',
+      proposalId: 'agent-run:run-1:goal.create',
+      revision: 1,
+      patch: { title: 'Edited' },
+    });
+    expect(result.revision).toBe(2);
+    expect(getRememberedHostProposalRevision('agent-run:run-1:goal.create')).toBe(2);
+  });
+});
+

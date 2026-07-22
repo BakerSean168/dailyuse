@@ -121,4 +121,42 @@ describe('AIAssistantFacadeController', () => {
       },
     ]);
   });
+
+  it('routes revise_proposal lifecycle without mutation executor surface', async () => {
+    const dispatchAssistant = vi.fn(async (command, onEvent) => {
+      expect(command).toMatchObject({
+        type: 'revise_proposal',
+        identityId: 'user-1',
+        runId: 'run-p',
+        proposalId: 'agent-run:run-p:goal.create',
+        revision: 1,
+        patch: { title: 'Edited' },
+      });
+      onEvent({
+        type: 'proposal.revised',
+        runId: 'run-p',
+        proposalId: 'agent-run:run-p:goal.create',
+        revision: 2,
+        kind: 'goal.create',
+        title: 'Edited',
+      });
+      return ok({ eventCount: 1 });
+    });
+    const controller = new AIAssistantFacadeController({ dispatchAssistant });
+    const events = [];
+    const result = await controller.dispatch(
+      {
+        type: 'revise_proposal',
+        runId: 'run-p',
+        proposalId: 'agent-run:run-p:goal.create',
+        revision: 1,
+        patch: { title: 'Edited' },
+      },
+      { identityId: 'user-1' } as never,
+      (event) => events.push(event),
+    );
+    expect(result.ok).toBe(true);
+    expect(events[0]).toMatchObject({ type: 'proposal.revised', revision: 2 });
+  });
+
 });

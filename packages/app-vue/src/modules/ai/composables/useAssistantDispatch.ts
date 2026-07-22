@@ -108,6 +108,31 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
     );
   }
 
+  async function reviseProposal(input: {
+    runId: string;
+    proposalId: string;
+    revision: number;
+    patch: {
+      title?: string;
+      description?: string | null;
+      targetPath?: string;
+      contentMarkdown?: string;
+      goalId?: string | null;
+    };
+    onEvent?: (event: AssistantEvent) => void;
+  }) {
+    return dispatch(
+      {
+        type: 'revise_proposal',
+        runId: input.runId,
+        proposalId: input.proposalId,
+        revision: input.revision,
+        patch: input.patch,
+      },
+      { onEvent: input.onEvent },
+    );
+  }
+
   async function rejectProposal(input: {
     runId: string;
     proposalId: string;
@@ -148,6 +173,7 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
     dispatch,
     dispatchMessage,
     approveProposal,
+    reviseProposal,
     rejectProposal,
     cancelRun,
   };

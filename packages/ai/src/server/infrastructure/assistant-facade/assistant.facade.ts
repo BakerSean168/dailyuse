@@ -3,7 +3,7 @@
  *
  * Routes:
  * - message → DirectTurnEngine open chat (default) or ReadonlyAnalysisTurnEngine (pi_readonly)
- * - approve_proposal / reject_proposal → ProposalKernel lifecycle only
+ * - approve_proposal / revise_proposal / reject_proposal → ProposalKernel lifecycle only
  * - cancel_run → abort both production Turn Engines
  *
  * Residual 355: agent-run bridge proposal ids (`agent-run:{runId}:{kind}`) are
@@ -22,6 +22,7 @@ import type {
   ITurnEnginePort,
 } from '@dailyuse/contracts/ai';
 import {
+  applyAgentRunBridgeProposalPatch,
   materializeAgentRunBridgeProposal,
   parseAgentRunHostProposalId,
 } from '@dailyuse/contracts/ai';
@@ -54,6 +55,9 @@ export class AssistantFacade implements IAssistantFacadePort {
           return;
         case 'approve_proposal':
           yield* this.dispatchApprove(command);
+          return;
+        case 'revise_proposal':
+          yield* this.dispatchRevise(command);
           return;
         case 'reject_proposal':
           yield* this.dispatchReject(command);
@@ -250,7 +254,78 @@ export class AssistantFacade implements IAssistantFacadePort {
     };
   }
 
-  /**
+  private async *dispatchRevise(
+    command: Extract<AssistantCommand, { type: 'revise_proposal' }>,
+  ): AsyncGenerator<AssistantEvent, void, void> {
+    // Lifecycle only — never executeApproved / business mutation here.
+    const parsed = parseAgentRunHostProposalId(command.proposalId);
+    if (!parsed || parsed.runId !== command.runId) {
+      yield {
+        type: 'error',
+        code: 'PROPOSAL_REVISE_UNSUPPORTED',
+        message: 'revise_proposal currently supports agent-run Host bridge proposals only',
+        runId: command.runId,
+      };
+      return;
+    }
+
+    await this.ensureAgentRunBridgeProposal(command.runId, command.proposalId);
+    // Patch-only payload; ProposalKernel.revise merges onto the stored proposal.
+    const base = materializeAgentRunBridgeProposal(parsed.runId, parsed.kind);
+    const patched = applyAgentRunBridgeProposalPatch(base, command.patch ?? {});
+    const next = {
+      kind: patched.kind,
+      id: command.proposalId,
+      // Optimistic concurrency: expected current revision before increment.
+      revision: command.revision,
+      status: 'ready' as const,
+      createdAt: base.createdAt,
+      updatedAt: base.updatedAt,
+      ...(patched.kind === 'goal.create'
+        ? {
+            title:
+              typeof command.patch?.title === 'string' && command.patch.title.trim()
+                ? command.patch.title.trim()
+                : undefined,
+            description:
+              command.patch && 'description' in command.patch
+                ? command.patch.description
+                : undefined,
+          }
+        : patched.kind === 'knowledge.write'
+          ? {
+              targetPath:
+                typeof command.patch?.targetPath === 'string' && command.patch.targetPath.trim()
+                  ? command.patch.targetPath.trim()
+                  : undefined,
+              contentMarkdown:
+                typeof command.patch?.contentMarkdown === 'string' &&
+                command.patch.contentMarkdown.trim()
+                  ? command.patch.contentMarkdown
+                  : undefined,
+            }
+          : {
+              title:
+                typeof command.patch?.title === 'string' && command.patch.title.trim()
+                  ? command.patch.title.trim()
+                  : undefined,
+              goalId:
+                command.patch && 'goalId' in command.patch ? command.patch.goalId : undefined,
+            }),
+    } as typeof patched;
+    const revised = await this.proposalKernel.revise(command.proposalId, next);
+    yield {
+      type: 'proposal.revised',
+      runId: command.runId,
+      proposalId: revised.id,
+      revision: revised.revision,
+      kind: revised.kind,
+      title: 'title' in revised ? revised.title : undefined,
+      targetPath: 'targetPath' in revised ? revised.targetPath : undefined,
+    };
+  }
+
+    /**
    * Materialise legacy AgentRun bridge proposals into ProposalKernel on first use.
    * Non-bridge ids are ignored (kernel remains source of truth).
    */

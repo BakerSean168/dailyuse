@@ -344,6 +344,8 @@ export default {
         kindTask: 'Task create',
         revision: 'Rev {revision}',
         pendingActions: '{count} pending action(s)',
+        editTitle: 'Proposal title',
+        revise: 'Save revision',
         approve: 'Approve',
         reject: 'Reject',
         busy: 'Updating...',

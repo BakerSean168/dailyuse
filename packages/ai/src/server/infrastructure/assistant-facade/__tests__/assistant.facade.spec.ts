@@ -279,4 +279,56 @@ describe('AssistantFacade', () => {
     expect(kernel.executeApproved).not.toHaveBeenCalled();
   });
 
+
+  it('revises agent-run bridge proposals without executeApproved', async () => {
+    const store = new Map<string, any>();
+    const kernel = createKernel({
+      create: vi.fn().mockImplementation(async (proposal) => {
+        store.set(proposal.id, { ...proposal, revision: 1 });
+        return store.get(proposal.id);
+      }),
+      revise: vi.fn().mockImplementation(async (proposalId, next) => {
+        const current = store.get(proposalId);
+        const revised = {
+          ...current,
+          ...next,
+          id: proposalId,
+          revision: current.revision + 1,
+          status: 'ready',
+          title: next.title ?? current.title,
+        };
+        store.set(proposalId, revised);
+        return revised;
+      }),
+    });
+    const facade = new AssistantFacade(
+      createOpenChat(),
+      createReadonlyEngine(),
+      kernel,
+      createReadonlyEngine(),
+    );
+
+    const events = await collect(facade, {
+      type: 'revise_proposal',
+      identityId: 'user-1',
+      runId: 'run-goal-1',
+      proposalId: 'agent-run:run-goal-1:goal.create',
+      revision: 1,
+      patch: { title: 'Edited Host Goal' },
+    });
+
+    expect(kernel.create).toHaveBeenCalled();
+    expect(kernel.revise).toHaveBeenCalled();
+    expect(kernel.executeApproved).not.toHaveBeenCalled();
+    expect(events[0]).toMatchObject({
+      type: 'proposal.revised',
+      runId: 'run-goal-1',
+      proposalId: 'agent-run:run-goal-1:goal.create',
+      revision: 2,
+      kind: 'goal.create',
+      title: 'Edited Host Goal',
+    });
+  });
+
+
 });

@@ -249,10 +249,12 @@
       @close="closeContextPanel"
     >
       <AIHostProposalPanel
+        ref="hostProposalPanelRef"
         :items="hostProposalItems"
-        :busy="goalAgentResuming || noteCreating"
+        :busy="goalAgentResuming || noteCreating || hostProposalBusy"
         @approve="handleHostProposalApprove"
         @reject="handleHostProposalReject"
+        @revise="handleHostProposalRevise"
       />
       <AIGoalWorkflowPanel
         :tool-mode="toolMode"
@@ -332,12 +334,16 @@ import type { ComposerDensity } from '../../../layouts/shell/panel-geometry';
 import { useAIChatView } from '../composables/useAIChatView';
 import {
   buildPendingHostProposalItems,
+  dispatchHostProposalDecision,
+  dispatchHostProposalRevise,
   type HostProposalPanelItem,
 } from '../composables/hostProposalLifecycle';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
+import { useAI } from '../composables/useAI';
 
 const { t } = useI18n();
 const router = useRouter();
+const { service: aiHostService } = useAI();
 
 /**
  * V2 shell integration props (UI_REDESIGN_V2_PLAN §2.1).
@@ -536,31 +542,117 @@ const hasWorkflowContext = computed(
   () => toolMode.value !== 'chat' || hasWorkflowArtifact.value,
 );
 
-// Residual 357: Host proposal workbench rows (waiting_approval only).
+// Residual 357/359: Host proposal workbench rows (waiting_approval only).
 const hostProposalItems = computed(() =>
   buildPendingHostProposalItems({
     goalAgentRun: goalAgentRun.value,
     noteAgentRun: noteAgentRun.value,
   }),
 );
+const hostProposalBusy = ref(false);
+const hostProposalPanelRef = ref<{
+  applyRevised: (
+    proposalId: string,
+    next: { revision: number; title?: string },
+  ) => void;
+} | null>(null);
 
-function handleHostProposalApprove(item: HostProposalPanelItem) {
-  if (item.source === 'goal') {
-    confirmGoalAgentRun();
-    return;
-  }
-  if (item.source === 'knowledge') {
-    void createKnowledgeNoteFromConversation();
+async function handleHostProposalRevise(payload: {
+  item: HostProposalPanelItem;
+  title: string;
+  revision: number;
+}) {
+  if (hostProposalBusy.value) return;
+  hostProposalBusy.value = true;
+  try {
+    const result = await dispatchHostProposalRevise(aiHostService, {
+      runId: payload.item.runId,
+      kind: payload.item.kind,
+      revision: payload.revision,
+      patch: { title: payload.title },
+    });
+    hostProposalPanelRef.value?.applyRevised(payload.item.proposalId, {
+      revision: result.revision,
+      title: payload.title,
+    });
+  } finally {
+    hostProposalBusy.value = false;
   }
 }
 
-function handleHostProposalReject(item: HostProposalPanelItem) {
-  if (item.source === 'goal') {
-    cancelGoalAgentRun();
-    return;
+async function handleHostProposalApprove(payload: {
+  item: HostProposalPanelItem;
+  title: string;
+  revision: number;
+}) {
+  if (hostProposalBusy.value) return;
+  hostProposalBusy.value = true;
+  try {
+    let revision = payload.revision;
+    const dirty = payload.title.trim() !== payload.item.title.trim();
+    if (dirty) {
+      const revised = await dispatchHostProposalRevise(aiHostService, {
+        runId: payload.item.runId,
+        kind: payload.item.kind,
+        revision,
+        patch: { title: payload.title },
+      });
+      revision = revised.revision;
+      hostProposalPanelRef.value?.applyRevised(payload.item.proposalId, {
+        revision,
+        title: payload.title,
+      });
+    }
+
+    await dispatchHostProposalDecision(aiHostService, {
+      decision: 'approve',
+      runId: payload.item.runId,
+      kind: payload.item.kind,
+      revision,
+    });
+
+    if (payload.item.source === 'goal') {
+      await confirmGoalAgentRun({ skipHostLifecycle: true, revision });
+      return;
+    }
+    if (payload.item.source === 'knowledge') {
+      await createKnowledgeNoteFromConversation({
+        skipHostLifecycle: true,
+        revision,
+      });
+    }
+  } finally {
+    hostProposalBusy.value = false;
   }
-  if (item.source === 'knowledge') {
-    void cancelKnowledgeNoteAgentRun();
+}
+
+async function handleHostProposalReject(payload: {
+  item: HostProposalPanelItem;
+  revision: number;
+}) {
+  if (hostProposalBusy.value) return;
+  hostProposalBusy.value = true;
+  try {
+    await dispatchHostProposalDecision(aiHostService, {
+      decision: 'reject',
+      runId: payload.item.runId,
+      kind: payload.item.kind,
+      revision: payload.revision,
+      reason: 'user_cancel',
+    });
+
+    if (payload.item.source === 'goal') {
+      await cancelGoalAgentRun({ skipHostLifecycle: true, revision: payload.revision });
+      return;
+    }
+    if (payload.item.source === 'knowledge') {
+      await cancelKnowledgeNoteAgentRun({
+        skipHostLifecycle: true,
+        revision: payload.revision,
+      });
+    }
+  } finally {
+    hostProposalBusy.value = false;
   }
 }
 

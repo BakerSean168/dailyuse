@@ -733,18 +733,29 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     }
   }
 
-  async function resumeGoalAgentRun(userDecision: AgentResumePayload['userDecision']) {
+  async function resumeGoalAgentRun(
+    userDecision: AgentResumePayload['userDecision'],
+    hostOptions?: {
+      /** When true, Host lifecycle already completed (panel revise/approve path). */
+      skipHostLifecycle?: boolean;
+      revision?: number;
+    },
+  ) {
     if (!goalAgentRun.value || goalAgentResuming.value) return;
     goalAgentResuming.value = true;
     try {
-      // Residual 355: Host ProposalKernel lifecycle via AssistantFacade first.
+      // Residual 355/359: Host ProposalKernel lifecycle via AssistantFacade first.
       // resumeAgentRun remains the separate business mutation executor.
-      if (userDecision === 'confirm' || userDecision === 'cancel') {
+      if (
+        !hostOptions?.skipHostLifecycle &&
+        (userDecision === 'confirm' || userDecision === 'cancel')
+      ) {
         await dispatchHostProposalDecision(options.service, {
           decision: userDecision === 'confirm' ? 'approve' : 'reject',
           runId: goalAgentRun.value.run.runId,
           kind: 'goal.create',
           reason: userDecision === 'cancel' ? 'user_cancel' : undefined,
+          revision: hostOptions?.revision,
         });
       }
       const payload = buildGoalAgentApprovalPayload(goalAgentRun.value, userDecision);
@@ -960,8 +971,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     handleExecuteGoalAutomation,
     startGoalAgentRun,
     submitGoalAgentClarification,
-    confirmGoalAgentRun: () => resumeGoalAgentRun('confirm'),
-    cancelGoalAgentRun: () => resumeGoalAgentRun('cancel'),
+    confirmGoalAgentRun: (hostOptions?: { skipHostLifecycle?: boolean; revision?: number }) =>
+      resumeGoalAgentRun('confirm', hostOptions),
+    cancelGoalAgentRun: (hostOptions?: { skipHostLifecycle?: boolean; revision?: number }) =>
+      resumeGoalAgentRun('cancel', hostOptions),
     continueGoalAgentExecution,
     retryGoalAgentExecution,
     syncGoalAgentRun,

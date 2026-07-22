@@ -20,8 +20,11 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain("type: 'approve_proposal'");
     expect(helper).toContain("type: 'reject_proposal'");
     expect(helper).toContain('buildAgentRunHostProposalRef');
-    expect(helper).toContain('service.dispatchAssistant');
+    expect(helper).toContain('dispatchAssistant');
+    expect(helper).toMatch(/service\s*\.\s*dispatchAssistant/);
     expect(helper).toContain('buildPendingHostProposalItems');
+    expect(helper).toContain('dispatchHostProposalRevise');
+    expect(helper).toContain("type: 'revise_proposal'");
     expect(helper).toContain("runStatus: 'waiting_approval'");
     expect(helper).not.toContain('executeApproved');
     expect(helper).not.toContain('resumeAgentRun');
@@ -49,10 +52,15 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('hostProposalItems');
     expect(chatView).toContain('handleHostProposalApprove');
     expect(chatView).toContain('handleHostProposalReject');
+    expect(chatView).toContain('handleHostProposalRevise');
+    expect(chatView).toContain('dispatchHostProposalRevise');
+    expect(chatView).toContain('skipHostLifecycle');
     expect(chatView).toContain('buildPendingHostProposalItems');
     expect(panel).toContain('data-testid="ai-host-proposal-panel"');
     expect(panel).toContain('ai-host-proposal-approve-');
     expect(panel).toContain('ai-host-proposal-reject-');
+    expect(panel).toContain('ai-host-proposal-revise-');
+    expect(panel).toContain('ai-host-proposal-title-');
     expect(panel).not.toContain('executeApproved');
     expect(panel).not.toContain('resumeAgentRun');
     expect(panel).not.toContain('dispatchAssistant');

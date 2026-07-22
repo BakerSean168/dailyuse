@@ -114,14 +114,40 @@ export class ProposalKernel implements IProposalKernelPort {
       throw new Error('PROPOSAL_KIND_IMMUTABLE');
     }
 
+    // Residual 359: next.revision (when positive) is the expected current revision.
+    if (
+      typeof next.revision === 'number' &&
+      next.revision > 0 &&
+      next.revision !== current.revision
+    ) {
+      throw new Error('PROPOSAL_REVISION_CONFLICT');
+    }
+
     // User edit produces a new revision; approval is invalidated.
+    // Residual 359: merge patch onto current so unspecified fields are preserved.
     const status: AgentProposal['status'] =
       next.status === 'ready' || next.status === 'draft' || next.status === 'stale'
         ? next.status
-        : 'draft';
+        : current.status === 'approved' || current.status === 'rejected'
+          ? 'draft'
+          : current.status === 'ready' || current.status === 'draft' || current.status === 'stale'
+            ? current.status
+            : 'draft';
+
+    const patchEntries = Object.entries(next as Record<string, unknown>).filter(
+      ([key, value]) =>
+        value !== undefined &&
+        key !== 'id' &&
+        key !== 'kind' &&
+        key !== 'revision' &&
+        key !== 'createdAt' &&
+        key !== 'updatedAt',
+    );
+    const patch = Object.fromEntries(patchEntries);
 
     const revised = cloneProposal({
-      ...next,
+      ...current,
+      ...patch,
       id: proposalId,
       kind: current.kind,
       status,

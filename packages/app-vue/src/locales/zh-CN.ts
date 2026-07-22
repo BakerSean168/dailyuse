@@ -329,6 +329,8 @@ export default {
         kindTask: '创建任务',
         revision: '版本 {revision}',
         pendingActions: '{count} 个待处理动作',
+        editTitle: '提案标题',
+        revise: '保存修订',
         approve: '批准',
         reject: '拒绝',
         busy: '处理中...',

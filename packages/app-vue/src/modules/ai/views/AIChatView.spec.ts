@@ -296,6 +296,8 @@ const i18n = createI18n({
             kindTask: 'Task create',
             revision: 'Rev {revision}',
             pendingActions: '{count} pending action(s)',
+            editTitle: 'Proposal title',
+            revise: 'Save revision',
             approve: 'Approve',
             reject: 'Reject',
             busy: 'Updating...',
@@ -1206,6 +1208,19 @@ describe('AIChatView', () => {
       getAgentEvents: vi.fn(),
       createKnowledgeNote: vi.fn(),
       dispatchAssistant: vi.fn(async (command, handlers) => {
+        if (command?.type === 'revise_proposal') {
+          handlers?.onEvent?.({
+            type: 'proposal.revised',
+            runId: command.runId,
+            proposalId: command.proposalId,
+            revision: (command.revision ?? 1) + 1,
+            kind: String(command.proposalId).includes('knowledge.write')
+              ? 'knowledge.write'
+              : 'goal.create',
+            title: command.patch?.title,
+          });
+          return;
+        }
         if (command?.type === 'approve_proposal') {
           handlers?.onEvent?.({
             type: 'proposal.approved',

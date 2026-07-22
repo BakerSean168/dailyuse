@@ -241,7 +241,10 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       .slice(0, 4000);
   }
 
-  async function createKnowledgeNoteFromConversation() {
+  async function createKnowledgeNoteFromConversation(hostOptions?: {
+    skipHostLifecycle?: boolean;
+    revision?: number;
+  }) {
     if (!options.hasWorkflowMessages.value && !noteAgentDraftMarkdown.value) return;
 
     if (noteAgentRun.value) {
@@ -252,12 +255,15 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
       noteCreating.value = true;
       try {
-        // Residual 355: Host proposal lifecycle first; resume remains mutation executor.
-        await dispatchHostProposalDecision(options.service, {
-          decision: 'approve',
-          runId: noteAgentRun.value.run.runId,
-          kind: 'knowledge.write',
-        });
+        // Residual 355/359: Host proposal lifecycle first; resume remains mutation executor.
+        if (!hostOptions?.skipHostLifecycle) {
+          await dispatchHostProposalDecision(options.service, {
+            decision: 'approve',
+            runId: noteAgentRun.value.run.runId,
+            kind: 'knowledge.write',
+            revision: hostOptions?.revision,
+          });
+        }
         const result = unwrap(await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
           userDecision: 'confirm',
           approvedActions,
@@ -400,18 +406,24 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
    * Residual 357: Host reject lifecycle then cancel the AgentRun executor path.
    * Does not run ProposalKernel mutation execution or write knowledge notes.
    */
-  async function cancelKnowledgeNoteAgentRun() {
+  async function cancelKnowledgeNoteAgentRun(hostOptions?: {
+    skipHostLifecycle?: boolean;
+    revision?: number;
+  }) {
     if (!noteAgentRun.value || noteCreating.value || noteAgentLoading.value) return;
     if (noteAgentRun.value.run.status !== 'waiting_approval') return;
 
     noteCreating.value = true;
     try {
-      await dispatchHostProposalDecision(options.service, {
-        decision: 'reject',
-        runId: noteAgentRun.value.run.runId,
-        kind: 'knowledge.write',
-        reason: 'user_cancel',
-      });
+      if (!hostOptions?.skipHostLifecycle) {
+        await dispatchHostProposalDecision(options.service, {
+          decision: 'reject',
+          runId: noteAgentRun.value.run.runId,
+          kind: 'knowledge.write',
+          reason: 'user_cancel',
+          revision: hostOptions?.revision,
+        });
+      }
       const result = unwrap(
         await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
           userDecision: 'cancel',

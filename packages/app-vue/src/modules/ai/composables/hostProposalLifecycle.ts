@@ -1,19 +1,39 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357).
+ * Host proposal lifecycle helpers (residual 355/357/359).
  *
- * Routes approve/reject through AssistantFacade before legacy AgentRun executors.
- * Derives thin workbench panel items from waiting_approval AgentRun snapshots.
- * Never calls ProposalKernel mutation execution from this module.
+ * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
+ * executors. Derives thin workbench panel items from waiting_approval AgentRun
+ * snapshots. Never calls ProposalKernel mutation execution from this module.
  */
 import type {
   AgentRunHostProposalKind,
   AgentRunResult,
   AssistantEvent,
+  AssistantProposalPatch,
 } from '@dailyuse/contracts/ai';
-import { buildAgentRunHostProposalRef } from '@dailyuse/contracts/ai';
+import {
+  AGENT_RUN_HOST_PROPOSAL_REVISION,
+  buildAgentRunHostProposalRef,
+} from '@dailyuse/contracts/ai';
 import type { AIChatService } from './types';
 
 export type HostProposalLifecycleService = Pick<AIChatService, 'dispatchAssistant'>;
+
+/** Tracks latest Host proposal revision after revise/approve for action-bar parity. */
+const hostProposalRevisionById = new Map<string, number>();
+
+export function rememberHostProposalRevision(proposalId: string, revision: number): void {
+  if (!proposalId || !Number.isFinite(revision) || revision < 1) return;
+  hostProposalRevisionById.set(proposalId, revision);
+}
+
+export function getRememberedHostProposalRevision(
+  proposalId: string,
+  fallback: number = AGENT_RUN_HOST_PROPOSAL_REVISION,
+): number {
+  return hostProposalRevisionById.get(proposalId) ?? fallback;
+}
+
 
 export type HostProposalPanelSource = 'goal' | 'knowledge';
 
@@ -33,6 +53,26 @@ export type HostProposalPanelItem = {
   pendingActionCount: number;
 };
 
+function collectEvents(
+  service: HostProposalLifecycleService,
+  command: Parameters<HostProposalLifecycleService['dispatchAssistant']>[0],
+): Promise<AssistantEvent[]> {
+  const events: AssistantEvent[] = [];
+  return service
+    .dispatchAssistant(command, {
+      onEvent: (event) => {
+        events.push(event);
+      },
+    })
+    .then(() => {
+      const errorEvent = events.find((event) => event.type === 'error');
+      if (errorEvent && errorEvent.type === 'error') {
+        throw new Error(errorEvent.message || 'Host proposal lifecycle failed');
+      }
+      return events;
+    });
+}
+
 export async function dispatchHostProposalDecision(
   service: HostProposalLifecycleService,
   input: {
@@ -40,12 +80,17 @@ export async function dispatchHostProposalDecision(
     runId: string;
     kind: AgentRunHostProposalKind;
     reason?: string;
+    /** Current Host proposal revision (defaults to bridge create revision). */
+    revision?: number;
   },
 ): Promise<AssistantEvent[]> {
-  const { proposalId, revision } = buildAgentRunHostProposalRef(input.runId, input.kind);
-  const events: AssistantEvent[] = [];
+  const { proposalId } = buildAgentRunHostProposalRef(input.runId, input.kind);
+  const revision =
+    input.revision ??
+    getRememberedHostProposalRevision(proposalId, AGENT_RUN_HOST_PROPOSAL_REVISION);
 
-  await service.dispatchAssistant(
+  const events = await collectEvents(
+    service,
     input.decision === 'approve'
       ? {
           type: 'approve_proposal',
@@ -60,17 +105,7 @@ export async function dispatchHostProposalDecision(
           revision,
           reason: input.reason,
         },
-    {
-      onEvent: (event) => {
-        events.push(event);
-      },
-    },
   );
-
-  const errorEvent = events.find((event) => event.type === 'error');
-  if (errorEvent && errorEvent.type === 'error') {
-    throw new Error(errorEvent.message || 'Host proposal lifecycle failed');
-  }
 
   const expectedType =
     input.decision === 'approve' ? 'proposal.approved' : 'proposal.rejected';
@@ -78,7 +113,50 @@ export async function dispatchHostProposalDecision(
     throw new Error(`Host proposal lifecycle missing ${expectedType}`);
   }
 
+  const settled = events.find(
+    (event) => event.type === expectedType,
+  ) as Extract<AssistantEvent, { type: 'proposal.approved' | 'proposal.rejected' }> | undefined;
+  if (settled) {
+    rememberHostProposalRevision(settled.proposalId, settled.revision);
+  }
+
   return events;
+}
+
+/**
+ * Residual 359: revise Host bridge proposal before approve (lifecycle only).
+ * Returns the new revision from proposal.revised.
+ */
+export async function dispatchHostProposalRevise(
+  service: HostProposalLifecycleService,
+  input: {
+    runId: string;
+    kind: AgentRunHostProposalKind;
+    revision: number;
+    patch: AssistantProposalPatch;
+  },
+): Promise<{ events: AssistantEvent[]; revision: number; proposalId: string }> {
+  const { proposalId } = buildAgentRunHostProposalRef(input.runId, input.kind);
+  const events = await collectEvents(service, {
+    type: 'revise_proposal',
+    runId: input.runId,
+    proposalId,
+    revision: input.revision,
+    patch: input.patch,
+  });
+
+  const revised = events.find((event) => event.type === 'proposal.revised');
+  if (!revised || revised.type !== 'proposal.revised') {
+    throw new Error('Host proposal lifecycle missing proposal.revised');
+  }
+
+  rememberHostProposalRevision(revised.proposalId, revised.revision);
+
+  return {
+    events,
+    revision: revised.revision,
+    proposalId: revised.proposalId,
+  };
 }
 
 function pendingActionCount(run: AgentRunResult): number {
