@@ -3,6 +3,8 @@
  * single-product-draft gate (knowledge residual 555 / task residual 547 symmetry;
  * no multi product invent). Foreign companions (key_result/task_template/reminder)
  * may remain for executor context; multi create_goal is fail-closed.
+ * Residual 559: goal.create confirm/cancel only from waiting_approval
+ * (task residual 489/477 + knowledge cancel symmetry).
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -801,6 +803,15 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     },
   ) {
     if (!goalAgentRun.value || goalAgentResuming.value) return;
+
+    // Residual 559: confirm/cancel only from waiting_approval
+    // (task residual 489/477 + knowledge cancel symmetry; clarify/continue/retry own gates).
+    if (
+      (userDecision === 'confirm' || userDecision === 'cancel') &&
+      goalAgentRun.value.run.status !== 'waiting_approval'
+    ) {
+      return;
+    }
 
     // Residual 557: goal.create confirm requires sole create_goal draftAction after
     // single-product-draft gate (knowledge residual 555 / task residual 547 symmetry;

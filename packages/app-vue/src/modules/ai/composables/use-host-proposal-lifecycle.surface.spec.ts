@@ -1024,7 +1024,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(goal).toContain("action.tool === 'create_goal'");
     const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
     expect(resumeIdx).toBeGreaterThan(-1);
-    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 2200);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 3200);
     expect(resumeSlice).toContain('Residual 557');
     expect(resumeSlice).toContain('productDraftCount !== 1');
     expect(resumeSlice).toContain("action.tool === 'create_goal'");
@@ -1036,6 +1036,43 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(gateIdx).toBeGreaterThan(-1);
     expect(hostIdx).toBeGreaterThan(gateIdx);
     expect(payloadIdx).toBeGreaterThan(gateIdx);
+    expect(helper).not.toContain('executeApproved');
+  });
+
+  it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
+    const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
+    const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');
+    expect(goal).toContain('Residual 559');
+    expect(knowledge).toContain('Residual 559');
+    const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
+    expect(resumeIdx).toBeGreaterThan(-1);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 2400);
+    expect(resumeSlice).toContain('Residual 559');
+    expect(resumeSlice).toContain("run.status !== 'waiting_approval'");
+    expect(resumeSlice).toContain("userDecision === 'confirm' || userDecision === 'cancel'");
+    // Status gate before sole create_goal product draft gate and Host lifecycle.
+    const statusIdx = resumeSlice.indexOf("run.status !== 'waiting_approval'");
+    const productIdx = resumeSlice.indexOf('productDraftCount !== 1');
+    const hostIdx = resumeSlice.indexOf('dispatchHostProposalDecision');
+    expect(statusIdx).toBeGreaterThan(-1);
+    expect(productIdx).toBeGreaterThan(statusIdx);
+    expect(hostIdx).toBeGreaterThan(statusIdx);
+
+    const createIdx = knowledge.indexOf('async function createKnowledgeNoteFromConversation');
+    expect(createIdx).toBeGreaterThan(-1);
+    const createSlice = knowledge.slice(createIdx, createIdx + 2400);
+    expect(createSlice).toContain('Residual 559');
+    expect(createSlice).toContain("run.status !== 'waiting_approval'");
+    const kStatusIdx = createSlice.indexOf("run.status !== 'waiting_approval'");
+    const kProductIdx = createSlice.indexOf('productDraftCount !== 1');
+    const kHostIdx = createSlice.indexOf('dispatchHostProposalDecision');
+    expect(kStatusIdx).toBeGreaterThan(-1);
+    expect(kProductIdx).toBeGreaterThan(kStatusIdx);
+    expect(kHostIdx).toBeGreaterThan(kStatusIdx);
+    // Knowledge cancel already waiting_approval-only (residual 357).
+    const cancelIdx = knowledge.indexOf('async function cancelKnowledgeNoteAgentRun');
+    expect(cancelIdx).toBeGreaterThan(-1);
+    expect(knowledge.slice(cancelIdx, cancelIdx + 600)).toContain("run.status !== 'waiting_approval'");
     expect(helper).not.toContain('executeApproved');
   });
 

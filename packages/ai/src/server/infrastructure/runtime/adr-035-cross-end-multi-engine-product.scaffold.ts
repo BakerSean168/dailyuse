@@ -365,6 +365,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 557: goal.create confirm sole create_goal draftAction.
         'Residual 557',
         "action.tool === 'create_goal'",
+        // Residual 559: goal confirm/cancel + knowledge confirm waiting_approval-only.
+        'Residual 559',
+        "run.status !== 'waiting_approval'",
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

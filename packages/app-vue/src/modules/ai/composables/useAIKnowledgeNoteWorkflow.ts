@@ -3,6 +3,8 @@
  * draftAction after single-product-draft gate (task residual 547 / Host residual
  * 553 symmetry; no multi product invent). Foreign companions may remain in the
  * approvedActions payload for executor context; multi create_knowledge_note is fail-closed.
+ * Residual 559: knowledge.write confirm only from waiting_approval
+ * (task residual 489 + knowledge cancel residual 357 symmetry).
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -261,6 +263,10 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     if (!options.hasWorkflowMessages.value && !noteAgentDraftMarkdown.value) return;
 
     if (noteAgentRun.value) {
+      // Residual 559: knowledge.write confirm only from waiting_approval
+      // (task residual 489 + knowledge cancel residual 357 symmetry).
+      if (noteAgentRun.value.run.status !== 'waiting_approval') return;
+
       const baseActions = noteAgentRun.value.state.pendingActions.length
         ? noteAgentRun.value.state.pendingActions
         : noteAgentRun.value.state.approvedActions;
