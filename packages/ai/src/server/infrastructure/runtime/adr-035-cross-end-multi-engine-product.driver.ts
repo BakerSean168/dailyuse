@@ -414,6 +414,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 537'];
     case 'productLaneExecuted':
       return ['productLaneExecuted'];
+    case 'Residual 541':
+      return ['Residual 541'];
+    case 'const draftAction = pendingActions[0]':
+      return ['const draftAction = pendingActions[0]'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

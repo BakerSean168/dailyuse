@@ -1008,3 +1008,26 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/
   });
 
 });
+
+
+describe('edit draftAction sole product draft (residual 541)', () => {
+  it('source uses draftAction after single-action + create_task_template gates', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const src = readFileSync(
+      resolve(__dirname, '../host-task-create-resume.ts'),
+      'utf8',
+    );
+    expect(src).toContain('Residual 541');
+    expect(src).toContain('const draftAction = pendingActions[0]');
+    expect(src).toContain("draftAction.tool !== 'create_task_template'");
+    expect(src).toContain('...draftAction');
+    // No blind multi-index invent after gates: title/name read draftAction payload only.
+    const editIdx = src.indexOf("if (decision === 'edit')");
+    expect(editIdx).toBeGreaterThan(-1);
+    const editSlice = src.slice(editIdx, editIdx + 2200);
+    expect(editSlice).toContain('draftAction.payload');
+    expect(editSlice).not.toContain('pendingActions[1]');
+  });
+});
+

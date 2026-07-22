@@ -390,6 +390,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 537: receipt ok requires product-lane executed on completed.
         'Residual 537',
         'productLaneExecuted',
+        // Residual 541: Host edit draftAction sole create_task_template after gates.
+        'Residual 541',
+        'const draftAction = pendingActions[0]',
       ],
       status: 'implemented_unit',
     },

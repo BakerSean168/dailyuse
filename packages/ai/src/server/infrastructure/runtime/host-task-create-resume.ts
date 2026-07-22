@@ -45,6 +45,9 @@
  * Residual 495: resume agentType + unsupported userDecision fail-closed use named constants
  * (no ad-hoc product-path invent for agent isolation / decision surface).
  *
+ * Residual 541: edit revise uses the sole create_task_template draftAction after
+ * single-action + tool gates (no blind multi-index invent).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -451,11 +454,17 @@ export function buildHostTaskCreateResumeResult(input: {
         throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
       }
     }
+    // Residual 541: after length===1 + create_task_template tool gate, the sole product
+    // draft action is the only revise payload source — never blind multi-index invent.
+    const draftAction = pendingActions[0];
+    if (!draftAction || draftAction.tool !== 'create_task_template') {
+      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
+    }
     const rawTitle =
-      typeof pendingActions[0]?.payload?.['title'] === 'string'
-        ? String(pendingActions[0].payload['title'])
-        : typeof pendingActions[0]?.payload?.['name'] === 'string'
-          ? String(pendingActions[0].payload['name'])
+      typeof draftAction.payload?.['title'] === 'string'
+        ? String(draftAction.payload['title'])
+        : typeof draftAction.payload?.['name'] === 'string'
+          ? String(draftAction.payload['name'])
           : undefined;
     const title = rawTitle?.trim() ? rawTitle.trim() : undefined;
     // Residual 455: blank revise is fail-closed (same title invariant as start).
@@ -464,7 +473,7 @@ export function buildHostTaskCreateResumeResult(input: {
     }
     // Normalize trimmed title into pending payload so getRun/list rehydrate clean values.
     const firstPayload = {
-      ...(pendingActions[0]?.payload ?? {}),
+      ...(draftAction.payload ?? {}),
       title,
     };
     const rawGoalId = firstPayload['goalId'] ?? firstPayload['goal_id'];
@@ -481,9 +490,9 @@ export function buildHostTaskCreateResumeResult(input: {
       delete firstPayload['goal_id'];
       goalId = undefined;
     }
-    // Residual 473: keep exactly one normalized pending create_task_template action.
+    // Residual 473/541: keep exactly one normalized pending create_task_template action.
     pendingActions[0] = {
-      ...pendingActions[0]!,
+      ...draftAction,
       tool: 'create_task_template',
       index: 0,
       payload: firstPayload,
