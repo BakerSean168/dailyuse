@@ -33,9 +33,13 @@ updated: 2026-07-22T00:00:00
   - ADR-035 journey（capability/turn isolation steps 1–16）+ multi-engine conformance harness
     （`engine.direct_turn` + `engine.langgraph_workflow` 同 suite isolation；**in-suite doubles only**）
     在 vault active plan residual 305/309/311 证据中通过。
+- **阶段 4 部分起步（residual 314）**：
+  - 生产 `DirectTurnEngine`（`engine.direct_turn`）已实现 `ITurnEnginePort`，由 `createAIModule().turnEngine` 暴露。
+  - 开放式 chat/analysis only；ownership fail-closed + abort；不自动 emit `engine.*` capability offers。
+  - 现有 `sendMessage`/`streamMessage` 路径仍经 chat use cases；统一助手 UI 未切换。
 - **仍未实现（不得勾完成定义）**：
-  - 生产 DirectTurnEngine / LangGraphWorkflowAdapter 接线；Proposal Kernel 产品面；统一助手 UI；
-    完整 multi-engine runtime E2E；CLI/Pi product path。
+  - 第二生产 Turn Engine（langgraph/pi/cli）；LangGraphWorkflowAdapter；Proposal Kernel 产品面；统一助手 UI；
+    完整 multi-engine runtime E2E；CLI/Pi product path；开放式 Chat 全面经 TurnEngine。
 - 更完整的 vault/知识仓库边界与 §13.2 证据见
   [2026-07-16-obsidian-vault-repository-optimization.md](./2026-07-16-obsidian-vault-repository-optimization.md)。
 
@@ -774,9 +778,9 @@ packages/contracts/src/modules/ai/
 
 ### 阶段 4：首个 TurnEngine
 
-- 使用现有直连 Provider/ChatExecution 实现 DirectTurnEngine。
-- 验证流式事件、Abort、Context、Tool 和结构化输出契约。
-- 新的开放式 Chat 经 TurnEngine，不影响业务 Workflow。
+- 使用现有直连 Provider/ChatExecution 实现 DirectTurnEngine。 **（部分：生产 class + module.turnEngine；residual 314）**
+- 验证流式事件、Abort、Context、Tool 和结构化输出契约。 **（部分：abort/ownership/complete 单测；stream/tool schema 未齐）**
+- 新的开放式 Chat 经 TurnEngine，不影响业务 Workflow。 **（未完成：chat use cases 仍直连 IAIChatExecutionPort）**
 
 ### 阶段 5：Pi 只读 Spike
 
@@ -851,9 +855,9 @@ packages/contracts/src/modules/ai/
 
 - [ ] 用户只面对统一助手和右侧工作台。
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。
-- [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。
+- [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine；Workflow/Model Gateway 生产 adapter 未齐）**
 - [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。
-- [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双引擎标签 isolation 通过；生产 adapter 仍缺）**
+- [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双标签 isolation + 生产 DirectTurnEngine 首引擎；第二生产引擎仍缺）**
 - [ ] 自定义模型 API 不需要实现完整 Agent runtime。
 - [ ] 本地 CLI 不需要伪装成 Model Provider。
 - [ ] Run 固定 ResolvedRunPlan 和 CapabilitySnapshot。

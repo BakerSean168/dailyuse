@@ -85,3 +85,9 @@ export {
   computeContentSha256,
   signInternalRequest,
 } from './chat-execution';
+
+// ---------------------------------------------------------------------------
+// Turn Engine (ADR-035)
+// ---------------------------------------------------------------------------
+export { DirectTurnEngine, DIRECT_TURN_ENGINE_ID } from './turn-engine';
+

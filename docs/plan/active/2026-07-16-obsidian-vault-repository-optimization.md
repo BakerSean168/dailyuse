@@ -2970,6 +2970,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > （仅阶段 0 部分；完成定义不打勾）。验证：governance-check（GOV_EXIT:0）。vault §13.2 未打勾项
 > 仍为部分/外部阻塞。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百一十四轮）：ADR-035 首个生产 Turn Engine（仍不打勾 Agent）——
+> 新增 `DirectTurnEngine`（`engine.direct_turn`）实现 `ITurnEnginePort`，经 `IAIChatExecutionPort`
+> + provider/conversation 解析完成开放式 chat/analysis；ownership fail-closed、abort、无
+> waiting_approval/mutation。`createAIModule` 暴露 `turnEngine`；**不**静默 emit `engine.*`
+> capability offers；仍无 Workflow/Capability/Proposal 生产实现与第二引擎。验证：direct-turn 7 +
+> composition/harness/journey + stage-0 freeze + governance-check（GOV_EXIT:0）。§13.2 Agent 仍为
+> **部分实现**。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3054,7 +3062,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留三百一十一轮刷新 Agent Host stage-0 composition 指针；残留三百零九/三百零七轮 harness 与三入口指针仍有效）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留三百一十四轮刷新首个生产 DirectTurnEngine 指针；三入口 step 10 / harness 指针仍有效）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 阶段 6 dual 收口（残留 250–300）：pure ClientPort duals 已 type-alias（setting/data-portability/auth/
 > repository/reminder/notification）；intentional facade/mapping duals 已 surface 锁定（account/goal/
 > task/schedule/ai）；dead unused `*Res` duals 再清（263/290）。focused evidence suite tip：**60 文件 /
@@ -3361,6 +3369,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百零五轮：ADR-035 journey step 16 multi-engine label isolation + stage-0 ITurnEnginePort freeze surface (Agent still partial)。
   残留三百零九轮：`adr-035-multi-engine-turn-conformance.harness.spec.ts` 双引擎同 suite isolation harness（14 通过；in-suite doubles only）。
   残留三百一十一轮：Agent Host stage-0 composition freeze（runtime offers 无 engine.*；module 未注册 Turn Engine ports；生产 port 实现仍为空）。
+  残留三百一十四轮：生产 `DirectTurnEngine`（engine.direct_turn）实现 ITurnEnginePort 并挂到 `createAIModule().turnEngine`；仍无第二引擎/Workflow adapter。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3369,6 +3378,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十一轮：ADR-035 Agent Host stage-0 composition freeze (no production port impls; runtime offers never emit engine.*; module does not register Turn Engines; Agent still partial)。
   残留三百一十二轮：§13.2 focused evidence suite re-run (216 tests, residuals 250–311 locks, no checkbox changes)。
   残留三百一十三轮：align Agent Host active plan stage-0 evidence pointers (status 实施中 partial; no DoD checkbox flips)。
+  残留三百一十四轮：production DirectTurnEngine (engine.direct_turn) implements ITurnEnginePort; module.turnEngine wired; multi-engine still partial。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3455,6 +3465,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十一轮：Agent Host stage-0 composition/port freeze surfaces 通过（生产 adapter 仍缺；runtime 不静默 emit engine.*）+ governance-check；仍不构成生产 multi-engine 接线 E2E 证据。
   残留三百一十二轮：tip 上 216 项 focused evidence suite（含 residual 250–311 dual/docs/disclosure/ADR-035/three-login/harness/composition 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百一十三轮：Agent Host plan stage-0 证据指针对齐 + governance-check；仍不构成生产 multi-engine/统一助手完成证据。
+  残留三百一十四轮：DirectTurnEngine 生产首引擎 + module.turnEngine + stage-0 仅允许该引擎；仍不构成 multi-engine/统一助手完成证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

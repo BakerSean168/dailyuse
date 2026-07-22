@@ -1,7 +1,8 @@
 /**
- * Residual 311: ADR-035 Agent Host composition stays stage-0.
- * Runtime capability offers never auto-emit engine.* labels, and the AI module
- * composition root does not register ITurnEnginePort adapters yet.
+ * Residual 311/314: ADR-035 Agent Host composition.
+ * Runtime capability offers never auto-emit engine.* labels.
+ * Residual 314 wires the first production DirectTurnEngine on the module instance
+ * without registering Workflow/Capability/Proposal ports or silent engine offers.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -38,14 +39,17 @@ describe('agent-host stage-0 composition surface', () => {
     expect(runtime).not.toMatch(/kind:\s*'engine\.cli_readonly'/);
   });
 
-  it('ai.module composition root does not import or implement Turn Engine ports', () => {
+  it('ai.module wires DirectTurnEngine only (no Workflow/Capability/Proposal ports)', () => {
     const moduleSource = readFileSync(resolve(__dirname, '../../ai.module.ts'), 'utf8');
     expect(moduleSource).toContain('createDirectProviderAIRuntime');
-    expect(moduleSource).not.toContain('ITurnEnginePort');
+    expect(moduleSource).toContain('DirectTurnEngine');
+    expect(moduleSource).toContain('turnEngine');
+    expect(moduleSource).toContain('ITurnEnginePort');
     expect(moduleSource).not.toContain('IWorkflowAdapterPort');
     expect(moduleSource).not.toContain('ICapabilityResolverPort');
     expect(moduleSource).not.toContain('IProposalKernelPort');
-    expect(moduleSource).not.toContain('implements ITurnEnginePort');
-    expect(moduleSource).not.toContain('startTurn');
+    expect(moduleSource).not.toContain('implements IWorkflowAdapterPort');
+    expect(moduleSource).not.toContain('implements ICapabilityResolverPort');
+    expect(moduleSource).not.toContain('implements IProposalKernelPort');
   });
 });

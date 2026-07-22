@@ -3,12 +3,12 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 305 + 311: ADR-035 Agent Host ports remain stage-0 shape freezes.
- * ITurnEnginePort / ICapabilityResolverPort / IWorkflowAdapterPort / IProposalKernelPort
- * are contracts only — production packages do not implement multi-engine Turn Engine,
- * Workflow Adapter, Capability Resolver, or Proposal Kernel adapters yet.
- * Multi-engine isolation is enforced at capability resolve/start gates and the
- * multi-engine Turn Engine conformance harness (in-suite doubles only).
+ * Residual 305/311/314: ADR-035 Agent Host ports.
+ * Stage 0 shapes stay frozen. Residual 314 introduces the first production
+ * Turn Engine (`DirectTurnEngine` / engine.direct_turn) only. Workflow Adapter,
+ * Capability Resolver, and Proposal Kernel remain unimplemented in production.
+ * Multi-engine isolation still relies on resolve/start gates + conformance harness;
+ * a second production engine (langgraph/pi/cli) is not wired yet.
  */
 describe('agent-host stage-0 ports freeze surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../');
@@ -35,20 +35,21 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(capabilities).toContain("engineId: missing.length > 0 ? 'none' : input.engineId");
   });
 
-  it('has no production class implementing Agent Host stage-0 ports yet', () => {
+  it('allows only DirectTurnEngine as the first production Turn Engine (no other Host ports)', () => {
     const roots = [
       resolve(repoRoot, 'packages/ai/src'),
       resolve(repoRoot, 'apps/ai-service'),
       resolve(repoRoot, 'apps/api/src'),
       resolve(repoRoot, 'apps/desktop/src'),
     ];
-    const portMarkers = [
-      'implements ITurnEnginePort',
+    const allowedTurnEngine = 'packages/ai/src/server/infrastructure/turn-engine/direct-turn.engine.ts';
+    const forbiddenMarkers = [
       'implements IWorkflowAdapterPort',
       'implements ICapabilityResolverPort',
       'implements IProposalKernelPort',
     ] as const;
-    const offenders: string[] = [];
+    const turnEngines: string[] = [];
+    const forbidden: string[] = [];
     const skipDirs = new Set(['dist', 'node_modules', '__tests__', 'tests']);
 
     function walk(dir: string) {
@@ -66,39 +67,40 @@ describe('agent-host stage-0 ports freeze surface', () => {
         if (entry.name.endsWith('.surface.spec.ts')) continue;
         if (entry.name.includes('.harness.spec.')) continue;
         const source = readFileSync(full, 'utf8');
-        // Allow the port definition itself and pure type re-exports.
         if (full.endsWith(`${'agent-host'}/ports.ts`)) continue;
         if (source.includes('export interface ITurnEnginePort')) continue;
-        const hit = portMarkers.some((marker) => source.includes(marker));
-        const turnTyped =
-          source.includes(': ITurnEnginePort') && source.includes('startTurn') && source.includes('class ');
-        if (!hit && !turnTyped) continue;
-        if (
-          source.includes('export type') &&
-          !source.includes('class ') &&
-          portMarkers.some((marker) => source.includes(marker.replace('implements ', '')))
-        ) {
-          continue;
+        const rel = full.replace(repoRoot + '/', '');
+        if (source.includes('implements ITurnEnginePort')) {
+          turnEngines.push(rel);
         }
-        offenders.push(full.replace(repoRoot + '/', ''));
+        if (forbiddenMarkers.some((marker) => source.includes(marker))) {
+          forbidden.push(rel);
+        }
       }
     }
 
     for (const root of roots) walk(root);
-    expect(offenders).toEqual([]);
+    expect(turnEngines).toEqual([allowedTurnEngine]);
+    expect(forbidden).toEqual([]);
+
+    const direct = readFileSync(resolve(repoRoot, allowedTurnEngine), 'utf8');
+    expect(direct).toContain("DIRECT_TURN_ENGINE_ID = 'engine.direct_turn'");
+    expect(direct).toContain('export class DirectTurnEngine implements ITurnEnginePort');
+    expect(direct).not.toContain('implements IWorkflowAdapterPort');
   });
 
-  it('points multi-engine conformance at the residual 309 harness (doubles only)', () => {
+  it('points multi-engine conformance at the residual 309 harness (doubles + DirectTurnEngine note)', () => {
     const harness = resolve(
       repoRoot,
       'packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-multi-engine-turn-conformance.harness.spec.ts',
     );
     expect(existsSync(harness)).toBe(true);
     const harnessText = readFileSync(harness, 'utf8');
-    expect(harnessText).toContain("engine.direct_turn");
-    expect(harnessText).toContain("engine.langgraph_workflow");
+    expect(harnessText).toContain('engine.direct_turn');
+    expect(harnessText).toContain('engine.langgraph_workflow');
     expect(harnessText).toContain('createConformanceTurnEngine');
     expect(harnessText).toContain('ITurnEnginePort');
-    expect(harnessText).toContain('production packages still do not implement');
+    expect(harnessText).toContain('DirectTurnEngine only');
+    expect(harnessText).toContain('multi-engine');
   });
 });

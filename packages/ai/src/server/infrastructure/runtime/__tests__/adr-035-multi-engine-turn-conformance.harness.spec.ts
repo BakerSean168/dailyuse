@@ -1,10 +1,10 @@
 /**
- * ADR-035 multi-engine Turn Engine conformance harness (residual 309 / §13.2 Agent).
+ * ADR-035 multi-engine Turn Engine conformance harness (residual 309/314 / §13.2 Agent).
  *
  * Runs the same isolation invariants against two engine labels in one suite:
  * `engine.direct_turn` and `engine.langgraph_workflow`. Uses in-suite test doubles
- * that match `ITurnEnginePort` shape only — production packages still have no
- * multi-engine Turn Engine adapters (see agent-host stage-0 freeze surface).
+ * for dual-label isolation. Production residual 314 adds DirectTurnEngine only;
+ * a second production engine (langgraph/pi/cli) is still missing.
  *
  * This is not a Playwright/Electron E2E and does not claim production multi-engine
  * runtime wiring is complete.
@@ -280,12 +280,12 @@ describe('ADR-035 multi-engine Turn Engine conformance harness', () => {
     }
   });
 
-  it('documents that production packages still do not implement ITurnEnginePort', () => {
-    // Harness doubles implement the port shape in-test only. Stage-0 freeze surface
-    // remains the production absence lock; this assertion keeps the residual honest.
+  it('documents residual 314: only DirectTurnEngine is production; multi-engine still partial', () => {
+    // Harness doubles still cover dual-label isolation. Production has DirectTurnEngine
+    // (engine.direct_turn) only — not a second Turn Engine adapter.
     const productionNote =
-      'production packages do not implement multi-engine Turn Engine adapters yet';
-    expect(productionNote).toContain('do not implement multi-engine');
-    expect(ENGINE_IDS.length).toBe(2);
+      'production has DirectTurnEngine only; multi-engine adapters still incomplete';
+    expect(productionNote).toContain('DirectTurnEngine only');
+    expect(ENGINE_IDS).toEqual(['engine.direct_turn', 'engine.langgraph_workflow']);
   });
 });

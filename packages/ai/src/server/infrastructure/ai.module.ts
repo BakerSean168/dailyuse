@@ -42,6 +42,9 @@ import type {
 
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
+import { DirectProviderChatExecutionAdapter } from './chat-execution';
+import { DirectTurnEngine } from './turn-engine';
+import type { ITurnEnginePort } from '@dailyuse/contracts/ai';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -308,6 +311,11 @@ export interface AIModuleInstance {
   readonly providerConfigRepository: IAIProviderConfigRepository;
   readonly services: AIModuleServices;
   readonly api: AIApplicationPort;
+  /**
+   * First production Turn Engine (ADR-035 stage 4). Open chat/analysis only;
+   * not a Workflow and never a mutation executor.
+   */
+  readonly turnEngine: ITurnEnginePort;
   start(): void;
   dispose(): void;
 }
@@ -479,11 +487,19 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       services.agentRuntimeService.getEvents(runId, cx, requestId, signal),
   };
 
+  // First production Turn Engine — open chat only; not auto-emitted as capability offers.
+  const turnEngine = new DirectTurnEngine(
+    conversationRepository,
+    providerConfigRepository,
+    dependencies.chatExecutionPort ?? new DirectProviderChatExecutionAdapter(),
+  );
+
   return {
     conversationRepository,
     providerConfigRepository,
     services,
     api,
+    turnEngine,
     start(): void {
       if (started) {
         return;
