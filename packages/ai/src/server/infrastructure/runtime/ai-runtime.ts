@@ -264,11 +264,23 @@ export function assertAgentStartCapabilityPlan(
 }
 
 
+/**
+ * Residual 503: ownership compare uses trimmed non-empty identity (process-local store symmetry).
+ * Blank/whitespace query never owns a run (fail-closed isolation).
+ */
 function ensureAgentRunOwnedByIdentity(
   result: AgentRunResult,
   identityId: string,
 ): Result<AgentRunResult> {
-  if (result.run.identityId !== identityId) {
+  const owned =
+    typeof result.run.identityId === 'string' && result.run.identityId.trim().length > 0
+      ? result.run.identityId.trim()
+      : undefined;
+  const query =
+    typeof identityId === 'string' && identityId.trim().length > 0
+      ? identityId.trim()
+      : undefined;
+  if (!owned || !query || owned !== query) {
     return error(
       'FORBIDDEN',
       'Agent run is not owned by the current identity.',

@@ -334,6 +334,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 501: client complete settlement draft create_task_template only.
         'Residual 501',
         "action.tool === 'create_task_template'",
+        // Residual 503: process-local store identity trim match + ownership trim.
+        'matchesHostTaskCreateIdentity',
+        'Residual 503',
+        'ensureAgentRunOwnedByIdentity',
       ],
       status: 'implemented_unit',
     },

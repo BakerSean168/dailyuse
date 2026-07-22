@@ -1,5 +1,5 @@
 /**
- * Residual 435/447/451/457/495: process-local Host task.create run store foundation.
+ * Residual 435/447/451/457/495/503: process-local Host task.create run store foundation.
  *
  * TS task.create start (residual 431) does not hit Python LangGraph checkpointers.
  * This registry keeps started results for getRun/listRuns/getEvents within the
@@ -16,9 +16,14 @@
  * existing runId to a different conversation or thread (session isolation).
  *
  * Residual 495: upsert rejects non-task.create agentType (no silent ignore).
+ *
+ * Residual 503: identity match uses trimmed non-empty identity (start residual 493
+ * symmetry) so whitespace query/stored identity cannot isolate false-negative miss
+ * or false-positive foreign accept.
  */
 
 import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
+import { resolveTaskCreateIdentityId } from './host-task-create-start';
 
 const ACTIVE_STATUSES = new Set([
   'pending',
@@ -46,6 +51,19 @@ export const HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE =
 /** Residual 495: process-local store rejects non-task.create (no silent ignore). */
 export const HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE =
   'Host task.create process-local store only accepts agentType task.create.';
+
+/**
+ * Residual 503: compare process-local identity with start-builder trim semantics.
+ * Empty/whitespace query never matches (fail-closed isolation).
+ */
+export function matchesHostTaskCreateIdentity(
+  storedIdentityId: string,
+  queryIdentityId: string,
+): boolean {
+  const stored = resolveTaskCreateIdentityId(storedIdentityId);
+  const query = resolveTaskCreateIdentityId(queryIdentityId);
+  return Boolean(stored && query && stored === query);
+}
 
 export type HostTaskCreateRunStore = {
   upsert(result: AgentRunResult): void;
@@ -84,9 +102,10 @@ export function createHostTaskCreateRunStore(
       if (result.run.agentType !== 'task.create') {
         throw new Error(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE);
       }
-      // Residual 451: process-local runId identity binding (no foreign takeover).
+      // Residual 451/503: process-local runId identity binding (no foreign takeover;
+      // compare trimmed non-empty identities).
       const existing = byRunId.get(result.run.runId);
-      if (existing && existing.run.identityId !== result.run.identityId) {
+      if (existing && !matchesHostTaskCreateIdentity(existing.run.identityId, result.run.identityId)) {
         throw new Error(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE);
       }
       // Residual 457: conversation/thread binding (no session rebinding via runId reuse).
@@ -107,14 +126,19 @@ export function createHostTaskCreateRunStore(
     get(runId: string, identityId: string): AgentRunResult | null {
       const result = byRunId.get(runId);
       if (!result) return null;
-      if (result.run.identityId !== identityId) return null;
+      // Residual 503: trimmed identity isolation (blank query never matches).
+      if (!matchesHostTaskCreateIdentity(result.run.identityId, identityId)) return null;
       return result;
     },
 
     list(identityId: string, params?: AgentRunListParams): AgentRun[] {
       let runs = [...byRunId.values()]
         .map((item) => item.run)
-        .filter((run) => run.identityId === identityId && run.agentType === 'task.create');
+        .filter(
+          (run) =>
+            matchesHostTaskCreateIdentity(run.identityId, identityId) &&
+            run.agentType === 'task.create',
+        );
 
       if (params?.conversationId) {
         runs = runs.filter((run) => run.conversationId === params.conversationId);

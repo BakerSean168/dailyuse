@@ -340,6 +340,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 501'];
     case "action.tool === 'create_task_template'":
       return ["action.tool === 'create_task_template'"];
+    case 'matchesHostTaskCreateIdentity':
+      return ['matchesHostTaskCreateIdentity'];
+    case 'Residual 503':
+      return ['Residual 503'];
+    case 'ensureAgentRunOwnedByIdentity':
+      return ['ensureAgentRunOwnedByIdentity'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

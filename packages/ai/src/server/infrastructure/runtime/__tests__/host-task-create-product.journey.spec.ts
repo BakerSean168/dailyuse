@@ -609,6 +609,39 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(port.startRun).not.toHaveBeenCalled();
   });
 
+  it('getRun/listRuns match trimmed ExecutionContext identity (residual 503)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const startCx = { identityId: 'owner-trim' } as const;
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-trim-id',
+        threadId: 'thread-journey-trim-id',
+        conversationId: 'conv-journey-trim-id',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Trim identity match' },
+        identityId: 'ignored',
+      },
+      startCx as any,
+    );
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    expect(started.data.run.identityId).toBe('owner-trim');
+
+    const queryCx = { identityId: '  owner-trim  ' } as const;
+    const got = await service.getRun('run-journey-trim-id', queryCx as any);
+    expect(got.ok).toBe(true);
+    if (!got.ok) return;
+    expect(got.data.run.runId).toBe('run-journey-trim-id');
+
+    const listed = await service.listRuns({}, queryCx as any);
+    expect(listed.ok).toBe(true);
+    if (!listed.ok) return;
+    expect(listed.data.some((run) => run.runId === 'run-journey-trim-id')).toBe(true);
+    expect(port.getRun).not.toHaveBeenCalled();
+  });
+
 
   it('confirm normalizes settlement title from process-local draft (residual 463)', async () => {
     const port = makePort();

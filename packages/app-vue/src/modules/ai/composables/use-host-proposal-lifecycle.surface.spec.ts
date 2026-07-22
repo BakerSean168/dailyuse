@@ -862,6 +862,31 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local store identity match trims (residual 503)', () => {
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(store).toContain('matchesHostTaskCreateIdentity');
+    expect(store).toContain('resolveTaskCreateIdentityId');
+    expect(store).toContain('Residual 503');
+    expect(store).toContain('matchesHostTaskCreateIdentity(result.run.identityId, identityId)');
+    expect(store).toContain('matchesHostTaskCreateIdentity(run.identityId, identityId)');
+    // Runtime ownership helper is also trim-aware (getRun/list/resume isolation).
+    expect(runtime).toContain('Residual 503');
+    expect(runtime).toContain('function ensureAgentRunOwnedByIdentity');
+    expect(runtime).toContain('identityId.trim()');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

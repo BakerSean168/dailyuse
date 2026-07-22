@@ -4,6 +4,7 @@ import {
   resetDefaultHostTaskCreateRunStoreForTests,
   getDefaultHostTaskCreateRunStore,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
+  matchesHostTaskCreateIdentity,
 } from '../host-task-create-run-store';
 import { buildHostTaskCreateStartResult } from '../host-task-create-start';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
@@ -290,6 +291,64 @@ describe('host-task-create-run-store agentType fail-closed (residual 495)', () =
     expect(store.size()).toBe(0);
     expect(store.get('run-foreign-agent', 'id-1')).toBeNull();
     expect(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE).toMatch(/task\.create/);
+  });
+});
+
+describe('host-task-create-run-store identity trim match (residual 503)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('matchesHostTaskCreateIdentity trims and rejects empty', () => {
+    expect(matchesHostTaskCreateIdentity('id-1', '  id-1  ')).toBe(true);
+    expect(matchesHostTaskCreateIdentity('  id-1  ', 'id-1')).toBe(true);
+    expect(matchesHostTaskCreateIdentity('id-1', 'id-2')).toBe(false);
+    expect(matchesHostTaskCreateIdentity('id-1', '   ')).toBe(false);
+    expect(matchesHostTaskCreateIdentity('id-1', '')).toBe(false);
+  });
+
+  it('get/list/getEvents honor trimmed identity query without false isolation miss', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-trim-id', 'Trim identity'),
+      identityId: 'owner-1',
+      nowMs: 10,
+    });
+    store.upsert(started);
+
+    expect(store.get('run-trim-id', '  owner-1  ')?.run.runId).toBe('run-trim-id');
+    expect(store.getEvents('run-trim-id', ' owner-1 ')?.length).toBeGreaterThan(0);
+    expect(store.list('  owner-1  ').some((run) => run.runId === 'run-trim-id')).toBe(true);
+
+    // blank / foreign still fail-closed
+    expect(store.get('run-trim-id', '   ')).toBeNull();
+    expect(store.get('run-trim-id', 'intruder')).toBeNull();
+    expect(store.list('   ')).toHaveLength(0);
+  });
+
+  it('upsert foreign takeover still fail-closed across whitespace-equivalent ids only', () => {
+    const store = createHostTaskCreateRunStore();
+    const owned = buildHostTaskCreateStartResult({
+      request: request('run-bound', 'Owned'),
+      identityId: 'owner-1',
+      nowMs: 1,
+    });
+    store.upsert(owned);
+
+    // same identity with surrounding whitespace must not count as foreign takeover
+    const sameOwnerSpaced = {
+      ...owned,
+      run: { ...owned.run, identityId: '  owner-1  ', updatedAt: 2 },
+    };
+    expect(() => store.upsert(sameOwnerSpaced as typeof owned)).not.toThrow();
+
+    const foreign = {
+      ...owned,
+      run: { ...owned.run, identityId: 'other-owner', updatedAt: 3 },
+    };
+    expect(() => store.upsert(foreign as typeof owned)).toThrow(
+      /already bound to another identity/,
+    );
   });
 });
 
