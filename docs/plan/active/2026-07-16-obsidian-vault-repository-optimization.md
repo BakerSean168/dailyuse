@@ -2079,6 +2079,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `findByIdForIdentity`，owned miss 统一 NOT_FOUND（不 FORBIDDEN）。§13.2 仍部分。
 > 验证：auth-session-ownership surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百八十九轮）：notification template 系统全局 catalog lock——
+> bare `findById` 是模板目录主键路径（无 identity dual-method）；create-from-template 先全局加载模板，
+> 再按 `identityId` 创建 owned notification。§13.2 仍部分。
+> 验证：notification-template-ownership surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2164,12 +2170,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留一百八十八轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留一百八十九轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除，仅保留
 > schedule-task runtime bootstrap（残留 180 surface 锁定）、knowledge connection projection bootstrap
 > （残留 186 surface 锁定）、GitHub webhook delivery 系统投递 id bootstrap（残留 187 surface 锁定）、
-> auth session trusted-token bootstrap（残留 188 surface 锁定）、notification template 系统全局、
-> account/auth identity 主键路径、governance rule 全局目录。
+> auth session trusted-token bootstrap（残留 188 surface 锁定）、notification template 系统全局 catalog
+> （残留 189 surface 锁定）、account/auth identity 主键路径、governance rule 全局目录。
 > 不因此把三入口/Agent/E2E 未完成项打勾。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
@@ -2324,6 +2330,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百八十六轮：knowledge connection bootstrap dual lock (mirror residual 180)。
   残留一百八十七轮：GitHub webhook delivery bootstrap dual lock (connectionId write fence)。
   残留一百八十八轮：auth session trusted-token bootstrap dual lock (JWT/refresh bare only)。
+  残留一百八十九轮：notification template system-global catalog surface lock。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
