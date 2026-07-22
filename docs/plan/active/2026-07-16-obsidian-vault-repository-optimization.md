@@ -3932,6 +3932,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 防跨会话泄漏；非跨端 Playwright/Electron multi-engine E2E。
 > 状态保持 **实施中**；不改 §13.2 checkbox。
 
+> 续进展 2026-07-22（阶段 6 残留四百四十六轮）：§13.2 聚焦证据套件复跑（含 residual 250–445
+> Host task.create linked goal restore + settlement isolation 锁，不改 checkbox）——**104 文件 / 452 测试**（app-vue 26/161、
+> ai 33/158、repository 6/35、contracts 11/29、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`。
+> 相对 residual 444：app-vue +0 file / +3 tests（linked goal unit +2、surface +1）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
+> GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
+> 状态保持 **实施中**；PR 就绪仍为否。
+
 
 
 
@@ -4469,6 +4477,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百四十三轮：Host 会话 restore 工作台聚焦（resolveHostWorkbenchFocusFromSessionRuns + selectConversation）。
   残留四百四十四轮：§13.2 focused evidence suite re-run（449 tests，residuals 250–443 锁；不改 checkbox）。
   残留四百四十五轮：Host task.create linked goal restore + 会话 client settlement 隔离。
+  残留四百四十六轮：§13.2 focused evidence suite re-run（452 tests，residuals 250–445 锁；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4609,6 +4618,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百四十三轮：Host conversation restore workbench focus (resolveHostWorkbenchFocusFromSessionRuns + selectConversation)。
   残留四百四十四轮：§13.2 focused evidence suite re-run (449 tests, residuals 250–443 locks, no checkbox changes)。
   残留四百四十五轮：Host task.create linked goal restore + conversation client settlement isolation。
+  残留四百四十六轮：§13.2 focused evidence suite re-run (452 tests, residuals 250–445 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4835,6 +4845,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百四十三轮：会话 restore Host 工作台聚焦落地；仍不构成跨端 Playwright/Electron multi-engine E2E 证据。
   残留四百四十四轮：tip 上 449 项 focused evidence suite（含 residual 250–443 Host conversation restore workbench focus 锁）通过；仍不构成全量 PR 门禁证据。
   残留四百四十五轮：linked goal restore + client settlement 会话隔离落地；仍不构成跨端 Playwright/Electron multi-engine E2E 证据。
+  残留四百四十六轮：tip 上 452 项 focused evidence suite（含 residual 250–445 Host linked goal restore + settlement isolation 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
