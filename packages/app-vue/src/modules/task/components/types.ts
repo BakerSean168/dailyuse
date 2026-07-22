@@ -1,5 +1,4 @@
 import type { TaskGoalBindingTriggerValue } from '@dailyuse/contracts/task';
-import type { TaskForDAG, TaskGraphData, TaskGraphEdge } from '@dailyuse/task/client';
 
 export type UIPriority = 'high' | 'normal' | 'low' | 'urgent';
 
@@ -33,10 +32,6 @@ export interface TaskGoalBindingViewModel {
   goalTitle?: string;
   keyResultTitle?: string;
 }
-
-export type TaskForDAGViewModel = TaskForDAG;
-export type TaskGraphEdgeViewModel = TaskGraphEdge;
-export type TaskGraphDataViewModel = TaskGraphData;
 
 export interface TaskDependencyValidationError {
   code: string;
