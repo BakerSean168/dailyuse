@@ -3591,6 +3591,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留三百九十五轮）：Host mid-turn cancel_run 生产 journey（仍不打勾）——
+> 同 fixture 经 `AssistantFacade`：in-flight DirectTurn stream 与 ReadonlyAnalysis gateway
+> complete 在 client-owned `runId` 上 `cancel_run` 后均 `message.completed.status=aborted`，
+> 并 emit `run.cancelled`；凭证不进事件。仍非跨端 Playwright/Electron multi-engine E2E。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -4077,6 +4083,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百九十二轮：§13.2 focused evidence suite re-run（353 tests，residuals 250–391 锁；不改 checkbox）。
   残留三百九十三轮：Host open-chat stop → cancel_run（client-owned runId + dispatchAssistant）。
   残留三百九十四轮：§13.2 focused evidence suite re-run（357 tests，residuals 250–393 锁；不改 checkbox）。
+  残留三百九十五轮：Host mid-turn cancel_run 生产 journey（DirectTurn stream + ReadonlyAnalysis 中止）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4166,6 +4173,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百九十二轮：§13.2 focused evidence suite re-run (353 tests, residuals 250–391 locks, no checkbox changes)。
   残留三百九十三轮：Host open-chat stop → cancel_run (client-owned runId + dispatchAssistant)。
   残留三百九十四轮：§13.2 focused evidence suite re-run (357 tests, residuals 250–393 locks, no checkbox changes)。
+  残留三百九十五轮：Host mid-turn cancel_run production journey (DirectTurn stream + ReadonlyAnalysis abort)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4341,6 +4349,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百九十二轮：tip 上 353 项 focused evidence suite（含 residual 250–391 Pi process dry-run plan 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百九十三轮：Host open-chat stop → cancel_run 落地；仍不构成跨端 Playwright/Electron multi-engine E2E/真实 Pi spawn 证据。
   残留三百九十四轮：tip 上 357 项 focused evidence suite（含 residual 250–393 Host open-chat cancel_run 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百九十五轮：Host mid-turn cancel_run 生产 journey 落地；仍不构成跨端 Playwright/Electron multi-engine E2E/真实 Pi spawn 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

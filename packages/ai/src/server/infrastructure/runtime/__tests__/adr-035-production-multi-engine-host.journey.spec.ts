@@ -8,6 +8,8 @@
  * Uses production classes with in-suite dependency doubles (chat execution /
  * model gateway / provider repos). Not Playwright/Electron E2E and does not
  * claim full multi-engine product E2E or real Pi process spawn.
+ * Residual 395: mid-turn cancel_run aborts in-flight DirectTurn stream and
+ * ReadonlyAnalysis gateway complete via production engine abort controllers.
  */
 import { describe, expect, it, vi } from 'vitest';
 import type {
@@ -309,6 +311,140 @@ describe('ADR-035 production multi-engine Host journey (residual 375)', () => {
       proposalId: 'agent-run:run-goal-1:goal.create',
     });
     expect(kernel.executeApproved).not.toHaveBeenCalled();
+  });
+
+  it('mid-turn cancel_run aborts in-flight DirectTurn stream and ReadonlyAnalysis (residual 395)', async () => {
+    const providers = createProviderRepo();
+    const { repo: conversations, conversationId } = createConversationRepo();
+
+    // Gate: only cancel after production engines have registered the run controller.
+    let resolveDirectStreamEntered!: () => void;
+    const directStreamEntered = new Promise<void>((resolve) => {
+      resolveDirectStreamEntered = resolve;
+    });
+    let resolveReadonlyGatewayEntered!: () => void;
+    const readonlyGatewayEntered = new Promise<void>((resolve) => {
+      resolveReadonlyGatewayEntered = resolve;
+    });
+
+    const chat: IAIChatExecutionPort = {
+      complete: vi.fn().mockResolvedValue({
+        content: 'unused',
+        finishReason: 'stop',
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      }),
+      stream: vi.fn().mockImplementation(async function* (input) {
+        // First delta proves stream is live; gate cancel after onChunk runs.
+        yield { content: 'partial-' };
+        resolveDirectStreamEntered();
+        await new Promise<void>((_resolve, reject) => {
+          const signal = input.signal;
+          if (signal?.aborted) {
+            reject(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+            return;
+          }
+          signal?.addEventListener(
+            'abort',
+            () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })),
+            { once: true },
+          );
+        });
+        yield { content: 'should-not-emit', finishReason: 'stop' };
+      }),
+    };
+
+    const gateway = createGateway();
+    vi.mocked(gateway.complete).mockImplementation(
+      (input) =>
+        new Promise((_resolve, reject) => {
+          resolveReadonlyGatewayEntered();
+          const signal = input.signal;
+          if (signal?.aborted) {
+            reject(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+            return;
+          }
+          signal?.addEventListener(
+            'abort',
+            () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })),
+            { once: true },
+          );
+        }),
+    );
+
+    const direct = new DirectTurnEngine(conversations, providers, chat);
+    const readonly = new ReadonlyAnalysisTurnEngine(providers, gateway);
+    const kernel = createKernel();
+    const facade = new AssistantFacade(direct, readonly, kernel, direct);
+
+    const runDirect = 'run-mid-direct-cancel';
+    const runReadonly = 'run-mid-readonly-cancel';
+
+    const directTurnPromise = collect(facade, {
+      type: 'message',
+      identityId: FIXTURE.identity,
+      conversationId,
+      content: 'stream me then cancel',
+      surface: 'web',
+      runId: runDirect,
+    });
+    await directStreamEntered;
+
+    const directCancel = await collect(facade, {
+      type: 'cancel_run',
+      identityId: FIXTURE.identity,
+      runId: runDirect,
+    });
+    expect(directCancel).toEqual([{ type: 'run.cancelled', runId: runDirect }]);
+
+    const directEvents = await directTurnPromise;
+    expect(directEvents[0]).toMatchObject({
+      type: 'run.started',
+      runId: runDirect,
+      engineId: DIRECT_TURN_ENGINE_ID,
+      profile: 'direct_turn',
+    });
+    expect(directEvents.some((e) => e.type === 'message.delta')).toBe(true);
+    expect(directEvents.find((e) => e.type === 'message.completed')).toMatchObject({
+      type: 'message.completed',
+      runId: runDirect,
+      status: 'aborted',
+    });
+    expect(JSON.stringify(directEvents)).not.toContain('sk-prod-secret');
+
+    const readonlyTurnPromise = collect(facade, {
+      type: 'message',
+      identityId: FIXTURE.identity,
+      conversationId,
+      content: 'analyze then cancel',
+      surface: 'desktop',
+      executionProfileId: 'pi_readonly',
+      runId: runReadonly,
+    });
+    await readonlyGatewayEntered;
+
+    const readonlyCancel = await collect(facade, {
+      type: 'cancel_run',
+      identityId: FIXTURE.identity,
+      runId: runReadonly,
+    });
+    expect(readonlyCancel).toEqual([{ type: 'run.cancelled', runId: runReadonly }]);
+
+    const readonlyEvents = await readonlyTurnPromise;
+    expect(readonlyEvents[0]).toMatchObject({
+      type: 'run.started',
+      runId: runReadonly,
+      engineId: PI_READONLY_TURN_ENGINE_ID,
+      profile: 'pi_readonly',
+    });
+    expect(readonlyEvents.find((e) => e.type === 'message.completed')).toMatchObject({
+      type: 'message.completed',
+      runId: runReadonly,
+      status: 'aborted',
+    });
+    expect(JSON.stringify(readonlyEvents)).not.toContain('sk-prod-secret');
+
+    // Process spike remains uninvolved in product cancel path.
+    expect(PI_READONLY_PROCESS_ADAPTER_ID).toBe('process.pi_readonly_spike');
   });
 
   it('process spike remains fail-closed and uninvolved in Facade host journey', async () => {
