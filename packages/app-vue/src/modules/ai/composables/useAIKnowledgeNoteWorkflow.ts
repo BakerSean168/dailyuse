@@ -5,6 +5,9 @@
  * approvedActions payload for executor context; multi create_knowledge_note is fail-closed.
  * Residual 559: knowledge.write confirm only from waiting_approval
  * (task residual 489 + knowledge cancel residual 357 symmetry).
+ * Residual 605: process-local edit revise after Host proposal revise (task residual 439
+ * + knowledge classifier residual 603 symmetry). Patches sole create_knowledge_note so
+ * getRun/selectAgentRun reopen revised path/body; foreign companions may remain.
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -436,6 +439,58 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
   }
 
   /**
+   * Residual 605: Host revise → process-local edit resume (stay waiting_approval).
+   * Patches sole create_knowledge_note so getRun/selectAgentRun reopen revised draft
+   * (task residual 439 / residual 507 sole product draft symmetry).
+   * Residual 559: product revise only from waiting_approval.
+   * Residual 555/551: sole create_knowledge_note draftAction only (foreign companions OK).
+   * Host lifecycle revise is dispatched by AIChatView first; this is the AgentRun edit path.
+   */
+  async function reviseKnowledgeNoteAgentRun(hostOptions?: {
+    targetPath?: string;
+    contentMarkdown?: string;
+  }) {
+    if (!noteAgentRun.value || noteCreating.value || noteAgentLoading.value) return;
+    // Residual 559/605: product revise only from waiting_approval.
+    if (noteAgentRun.value.run.status !== 'waiting_approval') return;
+    // knowledge.generate is the Host knowledge product AgentType (start residual).
+    if (noteAgentRun.value.run.agentType !== 'knowledge.generate') return;
+    // Refuse blank path revise (Host path fields are vault-relative non-empty when set).
+    if (typeof hostOptions?.targetPath === 'string' && !hostOptions.targetPath.trim()) return;
+
+    noteCreating.value = true;
+    try {
+      const source =
+        noteAgentRun.value.state.pendingActions.length > 0
+          ? noteAgentRun.value.state.pendingActions
+          : noteAgentRun.value.state.approvedActions;
+      // Residual 555/605: sole create_knowledge_note draftAction (no multi invent).
+      const productDraftCount = source.filter(
+        (action) => action.tool === 'create_knowledge_note',
+      ).length;
+      if (productDraftCount !== 1) return;
+
+      // Residual 363/551/605: Host-revised path/body; keep foreign companions for executor context.
+      const approvedActions = applyHostKnowledgePatchToAgentActions(source, {
+        targetPath: hostOptions?.targetPath,
+        contentMarkdown: hostOptions?.contentMarkdown,
+      });
+
+      const result = unwrap(
+        await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
+          userDecision: 'edit',
+          approvedActions,
+        }),
+      );
+      noteAgentRun.value = result;
+    } catch (error) {
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
+    } finally {
+      noteCreating.value = false;
+    }
+  }
+
+  /**
    * Residual 357: Host reject lifecycle then cancel the AgentRun executor path.
    * Does not run ProposalKernel mutation execution or write knowledge notes.
    */
@@ -518,6 +573,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     startKnowledgeNoteAgentRunFromKnowledgeAnswer,
     createKnowledgeNoteFromConversation,
     retryKnowledgeNoteAgentExecution,
+    reviseKnowledgeNoteAgentRun,
     cancelKnowledgeNoteAgentRun,
     openCreatedNote,
   };

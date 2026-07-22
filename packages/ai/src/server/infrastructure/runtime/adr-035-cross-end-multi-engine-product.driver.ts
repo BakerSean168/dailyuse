@@ -452,6 +452,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 603'];
     case 'isHostPanelKnowledgeSessionProductOwned':
       return ['isHostPanelKnowledgeSessionProductOwned'];
+    case 'Residual 605':
+      return ['Residual 605'];
+    case 'reviseKnowledgeNoteAgentRun':
+      return ['reviseKnowledgeNoteAgentRun'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

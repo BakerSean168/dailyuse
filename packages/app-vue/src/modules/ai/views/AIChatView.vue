@@ -539,6 +539,7 @@ const {
   createKnowledgeNoteFromConversation,
   startKnowledgeNoteAgentRunFromKnowledgeAnswer,
   retryKnowledgeNoteAgentExecution,
+  reviseKnowledgeNoteAgentRun,
   cancelKnowledgeNoteAgentRun,
   openCreatedNote,
 } = noteWorkflow;
@@ -818,6 +819,17 @@ async function handleHostProposalRevise(payload: {
       await reviseTaskAgentRun({
         title: payload.patch.title ?? payload.item.title,
         goalId: payload.patch.goalId ?? payload.item.goalId,
+      });
+    }
+    // Residual 605: knowledge session process-local edit via shared classifier
+    // (task residual 439 + knowledge classifier residual 603 symmetry).
+    if (
+      payload.item.source === 'knowledge' &&
+      isHostPanelKnowledgeSessionProductOwned(owned)
+    ) {
+      await reviseKnowledgeNoteAgentRun({
+        targetPath: payload.patch.targetPath ?? payload.item.targetPath,
+        contentMarkdown: payload.patch.contentMarkdown ?? payload.item.contentMarkdown,
       });
     }
   } finally {

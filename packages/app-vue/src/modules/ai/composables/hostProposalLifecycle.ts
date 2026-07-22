@@ -409,10 +409,12 @@ export function isHostPanelGoalSessionProductOwned(
 }
 
 /**
- * Residual 603: Host panel knowledge-session product settlement ownership.
+ * Residual 603/605: Host panel knowledge-session product settlement ownership.
  * create_knowledge_note product tool from shared resolveHostPanelOwnedProductRun —
  * mirrors residual 581 process-local / goal-session classifiers so knowledge
  * approve/reject/revise settlement cannot drift from ownership productTool.
+ * Residual 605: Host revise also process-local edit-resumes via this classifier
+ * (task residual 439 symmetry) so getRun/reopen cannot rehydrate stale path/body.
  */
 export function isHostPanelKnowledgeSessionProductOwned(
   owned:

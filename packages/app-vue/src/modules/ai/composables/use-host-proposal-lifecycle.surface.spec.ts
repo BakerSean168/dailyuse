@@ -1341,6 +1341,38 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).not.toContain('executeApproved');
   });
 
+  it('knowledge process-local edit revise via classifier (residual 605)', () => {
+    const knowledge = readFileSync(resolve(dir, 'useAIKnowledgeNoteWorkflow.ts'), 'utf8');
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(knowledge).toContain('Residual 605');
+    expect(knowledge).toContain('reviseKnowledgeNoteAgentRun');
+    expect(knowledge).toContain("userDecision: 'edit'");
+    expect(knowledge).toContain('applyHostKnowledgePatchToAgentActions');
+    // Sole product draft gate (residual 555/551 symmetry).
+    const reviseIdx = knowledge.indexOf('async function reviseKnowledgeNoteAgentRun');
+    expect(reviseIdx).toBeGreaterThan(-1);
+    const reviseSlice = knowledge.slice(reviseIdx, reviseIdx + 2200);
+    expect(reviseSlice).toContain("tool === 'create_knowledge_note'");
+    expect(reviseSlice).toContain("status !== 'waiting_approval'");
+    expect(reviseSlice).toContain("agentType !== 'knowledge.generate'");
+    expect(reviseSlice).toContain('targetPath: hostOptions?.targetPath');
+    expect(reviseSlice).toContain('contentMarkdown: hostOptions?.contentMarkdown');
+    // Host panel revise settles knowledge via classifier + process-local edit.
+    expect(chatView).toContain('reviseKnowledgeNoteAgentRun');
+    expect(chatView).toContain('Residual 605');
+    const hostReviseIdx = chatView.indexOf('async function handleHostProposalRevise');
+    expect(hostReviseIdx).toBeGreaterThan(-1);
+    const hostReviseSlice = chatView.slice(hostReviseIdx, hostReviseIdx + 4200);
+    expect(hostReviseSlice).toContain('isHostPanelKnowledgeSessionProductOwned(owned)');
+    expect(hostReviseSlice).toContain('reviseKnowledgeNoteAgentRun');
+    // Classifier comment locks residual 605 revise path.
+    expect(helper).toContain('Residual 603/605');
+    expect(helper).toContain('Residual 605');
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+    expect(knowledge).not.toContain('executeApproved');
+  });
+
 
   it('goal.create confirm/cancel and knowledge.write confirm require waiting_approval (residual 559)', () => {
     const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
