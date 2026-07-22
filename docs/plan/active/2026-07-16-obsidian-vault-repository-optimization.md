@@ -1827,6 +1827,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-22（阶段 6 残留一百四十九轮）：Weight snapshot 身份隔离——`findByGoal`/
+> `findByKeyResult`/`findByTimeRange`/`findByIdForIdentity`/`delete*` 要求 identityId；
+> Prisma 过滤 identity。补 ownership surface。§13.2 仍部分。
+> 验证：weight snapshot surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 
 
 
@@ -1964,6 +1972,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百四十六轮：focus mode findByIdForIdentity/delete identity-scoped。
   残留一百四十七轮：notification preference findByIdForIdentity/delete/exists identity-scoped。
   残留一百四十八轮：reminder response findByIdForIdentity identity-scoped。
+  残留一百四十九轮：weight snapshot query/delete identity-scoped。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
