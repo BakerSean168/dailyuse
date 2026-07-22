@@ -42,35 +42,14 @@ import type {
 
 // ─── Client Application Port ────────────────────────────────────────────────
 
-/** High-level client-side operations for the authentication module. */
-export interface AuthenticationClientPort {
-  loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>>;
-  registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>>;
-  refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>>;
-  logout(): Promise<Result<void>>;
-  getCurrentUser(): Promise<Result<GetCurrentUserRes>>;
-  listSessions(): Promise<Result<ListSessionsRes>>;
-  revokeSession(req: RevokeSessionReq): Promise<Result<void>>;
-  changePassword(req: ChangePasswordReq): Promise<Result<void>>;
-  forgotPassword(req: ForgotPasswordReq): Promise<Result<void>>;
-  resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
-  sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>>;
-  verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>>;
-  getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
-  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
-  oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>>;
-  bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>>;
-  unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>>;
-  enterGuestMode(): Promise<Result<GuestModeRes>>;
-  autoLoginDesktop(): Promise<Result<AutoLoginResult>>;
-  listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>>;
-  loginRememberedDesktopAccount(
-    req: RememberedDesktopAccountLoginReq,
-  ): Promise<Result<LoginByEmailRes>>;
-  removeRememberedAccount(identityId: string): Promise<Result<void>>;
-}
+/**
+ * Application-facing client port.
+ * Identical to IAuthApiClient for this module (pure Result pass-through).
+ */
+export type AuthenticationClientPort = IAuthApiClient;
 
-export class AuthClientService implements AuthenticationClientPort {
+export class AuthClientService implements IAuthApiClient {
+
   constructor(private readonly apiClient: IAuthApiClient) {
     this.loginByEmail = this.loginByEmail.bind(this);
     this.registerByEmail = this.registerByEmail.bind(this);
