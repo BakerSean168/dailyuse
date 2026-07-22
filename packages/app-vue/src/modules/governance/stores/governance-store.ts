@@ -15,7 +15,7 @@ import type {
   RuleRevisionClientDTO,
   RuleSeverity,
   RuleStatus,
-} from '../types';
+} from '@dailyuse/contracts/governance';
 
 export interface GovernanceState {
   /** Rules cache by ID. 按 ID 存储的规则缓存。 */

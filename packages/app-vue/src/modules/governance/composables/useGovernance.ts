@@ -24,7 +24,7 @@ import type {
   RuleSeverity,
   RuleStatus,
   UpdateRuleReq,
-} from '../types';
+} from '@dailyuse/contracts/governance';
 import { toGovernanceDisplayRule } from '../display-rule';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 

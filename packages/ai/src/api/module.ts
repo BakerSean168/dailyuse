@@ -11,7 +11,7 @@
  *
  * Follows the governance reference pattern:
  * 1. Composition Root via `createAIModule(deps)`
- * 2. Transport handlers via `createAITransportHandlers(api)`
+ * 2. Controllers wired to `aiModule.api` (ApplicationPort single track)
  * 3. Route registration
  * + `destroy()` for cleanup
  */
@@ -68,7 +68,6 @@ import type {
   IKnowledgeIndexStatusPort,
   IKnowledgeSourcePort,
 } from '../ports';
-import { createAITransportHandlers } from '../server/transport';
 import { getAIServiceRuntimeConfig } from '../shared/config/env';
 
 /**
@@ -156,7 +155,7 @@ export function createAIApiModule(options: {
       });
       activeAIModule = aiModule;
       aiModule.start();
-      const handlers = createAITransportHandlers(aiModule.api);
+      const handlers = aiModule.api;
 
       // ---------------------------------------------------------------
       // 2. Controllers — wired to the module's ApplicationPort (api)
