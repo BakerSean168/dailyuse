@@ -193,7 +193,8 @@ export function createNotificationModule(
     },
 
     getPreferences: async (identityId) => {
-      return useCases.getNotificationPreference.execute(identityId);
+      // Always materialize a preference row for the identity (residual 196).
+      return useCases.getNotificationPreference.executeOrCreate(identityId);
     },
 
     updatePreferences: async (dto, identityId) => {

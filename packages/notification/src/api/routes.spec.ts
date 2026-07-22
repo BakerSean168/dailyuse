@@ -35,6 +35,8 @@ function createControllerStub(): NotificationUseCases {
     batchMarkAsRead: vi.fn(),
     batchDelete: vi.fn(),
     cleanupOldNotifications: vi.fn(),
+    getPreferences: vi.fn(),
+    updatePreferences: vi.fn(),
   } as unknown as NotificationUseCases;
 }
 
@@ -283,4 +285,35 @@ describe('notification route contracts', () => {
     const deleteResponseSchema = getResponseSchema(deleteRoute, 200);
     expect(deleteResponseSchema).toBeDefined();
   });
+
+  it('preferences endpoints are identity-scoped static paths before /:id (residual 196)', () => {
+    const registry = new TestOpenApiRegistry();
+
+    registerNotificationRoutes(
+      createControllerStub(),
+      { auth: authMiddleware, requireRole: vi.fn(() => authMiddleware) },
+      registry,
+    );
+
+    const getPref = getRegisteredRoute(registry, 'get', `${BASE}/preferences`);
+    const putPref = getRegisteredRoute(registry, 'put', `${BASE}/preferences`);
+    expect(getPref).toBeDefined();
+    expect(putPref).toBeDefined();
+
+    const bodySchema = getJsonBodySchema(putPref);
+    expect(bodySchema.safeParse({ channels: { inApp: true } }).success).toBe(true);
+    // Body must not require client-supplied identityId dual-track.
+    expect(bodySchema.safeParse({ identityId: 'x', channels: { inApp: true } }).success).toBe(true);
+
+    const getIdx = registry.paths.findIndex(
+      (route) => route.method === 'get' && route.path === `${BASE}/preferences`,
+    );
+    const idIdx = registry.paths.findIndex(
+      (route) => route.method === 'get' && route.path === `${BASE}/{id}`,
+    );
+    expect(getIdx).toBeGreaterThanOrEqual(0);
+    expect(idIdx).toBeGreaterThanOrEqual(0);
+    expect(getIdx).toBeLessThan(idIdx);
+  });
+
 });

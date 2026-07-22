@@ -49,6 +49,8 @@ const allChannels = [
   NotificationChannels.DELETE,
   NotificationChannels.CLEAR_ALL,
   NotificationChannels.GET_UNREAD_COUNT,
+  NotificationChannels.PREFERENCES_GET,
+  NotificationChannels.PREFERENCES_UPDATE,
   NotificationChannels.CUSTOM_RECEIVE,
   NotificationChannels.CUSTOM_CLICK,
   NotificationChannels.CUSTOM_CLOSE,
@@ -146,6 +148,16 @@ export const NotificationElectronModule: IElectronModule = {
     });
     ipcMain.handle(NotificationChannels.GET_UNREAD_COUNT, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) => controller.getUnreadCount(identityId));
+    });
+    ipcMain.handle(NotificationChannels.PREFERENCES_GET, async () => {
+      return withAuthenticatedValue(ctx, (requestContext) =>
+        controller.getPreferences(requestContext),
+      );
+    });
+    ipcMain.handle(NotificationChannels.PREFERENCES_UPDATE, async (_, dto) => {
+      return withAuthenticatedValue(ctx, (requestContext) =>
+        controller.updatePreferences(dto ?? {}, requestContext),
+      );
     });
     logger.info('Notification module registered');
   },

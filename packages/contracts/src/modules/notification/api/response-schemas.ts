@@ -6,10 +6,11 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId, NotificationId } from '../../../primitives';
+import type { IdentityId, NotificationId, NotificationPreferenceId } from '../../../primitives';
 import { NotificationType } from '../value-objects/notification-type';
 import { NotificationCategory } from '../value-objects/notification-category';
 import { NotificationStatus } from '../value-objects/notification-status';
+import { NotificationChannelType } from '../value-objects/notification-channel-type';
 
 /**
  * Notification Response Schema
@@ -41,3 +42,17 @@ export const NotificationBatchResultSchema = z.object({
 export const UnreadCountResponseSchema = z.object({
   count: z.number(),
 });
+
+/**
+ * Notification Preference Response Schema (residual 196)
+ */
+export const NotificationPreferenceResponseSchema = z.object({
+  id: brandedId<NotificationPreferenceId>(),
+  identityId: brandedId<IdentityId>(),
+  settings: z.record(z.string(), z.array(z.enum(NotificationChannelType))),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+});
+

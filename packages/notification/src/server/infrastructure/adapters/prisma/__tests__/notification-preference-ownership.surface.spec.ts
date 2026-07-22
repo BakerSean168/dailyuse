@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
  * primary key alone. Runtime get/update paths already use findByIdentityId.
  * Residual 194: updatePreferences requires identityId at the call boundary
  * (no optional identity dual-track on the use-case input).
+ * Residual 196: HTTP/Electron preference transport wired with ctx.identityId only.
  */
 describe('notification preference ownership surface', () => {
   const port = readFileSync(
@@ -36,6 +37,19 @@ describe('notification preference ownership surface', () => {
   );
   const moduleSource = readFileSync(
     resolve(__dirname, '../../../notification.module.ts'),
+    'utf8',
+  );
+  const routes = readFileSync(resolve(__dirname, '../../../../../api/routes.ts'), 'utf8');
+  const controller = readFileSync(
+    resolve(__dirname, '../../../../transport/notification.controller.ts'),
+    'utf8',
+  );
+  const electron = readFileSync(resolve(__dirname, '../../../../../electron/index.ts'), 'utf8');
+  const channels = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../../../../contracts/src/electron/ipc-channels.ts',
+    ),
     'utf8',
   );
 
@@ -86,6 +100,32 @@ describe('notification preference ownership surface', () => {
     expect(moduleSource).toMatch(
       /updateNotificationPreference\.execute\(\s*identityId,/,
     );
+  });
+
+
+  it('HTTP/Electron preference transport is identity-scoped (residual 196)', () => {
+    expect(channels).toContain("PREFERENCES_GET: 'notification:preferences:get'");
+    expect(channels).toContain("PREFERENCES_UPDATE: 'notification:preferences:update'");
+    expect(routes).toContain("path: '/preferences'");
+    expect(routes).toContain('controller.getPreferences(ctx)');
+    expect(routes).toContain('controller.updatePreferences(req.body, ctx)');
+    // Static path must appear before /:id registration.
+    expect(routes.indexOf("path: '/preferences'")).toBeLessThan(routes.indexOf("path: '/:id'"));
+    expect(controller).toContain('async getPreferences(ctx: Context)');
+    expect(controller).toContain('async updatePreferences(input: unknown, ctx: Context)');
+    expect(controller).toContain(
+      'return this.useCases.updatePreferences(parsed.data, ctx.identityId);',
+    );
+    expect(controller).toContain('return this.useCases.getPreferences(ctx.identityId);');
+    // Never accept identityId from client preference body dual-track.
+    expect(controller).not.toMatch(
+      /updatePreferences\([\s\S]*identityId:\s*parsed\.data\.identityId/,
+    );
+    expect(electron).toContain('NotificationChannels.PREFERENCES_GET');
+    expect(electron).toContain('NotificationChannels.PREFERENCES_UPDATE');
+    expect(electron).toContain('controller.getPreferences(requestContext)');
+    expect(electron).toContain('controller.updatePreferences(dto ?? {}, requestContext)');
+    expect(moduleSource).toContain('executeOrCreate(identityId)');
   });
 
 });

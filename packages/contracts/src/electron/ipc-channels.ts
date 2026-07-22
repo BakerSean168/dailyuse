@@ -205,6 +205,9 @@ export const NotificationChannels = {
   DELETE: 'notification:delete',
   CLEAR_ALL: 'notification:clear-all',
   GET_UNREAD_COUNT: 'notification:unread-count',
+  // Residual 196: identity-scoped preference get/update (no dual-track body identityId).
+  PREFERENCES_GET: 'notification:preferences:get',
+  PREFERENCES_UPDATE: 'notification:preferences:update',
   CUSTOM_RECEIVE: 'notification:custom:receive',
   CUSTOM_CLICK: 'notification:custom:click',
   CUSTOM_CLOSE: 'notification:custom:close',

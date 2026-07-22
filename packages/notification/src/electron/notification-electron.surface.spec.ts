@@ -19,10 +19,14 @@ describe('NotificationElectronModule channel surface', () => {
     expect(source).toContain('NotificationChannels.CUSTOM_RECEIVE');
     expect(source).toContain('NotificationChannels.LIST');
     expect(source).toContain('NotificationChannels.GET_UNREAD_COUNT');
+    expect(source).toContain('NotificationChannels.PREFERENCES_GET');
+    expect(source).toContain('NotificationChannels.PREFERENCES_UPDATE');
   });
 
   it('keeps core notification channels stable', () => {
     expect(NotificationChannels.LIST).toBe('notification:list');
     expect(NotificationChannels.CUSTOM_RECEIVE).toBe('notification:custom:receive');
+    expect(NotificationChannels.PREFERENCES_GET).toBe('notification:preferences:get');
+    expect(NotificationChannels.PREFERENCES_UPDATE).toBe('notification:preferences:update');
   });
 });

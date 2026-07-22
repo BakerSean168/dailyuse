@@ -15,6 +15,7 @@ import {
   MarkAsReadBatchSchema,
   DeleteNotificationsBatchSchema,
   CleanupOldNotificationsSchema,
+  UpdateNotificationPreferenceSchema,
 } from '@dailyuse/contracts/notification';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -144,5 +145,24 @@ export class NotificationController {
       return ok({ deletedCount: Number((result.data as { deletedCount: number }).deletedCount) });
     }
     return ok({ deletedCount: 0 });
+  }
+
+  // ==================== Preference Operations (residual 196) ====================
+
+  async getPreferences(ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.getPreferences(ctx.identityId);
+  }
+
+  async updatePreferences(input: unknown, ctx: Context): Promise<Result<unknown>> {
+    const parsed = UpdateNotificationPreferenceSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    // identityId always from auth context — never from client body dual-track.
+    return this.useCases.updatePreferences(parsed.data, ctx.identityId);
   }
 }
