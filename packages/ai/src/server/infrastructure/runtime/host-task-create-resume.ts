@@ -1,5 +1,5 @@
 /**
- * Residual 437/439/453/455/463: Host task.create process-local resume.
+ * Residual 437/439/453/455/463/465: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
@@ -13,6 +13,9 @@
  *
  * Residual 463: confirm settlement must carry a recoverable non-empty title
  * (executed data / approved pending) for history reopen + receipt rehydrate.
+ *
+ * Residual 465: confirm settlement must carry a recoverable non-empty template
+ * entity id (entityId / data.templateId|entityId|taskId) for receipt deep-link.
  *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
@@ -36,6 +39,10 @@ export const HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE =
 /** Residual 463: confirm without recoverable settlement title is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE =
   'Host task.create confirm requires a non-empty settlement title on create_task_template executedActions.';
+
+/** Residual 465: confirm without recoverable settlement template entity id is fail-closed. */
+export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE =
+  'Host task.create confirm requires a non-empty settlement template entity id on create_task_template executedActions.';
 
 function nextSequence(events: AgentRunResult['events']): number {
   if (events.length === 0) return 0;
@@ -76,6 +83,25 @@ function resolveConfirmSettlementTitle(
     asNonEmptyTrimmedString(pending['title']) ??
     asNonEmptyTrimmedString(pending['name'])
   );
+}
+
+/**
+ * Residual 465: resolve settlement template entity id from executed action fields/data.
+ * Product confirm records the domain createTemplate id for receipt deep-link / reopen.
+ */
+function resolveConfirmSettlementTemplateId(executed: AgentExecutedAction): string | undefined {
+  const fromEntity = asNonEmptyTrimmedString(executed.entityId);
+  if (fromEntity) return fromEntity;
+  const data = executed.data;
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    const record = data as Record<string, unknown>;
+    return (
+      asNonEmptyTrimmedString(record['templateId']) ??
+      asNonEmptyTrimmedString(record['entityId']) ??
+      asNonEmptyTrimmedString(record['taskId'])
+    );
+  }
+  return undefined;
 }
 
 function resolveApprovedActions(
@@ -208,23 +234,33 @@ export function buildHostTaskCreateResumeResult(input: {
       }
     }
     const approvedActions = resolveApprovedActions(current, input.payload);
-    // Residual 463: normalize recoverable settlement title into executed data + completion event.
+    // Residual 463/465: normalize recoverable settlement title + template entity id
+    // into executed data/entityId + completion event for reopen/receipt deep-link.
     let settlementTitle: string | undefined;
+    let settlementTemplateId: string | undefined;
     for (let index = 0; index < executedActions.length; index += 1) {
       const action = executedActions[index]!;
       const title = resolveConfirmSettlementTitle(action, approvedActions);
       if (!title) {
         throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE);
       }
+      const templateId = resolveConfirmSettlementTemplateId(action);
+      if (!templateId) {
+        throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE);
+      }
       settlementTitle = settlementTitle ?? title;
+      settlementTemplateId = settlementTemplateId ?? templateId;
       const data: Record<string, unknown> = {
         ...(action.data && typeof action.data === 'object' && !Array.isArray(action.data)
           ? (action.data as Record<string, unknown>)
           : {}),
         title,
+        templateId,
+        entityId: templateId,
       };
       executedActions[index] = {
         ...action,
+        entityId: templateId,
         data,
       };
     }
@@ -257,6 +293,7 @@ export function buildHostTaskCreateResumeResult(input: {
             status: 'completed',
             executedCount: executedActions.length,
             ...(settlementTitle ? { title: settlementTitle } : {}),
+            ...(settlementTemplateId ? { templateId: settlementTemplateId } : {}),
           },
         },
       ],

@@ -514,6 +514,27 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create confirm requires recoverable settlement template id (residual 465)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE');
+    expect(resume).toContain('non-empty settlement template entity id');
+    expect(resume).toContain('resolveConfirmSettlementTemplateId');
+    expect(resume).toContain('Residual 465');
+    // Client complete path carries templateId as entityId into executedActions.
+    expect(taskWorkflow).toContain('completeTaskAgentRun');
+    expect(taskWorkflow).toContain('templateId');
+    expect(taskWorkflow).toContain('entityId: templateId');
+    expect(taskWorkflow).toContain('Residual 465');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

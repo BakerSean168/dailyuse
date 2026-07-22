@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -341,6 +341,9 @@ describe('host-task-create-resume (residual 437/439/453/455/463)', () => {
     expect(completed.run.status).toBe('completed');
     expect(completed.state.executedActions[0]?.data?.['title']).toBe('Ship residual 439');
     expect(completed.events.at(-1)?.data?.['title']).toBe('Ship residual 439');
+    expect(completed.state.executedActions[0]?.entityId).toBe('tpl-title');
+    expect(completed.state.executedActions[0]?.data?.['templateId']).toBe('tpl-title');
+    expect(completed.events.at(-1)?.data?.['templateId']).toBe('tpl-title');
   });
 
   it('confirm fails closed when settlement title cannot be recovered (residual 463)', () => {
@@ -379,5 +382,60 @@ describe('host-task-create-resume (residual 437/439/453/455/463)', () => {
       }),
     ).toThrow(/non-empty settlement title/);
   });
+
+  it('confirm normalizes settlement template id from data when entityId missing (residual 465)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-settle-template'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const completed = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            // entityId omitted — recover from data.templateId
+            data: { title: 'From data', templateId: '  tpl-from-data  ' },
+          },
+        ],
+      },
+      nowMs: 2,
+    });
+    expect(completed.run.status).toBe('completed');
+    expect(completed.state.executedActions[0]?.entityId).toBe('tpl-from-data');
+    expect(completed.state.executedActions[0]?.data?.['templateId']).toBe('tpl-from-data');
+    expect(completed.state.executedActions[0]?.data?.['entityId']).toBe('tpl-from-data');
+    expect(completed.events.at(-1)?.data?.['templateId']).toBe('tpl-from-data');
+    expect(completed.events.at(-1)?.data?.['title']).toBe('From data');
+  });
+
+  it('confirm fails closed when settlement template id cannot be recovered (residual 465)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-no-template'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'Created without template id',
+              data: { title: 'Has title only' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/non-empty settlement template entity id/);
+  });
+
 
 });

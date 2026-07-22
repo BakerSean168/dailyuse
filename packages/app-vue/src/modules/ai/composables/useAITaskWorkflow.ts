@@ -151,9 +151,10 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 437/453/463: mark process-local task.create run completed after client createTemplate.
-   * Domain mutation already happened; Host confirm requires these executedActions (no Host default)
-   * and a recoverable settlement title in data (residual 463).
+   * Residual 437/453/463/465: mark process-local task.create run completed after client createTemplate.
+   * Domain mutation already happened; Host confirm requires these executedActions (no Host default),
+   * a recoverable settlement title in data (residual 463), and a non-empty template entity id
+   * (residual 465) for receipt deep-link / reopen.
    * This only records settlement for getRun/list/reopen.
    */
   async function completeTaskAgentRun(hostOptions?: {
@@ -163,12 +164,14 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }) {
     const run = options.taskAgentRun.value;
     if (!run || run.run.agentType !== 'task.create' || taskAgentResuming.value) return;
+    // Residual 465: product confirm needs domain template id for Host settlement deep-link.
+    const templateId =
+      typeof hostOptions?.templateId === 'string' && hostOptions.templateId.trim()
+        ? hostOptions.templateId.trim()
+        : undefined;
+    if (!templateId) return;
     taskAgentResuming.value = true;
     try {
-      const templateId =
-        typeof hostOptions?.templateId === 'string' && hostOptions.templateId.trim()
-          ? hostOptions.templateId.trim()
-          : undefined;
       const title =
         typeof hostOptions?.title === 'string' && hostOptions.title.trim()
           ? hostOptions.title.trim()
@@ -184,6 +187,9 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
       };
       if (title) payloadBase['title'] = title;
       if (goalId) payloadBase['goalId'] = goalId;
+      // Residual 465: always stamp domain template id into settlement data + entityId.
+      payloadBase['templateId'] = templateId;
+      payloadBase['entityId'] = templateId;
 
       const approvedActions = pending
         ? [
@@ -201,7 +207,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
           message: goalId
             ? `Created task template · linked goal ${goalId}`
             : 'Created task template',
-          ...(templateId ? { entityId: templateId } : {}),
+          entityId: templateId,
           data: payloadBase,
         },
       ];

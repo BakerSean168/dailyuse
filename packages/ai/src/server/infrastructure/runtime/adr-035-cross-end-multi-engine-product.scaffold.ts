@@ -284,6 +284,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 463: confirm settlement title recoverable for reopen/receipt.
         'HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE',
         'resolveConfirmSettlementTitle',
+        // Residual 465: confirm settlement template entity id for receipt deep-link.
+        'HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE',
+        'resolveConfirmSettlementTemplateId',
       ],
       status: 'implemented_unit',
     },

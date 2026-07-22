@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -11,6 +11,7 @@
  *   conversation/thread runId binding (residual 457)
  *   start requires conversationId (residual 461)
  *   confirm settlement title (residual 463)
+ *   confirm settlement template id (residual 465)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -522,6 +523,87 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(failConfirm.error.message).toMatch(/non-empty settlement title/);
 
     const stillWaiting = await service.getRun('run-journey-title-fail', cx as any);
+    expect(stillWaiting.ok).toBe(true);
+    if (!stillWaiting.ok) return;
+    expect(stillWaiting.data.run.status).toBe('waiting_approval');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
+  it('confirm normalizes settlement template id and fails closed without recoverable id (residual 465)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-template-settle' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-template-settle',
+        threadId: 'thread-journey-template-settle',
+        conversationId: 'conv-journey-template-settle',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Template settle' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    const completed = await service.resumeRun(
+      'run-journey-template-settle',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            data: { title: 'Template settle', templateId: 'tpl-journey-data' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(completed.ok).toBe(true);
+    if (!completed.ok) return;
+    expect(completed.data.state.executedActions[0]?.entityId).toBe('tpl-journey-data');
+    expect(completed.data.state.executedActions[0]?.data?.['templateId']).toBe('tpl-journey-data');
+    expect(completed.data.events.at(-1)?.data?.['templateId']).toBe('tpl-journey-data');
+
+    const started2 = await service.startRun(
+      {
+        runId: 'run-journey-template-fail',
+        threadId: 'thread-journey-template-fail',
+        conversationId: 'conv-journey-template-fail',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'No template id' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started2.ok).toBe(true);
+
+    const failConfirm = await service.resumeRun(
+      'run-journey-template-fail',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created without template id',
+            data: { title: 'No template id' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(failConfirm.ok).toBe(false);
+    if (failConfirm.ok) return;
+    expect(failConfirm.error.code).toBe('VALIDATION_ERROR');
+    expect(failConfirm.error.message).toMatch(/non-empty settlement template entity id/);
+
+    const stillWaiting = await service.getRun('run-journey-template-fail', cx as any);
     expect(stillWaiting.ok).toBe(true);
     if (!stillWaiting.ok) return;
     expect(stillWaiting.data.run.status).toBe('waiting_approval');
