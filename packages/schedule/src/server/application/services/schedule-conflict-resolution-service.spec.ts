@@ -14,10 +14,6 @@ class InMemoryScheduleRepository implements IScheduleRepository {
   }
 
 
-  async findById(id: string): Promise<CalendarEntry | null> {
-    return this.schedules.get(id) ?? null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null> {
     const schedule = this.schedules.get(id) ?? null;
     if (!schedule || schedule.identityId !== identityId) {

@@ -69,17 +69,6 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   }
 
   /**
-   * Find schedule by UUID
-   */
-  async findById(id: string): Promise<CalendarEntry | null> {
-    const data = await this.db.schedule.findUnique({
-      where: { id },
-    });
-
-    return data ? this.mapToEntity(data) : null;
-  }
-
-  /**
    * Find schedule by UUID owned by identity
    */
   async findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null> {

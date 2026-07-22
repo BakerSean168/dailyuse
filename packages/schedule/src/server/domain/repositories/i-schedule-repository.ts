@@ -15,12 +15,7 @@ export interface IScheduleRepository {
   save(schedule: CalendarEntry): Promise<void>;
 
   /**
-   * Find a schedule by its UUID
-   */
-  findById(id: string): Promise<CalendarEntry | null>;
-
-  /**
-   * Find a schedule by UUID owned by the given identity
+   * Find a schedule by UUID owned by the given identity (only load path)
    */
   findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null>;
 

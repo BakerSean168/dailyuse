@@ -81,14 +81,6 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
     }
   }
 
-  async findById(id: string): Promise<CalendarEntry | null> {
-    const row = await this.db.getOptional<PowerSyncScheduleRow>(
-      'SELECT * FROM schedules WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return row ? PowerSyncScheduleMapper.toDomain(row) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null> {
     const row = await this.db.getOptional<PowerSyncScheduleRow>(
       'SELECT * FROM schedules WHERE id = ? AND identity_id = ? LIMIT 1',

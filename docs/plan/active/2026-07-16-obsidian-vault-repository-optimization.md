@@ -1967,6 +1967,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 补 ownership/repository surface。§13.2 仍部分。
 > 验证：ai ownership/surface + focused unit/runtime specs + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百七十轮）：Calendar schedule 身份隔离——
+> 删除 `IScheduleRepository` bare `findById` 双轨，唯一读路径 `findByIdForIdentity`。
+> 补 ownership/surface。§13.2 仍部分。
+> 验证：schedule event ownership/surface + application service specs + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2185,6 +2191,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百六十七轮：legacy editor/repository runtime surface audit。
   残留一百六十八轮：schedule projection source identity-required (no bare findById)。
   残留一百六十九轮：AI conversation/provider findById dual-method collapse。
+  残留一百七十轮：calendar schedule findById dual-method collapse。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
