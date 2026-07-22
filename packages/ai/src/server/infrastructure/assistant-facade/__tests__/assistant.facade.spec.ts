@@ -91,6 +91,8 @@ describe('AssistantFacade', () => {
       content: 'hi',
       surface: 'web',
       runId: 'run-1',
+      providerId: 'prov-1',
+      model: 'gpt-test',
     });
 
     expect(events[0]).toMatchObject({
@@ -108,6 +110,14 @@ describe('AssistantFacade', () => {
       content: 'hello',
     });
     expect(openChat.streamConversationTurn).toHaveBeenCalledOnce();
+    expect(openChat.streamConversationTurn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerId: 'prov-1',
+        model: 'gpt-test',
+        conversationId: 'conv-1',
+      }),
+      expect.any(Function),
+    );
     expect(readonlyEngine.startTurn).not.toHaveBeenCalled();
     expect(kernel.executeApproved).not.toHaveBeenCalled();
   });

@@ -30,6 +30,8 @@ export const AssistantClientCommandSchema = z.discriminatedUnion('type', [
     surface: SurfaceSchema,
     runId: z.string().min(1).optional(),
     executionProfileId: ProfileSchema.optional(),
+    providerId: z.string().min(1).optional(),
+    model: z.string().min(1).optional(),
   }),
   z.object({
     type: z.literal('approve_proposal'),
@@ -74,6 +76,8 @@ function toHostCommand(
         surface: client.surface as AssistantSurface,
         runId: client.runId,
         executionProfileId: client.executionProfileId as AssistantExecutionProfileId | undefined,
+        providerId: client.providerId,
+        model: client.model,
       };
     case 'approve_proposal':
       return {

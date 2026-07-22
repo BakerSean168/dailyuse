@@ -1,6 +1,6 @@
 import { computed, nextTick, ref } from 'vue';
 import type {
-  SendMessageRes,
+  AssistantEvent,
 } from '@dailyuse/contracts/ai';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
@@ -16,7 +16,6 @@ import { getAIErrorMessage } from './error';
 
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
 type DeleteConversationId = Parameters<AIChatService['deleteConversation']>[0];
-type StreamMessageRequest = Parameters<AIChatService['streamMessage']>[0];
 
 export interface UseAIChatSessionOptions {
   service: AIChatService;
@@ -235,49 +234,75 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       await nextTick();
       adjustComposerHeight();
 
-      await loadService.streamMessage(
+      // Residual 351: open chat default path via AssistantFacade Host dispatch.
+      let sawCompleted = false;
+      await loadService.dispatchAssistant(
         {
-          conversationId: conversationId as StreamMessageRequest['conversationId'],
+          type: 'message',
+          conversationId,
           content: pendingUserMessage,
-          providerId: selectedModel.providerId as StreamMessageRequest['providerId'],
+          surface: 'web',
+          providerId: selectedModel.providerId,
           model: selectedModel.modelId,
         },
         {
-          onChunk: (chunk: { role: 'assistant'; content: string }) => {
-            const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
-            if (target) {
-              target.content += chunk.content;
-              target.status = 'generating';
-              target.errorMessage = undefined;
+          onEvent: (event: AssistantEvent) => {
+            if (event.type === 'message.delta') {
+              const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
+              if (target) {
+                target.content += event.content;
+                target.status = 'generating';
+                target.errorMessage = undefined;
+              }
+              return;
             }
-          },
-          onDone: async (result: unknown) => {
-            const resolved = (result ?? {}) as SendMessageRes;
-            const assistantIndex = chatTimeline.value.findIndex(
-              (item) => item.id === assistantDraftId,
-            );
-            if (assistantIndex >= 0 && resolved.assistantMessage) {
-              chatTimeline.value[assistantIndex] = {
-                id: String(resolved.assistantMessage.id),
-                role: 'assistant',
-                content: resolved.assistantMessage.content,
-                status: 'success',
-              };
+
+            if (event.type === 'message.completed') {
+              sawCompleted = true;
+              const assistantIndex = chatTimeline.value.findIndex(
+                (item) => item.id === assistantDraftId,
+              );
+              if (assistantIndex >= 0) {
+                chatTimeline.value[assistantIndex] = {
+                  id: event.assistantMessage?.id
+                    ? String(event.assistantMessage.id)
+                    : assistantDraftId,
+                  role: 'assistant',
+                  content:
+                    event.assistantMessage?.content ??
+                    event.content ??
+                    chatTimeline.value[assistantIndex]?.content ??
+                    '',
+                  status: event.status === 'aborted' ? 'aborted' : event.status === 'failed' ? 'error' : 'success',
+                  errorMessage: event.error,
+                };
+              }
+              const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
+              if (userIndex >= 0 && event.userMessage) {
+                chatTimeline.value[userIndex] = {
+                  id: String(event.userMessage.id),
+                  role: 'user',
+                  content: event.userMessage.content,
+                  status: 'success',
+                };
+              }
+              return;
             }
-            const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
-            if (userIndex >= 0 && resolved.userMessage) {
-              chatTimeline.value[userIndex] = {
-                id: String(resolved.userMessage.id),
-                role: 'user',
-                content: resolved.userMessage.content,
-                status: 'success',
-              };
+
+            if (event.type === 'error') {
+              const assistantDraft = chatTimeline.value.find((item) => item.id === assistantDraftId);
+              if (assistantDraft) {
+                assistantDraft.status = 'error';
+                assistantDraft.errorMessage = event.message;
+              }
             }
-            await loadConversationList(loadService);
           },
         },
         streamController.signal,
       );
+      if (sawCompleted) {
+        await loadConversationList(loadService);
+      }
     } catch (error) {
       const assistantDraft = chatTimeline.value.find((item) => item.id === assistantDraftId);
       const userDraft = chatTimeline.value.find((item) => item.id === userDraftId);

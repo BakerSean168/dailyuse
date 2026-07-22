@@ -72,6 +72,8 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
     surface?: 'web' | 'desktop' | 'server';
     runId?: string;
     executionProfileId?: 'direct_turn' | 'pi_readonly';
+    providerId?: string;
+    model?: string;
     onEvent?: (event: AssistantEvent) => void;
   }) {
     return dispatch(
@@ -82,6 +84,8 @@ export function useAssistantDispatch(options: UseAssistantDispatchOptions) {
         surface: input.surface ?? 'web',
         runId: input.runId,
         executionProfileId: input.executionProfileId,
+        providerId: input.providerId,
+        model: input.model,
       },
       { onEvent: input.onEvent },
     );

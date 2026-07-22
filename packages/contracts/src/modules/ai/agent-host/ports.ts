@@ -154,6 +154,9 @@ export type AssistantCommand =
        * second production ReadonlyAnalysisTurnEngine and never mutates product data.
        */
       executionProfileId?: AssistantExecutionProfileId;
+      /** Optional model selection for direct_turn open chat (residual 351). */
+      providerId?: string;
+      model?: string;
     }
   | {
       type: 'approve_proposal';
@@ -185,6 +188,9 @@ export type AssistantEvent =
       status: 'completed' | 'aborted' | 'failed' | 'waiting_approval';
       error?: string;
       content?: string;
+      /** Optional persisted message ids/content from open chat (residual 351). */
+      userMessage?: { id: string; content: string };
+      assistantMessage?: { id: string; content: string };
     }
   | { type: 'proposal.approved'; runId: string; proposalId: string; revision: number }
   | {

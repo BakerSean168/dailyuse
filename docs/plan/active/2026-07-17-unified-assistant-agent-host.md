@@ -63,8 +63,10 @@ updated: 2026-07-22T00:00:00
     `POST /api/v1/ai/assistant/dispatch/sse`；identityId 仅 auth ExecutionContext。
   - residual 347：`AIClientPort.dispatchAssistant` + Web HTTP/SSE adapter；Desktop IPC
     fail-closed `NOT_SUPPORTED`（流通道未注册）。
-  - residual 349：Vue `useAssistantDispatch` 薄入口；完整 open chat / 工作台默认路径仍未切换。
-  - 统一助手 UI 工作台仍未切换到 facade。
+  - residual 349：Vue `useAssistantDispatch` 薄入口。
+  - residual 351：open chat 默认发送经 `dispatchAssistant`（live delta + model selection）；
+    完整右侧工作台/Proposal UI 仍未切换。
+  - 统一助手 UI 工作台（右侧结构化面板）仍未完整切换到 facade。
 - **阶段 6 部分起步（residual 337）**：
   - 生产 `CustomModelGateway` 实现 `IModelGatewayPort`；结果只回 `modelBindingId`，凭据仅请求作用域。
 - **仍未实现（不得勾完成定义）**：
@@ -884,7 +886,7 @@ packages/contracts/src/modules/ai/
 
 ## 20. 完成定义
 
-- [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343 生产 AssistantFacade.dispatch；统一助手 UI 工作台仍未切换）**
+- [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343/351 生产 AssistantFacade + open chat 默认 dispatch；统一助手右侧工作台仍未完整切换）**
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。
 - [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
 - [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；UI 泄漏审计未齐）**

@@ -43,6 +43,8 @@ describe('useAssistantDispatch', () => {
       surface: 'web',
       runId: undefined,
       executionProfileId: undefined,
+      providerId: undefined,
+      model: undefined,
     });
     expect(command).not.toHaveProperty('identityId');
     expect(collected).toEqual(events);

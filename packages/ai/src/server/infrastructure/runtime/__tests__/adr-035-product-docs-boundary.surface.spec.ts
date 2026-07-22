@@ -52,6 +52,8 @@ describe('ADR-035 / ADR-034 product AI docs boundary', () => {
     expect(aiProduct).toContain('AIAssistantFacadeController');
     expect(aiProduct).toContain('AIAssistantHttpAdapter');
     expect(aiProduct).toContain('useAssistantDispatch');
+    expect(aiProduct).toContain('dispatchAssistant');
+    expect(aiProduct).toMatch(/open chat/i);
     expect(aiProduct).toContain('NOT_SUPPORTED');
     expect(aiProduct).toContain('LangGraphWorkflowAdapter');
     expect(aiProduct).toContain('ProposalKernel');

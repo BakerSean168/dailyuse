@@ -129,32 +129,84 @@ export class AssistantFacade implements IAssistantFacadePort {
       return;
     }
 
-    const deltas: string[] = [];
-    const result = await this.openChatTurn.streamConversationTurn(
-      {
-        runId,
-        identityId: command.identityId,
-        conversationId: command.conversationId,
-        message: command.content,
-        signal,
-      },
-      (chunk) => {
-        if (chunk.content) {
-          deltas.push(chunk.content);
-        }
-      },
-    );
+    // Residual 351: yield message.delta live while the Turn Engine streams.
+    const pending: AssistantEvent[] = [];
+    let notify: (() => void) | null = null;
+    let streamDone = false;
+    let streamError: unknown;
+    let streamResult: Awaited<
+      ReturnType<IOpenChatTurnPort['streamConversationTurn']>
+    > | null = null;
 
-    for (const content of deltas) {
-      yield { type: 'message.delta', runId, content };
+    const wake = () => {
+      const resolve = notify;
+      notify = null;
+      resolve?.();
+    };
+
+    const streamPromise = this.openChatTurn
+      .streamConversationTurn(
+        {
+          runId,
+          identityId: command.identityId,
+          conversationId: command.conversationId,
+          message: command.content,
+          providerId: command.providerId,
+          model: command.model,
+          signal,
+        },
+        (chunk) => {
+          if (chunk.content) {
+            pending.push({ type: 'message.delta', runId, content: chunk.content });
+            wake();
+          }
+        },
+      )
+      .then((result) => {
+        streamResult = result;
+      })
+      .catch((error) => {
+        streamError = error;
+      })
+      .finally(() => {
+        streamDone = true;
+        wake();
+      });
+
+    while (!streamDone || pending.length > 0) {
+      if (pending.length === 0) {
+        await new Promise<void>((resolve) => {
+          notify = resolve;
+        });
+        continue;
+      }
+      yield pending.shift()!;
     }
 
+    await streamPromise;
+
+    if (streamError) {
+      throw streamError instanceof Error
+        ? streamError
+        : new Error('Open chat stream failed');
+    }
+
+    const result = streamResult!;
     yield {
       type: 'message.completed',
       runId,
       status: result.status,
       error: result.error,
       content: result.content,
+      userMessage: result.userMessage
+        ? { id: String(result.userMessage.id), content: result.userMessage.content }
+        : undefined,
+      assistantMessage: result.assistantMessage
+        ? {
+            id: String(result.assistantMessage.id),
+            content: result.assistantMessage.content,
+          }
+        : undefined,
     };
   }
 

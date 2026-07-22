@@ -1191,7 +1191,7 @@ describe('AIChatView', () => {
       getAgentRun: vi.fn(),
       getAgentEvents: vi.fn(),
       createKnowledgeNote: vi.fn(),
-      streamMessage: vi.fn(),
+      dispatchAssistant: vi.fn(async () => undefined),
     };
     const loadProviders = vi.fn(async () => {
       providers.value = [

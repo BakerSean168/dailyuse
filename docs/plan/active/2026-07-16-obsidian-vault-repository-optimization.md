@@ -3281,6 +3281,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 真实 OAuth 跨端 E2E、完整 multi-engine runtime E2E、统一助手 UI 工作台切换、Desktop IPC stream、
 > 真实 Pi SDK/CLI、GitHub App fixture E2E、全量 PR 门禁。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百五十一轮）：open chat 默认 Host 路径（仍不打勾）——
+> `useAIChatSession.handleSendChat` 经 `dispatchAssistant`/`AssistantFacade`；live `message.delta`；
+> model selection 透传；Facade 完成事件可回写 message id。仍无完整右侧工作台/Proposal UI。验证：
+> facade/controller/session surface + AIChatView + product-docs + governance-check。§13.2 Agent
+> 仍为部分。状态保持 **实施中**；PR readiness 仍为 no。
+
+
 
 
 
@@ -3714,6 +3721,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百四十八轮：§13.2 focused evidence suite re-run（281 tests，residuals 250–347 锁；不改 checkbox）。
   残留三百四十九轮：Vue useAssistantDispatch 薄入口（仍不切换完整 open chat 默认路径）。
   残留三百五十轮：§13.2 focused evidence suite re-run（284 tests，residuals 250–349 锁；不改 checkbox）。
+  残留三百五十一轮：open chat 默认经 dispatchAssistant/AssistantFacade（live delta + model）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3759,6 +3767,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百四十八轮：§13.2 focused evidence suite re-run (281 tests, residuals 250–347 locks, no checkbox changes)。
   残留三百四十九轮：Vue useAssistantDispatch thin entry (open chat default path unchanged)。
   残留三百五十轮：§13.2 focused evidence suite re-run (284 tests, residuals 250–349 locks, no checkbox changes)。
+  残留三百五十一轮：open chat default path via dispatchAssistant/AssistantFacade (live delta + model)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3890,6 +3899,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百四十八轮：tip 上 281 项 focused evidence suite（含 residual 250–347 AssistantFacade client 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百四十九轮：Vue useAssistantDispatch 薄入口落地；仍不构成统一助手 UI 工作台/完整 open chat 切换证据。
   残留三百五十轮：tip 上 284 项 focused evidence suite（含 residual 250–349 useAssistantDispatch 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百五十一轮：open chat 默认 Host dispatch 落地；仍不构成统一助手右侧工作台/完整 multi-engine E2E 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
