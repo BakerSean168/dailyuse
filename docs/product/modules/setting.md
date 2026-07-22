@@ -5,7 +5,7 @@ tags:
   - setting
 description: 设置模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 设置模块说明
@@ -40,7 +40,9 @@ updated: 2026-06-02T00:00:00
 ## 4. 业务规则
 
 - UserSetting 是设置模块核心聚合，所有偏好存储为单个 JSONB `preferences` 列。
-- 偏好通过 Zod schema 验证，分为 10 个 category：appearance、locale、ai、privacy、notification、editor、shortcuts、experimental、ui、workflow。
+- 偏好通过 Zod schema 验证；运行时 category 不含已退役的 in-app `editor`（Monaco 偏好已删）。
+  当前为 appearance、locale、ai、privacy、notification、shortcuts、experimental、ui、workflow 等；
+  portable `editor_*` 备份只走 data-portability，不作为设置页分类。
 - 每个 category 有独立的 Zod schema，支持 `.default()` 默认值。
 - 设置变更为 patch 语义：只更新指定 category，不影响其他 category。
 - 设置导出格式为版本化 JSON（version: '2.0.0'），支持跨设备迁移。

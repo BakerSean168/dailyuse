@@ -5,7 +5,7 @@ tags:
   - ai
 description: AI 模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # AI 模块说明
@@ -19,7 +19,7 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - AI Chat：用户与 AI 进行对话，支持消息发送和流式响应。
 - 目标生成：通过 goal workflow 生成结构化目标草稿，支持澄清、编辑和确认后写入目标模块。
 - 目标自动化：AI 可生成任务模板并绑定到目标，支持自动化 tool execution。
-- 知识笔记：当前实现可写入数据库 Repository；ADR-034 迁移后，Desktop 可确认写入本地 Vault，绑定 GitHub 后 Web 也可确认创建 Git commit。
+- 知识笔记：ADR-034 已落地——Desktop 本地 Vault 确认写入；绑定 GitHub 后 Web 仅 confirmed-create 新笔记（Git commit），不开放已有笔记全文编辑；旧数据库 Repository 笔记 CRUD 运行时已摘除。
 - 知识查询：基于向量索引的知识检索和问答。
 - 知识扩展：对已有知识进行扩展和深化。
 - 知识索引：自动同步和索引 repository 中的资源内容。
@@ -30,7 +30,20 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - 会话管理：创建、删除、列出对话，支持对话状态管理。
 - 双运行时模式：支持直连 LLM provider 和远程 ai-service 两种运行时。
 
-已采纳但尚未完成的目标态：一个统一助手通过 Daily Use Agent Host 组合 Workflow Engine、Turn Engine 和 Model Gateway；右侧业务面板统一展示 Artifact、Proposal、审批和执行结果。当前 direct-provider/remote-ai-service 仍是迁移前实现。
+已采纳且部分落地的目标态：统一助手通过 Daily Use Agent Host 组合 Workflow Engine、Turn Engine 和 Model Gateway；右侧业务面板统一展示 Artifact、Proposal、审批和执行结果。
+当前仍保留 direct-provider / remote-ai-service 双运行时装配，但 ADR-035 Host 生产适配已部分接线：
+`DirectTurnEngine`（开放式 chat）、`LangGraphWorkflowAdapter`（remote workflow）、
+`ProposalKernel`（提案生命周期）、`CapabilityResolver`（fail-closed start gate）。
+统一助手 UI、第二生产 Turn Engine、完整 multi-engine runtime E2E 仍未完成。
+
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–324 对齐）
+
+- 生产允许：`DirectTurnEngine`、`LangGraphWorkflowAdapter`、`ProposalKernel`、`CapabilityResolver`。
+- open chat send/stream 经同一 `DirectTurnEngine`（`IOpenChatTurnPort`），不旁路 raw chatExecution。
+- `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；
+  workflow offers 永不含 `tool.mutation` / `tool.proposal`。
+- Engine 标签永不静默替代 mutation/context；CapabilityResolver 永不静默 expand `engine.*`。
+- ProposalKernel `executeApproved` 只发 lifecycle receipt，业务 mutation 仍须用户确认后的 executor。
 
 ## 3. 用户路径
 
@@ -67,15 +80,17 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - Provider capability、workflow command、response contract 的一致性需要持续维护。
 - ai-service 的部署和运维复杂度较高（独立 Python 应用 + HMAC 签名 + LLM provider 抽象）。
 - 知识索引的向量搜索能力和准确性需要进一步验证。
-- 当前 Web AI 写入数据库 Repository，而目标态要求创建 Git commit。
-- 当前知识索引流程尚未覆盖 GitHub webhook、commit 幂等和删除 commit 后的向量清理。
-- ADR-035 已明确统一 Proposal、Capability、Context 和 Engine 边界，但对应 contracts、Host 和 adapters 尚未实现。
+- Web 知识笔记已走 confirmed-create → Git commit；旧数据库 Repository 写路径不应再作为产品叙述。
+- 知识索引/webhook/幂等/删除后向量清理仍需持续 harden。
+- ADR-035 contracts 与首批 Host adapters（DirectTurn / LangGraph workflow / ProposalKernel /
+  CapabilityResolver）已部分落地；统一助手 UI、第二 Turn Engine、Pi/CLI adapter 与完整
+  multi-engine runtime E2E 仍未完成。
 - 当前 `AgentAction` 的开放 payload、`supportsXxx` 布尔能力和 framework-oriented node event 仍需按新方案收敛。
 - 当前缺少 Pi Turn Engine、自定义 Model Gateway 收口和 Desktop local CLI adapter。
 
 ## 7. 优化机会
 
-- 按 ADR-035 建立 AssistantFacade、Agent Host、Proposal Kernel 和 Capability Resolver。
+- 在已落地的 Proposal Kernel / Capability Resolver 之上补齐 AssistantFacade 与统一助手 UI 工作台。
 - 将右侧业务面板升级为 Goal/Knowledge/Task 共用的 Artifact 与审批工作台。
 - 梳理 AI 模块与业务模块的写入边界，建立更清晰的“AI 建议 → 用户确认 → 业务写入”链路。
 - 为知识索引提供更好的管理和维护能力。

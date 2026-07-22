@@ -3084,6 +3084,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > tip 71/247 focused suite）写入 §13.2 Agent 与全量门禁证据段；**不**把 Agent 或全量门禁改标
 > 为已证明。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百二十七轮）：产品文档/runtime 边界对齐（仍不打勾）——
+> 修正 `docs/product/modules/ai.md`：删除“写数据库 Repository / Host adapters 尚未实现”过时叙述；
+> 记录 ADR-035 Host 部分落地（DirectTurn/LangGraph/ProposalKernel/CapabilityResolver + start-gate
+> fail-closed）。修正 `docs/product/modules/setting.md`：设置 category 不再列退役 `editor`。
+> 新增 `adr-035-product-docs-boundary.surface.spec.ts` + 扩展 retired-editor preference surface。
+> 验证：ai product-docs 2 + contracts retired-editor 4 + governance-check。§13.2 未打勾项仍为
+> 部分/外部阻塞。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3485,6 +3493,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十四轮：`startRun` knowledge.generate 门禁经共享 CapabilityResolver.resolveFor（热路径）。
   残留三百二十五轮：§13.2 focused evidence suite re-run（247 tests，residuals 250–324 锁；不改 checkbox）。
   残留三百二十六轮：§13.2 证据指针刷新（Host residual 305–325；不改 checkbox）。
+  残留三百二十七轮：产品 ai/setting 文档对齐 ADR-034/035 runtime + surface 锁。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3506,6 +3515,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十四轮：agent start gate uses shared CapabilityResolver.resolveFor (hot path); Agent still partial。
   残留三百二十五轮：§13.2 focused evidence suite re-run (247 tests, residuals 250–324 locks, no checkbox changes)。
   残留三百二十六轮：§13.2 evidence-pointer refresh for residual 305–325 Host adapters/start-gate (no checkbox changes)。
+  残留三百二十七轮：align product ai/setting docs with ADR-034/035 runtime (Host partial + retired editor category); surface locks。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3613,6 +3623,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百二十四轮：CapabilityResolver start-gate 热路径接线 + composition 锁通过；仍不构成 multi-engine/统一助手完成证据。
   残留三百二十五轮：tip 上 247 项 focused evidence suite（含 residual 250–324 start-gate 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百二十六轮：§13.2 Agent/全量门禁证据指针刷新（305–325 Host 部分）；仍不构成完成证据。
+  残留三百二十七轮：product ai/setting 文档与 runtime 边界对齐 + surface 锁；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

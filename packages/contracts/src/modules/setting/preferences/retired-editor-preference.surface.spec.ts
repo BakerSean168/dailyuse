@@ -58,4 +58,16 @@ describe('retired editor preference category surface', () => {
     expect(valueObjectsIndex).not.toContain('FontSize');
     expect(valueObjectsIndex).not.toContain('SettingCategory');
   });
+  it('product setting.md does not list retired editor preference category (residual 327)', () => {
+    const settingProduct = readFileSync(
+      resolve(repoRoot, 'docs/product/modules/setting.md'),
+      'utf8',
+    );
+    expect(settingProduct).not.toMatch(
+      /10 个 category：appearance、locale、ai、privacy、notification、editor/,
+    );
+    expect(settingProduct).toContain('不含已退役的 in-app `editor`');
+    expect(settingProduct).toContain('portable `editor_*`');
+  });
+
 });
