@@ -161,6 +161,6 @@ describe('GetGoalAggregateUseCase', () => {
     const useCase = new GetGoalAggregateUseCase(goalRepo, recordRepo);
     await useCase.execute('goal-id-1', 'identity-1');
 
-    expect(findByGoalId).toHaveBeenCalledWith('goal-id-1', { orderBy: 'desc' });
+    expect(findByGoalId).toHaveBeenCalledWith('identity-1', 'goal-id-1', { orderBy: 'desc' });
   });
 });

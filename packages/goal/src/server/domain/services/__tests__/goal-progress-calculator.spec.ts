@@ -107,6 +107,7 @@ describe('GoalProgressCalculator', () => {
       await calculator.recalculateKeyResultProgress(goal, kr.id);
 
       expect(mockRepo.findByKeyResultId).toHaveBeenCalledWith(
+        String(goal.identityId),
         kr.id,
         expect.objectContaining({ orderBy: 'asc' }),
       );
@@ -186,6 +187,7 @@ describe('GoalProgressCalculator', () => {
       await calculator.recalculateKeyResultProgress(goal, kr.id, { startTime });
 
       expect(mockRepo.findByKeyResultId).toHaveBeenCalledWith(
+        String(goal.identityId),
         kr.id,
         expect.objectContaining({ orderBy: 'asc', startTime }),
       );
@@ -251,6 +253,7 @@ describe('GoalProgressCalculator', () => {
       await calculator.recalculateGoalProgress(goal);
 
       expect(mockRepo.findByKeyResultIds).toHaveBeenCalledWith(
+        String(goal.identityId),
         [kr1.id, kr2.id],
         expect.objectContaining({ orderBy: 'asc' }),
       );
@@ -286,10 +289,11 @@ describe('GoalProgressCalculator', () => {
 
   describe('getKeyResultHistoryValues()', () => {
     it('should return empty array when no records exist', async () => {
-      const values = await calculator.getKeyResultHistoryValues('kr-123');
+      const values = await calculator.getKeyResultHistoryValues('identity-1', 'kr-123');
 
       expect(values).toEqual([]);
       expect(mockRepo.findByKeyResultId).toHaveBeenCalledWith(
+        'identity-1',
         'kr-123',
         expect.objectContaining({ orderBy: 'asc' }),
       );
@@ -302,7 +306,7 @@ describe('GoalProgressCalculator', () => {
         createMockRecord(40),
       ]);
 
-      const values = await calculator.getKeyResultHistoryValues('kr-123');
+      const values = await calculator.getKeyResultHistoryValues('identity-1', 'kr-123');
 
       expect(values).toEqual([10, 25, 40]);
     });
@@ -310,9 +314,10 @@ describe('GoalProgressCalculator', () => {
     it('should pass query options through', async () => {
       const endTime = new Date('2025-12-31');
 
-      await calculator.getKeyResultHistoryValues('kr-123', { endTime });
+      await calculator.getKeyResultHistoryValues('identity-1', 'kr-123', { endTime });
 
       expect(mockRepo.findByKeyResultId).toHaveBeenCalledWith(
+        'identity-1',
         'kr-123',
         expect.objectContaining({ orderBy: 'asc', endTime }),
       );

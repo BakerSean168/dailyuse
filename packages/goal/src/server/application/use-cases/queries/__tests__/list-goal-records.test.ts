@@ -69,7 +69,7 @@ describe('ListGoalRecordsUseCase', () => {
       limit: 1,
     });
 
-    expect(findByKeyResultId).toHaveBeenCalledWith('kr-1', { orderBy: 'desc' });
+    expect(findByKeyResultId).toHaveBeenCalledWith('identity-1', 'kr-1', { orderBy: 'desc' });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.data.total).toBe(3);

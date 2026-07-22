@@ -51,11 +51,11 @@ export class ListGoalRecordsUseCase {
 
     let records: GoalRecord[];
     if (keyResultId) {
-      records = await this.goalRecordRepository.findByKeyResultId(keyResultId, {
+      records = await this.goalRecordRepository.findByKeyResultId(identityId, keyResultId, {
         orderBy: 'desc',
       });
     } else if (goalId) {
-      records = await this.goalRecordRepository.findByGoalId(goalId, {
+      records = await this.goalRecordRepository.findByGoalId(identityId, goalId, {
         orderBy: 'desc',
       });
     } else {

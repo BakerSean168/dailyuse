@@ -120,7 +120,7 @@ describe('registerGoalEventListeners integration', () => {
 
     expect(reloaded?.getKeyResult(String(keyResult.id))?.progress.currentValue).toBe(3);
 
-    const records = await goalRecordRepository.findByKeyResultId(String(keyResult.id));
+    const records = await goalRecordRepository.findByKeyResultId(String(goal.identityId), String(keyResult.id));
     expect(records).toHaveLength(1);
     expect(records[0].value).toBe(3);
   });

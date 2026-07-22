@@ -313,4 +313,25 @@ describe('goal ownership surface', () => {
       /RECORD_LIST_BY_KEY_RESULT[\s\S]*requestContext/,
     );
   });
+
+  it('goal record secondary queries require identityId (residual 141)', () => {
+    expect(recordPort).toMatch(
+      /findByKeyResultId\(\s*identityId: string,\s*keyResultId: string,/,
+    );
+    expect(recordPort).toMatch(
+      /findByGoalId\(\s*identityId: string,\s*goalId: string,/,
+    );
+    expect(recordPort).toMatch(
+      /findByKeyResultIds\(\s*identityId: string,\s*keyResultIds: string\[\],/,
+    );
+    expect(recordPort).toContain(
+      'countByKeyResultId(identityId: string, keyResultId: string): Promise<number>;',
+    );
+    expect(recordPrisma).toContain('identityId, keyResultId, deletedAt: null');
+    expect(prisma).toContain(
+      'async findByFolderId(identityId: string, folderId: string)',
+    );
+    expect(prisma).toContain('where: { identityId, folderId, deletedAt: null, archivedAt: null }');
+  });
+
 });

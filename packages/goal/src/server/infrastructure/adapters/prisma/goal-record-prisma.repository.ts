@@ -55,13 +55,14 @@ export class GoalRecordPrismaRepository
    * Find records by key result ID
    */
   async findByKeyResultId(
+    identityId: string,
     keyResultId: string,
     options?: GoalRecordQueryOptions,
   ): Promise<GoalRecord[]> {
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
     const data = await this.prisma.goalRecord.findMany({
-      where: { keyResultId, deletedAt: null, ...where },
+      where: { identityId, keyResultId, deletedAt: null, ...where },
       orderBy,
       ...(take ? { take } : {}),
     });
@@ -72,11 +73,16 @@ export class GoalRecordPrismaRepository
   /**
    * Find records by goal ID (via KeyResult relation)
    */
-  async findByGoalId(goalId: string, options?: GoalRecordQueryOptions): Promise<GoalRecord[]> {
+  async findByGoalId(
+    identityId: string,
+    goalId: string,
+    options?: GoalRecordQueryOptions,
+  ): Promise<GoalRecord[]> {
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
     const data = await this.prisma.goalRecord.findMany({
       where: {
+        identityId,
         keyResult: { goalId },
         deletedAt: null,
         ...where,
@@ -92,6 +98,7 @@ export class GoalRecordPrismaRepository
    * Find records by multiple key result IDs, grouped by key result
    */
   async findByKeyResultIds(
+    identityId: string,
     keyResultIds: string[],
     options?: GoalRecordQueryOptions,
   ): Promise<Map<string, GoalRecord[]>> {
@@ -99,6 +106,7 @@ export class GoalRecordPrismaRepository
 
     const data = await this.prisma.goalRecord.findMany({
       where: {
+        identityId,
         keyResultId: { in: keyResultIds },
         deletedAt: null,
         ...where,
@@ -123,9 +131,9 @@ export class GoalRecordPrismaRepository
   /**
    * Count records for a key result
    */
-  async countByKeyResultId(keyResultId: string): Promise<number> {
+  async countByKeyResultId(identityId: string, keyResultId: string): Promise<number> {
     return this.prisma.goalRecord.count({
-      where: { keyResultId, deletedAt: null },
+      where: { identityId, keyResultId, deletedAt: null },
     });
   }
 

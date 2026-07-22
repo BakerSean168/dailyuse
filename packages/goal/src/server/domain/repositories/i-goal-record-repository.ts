@@ -89,6 +89,7 @@ export interface IGoalRecordRepository {
    * @returns 实体列表（按 recordedAt 排序）
    */
   findByKeyResultId(
+    identityId: string,
     keyResultId: string,
     options?: GoalRecordQueryOptions,
   ): Promise<GoalRecord[]>;
@@ -104,6 +105,7 @@ export interface IGoalRecordRepository {
    * @returns 实体列表（按 recordedAt 排序）
    */
   findByGoalId(
+    identityId: string,
     goalId: string,
     options?: GoalRecordQueryOptions,
   ): Promise<GoalRecord[]>;
@@ -119,6 +121,7 @@ export interface IGoalRecordRepository {
    * @returns Map<keyResultId, records[]>
    */
   findByKeyResultIds(
+    identityId: string,
     keyResultIds: string[],
     options?: GoalRecordQueryOptions,
   ): Promise<Map<string, GoalRecord[]>>;
@@ -132,7 +135,7 @@ export interface IGoalRecordRepository {
    * @param keyResultId KeyResult 的 UUID
    * @returns 记录数量
    */
-  countByKeyResultId(keyResultId: string): Promise<number>;
+  countByKeyResultId(identityId: string, keyResultId: string): Promise<number>;
 
   /**
    * 保存单条记录

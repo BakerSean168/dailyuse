@@ -37,6 +37,7 @@ export class GoalRecordPowerSyncRepository
   }
 
   async findByKeyResultId(
+    identityId: string,
     keyResultId: string,
     options?: GoalRecordQueryOptions,
   ): Promise<GoalRecord[]> {
@@ -47,17 +48,24 @@ export class GoalRecordPowerSyncRepository
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
        FROM goal_records
-       WHERE key_result_id = ?
+       WHERE identity_id = ?
+         AND key_result_id = ?
          AND deleted_at IS NULL
          ${clauses.length > 0 ? `AND ${clauses.join(' AND ')}` : ''}
        ORDER BY recorded_at ${orderDir}${limitClause}`,
-      options?.limit ? [keyResultId, ...params, options.limit] : [keyResultId, ...params],
+      options?.limit
+        ? [identityId, keyResultId, ...params, options.limit]
+        : [identityId, keyResultId, ...params],
     );
 
     return rows.map((row) => PowerSyncGoalRecordMapper.toDomain(row));
   }
 
-  async findByGoalId(goalId: string, options?: GoalRecordQueryOptions): Promise<GoalRecord[]> {
+  async findByGoalId(
+    identityId: string,
+    goalId: string,
+    options?: GoalRecordQueryOptions,
+  ): Promise<GoalRecord[]> {
     const { clauses, params } = buildTimeFilters(options);
     const orderDir = options?.orderBy === 'desc' ? 'DESC' : 'ASC';
     const limitClause = options?.limit ? ' LIMIT ?' : '';
@@ -66,18 +74,22 @@ export class GoalRecordPowerSyncRepository
       `SELECT gr.*
        FROM goal_records gr
        INNER JOIN key_results kr ON kr.id = gr.key_result_id
-       WHERE kr.goal_id = ?
+       WHERE gr.identity_id = ?
+         AND kr.goal_id = ?
          AND kr.deleted_at IS NULL
          AND gr.deleted_at IS NULL
          ${clauses.length > 0 ? `AND ${clauses.join(' AND ')}` : ''}
        ORDER BY gr.recorded_at ${orderDir}${limitClause}`,
-      options?.limit ? [goalId, ...params, options.limit] : [goalId, ...params],
+      options?.limit
+        ? [identityId, goalId, ...params, options.limit]
+        : [identityId, goalId, ...params],
     );
 
     return rows.map((row) => PowerSyncGoalRecordMapper.toDomain(row));
   }
 
   async findByKeyResultIds(
+    identityId: string,
     keyResultIds: string[],
     options?: GoalRecordQueryOptions,
   ): Promise<Map<string, GoalRecord[]>> {
@@ -98,11 +110,14 @@ export class GoalRecordPowerSyncRepository
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
        FROM goal_records
-       WHERE key_result_id IN (${placeholders})
+       WHERE identity_id = ?
+         AND key_result_id IN (${placeholders})
          AND deleted_at IS NULL
          ${clauses.length > 0 ? `AND ${clauses.join(' AND ')}` : ''}
        ORDER BY recorded_at ${orderDir}${limitClause}`,
-      options?.limit ? [...keyResultIds, ...params, options.limit] : [...keyResultIds, ...params],
+      options?.limit
+        ? [identityId, ...keyResultIds, ...params, options.limit]
+        : [identityId, ...keyResultIds, ...params],
     );
 
     for (const row of rows) {
@@ -115,13 +130,14 @@ export class GoalRecordPowerSyncRepository
     return result;
   }
 
-  async countByKeyResultId(keyResultId: string): Promise<number> {
+  async countByKeyResultId(identityId: string, keyResultId: string): Promise<number> {
     const row = await this.db.getOptional<{ count: number }>(
       `SELECT COUNT(*) as count
        FROM goal_records
-       WHERE key_result_id = ?
+       WHERE identity_id = ?
+         AND key_result_id = ?
          AND deleted_at IS NULL`,
-      [keyResultId],
+      [identityId, keyResultId],
     );
 
     return Number(row?.count ?? 0);

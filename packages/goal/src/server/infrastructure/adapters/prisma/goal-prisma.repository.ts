@@ -171,9 +171,9 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     });
   }
 
-  async findByFolderId(folderId: string): Promise<Goal[]> {
+  async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
     const rows = await this.prisma.goal.findMany({
-      where: { folderId, deletedAt: null, archivedAt: null },
+      where: { identityId, folderId, deletedAt: null, archivedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return rows.map((row: PrismaGoalWithRelations) =>

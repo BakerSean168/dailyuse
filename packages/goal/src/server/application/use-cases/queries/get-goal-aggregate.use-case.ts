@@ -25,7 +25,7 @@ export class GetGoalAggregateUseCase {
     }
 
     const goalDTO = goal.toClientDTO(true);
-    const records = await this.goalRecordRepository.findByGoalId(goalId, { orderBy: 'desc' });
+    const records = await this.goalRecordRepository.findByGoalId(identityId, goalId, { orderBy: 'desc' });
     const keyResults = goal.keyResults.map((keyResult) => keyResult.toClientDTO());
     const reviews = goal.goalReviews.map((review) => review.toClientDTO());
     const recordDTOs = records.map((r) => r.toClientDTO(goalId));

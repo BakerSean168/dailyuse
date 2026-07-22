@@ -86,6 +86,7 @@ export class GoalProgressCalculator {
 
     // 2. 查询历史记录（Service 负责 I/O）- 返回实体列表
     const records = await this.goalRecordRepository.findByKeyResultId(
+      String(goal.identityId),
       keyResultId,
       { orderBy: 'asc', ...options },
     );
@@ -141,6 +142,7 @@ export class GoalProgressCalculator {
     // 批量查询所有 KR 的记录（减少数据库查询）- 返回实体 Map
     const keyResultIds = keyResults.map((kr) => kr.id);
     const recordsMap = await this.goalRecordRepository.findByKeyResultIds(
+      String(goal.identityId),
       keyResultIds,
       { orderBy: 'asc', ...options },
     );
@@ -198,10 +200,12 @@ export class GoalProgressCalculator {
    * @returns 值数组
    */
   public async getKeyResultHistoryValues(
+    identityId: string,
     keyResultId: KeyResultId,
     options?: GoalRecordQueryOptions,
   ): Promise<number[]> {
     const records = await this.goalRecordRepository.findByKeyResultId(
+      identityId,
       keyResultId,
       { orderBy: 'asc', ...options },
     );
@@ -231,6 +235,7 @@ export class GoalProgressCalculator {
     }
 
     const records = await this.goalRecordRepository.findByKeyResultId(
+      String(goal.identityId),
       keyResultId,
       { orderBy: 'asc' },
     );
@@ -272,6 +277,7 @@ export class GoalProgressCalculator {
     }
 
     const records = await this.goalRecordRepository.findByKeyResultId(
+      String(goal.identityId),
       keyResultId,
       { orderBy: 'asc' },
     );

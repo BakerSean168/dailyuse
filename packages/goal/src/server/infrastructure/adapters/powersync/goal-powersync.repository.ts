@@ -109,15 +109,16 @@ export class GoalPowerSyncRepository
     return Promise.all(rows.map((row) => this.toGoal(row, includeChildren)));
   }
 
-  async findByFolderId(folderId: string): Promise<Goal[]> {
+  async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
         FROM goals
-        WHERE folder_id = ?
+        WHERE identity_id = ?
+          AND folder_id = ?
           AND deleted_at IS NULL
           AND archived_at IS NULL
         ORDER BY sort_order ASC, created_at DESC`,
-      [folderId],
+      [identityId, folderId],
     );
 
     return Promise.all(rows.map((row) => this.toGoal(row, false)));

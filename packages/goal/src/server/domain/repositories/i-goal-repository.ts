@@ -78,7 +78,7 @@ export interface IGoalRepository {
    * @param folderId - 文件夹 ID
    * @returns 目标列表
    */
-  findByFolderId(folderId: string): Promise<Goal[]>;
+  findByFolderId(identityId: string, folderId: string): Promise<Goal[]>;
 
   /**
    * 永久删除聚合根（物理删除，必须同时匹配 identity）

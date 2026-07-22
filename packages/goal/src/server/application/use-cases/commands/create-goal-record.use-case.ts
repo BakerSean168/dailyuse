@@ -44,7 +44,7 @@ export class CreateGoalRecordUseCase {
       return error('NOT_FOUND', `KeyResult not found: ${keyResultId} in goal ${goalId}`);
     }
 
-    const historyBefore = await this.goalRecordRepository.findByKeyResultId(keyResultId, {
+    const historyBefore = await this.goalRecordRepository.findByKeyResultId(identityId, keyResultId, {
       orderBy: 'asc',
     });
 
