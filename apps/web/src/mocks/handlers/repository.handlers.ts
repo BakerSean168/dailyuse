@@ -5,7 +5,8 @@ const REPOS = `${API_BASE}/repositories`;
 
 /**
  * Mock routes for the live knowledge-repository surface only.
- * Legacy database Repository/Folder/Resource CRUD is intentionally absent.
+ * Legacy database Repository/Folder/Resource/Bookmark CRUD is not registered
+ * (no dual-track 404 stubs). Unhandled paths use MSW onUnhandledRequest bypass.
  */
 export const repositoryMockRoutes = {
   repositories: REPOS,
@@ -24,21 +25,7 @@ function success<T>(data: T) {
   });
 }
 
-function notFound() {
-  return HttpResponse.json(
-    {
-      ok: false,
-      code: 404,
-      message: 'Not Found',
-      error: { code: 'NOT_FOUND', message: 'Legacy repository route is not mounted' },
-      timestamp: Date.now(),
-    },
-    { status: 404 },
-  );
-}
-
 export const repositoryHandlers = [
-  // Live knowledge repository surface
   http.get(`${REPOS}/knowledge-connections`, () =>
     success({
       connections: [],
@@ -54,19 +41,4 @@ export const repositoryHandlers = [
       attachments: [],
     }),
   ),
-
-  // Legacy database note mutation surface — must remain unmounted (404)
-  http.get(`${REPOS}/current`, () => notFound()),
-  http.get(`${REPOS}/:repositoryId/resources`, () => notFound()),
-  http.post(`${REPOS}/:repositoryId/resources`, () => notFound()),
-  http.post(`${REPOS}/:repositoryId/resources/upload`, () => notFound()),
-  http.get(`${REPOS}/:repositoryId/folders`, () => notFound()),
-  http.post(`${REPOS}/:repositoryId/folders`, () => notFound()),
-  http.get(`${REPOS}/:repositoryId/bookmarks`, () => notFound()),
-  http.post(`${REPOS}/:repositoryId/bookmarks`, () => notFound()),
-  http.get(`${API_BASE}/resources/:id`, () => notFound()),
-  http.put(`${API_BASE}/resources/:id`, () => notFound()),
-  http.delete(`${API_BASE}/resources/:id`, () => notFound()),
-  http.get(`${API_BASE}/folders/:id/contents`, () => notFound()),
-  http.post(`${API_BASE}/search`, () => notFound()),
 ];

@@ -608,7 +608,7 @@ export class GenerateAIGoalUseCase {
 
     try {
       const resources = await this.knowledgeSourcePort.listRelevantResources(identityId, query, 6);
-      logger.info('Goal automation knowledge resources loaded', {
+      logger.info('Goal automation knowledge notes loaded', {
         identityId,
         queryPreview: previewText(query),
         resourceCount: resources.length,
@@ -616,7 +616,7 @@ export class GenerateAIGoalUseCase {
       });
       return resources.length ? resources : undefined;
     } catch (err) {
-      logger.warn('Failed to load related knowledge resources for goal automation planning', {
+      logger.warn('Failed to load related knowledge notes for goal automation planning', {
         error: err,
         identityId,
       });

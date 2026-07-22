@@ -2209,6 +2209,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > （真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、全量 PR 门禁）。
 > 状态保持 **实施中**；PR readiness 仍为 no。不改 checkbox。
 
+> 续进展 2026-07-22（阶段 6 残留二百零九轮）：Web MSW knowledge-only 收口——删除 repository
+> handlers 中 legacy Resource/Folder/Bookmark/`/repositories/current`/search 的双轨 404 stub
+> （未挂载路径走 `onUnhandledRequest: bypass`；真实 API 边界仍由 E2E
+> `legacy-note-mutation-boundary` 验证）；goal automation 日志改为 knowledge notes 措辞。
+> §13.2 未打勾项仍为部分/外部阻塞。验证：repository.handlers.spec（4）+ goal generation
+> focused specs + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2479,6 +2486,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百零六轮：retire AI Resource dual-track knowledge terminology (note wording + surface lock)。
   残留二百零七轮：server/ai-service knowledge note terminology (no repository resources product copy)。
   残留二百零八轮：eval/fixture note terminology + §13.2 core evidence suite re-run (205 tests, no checkbox changes)。
+  残留二百零九轮：drop MSW legacy Resource/Folder dual-track 404 stubs (knowledge-only handlers)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

@@ -64,3 +64,18 @@ describe('repository handlers contracts', () => {
     });
   });
 });
+
+  it('does not register legacy Resource/Folder/Bookmark dual-track MSW stubs', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const source = readFileSync(resolve(__dirname, 'repository.handlers.ts'), 'utf8');
+    expect(source).not.toContain('Legacy repository route is not mounted');
+    expect(source).not.toContain('/resources');
+    expect(source).not.toContain('/bookmarks');
+    expect(source).not.toContain('/folders');
+    expect(source).not.toMatch(/repositories\/current/);
+    expect(source).toContain('knowledge-connections');
+    expect(source).toContain('knowledge-notes');
+    expect(source).toContain('knowledge-attachments');
+  });
+
