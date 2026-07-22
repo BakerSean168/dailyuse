@@ -11,6 +11,7 @@ import {
   resolveHostWorkbenchReopenFromAgentRun,
   shouldOpenHostWorkbenchFromAgentRun,
   resolveHostWorkbenchFocusFromAgentRun,
+  resolveHostWorkbenchFocusFromSessionRuns,
   buildHostProposalPatchFromDraft,
   buildPendingHostProposalItems,
   dispatchHostProposalDecision,
@@ -1488,3 +1489,39 @@ describe('Host workbench focus from AgentRun history (residual 441)', () => {
   });
 });
 
+describe('Host workbench focus from session restore (residual 443)', () => {
+  it('prefers exclusive task.create lane over goal/knowledge when resolving session focus', () => {
+    const task = taskWaitingRun();
+    task.run.agentType = 'task.create';
+    task.state.artifacts = [];
+    const goal = goalWaitingRun();
+    const focus = resolveHostWorkbenchFocusFromSessionRuns({
+      taskAgentRun: task,
+      goalAgentRun: goal,
+      noteAgentRun: null,
+    });
+    expect(focus).toEqual({
+      proposalId: 'agent-run:run-task-1:task.create',
+      surface: 'proposal',
+    });
+  });
+
+  it('falls back to goal then knowledge, and null when none reopen', () => {
+    const goal = goalWaitingRun();
+    expect(
+      resolveHostWorkbenchFocusFromSessionRuns({
+        taskAgentRun: null,
+        goalAgentRun: goal,
+        noteAgentRun: null,
+      })?.proposalId,
+    ).toBe('agent-run:run-1:goal.create');
+
+    expect(
+      resolveHostWorkbenchFocusFromSessionRuns({
+        taskAgentRun: null,
+        goalAgentRun: null,
+        noteAgentRun: null,
+      }),
+    ).toBeNull();
+  });
+});

@@ -247,6 +247,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 441: history reopen focuses Host proposal/receipt row.
         'resolveHostWorkbenchFocusFromAgentRun',
         'focusedHostProposalId.value = focus?.proposalId',
+        // Residual 443: conversation restore focus + default first proposal/receipt.
+        'resolveHostWorkbenchFocusFromSessionRuns',
+        'selectConversationBase',
+        'hostProposalItems.value[0]?.proposalId',
       ],
       status: 'implemented_unit',
     },

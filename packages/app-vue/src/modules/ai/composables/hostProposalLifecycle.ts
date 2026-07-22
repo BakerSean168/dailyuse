@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -1182,6 +1182,23 @@ export function resolveHostWorkbenchFocusFromAgentRun(
     proposalId: ref.proposalId,
     surface: reopen === 'proposal' ? 'proposal' : 'receipt',
   };
+}
+
+/**
+ * Residual 443: pick Host workbench focus from live session AgentRun snapshots
+ * after conversation restore (or start). Prefer exclusive task.create lane, then
+ * goal, then knowledge. Returns null when no Host proposal/receipt should reopen.
+ */
+export function resolveHostWorkbenchFocusFromSessionRuns(input: {
+  taskAgentRun?: AgentRunResult | null;
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+}): HostWorkbenchFocusTarget | null {
+  return (
+    resolveHostWorkbenchFocusFromAgentRun(input.taskAgentRun) ??
+    resolveHostWorkbenchFocusFromAgentRun(input.goalAgentRun) ??
+    resolveHostWorkbenchFocusFromAgentRun(input.noteAgentRun)
+  );
 }
 
 /**

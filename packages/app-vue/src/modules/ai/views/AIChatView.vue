@@ -373,6 +373,7 @@ import {
   resolveLiveHostWorkbenchAgentRuns,
   shouldOpenHostWorkbenchFromAgentRun,
   resolveHostWorkbenchFocusFromAgentRun,
+  resolveHostWorkbenchFocusFromSessionRuns,
   dispatchHostProposalDecision,
   normalizeHostProposalRejectReason,
   dispatchHostProposalRevise,
@@ -455,7 +456,7 @@ const {
   recentGoalList,
   recentKnowledgeNoteList,
   messagesViewport,
-  selectConversation,
+  selectConversation: selectConversationBase,
   selectAgentRun: selectAgentRunBase,
   openRecentGoal,
   openRecentKnowledgeNote,
@@ -985,13 +986,21 @@ const todayOverviewVisible = computed(
 );
 
 
-// Residual 371/379: auto-open right workbench for Host proposals or execution receipts.
-// Desktop already shows the rail; mobile needs open=true to unhide the sheet.
+// Residual 371/379/443: auto-open right workbench for Host proposals or execution receipts.
+// Residual 443: default-focus first proposal/receipt when nothing is focused yet
+// (conversation restore + task.create start). Desktop already shows the rail;
+// mobile needs open=true to unhide the sheet.
 watch(
-  [hasPendingHostProposals, hasHostExecutionReceipts],
+  [hasPendingHostProposals, hasHostExecutionReceipts, hostProposalItems, hostExecutionReceiptItems],
   ([pending, receipts]) => {
     if (pending || receipts) {
       contextPanelOpen.value = true;
+      if (!focusedHostProposalId.value) {
+        focusedHostProposalId.value =
+          hostProposalItems.value[0]?.proposalId ??
+          hostExecutionReceiptItems.value[0]?.proposalId ??
+          null;
+      }
     }
   },
   { immediate: true },
@@ -1151,6 +1160,29 @@ function startNewConversationFromMobile() {
 async function selectConversationFromMobile(item: ConversationSummary) {
   closeMobileSidebar();
   await selectConversation(item);
+}
+
+/**
+ * Residual 443: Conversation restore reopens + focuses Host workbench when the
+ * restored session owns task/goal/knowledge Host rows (process-local task.create included).
+ */
+async function selectConversation(item: ConversationSummary) {
+  await selectConversationBase(item);
+  const focus = resolveHostWorkbenchFocusFromSessionRuns({
+    taskAgentRun: taskAgentRun.value,
+    goalAgentRun: goalAgentRun.value,
+    noteAgentRun: noteAgentRun.value,
+  });
+  if (
+    focus ||
+    hasPendingHostProposals.value ||
+    hasHostExecutionReceipts.value
+  ) {
+    contextPanelOpen.value = true;
+    focusedHostProposalId.value = focus?.proposalId ?? null;
+  } else {
+    focusedHostProposalId.value = null;
+  }
 }
 
 /**
