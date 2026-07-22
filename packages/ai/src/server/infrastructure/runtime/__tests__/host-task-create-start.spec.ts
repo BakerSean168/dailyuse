@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildHostTaskCreateStartResult,
-  resolveTaskCreateGoalId,
   resolveTaskCreateTitle,
+  resolveTaskCreateGoalId,
+  resolveTaskCreateConversationId,
+  HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
 } from '../host-task-create-start';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
 
@@ -48,3 +50,14 @@ describe('host-task-create-start (residual 431)', () => {
     expect(result.events[0]?.type).toBe('approval.required');
   });
 });
+
+describe('host-task-create-start conversation binding (residual 461)', () => {
+  it('resolveTaskCreateConversationId trims and rejects empty', () => {
+    expect(resolveTaskCreateConversationId('  conv-1  ')).toBe('conv-1');
+    expect(resolveTaskCreateConversationId('')).toBeUndefined();
+    expect(resolveTaskCreateConversationId(null)).toBeUndefined();
+    expect(resolveTaskCreateConversationId(undefined)).toBeUndefined();
+    expect(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE).toMatch(/conversationId/);
+  });
+});
+

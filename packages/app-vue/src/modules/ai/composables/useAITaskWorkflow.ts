@@ -1,5 +1,5 @@
 /**
- * Residual 431/433/437/439/445: product path for AgentType task.create.
+ * Residual 431/433/437/439/445/461: product path for AgentType task.create.
  * Residual 433: optional linked goalId at start; session restore owned by useAIChatView.
  * Residual 437: process-local cancel/complete resume after Host lifecycle decisions.
  * Residual 439: process-local edit revise after Host proposal revise.
@@ -51,6 +51,8 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   const canRunTaskAgent = computed(
     () =>
       options.selectedModel.value !== null &&
+      // Residual 461: require session conversation for process-local restore/history reopen.
+      Boolean(options.chatConversationId.value?.trim()) &&
       !options.chatLoading.value &&
       !taskAgentLoading.value &&
       !taskAgentResuming.value &&
@@ -81,6 +83,9 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
 
   async function startTaskAgentRun() {
     if (!canRunTaskAgent.value) return;
+    // Residual 461: double-gate session binding (Host also fail-closed).
+    const conversationId = options.chatConversationId.value?.trim();
+    if (!conversationId) return;
     taskAgentLoading.value = true;
     try {
       const selectedModel = options.selectedModel.value;
@@ -93,7 +98,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
       const request: AgentStartRunClientRequest = {
         runId: createAgentId('run'),
         threadId: createAgentId('thread'),
-        conversationId: options.chatConversationId.value || null,
+        conversationId,
         agentType: 'task.create',
         locale: locale.value === 'en-US' ? 'en-US' : 'zh-CN',
         input: {

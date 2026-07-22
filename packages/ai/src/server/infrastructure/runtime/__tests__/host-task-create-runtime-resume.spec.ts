@@ -113,6 +113,7 @@ describe('host task.create process-local resume runtime wire (residual 437/439)'
       {
         runId: 'run-task-resume-3',
         threadId: 'thread-task-resume-3',
+        conversationId: 'conv-1',
         agentType: 'task.create',
         locale: 'zh-CN',
         input: { idea: 'no clarify' },

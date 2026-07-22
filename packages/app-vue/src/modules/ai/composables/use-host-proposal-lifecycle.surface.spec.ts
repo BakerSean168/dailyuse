@@ -469,6 +469,30 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+
+  it('task.create start requires non-empty conversationId (residual 461)', () => {
+    const start = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(start).toContain('HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE');
+    expect(start).toContain('resolveTaskCreateConversationId');
+    expect(start).toContain('Residual 461');
+    expect(runtime).toContain('HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE');
+    expect(runtime).toContain('resolveTaskCreateConversationId');
+    expect(taskWorkflow).toContain('chatConversationId.value?.trim()');
+    expect(taskWorkflow).toContain('Residual 461');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

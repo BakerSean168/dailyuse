@@ -268,6 +268,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['shouldReviseProcessLocalTaskDraftBeforeDomainSettle'];
     case 'dirty approve must revise process-local draft':
       return ['dirty approve must revise process-local draft', 'Residual 459'];
+    case 'HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE':
+      return ['HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE'];
+    case 'resolveTaskCreateConversationId':
+      return ['resolveTaskCreateConversationId'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

@@ -278,6 +278,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 459: dirty approve revises process-local draft before domain settle.
         'shouldReviseProcessLocalTaskDraftBeforeDomainSettle',
         'dirty approve must revise process-local draft',
+        // Residual 461: start requires non-empty conversationId (session-bound).
+        'HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE',
+        'resolveTaskCreateConversationId',
       ],
       status: 'implemented_unit',
     },

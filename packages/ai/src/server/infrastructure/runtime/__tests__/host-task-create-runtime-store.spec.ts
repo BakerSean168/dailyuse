@@ -75,6 +75,7 @@ describe('host task.create process-local store runtime wire (residual 435)', () 
       {
         runId: 'run-task-store-2',
         threadId: 'thread-task-store-2',
+        conversationId: 'conv-1',
         agentType: 'task.create',
         locale: 'zh-CN',
         input: { idea: 'Cross identity' },

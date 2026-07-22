@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -9,6 +9,7 @@
  *   confirm requires client settlement (residual 453)
  *   edit requires non-empty title (residual 455)
  *   conversation/thread runId binding (residual 457)
+ *   start requires conversationId (residual 461)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -170,6 +171,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     const started = await service.startRun(
       {
         runId: 'run-journey-owner',
+        conversationId: 'conv-journey-owner',
         threadId: 'thread-journey-owner',
         agentType: 'task.create',
         locale: 'en-US',
@@ -193,6 +195,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     const rejected = await service.startRun(
       {
         runId: 'run-journey-empty',
+        conversationId: 'conv-journey-empty',
         threadId: 'thread-journey-empty',
         agentType: 'task.create',
         locale: 'en-US',
@@ -219,6 +222,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     const owned = await service.startRun(
       {
         runId: 'run-bound-451',
+        conversationId: 'conv-bound-451',
         threadId: 'thread-bound-451',
         agentType: 'task.create',
         locale: 'en-US',
@@ -232,6 +236,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     const takeover = await service.startRun(
       {
         runId: 'run-bound-451',
+        conversationId: 'conv-bound-451',
         threadId: 'thread-intruder-451',
         agentType: 'task.create',
         locale: 'en-US',
@@ -262,6 +267,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     const started = await service.startRun(
       {
         runId: 'run-journey-settlement',
+        conversationId: 'conv-journey-settlement',
         threadId: 'thread-journey-settlement',
         agentType: 'task.create',
         locale: 'en-US',
@@ -299,6 +305,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     const started = await service.startRun(
       {
         runId: 'run-journey-edit-blank',
+        conversationId: 'conv-journey-edit-blank',
         threadId: 'thread-journey-edit-blank',
         agentType: 'task.create',
         locale: 'en-US',
@@ -396,6 +403,35 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!stillA.ok) return;
     expect(stillA.data.run.conversationId).toBe('conv-session-a');
     expect(stillA.data.state.pendingActions[0]?.payload['title']).toBe('Session A draft');
+    expect(port.startRun).not.toHaveBeenCalled();
+  });
+
+
+  it('rejects missing conversationId at start without store registration (residual 461)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-conv' } as const;
+
+    const rejected = await service.startRun(
+      {
+        runId: 'run-journey-no-conv',
+        threadId: 'thread-journey-no-conv',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Needs conversation' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(rejected.ok).toBe(false);
+    if (rejected.ok) return;
+    expect(rejected.error.code).toBe('VALIDATION_ERROR');
+    expect(rejected.error.message).toMatch(/non-empty conversationId/);
+
+    const listed = await service.listRuns({}, cx as any);
+    expect(listed.ok).toBe(true);
+    if (!listed.ok) return;
+    expect(listed.data.some((run) => run.runId === 'run-journey-no-conv')).toBe(false);
     expect(port.startRun).not.toHaveBeenCalled();
   });
 

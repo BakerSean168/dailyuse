@@ -21,7 +21,12 @@ import {
 import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
 import { CapabilityResolver } from '../capability-resolver';
-import { buildHostTaskCreateStartResult, resolveTaskCreateTitle } from './host-task-create-start';
+import {
+  buildHostTaskCreateStartResult,
+  resolveTaskCreateTitle,
+  resolveTaskCreateConversationId,
+  HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
+} from './host-task-create-start';
 import { buildHostTaskCreateResumeResult } from './host-task-create-resume';
 import {
   getDefaultHostTaskCreateRunStore,
@@ -1152,6 +1157,13 @@ export function createAgentRuntimeService(
           return error(
             'VALIDATION_ERROR',
             'Task Agent input must include a non-empty title, idea, message, or conversationTitle.',
+          );
+        }
+        // Residual 461: session-bound product path — conversationId required for restore/history.
+        if (!resolveTaskCreateConversationId(requestWithKnowledge.data.conversationId)) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
           );
         }
         const startedAt = Date.now();
