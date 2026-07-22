@@ -297,4 +297,19 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toMatch(/confirmGoalAgentRun\(\{[\s\S]*skipHostLifecycle: true/);
     expect(chatView).not.toContain('domain Task executor not wired');
   });
+
+  it('Host task.create client settlement + receipt after createTemplate (residual 425)', () => {
+    expect(helper).toContain('buildHostTaskClientExecutionReceipt');
+    expect(helper).toContain('filterPendingHostProposalsByClientSettlement');
+    expect(helper).toContain('mergeHostExecutionReceiptItems');
+    expect(helper).toContain('settledProposalIds');
+    expect(helper).toContain('clientTaskReceipts');
+    expect(helper).not.toContain('executeApproved');
+    expect(chatView).toContain('buildHostTaskClientExecutionReceipt');
+    expect(chatView).toContain('clientSettledHostProposalIds');
+    expect(chatView).toContain('clientTaskHostReceipts');
+    expect(chatView).toContain('settledProposalIds: clientSettledHostProposalIds.value');
+    expect(chatView).toContain('clientTaskReceipts: clientTaskHostReceipts.value');
+    expect(chatView).toContain('created?.template?.id');
+  });
 });

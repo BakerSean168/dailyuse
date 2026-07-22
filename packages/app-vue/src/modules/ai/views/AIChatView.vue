@@ -360,6 +360,7 @@ import { useAIChatView } from '../composables/useAIChatView';
 import {
   buildPendingHostProposalItems,
   buildHostExecutionReceiptItems,
+  buildHostTaskClientExecutionReceipt,
   buildHostTaskCreateTemplateRequest,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
@@ -368,6 +369,7 @@ import {
   dispatchHostProposalDecision,
   normalizeHostProposalRejectReason,
   dispatchHostProposalRevise,
+  type HostExecutionReceiptItem,
   type HostProposalPanelItem,
   type HostTimelineArtifactItem,
 } from '../composables/hostProposalLifecycle';
@@ -381,6 +383,10 @@ const router = useRouter();
 const { service: aiHostService } = useAI();
 /** Residual 423: domain Task template create fallback for Host task approve. */
 const { createTemplate: createTaskTemplate } = useTaskTemplates();
+/** Residual 425: client domain createTemplate settled proposalIds (session-only). */
+const clientSettledHostProposalIds = ref<string[]>([]);
+/** Residual 425: client domain task Host execution receipts (session-only). */
+const clientTaskHostReceipts = ref<HostExecutionReceiptItem[]>([]);
 
 /**
  * V2 shell integration props (UI_REDESIGN_V2_PLAN §2.1).
@@ -592,15 +598,17 @@ const hostProposalItems = computed(() =>
     goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
     noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
     taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
+    settledProposalIds: clientSettledHostProposalIds.value,
   }),
 );
 
-/** Residual 379/423: Host execution receipt rows after approve + domain executor. */
+/** Residual 379/423/425: Host execution receipts (AgentRun + client createTemplate). */
 const hostExecutionReceiptItems = computed(() =>
   buildHostExecutionReceiptItems({
     goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
     noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
     taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
+    clientTaskReceipts: clientTaskHostReceipts.value,
   }),
 );
 
@@ -806,9 +814,30 @@ async function handleHostProposalApprove(payload: {
         return;
       }
       // Fallback: pure domain Task template create (no AgentRun resume owner).
+      // Residual 425: settle proposal + client Host receipt with deep-link entity id.
       const req = buildHostTaskCreateTemplateRequest({ title, goalId });
       if (req) {
-        await createTaskTemplate(req as CreateTaskTemplateReq);
+        const created = await createTaskTemplate(req as CreateTaskTemplateReq);
+        const templateId = created?.template?.id ? String(created.template.id) : '';
+        if (templateId) {
+          const receipt = buildHostTaskClientExecutionReceipt({
+            runId: payload.item.runId,
+            proposalId: payload.item.proposalId,
+            revision,
+            title,
+            templateId,
+            goalId,
+          });
+          if (!clientSettledHostProposalIds.value.includes(payload.item.proposalId)) {
+            clientSettledHostProposalIds.value = [
+              ...clientSettledHostProposalIds.value,
+              payload.item.proposalId,
+            ];
+          }
+          if (!clientTaskHostReceipts.value.some((row) => row.proposalId === receipt.proposalId)) {
+            clientTaskHostReceipts.value = [...clientTaskHostReceipts.value, receipt];
+          }
+        }
       }
       return;
     }
@@ -845,13 +874,19 @@ async function handleHostProposalReject(payload: {
       });
       return;
     }
-    // Residual 423: cancel primary task-shaped AgentRun via goal session when owned there.
+    // Residual 423/425: cancel primary task-shaped AgentRun via goal session when owned there.
     if (payload.item.source === 'task') {
       if (goalAgentRun.value?.run.runId === payload.item.runId) {
         await cancelGoalAgentRun({
           skipHostLifecycle: true,
           revision: payload.revision,
         });
+      } else if (!clientSettledHostProposalIds.value.includes(payload.item.proposalId)) {
+        // Residual 425: client-settle orphan task proposals (no AgentRun owner to cancel).
+        clientSettledHostProposalIds.value = [
+          ...clientSettledHostProposalIds.value,
+          payload.item.proposalId,
+        ];
       }
       return;
     }

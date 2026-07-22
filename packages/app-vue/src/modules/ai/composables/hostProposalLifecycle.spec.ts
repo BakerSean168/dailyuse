@@ -21,6 +21,9 @@ import {
   composeHostWorkbenchTimelineArtifacts,
   applyHostTaskPatchToAgentActions,
   buildHostTaskCreateTemplateRequest,
+  buildHostTaskClientExecutionReceipt,
+  filterPendingHostProposalsByClientSettlement,
+  mergeHostExecutionReceiptItems,
   isPrimaryTaskHostAgentRun,
   isTaskShapedHostAgentRun,
   resolveLiveHostWorkbenchAgentRuns,
@@ -1325,6 +1328,70 @@ describe('Host task.create live lane + domain executor foundation (residual 423)
       timeConfig: { timeType: 'AllDay', startDate: null, timePoint: null, timeRange: null },
     });
     expect(buildHostTaskCreateTemplateRequest({ title: '   ' })).toBeNull();
+  });
+});
+
+describe('Host task.create client settlement + receipt (residual 425)', () => {
+  it('builds client createTemplate receipt with primaryEntityId deep-link', () => {
+    const receipt = buildHostTaskClientExecutionReceipt({
+      runId: 'run-task-1',
+      proposalId: 'agent-run:run-task-1:task.create',
+      revision: 1,
+      title: 'Ship Host Task lane',
+      templateId: 'tmpl-1',
+      goalId: 'goal-1',
+    });
+    expect(receipt).toMatchObject({
+      kind: 'task.create',
+      source: 'task',
+      runStatus: 'completed',
+      ok: true,
+      primaryEntityId: 'tmpl-1',
+      entityIds: ['tmpl-1'],
+      executedCount: 1,
+    });
+    expect(receipt.actionLines[0]).toMatchObject({
+      tool: 'create_task_template',
+      status: 'executed',
+      entityId: 'tmpl-1',
+    });
+  });
+
+  it('filters settled pending proposals and merges client receipts without duplicates', () => {
+    const pending = buildPendingHostProposalItems({ taskAgentRun: taskWaitingRun() });
+    expect(pending).toHaveLength(1);
+    const settled = filterPendingHostProposalsByClientSettlement(pending, [
+      pending[0]!.proposalId,
+    ]);
+    expect(settled).toEqual([]);
+
+    const suppressed = buildPendingHostProposalItems({
+      taskAgentRun: taskWaitingRun(),
+      settledProposalIds: [pending[0]!.proposalId],
+    });
+    expect(suppressed).toEqual([]);
+
+    const client = buildHostTaskClientExecutionReceipt({
+      runId: 'run-task-1',
+      proposalId: 'agent-run:run-task-1:task.create',
+      revision: 1,
+      title: 'Ship Host Task lane',
+      templateId: 'tmpl-1',
+    });
+    const merged = mergeHostExecutionReceiptItems([], [client]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]?.primaryEntityId).toBe('tmpl-1');
+
+    const withDup = mergeHostExecutionReceiptItems([client], [
+      { ...client, primaryEntityId: 'other' },
+    ]);
+    expect(withDup).toHaveLength(1);
+    expect(withDup[0]?.primaryEntityId).toBe('tmpl-1');
+
+    const viaBuilder = buildHostExecutionReceiptItems({
+      clientTaskReceipts: [client],
+    });
+    expect(viaBuilder).toEqual([client]);
   });
 });
 

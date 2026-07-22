@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -802,11 +802,99 @@ export function buildHostTaskCreateTemplateRequest(input: {
   };
 }
 
+
+/**
+ * Residual 425: Host execution receipt for pure domain createTemplate fallback.
+ * Presentation only — caller owns persistence/reactivity of the receipt list.
+ * Never calls Host kernel mutation execution.
+ */
+export function buildHostTaskClientExecutionReceipt(input: {
+  runId: string;
+  proposalId: string;
+  revision: number;
+  title: string;
+  templateId: string;
+  goalId?: string | null;
+}): HostExecutionReceiptItem {
+  const title = input.title.trim() || `Task ${input.templateId}`;
+  const templateId = input.templateId.trim();
+  const goalId =
+    typeof input.goalId === 'string' && input.goalId.trim() ? input.goalId.trim() : null;
+  const summary = goalId
+    ? `Created task template · linked goal ${goalId}`
+    : 'Created task template';
+  return {
+    runId: input.runId,
+    proposalId: input.proposalId,
+    revision: input.revision,
+    kind: 'task.create',
+    source: 'task',
+    runStatus: 'completed',
+    ok: true,
+    title,
+    summary,
+    executedCount: 1,
+    failedCount: 0,
+    skippedCount: 0,
+    entityIds: templateId ? [templateId] : [],
+    actionLines: [
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: summary,
+        ...(templateId ? { entityId: templateId } : {}),
+      },
+    ],
+    ...(templateId ? { primaryEntityId: templateId } : {}),
+    receiptKey: `host-receipt:${input.proposalId}`,
+  };
+}
+
+/**
+ * Residual 425: filter pending Host proposals already settled by client domain executor.
+ */
+export function filterPendingHostProposalsByClientSettlement(
+  items: readonly HostProposalPanelItem[],
+  settledProposalIds?: ReadonlySet<string> | readonly string[] | null,
+): HostProposalPanelItem[] {
+  if (!settledProposalIds) return [...items];
+  const settled =
+    settledProposalIds instanceof Set
+      ? settledProposalIds
+      : new Set(settledProposalIds);
+  if (settled.size === 0) return [...items];
+  return items.filter((item) => !settled.has(item.proposalId));
+}
+
+/**
+ * Residual 425: merge AgentRun-derived receipts with client domain task receipts.
+ * Client rows win only when the same proposalId is absent from AgentRun receipts.
+ */
+export function mergeHostExecutionReceiptItems(
+  agentRunReceipts: readonly HostExecutionReceiptItem[],
+  clientTaskReceipts?: readonly HostExecutionReceiptItem[] | null,
+): HostExecutionReceiptItem[] {
+  const items = [...agentRunReceipts];
+  if (!clientTaskReceipts?.length) return items;
+  const seen = new Set(items.map((item) => item.proposalId));
+  for (const receipt of clientTaskReceipts) {
+    if (!receipt?.proposalId || seen.has(receipt.proposalId)) continue;
+    items.push(receipt);
+    seen.add(receipt.proposalId);
+  }
+  return items;
+}
+
 export function buildHostExecutionReceiptItems(input: {
   goalAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;
   /** Residual 419: optional task.create bridge run (fixture / future AgentType). */
   taskAgentRun?: AgentRunResult | null;
+  /**
+   * Residual 425: client domain createTemplate receipts (no AgentRun status change).
+   * Merged after AgentRun-derived rows; never replaces an existing proposalId.
+   */
+  clientTaskReceipts?: readonly HostExecutionReceiptItem[] | null;
 }): HostExecutionReceiptItem[] {
   const items: HostExecutionReceiptItem[] = [];
 
@@ -910,7 +998,8 @@ export function buildHostExecutionReceiptItems(input: {
     }
   }
 
-  return items;
+  // Residual 425: merge client domain task receipts (createTemplate fallback).
+  return mergeHostExecutionReceiptItems(items, input.clientTaskReceipts);
 }
 
 export function buildPendingHostProposalItems(input: {
@@ -918,6 +1007,11 @@ export function buildPendingHostProposalItems(input: {
   noteAgentRun?: AgentRunResult | null;
   /** Residual 419: optional task.create bridge run (fixture / future AgentType). */
   taskAgentRun?: AgentRunResult | null;
+  /**
+   * Residual 425: proposalIds already settled by client domain executor
+   * (createTemplate fallback) — suppress pending rows without AgentRun status change.
+   */
+  settledProposalIds?: ReadonlySet<string> | readonly string[] | null;
 }): HostProposalPanelItem[] {
   const items: HostProposalPanelItem[] = [];
 
@@ -978,7 +1072,8 @@ export function buildPendingHostProposalItems(input: {
     });
   }
 
-  return items;
+  // Residual 425: hide client-settled task proposals (domain createTemplate fallback).
+  return filterPendingHostProposalsByClientSettlement(items, input.settledProposalIds);
 }
 
 /**
