@@ -6,10 +6,12 @@ import { describe, expect, it } from 'vitest';
  * Residual 351/369: open chat default send path goes through AssistantFacade
  * (dispatchAssistant), not streamMessage dual path. Residual 369 adds Host
  * multi-engine execution profile selection (direct_turn / pi_readonly).
+ * Residual 393: stopGenerating issues Host cancel_run with client-owned runId.
  */
 describe('useAIChatSession open chat Host dispatch surface', () => {
   const session = readFileSync(resolve(__dirname, 'useAIChatSession.ts'), 'utf8');
   const types = readFileSync(resolve(__dirname, 'types.ts'), 'utf8');
+  const cancelHelper = readFileSync(resolve(__dirname, 'hostOpenChatCancel.ts'), 'utf8');
   const composer = readFileSync(
     resolve(__dirname, '../components/AIFooterComposer.vue'),
     'utf8',
@@ -39,5 +41,19 @@ describe('useAIChatSession open chat Host dispatch surface', () => {
     expect(composer).toContain("'select-execution-profile'");
     expect(chatView).toContain(':execution-profile-id="executionProfileId"');
     expect(chatView).toContain('@select-execution-profile="selectExecutionProfile"');
+  });
+
+  it('stopGenerating issues Host cancel_run with client-owned runId (residual 393)', () => {
+    expect(session).toContain('createHostOpenChatRunId');
+    expect(session).toContain('buildHostOpenChatStopCancelCommand');
+    expect(session).toContain('activeHostRunId');
+    expect(session).toContain('runId: hostRunId');
+    expect(session).toContain('dispatchAssistant(cancelCommand');
+    expect(cancelHelper).toContain("type: 'cancel_run'");
+    expect(cancelHelper).toContain('buildHostOpenChatStopCancelCommand');
+    expect(cancelHelper).not.toContain('identityId');
+    // Stop control remains in composer; Host cancel is session-owned.
+    expect(composer).toContain('ai-chat-stop-generating');
+    expect(chatView).toContain('@stop="stopGenerating"');
   });
 });

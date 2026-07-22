@@ -13,6 +13,11 @@ import type {
 } from './types';
 import { unwrap } from '@dailyuse/contracts/result';
 import { getAIErrorMessage } from './error';
+import {
+  buildHostOpenChatStopCancelCommand,
+  createHostOpenChatRunId,
+  isHostOpenChatCancelledEvent,
+} from './hostOpenChatCancel';
 
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
 type DeleteConversationId = Parameters<AIChatService['deleteConversation']>[0];
@@ -38,6 +43,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   const messagesViewport = ref<HTMLElement | null>(null);
   const composerTextarea = ref<HTMLTextAreaElement | null>(null);
   const activeStreamAbortController = ref<AbortController | null>(null);
+  /** Residual 393: client-owned Host run id for open-chat cancel_run on stop. */
+  const activeHostRunId = ref<string | null>(null);
   /** Residual 369: Host open-chat engine profile (Facade routes DirectTurn vs ReadonlyAnalysis). */
   const executionProfileId = ref<'direct_turn' | 'pi_readonly'>('direct_turn');
 
@@ -87,9 +94,30 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     activeStreamAbortController.value = null;
   }
 
+  /**
+   * Residual 393: stop open chat — abort client stream AND Host cancel_run so
+   * DirectTurn/ReadonlyAnalysis engines abort (client abort alone is insufficient).
+   */
   function stopGenerating() {
     if (!chatLoading.value) return;
+    const cancelCommand = buildHostOpenChatStopCancelCommand(activeHostRunId.value);
     abortActiveStream();
+    if (!cancelCommand) return;
+    void options.service
+      .dispatchAssistant(cancelCommand, {
+        onEvent: (event: AssistantEvent) => {
+          if (!isHostOpenChatCancelledEvent(event)) return;
+          for (const item of chatTimeline.value) {
+            if (item.status === 'generating') {
+              item.status = 'aborted';
+              item.errorMessage = undefined;
+            }
+          }
+        },
+      })
+      .catch(() => {
+        // Best-effort Host cancel; local abort already applied.
+      });
   }
 
   function updateLastActiveConversation(id: string) {
@@ -229,6 +257,9 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       const conversationId = await ensureConversationCreated(loadService, conversationName);
       streamController = new AbortController();
       activeStreamAbortController.value = streamController;
+      // Residual 393: client-owned runId so stop can cancel_run before/without run.started.
+      const hostRunId = createHostOpenChatRunId();
+      activeHostRunId.value = hostRunId;
 
       userDraftId = `user-draft-${Date.now()}`;
       assistantDraftId = `assistant-draft-${Date.now()}`;
@@ -248,6 +279,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
           conversationId,
           content: pendingUserMessage,
           surface: 'web',
+          runId: hostRunId,
           // Residual 369: multi-engine Host profile selection for open chat.
           executionProfileId: executionProfileId.value,
           providerId: selectedModel.providerId,
@@ -255,6 +287,16 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
         },
         {
           onEvent: (event: AssistantEvent) => {
+            if (event.type === 'run.started' && event.runId) {
+              activeHostRunId.value = event.runId;
+            }
+            if (isHostOpenChatCancelledEvent(event)) {
+              const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
+              if (target && target.status === 'generating') {
+                target.status = 'aborted';
+                target.errorMessage = undefined;
+              }
+            }
             if (event.type === 'message.delta') {
               const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
               if (target) {
@@ -333,6 +375,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       if (activeStreamAbortController.value === streamController) {
         activeStreamAbortController.value = null;
       }
+      // Residual 393: clear Host run tracking after open-chat turn ends.
+      activeHostRunId.value = null;
       chatLoading.value = false;
     }
   }
