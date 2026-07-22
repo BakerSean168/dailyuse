@@ -368,6 +368,7 @@ import {
   buildHostExecutionReceiptItems,
   buildHostTaskClientExecutionReceipt,
   buildHostTaskCreateTemplateRequest,
+  canHostApproveProductAgentRun,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
@@ -793,6 +794,28 @@ async function handleHostProposalApprove(payload: {
   dirty: boolean;
 }) {
   if (hostProposalBusy.value) return;
+
+  // Residual 561: goal/knowledge Host approve requires waiting_approval + sole
+  // product draftAction before Host lifecycle (confirm residual 555/557/559
+  // symmetry). Avoids approve-then-silent-noop when product gates fail-closed.
+  if (payload.item.source === 'goal') {
+    const run =
+      goalAgentRun.value?.run.runId === payload.item.runId ? goalAgentRun.value : null;
+    if (!canHostApproveProductAgentRun({ run, productTool: 'create_goal' })) return;
+  }
+  if (payload.item.source === 'knowledge') {
+    const run =
+      noteAgentRun.value?.run.runId === payload.item.runId ? noteAgentRun.value : null;
+    if (
+      !canHostApproveProductAgentRun({
+        run,
+        productTool: 'create_knowledge_note',
+      })
+    ) {
+      return;
+    }
+  }
+
   hostProposalBusy.value = true;
   try {
     let revision = payload.revision;

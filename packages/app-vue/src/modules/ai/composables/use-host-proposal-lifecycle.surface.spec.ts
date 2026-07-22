@@ -1077,6 +1077,28 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('Host panel goal/knowledge approve gates waiting_approval + sole product draft before lifecycle (residual 561)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('canHostApproveProductAgentRun');
+    expect(helper).toContain('Residual 561');
+    expect(chatView).toContain('canHostApproveProductAgentRun');
+    expect(chatView).toContain('Residual 561');
+    const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
+    expect(approveIdx).toBeGreaterThan(-1);
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 2800);
+    expect(approveSlice).toContain('canHostApproveProductAgentRun');
+    expect(approveSlice).toContain("productTool: 'create_goal'");
+    expect(approveSlice).toContain("productTool: 'create_knowledge_note'");
+    // Gate before Host lifecycle approve decision.
+    const gateIdx = approveSlice.indexOf('canHostApproveProductAgentRun');
+    const decisionIdx = approveSlice.indexOf('dispatchHostProposalDecision');
+    expect(gateIdx).toBeGreaterThan(-1);
+    expect(decisionIdx).toBeGreaterThan(gateIdx);
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('task.create process-local store conversation list trims (residual 509)', () => {
     const store = readFileSync(
       resolve(

@@ -222,6 +222,22 @@ function soleProductDraftAction(
 }
 
 /**
+ * Residual 561: Host panel approve for product-lane AgentRuns requires
+ * waiting_approval + sole product draftAction before Host lifecycle
+ * (goal residual 557/559 + knowledge residual 555/559 symmetry).
+ * Prevents approve-then-silent-noop when confirm product gates fail-closed.
+ * Foreign companions may remain; multi product drafts fail-closed.
+ */
+export function canHostApproveProductAgentRun(input: {
+  run: AgentRunResult | null | undefined;
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template';
+}): boolean {
+  const run = input.run;
+  if (!run || run.run.status !== 'waiting_approval') return false;
+  return soleProductDraftAction(run, input.productTool) !== undefined;
+}
+
+/**
  * Residual 527: workbench pending count from product-lane tool only
  * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
  * Foreign tools never inflate the Host proposal action count.

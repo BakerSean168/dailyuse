@@ -31,6 +31,7 @@ import {
   isTaskShapedHostAgentRun,
   resolveLiveHostWorkbenchAgentRuns,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
+  canHostApproveProductAgentRun,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -2551,6 +2552,83 @@ describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', (
         isTaskAgentType: true,
         ownedByTaskSession: true,
         agentType: 'goal.create',
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('canHostApproveProductAgentRun (residual 561)', () => {
+  function runWith(
+    status: AgentRunResult['run']['status'],
+    tools: string[],
+  ): AgentRunResult {
+    return {
+      run: {
+        runId: 'run-1',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create',
+        status,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: tools.map((tool, index) => ({
+          tool,
+          index,
+          dependsOn: [],
+          payload: {},
+          rationale: tool,
+        })),
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  it('allows waiting_approval with sole create_goal', () => {
+    expect(
+      canHostApproveProductAgentRun({
+        run: runWith('waiting_approval', ['create_goal', 'create_key_result']),
+        productTool: 'create_goal',
+      }),
+    ).toBe(true);
+  });
+
+  it('rejects multi create_goal and non-waiting statuses', () => {
+    expect(
+      canHostApproveProductAgentRun({
+        run: runWith('waiting_approval', ['create_goal', 'create_goal']),
+        productTool: 'create_goal',
+      }),
+    ).toBe(false);
+    expect(
+      canHostApproveProductAgentRun({
+        run: runWith('waiting_execution', ['create_goal']),
+        productTool: 'create_goal',
+      }),
+    ).toBe(false);
+    expect(
+      canHostApproveProductAgentRun({
+        run: null,
+        productTool: 'create_goal',
+      }),
+    ).toBe(false);
+  });
+
+  it('allows knowledge sole create_knowledge_note and rejects missing product draft', () => {
+    expect(
+      canHostApproveProductAgentRun({
+        run: runWith('waiting_approval', ['create_knowledge_note', 'search_knowledge']),
+        productTool: 'create_knowledge_note',
+      }),
+    ).toBe(true);
+    expect(
+      canHostApproveProductAgentRun({
+        run: runWith('waiting_approval', ['search_knowledge']),
+        productTool: 'create_knowledge_note',
       }),
     ).toBe(false);
   });

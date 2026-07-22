@@ -368,6 +368,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 559: goal confirm/cancel + knowledge confirm waiting_approval-only.
         'Residual 559',
         "run.status !== 'waiting_approval'",
+        // Residual 561: Host panel goal/knowledge approve pre-lifecycle product gate.
+        'Residual 561',
+        'canHostApproveProductAgentRun',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',
