@@ -3003,6 +3003,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、第二生产 Turn Engine、GitHub App fixture E2E、全量 PR 门禁。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百一十八轮）：ADR-035 Workflow Adapter 首实现（仍不打勾 Agent）——
+> 新增 `LangGraphWorkflowAdapter`（`workflow.langgraph`）实现 `IWorkflowAdapterPort` 并委托
+> `IAgentRuntimePort`；`offeredKinds` 仅 workflow/engine 标签，永不含 tool.mutation/proposal；
+> remote runtime 在 agentRuntimePort 存在时包装；direct runtime `workflowAdapter: null`；
+> `module.workflowAdapter` 暴露。stage-0 freeze 允许 DirectTurnEngine + 本 adapter。验证：
+> workflow adapter 4 + composition + stage-0 + journey/harness + governance-check（GOV_EXIT:0）。
+> §13.2 Agent 仍为 **部分实现**（第二 Turn Engine / Proposal Kernel / 统一助手 UI 未齐）。状态保持
+> **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3396,6 +3405,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十一轮：Agent Host stage-0 composition freeze（runtime offers 无 engine.*；module 未注册 Turn Engine ports；生产 port 实现仍为空）。
   残留三百一十四轮：生产 `DirectTurnEngine`（engine.direct_turn）实现 ITurnEnginePort 并挂到 `createAIModule().turnEngine`；仍无第二引擎/Workflow adapter。
   残留三百一十六轮：Send/Stream open chat use cases 经同一 DirectTurnEngine（IOpenChatTurnPort）；不再直连 chatExecution ctor 旁路。
+  残留三百一十八轮：LangGraphWorkflowAdapter 包装 IAgentRuntimePort；workflow offers 不含 mutation；remote 接线、direct null。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3408,6 +3418,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十五轮：§13.2 focused evidence suite re-run (223 tests, residuals 250–314 locks, no checkbox changes)。
   残留三百一十六轮：open chat send/stream routes through DirectTurnEngine (IOpenChatTurnPort); multi-engine still partial。
   残留三百一十七轮：§13.2 focused evidence suite re-run (226 tests, residuals 250–316 locks, no checkbox changes)。
+  残留三百一十八轮：LangGraphWorkflowAdapter (IWorkflowAdapterPort) wraps IAgentRuntimePort; no mutation offers; Agent still partial。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3498,6 +3509,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十五轮：tip 上 223 项 focused evidence suite（含 residual 250–314 dual/docs/disclosure/ADR-035/three-login/harness/composition/DirectTurnEngine 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百一十六轮：open chat 经 DirectTurnEngine + IOpenChatTurnPort + composition surface；仍不构成 multi-engine/统一助手完成证据。
   残留三百一十七轮：tip 上 226 项 focused evidence suite（含 residual 250–316 open-chat/DirectTurnEngine 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百一十八轮：LangGraphWorkflowAdapter + stage-0/composition 锁通过；仍不构成 multi-engine/统一助手完成证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

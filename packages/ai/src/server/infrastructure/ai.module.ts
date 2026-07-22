@@ -42,7 +42,7 @@ import type {
 
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
-import type { ITurnEnginePort } from '@dailyuse/contracts/ai';
+import type { ITurnEnginePort, IWorkflowAdapterPort } from '@dailyuse/contracts/ai';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -314,6 +314,10 @@ export interface AIModuleInstance {
    * not a Workflow and never a mutation executor.
    */
   readonly turnEngine: ITurnEnginePort;
+  /**
+   * LangGraph workflow adapter when remote agent runtime is present (stage 3 / residual 318).
+   */
+  readonly workflowAdapter: IWorkflowAdapterPort | null;
   start(): void;
   dispose(): void;
 }
@@ -492,6 +496,7 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
     services,
     api,
     turnEngine: runtime.turnEngine,
+    workflowAdapter: runtime.workflowAdapter,
     start(): void {
       if (started) {
         return;

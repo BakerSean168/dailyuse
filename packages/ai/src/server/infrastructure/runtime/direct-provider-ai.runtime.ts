@@ -154,5 +154,5 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     agentRuntimeService: createAgentRuntimeService(undefined),
   };
 
-  return { services, capabilities, runtimeContributions: [], turnEngine };
+  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter: null };
 }

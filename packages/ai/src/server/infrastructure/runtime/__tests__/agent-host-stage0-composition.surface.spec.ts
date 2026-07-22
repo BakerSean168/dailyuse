@@ -1,5 +1,5 @@
 /**
- * Residual 311/314/316: ADR-035 Agent Host composition.
+ * Residual 311/314/316/318: ADR-035 Agent Host composition.
  * Runtime capability offers never auto-emit engine.* labels.
  * Residual 314 wires the first production DirectTurnEngine on the module instance
  * and residual 316 routes open chat send/stream through that engine (no chatExecution bypass).
@@ -39,15 +39,15 @@ describe('agent-host stage-0 composition surface', () => {
     expect(runtime).not.toMatch(/kind:\s*'engine\.cli_readonly'/);
   });
 
-  it('ai.module wires DirectTurnEngine only (no Workflow/Capability/Proposal ports)', () => {
+  it('ai.module exposes turnEngine + workflowAdapter without Capability/Proposal ports', () => {
     const moduleSource = readFileSync(resolve(__dirname, '../../ai.module.ts'), 'utf8');
     expect(moduleSource).toContain('createDirectProviderAIRuntime');
     expect(moduleSource).toContain('turnEngine: runtime.turnEngine');
+    expect(moduleSource).toContain('workflowAdapter: runtime.workflowAdapter');
     expect(moduleSource).toContain('ITurnEnginePort');
-    expect(moduleSource).not.toContain('IWorkflowAdapterPort');
+    expect(moduleSource).toContain('IWorkflowAdapterPort');
     expect(moduleSource).not.toContain('ICapabilityResolverPort');
     expect(moduleSource).not.toContain('IProposalKernelPort');
-    expect(moduleSource).not.toContain('implements IWorkflowAdapterPort');
     expect(moduleSource).not.toContain('implements ICapabilityResolverPort');
     expect(moduleSource).not.toContain('implements IProposalKernelPort');
   });
@@ -64,6 +64,18 @@ describe('agent-host stage-0 composition surface', () => {
         /new SendAIMessageUseCase\(\s*conversationRepository[\s\S]*?chatExecutionPort/,
       );
     }
+  });
+
+
+  it('remote runtime wraps agentRuntimePort with LangGraphWorkflowAdapter when present', () => {
+    const remote = readFileSync(resolve(__dirname, '../remote-ai-service.runtime.ts'), 'utf8');
+    const direct = readFileSync(resolve(__dirname, '../direct-provider-ai.runtime.ts'), 'utf8');
+    expect(remote).toContain('new LangGraphWorkflowAdapter(dependencies.agentRuntimePort)');
+    expect(remote).toContain('agentRuntimePort');
+    expect(remote).toContain('workflowAdapter');
+    expect(direct).toContain('workflowAdapter: null');
+    // Runtime offers still never silent-emit engine.* from adapter wiring.
+    expect(remote).not.toMatch(/buildAgentRuntimeCapabilityOffers[\s\S]*engine\.langgraph_workflow/);
   });
 
 });

@@ -33,7 +33,10 @@ updated: 2026-07-22T00:00:00
   - ADR-035 journey（capability/turn isolation steps 1–16）+ multi-engine conformance harness
     （`engine.direct_turn` + `engine.langgraph_workflow` 同 suite isolation；**in-suite doubles only**）
     在 vault active plan residual 305/309/311 证据中通过。
-- **阶段 4 部分起步（residual 314）**：
+- **阶段 3 部分起步（residual 318）**：
+  - 生产 `LangGraphWorkflowAdapter` 包装 `IAgentRuntimePort`；`module.workflowAdapter` 在 remote 有值。
+  - workflow offers 永不含 `tool.mutation`/`tool.proposal`。
+- **阶段 4 部分起步（residual 314/316）**：
   - 生产 `DirectTurnEngine`（`engine.direct_turn`）已实现 `ITurnEnginePort`，由 `createAIModule().turnEngine` 暴露。
   - 开放式 chat/analysis only；ownership fail-closed + abort；不自动 emit `engine.*` capability offers。
   - `sendMessage`/`streamMessage` 已经同一 `DirectTurnEngine`（IOpenChatTurnPort）；统一助手 UI 未切换。
@@ -771,10 +774,10 @@ packages/contracts/src/modules/ai/
 
 ### 阶段 3：Workflow Adapter 收口
 
-- 用 LangGraphWorkflowAdapter 包装现有 `IAgentRuntimePort`。
-- Host 统一持久化标准 Run/Event projection。
-- LangGraph 原生 node/thread/interrupt 留在 adapter 私有状态。
-- 不改写 Python graph 的业务阶段。
+- 用 LangGraphWorkflowAdapter 包装现有 `IAgentRuntimePort`。 **（部分：residual 318 生产 class + remote 接线；offeredKinds isolation）**
+- Host 统一持久化标准 Run/Event projection。 **（未完成：仍用既有 AgentRun 路径）**
+- LangGraph 原生 node/thread/interrupt 留在 adapter 私有状态。 **（部分：adapter 仅委托；原生态未额外投影）**
+- 不改写 Python graph 的业务阶段。 **（保持）**
 
 ### 阶段 4：首个 TurnEngine
 
@@ -855,8 +858,8 @@ packages/contracts/src/modules/ai/
 
 - [ ] 用户只面对统一助手和右侧工作台。
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。
-- [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine；Workflow/Model Gateway 生产 adapter 未齐）**
-- [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。
+- [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
+- [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；UI 泄漏审计未齐）**
 - [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双标签 isolation + 生产 DirectTurnEngine 首引擎；第二生产引擎仍缺）**
 - [ ] 自定义模型 API 不需要实现完整 Agent runtime。
 - [ ] 本地 CLI 不需要伪装成 Model Provider。

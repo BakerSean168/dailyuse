@@ -66,6 +66,7 @@ import {
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
 import { DirectTurnEngine } from '../turn-engine';
+import { LangGraphWorkflowAdapter } from '../workflow';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
 
@@ -121,6 +122,12 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     providerConfigRepository,
     chatExecutionPort,
   );
+
+  // Residual 318: wrap remote agent runtime with LangGraphWorkflowAdapter when present.
+  const workflowAdapter = dependencies.agentRuntimePort
+    ? new LangGraphWorkflowAdapter(dependencies.agentRuntimePort)
+    : null;
+  const agentRuntimePort = workflowAdapter ?? dependencies.agentRuntimePort;
 
   const chatServices: AIChatServices = {
     send: new SendAIMessageUseCase(turnEngine, dependencies.executionLogPort),
@@ -278,7 +285,7 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     analyticsQueryService: createAnalyticsRuntimeService(analyticsQueryUseCase, capabilities),
     evaluationReportService: createEvaluationRuntimeService(evaluationReportUseCase),
     agentRuntimeService: createAgentRuntimeService(
-      dependencies.agentRuntimePort,
+      agentRuntimePort,
       dependencies.automationToolExecutorPort,
       dependencies.providerConfigRepository,
       dependencies.knowledgeSourcePort,
@@ -289,5 +296,5 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     ),
   };
 
-  return { services, capabilities, runtimeContributions: [], turnEngine };
+  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter };
 }

@@ -95,6 +95,11 @@ export interface AIRuntimeOutput {
   readonly runtimeContributions: readonly AIModuleRuntimeContribution[];
   /** First production Turn Engine (DirectTurnEngine); also powers open chat use cases. */
   readonly turnEngine: import('@dailyuse/contracts/ai').ITurnEnginePort;
+  /**
+   * LangGraph workflow adapter when remote agent runtime is present; otherwise null.
+   * Residual 318 — wraps IAgentRuntimePort without replacing Python graphs.
+   */
+  readonly workflowAdapter: import('@dailyuse/contracts/ai').IWorkflowAdapterPort | null;
 }
 
 export function buildCapabilityUnavailableMessage(

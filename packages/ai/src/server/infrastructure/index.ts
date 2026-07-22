@@ -91,3 +91,11 @@ export {
 // ---------------------------------------------------------------------------
 export { DirectTurnEngine, DIRECT_TURN_ENGINE_ID } from './turn-engine';
 
+// ---------------------------------------------------------------------------
+// Workflow Adapter (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  LangGraphWorkflowAdapter,
+  LANGGRAPH_WORKFLOW_ADAPTER_ID,
+} from './workflow';
+
