@@ -139,3 +139,20 @@ describe('PowerSyncApiModule profile snapshot routes', () => {
     expect(Buffer.compare(downloadResponse.body as Buffer, sqliteBuffer)).toBe(0);
   });
 });
+
+describe('PowerSyncApiModule schema route (residual 629)', () => {
+  it('returns HttpResponse ok envelope for GET /powersync/schema', async () => {
+    const app = await createTestApp();
+    const res = await request(app).get('/api/v1/powersync/schema');
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.code).toBe(200);
+    expect(res.body.data).toEqual({
+      powersync_url: expect.any(String),
+      configured: expect.any(Boolean),
+    });
+    expect(typeof res.body.timestamp).toBe('number');
+    expect(res.body).not.toHaveProperty('success');
+  });
+});

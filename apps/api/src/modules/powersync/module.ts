@@ -191,14 +191,15 @@ export const PowerSyncApiModule: IApiModule = {
     });
 
     // ── GET /powersync/schema ──
-    psRouter.get('/schema', (_req, res) => {
-      return res.json({
-        ok: true,
-        data: {
-          powersync_url: config.url,
-          configured: !!config.privateKey,
-        },
-      });
+    // Residual 629: Result/HttpResponse envelope only (no partial { ok, data } dual-track).
+    psRouter.get('/schema', (req, res) => {
+      const responseBuilder = createApiResponseBuilder(req);
+      return res.status(200).json(
+        responseBuilder.success({
+          powersync_url: config.url ?? '',
+          configured: Boolean(config.privateKey),
+        }),
+      );
     });
 
     router.use('/powersync', psRouter);
