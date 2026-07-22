@@ -355,6 +355,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 551: applyHost*Patch sole product draftAction only (no multi-index invent).
         'Residual 551',
         'productDraftCount !== 1',
+        // Residual 553: Host confirm store draft resolve sole create_task_template.
+        'Residual 553',
+        'function resolveConfirmStoreDraftActions',
+        'return productDrafts',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

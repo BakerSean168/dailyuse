@@ -368,6 +368,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 551'];
     case 'productDraftCount !== 1':
       return ['productDraftCount !== 1'];
+    case 'Residual 553':
+      return ['Residual 553'];
+    case 'function resolveConfirmStoreDraftActions':
+      return ['function resolveConfirmStoreDraftActions'];
+    case 'return productDrafts':
+      return ['return productDrafts'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

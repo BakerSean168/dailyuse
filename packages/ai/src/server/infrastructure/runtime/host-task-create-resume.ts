@@ -55,6 +55,9 @@
  * create_task_template draftAction after single-store-draft + tool gates
  * (no blind multi-index invent; residual 541/543 symmetry).
  *
+ * Residual 553: resolveConfirmStoreDraftActions returns the sole process-local
+ * create_task_template draftAction (foreign companions ignored; multi product fail-closed).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -239,19 +242,34 @@ function resolveConfirmSettlementGoalId(
 }
 
 /**
- * Residual 471: confirm draft is process-local only.
+ * Residual 471/553: confirm draft is process-local only.
  * Client payload.approvedActions must not revise draft on confirm (edit owns revise).
+ * Residual 553: return sole create_task_template draftAction (foreign companions ignored;
+ * multi product-lane drafts fail-closed — residual 545 single-store symmetry at resolve).
  */
 function resolveConfirmStoreDraftActions(
   current: AgentRunResult,
 ): AgentRunResult['state']['approvedActions'] {
-  if (current.state.pendingActions.length > 0) {
-    return cloneActions(current.state.pendingActions);
+  const pool =
+    current.state.pendingActions.length > 0
+      ? current.state.pendingActions
+      : current.state.approvedActions.length > 0
+        ? current.state.approvedActions
+        : null;
+  if (!pool || pool.length === 0) {
+    throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
   }
-  if (current.state.approvedActions.length > 0) {
-    return cloneActions(current.state.approvedActions);
+  // Residual 553: product draft is sole create_task_template (ignore foreign companions).
+  const productDrafts = cloneActions(pool).filter(
+    (action) => action.tool === 'create_task_template',
+  );
+  if (productDrafts.length === 0) {
+    throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
   }
-  throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
+  if (productDrafts.length !== 1) {
+    throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE);
+  }
+  return productDrafts;
 }
 
 function rebuildTaskCreateInterrupts(
@@ -378,10 +396,10 @@ export function buildHostTaskCreateResumeResult(input: {
     ) {
       throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE);
     }
-    // Residual 471: process-local draft only — ignore payload.approvedActions on confirm.
+    // Residual 471/553: process-local sole create_task_template draft only —
+    // ignore payload.approvedActions on confirm (edit owns revise).
     const approvedActions = resolveConfirmStoreDraftActions(current);
-    // Residual 545: process-local product draft is a single create_task_template action
-    // (start/edit symmetry; no blind multi-index invent for title/goalId rebind).
+    // Residual 545/553: defense-in-depth sole draftAction after resolve product filter.
     if (approvedActions.length !== 1) {
       throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE);
     }

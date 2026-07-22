@@ -1081,7 +1081,7 @@ describe('confirm store draftAction sole product draft (residual 545)', () => {
     expect(confirmSlice).not.toContain('approvedActions[1]');
   });
 
-  it('fail-closed when process-local store draft is multi-action', () => {
+  it('ignores foreign companions and confirms sole create_task_template store draft (residual 553)', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-multi-store-draft'),
       identityId: 'id-1',
@@ -1103,9 +1103,60 @@ describe('confirm store draftAction sole product draft (residual 545)', () => {
         ],
       },
     };
+    // Residual 553: foreign companions ignored when sole create_task_template remains.
+    const completed = buildHostTaskCreateResumeResult({
+      current: multiDraft,
+      payload: {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created',
+            entityId: 'tpl-multi-store',
+            data: { title: 'Ship residual 439' },
+          },
+        ],
+      },
+      nowMs: 20,
+    });
+    expect(completed.run.status).toBe('completed');
+    expect(completed.state.executedActions).toHaveLength(1);
+    expect(completed.state.executedActions[0]?.entityId).toBe('tpl-multi-store');
+    expect(completed.state.approvedActions).toHaveLength(1);
+    expect(completed.state.approvedActions[0]?.tool).toBe('create_task_template');
+  });
+
+  it('fail-closed when process-local store has multi create_task_template drafts (residual 553)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-multi-product-store-draft'),
+      identityId: 'id-1',
+      nowMs: 10,
+    });
+    const multiProduct = {
+      ...started,
+      state: {
+        ...started.state,
+        pendingActions: [
+          {
+            ...started.state.pendingActions[0]!,
+            tool: 'create_task_template',
+            index: 0,
+            payload: { title: 'First product' },
+          },
+          {
+            tool: 'create_task_template',
+            index: 1,
+            dependsOn: [],
+            rationale: 'second product',
+            payload: { title: 'Second product' },
+          },
+        ],
+      },
+    };
     expect(() =>
       buildHostTaskCreateResumeResult({
-        current: multiDraft,
+        current: multiProduct,
         payload: {
           userDecision: 'confirm',
           executedActions: [
@@ -1113,8 +1164,8 @@ describe('confirm store draftAction sole product draft (residual 545)', () => {
               tool: 'create_task_template',
               status: 'executed',
               message: 'Created',
-              entityId: 'tpl-multi-store',
-              data: { title: 'Ship residual 439' },
+              entityId: 'tpl-multi-product',
+              data: { title: 'First product' },
             },
           ],
         },
@@ -1162,6 +1213,29 @@ describe('confirm store draftAction sole product draft (residual 545)', () => {
         nowMs: 20,
       }),
     ).toThrow(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
+  });
+});
+
+describe('confirm store draft resolve sole create_task_template (residual 553)', () => {
+  it('source resolves sole product draftAction and filters foreign companions', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const src = readFileSync(
+      resolve(__dirname, '../host-task-create-resume.ts'),
+      'utf8',
+    );
+    expect(src).toContain('Residual 553');
+    expect(src).toContain('function resolveConfirmStoreDraftActions');
+    const fnIdx = src.indexOf('function resolveConfirmStoreDraftActions');
+    expect(fnIdx).toBeGreaterThan(-1);
+    const fnSlice = src.slice(fnIdx, fnIdx + 1200);
+    expect(fnSlice).toContain("action.tool === 'create_task_template'");
+    expect(fnSlice).toContain('productDrafts.length === 0');
+    expect(fnSlice).toContain('productDrafts.length !== 1');
+    expect(fnSlice).toContain('return productDrafts');
+    // Foreign companions filtered — not raw pending/approved clone return.
+    expect(fnSlice).not.toContain('return cloneActions(current.state.pendingActions)');
+    expect(fnSlice).not.toContain('return cloneActions(current.state.approvedActions)');
   });
 });
 
