@@ -3,10 +3,12 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Portable editor backup boundary surface (stage-6 residual 193):
+ * Portable editor backup boundary surface (stage-6 residual 193/303):
  * editor_* tables + data-portability import/export remain for business backup
  * re-import only. The runtime `@dailyuse/editor` package stays deleted; no host
  * remounts Editor API/Electron as a first-party editing surface.
+ * Residual 303: lock Web-only server-held disclosure vs Desktop IPC export/import
+ * split (no disclosure IPC channel).
  */
 describe('portable editor backup boundary surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../');
@@ -45,6 +47,40 @@ describe('portable editor backup boundary surface', () => {
   const apiMain = readFileSync(resolve(repoRoot, 'apps/api/src/main.ts'), 'utf8');
   const desktopMain = readFileSync(
     resolve(repoRoot, 'apps/desktop/src/main/main.ts'),
+    'utf8',
+  );
+  const ipcChannels = readFileSync(
+    resolve(repoRoot, 'packages/contracts/src/electron/ipc-channels.ts'),
+    'utf8',
+  );
+  const electronModule = readFileSync(
+    resolve(repoRoot, 'packages/data-portability/src/electron/index.ts'),
+    'utf8',
+  );
+  const ipcAdapter = readFileSync(
+    resolve(
+      repoRoot,
+      'packages/data-portability/src/infrastructure-client/adapters/ipc/data-portability-ipc.adapter.ts',
+    ),
+    'utf8',
+  );
+  const httpAdapter = readFileSync(
+    resolve(
+      repoRoot,
+      'packages/data-portability/src/infrastructure-client/adapters/http/data-portability-http.adapter.ts',
+    ),
+    'utf8',
+  );
+  const apiRoutes = readFileSync(
+    resolve(repoRoot, 'packages/data-portability/src/api/routes.ts'),
+    'utf8',
+  );
+  const editorProductDoc = readFileSync(
+    resolve(repoRoot, 'docs/product/modules/editor.md'),
+    'utf8',
+  );
+  const repositoryProductDoc = readFileSync(
+    resolve(repoRoot, 'docs/product/modules/repository.md'),
     'utf8',
   );
 
@@ -110,4 +146,39 @@ describe('portable editor backup boundary surface', () => {
     // Editor backup is part of user-data-export, not disclosure.
     expect(importSafety).toContain('memoflow.user-data-export');
   });
+
+  it('Web-only server-held disclosure vs Desktop portable export/import split (residual 303)', () => {
+    // No disclosure IPC channel — only portable user-data export/import.
+    const channelsBlock = ipcChannels.slice(
+      ipcChannels.indexOf('export const DataPortabilityChannels'),
+      ipcChannels.indexOf('export const WindowChannels'),
+    );
+    expect(channelsBlock).toContain("EXPORT: 'data-portability:export'");
+    expect(channelsBlock).toContain("IMPORT: 'data-portability:import'");
+    expect(channelsBlock).not.toMatch(/DISCLOSURE|server-held|serverHeld/i);
+
+    expect(electronModule).toContain('DataPortabilityChannels.EXPORT');
+    expect(electronModule).toContain('DataPortabilityChannels.IMPORT');
+    expect(electronModule).not.toMatch(/exportServerHeldDataDisclosure|server-held-data-disclosure/);
+
+    // Renderer IPC adapter fail-closed; HTTP posts dedicated non-import route.
+    expect(ipcAdapter).toContain('exportServerHeldDataDisclosure');
+    expect(ipcAdapter).toContain("code: 'NOT_SUPPORTED'");
+    expect(httpAdapter).toContain('/server-held-data-disclosure');
+    expect(apiRoutes).toContain("path: '/server-held-data-disclosure'");
+    expect(apiRoutes).toContain('exportServerHeldDataDisclosure');
+  });
+
+  it('product docs keep portable editor backup and server-held disclosure distinct', () => {
+    expect(editorProductDoc).toContain('可重新导入业务数据备份');
+    expect(editorProductDoc).toContain('不再构成运行时编辑通道');
+    expect(editorProductDoc).toContain('memoflow.server-held-data-disclosure');
+    expect(editorProductDoc).toContain('Web 可下');
+    expect(editorProductDoc).toContain('Desktop 明确不支持');
+
+    expect(repositoryProductDoc).toContain('memoflow.user-data-export');
+    expect(repositoryProductDoc).toContain('memoflow.server-held-data-disclosure');
+    expect(repositoryProductDoc).toContain('没有 import route');
+  });
+
 });
