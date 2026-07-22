@@ -163,9 +163,10 @@ export class TaskInstancePrismaRepository
     }
   }
 
-  async deleteMany(ids: string[]): Promise<void> {
+  async deleteMany(identityId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
     await this.db.taskInstance.deleteMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
     });
   }
 

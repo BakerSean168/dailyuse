@@ -169,10 +169,13 @@ export class PowerSyncTaskInstanceRepository
     ]);
   }
 
-  async deleteMany(ids: string[]): Promise<void> {
+  async deleteMany(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
-    await this.db.execute(`DELETE FROM task_instances WHERE id IN (${placeholders})`, ids);
+    await this.db.execute(
+      `DELETE FROM task_instances WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
+    );
   }
 
   async deleteByTemplateId(templateId: string, identityId: string): Promise<void> {

@@ -76,7 +76,7 @@ export interface ITaskInstanceRepository {
   /**
    * 批量删除任务实例
    */
-  deleteMany(ids: string[]): Promise<void>;
+  deleteMany(identityId: string, ids: string[]): Promise<void>;
 
   /**
    * 删除模板的所有任务实例

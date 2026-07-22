@@ -16,6 +16,10 @@ describe('task instance ownership surface', () => {
     resolve(__dirname, '../task-instance-prisma.repository.ts'),
     'utf8',
   );
+  const powersync = readFileSync(
+    resolve(__dirname, '../../powersync/task-instance-powersync.repository.ts'),
+    'utf8',
+  );
   const getUseCase = readFileSync(
     resolve(
       __dirname,
@@ -155,4 +159,19 @@ describe('task instance ownership surface', () => {
       'instanceController.getInstance(payload?.id ?? payload),',
     );
   });
+
+  it('port deleteMany requires identityId (residual 157)', () => {
+    expect(port).toContain(
+      'deleteMany(identityId: string, ids: string[]): Promise<void>;',
+    );
+  });
+
+  it('prisma/powersync deleteMany filter by identity (residual 157)', () => {
+    expect(prisma).toContain('async deleteMany(identityId: string, ids: string[])');
+    expect(prisma).toContain('where: { id: { in: ids }, identityId }');
+    expect(powersync).toContain(
+      'DELETE FROM task_instances WHERE identity_id = ? AND id IN (${placeholders})',
+    );
+  });
+
 });
