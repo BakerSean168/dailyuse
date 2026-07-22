@@ -1161,7 +1161,7 @@ export function createAgentRuntimeService(
             HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
           );
         }
-        // Residual 461: session-bound product path — conversationId required for restore/history.
+        // Residual 461/483: session-bound product path — conversationId required (builder also throws).
         if (!resolveTaskCreateConversationId(requestWithKnowledge.data.conversationId)) {
           return error(
             'VALIDATION_ERROR',
@@ -1210,8 +1210,11 @@ export function createAgentRuntimeService(
             ) {
               return error('VALIDATION_ERROR', err.message);
             }
-            // Residual 479: builder title fail-closed maps to validation (defense-in-depth).
-            if (err.message.includes(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE)) {
+            // Residual 479/483: builder title/conversation fail-closed maps to validation.
+            if (
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE)
+            ) {
               return error('VALIDATION_ERROR', err.message);
             }
           }

@@ -302,6 +302,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE'];
     case 'HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE':
       return ['HOST_TASK_CREATE_EDIT_REQUIRES_WAITING_APPROVAL_MESSAGE'];
+    case 'Residual 483':
+      return ['Residual 483'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

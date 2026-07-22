@@ -1,10 +1,11 @@
 /**
- * Residual 431/461/479: Host task.create start foundation (TS runtime).
+ * Residual 431/461/479/483: Host task.create start foundation (TS runtime).
  *
  * Builds a waiting_approval AgentRunResult with one create_task_template action.
  * Host lifecycle + client createTemplate settlement (residual 423–425) own mutation.
  * Residual 461: product path requires non-empty conversationId (session-bound).
  * Residual 479: start builder requires non-empty title (no 'New task' default).
+ * Residual 483: start builder requires non-empty conversationId (no silent null invent).
  * Not a full LangGraph Task Agent workflow.
  */
 
@@ -57,6 +58,7 @@ export function resolveTaskCreateGoalId(input: Record<string, unknown>): string 
  * Build a Host-ready task.create start result (waiting_approval).
  * identityId must come from server ExecutionContext — never trust client body identity.
  * Residual 479: empty title fails closed (no silent 'New task' invent).
+ * Residual 483: empty conversationId fails closed (no silent null invent).
  */
 export function buildHostTaskCreateStartResult(input: {
   request: AgentStartRunRequest;
@@ -68,13 +70,15 @@ export function buildHostTaskCreateStartResult(input: {
   if (!title) {
     throw new Error(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE);
   }
+  // Residual 483: session binding fail-closed in builder (runtime also checks).
+  const conversationId = resolveTaskCreateConversationId(input.request.conversationId);
+  if (!conversationId) {
+    throw new Error(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE);
+  }
   const goalId = resolveTaskCreateGoalId(input.request.input);
   const runId = input.request.runId;
   const payload: Record<string, unknown> = { title };
   if (goalId) payload['goalId'] = goalId;
-
-  const conversationId =
-    resolveTaskCreateConversationId(input.request.conversationId) ?? null;
 
   return AgentRunResultSchema.parse({
     run: {

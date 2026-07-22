@@ -4178,6 +4178,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留四百八十三轮）：Host **task.create start conversationId builder fail-closed**（仍不打勾）——
+> `buildHostTaskCreateStartResult` 禁 silent `null` conversationId；与 residual 461 runtime 门禁对称；
+> start unit +1、journey blank conv、surface/scaffold/driver Residual 483 锁；非跨端 multi-engine E2E。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -4284,8 +4289,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > focused evidence suite tip（残留四百八十二轮）：**105 文件 / 524 测试** + governance-check GOV_EXIT:0。
 > 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
 > 阶段 6 dual 收口（残留 250–300）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
-> Host task.create 进程内产品路径（残留 427–481）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
-> + history/session focus + linked goal restore + client settlement 会话隔离 + store 容量边界 + process-local product journey + runId 身份/会话/thread 绑定 + confirm 必须 client executedActions + edit 非空 title + dirty approve 先 process-local revise + start 必须 conversationId + start 非空 title（builder fail-closed，无静默默认）+ confirm settlement title/templateId 可回收 + confirm goalId/title 禁重绑 + confirm 仅 process-local draft + 单 executed + edit 单 approvedAction + cancel/confirm/edit 仅 waiting_approval；永不 `executeApproved`。
+> Host task.create 进程内产品路径（残留 427–483）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
+> + history/session focus + linked goal restore + client settlement 会话隔离 + store 容量边界 + process-local product journey + runId 身份/会话/thread 绑定 + confirm 必须 client executedActions + edit 非空 title + dirty approve 先 process-local revise + start 必须 conversationId（runtime+builder fail-closed，无 silent null）+ start 非空 title（builder fail-closed，无静默默认）+ confirm settlement title/templateId 可回收 + confirm goalId/title 禁重绑 + confirm 仅 process-local draft + 单 executed + edit 单 approvedAction + cancel/confirm/edit 仅 waiting_approval；永不 `executeApproved`。
 > 仍非跨进程 durable / 完整 Task LangGraph / 跨端 Playwright-Electron multi-engine E2E。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
@@ -4755,6 +4760,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百八十轮：§13.2 focused evidence suite re-run（520 tests，residuals 250–479 锁；不改 checkbox）。
   残留四百八十一轮：Host task.create edit 仅 waiting_approval（对称 confirm/cancel 命名常量）。
   残留四百八十二轮：§13.2 focused evidence suite re-run（524 tests，residuals 250–481 锁；不改 checkbox）。
+  残留四百八十三轮：Host task.create start conversationId builder fail-closed（禁 silent null）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4932,6 +4938,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百八十轮：§13.2 focused evidence suite re-run (520 tests, residuals 250–479 locks, no checkbox changes)。
   残留四百八十一轮：Host task.create edit only from waiting_approval (symmetric with confirm/cancel)。
   残留四百八十二轮：§13.2 focused evidence suite re-run (524 tests, residuals 250–481 locks, no checkbox changes)。
+  残留四百八十三轮：Host task.create start conversationId builder fail-closed (no silent null invent)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -5195,6 +5202,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百八十轮：tip 上 520 项 focused evidence suite（含 residual 250–479 Host start non-empty title 锁）通过；仍不构成全量 PR 门禁证据。
   残留四百八十一轮：edit waiting_approval-only fail-closed 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   残留四百八十二轮：tip 上 524 项 focused evidence suite（含 residual 250–481 Host edit waiting_approval-only 锁）通过；仍不构成全量 PR 门禁证据。
+  残留四百八十三轮：start conversationId builder fail-closed 落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 跨进程 durable 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

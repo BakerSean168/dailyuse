@@ -99,3 +99,30 @@ describe('host-task-create-start title fail-closed (residual 479)', () => {
     expect(fromMessage.state.pendingActions[0]?.payload['title']).toBe('From message');
   });
 });
+
+describe('host-task-create-start conversationId fail-closed (residual 483)', () => {
+  it('buildHostTaskCreateStartResult throws without inventing null conversationId', () => {
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: { ...baseRequest({ title: 'Needs conversation' }), conversationId: '' },
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE);
+
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: { ...baseRequest({ title: 'Needs conversation' }), conversationId: '   ' },
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(/non-empty conversationId/);
+
+    const ok = buildHostTaskCreateStartResult({
+      request: { ...baseRequest({ title: 'Bound' }), conversationId: '  conv-trim  ' },
+      identityId: 'identity-server',
+      nowMs: 1000,
+    });
+    expect(ok.run.conversationId).toBe('conv-trim');
+  });
+});
