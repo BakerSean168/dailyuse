@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/ports';
+import type { IKnowledgeSourcePort, KnowledgeSourceNote } from '@dailyuse/ai/ports';
 import type { PrismaClient } from '@dailyuse/database';
 
 function tokenize(text: string): string[] {
@@ -8,7 +8,7 @@ function tokenize(text: string): string[] {
   );
 }
 
-function scoreResource(resource: KnowledgeSourceResource, query: string): number {
+function scoreNote(resource: KnowledgeSourceNote, query: string): number {
   const tokens = new Set(tokenize(query));
   const haystack =
     `${resource.title ?? ''} ${resource.resourcePath} ${resource.content}`.toLowerCase();
@@ -31,31 +31,31 @@ export class RepositoryKnowledgeSourceAdapter implements IKnowledgeSourcePort {
     _storageBaseDir?: string,
   ) {}
 
-  async listRelevantResources(
+  async listRelevantNotes(
     identityId: string,
     query: string,
     limit: number,
-  ): Promise<KnowledgeSourceResource[]> {
-    const resources = await this.loadResources(identityId, limit * 3);
+  ): Promise<KnowledgeSourceNote[]> {
+    const resources = await this.loadNotes(identityId, limit * 3);
     return resources
-      .map((resource) => ({ resource, score: scoreResource(resource, query) }))
+      .map((resource) => ({ resource, score: scoreNote(resource, query) }))
       .filter(({ score }) => score > 0 || query.trim().length === 0)
       .sort((left, right) => right.score - left.score)
       .slice(0, limit)
       .map(({ resource }) => resource);
   }
 
-  async listIndexableResources(
+  async listIndexableNotes(
     identityId: string,
     limit: number,
-  ): Promise<KnowledgeSourceResource[]> {
-    return this.loadResources(identityId, limit);
+  ): Promise<KnowledgeSourceNote[]> {
+    return this.loadNotes(identityId, limit);
   }
 
-  async getResourceById(
+  async getNoteById(
     identityId: string,
     resourceId: string,
-  ): Promise<KnowledgeSourceResource | null> {
+  ): Promise<KnowledgeSourceNote | null> {
     const row = await this.db.knowledgeNoteProjection.findFirst({
       where: {
         id: resourceId,
@@ -63,13 +63,13 @@ export class RepositoryKnowledgeSourceAdapter implements IKnowledgeSourcePort {
         connection: { identityId, deletedAt: null, status: { in: ['Active', 'Suspended'] } },
       },
     });
-    return row ? this.toResource(identityId, row) : null;
+    return row ? this.toKnowledgeNote(identityId, row) : null;
   }
 
-  private async loadResources(
+  private async loadNotes(
     identityId: string,
     limit: number,
-  ): Promise<KnowledgeSourceResource[]> {
+  ): Promise<KnowledgeSourceNote[]> {
     const rows = await this.db.knowledgeNoteProjection.findMany({
       where: {
         deletedAt: null,
@@ -78,10 +78,10 @@ export class RepositoryKnowledgeSourceAdapter implements IKnowledgeSourcePort {
       orderBy: { updatedAt: 'desc' },
       take: limit,
     });
-    return rows.map((row) => this.toResource(identityId, row));
+    return rows.map((row) => this.toKnowledgeNote(identityId, row));
   }
 
-  private toResource(
+  private toKnowledgeNote(
     identityId: string,
     row: {
       id: string;
@@ -93,7 +93,7 @@ export class RepositoryKnowledgeSourceAdapter implements IKnowledgeSourcePort {
       contentHash: string;
       indexStatus: string;
     },
-  ): KnowledgeSourceResource {
+  ): KnowledgeSourceNote {
     const frontmatter =
       row.frontmatter && typeof row.frontmatter === 'object' && !Array.isArray(row.frontmatter)
         ? (row.frontmatter as Record<string, unknown>)

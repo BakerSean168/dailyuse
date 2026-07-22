@@ -72,7 +72,7 @@ import type {
   IAgentRuntimePort,
   IKnowledgeSourcePort,
   AnalyticsQueryContext,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
 } from '../../application/ports';
 import {
   resolveActiveProviderConfig,
@@ -240,7 +240,7 @@ function getKnowledgeQaQuestion(input: Record<string, unknown>): string | undefi
   );
 }
 
-function toAIServiceKnowledgeResource(resource: KnowledgeSourceResource) {
+function toAIServiceKnowledgeNote(resource: KnowledgeSourceNote) {
   return {
     identity_id: resource.identityId,
     repository_id: resource.repositoryId,
@@ -430,10 +430,10 @@ async function withGoalAgentReadOnlyContext(
   const inputPatch: Record<string, unknown> = {};
   const contextErrors: Array<{ tool: string; message: string }> = [];
 
-  if (knowledgeSourcePort && !req.input['related_resources'] && !req.input['relatedResources']) {
+  if (knowledgeSourcePort && !req.input['related_resources']) {
     try {
-      const resources = await knowledgeSourcePort.listRelevantResources(identityId, query, 6);
-      inputPatch['related_resources'] = resources.map(toAIServiceKnowledgeResource);
+      const resources = await knowledgeSourcePort.listRelevantNotes(identityId, query, 6);
+      inputPatch['related_resources'] = resources.map(toAIServiceKnowledgeNote);
     } catch (err) {
       contextErrors.push({
         tool: 'search_knowledge',

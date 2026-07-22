@@ -48,7 +48,7 @@ describe('DesktopKnowledgeSourceAdapter', () => {
     const localVault = createLocalVaultPort();
     const adapter = new DesktopKnowledgeSourceAdapter(localVault);
 
-    const resources = await adapter.listRelevantResources('identity-1', 'capability', 5);
+    const resources = await adapter.listRelevantNotes('identity-1', 'capability', 5);
 
     expect(localVault.searchVault).toHaveBeenCalledWith('identity-1', {
       query: 'capability',
@@ -72,7 +72,7 @@ describe('DesktopKnowledgeSourceAdapter', () => {
     const localVault = createLocalVaultPort(false);
     const adapter = new DesktopKnowledgeSourceAdapter(localVault);
 
-    await expect(adapter.listIndexableResources('identity-1', 20)).resolves.toEqual([]);
+    await expect(adapter.listIndexableNotes('identity-1', 20)).resolves.toEqual([]);
     expect(localVault.scanVault).not.toHaveBeenCalled();
     expect(localVault.readNote).not.toHaveBeenCalled();
   });

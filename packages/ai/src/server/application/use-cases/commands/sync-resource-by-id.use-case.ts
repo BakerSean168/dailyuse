@@ -38,7 +38,7 @@ export class SyncResourceByIdUseCase {
     cx: ExecutionContext,
     options?: SyncKnowledgeResourcesOptions,
   ): Promise<SyncKnowledgeResourceByIdResult> {
-    const resource = await this.knowledgeSourcePort.getResourceById(cx.identityId, resourceId);
+    const resource = await this.knowledgeSourcePort.getNoteById(cx.identityId, resourceId);
     if (!resource) {
       return {
         resource: null,

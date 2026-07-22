@@ -364,7 +364,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
         }
 
         if (action.tool === 'search_notes') {
-          const resources = await this.knowledgeSource.listRelevantResources(
+          const resources = await this.knowledgeSource.listRelevantNotes(
             input.identityId,
             input.request.idea,
             5,

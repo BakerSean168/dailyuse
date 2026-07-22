@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   addKeyResult: vi.fn(),
   createTaskTemplate: vi.fn(),
   createReminderTemplate: vi.fn(),
-  listRelevantResources: vi.fn(),
+  listRelevantNotes: vi.fn(),
   buildContext: vi.fn(),
 }));
 
@@ -41,7 +41,7 @@ vi.mock('@dailyuse/reminder', () => ({
 vi.mock('./repository-knowledge-source.adapter', () => ({
   RepositoryKnowledgeSourceAdapter: vi.fn(function RepositoryKnowledgeSourceAdapter() {
     return {
-      listRelevantResources: mocks.listRelevantResources,
+      listRelevantNotes: mocks.listRelevantNotes,
     };
   }),
 }));

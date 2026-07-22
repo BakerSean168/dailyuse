@@ -2235,6 +2235,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
 > 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百一十三轮）：AI knowledge source port 退役 Resource 双轨命名——
+> `KnowledgeSourceResource`→`KnowledgeSourceNote`；`listRelevantNotes`/`listIndexableNotes`/
+> `getNoteById`；goal automation TS 字段 `relatedNotes`；wire 仍用 `related_resources`；
+> agent start 上下文只认 `related_resources`（去掉 relatedNotes 双轨读入）。补
+> `knowledge-source-note.surface.spec.ts`。协议字段 `resourceId`/`resourcePath` 与
+> `fetch_resource` 保持稳定。§13.2 未打勾项仍为部分/外部阻塞。验证：surface +
+> ai-query/goal/runtime + api/desktop knowledge-source adapter specs + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2511,6 +2520,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百一十轮：align plan stage-6 summary (no hard-fail CRUD dual-track claim; MSW knowledge-only)。
   残留二百一十一轮：module-index + goal-workflow e2e drop legacy hard-fail/debug dual-track claims。
   残留二百一十二轮：§13.2 core evidence suite re-run (204 tests, residual 211 locks, no checkbox changes)。
+  残留二百一十三轮：AI knowledge source port Resource→Note naming (wire related_resources stable)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

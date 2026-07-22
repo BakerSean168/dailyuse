@@ -5,7 +5,7 @@ import type {
   IKnowledgeIngestionPort,
   IKnowledgeIndexStatusPort,
   IKnowledgeSourcePort,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
 } from '../../ports';
 import { SyncKnowledgeResourcesUseCase } from './sync-knowledge-resources.use-case';
 import {
@@ -41,7 +41,7 @@ export class SyncRelevantKnowledgeUseCase {
     cx: ExecutionContext,
     options?: SyncKnowledgeResourcesOptions,
   ): Promise<{
-    resources: KnowledgeSourceResource[];
+    resources: KnowledgeSourceNote[];
     sync: SyncKnowledgeResourcesResult;
   }> {
     const requestedLimit = Math.max(limit, 1);
@@ -55,15 +55,15 @@ export class SyncRelevantKnowledgeUseCase {
       (
         await Promise.all(
           indexedCandidates.map(async (resource) =>
-            this.knowledgeSourcePort.getResourceById(cx.identityId, resource.resourceId),
+            this.knowledgeSourcePort.getNoteById(cx.identityId, resource.resourceId),
           ),
         )
-      ).filter((resource): resource is KnowledgeSourceResource => resource !== null),
+      ).filter((resource): resource is KnowledgeSourceNote => resource !== null),
     );
     const relevantResources =
       hydratedIndexedCandidates.length >= Math.min(requestedLimit, 6)
         ? []
-        : await this.knowledgeSourcePort.listRelevantResources(
+        : await this.knowledgeSourcePort.listRelevantNotes(
             cx.identityId,
             query,
             candidateLimit,
@@ -71,7 +71,7 @@ export class SyncRelevantKnowledgeUseCase {
     const fallbackResources =
       hydratedIndexedCandidates.length + relevantResources.length >= Math.min(requestedLimit, 6)
         ? []
-        : await this.knowledgeSourcePort.listIndexableResources(cx.identityId, candidateLimit);
+        : await this.knowledgeSourcePort.listIndexableNotes(cx.identityId, candidateLimit);
     const resources = mergeUniqueResources([
       ...hydratedIndexedCandidates,
       ...relevantResources,

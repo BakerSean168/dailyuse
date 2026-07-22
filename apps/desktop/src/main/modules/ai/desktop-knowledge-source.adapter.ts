@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { IKnowledgeSourcePort, KnowledgeSourceResource } from '@dailyuse/ai/ports';
+import type { IKnowledgeSourcePort, KnowledgeSourceNote } from '@dailyuse/ai/ports';
 import type { LocalVaultNoteDTO, LocalVaultNoteSummaryDTO } from '@dailyuse/contracts/repository';
 import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
 
@@ -11,11 +11,11 @@ function resourceIdForPath(relativePath: string): string {
 export class DesktopKnowledgeSourceAdapter implements IKnowledgeSourcePort {
   constructor(private readonly localVault: LocalVaultElectronPort) {}
 
-  async listRelevantResources(
+  async listRelevantNotes(
     identityId: string,
     query: string,
     limit: number,
-  ): Promise<KnowledgeSourceResource[]> {
+  ): Promise<KnowledgeSourceNote[]> {
     const binding = await this.localVault.getBinding(identityId);
     if (!binding || binding.status !== 'Active') return [];
 
@@ -27,20 +27,20 @@ export class DesktopKnowledgeSourceAdapter implements IKnowledgeSourcePort {
     return this.hydrate(identityId, binding.id, summaries.slice(0, limit));
   }
 
-  async listIndexableResources(
+  async listIndexableNotes(
     identityId: string,
     limit: number,
-  ): Promise<KnowledgeSourceResource[]> {
+  ): Promise<KnowledgeSourceNote[]> {
     const binding = await this.localVault.getBinding(identityId);
     if (!binding || binding.status !== 'Active') return [];
     const scanned = await this.localVault.scanVault(identityId);
     return this.hydrate(identityId, binding.id, scanned.notes.slice(0, limit));
   }
 
-  async getResourceById(
+  async getNoteById(
     identityId: string,
     resourceId: string,
-  ): Promise<KnowledgeSourceResource | null> {
+  ): Promise<KnowledgeSourceNote | null> {
     const binding = await this.localVault.getBinding(identityId);
     if (!binding || binding.status !== 'Active') return null;
     const scanned = await this.localVault.scanVault(identityId);
@@ -51,17 +51,17 @@ export class DesktopKnowledgeSourceAdapter implements IKnowledgeSourcePort {
     const note = await this.localVault.readNote(identityId, {
       relativePath: summary.relativePath,
     });
-    return this.toKnowledgeResource(identityId, binding.id, note);
+    return this.toKnowledgeNote(identityId, binding.id, note);
   }
 
   private async hydrate(
     identityId: string,
     repositoryId: string,
     summaries: LocalVaultNoteSummaryDTO[],
-  ): Promise<KnowledgeSourceResource[]> {
+  ): Promise<KnowledgeSourceNote[]> {
     return Promise.all(
       summaries.map(async (summary) =>
-        this.toKnowledgeResource(
+        this.toKnowledgeNote(
           identityId,
           repositoryId,
           await this.localVault.readNote(identityId, {
@@ -72,11 +72,11 @@ export class DesktopKnowledgeSourceAdapter implements IKnowledgeSourcePort {
     );
   }
 
-  private toKnowledgeResource(
+  private toKnowledgeNote(
     identityId: string,
     repositoryId: string,
     note: LocalVaultNoteDTO,
-  ): KnowledgeSourceResource {
+  ): KnowledgeSourceNote {
     return {
       identityId,
       repositoryId,

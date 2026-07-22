@@ -4,7 +4,7 @@ import type {
   IKnowledgeIndexRepository,
   IKnowledgeIndexStatusPort,
   IKnowledgeIngestionPort,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
   KnowledgeIndexedResource,
 } from '../../ports';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -29,7 +29,7 @@ export class SyncKnowledgeResourcesUseCase {
   ) {}
 
   async execute(
-    resources: KnowledgeSourceResource[],
+    resources: KnowledgeSourceNote[],
     cx: ExecutionContext,
     options?: SyncKnowledgeResourcesOptions,
   ): Promise<SyncKnowledgeResourcesResult> {
@@ -161,7 +161,7 @@ export class SyncKnowledgeResourcesUseCase {
 
   private async reportIndexStatus(
     identityId: string,
-    resource: KnowledgeSourceResource,
+    resource: KnowledgeSourceNote,
     contentHash: string,
     status: 'indexed' | 'failed',
   ): Promise<void> {

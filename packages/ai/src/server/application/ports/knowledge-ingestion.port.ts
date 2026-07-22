@@ -1,6 +1,6 @@
 import type { ChatExecutionProviderConfig } from './chat-execution.port';
 
-export interface KnowledgeSourceResource {
+export interface KnowledgeSourceNote {
   identityId: string;
   repositoryId: string;
   resourceId: string;
@@ -38,7 +38,7 @@ export interface KnowledgeIndexedResource {
 }
 
 export interface KnowledgeIngestionInput {
-  resource: KnowledgeSourceResource;
+  resource: KnowledgeSourceNote;
   providerConfig?: ChatExecutionProviderConfig;
   maxChunkChars?: number;
   overlapChars?: number;

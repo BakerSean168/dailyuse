@@ -18,7 +18,7 @@ import type {
   IKnowledgeSourcePort,
   KnowledgeIndexedResource,
   KnowledgeQueryCitation,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
 } from '../../../application/ports';
 import { createRemoteAIServiceRuntime } from '../remote-ai-service.runtime';
 
@@ -101,7 +101,7 @@ function createKnowledgeQueryBundleDeps(): {
   knowledgeQueryPort: IKnowledgeQueryPort;
   citation: KnowledgeQueryCitation;
 } {
-  const sourceResource: KnowledgeSourceResource = {
+  const sourceResource: KnowledgeSourceNote = {
     identityId: 'identity-1',
     repositoryId: 'repo-1',
     resourceId: 'resource-1',
@@ -141,9 +141,9 @@ function createKnowledgeQueryBundleDeps(): {
 
   return {
     knowledgeSourcePort: {
-      listRelevantResources: vi.fn().mockResolvedValue([sourceResource]),
-      listIndexableResources: vi.fn().mockResolvedValue([sourceResource]),
-      getResourceById: vi.fn().mockResolvedValue(sourceResource),
+      listRelevantNotes: vi.fn().mockResolvedValue([sourceResource]),
+      listIndexableNotes: vi.fn().mockResolvedValue([sourceResource]),
+      getNoteById: vi.fn().mockResolvedValue(sourceResource),
     },
     knowledgeIndexRepository: {
       getDiagnostics: vi.fn(),
@@ -1925,7 +1925,7 @@ describe('createRemoteAIServiceRuntime', () => {
   it('loads read-only context before starting goal.create Agent runs', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     const knowledgeSourcePort: IKnowledgeSourcePort = {
-      listRelevantResources: vi.fn().mockResolvedValue([
+      listRelevantNotes: vi.fn().mockResolvedValue([
         {
           identityId: 'identity-1',
           repositoryId: 'repo-1',
@@ -1937,8 +1937,8 @@ describe('createRemoteAIServiceRuntime', () => {
           metadata: { source: 'test' },
         },
       ]),
-      listIndexableResources: vi.fn(),
-      getResourceById: vi.fn(),
+      listIndexableNotes: vi.fn(),
+      getNoteById: vi.fn(),
     };
     const analyticsReadPort: IAnalyticsReadPort = {
       buildContext: vi.fn().mockResolvedValue({
@@ -1975,7 +1975,7 @@ describe('createRemoteAIServiceRuntime', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(knowledgeSourcePort.listRelevantResources).toHaveBeenCalledWith(
+    expect(knowledgeSourcePort.listRelevantNotes).toHaveBeenCalledWith(
       'identity-1',
       'Ship the AI Agent workspace',
       6,

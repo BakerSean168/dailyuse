@@ -15,7 +15,7 @@ import type {
   IGoalAutomationPlanningPort,
   IGoalPlanningPort,
   IKnowledgeSourcePort,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
 } from '../../../ports';
 import type { IAIProviderConfigRepository } from '../../../../domain/repositories/i-ai-provider-config-repository';
 import { GenerateAIGoalUseCase } from '../generate-ai-goal.use-case';
@@ -143,8 +143,8 @@ class StubAutomationToolExecutorPort implements IAIAutomationToolExecutorPort {
 }
 
 class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
-  public readonly listRelevantResources = vi.fn<
-    (identityId: string, query: string, limit: number) => Promise<KnowledgeSourceResource[]>
+  public readonly listRelevantNotes = vi.fn<
+    (identityId: string, query: string, limit: number) => Promise<KnowledgeSourceNote[]>
   >(async () => [
     {
       identityId: 'identity-1',
@@ -158,9 +158,9 @@ class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
     },
   ]);
 
-  public readonly listIndexableResources = vi.fn(async () => []);
+  public readonly listIndexableNotes = vi.fn(async () => []);
 
-  public readonly getResourceById = vi.fn(async () => null);
+  public readonly getNoteById = vi.fn(async () => null);
 }
 
 class StubAnalyticsReadPort implements IAnalyticsReadPort {
@@ -459,7 +459,7 @@ describe('GoalGenerationApplicationService', () => {
       expect.objectContaining({
         idea: expect.stringContaining('Goal title: Ship AI automation'),
         includeTaskTemplates: true,
-        relatedResources: [
+        relatedNotes: [
           expect.objectContaining({
             resourceId: 'resource-1',
             resourcePath: 'notes/ai-goals.md',
@@ -474,7 +474,7 @@ describe('GoalGenerationApplicationService', () => {
         }),
       }),
     );
-    expect(knowledgeSourcePort.listRelevantResources).toHaveBeenCalledWith(
+    expect(knowledgeSourcePort.listRelevantNotes).toHaveBeenCalledWith(
       'identity-1',
       expect.stringContaining('Goal title: Ship AI automation'),
       6,

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type {
   IAIExecutionLogPort,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
   KnowledgeIndexedResource,
 } from '../../ports';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -28,15 +28,15 @@ export interface SyncKnowledgeResourcesResult {
 }
 
 export interface SyncKnowledgeResourceByIdResult {
-  resource: KnowledgeSourceResource | null;
+  resource: KnowledgeSourceNote | null;
   sync: SyncKnowledgeResourcesResult | null;
 }
 
 export function mergeUniqueResources(
-  resources: KnowledgeSourceResource[],
-): KnowledgeSourceResource[] {
+  resources: KnowledgeSourceNote[],
+): KnowledgeSourceNote[] {
   const seen = new Set<string>();
-  const merged: KnowledgeSourceResource[] = [];
+  const merged: KnowledgeSourceNote[] = [];
 
   for (const resource of resources) {
     if (seen.has(resource.resourceId)) {
@@ -49,7 +49,7 @@ export function mergeUniqueResources(
   return merged;
 }
 
-export function resolveSourceContentHash(resource: KnowledgeSourceResource): string {
+export function resolveSourceContentHash(resource: KnowledgeSourceNote): string {
   const metadataHash = resource.metadata?.['contentDigest'];
   if (typeof metadataHash === 'string' && metadataHash.length > 0) {
     return metadataHash;

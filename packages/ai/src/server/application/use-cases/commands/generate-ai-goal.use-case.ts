@@ -437,7 +437,7 @@ export class GenerateAIGoalUseCase {
     }
 
     const automationIdea = this.buildAutomationIdea(input.params);
-    const relatedResources = await this.loadRelatedKnowledgeResources(
+    const relatedNotes = await this.loadRelatedKnowledgeNotes(
       input.params.identityId,
       automationIdea,
     );
@@ -448,7 +448,7 @@ export class GenerateAIGoalUseCase {
     logger.info('Goal automation planning dependencies loaded', {
       identityId: input.params.identityId,
       requestId: input.requestId,
-      relatedResourceCount: relatedResources?.length ?? 0,
+      relatedResourceCount: relatedNotes?.length ?? 0,
       hasAnalyticsContext: Boolean(analyticsContext),
       analyticsGoalCount: analyticsContext?.goals?.length ?? 0,
     });
@@ -461,7 +461,7 @@ export class GenerateAIGoalUseCase {
       timeframe: input.params.timeframe,
       includeKeyResults: input.params.includeKeyResults ?? true,
       includeTaskTemplates: input.params.includeTaskTemplates ?? true,
-      relatedResources,
+      relatedNotes,
       analyticsContext,
       requestId: input.requestId,
     });
@@ -594,7 +594,7 @@ export class GenerateAIGoalUseCase {
     }
   }
 
-  private async loadRelatedKnowledgeResources(
+  private async loadRelatedKnowledgeNotes(
     identityId: string,
     query: string,
   ) {
@@ -607,7 +607,7 @@ export class GenerateAIGoalUseCase {
     }
 
     try {
-      const resources = await this.knowledgeSourcePort.listRelevantResources(identityId, query, 6);
+      const resources = await this.knowledgeSourcePort.listRelevantNotes(identityId, query, 6);
       logger.info('Goal automation knowledge notes loaded', {
         identityId,
         queryPreview: previewText(query),

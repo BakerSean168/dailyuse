@@ -38,7 +38,7 @@ export class ReindexAllKnowledgeUseCase {
     limit = 200,
     options?: SyncKnowledgeResourcesOptions,
   ): Promise<SyncKnowledgeResourcesResult> {
-    const resources = await this.knowledgeSourcePort.listIndexableResources(cx.identityId, limit);
+    const resources = await this.knowledgeSourcePort.listIndexableNotes(cx.identityId, limit);
     return this.syncResources.execute(resources, cx, {
       ...options,
       force: options?.force ?? true,

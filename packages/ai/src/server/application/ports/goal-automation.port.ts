@@ -8,7 +8,7 @@ import type {
 
 import type { AnalyticsQueryContext } from './analytics-query.port';
 import type { ChatExecutionProviderConfig, ChatExecutionUsage } from './chat-execution.port';
-import type { KnowledgeSourceResource } from './knowledge-ingestion.port';
+import type { KnowledgeSourceNote } from './knowledge-ingestion.port';
 
 export interface GoalAutomationPlanningInput {
   identityId: string;
@@ -18,7 +18,7 @@ export interface GoalAutomationPlanningInput {
   timeframe?: string;
   includeKeyResults: boolean;
   includeTaskTemplates: boolean;
-  relatedResources?: KnowledgeSourceResource[];
+  relatedNotes?: KnowledgeSourceNote[];
   analyticsContext?: AnalyticsQueryContext;
   requestId?: string;
 }

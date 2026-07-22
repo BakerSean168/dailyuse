@@ -51,7 +51,7 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
       timeframe: input.timeframe,
       includeKeyResults: input.includeKeyResults,
       includeTaskTemplates: input.includeTaskTemplates,
-      relatedResourceCount: input.relatedResources?.length ?? 0,
+      relatedResourceCount: input.relatedNotes?.length ?? 0,
       hasAnalyticsContext: Boolean(input.analyticsContext),
       provider: input.providerConfig.provider,
       model: input.providerConfig.model,
@@ -101,7 +101,7 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
         timeframe: input.timeframe,
         include_key_results: input.includeKeyResults,
         include_task_templates: input.includeTaskTemplates,
-        related_resources: input.relatedResources?.map((resource) => ({
+        related_resources: input.relatedNotes?.map((resource) => ({
           identity_id: resource.identityId,
           repository_id: resource.repositoryId,
           resource_id: resource.resourceId,

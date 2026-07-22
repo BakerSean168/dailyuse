@@ -35,7 +35,7 @@ describe('RepositoryKnowledgeSourceAdapter', () => {
     } as unknown as PrismaClient;
     const adapter = new RepositoryKnowledgeSourceAdapter(db);
 
-    const resources = await adapter.listRelevantResources('identity-1', 'architecture', 1);
+    const resources = await adapter.listRelevantNotes('identity-1', 'architecture', 1);
 
     expect(findMany).toHaveBeenCalledWith({
       where: {
@@ -75,7 +75,7 @@ describe('RepositoryKnowledgeSourceAdapter', () => {
     } as unknown as PrismaClient;
     const adapter = new RepositoryKnowledgeSourceAdapter(db);
 
-    const resource = await adapter.getResourceById('identity-1', 'projection-1');
+    const resource = await adapter.getNoteById('identity-1', 'projection-1');
 
     expect(findFirst).toHaveBeenCalledWith({
       where: {

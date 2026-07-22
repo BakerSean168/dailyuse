@@ -4,7 +4,7 @@ export type {
   IKnowledgeNotePersistencePort,
   IAIAutomationToolExecutorPort,
   GoalAutomationExecutionInput,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IAIExecutionLogPort,

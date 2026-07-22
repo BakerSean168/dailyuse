@@ -33,7 +33,7 @@ import type {
   KnowledgeIndexedResource,
   KnowledgeQueryInput,
   KnowledgeQueryResult,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
 } from '../../../ports';
 import { QueryAIAnalyticsUseCase } from '../query-ai-analytics.use-case';
 import { SyncRelevantKnowledgeUseCase } from '../sync-relevant-knowledge.use-case';
@@ -85,8 +85,8 @@ class StubProviderConfigRepository {
 }
 
 class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
-  public readonly getResourceById = vi.fn<
-    (identityId: string, resourceId: string) => Promise<KnowledgeSourceResource | null>
+  public readonly getNoteById = vi.fn<
+    (identityId: string, resourceId: string) => Promise<KnowledgeSourceNote | null>
   >(async (identityId, resourceId) => ({
     identityId,
     repositoryId: 'repo-1',
@@ -98,8 +98,8 @@ class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
     metadata: {},
   }));
 
-  public readonly listRelevantResources = vi.fn<
-    (identityId: string, query: string, limit: number) => Promise<KnowledgeSourceResource[]>
+  public readonly listRelevantNotes = vi.fn<
+    (identityId: string, query: string, limit: number) => Promise<KnowledgeSourceNote[]>
   >(async () => [
     {
       identityId: 'identity-1',
@@ -113,9 +113,9 @@ class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
     },
   ]);
 
-  public readonly listIndexableResources = vi.fn<
-    (identityId: string, limit: number) => Promise<KnowledgeSourceResource[]>
-  >(async (identityId, limit) => this.listRelevantResources(identityId, '', limit));
+  public readonly listIndexableNotes = vi.fn<
+    (identityId: string, limit: number) => Promise<KnowledgeSourceNote[]>
+  >(async (identityId, limit) => this.listRelevantNotes(identityId, '', limit));
 }
 
 class StubKnowledgeIngestionPort implements IKnowledgeIngestionPort {
@@ -258,7 +258,7 @@ class StubAnalyticsQueryPort implements IAnalyticsQueryPort {
 describe('SyncKnowledgeResourcesUseCase', () => {
   it('records an indexing failure without conflating it with the persisted source note', async () => {
     const resource = (
-      await new StubKnowledgeSourcePort().listIndexableResources('identity-1', 1)
+      await new StubKnowledgeSourcePort().listIndexableNotes('identity-1', 1)
     )[0]!;
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
@@ -305,7 +305,7 @@ describe('SyncKnowledgeResourcesUseCase', () => {
 
   it('reports a successful index without making status projection failures fatal', async () => {
     const resource = (
-      await new StubKnowledgeSourcePort().listIndexableResources('identity-1', 1)
+      await new StubKnowledgeSourcePort().listIndexableNotes('identity-1', 1)
     )[0]!;
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const indexStatusPort = new StubKnowledgeIndexStatusPort();
@@ -371,7 +371,7 @@ describe('AIKnowledgeQueryService', () => {
       { identityId: 'identity-1' },
     );
 
-    expect(sourcePort.listRelevantResources).toHaveBeenCalledWith(
+    expect(sourcePort.listRelevantNotes).toHaveBeenCalledWith(
       'identity-1',
       'How does knowledge grounding work?',
       32,
@@ -420,8 +420,8 @@ describe('AIKnowledgeQueryService', () => {
 
   it('backs off to broader indexable resources when lexical prefilter recall is too narrow', async () => {
     const sourcePort = new StubKnowledgeSourcePort();
-    sourcePort.listRelevantResources.mockResolvedValueOnce([]);
-    sourcePort.listIndexableResources.mockResolvedValueOnce([
+    sourcePort.listRelevantNotes.mockResolvedValueOnce([]);
+    sourcePort.listIndexableNotes.mockResolvedValueOnce([
       {
         identityId: 'identity-1',
         repositoryId: 'repo-1',
@@ -469,12 +469,12 @@ describe('AIKnowledgeQueryService', () => {
       { identityId: 'identity-1' },
     );
 
-    expect(sourcePort.listRelevantResources).toHaveBeenCalledWith(
+    expect(sourcePort.listRelevantNotes).toHaveBeenCalledWith(
       'identity-1',
       'How does grounding from repos cite sources?',
       32,
     );
-    expect(sourcePort.listIndexableResources).toHaveBeenCalledWith('identity-1', 32);
+    expect(sourcePort.listIndexableNotes).toHaveBeenCalledWith('identity-1', 32);
     expect(queryPort.query).toHaveBeenCalledTimes(1);
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected ok');
@@ -540,9 +540,9 @@ describe('AIKnowledgeQueryService', () => {
       'How does repository grounding work?',
       32,
     );
-    expect(sourcePort.getResourceById).toHaveBeenCalledTimes(6);
-    expect(sourcePort.listRelevantResources).not.toHaveBeenCalled();
-    expect(sourcePort.listIndexableResources).not.toHaveBeenCalled();
+    expect(sourcePort.getNoteById).toHaveBeenCalledTimes(6);
+    expect(sourcePort.listRelevantNotes).not.toHaveBeenCalled();
+    expect(sourcePort.listIndexableNotes).not.toHaveBeenCalled();
   });
 
   it('expands knowledge drafts through the shared retrieval execution port', async () => {
@@ -700,8 +700,8 @@ describe('AIKnowledgeQueryService', () => {
       { identityId: 'identity-1' },
     );
 
-    expect(sourcePort.getResourceById).toHaveBeenCalledWith('identity-1', 'resource-42');
-    expect(sourcePort.listIndexableResources).not.toHaveBeenCalled();
+    expect(sourcePort.getNoteById).toHaveBeenCalledWith('identity-1', 'resource-42');
+    expect(sourcePort.listIndexableNotes).not.toHaveBeenCalled();
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected ok');
     expect(result.data.results).toEqual([
@@ -872,7 +872,7 @@ describe('AI knowledge auto-index runtime', () => {
       });
 
       await vi.waitFor(() => {
-        expect(sourcePort.getResourceById).toHaveBeenCalledWith('identity-1', 'resource-1');
+        expect(sourcePort.getNoteById).toHaveBeenCalledWith('identity-1', 'resource-1');
         expect(ingestionPort.indexResource).toHaveBeenCalledTimes(1);
         expect(ingestionPort.indexResource).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -930,7 +930,7 @@ describe('AI knowledge auto-index runtime', () => {
         );
       });
 
-      expect(sourcePort.getResourceById).not.toHaveBeenCalled();
+      expect(sourcePort.getNoteById).not.toHaveBeenCalled();
       expect(ingestionPort.indexResource).not.toHaveBeenCalled();
       expect(knowledgeIndexRepository.upsert).not.toHaveBeenCalled();
     } finally {
