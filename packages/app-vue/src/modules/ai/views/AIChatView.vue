@@ -548,6 +548,8 @@ const {
   linkedGoalId,
   setLinkedGoalId,
   startTaskAgentRun,
+  cancelTaskAgentRun,
+  completeTaskAgentRun,
 } = taskWorkflow;
 
 
@@ -870,6 +872,18 @@ async function handleHostProposalApprove(payload: {
           if (!clientTaskHostReceipts.value.some((row) => row.proposalId === receipt.proposalId)) {
             clientTaskHostReceipts.value = [...clientTaskHostReceipts.value, receipt];
           }
+          // Residual 437: process-local task.create complete settle after domain createTemplate.
+          if (
+            isTaskAgentType &&
+            taskAgentRun.value?.run.runId === payload.item.runId &&
+            taskAgentRun.value.run.agentType === 'task.create'
+          ) {
+            await completeTaskAgentRun({
+              templateId,
+              title,
+              goalId,
+            });
+          }
         }
       }
       return;
@@ -907,12 +921,28 @@ async function handleHostProposalReject(payload: {
       });
       return;
     }
-    // Residual 423/425/427: cancel task-shaped AgentRun via goal session when owned there.
+    // Residual 423/425/427/437: cancel task AgentRun (process-local) or goal-session owner.
     if (payload.item.source === 'task') {
       const isTaskAgentType =
         taskAgentRun.value?.run.agentType === 'task.create' ||
         liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType === 'task.create';
       if (
+        isTaskAgentType &&
+        taskAgentRun.value?.run.runId === payload.item.runId &&
+        taskAgentRun.value.run.agentType === 'task.create'
+      ) {
+        // Residual 437: process-local cancel resume (store → cancelled).
+        await cancelTaskAgentRun({
+          skipHostLifecycle: true,
+          revision: payload.revision,
+        });
+        if (!clientSettledHostProposalIds.value.includes(payload.item.proposalId)) {
+          clientSettledHostProposalIds.value = [
+            ...clientSettledHostProposalIds.value,
+            payload.item.proposalId,
+          ];
+        }
+      } else if (
         !isTaskAgentType &&
         goalAgentRun.value?.run.runId === payload.item.runId
       ) {

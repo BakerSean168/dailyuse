@@ -350,6 +350,35 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local cancel/complete resume (residual 437)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    expect(resume).toContain('buildHostTaskCreateResumeResult');
+    expect(resume).toContain("status: 'cancelled'");
+    expect(resume).toContain("userDecision: 'cancel'");
+    expect(resume).toContain("userDecision: 'confirm'");
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(runtime).toContain('buildHostTaskCreateResumeResult');
+    expect(runtime).toContain('// Residual 437: process-local task.create cancel/complete settle');
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(taskWorkflow).toContain('cancelTaskAgentRun');
+    expect(taskWorkflow).toContain('completeTaskAgentRun');
+    expect(taskWorkflow).toContain("userDecision: 'cancel'");
+    expect(taskWorkflow).toContain("userDecision: 'confirm'");
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(chatView).toContain('cancelTaskAgentRun');
+    expect(chatView).toContain('completeTaskAgentRun');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create session restore + linked goal start (residual 433)', () => {
     const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
     expect(chatViewTs).toContain('Residual 433: restore dedicated task.create session field');

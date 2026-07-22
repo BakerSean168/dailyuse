@@ -236,6 +236,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'taskCreateRunStore',
         'createHostTaskCreateRunStore',
         'taskCreateRunStore.upsert',
+        // Residual 437: process-local cancel/complete resume + client settle.
+        'buildHostTaskCreateResumeResult',
+        'cancelTaskAgentRun',
+        'completeTaskAgentRun',
       ],
       status: 'implemented_unit',
     },

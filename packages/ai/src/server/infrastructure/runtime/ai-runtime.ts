@@ -22,6 +22,7 @@ import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
 import { CapabilityResolver } from '../capability-resolver';
 import { buildHostTaskCreateStartResult, resolveTaskCreateTitle } from './host-task-create-start';
+import { buildHostTaskCreateResumeResult } from './host-task-create-resume';
 import { getDefaultHostTaskCreateRunStore } from './host-task-create-run-store';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
@@ -1228,12 +1229,51 @@ export function createAgentRuntimeService(
       requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      const startedAt = Date.now();
+      const request = { runId, payload };
+
+      // Residual 437: process-local task.create cancel/complete settle (no Python port).
+      const storedTask = taskCreateRunStore.get(runId, cx.identityId);
+      if (storedTask) {
+        try {
+          const resumed = buildHostTaskCreateResumeResult({
+            current: storedTask,
+            payload,
+          });
+          const ownership = ensureAgentRunOwnedByIdentity(resumed, cx.identityId);
+          if (!ownership.ok) {
+            return ownership;
+          }
+          taskCreateRunStore.upsert(resumed);
+          await recordAgentRuntimeExecution({
+            operation: 'resume',
+            identityId: cx.identityId,
+            requestId,
+            startedAt,
+            request,
+            result: resumed,
+          });
+          return ownership;
+        } catch (err) {
+          await recordAgentRuntimeExecution({
+            operation: 'resume',
+            identityId: cx.identityId,
+            requestId,
+            startedAt,
+            request,
+            error: err,
+          });
+          if (err instanceof Error && err.message.includes('does not support userDecision')) {
+            return error('VALIDATION_ERROR', err.message);
+          }
+          throw err;
+        }
+      }
+
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      const startedAt = Date.now();
-      const request = { runId, payload };
       try {
         if (
           payload.userDecision === 'confirm' &&

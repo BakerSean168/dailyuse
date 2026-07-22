@@ -206,6 +206,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['createHostTaskCreateRunStore'];
     case 'taskCreateRunStore.upsert':
       return ['taskCreateRunStore.upsert', 'taskCreateRunStore.upsert('];
+    case 'buildHostTaskCreateResumeResult':
+      return ['buildHostTaskCreateResumeResult'];
+    case 'cancelTaskAgentRun':
+      return ['cancelTaskAgentRun'];
+    case 'completeTaskAgentRun':
+      return ['completeTaskAgentRun'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
