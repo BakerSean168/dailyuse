@@ -114,14 +114,14 @@ export interface IReminderTemplateRepository {
    *
    * @param id 提醒模板 ID
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * 检查提醒模板是否存在
    *
    * @param id 提醒模板 ID
    */
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 
   /**
    * 统计身份下的提醒模板数量

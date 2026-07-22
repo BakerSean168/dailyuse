@@ -24,6 +24,14 @@ describe('reminder template ownership surface', () => {
     resolve(__dirname, '../reminder-group-prisma.repository.ts'),
     'utf8',
   );
+  const powersyncTemplate = readFileSync(
+    resolve(__dirname, '../../powersync/reminder-template-powersync.repository.ts'),
+    'utf8',
+  );
+  const powersyncGroup = readFileSync(
+    resolve(__dirname, '../../powersync/reminder-group-powersync.repository.ts'),
+    'utf8',
+  );
   const getUseCase = readFileSync(
     resolve(
       __dirname,
@@ -132,4 +140,42 @@ describe('reminder template ownership surface', () => {
     expect(listUseCase).toContain('findByGroupId(query.groupId, cx.identityId');
     expect(listUseCase).not.toContain('groupTemplates.filter');
   });
+
+  it('ports delete/exists require identityId (residual 151)', () => {
+    expect(templatePort).toContain('delete(identityId: string, id: string): Promise<void>;');
+    expect(templatePort).toContain('exists(identityId: string, id: string): Promise<boolean>;');
+    expect(groupPort).toContain('delete(identityId: string, id: string): Promise<void>;');
+    expect(groupPort).toContain('exists(identityId: string, id: string): Promise<boolean>;');
+  });
+
+  it('prisma delete/exists filter by identityId (residual 151)', () => {
+    expect(prismaTemplate).toContain('async delete(identityId: string, id: string)');
+    expect(prismaTemplate).toContain('where: { id, identityId }');
+    expect(prismaTemplate).toContain(
+      "throw new Error('Reminder template not found for the current identity.');",
+    );
+    expect(prismaGroup).toContain('async delete(identityId: string, id: string)');
+    expect(prismaGroup).toContain(
+      "throw new Error('Reminder group not found for the current identity.');",
+    );
+  });
+
+  it('powersync delete filters by identity_id (residual 151)', () => {
+    expect(powersyncTemplate).toContain(
+      'DELETE FROM reminder_templates WHERE id = ? AND identity_id = ?',
+    );
+    expect(powersyncGroup).toContain(
+      'DELETE FROM reminder_groups WHERE id = ? AND identity_id = ?',
+    );
+  });
+
+  it('domain hard deletes pass identityId (residual 151)', () => {
+    expect(domainService).toContain(
+      'reminderTemplateRepository.delete(identityId, id)',
+    );
+    expect(domainService).toContain(
+      'reminderGroupRepository.delete(identityId, id)',
+    );
+  });
+
 });

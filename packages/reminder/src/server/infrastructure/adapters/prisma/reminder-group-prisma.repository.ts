@@ -145,15 +145,18 @@ export class ReminderGroupPrismaRepository
     return data ? this.mapToEntity(data) : null;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.reminderGroup.delete({
-      where: { id },
+  async delete(identityId: string, id: string): Promise<void> {
+    const result = await this.prisma.reminderGroup.deleteMany({
+      where: { id, identityId },
     });
+    if (result.count !== 1) {
+      throw new Error('Reminder group not found for the current identity.');
+    }
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(identityId: string, id: string): Promise<boolean> {
     const count = await this.prisma.reminderGroup.count({
-      where: { id },
+      where: { id, identityId },
     });
     return count > 0;
   }

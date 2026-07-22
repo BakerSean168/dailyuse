@@ -67,12 +67,14 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
       .filter((t) => !!t && String(t.identityId) === String(identityId));
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) return;
     this.templates.delete(id);
   }
 
-  async exists(id: string): Promise<boolean> {
-    return this.templates.has(id);
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async count(identityId: string): Promise<number> {
@@ -103,12 +105,14 @@ class MockReminderGroupRepository implements IReminderGroupRepository {
     return [];
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) return;
     this.groups.delete(id);
   }
 
-  async exists(id: string): Promise<boolean> {
-    return this.groups.has(id);
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async count(): Promise<number> {

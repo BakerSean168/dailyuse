@@ -155,7 +155,7 @@ export class ReminderDomainService {
       template.softDelete();
       await this.reminderTemplateRepository.save(template);
     } else {
-      await this.reminderTemplateRepository.delete(id);
+      await this.reminderTemplateRepository.delete(identityId, id);
     }
 
     if (groupId) {
@@ -213,7 +213,7 @@ export class ReminderDomainService {
       group.softDelete();
       await this.reminderGroupRepository.save(group);
     } else {
-      await this.reminderGroupRepository.delete(id);
+      await this.reminderGroupRepository.delete(identityId, id);
     }
   }
 

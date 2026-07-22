@@ -339,16 +339,19 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     return ids.map((id) => map.get(id)).filter((item): item is ReminderTemplate => !!item);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM reminder_templates WHERE id = ?', [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Reminder template not found for the current identity.');
+    }
+    await this.db.execute(
+      'DELETE FROM reminder_templates WHERE id = ? AND identity_id = ?',
+      [id, identityId],
+    );
   }
 
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ id: string }>(
-      'SELECT id FROM reminder_templates WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return !!row;
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async count(

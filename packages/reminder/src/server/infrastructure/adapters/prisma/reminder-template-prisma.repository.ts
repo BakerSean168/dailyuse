@@ -232,16 +232,19 @@ export class ReminderTemplatePrismaRepository
     return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
     // Cascade deletion: ReminderHistory is set to cascade in Prisma schema
-    await this.prisma.reminderTemplate.delete({
-      where: { id },
+    const result = await this.prisma.reminderTemplate.deleteMany({
+      where: { id, identityId },
     });
+    if (result.count !== 1) {
+      throw new Error('Reminder template not found for the current identity.');
+    }
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(identityId: string, id: string): Promise<boolean> {
     const count = await this.prisma.reminderTemplate.count({
-      where: { id },
+      where: { id, identityId },
     });
     return count > 0;
   }
