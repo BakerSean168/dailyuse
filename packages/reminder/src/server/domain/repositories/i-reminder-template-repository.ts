@@ -79,11 +79,11 @@ export interface IReminderTemplateRepository {
   /**
    * 查找所有活跃的提醒模板
    *
-   * @param identityId 身份 ID（可选，不传则查找所有）
+   * @param identityId 身份 ID
    * @returns 活跃的提醒模板列表
    */
   findActive(
-    identityId?: string,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]>;
 

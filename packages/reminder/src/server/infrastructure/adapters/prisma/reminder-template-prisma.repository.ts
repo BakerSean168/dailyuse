@@ -173,17 +173,15 @@ export class ReminderTemplatePrismaRepository
   }
 
   async findActive(
-    identityId?: string,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]> {
     const where: Prisma.ReminderTemplateWhereInput = {
+      identityId,
       selfEnabled: true,
       status: 'Active',
       deletedAt: null,
     };
-    if (identityId) {
-      where.identityId = identityId;
-    }
 
     const data = await this.prisma.reminderTemplate.findMany({
       where,

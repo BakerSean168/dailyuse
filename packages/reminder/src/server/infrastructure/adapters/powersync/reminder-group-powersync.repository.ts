@@ -134,12 +134,10 @@ export class ReminderGroupPowerSyncRepository
     return rows.map((row) => PowerSyncReminderGroupMapper.toDomain(row));
   }
 
-  async findActive(identityId?: string): Promise<ReminderGroup[]> {
+  async findActive(identityId: string): Promise<ReminderGroup[]> {
     const rows = await this.db.getAll<PowerSyncReminderGroupRow>(
-      `SELECT * FROM reminder_groups WHERE enabled = 1 AND status = 'Active' AND deleted_at IS NULL${
-        identityId ? ' AND identity_id = ?' : ''
-      } ORDER BY "order" ASC`,
-      identityId ? [identityId] : [],
+      `SELECT * FROM reminder_groups WHERE identity_id = ? AND enabled = 1 AND status = 'Active' AND deleted_at IS NULL ORDER BY "order" ASC`,
+      [identityId],
     );
     return rows.map((row) => PowerSyncReminderGroupMapper.toDomain(row));
   }

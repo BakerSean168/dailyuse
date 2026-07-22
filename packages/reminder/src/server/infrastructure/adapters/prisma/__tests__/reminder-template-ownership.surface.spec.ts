@@ -178,4 +178,33 @@ describe('reminder template ownership surface', () => {
     );
   });
 
+
+  it('port findActive requires identityId (residual 164)', () => {
+    expect(templatePort).toContain(
+      'findActive(\n    identityId: string,\n    options?: { includeHistory?: boolean; historyLimit?: number },\n  ): Promise<ReminderTemplate[]>;',
+    );
+    expect(groupPort).toContain(
+      'findActive(identityId: string): Promise<ReminderGroup[]>;',
+    );
+    // System scheduler path remains intentionally optional:
+    expect(templatePort).toContain(
+      'findByNextTriggerBefore(beforeTime: number, identityId?: string)',
+    );
+  });
+
+  it('prisma/powersync findActive always filters identity (residual 164)', () => {
+    expect(prismaTemplate).toContain(
+      'async findActive(\n    identityId: string,',
+    );
+    expect(prismaTemplate).toContain('identityId,\n      selfEnabled: true,');
+    expect(prismaGroup).toContain('async findActive(identityId: string)');
+    expect(prismaGroup).toContain('identityId,\n      enabled: true,');
+    expect(powersyncTemplate).toContain(
+      "SELECT * FROM reminder_templates WHERE identity_id = ? AND self_enabled = 1 AND status = 'Active' AND deleted_at IS NULL ORDER BY created_at ASC",
+    );
+    expect(powersyncGroup).toContain(
+      'SELECT * FROM reminder_groups WHERE identity_id = ? AND enabled = 1 AND status = \'Active\' AND deleted_at IS NULL ORDER BY "order" ASC',
+    );
+  });
+
 });

@@ -68,10 +68,10 @@ export interface IReminderGroupRepository {
   /**
    * 查找所有活跃的提醒分组
    *
-   * @param identityId 身份 ID（可选，不传则查找所有）
+   * @param identityId 身份 ID
    * @returns 活跃的提醒分组列表
    */
-  findActive(identityId?: string): Promise<ReminderGroup[]>;
+  findActive(identityId: string): Promise<ReminderGroup[]>;
 
   /**
    * 批量查找提醒分组（identity-scoped）

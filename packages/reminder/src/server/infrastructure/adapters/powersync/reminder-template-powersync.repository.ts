@@ -293,14 +293,12 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
   }
 
   async findActive(
-    identityId?: string,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]> {
-    const sql = `SELECT * FROM reminder_templates WHERE self_enabled = 1 AND status = 'Active' AND deleted_at IS NULL${
-      identityId ? ' AND identity_id = ?' : ''
-    } ORDER BY created_at ASC`;
+    const sql = `SELECT * FROM reminder_templates WHERE identity_id = ? AND self_enabled = 1 AND status = 'Active' AND deleted_at IS NULL ORDER BY created_at ASC`;
     return this.mapRows(
-      await this.db.getAll(sql, identityId ? [identityId] : []),
+      await this.db.getAll(sql, [identityId]),
       options?.includeHistory,
       options?.historyLimit,
     );

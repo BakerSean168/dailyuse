@@ -51,7 +51,7 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
     );
   }
 
-  async findActive(identityId?: string): Promise<any[]> {
+  async findActive(identityId: string): Promise<any[]> {
     return Array.from(this.templates.values()).filter(
       (t) => (!identityId || t.identityId === identityId) && t.selfEnabled,
     );

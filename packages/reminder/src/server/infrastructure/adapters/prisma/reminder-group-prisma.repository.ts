@@ -100,15 +100,13 @@ export class ReminderGroupPrismaRepository
     return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
   }
 
-  async findActive(identityId?: string): Promise<ReminderGroup[]> {
+  async findActive(identityId: string): Promise<ReminderGroup[]> {
     const where: Prisma.ReminderGroupWhereInput = {
+      identityId,
       enabled: true,
       status: 'Active',
       deletedAt: null,
     };
-    if (identityId) {
-      where.identityId = identityId;
-    }
 
     const data = await this.prisma.reminderGroup.findMany({
       where,
