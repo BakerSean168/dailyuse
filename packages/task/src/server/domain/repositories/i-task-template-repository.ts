@@ -102,12 +102,12 @@ export interface ITaskTemplateRepository {
   /**
    * 软删除任务模板
    */
-  softDelete(id: string): Promise<void>;
+  softDelete(identityId: string, id: string): Promise<void>;
 
   /**
    * 恢复软删除的任务模板
    */
-  restore(id: string): Promise<void>;
+  restore(identityId: string, id: string): Promise<void>;
 
   // ===== 任务类型查询 =====
 

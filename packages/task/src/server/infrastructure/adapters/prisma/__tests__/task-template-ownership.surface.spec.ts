@@ -139,4 +139,25 @@ describe('task template ownership surface', () => {
     );
   });
 
+
+  it('port softDelete/restore require identityId (residual 159)', () => {
+    expect(port).toContain('softDelete(identityId: string, id: string): Promise<void>;');
+    expect(port).toContain('restore(identityId: string, id: string): Promise<void>;');
+  });
+
+  it('prisma/powersync softDelete/restore filter by identity (residual 159)', () => {
+    expect(prisma).toContain('async softDelete(identityId: string, id: string)');
+    expect(prisma).toContain('async restore(identityId: string, id: string)');
+    expect(prisma).toContain('where: { id, identityId }');
+    expect(prisma).toContain(
+      "throw new Error('Task template not found for the current identity.');",
+    );
+    expect(powersync).toContain(
+      'UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
+    );
+    expect(powersync).toContain(
+      'UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
+    );
+  });
+
 });

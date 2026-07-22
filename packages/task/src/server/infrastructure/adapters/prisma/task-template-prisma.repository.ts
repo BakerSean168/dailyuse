@@ -201,18 +201,24 @@ export class TaskTemplatePrismaRepository
     }
   }
 
-  async softDelete(id: string): Promise<void> {
-    await this.db.taskTemplate.update({
-      where: { id },
+  async softDelete(identityId: string, id: string): Promise<void> {
+    const result = await this.db.taskTemplate.updateMany({
+      where: { id, identityId },
       data: { deletedAt: new Date() },
     });
+    if (result.count !== 1) {
+      throw new Error('Task template not found for the current identity.');
+    }
   }
 
-  async restore(id: string): Promise<void> {
-    await this.db.taskTemplate.update({
-      where: { id },
+  async restore(identityId: string, id: string): Promise<void> {
+    const result = await this.db.taskTemplate.updateMany({
+      where: { id, identityId },
       data: { deletedAt: null },
     });
+    if (result.count !== 1) {
+      throw new Error('Task template not found for the current identity.');
+    }
   }
 
   async findOneTimeTasks(identityId: string, filters?: TaskFilters): Promise<TaskTemplate[]> {

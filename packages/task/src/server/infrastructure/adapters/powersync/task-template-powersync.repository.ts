@@ -289,18 +289,26 @@ export class PowerSyncTaskTemplateRepository
     ]);
   }
 
-  async softDelete(id: string): Promise<void> {
+  async softDelete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task template not found for the current identity.');
+    }
     const now = new Date().toISOString();
     await this.db.execute(
-      'UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ?',
-      ['Deleted', now, now, id],
+      'UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
+      ['Deleted', now, now, id, identityId],
     );
   }
 
-  async restore(id: string): Promise<void> {
+  async restore(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task template not found for the current identity.');
+    }
     await this.db.execute(
-      'UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ?',
-      ['Active', new Date().toISOString(), id],
+      'UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
+      ['Active', new Date().toISOString(), id, identityId],
     );
   }
 
