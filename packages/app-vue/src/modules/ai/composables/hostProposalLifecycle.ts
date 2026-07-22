@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385/387).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -756,4 +756,25 @@ export function buildHostTimelineArtifactItems(input: {
   }
 
   return items;
+}
+
+/**
+ * Residual 387: map a timeline Artifact card to a Host workbench focus target.
+ * Used when Conversation timeline reopens the right rail so the matching
+ * proposal/receipt row can be highlighted and scrolled into view.
+ */
+export type HostWorkbenchFocusTarget = {
+  proposalId: string;
+  surface: 'proposal' | 'receipt';
+};
+
+export function resolveHostWorkbenchFocusFromTimeline(
+  item: HostTimelineArtifactItem | null | undefined,
+): HostWorkbenchFocusTarget | null {
+  if (!item?.proposalId?.trim()) return null;
+  if (item.surface !== 'proposal' && item.surface !== 'receipt') return null;
+  return {
+    proposalId: item.proposalId.trim(),
+    surface: item.surface,
+  };
 }

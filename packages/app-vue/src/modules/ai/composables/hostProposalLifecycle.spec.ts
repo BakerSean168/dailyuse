@@ -4,6 +4,7 @@ import {
   applyHostKnowledgePatchToAgentActions,
   buildHostExecutionReceiptItems,
   buildHostTimelineArtifactItems,
+  resolveHostWorkbenchFocusFromTimeline,
   resolveHostWorkbenchReopenFromAgentRun,
   shouldOpenHostWorkbenchFromAgentRun,
   buildHostProposalPatchFromDraft,
@@ -698,6 +699,54 @@ describe('buildHostExecutionReceiptItems rich replay (residual 385)', () => {
     const items = buildHostExecutionReceiptItems({ noteAgentRun: run });
     expect(items[0]!.contentPreview).toBe(`${'x'.repeat(240)}…`);
     expect(items[0]!.targetPath).toBe('notes/long');
+  });
+});
+
+describe('resolveHostWorkbenchFocusFromTimeline (residual 387)', () => {
+  it('maps timeline proposal/receipt cards to workbench focus targets', () => {
+    const proposals = buildPendingHostProposalItems({
+      goalAgentRun: goalWaitingRun('waiting_approval'),
+    });
+    const cards = buildHostTimelineArtifactItems({ proposals });
+    expect(resolveHostWorkbenchFocusFromTimeline(cards[0])).toEqual({
+      proposalId: 'agent-run:run-1:goal.create',
+      surface: 'proposal',
+    });
+
+    const completed = noteWaitingRun('completed');
+    completed.state.pendingActions = [];
+    completed.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        entityId: 'note-1',
+        message: 'ok',
+      },
+    ];
+    const receipts = buildHostExecutionReceiptItems({ noteAgentRun: completed });
+    const receiptCards = buildHostTimelineArtifactItems({ receipts });
+    expect(resolveHostWorkbenchFocusFromTimeline(receiptCards[0])).toEqual({
+      proposalId: 'agent-run:note-run-1:knowledge.write',
+      surface: 'receipt',
+    });
+  });
+
+  it('returns null for missing or empty timeline items', () => {
+    expect(resolveHostWorkbenchFocusFromTimeline(null)).toBeNull();
+    expect(resolveHostWorkbenchFocusFromTimeline(undefined)).toBeNull();
+    expect(
+      resolveHostWorkbenchFocusFromTimeline({
+        id: 'x',
+        surface: 'proposal',
+        runId: 'r',
+        proposalId: '   ',
+        kind: 'goal.create',
+        source: 'goal',
+        title: 't',
+        summary: '',
+        statusLabelKey: 'pending',
+      }),
+    ).toBeNull();
   });
 });
 

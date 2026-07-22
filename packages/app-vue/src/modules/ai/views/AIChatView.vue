@@ -247,11 +247,12 @@
     </section>
 
     <!--
-      Artifact rail / Host proposal + execution-report workbench (residual 371/379/381/383):
+      Artifact rail / Host proposal + execution-report workbench (residual 371/379/381/383/387):
       AIContextPanel is the structured right workbench for Goal/Knowledge artifacts,
       waiting_approval Host proposals, and post-approve Host execution receipts.
       Residual 381 reopens this rail from Conversation AgentRun history.
       Residual 383 also surfaces Host Artifact cards in the message timeline.
+      Residual 387 focuses the matching proposal/receipt row from a timeline card.
       Actions near composer remain lifecycle shortcuts; Host revise/approve/reject
       and receipt presentation live here.
     -->
@@ -268,12 +269,14 @@
         ref="hostProposalPanelRef"
         :items="hostProposalItems"
         :busy="goalAgentResuming || noteCreating || hostProposalBusy"
+        :focused-proposal-id="focusedHostProposalId"
         @approve="handleHostProposalApprove"
         @reject="handleHostProposalReject"
         @revise="handleHostProposalRevise"
       />
       <AIHostExecutionReceiptPanel
         :items="hostExecutionReceiptItems"
+        :focused-proposal-id="focusedHostProposalId"
         @open-entity="openHostReceiptEntity"
       />
       <AIGoalWorkflowPanel
@@ -358,10 +361,12 @@ import {
   buildPendingHostProposalItems,
   buildHostExecutionReceiptItems,
   buildHostTimelineArtifactItems,
+  resolveHostWorkbenchFocusFromTimeline,
   shouldOpenHostWorkbenchFromAgentRun,
   dispatchHostProposalDecision,
   dispatchHostProposalRevise,
   type HostProposalPanelItem,
+  type HostTimelineArtifactItem,
 } from '../composables/hostProposalLifecycle';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
 import { useAI } from '../composables/useAI';
@@ -589,10 +594,33 @@ const hostTimelineArtifactItems = computed(() =>
   }),
 );
 
-function openHostWorkbenchFromTimeline() {
-  // Residual 383: timeline card reopens the right Host proposal/receipt workbench.
+/** Residual 387: timeline card focus target (proposalId) for right workbench highlight. */
+const focusedHostProposalId = ref<string | null>(null);
+
+/**
+ * Residual 383/387: timeline Artifact card reopens Host workbench and focuses
+ * the matching proposal/receipt row.
+ */
+function openHostWorkbenchFromTimeline(item?: HostTimelineArtifactItem) {
   contextPanelOpen.value = true;
+  const focus = resolveHostWorkbenchFocusFromTimeline(item);
+  focusedHostProposalId.value = focus?.proposalId ?? null;
 }
+
+watch(
+  [hostProposalItems, hostExecutionReceiptItems],
+  () => {
+    const focusedId = focusedHostProposalId.value;
+    if (!focusedId) return;
+    const stillPresent =
+      hostProposalItems.value.some((row) => row.proposalId === focusedId) ||
+      hostExecutionReceiptItems.value.some((row) => row.proposalId === focusedId);
+    if (!stillPresent) {
+      focusedHostProposalId.value = null;
+    }
+  },
+  { deep: true },
+);
 
 /**
  * Residual 385: deep-link from Host execution receipt primary entity.

@@ -6,10 +6,11 @@
  * Lists waiting_approval bridge proposals with edit/revise + approve/reject.
  * Goal edits title + description (residual 367); knowledge edits targetPath + contentMarkdown (residual 361).
  * Residual 371 auto-opens the right workbench when items are pending.
+ * Residual 387: focusedProposalId highlights/scrolls the matching row.
  * Handlers must route through AssistantFacade lifecycle first; this panel
  * never runs Host mutation execution or agent resume itself.
  */
-import { reactive, watch } from 'vue';
+import { nextTick, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import type { AssistantProposalPatch } from '@dailyuse/contracts/ai';
@@ -22,6 +23,8 @@ import {
 const props = defineProps<{
   items: HostProposalPanelItem[];
   busy?: boolean;
+  /** Residual 387: timeline-driven focus target proposalId. */
+  focusedProposalId?: string | null;
 }>();
 
 export type HostProposalPanelActionPayload = {
@@ -205,7 +208,22 @@ function applyRevised(
 }
 
 defineExpose({ applyRevised });
+
+watch(
+  () => props.focusedProposalId,
+  async (focusedId) => {
+    if (!focusedId) return;
+    await nextTick();
+    const el = Array.from(
+      document.querySelectorAll('[data-host-focused="true"]'),
+    ).find((node) => node.getAttribute('data-host-focus-id') === focusedId);
+    if (el && 'scrollIntoView' in el) {
+      (el as HTMLElement).scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  },
+);
 </script>
+
 
 <template>
   <section
@@ -226,8 +244,17 @@ defineExpose({ applyRevised });
       <li
         v-for="item in items"
         :key="item.proposalId"
-        class="rounded-md border border-border/80 bg-background/60 p-3"
+        class="rounded-md border border-border/80 bg-background/60 p-3 transition-shadow"
+        :class="
+          focusedProposalId && item.proposalId === focusedProposalId
+            ? 'ring-2 ring-primary shadow-md'
+            : ''
+        "
         :data-testid="`ai-host-proposal-item-${item.source}`"
+        :data-host-focus-id="item.proposalId"
+        :data-host-focused="
+          focusedProposalId && item.proposalId === focusedProposalId ? 'true' : 'false'
+        "
       >
         <div class="space-y-2">
           <div class="min-w-0 space-y-2">

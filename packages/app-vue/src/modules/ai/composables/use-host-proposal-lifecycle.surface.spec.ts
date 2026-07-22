@@ -32,6 +32,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('shouldOpenHostWorkbenchFromAgentRun');
     expect(helper).toContain('buildHostTimelineArtifactItems');
     expect(helper).toContain('HostTimelineArtifactItem');
+    expect(helper).toContain('resolveHostWorkbenchFocusFromTimeline');
+    expect(helper).toContain('HostWorkbenchFocusTarget');
     expect(helper).toContain('dispatchHostProposalRevise');
     expect(helper).toContain("type: 'revise_proposal'");
     expect(helper).toContain('buildHostProposalPatchFromDraft');
@@ -170,5 +172,20 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('@open-entity="openHostReceiptEntity"');
     expect(chatView).toContain("router.push(`/goals/${payload.entityId}`)");
     expect(chatView).toContain('openRecentKnowledgeNote(payload.entityId)');
+  });
+
+  it('timeline open focuses Host proposal/receipt row (residual 387)', () => {
+    expect(chatView).toContain('resolveHostWorkbenchFocusFromTimeline');
+    expect(chatView).toContain('focusedHostProposalId');
+    expect(chatView).toContain(':focused-proposal-id="focusedHostProposalId"');
+    expect(chatView).toContain('openHostWorkbenchFromTimeline(item?: HostTimelineArtifactItem)');
+    expect(panel).toContain('focusedProposalId');
+    expect(panel).toContain('data-host-focus-id');
+    expect(panel).toContain('data-host-focused');
+    expect(panel).toContain('ring-2 ring-primary');
+    expect(panel).toContain('scrollIntoView');
+    expect(receiptPanel).toContain('focusedProposalId');
+    expect(receiptPanel).toContain('data-host-focus-id');
+    expect(receiptPanel).toContain('scrollIntoView');
   });
 });

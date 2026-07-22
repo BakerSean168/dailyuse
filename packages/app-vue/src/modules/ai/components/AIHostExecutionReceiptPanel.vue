@@ -4,14 +4,18 @@
  *
  * Mounted in AIContextPanel right rail after Host approve + domain executor.
  * Residual 385 adds rich replay: description/path/body preview, action lines,
- * and primary entity deep-link. Presentation only — never Host kernel mutation.
+ * and primary entity deep-link. Residual 387: focusedProposalId highlight/scroll.
+ * Presentation only — never Host kernel mutation.
  */
+import { nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import type { HostExecutionReceiptItem } from '../composables/hostProposalLifecycle';
 
 const props = defineProps<{
   items: HostExecutionReceiptItem[];
+  /** Residual 387: timeline-driven focus target proposalId. */
+  focusedProposalId?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -49,7 +53,22 @@ function onOpenEntity(item: HostExecutionReceiptItem) {
   if (!item.primaryEntityId) return;
   emit('openEntity', { source: item.source, entityId: item.primaryEntityId });
 }
+
+watch(
+  () => props.focusedProposalId,
+  async (focusedId) => {
+    if (!focusedId) return;
+    await nextTick();
+    const el = Array.from(
+      document.querySelectorAll('[data-host-focused="true"]'),
+    ).find((node) => node.getAttribute('data-host-focus-id') === focusedId);
+    if (el && 'scrollIntoView' in el) {
+      (el as HTMLElement).scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  },
+);
 </script>
+
 
 <template>
   <section
@@ -69,8 +88,17 @@ function onOpenEntity(item: HostExecutionReceiptItem) {
     <article
       v-for="item in items"
       :key="item.receiptKey"
-      class="rounded-lg border bg-card p-3 shadow-sm"
+      class="rounded-lg border bg-card p-3 shadow-sm transition-shadow"
+      :class="
+        focusedProposalId && item.proposalId === focusedProposalId
+          ? 'ring-2 ring-primary shadow-md'
+          : ''
+      "
       :data-testid="`ai-host-execution-receipt-${item.proposalId}`"
+      :data-host-focus-id="item.proposalId"
+      :data-host-focused="
+        focusedProposalId && item.proposalId === focusedProposalId ? 'true' : 'false'
+      "
     >
       <div class="flex items-start justify-between gap-2">
         <div class="min-w-0 space-y-1">
