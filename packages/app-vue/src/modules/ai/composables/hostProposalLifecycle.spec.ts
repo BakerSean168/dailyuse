@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  applyHostGoalPatchToAgentActions,
   applyHostKnowledgePatchToAgentActions,
   buildHostProposalPatchFromDraft,
   buildPendingHostProposalItems,
@@ -320,3 +321,66 @@ describe('applyHostKnowledgePatchToAgentActions (residual 363)', () => {
   });
 });
 
+describe('applyHostGoalPatchToAgentActions (residual 365)', () => {
+  it('overlays Host title/description onto create_goal executor actions only', () => {
+    const actions = [
+      {
+        tool: 'create_goal',
+        payload: {
+          title: 'old title',
+          description: 'old description',
+          category: 'health',
+        },
+        rationale: 'create',
+        index: 0,
+        dependsOn: [],
+      },
+      {
+        tool: 'create_key_result',
+        payload: { title: 'kr-1' },
+        rationale: 'kr',
+        index: 1,
+        dependsOn: [0],
+      },
+    ] as AgentAction[];
+
+    const patched = applyHostGoalPatchToAgentActions(actions, {
+      title: 'Host revised title',
+      description: 'Host revised description',
+    });
+
+    expect(patched[0]).toMatchObject({
+      tool: 'create_goal',
+      payload: {
+        title: 'Host revised title',
+        description: 'Host revised description',
+        category: 'health',
+      },
+    });
+    expect(patched[1]).toMatchObject({
+      tool: 'create_key_result',
+      payload: { title: 'kr-1' },
+    });
+    // original actions remain untouched
+    expect(actions[0]?.payload).toMatchObject({
+      title: 'old title',
+      description: 'old description',
+    });
+  });
+
+  it('leaves create_goal payload when Host patch is empty', () => {
+    const actions = [
+      {
+        tool: 'create_goal',
+        payload: { title: 'keep me' },
+        rationale: 'create',
+        index: 0,
+        dependsOn: [],
+      },
+    ] as AgentAction[];
+
+    const patched = applyHostGoalPatchToAgentActions(actions, {});
+    expect(patched[0]?.payload).toMatchObject({ title: 'keep me' });
+    expect(patched[0]?.payload).not.toBe(actions[0]?.payload);
+  });
+});

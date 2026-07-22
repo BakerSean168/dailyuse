@@ -632,7 +632,13 @@ async function handleHostProposalApprove(payload: {
     });
 
     if (payload.item.source === 'goal') {
-      await confirmGoalAgentRun({ skipHostLifecycle: true, revision });
+      await confirmGoalAgentRun({
+        skipHostLifecycle: true,
+        revision,
+        // Residual 365: pass Host-revised title/description into resumeAgentRun executor payload.
+        title: payload.patch.title ?? payload.item.title,
+        description: payload.patch.description,
+      });
       return;
     }
     if (payload.item.source === 'knowledge') {

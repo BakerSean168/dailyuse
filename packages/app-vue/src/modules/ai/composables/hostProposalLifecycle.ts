@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -337,6 +337,48 @@ export function applyHostKnowledgePatchToAgentActions(
     if (contentMarkdown !== undefined) {
       payload.contentMarkdown = contentMarkdown;
       payload.markdown = contentMarkdown;
+    }
+    return {
+      ...action,
+      payload,
+    };
+  });
+}
+
+
+/**
+ * Residual 365: map Host-revised goal title/description onto AgentRun executor actions.
+ * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
+ */
+export function applyHostGoalPatchToAgentActions(
+  actions: AgentAction[],
+  patch: {
+    title?: string;
+    description?: string | null;
+  },
+): AgentAction[] {
+  const title =
+    typeof patch.title === 'string' && patch.title.trim() ? patch.title.trim() : undefined;
+  const hasDescription = patch.description !== undefined;
+  const description = hasDescription ? patch.description : undefined;
+
+  if (!title && !hasDescription) {
+    return actions.map((action) => ({ ...action, payload: { ...action.payload } }));
+  }
+
+  return actions.map((action) => {
+    if (action.tool !== 'create_goal') {
+      return {
+        ...action,
+        payload: { ...(action.payload ?? {}) },
+      };
+    }
+    const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
+    if (title) {
+      payload.title = title;
+    }
+    if (hasDescription) {
+      payload.description = description;
     }
     return {
       ...action,

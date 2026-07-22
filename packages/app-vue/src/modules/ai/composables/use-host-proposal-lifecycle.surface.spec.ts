@@ -29,6 +29,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('applyHostKnowledgePatchToAgentActions');
     expect(helper).toContain('targetPath');
     expect(helper).toContain('contentMarkdown');
+    expect(helper).toContain('applyHostGoalPatchToAgentActions');
     expect(helper).toContain("runStatus: 'waiting_approval'");
     expect(helper).not.toContain('executeApproved');
     expect(helper).not.toContain('resumeAgentRun');
@@ -37,6 +38,9 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(goal).toContain("kind: 'goal.create'");
     expect(goal).toContain("decision: userDecision === 'confirm' ? 'approve' : 'reject'");
     expect(goal).toContain('resumeAgentRun');
+    expect(goal).toContain('applyHostGoalPatchToAgentActions');
+    expect(goal).toContain('title: hostOptions?.title');
+    expect(goal).toContain('description: hostOptions?.description');
     expect(goal).not.toContain('executeApproved');
 
     expect(knowledge).toContain('dispatchHostProposalDecision');
@@ -64,6 +68,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('skipHostLifecycle');
     expect(chatView).toContain('targetPath: payload.patch.targetPath');
     expect(chatView).toContain('contentMarkdown: payload.patch.contentMarkdown');
+    expect(chatView).toContain('title: payload.patch.title ?? payload.item.title');
+    expect(chatView).toContain('description: payload.patch.description');
     expect(chatView).toContain('buildPendingHostProposalItems');
     expect(panel).toContain('data-testid="ai-host-proposal-panel"');
     expect(panel).toContain('ai-host-proposal-approve-');

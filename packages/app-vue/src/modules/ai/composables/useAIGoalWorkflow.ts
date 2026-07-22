@@ -35,7 +35,10 @@ import {
   type AutomationContext,
 } from './goalAutomationHelpers';
 import { unwrap } from '@dailyuse/contracts/result';
-import { dispatchHostProposalDecision } from './hostProposalLifecycle';
+import {
+  applyHostGoalPatchToAgentActions,
+  dispatchHostProposalDecision,
+} from './hostProposalLifecycle';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -601,13 +604,25 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   ): AgentArtifact[] {
     const now = Date.now();
     const draftData = buildEditedGoalDraftData(run);
-    const title = getString(draftData, 'title') || options.conversationTitle.value;
+    // Residual 365: prefer create_goal payload (may include Host-revised title/description).
+    const createGoalPayload = approvedActions.find((action) => action.tool === 'create_goal')?.payload;
+    const createGoalData = isRecord(createGoalPayload) ? createGoalPayload : {};
+    const mergedDraftData: Record<string, unknown> = {
+      ...draftData,
+      ...(typeof createGoalData['title'] === 'string' && createGoalData['title'].trim()
+        ? { title: String(createGoalData['title']).trim() }
+        : {}),
+      ...(createGoalData['description'] !== undefined
+        ? { description: createGoalData['description'] }
+        : {}),
+    };
+    const title = getString(mergedDraftData, 'title') || options.conversationTitle.value;
     return run.state.artifacts.map((artifact) => {
       if (artifact.kind === 'goal_draft') {
         return {
           ...artifact,
           title,
-          data: draftData,
+          data: mergedDraftData,
           updatedAt: now,
         };
       }
@@ -641,12 +656,20 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   function buildGoalAgentApprovalPayload(
     run: AgentRunResult,
     userDecision: AgentResumePayload['userDecision'],
+    hostOptions?: {
+      title?: string;
+      description?: string | null;
+    },
   ): AgentResumePayload {
     if (userDecision !== 'confirm') {
       return { userDecision };
     }
 
-    const approvedActions = buildEditedApprovedActions(run);
+    // Residual 365: Host lifecycle may revise title/description; executor consumes patched actions.
+    const approvedActions = applyHostGoalPatchToAgentActions(buildEditedApprovedActions(run), {
+      title: hostOptions?.title,
+      description: hostOptions?.description,
+    });
     return {
       userDecision,
       approvedActions,
@@ -739,6 +762,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       /** When true, Host lifecycle already completed (panel revise/approve path). */
       skipHostLifecycle?: boolean;
       revision?: number;
+      /** Residual 365: Host-revised goal title applied to create_goal executor actions. */
+      title?: string;
+      /** Residual 365: Host-revised goal description applied to create_goal executor actions. */
+      description?: string | null;
     },
   ) {
     if (!goalAgentRun.value || goalAgentResuming.value) return;
@@ -758,7 +785,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
           revision: hostOptions?.revision,
         });
       }
-      const payload = buildGoalAgentApprovalPayload(goalAgentRun.value, userDecision);
+      const payload = buildGoalAgentApprovalPayload(goalAgentRun.value, userDecision, {
+        title: hostOptions?.title,
+        description: hostOptions?.description,
+      });
       const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload));
       syncGoalAgentRun(result);
       toast.success(
@@ -971,10 +1001,18 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     handleExecuteGoalAutomation,
     startGoalAgentRun,
     submitGoalAgentClarification,
-    confirmGoalAgentRun: (hostOptions?: { skipHostLifecycle?: boolean; revision?: number }) =>
-      resumeGoalAgentRun('confirm', hostOptions),
-    cancelGoalAgentRun: (hostOptions?: { skipHostLifecycle?: boolean; revision?: number }) =>
-      resumeGoalAgentRun('cancel', hostOptions),
+    confirmGoalAgentRun: (hostOptions?: {
+      skipHostLifecycle?: boolean;
+      revision?: number;
+      title?: string;
+      description?: string | null;
+    }) => resumeGoalAgentRun('confirm', hostOptions),
+    cancelGoalAgentRun: (hostOptions?: {
+      skipHostLifecycle?: boolean;
+      revision?: number;
+      title?: string;
+      description?: string | null;
+    }) => resumeGoalAgentRun('cancel', hostOptions),
     continueGoalAgentExecution,
     retryGoalAgentExecution,
     syncGoalAgentRun,
