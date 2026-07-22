@@ -2067,6 +2067,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > connection service 禁止 bare 读；port 保留 dual method（镜像 residual 180 schedule-task 模式）。
 > §13.2 仍部分。验证：knowledge-repository-connection-ownership surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百八十七轮）：GitHub webhook delivery bootstrap dual lock——
+> bare `findById(deliveryId)` 仅系统 processDelivery bootstrap；`updateStatus` 始终带 `connectionId` 围栏；
+> 连接经 `loadOwnedConnectionById` 复核；delivery port 不设 identity dual-method（系统投递主键设计）。
+> §13.2 仍部分。验证：github-webhook-delivery-ownership surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2152,11 +2158,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留一百八十六轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留一百八十七轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除，仅保留
 > schedule-task runtime bootstrap（残留 180 surface 锁定）、knowledge connection projection bootstrap
-> （残留 186 surface 锁定）、notification template 系统全局、account/auth identity 主键路径、
-> GitHub webhook delivery 系统投递 id、governance rule 全局目录。
+> （残留 186 surface 锁定）、GitHub webhook delivery 系统投递 id bootstrap（残留 187 surface 锁定）、
+> notification template 系统全局、account/auth identity 主键路径、governance rule 全局目录。
 > 不因此把三入口/Agent/E2E 未完成项打勾。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
@@ -2309,6 +2315,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百八十四轮：ADR-031/032 + surface lock exclude retired editor package。
   残留一百八十五轮：§13.2 core evidence suite re-run (66 tests, no checkbox changes)。
   残留一百八十六轮：knowledge connection bootstrap dual lock (mirror residual 180)。
+  残留一百八十七轮：GitHub webhook delivery bootstrap dual lock (connectionId write fence)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
