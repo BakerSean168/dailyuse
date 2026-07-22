@@ -284,6 +284,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE'];
     case 'resolveConfirmSettlementGoalId':
       return ['resolveConfirmSettlementGoalId'];
+    case 'HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE':
+      return ['HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

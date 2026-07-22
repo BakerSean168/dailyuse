@@ -1,5 +1,5 @@
 /**
- * Residual 437/439/453/455/463/465/467: Host task.create process-local resume.
+ * Residual 437/439/453/455/463/465/467/469: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
@@ -19,6 +19,9 @@
  *
  * Residual 467: confirm settlement goalId must not rebind against the approved
  * create_task_template draft (normalize approved goalId into settlement).
+ *
+ * Residual 469: confirm settlement title must not rebind against the approved
+ * create_task_template draft (approved title is source of truth when present).
  *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
@@ -51,6 +54,10 @@ export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE =
 export const HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE =
   'Host task.create confirm must not rebind settlement goalId against the approved create_task_template draft.';
 
+/** Residual 469: confirm must not rebind settlement title against approved draft. */
+export const HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE =
+  'Host task.create confirm must not rebind settlement title against the approved create_task_template draft.';
+
 function nextSequence(events: AgentRunResult['events']): number {
   if (events.length === 0) return 0;
   return Math.max(...events.map((event) => event.sequence)) + 1;
@@ -72,24 +79,29 @@ function asNonEmptyTrimmedString(value: unknown): string | undefined {
 }
 
 /**
- * Residual 463: resolve settlement title from executed action data or approved pending payload.
+ * Residual 463/469: resolve settlement title without rebinding approved draft title.
+ * Approved draft title is source of truth when present; executed may omit and inherit.
+ * Mismatch between approved and executed non-empty titles is fail-closed (residual 469).
  */
 function resolveConfirmSettlementTitle(
   executed: AgentExecutedAction,
   approved: AgentRunResult['state']['approvedActions'],
 ): string | undefined {
+  const pending = approved[0]?.payload ?? {};
+  const approvedTitle =
+    asNonEmptyTrimmedString(pending['title']) ??
+    asNonEmptyTrimmedString(pending['name']);
   const data = executed.data;
+  let executedTitle: string | undefined;
   if (data && typeof data === 'object' && !Array.isArray(data)) {
-    const fromData =
+    executedTitle =
       asNonEmptyTrimmedString((data as Record<string, unknown>)['title']) ??
       asNonEmptyTrimmedString((data as Record<string, unknown>)['name']);
-    if (fromData) return fromData;
   }
-  const pending = approved[0]?.payload ?? {};
-  return (
-    asNonEmptyTrimmedString(pending['title']) ??
-    asNonEmptyTrimmedString(pending['name'])
-  );
+  if (approvedTitle && executedTitle && approvedTitle !== executedTitle) {
+    throw new Error(HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE);
+  }
+  return approvedTitle ?? executedTitle;
 }
 
 /**
@@ -270,8 +282,8 @@ export function buildHostTaskCreateResumeResult(input: {
       }
     }
     const approvedActions = resolveApprovedActions(current, input.payload);
-    // Residual 463/465/467: normalize recoverable settlement title + template entity id
-    // + non-rebinding goalId into executed data/entityId + completion event.
+    // Residual 463/465/467/469: normalize recoverable settlement title + template entity id
+    // + non-rebinding goalId/title into executed data/entityId + completion event.
     let settlementTitle: string | undefined;
     let settlementTemplateId: string | undefined;
     let settlementGoalId: string | undefined;

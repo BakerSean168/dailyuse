@@ -290,6 +290,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 467: confirm settlement goalId must not rebind approved draft.
         'HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE',
         'resolveConfirmSettlementGoalId',
+        // Residual 469: confirm settlement title must not rebind approved draft.
+        'HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE',
       ],
       status: 'implemented_unit',
     },

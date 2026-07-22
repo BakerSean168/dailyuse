@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465/467: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467/469: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -13,6 +13,7 @@
  *   confirm settlement title (residual 463)
  *   confirm settlement template id (residual 465)
  *   confirm settlement goalId no-rebind (residual 467)
+ *   confirm settlement title no-rebind (residual 469)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -687,6 +688,88 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(failConfirm.error.message).toMatch(/must not rebind settlement goalId/);
 
     const stillWaiting = await service.getRun('run-journey-goal-rebind', cx as any);
+    expect(stillWaiting.ok).toBe(true);
+    if (!stillWaiting.ok) return;
+    expect(stillWaiting.data.run.status).toBe('waiting_approval');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
+  it('confirm forbids settlement title rebind against approved draft (residual 469)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-title-rebind' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-title-rebind',
+        threadId: 'thread-journey-title-rebind',
+        conversationId: 'conv-journey-title-rebind',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Approved draft title' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    // Matching title is allowed (normalize/keep approved).
+    const completed = await service.resumeRun(
+      'run-journey-title-rebind',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            entityId: 'tpl-journey-title-ok',
+            data: { title: 'Approved draft title' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(completed.ok).toBe(true);
+    if (!completed.ok) return;
+    expect(completed.data.state.executedActions[0]?.data?.['title']).toBe('Approved draft title');
+
+    const started2 = await service.startRun(
+      {
+        runId: 'run-journey-title-rebind-fail',
+        threadId: 'thread-journey-title-rebind-fail',
+        conversationId: 'conv-journey-title-rebind-fail',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Approved draft title' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started2.ok).toBe(true);
+
+    const failConfirm = await service.resumeRun(
+      'run-journey-title-rebind-fail',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created with rebound title',
+            entityId: 'tpl-journey-title-bad',
+            data: { title: 'Forged other title' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(failConfirm.ok).toBe(false);
+    if (failConfirm.ok) return;
+    expect(failConfirm.error.code).toBe('VALIDATION_ERROR');
+    expect(failConfirm.error.message).toMatch(/must not rebind settlement title/);
+
+    const stillWaiting = await service.getRun('run-journey-title-rebind-fail', cx as any);
     expect(stillWaiting.ok).toBe(true);
     if (!stillWaiting.ok) return;
     expect(stillWaiting.data.run.status).toBe('waiting_approval');

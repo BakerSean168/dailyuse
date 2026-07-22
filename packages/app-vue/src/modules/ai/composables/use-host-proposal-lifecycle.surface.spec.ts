@@ -555,6 +555,26 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create confirm forbids settlement title rebind (residual 469)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE');
+    expect(resume).toContain('must not rebind settlement title');
+    expect(resume).toContain('resolveConfirmSettlementTitle');
+    expect(resume).toContain('Residual 469');
+    // Client complete stamps title; Host forbids rebind vs approved draft.
+    expect(taskWorkflow).toContain('completeTaskAgentRun');
+    expect(taskWorkflow).toContain("payloadBase['title']");
+    expect(taskWorkflow).toContain('Residual 469');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

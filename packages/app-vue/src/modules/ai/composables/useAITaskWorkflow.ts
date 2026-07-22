@@ -151,11 +151,11 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 437/453/463/465/467: mark process-local task.create run completed after client createTemplate.
+   * Residual 437/453/463/465/467/469: mark process-local task.create run completed after client createTemplate.
    * Domain mutation already happened; Host confirm requires these executedActions (no Host default),
    * a recoverable settlement title in data (residual 463), a non-empty template entity id
-   * (residual 465) for receipt deep-link / reopen, and must not rebind approved goalId (residual 467).
-   * This only records settlement for getRun/list/reopen.
+   * (residual 465) for receipt deep-link / reopen, and must not rebind approved goalId/title
+   * (residual 467/469). This only records settlement for getRun/list/reopen.
    */
   async function completeTaskAgentRun(hostOptions?: {
     templateId?: string | null;
@@ -185,6 +185,7 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
       const payloadBase: Record<string, unknown> = {
         ...(pending?.payload ?? {}),
       };
+      // Residual 469: title stamp must match approved draft (Host fail-closes on rebind).
       if (title) payloadBase['title'] = title;
       // Residual 467: optional goalId stamp; Host fail-closes on approved-draft rebind.
       if (goalId) payloadBase['goalId'] = goalId;
