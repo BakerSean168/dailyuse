@@ -1,7 +1,8 @@
-export type { ReminderConfig, ReminderConfigDTO } from './reminder-config';
-export type { NotificationConfig, NotificationConfigDTO } from './notification-config';
-export type { ScheduleConfig, ScheduleConfigDTO } from './schedule-config';
-export { NotifyChannel } from './notify-channel';
+/**
+ * Residual 645: shared dual Reminder/Notification/Schedule config VOs retired.
+ * Module-scoped configs live under modules/{reminder,schedule,task,goal}.
+ * Keep only cross-module enum levels here.
+ */
 export { ImportanceLevel } from './importance';
 export { UrgencyLevel } from './urgency';
 export { PriorityLevel } from './priority';
