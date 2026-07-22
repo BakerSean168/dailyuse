@@ -154,12 +154,13 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 437/453/463/465/467/469/471: mark process-local task.create run completed after client createTemplate.
+   * Residual 437/453/463/465/467/469/471/475/489: mark process-local task.create run completed after client createTemplate.
    * Domain mutation already happened; Host confirm requires these executedActions (no Host default),
    * a recoverable settlement title in data (residual 463), a non-empty template entity id
    * (residual 465) for receipt deep-link / reopen, and must not rebind approved goalId/title
    * (residual 467/469). Residual 471: do not send approvedActions on confirm — process-local
    * draft is Host source of truth (edit is the only revise path).
+   * Residual 489: only complete from waiting_approval (Host residual 475 also fail-closed).
    * This only records settlement for getRun/list/reopen.
    */
   async function completeTaskAgentRun(hostOptions?: {
@@ -169,6 +170,8 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }) {
     const run = options.taskAgentRun.value;
     if (!run || run.run.agentType !== 'task.create' || taskAgentResuming.value) return;
+    // Residual 489: product confirm only from waiting_approval (symmetric cancel/edit).
+    if (run.run.status !== 'waiting_approval') return;
     // Residual 465: product confirm needs domain template id for Host settlement deep-link.
     const templateId =
       typeof hostOptions?.templateId === 'string' && hostOptions.templateId.trim()

@@ -311,6 +311,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 485: start builder threadId fail-closed (trim non-empty).
         'HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE',
         'resolveTaskCreateThreadId',
+        // Residual 489: client complete only from waiting_approval (Host 475 symmetry).
+        'Residual 489',
+        'completeTaskAgentRun',
       ],
       status: 'implemented_unit',
     },

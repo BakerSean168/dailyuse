@@ -748,6 +748,33 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+
+  it('task.create client complete requires waiting_approval only (residual 489)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    // Host confirm already waiting_approval-only (residual 475).
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_WAITING_APPROVAL_MESSAGE');
+    expect(resume).toContain('Residual 475');
+    // Client complete now double-gates waiting_approval (residual 489).
+    expect(taskWorkflow).toContain('completeTaskAgentRun');
+    expect(taskWorkflow).toContain('Residual 489');
+    expect(taskWorkflow).toContain("run.run.status !== 'waiting_approval'");
+    // completeTaskAgentRun body includes waiting_approval gate before templateId check.
+    const completeIdx = taskWorkflow.indexOf('async function completeTaskAgentRun');
+    expect(completeIdx).toBeGreaterThan(-1);
+    const completeSlice = taskWorkflow.slice(completeIdx, completeIdx + 900);
+    expect(completeSlice).toContain("run.run.status !== 'waiting_approval'");
+    expect(completeSlice).toContain('Residual 489');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(
