@@ -7,6 +7,7 @@ import {
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_RUN_ID_MESSAGE,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_THREAD_MESSAGE,
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE,
+  HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE,
   matchesHostTaskCreateIdentity,
   matchesHostTaskCreateConversation,
   matchesHostTaskCreateThread,
@@ -602,5 +603,55 @@ describe('host-task-create-run-store conversationId upsert normalize (residual 5
       HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE,
     );
     expect(store.size()).toBe(0);
+  });
+});
+
+describe('host-task-create-run-store identityId upsert normalize (residual 515)', () => {
+  beforeEach(() => {
+    resetDefaultHostTaskCreateRunStoreForTests();
+  });
+
+  it('upsert normalizes spaced identityId and keeps ownership', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-id-norm', 'Owned'),
+      identityId: 'owner-norm',
+      nowMs: 10,
+    });
+    store.upsert(started);
+
+    const spacedSame = {
+      ...started,
+      run: { ...started.run, identityId: '  owner-norm  ', updatedAt: 20 },
+    };
+    expect(() => store.upsert(spacedSame as typeof started)).not.toThrow();
+    expect(store.get('run-id-norm', 'owner-norm')?.run.identityId).toBe('owner-norm');
+    expect(store.get('run-id-norm', '  owner-norm  ')?.run.updatedAt).toBe(20);
+
+    const foreign = {
+      ...started,
+      run: { ...started.run, identityId: 'intruder', updatedAt: 30 },
+    };
+    expect(() => store.upsert(foreign as typeof started)).toThrow(
+      /already bound to another identity/,
+    );
+  });
+
+  it('upsert rejects blank identityId fail-closed', () => {
+    const store = createHostTaskCreateRunStore();
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-blank-id', 'Blank identity'),
+      identityId: 'owner-1',
+      nowMs: 1,
+    });
+    const blank = {
+      ...started,
+      run: { ...started.run, identityId: '   ' },
+    };
+    expect(() => store.upsert(blank as typeof started)).toThrow(
+      HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE,
+    );
+    expect(store.size()).toBe(0);
+    expect(HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE).toMatch(/identityId/);
   });
 });

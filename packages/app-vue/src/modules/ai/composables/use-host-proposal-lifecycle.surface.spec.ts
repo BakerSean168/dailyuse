@@ -975,6 +975,22 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create process-local store identity upsert normalizes (residual 515)', () => {
+    const store = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
+      ),
+      'utf8',
+    );
+    expect(store).toContain('HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE');
+    expect(store).toContain('resolveTaskCreateIdentityId');
+    expect(store).toContain('Residual 515');
+    expect(store).toContain('const identityId = resolveTaskCreateIdentityId(result.run.identityId)');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

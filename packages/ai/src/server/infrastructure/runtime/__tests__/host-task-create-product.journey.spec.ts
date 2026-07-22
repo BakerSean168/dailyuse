@@ -1474,4 +1474,37 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(listed.data.some((run) => run.runId === 'run-journey-conv-norm')).toBe(true);
   });
 
+
+  it('process-local start stores normalized identityId for get/list rehydrate (residual 515)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    // ExecutionContext identity with surrounding whitespace must normalize at start+store.
+    const cx = { identityId: '  owner-id-norm  ' } as const;
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-id-norm',
+        threadId: 'thread-journey-id-norm',
+        conversationId: 'conv-journey-id-norm',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Normalize identity' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+    if (!started.ok) return;
+    expect(started.data.run.identityId).toBe('owner-id-norm');
+
+    const got = await service.getRun('run-journey-id-norm', { identityId: 'owner-id-norm' } as any);
+    expect(got.ok).toBe(true);
+    if (!got.ok) return;
+    expect(got.data.run.identityId).toBe('owner-id-norm');
+
+    const listed = await service.listRuns({}, { identityId: '  owner-id-norm  ' } as any);
+    expect(listed.ok).toBe(true);
+    if (!listed.ok) return;
+    expect(listed.data.some((run) => run.runId === 'run-journey-id-norm')).toBe(true);
+  });
+
 });

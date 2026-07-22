@@ -354,6 +354,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 513: process-local store conversationId upsert normalize + blank fail-closed.
         'HOST_TASK_CREATE_RUN_STORE_REQUIRES_CONVERSATION_MESSAGE',
         'Residual 513',
+        // Residual 515: process-local store identityId upsert normalize + blank fail-closed.
+        'HOST_TASK_CREATE_RUN_STORE_REQUIRES_IDENTITY_MESSAGE',
+        'Residual 515',
       ],
       status: 'implemented_unit',
     },
