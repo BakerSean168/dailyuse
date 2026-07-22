@@ -7,7 +7,8 @@ import { resolve } from 'node:path';
  * `engine.direct_turn` and `engine.langgraph_workflow`. Uses in-suite test doubles
  * for dual-label isolation. Production residual 314 adds DirectTurnEngine;
  * residual 341 adds ReadonlyAnalysisTurnEngine (engine.pi_readonly) via Model Gateway.
- * Full multi-engine runtime E2E and real Pi SDK/CLI process adapters remain open.
+ * Residual 373 adds fail-closed PiReadonlyProcessAdapter spike (no spawn, not product default).
+ * Full multi-engine runtime E2E and real Pi SDK/CLI process spawn remain open.
  *
  * This is not a Playwright/Electron E2E and does not claim production multi-engine
  * runtime wiring is complete.

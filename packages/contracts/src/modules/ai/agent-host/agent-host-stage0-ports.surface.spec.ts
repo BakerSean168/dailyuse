@@ -21,6 +21,8 @@ describe('agent-host stage-0 ports freeze surface', () => {
 
   it('freezes Turn Engine / Capability / Workflow adapter port shapes', () => {
     expect(ports).toContain('export interface ITurnEnginePort');
+    expect(ports).toContain('export interface IExternalProcessTurnAdapterPort');
+    expect(ports).toContain('ExternalProcessProbeResult');
     expect(ports).toContain('export interface ICapabilityResolverPort');
     expect(ports).toContain('export interface IWorkflowAdapterPort');
     expect(ports).toContain('export interface IModelGatewayPort');
@@ -197,6 +199,12 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(harnessText).toContain('ITurnEnginePort');
     expect(harnessText).toContain('ReadonlyAnalysisTurnEngine');
     expect(harnessText).toContain('engine.pi_readonly');
+    const processAdapter = resolve(
+      repoRoot,
+      'packages/ai/src/server/infrastructure/turn-engine/pi-readonly-process.adapter.ts',
+    );
+    expect(existsSync(processAdapter)).toBe(true);
+    expect(readFileSync(processAdapter, 'utf8')).toContain('PI_SPIKE_SPAWN_BLOCKED');
     expect(harnessText).toContain('multi-engine');
   });
 });

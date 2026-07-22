@@ -94,6 +94,11 @@ export {
   DIRECT_TURN_ENGINE_ID,
   ReadonlyAnalysisTurnEngine,
   PI_READONLY_TURN_ENGINE_ID,
+  PiReadonlyProcessAdapter,
+  PI_READONLY_PROCESS_ADAPTER_ID,
+  PI_SPIKE_PINNED_LABEL,
+  PI_SPIKE_BINARY_ENV,
+  PI_SPIKE_ENABLED_ENV,
 } from './turn-engine';
 
 // ---------------------------------------------------------------------------

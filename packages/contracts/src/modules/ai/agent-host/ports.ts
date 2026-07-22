@@ -45,6 +45,40 @@ export interface ITurnEnginePort {
 }
 
 /**
+ * External process Turn adapter probe (ADR-035 stage 5/6 spike — residual 373).
+ * Process-shaped engines (Pi CLI / local CLI) must probe before any startTurn.
+ * Never product default open-chat path.
+ */
+export type ExternalProcessProbeResult =
+  | {
+      status: 'available';
+      binaryPath: string;
+      /** Pinned package/version label for diagnostics only. */
+      pinnedLabel?: string;
+    }
+  | {
+      status: 'unavailable';
+      reason: string;
+    };
+
+/**
+ * External process Turn adapter port — Desktop-first CLI/Pi spike surface.
+ *
+ * Security invariants (fail closed):
+ * - productDefault is always false (never open-chat default)
+ * - must not use real Vault as process cwd
+ * - must not inject Daily Use / GitHub / Provider tokens into process env
+ * - must not treat CLI-native file writes as completed business mutations
+ */
+export interface IExternalProcessTurnAdapterPort extends ITurnEnginePort {
+  readonly productDefault: false;
+  readonly readonlyMode: true;
+  /** desktop-only first phase; server may host diagnostics only. */
+  readonly placement: 'desktop' | 'server';
+  probe(): Promise<ExternalProcessProbeResult>;
+}
+
+/**
  * Workflow Adapter port — wraps existing IAgentRuntimePort without replacing Python graphs.
  * Workflow 适配端口 —— 包装既有 IAgentRuntimePort，不替换 Python graph。
  */
