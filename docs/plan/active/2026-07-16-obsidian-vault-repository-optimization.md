@@ -3849,6 +3849,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 恢复会话时刷新/保留 `taskAgentRun`；ActionBar 可选 `linkedGoalId` 写入 start payload；完整 LangGraph 仍未齐。
 > 状态保持 **实施中**；不改 §13.2 checkbox。
 
+> 续进展 2026-07-22（阶段 6 残留四百三十四轮）：§13.2 聚焦证据套件复跑（含 residual 250–433
+> Host task.create restore/linked goal 锁，不改 checkbox）——**99 文件 / 426 测试**（app-vue 26/149、
+> ai 28/144、repository 6/35、contracts 11/29、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`（首跑 nx
+> SIGSEGV 后复跑 governance-check 通过）。相对 residual 432：app-vue +0 file / +1 test（restore/linked goal surface）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
+> GitHub App fixture E2E、全量 PR 门禁、完整 Task LangGraph 工作流。
+> 状态保持 **实施中**；PR 就绪仍为否。
+
 
 
 
@@ -4374,6 +4382,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百三十一轮：Host task.create 产品 start 基础（TS Host start + startTaskAgentRun）。
   残留四百三十二轮：§13.2 focused evidence suite re-run（425 tests，residuals 250–431 锁；不改 checkbox）。
   残留四百三十三轮：Host task.create 会话 restore/refresh + 启动时可选关联 goalId。
+  残留四百三十四轮：§13.2 focused evidence suite re-run（426 tests，residuals 250–433 锁；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4502,6 +4511,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百三十一轮：Host task.create product start foundation (TS Host start + startTaskAgentRun)。
   残留四百三十二轮：§13.2 focused evidence suite re-run (425 tests, residuals 250–431 locks, no checkbox changes)。
   残留四百三十三轮：Host task.create session restore/refresh + optional linked goalId on start。
+  残留四百三十四轮：§13.2 focused evidence suite re-run (426 tests, residuals 250–433 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4716,6 +4726,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百三十一轮：task.create 产品 start 基础落地；仍不构成完整 Task LangGraph 工作流/E2E 证据。
   残留四百三十二轮：tip 上 425 项 focused evidence suite（含 residual 250–431 Host task.create 产品 start 基础锁）通过；仍不构成全量 PR 门禁证据。
   残留四百三十三轮：task.create restore/linked goal 落地；仍不构成完整 Task LangGraph 工作流/E2E 证据。
+  残留四百三十四轮：tip 上 426 项 focused evidence suite（含 residual 250–433 Host task.create restore/linked goal 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
