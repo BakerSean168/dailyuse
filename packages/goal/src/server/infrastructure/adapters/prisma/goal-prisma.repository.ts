@@ -390,9 +390,10 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     });
   }
 
-  async batchMoveToFolder(ids: string[], folderId: string | null): Promise<void> {
+  async batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void> {
+    if (ids.length === 0) return;
     await this.prisma.goal.updateMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
       data: { folderId, updatedAt: new Date() },
     });
   }

@@ -379,4 +379,21 @@ describe('goal ownership surface', () => {
     );
   });
 
+
+  it('port batchMoveToFolder requires identityId (residual 160)', () => {
+    expect(port).toContain(
+      'batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void>;',
+    );
+  });
+
+  it('prisma/powersync batchMoveToFolder filter by identity (residual 160)', () => {
+    expect(prisma).toContain(
+      'async batchMoveToFolder(identityId: string, ids: string[], folderId: string | null)',
+    );
+    expect(prisma).toContain('where: { id: { in: ids }, identityId }');
+    expect(powersync).toContain(
+      'UPDATE goals SET folder_id = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})',
+    );
+  });
+
 });

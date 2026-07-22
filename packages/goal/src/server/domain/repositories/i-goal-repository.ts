@@ -114,7 +114,7 @@ export interface IGoalRepository {
    * @param ids - 目标 ID 列表
    * @param folderId - 目标文件夹 ID（null 表示移出文件夹）
    */
-  batchMoveToFolder(ids: string[], folderId: string | null): Promise<void>;
+  batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void>;
 
   // ================= 层级关系查询 =================
 

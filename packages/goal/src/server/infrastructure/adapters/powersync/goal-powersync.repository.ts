@@ -275,12 +275,12 @@ export class GoalPowerSyncRepository
     );
   }
 
-  async batchMoveToFolder(ids: string[], folderId: string | null): Promise<void> {
+  async batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
     await this.db.execute(
-      `UPDATE goals SET folder_id = ?, updated_at = ? WHERE id IN (${placeholders})`,
-      [folderId, toDbDateTime(new Date()), ...ids],
+      `UPDATE goals SET folder_id = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})`,
+      [folderId, toDbDateTime(new Date()), identityId, ...ids],
     );
   }
 
