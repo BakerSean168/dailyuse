@@ -98,12 +98,12 @@ updated: 2026-07-22T00:00:00
 | [`packages/repository/src/server/infrastructure/adapters/prisma/__tests__/confirmed-create-only-note-boundary.surface.spec.ts`](../../../packages/repository/src/server/infrastructure/adapters/prisma/__tests__/confirmed-create-only-note-boundary.surface.spec.ts) | residual 201：confirmed-create-only 边界 |
 | [`packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts`](../../../packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts) | Web 投影工作区 |
 | [`packages/app-vue/src/shared/utils/safe-markdown.spec.ts`](../../../packages/app-vue/src/shared/utils/safe-markdown.spec.ts) | Markdown 安全边界 |
-| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts) | projection/confirmed-create 与 legacy 硬失败 |
+| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts) | projection/confirmed-create；断言无 legacy CRUD 方法 |
 | [`packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.spec.ts) | knowledge + vault IPC |
 | [`packages/repository/src/server/application/services/knowledge-note-commit.service.spec.ts`](../../../packages/repository/src/server/application/services/knowledge-note-commit.service.spec.ts) | 幂等 confirmed create |
 | [`packages/repository/src/server/application/services/knowledge-repository-projection.service.spec.ts`](../../../packages/repository/src/server/application/services/knowledge-repository-projection.service.spec.ts) | webhook / 投影 |
 | [`apps/web/e2e/note/legacy-note-mutation-boundary.spec.ts`](../../../apps/web/e2e/note/legacy-note-mutation-boundary.spec.ts) | 旧 CRUD 路径 404 边界 |
-| [`apps/web/src/mocks/handlers/repository.handlers.ts`](../../../apps/web/src/mocks/handlers/repository.handlers.ts) | MSW knowledge-only + legacy 404 |
+| [`apps/web/src/mocks/handlers/repository.handlers.ts`](../../../apps/web/src/mocks/handlers/repository.handlers.ts) | MSW knowledge-only（无 legacy Resource/Folder 404 stub） |
 
 ## 需要重点关注的改动风险
 

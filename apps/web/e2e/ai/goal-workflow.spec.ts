@@ -16,7 +16,6 @@ type GoalWorkflowSessionOptions = {
   conversationId?: string | null;
   modelKey?: string | null;
   workflowEntry?: Record<string, unknown> | null;
-  legacyGoalWorkflow?: boolean;
   seedConversation?: boolean;
   landingPath?: string;
 };
@@ -31,13 +30,11 @@ async function seedAiLocalState(
     conversationId?: string | null;
     modelKey?: string | null;
     workflowEntry?: Record<string, unknown> | null;
-    legacyGoalWorkflow?: boolean;
   } = {},
 ): Promise<void> {
   const conversationId = options.conversationId ?? null;
   const modelKey = options.modelKey ?? null;
   const workflowEntry = options.workflowEntry ?? null;
-  const legacyGoalWorkflow = options.legacyGoalWorkflow ?? false;
 
   await page.evaluate(
     ({
@@ -49,14 +46,10 @@ async function seedAiLocalState(
       seededConversationId,
       seededModelKey,
       seededWorkflowEntry,
-      seededLegacyGoalWorkflow,
     }) => {
       window.localStorage.removeItem(lastModelStorageKey);
-      if (seededLegacyGoalWorkflow) {
-        window.localStorage.setItem(legacyGoalWorkflowStorageKey, 'true');
-      } else {
-        window.localStorage.removeItem(legacyGoalWorkflowStorageKey);
-      }
+      // Residual 211: legacy goal-workflow debug dual-track is retired; clear any stale key.
+      window.localStorage.removeItem(legacyGoalWorkflowStorageKey);
 
       if (seededConversationId) {
         window.localStorage.setItem(lastConversationStorageKey, seededConversationId);
@@ -92,7 +85,6 @@ async function seedAiLocalState(
       seededConversationId: conversationId,
       seededModelKey: modelKey,
       seededWorkflowEntry: workflowEntry,
-      seededLegacyGoalWorkflow: legacyGoalWorkflow,
     },
   );
 }
@@ -121,7 +113,6 @@ async function bootstrapGoalWorkflowSession(
     conversationId: options.conversationId,
     modelKey: options.modelKey,
     workflowEntry: options.workflowEntry,
-    legacyGoalWorkflow: options.legacyGoalWorkflow,
   });
 
   await page.goto(WEB_CONFIG.getFullUrl(landingPath), {
