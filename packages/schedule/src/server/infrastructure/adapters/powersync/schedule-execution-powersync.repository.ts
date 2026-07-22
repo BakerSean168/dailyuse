@@ -53,14 +53,6 @@ export class PowerSyncScheduleExecutionRepository implements IScheduleExecutionR
     }
   }
 
-  async findById(id: string): Promise<ScheduleExecution | null> {
-    const row = await this.db.getOptional<PowerSyncScheduleExecutionRow>(
-      'SELECT * FROM schedule_executions WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return row ? PowerSyncScheduleExecutionMapper.toDomain(row) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleExecution | null> {
     const row = await this.db.getOptional<PowerSyncScheduleExecutionRow>(
       'SELECT * FROM schedule_executions WHERE id = ? AND identity_id = ? LIMIT 1',

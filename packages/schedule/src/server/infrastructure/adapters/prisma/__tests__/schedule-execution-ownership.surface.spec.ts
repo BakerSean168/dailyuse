@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Schedule execution ownership surface (stage-6 residual 144):
  * execution reads must never authorize by bare execution/task primary key alone.
+ * Residual 179 collapses bare findById dual method.
  */
 describe('schedule execution ownership surface', () => {
   const port = readFileSync(
@@ -27,6 +28,12 @@ describe('schedule execution ownership surface', () => {
     expect(port).toContain(
       'findByTaskId(identityId: string, taskId: string): Promise<ScheduleExecution[]>;',
     );
+  });
+
+  it('port drops bare findById dual method (residual 179)', () => {
+    expect(port).not.toContain('findById(id: string): Promise<ScheduleExecution | null>;');
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+    expect(powersync).not.toMatch(/async findById\(id: string\)/);
   });
 
   it('prisma filters by identityId', () => {

@@ -2017,6 +2017,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 删除 bare `findById` 双轨，唯一读路径 `findByIdForIdentity`。Notification template 系统全局 bare `findById` 保留。
 > 补 ownership/surface。§13.2 仍部分。验证：goal/notification/preference ownership surfaces + focused specs + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
+>
+> 续进展 2026-07-22（阶段 6 残留一百七十九轮）：Schedule execution 身份隔离——
+> 删除 bare `findById` 双轨，唯一读路径 `findByIdForIdentity`。Schedule task bare `findById` 仍保留
+> 作为 runtime 无 identity 时的 bootstrap + re-own 路径（residual 131）。§13.2 仍部分。
+> 验证：schedule-execution ownership surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
 
 
 
@@ -2102,7 +2108,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-21（残留五十四轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留一百七十九轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除，仅保留
+> schedule-task runtime bootstrap、notification template 系统全局、account/auth identity 主键路径。
+> 不因此把三入口/Agent/E2E 未完成项打勾。
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
@@ -2244,6 +2253,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百七十六轮：task folder/dependency findById dual-method collapse。
   残留一百七十七轮：task template/instance findById dual-method collapse。
   残留一百七十八轮：goal/notification/preference findById dual-method collapse。
+  残留一百七十九轮：schedule execution findById dual-method collapse。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

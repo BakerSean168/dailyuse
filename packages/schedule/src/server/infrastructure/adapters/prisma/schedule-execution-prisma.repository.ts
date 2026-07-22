@@ -16,13 +16,6 @@ export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepo
     });
   }
 
-  async findById(id: string): Promise<ScheduleExecution | null> {
-    const data = await this.prisma.scheduleExecution.findUnique({
-      where: { id },
-    });
-    return data ? PrismaScheduleExecutionMapper.toDomain(data) : null;
-  }
-
   async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleExecution | null> {
     const data = await this.prisma.scheduleExecution.findFirst({
       where: { id, identityId },
