@@ -6,6 +6,12 @@ Accepted
 ## Date
 2026-01-15
 
+## Implementation note (Residual 617 / 2026-07-22)
+Stage-6 deleted the zero-consumer `ActionResult` / `actionOk` dual-track helpers from
+`@dailyuse/contracts/result`. Transport truth is **only** `Result<T>` plus boundary
+envelopes `IpcResult<T>` / `HttpResponse<T>`. Do not reintroduce `success: boolean`
+or `ActionResult`-style parallel types.
+
 ## Context
 Inconsistent API response formats make frontend integration and cross-service communication error-prone. Different modules using `success: true`, `ok: true`, or just returning raw data leads to confusion and defensive programming overhead.
 
@@ -26,26 +32,25 @@ interface BaseResponse<T> {
 *   ❌ Raw data return (e.g., returning just `User` object instead of `{ ok: true, data: User }` for operations prone to failure)
 
 ### 3. Usage of Contract Types
-Implementations must use the exact types from `@dailyuse/contracts`:
+Implementations must use the exact types from `@dailyuse/contracts/result`:
 
-*   **Simple Actions:** `ActionResult`
-*   **Data Retrieval:** `ActionWithDataResult<T>`
-*   **Batch Operations:** `BatchActionResult`
-*   **Counts:** `CountResult`
-*   **IPC:** `IpcResult<T>`
-*   **HTTP:** `HttpResponse<T>`
+*   **All operations:** `Result<T>` (`ok` / `fail` / `error` helpers)
+*   **IPC boundary:** `IpcResult<T>` (`toIpcResult` / `fromIpcResult`)
+*   **HTTP boundary:** `HttpResponse<T>` (`toHttpResponse` / `fromHttpResponse`)
+*   **Batch payloads:** `BatchResult<T>` / `okBatch` when a multi-item summary is needed
 
 ### 4. Code Example
 ```typescript
-import type { ActionWithDataResult } from '@dailyuse/contracts';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, fail } from '@dailyuse/contracts/result';
 
 // Correct
-export async function getUser(id: string): Promise<ActionWithDataResult<User>> {
+export async function getUser(id: string): Promise<Result<User>> {
   try {
     const user = await db.find(id);
-    return { ok: true, data: user };
+    return ok(user);
   } catch (e) {
-    return { ok: false, error: toErrorInfo(e) };
+    return fail({ code: 'INTERNAL_ERROR', message: 'Failed to load user' });
   }
 }
 ```

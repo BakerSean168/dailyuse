@@ -5066,6 +5066,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留六百一十七轮）：对齐 Result ADR **文档双轨收口**（仍不打勾）——
+> ADR-008/010/012/030 不再处方 `ActionResult`/`CountResult` 双轨；传输真值 `Result`/`IpcResult`/`HttpResponse`；
+> contracts `result-adr-alignment.surface.spec.ts` Residual 617 锁；承接 residual 615 代码删除。
+> 非跨端 multi-engine E2E / 全量 PR 门禁。状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -5805,6 +5810,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百一十四轮：§13.2 focused evidence suite re-run (705 tests, residuals 250–613 locks, no checkbox changes)。
   残留六百一十五轮：delete contracts ActionResult dual-track dead surface (Result envelope only).
   残留六百一十六轮：§13.2 focused evidence suite re-run (708 tests, residuals 250–615 locks, no checkbox changes)。
+  残留六百一十七轮：align Result ADRs after ActionResult dual-track retirement.
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -5854,6 +5860,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百一十四轮：§13.2 focused evidence suite re-run（705 tests，residuals 250–613 锁；不改 checkbox）。
   残留六百一十五轮：删除 contracts ActionResult 双轨死表面（Result 信封唯一真值）。
   残留六百一十六轮：§13.2 focused evidence suite re-run（708 tests，residuals 250–615 锁；不改 checkbox）。
+  残留六百一十七轮：对齐 Result ADR（ADR-008/010/012/030）删除 ActionResult 双轨处方。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -6514,6 +6521,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百一十四轮：tip 上 705 项 focused evidence suite（含 residual 250–613 exclusive Host proposal/receipt order 锁）通过；仍不构成全量 PR 门禁证据。
   残留六百一十五轮：contracts ActionResult 双轨死表面删除落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留六百一十六轮：tip 上 708 项 focused evidence suite（含 residual 250–615 ActionResult dual-track retired 锁）通过；仍不构成全量 PR 门禁证据。
+  残留六百一十七轮：Result ADR 文档双轨收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

@@ -6,6 +6,11 @@ Accepted
 ## Date
 2026-01-15
 
+## Implementation note (Residual 617 / 2026-07-22)
+Boundary layers convert thrown/structured errors into `Result<T>` failures
+(`fail` / `error`), then map to `IpcResult` or `HttpResponse` at the transport edge.
+Do not convert to retired `ActionResult` helpers.
+
 ## Context
 Random error throwing (strings, generic Errors) and inconsistent catching make debugging impossible. A unified error strategy is needed for reliable operation.
 
@@ -23,14 +28,16 @@ Errors must carry a machine-readable `code` (e.g., `AUTH_TOKEN_EXPIRED`, `TASK_N
 
 ### 3. Try/Catch & Result Pattern
 *   **Service Layer:** Throw specific errors (`throw new NotFoundError()`) to abort logic flow.
-*   **Boundary Layer (Controller/IPC):** Catch exceptions and convert them to `ActionResult`.
+*   **Boundary Layer (Controller/IPC):** Catch exceptions and convert them to `Result<T>`.
     ```typescript
+    import { ok, fail } from '@dailyuse/contracts/result';
+
     try {
        await service.doIt();
-       return { ok: true };
+       return ok(null);
     } catch (e) {
-       // Convert exception to serializable object
-       return { ok: false, error: toErrorInfo(e) };
+       // Convert exception to serializable Result failure
+       return fail({ code: 'INTERNAL_ERROR', message: 'Operation failed' });
     }
     ```
 
