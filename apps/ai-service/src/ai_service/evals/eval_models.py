@@ -16,7 +16,7 @@ from ai_service.evals.goal_workflow_harness import GoalWorkflowEvalCase
 from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
-    KnowledgeResourceDocument,
+    KnowledgeNoteDocument,
     ProviderConfig,
 )
 
@@ -132,7 +132,7 @@ class KnowledgeGroundingEvalCase(BaseModel):
     type: Literal["knowledge_grounding"]
     description: str
     question: str
-    resource_documents: list[KnowledgeResourceDocument]
+    resource_documents: list[KnowledgeNoteDocument]
     model_response: str
     expected_answer_substrings: list[str] = Field(default_factory=list)
     expected_resource_paths: list[str] = Field(default_factory=list)

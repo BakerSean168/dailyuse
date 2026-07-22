@@ -27,7 +27,7 @@ from ai_service.schemas import (
     AgentStartRunRequest,
     AgentUsage,
     AnalyticsQueryContext,
-    KnowledgeResourceDocument,
+    KnowledgeNoteDocument,
     ProviderConfig,
 )
 
@@ -129,7 +129,7 @@ def _related_resources_input(data: dict[str, Any]) -> list[dict[str, Any]]:
 
     try:
         return [
-            KnowledgeResourceDocument.model_validate(item).model_dump(mode="json")
+            KnowledgeNoteDocument.model_validate(item).model_dump(mode="json")
             for item in raw
             if isinstance(item, dict)
         ]
@@ -151,10 +151,10 @@ def _indexed_resources_input(data: dict[str, Any]) -> list[Any]:
         )
 
     try:
-        from ai_service.schemas import IndexedKnowledgeResource
+        from ai_service.schemas import IndexedKnowledgeNote
 
         return [
-            IndexedKnowledgeResource.model_validate(item)
+            IndexedKnowledgeNote.model_validate(item)
             for item in raw
             if isinstance(item, dict)
         ]

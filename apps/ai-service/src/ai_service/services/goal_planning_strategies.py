@@ -24,7 +24,7 @@ from ai_service.schemas import (
     GoalAutomationFetchStatsResult,
     GoalAutomationResponse,
     GoalAutomationSearchNotesResult,
-    KnowledgeResourceDocument,
+    KnowledgeNoteDocument,
     PlannedGoal,
     ProviderConfig,
 )
@@ -66,7 +66,7 @@ async def execute_automation_strategy(
     timeframe: str | None,
     include_key_results: bool,
     include_task_templates: bool,
-    related_resources: list[KnowledgeResourceDocument] | None = None,
+    related_resources: list[KnowledgeNoteDocument] | None = None,
     analytics_context: AnalyticsQueryContext | None = None,
     provider_config: ProviderConfig,
     locale: str = "en-US",
@@ -192,7 +192,7 @@ async def _complete_goal_automation_with_tools(
     messages: list[ChatMessage],
     provider_config: ProviderConfig,
     tools: list[ChatToolDefinition] | None,
-    related_resources: list[KnowledgeResourceDocument],
+    related_resources: list[KnowledgeNoteDocument],
     analytics_context: AnalyticsQueryContext | None,
     request_id: str | None,
 ):
@@ -243,7 +243,7 @@ async def _execute_goal_read_only_tool_calls(
     knowledge_query_service: KnowledgeQueryService | None,
     analytics_query_service: AnalyticsQueryService | None,
     provider_config: ProviderConfig,
-    related_resources: list[KnowledgeResourceDocument],
+    related_resources: list[KnowledgeNoteDocument],
     analytics_context: AnalyticsQueryContext | None,
     request_id: str | None,
 ) -> list[ToolLoopResult]:
@@ -305,7 +305,7 @@ async def _search_notes_for_goal_planning(
     knowledge_indexing_service: KnowledgeIndexingService | None,
     knowledge_query_service: KnowledgeQueryService | None,
     provider_config: ProviderConfig,
-    related_resources: list[KnowledgeResourceDocument],
+    related_resources: list[KnowledgeNoteDocument],
     request_id: str | None,
 ) -> GoalAutomationSearchNotesResult:
     if not related_resources:
@@ -333,7 +333,7 @@ async def _search_notes_for_goal_planning(
         ),
     )
     indexed_resources = [
-        knowledge_indexing_service.index_resource(resource)
+        knowledge_indexing_service.index_note(resource)
         for resource in related_resources
     ]
     citations = await knowledge_query_service.select_citations(

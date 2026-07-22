@@ -5,7 +5,7 @@ from typing import TypeVar
 from pydantic import BaseModel
 
 from ai_service.schemas.chat import ProviderConfig
-from ai_service.schemas.knowledge import KnowledgeResourceDocument
+from ai_service.schemas.knowledge import KnowledgeNoteDocument
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -54,9 +54,9 @@ def parse_optional_provider_config(raw: object | None) -> ProviderConfig | None:
     return parse_optional_model(raw, ProviderConfig, "provider_config")
 
 
-def parse_knowledge_resource(raw: object) -> KnowledgeResourceDocument:
-    return parse_required_model(raw, KnowledgeResourceDocument, "resource")
+def parse_knowledge_note(raw: object) -> KnowledgeNoteDocument:
+    return parse_required_model(raw, KnowledgeNoteDocument, "resource")
 
 
-def parse_knowledge_resource_list(raw: object) -> list[KnowledgeResourceDocument]:
-    return parse_model_list(raw, KnowledgeResourceDocument, "related_resources")
+def parse_knowledge_note_list(raw: object) -> list[KnowledgeNoteDocument]:
+    return parse_model_list(raw, KnowledgeNoteDocument, "related_resources")

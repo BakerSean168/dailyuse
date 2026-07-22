@@ -112,7 +112,7 @@ class TestGoalAutomationService:
             ChatToolCall,
             ChatToolCallFunction,
             KnowledgeCitation,
-            KnowledgeResourceDocument,
+            KnowledgeNoteDocument,
         )
         from ai_service.services.chat_service import ChatService
         from ai_service.services.goal_planning_service import GoalPlanningService
@@ -190,7 +190,7 @@ class TestGoalAutomationService:
             ),
         ]
         indexing_service = Mock()
-        indexing_service.index_resource.side_effect = lambda resource: Mock(
+        indexing_service.index_note.side_effect = lambda resource: Mock(
             identity_id=resource.identity_id,
             repository_id=resource.repository_id,
             resource_id=resource.resource_id,
@@ -228,7 +228,7 @@ class TestGoalAutomationService:
             include_key_results=True,
             include_task_templates=True,
             related_resources=[
-                KnowledgeResourceDocument(
+                KnowledgeNoteDocument(
                     identity_id="identity-1",
                     repository_id="repo-1",
                     resource_id="resource-1",

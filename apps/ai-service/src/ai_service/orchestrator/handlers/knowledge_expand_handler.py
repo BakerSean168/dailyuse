@@ -1,5 +1,5 @@
 from ai_service.orchestrator.handlers.input_parsing import (
-    parse_knowledge_resource_list,
+    parse_knowledge_note_list,
     parse_provider_config,
 )
 from ai_service.orchestrator.models import WorkflowContext
@@ -24,7 +24,7 @@ class KnowledgeExpandWorkflowHandler(WorkflowHandler):
         provider_config = parse_provider_config(
             context.input_data.get("provider_config")
         )
-        related_resources = parse_knowledge_resource_list(
+        related_resources = parse_knowledge_note_list(
             context.input_data.get("related_resources")
         )
 

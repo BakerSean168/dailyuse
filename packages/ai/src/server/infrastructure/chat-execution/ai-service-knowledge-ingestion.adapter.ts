@@ -17,7 +17,7 @@ interface AIServiceIndexedKnowledgeChunkResponse {
   embedding?: number[];
 }
 
-interface AIServiceIndexedKnowledgeResourceResponse {
+interface AIServiceIndexedKnowledgeNoteResponse {
   identity_id: string;
   repository_id: string;
   resource_id: string;
@@ -33,7 +33,7 @@ interface AIServiceIndexedKnowledgeResourceResponse {
 }
 
 interface AIServiceKnowledgeIngestionResponse {
-  indexed_resource: AIServiceIndexedKnowledgeResourceResponse;
+  indexed_resource: AIServiceIndexedKnowledgeNoteResponse;
 }
 
 export class AIServiceKnowledgeIngestionAdapter implements IKnowledgeIngestionPort {

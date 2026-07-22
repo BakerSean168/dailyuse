@@ -21,7 +21,7 @@ from ai_service.schemas import (
     ChatMessage,
     GoalAutomationResponse,
     GoalPlanningResponse,
-    KnowledgeResourceDocument,
+    KnowledgeNoteDocument,
     PlannedGoal,
     ProviderConfig,
 )
@@ -172,7 +172,7 @@ class GoalPlanningService:
         timeframe: str | None,
         include_key_results: bool,
         include_task_templates: bool,
-        related_resources: list[KnowledgeResourceDocument] | None = None,
+        related_resources: list[KnowledgeNoteDocument] | None = None,
         analytics_context: AnalyticsQueryContext | None = None,
         provider_config: ProviderConfig,
         locale: str = "en-US",

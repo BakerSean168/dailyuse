@@ -7,7 +7,7 @@ import json
 from ai_service.schemas import (
     ChatMessage,
     KnowledgeExpansionResponse,
-    KnowledgeResourceDocument,
+    KnowledgeNoteDocument,
     ProviderConfig,
 )
 from ai_service.services.chat_service import ChatService
@@ -37,14 +37,14 @@ class KnowledgeExpansionService:
         *,
         instruction: str,
         current_content: str | None,
-        related_resources: list[KnowledgeResourceDocument],
+        related_resources: list[KnowledgeNoteDocument],
         provider_config: ProviderConfig,
         max_citations: int = 4,
     ) -> KnowledgeExpansionResponse:
         """Expand a note draft while grounding additions in repository excerpts."""
 
         indexed_resources = [
-            await self._indexing_service.index_resource_async(
+            await self._indexing_service.index_note_async(
                 resource,
                 provider_config=provider_config,
             )

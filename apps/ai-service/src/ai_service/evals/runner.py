@@ -187,7 +187,7 @@ async def evaluate_knowledge_grounding(
     """Run real retrieval service checks (deterministic or live)."""
     indexing_service = KnowledgeIndexingService()
     indexed_resources = [
-        indexing_service.index_resource(resource)
+        indexing_service.index_note(resource)
         for resource in case.resource_documents
     ]
     active_service = chat_service or StubChatService(case.model_response)
