@@ -1,5 +1,6 @@
 import type { Result } from '@dailyuse/contracts/result';
-import type { IDashboardApiClient, DashboardData } from '../types';
+import type { IDashboardApiClient } from '../types';
+import type { DashboardData } from '@dailyuse/contracts/dashboard';
 
 interface IResultHttpClient {
   get<T = unknown>(url: string): Promise<Result<T>>;
