@@ -26,7 +26,7 @@ export class GetTaskTemplateUseCase {
     includeChildren = false,
   ): Promise<Result<GetTaskTemplateRes>> {
     const template = includeChildren
-      ? await this.templateRepository.findByIdWithChildrenForIdentity(identityId, id)
+      ? await this.templateRepository.findByIdWithChildren(identityId, id)
       : await this.templateRepository.findByIdForIdentity(identityId, id);
 
     if (!template) {

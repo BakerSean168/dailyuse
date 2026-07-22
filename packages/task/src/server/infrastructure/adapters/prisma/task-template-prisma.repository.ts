@@ -84,18 +84,7 @@ export class TaskTemplatePrismaRepository
     return data ? this.mapToEntity(data) : null;
   }
 
-  async findByIdWithChildren(id: string): Promise<TaskTemplate | null> {
-    const data = await this.db.taskTemplate.findUnique({
-      where: { id },
-      include: { subtasks: true, instances: true },
-    });
-    return data ? this.mapToEntity(data) : null;
-  }
-
-  async findByIdWithChildrenForIdentity(
-    identityId: string,
-    id: string,
-  ): Promise<TaskTemplate | null> {
+  async findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null> {
     const data = await this.db.taskTemplate.findFirst({
       where: { id, identityId },
       include: { subtasks: true, instances: true },

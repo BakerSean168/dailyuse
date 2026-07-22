@@ -160,4 +160,40 @@ describe('task template ownership surface', () => {
     );
   });
 
+
+  it('port findByIdWithChildren requires identityId (residual 163)', () => {
+    expect(port).toContain(
+      'findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null>;',
+    );
+    expect(port).not.toContain('findByIdWithChildrenForIdentity');
+    expect(port).not.toContain('findByIdWithChildren(id: string)');
+  });
+
+  it('prisma/powersync findByIdWithChildren filter by identity (residual 163)', () => {
+    expect(prisma).toContain(
+      'async findByIdWithChildren(identityId: string, id: string)',
+    );
+    expect(prisma).toContain('where: { id, identityId }');
+    expect(prisma).not.toContain('findByIdWithChildrenForIdentity');
+    expect(powersync).toContain(
+      'async findByIdWithChildren(identityId: string, id: string)',
+    );
+    expect(powersync).toContain('findByIdForIdentity(identityId, id)');
+    expect(powersync).toContain(
+      'SELECT * FROM task_instances WHERE template_id = ? AND identity_id = ? ORDER BY instance_date DESC',
+    );
+  });
+
+  it('get use case loads withChildren via identity-scoped method (residual 163)', () => {
+    const getUseCase = readFileSync(
+      resolve(
+        __dirname,
+        '../../../../application/use-cases/queries/get-task-template.use-case.ts',
+      ),
+      'utf8',
+    );
+    expect(getUseCase).toContain('findByIdWithChildren(identityId, id)');
+    expect(getUseCase).not.toContain('findByIdWithChildrenForIdentity');
+  });
+
 });

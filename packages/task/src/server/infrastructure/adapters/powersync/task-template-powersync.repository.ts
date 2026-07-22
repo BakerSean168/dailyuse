@@ -196,30 +196,13 @@ export class PowerSyncTaskTemplateRepository
     return row ? PowerSyncTaskTemplateMapper.toDomain(row) : null;
   }
 
-  async findByIdWithChildren(id: string): Promise<TaskTemplate | null> {
-    const template = await this.findById(id);
-    if (!template) return null;
-
-    const instances = await this.db.getAll<PowerSyncTaskInstanceRow>(
-      'SELECT * FROM task_instances WHERE template_id = ? ORDER BY instance_date DESC',
-      [id],
-    );
-    instances
-      .map((row) => PowerSyncTaskInstanceMapper.toDomain(row))
-      .forEach((instance) => template.addInstance(instance));
-    return template;
-  }
-
-  async findByIdWithChildrenForIdentity(
-    identityId: string,
-    id: string,
-  ): Promise<TaskTemplate | null> {
+  async findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null> {
     const template = await this.findByIdForIdentity(identityId, id);
     if (!template) return null;
 
     const instances = await this.db.getAll<PowerSyncTaskInstanceRow>(
-      'SELECT * FROM task_instances WHERE template_id = ? ORDER BY instance_date DESC',
-      [id],
+      'SELECT * FROM task_instances WHERE template_id = ? AND identity_id = ? ORDER BY instance_date DESC',
+      [id, identityId],
     );
     instances
       .map((row) => PowerSyncTaskInstanceMapper.toDomain(row))

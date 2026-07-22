@@ -15,7 +15,7 @@ describe('GetTaskTemplateUseCase', () => {
     vi.clearAllMocks();
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findByIdForIdentity: vi.fn(),
-      findByIdWithChildrenForIdentity: vi.fn(),
+      findByIdWithChildren: vi.fn(),
     });
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findByTemplateId: vi.fn(),
@@ -78,16 +78,16 @@ describe('GetTaskTemplateUseCase', () => {
     await useCase.execute(template.id, template.identityId);
 
     expect(templateRepo.findByIdForIdentity).toHaveBeenCalledWith(template.identityId, template.id);
-    expect(templateRepo.findByIdWithChildrenForIdentity).not.toHaveBeenCalled();
+    expect(templateRepo.findByIdWithChildren).not.toHaveBeenCalled();
   });
 
   it('should use findByIdWithChildren when includeChildren is true', async () => {
     const template = aOneTimeTask();
-    vi.mocked(templateRepo.findByIdWithChildrenForIdentity).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdWithChildren).mockResolvedValue(template);
 
     await useCase.execute(template.id, template.identityId, true);
 
-    expect(templateRepo.findByIdWithChildrenForIdentity).toHaveBeenCalledWith(template.identityId, template.id);
+    expect(templateRepo.findByIdWithChildren).toHaveBeenCalledWith(template.identityId, template.id);
     expect(templateRepo.findByIdForIdentity).not.toHaveBeenCalled();
     expect(instanceRepo.findByTemplateId).not.toHaveBeenCalled();
   });
@@ -95,7 +95,7 @@ describe('GetTaskTemplateUseCase', () => {
   it('should pass includeChildren to toClientDTO', async () => {
     const template = aOneTimeTask();
     const spy = vi.spyOn(template, 'toClientDTO');
-    vi.mocked(templateRepo.findByIdWithChildrenForIdentity).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdWithChildren).mockResolvedValue(template);
 
     await useCase.execute(template.id, template.identityId, true);
 

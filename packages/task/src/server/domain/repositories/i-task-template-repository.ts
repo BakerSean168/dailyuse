@@ -47,17 +47,9 @@ export interface ITaskTemplateRepository {
   findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null>;
 
   /**
-   * 根据 ID 查找任务模板（包含子实体：子任务、实例）
+   * 根据 ID + identity 查找任务模板（包含子实体：子任务、实例）
    */
-  findByIdWithChildren(id: string): Promise<TaskTemplate | null>;
-
-  /**
-   * 根据 ID + identity 查找任务模板（含子集）
-   */
-  findByIdWithChildrenForIdentity(
-    identityId: string,
-    id: string,
-  ): Promise<TaskTemplate | null>;
+  findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null>;
 
   /**
    * 根据用户 ID 查找所有任务模板
