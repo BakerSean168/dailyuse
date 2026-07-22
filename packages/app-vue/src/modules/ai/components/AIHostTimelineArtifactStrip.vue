@@ -5,6 +5,7 @@
  *
  * Compact cards for Host proposal / execution receipt. Click reopens the right
  * Host workbench. Presentation only — no Host kernel mutation execution.
+ * Residual 399: engine/profile badge for multi-engine isolation visibility.
  */
 import { useI18n } from 'vue-i18n';
 import type { HostTimelineArtifactItem } from '../composables/hostProposalLifecycle';
@@ -39,6 +40,19 @@ function kindLabel(kind: HostTimelineArtifactItem['kind']): string {
   if (kind === 'knowledge.write') return t('aiAssistant.chatPage.context.hostReceiptKindKnowledge');
   return kind;
 }
+
+/** Residual 399: multi-engine Host lane badge. */
+function engineLabel(item: HostTimelineArtifactItem): string {
+  const key = item.engineKey;
+  if (key === 'engine.direct_turn') return t('aiAssistant.chatPage.hostProfile.directTurn');
+  if (key === 'engine.pi_readonly') return t('aiAssistant.chatPage.hostProfile.piReadonly');
+  if (key === 'agent_run.goal_create') return t('aiAssistant.chatPage.context.hostTimelineEngineGoal');
+  if (key === 'agent_run.knowledge_write') {
+    return t('aiAssistant.chatPage.context.hostTimelineEngineKnowledge');
+  }
+  if (key === 'agent_run.task_create') return t('aiAssistant.chatPage.context.hostTimelineEngineTask');
+  return t('aiAssistant.chatPage.context.hostTimelineEngineUnknown');
+}
 </script>
 
 <template>
@@ -62,8 +76,16 @@ function kindLabel(kind: HostTimelineArtifactItem['kind']): string {
         <span class="text-[11px] uppercase tracking-wide text-muted-foreground">
           {{ surfaceLabel(item) }} · {{ kindLabel(item.kind) }}
         </span>
+        <span class="flex shrink-0 items-center gap-1">
         <span
-          class="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium"
+          class="rounded-full bg-sky-500/10 px-2 py-0.5 text-[11px] font-medium text-sky-800 dark:text-sky-200"
+          :data-testid="`ai-host-timeline-artifact-engine-${item.proposalId}`"
+          :data-engine-key="item.engineKey"
+        >
+          {{ engineLabel(item) }}
+        </span>
+        <span
+          class="rounded-full px-2 py-0.5 text-[11px] font-medium"
           :class="
             item.statusLabelKey === 'ok'
               ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
@@ -76,6 +98,7 @@ function kindLabel(kind: HostTimelineArtifactItem['kind']): string {
           :data-testid="`ai-host-timeline-artifact-status-${item.proposalId}`"
         >
           {{ statusLabel(item) }}
+        </span>
         </span>
       </div>
       <p

@@ -6,6 +6,7 @@ import {
   buildHostTimelineArtifactItems,
   resolveHostWorkbenchFocusFromTimeline,
   normalizeHostProposalRejectReason,
+  resolveHostTimelineEngineKey,
   resolveHostWorkbenchReopenFromAgentRun,
   shouldOpenHostWorkbenchFromAgentRun,
   buildHostProposalPatchFromDraft,
@@ -858,5 +859,59 @@ describe('normalizeHostProposalRejectReason (residual 397)', () => {
     expect(normalized).toHaveLength(500);
     expect(normalized).toBe('x'.repeat(500));
     expect(normalizeHostProposalRejectReason('  path looks wrong  ')).toBe('path looks wrong');
+  });
+});
+
+describe('resolveHostTimelineEngineKey (residual 399)', () => {
+  it('maps AgentRun Host kinds to agent_run lanes ahead of open-chat profile', () => {
+    expect(resolveHostTimelineEngineKey({ kind: 'goal.create' })).toBe('agent_run.goal_create');
+    expect(resolveHostTimelineEngineKey({ kind: 'knowledge.write' })).toBe(
+      'agent_run.knowledge_write',
+    );
+    expect(resolveHostTimelineEngineKey({ kind: 'task.create' })).toBe('agent_run.task_create');
+    // AgentRun kind wins over open-chat profile — multi-engine isolation.
+    expect(
+      resolveHostTimelineEngineKey({
+        kind: 'goal.create',
+        executionProfileId: 'pi_readonly',
+      }),
+    ).toBe('agent_run.goal_create');
+  });
+
+  it('maps open-chat profiles when no AgentRun kind is present and fails closed', () => {
+    expect(resolveHostTimelineEngineKey({ executionProfileId: 'direct_turn' })).toBe(
+      'engine.direct_turn',
+    );
+    expect(resolveHostTimelineEngineKey({ executionProfileId: 'pi_readonly' })).toBe(
+      'engine.pi_readonly',
+    );
+    expect(resolveHostTimelineEngineKey({})).toBe('unknown');
+    expect(resolveHostTimelineEngineKey({ kind: 'mystery', executionProfileId: 'x' })).toBe(
+      'unknown',
+    );
+  });
+
+  it('attaches engineKey on timeline Artifact cards from proposal/receipt kinds', () => {
+    const proposals = [
+      {
+        runId: 'run-g',
+        proposalId: 'agent-run:run-g:goal.create',
+        revision: 1,
+        kind: 'goal.create' as const,
+        source: 'goal' as const,
+        runStatus: 'waiting_approval' as const,
+        title: 'G',
+        summary: 's',
+        pendingActionCount: 1,
+      },
+    ];
+    const cards = buildHostTimelineArtifactItems({ proposals });
+    expect(cards[0]?.engineKey).toBe('agent_run.goal_create');
+
+    const openChatOnly = buildHostTimelineArtifactItems({
+      proposals: [],
+      executionProfileId: 'pi_readonly',
+    });
+    expect(openChatOnly).toEqual([]);
   });
 });

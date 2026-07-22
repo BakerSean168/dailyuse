@@ -203,4 +203,17 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     // Lifecycle-only path: freeform reason never becomes a mutation executor call.
     expect(chatView).toMatch(/decision:\s*'reject'/);
   });
+
+  it('Host timeline Artifact cards expose multi-engine badge (residual 399)', () => {
+    expect(helper).toContain('resolveHostTimelineEngineKey');
+    expect(helper).toContain('HostTimelineEngineKey');
+    expect(helper).toContain('engineKey');
+    expect(helper).toContain('agent_run.goal_create');
+    expect(helper).toContain('engine.pi_readonly');
+    expect(timelineStrip).toContain('ai-host-timeline-artifact-engine-');
+    expect(timelineStrip).toContain('data-engine-key');
+    expect(timelineStrip).toContain('engineLabel');
+    expect(timelineStrip).not.toContain('executeApproved');
+    expect(timelineStrip).not.toContain('dispatchAssistant');
+  });
 });

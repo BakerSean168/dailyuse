@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385/387/397).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385/387/397/399).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -715,9 +715,45 @@ export function shouldOpenHostWorkbenchFromAgentRun(
 }
 
 /**
+ * Residual 399: Host multi-engine lane label for timeline Artifact cards.
+ * Distinguishes open-chat Turn Engines from AgentRun proposal-kernel lanes.
+ * Presentation only — never selects or executes engines.
+ */
+export type HostTimelineEngineKey =
+  | 'engine.direct_turn'
+  | 'engine.pi_readonly'
+  | 'agent_run.goal_create'
+  | 'agent_run.knowledge_write'
+  | 'agent_run.task_create'
+  | 'unknown';
+
+/**
+ * Residual 399: resolve Host engine/profile badge key for timeline cards.
+ * Prefer explicit open-chat executionProfileId when present; otherwise map
+ * AgentRun Host proposal kinds to agent_run lanes. Fail closed to unknown.
+ */
+export function resolveHostTimelineEngineKey(input: {
+  kind?: string | null;
+  executionProfileId?: string | null;
+}): HostTimelineEngineKey {
+  // AgentRun Host proposal kinds own the engine lane (not open-chat profile).
+  const kind = typeof input.kind === 'string' ? input.kind.trim() : '';
+  if (kind === 'goal.create') return 'agent_run.goal_create';
+  if (kind === 'knowledge.write') return 'agent_run.knowledge_write';
+  if (kind === 'task.create') return 'agent_run.task_create';
+
+  // Open-chat Turn Engine profile only when no AgentRun kind is present.
+  const profile = typeof input.executionProfileId === 'string' ? input.executionProfileId.trim() : '';
+  if (profile === 'pi_readonly') return 'engine.pi_readonly';
+  if (profile === 'direct_turn') return 'engine.direct_turn';
+  return 'unknown';
+}
+
+/**
  * Residual 383: compact Host Artifact card for the Conversation message timeline.
  * Surfaces proposal (awaiting approval) or receipt (post-execution) without owning
  * mutation lifecycle — click reopens the right workbench.
+ * Residual 399: engineKey badge for multi-engine isolation visibility.
  */
 export type HostTimelineArtifactItem = {
   id: string;
@@ -729,14 +765,19 @@ export type HostTimelineArtifactItem = {
   title: string;
   summary: string;
   statusLabelKey: 'pending' | 'ok' | 'partial' | 'failed' | 'cancelled';
+  /** Residual 399: Host engine/profile lane for multi-engine isolation badge. */
+  engineKey: HostTimelineEngineKey;
 };
 
 /**
  * Residual 383: derive timeline Artifact cards from current Host proposal + receipt rows.
+ * Residual 399: attach engineKey from AgentRun kind or optional open-chat profile.
  */
 export function buildHostTimelineArtifactItems(input: {
   proposals?: HostProposalPanelItem[];
   receipts?: HostExecutionReceiptItem[];
+  /** Optional open-chat profile override for non-AgentRun Host cards. */
+  executionProfileId?: string | null;
 }): HostTimelineArtifactItem[] {
   const items: HostTimelineArtifactItem[] = [];
 
@@ -751,6 +792,10 @@ export function buildHostTimelineArtifactItems(input: {
       title: proposal.title,
       summary: proposal.summary || proposal.description || '',
       statusLabelKey: 'pending',
+      engineKey: resolveHostTimelineEngineKey({
+        kind: proposal.kind,
+        executionProfileId: input.executionProfileId,
+      }),
     });
   }
 
@@ -769,6 +814,10 @@ export function buildHostTimelineArtifactItems(input: {
       title: receipt.title,
       summary: receipt.summary,
       statusLabelKey,
+      engineKey: resolveHostTimelineEngineKey({
+        kind: receipt.kind,
+        executionProfileId: input.executionProfileId,
+      }),
     });
   }
 
