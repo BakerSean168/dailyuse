@@ -362,6 +362,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 555: knowledge.write confirm sole create_knowledge_note draftAction.
         'Residual 555',
         "action.tool === 'create_knowledge_note'",
+        // Residual 557: goal.create confirm sole create_goal draftAction.
+        'Residual 557',
+        "action.tool === 'create_goal'",
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

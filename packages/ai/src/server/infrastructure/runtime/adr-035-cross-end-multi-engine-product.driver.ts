@@ -110,6 +110,7 @@ export function resolveCrossEndMultiEngineProductStepSources(
         'packages/app-vue/src/modules/ai/composables/useAIChatView.ts',
         'packages/app-vue/src/modules/ai/composables/useAITaskWorkflow.ts',
         'packages/app-vue/src/modules/ai/composables/useAIKnowledgeNoteWorkflow.ts',
+        'packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.ts',
         'packages/app-vue/src/modules/ai/composables/types.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-start.ts',
         'packages/ai/src/server/infrastructure/runtime/host-task-create-run-store.ts',
@@ -377,6 +378,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['return productDrafts'];
     case 'Residual 555':
       return ['Residual 555'];
+    case 'Residual 557':
+      return ['Residual 557'];
     case 'matchesHostTaskCreateConversation':
       return ['matchesHostTaskCreateConversation'];
     case 'Residual 509':

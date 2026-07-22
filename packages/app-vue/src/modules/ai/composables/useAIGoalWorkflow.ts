@@ -1,3 +1,9 @@
+/**
+ * Residual 557: goal.create confirm requires sole create_goal draftAction after
+ * single-product-draft gate (knowledge residual 555 / task residual 547 symmetry;
+ * no multi product invent). Foreign companions (key_result/task_template/reminder)
+ * may remain for executor context; multi create_goal is fail-closed.
+ */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -795,6 +801,21 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     },
   ) {
     if (!goalAgentRun.value || goalAgentResuming.value) return;
+
+    // Residual 557: goal.create confirm requires sole create_goal draftAction after
+    // single-product-draft gate (knowledge residual 555 / task residual 547 symmetry;
+    // no multi product invent). Primary task Host path keeps create_task_template gates.
+    // Foreign companions may remain for executor context.
+    if (userDecision === 'confirm' && !isPrimaryTaskHostAgentRun(goalAgentRun.value)) {
+      const baseActions = goalAgentRun.value.state.pendingActions.length
+        ? goalAgentRun.value.state.pendingActions
+        : goalAgentRun.value.state.approvedActions;
+      const productDraftCount = baseActions.filter(
+        (action) => action.tool === 'create_goal',
+      ).length;
+      if (productDraftCount !== 1) return;
+    }
+
     goalAgentResuming.value = true;
     try {
       // Residual 355/359: Host ProposalKernel lifecycle via AssistantFacade first.

@@ -1017,6 +1017,28 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('goal.create confirm requires sole create_goal draftAction (residual 557)', () => {
+    const goal = readFileSync(resolve(dir, 'useAIGoalWorkflow.ts'), 'utf8');
+    expect(goal).toContain('Residual 557');
+    expect(goal).toContain('productDraftCount !== 1');
+    expect(goal).toContain("action.tool === 'create_goal'");
+    const resumeIdx = goal.indexOf('async function resumeGoalAgentRun');
+    expect(resumeIdx).toBeGreaterThan(-1);
+    const resumeSlice = goal.slice(resumeIdx, resumeIdx + 2200);
+    expect(resumeSlice).toContain('Residual 557');
+    expect(resumeSlice).toContain('productDraftCount !== 1');
+    expect(resumeSlice).toContain("action.tool === 'create_goal'");
+    expect(resumeSlice).toContain("userDecision === 'confirm'");
+    // Gate before Host lifecycle / confirm resume payload build.
+    const gateIdx = resumeSlice.indexOf('productDraftCount !== 1');
+    const hostIdx = resumeSlice.indexOf('dispatchHostProposalDecision');
+    const payloadIdx = resumeSlice.indexOf('buildGoalAgentApprovalPayload');
+    expect(gateIdx).toBeGreaterThan(-1);
+    expect(hostIdx).toBeGreaterThan(gateIdx);
+    expect(payloadIdx).toBeGreaterThan(gateIdx);
+    expect(helper).not.toContain('executeApproved');
+  });
+
 
   it('task.create process-local store conversation list trims (residual 509)', () => {
     const store = readFileSync(
