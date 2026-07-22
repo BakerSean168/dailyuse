@@ -297,35 +297,55 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
   }
 
   async findByRelatedEntity(
-    _relatedEntityType: string,
-    _relatedEntityId: string,
+    identityId: string,
+    relatedEntityType: string,
+    relatedEntityId: string,
   ): Promise<Notification[]> {
-    return [];
+    const rows = await this.db.getAll<NotificationRow>(
+      `SELECT * FROM notifications
+        WHERE identity_id = ?
+          AND related_entity_type = ?
+          AND related_entity_id = ?
+          AND deleted_at IS NULL
+        ORDER BY created_at DESC`,
+      [identityId, relatedEntityType, relatedEntityId],
+    );
+    return rows.map((row) => hydrateNotification(row));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute(`DELETE FROM notifications WHERE id = ?`, [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Notification not found for the current identity.');
+    }
+    await this.db.execute(
+      `DELETE FROM notifications WHERE id = ? AND identity_id = ?`,
+      [id, identityId],
+    );
   }
 
-  async deleteMany(ids: string[]): Promise<void> {
+  async deleteMany(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
-    await this.db.execute(`DELETE FROM notifications WHERE id IN (${placeholders})`, ids);
-  }
-
-  async softDelete(id: string): Promise<void> {
-    await this.db.execute(`UPDATE notifications SET deleted_at = ? WHERE id = ?`, [
-      new Date().toISOString(),
-      id,
-    ]);
-  }
-
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ id: string }>(
-      `SELECT id FROM notifications WHERE id = ? LIMIT 1`,
-      [id],
+    await this.db.execute(
+      `DELETE FROM notifications WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
     );
-    return row !== null;
+  }
+
+  async softDelete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Notification not found for the current identity.');
+    }
+    await this.db.execute(
+      `UPDATE notifications SET deleted_at = ? WHERE id = ? AND identity_id = ?`,
+      [new Date().toISOString(), id, identityId],
+    );
+  }
+
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async countUnread(identityId: string): Promise<number> {
@@ -367,7 +387,7 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     return counts;
   }
 
-  async markManyAsRead(ids: string[]): Promise<void> {
+  async markManyAsRead(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
     await this.db.execute(
@@ -376,8 +396,9 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
               status = ?,
               read_at = ?,
               updated_at = ?
-        WHERE id IN (${placeholders})`,
-      ['Read', new Date().toISOString(), new Date().toISOString(), ...ids],
+        WHERE identity_id = ?
+          AND id IN (${placeholders})`,
+      ['Read', new Date().toISOString(), new Date().toISOString(), identityId, ...ids],
     );
   }
 

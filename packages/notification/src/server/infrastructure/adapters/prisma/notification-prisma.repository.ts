@@ -243,11 +243,13 @@ export class NotificationPrismaRepository implements INotificationRepository {
   }
 
   async findByRelatedEntity(
+    identityId: string,
     relatedEntityType: string,
     relatedEntityId: string,
   ): Promise<Notification[]> {
     const rows = await this.prisma.notification.findMany({
       where: {
+        identityId,
         relatedEntityType,
         relatedEntityId,
         deletedAt: null,
@@ -259,26 +261,34 @@ export class NotificationPrismaRepository implements INotificationRepository {
     return rows.map((row) => NotificationPrismaMapper.toDomain(row as PrismaNotificationWithRelations));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.notification.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const result = await this.prisma.notification.deleteMany({
+      where: { id, identityId },
+    });
+    if (result.count !== 1) {
+      throw new Error('Notification not found for the current identity.');
+    }
   }
 
-  async deleteMany(ids: string[]): Promise<void> {
+  async deleteMany(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     await this.prisma.notification.deleteMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
     });
   }
 
-  async softDelete(id: string): Promise<void> {
-    await this.prisma.notification.update({
-      where: { id },
+  async softDelete(identityId: string, id: string): Promise<void> {
+    const result = await this.prisma.notification.updateMany({
+      where: { id, identityId },
       data: { deletedAt: new Date() },
     });
+    if (result.count !== 1) {
+      throw new Error('Notification not found for the current identity.');
+    }
   }
 
-  async exists(id: string): Promise<boolean> {
-    const count = await this.prisma.notification.count({ where: { id } });
+  async exists(identityId: string, id: string): Promise<boolean> {
+    const count = await this.prisma.notification.count({ where: { id, identityId } });
     return count > 0;
   }
 
@@ -319,11 +329,11 @@ export class NotificationPrismaRepository implements INotificationRepository {
     return counts;
   }
 
-  async markManyAsRead(ids: string[]): Promise<void> {
+  async markManyAsRead(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const now = new Date();
     await this.prisma.notification.updateMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
       data: {
         isRead: true,
         status: 'Read',

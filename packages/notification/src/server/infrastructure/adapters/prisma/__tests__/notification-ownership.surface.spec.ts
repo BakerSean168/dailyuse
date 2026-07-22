@@ -16,6 +16,17 @@ describe('notification ownership surface', () => {
     resolve(__dirname, '../notification-prisma.repository.ts'),
     'utf8',
   );
+  const powersync = readFileSync(
+    resolve(__dirname, '../../powersync/notification-powersync.repository.ts'),
+    'utf8',
+  );
+  const queryService = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/services/notification-query-application-service.ts',
+    ),
+    'utf8',
+  );
   const markRead = readFileSync(
     resolve(
       __dirname,
@@ -100,4 +111,51 @@ describe('notification ownership surface', () => {
     expect(electron).not.toContain('controller.get(id));');
     expect(electron).not.toContain('controller.markAsRead(id));');
   });
+
+  it('port delete/related/markMany require identityId (residual 150)', () => {
+    expect(port).toContain(
+      'findByRelatedEntity(\n    identityId: string,\n    relatedEntityType: string,',
+    );
+    expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
+    expect(port).toContain('deleteMany(identityId: string, ids: string[]): Promise<void>;');
+    expect(port).toContain('softDelete(identityId: string, id: string): Promise<void>;');
+    expect(port).toContain('exists(identityId: string, id: string): Promise<boolean>;');
+    expect(port).toContain(
+      'markManyAsRead(identityId: string, ids: string[]): Promise<void>;',
+    );
+  });
+
+  it('prisma delete/related/markMany filter by identityId (residual 150)', () => {
+    expect(prisma).toContain('async findByRelatedEntity(');
+    expect(prisma).toContain('identityId,\n        relatedEntityType,\n        relatedEntityId,');
+    expect(prisma).toContain('async delete(identityId: string, id: string)');
+    expect(prisma).toContain('where: { id, identityId }');
+    expect(prisma).toContain('where: { id: { in: ids }, identityId }');
+    expect(prisma).toContain(
+      "throw new Error('Notification not found for the current identity.');",
+    );
+  });
+
+  it('powersync delete/related filter by identity_id (residual 150)', () => {
+    expect(powersync).toContain(
+      'DELETE FROM notifications WHERE id = ? AND identity_id = ?',
+    );
+    expect(powersync).toContain(
+      'DELETE FROM notifications WHERE identity_id = ? AND id IN (${placeholders})',
+    );
+    expect(powersync).toContain('related_entity_type = ?');
+    expect(powersync).toContain('related_entity_id = ?');
+  });
+
+  it('query/maintenance/domain pass identity into related/delete (residual 150)', () => {
+    expect(queryService).toContain(
+      'findByRelatedEntity(\n          query.identityId,\n          query.relatedEntityType,',
+    );
+    expect(maintenance).toContain('deleteMany(data.identityId, expiredIds)');
+    expect(domainService).toContain('delete(identityId, id)');
+    expect(domainService).toContain(
+      'getNotificationsByRelatedEntity(\n    identityId: string,',
+    );
+  });
+
 });

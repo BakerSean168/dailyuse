@@ -68,7 +68,7 @@ export class NotificationMaintenanceApplicationService {
       .map((notification) => String(notification.id));
 
     if (expiredIds.length > 0) {
-      await this.notificationRepository.deleteMany(expiredIds);
+      await this.notificationRepository.deleteMany(data.identityId, expiredIds);
     }
 
     return ok({

@@ -123,9 +123,12 @@ describe('NotificationMaintenanceApplicationService', () => {
       includeDeleted: false,
       includeRead: true,
     });
-    expect(notificationRepository.deleteMany).toHaveBeenCalledWith([
-      'INotificationId_550e8400-e29b-41d4-a716-446655440010',
-    ]);
+    expect(notificationRepository.deleteMany).toHaveBeenCalledWith(
+      IDENTITY_ID,
+      [
+        'INotificationId_550e8400-e29b-41d4-a716-446655440010',
+      ],
+    );
     expect(result).toEqual({
       ok: true,
       data: { deletedCount: 1 },

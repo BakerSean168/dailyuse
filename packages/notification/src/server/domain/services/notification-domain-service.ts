@@ -291,7 +291,7 @@ export class NotificationDomainService {
       notification.softDelete();
       await this.notificationRepo.save(notification);
     } else {
-      await this.notificationRepo.delete(id);
+      await this.notificationRepo.delete(identityId, id);
     }
   }
 
@@ -313,7 +313,10 @@ export class NotificationDomainService {
       }
       await this.notificationRepo.saveMany(notifications);
     } else {
-      await this.notificationRepo.deleteMany(notifications.map((notification) => String(notification.id)));
+      await this.notificationRepo.deleteMany(
+        identityId,
+        notifications.map((notification) => String(notification.id)),
+      );
     }
   }
 
@@ -431,9 +434,14 @@ export class NotificationDomainService {
    * 获取相关实体的通知
    */
   public async getNotificationsByRelatedEntity(
+    identityId: string,
     relatedEntityType: string,
     relatedEntityId: string,
   ): Promise<Notification[]> {
-    return await this.notificationRepo.findByRelatedEntity(relatedEntityType, relatedEntityId);
+    return await this.notificationRepo.findByRelatedEntity(
+      identityId,
+      relatedEntityType,
+      relatedEntityId,
+    );
   }
 }

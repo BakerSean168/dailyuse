@@ -240,7 +240,7 @@ describe('NotificationDomainService', () => {
 
       await service.deleteNotification(testIdentityId, String(notification.id), false);
 
-      expect(notificationRepo.delete).toHaveBeenCalledWith(String(notification.id));
+      expect(notificationRepo.delete).toHaveBeenCalledWith(testIdentityId, String(notification.id));
     });
   });
 });

@@ -44,6 +44,7 @@ export class NotificationQueryApplicationService {
 
     const notifications = query.relatedEntityType && query.relatedEntityId
       ? await this.notificationRepository.findByRelatedEntity(
+          query.identityId,
           query.relatedEntityType,
           query.relatedEntityId,
         )
