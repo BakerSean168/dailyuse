@@ -1085,7 +1085,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('Residual 561');
     const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
     expect(approveIdx).toBeGreaterThan(-1);
-    const approveSlice = chatView.slice(approveIdx, approveIdx + 2800);
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 3600);
     expect(approveSlice).toContain('canHostApproveProductAgentRun');
     expect(approveSlice).toContain("productTool: 'create_goal'");
     expect(approveSlice).toContain("productTool: 'create_knowledge_note'");
@@ -1094,6 +1094,29 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     const decisionIdx = approveSlice.indexOf('dispatchHostProposalDecision');
     expect(gateIdx).toBeGreaterThan(-1);
     expect(decisionIdx).toBeGreaterThan(gateIdx);
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+  it('Host panel task.create approve gates waiting_approval + sole create_task_template before lifecycle (residual 563)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('Residual 563');
+    expect(chatView).toContain('Residual 563');
+    expect(chatView).toContain("productTool: 'create_task_template'");
+    const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
+    expect(approveIdx).toBeGreaterThan(-1);
+    const approveSlice = chatView.slice(approveIdx, approveIdx + 7000);
+    expect(approveSlice).toContain('Residual 563');
+    expect(approveSlice).toContain("productTool: 'create_task_template'");
+    expect(approveSlice).toContain('ownedByTaskSession');
+    expect(approveSlice).toContain("agentType === 'task.create'");
+    // Pure domain createTemplate fallback remains after gates (ungated when no session owner).
+    expect(approveSlice).toContain('buildHostTaskCreateTemplateRequest');
+    // Task product gate before Host lifecycle decision.
+    const taskGateIdx = approveSlice.indexOf("productTool: 'create_task_template'");
+    const decisionIdx = approveSlice.indexOf('dispatchHostProposalDecision');
+    expect(taskGateIdx).toBeGreaterThan(-1);
+    expect(decisionIdx).toBeGreaterThan(taskGateIdx);
     expect(chatView).not.toContain('executeApproved');
     expect(helper).not.toContain('executeApproved');
   });

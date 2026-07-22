@@ -815,6 +815,39 @@ async function handleHostProposalApprove(payload: {
       return;
     }
   }
+  // Residual 563: session-owned task.create Host approve requires waiting_approval
+  // + sole create_task_template before Host lifecycle (complete residual 547/489
+  // + residual 561 symmetry). Pure domain createTemplate fallback stays ungated.
+  // Task-shaped goal.create owned by goal session gates create_goal the same way.
+  if (payload.item.source === 'task') {
+    const ownedByTaskSession = taskAgentRun.value?.run.runId === payload.item.runId;
+    const isTaskAgentType =
+      taskAgentRun.value?.run.agentType === 'task.create' ||
+      liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType === 'task.create';
+    if (isTaskAgentType && ownedByTaskSession) {
+      if (
+        !canHostApproveProductAgentRun({
+          run: taskAgentRun.value,
+          productTool: 'create_task_template',
+        })
+      ) {
+        return;
+      }
+    } else if (
+      !isTaskAgentType &&
+      !ownedByTaskSession &&
+      goalAgentRun.value?.run.runId === payload.item.runId
+    ) {
+      if (
+        !canHostApproveProductAgentRun({
+          run: goalAgentRun.value,
+          productTool: 'create_goal',
+        })
+      ) {
+        return;
+      }
+    }
+  }
 
   hostProposalBusy.value = true;
   try {

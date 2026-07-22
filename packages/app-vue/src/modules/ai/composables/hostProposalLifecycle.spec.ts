@@ -2557,7 +2557,7 @@ describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', (
   });
 });
 
-describe('canHostApproveProductAgentRun (residual 561)', () => {
+describe('canHostApproveProductAgentRun (residual 561/563)', () => {
   function runWith(
     status: AgentRunResult['run']['status'],
     tools: string[],
@@ -2629,6 +2629,27 @@ describe('canHostApproveProductAgentRun (residual 561)', () => {
       canHostApproveProductAgentRun({
         run: runWith('waiting_approval', ['search_knowledge']),
         productTool: 'create_knowledge_note',
+      }),
+    ).toBe(false);
+  });
+
+  it('allows task sole create_task_template and rejects multi product drafts (residual 563)', () => {
+    expect(
+      canHostApproveProductAgentRun({
+        run: runWith('waiting_approval', ['create_task_template', 'search_knowledge']),
+        productTool: 'create_task_template',
+      }),
+    ).toBe(true);
+    expect(
+      canHostApproveProductAgentRun({
+        run: runWith('waiting_approval', ['create_task_template', 'create_task_template']),
+        productTool: 'create_task_template',
+      }),
+    ).toBe(false);
+    expect(
+      canHostApproveProductAgentRun({
+        run: runWith('completed', ['create_task_template']),
+        productTool: 'create_task_template',
       }),
     ).toBe(false);
   });

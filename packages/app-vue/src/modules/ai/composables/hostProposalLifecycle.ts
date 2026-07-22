@@ -222,11 +222,12 @@ function soleProductDraftAction(
 }
 
 /**
- * Residual 561: Host panel approve for product-lane AgentRuns requires
+ * Residual 561/563: Host panel approve for product-lane AgentRuns requires
  * waiting_approval + sole product draftAction before Host lifecycle
- * (goal residual 557/559 + knowledge residual 555/559 symmetry).
- * Prevents approve-then-silent-noop when confirm product gates fail-closed.
- * Foreign companions may remain; multi product drafts fail-closed.
+ * (goal residual 557/559 + knowledge residual 555/559 + task residual 547/489
+ * symmetry). Prevents approve-then-silent-noop when confirm product gates
+ * fail-closed. Foreign companions may remain; multi product drafts fail-closed.
+ * Residual 563: task.create session-owned path uses create_task_template.
  */
 export function canHostApproveProductAgentRun(input: {
   run: AgentRunResult | null | undefined;

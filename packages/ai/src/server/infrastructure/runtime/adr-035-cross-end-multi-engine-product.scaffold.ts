@@ -371,6 +371,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 561: Host panel goal/knowledge approve pre-lifecycle product gate.
         'Residual 561',
         'canHostApproveProductAgentRun',
+        // Residual 563: Host panel task.create approve pre-lifecycle sole create_task_template.
+        'Residual 563',
+        "productTool: 'create_task_template'",
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',
