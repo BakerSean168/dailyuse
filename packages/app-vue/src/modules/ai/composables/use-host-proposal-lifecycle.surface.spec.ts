@@ -1295,32 +1295,68 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
     expect(helper).toContain('Residual 579');
     expect(chatView).toContain('Residual 579');
-    // Approve: primary-task-shaped create_task_template → confirmGoalAgentRun (not process-local complete).
+    // Residual 581 classifiers encode residual 579 primary-task → goal session rule.
+    expect(helper).toContain('isHostPanelGoalSessionProductOwned');
+    expect(helper).toContain('isHostPanelProcessLocalTaskCreateOwned');
+    // Approve: goal-session product → confirmGoalAgentRun (not process-local complete alone).
     const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
     expect(approveIdx).toBeGreaterThan(-1);
     const approveSlice = chatView.slice(approveIdx, approveIdx + 7500);
-    expect(approveSlice).toContain('Residual 579');
-    expect(approveSlice).toContain("owned.run.run.agentType !== 'task.create'");
+    expect(approveSlice).toContain('isHostPanelGoalSessionProductOwned');
     expect(approveSlice).toContain('confirmGoalAgentRun');
-    // process-local task complete only for AgentType task.create.
-    expect(approveSlice).toContain("owned.run.run.agentType === 'task.create'");
+    expect(approveSlice).toContain('isHostPanelProcessLocalTaskCreateOwned');
     expect(approveSlice).toContain('completeTaskAgentRun');
-    // Reject: primary-task-shaped cancelGoalAgentRun (cancelTaskAgentRun is task.create-only).
+    // Reject: process-local cancelTask vs goal-session cancelGoal via classifiers.
     const rejectIdx = chatView.indexOf('async function handleHostProposalReject');
     expect(rejectIdx).toBeGreaterThan(-1);
     const rejectSlice = chatView.slice(rejectIdx, rejectIdx + 4500);
-    expect(rejectSlice).toContain('Residual 579');
-    expect(rejectSlice).toContain('cancelGoalAgentRun');
-    expect(rejectSlice).toContain("owned.run.run.agentType === 'task.create'");
+    expect(rejectSlice).toContain('isHostPanelProcessLocalTaskCreateOwned');
     expect(rejectSlice).toContain('cancelTaskAgentRun');
-    // Revise process-local only for AgentType task.create.
+    expect(rejectSlice).toContain('isHostPanelGoalSessionProductOwned');
+    expect(rejectSlice).toContain('cancelGoalAgentRun');
+    // Revise process-local only via process-local classifier.
     const reviseIdx = chatView.indexOf('async function handleHostProposalRevise');
     const reviseSlice = chatView.slice(reviseIdx, reviseIdx + 3600);
-    expect(reviseSlice).toContain("owned.run.run.agentType === 'task.create'");
+    expect(reviseSlice).toContain('isHostPanelProcessLocalTaskCreateOwned');
     expect(reviseSlice).toContain('reviseTaskAgentRun');
     expect(chatView).not.toContain('executeApproved');
     expect(helper).not.toContain('executeApproved');
   });
+
+  it('Host panel settlement classifiers shared by approve/reject/revise (residual 581)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('isHostPanelProcessLocalTaskCreateOwned');
+    expect(helper).toContain('isHostPanelGoalSessionProductOwned');
+    expect(helper).toContain('Residual 581');
+    expect(chatView).toContain('isHostPanelProcessLocalTaskCreateOwned');
+    expect(chatView).toContain('isHostPanelGoalSessionProductOwned');
+    // All three handlers use shared classifiers (no dual agentType re-branch invent).
+    for (const fn of [
+      'async function handleHostProposalApprove',
+      'async function handleHostProposalReject',
+      'async function handleHostProposalRevise',
+    ]) {
+      const fnIdx = chatView.indexOf(fn);
+      expect(fnIdx).toBeGreaterThan(-1);
+      const slice = chatView.slice(fnIdx, fnIdx + 5000);
+      if (fn.includes('Revise')) {
+        expect(slice).toContain('isHostPanelProcessLocalTaskCreateOwned');
+      } else {
+        expect(slice).toContain('isHostPanelProcessLocalTaskCreateOwned');
+        expect(slice).toContain('isHostPanelGoalSessionProductOwned');
+      }
+    }
+    // Helper predicates are exclusive for task.create vs primary-task-shaped.
+    const processIdx = helper.indexOf('export function isHostPanelProcessLocalTaskCreateOwned');
+    const goalIdx = helper.indexOf('export function isHostPanelGoalSessionProductOwned');
+    expect(processIdx).toBeGreaterThan(-1);
+    expect(goalIdx).toBeGreaterThan(-1);
+    expect(helper.slice(processIdx, processIdx + 700)).toContain("agentType === 'task.create'");
+    expect(helper.slice(goalIdx, goalIdx + 900)).toContain("agentType !== 'task.create'");
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
 
 
 
@@ -1339,25 +1375,26 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
       expect(fnIdx).toBeGreaterThan(-1);
       const slice = chatView.slice(fnIdx, fnIdx + 4500);
       expect(slice).toContain('resolveHostPanelOwnedProductRun');
-      expect(slice).toContain('owned?.productTool');
-      // Settlement paths bind productTool — not dual isTaskAgentType/liveHost re-resolve.
+      // Residual 581: settlement uses shared classifiers (not dual productTool re-branch invent).
+      expect(slice).toContain('isHostPanelProcessLocalTaskCreateOwned');
+      // Settlement paths bind ownership classifiers — not dual isTaskAgentType/liveHost re-resolve.
       expect(slice).not.toContain(
         'liveHostWorkbenchAgentRuns.value.taskAgentRun?.run.agentType',
       );
     }
-    // Task approve settlement: goal productTool confirms goal; task productTool completes.
+    // Task approve settlement: goal-session product confirms goal; process-local completes.
     const approveIdx = chatView.indexOf('async function handleHostProposalApprove');
     const approveSlice = chatView.slice(approveIdx, approveIdx + 7000);
-    expect(approveSlice).toContain("owned?.productTool === 'create_goal'");
-    expect(approveSlice).toContain("owned?.productTool === 'create_task_template'");
-    // Residual 579: process-local task lane requires AgentType task.create, not only productTool.
+    expect(approveSlice).toContain('isHostPanelGoalSessionProductOwned');
+    expect(approveSlice).toContain('isHostPanelProcessLocalTaskCreateOwned');
     expect(approveSlice).toContain('isTaskAgentType');
-    expect(approveSlice).toContain("owned.run.run.agentType === 'task.create'");
-    // Reject settlement mirrors productTool ownership.
+    expect(approveSlice).toContain('confirmGoalAgentRun');
+    expect(approveSlice).toContain('completeTaskAgentRun');
+    // Reject settlement mirrors shared ownership classifiers.
     const rejectIdx = chatView.indexOf('async function handleHostProposalReject');
     const rejectSlice = chatView.slice(rejectIdx, rejectIdx + 4500);
-    expect(rejectSlice).toContain("owned?.productTool === 'create_task_template'");
-    expect(rejectSlice).toContain("owned?.productTool === 'create_goal'");
+    expect(rejectSlice).toContain('isHostPanelProcessLocalTaskCreateOwned');
+    expect(rejectSlice).toContain('isHostPanelGoalSessionProductOwned');
     expect(chatView).not.toContain('executeApproved');
     expect(helper).not.toContain('executeApproved');
   });

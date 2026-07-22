@@ -35,6 +35,8 @@ import {
   canHostRejectProductAgentRun,
   canHostReviseProductAgentRun,
   resolveHostPanelOwnedProductRun,
+  isHostPanelGoalSessionProductOwned,
+  isHostPanelProcessLocalTaskCreateOwned,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -2988,6 +2990,56 @@ describe('resolveHostPanelOwnedProductRun (residual 569)', () => {
         taskAgentRun: null,
       })?.productTool,
     ).toBe('create_goal');
+  });
+});
+
+describe('Host panel settlement ownership classifiers (residual 581)', () => {
+  function makeOwned(
+    agentType: string,
+    productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+  ) {
+    return {
+      productTool,
+      run: {
+        run: {
+          runId: 'r-1',
+          threadId: 't-1',
+          conversationId: 'c-1',
+          agentType,
+          status: 'waiting_approval' as const,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        state: {
+          pendingActions: [],
+          approvedActions: [],
+          executedActions: [],
+          artifacts: [],
+          interrupts: [],
+        },
+      } as AgentRunResult,
+    };
+  }
+
+  it('classifies process-local task.create vs goal-session product ownership', () => {
+    const processLocal = makeOwned('task.create', 'create_task_template');
+    expect(isHostPanelProcessLocalTaskCreateOwned(processLocal)).toBe(true);
+    expect(isHostPanelGoalSessionProductOwned(processLocal)).toBe(false);
+
+    const primaryTask = makeOwned('goal.create', 'create_task_template');
+    expect(isHostPanelProcessLocalTaskCreateOwned(primaryTask)).toBe(false);
+    expect(isHostPanelGoalSessionProductOwned(primaryTask)).toBe(true);
+
+    const normalGoal = makeOwned('goal.create', 'create_goal');
+    expect(isHostPanelProcessLocalTaskCreateOwned(normalGoal)).toBe(false);
+    expect(isHostPanelGoalSessionProductOwned(normalGoal)).toBe(true);
+
+    const knowledge = makeOwned('knowledge.generate', 'create_knowledge_note');
+    expect(isHostPanelProcessLocalTaskCreateOwned(knowledge)).toBe(false);
+    expect(isHostPanelGoalSessionProductOwned(knowledge)).toBe(false);
+
+    expect(isHostPanelProcessLocalTaskCreateOwned(null)).toBe(false);
+    expect(isHostPanelGoalSessionProductOwned(null)).toBe(false);
   });
 });
 

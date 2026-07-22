@@ -398,6 +398,10 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 579: primary-task-shaped settlement via goal session confirm/cancel.
         'Residual 579',
         "owned.run.run.agentType !== 'task.create'",
+        // Residual 581: shared Host panel settlement ownership classifiers.
+        'Residual 581',
+        'isHostPanelProcessLocalTaskCreateOwned',
+        'isHostPanelGoalSessionProductOwned',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

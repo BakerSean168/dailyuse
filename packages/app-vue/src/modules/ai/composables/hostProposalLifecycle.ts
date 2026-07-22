@@ -287,6 +287,8 @@ export type HostPanelProductTool =
  * matching exclusive task Host lane + residual 575 sole-product confirm.
  * Residual 579: Host panel settlement for primary-task-shaped must use goal-session
  * confirm/cancel (process-local task store is AgentType task.create only).
+ * Residual 581: settlement classifiers isHostPanelProcessLocalTaskCreateOwned /
+ * isHostPanelGoalSessionProductOwned keep approve/reject/revise from dual drift.
  *
  * - goal → create_goal when goalAgentRun.runId matches and run is not primary-task;
  *   primary-task-shaped goal session → create_task_template
@@ -335,6 +337,49 @@ export function resolveHostPanelOwnedProductRun(input: {
     return null;
   }
   return null;
+}
+
+/**
+ * Residual 581: Host panel process-local task.create ownership.
+ * Requires productTool create_task_template AND AgentType task.create
+ * (process-local store / complete / cancel / revise only).
+ */
+export function isHostPanelProcessLocalTaskCreateOwned(
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined,
+): boolean {
+  return (
+    owned?.productTool === 'create_task_template' &&
+    owned.run.run.agentType === 'task.create'
+  );
+}
+
+/**
+ * Residual 581: Host panel goal-session product settlement ownership.
+ * Normal create_goal, or primary-task-shaped create_task_template
+ * (residual 577/579 — not process-local task.create store).
+ */
+export function isHostPanelGoalSessionProductOwned(
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined,
+): boolean {
+  if (!owned) return false;
+  if (owned.productTool === 'create_goal') return true;
+  // Residual 579/581: primary-task-shaped maps create_task_template but settles via goal session.
+  return (
+    owned.productTool === 'create_task_template' &&
+    owned.run.run.agentType !== 'task.create'
+  );
 }
 
 /**
