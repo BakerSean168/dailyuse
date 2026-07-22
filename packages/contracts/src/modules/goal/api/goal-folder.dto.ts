@@ -60,13 +60,11 @@ export type UpdateGoalFolderRes = GoalFolderClientDTO;
  * 获取文件夹详情
  */
 export type GetGoalFolderReq = void;
-export type GetGoalFolderRes = GoalFolderClientDTO;
 
 /**
  * 删除文件夹
  */
 export type DeleteGoalFolderReq = void;
-export type DeleteGoalFolderRes = GoalFolderClientDTO;
 
 // ============================================================================
 // QUERY Folders

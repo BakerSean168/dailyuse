@@ -5,7 +5,6 @@ export const SyncSettingsSchema = z.object({
   force: z.boolean().optional(),
 });
 export type SyncSettingsReq = z.infer<typeof SyncSettingsSchema>;
-export type SyncSettingsRes = UserSettingClientDTO;
 
 export const ExportSettingsSchema = z.object({
   format: z.enum(['json']).default('json').optional(),

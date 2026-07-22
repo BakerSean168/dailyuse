@@ -52,7 +52,6 @@ export const UpdateKeyResultSchema = z.object({
 });
 
 export type UpdateKeyResultReq = z.infer<typeof UpdateKeyResultSchema>;
-export type UpdateKeyResultRes = KeyResultClientDTO;
 
 // ============================================================================
 // GET Key Results
@@ -86,4 +85,3 @@ export const UpdateKeyResultProgressSchema = z.object({
 });
 
 export type UpdateKeyResultProgressReq = z.infer<typeof UpdateKeyResultProgressSchema>;
-export type UpdateKeyResultProgressRes = KeyResultClientDTO;

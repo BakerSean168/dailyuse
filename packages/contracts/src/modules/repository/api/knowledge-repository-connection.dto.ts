@@ -115,7 +115,6 @@ export const CreateKnowledgeRepositoryConnectionSchema = z.object({
 export type CreateKnowledgeRepositoryConnectionReq = z.infer<
   typeof CreateKnowledgeRepositoryConnectionSchema
 >;
-export type CreateKnowledgeRepositoryConnectionRes = KnowledgeRepositoryConnectionClientDTO;
 
 export const KnowledgeRepositoryConnectionClientSchema = z.object({
   id: z.string().min(1),

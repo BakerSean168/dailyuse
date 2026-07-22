@@ -18,4 +18,3 @@ export const ToggleTaskCompletionSchema = z.object({
 });
 
 export type ToggleTaskCompletionReq = z.infer<typeof ToggleTaskCompletionSchema>;
-export type ToggleTaskCompletionRes = TaskInstanceClientDTO;

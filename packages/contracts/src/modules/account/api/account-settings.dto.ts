@@ -4,7 +4,6 @@ import { ThemeType } from '../value-objects/theme-type';
 import { LanguageCode } from '../value-objects/language-code';
 
 export type GetAccountSettingsReq = void;
-export type GetAccountSettingsRes = AccountSettingsDTO;
 
 export const UpdateAccountSettingsSchema = z.object({
   theme: z.enum(ThemeType).optional(),

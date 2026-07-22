@@ -57,7 +57,6 @@ export const OAuthAuthorizeSchema = z.object({
 });
 
 export type OAuthAuthorizeReq = z.infer<typeof OAuthAuthorizeSchema>;
-export type OAuthAuthorizeRes = AuthResponseDTO;
 
 // ============================================================================
 // Bind / Unbind OAuth (authenticated account linking)

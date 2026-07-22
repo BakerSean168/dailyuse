@@ -23,7 +23,6 @@ export const StartFocusSchema = z.object({
 });
 
 export type StartFocusReq = z.infer<typeof StartFocusSchema>;
-export type StartFocusRes = FocusSessionClientDTO;
 
 // ============================================================================
 // STOP Focus
@@ -37,7 +36,6 @@ export const StopFocusSchema = z.object({
 });
 
 export type StopFocusReq = z.infer<typeof StopFocusSchema>;
-export type StopFocusRes = FocusSessionClientDTO;
 
 // ============================================================================
 // GET Focus Status

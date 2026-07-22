@@ -23,7 +23,6 @@ export const CreateGoalRecordSchema = z.object({
 });
 
 export type CreateGoalRecordReq = z.infer<typeof CreateGoalRecordSchema>;
-export type CreateGoalRecordRes = GoalRecordClientDTO;
 
 // ============================================================================
 // GET Goal Records
@@ -51,4 +50,3 @@ export interface GetGoalRecordsRes {
 // ============================================================================
 
 export type DeleteGoalRecordReq = void;
-export type DeleteGoalRecordRes = GoalRecordClientDTO;

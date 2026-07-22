@@ -60,4 +60,3 @@ export const GetRuleRevisionSchema = z.object({
 
 export type GetRuleRevisionReq = z.infer<typeof GetRuleRevisionSchema>;
 
-export type GetRuleRevisionRes = RuleRevisionClientDTO;

@@ -42,7 +42,6 @@ export type GetAIProviderConfigRes = AIProviderConfigClientDTO;
 export type DeleteAIProviderConfigReq = void;
 export type DeleteAIProviderConfigRes = void;
 export type RefreshAIProviderModelsReq = void;
-export type RefreshAIProviderModelsRes = AIProviderConfigClientDTO;
 
 export const TestAIProviderSchema = z
   .object({

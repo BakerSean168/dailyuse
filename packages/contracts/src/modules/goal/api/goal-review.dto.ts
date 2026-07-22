@@ -30,7 +30,6 @@ export const CreateGoalReviewSchema = z.object({
 });
 
 export type CreateGoalReviewReq = z.infer<typeof CreateGoalReviewSchema>;
-export type CreateGoalReviewRes = GoalReviewServerDTO;
 
 // ============================================================================
 // UPDATE Review
@@ -49,7 +48,6 @@ export const UpdateGoalReviewSchema = z.object({
 });
 
 export type UpdateGoalReviewReq = z.infer<typeof UpdateGoalReviewSchema>;
-export type UpdateGoalReviewRes = GoalReviewServerDTO;
 
 // ============================================================================
 // GET Review
@@ -59,13 +57,11 @@ export type UpdateGoalReviewRes = GoalReviewServerDTO;
  * 获取复盘详情
  */
 export type GetGoalReviewReq = void;
-export type GetGoalReviewRes = GoalReviewServerDTO;
 
 /**
  * 删除复盘
  */
 export type DeleteGoalReviewReq = void;
-export type DeleteGoalReviewRes = GoalReviewServerDTO;
 
 // ============================================================================
 // QUERY Reviews
