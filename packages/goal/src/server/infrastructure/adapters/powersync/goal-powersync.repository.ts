@@ -284,7 +284,11 @@ export class GoalPowerSyncRepository
     );
   }
 
-  async isAncestor(potentialAncestorId: string, potentialDescendantId: string): Promise<boolean> {
+  async isAncestor(
+    identityId: string,
+    potentialAncestorId: string,
+    potentialDescendantId: string,
+  ): Promise<boolean> {
     let currentId: string | null = potentialDescendantId;
     const visited = new Set<string>();
 
@@ -294,8 +298,8 @@ export class GoalPowerSyncRepository
       visited.add(currentId);
 
       const parentRow: { parent_goal_id: string | null } | null = await this.db.getOptional(
-        `SELECT parent_goal_id FROM goals WHERE id = ? LIMIT 1`,
-        [currentId],
+        `SELECT parent_goal_id FROM goals WHERE id = ? AND identity_id = ? LIMIT 1`,
+        [currentId, identityId],
       );
       currentId = parentRow?.parent_goal_id ?? null;
     }
@@ -303,14 +307,15 @@ export class GoalPowerSyncRepository
     return false;
   }
 
-  async findChildren(parentId: string): Promise<Goal[]> {
+  async findChildren(identityId: string, parentId: string): Promise<Goal[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
        FROM goals
        WHERE parent_goal_id = ?
+         AND identity_id = ?
          AND deleted_at IS NULL
        ORDER BY sort_order ASC`,
-      [parentId],
+      [parentId, identityId],
     );
 
     return Promise.all(rows.map((row) => this.toGoal(row, false)));

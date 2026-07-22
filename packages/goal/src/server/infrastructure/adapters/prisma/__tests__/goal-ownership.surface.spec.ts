@@ -396,4 +396,29 @@ describe('goal ownership surface', () => {
     );
   });
 
+
+  it('port isAncestor/findChildren require identityId (residual 161)', () => {
+    expect(port).toContain(
+      'isAncestor(\n    identityId: string,\n    potentialAncestorId: string,\n    potentialDescendantId: string,\n  ): Promise<boolean>;',
+    );
+    expect(port).toContain(
+      'findChildren(identityId: string, parentId: string): Promise<Goal[]>;',
+    );
+  });
+
+  it('prisma/powersync hierarchy queries filter by identity (residual 161)', () => {
+    expect(prisma).toContain(
+      'async isAncestor(\n    identityId: string,\n    potentialAncestorId: string,',
+    );
+    expect(prisma).toContain('where: { id: currentId, identityId }');
+    expect(prisma).toContain(
+      'where: { parentGoalId: parentId, identityId, deletedAt: null }',
+    );
+    expect(powersync).toContain(
+      'SELECT parent_goal_id FROM goals WHERE id = ? AND identity_id = ? LIMIT 1',
+    );
+    expect(powersync).toContain('AND identity_id = ?');
+    expect(powersync).toContain('parent_goal_id = ?');
+  });
+
 });

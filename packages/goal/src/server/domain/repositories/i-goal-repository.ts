@@ -126,7 +126,11 @@ export interface IGoalRepository {
    * @param potentialDescendantId - 可能是后代的目标 ID
    * @returns 如果 potentialAncestorId 是 potentialDescendantId 的祖先则返回 true
    */
-  isAncestor(potentialAncestorId: string, potentialDescendantId: string): Promise<boolean>;
+  isAncestor(
+    identityId: string,
+    potentialAncestorId: string,
+    potentialDescendantId: string,
+  ): Promise<boolean>;
 
   /**
    * 查找目标的所有直接子目标
@@ -134,5 +138,5 @@ export interface IGoalRepository {
    * @param parentId - 父目标 ID
    * @returns 子目标列表
    */
-  findChildren(parentId: string): Promise<Goal[]>;
+  findChildren(identityId: string, parentId: string): Promise<Goal[]>;
 }

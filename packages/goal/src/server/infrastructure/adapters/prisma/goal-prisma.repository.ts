@@ -400,7 +400,11 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
 
   // ================= Hierarchy Operations =================
 
-  async isAncestor(potentialAncestorId: string, potentialDescendantId: string): Promise<boolean> {
+  async isAncestor(
+    identityId: string,
+    potentialAncestorId: string,
+    potentialDescendantId: string,
+  ): Promise<boolean> {
     let currentId: string | null = potentialDescendantId;
     const visited = new Set<string>();
 
@@ -409,8 +413,8 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       if (visited.has(currentId)) break; // Circular reference guard
       visited.add(currentId);
 
-      const parent: { parentGoalId: string | null } | null = await this.prisma.goal.findUnique({
-        where: { id: currentId },
+      const parent: { parentGoalId: string | null } | null = await this.prisma.goal.findFirst({
+        where: { id: currentId, identityId },
         select: { parentGoalId: true },
       });
       currentId = parent?.parentGoalId ?? null;
@@ -418,9 +422,9 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     return false;
   }
 
-  async findChildren(parentId: string): Promise<Goal[]> {
+  async findChildren(identityId: string, parentId: string): Promise<Goal[]> {
     const rows = await this.prisma.goal.findMany({
-      where: { parentGoalId: parentId, deletedAt: null },
+      where: { parentGoalId: parentId, identityId, deletedAt: null },
       include: GOAL_INCLUDE_ALL,
       orderBy: { sortOrder: 'asc' },
     });
