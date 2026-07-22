@@ -2511,6 +2511,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 补 surface。§13.2 未打勾项仍为部分/外部阻塞。验证：app-vue AI surfaces + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百四十九轮）：§13.2 核心证据套件复跑（含 residual 246–248
+> transport UseCases / task DAG / goal types / AI composable dual 锁，不改 checkbox）——
+> **65 文件 / 270 测试**（app-vue 36、ai 62、repository 41、web 4、contracts 22、
+> ownership 70、portable 5、desktop 13、reminder 3、notification 1、authentication 8、
+> goal 4、dashboard 1）+ governance-check。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
+> 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2595,7 +2603,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留二百四十八轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
+> 审计时间 2026-07-22（残留二百四十九轮刷新证据指针）。状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > 身份隔离 dual-method 收口（残留 169–179）：业务聚合 bare `findById` 双轨已基本拆除；intentional
 > dual/bootstrap 与自然主键路径均已 surface 锁定：schedule-task（180）、knowledge connection（186）、
 > webhook delivery（187）、auth session token（188）、notification template catalog（189）、
@@ -2836,6 +2844,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百四十六轮：drop NotificationUseCases/ReminderUseCases/AITransportHandlers dual aliases + app-vue useI18n re-export。
   残留二百四十七轮：drop unused Task DAG ViewModel duals + goal application/types ExecutionContext dual barrel。
   残留二百四十八轮：drop unused AI composable Goal/KnowledgeNote AgentArtifact dual aliases。
+  残留二百四十九轮：§13.2 core evidence suite re-run (270 tests, residuals 246–248 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -2860,6 +2869,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百三十七轮：tip 上 249 项核心 evidence suite（含 residual 235–236 auth export/provider barrel 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百四十一轮：tip 上 258 项核心 evidence suite（含 residual 238–240 powersync/runtime/goal priority 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百四十五轮：tip 上 262 项核心 evidence suite（含 residual 242–244 electron/runtime/dashboard 锁）通过；仍不构成全量 PR 门禁证据。
+  残留二百四十九轮：tip 上 270 项核心 evidence suite（含 residual 246–248 transport/task/AI dual 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
