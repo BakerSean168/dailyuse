@@ -75,6 +75,13 @@ export class FocusSessionPrismaRepository
     return data ? this.mapToEntity(data) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<FocusSession | null> {
+    const data = await this.prisma.focusSession.findFirst({
+      where: { id, identityId },
+    });
+    return data ? this.mapToEntity(data) : null;
+  }
+
   /**
    * Find active session for user (Active status)
    */
@@ -132,6 +139,7 @@ export class FocusSessionPrismaRepository
    * Find sessions by goal ID
    */
   async findByGoalId(
+    identityId: string,
     goalId: string,
     options?: {
       status?: FocusSessionStatus[];
@@ -139,7 +147,7 @@ export class FocusSessionPrismaRepository
       offset?: number;
     },
   ): Promise<FocusSession[]> {
-    const where: Prisma.FocusSessionWhereInput = { goalId, deletedAt: null };
+    const where: Prisma.FocusSessionWhereInput = { identityId, goalId, deletedAt: null };
 
     if (options?.status && options.status.length > 0) {
       where.status = { in: options.status };
@@ -158,18 +166,21 @@ export class FocusSessionPrismaRepository
   /**
    * Delete session
    */
-  async delete(id: string): Promise<void> {
-    await this.prisma.focusSession.delete({
-      where: { id },
+  async delete(identityId: string, id: string): Promise<void> {
+    const result = await this.prisma.focusSession.deleteMany({
+      where: { id, identityId },
     });
+    if (result.count === 0) {
+      throw new Error('Focus session not found for the current identity.');
+    }
   }
 
   /**
    * Check if session exists
    */
-  async exists(id: string): Promise<boolean> {
+  async exists(identityId: string, id: string): Promise<boolean> {
     const count = await this.prisma.focusSession.count({
-      where: { id },
+      where: { id, identityId },
     });
     return count > 0;
   }
