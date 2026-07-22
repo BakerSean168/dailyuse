@@ -3508,6 +3508,20 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 消息时间线 Artifact 回放深度、GitHub App fixture E2E、全量 PR 门禁。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留三百八十三轮）：Host 时间线 Artifact 卡片（仍不打勾）——
+> Conversation 消息区 workflow surface 挂载 `AIHostTimelineArtifactStrip`，
+> 展示 Host proposal/receipt 紧凑卡片，点击重开右侧工作台；纯展示。
+> 仍非完整 Artifact 富编辑/真实 Pi spawn/跨端 multi-engine E2E。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+>
+> 续进展 2026-07-22（阶段 6 残留三百八十四轮）：§13.2 聚焦证据套件复跑（含 residual 250–383
+> Host timeline Artifact 锁，不改 checkbox）——**92 文件 / 342 测试**（app-vue 21/82、
+> ai 26/127、repository 6/35、contracts 11/29、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`。
+> 相对 residual 382：app-vue +0 file / +3 tests（timeline unit +2、surface +1）。仍为部分/外部阻塞：
+> 真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn 产品路径、
+> Artifact 富内容编辑回放、GitHub App fixture E2E、全量 PR 门禁。
+> 状态保持 **实施中**；PR 就绪仍为否。
+
 
 
 
@@ -3982,6 +3996,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百八十轮：§13.2 focused evidence suite re-run（335 tests，residuals 250–379 锁；不改 checkbox）。
   残留三百八十一轮：Host 工作台从 Conversation AgentRun 历史重开（proposal/receipt 判定）。
   残留三百八十二轮：§13.2 focused evidence suite re-run（339 tests，residuals 250–381 锁；不改 checkbox）。
+  残留三百八十三轮：Host 时间线 Artifact 卡片（proposal/receipt 紧凑卡 + 重开工作台）。
+  残留三百八十四轮：§13.2 focused evidence suite re-run（342 tests，residuals 250–383 锁；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4059,6 +4075,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百八十轮：§13.2 focused evidence suite re-run (335 tests, residuals 250–379 locks, no checkbox changes)。
   残留三百八十一轮：Host workbench reopen from Conversation AgentRun history (proposal/receipt)。
   残留三百八十二轮：§13.2 focused evidence suite re-run (339 tests, residuals 250–381 locks, no checkbox changes)。
+  残留三百八十三轮：Host timeline Artifact cards (proposal/receipt compact cards + reopen workbench)。
+  残留三百八十四轮：§13.2 focused evidence suite re-run (342 tests, residuals 250–383 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4222,6 +4240,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百八十轮：tip 上 335 项 focused evidence suite（含 residual 250–379 Host execution receipt 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百八十一轮：Host 工作台 AgentRun 历史重开落地；仍不构成消息时间线 Artifact 卡片/完整 multi-engine runtime E2E 证据。
   残留三百八十二轮：tip 上 339 项 focused evidence suite（含 residual 250–381 Host workbench reopen 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百八十三轮：Host 时间线 Artifact 卡片落地；仍不构成 Artifact 富内容编辑回放/完整 multi-engine runtime E2E 证据。
+  残留三百八十四轮：tip 上 342 项 focused evidence suite（含 residual 250–383 Host timeline Artifact 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
