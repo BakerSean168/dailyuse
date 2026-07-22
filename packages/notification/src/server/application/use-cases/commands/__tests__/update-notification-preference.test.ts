@@ -31,8 +31,7 @@ describe('UpdateNotificationPreferenceUseCase', () => {
     const preference = aPreference(identityId);
     vi.mocked(preferenceRepo.getOrCreate).mockResolvedValue(preference);
 
-    const result = await useCase.execute({
-      identityId,
+    const result = await useCase.execute(identityId, {
       categories: {
         task: { inApp: true, email: true, push: false, sms: false },
         goal: { inApp: false, email: false, push: true, sms: false },
@@ -54,8 +53,7 @@ describe('UpdateNotificationPreferenceUseCase', () => {
     const preference = aPreference(identityId);
     vi.mocked(preferenceRepo.getOrCreate).mockResolvedValue(preference);
 
-    const result = await useCase.execute({
-      identityId,
+    const result = await useCase.execute(identityId, {
       channels: { inApp: true, email: false, push: true, sms: false },
     });
 
@@ -71,8 +69,8 @@ describe('UpdateNotificationPreferenceUseCase', () => {
     ]);
   });
 
-  it('returns BAD_REQUEST when identityId is missing', async () => {
-    const result = await useCase.execute({ channels: { inApp: true } });
+  it('returns BAD_REQUEST when identityId is empty (residual 194)', async () => {
+    const result = await useCase.execute('', { channels: { inApp: true } });
 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error('Expected error');

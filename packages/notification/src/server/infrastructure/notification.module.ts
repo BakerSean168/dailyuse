@@ -196,9 +196,10 @@ export function createNotificationModule(
       return useCases.getNotificationPreference.execute(identityId);
     },
 
-    updatePreferences: async (dto) => {
+    updatePreferences: async (dto, identityId) => {
       return useCases.updateNotificationPreference.execute(
-        dto as Parameters<UpdateNotificationPreferenceUseCase['execute']>[0],
+        identityId,
+        dto as Parameters<UpdateNotificationPreferenceUseCase['execute']>[1],
       );
     },
   };

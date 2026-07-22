@@ -23,5 +23,5 @@ export interface NotificationApplicationPort {
     category?: string;
   }): Promise<Result<unknown>>;
   getPreferences(identityId: string): Promise<Result<unknown>>;
-  updatePreferences(dto: unknown): Promise<Result<unknown>>;
+  updatePreferences(dto: unknown, identityId: string): Promise<Result<unknown>>;
 }

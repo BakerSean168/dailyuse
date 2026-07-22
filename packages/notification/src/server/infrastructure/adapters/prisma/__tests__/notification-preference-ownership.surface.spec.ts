@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 178 collapses bare findById dual method.
  * preference get-by-id/delete/exists must never authorize by bare preference
  * primary key alone. Runtime get/update paths already use findByIdentityId.
+ * Residual 194: updatePreferences requires identityId at the call boundary
+ * (no optional identity dual-track on the use-case input).
  */
 describe('notification preference ownership surface', () => {
   const port = readFileSync(
@@ -19,6 +21,21 @@ describe('notification preference ownership surface', () => {
   );
   const powersync = readFileSync(
     resolve(__dirname, '../../powersync/notification-preference-powersync.repository.ts'),
+    'utf8',
+  );
+  const useCase = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/use-cases/commands/update-notification-preference.use-case.ts',
+    ),
+    'utf8',
+  );
+  const applicationPort = readFileSync(
+    resolve(__dirname, '../../../../application/notification.application.port.ts'),
+    'utf8',
+  );
+  const moduleSource = readFileSync(
+    resolve(__dirname, '../../../notification.module.ts'),
     'utf8',
   );
 
@@ -53,4 +70,22 @@ describe('notification preference ownership surface', () => {
       'DELETE FROM notification_preferences WHERE id = ? AND identity_id = ?',
     );
   });
+
+  it('updatePreferences requires identityId at call boundary (residual 194)', () => {
+    expect(useCase).toMatch(
+      /async execute\(\s*identityId: string,\s*input: UpdateNotificationPreferenceReq,/,
+    );
+    expect(useCase).not.toContain('identityId?: string');
+    expect(applicationPort).toContain(
+      'updatePreferences(dto: unknown, identityId: string): Promise<Result<unknown>>;',
+    );
+    expect(applicationPort).not.toContain(
+      'updatePreferences(dto: unknown): Promise<Result<unknown>>;',
+    );
+    expect(moduleSource).toContain('updatePreferences: async (dto, identityId) =>');
+    expect(moduleSource).toMatch(
+      /updateNotificationPreference\.execute\(\s*identityId,/,
+    );
+  });
+
 });
