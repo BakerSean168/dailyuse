@@ -296,6 +296,8 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE',
         'HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE',
         'resolveConfirmStoreDraftActions',
+        // Residual 473: edit requires exactly one create_task_template approvedAction.
+        'HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE',
       ],
       status: 'implemented_unit',
     },

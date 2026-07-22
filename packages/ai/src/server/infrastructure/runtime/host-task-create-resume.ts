@@ -1,5 +1,5 @@
 /**
- * Residual 437/439/453/455/463/465/467/469/471: Host task.create process-local resume.
+ * Residual 437/439/453/455/463/465/467/469/471/473: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
@@ -27,6 +27,9 @@
  * (ignore client payload.approvedActions; edit is the only revise path). Confirm also
  * requires exactly one create_task_template executedAction.
  *
+ * Residual 473: edit revise requires exactly one create_task_template approvedAction
+ * (symmetric single-draft product model with start/confirm).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -45,6 +48,10 @@ export const HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE =
 /** Residual 455: edit revise without a non-empty title is fail-closed. */
 export const HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE =
   'Host task.create edit requires a non-empty revised title on create_task_template.';
+
+/** Residual 473: edit multi-action revise is fail-closed. */
+export const HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE =
+  'Host task.create edit requires exactly one create_task_template approvedAction.';
 
 /** Residual 463: confirm without recoverable settlement title is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE =
@@ -379,7 +386,7 @@ export function buildHostTaskCreateResumeResult(input: {
     });
   }
 
-  // Residual 439/455: Host revise → keep waiting_approval with patched pending create_task_template.
+  // Residual 439/455/473: Host revise → keep waiting_approval with single patched pending action.
   if (decision === 'edit') {
     if (status !== 'waiting_approval') {
       throw new Error(
@@ -388,6 +395,10 @@ export function buildHostTaskCreateResumeResult(input: {
     }
     if (!input.payload.approvedActions || input.payload.approvedActions.length === 0) {
       throw new Error('Host task.create edit requires non-empty approvedActions as revised pending actions.');
+    }
+    // Residual 473: product draft is a single create_task_template action (start/confirm symmetry).
+    if (input.payload.approvedActions.length !== 1) {
+      throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE);
     }
     const pendingActions = cloneActions(input.payload.approvedActions);
     for (const action of pendingActions) {
@@ -427,12 +438,13 @@ export function buildHostTaskCreateResumeResult(input: {
       delete firstPayload['goal_id'];
       goalId = undefined;
     }
-    if (pendingActions[0]) {
-      pendingActions[0] = {
-        ...pendingActions[0],
-        payload: firstPayload,
-      };
-    }
+    // Residual 473: keep exactly one normalized pending create_task_template action.
+    pendingActions[0] = {
+      ...pendingActions[0]!,
+      tool: 'create_task_template',
+      index: 0,
+      payload: firstPayload,
+    };
 
     return AgentRunResultSchema.parse({
       run: {

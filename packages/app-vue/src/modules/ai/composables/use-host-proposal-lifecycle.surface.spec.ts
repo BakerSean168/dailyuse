@@ -596,6 +596,25 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create edit requires single approvedAction (residual 473)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE');
+    expect(resume).toContain('exactly one create_task_template approvedAction');
+    expect(resume).toContain('Residual 473');
+    // Client revise path still patches single create_task_template via approvedActions.
+    expect(taskWorkflow).toContain('reviseTaskAgentRun');
+    expect(taskWorkflow).toContain("userDecision: 'edit'");
+    expect(taskWorkflow).toContain('Residual 473');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

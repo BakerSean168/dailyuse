@@ -225,9 +225,10 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 439/455: Host revise → process-local edit resume (stay waiting_approval).
+   * Residual 439/455/473: Host revise → process-local edit resume (stay waiting_approval).
    * Patches create_task_template pendingActions so getRun/selectAgentRun reopen revised draft.
    * Residual 455: blank title revise is refused client-side (Host also fail-closed).
+   * Residual 473: Host requires exactly one create_task_template approvedAction (single-draft).
    */
   async function reviseTaskAgentRun(hostOptions?: {
     title?: string;

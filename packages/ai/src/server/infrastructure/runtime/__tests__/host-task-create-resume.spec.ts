@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471/473)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -657,6 +657,70 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465/467/469/471)
         },
       }),
     ).toThrow(/exactly one create_task_template executedAction/);
+  });
+
+
+  it('edit revises single create_task_template pending action (residual 473)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit-single'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const edited = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'Revised once',
+            payload: { title: 'Single revise', goalId: 'goal-single' },
+          },
+        ],
+      },
+      nowMs: 2,
+    });
+    expect(edited.run.status).toBe('waiting_approval');
+    expect(edited.state.pendingActions).toHaveLength(1);
+    expect(edited.state.pendingActions[0]?.tool).toBe('create_task_template');
+    expect(edited.state.pendingActions[0]?.index).toBe(0);
+    expect(edited.state.pendingActions[0]?.payload['title']).toBe('Single revise');
+    expect(edited.state.pendingActions[0]?.payload['goalId']).toBe('goal-single');
+    expect(edited.interrupts[0]?.pendingActions).toHaveLength(1);
+  });
+
+  it('edit fails closed when approvedActions is not exactly one (residual 473)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-edit-multi'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'edit',
+          approvedActions: [
+            {
+              tool: 'create_task_template',
+              index: 0,
+              dependsOn: [],
+              rationale: 'one',
+              payload: { title: 'First' },
+            },
+            {
+              tool: 'create_task_template',
+              index: 1,
+              dependsOn: [],
+              rationale: 'two',
+              payload: { title: 'Second' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/exactly one create_task_template approvedAction/);
   });
 
 

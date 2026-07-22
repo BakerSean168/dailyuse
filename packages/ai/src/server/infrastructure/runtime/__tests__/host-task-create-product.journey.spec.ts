@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465/467/469/471: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467/469/471/473: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -15,6 +15,7 @@
  *   confirm settlement goalId no-rebind (residual 467)
  *   confirm settlement title no-rebind (residual 469)
  *   confirm process-local draft only + single executed (residual 471)
+ *   edit single approvedAction (residual 473)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -575,6 +576,99 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(stillWaiting.ok).toBe(true);
     if (!stillWaiting.ok) return;
     expect(stillWaiting.data.run.status).toBe('waiting_approval');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
+  it('edit requires exactly one create_task_template approvedAction (residual 473)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-edit-single' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-edit-single',
+        threadId: 'thread-journey-edit-single',
+        conversationId: 'conv-journey-edit-single',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Edit single' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    const edited = await service.resumeRun(
+      'run-journey-edit-single',
+      {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'single',
+            payload: { title: 'Revised once', goalId: 'goal-edit' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(edited.ok).toBe(true);
+    if (!edited.ok) return;
+    expect(edited.data.run.status).toBe('waiting_approval');
+    expect(edited.data.state.pendingActions).toHaveLength(1);
+    expect(edited.data.state.pendingActions[0]?.payload['title']).toBe('Revised once');
+    expect(edited.data.state.pendingActions[0]?.payload['goalId']).toBe('goal-edit');
+
+    const started2 = await service.startRun(
+      {
+        runId: 'run-journey-edit-multi',
+        threadId: 'thread-journey-edit-multi',
+        conversationId: 'conv-journey-edit-multi',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Edit multi' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started2.ok).toBe(true);
+
+    const failEdit = await service.resumeRun(
+      'run-journey-edit-multi',
+      {
+        userDecision: 'edit',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'one',
+            payload: { title: 'First' },
+          },
+          {
+            tool: 'create_task_template',
+            index: 1,
+            dependsOn: [],
+            rationale: 'two',
+            payload: { title: 'Second' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(failEdit.ok).toBe(false);
+    if (failEdit.ok) return;
+    expect(failEdit.error.code).toBe('VALIDATION_ERROR');
+    expect(failEdit.error.message).toMatch(/exactly one create_task_template approvedAction/);
+
+    const stillWaiting = await service.getRun('run-journey-edit-multi', cx as any);
+    expect(stillWaiting.ok).toBe(true);
+    if (!stillWaiting.ok) return;
+    expect(stillWaiting.data.run.status).toBe('waiting_approval');
+    expect(stillWaiting.data.state.pendingActions).toHaveLength(1);
+    expect(stillWaiting.data.state.pendingActions[0]?.payload['title']).toBe('Edit multi');
     expect(port.resumeRun).not.toHaveBeenCalled();
   });
 

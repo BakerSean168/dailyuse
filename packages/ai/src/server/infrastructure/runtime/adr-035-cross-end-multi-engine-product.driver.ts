@@ -292,6 +292,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE'];
     case 'resolveConfirmStoreDraftActions':
       return ['resolveConfirmStoreDraftActions'];
+    case 'HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE':
+      return ['HOST_TASK_CREATE_EDIT_REQUIRES_SINGLE_ACTION_MESSAGE'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
