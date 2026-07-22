@@ -205,6 +205,16 @@ describe('agent-host stage-0 ports freeze surface', () => {
     );
     expect(existsSync(processAdapter)).toBe(true);
     expect(readFileSync(processAdapter, 'utf8')).toContain('PI_SPIKE_SPAWN_BLOCKED');
+    const prodJourney = resolve(
+      repoRoot,
+      'packages/ai/src/server/infrastructure/runtime/__tests__/adr-035-production-multi-engine-host.journey.spec.ts',
+    );
+    expect(existsSync(prodJourney)).toBe(true);
+    const prodJourneyText = readFileSync(prodJourney, 'utf8');
+    expect(prodJourneyText).toContain('DirectTurnEngine');
+    expect(prodJourneyText).toContain('ReadonlyAnalysisTurnEngine');
+    expect(prodJourneyText).toContain('AssistantFacade');
+    expect(prodJourneyText).toContain('residual 375');
     expect(harnessText).toContain('multi-engine');
   });
 });

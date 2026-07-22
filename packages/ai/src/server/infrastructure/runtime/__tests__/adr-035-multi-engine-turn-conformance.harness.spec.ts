@@ -8,7 +8,8 @@ import { resolve } from 'node:path';
  * for dual-label isolation. Production residual 314 adds DirectTurnEngine;
  * residual 341 adds ReadonlyAnalysisTurnEngine (engine.pi_readonly) via Model Gateway.
  * Residual 373 adds fail-closed PiReadonlyProcessAdapter spike (no spawn, not product default).
- * Full multi-engine runtime E2E and real Pi SDK/CLI process spawn remain open.
+ * Residual 375 adds production multi-engine Host journey (DirectTurn + ReadonlyAnalysis via Facade).
+ * Full cross-end multi-engine product E2E and real Pi SDK/CLI process spawn remain open.
  *
  * This is not a Playwright/Electron E2E and does not claim production multi-engine
  * runtime wiring is complete.
