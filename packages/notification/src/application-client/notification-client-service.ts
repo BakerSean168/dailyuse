@@ -24,24 +24,14 @@ import type {
 
 // ─── Client Application Port ────────────────────────────────────────────────
 
-/** High-level client-side operations for the notification module. */
-export interface NotificationClientPort {
-  createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>>;
-  findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>>;
-  findNotificationById(id: string): Promise<Result<NotificationClientDTO>>;
-  markAsRead(id: string): Promise<Result<NotificationClientDTO>>;
-  markAllAsRead(): Promise<Result<{ count: number }>>;
-  deleteNotification(id: string): Promise<Result<null>>;
-  batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>>;
-  dismissAll(ids: string[]): Promise<Result<BatchOperationResultDTO>>;
-  getUnreadCount(): Promise<Result<UnreadCountResponse>>;
-  getPreferences(): Promise<Result<NotificationPreferenceClientDTO>>;
-  updatePreferences(
-    request: UpdateNotificationPreferenceReq,
-  ): Promise<Result<NotificationPreferenceClientDTO>>;
-}
+/**
+ * Application-facing client port.
+ * Identical to INotificationApiClient for this module (pure Result pass-through;
+ * dismissAll dual removed — callers use batchDeleteNotifications).
+ */
+export type NotificationClientPort = INotificationApiClient;
 
-export class NotificationClientService implements NotificationClientPort {
+export class NotificationClientService implements INotificationApiClient {
   constructor(private readonly notificationApi: INotificationApiClient) {
     this.createNotification = this.createNotification.bind(this);
     this.findNotifications = this.findNotifications.bind(this);
@@ -50,7 +40,6 @@ export class NotificationClientService implements NotificationClientPort {
     this.markAllAsRead = this.markAllAsRead.bind(this);
     this.deleteNotification = this.deleteNotification.bind(this);
     this.batchDeleteNotifications = this.batchDeleteNotifications.bind(this);
-    this.dismissAll = this.dismissAll.bind(this);
     this.getUnreadCount = this.getUnreadCount.bind(this);
     this.getPreferences = this.getPreferences.bind(this);
     this.updatePreferences = this.updatePreferences.bind(this);
@@ -87,10 +76,6 @@ export class NotificationClientService implements NotificationClientPort {
   }
 
   async batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>> {
-    return this.notificationApi.batchDeleteNotifications(ids);
-  }
-
-  async dismissAll(ids: string[]): Promise<Result<BatchOperationResultDTO>> {
     return this.notificationApi.batchDeleteNotifications(ids);
   }
 

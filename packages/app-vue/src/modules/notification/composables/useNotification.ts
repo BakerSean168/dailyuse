@@ -94,7 +94,7 @@ export function useNotification() {
       return;
     }
 
-    const result = await service.dismissAll(ids);
+    const result = await service.batchDeleteNotifications(ids);
     if (result.ok) {
       store.setNotifications([], 0);
       store.setUnreadCount(0);
