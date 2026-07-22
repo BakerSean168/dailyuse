@@ -3674,6 +3674,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留四百零七轮）：跨端 multi-engine Host 产品 **unit driver**（仍不打勾）——
+> 消费 residual 405 scaffold journey，对 10 个 `implemented_unit` 步做源码契约校验（HTTP SSE /
+> Desktop IPC / Vue selectors / cancel_run / session memory），3 个 `external_blocked` 显式 skip；
+> `claimsFullProductE2E`/`claimsRealPiSpawn` 恒为 false。**不**宣称 Playwright/Electron 全量 product E2E。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -4172,6 +4178,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百零四轮：§13.2 focused evidence suite re-run（372 tests，residuals 250–403 锁；不改 checkbox）。
   残留四百零五轮：跨端 multi-engine Host 产品 E2E scaffold（13-step journey；非 Playwright/Electron 全绿）。
   残留四百零六轮：§13.2 focused evidence suite re-run（378 tests，residuals 250–405 锁；不改 checkbox）。
+  残留四百零七轮：跨端 multi-engine Host 产品 unit driver（10 implemented_unit 源码契约；external skip）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4273,6 +4280,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百零四轮：§13.2 focused evidence suite re-run (372 tests, residuals 250–403 locks, no checkbox changes)。
   残留四百零五轮：cross-end multi-engine Host product E2E scaffold (13-step journey; not Playwright/Electron green)。
   残留四百零六轮：§13.2 focused evidence suite re-run (378 tests, residuals 250–405 locks, no checkbox changes)。
+  残留四百零七轮：cross-end multi-engine Host product unit driver (10 implemented_unit source contracts; external skip)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4460,6 +4468,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百零四轮：tip 上 372 项 focused evidence suite（含 residual 250–403 open-chat Host turn session memory 锁）通过；仍不构成全量 PR 门禁证据。
   残留四百零五轮：跨端 multi-engine Host 产品 E2E scaffold 落地；仍不构成 Playwright/Electron 全量 product E2E/真实 Pi spawn 证据。
   残留四百零六轮：tip 上 378 项 focused evidence suite（含 residual 250–405 cross-end multi-engine product E2E scaffold 锁）通过；仍不构成全量 PR 门禁证据。
+  残留四百零七轮：跨端 multi-engine Host 产品 unit driver 落地；仍不构成 Playwright/Electron 全量 product E2E/真实 Pi spawn 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
