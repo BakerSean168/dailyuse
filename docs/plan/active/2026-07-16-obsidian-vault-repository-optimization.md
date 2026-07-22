@@ -2964,6 +2964,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > multi-engine 接线 E2E、GitHub App fixture E2E、全量 PR 门禁一揽子。状态保持 **实施中**；
 > PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百一十三轮）：跨 active plan 对齐——将 vault residual 305/309/311
+> 的 ADR-035 stage-0 Port 冻结、multi-engine harness（doubles only）与 composition freeze 证据指针
+> 写入 `2026-07-17-unified-assistant-agent-host.md`；该 plan 状态由 **待实施** 调整为 **实施中**
+> （仅阶段 0 部分；完成定义不打勾）。验证：governance-check（GOV_EXIT:0）。vault §13.2 未打勾项
+> 仍为部分/外部阻塞。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3362,6 +3368,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十轮：§13.2 focused evidence suite re-run (212 tests, residuals 250–309 locks, no checkbox changes)。
   残留三百一十一轮：ADR-035 Agent Host stage-0 composition freeze (no production port impls; runtime offers never emit engine.*; module does not register Turn Engines; Agent still partial)。
   残留三百一十二轮：§13.2 focused evidence suite re-run (216 tests, residuals 250–311 locks, no checkbox changes)。
+  残留三百一十三轮：align Agent Host active plan stage-0 evidence pointers (status 实施中 partial; no DoD checkbox flips)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3447,6 +3454,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十轮：tip 上 212 项 focused evidence suite（含 residual 250–309 dual/docs/disclosure/ADR-035/three-login/harness 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百一十一轮：Agent Host stage-0 composition/port freeze surfaces 通过（生产 adapter 仍缺；runtime 不静默 emit engine.*）+ governance-check；仍不构成生产 multi-engine 接线 E2E 证据。
   残留三百一十二轮：tip 上 216 项 focused evidence suite（含 residual 250–311 dual/docs/disclosure/ADR-035/three-login/harness/composition 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百一十三轮：Agent Host plan stage-0 证据指针对齐 + governance-check；仍不构成生产 multi-engine/统一助手完成证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

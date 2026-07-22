@@ -10,7 +10,7 @@ tags:
   - cli
 description: 统一助手、右侧工作台与可插拔 Agent Host 的详细实施方案
 created: 2026-07-17T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 统一助手与可插拔 Agent Host 实施方案
@@ -19,9 +19,25 @@ updated: 2026-07-17T00:00:00
 
 本文执行 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)，承接 Open Design、`earendil-works/pi`、当前 TypeScript AI 模块、Python LangGraph runtime、checkpoint、tool executor 和 Obsidian/GitHub 知识仓库方案的专项调研。
 
-状态：**待实施**。
+状态：**实施中**（阶段 0 部分收口；后续阶段未宣称完成）。
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
+
+### 当前进展（2026-07-22，与 vault plan residual 305–312 对齐）
+
+- **阶段 0 部分已落地（契约冻结）**：
+  - `packages/contracts` agent-host：`ITurnEnginePort` / `ICapabilityResolverPort` /
+    `IWorkflowAdapterPort` / `IProposalKernelPort` + `resolveRunPlan` / capability kinds 已冻结。
+  - stage-0 surface：生产侧尚无上述 Port 的 class 实现；runtime
+    `buildAgentRuntimeCapabilityOffers` 不静默 emit `engine.*`；`ai.module` 未注册 Turn Engine。
+  - ADR-035 journey（capability/turn isolation steps 1–16）+ multi-engine conformance harness
+    （`engine.direct_turn` + `engine.langgraph_workflow` 同 suite isolation；**in-suite doubles only**）
+    在 vault active plan residual 305/309/311 证据中通过。
+- **仍未实现（不得勾完成定义）**：
+  - 生产 DirectTurnEngine / LangGraphWorkflowAdapter 接线；Proposal Kernel 产品面；统一助手 UI；
+    完整 multi-engine runtime E2E；CLI/Pi product path。
+- 更完整的 vault/知识仓库边界与 §13.2 证据见
+  [2026-07-16-obsidian-vault-repository-optimization.md](./2026-07-16-obsidian-vault-repository-optimization.md)。
 
 ## 2. 目标与非目标
 
@@ -726,10 +742,12 @@ packages/contracts/src/modules/ai/
 
 ### 阶段 0：契约与现状基线
 
-- 固化 ADR-035。
-- 为当前 AgentRun/Action/Event 建立 contract tests 和当前行为 fixture。
-- 明确 Conversation 与 AgentRun 的关联和恢复路径。
-- 记录当前 direct/remote capability 差异。
+- 固化 ADR-035。 **（已采纳）**
+- 为当前 AgentRun/Action/Event 建立 contract tests 和当前行为 fixture。 **（部分：journey + ownership surfaces）**
+- 明确 Conversation 与 AgentRun 的关联和恢复路径。 **（部分：现有 AgentRun 模型；统一助手关联未做）**
+- 记录当前 direct/remote capability 差异。 **（部分：`buildAgentRuntimeCapabilityOffers` + assert start gate）**
+- Agent Host Port 形状冻结（Turn/Workflow/Capability/Proposal）+ 生产侧未实现锁。 **（已证明，residual 305/311）**
+- multi-engine isolation conformance harness（同 suite 双引擎标签；test doubles only）。 **（部分：residual 309；非生产 adapter）**
 
 ### 阶段 1：统一助手与 Proposal Kernel
 
@@ -835,7 +853,7 @@ packages/contracts/src/modules/ai/
 - [ ] Conversation 与 AgentRun 有明确、多对一的关联。
 - [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。
 - [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。
-- [ ] 至少两个 Turn Engine 通过同一 conformance suite。
+- [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双引擎标签 isolation 通过；生产 adapter 仍缺）**
 - [ ] 自定义模型 API 不需要实现完整 Agent runtime。
 - [ ] 本地 CLI 不需要伪装成 Model Provider。
 - [ ] Run 固定 ResolvedRunPlan 和 CapabilitySnapshot。
