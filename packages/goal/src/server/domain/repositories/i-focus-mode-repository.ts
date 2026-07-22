@@ -28,12 +28,17 @@ export interface IFocusModeRepository {
   save(focusMode: FocusMode): Promise<void>;
 
   /**
-   * 通过 ID 查找专注模式
+   * 通过 ID 查找专注模式（系统/内部路径；授权敏感路径请用 findByIdForIdentity）
    *
    * @param id - 专注模式 ID
    * @returns 专注模式实例，不存在则返回 null
    */
   findById(id: string): Promise<FocusMode | null>;
+
+  /**
+   * 通过 ID + identity 查找专注模式（授权敏感读路径）
+   */
+  findByIdForIdentity(identityId: string, id: string): Promise<FocusMode | null>;
 
   /**
    * 查找用户当前活跃的专注模式
@@ -64,9 +69,10 @@ export interface IFocusModeRepository {
   deactivateExpired(): Promise<number>;
 
   /**
-   * 删除专注模式
+   * 删除专注模式（必须同时匹配 identity）
    *
+   * @param identityId - 用户身份 ID
    * @param id - 专注模式 ID
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 }

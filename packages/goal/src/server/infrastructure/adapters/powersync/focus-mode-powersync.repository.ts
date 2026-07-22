@@ -87,6 +87,14 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
     return row ? PowerSyncFocusModeMapper.toDomain(row) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<FocusMode | null> {
+    const row = await this.db.getOptional<Record<string, unknown>>(
+      `SELECT * FROM focus_modes WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [id, identityId],
+    );
+    return row ? PowerSyncFocusModeMapper.toDomain(row) : null;
+  }
+
   async findActiveByIdentityId(identityId: string): Promise<FocusMode | null> {
     this.logger.info('按身份查询启用中的专注模式开始', {
       identityId,
@@ -127,7 +135,14 @@ export class FocusModePowerSyncRepository implements IFocusModeRepository {
     return result.rowsAffected;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute(`DELETE FROM focus_modes WHERE id = ?`, [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Focus mode not found for the current identity.');
+    }
+    await this.db.execute(`DELETE FROM focus_modes WHERE id = ? AND identity_id = ?`, [
+      id,
+      identityId,
+    ]);
   }
 }

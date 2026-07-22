@@ -58,6 +58,13 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
     return data ? this.mapToValueObject(data) : null;
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<FocusMode | null> {
+    const data = await this.prisma.focusMode.findFirst({
+      where: { id, identityId },
+    });
+    return data ? this.mapToValueObject(data) : null;
+  }
+
   async findActiveByIdentityId(identityId: string): Promise<FocusMode | null> {
     this.logger.info('按身份查询启用中的专注模式开始', { identityId });
     const data = await this.prisma.focusMode.findFirst({
@@ -94,7 +101,12 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
     return result.count;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.focusMode.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const result = await this.prisma.focusMode.deleteMany({
+      where: { id, identityId },
+    });
+    if (result.count === 0) {
+      throw new Error('Focus mode not found for the current identity.');
+    }
   }
 }
