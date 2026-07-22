@@ -2994,6 +2994,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > composition + journey/harness + governance-check（GOV_EXIT:0）。§13.2 Agent 仍为 **部分实现**
 > （缺第二生产引擎 / 统一助手 UI）。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百一十七轮）：§13.2 聚焦证据套件复跑（含 residual 250–316
+> dual/docs/disclosure/ADR-035/three-login/harness/composition/DirectTurnEngine/open-chat 锁，
+> 不改 checkbox）——**68 文件 / 226 测试**（app-vue 54、ai 54、repository 35、contracts 14、
+> ipc-client 5、http-client 5、governance 2、setting 5、data-portability 15、authentication 13、
+> reminder 2、notification 2、account 2、goal 2、schedule 2、dashboard 1、desktop 9、task 4）+
+> governance-check（GOV_EXIT:0）。相对 residual 315：ai +1 file / +3 tests（open-chat application）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、第二生产 Turn Engine、GitHub App fixture E2E、全量 PR 门禁。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3398,6 +3407,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十四轮：production DirectTurnEngine (engine.direct_turn) implements ITurnEnginePort; module.turnEngine wired; multi-engine still partial。
   残留三百一十五轮：§13.2 focused evidence suite re-run (223 tests, residuals 250–314 locks, no checkbox changes)。
   残留三百一十六轮：open chat send/stream routes through DirectTurnEngine (IOpenChatTurnPort); multi-engine still partial。
+  残留三百一十七轮：§13.2 focused evidence suite re-run (226 tests, residuals 250–316 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3487,6 +3497,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十四轮：DirectTurnEngine 生产首引擎 + module.turnEngine + stage-0 仅允许该引擎；仍不构成 multi-engine/统一助手完成证据。
   残留三百一十五轮：tip 上 223 项 focused evidence suite（含 residual 250–314 dual/docs/disclosure/ADR-035/three-login/harness/composition/DirectTurnEngine 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百一十六轮：open chat 经 DirectTurnEngine + IOpenChatTurnPort + composition surface；仍不构成 multi-engine/统一助手完成证据。
+  残留三百一十七轮：tip 上 226 项 focused evidence suite（含 residual 250–316 open-chat/DirectTurnEngine 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
