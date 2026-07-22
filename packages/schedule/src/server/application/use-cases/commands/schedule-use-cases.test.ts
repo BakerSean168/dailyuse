@@ -42,15 +42,15 @@ class MockScheduleTaskRepository implements IScheduleTaskRepository {
     );
   }
 
-  async findBySourceModule(): Promise<any[]> {
+  async findBySourceModule(module: any, identityId: string): Promise<any[]> {
     return [];
   }
 
-  async findBySourceEntity(): Promise<any[]> {
+  async findBySourceEntity(module: any, entityId: string, identityId: string): Promise<any[]> {
     return [];
   }
 
-  async findByStatus(): Promise<any[]> {
+  async findByStatus(status: any, identityId: string): Promise<any[]> {
     return [];
   }
 

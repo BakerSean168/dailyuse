@@ -186,11 +186,11 @@ export class ScheduleTaskPrismaRepository
     return tasks.map((task) => this.toDomain(task));
   }
 
-  async findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]> {
+  async findBySourceModule(module: SourceModule, identityId: string): Promise<ScheduleTask[]> {
     const tasks = await this.db.scheduleTask.findMany({
       where: {
         sourceModule: module,
-        ...(identityId && { identityId }),
+        identityId,
       },
       include: {
         executions: {
@@ -206,13 +206,13 @@ export class ScheduleTaskPrismaRepository
   async findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    identityId?: string,
+    identityId: string,
   ): Promise<ScheduleTask[]> {
     const tasks = await this.db.scheduleTask.findMany({
       where: {
         sourceModule: module,
         sourceEntityId: entityId,
-        ...(identityId && { identityId }),
+        identityId,
       },
       include: {
         executions: {
@@ -225,11 +225,11 @@ export class ScheduleTaskPrismaRepository
     return tasks.map((task) => this.toDomain(task));
   }
 
-  async findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]> {
+  async findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]> {
     const tasks = await this.db.scheduleTask.findMany({
       where: {
         status: status,
-        ...(identityId && { identityId }),
+        identityId,
       },
       include: {
         executions: {

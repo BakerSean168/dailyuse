@@ -261,28 +261,28 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     );
   }
 
-  async findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]> {
+  async findBySourceModule(module: SourceModule, identityId: string): Promise<ScheduleTask[]> {
     return this.queryRows(
-      `SELECT * FROM schedule_tasks WHERE source_module = ?${identityId ? ' AND identity_id = ?' : ''} ORDER BY next_run_at ASC`,
-      identityId ? [module, identityId] : [module],
+      `SELECT * FROM schedule_tasks WHERE source_module = ? AND identity_id = ? ORDER BY next_run_at ASC`,
+      [module, identityId],
     );
   }
 
   async findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    identityId?: string,
+    identityId: string,
   ): Promise<ScheduleTask[]> {
     return this.queryRows(
-      `SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ?${identityId ? ' AND identity_id = ?' : ''} ORDER BY next_run_at ASC`,
-      identityId ? [module, entityId, identityId] : [module, entityId],
+      `SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ? AND identity_id = ? ORDER BY next_run_at ASC`,
+      [module, entityId, identityId],
     );
   }
 
-  async findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]> {
+  async findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]> {
     return this.queryRows(
-      `SELECT * FROM schedule_tasks WHERE status = ?${identityId ? ' AND identity_id = ?' : ''} ORDER BY next_run_at ASC`,
-      identityId ? [status, identityId] : [status],
+      `SELECT * FROM schedule_tasks WHERE status = ? AND identity_id = ? ORDER BY next_run_at ASC`,
+      [status, identityId],
     );
   }
 

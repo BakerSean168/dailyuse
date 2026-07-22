@@ -18,13 +18,22 @@ export async function findMatchingTasks(
   scheduleTaskRepository: IScheduleTaskRepository,
   selection: ProjectionSelection,
 ): Promise<readonly ScheduleTask[]> {
+  if (!selection.identityId) {
+    throw new Error(
+      'Projection selection requires identityId for identity-scoped schedule task loads.',
+    );
+  }
+
   const existingTasks = selection.sourceEntityId
     ? await scheduleTaskRepository.findBySourceEntity(
         selection.sourceModule,
         selection.sourceEntityId,
         selection.identityId,
       )
-    : await scheduleTaskRepository.findBySourceModule(selection.sourceModule, selection.identityId);
+    : await scheduleTaskRepository.findBySourceModule(
+        selection.sourceModule,
+        selection.identityId,
+      );
 
   return existingTasks.filter((task) => selection.matches(task));
 }

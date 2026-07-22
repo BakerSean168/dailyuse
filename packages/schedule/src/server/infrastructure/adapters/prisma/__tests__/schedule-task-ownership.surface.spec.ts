@@ -117,4 +117,45 @@ describe('schedule task ownership surface', () => {
     );
   });
 
+
+  it('port list methods require identityId (residual 162)', () => {
+    expect(port).toContain(
+      'findBySourceModule(module: SourceModule, identityId: string): Promise<ScheduleTask[]>;',
+    );
+    expect(port).toContain(
+      'findBySourceEntity(\n    module: SourceModule,\n    entityId: string,\n    identityId: string,\n  ): Promise<ScheduleTask[]>;',
+    );
+    expect(port).toContain(
+      'findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]>;',
+    );
+    // System scheduler paths remain intentionally unscoped:
+    expect(port).toContain(
+      'findEnabled(identityId?: string): Promise<ScheduleTask[]>;',
+    );
+    expect(port).toContain('findDueTasksForExecution(beforeTime: Date, limit?: number)');
+  });
+
+  it('prisma/powersync list methods always filter identityId (residual 162)', () => {
+    expect(prisma).toContain('async findBySourceModule(module: SourceModule, identityId: string)');
+    expect(prisma).toContain('sourceModule: module,\n        identityId,');
+    expect(prisma).toContain('sourceEntityId: entityId,\n        identityId,');
+    expect(prisma).toContain('status: status,\n        identityId,');
+    expect(powersync).toContain(
+      'SELECT * FROM schedule_tasks WHERE source_module = ? AND identity_id = ? ORDER BY next_run_at ASC',
+    );
+    expect(powersync).toContain(
+      'SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ? AND identity_id = ? ORDER BY next_run_at ASC',
+    );
+    expect(powersync).toContain(
+      'SELECT * FROM schedule_tasks WHERE status = ? AND identity_id = ? ORDER BY next_run_at ASC',
+    );
+  });
+
+  it('shared projection requires selection.identityId (residual 162)', () => {
+    expect(sharedProjection).toContain(
+      "Projection selection requires identityId for identity-scoped schedule task loads.",
+    );
+    expect(sharedProjection).toContain('if (!selection.identityId)');
+  });
+
 });

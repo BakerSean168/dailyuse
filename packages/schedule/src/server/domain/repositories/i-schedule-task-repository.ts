@@ -61,7 +61,7 @@ export interface IScheduleTaskRepository {
   /**
    * 鏌ヨ鎸囧畾鏉ユ簮妯″潡鐨勬墍鏈変换鍔?
    */
-  findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]>;
+  findBySourceModule(module: SourceModule, identityId: string): Promise<ScheduleTask[]>;
 
   /**
    * 鏌ヨ鎸囧畾鏉ユ簮瀹炰綋鐨勪换鍔?
@@ -69,13 +69,13 @@ export interface IScheduleTaskRepository {
   findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    identityId?: string,
+    identityId: string,
   ): Promise<ScheduleTask[]>;
 
   /**
    * 鏌ヨ鎸囧畾鐘舵€佺殑浠诲姟
    */
-  findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]>;
+  findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]>;
 
   /**
    * 鏌ヨ鍚敤鐨勪换鍔?
