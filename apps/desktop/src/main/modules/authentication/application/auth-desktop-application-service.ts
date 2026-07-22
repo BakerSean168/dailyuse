@@ -63,14 +63,6 @@ import { safeTransition } from './auth-coordinator-helpers';
 import type { WindowManager } from '../../../lifecycle/window-manager';
 import { toCloudAccessToken } from '../infrastructure/session-types';
 
-// Re-export from contracts for convenience
-export type { IpcResult, AuthStatus, EmailLoginCredentials };
-export { AuthMode, toIpcResult, ok, fail };
-
-// Re-export lifecycle types
-export type { AutoLoginResult, SessionRestoreResult } from './desktop-auth-lifecycle-coordinator';
-
-
 // ===== Application Service =====
 
 /**

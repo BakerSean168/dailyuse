@@ -34,7 +34,12 @@ export type {
 // Export managers
 export { TokenManager } from './token-manager';
 export { SessionManager } from './session-manager';
-export type { SessionRestoreResult, AutoLoginResult, SessionStatus } from './session-manager';
+export type {
+  SessionRestoreResult,
+  AutoLoginResult,
+  SessionStatus,
+  OfflineLoginResponse,
+} from './session-types';
 export { NetworkStateManager } from './network-state-manager';
 export type { NetworkStateManagerConfig } from './network-state-manager';
 export { RememberedAccountsService } from './remembered-accounts-service';
