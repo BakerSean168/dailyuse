@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const AgentIntentSchema = z.enum([
   'chat',
   'goal-create',
+  'task-create',
   'knowledge-qa',
   'knowledge-generate',
 ]);

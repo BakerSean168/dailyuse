@@ -21,6 +21,9 @@ export interface WorkflowStatusParams {
   noteAgentLoading: boolean;
   noteAgentDraftReady: boolean;
   noteSummary: { resolvedPath: string } | null;
+  /** Residual 431: task.create start in flight. */
+  taskAgentLoading?: boolean;
+  taskAgentRun?: { run: { status: string } } | null;
 }
 
 /** Computes the workflow status text for the chat view. */
@@ -61,6 +64,10 @@ export function getWorkflowStatusText(
     return t('aiAssistant.chatPage.workflow.noteCollectingHint');
   }
   if (params.toolMode === 'task-create') {
+    if (params.taskAgentLoading) return t('aiAssistant.dialogs.agent.starting');
+    if (params.taskAgentRun?.run.status === 'waiting_approval') {
+      return t('aiAssistant.chatPage.workflow.taskAwaitingApprovalHint');
+    }
     return t('aiAssistant.chatPage.workflow.taskCollectingHint');
   }
   if (params.toolMode === 'knowledge-qa') {

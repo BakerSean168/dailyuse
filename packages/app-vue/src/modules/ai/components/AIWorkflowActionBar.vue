@@ -54,8 +54,13 @@ defineProps<{
   canRunWorkflowActions: boolean;
   canSendMessage: boolean;
 
+  // ── task-create 状态（residual 431） ──
+  taskAgentLoading: boolean;
+  canRunTaskAgent: boolean;
+
   // ── 动作（函数 props：状态机处理器原样透传） ──
   startGoalAgentRun: () => void;
+  startTaskAgentRun: () => void;
   submitGoalAgentClarification: () => void;
   confirmGoalAgentRun: () => void;
   cancelGoalAgentRun: () => void;
@@ -154,7 +159,21 @@ const { t } = useI18n();
         </Button>
       </template>
 
-      <!-- Residual 429: task-create product entry — status + shared exit; Agent start not wired yet. -->
+      <template v-else-if="toolMode === 'task-create'">
+        <!-- Residual 431: product start for AgentType task.create (Host proposal foundation). -->
+        <Button
+          variant="outline"
+          :disabled="!canRunTaskAgent"
+          data-testid="task-agent-start-run"
+          @click="startTaskAgentRun"
+        >
+          {{
+            taskAgentLoading
+              ? t('aiAssistant.dialogs.agent.starting')
+              : t('aiAssistant.dialogs.agent.startRun')
+          }}
+        </Button>
+      </template>
       <template v-else-if="toolMode === 'knowledge-generate'">
         <Button
           v-if="canRetryKnowledgeNoteAgentExecution"

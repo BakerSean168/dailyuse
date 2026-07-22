@@ -186,6 +186,9 @@
             :can-ask-knowledge="canAskKnowledge"
             :can-run-workflow-actions="canRunWorkflowActions"
             :can-send-message="canSendMessage"
+            :task-agent-loading="taskAgentLoading"
+            :can-run-task-agent="canRunTaskAgent"
+            :start-task-agent-run="startTaskAgentRun"
             :start-goal-agent-run="startGoalAgentRun"
             :submit-goal-agent-clarification="submitGoalAgentClarification"
             :confirm-goal-agent-run="confirmGoalAgentRun"
@@ -428,6 +431,7 @@ const {
   goalWorkflow,
   noteWorkflow,
   knowledgeQaWorkflow,
+  taskWorkflow,
   formatters,
   common,
 } = useAIChatView({
@@ -534,6 +538,9 @@ const {
   askKnowledgeFromConversation,
   openKnowledgeCitation,
 } = knowledgeQaWorkflow;
+
+const { taskAgentLoading, canRunTaskAgent, startTaskAgentRun } = taskWorkflow;
+
 
 const {
   formatAutomationTool,

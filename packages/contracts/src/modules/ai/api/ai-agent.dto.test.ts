@@ -28,6 +28,34 @@ describe('AI agent contract schemas', () => {
     });
     expect(parsed.agentType).toBe('task.create');
   });
+
+  it('accepts residual 431 task-create intent on agent run result state', () => {
+    const parsed = AgentRunResultSchema.parse({
+      run: {
+        runId: 'run-task-1',
+        threadId: 'thread-task-1',
+        conversationId: null,
+        identityId: 'identity-1',
+        agentType: 'task.create',
+        status: 'waiting_approval',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+      state: {
+        stage: 'approval',
+        intent: 'task-create',
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            payload: { title: 'Ship residual 431' },
+          },
+        ],
+      },
+    });
+    expect(parsed.state.intent).toBe('task-create');
+    expect(parsed.state.pendingActions[0]?.tool).toBe('create_task_template');
+  });
   it.each(['update_knowledge_note', 'reindex_resource'] as const)(
     'rejects first-phase-closed knowledge mutation tools: %s',
     (tool) => {

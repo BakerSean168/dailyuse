@@ -13,6 +13,7 @@ import { useAIChatSession } from './useAIChatSession';
 import { useAIModelSelection } from './useAIModelSelection';
 import { useAIGoalWorkflow } from './useAIGoalWorkflow';
 import { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
+import { useAITaskWorkflow } from './useAITaskWorkflow';
 import { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 import { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 import { useAIFormatters } from './useAIFormatters';
@@ -177,6 +178,26 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     requestOpenKnowledgeNote,
   });
 
+  // Residual 431: Task create product start (AgentType task.create Host foundation).
+  // Late-bound sync: syncSelectedAgentRun is declared below.
+  // eslint-disable-next-line prefer-const -- reassigned after helper is constructed
+  let syncTaskAgentRunFromStart: ((result: import('@dailyuse/contracts/ai').AgentRunResult) => void) | undefined;
+  const taskWorkflow = useAITaskWorkflow({
+    service,
+    selectedModel: modelSelection.selectedModel,
+    chatConversationId: chatSession.chatConversationId,
+    chatLoading: chatSession.chatLoading,
+    chatTimeline: chatSession.chatTimeline,
+    conversationTitle: chatSession.conversationTitle,
+    hasWorkflowUserMessages: chatSession.hasWorkflowUserMessages,
+    buildConversationTranscript: chatSession.buildConversationTranscript,
+    scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
+    taskAgentRun,
+    syncTaskAgentRun: (result) => {
+      syncTaskAgentRunFromStart?.(result);
+    },
+  });
+
   // 6. Persistence
   function resetWorkflowArtifacts() {
     goalWorkflow.resetGoalArtifacts();
@@ -304,6 +325,11 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     }
   }
 
+  syncTaskAgentRunFromStart = (result) => {
+    syncSelectedAgentRun(result);
+    syncAgentRunListItem(result.run);
+  };
+
   function syncAgentRunListItem(run: AgentRun | null | undefined) {
     if (!run) return;
     agentRunList.value = agentRunList.value.filter((item) => item.runId !== run.runId);
@@ -421,6 +447,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
         noteAgentLoading: noteWorkflow.noteAgentLoading.value,
         noteAgentDraftReady: Boolean(noteWorkflow.noteAgentDraftArtifact.value),
         noteSummary: noteWorkflow.noteSummary.value,
+        taskAgentLoading: taskWorkflow.taskAgentLoading.value,
+        taskAgentRun: taskAgentRun.value,
       },
       t,
       formatters.formatExecutionOutcome,
@@ -441,6 +469,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       !knowledgeQaWorkflow.knowledgeQueryLoading.value &&
       !noteWorkflow.noteCreating.value &&
       !noteWorkflow.noteAgentLoading.value &&
+      !taskWorkflow.taskAgentLoading.value &&
       (toolMode.value !== 'knowledge-generate' || chatSession.hasWorkflowMessages.value) &&
       (toolMode.value !== 'knowledge-qa' || chatSession.hasWorkflowUserMessages.value),
   );
@@ -616,6 +645,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       askKnowledgeFromConversation,
     },
     noteWorkflow,
+    taskWorkflow,
     formatters,
     common: {
       toolMode,

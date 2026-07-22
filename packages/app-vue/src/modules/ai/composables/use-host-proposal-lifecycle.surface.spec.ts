@@ -329,6 +329,39 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create product start path (residual 431)', () => {
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(taskWorkflow).toContain("agentType: 'task.create'");
+    expect(taskWorkflow).toContain('startTaskAgentRun');
+    const chatViewTs = readFileSync(resolve(dir, 'useAIChatView.ts'), 'utf8');
+    expect(chatViewTs).toContain('taskWorkflow');
+    expect(chatViewTs).toContain('useAITaskWorkflow');
+    expect(chatViewTs).toContain('syncTaskAgentRunFromStart');
+    const actionBar = readFileSync(
+      resolve(dir, '../components/AIWorkflowActionBar.vue'),
+      'utf8',
+    );
+    expect(actionBar).toContain('task-agent-start-run');
+    expect(actionBar).toContain('startTaskAgentRun');
+    const hostStart = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+      ),
+      'utf8',
+    );
+    expect(hostStart).toContain('buildHostTaskCreateStartResult');
+    expect(hostStart).toContain("agentType: 'task.create'");
+    expect(hostStart).toContain("tool: 'create_task_template'");
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(runtime).toContain("agentType === 'task.create'");
+    expect(runtime).toContain('buildHostTaskCreateStartResult');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create product toolMode + welcome/footer entry (residual 429)', () => {
     const types = readFileSync(resolve(dir, 'types.ts'), 'utf8');
     expect(types).toContain("'task-create'");

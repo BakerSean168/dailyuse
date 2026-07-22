@@ -7,6 +7,7 @@ export { useAIFormatters } from './useAIFormatters';
 export { useAIGoalWorkflow } from './useAIGoalWorkflow';
 export { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
 export { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
+export { useAITaskWorkflow } from './useAITaskWorkflow';
 export { useAIModelSelection } from './useAIModelSelection';
 export { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 export type {

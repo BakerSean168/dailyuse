@@ -1,5 +1,5 @@
 /**
- * Residual 407/417/421/423/425/427/429: ADR-035 cross-end multi-engine Host product unit driver.
+ * Residual 407/417/421/423/425/427/429/431: ADR-035 cross-end multi-engine Host product unit driver.
  *
  * Executes residual 405 scaffold `implemented_unit` steps as source-level
  * contract checks (HTTP SSE / Desktop IPC / Vue selectors / Host cancel +
@@ -108,7 +108,11 @@ export function resolveCrossEndMultiEngineProductStepSources(
       return [
         'packages/app-vue/src/modules/ai/composables/hostProposalLifecycle.ts',
         'packages/app-vue/src/modules/ai/composables/useAIChatView.ts',
+        'packages/app-vue/src/modules/ai/composables/useAITaskWorkflow.ts',
         'packages/app-vue/src/modules/ai/composables/types.ts',
+        'packages/ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+        'packages/ai/src/server/infrastructure/runtime/ai-runtime.ts',
+        'packages/app-vue/src/modules/ai/components/AIWorkflowActionBar.vue',
         'packages/app-vue/src/modules/ai/components/AIHostProposalPanel.vue',
         'packages/app-vue/src/modules/ai/components/AIHostExecutionReceiptPanel.vue',
         'packages/app-vue/src/modules/ai/components/AIMessagePanel.vue',
@@ -183,6 +187,12 @@ function contractNeedles(contract: string): readonly string[] {
       return ['ai-chat-tool-task-create'];
     case "toolMode.value = 'task-create'":
       return ["toolMode.value = 'task-create'", "'task-create'"];
+    case 'buildHostTaskCreateStartResult':
+      return ['buildHostTaskCreateStartResult'];
+    case 'startTaskAgentRun':
+      return ['startTaskAgentRun'];
+    case 'task-agent-start-run':
+      return ['task-agent-start-run'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

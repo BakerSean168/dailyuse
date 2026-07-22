@@ -21,6 +21,7 @@ import {
 import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
 import { CapabilityResolver } from '../capability-resolver';
+import { buildHostTaskCreateStartResult, resolveTaskCreateTitle } from './host-task-create-start';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import type {
@@ -233,7 +234,7 @@ export function assertAgentStartCapabilityPlan(
 
   // goal.create / task.create may start planning without the TS automation executor;
   // mutation capability is enforced when execution.required is resolved, not at start.
-  // Residual 427: task.create Host AgentType foundation is allowed at start.
+  // Residual 427/431: task.create Host AgentType + TS start foundation is allowed at start.
   return ok(undefined);
 }
 
@@ -1133,6 +1134,47 @@ export function createAgentRuntimeService(
       );
       if (!requestWithKnowledge.ok) {
         return requestWithKnowledge;
+      }
+
+      // Residual 431: task.create Host start foundation (TS runtime, no LangGraph yet).
+      // Produces waiting_approval + create_task_template for Host lane / client settle.
+      if (requestWithKnowledge.data.agentType === 'task.create') {
+        if (!resolveTaskCreateTitle(requestWithKnowledge.data.input)) {
+          return error(
+            'VALIDATION_ERROR',
+            'Task Agent input must include a non-empty title, idea, message, or conversationTitle.',
+          );
+        }
+        const startedAt = Date.now();
+        try {
+          const taskResult = buildHostTaskCreateStartResult({
+            request: requestWithKnowledge.data,
+            identityId: cx.identityId,
+          });
+          const ownership = ensureAgentRunOwnedByIdentity(taskResult, cx.identityId);
+          if (!ownership.ok) {
+            return ownership;
+          }
+          await recordAgentRuntimeExecution({
+            operation: 'start',
+            identityId: cx.identityId,
+            requestId,
+            startedAt,
+            request: requestWithKnowledge.data,
+            result: taskResult,
+          });
+          return ownership;
+        } catch (err) {
+          await recordAgentRuntimeExecution({
+            operation: 'start',
+            identityId: cx.identityId,
+            requestId,
+            startedAt,
+            request: requestWithKnowledge.data,
+            error: err,
+          });
+          throw err;
+        }
       }
 
       const startedAt = Date.now();

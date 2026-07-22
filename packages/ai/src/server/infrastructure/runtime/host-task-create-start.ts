@@ -1,0 +1,122 @@
+/**
+ * Residual 431: Host task.create start foundation (TS runtime).
+ *
+ * Builds a waiting_approval AgentRunResult with one create_task_template action.
+ * Host lifecycle + client createTemplate settlement (residual 423–425) own mutation.
+ * Not a full LangGraph Task Agent workflow.
+ */
+
+import {
+  AgentRunResultSchema,
+  type AgentRunResult,
+  type AgentStartRunRequest,
+} from '@dailyuse/contracts/ai';
+
+function asNonEmptyString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+}
+
+/**
+ * Derive task title from start input (title / idea / message / conversationTitle).
+ */
+export function resolveTaskCreateTitle(input: Record<string, unknown>): string | undefined {
+  return (
+    asNonEmptyString(input['title']) ??
+    asNonEmptyString(input['idea']) ??
+    asNonEmptyString(input['message']) ??
+    asNonEmptyString(input['conversationTitle'])
+  );
+}
+
+export function resolveTaskCreateGoalId(input: Record<string, unknown>): string | null {
+  const goalId = input['goalId'] ?? input['goal_id'];
+  if (goalId === null) return null;
+  return asNonEmptyString(goalId) ?? null;
+}
+
+/**
+ * Build a Host-ready task.create start result (waiting_approval).
+ * identityId must come from server ExecutionContext — never trust client body identity.
+ */
+export function buildHostTaskCreateStartResult(input: {
+  request: AgentStartRunRequest;
+  identityId: string;
+  nowMs?: number;
+}): AgentRunResult {
+  const now = input.nowMs ?? Date.now();
+  const title = resolveTaskCreateTitle(input.request.input) ?? 'New task';
+  const goalId = resolveTaskCreateGoalId(input.request.input);
+  const runId = input.request.runId;
+  const payload: Record<string, unknown> = { title };
+  if (goalId) payload['goalId'] = goalId;
+
+  return AgentRunResultSchema.parse({
+    run: {
+      runId,
+      threadId: input.request.threadId,
+      conversationId: input.request.conversationId ?? null,
+      identityId: input.identityId,
+      agentType: 'task.create',
+      status: 'waiting_approval',
+      createdAt: now,
+      updatedAt: now,
+    },
+    state: {
+      messages: [
+        {
+          role: 'user',
+          content: title,
+          createdAt: now,
+        },
+      ],
+      intent: 'task-create',
+      stage: 'approval',
+      artifacts: [],
+      citations: [],
+      retrievedContext: [],
+      pendingActions: [
+        {
+          tool: 'create_task_template',
+          index: 0,
+          dependsOn: [],
+          rationale: 'Create a task template after Host approval.',
+          payload,
+        },
+      ],
+      approvedActions: [],
+      executedActions: [],
+      usage: {},
+      errors: [],
+    },
+    events: [
+      {
+        eventId: `${runId}:approval.required`,
+        runId,
+        sequence: 0,
+        type: 'approval.required',
+        createdAt: now,
+        data: {
+          agentType: 'task.create',
+          title,
+          ...(goalId ? { goalId } : {}),
+        },
+      },
+    ],
+    interrupts: [
+      {
+        runId,
+        threadId: input.request.threadId,
+        agentType: 'task.create',
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'Create a task template after Host approval.',
+            payload,
+          },
+        ],
+      },
+    ],
+  });
+}

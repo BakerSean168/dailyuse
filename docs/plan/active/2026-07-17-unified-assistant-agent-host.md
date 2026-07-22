@@ -792,7 +792,7 @@ packages/contracts/src/modules/ai/
 - 定义 AssistantCommand/Event、AgentProposal、ExecutionReceipt。 **（类型已冻结）**
 - 将 AgentAction 逐步收紧为 discriminated union。
 - 建立 Proposal revision、stale、precondition 和幂等规则。 **（ProposalKernel residual 320 部分：lifecycle + 幂等；precondition 产品规则仍待）**
-- 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。 **（部分：residual 355–387 Host Proposal/receipt/timeline；residual 419–429 task.create lane（live + domain + settle/receipt + AgentType + product toolMode 入口）；完整 Task 工作流与富编辑未齐）**
+- 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。 **（部分：residual 355–387 Host Proposal/receipt/timeline；residual 419–431 task.create lane（live + domain + settle/receipt + AgentType + product toolMode + start 基础）；完整 Task 工作流与富编辑未齐）**
 - 保留现有 LangGraph 和 Provider 实现。
 
 ### 阶段 2：Host Tool/Context/Capability
