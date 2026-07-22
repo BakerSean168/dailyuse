@@ -37,7 +37,9 @@ import {
 import { unwrap } from '@dailyuse/contracts/result';
 import {
   applyHostGoalPatchToAgentActions,
+  applyHostTaskPatchToAgentActions,
   dispatchHostProposalDecision,
+  isPrimaryTaskHostAgentRun,
 } from './hostProposalLifecycle';
 import {
   applyGoalDraft as applyGoalDraftHelper,
@@ -499,6 +501,20 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     const sourceActions = run.state.pendingActions.length
       ? run.state.pendingActions
       : run.state.approvedActions;
+    // Residual 423: primary task Host runs execute only create_task_template actions.
+    if (isPrimaryTaskHostAgentRun(run)) {
+      return sourceActions
+        .filter((action) => action.tool === 'create_task_template')
+        .map((action, index) => ({
+          ...action,
+          index,
+          dependsOn: [],
+          payload:
+            action.payload && typeof action.payload === 'object'
+              ? { ...(action.payload as Record<string, unknown>) }
+              : {},
+        }));
+    }
     const draftData = buildEditedGoalDraftData(run);
     const keyResults = Array.isArray(draftData.keyResults) ? draftData.keyResults : [];
     const taskTemplates = Array.isArray(draftData.taskTemplates) ? draftData.taskTemplates : [];
@@ -659,17 +675,25 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     hostOptions?: {
       title?: string;
       description?: string | null;
+      /** Residual 423: Host task.create optional linked goal id. */
+      goalId?: string | null;
     },
   ): AgentResumePayload {
     if (userDecision !== 'confirm') {
       return { userDecision };
     }
 
-    // Residual 365: Host lifecycle may revise title/description; executor consumes patched actions.
-    const approvedActions = applyHostGoalPatchToAgentActions(buildEditedApprovedActions(run), {
-      title: hostOptions?.title,
-      description: hostOptions?.description,
-    });
+    // Residual 365/423: Host lifecycle may revise fields; executor consumes patched actions.
+    const baseActions = buildEditedApprovedActions(run);
+    const approvedActions = isPrimaryTaskHostAgentRun(run)
+      ? applyHostTaskPatchToAgentActions(baseActions, {
+          title: hostOptions?.title,
+          goalId: hostOptions?.goalId,
+        })
+      : applyHostGoalPatchToAgentActions(baseActions, {
+          title: hostOptions?.title,
+          description: hostOptions?.description,
+        });
     return {
       userDecision,
       approvedActions,
@@ -766,6 +790,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       title?: string;
       /** Residual 365: Host-revised goal description applied to create_goal executor actions. */
       description?: string | null;
+      /** Residual 423: Host-revised task goalId applied to create_task_template actions. */
+      goalId?: string | null;
     },
   ) {
     if (!goalAgentRun.value || goalAgentResuming.value) return;
@@ -1006,12 +1032,14 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       revision?: number;
       title?: string;
       description?: string | null;
+      goalId?: string | null;
     }) => resumeGoalAgentRun('confirm', hostOptions),
     cancelGoalAgentRun: (hostOptions?: {
       skipHostLifecycle?: boolean;
       revision?: number;
       title?: string;
       description?: string | null;
+      goalId?: string | null;
     }) => resumeGoalAgentRun('cancel', hostOptions),
     continueGoalAgentExecution,
     retryGoalAgentExecution,

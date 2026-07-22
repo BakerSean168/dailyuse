@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -610,6 +610,198 @@ function taskDraftGoalId(run: AgentRunResult): string | null {
   return null;
 }
 
+/**
+ * Residual 419/423: AgentRun looks task-shaped when it carries task draft artifacts.
+ */
+export function isTaskShapedHostAgentRun(
+  result: AgentRunResult | null | undefined,
+): boolean {
+  if (!result?.state?.artifacts?.length) return false;
+  return result.state.artifacts.some(
+    (artifact) =>
+      artifact.kind === 'task_draft' ||
+      artifact.kind === 'task' ||
+      artifact.kind === 'task_template_draft',
+  );
+}
+
+/**
+ * Residual 423: exclusive Host task lane — task-shaped and not goal/knowledge primary.
+ * Avoids stealing normal goal.create runs that also plan create_task_template actions
+ * while still promoting residual 419 task_draft-only fixtures.
+ */
+export function isPrimaryTaskHostAgentRun(
+  result: AgentRunResult | null | undefined,
+): boolean {
+  if (!isTaskShapedHostAgentRun(result) || !result) return false;
+  const hasGoalDraft = result.state.artifacts.some((artifact) => artifact.kind === 'goal_draft');
+  const hasNoteDraft = result.state.artifacts.some(
+    (artifact) =>
+      artifact.kind === 'note_draft' ||
+      artifact.kind === 'knowledge_note_draft' ||
+      artifact.kind === 'knowledge_draft',
+  );
+  return !hasGoalDraft && !hasNoteDraft;
+}
+
+/**
+ * Residual 423: derive exclusive Host workbench AgentRun inputs for live AIChatView.
+ * Primary task-shaped goal session runs promote into taskAgentRun and leave goal null.
+ */
+export function resolveLiveHostWorkbenchAgentRuns(input: {
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  /** Optional dedicated task session field (future AgentType). */
+  taskAgentRun?: AgentRunResult | null;
+}): {
+  goalAgentRun: AgentRunResult | null;
+  noteAgentRun: AgentRunResult | null;
+  taskAgentRun: AgentRunResult | null;
+} {
+  const explicitTask =
+    input.taskAgentRun && isPrimaryTaskHostAgentRun(input.taskAgentRun)
+      ? input.taskAgentRun
+      : null;
+  const goal = input.goalAgentRun ?? null;
+  const note = input.noteAgentRun ?? null;
+
+  if (explicitTask) {
+    return {
+      goalAgentRun: goal && !isPrimaryTaskHostAgentRun(goal) ? goal : null,
+      noteAgentRun: note && !isPrimaryTaskHostAgentRun(note) ? note : null,
+      taskAgentRun: explicitTask,
+    };
+  }
+
+  if (goal && isPrimaryTaskHostAgentRun(goal)) {
+    return {
+      goalAgentRun: null,
+      noteAgentRun: note && !isPrimaryTaskHostAgentRun(note) ? note : null,
+      taskAgentRun: goal,
+    };
+  }
+
+  if (note && isPrimaryTaskHostAgentRun(note)) {
+    return {
+      goalAgentRun: goal,
+      noteAgentRun: null,
+      taskAgentRun: note,
+    };
+  }
+
+  return {
+    goalAgentRun: goal,
+    noteAgentRun: note,
+    taskAgentRun: null,
+  };
+}
+
+/**
+ * Residual 423: map Host-revised task title/goalId onto create_task_template executor actions.
+ * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
+ */
+export function applyHostTaskPatchToAgentActions(
+  actions: AgentAction[],
+  patch: {
+    title?: string;
+    goalId?: string | null;
+  },
+): AgentAction[] {
+  const title =
+    typeof patch.title === 'string' && patch.title.trim() ? patch.title.trim() : undefined;
+  const hasGoalId = patch.goalId !== undefined;
+  const goalId =
+    hasGoalId && typeof patch.goalId === 'string' && patch.goalId.trim()
+      ? patch.goalId.trim()
+      : hasGoalId
+        ? patch.goalId
+        : undefined;
+
+  if (!title && !hasGoalId) {
+    return actions.map((action) => ({ ...action, payload: { ...(action.payload ?? {}) } }));
+  }
+
+  return actions.map((action) => {
+    if (action.tool !== 'create_task_template') {
+      return {
+        ...action,
+        payload: { ...(action.payload ?? {}) },
+      };
+    }
+    const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
+    if (title) {
+      payload.title = title;
+      payload.name = title;
+    }
+    if (hasGoalId) {
+      payload.goalId = goalId;
+    }
+    return {
+      ...action,
+      payload,
+    };
+  });
+}
+
+/**
+ * Residual 423: pure fallback CreateTaskTemplate transport body for Host task approve
+ * when no AgentRun confirm path owns the run. Prefer goal-session confirm for goal.create
+ * primary-task sessions; this is the domain createTemplate fallback only.
+ * Does not call any mutation port by itself.
+ */
+export function buildHostTaskCreateTemplateRequest(input: {
+  title: string;
+  goalId?: string | null;
+  description?: string | null;
+}): {
+  name: string;
+  description: string | null;
+  taskType: 'OneTime';
+  timeConfig: {
+    timeType: 'AllDay';
+    startDate: null;
+    timePoint: null;
+    timeRange: null;
+  };
+  importance: 'Moderate';
+  tags: string[];
+  goalBinding: null;
+  parentTaskId: null;
+  folderId: null;
+  color: null;
+  recurrenceRule: null;
+  reminderConfig: null;
+} | null {
+  const name = input.title.trim();
+  if (!name) return null;
+  const goalId = typeof input.goalId === 'string' ? input.goalId.trim() : '';
+  const descriptionRaw =
+    typeof input.description === 'string' && input.description.trim()
+      ? input.description.trim()
+      : goalId
+        ? `Linked goal ${goalId}`
+        : null;
+  return {
+    name,
+    description: descriptionRaw,
+    taskType: 'OneTime',
+    timeConfig: {
+      timeType: 'AllDay',
+      startDate: null,
+      timePoint: null,
+      timeRange: null,
+    },
+    importance: 'Moderate',
+    tags: goalId ? [`goal:${goalId}`] : [],
+    goalBinding: null,
+    parentTaskId: null,
+    folderId: null,
+    color: null,
+    recurrenceRule: null,
+    reminderConfig: null,
+  };
+}
+
 export function buildHostExecutionReceiptItems(input: {
   goalAgentRun?: AgentRunResult | null;
   noteAgentRun?: AgentRunResult | null;
@@ -804,13 +996,8 @@ export function resolveHostWorkbenchReopenFromAgentRun(
 ): HostWorkbenchReopenKind {
   if (!result?.run) return 'none';
   const agentType = result.run.agentType;
-  // Residual 419: task.create Host lane via task-shaped artifacts (no AgentType yet).
-  const looksLikeTaskHostRun = result.state.artifacts.some(
-    (artifact) =>
-      artifact.kind === 'task_draft' ||
-      artifact.kind === 'task' ||
-      artifact.kind === 'task_template_draft',
-  );
+  // Residual 419/423: task.create Host lane via task-shaped artifacts (no AgentType yet).
+  const looksLikeTaskHostRun = isTaskShapedHostAgentRun(result);
   if (
     agentType !== 'goal.create'
     && agentType !== 'knowledge.generate'

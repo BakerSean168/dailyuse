@@ -280,4 +280,21 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('/tasks/');
     expect(helper).not.toContain('executeApproved');
   });
+
+  it('Host task.create live lane + domain executor foundation (residual 423)', () => {
+    expect(helper).toContain('resolveLiveHostWorkbenchAgentRuns');
+    expect(helper).toContain('isPrimaryTaskHostAgentRun');
+    expect(helper).toContain('applyHostTaskPatchToAgentActions');
+    expect(helper).toContain('buildHostTaskCreateTemplateRequest');
+    expect(helper).not.toContain('executeApproved');
+    expect(chatView).toContain('resolveLiveHostWorkbenchAgentRuns');
+    expect(chatView).toContain('liveHostWorkbenchAgentRuns');
+    expect(chatView).toContain('taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun');
+    expect(chatView).toContain('buildHostTaskCreateTemplateRequest');
+    expect(chatView).toContain('createTaskTemplate');
+    expect(chatView).toContain("source === 'task'");
+    // Domain executor uses skipHostLifecycle resume or createTemplate fallback.
+    expect(chatView).toMatch(/confirmGoalAgentRun\(\{[\s\S]*skipHostLifecycle: true/);
+    expect(chatView).not.toContain('domain Task executor not wired');
+  });
 });

@@ -360,8 +360,10 @@ import { useAIChatView } from '../composables/useAIChatView';
 import {
   buildPendingHostProposalItems,
   buildHostExecutionReceiptItems,
+  buildHostTaskCreateTemplateRequest,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
+  resolveLiveHostWorkbenchAgentRuns,
   shouldOpenHostWorkbenchFromAgentRun,
   dispatchHostProposalDecision,
   normalizeHostProposalRejectReason,
@@ -369,12 +371,16 @@ import {
   type HostProposalPanelItem,
   type HostTimelineArtifactItem,
 } from '../composables/hostProposalLifecycle';
+import { useTaskTemplates } from '../../task/composables/useTaskTemplates';
+import type { CreateTaskTemplateReq } from '@dailyuse/contracts/task';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
 import { useAI } from '../composables/useAI';
 
 const { t } = useI18n();
 const router = useRouter();
 const { service: aiHostService } = useAI();
+/** Residual 423: domain Task template create fallback for Host task approve. */
+const { createTemplate: createTaskTemplate } = useTaskTemplates();
 
 /**
  * V2 shell integration props (UI_REDESIGN_V2_PLAN §2.1).
@@ -572,19 +578,29 @@ const hasWorkflowArtifact = computed(() => {
   return false;
 });
 
-// Residual 357/359/361/367: Host proposal workbench rows (waiting_approval only).
-const hostProposalItems = computed(() =>
-  buildPendingHostProposalItems({
+// Residual 357/359/361/367/419/423: Host proposal workbench rows (waiting_approval only).
+// Residual 423: promote primary task-shaped session runs into exclusive task.create lane.
+const liveHostWorkbenchAgentRuns = computed(() =>
+  resolveLiveHostWorkbenchAgentRuns({
     goalAgentRun: goalAgentRun.value,
     noteAgentRun: noteAgentRun.value,
   }),
 );
 
-/** Residual 379: Host execution receipt rows after approve + domain executor. */
+const hostProposalItems = computed(() =>
+  buildPendingHostProposalItems({
+    goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
+    noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
+    taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
+  }),
+);
+
+/** Residual 379/423: Host execution receipt rows after approve + domain executor. */
 const hostExecutionReceiptItems = computed(() =>
   buildHostExecutionReceiptItems({
-    goalAgentRun: goalAgentRun.value,
-    noteAgentRun: noteAgentRun.value,
+    goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
+    noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
+    taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
   }),
 );
 
@@ -688,6 +704,7 @@ async function handleHostProposalRevise(payload: {
     targetPath?: string;
     contentMarkdown?: string;
     description?: string | null;
+    goalId?: string | null;
   };
   dirty: boolean;
 }) {
@@ -721,6 +738,7 @@ async function handleHostProposalApprove(payload: {
     targetPath?: string;
     contentMarkdown?: string;
     description?: string | null;
+    goalId?: string | null;
   };
   dirty: boolean;
 }) {
@@ -773,8 +791,25 @@ async function handleHostProposalApprove(payload: {
       });
       return;
     }
-    // Residual 419: task.create Host lifecycle only — domain Task executor not wired yet.
+    // Residual 423: task.create domain executor after Host lifecycle approve.
     if (payload.item.source === 'task') {
+      const title = payload.patch.title ?? payload.item.title;
+      const goalId = payload.patch.goalId ?? payload.item.goalId;
+      // Prefer AgentRun resume when the live goal session owns this task-shaped run.
+      if (goalAgentRun.value?.run.runId === payload.item.runId) {
+        await confirmGoalAgentRun({
+          skipHostLifecycle: true,
+          revision,
+          title,
+          goalId,
+        });
+        return;
+      }
+      // Fallback: pure domain Task template create (no AgentRun resume owner).
+      const req = buildHostTaskCreateTemplateRequest({ title, goalId });
+      if (req) {
+        await createTaskTemplate(req as CreateTaskTemplateReq);
+      }
       return;
     }
   } finally {
@@ -808,6 +843,17 @@ async function handleHostProposalReject(payload: {
         skipHostLifecycle: true,
         revision: payload.revision,
       });
+      return;
+    }
+    // Residual 423: cancel primary task-shaped AgentRun via goal session when owned there.
+    if (payload.item.source === 'task') {
+      if (goalAgentRun.value?.run.runId === payload.item.runId) {
+        await cancelGoalAgentRun({
+          skipHostLifecycle: true,
+          revision: payload.revision,
+        });
+      }
+      return;
     }
   } finally {
     hostProposalBusy.value = false;

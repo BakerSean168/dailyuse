@@ -3780,6 +3780,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、Task 域 executor。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-22（阶段 6 残留四百二十三轮）：Host **task.create** 实时 lane 接线 + 域 executor 基础（仍不打勾）——
+> `resolveLiveHostWorkbenchAgentRuns` 排他接入 AIChatView；primary task 经 goal session confirm 或
+> `buildHostTaskCreateTemplateRequest`+`createTemplate` fallback；`applyHostTaskPatchToAgentActions`。
+> 状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -4294,6 +4299,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百二十轮：§13.2 focused evidence suite re-run（414 tests，residuals 250–419 锁；不改 checkbox）。
   残留四百二十一轮：Goal 可观测性 i18n 去 node 产品语 + scaffold/driver task.create unit 步（16→17）。
   残留四百二十二轮：§13.2 focused evidence suite re-run（415 tests，residuals 250–421 锁；不改 checkbox）。
+  残留四百二十三轮：Host task.create 实时 lane + 域 executor 基础（live resolve + goal resume/createTemplate）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -4411,6 +4417,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百二十轮：§13.2 focused evidence suite re-run (414 tests, residuals 250–419 locks, no checkbox changes)。
   残留四百二十一轮：Goal observability i18n drops LangGraph node product wording + cross-end task.create unit step (16→17)。
   残留四百二十二轮：§13.2 focused evidence suite re-run (415 tests, residuals 250–421 locks, no checkbox changes)。
+  残留四百二十三轮：Host task.create live lane + domain executor foundation (resolveLive + resume/createTemplate)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -4614,6 +4621,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留四百二十轮：tip 上 414 项 focused evidence suite（含 residual 250–419 Host task.create lane 锁）通过；仍不构成全量 PR 门禁证据。
   残留四百二十一轮：Goal diagnosticWorkflowStepTiming i18n + scaffold/driver 17-step（task.create lane unit）落地；仍不构成 Task 域 executor/Playwright 全量 E2E 证据。
   残留四百二十二轮：tip 上 415 项 focused evidence suite（含 residual 250–421 diagnosticWorkflowStepTiming + task.create unit 步锁）通过；仍不构成全量 PR 门禁证据。
+  残留四百二十三轮：Host task.create live lane + domain executor 基础落地；仍不构成完整 Task 工作台/AgentType task.create 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

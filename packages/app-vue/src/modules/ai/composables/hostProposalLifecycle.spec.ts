@@ -18,7 +18,12 @@ import {
   isHostProposalDraftDirty,
   partitionHostTimelineArtifactsBySurface,
   collectHostTimelineSurfaceIsolationViolations,
-  composeHostWorkbenchTimelineArtifacts
+  composeHostWorkbenchTimelineArtifacts,
+  applyHostTaskPatchToAgentActions,
+  buildHostTaskCreateTemplateRequest,
+  isPrimaryTaskHostAgentRun,
+  isTaskShapedHostAgentRun,
+  resolveLiveHostWorkbenchAgentRuns,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -1258,3 +1263,68 @@ describe('Host task.create proposal lane (residual 419)', () => {
     ).toBe(false);
   });
 });
+
+describe('Host task.create live lane + domain executor foundation (residual 423)', () => {
+  it('classifies primary task-shaped runs and exclusive live workbench routing', () => {
+    const taskOnly = taskWaitingRun();
+    expect(isTaskShapedHostAgentRun(taskOnly)).toBe(true);
+    expect(isPrimaryTaskHostAgentRun(taskOnly)).toBe(true);
+
+    const goalWithDraft = taskWaitingRun();
+    goalWithDraft.state.artifacts = [
+      { kind: 'goal_draft', title: 'G', data: {} },
+      { kind: 'task_draft', title: 'T', data: {} },
+    ] as typeof goalWithDraft.state.artifacts;
+    expect(isTaskShapedHostAgentRun(goalWithDraft)).toBe(true);
+    expect(isPrimaryTaskHostAgentRun(goalWithDraft)).toBe(false);
+
+    const live = resolveLiveHostWorkbenchAgentRuns({ goalAgentRun: taskOnly });
+    expect(live.goalAgentRun).toBeNull();
+    expect(live.taskAgentRun?.run.runId).toBe('run-task-1');
+
+    const goalLane = resolveLiveHostWorkbenchAgentRuns({ goalAgentRun: goalWithDraft });
+    expect(goalLane.goalAgentRun?.run.runId).toBe('run-task-1');
+    expect(goalLane.taskAgentRun).toBeNull();
+  });
+
+  it('patches create_task_template title + goalId and builds createTemplate fallback body', () => {
+    const actions = [
+      {
+        tool: 'create_task_template' as const,
+        rationale: 'r',
+        payload: { title: 'Old', goalId: 'g0' },
+        dependsOn: [] as number[],
+      },
+      {
+        tool: 'create_goal' as const,
+        rationale: 'g',
+        payload: { title: 'Goal' },
+        dependsOn: [] as number[],
+      },
+    ];
+    const patched = applyHostTaskPatchToAgentActions(actions as never, {
+      title: '  New Task  ',
+      goalId: 'goal-42',
+    });
+    expect(patched[0]?.payload).toMatchObject({
+      title: 'New Task',
+      name: 'New Task',
+      goalId: 'goal-42',
+    });
+    expect(patched[1]?.payload).toEqual({ title: 'Goal' });
+
+    const req = buildHostTaskCreateTemplateRequest({
+      title: ' Ship it ',
+      goalId: 'goal-9',
+    });
+    expect(req).toMatchObject({
+      name: 'Ship it',
+      taskType: 'OneTime',
+      importance: 'Moderate',
+      tags: ['goal:goal-9'],
+      timeConfig: { timeType: 'AllDay', startDate: null, timePoint: null, timeRange: null },
+    });
+    expect(buildHostTaskCreateTemplateRequest({ title: '   ' })).toBeNull();
+  });
+});
+
