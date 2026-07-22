@@ -229,6 +229,11 @@ const i18n = createI18n({
             hostReceiptSkipped: 'Skipped',
             hostReceiptFailed: 'Failed',
             hostReceiptEntities: 'Entities: {ids}',
+            hostTimelineTitle: 'Host artifacts (timeline)',
+            hostTimelineProposal: 'Pending proposal',
+            hostTimelineReceipt: 'Execution report',
+            hostTimelineStatusPending: 'Awaiting approval',
+            hostTimelineOpenWorkbench: 'Open Host workbench',
             show: 'Show context',
             hide: 'Hide context',
             todayOverview: 'Today',
@@ -1193,6 +1198,7 @@ function mountView() {
         // Residual 357: Host proposal panel real template for ai-host-proposal-* contracts.
         AIHostProposalPanel: false,
         AIHostExecutionReceiptPanel: false,
+        AIHostTimelineArtifactStrip: false,
       },
     },
   });

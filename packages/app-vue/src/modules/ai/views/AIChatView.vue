@@ -145,6 +145,11 @@
           >
             {{ workflowStatusText }}
           </p>
+          <!-- Residual 383: Host Artifact cards in Conversation message timeline -->
+          <AIHostTimelineArtifactStrip
+            :items="hostTimelineArtifactItems"
+            @open="openHostWorkbenchFromTimeline"
+          />
         </template>
       </AIMessagePanel>
 
@@ -242,10 +247,11 @@
     </section>
 
     <!--
-      Artifact rail / Host proposal + execution-report workbench (residual 371/379/381):
+      Artifact rail / Host proposal + execution-report workbench (residual 371/379/381/383):
       AIContextPanel is the structured right workbench for Goal/Knowledge artifacts,
       waiting_approval Host proposals, and post-approve Host execution receipts.
       Residual 381 reopens this rail from Conversation AgentRun history.
+      Residual 383 also surfaces Host Artifact cards in the message timeline.
       Actions near composer remain lifecycle shortcuts; Host revise/approve/reject
       and receipt presentation live here.
     -->
@@ -336,6 +342,7 @@ import AIWorkflowActionBar from '../components/AIWorkflowActionBar.vue';
 import AIContextPanel from '../components/AIContextPanel.vue';
 import AIHostProposalPanel from '../components/AIHostProposalPanel.vue';
 import AIHostExecutionReceiptPanel from '../components/AIHostExecutionReceiptPanel.vue';
+import AIHostTimelineArtifactStrip from '../components/AIHostTimelineArtifactStrip.vue';
 import DailyTodoWidget from '../../task/components/widgets/DailyTodoWidget.vue';
 import UpcomingRemindersWidget from '../../reminder/components/widgets/UpcomingRemindersWidget.vue';
 import GoalProgressWidget from '../../goal/components/widgets/GoalProgressWidget.vue';
@@ -347,6 +354,7 @@ import { useAIChatView } from '../composables/useAIChatView';
 import {
   buildPendingHostProposalItems,
   buildHostExecutionReceiptItems,
+  buildHostTimelineArtifactItems,
   shouldOpenHostWorkbenchFromAgentRun,
   dispatchHostProposalDecision,
   dispatchHostProposalRevise,
@@ -569,6 +577,19 @@ const hostExecutionReceiptItems = computed(() =>
     noteAgentRun: noteAgentRun.value,
   }),
 );
+
+/** Residual 383: compact Host Artifact cards in the Conversation message timeline. */
+const hostTimelineArtifactItems = computed(() =>
+  buildHostTimelineArtifactItems({
+    proposals: hostProposalItems.value,
+    receipts: hostExecutionReceiptItems.value,
+  }),
+);
+
+function openHostWorkbenchFromTimeline() {
+  // Residual 383: timeline card reopens the right Host proposal/receipt workbench.
+  contextPanelOpen.value = true;
+}
 
 /** Residual 371: pending Host proposals are first-class right-workbench context. */
 const hasPendingHostProposals = computed(() => hostProposalItems.value.length > 0);

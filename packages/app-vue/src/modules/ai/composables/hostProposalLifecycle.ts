@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -627,4 +627,65 @@ export function shouldOpenHostWorkbenchFromAgentRun(
   result: AgentRunResult | null | undefined,
 ): boolean {
   return resolveHostWorkbenchReopenFromAgentRun(result) !== 'none';
+}
+
+/**
+ * Residual 383: compact Host Artifact card for the Conversation message timeline.
+ * Surfaces proposal (awaiting approval) or receipt (post-execution) without owning
+ * mutation lifecycle — click reopens the right workbench.
+ */
+export type HostTimelineArtifactItem = {
+  id: string;
+  surface: 'proposal' | 'receipt';
+  runId: string;
+  proposalId: string;
+  kind: AgentRunHostProposalKind;
+  source: HostProposalPanelSource;
+  title: string;
+  summary: string;
+  statusLabelKey: 'pending' | 'ok' | 'partial' | 'failed' | 'cancelled';
+};
+
+/**
+ * Residual 383: derive timeline Artifact cards from current Host proposal + receipt rows.
+ */
+export function buildHostTimelineArtifactItems(input: {
+  proposals?: HostProposalPanelItem[];
+  receipts?: HostExecutionReceiptItem[];
+}): HostTimelineArtifactItem[] {
+  const items: HostTimelineArtifactItem[] = [];
+
+  for (const proposal of input.proposals ?? []) {
+    items.push({
+      id: `timeline-proposal:${proposal.proposalId}`,
+      surface: 'proposal',
+      runId: proposal.runId,
+      proposalId: proposal.proposalId,
+      kind: proposal.kind,
+      source: proposal.source,
+      title: proposal.title,
+      summary: proposal.summary || proposal.description || '',
+      statusLabelKey: 'pending',
+    });
+  }
+
+  for (const receipt of input.receipts ?? []) {
+    let statusLabelKey: HostTimelineArtifactItem['statusLabelKey'] = 'partial';
+    if (receipt.runStatus === 'cancelled') statusLabelKey = 'cancelled';
+    else if (receipt.runStatus === 'failed') statusLabelKey = 'failed';
+    else if (receipt.ok) statusLabelKey = 'ok';
+    items.push({
+      id: `timeline-receipt:${receipt.receiptKey}`,
+      surface: 'receipt',
+      runId: receipt.runId,
+      proposalId: receipt.proposalId,
+      kind: receipt.kind,
+      source: receipt.source,
+      title: receipt.title,
+      summary: receipt.summary,
+      statusLabelKey,
+    });
+  }
+
+  return items;
 }

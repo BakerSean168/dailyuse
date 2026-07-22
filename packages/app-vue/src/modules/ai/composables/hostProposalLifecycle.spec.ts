@@ -3,6 +3,7 @@ import {
   applyHostGoalPatchToAgentActions,
   applyHostKnowledgePatchToAgentActions,
   buildHostExecutionReceiptItems,
+  buildHostTimelineArtifactItems,
   resolveHostWorkbenchReopenFromAgentRun,
   shouldOpenHostWorkbenchFromAgentRun,
   buildHostProposalPatchFromDraft,
@@ -565,6 +566,57 @@ describe('resolveHostWorkbenchReopenFromAgentRun (residual 381)', () => {
       'none',
     );
     expect(shouldOpenHostWorkbenchFromAgentRun(null)).toBe(false);
+  });
+});
+
+describe('buildHostTimelineArtifactItems (residual 383)', () => {
+  it('maps pending proposals and terminal receipts into timeline Artifact cards', () => {
+    const proposals = buildPendingHostProposalItems({
+      goalAgentRun: goalWaitingRun('waiting_approval'),
+    });
+    const completed = goalWaitingRun('completed');
+    completed.state.pendingActions = [];
+    completed.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        entityId: 'goal-1',
+        message: 'created',
+      },
+    ];
+    // Note: proposal + receipt for same kind may coexist only across different runs;
+    // here we combine goal proposal with a note receipt for two cards.
+    const noteCompleted = noteWaitingRun('completed');
+    noteCompleted.state.pendingActions = [];
+    noteCompleted.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        entityId: 'note-1',
+        message: 'created',
+      },
+    ];
+    const receipts = buildHostExecutionReceiptItems({
+      noteAgentRun: noteCompleted,
+    });
+    const items = buildHostTimelineArtifactItems({ proposals, receipts });
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({
+      surface: 'proposal',
+      statusLabelKey: 'pending',
+      kind: 'goal.create',
+      title: 'Ship Host Panel',
+    });
+    expect(items[1]).toMatchObject({
+      surface: 'receipt',
+      statusLabelKey: 'ok',
+      kind: 'knowledge.write',
+      title: 'AI Note Draft',
+    });
+  });
+
+  it('returns empty when Host has no proposal or receipt rows', () => {
+    expect(buildHostTimelineArtifactItems({})).toEqual([]);
   });
 });
 

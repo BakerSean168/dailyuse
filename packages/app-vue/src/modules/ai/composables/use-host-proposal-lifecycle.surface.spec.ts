@@ -16,6 +16,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
   const panel = readFileSync(resolve(dir, '../components/AIHostProposalPanel.vue'), 'utf8');
   const receiptPanel = readFileSync(resolve(dir, '../components/AIHostExecutionReceiptPanel.vue'), 'utf8');
+  const timelineStrip = readFileSync(resolve(dir, '../components/AIHostTimelineArtifactStrip.vue'), 'utf8');
   const contextPanel = readFileSync(resolve(dir, '../components/AIContextPanel.vue'), 'utf8');
 
   it('routes confirm/cancel lifecycle via dispatchAssistant Host commands', () => {
@@ -29,6 +30,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('HostExecutionReceiptItem');
     expect(helper).toContain('resolveHostWorkbenchReopenFromAgentRun');
     expect(helper).toContain('shouldOpenHostWorkbenchFromAgentRun');
+    expect(helper).toContain('buildHostTimelineArtifactItems');
+    expect(helper).toContain('HostTimelineArtifactItem');
     expect(helper).toContain('dispatchHostProposalRevise');
     expect(helper).toContain("type: 'revise_proposal'");
     expect(helper).toContain('buildHostProposalPatchFromDraft');
@@ -135,5 +138,19 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatViewComposable).toContain('return result');
     expect(chatViewComposable).toContain('Residual 381');
     expect(chatViewComposable).toMatch(/selectAgentRun\(run: AgentRun\).*Promise/);
+  });
+
+  it('mounts Host timeline Artifact cards in message workflow surface (residual 383)', () => {
+    expect(chatView).toContain('AIHostTimelineArtifactStrip');
+    expect(chatView).toContain('hostTimelineArtifactItems');
+    expect(chatView).toContain('buildHostTimelineArtifactItems');
+    expect(chatView).toContain('openHostWorkbenchFromTimeline');
+    expect(chatView).toContain('Residual 383');
+    expect(timelineStrip).toContain('data-testid="ai-host-timeline-artifact-strip"');
+    expect(timelineStrip).toContain('ai-host-timeline-artifact-');
+    expect(timelineStrip).toContain('hostTimelineOpenWorkbench');
+    expect(timelineStrip).not.toContain('executeApproved');
+    expect(timelineStrip).not.toContain('resumeAgentRun');
+    expect(timelineStrip).not.toContain('dispatchAssistant');
   });
 });
