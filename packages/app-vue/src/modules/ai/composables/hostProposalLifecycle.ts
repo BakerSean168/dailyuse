@@ -1,9 +1,10 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
- * snapshots. Never calls ProposalKernel mutation execution from this module.
+ * snapshots and post-execution Host receipt rows. Never calls
+ * ProposalKernel mutation execution from this module.
  */
 import type {
   AgentAction,
@@ -407,6 +408,138 @@ export function applyHostGoalPatchToAgentActions(
       payload,
     };
   });
+}
+
+/**
+ * Residual 379: Host execution receipt workbench row.
+ * Presentation of post-approve executor outcomes only — never Host kernel mutation execution.
+ */
+export type HostExecutionReceiptItem = {
+  runId: string;
+  proposalId: string;
+  revision: number;
+  kind: AgentRunHostProposalKind;
+  source: HostProposalPanelSource;
+  runStatus: 'completed' | 'failed' | 'cancelled';
+  ok: boolean;
+  title: string;
+  summary: string;
+  executedCount: number;
+  failedCount: number;
+  skippedCount: number;
+  entityIds: string[];
+  /** Stable UI key; not a Host mutation request id. */
+  receiptKey: string;
+};
+
+const HOST_RECEIPT_STATUSES = new Set(['completed', 'failed', 'cancelled']);
+
+function summarizeExecutedActions(run: AgentRunResult): {
+  executedCount: number;
+  failedCount: number;
+  skippedCount: number;
+  entityIds: string[];
+  ok: boolean;
+  summary: string;
+} {
+  const actions = run.state.executedActions ?? [];
+  let executedCount = 0;
+  let failedCount = 0;
+  let skippedCount = 0;
+  const entityIds: string[] = [];
+  for (const action of actions) {
+    if (action.status === 'executed') executedCount += 1;
+    else if (action.status === 'failed') failedCount += 1;
+    else if (action.status === 'skipped') skippedCount += 1;
+    if (typeof action.entityId === 'string' && action.entityId.trim()) {
+      entityIds.push(action.entityId.trim());
+    }
+  }
+  const ok = run.run.status === 'completed' && failedCount === 0;
+  const parts = [
+    `${executedCount} executed`,
+    `${skippedCount} skipped`,
+    `${failedCount} failed`,
+  ];
+  const firstError = run.state.errors?.[0];
+  const summary = firstError
+    ? `${parts.join(', ')}; ${firstError}`
+    : parts.join(', ');
+  return { executedCount, failedCount, skippedCount, entityIds, ok, summary };
+}
+
+/**
+ * Residual 379: build Host execution receipt rows from completed/failed/cancelled
+ * Goal/Knowledge AgentRun snapshots after Host approve + domain executor.
+ * waiting_approval / waiting_execution never produce receipts (still pending).
+ * Does not call Host kernel mutation execution or any mutation port.
+ */
+export function buildHostExecutionReceiptItems(input: {
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+}): HostExecutionReceiptItem[] {
+  const items: HostExecutionReceiptItem[] = [];
+
+  const goalRun = input.goalAgentRun ?? null;
+  if (goalRun && HOST_RECEIPT_STATUSES.has(goalRun.run.status)) {
+    const status = goalRun.run.status as HostExecutionReceiptItem['runStatus'];
+    const ref = buildAgentRunHostProposalRef(goalRun.run.runId, 'goal.create');
+    const counts = summarizeExecutedActions(goalRun);
+    // Only surface when execution actually started (actions present) or terminal failed/cancelled.
+    if (
+      counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
+      items.push({
+        runId: goalRun.run.runId,
+        proposalId: ref.proposalId,
+        revision: getRememberedHostProposalRevision(ref.proposalId, ref.revision),
+        kind: 'goal.create',
+        source: 'goal',
+        runStatus: status,
+        ok: counts.ok,
+        title: goalDraftTitle(goalRun) || `Goal run ${goalRun.run.runId}`,
+        summary: counts.summary,
+        executedCount: counts.executedCount,
+        failedCount: counts.failedCount,
+        skippedCount: counts.skippedCount,
+        entityIds: counts.entityIds,
+        receiptKey: `host-receipt:${ref.proposalId}`,
+      });
+    }
+  }
+
+  const noteRun = input.noteAgentRun ?? null;
+  if (noteRun && HOST_RECEIPT_STATUSES.has(noteRun.run.status)) {
+    const status = noteRun.run.status as HostExecutionReceiptItem['runStatus'];
+    const ref = buildAgentRunHostProposalRef(noteRun.run.runId, 'knowledge.write');
+    const counts = summarizeExecutedActions(noteRun);
+    if (
+      counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
+      items.push({
+        runId: noteRun.run.runId,
+        proposalId: ref.proposalId,
+        revision: getRememberedHostProposalRevision(ref.proposalId, ref.revision),
+        kind: 'knowledge.write',
+        source: 'knowledge',
+        runStatus: status,
+        ok: counts.ok,
+        title: knowledgeDraftTitle(noteRun) || `Knowledge run ${noteRun.run.runId}`,
+        summary: counts.summary,
+        executedCount: counts.executedCount,
+        failedCount: counts.failedCount,
+        skippedCount: counts.skippedCount,
+        entityIds: counts.entityIds,
+        receiptKey: `host-receipt:${ref.proposalId}`,
+      });
+    }
+  }
+
+  return items;
 }
 
 export function buildPendingHostProposalItems(input: {

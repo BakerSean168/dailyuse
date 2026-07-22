@@ -15,6 +15,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   const types = readFileSync(resolve(dir, 'types.ts'), 'utf8');
   const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
   const panel = readFileSync(resolve(dir, '../components/AIHostProposalPanel.vue'), 'utf8');
+  const receiptPanel = readFileSync(resolve(dir, '../components/AIHostExecutionReceiptPanel.vue'), 'utf8');
   const contextPanel = readFileSync(resolve(dir, '../components/AIContextPanel.vue'), 'utf8');
 
   it('routes confirm/cancel lifecycle via dispatchAssistant Host commands', () => {
@@ -24,6 +25,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain('dispatchAssistant');
     expect(helper).toMatch(/service\s*\.\s*dispatchAssistant/);
     expect(helper).toContain('buildPendingHostProposalItems');
+    expect(helper).toContain('buildHostExecutionReceiptItems');
+    expect(helper).toContain('HostExecutionReceiptItem');
     expect(helper).toContain('dispatchHostProposalRevise');
     expect(helper).toContain("type: 'revise_proposal'");
     expect(helper).toContain('buildHostProposalPatchFromDraft');
@@ -73,7 +76,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(chatView).toContain('hasPendingHostProposals');
     expect(chatView).toContain('hasPendingHostProposals.value');
     expect(chatView).toContain(':host-proposal-count="hostProposalItems.length"');
-    expect(chatView).toContain('auto-open right workbench when Host proposals');
+    expect(chatView).toContain('auto-open right workbench for Host proposals or execution receipts');
     expect(chatView).toContain('targetPath: payload.patch.targetPath');
     expect(chatView).toContain('contentMarkdown: payload.patch.contentMarkdown');
     expect(chatView).toContain('title: payload.patch.title ?? payload.item.title');
@@ -98,5 +101,24 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(contextPanel).toContain('hostProposalCount');
     expect(contextPanel).toContain('ai-context-host-proposal-count');
     expect(contextPanel).toContain('hostWorkbenchTitle');
+  });
+
+  it('mounts Host execution receipt panel after approve (residual 379)', () => {
+    expect(chatView).toContain('AIHostExecutionReceiptPanel');
+    expect(chatView).toContain('hostExecutionReceiptItems');
+    expect(chatView).toContain('buildHostExecutionReceiptItems');
+    expect(chatView).toContain('hasHostExecutionReceipts');
+    expect(chatView).toContain(':host-execution-receipt-count="hostExecutionReceiptItems.length"');
+    expect(chatView).toContain('hasHostExecutionReceipts.value');
+    expect(receiptPanel).toContain('data-testid="ai-host-execution-receipt-panel"');
+    expect(receiptPanel).toContain('ai-host-execution-receipt-');
+    expect(receiptPanel).toContain('ai-host-execution-receipt-status-');
+    expect(receiptPanel).toContain('ai-host-execution-receipt-summary-');
+    expect(receiptPanel).not.toContain('executeApproved');
+    expect(receiptPanel).not.toContain('resumeAgentRun');
+    expect(receiptPanel).not.toContain('dispatchAssistant');
+    expect(contextPanel).toContain('hostExecutionReceiptCount');
+    expect(contextPanel).toContain('ai-context-host-receipt-count');
+    expect(contextPanel).toContain('hostReceiptPending');
   });
 });

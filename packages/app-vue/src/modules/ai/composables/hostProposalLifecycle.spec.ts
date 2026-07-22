@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   applyHostGoalPatchToAgentActions,
   applyHostKnowledgePatchToAgentActions,
+  buildHostExecutionReceiptItems,
   buildHostProposalPatchFromDraft,
   buildPendingHostProposalItems,
   dispatchHostProposalDecision,
@@ -423,3 +424,108 @@ describe('applyHostGoalPatchToAgentActions (residual 365)', () => {
     expect(patched[0]?.payload).not.toBe(actions[0]?.payload);
   });
 });
+
+describe('buildHostExecutionReceiptItems (residual 379)', () => {
+  function goalCompletedRun(): AgentRunResult {
+    const run = goalWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.approvedActions = [
+      {
+        tool: 'create_goal',
+        payload: { title: 'Ship Host Panel', description: 'Initial goal description' },
+        rationale: 'Create the approved goal draft after user confirmation.',
+        index: 0,
+        dependsOn: [],
+      },
+    ];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        entityId: 'goal-1',
+        message: 'created',
+      },
+      {
+        tool: 'create_key_result',
+        status: 'skipped',
+        message: 'skipped',
+      },
+    ];
+    return run;
+  }
+
+  function noteFailedRun(): AgentRunResult {
+    const run = noteWaitingRun('failed');
+    run.state.pendingActions = [];
+    run.state.approvedActions = [
+      {
+        tool: 'create_knowledge_note',
+        payload: { targetSubpath: 'notes/ai', contentMarkdown: '# body' },
+        rationale: 'Persist the approved knowledge note draft.',
+        index: 0,
+        dependsOn: [],
+      },
+    ];
+    run.state.executedActions = [
+      {
+        tool: 'create_knowledge_note',
+        status: 'failed',
+        message: 'write denied',
+      },
+    ];
+    run.state.errors = ['write denied'];
+    return run;
+  }
+
+  it('lists completed/failed Host execution receipts with counts and entity ids', () => {
+    const items = buildHostExecutionReceiptItems({
+      goalAgentRun: goalCompletedRun(),
+      noteAgentRun: noteFailedRun(),
+    });
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({
+      source: 'goal',
+      kind: 'goal.create',
+      runStatus: 'completed',
+      ok: true,
+      title: 'Ship Host Panel',
+      executedCount: 1,
+      skippedCount: 1,
+      failedCount: 0,
+      entityIds: ['goal-1'],
+      receiptKey: 'host-receipt:agent-run:run-1:goal.create',
+    });
+    expect(items[1]).toMatchObject({
+      source: 'knowledge',
+      kind: 'knowledge.write',
+      runStatus: 'failed',
+      ok: false,
+      title: 'AI Note Draft',
+      executedCount: 0,
+      failedCount: 1,
+    });
+    expect(items[1]!.summary).toContain('write denied');
+  });
+
+  it('excludes waiting_approval and waiting_execution (no receipt yet)', () => {
+    expect(
+      buildHostExecutionReceiptItems({
+        goalAgentRun: goalWaitingRun('waiting_approval'),
+        noteAgentRun: noteWaitingRun('waiting_execution'),
+      }),
+    ).toEqual([]);
+  });
+
+  it('includes cancelled terminal runs even without executed actions', () => {
+    const items = buildHostExecutionReceiptItems({
+      goalAgentRun: goalWaitingRun('cancelled'),
+    });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      runStatus: 'cancelled',
+      ok: false,
+      kind: 'goal.create',
+    });
+  });
+});
+

@@ -242,10 +242,11 @@
     </section>
 
     <!--
-      Artifact rail / Host proposal workbench (residual 371):
-      AIContextPanel is the structured right workbench for Goal/Knowledge artifacts
-      and waiting_approval Host proposals. Actions near composer remain lifecycle
-      shortcuts; Host revise/approve/reject live here.
+      Artifact rail / Host proposal + execution-report workbench (residual 371/379):
+      AIContextPanel is the structured right workbench for Goal/Knowledge artifacts,
+      waiting_approval Host proposals, and post-approve Host execution receipts.
+      Actions near composer remain lifecycle shortcuts; Host revise/approve/reject
+      and receipt presentation live here.
     -->
     <AIContextPanel
       v-show="!composerOnly"
@@ -253,6 +254,7 @@
       :open="contextPanelOpen"
       :tool-label="currentToolLabel"
       :host-proposal-count="hostProposalItems.length"
+      :host-execution-receipt-count="hostExecutionReceiptItems.length"
       @close="closeContextPanel"
     >
       <AIHostProposalPanel
@@ -263,6 +265,7 @@
         @reject="handleHostProposalReject"
         @revise="handleHostProposalRevise"
       />
+      <AIHostExecutionReceiptPanel :items="hostExecutionReceiptItems" />
       <AIGoalWorkflowPanel
         :tool-mode="toolMode"
         :goal-clarification="goalClarification"
@@ -307,7 +310,7 @@
         @start-new-conversation="startNewConversation"
       />
       <div
-        v-if="!hasWorkflowArtifact && hostProposalItems.length === 0"
+        v-if="!hasWorkflowArtifact && hostProposalItems.length === 0 && hostExecutionReceiptItems.length === 0"
         class="rounded-lg border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground"
         data-testid="ai-context-empty-state"
       >
@@ -331,6 +334,7 @@ import AIGoalWorkflowPanel from '../components/AIGoalWorkflowPanel.vue';
 import AIWorkflowActionBar from '../components/AIWorkflowActionBar.vue';
 import AIContextPanel from '../components/AIContextPanel.vue';
 import AIHostProposalPanel from '../components/AIHostProposalPanel.vue';
+import AIHostExecutionReceiptPanel from '../components/AIHostExecutionReceiptPanel.vue';
 import DailyTodoWidget from '../../task/components/widgets/DailyTodoWidget.vue';
 import UpcomingRemindersWidget from '../../reminder/components/widgets/UpcomingRemindersWidget.vue';
 import GoalProgressWidget from '../../goal/components/widgets/GoalProgressWidget.vue';
@@ -341,6 +345,7 @@ import type { ComposerDensity } from '../../../layouts/shell/panel-geometry';
 import { useAIChatView } from '../composables/useAIChatView';
 import {
   buildPendingHostProposalItems,
+  buildHostExecutionReceiptItems,
   dispatchHostProposalDecision,
   dispatchHostProposalRevise,
   type HostProposalPanelItem,
@@ -555,14 +560,26 @@ const hostProposalItems = computed(() =>
   }),
 );
 
+/** Residual 379: Host execution receipt rows after approve + domain executor. */
+const hostExecutionReceiptItems = computed(() =>
+  buildHostExecutionReceiptItems({
+    goalAgentRun: goalAgentRun.value,
+    noteAgentRun: noteAgentRun.value,
+  }),
+);
+
 /** Residual 371: pending Host proposals are first-class right-workbench context. */
 const hasPendingHostProposals = computed(() => hostProposalItems.value.length > 0);
+
+/** Residual 379: completed Host receipts keep the right workbench relevant. */
+const hasHostExecutionReceipts = computed(() => hostExecutionReceiptItems.value.length > 0);
 
 const hasWorkflowContext = computed(
   () =>
     toolMode.value !== 'chat' ||
     hasWorkflowArtifact.value ||
-    hasPendingHostProposals.value,
+    hasPendingHostProposals.value ||
+    hasHostExecutionReceipts.value,
 );
 const hostProposalBusy = ref(false);
 const hostProposalPanelRef = ref<{
@@ -709,12 +726,12 @@ const todayOverviewVisible = computed(
 );
 
 
-// Residual 371: auto-open right workbench when Host proposals wait for approval.
+// Residual 371/379: auto-open right workbench for Host proposals or execution receipts.
 // Desktop already shows the rail; mobile needs open=true to unhide the sheet.
 watch(
-  hasPendingHostProposals,
-  (pending) => {
-    if (pending) {
+  [hasPendingHostProposals, hasHostExecutionReceipts],
+  ([pending, receipts]) => {
+    if (pending || receipts) {
       contextPanelOpen.value = true;
     }
   },

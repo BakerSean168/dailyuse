@@ -12,6 +12,7 @@
  *
  * Residual 371: when hostProposalCount > 0, header marks the rail as Host
  * Proposal workbench (structured approval surface).
+ * Residual 379: hostExecutionReceiptCount surfaces post-approve execution reports.
  *
  * 布局容器不持有工作流状态——产物由 AIChatView 通过 slot 注入。
  */
@@ -29,6 +30,8 @@ const props = defineProps<{
   toolLabel: string;
   /** Residual 371: pending Host proposal count for workbench header. */
   hostProposalCount?: number;
+  /** Residual 379: Host execution receipt count for workbench header. */
+  hostExecutionReceiptCount?: number;
 }>();
 
 defineEmits<{ close: [] }>();
@@ -39,6 +42,16 @@ const pendingHostCount = computed(() =>
   typeof props.hostProposalCount === 'number' && props.hostProposalCount > 0
     ? props.hostProposalCount
     : 0,
+);
+
+const hostReceiptCount = computed(() =>
+  typeof props.hostExecutionReceiptCount === 'number' && props.hostExecutionReceiptCount > 0
+    ? props.hostExecutionReceiptCount
+    : 0,
+);
+
+const hostWorkbenchActive = computed(
+  () => pendingHostCount.value > 0 || hostReceiptCount.value > 0,
 );
 </script>
 
@@ -53,7 +66,7 @@ const pendingHostCount = computed(() =>
       <div class="min-w-0">
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {{
-            pendingHostCount > 0
+            hostWorkbenchActive
               ? t('aiAssistant.chatPage.context.hostWorkbenchTitle')
               : t('aiAssistant.chatPage.context.title')
           }}
@@ -69,6 +82,17 @@ const pendingHostCount = computed(() =>
           {{
             t('aiAssistant.chatPage.context.hostProposalPending', {
               count: pendingHostCount,
+            })
+          }}
+        </p>
+        <p
+          v-else-if="hostReceiptCount > 0"
+          class="mt-0.5 text-[11px] text-muted-foreground"
+          data-testid="ai-context-host-receipt-count"
+        >
+          {{
+            t('aiAssistant.chatPage.context.hostReceiptPending', {
+              count: hostReceiptCount,
             })
           }}
         </p>
