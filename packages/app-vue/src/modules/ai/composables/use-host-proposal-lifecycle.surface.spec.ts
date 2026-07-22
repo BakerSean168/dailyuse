@@ -1145,6 +1145,32 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('Host panel goal/knowledge/task revise gates waiting_approval before lifecycle (residual 567)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('canHostReviseProductAgentRun');
+    expect(helper).toContain('Residual 567');
+    expect(chatView).toContain('canHostReviseProductAgentRun');
+    expect(chatView).toContain('Residual 567');
+    const reviseIdx = chatView.indexOf('async function handleHostProposalRevise');
+    expect(reviseIdx).toBeGreaterThan(-1);
+    const reviseSlice = chatView.slice(reviseIdx, reviseIdx + 3200);
+    expect(reviseSlice).toContain('canHostReviseProductAgentRun');
+    expect(reviseSlice).toContain("source === 'goal'");
+    expect(reviseSlice).toContain("source === 'knowledge'");
+    expect(reviseSlice).toContain("source === 'task'");
+    // Gate before Host lifecycle revise dispatch.
+    const gateIdx = reviseSlice.indexOf('canHostReviseProductAgentRun');
+    const dispatchIdx = reviseSlice.indexOf('dispatchHostProposalRevise');
+    expect(gateIdx).toBeGreaterThan(-1);
+    expect(dispatchIdx).toBeGreaterThan(gateIdx);
+    // Dirty-only revise and task process-local edit remain.
+    expect(reviseSlice).toContain('!payload.dirty');
+    expect(reviseSlice).toContain('reviseTaskAgentRun');
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
   it('task.create process-local store conversation list trims (residual 509)', () => {

@@ -377,6 +377,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 565: Host panel product reject pre-lifecycle waiting_approval-only.
         'Residual 565',
         'canHostRejectProductAgentRun',
+        // Residual 567: Host panel product revise pre-lifecycle waiting_approval-only.
+        'Residual 567',
+        'canHostReviseProductAgentRun',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

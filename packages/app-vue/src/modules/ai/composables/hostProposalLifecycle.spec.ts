@@ -33,6 +33,7 @@ import {
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   canHostApproveProductAgentRun,
   canHostRejectProductAgentRun,
+  canHostReviseProductAgentRun,
 } from './hostProposalLifecycle';
 import type { AgentAction } from '@dailyuse/contracts/ai';
 import type { AgentRunResult } from '@dailyuse/contracts/ai';
@@ -2691,6 +2692,48 @@ describe('canHostRejectProductAgentRun (residual 565)', () => {
     expect(canHostRejectProductAgentRun({ run: runWith('waiting_execution') })).toBe(false);
     expect(canHostRejectProductAgentRun({ run: runWith('completed') })).toBe(false);
     expect(canHostRejectProductAgentRun({ run: null })).toBe(false);
+  });
+});
+
+describe('canHostReviseProductAgentRun (residual 567)', () => {
+  function runWith(status: AgentRunResult['run']['status']): AgentRunResult {
+    return {
+      run: {
+        runId: 'run-1',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'task.create',
+        status,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            payload: {},
+            rationale: 'draft',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+  }
+
+  it('mirrors reject waiting_approval-only gate', () => {
+    expect(canHostReviseProductAgentRun({ run: runWith('waiting_approval') })).toBe(true);
+    expect(canHostReviseProductAgentRun({ run: runWith('waiting_execution') })).toBe(false);
+    expect(canHostReviseProductAgentRun({ run: runWith('completed') })).toBe(false);
+    expect(canHostReviseProductAgentRun({ run: null })).toBe(false);
+    // Same predicate as residual 565 reject helper.
+    expect(canHostReviseProductAgentRun({ run: runWith('waiting_approval') })).toBe(
+      canHostRejectProductAgentRun({ run: runWith('waiting_approval') }),
+    );
   });
 });
 

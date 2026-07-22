@@ -253,6 +253,19 @@ export function canHostRejectProductAgentRun(input: {
 }
 
 /**
+ * Residual 567: Host panel revise for product-lane AgentRuns requires
+ * waiting_approval before Host lifecycle (edit residual 481 + residual 565
+ * reject symmetry). Prevents revise-then-silent-noop when process-local
+ * revise/edit gates fail-closed. Same status predicate as reject; named
+ * separately for Host panel action symmetry and scaffold locks.
+ */
+export function canHostReviseProductAgentRun(input: {
+  run: AgentRunResult | null | undefined;
+}): boolean {
+  return canHostRejectProductAgentRun(input);
+}
+
+/**
  * Residual 527: workbench pending count from product-lane tool only
  * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
  * Foreign tools never inflate the Host proposal action count.

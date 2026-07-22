@@ -370,6 +370,7 @@ import {
   buildHostTaskCreateTemplateRequest,
   canHostApproveProductAgentRun,
   canHostRejectProductAgentRun,
+  canHostReviseProductAgentRun,
   shouldReviseProcessLocalTaskDraftBeforeDomainSettle,
   composeHostWorkbenchTimelineArtifacts,
   resolveHostWorkbenchFocusFromTimeline,
@@ -749,6 +750,31 @@ async function handleHostProposalRevise(payload: {
   dirty: boolean;
 }) {
   if (hostProposalBusy.value || !payload.dirty) return;
+
+  // Residual 567: product-lane Host revise requires waiting_approval before Host
+  // lifecycle (edit residual 481 + residual 565 reject / 561 approve symmetry).
+  // Avoids revise-then-silent-noop when process-local revise gates fail-closed.
+  if (payload.item.source === 'goal') {
+    const run =
+      goalAgentRun.value?.run.runId === payload.item.runId ? goalAgentRun.value : null;
+    if (!canHostReviseProductAgentRun({ run })) return;
+  }
+  if (payload.item.source === 'knowledge') {
+    const run =
+      noteAgentRun.value?.run.runId === payload.item.runId ? noteAgentRun.value : null;
+    if (!canHostReviseProductAgentRun({ run })) return;
+  }
+  if (payload.item.source === 'task') {
+    const ownedByTaskSession =
+      taskAgentRun.value?.run.runId === payload.item.runId &&
+      taskAgentRun.value.run.agentType === 'task.create';
+    if (ownedByTaskSession) {
+      if (!canHostReviseProductAgentRun({ run: taskAgentRun.value })) return;
+    } else if (goalAgentRun.value?.run.runId === payload.item.runId) {
+      if (!canHostReviseProductAgentRun({ run: goalAgentRun.value })) return;
+    }
+  }
+
   hostProposalBusy.value = true;
   try {
     const result = await dispatchHostProposalRevise(aiHostService, {
