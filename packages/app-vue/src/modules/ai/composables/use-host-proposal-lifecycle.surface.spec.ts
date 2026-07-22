@@ -825,6 +825,27 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create start requires agentType task.create in builder (residual 499)', () => {
+    const start = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(start).toContain('HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE');
+    expect(start).toContain('Residual 499');
+    expect(start).toContain("input.request.agentType !== 'task.create'");
+    expect(runtime).toContain('HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE');
+    expect(runtime).toContain('Residual 499');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
 
 

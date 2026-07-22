@@ -334,6 +334,8 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE'];
     case 'resolveTaskCreateRunId':
       return ['resolveTaskCreateRunId'];
+    case 'HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE':
+      return ['HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

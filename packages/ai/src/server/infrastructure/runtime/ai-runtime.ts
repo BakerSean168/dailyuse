@@ -33,6 +33,7 @@ import {
   HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE,
 } from './host-task-create-start';
 import {
   buildHostTaskCreateResumeResult,
@@ -1165,6 +1166,7 @@ export function createAgentRuntimeService(
       // Residual 431: task.create Host start foundation (TS runtime, no LangGraph yet).
       // Produces waiting_approval + create_task_template for Host lane / client settle.
       if (requestWithKnowledge.data.agentType === 'task.create') {
+        // Residual 499: agentType already gated here; builder also fail-closes (no silent retype).
         // Residual 493: ExecutionContext identity fail-closed (builder also throws; no silent empty).
         const taskCreateIdentityId = resolveTaskCreateIdentityId(cx.identityId);
         if (!taskCreateIdentityId) {
@@ -1247,13 +1249,14 @@ export function createAgentRuntimeService(
             ) {
               return error('VALIDATION_ERROR', err.message);
             }
-            // Residual 479/483/485/493/497: builder title/conversation/thread/identity/runId fail-closed maps to validation.
+            // Residual 479/483/485/493/497/499: builder binding/agentType fail-closed maps to validation.
             if (
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE) ||
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE) ||
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE) ||
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE) ||
-              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE)
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE)
             ) {
               return error('VALIDATION_ERROR', err.message);
             }

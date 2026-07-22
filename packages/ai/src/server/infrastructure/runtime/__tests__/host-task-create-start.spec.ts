@@ -9,6 +9,7 @@ import {
   HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE,
   resolveTaskCreateThreadId,
   resolveTaskCreateIdentityId,
   resolveTaskCreateRunId,
@@ -232,6 +233,34 @@ describe('host-task-create-start runId fail-closed (residual 497)', () => {
     expect(ok.run.runId).toBe('run-trim');
     expect(ok.interrupts[0]?.runId).toBe('run-trim');
     expect(ok.events[0]?.runId).toBe('run-trim');
+  });
+});
+
+describe('host-task-create-start agentType fail-closed (residual 499)', () => {
+  it('buildHostTaskCreateStartResult rejects non-task.create agentType without silent retype', () => {
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: { ...baseRequest({ title: 'Wrong agent' }), agentType: 'goal.create' },
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE);
+
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: { ...baseRequest({ title: 'Wrong agent' }), agentType: 'knowledge.generate' as any },
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(/agentType task\.create/);
+
+    const ok = buildHostTaskCreateStartResult({
+      request: baseRequest({ title: 'Correct agent' }),
+      identityId: 'identity-server',
+      nowMs: 1000,
+    });
+    expect(ok.run.agentType).toBe('task.create');
+    expect(HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE).toMatch(/task\.create/);
   });
 });
 

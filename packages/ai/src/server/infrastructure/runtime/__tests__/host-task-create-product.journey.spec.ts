@@ -29,6 +29,10 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { createAgentRuntimeService } from '../ai-runtime';
 import { resetDefaultHostTaskCreateRunStoreForTests } from '../host-task-create-run-store';
+import {
+  buildHostTaskCreateStartResult,
+  HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE,
+} from '../host-task-create-start';
 import type { IAgentRuntimePort } from '../../../application/ports/agent-runtime.port';
 
 function makePort(): IAgentRuntimePort {
@@ -574,6 +578,34 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!listed.ok) return;
     // Blank runId must not land as empty-string key in process store.
     expect(listed.data.some((run) => !run.runId || !run.runId.trim())).toBe(false);
+    expect(port.startRun).not.toHaveBeenCalled();
+  });
+
+  it('builder rejects non-task.create agentType without process-local registration (residual 499)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-agent-type' } as const;
+
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: {
+          runId: 'run-journey-wrong-agent',
+          threadId: 'thread-journey-wrong-agent',
+          conversationId: 'conv-journey-wrong-agent',
+          agentType: 'goal.create',
+          locale: 'en-US',
+          input: { title: 'Must not retype' },
+          identityId: 'ignored',
+        },
+        identityId: 'owner-agent-type',
+        nowMs: 1,
+      }),
+    ).toThrow(HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE);
+
+    const listed = await service.listRuns({}, cx as any);
+    expect(listed.ok).toBe(true);
+    if (!listed.ok) return;
+    expect(listed.data.some((run) => run.runId === 'run-journey-wrong-agent')).toBe(false);
     expect(port.startRun).not.toHaveBeenCalled();
   });
 

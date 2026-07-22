@@ -1,5 +1,5 @@
 /**
- * Residual 431/461/479/483/485/493/497: Host task.create start foundation (TS runtime).
+ * Residual 431/461/479/483/485/493/497/499: Host task.create start foundation (TS runtime).
  *
  * Builds a waiting_approval AgentRunResult with one create_task_template action.
  * Host lifecycle + client createTemplate settlement (residual 423–425) own mutation.
@@ -11,6 +11,8 @@
  * never trust client body identity; no silent empty invent).
  * Residual 497: start builder requires non-empty trimmed runId (process-local map key;
  * no silent empty invent).
+ * Residual 499: start builder requires request.agentType task.create (no silent retype;
+ * symmetric with residual 495 resume/store agent isolation).
  * Not a full LangGraph Task Agent workflow.
  */
 
@@ -43,6 +45,10 @@ export const HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE =
 /** Residual 497: fail-closed when task.create start lacks a recoverable runId. */
 export const HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE =
   'Host task.create start requires a non-empty runId for process-local binding.';
+
+/** Residual 499: start with non-task.create agentType is fail-closed. */
+export const HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE =
+  'Host task.create start requires agentType task.create.';
 
 /**
  * Residual 461: resolve non-empty conversationId for product task.create start.
@@ -107,6 +113,7 @@ export function resolveTaskCreateGoalId(input: Record<string, unknown>): string 
  * Residual 485: empty/blank threadId fails closed (no untrimmed pass-through).
  * Residual 493: empty/blank identityId fails closed (no silent empty invent).
  * Residual 497: empty/blank runId fails closed (no silent empty invent).
+ * Residual 499: non-task.create request.agentType fails closed (no silent retype).
  */
 export function buildHostTaskCreateStartResult(input: {
   request: AgentStartRunRequest;
@@ -114,6 +121,10 @@ export function buildHostTaskCreateStartResult(input: {
   nowMs?: number;
 }): AgentRunResult {
   const now = input.nowMs ?? Date.now();
+  // Residual 499: agent isolation fail-closed in builder (runtime also gates).
+  if (input.request.agentType !== 'task.create') {
+    throw new Error(HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE);
+  }
   // Residual 493: ExecutionContext identity binding fail-closed in builder.
   const identityId = resolveTaskCreateIdentityId(input.identityId);
   if (!identityId) {
