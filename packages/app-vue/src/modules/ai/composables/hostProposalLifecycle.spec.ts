@@ -2062,9 +2062,103 @@ describe('receipt primaryEntityId product-lane only (residual 529)', () => {
       },
     ] as any;
     const receipts = buildHostExecutionReceiptItems({ taskAgentRun: run });
+    // Residual 533: cross-lane foreign-only execution does not surface a task receipt.
+    expect(receipts).toHaveLength(0);
+  });
+});
+
+describe('receipt summary excludes cross-lane foreign tools (residual 533)', () => {
+  it('task receipt ignores foreign create_goal from counts/actionLines/entityIds', () => {
+    const run = taskWaitingRun();
+    run.run.status = 'completed';
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'foreign goal',
+        entityId: 'foreign-goal-1',
+      },
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: 'created',
+        entityId: 'task-real-1',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ taskAgentRun: run });
     expect(receipts).toHaveLength(1);
-    expect(receipts[0]?.primaryEntityId).toBeUndefined();
-    expect(receipts[0]?.entityIds).toContain('foreign-only-1');
+    expect(receipts[0]?.executedCount).toBe(1);
+    expect(receipts[0]?.entityIds).toEqual(['task-real-1']);
+    expect(receipts[0]?.actionLines).toEqual([
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: 'created',
+        entityId: 'task-real-1',
+      },
+    ]);
+    expect(receipts[0]?.summary).toBe('1 executed, 0 skipped, 0 failed');
+  });
+
+  it('goal receipt keeps same-lane create_key_result but drops create_task_template', () => {
+    const run = goalWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: 'foreign task',
+        entityId: 'foreign-task-1',
+      },
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'created',
+        entityId: 'goal-real-1',
+      },
+      {
+        tool: 'create_key_result',
+        status: 'skipped',
+        message: 'skipped',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ goalAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.executedCount).toBe(1);
+    expect(receipts[0]?.skippedCount).toBe(1);
+    expect(receipts[0]?.entityIds).toEqual(['goal-real-1']);
+    expect(receipts[0]?.actionLines.map((line) => line.tool)).toEqual([
+      'create_goal',
+      'create_key_result',
+    ]);
+    expect(receipts[0]?.primaryEntityId).toBe('goal-real-1');
+  });
+
+  it('knowledge receipt drops foreign create_goal from actionLines', () => {
+    const run = noteWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'failed',
+        message: 'foreign fail',
+        entityId: 'foreign-goal-9',
+      },
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        message: 'created',
+        entityId: 'note-real-9',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ noteAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.executedCount).toBe(1);
+    expect(receipts[0]?.failedCount).toBe(0);
+    expect(receipts[0]?.entityIds).toEqual(['note-real-9']);
+    expect(receipts[0]?.actionLines).toHaveLength(1);
+    expect(receipts[0]?.actionLines[0]?.tool).toBe('create_knowledge_note');
   });
 });
 

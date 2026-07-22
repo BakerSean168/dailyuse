@@ -402,6 +402,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 531'];
     case 'function knowledgeDraftTitle':
       return ['function knowledgeDraftTitle'];
+    case 'Residual 533':
+      return ['Residual 533'];
+    case 'isCrossLaneForeignTool':
+      return ['isCrossLaneForeignTool'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

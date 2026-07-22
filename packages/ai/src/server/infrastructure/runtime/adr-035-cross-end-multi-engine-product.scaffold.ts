@@ -381,6 +381,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 531: knowledge draft title create_knowledge_note only.
         'Residual 531',
         'function knowledgeDraftTitle',
+        // Residual 533: receipt summary excludes cross-lane foreign tools.
+        'Residual 533',
+        'isCrossLaneForeignTool',
       ],
       status: 'implemented_unit',
     },

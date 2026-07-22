@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529/531).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529/531/533).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -12,6 +12,7 @@
  * Residual 527: workbench pendingActionCount counts product-lane tool only (no foreign tools).
  * Residual 529: receipt primaryEntityId prefers product-lane executed tool only (no foreign entityIds[0]).
  * Residual 531: knowledge draft title read create_knowledge_note only (path/markdown residual 521 symmetry).
+ * Residual 533: receipt summary excludes cross-lane foreign tools from counts/actionLines/entityIds.
  */
 import type {
   AgentAction,
@@ -573,9 +574,32 @@ function truncateHostContentPreview(text: string, max = 240): string {
 }
 
 /**
- * Residual 529: receipt primaryEntityId from product-lane executed tool only
- * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
- * Never steal foreign tool entityIds[0] for deep-link open.
+ * Residual 533: tools belonging to other Host product lanes.
+ * Same-lane companions (e.g. create_key_result on goal.create) remain visible.
+ */
+function isCrossLaneForeignTool(
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+  tool: string,
+): boolean {
+  if (productTool === 'create_goal') {
+    return tool === 'create_task_template' || tool === 'create_knowledge_note';
+  }
+  if (productTool === 'create_knowledge_note') {
+    return tool === 'create_goal' || tool === 'create_task_template';
+  }
+  // task.create
+  return (
+    tool === 'create_goal' ||
+    tool === 'create_knowledge_note' ||
+    tool === 'create_key_result'
+  );
+}
+
+/**
+ * Residual 529/533: receipt summary for product lane.
+ * Residual 529: primaryEntityId from product-lane executed tool only.
+ * Residual 533: cross-lane foreign tools never inflate counts/actionLines/entityIds.
+ * Same-lane companions (e.g. create_key_result on goal) remain for audit replay.
  */
 function summarizeExecutedActions(
   run: AgentRunResult,
@@ -598,6 +622,8 @@ function summarizeExecutedActions(
   const actionLines: HostExecutionActionLine[] = [];
   let primaryEntityId: string | undefined;
   for (const action of actions) {
+    // Residual 533: drop cross-lane foreign tools from Host receipt summary.
+    if (isCrossLaneForeignTool(productTool, action.tool)) continue;
     if (action.status === 'executed') executedCount += 1;
     else if (action.status === 'failed') failedCount += 1;
     else if (action.status === 'skipped') skippedCount += 1;

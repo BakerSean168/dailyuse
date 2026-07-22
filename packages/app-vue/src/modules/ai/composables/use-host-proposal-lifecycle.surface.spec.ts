@@ -1107,6 +1107,21 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain("summarizeExecutedActions(taskRun, 'create_task_template')");
   });
 
+  it('receipt summary excludes cross-lane foreign tools (residual 533)', () => {
+    expect(helper).toContain('Residual 533');
+    expect(helper).toContain('isCrossLaneForeignTool');
+    const fnIdx = helper.indexOf('function isCrossLaneForeignTool');
+    expect(fnIdx).toBeGreaterThan(-1);
+    const fnSlice = helper.slice(fnIdx, fnIdx + 900);
+    expect(fnSlice).toContain("tool === 'create_task_template'");
+    expect(fnSlice).toContain("tool === 'create_knowledge_note'");
+    const sumIdx = helper.indexOf('function summarizeExecutedActions');
+    expect(sumIdx).toBeGreaterThan(-1);
+    const sumSlice = helper.slice(sumIdx, sumIdx + 1800);
+    expect(sumSlice).toContain('isCrossLaneForeignTool(productTool, action.tool)');
+    expect(sumSlice).toContain('continue');
+  });
+
 
 
 
