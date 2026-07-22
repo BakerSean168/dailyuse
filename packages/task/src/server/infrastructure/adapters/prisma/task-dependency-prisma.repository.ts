@@ -187,15 +187,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
     await publishAggregateEvents(dependency, eventBusAdapter);
   }
 
-  async findAggregateById(id: string): Promise<TaskDependency | null> {
-    const data = await this.prisma.taskDependency.findUnique({ where: { id } });
-    return data ? PrismaTaskDependencyMapper.toAggregate(data) : null;
-  }
-
-  async findAggregateByIdForIdentity(
-    identityId: string,
-    id: string,
-  ): Promise<TaskDependency | null> {
+  async findAggregateById(identityId: string, id: string): Promise<TaskDependency | null> {
     const data = await this.prisma.taskDependency.findFirst({
       where: { id, identityId },
     });

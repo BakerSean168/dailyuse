@@ -144,18 +144,7 @@ export class PowerSyncTaskDependencyRepository implements ITaskDependencyReposit
     await publishAggregateEvents(dependency, eventBusAdapter);
   }
 
-  async findAggregateById(id: string): Promise<TaskDependency | null> {
-    const row = await this.db.getOptional<PowerSyncTaskDependencyRow>(
-      'SELECT * FROM task_dependencies WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return row ? PowerSyncTaskDependencyMapper.toAggregate(row) : null;
-  }
-
-  async findAggregateByIdForIdentity(
-    identityId: string,
-    id: string,
-  ): Promise<TaskDependency | null> {
+  async findAggregateById(identityId: string, id: string): Promise<TaskDependency | null> {
     const row = await this.db.getOptional<PowerSyncTaskDependencyRow>(
       'SELECT * FROM task_dependencies WHERE id = ? AND identity_id = ? LIMIT 1',
       [id, identityId],

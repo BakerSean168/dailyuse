@@ -99,7 +99,6 @@ export function createMockDependencyRepo(): ITaskDependencyRepository {
     delete: vi.fn().mockResolvedValue(undefined),
     deleteAggregate: vi.fn().mockResolvedValue(undefined),
     findAggregateById: vi.fn().mockResolvedValue(null),
-    findAggregateByIdForIdentity: vi.fn().mockResolvedValue(null),
     deleteByTaskId: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue(null as never),
     findAllByIdentityId: vi.fn().mockResolvedValue([]),

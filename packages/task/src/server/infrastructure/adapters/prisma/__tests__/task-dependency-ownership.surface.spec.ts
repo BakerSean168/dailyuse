@@ -39,7 +39,7 @@ describe('task dependency ownership surface', () => {
       'findByIdForIdentity(identityId: string, id: string): Promise<TaskDependencyServerDTO | null>;',
     );
     expect(port).toContain(
-      'findAggregateByIdForIdentity(identityId: string, id: string): Promise<TaskDependency | null>;',
+      'findAggregateById(identityId: string, id: string): Promise<TaskDependency | null>;',
     );
     expect(port).toContain('delete(identityId: string, id: string): Promise<void>;');
     expect(port).toContain('findBySuccessorId(taskId: string, identityId: string)');
@@ -54,7 +54,7 @@ describe('task dependency ownership surface', () => {
   });
 
   it('delete use case loads via findAggregateByIdForIdentity', () => {
-    expect(deleteUseCase).toContain('findAggregateByIdForIdentity(');
+    expect(deleteUseCase).toContain('findAggregateById(');
     expect(deleteUseCase).toMatch(/execute\(id: string, identityId: string\)/);
   });
 
@@ -97,6 +97,35 @@ describe('task dependency ownership surface', () => {
     expect(powersync).toContain(
       'DELETE FROM task_dependencies WHERE identity_id = ? AND (predecessor_task_id = ? OR successor_task_id = ?)',
     );
+  });
+
+
+  it('port findAggregateById requires identityId (residual 166)', () => {
+    expect(port).toContain(
+      'findAggregateById(identityId: string, id: string): Promise<TaskDependency | null>;',
+    );
+    expect(port).not.toContain('findAggregateByIdForIdentity');
+    expect(port).not.toContain('findAggregateById(id: string)');
+  });
+
+  it('prisma/powersync findAggregateById filters by identity (residual 166)', () => {
+    expect(prisma).toContain(
+      'async findAggregateById(identityId: string, id: string)',
+    );
+    expect(prisma).toContain('where: { id, identityId }');
+    expect(prisma).not.toContain('findAggregateByIdForIdentity');
+    expect(powersync).toContain(
+      'async findAggregateById(identityId: string, id: string)',
+    );
+    expect(powersync).toContain(
+      'SELECT * FROM task_dependencies WHERE id = ? AND identity_id = ? LIMIT 1',
+    );
+    expect(powersync).not.toContain('findAggregateByIdForIdentity');
+  });
+
+  it('delete use case uses identity-scoped findAggregateById (residual 166)', () => {
+    expect(deleteUseCase).toContain('findAggregateById(\n      identityId,\n      id,\n    )');
+    expect(deleteUseCase).not.toContain('findAggregateByIdForIdentity');
   });
 
 });

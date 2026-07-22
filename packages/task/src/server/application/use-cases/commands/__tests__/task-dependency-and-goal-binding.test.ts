@@ -21,7 +21,7 @@ describe('Task dependency and goal binding use-cases', () => {
       findByPredecessorAndSuccessorId: vi.fn(),
       create: vi.fn(),
       findByIdForIdentity: vi.fn(),
-      findAggregateByIdForIdentity: vi.fn(),
+      findAggregateById: vi.fn(),
       delete: vi.fn().mockResolvedValue(undefined),
       deleteAggregate: vi.fn().mockResolvedValue(undefined),
       update: vi.fn(),
@@ -97,7 +97,7 @@ describe('Task dependency and goal binding use-cases', () => {
 
   describe('DeleteTaskDependencyUseCase', () => {
     it('returns NOT_FOUND when dependency is missing', async () => {
-      vi.mocked(dependencyRepo.findAggregateByIdForIdentity).mockResolvedValue(null);
+      vi.mocked(dependencyRepo.findAggregateById).mockResolvedValue(null);
       const useCase = new DeleteTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('dep-404', 'identity-1');
@@ -113,7 +113,7 @@ describe('Task dependency and goal binding use-cases', () => {
         successorTaskId: 'task-2',
       });
       dependency.pullDomainEvents();
-      vi.mocked(dependencyRepo.findAggregateByIdForIdentity).mockResolvedValue(dependency);
+      vi.mocked(dependencyRepo.findAggregateById).mockResolvedValue(dependency);
       const useCase = new DeleteTaskDependencyUseCase(dependencyRepo);
 
       const result = await useCase.execute('dep-1', 'identity-1');

@@ -12,7 +12,7 @@ export class DeleteTaskDependencyUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}
 
   async execute(id: string, identityId: string): Promise<Result<void>> {
-    const dependency = await this.dependencyRepository.findAggregateByIdForIdentity(
+    const dependency = await this.dependencyRepository.findAggregateById(
       identityId,
       id,
     );
