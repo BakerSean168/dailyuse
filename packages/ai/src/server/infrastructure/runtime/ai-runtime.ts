@@ -105,6 +105,11 @@ export interface AIRuntimeOutput {
    * does not execute business mutations.
    */
   readonly proposalKernel: import('@dailyuse/contracts/ai').IProposalKernelPort;
+  /**
+   * Capability Resolver (residual 322). Fail-closed offer projection; never
+   * silent-emits engine.* labels.
+   */
+  readonly capabilityResolver: import('@dailyuse/contracts/ai').ICapabilityResolverPort;
 }
 
 export function buildCapabilityUnavailableMessage(

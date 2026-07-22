@@ -3,12 +3,12 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 305/311/314/318/320: ADR-035 Agent Host ports.
+ * Residual 305/311/314/318/320/322: ADR-035 Agent Host ports.
  * Stage 0 shapes stay frozen. Production allows:
  *   - DirectTurnEngine (ITurnEnginePort / engine.direct_turn) — residual 314/316
  *   - LangGraphWorkflowAdapter (IWorkflowAdapterPort wrapping IAgentRuntimePort) — residual 318
  *   - ProposalKernel (IProposalKernelPort / tool.proposal lifecycle) — residual 320
- * Capability Resolver remains unimplemented.
+ *   - CapabilityResolver (ICapabilityResolverPort / fail-closed resolve) — residual 322
  * Multi-engine Turn Engine isolation still partial (no second Turn Engine production class).
  */
 describe('agent-host stage-0 ports freeze surface', () => {
@@ -36,7 +36,7 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(capabilities).toContain("engineId: missing.length > 0 ? 'none' : input.engineId");
   });
 
-  it('allows DirectTurnEngine + LangGraphWorkflowAdapter + ProposalKernel as production Host adapters', () => {
+  it('allows DirectTurn + LangGraphWorkflow + ProposalKernel + CapabilityResolver as production Host adapters', () => {
     const roots = [
       resolve(repoRoot, 'packages/ai/src'),
       resolve(repoRoot, 'apps/ai-service'),
@@ -48,12 +48,13 @@ describe('agent-host stage-0 ports freeze surface', () => {
       'packages/ai/src/server/infrastructure/workflow/langgraph-workflow.adapter.ts';
     const allowedProposal =
       'packages/ai/src/server/infrastructure/proposal-kernel/proposal.kernel.ts';
-    const forbiddenMarkers = [
-      'implements ICapabilityResolverPort',
-    ] as const;
+    const allowedCapability =
+      'packages/ai/src/server/infrastructure/capability-resolver/capability.resolver.ts';
+    const forbiddenMarkers = [] as const;
     const turnEngines: string[] = [];
     const workflowAdapters: string[] = [];
     const proposalKernels: string[] = [];
+    const capabilityResolvers: string[] = [];
     const forbidden: string[] = [];
     const skipDirs = new Set(['dist', 'node_modules', '__tests__', 'tests']);
 
@@ -84,6 +85,9 @@ describe('agent-host stage-0 ports freeze surface', () => {
         if (source.includes('implements IProposalKernelPort')) {
           proposalKernels.push(rel);
         }
+        if (source.includes('implements ICapabilityResolverPort')) {
+          capabilityResolvers.push(rel);
+        }
         if (forbiddenMarkers.some((marker) => source.includes(marker))) {
           forbidden.push(rel);
         }
@@ -94,6 +98,7 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(turnEngines).toEqual([allowedTurnEngine]);
     expect(workflowAdapters).toEqual([allowedWorkflow]);
     expect(proposalKernels).toEqual([allowedProposal]);
+    expect(capabilityResolvers).toEqual([allowedCapability]);
     expect(forbidden).toEqual([]);
 
     const direct = readFileSync(resolve(repoRoot, allowedTurnEngine), 'utf8');
@@ -121,6 +126,12 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(proposal).toContain("kind: 'tool.proposal'");
     expect(proposal).toContain('executeApproved');
     expect(proposal).not.toContain("kind: 'tool.mutation'");
+
+    const capability = readFileSync(resolve(repoRoot, allowedCapability), 'utf8');
+    expect(capability).toContain("CAPABILITY_RESOLVER_ENGINE_ID = 'capability-resolver'");
+    expect(capability).toContain('export class CapabilityResolver implements ICapabilityResolverPort');
+    expect(capability).toContain('resolveRunPlan');
+    expect(capability).toContain('Never silently expands');
   });
 
   it('points multi-engine conformance at the residual 309 harness (doubles + DirectTurnEngine note)', () => {

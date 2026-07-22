@@ -30,6 +30,7 @@ import {
   createEvaluationRuntimeService,
   createKnowledgeNoteRuntimeService,
   createKnowledgeQueryRuntimeServices,
+  buildAgentRuntimeCapabilityOffers,
 } from './ai-runtime';
 import {
   CreateAIProviderUseCase,
@@ -67,6 +68,7 @@ import {
 } from '../chat-execution';
 import { DirectTurnEngine } from '../turn-engine';
 import { ProposalKernel } from '../proposal-kernel';
+import { CapabilityResolver } from '../capability-resolver';
 import { LangGraphWorkflowAdapter } from '../workflow';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
@@ -300,5 +302,17 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     ),
   };
 
-  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter, proposalKernel };
+  
+  // Residual 322: fail-closed capability projection.
+  // Workflow adapter offers are explicit (not silent engine.*) when remote agent runtime is present.
+  const capabilityOffers = [
+    ...buildAgentRuntimeCapabilityOffers({
+      knowledgeNoteUseCase,
+      automationToolExecutorPort: dependencies.automationToolExecutorPort,
+    }),
+    ...(workflowAdapter ? workflowAdapter.toCapabilityOffers('any') : []),
+  ];
+  const capabilityResolver = new CapabilityResolver(capabilityOffers);
+
+  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter, proposalKernel, capabilityResolver };
 }

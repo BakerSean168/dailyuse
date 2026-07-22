@@ -1,9 +1,10 @@
 /**
- * Residual 311/314/316/318/320: ADR-035 Agent Host composition.
+ * Residual 311/314/316/318/320/322: ADR-035 Agent Host composition.
  * Runtime capability offers never auto-emit engine.* labels.
  * Residual 314 wires the first production DirectTurnEngine on the module instance
  * and residual 316 routes open chat send/stream through that engine (no chatExecution bypass).
- * Residual 318 wires LangGraphWorkflowAdapter; residual 320 wires ProposalKernel.
+ * Residual 318 wires LangGraphWorkflowAdapter; residual 320 wires ProposalKernel;
+ * residual 322 wires CapabilityResolver (fail-closed, no silent engine.*).
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -40,16 +41,17 @@ describe('agent-host stage-0 composition surface', () => {
     expect(runtime).not.toMatch(/kind:\s*'engine\.cli_readonly'/);
   });
 
-  it('ai.module exposes turnEngine + workflowAdapter + proposalKernel without Capability Resolver', () => {
+  it('ai.module exposes turnEngine + workflowAdapter + proposalKernel + capabilityResolver', () => {
     const moduleSource = readFileSync(resolve(__dirname, '../../ai.module.ts'), 'utf8');
     expect(moduleSource).toContain('createDirectProviderAIRuntime');
     expect(moduleSource).toContain('turnEngine: runtime.turnEngine');
     expect(moduleSource).toContain('workflowAdapter: runtime.workflowAdapter');
     expect(moduleSource).toContain('proposalKernel: runtime.proposalKernel');
+    expect(moduleSource).toContain('capabilityResolver: runtime.capabilityResolver');
     expect(moduleSource).toContain('ITurnEnginePort');
     expect(moduleSource).toContain('IWorkflowAdapterPort');
     expect(moduleSource).toContain('IProposalKernelPort');
-    expect(moduleSource).not.toContain('ICapabilityResolverPort');
+    expect(moduleSource).toContain('ICapabilityResolverPort');
     expect(moduleSource).not.toContain('implements ICapabilityResolverPort');
     expect(moduleSource).not.toContain('implements IProposalKernelPort');
   });
@@ -95,6 +97,24 @@ describe('agent-host stage-0 composition surface', () => {
     expect(kernel).toContain("kind: 'tool.proposal'");
     expect(kernel).not.toContain("kind: 'tool.mutation'");
     expect(kernel).toContain('export class ProposalKernel implements IProposalKernelPort');
+  });
+
+  it('both runtimes construct CapabilityResolver without silent engine offers', () => {
+    const direct = readFileSync(resolve(__dirname, '../direct-provider-ai.runtime.ts'), 'utf8');
+    const remote = readFileSync(resolve(__dirname, '../remote-ai-service.runtime.ts'), 'utf8');
+    for (const source of [direct, remote]) {
+      expect(source).toContain('new CapabilityResolver(');
+      expect(source).toContain('buildAgentRuntimeCapabilityOffers');
+      expect(source).toContain('capabilityResolver');
+    }
+    const resolver = readFileSync(
+      resolve(__dirname, '../../capability-resolver/capability.resolver.ts'),
+      'utf8',
+    );
+    expect(resolver).toContain("CAPABILITY_RESOLVER_ENGINE_ID = 'capability-resolver'");
+    expect(resolver).toContain('export class CapabilityResolver implements ICapabilityResolverPort');
+    expect(resolver).toContain('resolveRunPlan');
+    expect(resolver).toContain('Never silently expands');
   });
 
 });

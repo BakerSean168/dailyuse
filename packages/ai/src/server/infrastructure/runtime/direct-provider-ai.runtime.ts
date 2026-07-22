@@ -18,6 +18,7 @@ import type {
 } from '../ai.module';
 import type { AIRuntimeOutput } from './ai-runtime';
 import {
+  buildAgentRuntimeCapabilityOffers,
   createAgentRuntimeService,
   createAnalyticsRuntimeService,
   createEvaluationRuntimeService,
@@ -50,6 +51,7 @@ import {
 } from '../chat-execution';
 import { DirectTurnEngine } from '../turn-engine';
 import { ProposalKernel } from '../proposal-kernel';
+import { CapabilityResolver } from '../capability-resolver';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
 
@@ -158,5 +160,18 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     agentRuntimeService: createAgentRuntimeService(undefined),
   };
 
-  return { services, capabilities, runtimeContributions: [], turnEngine, workflowAdapter: null, proposalKernel };
+  // Residual 322: fail-closed capability projection (no silent engine.*).
+  const capabilityResolver = new CapabilityResolver(
+    buildAgentRuntimeCapabilityOffers({ knowledgeNoteUseCase }),
+  );
+
+  return {
+    services,
+    capabilities,
+    runtimeContributions: [],
+    turnEngine,
+    workflowAdapter: null,
+    proposalKernel,
+    capabilityResolver,
+  };
 }

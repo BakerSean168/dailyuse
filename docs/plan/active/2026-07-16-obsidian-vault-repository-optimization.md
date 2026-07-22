@@ -3042,6 +3042,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 第二生产 Turn Engine、Capability Resolver、GitHub App fixture E2E、全量 PR 门禁。状态保持
 > **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百二十二轮）：ADR-035 Capability Resolver 首实现（仍不打勾 Agent）——
+> 新增 `CapabilityResolver`（`capability-resolver`）实现 `ICapabilityResolverPort`：`listOffers` 按 surface
+> 过滤；`resolve`/`resolveFor` 经 `resolveRunPlan` fail-closed，**永不**静默 expand `engine.*`。
+> direct/remote 均以 `buildAgentRuntimeCapabilityOffers` 构造（remote 另显式并入 workflow adapter offers）；
+> `module.capabilityResolver` 暴露。stage-0 freeze 允许 DirectTurn + LangGraph + ProposalKernel +
+> CapabilityResolver。验证：capability.resolver 6 + composition + stage-0 + journey/harness +
+> typecheck + governance-check（GOV_EXIT:0）。§13.2 Agent 仍为 **部分实现**（第二 Turn Engine /
+> 统一助手 UI / multi-engine runtime E2E 未齐）。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3438,6 +3447,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十八轮：LangGraphWorkflowAdapter 包装 IAgentRuntimePort；workflow offers 不含 mutation；remote 接线、direct null。
   残留三百二十轮：生产 `ProposalKernel`（IProposalKernelPort）生命周期 + `module.proposalKernel`；不执行 mutation；仍无 Capability Resolver。
   残留三百二十一轮：§13.2 focused evidence suite re-run（239 tests，residuals 250–320 锁；不改 checkbox）。
+  残留三百二十二轮：生产 `CapabilityResolver`（ICapabilityResolverPort）fail-closed + `module.capabilityResolver`；无静默 engine.*。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3454,6 +3464,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十九轮：§13.2 focused evidence suite re-run (231 tests, residuals 250–318 locks, no checkbox changes)。
   残留三百二十轮：ProposalKernel (IProposalKernelPort) lifecycle + module.proposalKernel; no mutation execution; Agent still partial。
   残留三百二十一轮：§13.2 focused evidence suite re-run (239 tests, residuals 250–320 locks, no checkbox changes)。
+  残留三百二十二轮：CapabilityResolver (ICapabilityResolverPort) fail-closed resolve + module.capabilityResolver; no silent engine.*; Agent still partial。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3548,6 +3559,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百一十九轮：tip 上 231 项 focused evidence suite（含 residual 250–318 workflow adapter 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百二十轮：ProposalKernel + stage-0/composition 锁通过；仍不构成 multi-engine/统一助手完成证据。
   残留三百二十一轮：tip 上 239 项 focused evidence suite（含 residual 250–320 ProposalKernel 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百二十二轮：CapabilityResolver + stage-0/composition 锁通过；仍不构成 multi-engine/统一助手完成证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

@@ -107,3 +107,11 @@ export {
   PROPOSAL_KERNEL_PROVIDER_ID,
 } from './proposal-kernel';
 
+// ---------------------------------------------------------------------------
+// Capability Resolver (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  CapabilityResolver,
+  CAPABILITY_RESOLVER_ENGINE_ID,
+} from './capability-resolver';
+
