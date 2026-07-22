@@ -121,14 +121,6 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
     };
   }
 
-  async findById(id: string): Promise<KeyResultWeightSnapshot | null> {
-    const prismaSnapshot = await this.prisma.keyResultWeightSnapshot.findUnique({
-      where: { id },
-    });
-
-    return prismaSnapshot ? PrismaWeightSnapshotMapper.toDomain(prismaSnapshot) : null;
-  }
-
   async findByIdForIdentity(
     identityId: string,
     id: string,

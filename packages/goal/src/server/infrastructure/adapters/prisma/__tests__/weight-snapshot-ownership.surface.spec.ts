@@ -3,8 +3,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Weight snapshot ownership surface (stage-6 residual 149):
+ * Weight snapshot ownership surface (stage-6 residual 149/173):
  * snapshot list/get/delete paths must never authorize by bare goal/KR/id alone.
+ * Residual 173 collapses dual findById.
  */
 describe('weight snapshot ownership surface', () => {
   const port = readFileSync(
@@ -15,6 +16,13 @@ describe('weight snapshot ownership surface', () => {
     resolve(__dirname, '../weight-snapshot-prisma.repository.ts'),
     'utf8',
   );
+
+  it('port drops bare findById dual method (residual 173)', () => {
+    expect(port).not.toContain(
+      'findById(id: string): Promise<KeyResultWeightSnapshot | null>;',
+    );
+    expect(prisma).not.toMatch(/async findById\(id: string\)/);
+  });
 
   it('port query/delete methods require identityId (residual 149)', () => {
     expect(port).toMatch(

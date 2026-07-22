@@ -39,8 +39,6 @@ export interface IWeightSnapshotRepository {
     pageSize?: number,
   ): Promise<SnapshotQueryResult>;
 
-  findById(id: string): Promise<KeyResultWeightSnapshot | null>;
-
   findByIdForIdentity(identityId: string, id: string): Promise<KeyResultWeightSnapshot | null>;
 
   delete(identityId: string, id: string): Promise<void>;
