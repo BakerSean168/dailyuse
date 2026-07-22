@@ -159,4 +159,74 @@ describe('AIAssistantFacadeController', () => {
     expect(events[0]).toMatchObject({ type: 'proposal.revised', revision: 2 });
   });
 
+
+  it('forwards executionProfileId pi_readonly with context identity only (residual 377)', async () => {
+    const dispatchAssistant = vi.fn(
+      async (command: AssistantCommand, onEvent: (event: AssistantEvent) => void) => {
+        expect(command).toMatchObject({
+          type: 'message',
+          identityId: 'ctx-user',
+          conversationId: 'conv-ro',
+          content: 'analyze',
+          surface: 'desktop',
+          executionProfileId: 'pi_readonly',
+        });
+        expect(JSON.stringify(command)).not.toContain('attacker');
+        onEvent({
+          type: 'run.started',
+          runId: 'run-ro',
+          engineId: 'engine.pi_readonly',
+          profile: 'pi_readonly',
+        });
+        onEvent({
+          type: 'message.completed',
+          runId: 'run-ro',
+          status: 'completed',
+        });
+        return ok({ eventCount: 2 });
+      },
+    );
+    const controller = new AIAssistantFacadeController({ dispatchAssistant });
+    const events: AssistantEvent[] = [];
+    const result = await controller.dispatch(
+      {
+        type: 'message',
+        conversationId: 'conv-ro',
+        content: 'analyze',
+        surface: 'desktop',
+        executionProfileId: 'pi_readonly',
+        identityId: 'attacker',
+      },
+      { identityId: 'ctx-user' } as never,
+      (event) => events.push(event),
+    );
+    expect(result.ok).toBe(true);
+    expect(events.map((e) => e.type)).toEqual(['run.started', 'message.completed']);
+    expect(events[0]).toMatchObject({
+      engineId: 'engine.pi_readonly',
+      profile: 'pi_readonly',
+    });
+  });
+
+  it('rejects unknown executionProfileId (residual 377)', async () => {
+    const dispatchAssistant = vi.fn();
+    const controller = new AIAssistantFacadeController({ dispatchAssistant });
+    const result = await controller.dispatch(
+      {
+        type: 'message',
+        conversationId: 'conv-1',
+        content: 'hello',
+        surface: 'web',
+        executionProfileId: 'remote_agent',
+      },
+      { identityId: 'user-1' } as never,
+      () => undefined,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('VALIDATION_ERROR');
+    }
+    expect(dispatchAssistant).not.toHaveBeenCalled();
+  });
+
 });

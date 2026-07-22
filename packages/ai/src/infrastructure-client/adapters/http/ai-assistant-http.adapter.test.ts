@@ -129,4 +129,72 @@ describe('AIAssistantHttpAdapter', () => {
       message: 'bad command',
     });
   });
+
+  it('forwards executionProfileId pi_readonly without identityId (residual 377)', async () => {
+    const stream = vi.fn().mockResolvedValue(
+      createSseResponse([
+        `event: assistant\ndata: ${JSON.stringify({
+          type: 'run.started',
+          runId: 'run-ro',
+          engineId: 'engine.pi_readonly',
+          profile: 'pi_readonly',
+        })}\n\n`,
+        `event: assistant\ndata: ${JSON.stringify({
+          type: 'message.completed',
+          runId: 'run-ro',
+          status: 'completed',
+        })}\n\n`,
+        `event: done\ndata: ${JSON.stringify({ eventCount: 2 })}\n\n`,
+      ]),
+    );
+    const adapter = new AIAssistantHttpAdapter(createHttpClientStub({ stream }));
+    const events: unknown[] = [];
+    let done: { eventCount: number } | undefined;
+
+    await adapter.dispatchAssistant(
+      {
+        type: 'message',
+        conversationId: 'conv-ro',
+        content: 'analyze',
+        surface: 'web',
+        executionProfileId: 'pi_readonly',
+      },
+      {
+        onEvent: (event) => events.push(event),
+        onDone: (result) => {
+          done = result;
+        },
+      },
+    );
+
+    expect(stream).toHaveBeenCalledWith(
+      '/ai/assistant/dispatch/sse',
+      expect.objectContaining({
+        method: 'POST',
+        body: {
+          type: 'message',
+          conversationId: 'conv-ro',
+          content: 'analyze',
+          surface: 'web',
+          executionProfileId: 'pi_readonly',
+        },
+      }),
+    );
+    expect(JSON.stringify(stream.mock.calls[0][1].body)).not.toContain('identityId');
+    expect(events).toEqual([
+      {
+        type: 'run.started',
+        runId: 'run-ro',
+        engineId: 'engine.pi_readonly',
+        profile: 'pi_readonly',
+      },
+      {
+        type: 'message.completed',
+        runId: 'run-ro',
+        status: 'completed',
+      },
+    ]);
+    expect(done).toEqual({ eventCount: 2 });
+  });
+
 });
