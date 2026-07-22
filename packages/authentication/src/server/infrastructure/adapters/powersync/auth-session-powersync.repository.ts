@@ -56,6 +56,15 @@ export class PowerSyncAuthSessionRepository
     return PowerSyncAuthSessionMapper.toDomain(row);
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<AuthSession | null> {
+    const row = await this.db.getOptional<PowerSyncAuthSessionRow>(
+      `SELECT * FROM auth_sessions WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [id, identityId],
+    );
+    if (!row) return null;
+    return PowerSyncAuthSessionMapper.toDomain(row);
+  }
+
   async findByIdentityId(identityId: string): Promise<AuthSession[]> {
     const rows = await this.db.getAll<PowerSyncAuthSessionRow>(
       `SELECT * FROM auth_sessions WHERE identity_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`,

@@ -77,6 +77,12 @@ class InMemorySessionRepo implements IAuthSessionRepository {
   async findById(_id: AuthSessionId): Promise<AuthSession | null> {
     return null;
   }
+  async findByIdForIdentity(
+    _identityId: IdentityId,
+    _id: AuthSessionId,
+  ): Promise<AuthSession | null> {
+    return null;
+  }
   async findByIdentityId(): Promise<AuthSession[]> {
     return [];
   }

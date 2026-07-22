@@ -31,8 +31,11 @@ export class GetCurrentUserUseCase {
 
     let session = null;
     if (sessionId) {
-      const currentSession = await this.sessionRepository.findById(AuthSessionId.of(sessionId));
-      if (currentSession && String(currentSession.identityId) === String(identity.id)) {
+      const currentSession = await this.sessionRepository.findByIdForIdentity(
+        IdentityId.of(cx.identityId),
+        AuthSessionId.of(sessionId),
+      );
+      if (currentSession) {
         session = currentSession.toClientDTO(true);
       }
     }

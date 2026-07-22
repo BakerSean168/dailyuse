@@ -1745,6 +1745,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-22（阶段 6 残留一百三十九轮）：Auth session 身份隔离——仓储新增
+> `findByIdForIdentity`；`revoke-session` 与 `get-current-user` 不再用 bare findById
+> 后 FORBIDDEN 二次判断，owned miss 统一 NOT_FOUND；JWT/refresh 仍可用 bare findById。
+> 补 ownership surface + revoke 单测。§13.2 仍部分。
+> 验证：auth session ownership/revoke + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
 
 
 
@@ -1872,6 +1881,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百三十六轮：reminder findByIds identity-scoped。
   残留一百三十七轮：knowledge projection system connection ownership re-verify。
   残留一百三十八轮：notification domain service identity-scoped loads。
+  残留一百三十九轮：auth session findByIdForIdentity（revoke/getCurrentUser）。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

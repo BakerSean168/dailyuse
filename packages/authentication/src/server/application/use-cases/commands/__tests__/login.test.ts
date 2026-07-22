@@ -45,6 +45,7 @@ const createMockSessionRepo = (
 ): IAuthSessionRepository => ({
   save: vi.fn().mockResolvedValue(undefined),
   findById: vi.fn().mockResolvedValue(null),
+  findByIdForIdentity: vi.fn().mockResolvedValue(null),
   findByIdentityId: vi.fn().mockResolvedValue([]),
   remove: vi.fn().mockResolvedValue(undefined),
   removeAllByIdentityId: vi.fn().mockResolvedValue(undefined),

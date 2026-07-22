@@ -32,7 +32,7 @@ describe('DisableIdentityForAccountCloseUseCase', () => {
     sessionRepo = {
       save: vi.fn(),
       findById: vi.fn(),
-      findByRefreshTokenHash: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       findByIdentityId: vi.fn(),
       remove: vi.fn(),
       removeAllByIdentityId: vi.fn().mockResolvedValue(undefined),
