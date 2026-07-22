@@ -1083,6 +1083,20 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).toContain("pendingActionCount(taskRun, 'create_task_template')");
   });
 
+  it('receipt primaryEntityId prefers product-lane executed tool only (residual 529)', () => {
+    expect(helper).toContain('Residual 529');
+    const fnIdx = helper.indexOf('function summarizeExecutedActions');
+    expect(fnIdx).toBeGreaterThan(-1);
+    const fnSlice = helper.slice(fnIdx, fnIdx + 1400);
+    expect(fnSlice).toContain('productTool');
+    expect(fnSlice).toContain('action.tool === productTool');
+    expect(fnSlice).not.toContain('if (!primaryEntityId && entityIds[0])');
+    expect(fnSlice).not.toContain("action.tool === 'create_goal' || action.tool === 'create_knowledge_note'");
+    expect(helper).toContain("summarizeExecutedActions(goalRun, 'create_goal')");
+    expect(helper).toContain("summarizeExecutedActions(noteRun, 'create_knowledge_note')");
+    expect(helper).toContain("summarizeExecutedActions(taskRun, 'create_task_template')");
+  });
+
 
 
 

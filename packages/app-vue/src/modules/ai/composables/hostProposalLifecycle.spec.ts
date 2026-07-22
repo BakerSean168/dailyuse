@@ -1897,6 +1897,96 @@ describe('workbench pendingActionCount product-lane only (residual 527)', () => 
   });
 });
 
+describe('receipt primaryEntityId product-lane only (residual 529)', () => {
+  it('task receipt ignores foreign executed tool entityId for deep-link', () => {
+    const run = taskWaitingRun();
+    run.run.status = 'completed';
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'foreign goal',
+        entityId: 'foreign-goal-1',
+      },
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: 'created',
+        entityId: 'task-real-1',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ taskAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.primaryEntityId).toBe('task-real-1');
+    expect(receipts[0]?.primaryEntityId).not.toBe('foreign-goal-1');
+  });
+
+  it('goal receipt ignores foreign executed tool entityId for deep-link', () => {
+    const run = goalWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: 'foreign task',
+        entityId: 'foreign-task-1',
+      },
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'created',
+        entityId: 'goal-real-1',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ goalAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.primaryEntityId).toBe('goal-real-1');
+    expect(receipts[0]?.primaryEntityId).not.toBe('foreign-task-1');
+  });
+
+  it('knowledge receipt ignores foreign executed tool entityId for deep-link', () => {
+    const run = noteWaitingRun('completed');
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'foreign',
+        entityId: 'foreign-goal-9',
+      },
+      {
+        tool: 'create_knowledge_note',
+        status: 'executed',
+        message: 'created',
+        entityId: 'note-real-9',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ noteAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.primaryEntityId).toBe('note-real-9');
+    expect(receipts[0]?.primaryEntityId).not.toBe('foreign-goal-9');
+  });
+
+  it('does not invent primaryEntityId from foreign-only executed actions', () => {
+    const run = taskWaitingRun();
+    run.run.status = 'completed';
+    run.state.pendingActions = [];
+    run.state.executedActions = [
+      {
+        tool: 'create_goal',
+        status: 'executed',
+        message: 'foreign-only',
+        entityId: 'foreign-only-1',
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ taskAgentRun: run });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.primaryEntityId).toBeUndefined();
+    expect(receipts[0]?.entityIds).toContain('foreign-only-1');
+  });
+});
+
 
 
 describe('shouldReviseProcessLocalTaskDraftBeforeDomainSettle (residual 459)', () => {

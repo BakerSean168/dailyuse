@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -10,6 +10,7 @@
  * Residual 523: goal draft title/description read create_goal only (no blind pending[0]).
  * Residual 525: workbench summary rationale reads product-lane tool only (no blind pending[0]).
  * Residual 527: workbench pendingActionCount counts product-lane tool only (no foreign tools).
+ * Residual 529: receipt primaryEntityId prefers product-lane executed tool only (no foreign entityIds[0]).
  */
 import type {
   AgentAction,
@@ -556,7 +557,15 @@ function truncateHostContentPreview(text: string, max = 240): string {
   return `${trimmed.slice(0, max).trimEnd()}…`;
 }
 
-function summarizeExecutedActions(run: AgentRunResult): {
+/**
+ * Residual 529: receipt primaryEntityId from product-lane executed tool only
+ * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
+ * Never steal foreign tool entityIds[0] for deep-link open.
+ */
+function summarizeExecutedActions(
+  run: AgentRunResult,
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+): {
   executedCount: number;
   failedCount: number;
   skippedCount: number;
@@ -583,11 +592,8 @@ function summarizeExecutedActions(run: AgentRunResult): {
         : undefined;
     if (entityId) {
       entityIds.push(entityId);
-      if (
-        !primaryEntityId &&
-        (action.tool === 'create_goal' || action.tool === 'create_knowledge_note') &&
-        action.status === 'executed'
-      ) {
+      // Residual 529: only product-lane executed tool entity — not foreign entityIds[0].
+      if (!primaryEntityId && action.tool === productTool && action.status === 'executed') {
         primaryEntityId = entityId;
       }
     }
@@ -598,9 +604,8 @@ function summarizeExecutedActions(run: AgentRunResult): {
       ...(entityId ? { entityId } : {}),
     });
   }
-  if (!primaryEntityId && entityIds[0]) {
-    primaryEntityId = entityIds[0];
-  }
+  // Residual 529: leave primaryEntityId undefined when product-lane tool has no entityId
+  // (do not fall back to foreign entityIds[0]).
   const ok = run.run.status === 'completed' && failedCount === 0;
   const parts = [
     `${executedCount} executed`,
@@ -1030,7 +1035,7 @@ export function buildHostExecutionReceiptItems(input: {
   if (goalRun && HOST_RECEIPT_STATUSES.has(goalRun.run.status)) {
     const status = goalRun.run.status as HostExecutionReceiptItem['runStatus'];
     const ref = buildAgentRunHostProposalRef(goalRun.run.runId, 'goal.create');
-    const counts = summarizeExecutedActions(goalRun);
+    const counts = summarizeExecutedActions(goalRun, 'create_goal');
     // Only surface when execution actually started (actions present) or terminal failed/cancelled.
     if (
       counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
@@ -1064,7 +1069,7 @@ export function buildHostExecutionReceiptItems(input: {
   if (noteRun && HOST_RECEIPT_STATUSES.has(noteRun.run.status)) {
     const status = noteRun.run.status as HostExecutionReceiptItem['runStatus'];
     const ref = buildAgentRunHostProposalRef(noteRun.run.runId, 'knowledge.write');
-    const counts = summarizeExecutedActions(noteRun);
+    const counts = summarizeExecutedActions(noteRun, 'create_knowledge_note');
     if (
       counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
       status === 'failed' ||
@@ -1099,7 +1104,7 @@ export function buildHostExecutionReceiptItems(input: {
   if (taskRun && HOST_RECEIPT_STATUSES.has(taskRun.run.status)) {
     const status = taskRun.run.status as HostExecutionReceiptItem['runStatus'];
     const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
-    const counts = summarizeExecutedActions(taskRun);
+    const counts = summarizeExecutedActions(taskRun, 'create_task_template');
     if (
       counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
       status === 'failed' ||

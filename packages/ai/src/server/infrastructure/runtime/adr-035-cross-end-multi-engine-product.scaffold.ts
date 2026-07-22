@@ -375,6 +375,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 527: workbench pendingActionCount product-lane tool only.
         'Residual 527',
         "pendingActionCount(goalRun, 'create_goal')",
+        // Residual 529: receipt primaryEntityId product-lane executed tool only.
+        'Residual 529',
+        "summarizeExecutedActions(goalRun, 'create_goal')",
       ],
       status: 'implemented_unit',
     },
