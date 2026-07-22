@@ -38,6 +38,12 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   const messagesViewport = ref<HTMLElement | null>(null);
   const composerTextarea = ref<HTMLTextAreaElement | null>(null);
   const activeStreamAbortController = ref<AbortController | null>(null);
+  /** Residual 369: Host open-chat engine profile (Facade routes DirectTurn vs ReadonlyAnalysis). */
+  const executionProfileId = ref<'direct_turn' | 'pi_readonly'>('direct_turn');
+
+  function selectExecutionProfile(profile: 'direct_turn' | 'pi_readonly') {
+    executionProfileId.value = profile === 'pi_readonly' ? 'pi_readonly' : 'direct_turn';
+  }
 
   const hasWorkflowMessages = computed(() =>
     chatTimeline.value.some((item) => item.content.trim().length > 0),
@@ -242,6 +248,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
           conversationId,
           content: pendingUserMessage,
           surface: 'web',
+          // Residual 369: multi-engine Host profile selection for open chat.
+          executionProfileId: executionProfileId.value,
           providerId: selectedModel.providerId,
           model: selectedModel.modelId,
         },
@@ -340,6 +348,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   return {
     chatMessage,
     chatLoading,
+    executionProfileId,
+    selectExecutionProfile,
     chatConversationId,
     chatTimeline,
     conversationTitle,

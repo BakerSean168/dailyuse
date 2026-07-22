@@ -211,11 +211,13 @@
           :tool-button-label="currentToolButtonLabel"
           :model-groups="modelGroups"
           :selected-model-key="selectedModelKey"
+          :execution-profile-id="executionProfileId"
           :density="composerDensity"
           @send="handleSendChat"
           @stop="stopGenerating"
           @start-conversation="startNewConversation"
           @select-model="selectModel"
+          @select-execution-profile="selectExecutionProfile"
           @open-settings="openSettings"
         />
       </Teleport>
@@ -228,11 +230,13 @@
         :tool-button-label="currentToolButtonLabel"
         :model-groups="modelGroups"
         :selected-model-key="selectedModelKey"
+        :execution-profile-id="executionProfileId"
         :density="composerDensity"
         @send="handleSendChat"
         @stop="stopGenerating"
         @start-conversation="startNewConversation"
         @select-model="selectModel"
+        @select-execution-profile="selectExecutionProfile"
         @open-settings="openSettings"
       />
     </section>
@@ -410,6 +414,8 @@ const {
   deleteConversation,
   loadConversationList,
   startNewConversation,
+  executionProfileId,
+  selectExecutionProfile,
   handleSendChat,
   stopGenerating,
 } = session;

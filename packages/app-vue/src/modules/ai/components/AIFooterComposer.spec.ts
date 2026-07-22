@@ -58,6 +58,11 @@ const i18n = createI18n({
         },
         chatPage: {
           emptyModels: 'No models',
+          hostProfile: {
+            label: 'Host engine',
+            directTurn: 'Chat engine',
+            piReadonly: 'Readonly analysis',
+          },
           workflow: {
             tools: {
               chat: 'Chat',

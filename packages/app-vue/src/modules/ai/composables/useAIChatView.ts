@@ -555,6 +555,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       openRecentGoal,
       openRecentKnowledgeNote,
       startNewConversation,
+      executionProfileId: chatSession.executionProfileId,
+      selectExecutionProfile: chatSession.selectExecutionProfile,
       handleSendChat: () =>
         chatSession.handleSendChat(
           service,

@@ -335,6 +335,11 @@ export default {
           knowledgeGenerate: 'Knowledge Note',
         },
       },
+      hostProfile: {
+        label: 'Host engine',
+        directTurn: 'Chat engine',
+        piReadonly: 'Readonly analysis',
+      },
       hostProposals: {
         title: 'Host Proposals',
         lifecycleOnly:

@@ -321,6 +321,11 @@ export default {
           knowledgeGenerate: '知识笔记',
         },
       },
+      hostProfile: {
+        label: 'Host 引擎',
+        directTurn: '对话引擎',
+        piReadonly: '只读分析',
+      },
       hostProposals: {
         title: 'Host 提案',
         lifecycleOnly: '仅 Host 生命周期 — 业务执行仍在批准后由既有 executor 完成。',
