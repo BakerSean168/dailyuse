@@ -2228,6 +2228,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > §13.2 未打勾项仍为部分/外部阻塞。验证：legacy-note-surface-docs surface（5）+
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留二百一十二轮）：§13.2 核心证据套件复跑（含 residual 211
+> MSW/e2e/module-index 锁，不改 checkbox）——**32 文件 / 204 测试**（app-vue 27、ai journey/
+> terminology/query/index 36、repository 39、web MSW 4、contracts 22、ownership auth/account/
+> notification/gov/schedule 70、portable-editor 5、desktop guest 1）+ governance-check。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
+> 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -2343,6 +2350,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百八十一轮：复跑 `three-login-surface.matrix.spec.ts`（14 通过）证据仍在；不因 dual-method 收口改写为已证明。
   残留二百零四轮：复跑 three-login matrix + repository/router notePanelAdaptation 等共 22 通过；仍为部分（缺真实 OAuth 跨端 E2E）。
   残留二百零八轮：复跑 three-login matrix + notePanel + terminology/deeplink surfaces 共 25 通过；仍为部分（缺真实 OAuth 跨端 E2E）。
+  残留二百一十二轮：复跑 three-login + notePanel + terminology/deeplink + legacy-note surface 共 27 通过；仍为部分（缺真实 OAuth 跨端 E2E）。
   仍缺：真实跨端 Playwright/Electron 一揽子 E2E（含真实 OAuth/GitHub fixture）。
 - [x] GitHub 登录与仓库授权在 UI、contract 和 token 上完全解耦。 **（已证明）**
 - [x] 访客和未绑定用户不上传 Vault 内容。 **（已证明）**
@@ -2384,6 +2392,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百八十一轮：复跑 `adr-035-capability-turn-isolation.journey.spec.ts`（13 通过）；证据强化但仍为部分实现。
   残留二百零四轮：复跑 `adr-035-capability-turn-isolation.journey.spec.ts`（13 通过）；仍为部分（缺 multi-engine Turn Engine E2E）。
   残留二百零八轮：复跑 ADR-035 journey（13 通过）+ knowledge terminology surfaces；仍为部分（缺 multi-engine Turn Engine E2E）。
+  残留二百一十二轮：复跑 ADR-035 journey（13 通过）+ knowledge terminology surface；仍为部分（缺 multi-engine Turn Engine E2E）。
   仍缺：多 Turn Engine 完整 E2E、跨端对抗 Playwright E2E 与真实 fixture。
   残留四十轮：`adr-035-capability-turn-isolation.journey.spec.ts` 增加 multi-turn 二次 confirm 不重复落盘，以及 Web surface 无法满足 Desktop `local_vault` knowledge-write 要求；仍缺完整 multi-engine Turn Engine E2E 与跨端对抗性 Playwright/Electron E2E。
   残留七十四轮：journey step 10 固化 readonly cloud_rag/proposal 不能满足 knowledge mutation；
@@ -2501,6 +2510,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百零九轮：drop MSW legacy Resource/Folder dual-track 404 stubs (knowledge-only handlers)。
   残留二百一十轮：align plan stage-6 summary (no hard-fail CRUD dual-track claim; MSW knowledge-only)。
   残留二百一十一轮：module-index + goal-workflow e2e drop legacy hard-fail/debug dual-track claims。
+  残留二百一十二轮：§13.2 core evidence suite re-run (204 tests, residual 211 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -2515,6 +2525,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百九十八轮：tip 上 118 项核心 evidence suite 通过；仍不构成全量 PR 门禁证据。
   残留二百零四轮：tip 上 157 项核心 evidence suite（含 confirmed-create / editor-pref / dual-track VO 锁）通过；仍不构成全量 PR 门禁证据。
   残留二百零八轮：tip 上 205 项核心 evidence suite（含 206–207 terminology + eval fixture 对齐）通过；仍不构成全量 PR 门禁证据。
+  残留二百一十二轮：tip 上 204 项核心 evidence suite（含 residual 211 MSW/e2e/docs 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
