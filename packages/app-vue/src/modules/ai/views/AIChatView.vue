@@ -361,6 +361,7 @@ import {
   buildPendingHostProposalItems,
   buildHostExecutionReceiptItems,
   buildHostTimelineArtifactItems,
+  buildHostOpenChatTimelineArtifactItems,
   resolveHostWorkbenchFocusFromTimeline,
   shouldOpenHostWorkbenchFromAgentRun,
   dispatchHostProposalDecision,
@@ -443,6 +444,7 @@ const {
   startNewConversation,
   executionProfileId,
   selectExecutionProfile,
+  openChatHostTurns,
   handleSendChat,
   stopGenerating,
 } = session;
@@ -587,13 +589,14 @@ const hostExecutionReceiptItems = computed(() =>
   }),
 );
 
-/** Residual 383: compact Host Artifact cards in the Conversation message timeline. */
-const hostTimelineArtifactItems = computed(() =>
-  buildHostTimelineArtifactItems({
+/** Residual 383/399/401: Host Artifact cards + open-chat multi-engine turn badges. */
+const hostTimelineArtifactItems = computed(() => [
+  ...buildHostOpenChatTimelineArtifactItems(openChatHostTurns.value),
+  ...buildHostTimelineArtifactItems({
     proposals: hostProposalItems.value,
     receipts: hostExecutionReceiptItems.value,
   }),
-);
+]);
 
 /** Residual 387: timeline card focus target (proposalId) for right workbench highlight. */
 const focusedHostProposalId = ref<string | null>(null);
@@ -603,6 +606,11 @@ const focusedHostProposalId = ref<string | null>(null);
  * the matching proposal/receipt row.
  */
 function openHostWorkbenchFromTimeline(item?: HostTimelineArtifactItem) {
+  // Residual 401: open-chat cards are multi-engine badges only — no proposal/receipt focus.
+  if (item?.surface === 'open_chat') {
+    focusedHostProposalId.value = null;
+    return;
+  }
   contextPanelOpen.value = true;
   const focus = resolveHostWorkbenchFocusFromTimeline(item);
   focusedHostProposalId.value = focus?.proposalId ?? null;

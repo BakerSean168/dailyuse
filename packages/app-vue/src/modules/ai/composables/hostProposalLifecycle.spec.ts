@@ -7,6 +7,7 @@ import {
   resolveHostWorkbenchFocusFromTimeline,
   normalizeHostProposalRejectReason,
   resolveHostTimelineEngineKey,
+  buildHostOpenChatTimelineArtifactItems,
   resolveHostWorkbenchReopenFromAgentRun,
   shouldOpenHostWorkbenchFromAgentRun,
   buildHostProposalPatchFromDraft,
@@ -913,5 +914,62 @@ describe('resolveHostTimelineEngineKey (residual 399)', () => {
       executionProfileId: 'pi_readonly',
     });
     expect(openChatOnly).toEqual([]);
+  });
+});
+
+describe('buildHostOpenChatTimelineArtifactItems (residual 401)', () => {
+  it('builds open-chat cards with live engine profile badges', () => {
+    const items = buildHostOpenChatTimelineArtifactItems([
+      {
+        runId: 'open-chat:1',
+        executionProfileId: 'direct_turn',
+        status: 'completed',
+        title: 'Hello engine',
+        summary: 'reply',
+        engineId: 'engine.direct_turn',
+      },
+      {
+        runId: 'open-chat:2',
+        executionProfileId: 'pi_readonly',
+        status: 'generating',
+        title: 'Analyze only',
+      },
+      {
+        runId: '  ',
+        executionProfileId: 'direct_turn',
+        status: 'failed',
+        title: 'skip empty run',
+      },
+    ]);
+
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({
+      surface: 'open_chat',
+      kind: 'open_chat.turn',
+      source: 'open_chat',
+      runId: 'open-chat:1',
+      proposalId: 'open-chat:open-chat:1',
+      engineKey: 'engine.direct_turn',
+      statusLabelKey: 'ok',
+      title: 'Hello engine',
+    });
+    expect(items[1]).toMatchObject({
+      runId: 'open-chat:2',
+      engineKey: 'engine.pi_readonly',
+      statusLabelKey: 'pending',
+    });
+  });
+
+  it('does not focus workbench rows for open_chat cards', () => {
+    const [card] = buildHostOpenChatTimelineArtifactItems([
+      {
+        runId: 'run-x',
+        executionProfileId: 'pi_readonly',
+        status: 'aborted',
+        title: 'stopped',
+      },
+    ]);
+    expect(card?.statusLabelKey).toBe('cancelled');
+    expect(resolveHostWorkbenchFocusFromTimeline(card)).toBeNull();
   });
 });

@@ -18,6 +18,7 @@ import {
   createHostOpenChatRunId,
   isHostOpenChatCancelledEvent,
 } from './hostOpenChatCancel';
+import type { HostOpenChatTurnSnapshot } from './hostProposalLifecycle';
 
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
 type DeleteConversationId = Parameters<AIChatService['deleteConversation']>[0];
@@ -45,11 +46,21 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   const activeStreamAbortController = ref<AbortController | null>(null);
   /** Residual 393: client-owned Host run id for open-chat cancel_run on stop. */
   const activeHostRunId = ref<string | null>(null);
+  /** Residual 401: recent open-chat Host turns for timeline multi-engine badges. */
+  const openChatHostTurns = ref<HostOpenChatTurnSnapshot[]>([]);
   /** Residual 369: Host open-chat engine profile (Facade routes DirectTurn vs ReadonlyAnalysis). */
   const executionProfileId = ref<'direct_turn' | 'pi_readonly'>('direct_turn');
 
   function selectExecutionProfile(profile: 'direct_turn' | 'pi_readonly') {
     executionProfileId.value = profile === 'pi_readonly' ? 'pi_readonly' : 'direct_turn';
+  }
+
+  /** Residual 401: keep a short ring of open-chat Host turns for timeline badges. */
+  function upsertOpenChatHostTurn(next: HostOpenChatTurnSnapshot) {
+    const runId = next.runId.trim();
+    if (!runId) return;
+    const rest = openChatHostTurns.value.filter((turn) => turn.runId !== runId);
+    openChatHostTurns.value = [{ ...next, runId }, ...rest].slice(0, 8);
   }
 
   const hasWorkflowMessages = computed(() =>
@@ -229,6 +240,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     chatTimeline.value = [];
     chatMessage.value = '';
     conversationTitle.value = getDefaultName(mode);
+    openChatHostTurns.value = [];
+    activeHostRunId.value = null;
   }
 
   function startNewConversation(mode: string = 'chat') {
@@ -260,6 +273,15 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       // Residual 393: client-owned runId so stop can cancel_run before/without run.started.
       const hostRunId = createHostOpenChatRunId();
       activeHostRunId.value = hostRunId;
+      const profileForTurn =
+        executionProfileId.value === 'pi_readonly' ? 'pi_readonly' : 'direct_turn';
+      upsertOpenChatHostTurn({
+        runId: hostRunId,
+        executionProfileId: profileForTurn,
+        status: 'generating',
+        title: pendingUserMessage,
+        summary: '',
+      });
 
       userDraftId = `user-draft-${Date.now()}`;
       assistantDraftId = `assistant-draft-${Date.now()}`;
@@ -289,12 +311,35 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
           onEvent: (event: AssistantEvent) => {
             if (event.type === 'run.started' && event.runId) {
               activeHostRunId.value = event.runId;
+              const existing = openChatHostTurns.value.find((turn) => turn.runId === hostRunId);
+              upsertOpenChatHostTurn({
+                runId: event.runId,
+                executionProfileId:
+                  event.profile === 'pi_readonly'
+                    ? 'pi_readonly'
+                    : existing?.executionProfileId ?? profileForTurn,
+                status: 'generating',
+                title: existing?.title ?? pendingUserMessage,
+                summary: existing?.summary ?? '',
+                engineId: event.engineId,
+              });
+              // If server rewrote runId, drop the pre-start client id row.
+              if (event.runId !== hostRunId) {
+                openChatHostTurns.value = openChatHostTurns.value.filter(
+                  (turn) => turn.runId !== hostRunId,
+                );
+              }
             }
             if (isHostOpenChatCancelledEvent(event)) {
               const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
               if (target && target.status === 'generating') {
                 target.status = 'aborted';
                 target.errorMessage = undefined;
+              }
+              const runKey = activeHostRunId.value ?? hostRunId;
+              const existing = openChatHostTurns.value.find((turn) => turn.runId === runKey);
+              if (existing) {
+                upsertOpenChatHostTurn({ ...existing, status: 'aborted' });
               }
             }
             if (event.type === 'message.delta') {
@@ -309,6 +354,27 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
 
             if (event.type === 'message.completed') {
               sawCompleted = true;
+              const completedRunId = event.runId || activeHostRunId.value || hostRunId;
+              const existingTurn = openChatHostTurns.value.find(
+                (turn) => turn.runId === completedRunId || turn.runId === hostRunId,
+              );
+              if (existingTurn || completedRunId) {
+                const nextStatus =
+                  event.status === 'aborted'
+                    ? 'aborted'
+                    : event.status === 'failed'
+                      ? 'failed'
+                      : 'completed';
+                upsertOpenChatHostTurn({
+                  runId: completedRunId,
+                  executionProfileId: existingTurn?.executionProfileId ?? profileForTurn,
+                  status: nextStatus,
+                  title: existingTurn?.title ?? pendingUserMessage,
+                  summary:
+                    (event.content ?? '').trim().slice(0, 240) || existingTurn?.summary || '',
+                  engineId: existingTurn?.engineId,
+                });
+              }
               const assistantIndex = chatTimeline.value.findIndex(
                 (item) => item.id === assistantDraftId,
               );
@@ -394,6 +460,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     chatLoading,
     executionProfileId,
     selectExecutionProfile,
+    openChatHostTurns,
     chatConversationId,
     chatTimeline,
     conversationTitle,

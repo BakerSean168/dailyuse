@@ -6,6 +6,7 @@
  * Compact cards for Host proposal / execution receipt. Click reopens the right
  * Host workbench. Presentation only — no Host kernel mutation execution.
  * Residual 399: engine/profile badge for multi-engine isolation visibility.
+ * Residual 401: open_chat surface for live open-chat Host turns.
  */
 import { useI18n } from 'vue-i18n';
 import type { HostTimelineArtifactItem } from '../composables/hostProposalLifecycle';
@@ -21,9 +22,9 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 function surfaceLabel(item: HostTimelineArtifactItem): string {
-  return item.surface === 'proposal'
-    ? t('aiAssistant.chatPage.context.hostTimelineProposal')
-    : t('aiAssistant.chatPage.context.hostTimelineReceipt');
+  if (item.surface === 'proposal') return t('aiAssistant.chatPage.context.hostTimelineProposal');
+  if (item.surface === 'receipt') return t('aiAssistant.chatPage.context.hostTimelineReceipt');
+  return t('aiAssistant.chatPage.context.hostTimelineOpenChat');
 }
 
 function statusLabel(item: HostTimelineArtifactItem): string {
@@ -38,6 +39,7 @@ function statusLabel(item: HostTimelineArtifactItem): string {
 function kindLabel(kind: HostTimelineArtifactItem['kind']): string {
   if (kind === 'goal.create') return t('aiAssistant.chatPage.context.hostReceiptKindGoal');
   if (kind === 'knowledge.write') return t('aiAssistant.chatPage.context.hostReceiptKindKnowledge');
+  if (kind === 'open_chat.turn') return t('aiAssistant.chatPage.context.hostTimelineOpenChatKind');
   return kind;
 }
 
@@ -115,7 +117,11 @@ function engineLabel(item: HostTimelineArtifactItem): string {
         {{ item.summary }}
       </p>
       <p class="text-[11px] text-primary/80">
-        {{ t('aiAssistant.chatPage.context.hostTimelineOpenWorkbench') }}
+        {{
+          item.surface === 'open_chat'
+            ? t('aiAssistant.chatPage.context.hostTimelineOpenChatHint')
+            : t('aiAssistant.chatPage.context.hostTimelineOpenWorkbench')
+        }}
       </p>
     </button>
   </section>

@@ -560,6 +560,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       startNewConversation,
       executionProfileId: chatSession.executionProfileId,
       selectExecutionProfile: chatSession.selectExecutionProfile,
+      openChatHostTurns: chatSession.openChatHostTurns,
       handleSendChat: () =>
         chatSession.handleSendChat(
           service,

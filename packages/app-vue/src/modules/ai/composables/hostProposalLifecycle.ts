@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385/387/397/399).
+ * Host proposal lifecycle helpers (residual 355/357/359/361/363/365/367/379/381/383/385/387/397/399/401).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -755,18 +755,37 @@ export function resolveHostTimelineEngineKey(input: {
  * mutation lifecycle — click reopens the right workbench.
  * Residual 399: engineKey badge for multi-engine isolation visibility.
  */
+/** Residual 401: open_chat is a presentation lane for multi-engine open-chat turns. */
+export type HostTimelineArtifactSurface = 'proposal' | 'receipt' | 'open_chat';
+export type HostTimelineArtifactKind = AgentRunHostProposalKind | 'open_chat.turn';
+export type HostTimelineArtifactSource = HostProposalPanelSource | 'open_chat';
+
 export type HostTimelineArtifactItem = {
   id: string;
-  surface: 'proposal' | 'receipt';
+  surface: HostTimelineArtifactSurface;
   runId: string;
   proposalId: string;
-  kind: AgentRunHostProposalKind;
-  source: HostProposalPanelSource;
+  kind: HostTimelineArtifactKind;
+  source: HostTimelineArtifactSource;
   title: string;
   summary: string;
   statusLabelKey: 'pending' | 'ok' | 'partial' | 'failed' | 'cancelled';
   /** Residual 399: Host engine/profile lane for multi-engine isolation badge. */
   engineKey: HostTimelineEngineKey;
+};
+
+/**
+ * Residual 401: open-chat Host turn snapshot for timeline multi-engine badges.
+ * Presentation only — not a proposal/receipt lifecycle object.
+ */
+export type HostOpenChatTurnSnapshot = {
+  runId: string;
+  executionProfileId: 'direct_turn' | 'pi_readonly' | string;
+  status: 'generating' | 'completed' | 'aborted' | 'failed';
+  title: string;
+  summary?: string;
+  /** Optional engine id from run.started for diagnostics. */
+  engineId?: string;
 };
 
 /**
@@ -825,9 +844,53 @@ export function buildHostTimelineArtifactItems(input: {
 }
 
 /**
+ * Residual 401: build timeline Artifact cards for open-chat Host turns.
+ * Uses live executionProfileId so engine badges distinguish DirectTurn vs
+ * ReadonlyAnalysis. Never creates proposal/receipt lifecycle rows.
+ */
+export function buildHostOpenChatTimelineArtifactItems(
+  turns: HostOpenChatTurnSnapshot[] | null | undefined,
+): HostTimelineArtifactItem[] {
+  const items: HostTimelineArtifactItem[] = [];
+  for (const turn of turns ?? []) {
+    const runId = typeof turn.runId === 'string' ? turn.runId.trim() : '';
+    if (!runId) continue;
+
+    let statusLabelKey: HostTimelineArtifactItem['statusLabelKey'] = 'partial';
+    if (turn.status === 'generating') statusLabelKey = 'pending';
+    else if (turn.status === 'completed') statusLabelKey = 'ok';
+    else if (turn.status === 'failed') statusLabelKey = 'failed';
+    else if (turn.status === 'aborted') statusLabelKey = 'cancelled';
+
+    const title =
+      typeof turn.title === 'string' && turn.title.trim()
+        ? turn.title.trim().slice(0, 120)
+        : 'Open chat';
+    const summary = typeof turn.summary === 'string' ? turn.summary.trim().slice(0, 240) : '';
+
+    items.push({
+      id: `timeline-open-chat:${runId}`,
+      surface: 'open_chat',
+      runId,
+      proposalId: `open-chat:${runId}`,
+      kind: 'open_chat.turn',
+      source: 'open_chat',
+      title,
+      summary,
+      statusLabelKey,
+      engineKey: resolveHostTimelineEngineKey({
+        executionProfileId: turn.executionProfileId,
+      }),
+    });
+  }
+  return items;
+}
+
+/**
  * Residual 387: map a timeline Artifact card to a Host workbench focus target.
  * Used when Conversation timeline reopens the right rail so the matching
  * proposal/receipt row can be highlighted and scrolled into view.
+ * Residual 401: open_chat cards never focus proposal/receipt workbench rows.
  */
 export type HostWorkbenchFocusTarget = {
   proposalId: string;

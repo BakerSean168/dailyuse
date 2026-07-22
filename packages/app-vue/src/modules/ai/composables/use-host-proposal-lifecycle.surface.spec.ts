@@ -17,6 +17,7 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   const panel = readFileSync(resolve(dir, '../components/AIHostProposalPanel.vue'), 'utf8');
   const receiptPanel = readFileSync(resolve(dir, '../components/AIHostExecutionReceiptPanel.vue'), 'utf8');
   const timelineStrip = readFileSync(resolve(dir, '../components/AIHostTimelineArtifactStrip.vue'), 'utf8');
+  const session = readFileSync(resolve(dir, 'useAIChatSession.ts'), 'utf8');
   const contextPanel = readFileSync(resolve(dir, '../components/AIContextPanel.vue'), 'utf8');
 
   it('routes confirm/cancel lifecycle via dispatchAssistant Host commands', () => {
@@ -215,5 +216,19 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(timelineStrip).toContain('engineLabel');
     expect(timelineStrip).not.toContain('executeApproved');
     expect(timelineStrip).not.toContain('dispatchAssistant');
+  });
+
+  it('open-chat Host turns appear on timeline with engine badges (residual 401)', () => {
+    expect(helper).toContain('buildHostOpenChatTimelineArtifactItems');
+    expect(helper).toContain("surface: 'open_chat'");
+    expect(helper).toContain("kind: 'open_chat.turn'");
+    expect(helper).toContain('HostOpenChatTurnSnapshot');
+    expect(session).toContain('openChatHostTurns');
+    expect(session).toContain('upsertOpenChatHostTurn');
+    expect(chatView).toContain('buildHostOpenChatTimelineArtifactItems');
+    expect(chatView).toContain('openChatHostTurns');
+    expect(timelineStrip).toContain('hostTimelineOpenChat');
+    expect(timelineStrip).toContain("item.surface === 'open_chat'");
+    expect(timelineStrip).not.toContain('executeApproved');
   });
 });
