@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -313,6 +313,71 @@ describe('host-task-create-resume (residual 437/439/453/455)', () => {
     expect(edited.state.pendingActions[0]?.payload['title']).toBe('Trimmed draft');
     expect(edited.state.pendingActions[0]?.payload['goalId']).toBe('goal-trim');
     expect(edited.events.at(-1)?.data?.['title']).toBe('Trimmed draft');
+  });
+
+
+  it('confirm normalizes settlement title into executed data (residual 463)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-settle-title'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const completed = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            entityId: 'tpl-title',
+            // no data.title — must recover from pending approved draft
+          },
+        ],
+      },
+      nowMs: 2,
+    });
+    expect(completed.run.status).toBe('completed');
+    expect(completed.state.executedActions[0]?.data?.['title']).toBe('Ship residual 439');
+    expect(completed.events.at(-1)?.data?.['title']).toBe('Ship residual 439');
+  });
+
+  it('confirm fails closed when settlement title cannot be recovered (residual 463)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-no-title'),
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    // Wipe pending title so neither executed data nor approved payload can recover.
+    const stripped = {
+      ...started,
+      state: {
+        ...started.state,
+        pendingActions: [
+          {
+            ...started.state.pendingActions[0]!,
+            payload: {},
+          },
+        ],
+      },
+      interrupts: [],
+    };
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: stripped,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'Created without title',
+            },
+          ],
+        },
+      }),
+    ).toThrow(/non-empty settlement title/);
   });
 
 });

@@ -281,6 +281,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 461: start requires non-empty conversationId (session-bound).
         'HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE',
         'resolveTaskCreateConversationId',
+        // Residual 463: confirm settlement title recoverable for reopen/receipt.
+        'HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE',
+        'resolveConfirmSettlementTitle',
       ],
       status: 'implemented_unit',
     },

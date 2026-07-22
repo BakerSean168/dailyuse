@@ -151,8 +151,9 @@ export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   }
 
   /**
-   * Residual 437/453: mark process-local task.create run completed after client createTemplate.
-   * Domain mutation already happened; Host confirm requires these executedActions (no Host default).
+   * Residual 437/453/463: mark process-local task.create run completed after client createTemplate.
+   * Domain mutation already happened; Host confirm requires these executedActions (no Host default)
+   * and a recoverable settlement title in data (residual 463).
    * This only records settlement for getRun/list/reopen.
    */
   async function completeTaskAgentRun(hostOptions?: {

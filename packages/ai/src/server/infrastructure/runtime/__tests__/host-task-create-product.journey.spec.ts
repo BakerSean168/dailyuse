@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -10,6 +10,7 @@
  *   edit requires non-empty title (residual 455)
  *   conversation/thread runId binding (residual 457)
  *   start requires conversationId (residual 461)
+ *   confirm settlement title (residual 463)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -433,6 +434,98 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     if (!listed.ok) return;
     expect(listed.data.some((run) => run.runId === 'run-journey-no-conv')).toBe(false);
     expect(port.startRun).not.toHaveBeenCalled();
+  });
+
+
+  it('confirm normalizes settlement title and fails closed without recoverable title (residual 463)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-title-settle' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-title-settle',
+        threadId: 'thread-journey-title-settle',
+        conversationId: 'conv-journey-title-settle',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Recoverable title' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    const completed = await service.resumeRun(
+      'run-journey-title-settle',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            entityId: 'tpl-journey-title',
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(completed.ok).toBe(true);
+    if (!completed.ok) return;
+    expect(completed.data.state.executedActions[0]?.data?.['title']).toBe('Recoverable title');
+    expect(completed.data.events.at(-1)?.data?.['title']).toBe('Recoverable title');
+
+    // Fresh run with blank title payload after edit is blocked by residual 455;
+    // construct confirm without recoverable title by confirming after empty approvedActions wipe via edit fail path is unavailable.
+    // Use a second start + confirm with approvedActions empty title override.
+    const started2 = await service.startRun(
+      {
+        runId: 'run-journey-title-fail',
+        threadId: 'thread-journey-title-fail',
+        conversationId: 'conv-journey-title-fail',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Will be wiped' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started2.ok).toBe(true);
+
+    const failConfirm = await service.resumeRun(
+      'run-journey-title-fail',
+      {
+        userDecision: 'confirm',
+        approvedActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            rationale: 'wipe',
+            payload: {},
+          },
+        ],
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created without title',
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(failConfirm.ok).toBe(false);
+    if (failConfirm.ok) return;
+    expect(failConfirm.error.code).toBe('VALIDATION_ERROR');
+    expect(failConfirm.error.message).toMatch(/non-empty settlement title/);
+
+    const stillWaiting = await service.getRun('run-journey-title-fail', cx as any);
+    expect(stillWaiting.ok).toBe(true);
+    if (!stillWaiting.ok) return;
+    expect(stillWaiting.data.run.status).toBe('waiting_approval');
+    expect(port.resumeRun).not.toHaveBeenCalled();
   });
 
 });

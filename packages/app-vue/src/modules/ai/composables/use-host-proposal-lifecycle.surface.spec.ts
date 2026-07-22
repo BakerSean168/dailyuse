@@ -493,6 +493,27 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+
+  it('task.create confirm requires recoverable settlement title (residual 463)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE');
+    expect(resume).toContain('non-empty settlement title');
+    expect(resume).toContain('resolveConfirmSettlementTitle');
+    expect(resume).toContain('Residual 463');
+    // Client complete path still carries title into executedActions data.
+    expect(taskWorkflow).toContain('completeTaskAgentRun');
+    expect(taskWorkflow).toContain('payloadBase');
+    expect(taskWorkflow).toContain("payloadBase['title']");
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(
