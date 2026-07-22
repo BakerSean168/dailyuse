@@ -26,6 +26,7 @@ import {
   resolveTaskCreateTitle,
   resolveTaskCreateConversationId,
   HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
 } from './host-task-create-start';
 import { buildHostTaskCreateResumeResult } from './host-task-create-resume';
 import {
@@ -1153,10 +1154,11 @@ export function createAgentRuntimeService(
       // Residual 431: task.create Host start foundation (TS runtime, no LangGraph yet).
       // Produces waiting_approval + create_task_template for Host lane / client settle.
       if (requestWithKnowledge.data.agentType === 'task.create') {
+        // Residual 479: title fail-closed (builder also throws; no silent 'New task').
         if (!resolveTaskCreateTitle(requestWithKnowledge.data.input)) {
           return error(
             'VALIDATION_ERROR',
-            'Task Agent input must include a non-empty title, idea, message, or conversationTitle.',
+            HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
           );
         }
         // Residual 461: session-bound product path — conversationId required for restore/history.
@@ -1206,6 +1208,10 @@ export function createAgentRuntimeService(
               err.message.includes(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE) ||
               err.message.includes(HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE)
             ) {
+              return error('VALIDATION_ERROR', err.message);
+            }
+            // Residual 479: builder title fail-closed maps to validation (defense-in-depth).
+            if (err.message.includes(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE)) {
               return error('VALIDATION_ERROR', err.message);
             }
           }

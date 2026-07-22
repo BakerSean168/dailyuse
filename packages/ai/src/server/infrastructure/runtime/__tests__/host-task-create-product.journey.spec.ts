@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475/477: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467/469/471/473/475/477/479: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -18,6 +18,7 @@
  *   edit single approvedAction (residual 473)
  *   confirm waiting_approval only (residual 475)
  *   cancel waiting_approval only (residual 477)
+ *   start non-empty title fail-closed (residual 479)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -195,7 +196,7 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     ).rejects.toThrow(/must not run for stored task.create|port\.getRun/);
   });
 
-  it('rejects empty title at start without registering store entry', async () => {
+  it('rejects empty title at start without registering store entry (residual 479)', async () => {
     const port = makePort();
     const service = createAgentRuntimeService(port);
     const cx = { identityId: 'owner-4' } as const;
@@ -215,11 +216,30 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(rejected.ok).toBe(false);
     if (rejected.ok) return;
     expect(rejected.error.code).toBe('VALIDATION_ERROR');
+    expect(rejected.error.message).toMatch(/non-empty title, idea, message/);
+
+    const missingAll = await service.startRun(
+      {
+        runId: 'run-journey-empty-all',
+        conversationId: 'conv-journey-empty-all',
+        threadId: 'thread-journey-empty-all',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: {},
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(missingAll.ok).toBe(false);
+    if (missingAll.ok) return;
+    expect(missingAll.error.code).toBe('VALIDATION_ERROR');
+    expect(missingAll.error.message).toMatch(/Host task\.create start requires a non-empty title/);
 
     const listed = await service.listRuns({}, cx as any);
     expect(listed.ok).toBe(true);
     if (!listed.ok) return;
     expect(listed.data.some((run) => run.runId === 'run-journey-empty')).toBe(false);
+    expect(listed.data.some((run) => run.runId === 'run-journey-empty-all')).toBe(false);
     expect(port.startRun).not.toHaveBeenCalled();
   });
 

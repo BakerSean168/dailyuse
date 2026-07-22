@@ -655,6 +655,30 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+
+  it('task.create start requires non-empty title without default invent (residual 479)', () => {
+    const start = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(start).toContain('HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE');
+    expect(start).toContain('Residual 479');
+    expect(start).toContain('resolveTaskCreateTitle');
+    expect(start).not.toContain("?? 'New task'");
+    expect(runtime).toContain('HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE');
+    expect(runtime).toContain('Residual 479');
+    expect(runtime).toContain('resolveTaskCreateTitle');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

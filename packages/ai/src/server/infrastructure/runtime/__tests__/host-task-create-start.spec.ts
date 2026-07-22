@@ -5,6 +5,7 @@ import {
   resolveTaskCreateGoalId,
   resolveTaskCreateConversationId,
   HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
 } from '../host-task-create-start';
 import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
 
@@ -61,3 +62,40 @@ describe('host-task-create-start conversation binding (residual 461)', () => {
   });
 });
 
+describe('host-task-create-start title fail-closed (residual 479)', () => {
+  it('buildHostTaskCreateStartResult throws without inventing a default title', () => {
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: baseRequest({ title: '   ' }),
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE);
+
+    expect(() =>
+      buildHostTaskCreateStartResult({
+        request: baseRequest({}),
+        identityId: 'identity-server',
+        nowMs: 1000,
+      }),
+    ).toThrow(/non-empty title/);
+
+    expect(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE).toMatch(/title, idea, message/);
+  });
+
+  it('accepts idea/message/conversationTitle as recoverable start title', () => {
+    const fromIdea = buildHostTaskCreateStartResult({
+      request: baseRequest({ idea: '  From idea  ' }),
+      identityId: 'identity-server',
+      nowMs: 1000,
+    });
+    expect(fromIdea.state.pendingActions[0]?.payload['title']).toBe('From idea');
+
+    const fromMessage = buildHostTaskCreateStartResult({
+      request: baseRequest({ message: 'From message' }),
+      identityId: 'identity-server',
+      nowMs: 2000,
+    });
+    expect(fromMessage.state.pendingActions[0]?.payload['title']).toBe('From message');
+  });
+});
