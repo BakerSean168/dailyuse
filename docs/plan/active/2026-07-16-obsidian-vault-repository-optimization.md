@@ -1728,6 +1728,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
+>
+> 续进展 2026-07-22（阶段 6 残留一百三十七轮）：Knowledge projection 系统路径
+> connection 身份复核——reconcile/delivery 经 `loadOwnedConnectionById`：bare findById
+> 后以 `findByIdForIdentity(connection.identityId)` 再加载。补 ownership surface。
+> §13.2 仍部分。验证：projection service/surface + governance-check。
+> 状态保持 **实施中**；PR readiness 仍为 no。
+
+
+
 
 
 
@@ -1852,6 +1861,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一百三十四轮：task template-scoped instance queries identity-scoped。
   残留一百三十五轮：reminder domain/control/mapper identity-scoped loads。
   残留一百三十六轮：reminder findByIds identity-scoped。
+  残留一百三十七轮：knowledge projection system connection ownership re-verify。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**

@@ -26,6 +26,13 @@ describe('knowledge repository connection ownership surface', () => {
     ),
     'utf8',
   );
+  const projectionService = readFileSync(
+    resolve(
+      __dirname,
+      '../../../../application/services/knowledge-repository-projection.service.ts',
+    ),
+    'utf8',
+  );
 
   it('port updateStatus requires identityId', () => {
     expect(port).toMatch(
@@ -90,4 +97,22 @@ describe('knowledge repository connection ownership surface', () => {
       /connectionRepository\.findById\(\s*connectionId\s*\)/,
     );
   });
+  it('projection system loads re-verify connection ownership (residual 137)', () => {
+    expect(projectionService).toContain('private async loadOwnedConnectionById(');
+    expect(projectionService).toContain(
+      'return this.options.connectionRepository.findByIdForIdentity(',
+    );
+    expect(projectionService).toContain('String(connection.identityId)');
+    expect(projectionService).toContain('loadOwnedConnectionById(connectionId)');
+    expect(projectionService).toContain('loadOwnedConnectionById(delivery.connectionId)');
+    // Bare findById is only the bootstrap inside loadOwnedConnectionById.
+    const bareLoads = projectionService.match(
+      /connectionRepository\.findById\(/g,
+    );
+    expect(bareLoads).toHaveLength(1);
+    expect(projectionService).not.toContain(
+      'const connection = await this.options.connectionRepository.findById(delivery.connectionId)',
+    );
+  });
+
 });

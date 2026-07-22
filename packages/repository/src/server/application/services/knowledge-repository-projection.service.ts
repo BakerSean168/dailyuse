@@ -606,6 +606,25 @@ export class KnowledgeRepositoryProjectionService {
     }
   }
 
+
+  /**
+   * System paths (webhook/reconcile) start from bare connection id, then re-load
+   * ownership-scoped once identity is known from the aggregate.
+   */
+  private async loadOwnedConnectionById(
+    connectionId: string,
+  ): Promise<KnowledgeRepositoryConnectionServerDTO | null> {
+    const connection = await this.options.connectionRepository.findById(connectionId);
+    if (!connection || connection.deletedAt !== null) {
+      return null;
+    }
+
+    return this.options.connectionRepository.findByIdForIdentity(
+      String(connection.identityId),
+      connectionId,
+    );
+  }
+
   private async reconcileConnection(connectionId: string): Promise<void> {
     await this.leaseCoordinator.execute(
       knowledgeRepositoryConnectionLeaseKey(connectionId),
@@ -617,8 +636,8 @@ export class KnowledgeRepositoryProjectionService {
     connectionId: string,
     guard: { ensureHeld(): Promise<void> },
   ): Promise<void> {
-    const connection = await this.options.connectionRepository.findById(connectionId);
-    if (!connection || connection.deletedAt !== null) return;
+    const connection = await this.loadOwnedConnectionById(connectionId);
+    if (!connection) return;
     try {
       const inventory = await this.options.githubAppClient.getInstallationInventory(
         connection.installationId,
@@ -677,8 +696,8 @@ export class KnowledgeRepositoryProjectionService {
         if (!delivery || delivery.status === 'Processed' || delivery.status === 'Ignored') {
           return { retry: false, connectionId: initial.connectionId };
         }
-        const connection = await this.options.connectionRepository.findById(delivery.connectionId);
-        if (!connection || connection.deletedAt !== null) {
+        const connection = await this.loadOwnedConnectionById(delivery.connectionId);
+        if (!connection) {
           await deliveryGuard.ensureHeld();
           await this.options.deliveryRepository.updateStatus(
             deliveryId,
