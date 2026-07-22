@@ -23,6 +23,7 @@ from ai_service.schemas import (
     AgentExecutedAction,
     AgentMessage,
     AgentResumePayload,
+    AgentUsage,
     GoalPlanningResponse,
     ProviderConfig,
 )
@@ -342,14 +343,10 @@ def _draft_reminders(title: str, *, locale: str) -> list[dict[str, Any]]:
 def _normalize_usage(usage: dict[str, Any] | None) -> dict[str, Any]:
     if not usage:
         return {}
-    return {
-        "promptTokens": usage.get("promptTokens", usage.get("prompt_tokens")),
-        "completionTokens": usage.get(
-            "completionTokens",
-            usage.get("completion_tokens"),
-        ),
-        "totalTokens": usage.get("totalTokens", usage.get("total_tokens")),
-    }
+    return AgentUsage.model_validate(usage).model_dump(
+        by_alias=True,
+        exclude_none=True,
+    )
 
 
 def _merge_usage(
@@ -387,10 +384,7 @@ def _planner_key_result_payload(
     )
     if not isinstance(data, dict):
         data = {}
-    target_value = _coerce_numeric(
-        data.get("targetValue", data.get("target_value")),
-        1,
-    )
+    target_value = _coerce_numeric(data.get("targetValue"), 1)
     return {
         "title": str(
             data.get("title")
