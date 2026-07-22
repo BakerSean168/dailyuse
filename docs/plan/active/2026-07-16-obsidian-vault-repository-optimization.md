@@ -3313,6 +3313,23 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Proposal UI、真实 Pi SDK/CLI、GitHub App fixture E2E、全量 PR 门禁。状态保持 **实施中**；
 > PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百五十五轮）：Host Proposal approve/reject UI 路径（仍不打勾）——
+> 新增 agent-run Host bridge（`agent-run:{runId}:{kind}`）与 `dispatchHostProposalDecision`；
+> goal confirm/cancel 与 knowledge note 确认先经 `AssistantFacade`/`ProposalKernel` 生命周期
+> （`approve_proposal`/`reject_proposal`），再由 `resumeAgentRun` 作为独立 mutation executor；
+> Facade 首次 approve/reject 时 materialize ready bridge proposal；**永不** `executeApproved`。
+> 验证：proposal-bridge 3 + hostProposalLifecycle 2 + surface 1 + facade bridge 2 + AIChatView 29。
+> 仍无完整右侧工作台/真实 multi-engine E2E/Pi·CLI。状态保持 **实施中**；不改 §13.2 checkbox。
+>
+> 续进展 2026-07-22（阶段 6 残留三百五十六轮）：§13.2 聚焦证据套件复跑（含 residual 250–355
+> Host proposal UI 锁，不改 checkbox）——**89 文件 / 298 测试**（app-vue 21/61、ai 23/105、
+> repository 6/35、contracts 11/28、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`。
+> 相对 residual 354：app-vue +2 files / +3 tests（Host proposal lifecycle）；ai +0 file / +2 tests
+> （facade bridge）；contracts +1 file / +3 tests（proposal-bridge）。仍为部分/外部阻塞：
+> 真实 OAuth 跨端 E2E、完整 multi-engine runtime E2E、统一助手右侧工作台/Pi·CLI、
+> GitHub App fixture E2E、全量 PR 门禁。状态保持 **实施中**；PR 就绪仍为否。
+
+
 
 
 
@@ -3754,6 +3771,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百五十二轮：§13.2 focused evidence suite re-run（285 tests，residuals 250–351 锁；不改 checkbox）。
   残留三百五十三轮：Desktop AssistantFacade IPC stream（ASSISTANT_DISPATCH_* + electron handler）。
   残留三百五十四轮：§13.2 focused evidence suite re-run（290 tests，residuals 250–353 锁；不改 checkbox）。
+  残留三百五十五轮：Host Proposal approve/reject UI（agent-run bridge + Facade lifecycle 先于 resume executor）。
+  残留三百五十六轮：§13.2 focused evidence suite re-run（298 tests，residuals 250–355 锁；不改 checkbox）。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3803,6 +3822,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百五十二轮：§13.2 focused evidence suite re-run (285 tests, residuals 250–351 locks, no checkbox changes)。
   残留三百五十三轮：Desktop AssistantFacade IPC stream (ASSISTANT_DISPATCH_* + electron handler)。
   残留三百五十四轮：§13.2 focused evidence suite re-run (290 tests, residuals 250–353 locks, no checkbox changes)。
+  残留三百五十五轮：Host Proposal approve/reject UI path (agent-run bridge + Facade lifecycle before resume executor)。
+  残留三百五十六轮：§13.2 focused evidence suite re-run (298 tests, residuals 250–355 locks, no checkbox changes)。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3938,6 +3959,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百五十二轮：tip 上 285 项 focused evidence suite（含 residual 250–351 open-chat Host dispatch 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百五十三轮：Desktop AssistantFacade IPC stream 落地；仍不构成统一助手右侧工作台/完整 multi-engine E2E 证据。
   残留三百五十四轮：tip 上 290 项 focused evidence suite（含 residual 250–353 Desktop Assistant IPC 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百五十五轮：Host Proposal approve/reject UI 路径落地；仍不构成统一助手右侧工作台/完整 multi-engine runtime E2E 证据。
+  残留三百五十六轮：tip 上 298 项 focused evidence suite（含 residual 250–355 Host proposal UI 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
