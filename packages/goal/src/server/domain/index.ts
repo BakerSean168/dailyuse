@@ -62,3 +62,10 @@ export type {
   GoalRecordQueryOptions,
 } from './repositories';
 
+
+// Priority calculator (canonical: domain/priority)
+export {
+  DailyPriorityCalculator,
+  type PriorityLevel,
+  type PriorityCalculationResult,
+} from './priority';

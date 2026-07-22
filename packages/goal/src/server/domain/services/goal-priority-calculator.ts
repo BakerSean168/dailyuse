@@ -23,10 +23,6 @@ import {
   type PriorityCalculationResult,
 } from '../priority';
 
-// Re-export types for convenience
-export type { PriorityLevel, PriorityCalculationResult };
-export type GoalPriorityLevel = PriorityLevel;
-
 /**
  * 计算目标优先级分数
  * 
