@@ -5,14 +5,14 @@ tags:
   - authentication
 description: 认证模块当前实现及账密、GitHub、访客三入口目标态
 created: 2026-06-02T00:00:00
-updated: 2026-07-21T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 认证模块说明
 
 ## 1. 功能定位
 
-认证模块管理账密账号、GitHub 身份、访客 profile 和 Daily Use 会话。GitHub 登录只解决“用户是谁”，GitHub 知识仓库连接属于 Repository 的独立同步授权，不能混成一个权限动作。
+认证模块管理账密账号、GitHub 身份、访客 profile 和 Daily Use 会话。GitHub 登录只解决“用户是谁”，authorize URL 仅请求 identity-only scopes（`read:user` / `user:email`），永不申请 repo Contents，也不签发知识仓库 GitHub App installation/token。GitHub 知识仓库连接属于 Repository 的独立同步授权，不能混成一个权限动作。
 
 ## 2. 当前实现
 
@@ -44,7 +44,7 @@ updated: 2026-07-21T00:00:00
 
 - GitHub 登录使用稳定 numeric user ID 作为外部 subject。
 - 登录成功后仍由 Daily Use 签发自己的 session，不用 GitHub token 直接访问业务 API。
-- GitHub 登录只请求身份所需权限，不自动创建仓库或申请 Contents 权限。
+- GitHub 登录只请求 identity-only scopes（`read:user` / `user:email`），不自动创建仓库、不申请 repo Contents，也不获得知识仓库 GitHub App installation/token。
 - 账密用户可以绑定 GitHub 仓库，不要求切换主登录方式。
 - 访客启用同步时先升级账号，原 Vault 和本地内容保持不变。
 
@@ -72,12 +72,12 @@ updated: 2026-07-21T00:00:00
 - `AuthenticationProvider`：抽象登录契约，每种方式实现凭据校验并返回已验证身份，不签发会话。
 - `AuthenticationProviderRegistry`：按方式 id 分发，组合期重复注册即快速失败。
 - `PasswordAuthenticationProvider`：包装既有 `LoginService`，账密行为不变。
-- `GithubAuthenticationProvider`：经 `IGithubOAuthClient` 端口用授权码换取稳定 numeric subject，find-or-create 身份；仅身份认证，不申请仓库 Contents 权限。
+- `GithubAuthenticationProvider`：经 `IGithubOAuthClient` 端口用授权码换取稳定 numeric subject，find-or-create 身份；仅身份认证（login scopes：`read:user` / `user:email`），不申请仓库 Contents 权限。
 - `AuthenticateUseCase`：统一编排 provider 校验 + Daily Use 会话签发。
 - `GithubOAuthClient`：用授权码临时换取 user access token，再读取 `/user` 的 numeric ID；client secret 仅存服务端，user token 不写入 Daily Use session。
 - 路由面：`/oauth/providers`、`/oauth/url`（state/PKCE）、`/oauth/callback`、`/oauth/bind`、`/oauth/unbind`。
 - Web 产品流：`WebAuthView` 条件显示 GitHub 按钮 → 跳转 authorize URL → AuthApp callback 场景完成 session。
-- Desktop：gateway/IPC 已支持 OAuth API；首屏登录仍是账密 + 访客。知识仓库同步使用独立 GitHub App 授权，不复用登录 OAuth token。
+- Desktop：gateway/IPC 已支持 OAuth API；首屏登录仍是账密 + 访客。知识仓库同步使用独立 GitHub App installation/token 授权，不复用登录 OAuth token。
 
 ## 7. 当前差距
 

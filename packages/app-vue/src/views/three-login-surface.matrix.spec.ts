@@ -357,11 +357,19 @@ describe('ADR-034 three-login same-fixture journey', () => {
     expect(knowledgeRoutes).toContain("path: '/knowledge-connections/:connectionId/desktop-token'");
     expect(knowledgeRoutes).not.toContain("path: '/oauth/");
 
-    // Product module doc keeps the three-login matrix wording aligned with sources.
+    // Product module doc keeps the three-login matrix wording aligned with sources
+    // (residual 333: explicit identity≠knowledge-repo App / identity-only scopes lock).
     expect(productAuth).toContain('GitHub 登录只解决');
     expect(productAuth).toContain('不暴露 GitHub 登录按钮');
     expect(productAuth).toContain('知识仓库仍需单独授权');
     expect(productAuth).toContain('访客仅 Desktop');
+    // Residual 307/333 step-10 product invariants: scopes + no Contents + separate App.
+    expect(productAuth).toContain('`read:user`');
+    expect(productAuth).toContain('`user:email`');
+    expect(productAuth).toContain('identity-only scopes');
+    expect(productAuth).toContain('repo Contents');
+    expect(productAuth).toContain('知识仓库 GitHub App');
+    expect(productAuth).toContain('installation/token');
 
     // UI hosts: AuthApp owns GitHub OAuth callback scene; Desktop first screen is guest, not OAuth.
     expect(webAuth).toContain('scene=oauth-callback');
