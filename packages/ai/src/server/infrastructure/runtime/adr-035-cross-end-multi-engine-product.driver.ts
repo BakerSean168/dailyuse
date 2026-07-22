@@ -219,6 +219,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ["userDecision: 'edit'", "userDecision: 'edit'"];
     case 'idempotent terminal resume':
       return ['idempotent terminal resume'];
+    case 'resolveHostWorkbenchFocusFromAgentRun':
+      return ['resolveHostWorkbenchFocusFromAgentRun'];
+    case 'focusedHostProposalId.value = focus?.proposalId':
+      return ['focusedHostProposalId.value = focus?.proposalId', 'focus?.proposalId'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

@@ -372,6 +372,7 @@ import {
   resolveHostWorkbenchFocusFromTimeline,
   resolveLiveHostWorkbenchAgentRuns,
   shouldOpenHostWorkbenchFromAgentRun,
+  resolveHostWorkbenchFocusFromAgentRun,
   dispatchHostProposalDecision,
   normalizeHostProposalRejectReason,
   dispatchHostProposalRevise,
@@ -1153,8 +1154,9 @@ async function selectConversationFromMobile(item: ConversationSummary) {
 }
 
 /**
- * Residual 381: AgentRun history (Conversation sidebar) reopens Host proposal
+ * Residual 381/441: AgentRun history (Conversation sidebar) reopens Host proposal
  * or execution-report workbench when the restored snapshot owns Host rows.
+ * Residual 441: also focus the matching proposal/receipt row (task.create process-local reopen).
  */
 async function selectAgentRun(run: AgentRun) {
   const result = await selectAgentRunBase(run);
@@ -1164,6 +1166,10 @@ async function selectAgentRun(run: AgentRun) {
     hasHostExecutionReceipts.value
   ) {
     contextPanelOpen.value = true;
+    const focus = resolveHostWorkbenchFocusFromAgentRun(result);
+    focusedHostProposalId.value = focus?.proposalId ?? null;
+  } else {
+    focusedHostProposalId.value = null;
   }
 }
 

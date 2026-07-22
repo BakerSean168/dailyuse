@@ -10,6 +10,7 @@ import {
   buildHostOpenChatTimelineArtifactItems,
   resolveHostWorkbenchReopenFromAgentRun,
   shouldOpenHostWorkbenchFromAgentRun,
+  resolveHostWorkbenchFocusFromAgentRun,
   buildHostProposalPatchFromDraft,
   buildPendingHostProposalItems,
   dispatchHostProposalDecision,
@@ -1409,6 +1410,81 @@ describe('Host AgentType task.create foundation (residual 427)', () => {
 
     const reopen = resolveHostWorkbenchReopenFromAgentRun(run);
     expect(reopen).toBe('proposal');
+  });
+});
+
+describe('Host workbench focus from AgentRun history (residual 441)', () => {
+  it('focuses proposal for waiting task.create and receipt for completed process-local run', () => {
+    const waiting = taskWaitingRun();
+    waiting.run.agentType = 'task.create';
+    waiting.state.artifacts = [];
+    const focusWaiting = resolveHostWorkbenchFocusFromAgentRun(waiting);
+    expect(focusWaiting).toEqual({
+      proposalId: 'agent-run:run-task-1:task.create',
+      surface: 'proposal',
+    });
+
+    const completed = taskWaitingRun();
+    completed.run.agentType = 'task.create';
+    completed.run.status = 'completed';
+    completed.state.artifacts = [];
+    completed.state.pendingActions = [];
+    completed.state.approvedActions = [
+      {
+        tool: 'create_task_template',
+        index: 0,
+        dependsOn: [],
+        rationale: 'settled',
+        payload: { title: 'Ship Host Task lane', goalId: 'goal-1' },
+      },
+    ] as any;
+    completed.state.executedActions = [
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: 'created',
+        entityId: 'tmpl-1',
+        data: { title: 'Ship Host Task lane' },
+      },
+    ] as any;
+    const focusCompleted = resolveHostWorkbenchFocusFromAgentRun(completed);
+    expect(focusCompleted).toEqual({
+      proposalId: 'agent-run:run-task-1:task.create',
+      surface: 'receipt',
+    });
+
+    // Title recovery after cancel clears pendingActions.
+    const cancelled = taskWaitingRun();
+    cancelled.run.agentType = 'task.create';
+    cancelled.run.status = 'cancelled';
+    cancelled.state.artifacts = [];
+    cancelled.state.pendingActions = [];
+    cancelled.state.approvedActions = [];
+    cancelled.state.messages = [
+      { role: 'user', content: 'Recovered cancel title', createdAt: 1 },
+    ] as any;
+    cancelled.events = [
+      {
+        eventId: 'e1',
+        runId: 'run-task-1',
+        sequence: 0,
+        type: 'approval.required',
+        createdAt: 1,
+        data: { title: 'Event title wins' },
+      },
+    ] as any;
+    const receipts = buildHostExecutionReceiptItems({ taskAgentRun: cancelled });
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]?.title).toBe('Event title wins');
+  });
+
+  it('returns null focus when AgentRun is not a Host workbench owner', () => {
+    expect(resolveHostWorkbenchFocusFromAgentRun(null)).toBeNull();
+    const qa = goalWaitingRun();
+    qa.run.agentType = 'knowledge.qa' as any;
+    qa.state.artifacts = [];
+    qa.state.pendingActions = [];
+    expect(resolveHostWorkbenchFocusFromAgentRun(qa)).toBeNull();
   });
 });
 

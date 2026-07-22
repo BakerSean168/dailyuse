@@ -1,5 +1,5 @@
 /**
- * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427).
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441).
  *
  * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
  * executors. Derives thin workbench panel items from waiting_approval AgentRun
@@ -584,9 +584,35 @@ function taskDraftTitle(run: AgentRunResult): string {
   const payload = action?.payload;
   const fromPayload =
     payload && typeof payload === 'object'
-      ? (payload as Record<string, unknown>)['title']
+      ? (payload as Record<string, unknown>)['title'] ??
+        (payload as Record<string, unknown>)['name']
       : undefined;
-  return typeof fromPayload === 'string' ? fromPayload.trim() : '';
+  if (typeof fromPayload === 'string' && fromPayload.trim()) return fromPayload.trim();
+
+  // Residual 441: process-local terminal task.create (pending cleared) — recover title
+  // from executedActions.data / approval events / user message content.
+  for (const executed of run.state.executedActions ?? []) {
+    const data = executed.data;
+    if (data && typeof data === 'object') {
+      const title =
+        (data as Record<string, unknown>)['title'] ??
+        (data as Record<string, unknown>)['name'];
+      if (typeof title === 'string' && title.trim()) return title.trim();
+    }
+  }
+  for (const event of [...(run.events ?? [])].reverse()) {
+    const data = event.data;
+    if (data && typeof data === 'object') {
+      const title = (data as Record<string, unknown>)['title'];
+      if (typeof title === 'string' && title.trim()) return title.trim();
+    }
+  }
+  for (const message of run.state.messages ?? []) {
+    if (message.role === 'user' && typeof message.content === 'string' && message.content.trim()) {
+      return message.content.trim();
+    }
+  }
+  return '';
 }
 
 function taskDraftGoalId(run: AgentRunResult): string | null {
@@ -1126,6 +1152,36 @@ export function shouldOpenHostWorkbenchFromAgentRun(
   result: AgentRunResult | null | undefined,
 ): boolean {
   return resolveHostWorkbenchReopenFromAgentRun(result) !== 'none';
+}
+
+/**
+ * Residual 441: map a restored AgentRun snapshot to a Host workbench focus target.
+ * Used when Conversation history reopens the right rail so the matching
+ * proposal/receipt row is highlighted (same contract as timeline focus).
+ */
+export function resolveHostWorkbenchFocusFromAgentRun(
+  result: AgentRunResult | null | undefined,
+): HostWorkbenchFocusTarget | null {
+  const reopen = resolveHostWorkbenchReopenFromAgentRun(result);
+  if (reopen === 'none' || !result?.run) return null;
+
+  const looksLikeTaskHostRun =
+    result.run.agentType === 'task.create' || isTaskShapedHostAgentRun(result);
+  let kind: AgentRunHostProposalKind | null = null;
+  if (looksLikeTaskHostRun) {
+    kind = 'task.create';
+  } else if (result.run.agentType === 'goal.create') {
+    kind = 'goal.create';
+  } else if (result.run.agentType === 'knowledge.generate') {
+    kind = 'knowledge.write';
+  }
+  if (!kind) return null;
+
+  const ref = buildAgentRunHostProposalRef(result.run.runId, kind);
+  return {
+    proposalId: ref.proposalId,
+    surface: reopen === 'proposal' ? 'proposal' : 'receipt',
+  };
 }
 
 /**

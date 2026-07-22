@@ -350,6 +350,16 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('AgentRun history Host workbench focus for task.create reopen (residual 441)', () => {
+    expect(helper).toContain('resolveHostWorkbenchFocusFromAgentRun');
+    expect(helper).toContain('// Residual 441: process-local terminal task.create');
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(chatView).toContain('resolveHostWorkbenchFocusFromAgentRun');
+    expect(chatView).toContain('focusedHostProposalId.value = focus?.proposalId');
+    expect(chatView).toContain('Residual 381/441');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local edit revise + idempotent terminal (residual 439)', () => {
     const resume = readFileSync(
       resolve(

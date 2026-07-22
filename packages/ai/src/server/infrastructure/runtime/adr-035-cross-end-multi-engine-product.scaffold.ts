@@ -244,6 +244,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         'reviseTaskAgentRun',
         "userDecision: 'edit'",
         'idempotent terminal resume',
+        // Residual 441: history reopen focuses Host proposal/receipt row.
+        'resolveHostWorkbenchFocusFromAgentRun',
+        'focusedHostProposalId.value = focus?.proposalId',
       ],
       status: 'implemented_unit',
     },
