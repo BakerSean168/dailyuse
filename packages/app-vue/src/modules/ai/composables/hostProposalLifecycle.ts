@@ -283,11 +283,15 @@ export type HostPanelProductTool =
  * drift across dual resolution paths.
  * Residual 571: post-lifecycle settlement (confirm/cancel/complete/revise
  * process-local) must reuse the same ownership result — no second dual resolve.
+ * Residual 577: primary-task-shaped runs map to create_task_template (not create_goal),
+ * matching exclusive task Host lane + residual 575 sole-product confirm.
  *
- * - goal → create_goal when goalAgentRun.runId matches
+ * - goal → create_goal when goalAgentRun.runId matches and run is not primary-task;
+ *   primary-task-shaped goal session → create_task_template
  * - knowledge → create_knowledge_note when noteAgentRun.runId matches
- * - task → create_task_template when task.create session run matches;
- *   otherwise create_goal when goal session owns the same runId
+ * - task → create_task_template when task session owns runId as task.create OR
+ *   primary-task-shaped; otherwise create_goal when goal session owns the same
+ *   runId as a normal (non primary-task) goal run
  * - orphan task proposals (no AgentRun owner) → null (client-settle / domain fallback)
  */
 export function resolveHostPanelOwnedProductRun(input: {
@@ -302,7 +306,12 @@ export function resolveHostPanelOwnedProductRun(input: {
 
   if (input.source === 'goal') {
     const run = input.goalAgentRun?.run.runId === runId ? input.goalAgentRun : null;
-    return run ? { run, productTool: 'create_goal' } : null;
+    if (!run) return null;
+    // Residual 577: primary-task-shaped goal session still owns task product tool.
+    if (isPrimaryTaskHostAgentRun(run)) {
+      return { run, productTool: 'create_task_template' };
+    }
+    return { run, productTool: 'create_goal' };
   }
   if (input.source === 'knowledge') {
     const run = input.noteAgentRun?.run.runId === runId ? input.noteAgentRun : null;
@@ -310,14 +319,15 @@ export function resolveHostPanelOwnedProductRun(input: {
   }
   if (input.source === 'task') {
     const taskRun = input.taskAgentRun;
-    if (
-      taskRun?.run.runId === runId &&
-      taskRun.run.agentType === 'task.create'
-    ) {
+    if (taskRun?.run.runId === runId && isPrimaryTaskHostAgentRun(taskRun)) {
+      // Residual 577: task.create AgentType OR primary-task-shaped (exclusive lane).
       return { run: taskRun, productTool: 'create_task_template' };
     }
     const goalRun = input.goalAgentRun;
     if (goalRun?.run.runId === runId) {
+      if (isPrimaryTaskHostAgentRun(goalRun)) {
+        return { run: goalRun, productTool: 'create_task_template' };
+      }
       return { run: goalRun, productTool: 'create_goal' };
     }
     return null;

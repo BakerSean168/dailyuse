@@ -754,7 +754,8 @@ async function handleHostProposalRevise(payload: {
 
   // Residual 567: product-lane Host revise waiting_approval before Host lifecycle.
   // Residual 573: sole product draftAction (approve residual 561/563 symmetry).
-  // Residual 569/571: shared resolveHostPanelOwnedProductRun for gate + settlement.
+  // Residual 569/571/577: shared resolveHostPanelOwnedProductRun for gate + settlement
+  // (live workbench lane + primary-task → create_task_template).
   // Edit residual 481 + residual 565 reject / 561 approve symmetry.
   // Avoids revise-then-silent-noop + dual ownership drift.
   const owned =
@@ -764,9 +765,10 @@ async function handleHostProposalRevise(payload: {
       ? resolveHostPanelOwnedProductRun({
           source: payload.item.source,
           runId: payload.item.runId,
-          goalAgentRun: goalAgentRun.value,
-          noteAgentRun: noteAgentRun.value,
-          taskAgentRun: taskAgentRun.value,
+          // Residual 577: exclusive workbench lane (primary-task promotion) for ownership.
+          goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
+          noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
+          taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
         })
       : null;
   // goal/knowledge must own a session run; task orphan Host-only revise stays ungated.
@@ -835,7 +837,8 @@ async function handleHostProposalApprove(payload: {
 
   // Residual 561: goal/knowledge Host approve sole product + waiting_approval.
   // Residual 563: session-owned task.create Host approve sole create_task_template.
-  // Residual 569/571: shared resolveHostPanelOwnedProductRun for gate + settlement.
+  // Residual 569/571/577: shared resolveHostPanelOwnedProductRun for gate + settlement
+  // (live workbench lane + primary-task → create_task_template).
   // Product draftAction before Host lifecycle (confirm residual 555/557/559 +
   // complete 547/489 symmetry). Pure domain createTemplate fallback stays ungated.
   const owned =
@@ -845,9 +848,10 @@ async function handleHostProposalApprove(payload: {
       ? resolveHostPanelOwnedProductRun({
           source: payload.item.source,
           runId: payload.item.runId,
-          goalAgentRun: goalAgentRun.value,
-          noteAgentRun: noteAgentRun.value,
-          taskAgentRun: taskAgentRun.value,
+          // Residual 577: exclusive workbench lane (primary-task promotion) for ownership.
+          goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
+          noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
+          taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
         })
       : null;
   if (
@@ -995,7 +999,8 @@ async function handleHostProposalReject(payload: {
   if (hostProposalBusy.value) return;
 
   // Residual 565: product-lane Host reject waiting_approval before Host lifecycle.
-  // Residual 569/571: shared resolveHostPanelOwnedProductRun for gate + settlement.
+  // Residual 569/571/577: shared resolveHostPanelOwnedProductRun for gate + settlement
+  // (live workbench lane + primary-task → create_task_template).
   // Cancel residual 477/559 + residual 561/563 approve symmetry.
   // Orphan task proposals remain client-settle only.
   const owned =
@@ -1005,9 +1010,10 @@ async function handleHostProposalReject(payload: {
       ? resolveHostPanelOwnedProductRun({
           source: payload.item.source,
           runId: payload.item.runId,
-          goalAgentRun: goalAgentRun.value,
-          noteAgentRun: noteAgentRun.value,
-          taskAgentRun: taskAgentRun.value,
+          // Residual 577: exclusive workbench lane (primary-task promotion) for ownership.
+          goalAgentRun: liveHostWorkbenchAgentRuns.value.goalAgentRun,
+          noteAgentRun: liveHostWorkbenchAgentRuns.value.noteAgentRun,
+          taskAgentRun: liveHostWorkbenchAgentRuns.value.taskAgentRun,
         })
       : null;
   if (

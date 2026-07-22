@@ -2876,5 +2876,118 @@ describe('resolveHostPanelOwnedProductRun (residual 569)', () => {
       }),
     ).toBeNull();
   });
+
+  it('maps primary-task-shaped ownership to create_task_template (residual 577)', () => {
+    const primaryTask = {
+      run: {
+        runId: 'pt-1',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create',
+        status: 'waiting_approval',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_task_template',
+            index: 0,
+            dependsOn: [],
+            payload: { title: 'T' },
+            rationale: 'task',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [{ kind: 'task_draft', id: 'a1', data: {}, updatedAt: 1 }],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+
+    expect(isPrimaryTaskHostAgentRun(primaryTask)).toBe(true);
+
+    // Task session exclusive lane (promoted primary-task-shaped).
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'task',
+        runId: 'pt-1',
+        taskAgentRun: primaryTask,
+        goalAgentRun: null,
+      })?.productTool,
+    ).toBe('create_task_template');
+
+    // Goal session still holding primary-task-shaped run (pre-promotion / dual mirror).
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'task',
+        runId: 'pt-1',
+        taskAgentRun: null,
+        goalAgentRun: primaryTask,
+      })?.productTool,
+    ).toBe('create_task_template');
+
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'goal',
+        runId: 'pt-1',
+        goalAgentRun: primaryTask,
+      })?.productTool,
+    ).toBe('create_task_template');
+
+    // Normal goal.create with companion create_task_template stays create_goal.
+    const normalGoal = {
+      run: {
+        runId: 'g-2',
+        threadId: 'thread-1',
+        conversationId: 'conv-1',
+        agentType: 'goal.create',
+        status: 'waiting_approval',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      state: {
+        pendingActions: [
+          {
+            tool: 'create_goal',
+            index: 0,
+            dependsOn: [],
+            payload: {},
+            rationale: 'goal',
+          },
+          {
+            tool: 'create_task_template',
+            index: 1,
+            dependsOn: [0],
+            payload: {},
+            rationale: 'task',
+          },
+        ],
+        approvedActions: [],
+        executedActions: [],
+        artifacts: [
+          { kind: 'goal_draft', id: 'gd', data: {}, updatedAt: 1 },
+          { kind: 'task_draft', id: 'td', data: {}, updatedAt: 1 },
+        ],
+        interrupts: [],
+      },
+    } as AgentRunResult;
+    expect(isPrimaryTaskHostAgentRun(normalGoal)).toBe(false);
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'goal',
+        runId: 'g-2',
+        goalAgentRun: normalGoal,
+      })?.productTool,
+    ).toBe('create_goal');
+    expect(
+      resolveHostPanelOwnedProductRun({
+        source: 'task',
+        runId: 'g-2',
+        goalAgentRun: normalGoal,
+        taskAgentRun: null,
+      })?.productTool,
+    ).toBe('create_goal');
+  });
 });
 

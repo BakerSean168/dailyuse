@@ -392,6 +392,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 575: goal session primary-task confirm sole create_task_template.
         'Residual 575',
         "action.tool === 'create_task_template'",
+        // Residual 577: Host panel ownership primary-task-shaped → create_task_template.
+        'Residual 577',
+        'isPrimaryTaskHostAgentRun',
         // Residual 509: process-local store conversationId trim list match.
         'matchesHostTaskCreateConversation',
         'Residual 509',

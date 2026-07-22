@@ -1258,6 +1258,40 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('Host panel ownership maps primary-task-shaped to create_task_template (residual 577)', () => {
+    const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
+    expect(helper).toContain('Residual 577');
+    expect(helper).toContain('isPrimaryTaskHostAgentRun');
+    expect(chatView).toContain('Residual 577');
+    expect(chatView).toContain('liveHostWorkbenchAgentRuns.value.goalAgentRun');
+    expect(chatView).toContain('liveHostWorkbenchAgentRuns.value.taskAgentRun');
+    // Ownership resolve uses exclusive workbench lane inputs (not raw dual session fields alone).
+    for (const fn of [
+      'async function handleHostProposalApprove',
+      'async function handleHostProposalReject',
+      'async function handleHostProposalRevise',
+    ]) {
+      const fnIdx = chatView.indexOf(fn);
+      expect(fnIdx).toBeGreaterThan(-1);
+      const slice = chatView.slice(fnIdx, fnIdx + 2800);
+      expect(slice).toContain('resolveHostPanelOwnedProductRun');
+      expect(slice).toContain('liveHostWorkbenchAgentRuns.value.goalAgentRun');
+      expect(slice).toContain('liveHostWorkbenchAgentRuns.value.taskAgentRun');
+      // Prefer workbench lane over raw goalAgentRun.value dual path.
+      expect(slice).not.toContain('goalAgentRun: goalAgentRun.value');
+    }
+    // Helper maps primary-task-shaped → create_task_template.
+    const resolveIdx = helper.indexOf('export function resolveHostPanelOwnedProductRun');
+    expect(resolveIdx).toBeGreaterThan(-1);
+    const resolveSlice = helper.slice(resolveIdx, resolveIdx + 2200);
+    expect(resolveSlice).toContain('Residual 577');
+    expect(resolveSlice).toContain('isPrimaryTaskHostAgentRun');
+    expect(resolveSlice).toContain("productTool: 'create_task_template'");
+    expect(chatView).not.toContain('executeApproved');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
   it('Host panel settlement reuses resolveHostPanelOwnedProductRun ownership (residual 571)', () => {
     const chatView = readFileSync(resolve(dir, '../views/AIChatView.vue'), 'utf8');
     expect(helper).toContain('Residual 571');
