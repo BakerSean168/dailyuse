@@ -51,6 +51,10 @@
  * Residual 543: confirm uses the sole create_task_template settlementAction after
  * single-executed + tool/status gates (edit draftAction residual 541 symmetry).
  *
+ * Residual 545: confirm title/goalId rebind checks use the sole process-local
+ * create_task_template draftAction after single-store-draft + tool gates
+ * (no blind multi-index invent; residual 541/543 symmetry).
+ *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
  */
@@ -134,6 +138,10 @@ export const HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE =
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_EXECUTED_MESSAGE =
   'Host task.create confirm requires exactly one create_task_template executedAction.';
 
+/** Residual 545: confirm multi process-local store draft is fail-closed. */
+export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE =
+  'Host task.create confirm requires exactly one process-local create_task_template draft.';
+
 function nextSequence(events: AgentRunResult['events']): number {
   if (events.length === 0) return 0;
   return Math.max(...events.map((event) => event.sequence)) + 1;
@@ -161,9 +169,10 @@ function asNonEmptyTrimmedString(value: unknown): string | undefined {
  */
 function resolveConfirmSettlementTitle(
   executed: AgentExecutedAction,
-  approved: AgentRunResult['state']['approvedActions'],
+  draftAction: AgentRunResult['state']['approvedActions'][number],
 ): string | undefined {
-  const pending = approved[0]?.payload ?? {};
+  // Residual 545: sole process-local create_task_template draftAction (no multi-index invent).
+  const pending = draftAction.payload ?? {};
   const approvedTitle =
     asNonEmptyTrimmedString(pending['title']) ??
     asNonEmptyTrimmedString(pending['name']);
@@ -214,9 +223,10 @@ function readGoalIdFromRecord(record: Record<string, unknown> | undefined): stri
  */
 function resolveConfirmSettlementGoalId(
   executed: AgentExecutedAction,
-  approved: AgentRunResult['state']['approvedActions'],
+  draftAction: AgentRunResult['state']['approvedActions'][number],
 ): string | undefined {
-  const approvedGoalId = readGoalIdFromRecord(approved[0]?.payload ?? undefined);
+  // Residual 545: sole process-local create_task_template draftAction (no multi-index invent).
+  const approvedGoalId = readGoalIdFromRecord(draftAction.payload ?? undefined);
   const data =
     executed.data && typeof executed.data === 'object' && !Array.isArray(executed.data)
       ? (executed.data as Record<string, unknown>)
@@ -370,9 +380,18 @@ export function buildHostTaskCreateResumeResult(input: {
     }
     // Residual 471: process-local draft only — ignore payload.approvedActions on confirm.
     const approvedActions = resolveConfirmStoreDraftActions(current);
-    // Residual 463/465/467/469/471/543: normalize recoverable settlement title + template entity id
-    // + non-rebinding goalId/title against process-local draft into sole settlementAction.
-    const title = resolveConfirmSettlementTitle(settlementAction, approvedActions);
+    // Residual 545: process-local product draft is a single create_task_template action
+    // (start/edit symmetry; no blind multi-index invent for title/goalId rebind).
+    if (approvedActions.length !== 1) {
+      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE);
+    }
+    const draftAction = approvedActions[0];
+    if (!draftAction || draftAction.tool !== 'create_task_template') {
+      throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
+    }
+    // Residual 463/465/467/469/471/543/545: normalize recoverable settlement title + template entity id
+    // + non-rebinding goalId/title against sole process-local draftAction into sole settlementAction.
+    const title = resolveConfirmSettlementTitle(settlementAction, draftAction);
     if (!title) {
       throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE);
     }
@@ -380,7 +399,7 @@ export function buildHostTaskCreateResumeResult(input: {
     if (!templateId) {
       throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE);
     }
-    const goalId = resolveConfirmSettlementGoalId(settlementAction, approvedActions);
+    const goalId = resolveConfirmSettlementGoalId(settlementAction, draftAction);
     const settlementTitle = title;
     const settlementTemplateId = templateId;
     const settlementGoalId = goalId;

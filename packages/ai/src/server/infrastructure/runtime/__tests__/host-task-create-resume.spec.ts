@@ -6,6 +6,8 @@ import {
   HOST_TASK_CREATE_EDIT_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
   HOST_TASK_CREATE_CONFIRM_REQUIRES_CREATE_TASK_TEMPLATE_MESSAGE,
   HOST_TASK_CREATE_CONFIRM_REQUIRES_EXECUTED_STATUS_MESSAGE,
+  HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE,
+  HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE,
   HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE,
   HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE,
 } from '../host-task-create-resume';
@@ -1047,13 +1049,119 @@ describe('confirm settlementAction sole product receipt (residual 543)', () => {
     expect(src).toContain('...settlementAction');
     const confirmIdx = src.indexOf("if (decision === 'confirm')");
     expect(confirmIdx).toBeGreaterThan(-1);
-    const confirmSlice = src.slice(confirmIdx, confirmIdx + 3200);
+    const confirmSlice = src.slice(confirmIdx, confirmIdx + 5200);
     expect(confirmSlice).toContain('resolveConfirmSettlementTitle(settlementAction');
     expect(confirmSlice).toContain('resolveConfirmSettlementTemplateId(settlementAction)');
     expect(confirmSlice).toContain('resolveConfirmSettlementGoalId(settlementAction');
     // No multi-index invent after single-executed gate.
     expect(confirmSlice).not.toContain('executedActions[1]');
     expect(confirmSlice).not.toContain('for (let index = 0; index < executedActions.length');
+  });
+});
+
+describe('confirm store draftAction sole product draft (residual 545)', () => {
+  it('source uses draftAction after single-store-draft + create_task_template gates', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const src = readFileSync(
+      resolve(__dirname, '../host-task-create-resume.ts'),
+      'utf8',
+    );
+    expect(src).toContain('Residual 545');
+    expect(src).toContain('const draftAction = approvedActions[0]');
+    expect(src).toContain('HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE');
+    expect(src).toContain("draftAction.tool !== 'create_task_template'");
+    const confirmIdx = src.indexOf("if (decision === 'confirm')");
+    expect(confirmIdx).toBeGreaterThan(-1);
+    const confirmSlice = src.slice(confirmIdx, confirmIdx + 4200);
+    expect(confirmSlice).toContain('resolveConfirmSettlementTitle(settlementAction, draftAction)');
+    expect(confirmSlice).toContain('resolveConfirmSettlementGoalId(settlementAction, draftAction)');
+    // No blind multi-index invent for store draft rebind checks.
+    expect(confirmSlice).not.toContain('approved[0]');
+    expect(confirmSlice).not.toContain('approvedActions[1]');
+  });
+
+  it('fail-closed when process-local store draft is multi-action', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-multi-store-draft'),
+      identityId: 'id-1',
+      nowMs: 10,
+    });
+    const multiDraft = {
+      ...started,
+      state: {
+        ...started.state,
+        pendingActions: [
+          started.state.pendingActions[0]!,
+          {
+            tool: 'create_goal',
+            index: 1,
+            dependsOn: [],
+            rationale: 'foreign',
+            payload: { title: 'Foreign goal' },
+          },
+        ],
+      },
+    };
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: multiDraft,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'Created',
+              entityId: 'tpl-multi-store',
+              data: { title: 'Ship residual 439' },
+            },
+          ],
+        },
+        nowMs: 20,
+      }),
+    ).toThrow(HOST_TASK_CREATE_CONFIRM_REQUIRES_SINGLE_STORE_DRAFT_MESSAGE);
+  });
+
+  it('fail-closed when sole process-local store draft is foreign tool', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: request('run-foreign-store-draft'),
+      identityId: 'id-1',
+      nowMs: 10,
+    });
+    const foreignDraft = {
+      ...started,
+      state: {
+        ...started.state,
+        pendingActions: [
+          {
+            tool: 'create_goal',
+            index: 0,
+            dependsOn: [],
+            rationale: 'foreign only',
+            payload: { title: 'Foreign goal' },
+          },
+        ],
+      },
+    };
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: foreignDraft,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'Created',
+              entityId: 'tpl-foreign-store',
+              data: { title: 'Ship residual 439' },
+            },
+          ],
+        },
+        nowMs: 20,
+      }),
+    ).toThrow(HOST_TASK_CREATE_CONFIRM_REQUIRES_STORE_DRAFT_MESSAGE);
   });
 });
 

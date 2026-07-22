@@ -396,6 +396,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 543: Host confirm settlementAction sole create_task_template after gates.
         'Residual 543',
         'const settlementAction = executedActions[0]',
+        // Residual 545: Host confirm store draftAction sole create_task_template after gates.
+        'Residual 545',
+        'const draftAction = approvedActions[0]',
       ],
       status: 'implemented_unit',
     },

@@ -422,6 +422,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['Residual 543'];
     case 'const settlementAction = executedActions[0]':
       return ['const settlementAction = executedActions[0]'];
+    case 'Residual 545':
+      return ['Residual 545'];
+    case 'const draftAction = approvedActions[0]':
+      return ['const draftAction = approvedActions[0]'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:
