@@ -51,3 +51,30 @@ describe('schedule operation response dual retired (residual 631)', () => {
   });
 });
 
+/**
+ * Residual 639: shared BatchOperationResponseDTO dual name retired.
+ * Schedule batch results use ScheduleBatchOperationResponseDTO only.
+ */
+describe('schedule batch operation response dual name retired (residual 639)', () => {
+  const apiDir = __dirname;
+  const taskReq = readFileSync(resolve(apiDir, 'requests/schedule-task-requests.ts'), 'utf8');
+  const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
+  const sharedDtosIndex = readFileSync(
+    resolve(apiDir, '../../../shared/dtos/index.ts'),
+    'utf8',
+  );
+
+  it('does not export shared BatchOperationResponseDTO dual', () => {
+    expect(sharedDtosIndex).not.toContain('BatchOperationResponseDTO');
+    expect(sharedDtosIndex).not.toContain('batch-operation-res');
+  });
+
+  it('schedule uses ScheduleBatchOperationResponseDTO / Schema only', () => {
+    expect(taskReq).toContain('Residual 639');
+    expect(taskReq).toContain('export interface ScheduleBatchOperationResponseDTO');
+    expect(taskReq).not.toMatch(/export interface BatchOperationResponseDTO\b/);
+    expect(responseSchemas).toContain('ScheduleBatchOperationResponseSchema');
+    expect(responseSchemas).not.toMatch(/export const BatchOperationResponseSchema\b/);
+  });
+});
+

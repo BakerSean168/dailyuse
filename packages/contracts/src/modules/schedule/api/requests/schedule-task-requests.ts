@@ -200,7 +200,8 @@ export interface ScheduleTaskListResponseDTO {
 /**
  * 批量操作响应
  */
-export interface BatchOperationResponseDTO {
+/** Residual 639: schedule-scoped batch result (not shared BatchOperationResponseDTO dual). */
+export interface ScheduleBatchOperationResponseDTO {
   readonly success: readonly string[];
   readonly failed: readonly {
     taskId: ScheduleTaskId;

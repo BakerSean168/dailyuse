@@ -14,7 +14,7 @@ import type {
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
-  BatchOperationResponseDTO,
+  ScheduleBatchOperationResponseDTO,
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
 } from '@dailyuse/contracts/schedule';
@@ -76,7 +76,7 @@ export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
     return this.ipcClient.invoke(ScheduleChannels.TASK_DELETE, taskId);
   }
 
-  async deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>> {
+  async deleteTasksBatch(taskIds: string[]): Promise<Result<ScheduleBatchOperationResponseDTO>> {
     return this.ipcClient.invoke(ScheduleChannels.TASK_DELETE_BATCH, taskIds);
   }
 

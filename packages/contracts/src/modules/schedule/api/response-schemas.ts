@@ -122,9 +122,10 @@ export const CalendarEntryResponseSchema = z.object({
 });
 
 /**
- * BatchOperation Response Schema
+ * Schedule BatchOperation Response Schema
  */
-export const BatchOperationResponseSchema = z.object({
+/** Residual 639: schedule batch result schema (renamed off shared dual name). */
+export const ScheduleBatchOperationResponseSchema = z.object({
   success: z.array(z.string()),
   failed: z.array(z.object({ taskId: brandedId<ScheduleTaskId>(), error: z.string() })),
   total: z.number(),

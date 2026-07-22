@@ -30,7 +30,7 @@ import {
   ScheduleTaskQueryParamsSchema,
   BatchScheduleTaskOperationRequestSchema,
   ScheduleTaskResponseSchema,
-  BatchOperationResponseSchema,
+  ScheduleBatchOperationResponseSchema,
   BatchDeleteResponseSchema,
   UpdateTaskMetadataRequestSchema,
 } from '@dailyuse/contracts/schedule';
@@ -93,7 +93,7 @@ export function registerScheduleRoutes(
         },
       },
       responses: {
-        200: successResponse(BatchOperationResponseSchema, '操作成功'),
+        200: successResponse(ScheduleBatchOperationResponseSchema, '操作成功'),
         400: errorResponse('参数错误'),
       },
     },

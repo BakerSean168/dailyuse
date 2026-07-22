@@ -11,7 +11,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { map as mapResult } from '@dailyuse/contracts/result';
 import type {
   CalendarEntryClientDTO,
-  BatchOperationResponseDTO,
+  ScheduleBatchOperationResponseDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -246,7 +246,7 @@ export class ScheduleClientService implements ScheduleClientPort {
     return this.taskApi.deleteTask(taskId);
   }
 
-  async deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>> {
+  async deleteTasksBatch(taskIds: string[]): Promise<Result<ScheduleBatchOperationResponseDTO>> {
     return this.taskApi.deleteTasksBatch(taskIds);
   }
 

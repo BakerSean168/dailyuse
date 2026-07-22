@@ -13,7 +13,7 @@ import type {
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
-  BatchOperationResponseDTO,
+  ScheduleBatchOperationResponseDTO,
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
 } from '@dailyuse/contracts/schedule';
@@ -94,7 +94,7 @@ export class ScheduleTaskHttpAdapter implements IScheduleTaskApiClient {
     return this.httpClient.delete(`${this.baseUrl}/tasks/${taskId}`);
   }
 
-  async deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>> {
+  async deleteTasksBatch(taskIds: string[]): Promise<Result<ScheduleBatchOperationResponseDTO>> {
     return this.httpClient.post(`${this.baseUrl}/tasks/batch/delete`, { taskIds });
   }
 

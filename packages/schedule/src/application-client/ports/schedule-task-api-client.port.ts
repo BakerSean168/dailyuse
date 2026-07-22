@@ -13,7 +13,7 @@ import type {
   ScheduleTaskClientDTO,
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
-  BatchOperationResponseDTO,
+  ScheduleBatchOperationResponseDTO,
 } from '@dailyuse/contracts/schedule';
 
 /**
@@ -42,6 +42,6 @@ export interface IScheduleTaskApiClient {
   completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>>;
   cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTaskClientDTO>>;
   deleteTask(taskId: string): Promise<Result<void>>;
-  deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>>;
+  deleteTasksBatch(taskIds: string[]): Promise<Result<ScheduleBatchOperationResponseDTO>>;
   updateTaskMetadata(taskId: string, metadata: UpdateTaskMetadataRequest): Promise<Result<ScheduleTaskClientDTO>>;
 }
