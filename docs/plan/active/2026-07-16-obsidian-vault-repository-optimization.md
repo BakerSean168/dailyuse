@@ -3151,6 +3151,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、第二生产 Turn Engine、统一助手 UI、GitHub App fixture
 > E2E、全量 PR 门禁。状态保持 **实施中**；PR readiness 仍为 no。
 
+> 续进展 2026-07-22（阶段 6 残留三百三十五轮）：authentication module-index OAuth 产品真值收口
+> （仍不打勾）——`docs/product/module-index/authentication-files.md` 删除“仅 callback 骨架/
+> 仍未接线”过时叙述；补 ADR-034 登录 OAuth 生产路径表（get-oauth-url identity-only scopes、
+> GitHub provider/client、WebAuthView、three-login step 10、knowledge-connection 分离）并修正
+> AuthPlatformEntry/Desktop 入口说明。`product-module-index-paths.surface.spec.ts` 增 residual
+> 335 内容锁。验证：contracts surface 2 + three-login 15 + governance-check。§13.2 仍为部分/
+> 外部阻塞。状态保持 **实施中**；PR readiness 仍为 no。
+
 
 
 
@@ -3560,6 +3568,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百三十二轮：§13.2 focused evidence suite re-run（255 tests，residuals 250–331 锁；不改 checkbox）。
   残留三百三十三轮：three-login step 10 product-doc 显式 identity-only scopes（read:user/user:email）+ 无 repo Contents + 知识仓库 GitHub App installation/token 分离锁。
   残留三百三十四轮：§13.2 focused evidence suite re-run（255 tests，residuals 250–333 锁；不改 checkbox）。
+  残留三百三十五轮：authentication-files 索引 OAuth 生产真值 + module-index surface 锁。
   残留三百零六轮：§13.2 focused evidence suite re-run (197 tests, residuals 250–305 locks, no checkbox changes)。
   残留三百零七轮：three-login matrix journey step 10 — GitHub OAuth identity transport never grants knowledge-repo install/token (IPC/HTTP/scopes/docs/UI source locks; still partial)。
   残留三百零八轮：§13.2 focused evidence suite re-run (198 tests, residuals 250–307 locks, no checkbox changes)。
@@ -3589,6 +3598,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百三十二轮：§13.2 focused evidence suite re-run (255 tests, residuals 250–331 locks, no checkbox changes)。
   残留三百三十三轮：three-login step 10 product-doc lock for identity-only scopes (read:user/user:email), no repo Contents, separate knowledge-repo GitHub App installation/token。
   残留三百三十四轮：§13.2 focused evidence suite re-run (255 tests, residuals 250–333 locks, no checkbox changes)。
+  残留三百三十五轮：rewrite authentication-files OAuth production paths + residual 335 module-index surface lock。
   仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 Playwright/Electron。
 - [x] webhook、read model、附件和 RAG 可从 GitHub default branch 重建。 **（已证明）**
 - [x] Web Markdown 安全测试通过，不泄露本机路径或 GitHub token。 **（已证明）**
@@ -3704,6 +3714,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留三百三十二轮：tip 上 255 项 focused evidence suite（含 residual 250–331 module-index 锁）通过；仍不构成全量 PR 门禁证据。
   残留三百三十三轮：authentication product-doc + three-login step 10 identity≠knowledge-repo surface 锁；仍不构成全量 PR 门禁/跨端 OAuth E2E 证据。
   残留三百三十四轮：tip 上 255 项 focused evidence suite（含 residual 250–333 auth identity≠repo 锁）通过；仍不构成全量 PR 门禁证据。
+  残留三百三十五轮：authentication-files OAuth 真值收口 + module-index surface；仍不构成全量 PR 门禁/跨端 OAuth E2E 证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
