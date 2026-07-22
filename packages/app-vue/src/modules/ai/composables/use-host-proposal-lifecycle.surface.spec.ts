@@ -535,6 +535,26 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(helper).not.toContain('executeApproved');
   });
 
+  it('task.create confirm forbids settlement goalId rebind (residual 467)', () => {
+    const resume = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-resume.ts',
+      ),
+      'utf8',
+    );
+    const taskWorkflow = readFileSync(resolve(dir, 'useAITaskWorkflow.ts'), 'utf8');
+    expect(resume).toContain('HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE');
+    expect(resume).toContain('must not rebind settlement goalId');
+    expect(resume).toContain('resolveConfirmSettlementGoalId');
+    expect(resume).toContain('Residual 467');
+    // Client complete still stamps optional goalId; Host is fail-closed source of truth.
+    expect(taskWorkflow).toContain('completeTaskAgentRun');
+    expect(taskWorkflow).toContain("payloadBase['goalId']");
+    expect(taskWorkflow).toContain('Residual 467');
+    expect(helper).not.toContain('executeApproved');
+  });
+
   it('task.create process-local store size bound (residual 447)', () => {
     const store = readFileSync(
       resolve(

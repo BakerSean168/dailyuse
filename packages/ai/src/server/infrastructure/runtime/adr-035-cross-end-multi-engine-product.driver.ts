@@ -280,6 +280,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE'];
     case 'resolveConfirmSettlementTemplateId':
       return ['resolveConfirmSettlementTemplateId'];
+    case 'HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE':
+      return ['HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE'];
+    case 'resolveConfirmSettlementGoalId':
+      return ['resolveConfirmSettlementGoalId'];
     case 'domain Task executor not wired':
       return ['domain Task executor not wired', 'Host lifecycle only'];
     default:

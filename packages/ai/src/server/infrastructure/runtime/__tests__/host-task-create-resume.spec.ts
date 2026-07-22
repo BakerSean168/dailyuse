@@ -15,7 +15,7 @@ function request(runId: string): AgentStartRunRequest {
   };
 }
 
-describe('host-task-create-resume (residual 437/439/453/455/463/465)', () => {
+describe('host-task-create-resume (residual 437/439/453/455/463/465/467)', () => {
   it('cancel moves waiting_approval to cancelled and clears interrupts', () => {
     const started = buildHostTaskCreateStartResult({
       request: request('run-cancel'),
@@ -435,6 +435,65 @@ describe('host-task-create-resume (residual 437/439/453/455/463/465)', () => {
         },
       }),
     ).toThrow(/non-empty settlement template entity id/);
+  });
+
+
+  it('confirm normalizes settlement goalId from approved draft (residual 467)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: {
+        ...request('run-settle-goal'),
+        input: { title: 'Linked draft', goalId: 'goal-approved' },
+      },
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    const completed = buildHostTaskCreateResumeResult({
+      current: started,
+      payload: {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            entityId: 'tpl-goal',
+            // omit data.goalId — must inherit approved draft linkage
+          },
+        ],
+      },
+      nowMs: 2,
+    });
+    expect(completed.run.status).toBe('completed');
+    expect(completed.state.executedActions[0]?.data?.['goalId']).toBe('goal-approved');
+    expect(completed.events.at(-1)?.data?.['goalId']).toBe('goal-approved');
+  });
+
+  it('confirm fails closed when settlement goalId rebinds approved draft (residual 467)', () => {
+    const started = buildHostTaskCreateStartResult({
+      request: {
+        ...request('run-goal-rebind'),
+        input: { title: 'Linked draft', goalId: 'goal-approved' },
+      },
+      identityId: 'id-1',
+      nowMs: 1,
+    });
+    expect(() =>
+      buildHostTaskCreateResumeResult({
+        current: started,
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_task_template',
+              status: 'executed',
+              message: 'Created with rebound goal',
+              entityId: 'tpl-rebind',
+              data: { title: 'Linked draft', goalId: 'goal-other' },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/must not rebind settlement goalId/);
   });
 
 

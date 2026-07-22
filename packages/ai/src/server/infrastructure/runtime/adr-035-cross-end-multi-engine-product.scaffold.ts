@@ -287,6 +287,9 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
         // Residual 465: confirm settlement template entity id for receipt deep-link.
         'HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE',
         'resolveConfirmSettlementTemplateId',
+        // Residual 467: confirm settlement goalId must not rebind approved draft.
+        'HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE',
+        'resolveConfirmSettlementGoalId',
       ],
       status: 'implemented_unit',
     },

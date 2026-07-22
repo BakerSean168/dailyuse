@@ -1,5 +1,5 @@
 /**
- * Residual 437/439/453/455/463/465: Host task.create process-local resume.
+ * Residual 437/439/453/455/463/465/467: Host task.create process-local resume.
  *
  * Residual 437: cancel / confirm settlement updates process store terminal status.
  * Residual 439: edit revise keeps waiting_approval with patched pendingActions;
@@ -16,6 +16,9 @@
  *
  * Residual 465: confirm settlement must carry a recoverable non-empty template
  * entity id (entityId / data.templateId|entityId|taskId) for receipt deep-link.
+ *
+ * Residual 467: confirm settlement goalId must not rebind against the approved
+ * create_task_template draft (normalize approved goalId into settlement).
  *
  * Client owns domain createTemplate mutation; confirm resume only records settlement.
  * Not a Python LangGraph checkpointer / cross-process durable DB.
@@ -43,6 +46,10 @@ export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TITLE_MESSAGE =
 /** Residual 465: confirm without recoverable settlement template entity id is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE =
   'Host task.create confirm requires a non-empty settlement template entity id on create_task_template executedActions.';
+
+/** Residual 467: confirm must not rebind settlement goalId against approved draft. */
+export const HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE =
+  'Host task.create confirm must not rebind settlement goalId against the approved create_task_template draft.';
 
 function nextSequence(events: AgentRunResult['events']): number {
   if (events.length === 0) return 0;
@@ -102,6 +109,35 @@ function resolveConfirmSettlementTemplateId(executed: AgentExecutedAction): stri
     );
   }
   return undefined;
+}
+
+function readGoalIdFromRecord(record: Record<string, unknown> | undefined): string | undefined {
+  if (!record) return undefined;
+  return (
+    asNonEmptyTrimmedString(record['goalId']) ??
+    asNonEmptyTrimmedString(record['goal_id'])
+  );
+}
+
+/**
+ * Residual 467: resolve settlement goalId without rebinding approved draft linkage.
+ * Approved draft goalId is source of truth when present; executed may omit and inherit.
+ * Mismatch between approved and executed non-empty goalIds is fail-closed.
+ */
+function resolveConfirmSettlementGoalId(
+  executed: AgentExecutedAction,
+  approved: AgentRunResult['state']['approvedActions'],
+): string | undefined {
+  const approvedGoalId = readGoalIdFromRecord(approved[0]?.payload ?? undefined);
+  const data =
+    executed.data && typeof executed.data === 'object' && !Array.isArray(executed.data)
+      ? (executed.data as Record<string, unknown>)
+      : undefined;
+  const executedGoalId = readGoalIdFromRecord(data);
+  if (approvedGoalId && executedGoalId && approvedGoalId !== executedGoalId) {
+    throw new Error(HOST_TASK_CREATE_CONFIRM_GOAL_REBIND_FORBIDDEN_MESSAGE);
+  }
+  return approvedGoalId ?? executedGoalId;
 }
 
 function resolveApprovedActions(
@@ -234,10 +270,11 @@ export function buildHostTaskCreateResumeResult(input: {
       }
     }
     const approvedActions = resolveApprovedActions(current, input.payload);
-    // Residual 463/465: normalize recoverable settlement title + template entity id
-    // into executed data/entityId + completion event for reopen/receipt deep-link.
+    // Residual 463/465/467: normalize recoverable settlement title + template entity id
+    // + non-rebinding goalId into executed data/entityId + completion event.
     let settlementTitle: string | undefined;
     let settlementTemplateId: string | undefined;
+    let settlementGoalId: string | undefined;
     for (let index = 0; index < executedActions.length; index += 1) {
       const action = executedActions[index]!;
       const title = resolveConfirmSettlementTitle(action, approvedActions);
@@ -248,8 +285,10 @@ export function buildHostTaskCreateResumeResult(input: {
       if (!templateId) {
         throw new Error(HOST_TASK_CREATE_CONFIRM_REQUIRES_SETTLEMENT_TEMPLATE_ID_MESSAGE);
       }
+      const goalId = resolveConfirmSettlementGoalId(action, approvedActions);
       settlementTitle = settlementTitle ?? title;
       settlementTemplateId = settlementTemplateId ?? templateId;
+      settlementGoalId = settlementGoalId ?? goalId;
       const data: Record<string, unknown> = {
         ...(action.data && typeof action.data === 'object' && !Array.isArray(action.data)
           ? (action.data as Record<string, unknown>)
@@ -258,6 +297,13 @@ export function buildHostTaskCreateResumeResult(input: {
         templateId,
         entityId: templateId,
       };
+      if (goalId) {
+        data['goalId'] = goalId;
+        delete data['goal_id'];
+      } else {
+        delete data['goalId'];
+        delete data['goal_id'];
+      }
       executedActions[index] = {
         ...action,
         entityId: templateId,
@@ -294,6 +340,7 @@ export function buildHostTaskCreateResumeResult(input: {
             executedCount: executedActions.length,
             ...(settlementTitle ? { title: settlementTitle } : {}),
             ...(settlementTemplateId ? { templateId: settlementTemplateId } : {}),
+            ...(settlementGoalId ? { goalId: settlementGoalId } : {}),
           },
         },
       ],

@@ -1,5 +1,5 @@
 /**
- * Residual 449/451/453/455/457/461/463/465: Host task.create process-local product journey (still partial for §13.2).
+ * Residual 449/451/453/455/457/461/463/465/467: Host task.create process-local product journey (still partial for §13.2).
  *
  * Same-process fixture chain:
  *   start → store → edit → cancel
@@ -12,6 +12,7 @@
  *   start requires conversationId (residual 461)
  *   confirm settlement title (residual 463)
  *   confirm settlement template id (residual 465)
+ *   confirm settlement goalId no-rebind (residual 467)
  *   never hits Python port / never Host-lifecycle domain execution wire
  *
  * Not Playwright/Electron multi-engine E2E, not cross-process durable, not full LangGraph.
@@ -604,6 +605,88 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(failConfirm.error.message).toMatch(/non-empty settlement template entity id/);
 
     const stillWaiting = await service.getRun('run-journey-template-fail', cx as any);
+    expect(stillWaiting.ok).toBe(true);
+    if (!stillWaiting.ok) return;
+    expect(stillWaiting.data.run.status).toBe('waiting_approval');
+    expect(port.resumeRun).not.toHaveBeenCalled();
+  });
+
+  it('confirm normalizes settlement goalId and fails closed on rebind (residual 467)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: 'owner-goal-settle' } as const;
+
+    const started = await service.startRun(
+      {
+        runId: 'run-journey-goal-settle',
+        threadId: 'thread-journey-goal-settle',
+        conversationId: 'conv-journey-goal-settle',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Goal settle', goalId: 'goal-approved' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started.ok).toBe(true);
+
+    const completed = await service.resumeRun(
+      'run-journey-goal-settle',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created task template',
+            entityId: 'tpl-journey-goal',
+            data: { title: 'Goal settle' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(completed.ok).toBe(true);
+    if (!completed.ok) return;
+    expect(completed.data.state.executedActions[0]?.data?.['goalId']).toBe('goal-approved');
+    expect(completed.data.events.at(-1)?.data?.['goalId']).toBe('goal-approved');
+
+    const started2 = await service.startRun(
+      {
+        runId: 'run-journey-goal-rebind',
+        threadId: 'thread-journey-goal-rebind',
+        conversationId: 'conv-journey-goal-rebind',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Goal rebind', goalId: 'goal-approved' },
+        identityId: 'ignored',
+      },
+      cx as any,
+    );
+    expect(started2.ok).toBe(true);
+
+    const failConfirm = await service.resumeRun(
+      'run-journey-goal-rebind',
+      {
+        userDecision: 'confirm',
+        executedActions: [
+          {
+            tool: 'create_task_template',
+            status: 'executed',
+            message: 'Created with rebound goal',
+            entityId: 'tpl-journey-rebind',
+            data: { title: 'Goal rebind', goalId: 'goal-other' },
+          },
+        ],
+      },
+      cx as any,
+    );
+    expect(failConfirm.ok).toBe(false);
+    if (failConfirm.ok) return;
+    expect(failConfirm.error.code).toBe('VALIDATION_ERROR');
+    expect(failConfirm.error.message).toMatch(/must not rebind settlement goalId/);
+
+    const stillWaiting = await service.getRun('run-journey-goal-rebind', cx as any);
     expect(stillWaiting.ok).toBe(true);
     if (!stillWaiting.ok) return;
     expect(stillWaiting.data.run.status).toBe('waiting_approval');
