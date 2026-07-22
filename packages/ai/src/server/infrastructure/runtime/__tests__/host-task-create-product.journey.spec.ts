@@ -516,6 +516,36 @@ describe('Host task.create process-local product journey (residual 449)', () => 
     expect(port.startRun).not.toHaveBeenCalled();
   });
 
+  it('rejects blank ExecutionContext identityId at start without store registration (residual 493)', async () => {
+    const port = makePort();
+    const service = createAgentRuntimeService(port);
+    const cx = { identityId: '   ' } as const;
+
+    const rejected = await service.startRun(
+      {
+        runId: 'run-journey-blank-identity',
+        threadId: 'thread-journey-blank-identity',
+        conversationId: 'conv-journey-blank-identity',
+        agentType: 'task.create',
+        locale: 'en-US',
+        input: { title: 'Needs identity' },
+        identityId: 'client-body-must-not-win',
+      },
+      cx as any,
+    );
+    expect(rejected.ok).toBe(false);
+    if (rejected.ok) return;
+    expect(rejected.error.code).toBe('VALIDATION_ERROR');
+    expect(rejected.error.message).toMatch(/non-empty identityId/);
+
+    // No process-local registration under any identity for this runId.
+    const listedOwner = await service.listRuns({}, { identityId: 'client-body-must-not-win' } as any);
+    expect(listedOwner.ok).toBe(true);
+    if (!listedOwner.ok) return;
+    expect(listedOwner.data.some((run) => run.runId === 'run-journey-blank-identity')).toBe(false);
+    expect(port.startRun).not.toHaveBeenCalled();
+  });
+
 
   it('confirm normalizes settlement title from process-local draft (residual 463)', async () => {
     const port = makePort();

@@ -308,6 +308,10 @@ function contractNeedles(contract: string): readonly string[] {
       return ['HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE'];
     case 'resolveTaskCreateThreadId':
       return ['resolveTaskCreateThreadId'];
+    case 'HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE':
+      return ['HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE'];
+    case 'resolveTaskCreateIdentityId':
+      return ['resolveTaskCreateIdentityId'];
     case 'Residual 489':
       return ['Residual 489'];
     case 'completeTaskAgentRun':

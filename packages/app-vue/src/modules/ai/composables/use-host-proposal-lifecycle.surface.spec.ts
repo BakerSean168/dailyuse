@@ -748,6 +748,30 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
   });
 
 
+  it('task.create start requires non-empty identityId from ExecutionContext (residual 493)', () => {
+    const start = readFileSync(
+      resolve(
+        dir,
+        '../../../../../ai/src/server/infrastructure/runtime/host-task-create-start.ts',
+      ),
+      'utf8',
+    );
+    const runtime = readFileSync(
+      resolve(dir, '../../../../../ai/src/server/infrastructure/runtime/ai-runtime.ts'),
+      'utf8',
+    );
+    expect(start).toContain('HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE');
+    expect(start).toContain('resolveTaskCreateIdentityId');
+    expect(start).toContain('Residual 493');
+    expect(runtime).toContain('HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE');
+    expect(runtime).toContain('resolveTaskCreateIdentityId');
+    expect(runtime).toContain('Residual 493');
+    // Client body identity must not be trusted — builder uses ExecutionContext-resolved identity only.
+    expect(start).toContain('never trust client body identity');
+    expect(helper).not.toContain('executeApproved');
+  });
+
+
 
   it('task.create client complete requires waiting_approval only (residual 489)', () => {
     const resume = readFileSync(

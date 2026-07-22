@@ -1,5 +1,5 @@
 /**
- * Residual 431/461/479/483/485: Host task.create start foundation (TS runtime).
+ * Residual 431/461/479/483/485/493: Host task.create start foundation (TS runtime).
  *
  * Builds a waiting_approval AgentRunResult with one create_task_template action.
  * Host lifecycle + client createTemplate settlement (residual 423–425) own mutation.
@@ -7,6 +7,8 @@
  * Residual 479: start builder requires non-empty title (no 'New task' default).
  * Residual 483: start builder requires non-empty conversationId (no silent null invent).
  * Residual 485: start builder requires non-empty trimmed threadId (process-local binding).
+ * Residual 493: start builder requires non-empty trimmed identityId (ExecutionContext only;
+ * never trust client body identity; no silent empty invent).
  * Not a full LangGraph Task Agent workflow.
  */
 
@@ -32,6 +34,10 @@ export const HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE =
 export const HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE =
   'Host task.create start requires a non-empty threadId for process-local binding.';
 
+/** Residual 493: fail-closed when task.create start lacks ExecutionContext identityId. */
+export const HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE =
+  'Host task.create start requires a non-empty identityId from ExecutionContext.';
+
 /**
  * Residual 461: resolve non-empty conversationId for product task.create start.
  */
@@ -48,6 +54,16 @@ export function resolveTaskCreateThreadId(
   threadId: string | null | undefined,
 ): string | undefined {
   return asNonEmptyString(threadId ?? undefined);
+}
+
+/**
+ * Residual 493: resolve non-empty identityId for product task.create start.
+ * identityId must come from server ExecutionContext — never from client body.
+ */
+export function resolveTaskCreateIdentityId(
+  identityId: string | null | undefined,
+): string | undefined {
+  return asNonEmptyString(identityId ?? undefined);
 }
 
 /**
@@ -74,6 +90,7 @@ export function resolveTaskCreateGoalId(input: Record<string, unknown>): string 
  * Residual 479: empty title fails closed (no silent 'New task' invent).
  * Residual 483: empty conversationId fails closed (no silent null invent).
  * Residual 485: empty/blank threadId fails closed (no untrimmed pass-through).
+ * Residual 493: empty/blank identityId fails closed (no silent empty invent).
  */
 export function buildHostTaskCreateStartResult(input: {
   request: AgentStartRunRequest;
@@ -81,6 +98,11 @@ export function buildHostTaskCreateStartResult(input: {
   nowMs?: number;
 }): AgentRunResult {
   const now = input.nowMs ?? Date.now();
+  // Residual 493: ExecutionContext identity binding fail-closed in builder.
+  const identityId = resolveTaskCreateIdentityId(input.identityId);
+  if (!identityId) {
+    throw new Error(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE);
+  }
   const title = resolveTaskCreateTitle(input.request.input);
   if (!title) {
     throw new Error(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE);
@@ -105,7 +127,7 @@ export function buildHostTaskCreateStartResult(input: {
       runId,
       threadId,
       conversationId,
-      identityId: input.identityId,
+      identityId,
       agentType: 'task.create',
       status: 'waiting_approval',
       createdAt: now,

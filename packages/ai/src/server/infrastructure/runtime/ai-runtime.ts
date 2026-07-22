@@ -26,9 +26,11 @@ import {
   resolveTaskCreateTitle,
   resolveTaskCreateConversationId,
   resolveTaskCreateThreadId,
+  resolveTaskCreateIdentityId,
   HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
   HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
 } from './host-task-create-start';
 import { buildHostTaskCreateResumeResult } from './host-task-create-resume';
 import {
@@ -1156,6 +1158,14 @@ export function createAgentRuntimeService(
       // Residual 431: task.create Host start foundation (TS runtime, no LangGraph yet).
       // Produces waiting_approval + create_task_template for Host lane / client settle.
       if (requestWithKnowledge.data.agentType === 'task.create') {
+        // Residual 493: ExecutionContext identity fail-closed (builder also throws; no silent empty).
+        const taskCreateIdentityId = resolveTaskCreateIdentityId(cx.identityId);
+        if (!taskCreateIdentityId) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
+          );
+        }
         // Residual 479: title fail-closed (builder also throws; no silent 'New task').
         if (!resolveTaskCreateTitle(requestWithKnowledge.data.input)) {
           return error(
@@ -1181,15 +1191,15 @@ export function createAgentRuntimeService(
         try {
           const taskResult = buildHostTaskCreateStartResult({
             request: requestWithKnowledge.data,
-            identityId: cx.identityId,
+            identityId: taskCreateIdentityId,
           });
-          const ownership = ensureAgentRunOwnedByIdentity(taskResult, cx.identityId);
+          const ownership = ensureAgentRunOwnedByIdentity(taskResult, taskCreateIdentityId);
           if (!ownership.ok) {
             return ownership;
           }
           await recordAgentRuntimeExecution({
             operation: 'start',
-            identityId: cx.identityId,
+            identityId: taskCreateIdentityId,
             requestId,
             startedAt,
             request: requestWithKnowledge.data,
@@ -1202,7 +1212,7 @@ export function createAgentRuntimeService(
         } catch (err) {
           await recordAgentRuntimeExecution({
             operation: 'start',
-            identityId: cx.identityId,
+            identityId: taskCreateIdentityId,
             requestId,
             startedAt,
             request: requestWithKnowledge.data,
@@ -1219,11 +1229,12 @@ export function createAgentRuntimeService(
             ) {
               return error('VALIDATION_ERROR', err.message);
             }
-            // Residual 479/483/485: builder title/conversation/thread fail-closed maps to validation.
+            // Residual 479/483/485/493: builder title/conversation/thread/identity fail-closed maps to validation.
             if (
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE) ||
               err.message.includes(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE) ||
-              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE)
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE)
             ) {
               return error('VALIDATION_ERROR', err.message);
             }
