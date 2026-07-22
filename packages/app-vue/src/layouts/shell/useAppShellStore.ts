@@ -232,7 +232,7 @@ export const useAppShellStore = defineStore('app-shell', {
       const next = this.tabs.filter(
         (tab) =>
           isBusinessModule(tab.module) &&
-          // retired existing-note editor routes (/note/:id) no longer exist
+          // Residual 539: retired existing-note editor routes (/note/:id) no longer exist
           !(tab.route === '/note' || tab.route.startsWith('/note/') || tab.route.startsWith('/note?')),
       );
       if (next.length === this.tabs.length) return;

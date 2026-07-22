@@ -3,12 +3,14 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Portable editor backup boundary surface (stage-6 residual 193/303):
+ * Portable editor backup boundary surface (stage-6 residual 193/303/539):
  * editor_* tables + data-portability import/export remain for business backup
  * re-import only. The runtime `@dailyuse/editor` package stays deleted; no host
  * remounts Editor API/Electron as a first-party editing surface.
  * Residual 303: lock Web-only server-held disclosure vs Desktop IPC export/import
  * split (no disclosure IPC channel).
+ * Residual 539: PowerSync editor_* + knowledge knowledge-only routes + Vue /note
+ * retirement stay dual-track closed (backup continuity only, not product editor).
  */
 describe('portable editor backup boundary surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../');
@@ -81,6 +83,22 @@ describe('portable editor backup boundary surface', () => {
   );
   const repositoryProductDoc = readFileSync(
     resolve(repoRoot, 'docs/product/modules/repository.md'),
+    'utf8',
+  );
+  const powersyncTableMapping = readFileSync(
+    resolve(repoRoot, 'apps/api/src/modules/powersync/table-mapping.ts'),
+    'utf8',
+  );
+  const desktopPowersync = readFileSync(
+    resolve(repoRoot, 'apps/desktop/src/main/database/powersync.ts'),
+    'utf8',
+  );
+  const repositoryRoutesIndex = readFileSync(
+    resolve(repoRoot, 'packages/repository/src/api/routes/index.ts'),
+    'utf8',
+  );
+  const appShellStore = readFileSync(
+    resolve(repoRoot, 'packages/app-vue/src/layouts/shell/useAppShellStore.ts'),
     'utf8',
   );
 
@@ -179,6 +197,40 @@ describe('portable editor backup boundary surface', () => {
     expect(repositoryProductDoc).toContain('memoflow.user-data-export');
     expect(repositoryProductDoc).toContain('memoflow.server-held-data-disclosure');
     expect(repositoryProductDoc).toContain('没有 import route');
+  });
+
+
+  it('PowerSync editor_* remains backup continuity only (residual 539)', () => {
+    expect(powersyncTableMapping).toContain('Residual 539');
+    expect(powersyncTableMapping).toContain("'editor_workspaces'");
+    expect(powersyncTableMapping).toContain("'editor_workspace_sessions'");
+    expect(powersyncTableMapping).toContain('portable backup');
+    expect(powersyncTableMapping).toContain('@dailyuse/editor');
+    expect(desktopPowersync).toContain('Residual 539');
+    expect(desktopPowersync).toContain("'editor_workspaces'");
+    expect(desktopPowersync).toContain('portable backup continuity');
+    // Still no first-party editor package / host remount.
+    expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
+    expect(apiMain).not.toContain('@dailyuse/editor');
+    expect(desktopMain).not.toContain('@dailyuse/editor');
+  });
+
+  it('repository API mounts knowledge-only routes without Folder/Resource CRUD (residual 539)', () => {
+    expect(repositoryRoutesIndex).toContain('Residual 539');
+    expect(repositoryRoutesIndex).toContain('registerKnowledgeRepositoryConnectionRoutes');
+    expect(repositoryRoutesIndex).toContain('Legacy database Repository/Folder/Resource CRUD builders are gone');
+    expect(repositoryRoutesIndex).not.toMatch(/registerFolderRoutes|registerResourceRoutes|FolderResourceController/);
+    expect(repositoryRoutesIndex).not.toContain('registerFolder');
+    expect(repositoryRoutesIndex).not.toContain('registerResource');
+    expect(repositoryRoutesIndex).not.toContain('createEditorApiModule');
+  });
+
+  it('Vue shell strips retired /note editor routes from persisted tabs (residual 539)', () => {
+    expect(appShellStore).toContain('Residual 539');
+    expect(appShellStore).toContain("tab.route === '/note'");
+    expect(appShellStore).toContain("tab.route.startsWith('/note/')");
+    expect(appShellStore).toContain("tab.route.startsWith('/note?')");
+    expect(appShellStore).toContain('sanitizeLegacyTabs');
   });
 
 });

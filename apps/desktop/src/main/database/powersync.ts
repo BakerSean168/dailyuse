@@ -48,6 +48,8 @@ const NON_SYNCABLE_LOCAL_TABLES = [
 const PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES = [
   'user_settings',
   'repositories',
+  // Residual 539: editor_* bootstrap tables are portable backup continuity only —
+  // Desktop never remounts @dailyuse/editor as a first-party editing surface.
   'editor_workspaces',
   'editor_workspace_sessions',
   'editor_workspace_session_groups',
