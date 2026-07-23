@@ -45,12 +45,15 @@ import {
 
 // ===== Extended Types =====
 // Reuse infrastructure AutoLoginResult; lifecycle adds hasValidSession for initialize/bootstrap.
-// Residual 883: intentional extension — required hasValidSession on lifecycle restore path.
+// Residual 883: intentional layered extension keep-boundary
+//   (contracts SessionRestoreResult → infrastructure SessionRestoreResult → lifecycle).
+// Residual 935: lifecycle name dual retired — LifecycleSessionRestoreResult sole lifecycle name
+//   (≠ contracts/infrastructure SessionRestoreResult; required hasValidSession keep-boundary).
 
 // Residual 887: AutoLoginResult re-export only (sole extension body in session-types).
 export type { AutoLoginResult } from '../infrastructure/session-types';
 
-export interface SessionRestoreResult extends InfrastructureSessionRestoreResult {
+export interface LifecycleSessionRestoreResult extends InfrastructureSessionRestoreResult {
   hasValidSession: boolean;
 }
 
@@ -72,7 +75,7 @@ export class DesktopAuthLifecycleCoordinator {
     private isInitializedRef: { value: boolean },
   ) {}
 
-  async initialize(): Promise<SessionRestoreResult> {
+  async initialize(): Promise<LifecycleSessionRestoreResult> {
     if (this.isInitializedRef.value) {
       this.logger.warn('AuthDesktopApplicationService already initialized');
       return {

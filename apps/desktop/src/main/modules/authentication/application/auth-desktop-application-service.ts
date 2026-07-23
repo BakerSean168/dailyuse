@@ -56,7 +56,7 @@ import { DesktopCredentialAuthCoordinator, type AuthState, type EmailRegisterCre
 import {
   DesktopAuthLifecycleCoordinator,
   type AutoLoginResult,
-  type SessionRestoreResult,
+  type LifecycleSessionRestoreResult,
 } from './desktop-auth-lifecycle-coordinator';
 import { DesktopAuthSecurityAdminService } from './desktop-auth-security-admin-service';
 import { safeTransition } from './auth-coordinator-helpers';
@@ -242,7 +242,7 @@ export class AuthDesktopApplicationService {
   /**
    * 初始化认证服务
    */
-  async initialize(): Promise<SessionRestoreResult> {
+  async initialize(): Promise<LifecycleSessionRestoreResult> {
     return this.requireLifecycle().initialize();
   }
 

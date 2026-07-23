@@ -10,6 +10,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 895 (soft): refresh-result layered dual keep-boundary
  *   (application/refresh-result-layered-keep-boundary.surface.spec.ts).
  * Not an exact dual to collapse; base + extension stay separate interface bodies.
+ * Residual 935 (soft): LifecycleSessionRestoreResult name dual retired
+ *   (session-restore-result-extension-keep-boundary.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('auto-login-result extension keep-boundary (residual 887)', () => {

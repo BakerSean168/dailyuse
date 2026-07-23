@@ -21,7 +21,7 @@ describe('auth-desktop-application-service export single-track surface', () => {
     expect(source).toContain("from './desktop-auth-lifecycle-coordinator'");
     expect(source).not.toContain('Re-export lifecycle types');
     expect(source).not.toContain(
-      "export type { AutoLoginResult, SessionRestoreResult } from './desktop-auth-lifecycle-coordinator'",
+      "export type { AutoLoginResult, LifecycleSessionRestoreResult } from './desktop-auth-lifecycle-coordinator'",
     );
   });
 

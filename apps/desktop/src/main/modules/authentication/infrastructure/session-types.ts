@@ -19,6 +19,7 @@ import { AuthMode } from '@dailyuse/contracts/authentication';
 
 /** Extended session restore result (includes domain objects).
  * Residual 883: intentional extension of contracts SessionRestoreResult (+ domain session).
+ * Residual 935 (soft): lifecycle uses LifecycleSessionRestoreResult (required hasValidSession), not this name.
  */
 export interface SessionRestoreResult extends ContractSessionRestoreResult {
   session?: AuthSession;
