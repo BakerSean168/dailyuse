@@ -6,7 +6,7 @@ import { readNestedNumber } from './read-nested-number';
 /**
  * Residual 1009: readNestedNumber dual retired (API + Desktop automation executors).
  * Sole body in @dailyuse/utils/shared/read-nested-number.
- * Soft residual 1008: tip focused suite numbers track Residual 1008 evidence tip (294/1279).
+ * Soft residual 1010: tip focused suite numbers track Residual 1010 evidence tip (295/1283).
  * Soft residual: API backend-automation still has local previewText (default maxLength 200)
  *   vs packages/ai shared previewText sole (residual 995, default 240) — keep-boundary
  *   until apps import a public export path without package boundary churn.
