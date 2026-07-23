@@ -70,6 +70,10 @@ export class ResultErrorException extends Error {
   }
 }
 
+/**
+ * Residual 1162 keep-boundary: contracts Result error shaping — non-null object (arrays allowed).
+ * Soft residual 1162: app-vue AI plain-object isRecord (!Array) and desktop envelope isRecord remain separate soles (no force-merge).
+ */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
