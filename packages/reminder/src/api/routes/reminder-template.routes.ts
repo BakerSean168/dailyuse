@@ -24,8 +24,9 @@ import {
   CreateReminderTemplateSchema,
   UpdateReminderTemplateSchema,
   GetUpcomingRemindersSchema,
+  GetUpcomingRemindersResSchema,
   GetReminderTodayScheduleSchema,
-  ReminderTodayScheduleItemSchema,
+  GetReminderTodayScheduleResSchema,
   ReminderTemplateResponseSchema,
   ReminderTemplateListResponseSchema,
   ReminderHistoryResponseSchema,
@@ -126,13 +127,7 @@ export function registerReminderTemplateRoutes(
         query: GetUpcomingRemindersSchema,
       },
       responses: {
-        200: successResponse(
-          z.object({
-            data: z.array(ReminderTodayScheduleItemSchema),
-            total: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(GetUpcomingRemindersResSchema, '获取成功'),
       },
     },
     [auth],
@@ -158,13 +153,7 @@ export function registerReminderTemplateRoutes(
         query: GetReminderTodayScheduleSchema,
       },
       responses: {
-        200: successResponse(
-          z.object({
-            data: z.array(ReminderTodayScheduleItemSchema),
-            total: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(GetReminderTodayScheduleResSchema, '获取成功'),
       },
     },
     [auth],

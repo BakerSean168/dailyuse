@@ -110,11 +110,6 @@ export const GetUpcomingRemindersSchema = z.object({
 
 export type GetUpcomingRemindersReq = z.infer<typeof GetUpcomingRemindersSchema>;
 
-export interface GetUpcomingRemindersRes {
-  data: ReminderTodayScheduleItem[];
-  total: number;
-}
-
 export const ReminderTodayScheduleItemSchema = z.object({
   templateId: brandedId<ReminderTemplateId>(),
   title: z.string(),
@@ -133,6 +128,15 @@ export const ReminderTodayScheduleItemSchema = z.object({
 
 export type ReminderTodayScheduleItem = z.infer<typeof ReminderTodayScheduleItemSchema>;
 
+// Residual 775: upcoming/today schedule list Res dual retired — sole list shape + z.infer.
+export const ReminderScheduleListResSchema = z.object({
+  data: z.array(ReminderTodayScheduleItemSchema),
+  total: z.number(),
+});
+
+export const GetUpcomingRemindersResSchema = ReminderScheduleListResSchema;
+export type GetUpcomingRemindersRes = z.infer<typeof GetUpcomingRemindersResSchema>;
+
 export const GetReminderTodayScheduleSchema = z.object({
   limit: z.number().int().min(1).max(200).optional(),
   includeExpired: z.boolean().optional(),
@@ -140,10 +144,9 @@ export const GetReminderTodayScheduleSchema = z.object({
 
 export type GetReminderTodayScheduleReq = z.infer<typeof GetReminderTodayScheduleSchema>;
 
-export interface GetReminderTodayScheduleRes {
-  data: ReminderTodayScheduleItem[];
-  total: number;
-}
+// Residual 775: today schedule Res reuses shared list schema (no dual body).
+export const GetReminderTodayScheduleResSchema = ReminderScheduleListResSchema;
+export type GetReminderTodayScheduleRes = z.infer<typeof GetReminderTodayScheduleResSchema>;
 
 // Residual 693: list response dual body retired — OpenAPI + transport use ReminderTemplateListResponseSchema.
 export type ReminderTemplateListRes = z.infer<typeof ReminderTemplateListResponseSchema>;
