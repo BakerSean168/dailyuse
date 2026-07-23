@@ -157,6 +157,7 @@ export const ReminderResponseItemSchema = z.object({
 
 // ============ Batch Result Schema ============
 
+// Residual 781: sole batch result transport shape (BatchGroupTemplatesRes is z.infer alias).
 export const ReminderBatchResultSchema = z.object({
   successCount: z.number(),
   failedCount: z.number(),
