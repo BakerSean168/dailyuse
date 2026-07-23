@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 879: intentional Client≠Server DTO keep-boundary.
  * Shape-mismatch duals must remain separate interface bodies (not type aliases).
+ * Residual 881 (soft): DeviceInfoClientDTO ≠ full DeviceInfo keep-boundary
+ *   (protocol/device-info-client-keep-boundary.surface.spec.ts).
  * Does not flip §13.2 checkboxes; OAuth / multi-engine Agent / full PR gate remain open.
  */
 describe('client-server shape-mismatch dual keep-boundary (residual 879)', () => {

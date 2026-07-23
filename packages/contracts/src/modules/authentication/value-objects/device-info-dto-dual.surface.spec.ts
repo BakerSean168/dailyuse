@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 847: DeviceInfoDTO dual body retired.
  * Sole DeviceInfo interface + `export type DeviceInfoDTO = DeviceInfo`.
  * Slim OpenAPI DeviceInfoSchema (deviceId+deviceType only) stays separate in api/response-schemas.
+ * Residual 881 (soft): DeviceInfoClientDTO keep-boundary
+ *   (protocol/device-info-client-keep-boundary.surface.spec.ts).
  */
 describe('device info dto dual retired (residual 847)', () => {
   const voDir = __dirname;

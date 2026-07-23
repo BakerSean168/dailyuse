@@ -5,6 +5,7 @@
  * Residual 847: DeviceInfoDTO dual retired — sole DeviceInfo interface + type alias.
  * (OpenAPI AuthSession uses a slim DeviceInfoSchema subset in api/response-schemas.ts —
  * that is intentionally not the full VO shape.)
+ * Residual 881: DeviceInfoClientDTO (desktop protocol) remains separate slim client dual.
  */
 
 import type { DeviceType } from './device-type';

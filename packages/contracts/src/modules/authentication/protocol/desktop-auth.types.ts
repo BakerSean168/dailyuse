@@ -249,6 +249,7 @@ export interface SessionInfo {
 
 /**
  * Device info for the renderer.
+ * Residual 881: intentional slim client dual — not full DeviceInfo VO (no browser/ip/location required fields).
  */
 export interface DeviceInfoClientDTO {
   deviceId: string;
