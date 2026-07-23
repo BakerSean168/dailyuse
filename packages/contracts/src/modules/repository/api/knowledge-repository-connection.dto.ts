@@ -40,22 +40,6 @@ export type StartKnowledgeRepositoryInstallationReq = z.infer<
   typeof StartKnowledgeRepositoryInstallationSchema
 >;
 
-export interface GitHubInstallationRepositoryDTO {
-  id: string;
-  nodeId: string;
-  fullName: string;
-  ownerId: string;
-  private: boolean;
-  archived: boolean;
-  disabled: boolean;
-  defaultBranch: string;
-  permissions: {
-    admin: boolean;
-    push: boolean;
-    pull: boolean;
-  };
-}
-
 export const GitHubInstallationRepositorySchema = z.object({
   id: z.string().min(1),
   nodeId: z.string(),
@@ -71,6 +55,9 @@ export const GitHubInstallationRepositorySchema = z.object({
     pull: z.boolean(),
   }),
 });
+
+// Residual 701: installation repository dual body retired — OpenAPI + transport use Schema only.
+export type GitHubInstallationRepositoryDTO = z.infer<typeof GitHubInstallationRepositorySchema>;
 
 export const StartKnowledgeRepositoryInstallationResponseSchema = z.object({
   installationUrl: z.string().url(),
