@@ -7,7 +7,9 @@ import { parseBoolean, parseNumber, parseString } from './parse-query-value';
  * Residual 989: parseString + parseNumber dual retired (notification + reminder API routes).
  * Residual 1021: parseBoolean dual retired for notification query filters.
  * Sole body in @dailyuse/utils/shared/parse-query-value.
- * Soft residual 1022: tip focused suite numbers track Residual 1022 evidence tip (301/1307).
+ * Soft residual 1022: tip focused suite numbers track Residual 1022 evidence tip (301/1307)
+ *   until residual 1024 suite re-run.
+ * Soft residual 1023: governance parseString/parseNumber dual retired (re-export this sole).
  * Soft residual: schedule route parsers keep-boundary (different empty/boolean handling).
  * Soft residual: goal parseBoolean sole (residual 985) is true/false-only keep-boundary vs this dual.
  * Does not flip §13.2 checkboxes.

@@ -17,34 +17,9 @@ export type GovernanceOpenApiRegistry = OpenApiRegistryLike | null | undefined;
 // (RuleClientDTOSchema / ListRulesResSchema / SearchRulesResSchema / GetRuleRevisionsResSchema).
 // No local *ResponseSchema name dual aliases.
 
-/**
- * Parses an unknown query value into a single string.
- * 将未知 query 值解析为单个字符串。
- * @param value - Raw query value from the HTTP seam.
- * @returns Normalized string value, or undefined when absent.
- */
-export function parseString(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? String(value[0]) : undefined;
-  }
-  if (value === undefined || value === null) {
-    return undefined;
-  }
-  return String(value);
-}
-
-/**
- * Parses an unknown query value into a finite number.
- * 将未知 query 值解析为有限数字。
- * @param value - Raw query value from the HTTP seam.
- * @returns Parsed finite number, or undefined when invalid.
- */
-export function parseNumber(value: unknown): number | undefined {
-  const raw = parseString(value);
-  if (!raw) return undefined;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
+// Residual 1023: parseString/parseNumber dual retired onto @dailyuse/utils/shared (residual 989 sole).
+// Re-export so governance route imports from this shared module stay stable.
+export { parseNumber, parseString } from '@dailyuse/utils/shared';
 
 /**
  * Parses an unknown query value into a normalized string array.
