@@ -6,6 +6,7 @@ import { parseNumber, parseString } from './parse-query-value';
 /**
  * Residual 1023: governance parseString/parseNumber dual retired onto residual 989 sole.
  * governance-route-shared re-exports utils sole; parseStringArray remains package-local.
+ * Soft residual 1069: governance parseStringArray keep-boundary surface (no force-merge).
  * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
  * Soft residual: schedule route parsers remain keep-boundary (empty-string shapes).
  * Soft residual 1021: notification parseBoolean sole family.

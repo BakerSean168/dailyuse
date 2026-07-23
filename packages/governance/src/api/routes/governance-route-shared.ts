@@ -24,6 +24,10 @@ export { parseNumber, parseString } from '@dailyuse/utils/shared';
 /**
  * Parses an unknown query value into a normalized string array.
  * 将未知 query 值解析为规范化字符串数组。
+ * Residual 1069 keep-boundary: package-local query array parser.
+ * Differs from goal.routes parseStringArray (empty → undefined here; array items
+ * trimmed) and from utils persistence parseStringArray (JSON string domain).
+ * Not merged into residual 989 query sole (no parseStringArray there).
  * @param value - Raw query value from the HTTP seam.
  * @returns Trimmed string array, or undefined when no values remain.
  */
