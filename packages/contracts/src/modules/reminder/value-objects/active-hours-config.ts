@@ -2,6 +2,8 @@
  * Active Hours Config Value Object
  */
 
+import { z } from 'zod';
+
 // ============ Interface Definitions ============
 
 /** Active hours config interface. */
@@ -24,11 +26,12 @@ export interface IActiveHoursConfig {
 
 // ============ DTO Definitions ============
 
-/**
- * Active Hours Config DTO
- */
-export interface ActiveHoursConfigDTO {
-  enabled: boolean;
-  startHour: number;
-  endHour: number;
-}
+// Residual 733: active hours dual body retired — OpenAPI + transport use
+// ActiveHoursConfigSchema (semantic ActiveHoursConfigDTO is a z.infer alias).
+export const ActiveHoursConfigSchema = z.object({
+  enabled: z.boolean(),
+  startHour: z.number(),
+  endHour: z.number(),
+});
+
+export type ActiveHoursConfigDTO = z.infer<typeof ActiveHoursConfigSchema>;

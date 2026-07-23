@@ -23,6 +23,12 @@ import { NotificationChannel } from '../value-objects/notification-channel';
 import { NotificationAction } from '../value-objects/notification-action';
 import { ControlMode } from '../value-objects/control-mode';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
+import { ActiveHoursConfigSchema } from '../value-objects/active-hours-config';
+import { GroupStatsSchema } from '../value-objects/group-stats';
+
+// Residual 733: ActiveHoursConfigSchema / GroupStatsSchema owned by value-objects
+// (re-exported for OpenAPI nested response consumers).
+export { ActiveHoursConfigSchema, GroupStatsSchema };
 
 // ============ 值对象 Zod Schema ============
 
@@ -75,19 +81,6 @@ const ActiveTimeConfigSchema = z.object({
   endDate: z.number().nullable(),
 });
 
-const ActiveHoursConfigSchema = z.object({
-  enabled: z.boolean(),
-  startHour: z.number(),
-  endHour: z.number(),
-});
-
-const GroupStatsSchema = z.object({
-  totalTemplates: z.number(),
-  activeTemplates: z.number(),
-  pausedTemplates: z.number(),
-  selfEnabledTemplates: z.number(),
-  selfPausedTemplates: z.number(),
-});
 
 // ============ ReminderTemplate Response Schema ============
 

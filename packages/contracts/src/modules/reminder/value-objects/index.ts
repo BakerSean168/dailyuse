@@ -32,11 +32,13 @@ export type {
   ActiveTimeConfigDTO,
 } from './active-time-config';
 
+export { ActiveHoursConfigSchema } from './active-hours-config';
 export type {
   IActiveHoursConfig,
   ActiveHoursConfigDTO,
 } from './active-hours-config';
 
+export { GroupStatsSchema } from './group-stats';
 export type {
   IGroupStats,
   GroupStatsDTO,
