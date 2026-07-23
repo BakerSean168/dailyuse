@@ -3,9 +3,10 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import type { IdentityId } from '@dailyuse/contracts/authentication';
-import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { ILogger } from '@dailyuse/utils/logger';
+// Residual 937: toIdentityId dual retired — session-types sole helper.
+import { toIdentityId } from './session-types';
 
 export interface RememberedAccountRecord {
   identityId: IdentityId;
@@ -52,10 +53,6 @@ interface RecordLoginInput {
 }
 
 const DEFAULT_FILE: RememberedAccountsFile = { accounts: [] };
-
-function toIdentityId(value: string | IdentityId): IdentityId {
-  return IdentityIdValue.of(String(value));
-}
 
 export class RememberedAccountsService {
   private readonly logger: ILogger;

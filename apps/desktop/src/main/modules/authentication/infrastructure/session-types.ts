@@ -44,6 +44,8 @@ export interface SessionStatus extends SessionStatusDTO {
 // Residual 925: OfflineLoginResponse name dual fully retired — consumers import contracts sole body.
 
 // ============ Utility Functions ============
+// Residual 937: sole toIdentityId / toDeviceInfoDTO helper bodies
+// (guest/offline/remembered local duals retired).
 
 export function toIdentityId(value: string | IdentityId): IdentityId {
   return IdentityIdValue.of(String(value));

@@ -12,11 +12,8 @@ import type { IdentityId } from '@dailyuse/contracts/authentication';
 import type { IAuthIdentityRepository } from '@dailyuse/authentication/electron';
 import type { IPasswordHasher } from '@dailyuse/authentication/electron';
 import type { ILogger } from '@dailyuse/utils/logger';
-import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
-
-function toIdentityId(value: string | IdentityId): IdentityId {
-  return IdentityIdValue.of(String(value));
-}
+// Residual 937: toIdentityId dual retired — session-types sole helper.
+import { toIdentityId } from './session-types';
 
 export interface OfflineVerificationResult {
   ok: boolean;

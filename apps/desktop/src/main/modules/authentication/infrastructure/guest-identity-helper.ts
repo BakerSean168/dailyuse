@@ -13,39 +13,15 @@ import type {
   IdentityId,
   AuthSessionId,
   DeviceInfoClientDTO,
-  DeviceInfoDTO,
   TokenStorageData,
 } from '@dailyuse/contracts/authentication';
-import { DeviceType } from '@dailyuse/contracts/authentication';
 import type { IAuthSessionRepository } from '@dailyuse/authentication/electron';
 import type { ILogger } from '@dailyuse/utils/logger';
-import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
 import { generateUUID } from '@dailyuse/utils/shared';
 import type { TokenManager } from './token-manager';
-import { GUEST_ACCESS_TOKEN } from './session-types';
+// Residual 937: toIdentityId / toDeviceInfoDTO duals retired — session-types sole helpers.
+import { GUEST_ACCESS_TOKEN, toDeviceInfoDTO, toIdentityId } from './session-types';
 
-function toIdentityId(value: string | IdentityId): IdentityId {
-  return IdentityIdValue.of(String(value));
-}
-
-function toDeviceInfoDTO(client: DeviceInfoClientDTO): DeviceInfoDTO {
-  const now = Date.now();
-  return {
-    deviceId: client.deviceId,
-    deviceFingerprint: client.deviceFingerprint ?? '',
-    deviceType: (client.deviceType as DeviceType) || 'Browser',
-    deviceName: client.deviceName ?? null,
-    os: client.os ?? null,
-    osVersion: client.osVersion ?? null,
-    browser: null,
-    appVersion: client.appVersion ?? null,
-    ipAddress: null,
-    userAgent: null,
-    location: null,
-    firstSeenAt: client.firstSeenAt ?? now,
-    lastSeenAt: client.lastSeenAt ?? now,
-  };
-}
 
 const GUEST_ID_PREFIX = 'IdentityId';
 export interface GuestIdentityResult {
