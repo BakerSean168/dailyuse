@@ -15,26 +15,14 @@ import type {
 import type { IAuthIdentityRepository, IVerificationChallengeStore } from '../../../domain';
 // Residual 959: normalizeEmail dual retired — sole server shared normalize-email helper.
 import { normalizeEmail } from '../../../shared/normalize-email';
+// Residual 961: toChallengePurpose dual retired — sole server shared to-challenge-purpose helper.
+import { toChallengePurpose } from '../../../shared/to-challenge-purpose';
 import {
   AuthDomainCode,
   AuthIdentityStatus,
-  VerificationChallengePurpose,
 } from '../../../domain';
 
 
-function toChallengePurpose(
-  purpose: VerifyEmailCodeReq['purpose'],
-): (typeof VerificationChallengePurpose)[keyof typeof VerificationChallengePurpose] {
-  switch (purpose) {
-    case 'EmailBind':
-      return VerificationChallengePurpose.EmailBind;
-    case 'EmailChange':
-      return VerificationChallengePurpose.EmailChange;
-    case 'EmailVerify':
-    default:
-      return VerificationChallengePurpose.EmailVerify;
-  }
-}
 
 export class VerifyEmailCodeUseCase {
   constructor(
