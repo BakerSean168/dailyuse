@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 270: window.electronAPI is typed as ElectronBridge (no local ElectronAPI dual).
+ * Residual 911 (soft): CustomNotificationView local ElectronBridge dual retired
+ *   (custom-notification-electron-bridge-dual.surface.spec.ts).
  */
 describe('desktop window electronAPI ElectronBridge surface', () => {
   const env = readFileSync(resolve(__dirname, 'env.d.ts'), 'utf8');
