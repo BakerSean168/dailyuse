@@ -60,6 +60,7 @@ export const DESKTOP_AUTH_API_KEY: InjectionKey<DesktopAuthApi> =
   Symbol('DesktopAuthApi');
 
 /** Desktop preload bridge — canonical type from @dailyuse/ipc-client. */
+// Residual 929: ElectronBridge keep-boundary for window controls (invoke+on+off).
 export type { ElectronBridge };
 
 export const DESKTOP_BRIDGE_KEY: InjectionKey<ElectronBridge> = Symbol('DesktopBridge');

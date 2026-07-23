@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
  * useGuestMode / useThemeSync / AppShell use getDesktopAuthApi or hasDesktopAuthApi
  * (no inline Window & electronAPI / DesktopBootstrapApi cast duals).
  * Keep-boundary: useDesktopWindowControls still needs ElectronBridge (invoke+on+off).
+ * Residual 929 (soft): ElectronBridge window-controls keep-boundary locked
+ *   (../composables/use-desktop-window-controls.surface.spec.ts).
  * Residual 909 (soft): Window typing + detect duals retired
  *   (electron-window-desktop-api-dual.surface.spec.ts).
  * Residual 907 (soft): themeSync DesktopAuthApi dual retired
@@ -67,7 +69,9 @@ describe('desktop host-access dual retired (residual 913)', () => {
     expect(recovery).toContain('export function getDesktopAuthApi');
     expect(recovery).toContain('export function hasDesktopAuthApi');
     expect(recovery).toMatch(/export type DesktopAuthApi = \{/);
+    expect(windowControls).toContain('Residual 929');
     expect(windowControls).toContain('ElectronBridge');
     expect(windowControls).toContain('DESKTOP_BRIDGE_KEY');
+    expect(windowControls).toContain('function isElectronBridge');
   });
 });
