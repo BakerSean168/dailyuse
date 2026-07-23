@@ -241,11 +241,16 @@ export interface ExportGoalsQuery extends ExportGoalFilters {
   identityId: IdentityId;
 }
 
-export interface ExportGoalsRes {
-  data: string | Uint8Array;
-  filename: string;
-  mimeType: string;
-}
+// Residual 791: export goals Res dual retired — sole ResSchema + z.infer.
+export const ExportGoalsResSchema = z.object({
+  data: z.union([
+    z.string(),
+    z.custom<Uint8Array>((val) => val instanceof Uint8Array),
+  ]),
+  filename: z.string(),
+  mimeType: z.string(),
+});
+export type ExportGoalsRes = z.infer<typeof ExportGoalsResSchema>;
 
 /**
  * Public transport DTO for import goals - excludes identityId (current-user operation)
@@ -268,11 +273,17 @@ export interface ImportGoalsCommand extends ImportGoalPayload {
   identityId: IdentityId;
 }
 
-export interface ImportGoalsRes {
-  importedCount: number;
-  skippedCount: number;
-  errors?: Array<{
-    line: number;
-    error: string;
-  }>;
-}
+// Residual 791: import goals Res dual retired — sole ResSchema + z.infer.
+export const ImportGoalsResSchema = z.object({
+  importedCount: z.number(),
+  skippedCount: z.number(),
+  errors: z
+    .array(
+      z.object({
+        line: z.number(),
+        error: z.string(),
+      }),
+    )
+    .optional(),
+});
+export type ImportGoalsRes = z.infer<typeof ImportGoalsResSchema>;
