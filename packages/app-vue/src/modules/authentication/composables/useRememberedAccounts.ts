@@ -13,6 +13,8 @@ import {
 // Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
 // Residual 1045: completeAuthSuccess dual retired onto completeAuthSuccess sole.
 // Residual 1049: auth result/catch failure duals retired onto reportAuthOperationFailure sole.
+// Residual 1079 keep-boundary: removeRememberedAccount is toast-only (no store.setError;
+// not reportAuthOperationFailure dual body — intentional soft-delete UX).
 
 export function useRememberedAccounts(ctx: AuthContext) {
   const { store, service, t, lastResultError, redirectWithReload, handleAuthSuccess, getLocalizedAuthError } = ctx;
@@ -62,6 +64,7 @@ export function useRememberedAccounts(ctx: AuthContext) {
   }
 
   async function removeRememberedAccount(identityId: string): Promise<boolean> {
+    // Residual 1079 keep-boundary: toast-only failure path (no store.setError dual).
     const result = await service.removeRememberedAccount(identityId);
     if (result.ok) {
       lastResultError.value = null;

@@ -3,6 +3,7 @@
  * Exact duals retired from useLogin / useRegister / useRememberedAccounts / useGuestMode
  * enterGuestMode result+catch paths.
  * Soft residual 1077: autoLoginDesktop AutoLoginResult keep-boundary (no force-merge).
+ * Soft residual 1079: removeRememberedAccount toast-only keep-boundary (no force-merge).
  */
 import { toast } from 'vue-sonner';
 import type { ResultError } from '@dailyuse/contracts/result';

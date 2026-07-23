@@ -19,6 +19,7 @@ import {
  * Residual 1049/1051: auth result/catch failure duals retired onto reportAuthOperationFailure sole.
  * Callers: login / register / remembered-desktop / enterGuestMode.
  * Soft residual: removeRememberedAccount keeps local toast path (no store.setError dual body).
+ * Soft residual 1079: removeRememberedAccount toast-only keep-boundary surface (no force-merge).
  * Soft residual: autoLoginDesktop returns AutoLoginResult (shape keep-boundary, no toast dual).
  * Soft residual 1077: autoLoginDesktop AutoLoginResult keep-boundary surface (no force-merge).
  * Does not flip §13.2 checkboxes.
