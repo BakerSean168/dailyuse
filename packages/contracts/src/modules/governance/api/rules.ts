@@ -281,12 +281,8 @@ export type ListRulesQuery = z.infer<typeof ListRulesQuerySchema>;
  */
 export type ListRulesQueryInput = z.input<typeof ListRulesQuerySchema>;
 
-export type ListRulesRes = {
-  items: RuleClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-};
+// Residual 783: ListRulesRes dual body retired — sole ListRulesResSchema + z.infer
+// (owned by response-schemas; semantic type is z.infer alias there).
 
 // ============================================================================
 // SEARCH Operation - 搜索规则
@@ -320,11 +316,5 @@ export type SearchRulesQueryInput = z.input<typeof SearchRulesQuerySchema>;
 
 export type SearchRulesQuery = z.infer<typeof SearchRulesQuerySchema>;
 
-export type SearchRulesRes = {
-  items: RuleClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-  /** 搜索用时（毫秒） */
-  searchTime: number;
-};
+// Residual 783: SearchRulesRes dual body retired — sole SearchRulesResSchema + z.infer
+// (owned by response-schemas; semantic type is z.infer alias there).

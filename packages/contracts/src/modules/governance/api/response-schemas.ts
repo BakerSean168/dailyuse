@@ -13,8 +13,6 @@ import { CodeSnippetDTOSchema } from '../value-objects/code-snippet';
 import { RuleTagDTOSchema } from '../value-objects/rule-tag';
 import type { RuleClientDTO } from '../aggregates/rule-client';
 import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
-import type { ListRulesRes, SearchRulesRes } from './rules';
-import type { GetRuleRevisionsRes } from './rule-revisions';
 
 // Residual 731: CodeSnippetDTOSchema / RuleTagDTOSchema owned by value-objects
 // (re-exported for OpenAPI nested response consumers).
@@ -50,25 +48,29 @@ export const RuleRevisionClientDTOSchema: z.ZodType<RuleRevisionClientDTO> = z.o
   createdAt: z.number(),
 });
 
-export const ListRulesResSchema: z.ZodType<ListRulesRes> = z.object({
+// Residual 783: list/search/revisions Res duals retired — sole ResSchema + z.infer.
+export const ListRulesResSchema = z.object({
   items: z.array(RuleClientDTOSchema),
   total: z.number(),
   page: z.number(),
   pageSize: z.number(),
 });
+export type ListRulesRes = z.infer<typeof ListRulesResSchema>;
 
-export const SearchRulesResSchema: z.ZodType<SearchRulesRes> = z.object({
+export const SearchRulesResSchema = z.object({
   items: z.array(RuleClientDTOSchema),
   total: z.number(),
   page: z.number(),
   pageSize: z.number(),
   searchTime: z.number(),
 });
+export type SearchRulesRes = z.infer<typeof SearchRulesResSchema>;
 
-export const GetRuleRevisionsResSchema: z.ZodType<GetRuleRevisionsRes> = z.object({
+export const GetRuleRevisionsResSchema = z.object({
   items: z.array(RuleRevisionClientDTOSchema),
   total: z.number(),
   page: z.number(),
   pageSize: z.number(),
 });
+export type GetRuleRevisionsRes = z.infer<typeof GetRuleRevisionsResSchema>;
 
