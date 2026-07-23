@@ -33,6 +33,10 @@ import type { GoalController } from '../../server/transport/goal.controller';
 import { parseBoolean } from './parse-boolean';
 
 // ============ Helpers ============
+// Residual 1065 soft / Residual 1067 keep-boundary:
+// Local parseNumber + parseStringArray stay package-local. They are not
+// createComposable duals of utils parse-query-value (array-first string /
+// empty-string) nor persistence JSON parseStringArray.
 
 function parseNumber(value: unknown): number | undefined {
   if (value === undefined || value === null) return undefined;
