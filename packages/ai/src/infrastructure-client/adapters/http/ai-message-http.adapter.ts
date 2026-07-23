@@ -1,5 +1,6 @@
 /**
  * Residual 963: findSSEBoundary sole import (packages/ai/src/shared/find-sse-boundary.ts).
+ * Residual 967: isAbortLikeError sole import (packages/ai/src/shared/is-abort-like-error.ts).
  */
 import type { IAIMessageApiClient, IResultHttpClient } from '../types';
 import type { Result, ResultErrorDetail } from '@dailyuse/contracts/result';
@@ -9,6 +10,7 @@ import {
   createResultClientErrorFromResponse,
 } from '../result-client-error';
 import { findSSEBoundary } from '../../../shared/find-sse-boundary';
+import { isAbortLikeError } from '../../../shared/is-abort-like-error';
 
 export class AIMessageHttpAdapter implements IAIMessageApiClient {
   private readonly baseUrl = '/ai/chat/messages';
@@ -175,19 +177,3 @@ async function* parseSSE(
   }
 }
 
-function isAbortLikeError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') {
-    return false;
-  }
-
-  if ('name' in error && error.name === 'AbortError') {
-    return true;
-  }
-
-  if ('message' in error && typeof error.message === 'string') {
-    const message = error.message.toLowerCase();
-    return message.includes('abort') || message.includes('cancel');
-  }
-
-  return false;
-}
