@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 667: bind-to-goal request dual body retired.
  * Live bind-goal OpenAPI/controller parse TaskGoalBindingSchema only.
+ * Residual 739: TaskGoalBindingSchema ownership moved to value-objects;
+ * task-template.dto re-exports the VO-owned schema (no local dual body).
  */
 describe('task bind-to-goal request dual retired (residual 667)', () => {
   const apiDir = __dirname;
@@ -20,7 +22,10 @@ describe('task bind-to-goal request dual retired (residual 667)', () => {
 
   it('does not export a separate bind-to-goal zod dual body', () => {
     expect(dto).toContain('Residual 667');
-    expect(dto).toContain('export const TaskGoalBindingSchema');
+    // Residual 739: schema is re-exported from VO (not a local export const dual).
+    expect(dto).toMatch(
+      /export \{[^}]*TaskGoalBindingSchema[^}]*\}|export const TaskGoalBindingSchema\b/,
+    );
     expect(dto).toContain('export type BindToGoalReq = z.infer<typeof TaskGoalBindingSchema>');
     expect(dto).not.toMatch(/export const BindToGoalSchema\b/);
   });

@@ -4,7 +4,6 @@ import type {
   IdentityId,
   TaskFolderId,
   GoalId,
-  KeyResultId,
   TaskTemplateId,
   TaskDependencyId,
 } from '../../../primitives';
@@ -13,15 +12,21 @@ import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
 import { DayOfWeek } from '../value-objects/day-of-week';
 import { RecurrenceFrequency } from '../value-objects/recurrence-frequency';
-import { ReminderTimeUnit } from '../value-objects/reminder-time-unit';
-import { TaskReminderType } from '../value-objects/task-reminder-type';
-import { TaskGoalBindingTrigger } from '../value-objects/task-goal-binding-trigger';
 import { TaskTimeType } from '../value-objects/task-time-type';
 import { TaskType } from '../value-objects/task-type';
 import type { DependencyType } from '../value-objects/dependency-type';
 import type { RecurrenceRuleDTO } from '../value-objects/recurrence-rule';
-import type { TaskReminderConfigDTO } from '../value-objects/task-reminder-config';
 import type { TaskTimeConfigDTO } from '../value-objects/task-time-config';
+import {
+  TaskReminderConfigSchema,
+} from '../value-objects/task-reminder-config';
+import {
+  TaskGoalBindingSchema,
+} from '../value-objects/task-goal-binding';
+
+// Residual 739: TaskReminderConfigSchema / TaskGoalBindingSchema owned by value-objects
+// (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
+export { TaskReminderConfigSchema, TaskGoalBindingSchema };
 
 const DayOfWeekSchema = z.union([
   z.literal(DayOfWeek.Sunday),
@@ -100,56 +105,6 @@ export const RecurrenceConfigSchema: z.ZodType<RecurrenceRuleDTO> = z
 
 export type RecurrenceConfigReq = z.infer<typeof RecurrenceConfigSchema>;
 
-export const TaskReminderConfigSchema: z.ZodType<TaskReminderConfigDTO> = z
-  .object({
-    enabled: z.boolean(),
-    triggers: z.array(
-      z
-        .object({
-          type: z.enum([TaskReminderType.Absolute, TaskReminderType.Relative]),
-          absoluteTime: z.number().int().nullable(),
-          relativeValue: z.number().int().nullable(),
-          relativeUnit: z
-            .enum([ReminderTimeUnit.Minutes, ReminderTimeUnit.Hours, ReminderTimeUnit.Days])
-            .nullable(),
-        })
-        .superRefine((trigger, ctx) => {
-          if (trigger.type === TaskReminderType.Absolute && trigger.absoluteTime == null) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: ['absoluteTime'],
-              message: '绝对时间提醒必须提供 absoluteTime',
-            });
-          }
-
-          if (trigger.type === TaskReminderType.Relative) {
-            if (trigger.relativeValue == null) {
-              ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                path: ['relativeValue'],
-                message: '相对时间提醒必须提供 relativeValue',
-              });
-            }
-
-            if (trigger.relativeUnit == null) {
-              ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                path: ['relativeUnit'],
-                message: '相对时间提醒必须提供 relativeUnit',
-              });
-            }
-          }
-        }),
-    ),
-  })
-  .openapi({ type: 'object', description: '任务提醒配置' });
-
-export const TaskGoalBindingSchema = z.object({
-  goalId: brandedId<GoalId>(),
-  keyResultId: brandedId<KeyResultId>(),
-  goalRecordValue: z.number().nonnegative(),
-  progressTrigger: z.enum(TaskGoalBindingTrigger).default(TaskGoalBindingTrigger.PerInstance),
-});
 
 // Public transport schema - NO identityId (injected from Context)
 export const CreateTaskTemplateSchema = z.object({
