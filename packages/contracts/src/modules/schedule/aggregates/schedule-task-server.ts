@@ -47,35 +47,4 @@ export interface ScheduleTaskServerDTO {
 
 // ============ 领域事件 ============
 // 事件接口已迁移至 domain/events/ 目录（payload-only 格式）
-// Event interfaces migrated to domain/events/ directory (payload-only format)
-
-/**
- * ScheduleTask 静态工厂方法接口
- * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实现
- */
-export interface ScheduleTaskServerStatic {
-  /**
-   * 创建新的 ScheduleTask 聚合根（静态工厂方法）
-   * @param params 创建参数
-   * @returns 新的 ScheduleTask 实例
-   */
-  create(params: {
-    identityId: IdentityId;
-    name: string;
-    sourceModule: SourceModule;
-    sourceEntityId: string;
-    schedule: ScheduleConfigDTO;
-    description?: string;
-    metadata?: Partial<TaskMetadataDTO>;
-    retryPolicy?: Partial<RetryPolicyDTO>;
-  }): ScheduleTaskServerDTO;
-
-  /**
-   * 从 Server DTO 创建实体（递归创建子实体）
-   */
-
-  /**
-   * 从 Persistence DTO 创建实体
-   * 注意：需要单独加载子实体
-   */
-}
+// Residual 653: ScheduleTaskServerStatic factory dual retired (domain class owns factories).
