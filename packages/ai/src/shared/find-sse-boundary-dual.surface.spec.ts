@@ -8,7 +8,7 @@ import { findSSEBoundary } from './find-sse-boundary';
  * Sole body in find-sse-boundary.ts.
  * Residual 977 soft: adapters no longer import findSSEBoundary directly; sole parseSSE
  * (parse-sse.ts) is the consumer. Adapters keep Residual 963 comment provenance.
- * Soft residual 978: tip focused suite numbers track Residual 978 evidence tip (279/1227).
+ * Soft residual 980: tip focused suite numbers track Residual 980 evidence tip (280/1231).
  * Soft residual 977: parseSSE dual retired (parse-sse-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
