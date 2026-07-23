@@ -55,9 +55,9 @@ export function toRecord(value: unknown): Record<string, unknown> | undefined {
 }
 
 /**
- * Residual 1003: sole export ref resolvers for task/reminder/repository projections.
+ * Residual 1003 / Residual 1017: sole export ref resolvers for task/reminder/repository
+ * and goal/editor projections.
  * entityLabel selects the dual warning / throw message domain word.
- * Soft residual: goal/editor keep local resolveRef (message shapes differ).
  */
 
 export function resolveExportRef(

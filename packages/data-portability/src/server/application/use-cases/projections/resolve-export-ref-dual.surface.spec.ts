@@ -8,8 +8,9 @@ import { RefAllocator } from '../../portable-runtime';
 /**
  * Residual 1003: resolveExportRef dual retired (task/reminder/repository projections).
  * Sole bodies in projection-helpers with entityLabel message domain.
- * Soft residual 1016: tip focused suite numbers track Residual 1016 evidence tip (298/1295).
- * Soft residual: goal/editor keep local resolveRef (message shapes differ).
+ * Soft residual 1016: tip focused suite numbers track Residual 1016 evidence tip (298/1295)
+ *   until residual 1018 suite re-run.
+ * Soft residual 1017: goal/editor resolveRef duals retired onto this sole.
  * Does not flip §13.2 checkboxes.
  */
 describe('resolveExportRef dual retired (residual 1003)', () => {
@@ -44,13 +45,18 @@ describe('resolveExportRef dual retired (residual 1003)', () => {
     }
   });
 
-  it('goal + editor remain keep-boundary (local resolveRef message shapes)', () => {
-    expect(goal).toMatch(/function resolveRef\b/);
-    expect(goal).toContain('entity may not have been exported');
-    expect(editor).toMatch(/function resolveRef\b/);
-    expect(editor).toContain('Unresolved editor reference');
-    expect(goal).not.toContain('resolveExportRef');
-    expect(editor).not.toContain('resolveExportRef');
+  it('goal + editor dual retired onto sole (residual 1017)', () => {
+    for (const [label, source, entity] of [
+      ['goal', goal, 'goal'],
+      ['editor', editor, 'editor'],
+    ] as const) {
+      expect(source, label).toContain('Residual 1017');
+      expect(source, label).toContain('resolveExportRef');
+      expect(source, label).toContain(`'${entity}'`);
+      expect(source, label).not.toMatch(/function resolveRef\b/);
+      expect(source, label).not.toMatch(/function resolveRefOrThrow\b/);
+    }
+    expect(goal).toContain('resolveExportRefOrThrow');
   });
 
   it('resolves mapped refs, warns, and throws with entityLabel', () => {

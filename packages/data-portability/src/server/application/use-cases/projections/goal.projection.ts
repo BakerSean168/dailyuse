@@ -4,7 +4,16 @@
 
 import type { ExportContext } from '../../portable-runtime';
 import type { PortableGoal, PortableGoalFolder, PortableGoalRecord, PortableKeyResult, PortableGoalReview, PortableFocusSession, PortableFocusMode } from '@dailyuse/contracts/data-portability';
-import { parseJsonField, toBoolean, toDateString, toRecord, toStringArray } from './projection-helpers';
+// Residual 1017: sole resolveExportRef/OrThrow (local resolveRef dual retired).
+import {
+  parseJsonField,
+  toBoolean,
+  toDateString,
+  toRecord,
+  toStringArray,
+  resolveExportRef,
+  resolveExportRefOrThrow,
+} from './projection-helpers';
 
 // ─── Goal Folders ───
 
@@ -19,7 +28,7 @@ export function projectGoalFolders(folders: unknown[], ctx: ExportContext): Port
       description: folder.description as string | null | undefined,
       icon: folder.icon as string | null | undefined,
       color: folder.color as string | null | undefined,
-      parentRef: resolveRef(folder.parentFolderId as string | null, ctx),
+      parentRef: resolveExportRef(folder.parentFolderId as string | null, ctx, 'goal'),
       sortOrder: (folder.sortOrder as number) ?? 0,
       isSystemFolder: toBoolean(folder.isSystemFolder, false),
       folderType: folder.folderType as string | null | undefined,
@@ -55,8 +64,8 @@ export function projectGoals(goals: unknown[], ctx: ExportContext): PortableGoal
       startDate: toDateString(goal.startDate),
       targetDate: toDateString(goal.targetDate),
       completedAt: toDateString(goal.completedAt),
-      folderRef: resolveRef(goal.folderId as string | null, ctx),
-      parentGoalRef: resolveRef(goal.parentGoalId as string | null, ctx),
+      folderRef: resolveExportRef(goal.folderId as string | null, ctx, 'goal'),
+      parentGoalRef: resolveExportRef(goal.parentGoalId as string | null, ctx, 'goal'),
       sortOrder: (goal.sortOrder as number) ?? 0,
       reminderConfig: parseJsonField(goal.reminderConfig),
       keyResults,
@@ -119,7 +128,7 @@ export function projectGoalRecords(records: unknown[], ctx: ExportContext): Port
     ctx.refToIdMap.set(entity.id as string, ref);
     return {
       _ref: ref,
-      keyResultRef: resolveRefOrThrow(entity.keyResultId as string, ctx),
+      keyResultRef: resolveExportRefOrThrow(entity.keyResultId as string, ctx, 'goal'),
       value: entity.value as number,
       note: entity.note as string | null | undefined,
       recordedAt: toDateString(entity.recordedAt) ?? new Date().toISOString(),
@@ -138,7 +147,7 @@ export function projectFocusSessions(sessions: unknown[], ctx: ExportContext): P
     ctx.refToIdMap.set(entity.id as string, ref);
     return {
       _ref: ref,
-      goalRef: resolveRef(entity.goalId as string | null, ctx),
+      goalRef: resolveExportRef(entity.goalId as string | null, ctx, 'goal'),
       status: entity.status as string,
       durationMinutes: entity.durationMinutes as number,
       actualDurationMinutes: entity.actualDurationMinutes as number,
@@ -161,7 +170,7 @@ export function projectFocusModes(modes: unknown[], ctx: ExportContext): Portabl
     const ref = ctx.refAllocator.allocate('focusMode');
     ctx.refToIdMap.set(entity.id as string, ref);
     const focusedGoalRefs = toStringArray(entity.focusedGoalIds).flatMap((id) => {
-      const resolved = resolveRef(id, ctx);
+      const resolved = resolveExportRef(id, ctx, 'goal');
       return resolved ? [resolved] : [];
     });
 
@@ -179,19 +188,4 @@ export function projectFocusModes(modes: unknown[], ctx: ExportContext): Portabl
   });
 }
 
-// ─── Helpers ───
-
-function resolveRef(id: string | null | undefined, ctx: ExportContext): string | null {
-  if (!id) return null;
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  // ID was not yet assigned a ref — store as opaque for later resolution
-  ctx.warnings.push(`Unresolved reference to ${id} — entity may not have been exported`);
-  return null;
-}
-
-function resolveRefOrThrow(id: string, ctx: ExportContext): string {
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  throw new Error(`EXPORT_VALIDATION_ERROR: Unresolved reference to ${id}`);
-}
+// Residual 1017: resolveExportRef/OrThrow elevated to projection-helpers.

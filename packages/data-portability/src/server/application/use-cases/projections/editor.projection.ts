@@ -5,7 +5,14 @@
 import type { ExportContext } from '../../portable-runtime';
 import type { PortableEditorWorkspace, PortableEditorSession, PortableEditorGroup, PortableEditorTab } from '@dailyuse/contracts/data-portability';
 import type { DataPortabilityDependencies } from '../../data-portability.dependencies';
-import { parseJsonField, toBoolean, toDateString, toRecord } from './projection-helpers';
+// Residual 1017: sole resolveExportRef (local resolveRef dual retired).
+import {
+  parseJsonField,
+  toBoolean,
+  toDateString,
+  toRecord,
+  resolveExportRef,
+} from './projection-helpers';
 
 export async function projectEditorWorkspaces(
   workspaces: unknown[],
@@ -50,7 +57,7 @@ export async function projectEditorWorkspaces(
           ctx.refToIdMap.set(tabEntity.id as string, tabRef);
           return {
             _ref: tabRef,
-            resourceRef: tabEntity.resourceId ? resolveRef(tabEntity.resourceId as string, ctx) ?? undefined : undefined,
+            resourceRef: tabEntity.resourceId ? resolveExportRef(tabEntity.resourceId as string, ctx, 'editor') ?? undefined : undefined,
             tabIndex: (tabEntity.tabIndex as number) ?? 0,
             tabType: tabEntity.tabType as string,
             name: ((tabEntity.name as string | undefined) ?? (tabEntity.title as string | undefined)) ?? '',
@@ -109,9 +116,4 @@ export async function projectEditorWorkspaces(
   return result;
 }
 
-function resolveRef(id: string, ctx: ExportContext): string | null {
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  ctx.warnings.push(`Unresolved editor reference to ${id}`);
-  return null;
-}
+// Residual 1017: resolveExportRef elevated to projection-helpers.
