@@ -33,6 +33,8 @@ import {
   applyHostKnowledgePatchToAgentActions,
   dispatchHostProposalDecision,
 } from './hostProposalLifecycle';
+// Residual 951: isRecord dual retired — sole AI composable plain-object helper.
+import { isRecord } from './isRecord';
 
 export interface UseAIKnowledgeNoteWorkflowOptions {
   service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
@@ -109,10 +111,6 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     if (!artifact) return '';
     const value = artifact.data[key];
     return typeof value === 'string' ? value.trim() : '';
-  }
-
-  function isRecord(value: unknown): value is Record<string, unknown> {
-    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   }
 
   function getRecordString(data: Record<string, unknown>, key: string): string {

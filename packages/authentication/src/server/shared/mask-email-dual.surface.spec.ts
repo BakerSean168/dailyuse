@@ -9,6 +9,7 @@ import { maskEmail } from './mask-email';
  * Soft residual 947: http envelope guard duals retired
  *   (apps/desktop/src/main/utils/http-envelope-guards-dual.surface.spec.ts).
  * Soft residual 950: tip focused suite numbers track Residual 950 evidence tip (266/1185).
+ * Soft residual 951: app-vue AI isRecord dual retired (is-record-dual.surface.spec.ts).
  * Invalid-email policy unified to non-leaking '***' (was: get-current-user returned raw email).
  * Does not flip §13.2 checkboxes.
  */

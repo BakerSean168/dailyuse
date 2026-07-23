@@ -57,6 +57,8 @@ import {
   dispatchHostProposalDecision,
   isPrimaryTaskHostAgentRun,
 } from './hostProposalLifecycle';
+// Residual 951: isRecord dual retired — sole AI composable plain-object helper.
+import { isRecord } from './isRecord';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -286,10 +288,6 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         isEditableGoalEmpty(),
     });
     syncGoalAgentStage(result);
-  }
-
-  function isRecord(value: unknown): value is Record<string, unknown> {
-    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   }
 
   function getString(data: Record<string, unknown>, key: string): string {
