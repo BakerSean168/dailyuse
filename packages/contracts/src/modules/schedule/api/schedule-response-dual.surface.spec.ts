@@ -6,6 +6,9 @@ import { describe, expect, it } from 'vitest';
  * Residual 715: schedule create/resolve response dual bodies retired.
  * CreateScheduleResponseDTO / ResolveConflictResponseDTO / AppliedResolution
  * reuse *ResponseSchema only.
+  *
+ * Soft residual 829: CalendarEntryClientDTO dual retired via CalendarEntryResponseSchema
+ * (see notification-preference-calendar-prefs-client-dto-dual surface).
  */
 describe('schedule response dual retired (residual 715)', () => {
   const apiDir = __dirname;

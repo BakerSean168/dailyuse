@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 751: reminder TimeSlot dual body retired.
  * TimeSlotDTO reuses TimeSlotSchema only.
+  *
+ * Soft residual 829: UserReminderPreferencesClientDTO dual retired via UserReminderPreferencesResponseSchema
+ * (see notification-preference-calendar-prefs-client-dto-dual surface).
  */
 describe('reminder time-slot dual retired (residual 751)', () => {
   const apiDir = __dirname;

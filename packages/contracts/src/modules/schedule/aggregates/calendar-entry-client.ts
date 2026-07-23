@@ -4,24 +4,13 @@
  * Client-side representation of a calendar entry/event.
  * This DTO is used for calendar rendering and conflict visualization.
  *
+ * Residual 829: CalendarEntryClientDTO dual retired — sole CalendarEntryResponseSchema + z.infer.
+ *
  * @module Schedule
  */
 
-import type { ScheduleId, IdentityId, TransferDate } from '../../../primitives';
+import type { z } from 'zod';
+import { CalendarEntryResponseSchema } from '../api/response-schemas';
 
-export interface CalendarEntryClientDTO {
-  id: ScheduleId;
-  identityId: IdentityId;
-  title: string;
-  description?: string;
-  startTime: TransferDate;
-  endTime: TransferDate;
-  duration: number;
-  hasConflict: boolean;
-  conflictingEntries?: string[];
-  priority?: number;
-  location?: string;
-  attendees?: string[];
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
+// Residual 829: CalendarEntryClientDTO dual retired — OpenAPI + transport use CalendarEntryResponseSchema.
+export type CalendarEntryClientDTO = z.infer<typeof CalendarEntryResponseSchema>;

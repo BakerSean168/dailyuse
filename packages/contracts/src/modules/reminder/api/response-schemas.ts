@@ -169,6 +169,8 @@ export const ReminderBatchResultSchema = z.object({
 // ============ UserReminderPreferences Response Schema ============
 
 
+// Residual 829: UserReminderPreferencesClientDTO dual retired — sole UserReminderPreferencesResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/user-reminder-preferences-server.ts).
 export const UserReminderPreferencesResponseSchema = z.object({
   id: brandedId<UserReminderPreferencesId>(),
   identityId: brandedId<IdentityId>(),

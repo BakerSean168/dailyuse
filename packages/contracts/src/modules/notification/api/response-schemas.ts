@@ -52,6 +52,9 @@ export type UnreadCountResponse = z.infer<typeof UnreadCountResponseSchema>;
 
 /**
  * Notification Preference Response Schema (residual 196)
+ *
+ * Residual 829: NotificationPreferenceClientDTO dual retired — sole NotificationPreferenceResponseSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/notification-preference-client.ts).
  */
 export const NotificationPreferenceResponseSchema = z.object({
   id: brandedId<NotificationPreferenceId>(),

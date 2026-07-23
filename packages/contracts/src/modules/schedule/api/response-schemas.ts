@@ -96,6 +96,8 @@ export const ScheduleTaskResponseSchema = z.object({
 /**
  * CalendarEntry (Schedule Event) Response Schema
  */
+// Residual 829: CalendarEntryClientDTO dual retired — sole CalendarEntryResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/calendar-entry-client.ts).
 export const CalendarEntryResponseSchema = z.object({
   id: brandedId<ScheduleId>(),
   identityId: brandedId<IdentityId>(),

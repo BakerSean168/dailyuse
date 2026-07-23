@@ -6,6 +6,9 @@ import { describe, expect, it } from 'vitest';
  * Residual 801: UnreadCountResponse dual body retired.
  * Sole UnreadCountResponseSchema + z.infer owned by contracts response-schemas.
  * Notification package port re-exports the contracts type (no local interface dual).
+  *
+ * Soft residual 829: NotificationPreferenceClientDTO dual retired via NotificationPreferenceResponseSchema
+ * (see notification-preference-calendar-prefs-client-dto-dual surface).
  */
 describe('notification unread count res dual retired (residual 801)', () => {
   const apiDir = __dirname;
