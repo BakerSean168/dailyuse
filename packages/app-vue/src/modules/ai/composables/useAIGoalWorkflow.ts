@@ -63,6 +63,8 @@ import { isRecord } from './isRecord';
 import { createAgentId } from './createAgentId';
 // Residual 955: getRecordString dual retired — sole AI composable helper (was local getString).
 import { getRecordString } from './getRecordString';
+// Residual 1007: sole normalizeReminderTimeOfDay (local dual retired).
+import { normalizeReminderTimeOfDay } from '@dailyuse/utils/shared';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -85,8 +87,6 @@ const GOAL_CATEGORIES = [
 ] as const;
 const IMPORTANCE_LEVELS = ['Vital', 'Important', 'Moderate', 'Minor', 'Trivial'] as const;
 const GOAL_CADENCES = ['daily', 'weekly', 'once'] as const;
-const DEFAULT_REMINDER_TIME_OF_DAY = '09:00';
-const REMINDER_TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   const { t, locale } = useI18n();
@@ -321,11 +321,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       : 'weekly';
   }
 
-  function normalizeReminderTimeOfDay(value: string): string {
-    return REMINDER_TIME_OF_DAY_PATTERN.test(value)
-      ? value
-      : DEFAULT_REMINDER_TIME_OF_DAY;
-  }
+  // Residual 1007: normalizeReminderTimeOfDay elevated to @dailyuse/utils/shared.
 
   function coerceKeyResults(value: unknown): KeyResultPreview[] | undefined {
     if (!Array.isArray(value)) return undefined;

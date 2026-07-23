@@ -22,6 +22,11 @@ import {
 } from '@dailyuse/contracts/task';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
+// Residual 1007: sole reminder time helpers (local dual retired).
+import {
+  buildReminderStartTimestamp,
+  normalizeReminderTimeOfDay,
+} from '@dailyuse/utils/shared';
 
 import { DesktopAnalyticsReadAdapter } from './desktop-analytics-read.adapter';
 import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapter';
@@ -29,8 +34,6 @@ import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapte
 const logger = createLogger('DesktopAutomationToolExecutor');
 const DAILY_REVIEW_INTERVAL_MINUTES = 24 * 60;
 const WEEKLY_REVIEW_INTERVAL_MINUTES = 7 * DAILY_REVIEW_INTERVAL_MINUTES;
-const DEFAULT_REMINDER_TIME_OF_DAY = '09:00';
-const REMINDER_TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function readNestedNumber(source: unknown, path: readonly string[]): number {
   let current = source;
@@ -45,19 +48,8 @@ function readNestedNumber(source: unknown, path: readonly string[]): number {
   return typeof current === 'number' ? current : 0;
 }
 
-function normalizeReminderTimeOfDay(value: string | undefined): string {
-  return value && REMINDER_TIME_OF_DAY_PATTERN.test(value) ? value : DEFAULT_REMINDER_TIME_OF_DAY;
-}
 
-function buildReminderStartTimestamp(timeOfDay: string, now = Date.now()): number {
-  const [hours = 9, minutes = 0] = timeOfDay.split(':').map((item) => Number(item));
-  const start = new Date(now);
-  start.setHours(hours, minutes, 0, 0);
-  if (start.getTime() < now) {
-    start.setDate(start.getDate() + 1);
-  }
-  return start.getTime();
-}
+// Residual 1007: reminder time helpers elevated to @dailyuse/utils/shared.
 
 function buildReminderTemplateInput(reminder: GoalAutomationReminderPreview, now = Date.now()) {
   const isOneTime = reminder.cadence === 'once';

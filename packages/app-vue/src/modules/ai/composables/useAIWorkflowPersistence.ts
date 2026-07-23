@@ -1,4 +1,6 @@
 import { ref, watch, type Ref } from 'vue';
+// Residual 1007: sole normalizeReminderTimeOfDay (local dual retired).
+import { normalizeReminderTimeOfDay } from '@dailyuse/utils/shared';
 import type {
   AgentRunResult,
   GoalClarificationDTO,
@@ -20,8 +22,6 @@ import {
 } from './types';
 
 const WORKFLOW_STORAGE_KEY = 'ai:conversation-workflow-map';
-const DEFAULT_REMINDER_TIME_OF_DAY = '09:00';
-const REMINDER_TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export interface UseAIWorkflowPersistenceOptions {
   toolMode: Ref<WorkflowMode>;
@@ -83,9 +83,8 @@ export function useAIWorkflowPersistence(options: UseAIWorkflowPersistenceOption
   function normalizeReminderDraft(item: EditableGoalReminder): EditableGoalReminder {
     return {
       ...item,
-      timeOfDay: REMINDER_TIME_OF_DAY_PATTERN.test(item.timeOfDay)
-        ? item.timeOfDay
-        : DEFAULT_REMINDER_TIME_OF_DAY,
+      // Residual 1007: normalizeReminderTimeOfDay elevated to @dailyuse/utils/shared.
+      timeOfDay: normalizeReminderTimeOfDay(item.timeOfDay),
     };
   }
 

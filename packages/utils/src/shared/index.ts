@@ -12,3 +12,4 @@ export * from './escape-html';
 export * from './parse-query-value';
 export * from './error-message';
 export * from './presentation-preference';
+export * from './reminder-time-of-day';
