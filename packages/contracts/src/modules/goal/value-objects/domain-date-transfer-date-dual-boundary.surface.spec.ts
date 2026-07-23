@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 859: DomainDate ≠ TransferDate dual keep-boundary + shape-mismatch duals stay separate.
  * Exact VO duals (FrequencyAdjustment/ResponseMetrics, residual 857) remain type aliases.
+ * Residual 861 (soft): ReminderResponse/NotificationChannel subset duals retired via Omit
+ *   (reminder-response-client-dto-dual.surface.spec.ts); this file keeps Residual 859 only.
  * Does not flip §13.2 checkboxes; OAuth / multi-engine Agent / full PR gate remain open.
  */
 describe('domain-date transfer-date dual keep-boundary (residual 859)', () => {
