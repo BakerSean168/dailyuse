@@ -26,6 +26,8 @@ import type { DataPortabilityClientPort } from '@dailyuse/data-portability/clien
 import type { Component } from 'vue';
 
 // ── Service Interfaces (structural, no private members) ──
+// Residual 927: I*Service = *ClientPort intentional DI facade keep-boundary
+// (InjectionKey naming surface; not a second interface body dual to force-merge).
 
 export type IAccountService = AccountClientPort;
 export type IAuthService = AuthenticationClientPort;
