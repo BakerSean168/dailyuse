@@ -7,6 +7,7 @@ import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result'
 // Residual 907: setting themeSync inline electronAPI dual retired — use DesktopAuthApi.
 // Residual 909: app-vue Window.electronAPI + desktop-detect duals retired — use DesktopAuthApi.
 // Residual 913: remaining host-access cast duals retired — use getDesktopAuthApi/hasDesktopAuthApi.
+// Residual 915: DESKTOP_AUTH_API_KEY InjectionKey dual retired — InjectionKey<DesktopAuthApi>.
 export type DesktopAuthApi = {
   invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
 };

@@ -8,6 +8,7 @@
 
 import type { InjectionKey, Ref, ShallowRef } from 'vue';
 import type { ElectronBridge } from '@dailyuse/ipc-client';
+import type { DesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 import type {
   IAccountService,
   IAuthService,
@@ -53,7 +54,9 @@ export const USER_NAME_KEY: InjectionKey<string> = Symbol('UserName');
 export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandler');
 
 // ── Desktop Platform Keys ──
-export const DESKTOP_AUTH_API_KEY: InjectionKey<Pick<ElectronBridge, 'invoke'>> =
+// Residual 915: DESKTOP_AUTH_API_KEY dual retired — InjectionKey<DesktopAuthApi>
+// (no ElectronBridge Pick dual of the sole invoke-api body).
+export const DESKTOP_AUTH_API_KEY: InjectionKey<DesktopAuthApi> =
   Symbol('DesktopAuthApi');
 
 /** Desktop preload bridge — canonical type from @dailyuse/ipc-client. */

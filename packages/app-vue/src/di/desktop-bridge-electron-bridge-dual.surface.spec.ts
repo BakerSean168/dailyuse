@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 270: DesktopBridge dual collapsed to ElectronBridge from @dailyuse/ipc-client.
+ * Residual 915 (soft): DESKTOP_AUTH_API_KEY dual retired — InjectionKey<DesktopAuthApi>
+ *   (desktop-auth-api-key-dual.surface.spec.ts).
  */
 describe('desktop bridge ElectronBridge single-track surface', () => {
   const keys = readFileSync(resolve(__dirname, 'keys.ts'), 'utf8');
