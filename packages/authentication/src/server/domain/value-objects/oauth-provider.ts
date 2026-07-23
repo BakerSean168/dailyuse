@@ -1,5 +1,7 @@
 import { OAuthProvider as IOAuthProvider } from '@dailyuse/contracts/authentication';
 
+// Residual 893: domain branded OAuthProvider derives contracts VO catalog (not API schema).
+
 /**
  * OAuth provider type - authentication method identifier.
  *

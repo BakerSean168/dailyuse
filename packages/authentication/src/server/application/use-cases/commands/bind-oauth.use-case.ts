@@ -36,7 +36,7 @@ function toDomainProvider(provider: BindOAuthReq['provider']): OAuthProvider | n
     case 'Apple':
       return OAuthProvider.Apple;
     default:
-      // Contract allows Microsoft; domain enum does not yet — treat as unavailable.
+      // Residual 893: transport allows Microsoft; domain/VO catalog does not — treat as unavailable.
       return null;
   }
 }

@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 763: OAuth provider enum dual retired.
  * OAuthProviderSchema is the sole provider enum body reused by Get/Callback/Authorize/Unbind.
+ * Residual 893 (soft): transport schema ≠ domain/VO catalog keep-boundary
+ *   (oauth-provider-transport-domain-keep-boundary.surface.spec.ts).
  */
 describe('oauth provider dual retired (residual 763)', () => {
   const oauth = readFileSync(resolve(__dirname, 'oauth.dto.ts'), 'utf8');
