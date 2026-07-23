@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 911: CustomNotificationView local ElectronBridge dual retired.
+ * Residual 941: local getElectronBridge dual retired — sole host helper in platform/electron-bridge.
  * Uses @dailyuse/ipc-client ElectronBridge sole body (same as residual 270 window typing).
  * Residual 270 (soft): window.electronAPI typed as ElectronBridge
  *   (desktop-electron-bridge-window.surface.spec.ts).
@@ -11,7 +12,7 @@ import { describe, expect, it } from 'vitest';
  *   (packages/app-vue .../electron-window-desktop-api-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
-describe('custom notification ElectronBridge dual retired (residual 911)', () => {
+describe('custom notification ElectronBridge dual retired (residual 911/941)', () => {
   const rendererDir = __dirname;
   const view = readFileSync(resolve(rendererDir, 'CustomNotificationView.vue'), 'utf8');
   const ipcTypes = readFileSync(
@@ -19,14 +20,18 @@ describe('custom notification ElectronBridge dual retired (residual 911)', () =>
     'utf8',
   );
   const env = readFileSync(resolve(rendererDir, 'env.d.ts'), 'utf8');
+  const hostBridge = readFileSync(resolve(rendererDir, 'platform/electron-bridge.ts'), 'utf8');
 
-  it('imports ElectronBridge from ipc-client and drops local interface dual', () => {
+  it('imports getElectronBridge from host sole helper and drops local duals', () => {
     expect(view).toContain('Residual 911');
-    expect(view).toContain("import type { ElectronBridge } from '@dailyuse/ipc-client'");
-    expect(view).toContain('function getElectronBridge(): ElectronBridge | undefined');
-    expect(view).toContain('return window.electronAPI');
+    expect(view).toContain('Residual 941');
+    expect(view).toContain(
+      "import { getElectronBridge } from './platform/electron-bridge'",
+    );
+    expect(view).not.toMatch(/function getElectronBridge\b/);
     expect(view).not.toMatch(/interface ElectronBridge\s*\{/);
     expect(view).not.toMatch(/type ElectronBridge\s*=\s*\{/);
+    expect(view).not.toContain('window.electronAPI');
   });
 
   it('keeps sole ElectronBridge object body in ipc-client types', () => {
@@ -42,5 +47,7 @@ describe('custom notification ElectronBridge dual retired (residual 911)', () =>
     expect(view).toContain('getElectronBridge().on(');
     expect(view).toContain('getElectronBridge().off(');
     expect(view).toContain('getElectronBridge().invoke(');
+    expect(hostBridge).toContain('Residual 941');
+    expect(hostBridge).toMatch(/export function getElectronBridge\b/);
   });
 });

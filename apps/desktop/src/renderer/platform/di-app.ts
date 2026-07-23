@@ -38,12 +38,11 @@ import {
 } from '@dailyuse/app-vue/di';
 import { createDashboardIpcAdapter } from '@dailyuse/app-vue/modules/dashboard/adapters';
 import { useAuthenticationStore } from '@dailyuse/app-vue/modules/authentication';
+// Residual 941: host bridge via requireElectronBridge sole helper.
+import { requireElectronBridge } from './electron-bridge';
 
 export function installDesktopAppServices(app: App): void {
-  const bridge = window.electronAPI;
-  if (!bridge) {
-    throw new Error('installDesktopAppServices requires window.electronAPI (preload bridge)');
-  }
+  const bridge = requireElectronBridge('installDesktopAppServices');
 
   const resultIpcClient = createResultIpcClient({ bridge });
 

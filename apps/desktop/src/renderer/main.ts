@@ -7,6 +7,8 @@
 import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
 
 import './styles/index.css';
+// Residual 941: host bridge via ensureElectronBridgeAvailable sole helper.
+import { ensureElectronBridgeAvailable } from './platform/electron-bridge';
 
 function escapeHtml(value: string): string {
   return value
@@ -45,15 +47,6 @@ function renderStartupError(error: unknown): void {
   `;
 }
 
-function ensureElectronBridgeAvailable(): void {
-  if (window.electronAPI) {
-    return;
-  }
-
-  throw new Error(
-    'Electron preload bridge is unavailable. Check BrowserWindow.webPreferences.preload and preload path resolution.',
-  );
-}
 
 function getHashPath(): string {
   const hash = window.location.hash;

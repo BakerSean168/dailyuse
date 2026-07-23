@@ -16,8 +16,10 @@ import { useReminderStore } from '@dailyuse/app-vue/modules/reminder';
 import { useNotificationStore } from '@dailyuse/app-vue/modules/notification';
 import { useUserSettingStore } from '@dailyuse/app-vue/modules/setting';
 import { useGovernanceStore } from '@dailyuse/app-vue/modules/governance';
+// Residual 941: host bridge via getElectronBridge sole helper.
+import { getElectronBridge } from './electron-bridge';
 
-const api = window.electronAPI;
+const api = getElectronBridge();
 
 export function initElectronFeatures(app: App): void {
   void app;

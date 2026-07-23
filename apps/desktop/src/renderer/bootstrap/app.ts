@@ -13,12 +13,14 @@ import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn/composables
 
 import App from '../App.vue';
 import { installDesktopAppServices } from '../platform/di-app';
+// Residual 941: host bridge via getElectronBridge sole helper.
+import { getElectronBridge } from '../platform/electron-bridge';
 import { initElectronFeatures } from '../platform/electron';
 import { shouldRedirectAuthenticatedDesktopEntry } from './route-entry';
 
 async function hydrateRendererAuthState(): Promise<boolean> {
   try {
-    return await hydrateDesktopBootstrapAuthState(window.electronAPI);
+    return await hydrateDesktopBootstrapAuthState(getElectronBridge());
   } catch (err) {
     console.error('[Auth Sync] Failed to hydrate desktop auth snapshot:', err);
     useAuthenticationStore().reset();
