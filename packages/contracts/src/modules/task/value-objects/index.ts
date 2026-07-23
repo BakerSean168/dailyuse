@@ -31,7 +31,9 @@ export type { TaskGoalBindingTrigger as TaskGoalBindingTriggerValue } from './ta
 export type {
   TaskTimeConfig,
   TaskTimeConfigDTO,
+  TaskTimeConfigReq,
 } from './task-time-config';
+export { TaskTimeConfigSchema } from './task-time-config';
 
 // CompletionRecord
 export type {

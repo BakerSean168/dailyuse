@@ -10,10 +10,8 @@ import type {
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
-import { TaskTimeType } from '../value-objects/task-time-type';
 import { TaskType } from '../value-objects/task-type';
 import type { DependencyType } from '../value-objects/dependency-type';
-import type { TaskTimeConfigDTO } from '../value-objects/task-time-config';
 import {
   TaskReminderConfigSchema,
 } from '../value-objects/task-reminder-config';
@@ -23,6 +21,9 @@ import {
 import {
   RecurrenceConfigSchema,
 } from '../value-objects/recurrence-rule';
+import {
+  TaskTimeConfigSchema,
+} from '../value-objects/task-time-config';
 
 // Residual 739: TaskReminderConfigSchema / TaskGoalBindingSchema owned by value-objects
 // (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
@@ -33,47 +34,11 @@ export { TaskReminderConfigSchema, TaskGoalBindingSchema };
 export { RecurrenceConfigSchema };
 export type { RecurrenceConfigReq } from '../value-objects/recurrence-rule';
 
-export const TaskTimeConfigSchema: z.ZodType<TaskTimeConfigDTO> = z
-  .object({
-    timeType: z.enum([TaskTimeType.AllDay, TaskTimeType.TimePoint, TaskTimeType.TimeRange]),
-    startDate: z.number().int().nullable(),
-    timePoint: z.number().int().nullable(),
-    timeRange: z
-      .object({
-        start: z.number().int(),
-        end: z.number().int(),
-      })
-      .nullable()
-      .optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (value.timeType === TaskTimeType.TimePoint && value.timePoint == null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['timePoint'],
-        message: '时间点任务必须提供 timePoint',
-      });
-    }
-
-    if (value.timeType === TaskTimeType.TimeRange) {
-      if (!value.timeRange) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['timeRange'],
-          message: '时间段任务必须提供 timeRange',
-        });
-      } else if (value.timeRange.start >= value.timeRange.end) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['timeRange'],
-          message: 'timeRange.start 必须小于 timeRange.end',
-        });
-      }
-    }
-  })
-  .openapi({ type: 'object', description: '任务时间配置' });
-
-export type TaskTimeConfigReq = z.infer<typeof TaskTimeConfigSchema>;
+// Residual 747: TaskTimeConfigSchema owned by value-objects
+// (semantic TaskTimeConfigDTO / TaskTimeConfigReq are z.infer aliases).
+// Domain TaskTimeConfig keeps DomainDate startDate (intentional shape split).
+export { TaskTimeConfigSchema };
+export type { TaskTimeConfigReq } from '../value-objects/task-time-config';
 
 
 // Public transport schema - NO identityId (injected from Context)
