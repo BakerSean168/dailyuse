@@ -1,19 +1,11 @@
 /**
  * KeyResult Entity - Client Interface
+ *
+ * Residual 817: KeyResultClientDTO dual retired — sole KeyResultClientDTOSchema + z.infer.
  */
 
-import type { TransferDate, KeyResultId } from '../../../primitives';
-import type { KeyResultProgressDTO } from '../value-objects';
+import type { z } from 'zod';
+import { KeyResultClientDTOSchema } from '../api/response-schemas';
 
-export interface KeyResultClientDTO {
-  id: KeyResultId;
-  title: string;
-  description: string | null;
-  progress: KeyResultProgressDTO;
-  weight: number; // 权重 (1-5)
-  order: number;
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-}
+// Residual 817: KeyResultClientDTO dual retired — OpenAPI + transport use KeyResultClientDTOSchema.
+export type KeyResultClientDTO = z.infer<typeof KeyResultClientDTOSchema>;

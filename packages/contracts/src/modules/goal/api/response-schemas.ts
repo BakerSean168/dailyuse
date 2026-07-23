@@ -24,8 +24,6 @@ import { FolderType } from '../value-objects/folder-type';
 
 import type { GoalClientDTO } from '../aggregates/goal-client';
 import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
-import type { GoalReviewClientDTO } from '../entities/goal-review-client';
-import type { KeyResultClientDTO } from '../entities/key-result-client';
 
 import { KeyResultProgressDTOSchema } from '../value-objects/key-result-progress';
 import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot';
@@ -58,7 +56,9 @@ export { FocusModeClientDTOSchema };
 /**
  * KeyResult Client DTO Schema
  */
-export const KeyResultClientDTOSchema: z.ZodType<KeyResultClientDTO> = z.object({
+// Residual 817: KeyResultClientDTO dual retired — sole KeyResultClientDTOSchema + z.infer
+// (semantic type is z.infer alias in entities/key-result-client.ts).
+export const KeyResultClientDTOSchema = z.object({
   id: brandedId<KeyResultId>(),
   title: z.string(),
   description: z.string().nullable(),
@@ -75,7 +75,9 @@ export const KeyResultClientDTOSchema: z.ZodType<KeyResultClientDTO> = z.object(
 /**
  * GoalReview Client DTO Schema
  */
-export const GoalReviewClientDTOSchema: z.ZodType<GoalReviewClientDTO> = z.object({
+// Residual 817: GoalReviewClientDTO dual retired — sole GoalReviewClientDTOSchema + z.infer
+// (semantic type is z.infer alias in entities/goal-review-client.ts).
+export const GoalReviewClientDTOSchema = z.object({
   id: brandedId<GoalReviewId>(),
   goalId: brandedId<GoalId>(),
   type: z.enum(ReviewType),
