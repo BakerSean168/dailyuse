@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 857: FrequencyAdjustmentDTO / ResponseMetricsDTO duals retired.
  * Sole VO interface + `export type XDTO = X` for each exact-match pair.
+ * Residual 859 (soft): DomainDate≠TransferDate duals stay separate interfaces
+ *   (see domain-date-transfer-date-dual-boundary.surface.spec.ts).
  */
 describe('reminder metrics vo dto duals retired (residual 857)', () => {
   const voDir = __dirname;

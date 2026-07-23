@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
  * GoalMetadataDTO / AccountSettingsDTO / ChecklistItemDefinitionDTO = sole interface + type alias.
  * Residual 857 (soft): FrequencyAdjustmentDTO / ResponseMetricsDTO exact duals also retired
  *   (reminder metrics VO surface; this file keeps Residual 853 lock only).
+ * Residual 859 (soft): DomainDate≠TransferDate dual keep-boundary owned by
+ *   domain-date-transfer-date-dual-boundary.surface.spec.ts (this file keeps Residual 853 only).
  */
 describe('exact vo dto duals retired (residual 853)', () => {
   const goalVo = __dirname;
