@@ -7194,6 +7194,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七百九十三轮：retire Scan/Search/ConfirmedLocalVaultWrite Res duals (nested DTO *Schema + z.infer).
   残留七百九十四轮：§13.2 focused evidence suite re-run (961 tests, residuals 250–793 locks, no checkbox changes)。
   残留七百九十五轮：retire local vault Req duals (Select/Read/Search/Open/ConfirmedWrite ReqSchema + z.infer).
+  残留七百九十六轮：§13.2 focused evidence suite re-run (964 tests, residuals 250–795 locks, no checkbox changes)。
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -8262,6 +8263,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七百九十三轮：local vault Res dual 收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留七百九十四轮：tip 上 961 项 focused evidence suite（含 residual 250–793 local vault Res dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留七百九十五轮：local vault Req dual 收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留七百九十六轮：tip 上 964 项 focused evidence suite（含 residual 250–795 local vault req dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
