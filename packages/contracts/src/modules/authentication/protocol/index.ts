@@ -20,7 +20,6 @@ export type {
   DeviceInfoClientDTO,
   AuthStatus,
   AuthBootstrapSnapshot,
-  AuthStatusDTO,
   EmailLoginCredentials,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,

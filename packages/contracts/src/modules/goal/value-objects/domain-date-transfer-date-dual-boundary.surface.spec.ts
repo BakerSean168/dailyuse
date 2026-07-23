@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
  * Exact VO duals (FrequencyAdjustment/ResponseMetrics, residual 857) remain type aliases.
  * Residual 861 (soft): ReminderResponse/NotificationChannel subset duals retired via Omit
  *   (reminder-response-client-dto-dual.surface.spec.ts); this file keeps Residual 859 only.
+ * Residual 865 (soft): AuthStatusDTO dead simplified dual deleted — AuthStatus sole status shape.
  * Does not flip §13.2 checkboxes; OAuth / multi-engine Agent / full PR gate remain open.
  */
 describe('domain-date transfer-date dual keep-boundary (residual 859)', () => {
@@ -49,7 +50,9 @@ describe('domain-date transfer-date dual keep-boundary (residual 859)', () => {
       expect(src).not.toContain(`export type ${dto} = ${vo}`);
     }
     expect(desktopAuth).toMatch(/export interface AuthStatus\b/);
-    expect(desktopAuth).toMatch(/export interface AuthStatusDTO\b/);
+    // Residual 865: AuthStatusDTO simplified dual deleted (dead dual, zero consumers).
+    expect(desktopAuth).toContain('Residual 865');
+    expect(desktopAuth).not.toMatch(/export interface AuthStatusDTO\b/);
     expect(desktopAuth).not.toContain('export type AuthStatusDTO = AuthStatus');
   });
 

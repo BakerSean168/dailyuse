@@ -284,17 +284,8 @@ export interface AuthBootstrapSnapshot {
   currentUser: CurrentUserDTO | null;
 }
 
-/**
- * Simplified auth status DTO.
- */
-export interface AuthStatusDTO {
-  authenticated: boolean;
-  mode: AuthMode;
-  connectionStatus: ConnectionStatus;
-  identityId: IdentityId | null;
-  canSync: boolean;
-}
-
+// Residual 865: AuthStatusDTO simplified dual deleted (zero consumers).
+// Sole desktop status shape is AuthStatus (used by getStatus / bootstrap snapshot).
 // Residual 637: AuthOperationResult { ok, error? } generic dual envelope deleted.
 // Concrete desktop auth flows use typed *Result DTOs + Result/IpcResult envelopes.
 

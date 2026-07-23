@@ -48,3 +48,30 @@ describe('desktop-auth AuthOperationResult dual retired (residual 637)', () => {
   });
 });
 
+/**
+ * Residual 865: AuthStatusDTO simplified dual deleted (zero consumers).
+ * Sole desktop status shape is AuthStatus (getStatus / bootstrap snapshot).
+ */
+describe('desktop-auth AuthStatusDTO dual retired (residual 865)', () => {
+  const source = readFileSync(resolve(__dirname, 'desktop-auth.types.ts'), 'utf8');
+  const protocolIndex = readFileSync(resolve(__dirname, 'index.ts'), 'utf8');
+
+  it('does not define or export AuthStatusDTO dual', () => {
+    expect(source).toContain('Residual 865');
+    expect(source).not.toMatch(/export interface AuthStatusDTO\b/);
+    expect(protocolIndex).not.toContain('AuthStatusDTO');
+  });
+
+  it('keeps sole AuthStatus on bootstrap snapshot and status surface', () => {
+    expect(source).toMatch(/export interface AuthStatus\b/);
+    expect(source).toContain('status: AuthStatus');
+    expect(protocolIndex).toContain('AuthStatus');
+    expect(source).toMatch(/export interface AuthBootstrapSnapshot\b/);
+  });
+
+  it('does not reintroduce AuthOperationResult dual envelope (residual 637)', () => {
+    expect(source).not.toMatch(/export interface AuthOperationResult/);
+    expect(protocolIndex).not.toContain('AuthOperationResult');
+  });
+});
+
