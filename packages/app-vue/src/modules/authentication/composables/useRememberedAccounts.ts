@@ -4,28 +4,13 @@ import type {
   RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
-import { hasDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
+import { completeAuthSuccess } from './complete-auth-success';
 
 // Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
+// Residual 1045: completeAuthSuccess dual retired onto complete-auth-success sole.
 
 export function useRememberedAccounts(ctx: AuthContext) {
   const { store, service, t, lastResultError, redirectWithReload, handleAuthSuccess, getLocalizedAuthError } = ctx;
-
-  async function completeAuthSuccess(
-    data: Parameters<typeof handleAuthSuccess>[0],
-    title: string,
-    description: string,
-  ): Promise<boolean> {
-    if (typeof window !== 'undefined' && hasDesktopAuthApi(window)) {
-      store.reset();
-    } else {
-      handleAuthSuccess(data);
-    }
-    toast.success(title, { description });
-    if (typeof window !== 'undefined' && hasDesktopAuthApi(window)) return true;
-    redirectWithReload('/');
-    return true;
-  }
 
   async function listRememberedAccounts(): Promise<RememberedDesktopAccountDTO[]> {
     const result = await service.listRememberedAccounts();
@@ -47,6 +32,11 @@ export function useRememberedAccounts(ctx: AuthContext) {
       if (result.ok) {
         lastResultError.value = null;
         return await completeAuthSuccess(
+          {
+            resetStore: () => store.reset(),
+            handleAuthSuccess,
+            redirectWithReload,
+          },
           result.data,
           t('auth.toast.loginSuccess'),
           t('auth.toast.welcomeBack'),
