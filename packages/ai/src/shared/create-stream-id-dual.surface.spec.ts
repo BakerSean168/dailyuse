@@ -6,7 +6,7 @@ import { createStreamId } from './create-stream-id';
 /**
  * Residual 993: createStreamId dual retired (AI IPC stream adapters).
  * Sole body in create-stream-id.ts; assistant + message IPC adapters import it.
- * Soft residual 1028: tip focused suite numbers track Residual 1028 evidence tip (304/1319).
+ * Soft residual 1030: tip focused suite numbers track Residual 1030 evidence tip (305/1323).
  * Does not flip §13.2 checkboxes.
  */
 describe('createStreamId dual retired (residual 993)', () => {

@@ -9,7 +9,7 @@ import { previewText } from './preview-text';
  * this package re-exports so package-local import paths stay stable.
  * generate-ai-goal + automation/planning adapters + internal client import it
  * (call sites keep their maxLength args).
- * Soft residual 1028: tip focused suite numbers track Residual 1028 evidence tip (304/1319).
+ * Soft residual 1030: tip focused suite numbers track Residual 1030 evidence tip (305/1323).
  * Soft residual 993: createStreamId dual retired (create-stream-id-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */

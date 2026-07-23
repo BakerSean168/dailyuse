@@ -9,7 +9,7 @@ import { z } from 'zod';
  * apps/api openapi registry re-exports without local dual bodies.
  * Soft residual: api ErrorResponseSchema registration remains component catalog keep-boundary
  * (slightly narrower than OpenApiErrorResponseSchema.context).
- * Soft residual 1028: tip focused suite numbers track Residual 1028 evidence tip (304/1319).
+ * Soft residual 1030: tip focused suite numbers track Residual 1030 evidence tip (305/1323).
  * Does not flip §13.2 checkboxes.
  */
 describe('openapi response helpers dual retired (residual 1029)', () => {
