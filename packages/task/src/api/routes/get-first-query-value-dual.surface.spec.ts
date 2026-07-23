@@ -6,7 +6,7 @@ import { getFirstQueryValue } from './get-first-query-value';
 /**
  * Residual 983: getFirstQueryValue dual retired (task API routes).
  * Sole body in get-first-query-value.ts; instance + template routes import it.
- * Soft residual 1002: tip focused suite numbers track Residual 1002 evidence tip (291/1268).
+ * Soft residual 1004: tip focused suite numbers track Residual 1004 evidence tip (292/1272).
  * Does not flip §13.2 checkboxes.
  */
 describe('getFirstQueryValue dual retired (residual 983)', () => {
