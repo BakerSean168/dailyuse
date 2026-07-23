@@ -11,6 +11,7 @@ import { toRecord } from '../../../../../data-portability/src/server/application
  * Soft residual 1095: parseJsonField keep-boundary remains (toRecord depends on it).
  * Soft residual 1089: isRecord plain-object vs envelope arrays remains separate.
  * Soft residual 1101: toTimestamp keep-boundary family (null/undefined/positive/0-fallback).
+ * Soft residual 1105: toNumber keep-boundary (adapter number-only vs goal-planning string parse).
  * Does not flip §13.2 checkboxes.
  */
 describe('asRecord/toRecord cross-package keep-boundary (residual 1099)', () => {

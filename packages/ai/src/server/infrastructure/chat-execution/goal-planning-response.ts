@@ -151,6 +151,8 @@ function toPositiveInteger(value: unknown): number | undefined {
     : undefined;
 }
 
+// Residual 1105 keep-boundary: LLM JSON may stringify numbers → Number(string) allowed.
+// Soft residual 1105: chat-execution adapter toNumber is number-only for provider usage tokens.
 function toNumber(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return value;

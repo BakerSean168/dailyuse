@@ -149,6 +149,8 @@ function normalizeUsage(usage: Record<string, unknown> | null | undefined): Chat
   };
 }
 
+// Residual 1105 keep-boundary: provider usage tokens are numeric only (no string Number()).
+// Soft residual 1105: goal-planning toNumber allows numeric strings from LLM JSON (no force-merge).
 function toNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
