@@ -18,7 +18,15 @@ describe('task instance Res dual single-track surface', () => {
   it('does not dual-alias Complete/Skip TaskInstanceRes', () => {
     expect(instanceDto).not.toMatch(/export type CompleteTaskInstanceRes\s*=/);
     expect(instanceDto).not.toMatch(/export type SkipTaskInstanceRes\s*=/);
-    expect(instanceDto).toContain('export interface TaskInstanceOperationRes');
+    // Soft residual 789: operation Res dual retired — ResSchema + z.infer only.
+    expect(instanceDto).toContain('Residual 789');
+    expect(instanceDto).toContain(
+      'export const TaskInstanceOperationResSchema = z.object({',
+    );
+    expect(instanceDto).toContain(
+      'export type TaskInstanceOperationRes = z.infer<typeof TaskInstanceOperationResSchema>',
+    );
+    expect(instanceDto).not.toMatch(/export interface TaskInstanceOperationRes\b/);
   });
 
   it('rpc map uses TaskInstanceOperationRes for complete/skip', () => {
