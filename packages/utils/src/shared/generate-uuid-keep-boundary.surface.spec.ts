@@ -9,6 +9,7 @@ import { generateUUID as utilsGenerateUUID, isValidUUID } from './uuid';
  * - test-utils generateUUID: node:crypto randomUUID only (test fixtures)
  * Soft residual 993: AI createStreamId dual-retired sole remains separate (stream- prefix).
  * Soft residual 951/1089: isRecord keep-boundaries remain separate.
+ * Soft residual 1135: newId library-backed uuid v4 keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */
 describe('generateUUID cross-package keep-boundary (residual 1131)', () => {
