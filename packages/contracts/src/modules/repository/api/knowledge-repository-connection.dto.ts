@@ -255,10 +255,8 @@ export type ExecuteKnowledgeRepositoryReconciliationRes = z.infer<
   typeof ExecuteKnowledgeRepositoryReconciliationResponseSchema
 >;
 
-export const SyncKnowledgeRepositorySchema = z.object({
-  connectionId: z.string().min(1),
-});
-export type SyncKnowledgeRepositoryReq = z.infer<typeof SyncKnowledgeRepositorySchema>;
+// Residual 669: sync request reuses connection params schema (no dual body).
+export type SyncKnowledgeRepositoryReq = z.infer<typeof KnowledgeRepositoryConnectionParamsSchema>;
 
 export const KnowledgeRepositorySyncOutcomeSchema = z.enum([
   'UpToDate',

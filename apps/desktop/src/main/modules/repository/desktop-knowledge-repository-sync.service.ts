@@ -1,5 +1,5 @@
 import {
-  SyncKnowledgeRepositorySchema,
+  KnowledgeRepositoryConnectionParamsSchema,
   type KnowledgeRepositoryConnectionClientDTO,
   type SyncKnowledgeRepositoryReq,
   type SyncKnowledgeRepositoryRes,
@@ -56,7 +56,7 @@ export class DesktopKnowledgeRepositorySyncService {
   }
 
   async execute(identityId: string, input: unknown): Promise<Result<SyncKnowledgeRepositoryRes>> {
-    const parsed = SyncKnowledgeRepositorySchema.safeParse(input);
+    const parsed = KnowledgeRepositoryConnectionParamsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
