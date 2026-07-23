@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
  * Exact shape of DesktopAuthApi — type alias only (no second object-type body).
  * Residual 901 (soft): DesktopAuthStatus dual retired
  *   (desktop-auth-status-dual.surface.spec.ts).
+ * Residual 905 (soft): reminder DesktopApi dual retired
+ *   (modules/reminder/.../reminder-desktop-api-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('desktop DesktopBootstrapApi dual retired (residual 903)', () => {
