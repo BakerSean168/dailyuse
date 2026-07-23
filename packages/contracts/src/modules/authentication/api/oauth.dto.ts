@@ -33,10 +33,11 @@ export interface GetOAuthUrlRes {
 /**
  * OAuth 回调处理 Schema
  */
+// Residual 759: OAuth callback/bind share one authorize-callback payload schema.
 export const OAuthCallbackSchema = z.object({
   provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
-  code: z.string(),
-  state: z.string(),
+  code: z.string().min(1),
+  state: z.string().min(1),
 });
 
 export type OAuthCallbackReq = z.infer<typeof OAuthCallbackSchema>;
@@ -69,11 +70,8 @@ export type OAuthAuthorizeReq = z.infer<typeof OAuthAuthorizeSchema>;
  * Uses the same authorize callback payload (code + state) issued by getOAuthUrl.
  * 使用 getOAuthUrl 签发的同一授权回调载荷（code + state）。
  */
-export const BindOAuthSchema = z.object({
-  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
-  code: z.string().min(1),
-  state: z.string().min(1),
-});
+// Residual 759: bind reuses OAuthCallbackSchema (no dual body).
+export const BindOAuthSchema = OAuthCallbackSchema;
 
 export type BindOAuthReq = z.infer<typeof BindOAuthSchema>;
 
