@@ -70,6 +70,12 @@ export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNote
   }
 }
 
+/**
+ * Residual 1149 soft residual / keep-boundary: API GitHub knowledge-repo mapping.
+ * id = knowledge-note-<sha256(connectionId:path)>; scope = connectionId;
+ * size = Buffer.byteLength(content); timestamps = Date.now().
+ * Soft residual 1149: Desktop local-Vault mapping stays separate (no force-merge).
+ */
 function toKnowledgeNoteRef(
   input: CreateKnowledgeNotePersistenceInput,
   connectionId: string,

@@ -36,6 +36,12 @@ export class DesktopKnowledgeNotePersistenceAdapter implements IKnowledgeNotePer
   }
 }
 
+/**
+ * Residual 1149 keep-boundary: Desktop local-Vault persisted-ref mapping.
+ * id = local-vault-<sha256(path)[:24]>; scope = local-vault-<identityId>;
+ * timestamps from note.updatedAt; size from vault DTO.
+ * Soft residual 1149: API GitHub connection mapping stays separate (no force-merge).
+ */
 function toKnowledgeNoteRef(identityId: string, note: LocalVaultNoteDTO): KnowledgeNotePersistedRef {
   const id = `local-vault-${createHash('sha256').update(note.relativePath).digest('hex').slice(0, 24)}`;
   const timestamp = Number(note.updatedAt);
