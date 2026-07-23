@@ -1,3 +1,6 @@
+/**
+ * Residual 965: getRequestId sole import (packages/ai/src/shared/get-request-id.ts).
+ */
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
 import {
@@ -9,14 +12,11 @@ import {
   fail,
 } from '@dailyuse/utils/result';
 import type { AILangGraphCheckpointController } from '../../server/transport/ai-langgraph-checkpoint.controller';
+import { getRequestId } from '../../shared/get-request-id';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
-}
-
-function getRequestId(req: { traceId?: string; id?: string }): string | undefined {
-  return req.traceId ?? req.id;
 }
 
 const SerializedLangGraphValueSchema = z.object({

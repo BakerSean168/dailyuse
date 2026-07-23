@@ -1,3 +1,6 @@
+/**
+ * Residual 965: getRequestId sole import (packages/ai/src/shared/get-request-id.ts).
+ */
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
@@ -16,14 +19,11 @@ import {
   AgentStartRunClientRequestSchema,
 } from '@dailyuse/contracts/ai';
 import type { AIAgentRuntimeController } from '../../server/transport/ai-agent-runtime.controller';
+import { getRequestId } from '../../shared/get-request-id';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
-}
-
-function getRequestId(req: { traceId?: string; id?: string }): string | undefined {
-  return req.traceId ?? req.id;
 }
 
 export function registerAIAgentRuntimeRoutes(
