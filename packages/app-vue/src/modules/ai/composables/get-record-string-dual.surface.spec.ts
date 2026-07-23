@@ -7,6 +7,7 @@ import { getRecordString } from './getRecordString';
  * Residual 955: app-vue AI getRecordString / getString dual retired.
  * Sole body in getRecordString.ts; goal (was getString) + knowledge-note import it.
  * Soft residual 953: AI createAgentId dual retired (create-agent-id-dual.surface.spec.ts).
+ * Soft residual 956: tip focused suite numbers track Residual 956 evidence tip (269/1194).
  * Goal local getString empty-check was behaviorally equivalent to trim sole; unified.
  * Does not flip §13.2 checkboxes.
  */
