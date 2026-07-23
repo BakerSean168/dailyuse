@@ -20,6 +20,8 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
+// Residual 989: sole parseString/parseNumber (local dual retired).
+import { parseNumber, parseString } from '@dailyuse/utils/shared';
 import {
   CreateReminderTemplateSchema,
   UpdateReminderTemplateSchema,
@@ -41,23 +43,7 @@ import type { ReminderTemplateId } from '@dailyuse/contracts/primitives';
 import type { ReminderController } from '../../server/transport/reminder.controller';
 
 // ============ Helpers ============
-
-function parseString(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? String(value[0]) : undefined;
-  }
-  if (value === undefined || value === null) {
-    return undefined;
-  }
-  return String(value);
-}
-
-function parseNumber(value: unknown): number | undefined {
-  const raw = parseString(value);
-  if (!raw) return undefined;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
+// Residual 989: parseString/parseNumber elevated to @dailyuse/utils/shared.
 
 // ============ Types ============
 
