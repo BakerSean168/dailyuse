@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 853: exact-match VO/DTO duals retired (DomainDate≠TransferDate duals left alone).
  * GoalMetadataDTO / AccountSettingsDTO / ChecklistItemDefinitionDTO = sole interface + type alias.
+ * Residual 857 (soft): FrequencyAdjustmentDTO / ResponseMetricsDTO exact duals also retired
+ *   (reminder metrics VO surface; this file keeps Residual 853 lock only).
  */
 describe('exact vo dto duals retired (residual 853)', () => {
   const goalVo = __dirname;
