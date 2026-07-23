@@ -5,30 +5,20 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId, RuleId, RuleRevisionId, CodeSnippetId } from '../../../primitives';
-import { Language } from '../value-objects/language';
-import { SnippetType } from '../value-objects/snippet-type';
+import type { IdentityId, RuleId, RuleRevisionId } from '../../../primitives';
 import { RuleSeverity } from '../value-objects/rule-severity';
 import { RuleStatus } from '../value-objects/rule-status';
 import { ChangeType } from '../value-objects/change-type';
-import type { CodeSnippetDTO } from '../value-objects/code-snippet';
-import type { RuleTagDTO } from '../value-objects/rule-tag';
+import { CodeSnippetDTOSchema } from '../value-objects/code-snippet';
+import { RuleTagDTOSchema } from '../value-objects/rule-tag';
 import type { RuleClientDTO } from '../aggregates/rule-client';
 import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
 import type { ListRulesRes, SearchRulesRes } from './rules';
 import type { GetRuleRevisionsRes } from './rule-revisions';
 
-export const RuleTagDTOSchema: z.ZodType<RuleTagDTO> = z.object({
-  value: z.string(),
-});
-
-export const CodeSnippetDTOSchema: z.ZodType<CodeSnippetDTO> = z.object({
-  id: brandedId<CodeSnippetId>(),
-  language: z.enum(Language),
-  content: z.string(),
-  type: z.enum(SnippetType),
-  caption: z.string().nullable(),
-});
+// Residual 731: CodeSnippetDTOSchema / RuleTagDTOSchema owned by value-objects
+// (re-exported for OpenAPI nested response consumers).
+export { CodeSnippetDTOSchema, RuleTagDTOSchema };
 
 export const RuleClientDTOSchema: z.ZodType<RuleClientDTO> = z.object({
   id: brandedId<RuleId>(),
