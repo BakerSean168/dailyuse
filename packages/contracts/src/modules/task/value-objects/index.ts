@@ -6,7 +6,9 @@
 export type {
   RecurrenceRule,
   RecurrenceRuleDTO,
+  RecurrenceConfigReq,
 } from './recurrence-rule';
+export { RecurrenceConfigSchema } from './recurrence-rule';
 
 // TaskReminderConfig
 export type {

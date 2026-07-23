@@ -10,12 +10,9 @@ import type {
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
-import { DayOfWeek } from '../value-objects/day-of-week';
-import { RecurrenceFrequency } from '../value-objects/recurrence-frequency';
 import { TaskTimeType } from '../value-objects/task-time-type';
 import { TaskType } from '../value-objects/task-type';
 import type { DependencyType } from '../value-objects/dependency-type';
-import type { RecurrenceRuleDTO } from '../value-objects/recurrence-rule';
 import type { TaskTimeConfigDTO } from '../value-objects/task-time-config';
 import {
   TaskReminderConfigSchema,
@@ -23,20 +20,18 @@ import {
 import {
   TaskGoalBindingSchema,
 } from '../value-objects/task-goal-binding';
+import {
+  RecurrenceConfigSchema,
+} from '../value-objects/recurrence-rule';
 
 // Residual 739: TaskReminderConfigSchema / TaskGoalBindingSchema owned by value-objects
 // (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
 export { TaskReminderConfigSchema, TaskGoalBindingSchema };
 
-const DayOfWeekSchema = z.union([
-  z.literal(DayOfWeek.Sunday),
-  z.literal(DayOfWeek.Monday),
-  z.literal(DayOfWeek.Tuesday),
-  z.literal(DayOfWeek.Wednesday),
-  z.literal(DayOfWeek.Thursday),
-  z.literal(DayOfWeek.Friday),
-  z.literal(DayOfWeek.Saturday),
-]);
+// Residual 743: RecurrenceConfigSchema owned by value-objects
+// (semantic RecurrenceRuleDTO / RecurrenceConfigReq are z.infer aliases).
+export { RecurrenceConfigSchema };
+export type { RecurrenceConfigReq } from '../value-objects/recurrence-rule';
 
 export const TaskTimeConfigSchema: z.ZodType<TaskTimeConfigDTO> = z
   .object({
@@ -79,31 +74,6 @@ export const TaskTimeConfigSchema: z.ZodType<TaskTimeConfigDTO> = z
   .openapi({ type: 'object', description: '任务时间配置' });
 
 export type TaskTimeConfigReq = z.infer<typeof TaskTimeConfigSchema>;
-
-export const RecurrenceConfigSchema: z.ZodType<RecurrenceRuleDTO> = z
-  .object({
-    frequency: z.enum([
-      RecurrenceFrequency.Daily,
-      RecurrenceFrequency.Weekly,
-      RecurrenceFrequency.Monthly,
-      RecurrenceFrequency.Yearly,
-    ]),
-    interval: z.number().int().positive(),
-    daysOfWeek: z.array(DayOfWeekSchema),
-    endDate: z.number().int().nullable(),
-    occurrences: z.number().int().positive().nullable(),
-  })
-  .superRefine((candidate, ctx) => {
-    if (candidate.endDate != null && candidate.occurrences != null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: '重复规则不能同时设置结束日期和重复次数',
-      });
-    }
-  })
-  .openapi({ type: 'object', description: '循环规则配置' });
-
-export type RecurrenceConfigReq = z.infer<typeof RecurrenceConfigSchema>;
 
 
 // Public transport schema - NO identityId (injected from Context)
