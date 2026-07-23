@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId } from '../../../primitives';
-import type { FocusSessionClientDTO } from '../aggregates/focus-session-client';
+import { FocusSessionClientDTOSchema } from './response-schemas';
 
 // ============================================================================
 // START Focus
@@ -46,13 +46,15 @@ export type StopFocusReq = z.infer<typeof StopFocusSchema>;
  */
 export type GetFocusStatusReq = void;
 
-export interface GetFocusStatusRes {
-  isActive: boolean;
-  session: FocusSessionClientDTO | null;
-  goalTitle?: string;
-  remainingSeconds?: number;
-  elapsedSeconds?: number;
-}
+// Residual 785: focus status Res dual retired — sole ResSchema + z.infer.
+export const GetFocusStatusResSchema = z.object({
+  isActive: z.boolean(),
+  session: FocusSessionClientDTOSchema.nullable(),
+  goalTitle: z.string().optional(),
+  remainingSeconds: z.number().optional(),
+  elapsedSeconds: z.number().optional(),
+});
+export type GetFocusStatusRes = z.infer<typeof GetFocusStatusResSchema>;
 
 // ============================================================================
 // QUERY Focus History
@@ -71,13 +73,15 @@ export const GetFocusHistorySchema = z.object({
 
 export type GetFocusHistoryReq = z.infer<typeof GetFocusHistorySchema>;
 
-export interface GetFocusHistoryRes {
-  data: FocusSessionClientDTO[];
-  totalSessions: number;
-  totalDurationMinutes: number;
-  averageDurationMinutes: number;
-  completionRate: number;
-}
+// Residual 785: focus history Res dual retired — sole ResSchema + z.infer.
+export const GetFocusHistoryResSchema = z.object({
+  data: z.array(FocusSessionClientDTOSchema),
+  totalSessions: z.number(),
+  totalDurationMinutes: z.number(),
+  averageDurationMinutes: z.number(),
+  completionRate: z.number(),
+});
+export type GetFocusHistoryRes = z.infer<typeof GetFocusHistoryResSchema>;
 
 // ============================================================================
 // GET Focus Statistics
