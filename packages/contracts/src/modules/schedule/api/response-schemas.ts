@@ -73,6 +73,8 @@ const ScheduleExecutionResponseSchema: z.ZodType<{
 /**
  * ScheduleTask Response Schema
  */
+// Residual 831: ScheduleTaskClientDTO dual retired — sole ScheduleTaskResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/schedule-task-client.ts).
 export const ScheduleTaskResponseSchema = z.object({
   id: brandedId<ScheduleTaskId>(),
   identityId: brandedId<IdentityId>(),

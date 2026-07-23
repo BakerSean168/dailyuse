@@ -1,38 +1,20 @@
 /**
  * Task Dependency Client DTOs
  * 任务依赖关系客户端数据传输对象
+ *
+ * Residual 831: TaskDependencyClientDTO dual retired — sole TaskDependencyResponseSchema + z.infer.
+ * DependencyChainClientDTO keeps interface body (extra estimatedCompletionDate vs ResponseSchema).
  */
 
+import type { z } from 'zod';
 import type {
-  TaskDependencyId,
   TaskTemplateId,
-  TransferDate,
   DomainDate,
 } from '../../../primitives';
-import type { DependencyType } from '../value-objects/dependency-type';
+import { TaskDependencyResponseSchema } from '../api/response-schemas';
 
-/**
- * 任务依赖关系实体（客户端）
- */
-export interface TaskDependencyClientDTO {
-  id: TaskDependencyId;
-  predecessorTaskId: TaskTemplateId;
-  successorTaskId: TaskTemplateId;
-  dependencyType: DependencyType;
-  lagDays?: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-
-  /**
-   * 前置任务的标题（用于显示）
-   */
-  predecessorTaskTitle?: string;
-
-  /**
-   * 后续任务的标题（用于显示）
-   */
-  successorTaskTitle?: string;
-}
+// Residual 831: TaskDependencyClientDTO dual retired — OpenAPI + transport use TaskDependencyResponseSchema.
+export type TaskDependencyClientDTO = z.infer<typeof TaskDependencyResponseSchema>;
 
 // Residual 649: task-template-with-dependencies client dual retired.
 
@@ -56,6 +38,7 @@ export function dependencyServerToClientDTO(
 
 /**
  * 依赖链信息（客户端）
+ * Keep interface dual intentionally — ResponseSchema omits estimatedCompletionDate.
  */
 export interface DependencyChainClientDTO {
   taskId: TaskTemplateId;

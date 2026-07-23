@@ -73,6 +73,8 @@ export const TaskTemplateListResponseSchema = z.object({
 // Residual 797: TaskGraphDependencyDTO dual retired — this schema is the sole graph-edge shape
 // (semantic TaskGraphDependencyDTO is z.infer alias).
 
+// Residual 831: TaskDependencyClientDTO dual retired — sole TaskDependencyResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/task-dependency-client.ts).
 export const TaskDependencyResponseSchema = z.object({
   id: brandedId<TaskDependencyId>(),
   predecessorTaskId: brandedId<TaskTemplateId>(),
@@ -111,6 +113,8 @@ export const TaskTemplateGraphResponseSchema = z.object({
 
 // ============ TaskInstance Response Schema ============
 
+// Residual 831: TaskInstanceClientDTO dual retired — sole TaskInstanceResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/task-instance-client.ts).
 export const TaskInstanceResponseSchema = z.object({
   id: brandedId<TaskInstanceId>(),
   templateId: brandedId<TaskTemplateId>(),

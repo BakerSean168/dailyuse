@@ -6,6 +6,9 @@ import { describe, expect, it } from 'vitest';
  * Residual 747: task time-config dual body retired.
  * TaskTimeConfigDTO reuses TaskTimeConfigSchema only.
  * Domain TaskTimeConfig (DomainDate startDate) stays separate from transfer DTO.
+  *
+ * Soft residual 831: TaskInstanceClientDTO dual retired via TaskInstanceResponseSchema
+ * (see task-instance-dependency-schedule-task-client-dto-dual surface).
  */
 describe('task time-config dual retired (residual 747)', () => {
   const apiDir = __dirname;

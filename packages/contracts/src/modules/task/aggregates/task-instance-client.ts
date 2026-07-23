@@ -1,39 +1,11 @@
 /**
  * TaskInstance Aggregate Root - Client Interface
+ *
+ * Residual 831: TaskInstanceClientDTO dual retired — sole TaskInstanceResponseSchema + z.infer.
  */
 
-import type {
-  TaskInstanceId,
-  TaskTemplateId,
-  IdentityId,
-  TransferDate,
-} from '../../../primitives';
-import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
-import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import type {
-  TaskTimeConfigDTO,
-} from '../value-objects';
+import type { z } from 'zod';
+import { TaskInstanceResponseSchema } from '../api/response-schemas';
 
-export interface TaskInstanceClientDTO {
-  id: TaskInstanceId;
-  templateId: TaskTemplateId;
-  identityId: IdentityId;
-
-  instanceDate: TransferDate;
-  timeConfig: TaskTimeConfigDTO;
- 
-  importance?: ImportanceLevel;
-  priority?: number;
-
-  status: TaskInstanceStatus;
-  actualStartTime: TransferDate | null;
-  actualEndTime: TransferDate | null;
-
-  comment: string | null;
-
-  // 同步字段
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-}
+// Residual 831: TaskInstanceClientDTO dual retired — OpenAPI + transport use TaskInstanceResponseSchema.
+export type TaskInstanceClientDTO = z.infer<typeof TaskInstanceResponseSchema>;

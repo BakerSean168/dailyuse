@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 649: retire zero-consumer task dependency/subtask Server duals.
  * Live path keeps TaskDependencyServerDTO + DependencyChainClientDTO + SubtaskClientDTO.
+  *
+ * Soft residual 831: TaskDependencyClientDTO dual retired via TaskDependencyResponseSchema; DependencyChain stays interface
+ * (see task-instance-dependency-schedule-task-client-dto-dual surface).
  */
 describe('task dependency/subtask server dual single-track surface (residual 649)', () => {
   const aggregates = __dirname;
