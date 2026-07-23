@@ -6,12 +6,15 @@
 import { z } from 'zod';
 import { Router } from 'express';
 import { RouteRegistrar, successResponse } from '@dailyuse/utils/result';
-import { GetRuleRevisionsQuerySchema } from '@dailyuse/contracts/governance';
+import {
+  GetRuleRevisionsQuerySchema,
+  GetRuleRevisionsResSchema,
+} from '@dailyuse/contracts/governance';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { RuleId } from '@dailyuse/contracts/primitives';
 import type { GovernanceController } from '../../server/transport/governance.controller';
 import type { GovernanceOpenApiRegistry, PlatformMiddleware } from './governance-route-shared';
-import { GovernanceRuleRevisionsResponseSchema, parseNumber } from './governance-route-shared';
+import { parseNumber } from './governance-route-shared';
 
 /**
  * Registers HTTP routes for the governance RuleRevision child resource.
@@ -45,7 +48,7 @@ export function registerGovernanceRuleRevisionsRoutes(
         query: GetRuleRevisionsQuerySchema.omit({ ruleId: true }),
       },
       responses: {
-        200: successResponse(GovernanceRuleRevisionsResponseSchema, '获取成功'),
+        200: successResponse(GetRuleRevisionsResSchema, '获取成功'),
       },
     },
     [auth],

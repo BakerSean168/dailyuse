@@ -5,13 +5,6 @@
 
 import type { RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import {
-  GetRuleRevisionsResSchema,
-  ListRulesResSchema,
-  RuleClientDTOSchema,
-  RuleRevisionClientDTOSchema,
-  SearchRulesResSchema,
-} from '@dailyuse/contracts/governance';
 
 export interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -20,11 +13,9 @@ export interface PlatformMiddleware {
 
 export type GovernanceOpenApiRegistry = OpenApiRegistryLike | null | undefined;
 
-export const RuleResponseSchema = RuleClientDTOSchema;
-export const RuleRevisionResponseSchema = RuleRevisionClientDTOSchema;
-export const GovernanceListRulesResponseSchema = ListRulesResSchema;
-export const GovernanceSearchRulesResponseSchema = SearchRulesResSchema;
-export const GovernanceRuleRevisionsResponseSchema = GetRuleRevisionsResSchema;
+// Residual 681: OpenAPI routes use contracts response schemas directly
+// (RuleClientDTOSchema / ListRulesResSchema / SearchRulesResSchema / GetRuleRevisionsResSchema).
+// No local *ResponseSchema name dual aliases.
 
 /**
  * Parses an unknown query value into a single string.

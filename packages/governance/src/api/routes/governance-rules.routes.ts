@@ -9,7 +9,10 @@ import { RouteRegistrar, successResponse, errorResponse } from '@dailyuse/utils/
 import {
   CreateRuleSchema,
   ListRulesQuerySchema,
+  ListRulesResSchema,
+  RuleClientDTOSchema,
   SearchRulesQuerySchema,
+  SearchRulesResSchema,
   UpdateRuleSchema,
 } from '@dailyuse/contracts/governance';
 import type { ListRulesQueryInput, SearchRulesQueryInput } from '@dailyuse/contracts/governance';
@@ -18,9 +21,6 @@ import type { RuleId } from '@dailyuse/contracts/primitives';
 import type { GovernanceController } from '../../server/transport/governance.controller';
 import type { GovernanceOpenApiRegistry, PlatformMiddleware } from './governance-route-shared';
 import {
-  GovernanceListRulesResponseSchema,
-  GovernanceSearchRulesResponseSchema,
-  RuleResponseSchema,
   parseNumber,
   parseString,
   parseStringArray,
@@ -55,7 +55,7 @@ export function registerGovernanceRulesRoutes(
       summary: '创建规则',
       request: { body: { content: { 'application/json': { schema: CreateRuleSchema } } } },
       responses: {
-        201: successResponse(RuleResponseSchema, '创建成功'),
+        201: successResponse(RuleClientDTOSchema, '创建成功'),
         400: errorResponse('参数错误'),
         403: errorResponse('权限不足'),
       },
@@ -72,7 +72,7 @@ export function registerGovernanceRulesRoutes(
       summary: '搜索规则',
       request: { query: SearchRulesQuerySchema },
       responses: {
-        200: successResponse(GovernanceSearchRulesResponseSchema, '搜索成功'),
+        200: successResponse(SearchRulesResSchema, '搜索成功'),
       },
     },
     [auth],
@@ -97,7 +97,7 @@ export function registerGovernanceRulesRoutes(
       summary: '按代码获取规则',
       request: { params: z.object({ code: z.string() }) },
       responses: {
-        200: successResponse(RuleResponseSchema, '获取成功'),
+        200: successResponse(RuleClientDTOSchema, '获取成功'),
         404: errorResponse('规则不存在'),
       },
     },
@@ -112,7 +112,7 @@ export function registerGovernanceRulesRoutes(
       summary: '查询规则列表',
       request: { query: ListRulesQuerySchema },
       responses: {
-        200: successResponse(GovernanceListRulesResponseSchema, '获取成功'),
+        200: successResponse(ListRulesResSchema, '获取成功'),
       },
     },
     [auth],
@@ -133,7 +133,7 @@ export function registerGovernanceRulesRoutes(
       summary: '按 ID 获取规则',
       request: { params: z.object({ id: brandedId<RuleId>() }) },
       responses: {
-        200: successResponse(RuleResponseSchema, '获取成功'),
+        200: successResponse(RuleClientDTOSchema, '获取成功'),
         404: errorResponse('规则不存在'),
       },
     },
@@ -151,7 +151,7 @@ export function registerGovernanceRulesRoutes(
         body: { content: { 'application/json': { schema: UpdateRuleSchema } } },
       },
       responses: {
-        200: successResponse(RuleResponseSchema, '更新成功'),
+        200: successResponse(RuleClientDTOSchema, '更新成功'),
         404: errorResponse('规则不存在'),
         403: errorResponse('权限不足'),
       },
