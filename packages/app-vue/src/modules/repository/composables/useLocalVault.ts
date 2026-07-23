@@ -8,10 +8,10 @@ import type {
 import type { Result } from '@dailyuse/contracts/result';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+// Residual 999: sole errorMessage (local dual retired).
+import { errorMessage } from '@dailyuse/utils/shared';
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
+// Residual 999: errorMessage elevated to @dailyuse/utils/shared.
 
 export function useLocalVault() {
   const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');

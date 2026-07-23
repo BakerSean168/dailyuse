@@ -10,3 +10,4 @@ export * from './env-config';
 export * from './persistence';
 export * from './escape-html';
 export * from './parse-query-value';
+export * from './error-message';

@@ -8,6 +8,8 @@
 
 import { z } from 'zod';
 import { createLogger } from '@dailyuse/utils/logger';
+// Residual 999: sole errorMessage (local dual retired).
+import { errorMessage } from '@dailyuse/utils/shared';
 import {
   AgentActionSchema,
   AgentArtifactSchema,
@@ -336,9 +338,7 @@ function toAIServiceAnalyticsContext(context: AnalyticsQueryContext) {
   };
 }
 
-function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
-}
+// Residual 999: errorMessage elevated to @dailyuse/utils/shared.
 
 function toAgentRuntimeTaskType(operation: 'start' | 'resume'): string {
   return operation === 'start' ? 'AGENT_RUNTIME_START' : 'AGENT_RUNTIME_RESUME';
