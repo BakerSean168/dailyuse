@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import { CreateKnowledgeNoteResSchema } from './response-schemas';
+import {
+  CreateKnowledgeNoteResSchema,
+  KnowledgeNotePersistedRefSchema,
+} from './response-schemas';
 
 function normalizeKnowledgeNoteTargetSubpath(value: string): string {
   return value
@@ -66,18 +69,9 @@ export type KnowledgeNoteIndexStatus = 'pending' | 'indexed' | 'failed';
  * Persisted knowledge-note reference returned after confirmed create.
  * Not a database Resource CRUD DTO — scoped to vault/projection note writes.
  */
-export interface KnowledgeNotePersistedRef {
-  id: string;
-  /** Knowledge connection id, or local-vault-{identityId} scope. */
-  repositoryScopeId: string;
-  name: string;
-  path: string;
-  mimeType: string;
-  size: number;
-  content: string | null;
-  createdAt: number;
-  updatedAt: number;
-}
+// Residual 723: persisted-ref dual body retired — OpenAPI + transport use
+// KnowledgeNotePersistedRefSchema.
+export type KnowledgeNotePersistedRef = z.infer<typeof KnowledgeNotePersistedRefSchema>;
 
 // Residual 695: response dual body retired — OpenAPI + transport use CreateKnowledgeNoteResSchema.
 export type CreateKnowledgeNoteRes = z.infer<typeof CreateKnowledgeNoteResSchema>;

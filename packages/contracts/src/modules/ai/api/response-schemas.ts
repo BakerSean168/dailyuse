@@ -221,7 +221,9 @@ export const ExpandKnowledgeResSchema = z.object({
   matchedResourceCount: z.number(),
 });
 
-const KnowledgeNotePersistedRefSchema = z.object({
+// Residual 723: KnowledgeNotePersistedRefSchema is the sole persisted-note shape
+// (KnowledgeNotePersistedRef is a z.infer alias).
+export const KnowledgeNotePersistedRefSchema = z.object({
   id: z.string(),
   repositoryScopeId: z.string(),
   name: z.string(),
