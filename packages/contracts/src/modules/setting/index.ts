@@ -1,3 +1,10 @@
+/**
+ * Setting Module Exports
+ *
+ * Residual 661: empty dual dtos barrel re-export retired.
+ * Live setting contracts: aggregates + preferences + api.
+ */
+
 // ============ Aggregates ============
 export * from './aggregates';
 
@@ -15,9 +22,6 @@ export * from './configs';
 
 // ============ API ============
 export * from './api';
-
-// ============ DTOs ============
-export * from './dtos';
 
 // ============ Preferences ============
 export * from './preferences';
