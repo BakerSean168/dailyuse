@@ -6,7 +6,7 @@ import { lastArg } from './last-arg';
 /**
  * Residual 997: lastArg dual retired (AI IPC stream adapters).
  * Sole body in last-arg.ts; assistant + message IPC adapters import it.
- * Soft residual 1006: tip focused suite numbers track Residual 1006 evidence tip (293/1275).
+ * Soft residual 1008: tip focused suite numbers track Residual 1008 evidence tip (294/1279).
  * Soft residual 993: createStreamId dual retired (create-stream-id-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */

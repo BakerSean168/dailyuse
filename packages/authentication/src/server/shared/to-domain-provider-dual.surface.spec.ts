@@ -7,7 +7,7 @@ import { OAuthProvider } from '../domain';
 /**
  * Residual 991: toDomainProvider dual retired (bind/unbind OAuth use cases).
  * Sole body in to-domain-provider.ts; bind + unbind use cases import it.
- * Soft residual 1006: tip focused suite numbers track Residual 1006 evidence tip (293/1275).
+ * Soft residual 1008: tip focused suite numbers track Residual 1008 evidence tip (294/1279).
  * Soft residual 893: transport Microsoft keep-boundary → null (domain catalog has no Microsoft).
  * Does not flip §13.2 checkboxes.
  */
