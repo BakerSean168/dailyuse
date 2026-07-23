@@ -1,5 +1,8 @@
 /**
  * UUID 生成工具（跨端）
+ * Residual 1131 keep-boundary: cross-platform generateUUID
+ * (crypto.randomUUID + Math.random fallback). Intentionally not test-utils generateUUID
+ * (node:crypto randomUUID only, test fixtures).
  */
 
 import { v4 as uuidv4 } from 'uuid';
@@ -12,6 +15,8 @@ export const newId = () => uuidv4();
 
 /**
  * 生成 UUID v4（跨平台兼容实现，不依赖 uuid 库）
+ * Residual 1131 keep-boundary: crypto.randomUUID + Math.random fallback (no node:crypto import).
+ * Soft residual 1131: test-utils generateUUID uses node:crypto randomUUID only (no force-merge).
  */
 export function generateUUID(): string {
   // 优先使用原生 API
