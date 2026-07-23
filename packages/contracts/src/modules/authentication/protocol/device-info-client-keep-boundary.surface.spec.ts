@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 881: DeviceInfoClientDTO ≠ full DeviceInfo VO keep-boundary.
  * Desktop renderer slim device dual stays separate from full VO and slim OpenAPI schema.
+ * Residual 883 (soft): SessionRestoreResult layered extension keep-boundary
+ *   (apps/desktop .../session-restore-result-extension-keep-boundary.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('device-info client keep-boundary (residual 881)', () => {

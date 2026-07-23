@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Auth lifecycle coordinator surface (stage-6 residual 70):
  * initialize idempotent path returns ok, not success dual-track.
+ * Residual 883 (soft): SessionRestoreResult layered extension keep-boundary
+ *   (session-restore-result-extension-keep-boundary.surface.spec.ts).
  */
 describe('desktop-auth-lifecycle-coordinator SessionRestoreResult surface', () => {
   const source = readFileSync(

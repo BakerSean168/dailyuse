@@ -141,6 +141,7 @@ export interface TokenStatus {
 
 /**
  * Result of attempting to restore a session on app startup.
+ * Residual 883: protocol DTO sole base shape (desktop infrastructure/lifecycle may extend intentionally).
  */
 export interface SessionRestoreResult {
   ok: boolean;

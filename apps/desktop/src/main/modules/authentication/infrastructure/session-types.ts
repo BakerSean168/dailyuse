@@ -18,7 +18,9 @@ import { AuthMode } from '@dailyuse/contracts/authentication';
 
 // ============ Exported Types ============
 
-/** Extended session restore result (includes domain objects). */
+/** Extended session restore result (includes domain objects).
+ * Residual 883: intentional extension of contracts SessionRestoreResult (+ domain session).
+ */
 export interface SessionRestoreResult extends ContractSessionRestoreResult {
   session?: AuthSession;
 }
