@@ -6,7 +6,7 @@ import { clamp } from './clamp';
 /**
  * Residual 1001: clamp dual retired (panel-geometry + useAppShellStore).
  * Sole body in clamp.ts with max < min fail-safe.
- * Soft residual 1020: tip focused suite numbers track Residual 1020 evidence tip (300/1303).
+ * Soft residual 1022: tip focused suite numbers track Residual 1022 evidence tip (301/1307).
  * Does not flip §13.2 checkboxes.
  */
 describe('clamp dual retired (residual 1001)', () => {
