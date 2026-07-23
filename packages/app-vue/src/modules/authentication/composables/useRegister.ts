@@ -1,13 +1,18 @@
-import { toast } from 'vue-sonner';
 import type { RegisterByEmailReq } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
 import { completeAuthSuccess } from './completeAuthSuccess';
+import {
+  reportAuthCatchFailure,
+  reportAuthResultFailure,
+} from './reportAuthOperationFailure';
 
 // Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
 // Residual 1045: completeAuthSuccess dual retired onto completeAuthSuccess sole.
+// Residual 1049: auth result/catch failure duals retired onto reportAuthOperationFailure sole.
 
 export function useRegister(ctx: AuthContext) {
   const { store, service, t, lastResultError, redirectWithReload, handleAuthSuccess, getLocalizedAuthError } = ctx;
+  const failureDeps = { store, t, lastResultError, getLocalizedAuthError };
 
   async function registerByEmail(req: RegisterByEmailReq): Promise<boolean> {
     store.setLoading(true);
@@ -27,22 +32,9 @@ export function useRegister(ctx: AuthContext) {
           t('auth.toast.welcomeJoin'),
         );
       }
-      lastResultError.value = result.error;
-      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
-      store.setError(message);
-      toast.error(t('auth.toast.registerFailed'), { description: message });
-      return false;
+      return reportAuthResultFailure(failureDeps, result.error, 'auth.toast.registerFailed');
     } catch (e) {
-      store.setLoading(false);
-      console.error('[auth] registerByEmail failed', e);
-      lastResultError.value = {
-        code: 'UNKNOWN',
-        message: e instanceof Error ? e.message : 'Unknown error',
-      };
-      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
-      store.setError(description);
-      toast.error(t('auth.toast.registerFailed'), { description });
-      return false;
+      return reportAuthCatchFailure(failureDeps, e, 'registerByEmail', 'auth.toast.registerFailed');
     } finally {
       store.setLoading(false);
     }

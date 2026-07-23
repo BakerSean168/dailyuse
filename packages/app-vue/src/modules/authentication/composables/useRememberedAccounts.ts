@@ -5,12 +5,18 @@ import type {
 } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
 import { completeAuthSuccess } from './completeAuthSuccess';
+import {
+  reportAuthCatchFailure,
+  reportAuthResultFailure,
+} from './reportAuthOperationFailure';
 
 // Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
 // Residual 1045: completeAuthSuccess dual retired onto completeAuthSuccess sole.
+// Residual 1049: auth result/catch failure duals retired onto reportAuthOperationFailure sole.
 
 export function useRememberedAccounts(ctx: AuthContext) {
   const { store, service, t, lastResultError, redirectWithReload, handleAuthSuccess, getLocalizedAuthError } = ctx;
+  const failureDeps = { store, t, lastResultError, getLocalizedAuthError };
 
   async function listRememberedAccounts(): Promise<RememberedDesktopAccountDTO[]> {
     const result = await service.listRememberedAccounts();
@@ -42,22 +48,14 @@ export function useRememberedAccounts(ctx: AuthContext) {
           t('auth.toast.welcomeBack'),
         );
       }
-      lastResultError.value = result.error;
-      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
-      store.setError(message);
-      toast.error(t('auth.toast.loginFailed'), { description: message });
-      return false;
+      return reportAuthResultFailure(failureDeps, result.error, 'auth.toast.loginFailed');
     } catch (e) {
-      store.setLoading(false);
-      console.error('[auth] loginRememberedDesktopAccount failed', e);
-      lastResultError.value = {
-        code: 'UNKNOWN',
-        message: e instanceof Error ? e.message : 'Unknown error',
-      };
-      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
-      store.setError(description);
-      toast.error(t('auth.toast.loginFailed'), { description });
-      return false;
+      return reportAuthCatchFailure(
+        failureDeps,
+        e,
+        'loginRememberedDesktopAccount',
+        'auth.toast.loginFailed',
+      );
     } finally {
       store.setLoading(false);
     }
