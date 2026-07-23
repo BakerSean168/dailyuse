@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId, NotificationId, NotificationPreferenceId } from '../../../primitives';
+import type { IdentityId, NotificationId, NotificationPreferenceId, NotificationTemplateId } from '../../../primitives';
 import { NotificationType } from '../value-objects/notification-type';
 import { NotificationCategory } from '../value-objects/notification-category';
 import { NotificationStatus } from '../value-objects/notification-status';
@@ -66,3 +66,53 @@ export const NotificationPreferenceResponseSchema = z.object({
   deletedAt: z.number().nullable(),
 });
 
+
+
+// Residual 839: NotificationTemplateClientDTO dual retired — sole NotificationTemplateResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/notification-template-client.ts).
+// Nested config matches NotificationTemplateConfigServerDTO shape.
+export const NotificationTemplateContentSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  variables: z.array(z.string()).optional(),
+});
+
+export const NotificationEmailTemplateContentSchema = z.object({
+  subject: z.string(),
+  htmlBody: z.string().nullable().optional(),
+  textBody: z.string().nullable().optional(),
+});
+
+export const NotificationPushTemplateContentSchema = z.object({
+  title: z.string(),
+  body: z.string(),
+  icon: z.string().nullable().optional(),
+  sound: z.string().nullable().optional(),
+});
+
+export const NotificationChannelConfigSchema = z.object({
+  inApp: z.boolean(),
+  email: z.boolean(),
+  push: z.boolean(),
+  sms: z.boolean(),
+});
+
+export const NotificationTemplateConfigSchema = z.object({
+  template: NotificationTemplateContentSchema,
+  channels: NotificationChannelConfigSchema,
+  emailTemplate: NotificationEmailTemplateContentSchema.nullable().optional(),
+  pushTemplate: NotificationPushTemplateContentSchema.nullable().optional(),
+});
+
+export const NotificationTemplateResponseSchema = z.object({
+  id: brandedId<NotificationTemplateId>(),
+  name: z.string(),
+  description: z.string().nullable(),
+  type: z.enum(NotificationType),
+  category: z.enum(NotificationCategory),
+  template: NotificationTemplateConfigSchema,
+  isActive: z.boolean(),
+  isSystemTemplate: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
