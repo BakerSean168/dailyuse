@@ -283,6 +283,7 @@ export interface AuthBootstrapSnapshot {
 
 /**
  * Email + password login credentials.
+ * Residual 869: sole desktop email-login request shape (DesktopLoginRequest is type alias).
  */
 export interface EmailLoginCredentials {
   email: string;

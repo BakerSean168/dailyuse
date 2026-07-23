@@ -1,4 +1,7 @@
-import { type AuthResponseDTO } from '@dailyuse/contracts/authentication';
+import {
+  type AuthResponseDTO,
+  type EmailLoginCredentials,
+} from '@dailyuse/contracts/authentication';
 
 import type { AuthRemoteGateway } from './auth-remote-gateway';
 import {
@@ -11,12 +14,8 @@ import {
   type AuthFlowResult,
 } from './auth-flow-types';
 
-export interface DesktopLoginRequest {
-  email: string;
-  password: string;
-  rememberPassword?: boolean;
-  autoLogin?: boolean;
-}
+// Residual 869: DesktopLoginRequest dual retired — EmailLoginCredentials is the sole shape.
+export type DesktopLoginRequest = EmailLoginCredentials;
 
 export type DesktopLoginResult = AuthFlowResult<AuthResponseDTO>;
 

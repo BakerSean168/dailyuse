@@ -80,6 +80,8 @@ describe('desktop-auth AuthStatusDTO dual retired (residual 865)', () => {
 /**
  * Residual 867: LoginResponse dual deleted (zero consumers).
  * Desktop offline login uses OfflineLoginResponse; online auth uses AuthResponseDTO.
+ * Residual 869 (soft): DesktopLoginRequest dual retired via EmailLoginCredentials type alias
+ *   (apps/desktop .../desktop-login-request-dual.surface.spec.ts).
  */
 describe('desktop-auth LoginResponse dual retired (residual 867)', () => {
   const source = readFileSync(resolve(__dirname, 'desktop-auth.types.ts'), 'utf8');
