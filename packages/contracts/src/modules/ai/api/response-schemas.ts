@@ -126,18 +126,20 @@ export const MessageListResSchema = z.object({
 // (re-exported for OpenAPI route consumers).
 export { TestAIProviderResultDTOSchema };
 
-const KnowledgeCitationResSchema = z.object({
-  resourceId: z.string(),
-  resourcePath: z.string(),
+// Residual 755: KnowledgeCitationSchema is the sole citation transport shape
+// (KnowledgeCitation is a z.infer alias on ai-knowledge-query.dto).
+export const KnowledgeCitationSchema = z.object({
+  resourceId: z.string().min(1),
+  resourcePath: z.string().min(1),
   title: z.string().optional(),
   chunkIndex: z.number().int().nonnegative(),
-  excerpt: z.string(),
+  excerpt: z.string().min(1),
   score: z.number().nonnegative(),
 });
 
 export const QueryKnowledgeResSchema = z.object({
   answer: z.string(),
-  citations: z.array(KnowledgeCitationResSchema),
+  citations: z.array(KnowledgeCitationSchema),
   providerId: brandedId<AiProviderConfigId>(),
   tokenUsage: TokenUsageSchema,
   processingTimeMs: z.number(),
@@ -146,7 +148,7 @@ export const QueryKnowledgeResSchema = z.object({
 
 export const ExpandKnowledgeResSchema = z.object({
   expandedContent: z.string(),
-  citations: z.array(KnowledgeCitationResSchema),
+  citations: z.array(KnowledgeCitationSchema),
   providerId: brandedId<AiProviderConfigId>(),
   tokenUsage: TokenUsageSchema,
   processingTimeMs: z.number(),

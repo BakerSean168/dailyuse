@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import { QueryKnowledgeResSchema } from './response-schemas';
+import {
+  KnowledgeCitationSchema,
+  QueryKnowledgeResSchema,
+} from './response-schemas';
 
 export const QueryKnowledgeSchema = z.object({
   query: z.string().trim().min(3).max(2000),
@@ -11,15 +14,7 @@ export const QueryKnowledgeSchema = z.object({
 
 export type QueryKnowledgeReq = z.infer<typeof QueryKnowledgeSchema>;
 
-export const KnowledgeCitationSchema = z.object({
-  resourceId: z.string().min(1),
-  resourcePath: z.string().min(1),
-  title: z.string().optional(),
-  chunkIndex: z.number().int().nonnegative(),
-  excerpt: z.string().min(1),
-  score: z.number().nonnegative(),
-});
-
+// Residual 755: citation dual retired — response-schemas owns KnowledgeCitationSchema.
 export type KnowledgeCitation = z.infer<typeof KnowledgeCitationSchema>;
 
 // Residual 695: response dual body retired — OpenAPI + transport use QueryKnowledgeResSchema.
