@@ -12,8 +12,7 @@ import type { NotificationApplicationPort } from '../application';
 import {
   CreateNotificationSchema,
   NotificationQuerySchema,
-  MarkAsReadBatchSchema,
-  DeleteNotificationsBatchSchema,
+  NotificationIdsBatchSchema,
   CleanupOldNotificationsSchema,
   UpdateNotificationPreferenceSchema,
 } from '@dailyuse/contracts/notification';
@@ -84,7 +83,7 @@ export class NotificationController {
   }
 
   async batchMarkAsRead(input: unknown, ctx: Context): Promise<Result<{ updatedCount: number }>> {
-    const parsed = MarkAsReadBatchSchema.safeParse(input);
+    const parsed = NotificationIdsBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -100,7 +99,7 @@ export class NotificationController {
   }
 
   async batchDelete(input: unknown, ctx: Context): Promise<Result<{ deletedCount: number }>> {
-    const parsed = DeleteNotificationsBatchSchema.safeParse(input);
+    const parsed = NotificationIdsBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',

@@ -12,8 +12,8 @@
  *   PUT    /:id             — Update notification (UpdateNotificationSchema)
  *   DELETE /:id             — Delete notification
  *   POST   /:id/read        — Mark single notification as read
- *   POST   /batch-read      — Batch mark as read (MarkAsReadBatchSchema)
- *   POST   /batch-delete    — Batch delete (DeleteNotificationsBatchSchema)
+ *   POST   /batch-read      — Batch mark as read (shared id-batch schema)
+ *   POST   /batch-delete    — Batch delete (shared id-batch schema)
  *   POST   /cleanup         — Cleanup old notifications (CleanupOldNotificationsSchema)
  */
 
@@ -31,8 +31,7 @@ import type { NotificationId } from '@dailyuse/contracts/primitives';
 import {
   CreateNotificationSchema,
   NotificationQuerySchema,
-  MarkAsReadBatchSchema,
-  DeleteNotificationsBatchSchema,
+  NotificationIdsBatchSchema,
   CleanupOldNotificationsSchema,
   UpdateNotificationPreferenceSchema,
   NotificationResponseSchema,
@@ -148,7 +147,7 @@ export function registerNotificationRoutes(
       method: 'post',
       path: '/batch-read',
       summary: '批量标记为已读',
-      request: { body: { content: { 'application/json': { schema: MarkAsReadBatchSchema } } } },
+      request: { body: { content: { 'application/json': { schema: NotificationIdsBatchSchema } } } },
       responses: {
         200: successResponse(NotificationBatchResultSchema, '操作成功'),
         400: errorResponse('参数错误'),
@@ -165,7 +164,7 @@ export function registerNotificationRoutes(
       path: '/batch-delete',
       summary: '批量删除通知',
       request: {
-        body: { content: { 'application/json': { schema: DeleteNotificationsBatchSchema } } },
+        body: { content: { 'application/json': { schema: NotificationIdsBatchSchema } } },
       },
       responses: {
         200: successResponse(NotificationBatchResultSchema, '删除成功'),
