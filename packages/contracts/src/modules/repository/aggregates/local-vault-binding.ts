@@ -6,6 +6,7 @@
  * 仅本地元数据，绝不隐含 GitHub 同步授权。
  *
  * Residual 793: Res duals retired — nested DTO + Res use sole *Schema + z.infer.
+ * Residual 795: Req duals retired — sole *ReqSchema + z.infer.
  */
 
 import { z } from 'zod';
@@ -39,10 +40,12 @@ export const LocalVaultBindingClientDTOSchema = z.object({
 });
 export type LocalVaultBindingClientDTO = z.infer<typeof LocalVaultBindingClientDTOSchema>;
 
-export interface SelectLocalVaultReq {
+// Residual 795: select vault Req dual retired — sole ReqSchema + z.infer.
+export const SelectLocalVaultReqSchema = z.object({
   /** Optional picker starting point. The renderer cannot bind an arbitrary path directly. */
-  suggestedPath?: string;
-}
+  suggestedPath: z.string().optional(),
+});
+export type SelectLocalVaultReq = z.infer<typeof SelectLocalVaultReqSchema>;
 
 export const LocalVaultNoteSummaryDTOSchema = z.object({
   relativePath: z.string(),
@@ -69,16 +72,20 @@ export const ScanLocalVaultResSchema = z.object({
 });
 export type ScanLocalVaultRes = z.infer<typeof ScanLocalVaultResSchema>;
 
-export interface ReadLocalVaultNoteReq {
-  relativePath: string;
-}
+// Residual 795: read note Req dual retired — sole ReqSchema + z.infer.
+export const ReadLocalVaultNoteReqSchema = z.object({
+  relativePath: z.string(),
+});
+export type ReadLocalVaultNoteReq = z.infer<typeof ReadLocalVaultNoteReqSchema>;
 
 export type ReadLocalVaultNoteRes = LocalVaultNoteDTO;
 
-export interface SearchLocalVaultReq {
-  query: string;
-  limit?: number;
-}
+// Residual 795: search vault Req dual retired — sole ReqSchema + z.infer.
+export const SearchLocalVaultReqSchema = z.object({
+  query: z.string(),
+  limit: z.number().optional(),
+});
+export type SearchLocalVaultReq = z.infer<typeof SearchLocalVaultReqSchema>;
 
 export const LocalVaultSearchMatchDTOSchema = z.object({
   lineNumber: z.number(),
@@ -101,17 +108,21 @@ export const SearchLocalVaultResSchema = z.object({
 });
 export type SearchLocalVaultRes = z.infer<typeof SearchLocalVaultResSchema>;
 
-export interface OpenLocalVaultInObsidianReq {
-  relativePath?: string;
-}
+// Residual 795: open-in-obsidian req dual retired — sole ReqSchema + z.infer.
+export const OpenLocalVaultInObsidianReqSchema = z.object({
+  relativePath: z.string().optional(),
+});
+export type OpenLocalVaultInObsidianReq = z.infer<typeof OpenLocalVaultInObsidianReqSchema>;
 
-export interface ConfirmedLocalVaultWriteReq {
-  relativePath: string;
-  contentMarkdown: string;
-  proposalId: string;
-  proposalRevision: number;
-  requestId: string;
-}
+// Residual 795: confirmed write req dual retired — sole ReqSchema + z.infer.
+export const ConfirmedLocalVaultWriteReqSchema = z.object({
+  relativePath: z.string(),
+  contentMarkdown: z.string(),
+  proposalId: z.string(),
+  proposalRevision: z.number(),
+  requestId: z.string(),
+});
+export type ConfirmedLocalVaultWriteReq = z.infer<typeof ConfirmedLocalVaultWriteReqSchema>;
 
 // Residual 793: confirmed write Res dual retired — sole ResSchema + z.infer.
 export const ConfirmedLocalVaultWriteResSchema = z.object({
