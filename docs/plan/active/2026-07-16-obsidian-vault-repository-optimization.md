@@ -8355,6 +8355,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > dashboard projection：`timestamp: number` → local midnight ms；
 > app-react agenda：`date: Date` → Date（本地日历日 UI）；
 > surface Residual 1165 锁（数字日界 vs Date 日界不强制合并）。
+> 续进展 2026-07-23（阶段 6 残留一千一百六十六轮）：§13.2 聚焦证据套件复跑（含 residual 250–1165
+> startOfDay keep-boundary 锁，不改 checkbox）——**350 文件 / 1512 测试**（app-vue 54/413、
+> ai 51/319、repository 7/38、contracts 131/389、governance 3/10、api 12/33、
+> desktop 22/63、utils 19/74、authentication 10/32、account 2/6、goal 6/22、schedule 3/9、
+> dashboard 3/9、data-portability 11/49、web 2/8、patterns 1/4）+
+> governance-check GOV_EXIT:0；FAILED_EXITS: []。
+> 相对 residual 1163：dashboard +1 file / +4 tests（residual 1165 startOfDay keep-boundary surface）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
+> GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
+> 状态保持 **实施中**；PR 就绪仍为否。
 
 
 
@@ -8542,7 +8552,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
 > Soft residual：goal createGoalErrorHandler rich-log keep-boundary（scope/details ≠ createComposableHandleError）不强制合并。
-> Soft residual：account PowerSync parseJson throw、api parseJsonLikeString、data-portability parseJsonField、asRecord/toRecord、toTimestamp、toNumber、toStringArray、toBoolean、optionalString/toNonEmptyString、asNonEmptyString、toDate/toDateString、extractErrorMessage、generateUUID、newId、isPlainObject、toMillis、formatFileSize、toKnowledgeNoteRef、tokenize、toPrismaJson account cast vs AI deep-clone、goal clampPercentage、isRecord cross-package keep-boundary、contracts private isRecord 不强制合并。
+> Soft residual：account PowerSync parseJson throw、api parseJsonLikeString、data-portability parseJsonField、asRecord/toRecord、toTimestamp、toNumber、toStringArray、toBoolean、optionalString/toNonEmptyString、asNonEmptyString、toDate/toDateString、extractErrorMessage、generateUUID、newId、isPlainObject、toMillis、formatFileSize、toKnowledgeNoteRef、tokenize、toPrismaJson account cast vs AI deep-clone、goal clampPercentage、isRecord cross-package keep-boundary、contracts private isRecord、startOfDay 不强制合并。
 > 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
 > 阶段 6 dual 收口（残留 250–300；四百八十七轮补 task DAG *ViewModel 消费者收口；五百三十九轮 portable editor_* / knowledge routes / /note strip 再锁）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
 > Host task.create 进程内产品路径（残留 427–491 + 501–589）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
@@ -9702,6 +9712,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百六十三轮：§13.2 focused evidence suite re-run (1508 tests, residuals 250–1162 locks, no checkbox changes)。
   残留一千一百六十四轮：§13.2 evidence tip refresh (1163 tip 349/1508) + open-items surface lock (no checkbox flips).
   残留一千一百六十五轮：lock startOfDay keep-boundary (dashboard timestamp ms vs app-react Date; no force-merge).
+  残留一千一百六十六轮：§13.2 focused evidence suite re-run (1512 tests, residuals 250–1165 locks, no checkbox changes)。
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -10300,6 +10311,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百六十三轮：§13.2 focused evidence suite re-run（1508 tests，residuals 250–1162 锁；不改 checkbox）。
   残留一千一百六十四轮：§13.2 evidence tip 刷新（1163 tip 349/1508）+ open-items surface 锁（不改 checkbox）。
   残留一千一百六十五轮：lock startOfDay keep-boundary（dashboard timestamp ms vs app-react Date；不强制合并）。
+  残留一千一百六十六轮：§13.2 focused evidence suite re-run（1512 tests，residuals 250–1165 锁；不改 checkbox）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11510,6 +11522,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百六十三轮：tip 上 1508 项 focused evidence suite（含 residual 250–1162 contracts isRecord keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
   残留一千一百六十四轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千一百六十五轮：startOfDay keep-boundary surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留一千一百六十六轮：tip 上 1512 项 focused evidence suite（含 residual 250–1165 startOfDay keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
