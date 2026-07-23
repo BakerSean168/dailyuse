@@ -6,6 +6,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 633: SettingOperationRes partial dual envelope is retired.
  * Setting API responses use DTO / Result envelopes only (no { ok, message? }).
+ *
+ * Soft residual 823: UserSettingClientDTO dual retired via UserSettingResponseSchema
+ * (see user-setting-client-dto-dual surface).
  */
 const here = dirname(fileURLToPath(import.meta.url));
 

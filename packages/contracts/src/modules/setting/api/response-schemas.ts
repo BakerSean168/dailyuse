@@ -11,6 +11,9 @@ import { UserPreferencesSchema } from '../preferences/schemas';
 
 /**
  * UserSetting Response Schema
+ *
+ * Residual 823: UserSettingClientDTO dual retired — sole UserSettingResponseSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/user-setting-client.ts).
  */
 export const UserSettingResponseSchema = z.object({
   id: brandedId<SettingId>(),

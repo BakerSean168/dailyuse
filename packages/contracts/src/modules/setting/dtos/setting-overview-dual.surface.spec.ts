@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 657: setting overview dual retired.
  * Setting contracts use UserSettingClientDTO / preference surfaces only.
+ *
+ * Soft residual 823: UserSettingClientDTO dual retired via UserSettingResponseSchema
+ * (see user-setting-client-dto-dual surface; assertion updated below).
  */
 describe('setting overview dual single-track surface (residual 657)', () => {
   const dtos = __dirname;
@@ -23,10 +26,13 @@ describe('setting overview dual single-track surface (residual 657)', () => {
     ]);
   });
 
-  it('keeps UserSettingClientDTO as live setting client surface', () => {
+  it('keeps UserSettingClientDTO as live setting client surface (z.infer)', () => {
     const client = readFileSync(resolve(aggregates, 'user-setting-client.ts'), 'utf8');
     const aggregatesIndex = readFileSync(resolve(aggregates, 'index.ts'), 'utf8');
-    expect(client).toContain('export interface UserSettingClientDTO');
+    expect(client).toContain(
+      'export type UserSettingClientDTO = z.infer<typeof UserSettingResponseSchema>',
+    );
+    expect(client).not.toMatch(/export interface UserSettingClientDTO\b/);
     expect(aggregatesIndex).toContain('UserSettingClientDTO');
   });
 });
