@@ -5519,6 +5519,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-23（阶段 6 残留六百八十七轮）：contracts authentication **base credential server 双轨收口**（仍不打勾）——
+> 删除 base credential dual 文件；`PasswordCredentialServerDTO` 直接持有完整 server 凭证字段；
+> surface Residual 687 锁。
+> 非跨端 multi-engine E2E / 全量 PR 门禁。状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -6348,6 +6353,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百八十四轮：§13.2 focused evidence suite re-run (797 tests, residuals 250–683 locks, no checkbox changes)。
   残留六百八十五轮：retire auth credential server dual (PasswordCredentialServerDTO only).
   残留六百八十六轮：§13.2 focused evidence suite re-run (799 tests, residuals 250–685 locks, no checkbox changes)。
+  残留六百八十七轮：retire auth base credential server dual (PasswordCredentialServerDTO owns full shape).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -6467,6 +6473,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百八十四轮：§13.2 focused evidence suite re-run（797 tests，residuals 250–683 锁；不改 checkbox）。
   残留六百八十五轮：authentication credential server 双轨收口。
   残留六百八十六轮：§13.2 focused evidence suite re-run（799 tests，residuals 250–685 锁；不改 checkbox）。
+  残留六百八十七轮：authentication base credential server 双轨收口。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -7197,6 +7204,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百八十四轮：tip 上 797 项 focused evidence suite（含 residual 250–683 AI provider create schema name dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留六百八十五轮：authentication credential server 双轨收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留六百八十六轮：tip 上 799 项 focused evidence suite（含 residual 250–685 auth credential server dual retired 锁）通过；仍不构成全量 PR 门禁证据。
+  残留六百八十七轮：authentication base credential server 双轨收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
