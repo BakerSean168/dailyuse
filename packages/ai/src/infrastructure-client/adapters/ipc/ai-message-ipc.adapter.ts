@@ -5,6 +5,8 @@ import type { IAIMessageApiClient, IResultIpcClient } from '../types';
 import { createResultClientError, unwrapResultOrThrow } from '../result-client-error';
 // Residual 993: sole createStreamId (local dual retired).
 import { createStreamId } from '../../../shared/create-stream-id';
+// Residual 997: sole lastArg (local dual retired).
+import { lastArg } from '../../../shared/last-arg';
 
 type StreamDonePayload = {
   userMessage: SendMessageRes['userMessage'];
@@ -169,7 +171,4 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
   }
 }
 
-function lastArg<T>(args: unknown[]): T | undefined {
-  return args.length > 0 ? (args[args.length - 1] as T | undefined) : undefined;
-}
 
