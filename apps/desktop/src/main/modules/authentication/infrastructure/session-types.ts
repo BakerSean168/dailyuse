@@ -12,7 +12,6 @@ import {
   type SessionStatusDTO,
   type DeviceInfoClientDTO,
   type DeviceInfoDTO,
-  type OfflineLoginResponse as ContractOfflineLoginResponse,
 } from '@dailyuse/contracts/authentication';
 import { AuthMode } from '@dailyuse/contracts/authentication';
 
@@ -41,7 +40,7 @@ export interface SessionStatus extends SessionStatusDTO {
 
 // Residual 867: contracts LoginResponse dual deleted.
 // Residual 873: OfflineLoginResponse dual retired — sole body in contracts desktop-auth.types.
-export type OfflineLoginResponse = ContractOfflineLoginResponse;
+// Residual 925: OfflineLoginResponse name dual fully retired — consumers import contracts sole body.
 
 // ============ Utility Functions ============
 

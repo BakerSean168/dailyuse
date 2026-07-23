@@ -8,7 +8,8 @@ import { describe, expect, it } from 'vitest';
  */
 /**
  * Residual 867 (soft): contracts LoginResponse dual deleted; OfflineLoginResponse remains sole offline result.
- * Residual 873 (soft): OfflineLoginResponse dual retired — sole body in contracts desktop-auth.types.
+ * Residual 873/925 (soft): OfflineLoginResponse name dual fully retired — contracts sole body
+ *   (packages/contracts .../offline-login-response-dual.surface.spec.ts).
  * Residual 889 (soft): SessionStatus extension keep-boundary
  *   (session-status-extension-keep-boundary.surface.spec.ts).
  */
@@ -49,12 +50,14 @@ describe('desktop auth session type export single-track surface', () => {
     );
   });
 
-  it('session-types owns the desktop session result interfaces', () => {
+  it('session-types owns extended session interfaces; OfflineLoginResponse from contracts', () => {
     expect(sessionTypes).toContain('export interface SessionRestoreResult');
     expect(sessionTypes).toContain('export interface AutoLoginResult');
     expect(sessionTypes).toContain('export interface SessionStatus');
-    // Residual 873: OfflineLoginResponse is type alias of contracts sole body
+    // Residual 873/925: OfflineLoginResponse name dual fully retired
     expect(sessionTypes).toContain('Residual 873');
-    expect(sessionTypes).toContain('export type OfflineLoginResponse = ContractOfflineLoginResponse');
+    expect(sessionTypes).toContain('Residual 925');
+    expect(sessionTypes).not.toMatch(/export type OfflineLoginResponse\b/);
+    expect(sessionTypes).not.toMatch(/export interface OfflineLoginResponse\b/);
   });
 });

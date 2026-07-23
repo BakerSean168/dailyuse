@@ -26,6 +26,8 @@ export type {
   LoginRequest,
   AuthMode,
   DeviceInfoClientDTO,
+  // Residual 925: OfflineLoginResponse sole body re-export from contracts (no session-types alias).
+  OfflineLoginResponse,
 } from '@dailyuse/contracts/authentication';
 
 // Export managers
@@ -35,7 +37,6 @@ export type {
   SessionRestoreResult,
   AutoLoginResult,
   SessionStatus,
-  OfflineLoginResponse,
 } from './session-types';
 export { NetworkStateManager } from './network-state-manager';
 export type { NetworkStateManagerConfig } from './network-state-manager';

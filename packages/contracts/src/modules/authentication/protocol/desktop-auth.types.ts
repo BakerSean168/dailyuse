@@ -216,7 +216,8 @@ export interface LoginRequest {
 }
 
 // Residual 867: LoginResponse dual deleted (zero consumers).
-// Residual 873: sole offline login result shape (desktop session-types re-exports type alias).
+// Residual 873: sole offline login result shape.
+// Residual 925 (soft): OfflineLoginResponse name dual fully retired — desktop imports contracts sole body.
 // Online auth uses AuthResponseDTO.
 export interface OfflineLoginResponse {
   ok: boolean;
