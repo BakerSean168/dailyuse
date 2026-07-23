@@ -59,6 +59,7 @@ export class TokenManager {
    * @param request - Token 保存请求
    * @throws Error - 如果加密不可用或写入失败
    */
+  // Residual 897: maps SaveTokenRequest (*ExpiresIn) → TokenStorageData (*ExpiresAt); not a type alias collapse.
   async saveTokens(request: SaveTokenRequest): Promise<void> {
     this.logger.debug('Saving tokens', {
       identityId: request.identityId,

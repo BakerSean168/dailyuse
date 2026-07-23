@@ -91,6 +91,7 @@ export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof Connection
 
 /**
  * Encrypted token data stored on disk via Electron safeStorage.
+ * Residual 897: persisted absolute-expiry shape (≠ SaveTokenRequest duration inputs).
  */
 export interface TokenStorageData {
   accessToken: string;
@@ -103,6 +104,7 @@ export interface TokenStorageData {
 
 /**
  * Request to save tokens after login/register.
+ * Residual 897: duration-input write shape (≠ TokenStorageData absolute-expiry persistence).
  */
 export interface SaveTokenRequest {
   accessToken: string;

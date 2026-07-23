@@ -9,6 +9,8 @@ import { describe, expect, it } from 'vitest';
  * Not exact duals to collapse; keep separate bodies / aliases.
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary
  *   (packages/contracts .../oauth-provider-transport-domain-keep-boundary.surface.spec.ts).
+ * Residual 897 (soft): TokenStorageData ≠ SaveTokenRequest keep-boundary
+ *   (infrastructure/token-storage-save-request-keep-boundary.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('refresh-result layered dual keep-boundary (residual 895)', () => {
