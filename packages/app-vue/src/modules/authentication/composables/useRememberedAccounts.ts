@@ -4,10 +4,10 @@ import type {
   RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
-import { completeAuthSuccess } from './complete-auth-success';
+import { completeAuthSuccess } from './completeAuthSuccess';
 
 // Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
-// Residual 1045: completeAuthSuccess dual retired onto complete-auth-success sole.
+// Residual 1045: completeAuthSuccess dual retired onto completeAuthSuccess sole.
 
 export function useRememberedAccounts(ctx: AuthContext) {
   const { store, service, t, lastResultError, redirectWithReload, handleAuthSuccess, getLocalizedAuthError } = ctx;

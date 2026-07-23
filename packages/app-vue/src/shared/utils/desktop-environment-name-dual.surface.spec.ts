@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 923: isDesktopEnvironment name dual fully retired.
  * Residual 1045 (soft): login/register/remembered desktop detect moved into
- * complete-auth-success sole; guest still detects via hasDesktopAuthApi(window).
+ * completeAuthSuccess sole; guest still detects via hasDesktopAuthApi(window).
  * Residual 909 (soft): Window typing + hasDesktopAuthApi detect
  *   (electron-window-desktop-api-dual.surface.spec.ts).
  * Residual 919 (soft): hasDesktopElectronBridge wrapper retired
@@ -20,7 +20,7 @@ describe('desktop isDesktopEnvironment name dual retired (residual 923)', () => 
   const useRegister = readFileSync(resolve(authDir, 'useRegister.ts'), 'utf8');
   const useRemembered = readFileSync(resolve(authDir, 'useRememberedAccounts.ts'), 'utf8');
   const useGuest = readFileSync(resolve(authDir, 'useGuestMode.ts'), 'utf8');
-  const completeAuth = readFileSync(resolve(authDir, 'complete-auth-success.ts'), 'utf8');
+  const completeAuth = readFileSync(resolve(authDir, 'completeAuthSuccess.ts'), 'utf8');
   const recovery = readFileSync(resolve(utilsDir, 'desktop-auth-recovery.ts'), 'utf8');
 
   it('drops isDesktopEnvironment export from useAuthContext', () => {
@@ -39,7 +39,7 @@ describe('desktop isDesktopEnvironment name dual retired (residual 923)', () => 
     ] as const) {
       expect(source, name).toContain('Residual 923');
       expect(source, name).toContain('Residual 1045');
-      expect(source, name).toContain("from './complete-auth-success'");
+      expect(source, name).toContain("from './completeAuthSuccess'");
       expect(source, name).toContain('completeAuthSuccess(');
       expect(source, name).not.toMatch(/async function completeAuthSuccess\b/);
       expect(source, name).not.toContain('hasDesktopAuthApi(window)');

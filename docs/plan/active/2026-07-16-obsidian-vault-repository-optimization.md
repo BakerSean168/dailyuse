@@ -7645,7 +7645,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 > 续进展 2026-07-23（阶段 6 残留一千零四十五轮）：app-vue auth **completeAuthSuccess dual retired**（仍不打勾）——
-> composables/complete-auth-success 唯 helper；useLogin/useRegister/useRememberedAccounts 收口；
+> composables/completeAuthSuccess 唯 helper；useLogin/useRegister/useRememberedAccounts 收口；
 > surface Residual 1045 锁。
 
 
@@ -8867,7 +8867,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千零四十二轮：§13.2 focused evidence suite re-run (1347 tests, residuals 250–1041 locks, no checkbox changes)。
   残留一千零四十三轮：retire integration-helpers dual (test-utils sole; goal/schedule/reminder/task re-export; task-only keep-boundary).
   残留一千零四十四轮：§13.2 focused evidence suite re-run (1351 tests, residuals 250–1043 locks, no checkbox changes)。
-  残留一千零四十五轮：retire completeAuthSuccess dual (app-vue auth complete-auth-success sole; login/register/remembered).
+  残留一千零四十五轮：retire completeAuthSuccess dual (app-vue auth completeAuthSuccess sole; login/register/remembered).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -9345,7 +9345,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千零四十二轮：§13.2 focused evidence suite re-run（1347 tests，residuals 250–1041 锁；不改 checkbox）。
   残留一千零四十三轮：retire integration-helpers dual（test-utils 唯 helper；goal/schedule/reminder/task re-export；task-only keep-boundary）。
   残留一千零四十四轮：§13.2 focused evidence suite re-run（1351 tests，residuals 250–1043 锁；不改 checkbox）。
-  残留一千零四十五轮：retire completeAuthSuccess dual（app-vue auth complete-auth-success 唯 helper；login/register/remembered）。
+  残留一千零四十五轮：retire completeAuthSuccess dual（app-vue auth completeAuthSuccess 唯 helper；login/register/remembered）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。

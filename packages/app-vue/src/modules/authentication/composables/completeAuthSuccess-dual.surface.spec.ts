@@ -15,7 +15,7 @@ vi.mock('../../../shared/utils/desktop-auth-recovery', () => ({
 
 import { toast } from 'vue-sonner';
 import { hasDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
-import { completeAuthSuccess } from './complete-auth-success';
+import { completeAuthSuccess } from './completeAuthSuccess';
 
 /**
  * Residual 1045: completeAuthSuccess dual retired onto composable sole.
@@ -24,7 +24,7 @@ import { completeAuthSuccess } from './complete-auth-success';
  */
 describe('completeAuthSuccess dual retired (residual 1045)', () => {
   const dir = __dirname;
-  const sole = readFileSync(resolve(dir, 'complete-auth-success.ts'), 'utf8');
+  const sole = readFileSync(resolve(dir, 'completeAuthSuccess.ts'), 'utf8');
   const login = readFileSync(resolve(dir, 'useLogin.ts'), 'utf8');
   const register = readFileSync(resolve(dir, 'useRegister.ts'), 'utf8');
   const remembered = readFileSync(resolve(dir, 'useRememberedAccounts.ts'), 'utf8');
@@ -51,7 +51,7 @@ describe('completeAuthSuccess dual retired (residual 1045)', () => {
       ['remembered', remembered],
     ] as const) {
       expect(source, label).toContain('Residual 1045');
-      expect(source, label).toContain("from './complete-auth-success'");
+      expect(source, label).toContain("from './completeAuthSuccess'");
       expect(source, label).toContain('completeAuthSuccess(');
       expect(source, label).not.toMatch(/async function completeAuthSuccess\b/);
       expect(source, label).not.toContain('hasDesktopAuthApi(window)');
