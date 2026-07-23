@@ -10,6 +10,7 @@ import {
   type AuthFlowResult,
 } from './auth-flow-types';
 
+// Residual 871: sole desktop register request shape (coordinator re-exports type only).
 export interface RegisterRequest {
   email: string;
   password: string;

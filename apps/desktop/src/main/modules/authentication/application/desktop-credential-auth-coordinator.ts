@@ -22,7 +22,12 @@ import {
   NetworkStateManager,
 } from '../infrastructure';
 import type { WindowManager } from '../../../lifecycle/window-manager';
-import { registerDesktopAccount } from './register-desktop-account';
+import {
+  registerDesktopAccount,
+  type RegisterRequest,
+} from './register-desktop-account';
+// Residual 871: RegisterRequest dual retired — re-export sole body from register-desktop-account.
+export type { RegisterRequest };
 import type { RegisterApiResponse } from './auth-remote-gateway';
 import { AuthRemoteGateway } from './auth-remote-gateway';
 import { loginDesktopAccount } from './login-desktop-account';
@@ -35,12 +40,6 @@ import {
   safeTransition,
 } from './auth-coordinator-helpers';
 
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  username?: string;
-}
 
 /** Mutable auth state shared between coordinator and facade. */
 export interface AuthState {
