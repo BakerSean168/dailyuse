@@ -1,5 +1,14 @@
-export type AuthLocale = 'zh-CN' | 'en-US';
-export type AuthThemeMode = 'light' | 'dark' | 'auto';
+// Residual 1005: sole presentation helpers (local dual retired).
+import {
+  detectBrowserLocale,
+  normalizeLocale,
+  normalizeTheme,
+  type PresentationLocale,
+  type PresentationThemeMode,
+} from '@dailyuse/utils/shared';
+
+export type AuthLocale = PresentationLocale;
+export type AuthThemeMode = PresentationThemeMode;
 
 const STORAGE_KEY = 'presentation-preference';
 
@@ -8,25 +17,7 @@ interface PresentationPreferenceState {
   theme: AuthThemeMode;
 }
 
-function detectBrowserLocale(): AuthLocale {
-  if (typeof navigator === 'undefined') {
-    return 'zh-CN';
-  }
-
-  const candidates = [...navigator.languages, navigator.language].filter(
-    (value): value is string => typeof value === 'string' && value.length > 0,
-  );
-
-  return candidates.some((value) => value.toLowerCase().startsWith('zh')) ? 'zh-CN' : 'en-US';
-}
-
-export function normalizeLocale(value: unknown): AuthLocale {
-  return value === 'zh-CN' || value === 'en-US' ? value : detectBrowserLocale();
-}
-
-export function normalizeTheme(value: unknown): AuthThemeMode {
-  return value === 'light' || value === 'dark' || value === 'auto' ? value : 'auto';
-}
+// Residual 1005: detectBrowserLocale/normalizeLocale/normalizeTheme elevated to @dailyuse/utils/shared.
 
 export function readPresentationPreferenceState(): PresentationPreferenceState {
   if (typeof window === 'undefined') {

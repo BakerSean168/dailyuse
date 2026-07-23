@@ -1,28 +1,17 @@
 import { defineStore } from 'pinia';
 import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
 import type { AppLocale } from '../../../plugins/i18n';
+// Residual 1005: sole presentation helpers (local dual retired).
+import {
+  detectBrowserLocale,
+  normalizeLocale,
+  normalizeTheme,
+  type PresentationThemeMode,
+} from '@dailyuse/utils/shared';
 
-export type PresentationThemeMode = 'light' | 'dark' | 'auto';
+export type { PresentationThemeMode };
 
-function normalizeLocale(value: unknown): AppLocale {
-  return value === 'en-US' || value === 'zh-CN' ? value : detectBrowserLocale();
-}
-
-function detectBrowserLocale(): AppLocale {
-  if (typeof navigator === 'undefined') {
-    return 'zh-CN';
-  }
-
-  const candidates = [...navigator.languages, navigator.language].filter(
-    (value): value is string => typeof value === 'string' && value.length > 0,
-  );
-
-  return candidates.some((value) => value.toLowerCase().startsWith('zh')) ? 'zh-CN' : 'en-US';
-}
-
-function normalizeTheme(value: unknown): PresentationThemeMode {
-  return value === 'light' || value === 'dark' || value === 'auto' ? value : 'auto';
-}
+// Residual 1005: detectBrowserLocale/normalizeLocale/normalizeTheme elevated to @dailyuse/utils/shared.
 
 export interface PresentationPreferenceState {
   locale: AppLocale;

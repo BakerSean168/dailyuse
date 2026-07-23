@@ -11,3 +11,4 @@ export * from './persistence';
 export * from './escape-html';
 export * from './parse-query-value';
 export * from './error-message';
+export * from './presentation-preference';
