@@ -3,6 +3,7 @@
  * Auth and knowledge-repository gateways import these; local isRecord/hasDataKey duals retired.
  * Envelope payload shapes remain module keep-boundaries (AuthHttpEnvelope ≠ knowledge HttpEnvelope).
  * Soft residual 1089: app-vue AI isRecord plain-object keep-boundary (rejects arrays; no force-merge).
+ * Soft residual 1139: sanitize-for-ipc isPlainObject (prototype-strict) remains separate (no force-merge).
  */
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

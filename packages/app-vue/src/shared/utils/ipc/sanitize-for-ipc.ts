@@ -104,6 +104,11 @@ function deepSanitize(value: unknown): unknown {
   }
 }
 
+/**
+ * Residual 1139 keep-boundary: prototype-strict plain object guard for IPC sanitize.
+ * Accepts only Object.prototype / null-proto objects (rejects arrays + class instances).
+ * Soft residual 1139: AI isRecord (!Array) and desktop isRecord (arrays allowed) stay separate.
+ */
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null) return false;
   const proto = Object.getPrototypeOf(value);

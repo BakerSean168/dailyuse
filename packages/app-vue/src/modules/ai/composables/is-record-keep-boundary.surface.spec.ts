@@ -10,6 +10,7 @@ import { isRecord as aiIsRecord } from './isRecord';
  * Intentionally not force-merged — different domain contracts (workflow data vs JSON envelope).
  * Soft residual 951: AI local duals retired onto app-vue isRecord sole.
  * Soft residual 947: desktop gateway duals retired onto http-envelope-guards sole.
+ * Soft residual 1139: sanitize-for-ipc isPlainObject prototype-strict keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */
 describe('isRecord cross-package keep-boundary (residual 1089)', () => {
