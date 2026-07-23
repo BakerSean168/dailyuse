@@ -9,7 +9,7 @@ import type { AIExecutionLogInput } from '../../application/ports';
  * Sole body in with-observability-payload.ts; PowerSync + Prisma execution-log adapters import it.
  * Soft residual 969: knowledge-index value helpers dual retired
  *   (knowledge-index-value-helpers-dual.surface.spec.ts).
- * Soft residual 970: tip focused suite numbers track Residual 970 evidence tip (276/1216).
+ * Soft residual 972: tip focused suite numbers track Residual 972 evidence tip (277/1219).
  * Does not flip §13.2 checkboxes.
  */
 describe('withObservabilityPayload dual retired (residual 971)', () => {
