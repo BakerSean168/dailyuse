@@ -7,7 +7,7 @@ import { previewText } from './preview-text';
  * Residual 995: previewText dual retired (AI goal/chat observability previews).
  * Sole body in preview-text.ts; generate-ai-goal + automation/planning adapters +
  * internal client import it (call sites keep their maxLength args).
- * Soft residual 994: tip focused suite numbers track Residual 994 evidence tip (287/1254).
+ * Soft residual 996: tip focused suite numbers track Residual 996 evidence tip (288/1258).
  * Soft residual 993: createStreamId dual retired (create-stream-id-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
