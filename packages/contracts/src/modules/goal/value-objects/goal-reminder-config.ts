@@ -5,18 +5,19 @@
  * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
  */
 
-import type { ReminderTriggerType } from './reminder-trigger-type';
+import { z } from 'zod';
+import { ReminderTriggerType } from './reminder-trigger-type';
 
-// ============ 辅助类型 ============
+// Residual 741: GoalReminderConfigDTO / ReminderTrigger dual bodies retired —
+// OpenAPI + transport use *Schema (semantic types are z.infer aliases).
 
-/**
- * 单个提醒触发器配置
- */
-export interface ReminderTrigger {
-  type: ReminderTriggerType;
-  value: number; // 百分比（50 表示 50%）或天数（100 表示 100 天）
-  enabled: boolean; // 是否启用
-}
+export const ReminderTriggerSchema = z.object({
+  type: z.enum(ReminderTriggerType),
+  value: z.number(),
+  enabled: z.boolean(),
+});
+
+export type ReminderTrigger = z.infer<typeof ReminderTriggerSchema>;
 
 // ============ Domain Shape (领域层) ============
 
@@ -29,14 +30,9 @@ export interface GoalReminderConfig {
   triggers: ReminderTrigger[]; // 触发器列表
 }
 
-// ============ Transfer DTO (传输层) ============
+export const GoalReminderConfigDTOSchema = z.object({
+  enabled: z.boolean(),
+  triggers: z.array(ReminderTriggerSchema),
+});
 
-/**
- * Goal Reminder Config DTO
- * API 传输用
- */
-export interface GoalReminderConfigDTO {
-  enabled: boolean;
-  triggers: ReminderTrigger[];
-}
-
+export type GoalReminderConfigDTO = z.infer<typeof GoalReminderConfigDTOSchema>;

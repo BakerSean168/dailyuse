@@ -32,6 +32,10 @@ export type {
   GoalReminderConfig,
   GoalReminderConfigDTO,
 } from './goal-reminder-config';
+export {
+  ReminderTriggerSchema,
+  GoalReminderConfigDTOSchema,
+} from './goal-reminder-config';
 
 export { SnapshotTrigger } from './key-result-weight-snapshot';
 export type {

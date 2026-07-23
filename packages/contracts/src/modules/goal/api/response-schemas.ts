@@ -20,7 +20,6 @@ import type {
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { ReviewType } from '../value-objects/review-type';
-import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
 import { FocusSessionStatus } from '../value-objects/focus-session-status';
 import { FolderType } from '../value-objects/folder-type';
 import { HiddenGoalsMode } from '../value-objects/focus-mode';
@@ -37,6 +36,15 @@ import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot
 // Residual 737: KeyResultProgressDTOSchema / KeyResultSnapshotDTOSchema owned by value-objects
 // (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
 export { KeyResultProgressDTOSchema, KeyResultSnapshotDTOSchema };
+
+import {
+  GoalReminderConfigDTOSchema,
+  ReminderTriggerSchema,
+} from '../value-objects/goal-reminder-config';
+
+// Residual 741: GoalReminderConfigDTOSchema / ReminderTriggerSchema owned by value-objects
+// (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
+export { GoalReminderConfigDTOSchema, ReminderTriggerSchema };
 
 
 // ============================================================================
@@ -81,22 +89,6 @@ export const GoalReviewClientDTOSchema: z.ZodType<GoalReviewClientDTO> = z.objec
   deletedAt: z.number().nullable(),
 });
 
-/**
- * Reminder Trigger Schema (嵌入式)
- */
-const ReminderTriggerSchema = z.object({
-  type: z.enum(ReminderTriggerType),
-  value: z.number(),
-  enabled: z.boolean(),
-});
-
-/**
- * GoalReminderConfig DTO Schema
- */
-const GoalReminderConfigDTOSchema = z.object({
-  enabled: z.boolean(),
-  triggers: z.array(ReminderTriggerSchema),
-});
 
 /**
  * FocusMode Client DTO Schema
