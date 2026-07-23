@@ -138,9 +138,6 @@ describe('schedule list/stats + detect-conflicts dual retired (residual 663)', (
     expect(scheduleReq).toContain('Residual 663');
     expect(scheduleReq).not.toMatch(/export interface DetectConflictsResponseDTO\b/);
     expect(responseSchemas).toContain('Residual 663');
-    expect(responseSchemas).toContain(
-      'export const DetectConflictsResponseSchema = ConflictDetectionResultSchema',
-    );
     expect(responseSchemas).not.toMatch(
       /DetectConflictsResponseSchema\s*=\s*z\.object\(\{\s*result:/,
     );
@@ -148,5 +145,32 @@ describe('schedule list/stats + detect-conflicts dual retired (residual 663)', (
     expect(rpcMap).toMatch(
       /'schedule:detect-conflicts':\s*\[[\s\S]*ConflictDetectionResult[\s\S]*?\]/,
     );
+  });
+});
+
+/**
+ * Residual 679: detect-conflicts OpenAPI schema name dual retired.
+ * Routes document ConflictDetectionResultSchema directly (no DetectConflictsResponseSchema alias).
+ */
+describe('schedule detect-conflicts response schema name dual retired (residual 679)', () => {
+  const apiDir = __dirname;
+  const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
+  const routes = readFileSync(
+    resolve(apiDir, '../../../../../schedule/src/api/schedule-event.routes.ts'),
+    'utf8',
+  );
+
+  it('does not export DetectConflictsResponseSchema name dual', () => {
+    expect(responseSchemas).toContain('Residual 679');
+    expect(responseSchemas).not.toMatch(/export const DetectConflictsResponseSchema\b/);
+    expect(responseSchemas).toContain('export const ConflictDetectionResultSchema');
+  });
+
+  it('detect and get-conflicts routes use ConflictDetectionResultSchema only', () => {
+    expect(routes).not.toContain('DetectConflictsResponseSchema');
+    expect(routes).toContain('ConflictDetectionResultSchema');
+    const sharedSchemaHits =
+      routes.split('successResponse(ConflictDetectionResultSchema').length - 1;
+    expect(sharedSchemaHits).toBeGreaterThanOrEqual(2);
   });
 });

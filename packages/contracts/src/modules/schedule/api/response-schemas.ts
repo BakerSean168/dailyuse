@@ -157,10 +157,8 @@ export const ConflictDetectionResultSchema = z.object({
   suggestions: z.array(ConflictSuggestionSchema),
 });
 
-/**
- * Residual 663: detect-conflicts OpenAPI body is ConflictDetectionResult (no wrapper dual).
- */
-export const DetectConflictsResponseSchema = ConflictDetectionResultSchema;
+// Residual 663: detect-conflicts OpenAPI body is ConflictDetectionResult (no wrapper dual).
+// Residual 679: drop DetectConflictsResponseSchema name dual; routes use ConflictDetectionResultSchema only.
 
 /**
  * CreateSchedule (with conflict detection) Response Schema
