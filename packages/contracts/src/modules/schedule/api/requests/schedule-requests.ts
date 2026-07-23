@@ -63,62 +63,24 @@ export const ResolveConflictRequestSchema = z.object({
 });
 
 // ============ Request Types ============
+// Residual 707: request dual bodies retired — OpenAPI + transport use *RequestSchema only.
 
-/**
- * Request DTO for creating a new schedule with automatic conflict detection
- */
-export interface CreateScheduleRequest {
-  name: string;
-  description?: string;
-  startTime: number;
-  endTime: number;
-  duration: number;
-  priority?: number;
-  location?: string;
-  attendees?: string[];
-  autoDetectConflicts?: boolean;
-}
+/** Request DTO for creating a new schedule with automatic conflict detection */
+export type CreateScheduleRequest = z.infer<typeof CreateScheduleRequestSchema>;
 
-/**
- * Request DTO for updating a schedule
- */
-export interface UpdateScheduleRequest {
-  name?: string;
-  description?: string;
-  startTime?: number;
-  endTime?: number;
-  duration?: number;
-  priority?: number;
-  location?: string;
-  attendees?: string[];
-}
+/** Request DTO for updating a schedule */
+export type UpdateScheduleRequest = z.infer<typeof UpdateScheduleRequestSchema>;
 
-/**
- * Request DTO for detecting schedule conflicts for a given time range
- */
-export interface DetectConflictsRequest {
-  startTime: number;
-  endTime: number;
-  excludeId?: ScheduleId;
-}
+/** Request DTO for detecting schedule conflicts for a given time range */
+export type DetectConflictsRequest = z.infer<typeof DetectConflictsRequestSchema>;
 
-/**
- * Request DTO for getting schedules within a time range
- */
-export interface GetSchedulesByTimeRangeRequest {
-  startTime: number;
-  endTime: number;
-}
+/** Request DTO for getting schedules within a time range */
+export type GetSchedulesByTimeRangeRequest = z.infer<
+  typeof GetSchedulesByTimeRangeRequestSchema
+>;
 
-/**
- * Request DTO for resolving a schedule conflict
- */
-export interface ResolveConflictRequest {
-  resolution: ResolutionStrategy;
-  newStartTime?: number;
-  newEndTime?: number;
-  newDuration?: number;
-}
+/** Request DTO for resolving a schedule conflict */
+export type ResolveConflictRequest = z.infer<typeof ResolveConflictRequestSchema>;
 
 // ============ Internal Types (for server-side use only) ============
 
