@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 751: AI model-info dual body retired.
+ * Soft residual 811: response-schemas re-exports AIModelInfoSchema with ClientDTOSchema.
  * AIModelInfo reuses AIModelInfoSchema only.
  */
 describe('ai model-info dual retired (residual 751)', () => {
@@ -28,9 +29,13 @@ describe('ai model-info dual retired (residual 751)', () => {
 
   it('response-schemas re-exports aggregate-owned schema (no local dual body)', () => {
     expect(responseSchemas).toContain('Residual 751');
+    expect(responseSchemas).toContain('Residual 811');
     expect(responseSchemas).toContain("from '../aggregates/ai-provider-config-client'");
-    expect(responseSchemas).toContain('export { AIModelInfoSchema }');
+    expect(responseSchemas).toContain(
+      'export { AIModelInfoSchema, AIProviderConfigClientDTOSchema }',
+    );
     expect(responseSchemas).not.toMatch(/const AIModelInfoSchema = z\.object\(\{/);
-    expect(responseSchemas).toContain('availableModels: z.array(AIModelInfoSchema)');
+    // Residual 811: availableModels lives on aggregate-owned ClientDTOSchema, not response-schemas body.
+    expect(aggregate).toContain('availableModels: z.array(AIModelInfoSchema)');
   });
 });

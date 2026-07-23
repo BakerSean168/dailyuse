@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 647: retire zero-consumer Summary dual-track surfaces.
  * Provider list uses full AIProviderConfigClientDTO; reminder/goal keep
  * canonical ClientDTO / UpcomingReminderDTO only.
+ * Soft residual 811: AIProviderConfigClientDTO dual retired via ClientDTOSchema
+ * (see ai-provider-config-client-dto-dual surface; assertion updated below).
  */
 describe('contracts summary dual single-track surface (residual 647)', () => {
   const aiApi = __dirname;
@@ -19,7 +21,10 @@ describe('contracts summary dual single-track surface (residual 647)', () => {
     const index = readFileSync(resolve(aiApi, '../aggregates/index.ts'), 'utf8');
     expect(client).not.toMatch(/export interface AIProviderConfigSummary\b/);
     expect(index).not.toContain('AIProviderConfigSummary');
-    expect(client).toContain('export interface AIProviderConfigClientDTO');
+    expect(client).toContain(
+      'export type AIProviderConfigClientDTO = z.infer<typeof AIProviderConfigClientDTOSchema>',
+    );
+    expect(client).not.toMatch(/export interface AIProviderConfigClientDTO\\b/);
   });
 
   it('retires AIProviderConfigSummarySchema dual; list uses ClientDTO schema', () => {

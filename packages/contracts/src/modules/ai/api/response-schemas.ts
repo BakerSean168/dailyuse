@@ -17,11 +17,14 @@ import { TestAIProviderResultDTOSchema } from '../dtos/provider-test-result.dto'
 import { TokenUsageSchema } from '../value-objects/token-usage';
 import { ConversationStatus } from '../value-objects/conversation-status';
 import { MessageRole } from '../value-objects/message-role';
-import { AIProviderType } from '../value-objects/ai-provider-type';
-import { AIModelInfoSchema } from '../aggregates/ai-provider-config-client';
+import {
+  AIModelInfoSchema,
+  AIProviderConfigClientDTOSchema,
+} from '../aggregates/ai-provider-config-client';
 
 // Residual 751: AIModelInfoSchema owned by aggregates (AIModelInfo is z.infer alias).
-export { AIModelInfoSchema };
+// Residual 811: AIProviderConfigClientDTOSchema owned by aggregates (ClientDTO is z.infer alias).
+export { AIModelInfoSchema, AIProviderConfigClientDTOSchema };
 
 // Residual 719: draft/preview/result schemas owned by goal-generation-result.dto.ts
 // (GenerateGoalResultDTOSchema re-exported for OpenAPI route consumers).
@@ -78,26 +81,8 @@ export const AIConversationClientDTOSchema = z.object({
 });
 
 
-export const AIProviderConfigClientDTOSchema = z.object({
-  id: brandedId<AiProviderConfigId>(),
-  identityId: z.string(),
-  name: z.string(),
-  providerType: z.enum(Object.values(AIProviderType)),
-  baseUrl: z.string(),
-  apiKeyMasked: z.string(),
-  defaultModel: z.string().nullable(),
-  availableModels: z.array(AIModelInfoSchema),
-  isActive: z.boolean(),
-  isDefault: z.boolean(),
-  priority: z.number(),
-  version: z.number(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
-});
-
 // Residual 647: AIProviderConfigSummarySchema dual-track retired.
-// List/get envelopes use AIProviderConfigClientDTOSchema only.
+// Residual 811: ClientDTOSchema owned by aggregates; list/get envelopes use it only.
 
 // Residual 695: AI response OpenAPI schemas are the sole response shapes for
 // SendMessage / ListAIProviderConfigs / QueryAnalytics / QueryKnowledge /
