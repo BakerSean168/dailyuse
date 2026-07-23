@@ -21,11 +21,9 @@ import {
   VerificationChallengePurpose,
 } from '../../../domain';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
+// Residual 959: normalizeEmail dual retired — sole server shared normalize-email helper.
+import { normalizeEmail } from '../../../shared/normalize-email';
 
-function normalizeEmail(email: string): string {
-  // Keep original casing for repository lookups; challenge store lowercases subjects.
-  return email.trim();
-}
 
 function toChallengePurpose(
   purpose: SendEmailCodeReq['purpose'],

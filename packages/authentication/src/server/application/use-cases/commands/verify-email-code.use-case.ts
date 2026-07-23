@@ -13,16 +13,14 @@ import type {
   VerifyEmailCodeRes,
 } from '@dailyuse/contracts/authentication';
 import type { IAuthIdentityRepository, IVerificationChallengeStore } from '../../../domain';
+// Residual 959: normalizeEmail dual retired — sole server shared normalize-email helper.
+import { normalizeEmail } from '../../../shared/normalize-email';
 import {
   AuthDomainCode,
   AuthIdentityStatus,
   VerificationChallengePurpose,
 } from '../../../domain';
 
-function normalizeEmail(email: string): string {
-  // Keep original casing for repository lookups; challenge store lowercases subjects.
-  return email.trim();
-}
 
 function toChallengePurpose(
   purpose: VerifyEmailCodeReq['purpose'],

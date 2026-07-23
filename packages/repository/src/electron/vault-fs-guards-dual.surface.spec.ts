@@ -9,6 +9,7 @@ import { isMissing, isTemporaryFile } from './vault-fs-guards';
  * Soft residual 955: app-vue AI getRecordString dual retired
  *   (packages/app-vue/src/modules/ai/composables/get-record-string-dual.surface.spec.ts).
  * Soft residual 958: tip focused suite numbers track Residual 958 evidence tip (270/1197).
+ * Soft residual 959: normalizeEmail dual retired (packages/authentication/src/server/shared/normalize-email-dual.surface.spec.ts).
  * isTemporarySyncFile name retired onto isTemporaryFile sole.
  * Does not flip §13.2 checkboxes.
  */
