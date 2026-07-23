@@ -12,6 +12,7 @@ import { createComposableHandleError } from './create-composable-handle-error';
  * Residual 1057: governance useGovernance (default console.error; setGovernanceError dual retired).
  * Residual 1059: dashboard useDashboard (default console.error; local ref error dual retired).
  * Soft residual: usePassword / account checkAvailability toast-only keep-boundary.
+ * Soft residual 1065: goal createGoalErrorHandler rich-log keep-boundary (no force-merge).
  * Does not flip §13.2 checkboxes.
  */
 describe('createComposableHandleError dual retired (residual 973/975/1055/1057/1059)', () => {

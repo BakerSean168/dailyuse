@@ -7,6 +7,7 @@
  * Residual 1059: dashboard useDashboard (default console.error report; local ref error dual retired).
  * Local handleError duals retired in these clusters.
  * Soft residual: usePassword / account checkAvailability toast-only (no setError) keep-boundary.
+ * Soft residual 1065: goal createGoalErrorHandler rich-log keep-boundary (scope/details ≠ sole).
  */
 
 import type { ResultErrorTranslateFn } from '@dailyuse/http-client';
