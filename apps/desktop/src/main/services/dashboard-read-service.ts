@@ -1,6 +1,6 @@
 import {
   getDashboardData,
-  type DashboardTaskInstanceRecord,
+  toDashboardTaskInstanceRecord,
 } from '@dailyuse/dashboard';
 import type { DashboardData } from '@dailyuse/contracts/dashboard';
 import { createLogger } from '@dailyuse/utils/logger';
@@ -15,20 +15,7 @@ import { getNotificationRepository } from '@dailyuse/notification/electron';
 
 const logger = createLogger('DashboardReadService');
 
-function toDashboardTaskInstanceRecord(
-  instance: Awaited<ReturnType<ReturnType<typeof getTaskInstanceRepository>['findByIdentityId']>>[number],
-): DashboardTaskInstanceRecord {
-  return {
-    id: String(instance.id),
-    templateId: String(instance.templateId),
-    status: instance.status,
-    instanceDate: instance.instanceDate,
-    actualEndTime: instance.actualEndTime,
-    updatedAt: instance.updatedAt.getTime(),
-    deletedAt: instance.deletedAt,
-    isOverdue: () => instance.isOverdue(),
-  };
-}
+/** Soft residual 1156: dual toDashboardTaskInstanceRecord retired onto @dailyuse/dashboard sole. */
 
 export async function getDesktopDashboardData(identityId: string): Promise<DashboardData> {
   const goalRepository = getGoalRepository();

@@ -26,3 +26,10 @@ export type {
 
 // Application: projection logic
 export { getDashboardData } from './domain/projection';
+
+// Domain: TaskInstance → DashboardTaskInstanceRecord sole (Residual 1156)
+export {
+  toDashboardTaskInstanceRecord,
+  type DashboardTaskInstanceSource,
+} from './domain/to-dashboard-task-instance-record';
+

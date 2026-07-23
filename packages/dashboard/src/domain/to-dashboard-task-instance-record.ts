@@ -1,0 +1,35 @@
+/**
+ * Residual 1156: sole toDashboardTaskInstanceRecord for dashboard read adapters.
+ * API Prisma + Desktop Electron dashboard-read-service duals retired onto this helper.
+ * Soft residual 1156: host service wiring (Prisma create* vs Electron get* + logger) remains
+ * separate — only the TaskInstance → DashboardTaskInstanceRecord mapping is sole.
+ */
+
+import type { DashboardTaskInstanceRecord } from './types';
+
+/** Duck-typed task instance fields required by the dashboard projection record. */
+export interface DashboardTaskInstanceSource {
+  id: string | number;
+  templateId: string | number;
+  status: string;
+  instanceDate: number;
+  actualEndTime: number | null;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  isOverdue(): boolean;
+}
+
+export function toDashboardTaskInstanceRecord(
+  instance: DashboardTaskInstanceSource,
+): DashboardTaskInstanceRecord {
+  return {
+    id: String(instance.id),
+    templateId: String(instance.templateId),
+    status: instance.status,
+    instanceDate: instance.instanceDate,
+    actualEndTime: instance.actualEndTime,
+    updatedAt: instance.updatedAt.getTime(),
+    deletedAt: instance.deletedAt,
+    isOverdue: () => instance.isOverdue(),
+  };
+}
