@@ -10,6 +10,7 @@ import { isRecord } from './isRecord';
  *   (packages/authentication/src/server/shared/mask-email-dual.surface.spec.ts).
  * Soft residual 947: desktop http-envelope isRecord is a keep-boundary
  *   (arrays allowed; apps/desktop/src/main/utils/http-envelope-guards.ts).
+ * Soft residual 1089: isRecord cross-package keep-boundary surface (no force-merge).
  * Soft residual 952: tip focused suite numbers track Residual 952 evidence tip (267/1188).
  * Soft residual 953: AI createAgentId dual retired (create-agent-id-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
@@ -24,7 +25,7 @@ describe('AI isRecord dual retired (residual 951)', () => {
     expect(sole).toContain('Residual 951');
     expect(sole).toMatch(/export function isRecord\b/);
     expect(sole).toContain("Boolean(value) && typeof value === 'object' && !Array.isArray(value)");
-    expect(sole).toContain('Keep-boundary vs desktop http-envelope-guards isRecord');
+    expect(sole).toContain('Residual 1089 keep-boundary vs desktop http-envelope-guards isRecord');
   });
 
   it('goal and knowledge workflows import sole without local dual bodies', () => {

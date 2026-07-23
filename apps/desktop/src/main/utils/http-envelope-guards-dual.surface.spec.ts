@@ -11,6 +11,7 @@ import { hasDataKey, isRecord } from './http-envelope-guards';
  * Soft residual 949: maskEmail dual retired
  *   (packages/authentication/src/server/shared/mask-email-dual.surface.spec.ts).
  * Keep-boundary: AuthHttpEnvelope ≠ knowledge HttpEnvelope payload shapes.
+ * Soft residual 1089: app-vue AI isRecord plain-object keep-boundary surface (no force-merge).
  * Does not flip §13.2 checkboxes.
  */
 describe('http envelope guards dual retired (residual 947)', () => {

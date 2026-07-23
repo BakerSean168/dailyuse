@@ -1,7 +1,7 @@
 /**
  * Residual 951: sole plain-object isRecord helper for AI workflow composables.
  * useAIGoalWorkflow + useAIKnowledgeNoteWorkflow import this; local duals retired.
- * Keep-boundary vs desktop http-envelope-guards isRecord (arrays allowed there):
+ * Residual 1089 keep-boundary vs desktop http-envelope-guards isRecord (arrays allowed there):
  * this helper rejects arrays and null/falsey values (plain-object only).
  */
 
