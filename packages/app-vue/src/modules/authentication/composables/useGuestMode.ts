@@ -14,6 +14,8 @@ import {
 // Residual 913: host access via getDesktopAuthApi (no inline host cast dual).
 // Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
 // Residual 1051: enterGuestMode result/catch failure duals retired onto reportAuthOperationFailure sole.
+// Residual 1077 keep-boundary: autoLoginDesktop returns AutoLoginResult shape
+// (setError + structured return; not toast dual / not reportAuthOperationFailure sole).
 export function useGuestMode(ctx: AuthContext) {
   const { store, service, t, lastResultError, getLocalizedAuthError } = ctx;
   const failureDeps = { store, t, lastResultError, getLocalizedAuthError };
@@ -87,6 +89,7 @@ export function useGuestMode(ctx: AuthContext) {
     }
   }
 
+  // Residual 1077 keep-boundary: AutoLoginResult return path (no toast dual body).
   async function autoLoginDesktop(): Promise<AutoLoginResult> {
     if (!(typeof window !== 'undefined' && hasDesktopAuthApi(window))) {
       return { ok: false, authenticated: false, error: 'Desktop only' };
