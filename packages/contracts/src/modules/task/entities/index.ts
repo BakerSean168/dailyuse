@@ -1,10 +1,7 @@
 /**
  * Task Entities Export
  */
-export type {
-  SubtaskServerDTO,
-} from './subtask-server';
-
+// Residual 649: subtask server dual retired (client DTO only).
 export type {
   SubtaskClientDTO,
 } from './subtask-client';

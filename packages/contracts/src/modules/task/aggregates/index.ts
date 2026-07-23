@@ -29,14 +29,11 @@ export type {
 // TaskDependency
 export type {
   TaskDependencyServerDTO,
-  TaskTemplateWithDependenciesServerDTO,
   CircularDependencyValidationResult,
-  DependencyChainServerDTO,
 } from './task-dependency-server';
 
 export type {
   TaskDependencyClientDTO,
-  TaskTemplateWithDependenciesClientDTO,
   DependencyChainClientDTO,
 } from './task-dependency-client';
 

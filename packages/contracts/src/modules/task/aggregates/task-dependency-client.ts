@@ -10,7 +10,6 @@ import type {
   DomainDate,
 } from '../../../primitives';
 import type { DependencyType } from '../value-objects/dependency-type';
-import type { DependencyStatus } from '../value-objects/dependency-status';
 
 /**
  * 任务依赖关系实体（客户端）
@@ -35,30 +34,7 @@ export interface TaskDependencyClientDTO {
   successorTaskTitle?: string;
 }
 
-/**
- * 带依赖信息的任务模板（客户端）
- */
-export interface TaskTemplateWithDependenciesClientDTO {
-  id: TaskTemplateId;
-  title: string;
-  // ... 其他 TaskTemplate 字段
-
-  dependencies: TaskDependencyClientDTO[];
-  dependents: TaskTemplateId[];
-  dependencyStatus: DependencyStatus;
-  isBlocked: boolean;
-  blockingReason?: string;
-
-  /**
-   * 可以开始的最早时间（基于依赖计算）
-   */
-  earliestStartTime?: DomainDate;
-
-  /**
-   * 依赖层级（用于可视化）
-   */
-  dependencyLevel?: number;
-}
+// Residual 649: task-template-with-dependencies client dual retired.
 
 /**
  * 将 ServerDTO 转换为 ClientDTO

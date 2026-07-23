@@ -1,6 +1,9 @@
 /**
  * Task Dependency Server DTOs
  * 任务依赖关系服务端数据传输对象
+ *
+ * Residual 649: with-dependencies / dependency-chain server duals retired
+ * (Client chain + dependency entity only).
  */
 
 import type {
@@ -10,7 +13,6 @@ import type {
   TransferDate,
 } from '../../../primitives';
 import type { DependencyType } from '../value-objects/dependency-type';
-import type { DependencyStatus } from '../value-objects/dependency-status';
 
 /**
  * 任务依赖关系实体（服务端）
@@ -62,47 +64,6 @@ export interface TaskDependencyServerDTO {
 }
 
 /**
- * 带依赖信息的任务模板（服务端）
- * 扩展 TaskTemplateServerDTO，包含依赖关系信息
- */
-export interface TaskTemplateWithDependenciesServerDTO {
-  /**
-   * 任务的基本信息（从 TaskTemplateServerDTO 继承）
-   */
-  id: TaskTemplateId;
-  title: string;
-  // ... 其他 TaskTemplate 字段
-
-  /**
-   * 此任务依赖的其他任务
-   * （前置任务列表）
-   */
-  dependencies: TaskDependencyServerDTO[];
-
-  /**
-   * 依赖此任务的其他任务
-   * （后续任务的 ID 列表）
-   */
-  dependents: TaskTemplateId[];
-
-  /**
-   * 当前依赖状态
-   */
-  dependencyStatus: DependencyStatus;
-
-  /**
-   * 是否被阻塞
-   * 当 dependencyStatus 为 WAITING 或 BLOCKED 时为 true
-   */
-  isBlocked: boolean;
-
-  /**
-   * 阻塞原因（如果被阻塞）
-   */
-  blockingReason?: string;
-}
-
-/**
  * 循环依赖验证结果
  * 用于检测依赖关系是否会形成循环
  */
@@ -123,38 +84,4 @@ export interface CircularDependencyValidationResult {
    * 验证消息
    */
   message?: string;
-}
-
-/**
- * 依赖链信息
- * 表示任务的完整依赖链
- */
-export interface DependencyChainServerDTO {
-  /**
-   * 任务 ID
-   */
-  taskId: TaskTemplateId;
-
-  /**
-   * 所有前置任务（递归）
-   * 按依赖层级排序
-   */
-  allPredecessors: TaskTemplateId[];
-
-  /**
-   * 所有后续任务（递归）
-   * 按依赖层级排序
-   */
-  allSuccessors: TaskTemplateId[];
-
-  /**
-   * 依赖深度
-   * 从根任务（无前置依赖）到此任务的最长路径
-   */
-  depth: number;
-
-  /**
-   * 是否在关键路径上
-   */
-  isOnCriticalPath: boolean;
 }
