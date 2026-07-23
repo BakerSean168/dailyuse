@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 839: NotificationTemplateClientDTO dual body retired.
  * Sole NotificationTemplateResponseSchema + z.infer.
- * NotificationTemplateServerDTO remains interface (identical shape; TransferDate timestamps).
+ * Soft residual 845: ServerDTO also z.infer of same schema (see notification-template-server-dto-dual).
  */
 describe('notification template client dto dual retired (residual 839)', () => {
   const apiDir = __dirname;
@@ -33,10 +33,13 @@ describe('notification template client dto dual retired (residual 839)', () => {
     expect(schemas).toContain('export const NotificationTemplateConfigSchema = z.object({');
   });
 
-  it('keeps NotificationTemplateServerDTO as interface body', () => {
-    expect(server).toMatch(/export interface NotificationTemplateServerDTO\b/);
-    expect(server).toContain('Soft residual 839');
-    expect(server).toContain('TransferDate');
+  it('keeps NotificationTemplateServerDTO as z.infer of same schema (soft residual 845)', () => {
+    // Soft residual 845: Server is z.infer of same schema (no interface dual body).
+    expect(server).toContain(
+      'export type NotificationTemplateServerDTO = z.infer<typeof NotificationTemplateResponseSchema>',
+    );
+    expect(server).not.toMatch(/export interface NotificationTemplateServerDTO\b/);
+    expect(server).toContain('Residual 845');
     expect(server).not.toMatch(/export interface NotificationTemplateClientDTO\b/);
   });
 

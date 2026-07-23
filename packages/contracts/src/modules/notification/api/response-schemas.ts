@@ -70,6 +70,7 @@ export const NotificationPreferenceResponseSchema = z.object({
 
 // Residual 839: NotificationTemplateClientDTO dual retired — sole NotificationTemplateResponseSchema + z.infer
 // (semantic type is z.infer alias in aggregates/notification-template-client.ts).
+// Residual 845: NotificationTemplateServerDTO also z.infer of this schema (client+server single-track).
 // Nested config matches NotificationTemplateConfigServerDTO shape.
 export const NotificationTemplateContentSchema = z.object({
   title: z.string(),

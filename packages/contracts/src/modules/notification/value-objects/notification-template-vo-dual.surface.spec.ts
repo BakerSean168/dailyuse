@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 659: retire dead notification template VO dual and snooze dual.
  * Live template contracts: NotificationTemplateConfigServerDTO + aggregate DTOs.
- * Soft residual 839: NotificationTemplateClientDTO dual retired via NotificationTemplateResponseSchema;
- * Server DTO remains interface (see notification-template-client-dto-dual surface).
+ * Soft residual 839: NotificationTemplateClientDTO dual retired via NotificationTemplateResponseSchema.
+ * Soft residual 845: NotificationTemplateServerDTO also z.infer of same schema (client+server single-track).
  */
 describe('notification template VO dual single-track surface (residual 659)', () => {
   const vos = __dirname;
@@ -35,6 +35,10 @@ describe('notification template VO dual single-track surface (residual 659)', ()
       'export type NotificationTemplateClientDTO = z.infer<typeof NotificationTemplateResponseSchema>',
     );
     expect(client).not.toMatch(/export interface NotificationTemplateClientDTO\b/);
-    expect(server).toContain('export interface NotificationTemplateServerDTO');
+    // Soft residual 845: ServerDTO is z.infer alias (no interface dual body).
+    expect(server).toContain(
+      'export type NotificationTemplateServerDTO = z.infer<typeof NotificationTemplateResponseSchema>',
+    );
+    expect(server).not.toMatch(/export interface NotificationTemplateServerDTO\b/);
   });
 });

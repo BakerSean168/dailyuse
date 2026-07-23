@@ -1,25 +1,12 @@
 /**
  * NotificationTemplate Aggregate Root - Server Interface
  *
- * Soft residual 839: ClientDTO dual retired via NotificationTemplateResponseSchema + z.infer
- * (see notification-template-client-dto-dual surface). Server DTO remains interface
- * (same shape as Client; TransferDate timestamps).
+ * Residual 845: NotificationTemplateServerDTO dual retired — sole NotificationTemplateResponseSchema + z.infer
+ * (same schema as NotificationTemplateClientDTO; identical shape).
  */
 
-import type { NotificationCategory } from '../value-objects/notification-category';
-import type { NotificationType } from '../value-objects/notification-type';
-import type { NotificationTemplateConfigServerDTO } from '../value-objects/notification-template-config';
-import type { NotificationTemplateId, TransferDate } from '../../../primitives';
+import type { z } from 'zod';
+import { NotificationTemplateResponseSchema } from '../api/response-schemas';
 
-export interface NotificationTemplateServerDTO {
-  id: NotificationTemplateId;
-  name: string;
-  description: string | null;
-  type: NotificationType;
-  category: NotificationCategory;
-  template: NotificationTemplateConfigServerDTO;
-  isActive: boolean;
-  isSystemTemplate: boolean;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
+// Residual 845: NotificationTemplateServerDTO dual retired — shared NotificationTemplateResponseSchema with client.
+export type NotificationTemplateServerDTO = z.infer<typeof NotificationTemplateResponseSchema>;
