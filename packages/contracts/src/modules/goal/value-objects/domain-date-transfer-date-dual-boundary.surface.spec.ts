@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 861 (soft): ReminderResponse/NotificationChannel subset duals retired via Omit
  *   (reminder-response-client-dto-dual.surface.spec.ts); this file keeps Residual 859 only.
  * Residual 865 (soft): AuthStatusDTO dead simplified dual deleted — AuthStatus sole status shape.
+ * Residual 879 (soft): AuthIdentity/AuthSession/TaskTemplate Client≠Server keep-boundary
+ *   (client-server-shape-mismatch-keep-boundary.surface.spec.ts).
  * Does not flip §13.2 checkboxes; OAuth / multi-engine Agent / full PR gate remain open.
  */
 describe('domain-date transfer-date dual keep-boundary (residual 859)', () => {

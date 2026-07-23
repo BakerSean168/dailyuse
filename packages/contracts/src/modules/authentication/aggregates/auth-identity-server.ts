@@ -18,6 +18,7 @@ import type { IdentityId } from '../../../primitives';
 /**
  * Server DTO (内部构造用)
  * 使用 TransferDate (number) 时间戳
+ * Residual 879: intentional Client≠Server dual (oauthBindings; client has has* flags).
  */
 export interface AuthIdentityServerDTO {
   id: IdentityId;

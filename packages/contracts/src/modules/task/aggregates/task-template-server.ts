@@ -26,6 +26,7 @@ import { ImportanceLevel } from '../../../shared/value-objects/importance';
 /**
  * TaskTemplate Server DTO
  */
+// Residual 879: intentional Client≠Server dual (client extra projection fields vs server checklist).
 export interface TaskTemplateServerDTO {
   id: TaskTemplateId;
   identityId: IdentityId;
