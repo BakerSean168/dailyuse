@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
+import { QueryKnowledgeResSchema } from './response-schemas';
 
 export const QueryKnowledgeSchema = z.object({
   query: z.string().trim().min(3).max(2000),
@@ -21,18 +22,8 @@ export const KnowledgeCitationSchema = z.object({
 
 export type KnowledgeCitation = z.infer<typeof KnowledgeCitationSchema>;
 
-export interface QueryKnowledgeRes {
-  answer: string;
-  citations: KnowledgeCitation[];
-  providerId: AiProviderConfigId;
-  tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  processingTimeMs: number;
-  matchedResourceCount: number;
-}
+// Residual 695: response dual body retired — OpenAPI + transport use QueryKnowledgeResSchema.
+export type QueryKnowledgeRes = z.infer<typeof QueryKnowledgeResSchema>;
 
 export const ReindexKnowledgeSchema = z.object({
   limit: z.number().int().min(1).max(500).default(200).optional(),

@@ -2,10 +2,10 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiConversationId, AiProviderConfigId } from '../../../primitives';
 import type { AIConversationClientDTO } from '../aggregates/ai-conversation-client';
-import type { MessageClientDTO } from '../entities/message-client';
 import {
   ConversationListResSchema,
   MessageListResSchema,
+  SendMessageResSchema,
 } from './response-schemas';
 
 /** Residual 673: shared conversation name body (create + update). */
@@ -42,17 +42,8 @@ export const SendMessageSchema = z.object({
 });
 export type SendMessageReq = z.infer<typeof SendMessageSchema>;
 
-export interface SendMessageRes {
-  userMessage: MessageClientDTO;
-  assistantMessage: MessageClientDTO;
-  tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  providerId: AiProviderConfigId;
-  processingTimeMs: number;
-}
+// Residual 695: response dual body retired — OpenAPI + transport use SendMessageResSchema.
+export type SendMessageRes = z.infer<typeof SendMessageResSchema>;
 
 export type StreamMessageChunk = {
   role: 'assistant';

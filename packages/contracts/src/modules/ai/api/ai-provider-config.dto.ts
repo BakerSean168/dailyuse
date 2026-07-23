@@ -5,6 +5,7 @@ import type {
   AIProviderConfigClientDTO,
 } from '../aggregates/ai-provider-config-client';
 import type { TestAIProviderResultDTO } from '../dtos/provider-test-result.dto';
+import { ListAIProviderConfigsResSchema } from './response-schemas';
 
 export const OpenAICompatibleProviderType = 'openai_compatible' as const;
 
@@ -30,10 +31,9 @@ export const UpdateAIProviderConfigSchema = z.object({
 export type UpdateAIProviderConfigReq = z.infer<typeof UpdateAIProviderConfigSchema>;
 export type UpdateAIProviderConfigRes = AIProviderConfigClientDTO;
 
-export interface ListAIProviderConfigsRes {
-  /** Full client DTOs — list payload matches server listProviders (no Summary dual-track). */
-  data: AIProviderConfigClientDTO[];
-}
+// Residual 695: list response dual body retired — OpenAPI + transport use ListAIProviderConfigsResSchema.
+// Full client DTOs — list payload matches server listProviders (no Summary dual-track).
+export type ListAIProviderConfigsRes = z.infer<typeof ListAIProviderConfigsResSchema>;
 
 export type GetAIProviderConfigReq = void;
 export type GetAIProviderConfigRes = AIProviderConfigClientDTO;

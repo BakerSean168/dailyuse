@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
+import { QueryAnalyticsResSchema } from './response-schemas';
 
 export const QueryAnalyticsSchema = z.object({
   query: z.string().trim().min(3).max(2000),
@@ -9,14 +10,5 @@ export const QueryAnalyticsSchema = z.object({
 
 export type QueryAnalyticsReq = z.infer<typeof QueryAnalyticsSchema>;
 
-export interface QueryAnalyticsRes {
-  answer: string;
-  highlights: string[];
-  providerId: AiProviderConfigId;
-  tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  processingTimeMs: number;
-}
+// Residual 695: response dual body retired — OpenAPI + transport use QueryAnalyticsResSchema.
+export type QueryAnalyticsRes = z.infer<typeof QueryAnalyticsResSchema>;

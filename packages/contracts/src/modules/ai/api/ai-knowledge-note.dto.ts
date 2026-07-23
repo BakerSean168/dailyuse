@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
+import { CreateKnowledgeNoteResSchema } from './response-schemas';
 
 function normalizeKnowledgeNoteTargetSubpath(value: string): string {
   return value
@@ -78,16 +79,5 @@ export interface KnowledgeNotePersistedRef {
   updatedAt: number;
 }
 
-export interface CreateKnowledgeNoteRes {
-  note: KnowledgeNotePersistedRef;
-  resolvedPath: string;
-  indexStatus: KnowledgeNoteIndexStatus;
-  tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  providerId: AiProviderConfigId;
-  processingTimeMs: number;
-  generatedAt: number;
-}
+// Residual 695: response dual body retired — OpenAPI + transport use CreateKnowledgeNoteResSchema.
+export type CreateKnowledgeNoteRes = z.infer<typeof CreateKnowledgeNoteResSchema>;

@@ -193,6 +193,9 @@ export const AIProviderConfigClientDTOSchema = z.object({
 // Residual 647: AIProviderConfigSummarySchema dual-track retired.
 // List/get envelopes use AIProviderConfigClientDTOSchema only.
 
+// Residual 695: AI response OpenAPI schemas are the sole response shapes for
+// SendMessage / ListAIProviderConfigs / QueryAnalytics / QueryKnowledge /
+// ExpandKnowledge / CreateKnowledgeNote (semantic *Res types are z.infer aliases).
 export const SendMessageResSchema = z.object({
   userMessage: MessageClientDTOSchema,
   assistantMessage: MessageClientDTOSchema,

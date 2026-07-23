@@ -30,8 +30,11 @@ describe('contracts summary dual single-track surface (residual 647)', () => {
     expect(schemas).toMatch(
       /ListAIProviderConfigsResSchema[\s\S]*data:\s*z\.array\(AIProviderConfigClientDTOSchema\)/,
     );
-    expect(listDto).toContain('AIProviderConfigClientDTO[]');
+    expect(listDto).toContain(
+      'export type ListAIProviderConfigsRes = z.infer<typeof ListAIProviderConfigsResSchema>',
+    );
     expect(listDto).toMatch(/no Summary dual-track/);
+    expect(listDto).not.toMatch(/export interface ListAIProviderConfigsRes\b/);
   });
 
   it('retires reminder Summary/Dashboard duals; keeps UpcomingReminderDTO', () => {
