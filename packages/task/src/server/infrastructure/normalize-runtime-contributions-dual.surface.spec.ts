@@ -10,7 +10,7 @@ import type { TaskModuleRuntimeContribution } from './task.module';
 /**
  * Residual 987: runtime-contribution normalize dual retired (task API + Electron entry).
  * Sole body in normalize-runtime-contributions.ts.
- * Soft residual 990: tip focused suite numbers track Residual 990 evidence tip (285/1248).
+ * Soft residual 992: tip focused suite numbers track Residual 992 evidence tip (286/1251).
  * Soft residual: server task.module.ts local normalizeRuntimeContributions remains keep-boundary
  * (composition-root + TaskRuntimeContributionsInput host; avoid circular import).
  * Does not flip §13.2 checkboxes.
