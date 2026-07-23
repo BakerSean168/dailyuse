@@ -15,6 +15,8 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
+// Residual 1117 keep-boundary: null/undefined → null; else String(value) (keeps empty; coerces numbers).
+// Soft residual 1117: AI goal-planning toNonEmptyString/toOptionalString → undefined after trim (no force-merge).
 function optionalString(value: unknown): string | null {
   return value === null || value === undefined ? null : String(value);
 }

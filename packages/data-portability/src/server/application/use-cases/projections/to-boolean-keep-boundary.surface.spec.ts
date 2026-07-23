@@ -12,6 +12,7 @@ import { toBoolean } from './projection-helpers';
  * - schedule parseBoolean: empty short-circuit + boolean literals → boolean|undefined
  * - goal parseBoolean (985): "true"/"false" only → boolean|undefined
  * Soft residual 1021/1073/985: query parser duals/keep-boundaries remain.
+ * Soft residual 1117: optionalString/toNonEmptyString keep-boundary remains.
  * Does not flip §13.2 checkboxes.
  */
 describe('data-portability toBoolean keep-boundary (residual 1113)', () => {

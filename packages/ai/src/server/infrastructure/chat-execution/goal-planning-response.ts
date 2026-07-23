@@ -137,6 +137,8 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
+// Residual 1117 keep-boundary: only non-empty trimmed strings → undefined otherwise (no String() coerce).
+// Soft residual 1117: data-portability schedule optionalString null + String() coerce (no force-merge).
 function toNonEmptyString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
