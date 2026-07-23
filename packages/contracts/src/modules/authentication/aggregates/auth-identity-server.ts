@@ -6,7 +6,7 @@
  * 此处仅保留 DTO 定义用于跨层数据传输
  */
 
-import type { AuthCredentialServerDTO } from '../entities/auth-credential-server';
+import type { PasswordCredentialServerDTO } from '../entities/password-credential-server';
 import type { AuthIdentifierDTO } from '../value-objects';
 import type { OAuthBindingServerDTO } from '../entities/oauth-binding';
 import type { TransferDate } from '../../../primitives';
@@ -27,7 +27,8 @@ export interface AuthIdentityServerDTO {
   lockedUntil: TransferDate | null;
   identifiers: AuthIdentifierDTO[];
   oauthBindings: OAuthBindingServerDTO[];
-  credentials: AuthCredentialServerDTO[];
+  // Residual 685: credentials are PasswordCredentialServerDTO only (no AuthCredentialServer dual).
+  credentials: PasswordCredentialServerDTO[];
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

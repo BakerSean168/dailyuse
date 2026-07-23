@@ -16,13 +16,7 @@
  * - No PersistenceDTO; mapper converts directly between DB Row and ServerDTO
  */
 
-import type {
-  AuthIdentityServerDTO,
-  AuthIdentifierDTO,
-  OAuthBindingServerDTO,
-  AuthCredentialServerDTO,
-  PasswordCredentialServerDTO,
-} from '@dailyuse/contracts/authentication';
+import type { AuthIdentityServerDTO, AuthIdentifierDTO, OAuthBindingServerDTO, PasswordCredentialServerDTO } from '@dailyuse/contracts/authentication';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { AuthIdentity } from '../../../../domain';
 import type { PrismaAuthIdentityWithRelations } from '../../../types';
@@ -101,7 +95,7 @@ export class PrismaAuthIdentityMapper {
     );
 
     // Convert DTO credentials to domain entities
-    const credentials = serverDTO.credentials.map((cred: AuthCredentialServerDTO) => {
+    const credentials = serverDTO.credentials.map((cred: PasswordCredentialServerDTO) => {
       if (cred.type === CredentialType.Password) {
         const p = cred as PasswordCredentialServerDTO;
         return PasswordCredential.load({
@@ -188,7 +182,7 @@ export class PrismaAuthIdentityMapper {
       oauthBindings: dto.oauthBindings.map((b: OAuthBindingServerDTO) =>
         PrismaOAuthBindingMapper.toPrismaCreate(b, identityId),
       ),
-      credentials: dto.credentials.map((c: AuthCredentialServerDTO) =>
+      credentials: dto.credentials.map((c: PasswordCredentialServerDTO) =>
         PrismaAuthCredentialMapper.toPrismaCreate(c, identityId),
       ),
     };

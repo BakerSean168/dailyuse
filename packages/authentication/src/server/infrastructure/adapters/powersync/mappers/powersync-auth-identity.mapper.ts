@@ -1,11 +1,4 @@
-import type {
-  AuthCredentialId,
-  AuthCredentialServerDTO,
-  AuthIdentifierDTO,
-  HashedPassword as IHashedPassword,
-  OAuthBindingServerDTO,
-  PasswordCredentialServerDTO,
-} from '@dailyuse/contracts/authentication';
+import type { AuthCredentialId, PasswordCredentialServerDTO, AuthIdentifierDTO, HashedPassword as IHashedPassword, OAuthBindingServerDTO } from '@dailyuse/contracts/authentication';
 import { createHash } from 'node:crypto';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { AuthIdentity } from '../../../../domain';
@@ -242,7 +235,7 @@ export class PowerSyncAuthIdentityMapper {
         is_verified: i.isVerified ? 1 : 0,
         created_at: createdAtIso,
       })),
-      credentials: dto.credentials.map((c: AuthCredentialServerDTO) => {
+      credentials: dto.credentials.map((c: PasswordCredentialServerDTO) => {
         const base = {
           id: c.id,
           identity_id: identityId,

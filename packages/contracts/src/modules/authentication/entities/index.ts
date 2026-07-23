@@ -1,6 +1,6 @@
 export type { AuthCredentialClientDTO } from './auth-credential-client';
 
-export type { AuthCredentialServerDTO } from './auth-credential-server';
+// Residual 685: credential server dual retired (PasswordCredentialServerDTO only).
 
 // ============ Entities - PasswordCredential ============
 export type { PasswordCredentialServerDTO } from './password-credential-server';
