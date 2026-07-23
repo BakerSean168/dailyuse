@@ -91,6 +91,8 @@ export const DependencyChainResponseSchema = z.object({
   isOnCriticalPath: z.boolean(),
 });
 
+// Residual 711: ValidateDependencyResponseSchema is the sole validate-dependency response shape
+// (ValidateDependencyResponse is a z.infer alias).
 export const ValidateDependencyResponseSchema = z.object({
   isValid: z.boolean(),
   errors: z.array(z.string()).optional(),

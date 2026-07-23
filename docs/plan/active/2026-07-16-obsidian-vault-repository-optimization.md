@@ -5676,6 +5676,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-23（阶段 6 残留七百一十一轮）：contracts task **dependency transport schema 双轨收口**（仍不打勾）——
+> 删除 Create/Update/Validate Body + ValidateDependencyResponse 接口 dual body；统一 `z.infer` of `*Schema`；
+> 保留 internal identity use-case Request 接口；surface Residual 711 锁。
+> 非跨端 multi-engine E2E / 全量 PR 门禁。状态保持 **实施中**；不改 §13.2 checkbox。
+
 
 
 
@@ -6529,6 +6534,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七百零八轮：§13.2 focused evidence suite re-run (830 tests, residuals 250–707 locks, no checkbox changes)。
   残留七百零九轮：retire schedule-task request duals (Create/Update/Config/Metadata/Batch RequestSchema only).
   残留七百一十轮：§13.2 focused evidence suite re-run (834 tests, residuals 250–709 locks, no checkbox changes)。
+  残留七百一十一轮：retire task dependency transport duals (Body + ValidateResponse Schema only).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -6672,6 +6678,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七百零八轮：§13.2 focused evidence suite re-run（830 tests，residuals 250–707 锁；不改 checkbox）。
   残留七百零九轮：schedule-task request schema 双轨收口。
   残留七百一十轮：§13.2 focused evidence suite re-run（834 tests，residuals 250–709 锁；不改 checkbox）。
+  残留七百一十一轮：task dependency transport schema 双轨收口。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -7426,6 +7433,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七百零八轮：tip 上 830 项 focused evidence suite（含 residual 250–707 schedule request dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留七百零九轮：schedule-task request schema 双轨收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留七百一十轮：tip 上 834 项 focused evidence suite（含 residual 250–709 schedule-task request dual retired 锁）通过；仍不构成全量 PR 门禁证据。
+  残留七百一十一轮：task dependency transport schema 双轨收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
