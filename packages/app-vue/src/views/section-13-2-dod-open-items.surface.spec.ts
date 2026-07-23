@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 891: honest §13.2 completion-definition open-items re-audit.
- * Residual 1053: tip focused suite pointer refresh (Residual 1052 evidence tip 315/1363)
- * without checkbox flips; reaffirms loadWorkspaceEnv + schedule parser keep-boundaries.
+ * Residual 1061: tip focused suite pointer refresh (Residual 1060 evidence tip 315/1364)
+ * without checkbox flips; reaffirms loadWorkspaceEnv + schedule + password keep-boundaries.
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary is separate contracts surface.
  * Residual 1047 (soft): loadWorkspaceEnv keep-boundary surface remains locked in api package.
  * Does not flip any §13.2 checkbox; focused suite tip remains evidence, not full PR gate.
@@ -30,8 +30,8 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
   it('keeps exactly three unchecked §13.2 items with partial/external-block labels', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
-    expect(plan).toContain('Residual 1053');
-    expect(plan).toContain('残留一千零五十三轮');
+    expect(plan).toContain('Residual 1061');
+    expect(plan).toContain('残留一千零六十一轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
     const checked = sec.match(/- \[x\]/g) ?? [];
@@ -59,9 +59,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
 
   it('records tip focused suite evidence without claiming full PR gate completion', () => {
     const sec = section132();
-    expect(sec).toContain('315 文件 / 1363 测试');
-    expect(sec).toContain('Residual 1052');
-    expect(sec).toContain('Residual 1053');
+    expect(sec).toContain('315 文件 / 1364 测试');
+    expect(sec).toContain('Residual 1060');
+    expect(sec).toContain('Residual 1061');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');
     expect(sec).toContain('三入口完整 E2E');
@@ -70,6 +70,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     // Honest: partial suite is not full PR gate
     expect(sec).not.toMatch(/全量 PR 门禁.*已证明/);
     // Stale tip numbers must not remain as the active tip line
+    expect(sec).not.toContain('focused evidence suite tip（Residual 1052）：**315 文件 / 1363 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1046）：**313 文件 / 1355 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1038）：**309 文件 / 1339 测试**');
   });
