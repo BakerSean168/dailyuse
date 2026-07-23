@@ -4,6 +4,7 @@ import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result'
 
 // Residual 903: sole desktop invoke-api shape (DesktopBootstrapApi is type alias).
 // Residual 905: reminder DesktopApi dual retired — use DesktopAuthApi sole body.
+// Residual 907: setting themeSync inline electronAPI dual retired — use DesktopAuthApi.
 export type DesktopAuthApi = {
   invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
 };

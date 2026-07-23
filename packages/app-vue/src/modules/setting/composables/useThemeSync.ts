@@ -1,6 +1,9 @@
 import { onScopeDispose, watch } from 'vue';
 import { WindowChannels } from '@dailyuse/contracts/electron';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
+import type { DesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
+
+// Residual 907: inline electronAPI dual retired — DesktopAuthApi sole invoke-api shape.
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 
@@ -18,9 +21,9 @@ function resolveThemeMode(theme: ThemeMode): 'light' | 'dark' {
 function syncDesktopWindowChrome(theme: 'light' | 'dark'): void {
   void (
     window as Window & {
-      electronAPI?: { invoke(channel: string, ...args: unknown[]): Promise<unknown> };
+      electronAPI?: DesktopAuthApi;
     }
-  ).electronAPI?.invoke(WindowChannels.SYNC_CHROME_THEME, theme);
+  ).electronAPI?.invoke?.(WindowChannels.SYNC_CHROME_THEME, theme);
 }
 
 export function applyThemeMode(theme: ThemeMode | string | null | undefined): void {

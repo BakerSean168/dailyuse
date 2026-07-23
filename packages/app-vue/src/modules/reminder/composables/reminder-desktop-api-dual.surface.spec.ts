@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
  * ReminderContext uses DesktopAuthApi sole invoke-api shape (no local dual object type).
  * Residual 903 (soft): DesktopBootstrapApi dual retired
  *   (shared/utils/desktop-bootstrap-api-dual.surface.spec.ts).
+ * Residual 907 (soft): setting themeSync electronAPI dual retired
+ *   (modules/setting/.../theme-sync-desktop-api-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('reminder DesktopApi dual retired (residual 905)', () => {
