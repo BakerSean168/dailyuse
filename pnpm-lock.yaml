@@ -238,8 +238,8 @@ importers:
         specifier: 23.0.2
         version: 23.0.2(@swc-node/register@1.11.1(@swc/core@1.15.43(@swc/helpers@0.5.17))(@swc/types@0.1.27)(typescript@6.0.3))(@swc/core@1.15.43(@swc/helpers@0.5.17))
       nx-mcp:
-        specifier: 0.24.0
-        version: 0.24.0
+        specifier: 0.25.0
+        version: 0.25.0
       prettier:
         specifier: ^3.9.5
         version: 3.9.5
@@ -11827,8 +11827,8 @@ packages:
   numbered@1.1.0:
     resolution: {integrity: sha512-pv/ue2Odr7IfYOO0byC1KgBI10wo5YDauLhxY6/saNzAdAs0r1SotGCPzzCLNPL0xtrAwWRialLu23AAu9xO1g==}
 
-  nx-mcp@0.24.0:
-    resolution: {integrity: sha512-c8+qAT8dE9sVTPu2PW2P76bNfS93sEJSjY/0m35/h6y9974kE9oXgrfnFEDbsHaYq5FcnJQdnCl5lk2lzqwqFA==}
+  nx-mcp@0.25.0:
+    resolution: {integrity: sha512-pSERsq6Cz1Yz5kddGZgTw8Cr3lyA4+YYEh4VLCYr1dfgBTzY3PtLs2uXr4O0W49ipvnM+v6lfKniyDurrVX4UA==}
     hasBin: true
 
   nx@23.0.2:
@@ -27453,7 +27453,7 @@ snapshots:
 
   numbered@1.1.0: {}
 
-  nx-mcp@0.24.0: {}
+  nx-mcp@0.25.0: {}
 
   nx@23.0.2(@swc-node/register@1.11.1(@swc/core@1.15.43(@swc/helpers@0.5.17))(@swc/types@0.1.27)(typescript@6.0.3))(@swc/core@1.15.43(@swc/helpers@0.5.17)):
     dependencies:

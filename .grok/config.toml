@@ -1,0 +1,24 @@
+# Grok project MCP servers (Memoflow / daily-use)
+# Prerequisites:
+#   1. Install CodeGraph: curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh
+#   2. Index once: codegraph init   (auto-sync thereafter)
+#   3. pnpm install (for nx-mcp under node_modules)
+#
+# Prefer `corepack pnpm ...` if bare `pnpm` hits the host-binary integrity bug.
+
+[mcp_servers.codegraph]
+command = "codegraph"
+args = ["serve", "--mcp"]
+enabled = true
+startup_timeout_sec = 60
+
+[mcp_servers.nx-mcp]
+command = "node"
+args = [
+  "./node_modules/nx-mcp/main.js",
+  ".",
+  "--no-minimal",
+  "--disableTelemetry",
+]
+enabled = true
+startup_timeout_sec = 90
