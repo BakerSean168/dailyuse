@@ -7,6 +7,9 @@
  *
  * @module @dailyuse/utils/result/openapi-helpers
  *
+ * Residual 1029: sole successResponse/errorResponse for package routes +
+ * apps/api openapi registry re-export (local dual bodies retired).
+ *
  * @example
  * ```ts
  * import { successResponse, errorResponse } from '@dailyuse/utils/result';
@@ -52,6 +55,7 @@ export const OpenApiErrorResponseSchema = z.object({
 /**
  * Generate a success response definition wrapping the given data schema.
  * Used in OpenAPI `responses` definitions.
+ * Residual 1029: sole body; apps/api registry re-exports without dual.
  */
 export function successResponse(schema: z.ZodType, description: string) {
   return {
@@ -73,6 +77,7 @@ export function successResponse(schema: z.ZodType, description: string) {
 /**
  * Generate an error response definition.
  * Used in OpenAPI `responses` definitions.
+ * Residual 1029: sole body (OpenApiErrorResponseSchema includes optional context).
  */
 export function errorResponse(description: string) {
   return {

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * OpenAPI Registry
  *
  * Central OpenAPI registry instance and common schemas.
@@ -81,39 +81,12 @@ export const ErrorResponseSchema = z.object({
 registry.register('ErrorResponse', ErrorResponseSchema);
 
 // ============================================================================
-// Shared Helpers
+// Shared Helpers (Residual 1029: re-export utils sole; local dual bodies retired)
 // ============================================================================
 
 /**
- * Generate a success response schema wrapping the given data schema.
+ * Residual 1029: successResponse/errorResponse dual retired onto
+ * @dailyuse/utils/result openapi-helpers sole.
+ * ErrorResponseSchema registration above remains for OpenAPI components.
  */
-export function successResponse(schema: z.ZodType, description: string) {
-  return {
-    description,
-    content: {
-      'application/json': {
-        schema: z.object({
-          ok: z.literal(true),
-          code: z.number(),
-          message: z.string(),
-          data: schema,
-          timestamp: z.number(),
-        }),
-      },
-    },
-  };
-}
-
-/**
- * Generate an error response schema.
- */
-export function errorResponse(description: string) {
-  return {
-    description,
-    content: {
-      'application/json': {
-        schema: ErrorResponseSchema,
-      },
-    },
-  };
-}
+export { successResponse, errorResponse } from '@dailyuse/utils/result';
