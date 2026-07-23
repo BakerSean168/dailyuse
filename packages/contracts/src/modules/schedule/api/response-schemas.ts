@@ -12,7 +12,19 @@ import { SourceModule } from '../value-objects/source-module';
 import { ExecutionStatus } from '../value-objects/execution-status';
 import { TaskPriority } from '../value-objects/task-priority';
 import { Timezone } from '../value-objects/timezone';
-import { ConflictSeverity, ConflictSuggestionType } from '../value-objects/conflict-detection-result';
+import {
+  ConflictDetectionResultSchema,
+  ConflictDetailSchema,
+  ConflictSuggestionSchema,
+} from '../value-objects/conflict-detection-result';
+
+// Residual 725: conflict detection schemas owned by conflict-detection-result.ts
+// (re-exported for OpenAPI route consumers).
+export {
+  ConflictDetectionResultSchema,
+  ConflictDetailSchema,
+  ConflictSuggestionSchema,
+};
 
 // ============ Inline Value Object Schemas ============
 
@@ -136,31 +148,9 @@ export const ScheduleBatchOperationResponseSchema = z.object({
 });
 
 // ============ Conflict Detection Response Schemas ============
-
-const ConflictDetailSchema = z.object({
-  scheduleId: brandedId<ScheduleId>(),
-  scheduleTitle: z.string(),
-  overlapStart: z.number(),
-  overlapEnd: z.number(),
-  overlapDuration: z.number(),
-  severity: z.enum(Object.values(ConflictSeverity) as [string, ...string[]]).optional(),
-});
-
-const ConflictSuggestionSchema = z.object({
-  type: z.enum(Object.values(ConflictSuggestionType) as [string, ...string[]]),
-  newStartTime: z.number(),
-  newEndTime: z.number(),
-  description: z.string().optional(),
-});
-
-export const ConflictDetectionResultSchema = z.object({
-  hasConflict: z.boolean(),
-  conflicts: z.array(ConflictDetailSchema),
-  suggestions: z.array(ConflictSuggestionSchema),
-});
-
 // Residual 663: detect-conflicts OpenAPI body is ConflictDetectionResult (no wrapper dual).
 // Residual 679: drop DetectConflictsResponseSchema name dual; routes use ConflictDetectionResultSchema only.
+// Residual 725: ConflictDetectionResultSchema owned by value-objects/conflict-detection-result.ts.
 
 /**
  * CreateSchedule (with conflict detection) Response Schema

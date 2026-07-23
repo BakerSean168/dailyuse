@@ -168,7 +168,11 @@ describe('schedule detect-conflicts response schema name dual retired (residual 
   it('does not export DetectConflictsResponseSchema name dual', () => {
     expect(responseSchemas).toContain('Residual 679');
     expect(responseSchemas).not.toMatch(/export const DetectConflictsResponseSchema\b/);
-    expect(responseSchemas).toContain('export const ConflictDetectionResultSchema');
+    // Residual 725: ConflictDetectionResultSchema is re-exported from VO module.
+    expect(responseSchemas).toMatch(
+      /export \{\s*[\s\S]*ConflictDetectionResultSchema/,
+    );
+    expect(responseSchemas).toContain('ConflictDetectionResultSchema');
   });
 
   it('detect and get-conflicts routes use ConflictDetectionResultSchema only', () => {

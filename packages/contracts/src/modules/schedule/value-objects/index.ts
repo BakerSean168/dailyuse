@@ -34,6 +34,11 @@ export type {
   TaskMetadataDTO,
 } from './task-metadata';
 
+export {
+  ConflictDetailSchema,
+  ConflictSuggestionSchema,
+  ConflictDetectionResultSchema,
+} from './conflict-detection-result';
 export type {
   ConflictDetectionResult,
   ConflictDetail,
