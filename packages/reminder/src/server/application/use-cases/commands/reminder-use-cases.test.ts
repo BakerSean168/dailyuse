@@ -185,8 +185,7 @@ const createValidCreateRequest = () => ({
     offsetMinutes: 0,
   },
   activeTime: {
-    startDate: new Date().toISOString(),
-    endDate: null,
+    activatedAt: Date.now(),
     timezone: 'UTC',
   },
   notificationConfig: {

@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 833: ActiveTimeConfigDTO / ReminderTemplateClientDTO / ScheduleExecutionClientDTO
  * dual bodies retired. Sole *Schema + z.infer; ActiveTime transport is activatedAt (not startDate/endDate).
+  *
+ * Soft residual 835: request ActiveTime dual also retired (Create/Update use ActiveTimeConfigSchema)
+ * (see reminder-template-request-active-time-dual surface).
  */
 describe('reminder template activeTime + schedule execution duals retired (residual 833)', () => {
   const reminderApi = __dirname;

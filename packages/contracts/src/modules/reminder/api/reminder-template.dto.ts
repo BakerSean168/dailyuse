@@ -15,6 +15,7 @@ import { TriggerType } from '../value-objects/trigger-type';
 import { NotificationChannel } from '../value-objects/notification-channel';
 import { NotificationAction } from '../value-objects/notification-action';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
+import { ActiveTimeConfigSchema } from '../value-objects/active-time-config';
 
 // ============================================================================
 // REMINDER TEMPLATE Operations
@@ -22,6 +23,8 @@ import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 /**
  * 创建提醒模板 Schema
+ *
+ * Residual 835: activeTime request dual retired — ActiveTimeConfigSchema (activatedAt).
  */
 export const CreateReminderTemplateSchema = z.object({
   title: z.string().min(1).max(200),
@@ -41,10 +44,8 @@ export const CreateReminderTemplateSchema = z.object({
       })
       .nullable(),
   }),
-  activeTime: z.object({
-    startDate: z.number(),
-    endDate: z.number().nullable(),
-  }),
+  // Residual 835: request ActiveTime reuses VO ActiveTimeConfigSchema (activatedAt; no startDate/endDate dual).
+  activeTime: ActiveTimeConfigSchema,
   notificationConfig: z.object({
     channels: z.array(z.enum(NotificationChannel)),
     title: z.string().nullable(),

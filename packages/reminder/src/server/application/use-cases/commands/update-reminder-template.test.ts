@@ -88,7 +88,7 @@ describe('UpdateReminderTemplateUseCase', () => {
 
     const result = await useCase.execute('tpl-1', {
       title: 'updated',
-      activeTime: { startDate: new Date('2026-04-01T00:00:00.000Z').toISOString() },
+      activeTime: { activatedAt: new Date('2026-04-01T00:00:00.000Z').getTime() },
       notificationConfig: {
         channels: ['Push'],
         title: null,
@@ -102,7 +102,7 @@ describe('UpdateReminderTemplateUseCase', () => {
       expect.objectContaining({
         title: 'updated',
         activeTime: {
-          activatedAt: new Date('2026-04-01T00:00:00.000Z').toISOString(),
+          activatedAt: new Date('2026-04-01T00:00:00.000Z').getTime(),
         },
         notificationConfig: expect.objectContaining({
           actions: null,

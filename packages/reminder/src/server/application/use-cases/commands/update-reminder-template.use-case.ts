@@ -64,7 +64,8 @@ export class UpdateReminderTemplateUseCase {
     template.update({
       title: request.title,
       description: request.description,
-      activeTime: request.activeTime ? { activatedAt: request.activeTime.startDate } : undefined,
+      // Residual 835: request activeTime is already ActiveTimeConfigDTO (activatedAt).
+      activeTime: request.activeTime,
       notificationConfig: request.notificationConfig
         ? {
             ...request.notificationConfig,
