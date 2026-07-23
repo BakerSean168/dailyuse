@@ -8,6 +8,7 @@ import { isMissing, isTemporaryFile } from './vault-fs-guards';
  * Sole bodies in vault-fs-guards.ts; local-vault-runtime + desktop auto-sync/git runtime import them.
  * Soft residual 955: app-vue AI getRecordString dual retired
  *   (packages/app-vue/src/modules/ai/composables/get-record-string-dual.surface.spec.ts).
+ * Soft residual 958: tip focused suite numbers track Residual 958 evidence tip (270/1197).
  * isTemporarySyncFile name retired onto isTemporaryFile sole.
  * Does not flip §13.2 checkboxes.
  */
