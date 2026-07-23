@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 837: TaskFolderClientDTO / TaskTemplateHistoryClientDTO dual bodies retired.
  * Sole *ResponseSchema + z.infer. Server DTOs remain separate interfaces (identical shape).
+ * Soft residual 841: SubtaskClientDTO dual also retired via SubtaskResponseSchema.
  */
 describe('task folder/history client dto duals retired (residual 837)', () => {
   const apiDir = __dirname;

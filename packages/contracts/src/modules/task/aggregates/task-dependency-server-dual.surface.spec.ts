@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
  * Soft residual 831: TaskDependencyClientDTO dual retired via TaskDependencyResponseSchema; DependencyChain stays interface
  * (see task-instance-dependency-schedule-task-client-dto-dual surface).
  * Soft residual 837: TaskFolderClientDTO / TaskTemplateHistoryClientDTO duals retired via *ResponseSchema.
+ * Soft residual 841: SubtaskClientDTO dual retired via SubtaskResponseSchema (see subtask-client-dto-dual surface).
  */
 describe('task dependency/subtask server dual single-track surface (residual 649)', () => {
   const aggregates = __dirname;
@@ -37,6 +38,10 @@ describe('task dependency/subtask server dual single-track surface (residual 649
     expect(entitiesIndex).not.toMatch(/SubtaskServerDTO/);
     expect(entitiesIndex).not.toMatch(/subtask-server/);
     expect(entitiesIndex).toContain('SubtaskClientDTO');
-    expect(client).toContain('export interface SubtaskClientDTO');
+    // Soft residual 841: ClientDTO is z.infer alias (no interface dual body).
+    expect(client).toContain(
+      'export type SubtaskClientDTO = z.infer<typeof SubtaskResponseSchema>',
+    );
+    expect(client).not.toMatch(/export interface SubtaskClientDTO\b/);
   });
 });

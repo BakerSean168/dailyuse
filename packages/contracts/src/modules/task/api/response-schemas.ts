@@ -7,7 +7,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { TaskTemplateId, TaskInstanceId, TaskDependencyId, IdentityId, TaskFolderId } from '../../../primitives';
+import type { TaskTemplateId, TaskInstanceId, TaskDependencyId, IdentityId, TaskFolderId, SubtaskId } from '../../../primitives';
 import {
   TaskGoalBindingSchema,
   TaskReminderConfigSchema,
@@ -164,4 +164,18 @@ export const TaskTemplateHistoryResponseSchema = z.object({
   action: z.string(),
   changes: z.unknown(),
   createdAt: z.number(),
+});
+
+
+// Residual 841: SubtaskClientDTO dual retired — sole SubtaskResponseSchema + z.infer
+// (semantic type is z.infer alias in entities/subtask-client.ts).
+export const SubtaskResponseSchema = z.object({
+  id: brandedId<SubtaskId>(),
+  name: z.string(),
+  isCompleted: z.boolean(),
+  order: z.number(),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
 });

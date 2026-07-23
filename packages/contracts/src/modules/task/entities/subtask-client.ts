@@ -1,12 +1,12 @@
-import type { SubtaskId,  TransferDate } from '../../../primitives';
+/**
+ * Subtask Entity - Client Interface
+ *
+ * Residual 841: SubtaskClientDTO dual retired — sole SubtaskResponseSchema + z.infer.
+ * Residual 649 retired SubtaskServerDTO (client-only track).
+ */
 
-export interface SubtaskClientDTO {
-  id: SubtaskId;
-  name: string;
-  isCompleted: boolean;
-  order: number;
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-}
+import type { z } from 'zod';
+import { SubtaskResponseSchema } from '../api/response-schemas';
+
+// Residual 841: SubtaskClientDTO dual retired — OpenAPI + transport use SubtaskResponseSchema.
+export type SubtaskClientDTO = z.infer<typeof SubtaskResponseSchema>;
