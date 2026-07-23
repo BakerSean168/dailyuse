@@ -4,6 +4,7 @@
  * (required string columns). Intentionally not utils parseJson/parseJsonSafe
  * (null/undefined + fallback, never throw).
  * Soft residual 1091: api PowerSync parseJsonLikeString keep-boundary (no force-merge).
+ * Soft residual 1095: data-portability parseJsonField keep-boundary (no force-merge).
  */
 import type { AccountState } from '../../../../domain';
 import { Account } from '../../../../domain';

@@ -8,6 +8,7 @@
  * JSON-looking strings and leaves other strings as-is; outer try/catch keeps
  * malformed JSON unchanged. Intentionally not utils parseJson/parseJsonSafe
  * (null/undefined + fallback) and not account PowerSync throw-on-invalid parseJson.
+ * Soft residual 1095: data-portability parseJsonField keep-boundary (no force-merge).
  */
 
 export const JSON_FIELDS_BY_TABLE: Record<string, ReadonlySet<string>> = {

@@ -11,6 +11,7 @@ import { normalizeCrudData } from './crud-normalization';
  * - utils parseJson/parseJsonSafe (null/undefined + fallback, never leave raw string on catch)
  * - account PowerSync private parseJson (required string, throws on invalid)
  * Soft residual 1081: account PowerSync throw parseJson keep-boundary remains.
+ * Soft residual 1095: data-portability parseJsonField keep-boundary surface (no force-merge).
  * Soft residual 1025: notification parseJsonSafe dual retired onto utils sole.
  * Does not flip §13.2 checkboxes.
  */

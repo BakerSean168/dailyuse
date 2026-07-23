@@ -10,6 +10,7 @@ import { parseJson, parseJsonSafe } from './persistence';
  * Soft residual: account powersync private parseJson remains keep-boundary (throws on invalid).
  * Soft residual 1081: account PowerSync parseJson keep-boundary surface (no force-merge).
  * Soft residual 1091: api PowerSync parseJsonLikeString keep-boundary surface (no force-merge).
+ * Soft residual 1095: data-portability parseJsonField keep-boundary surface (no force-merge).
  * Does not flip §13.2 checkboxes.
  */
 describe('parseJsonSafe dual retired (residual 1025)', () => {

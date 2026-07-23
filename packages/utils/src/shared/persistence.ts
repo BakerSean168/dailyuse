@@ -6,6 +6,7 @@
  * Residual 1025: parseJsonSafe elevated for notification mapper dual retirement.
  * Soft residual 1081: account PowerSync private parseJson keep-boundary (throws; no force-merge).
  * Soft residual 1091: api PowerSync parseJsonLikeString keep-boundary (JSON-looking only; no force-merge).
+ * Soft residual 1095: data-portability parseJsonField keep-boundary (unknown + passthrough; no force-merge).
  */
 
 export function extractErrorMessage(err: unknown): string {

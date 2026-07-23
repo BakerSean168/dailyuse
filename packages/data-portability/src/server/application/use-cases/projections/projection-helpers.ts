@@ -1,5 +1,14 @@
+/**
+ * Portable projection helpers (export/import mapping).
+ * Residual 1095 keep-boundary: parseJsonField accepts unknown (non-string passthrough),
+ * catch returns fallback ?? original value. Intentionally not:
+ * - utils parseJson/parseJsonSafe (string|null|undefined only + fixed fallback)
+ * - api PowerSync parseJsonLikeString (brace/bracket-looking only)
+ * - account PowerSync throw-on-invalid parseJson
+ */
 import type { ExportContext } from '../../portable-runtime';
 
+// Residual 1095 keep-boundary: unknown input + non-string passthrough + fallback??value catch.
 export function parseJsonField<T = unknown>(value: unknown, fallback?: T): T | unknown {
   if (value === null || value === undefined) return fallback;
   if (typeof value !== 'string') return value;
