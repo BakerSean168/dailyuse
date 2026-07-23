@@ -24,20 +24,14 @@ import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskInstanceController } from '../../server/transport/task-instance.controller';
+// Residual 983: sole getFirstQueryValue (local dual retired).
+import { getFirstQueryValue } from './get-first-query-value';
 
 // ============ Types ============
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
-}
-
-function getFirstQueryValue(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return typeof value[0] === 'string' ? value[0] : undefined;
-  }
-
-  return typeof value === 'string' ? value : undefined;
 }
 
 function parseTimestampQuery(value: unknown, fallback: number): number {

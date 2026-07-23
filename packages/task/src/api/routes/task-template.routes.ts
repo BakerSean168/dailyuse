@@ -30,20 +30,14 @@ import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
 import type { TaskTemplateController } from '../../server/transport/task-template.controller';
+// Residual 983: sole getFirstQueryValue (local dual retired).
+import { getFirstQueryValue } from './get-first-query-value';
 
 // ============ Types ============
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
-}
-
-function getFirstQueryValue(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return typeof value[0] === 'string' ? value[0] : undefined;
-  }
-
-  return typeof value === 'string' ? value : undefined;
 }
 
 function parseTemplateFilters(query: Record<string, unknown> | undefined): ListTaskTemplateFilters {
