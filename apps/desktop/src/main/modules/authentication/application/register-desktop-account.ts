@@ -1,5 +1,3 @@
-import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
-
 import type { AuthRemoteGateway, RegisterApiResponse } from './auth-remote-gateway';
 import {
   createConfigError,
@@ -7,7 +5,7 @@ import {
   createRemoteUnreachableError,
   createTerminalAuthError,
   type AuthFlowLogger,
-  type AuthFlowResult,
+  type DesktopAuthFlowResult,
 } from './auth-flow-types';
 
 // Residual 871: sole desktop register request shape (coordinator re-exports type only).
@@ -17,7 +15,7 @@ export interface RegisterRequest {
   username?: string;
 }
 
-export type RegisterResult = AuthFlowResult<AuthResponseDTO>;
+// Residual 917: RegisterResult dual retired — DesktopAuthFlowResult sole application name.
 
 interface RegisterDesktopAccountDependencies {
   isOnline: () => boolean;
@@ -29,7 +27,7 @@ interface RegisterDesktopAccountDependencies {
 export async function registerDesktopAccount(
   request: RegisterRequest,
   dependencies: RegisterDesktopAccountDependencies,
-): Promise<RegisterResult> {
+): Promise<DesktopAuthFlowResult> {
   const { isOnline, remoteGateway, logger, onSuccess } = dependencies;
 
   logger.info('Register attempt', { email: request.email });

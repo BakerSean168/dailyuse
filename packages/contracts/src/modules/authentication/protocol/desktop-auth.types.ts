@@ -117,7 +117,7 @@ export interface SaveTokenRequest {
 
 /**
  * Result of a token refresh operation.
- * Residual 895: token-manager callback sole shape (≠ RefreshSessionResponse / DesktopRefreshResult).
+ * Residual 895: token-manager callback sole shape (≠ RefreshSessionResponse / DesktopAuthFlowResult).
  */
 export interface TokenRefreshResult {
   ok: boolean;
@@ -194,7 +194,7 @@ export interface RefreshSessionRequest {
 
 /**
  * Response from session refresh.
- * Residual 895: infrastructure session/token-refresh sole shape (≠ TokenRefreshResult / DesktopRefreshResult).
+ * Residual 895: infrastructure session/token-refresh sole shape (≠ TokenRefreshResult / DesktopAuthFlowResult).
  */
 export interface RefreshSessionResponse {
   ok: boolean;

@@ -5,8 +5,10 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 895: refresh-result intentional layered dual keep-boundary.
  * TokenRefreshResult (token-manager callback) ≠ RefreshSessionResponse (infra session refresh)
- * ≠ DesktopRefreshResult (application online AuthFlowResult<AuthResponseDTO>).
+ * ≠ DesktopAuthFlowResult (application online AuthFlowResult<AuthResponseDTO>).
  * Not exact duals to collapse; keep separate bodies / aliases.
+ * Residual 917 (soft): DesktopLoginResult/RegisterResult/DesktopRefreshResult duals retired
+ *   (auth-flow-result-named-dual.surface.spec.ts) — sole application name DesktopAuthFlowResult.
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary
  *   (packages/contracts .../oauth-provider-transport-domain-keep-boundary.surface.spec.ts).
  * Residual 897 (soft): TokenStorageData ≠ SaveTokenRequest keep-boundary
@@ -48,7 +50,7 @@ describe('refresh-result layered dual keep-boundary (residual 895)', () => {
       'export type TokenRefreshResult = RefreshSessionResponse',
     );
     expect(contractsAuth).not.toContain(
-      'export type TokenRefreshResult = DesktopRefreshResult',
+      'export type TokenRefreshResult = DesktopAuthFlowResult',
     );
   });
 
@@ -67,26 +69,27 @@ describe('refresh-result layered dual keep-boundary (residual 895)', () => {
       'export type RefreshSessionResponse = TokenRefreshResult',
     );
     expect(contractsAuth).not.toContain(
-      'export type RefreshSessionResponse = DesktopRefreshResult',
+      'export type RefreshSessionResponse = DesktopAuthFlowResult',
     );
   });
 
-  it('keeps DesktopRefreshResult as application AuthFlowResult of AuthResponseDTO', () => {
+  it('keeps DesktopAuthFlowResult as application AuthFlowResult of AuthResponseDTO', () => {
     expect(refreshDesktop).toContain('Residual 895');
+    expect(refreshDesktop).toContain('Residual 917');
     expect(refreshDesktop).toContain(
-      'export type DesktopRefreshResult = AuthFlowResult<AuthResponseDTO>',
+      "import {",
     );
+    expect(refreshDesktop).toContain('type DesktopAuthFlowResult');
+    expect(refreshDesktop).toContain('Promise<DesktopAuthFlowResult>');
+    expect(refreshDesktop).not.toMatch(/export type DesktopRefreshResult\b/);
     expect(refreshDesktop).not.toMatch(/export interface DesktopRefreshResult\b/);
-    expect(refreshDesktop).not.toContain(
-      'export type DesktopRefreshResult = RefreshSessionResponse',
-    );
-    expect(refreshDesktop).not.toContain(
-      'export type DesktopRefreshResult = TokenRefreshResult',
+    expect(authFlow).toContain('Residual 917');
+    expect(authFlow).toContain(
+      'export type DesktopAuthFlowResult = AuthFlowResult<AuthResponseDTO>',
     );
     expect(authFlow).toContain(
       'export type AuthFlowResult<T> = { ok: true; response: T } | { ok: false; error: AuthFlowError }',
     );
     expect(refreshDesktop).toContain('export async function refreshDesktopSession');
-    expect(refreshDesktop).toContain('Promise<DesktopRefreshResult>');
   });
 });

@@ -11,13 +11,13 @@ import {
   createRemoteUnreachableError,
   createTerminalAuthError,
   type AuthFlowLogger,
-  type AuthFlowResult,
+  type DesktopAuthFlowResult,
 } from './auth-flow-types';
 
 // Residual 869: DesktopLoginRequest dual retired — EmailLoginCredentials is the sole shape.
 export type DesktopLoginRequest = EmailLoginCredentials;
 
-export type DesktopLoginResult = AuthFlowResult<AuthResponseDTO>;
+// Residual 917: DesktopLoginResult dual retired — DesktopAuthFlowResult sole application name.
 
 function toErrorLog(error: unknown): unknown {
   if (error instanceof Error) {
@@ -48,7 +48,7 @@ interface LoginDesktopAccountDependencies {
 export async function loginDesktopAccount(
   request: DesktopLoginRequest,
   dependencies: LoginDesktopAccountDependencies,
-): Promise<DesktopLoginResult> {
+): Promise<DesktopAuthFlowResult> {
   const { isOnline, remoteGateway, logger, onSuccess } = dependencies;
 
   logger.info('Desktop login attempt', { email: request.email });

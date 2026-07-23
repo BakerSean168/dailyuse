@@ -6,11 +6,11 @@ import {
   createRemoteUnreachableError,
   createTerminalAuthError,
   type AuthFlowLogger,
-  type AuthFlowResult,
+  type DesktopAuthFlowResult,
 } from './auth-flow-types';
 
 // Residual 895: application online refresh AuthFlowResult (≠ protocol TokenRefreshResult / RefreshSessionResponse).
-export type DesktopRefreshResult = AuthFlowResult<AuthResponseDTO>;
+// Residual 917: DesktopRefreshResult dual retired — DesktopAuthFlowResult sole application name.
 
 interface RefreshDesktopSessionDependencies {
   isOnline: () => boolean;
@@ -22,7 +22,7 @@ interface RefreshDesktopSessionDependencies {
 export async function refreshDesktopSession(
   request: RefreshSessionRequest,
   dependencies: RefreshDesktopSessionDependencies,
-): Promise<DesktopRefreshResult> {
+): Promise<DesktopAuthFlowResult> {
   const { isOnline, remoteGateway, logger, onSuccess } = dependencies;
 
   logger.info('Desktop refresh attempt', { sessionId: request.sessionId });

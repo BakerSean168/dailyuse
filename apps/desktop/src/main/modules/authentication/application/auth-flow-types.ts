@@ -1,3 +1,5 @@
+import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
+
 export type AuthFlowErrorCode =
   | 'OFFLINE'
   | 'REMOTE_UNREACHABLE'
@@ -17,6 +19,11 @@ export interface AuthFlowError {
 }
 
 export type AuthFlowResult<T> = { ok: true; response: T } | { ok: false; error: AuthFlowError };
+
+// Residual 917: sole application-layer AuthResponseDTO flow result name.
+// Login/register/refresh dual aliases (DesktopLoginResult / RegisterResult / DesktopRefreshResult) retired.
+// Layered keep-boundary vs protocol TokenRefreshResult / RefreshSessionResponse (residual 895).
+export type DesktopAuthFlowResult = AuthFlowResult<AuthResponseDTO>;
 
 export interface AuthFlowLogger {
   info(message: string, meta?: Record<string, unknown>): void;
