@@ -2,7 +2,13 @@
  * AI Module DTOs
  */
 
-export { GoalCategory } from './goal-generation-result.dto';
+export {
+  GoalCategory,
+  GeneratedGoalDraftSchema,
+  KeyResultPreviewSchema,
+  GenerateGoalResultDTOSchema,
+  GenerateKeyResultsResultDTOSchema,
+} from './goal-generation-result.dto';
 export type {
   GeneratedGoalDraft,
   KeyResultPreview,

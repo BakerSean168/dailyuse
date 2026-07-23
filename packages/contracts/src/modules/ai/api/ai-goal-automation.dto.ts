@@ -2,34 +2,15 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import { GoalCategory } from '../dtos/goal-generation-result.dto';
-import { KeyResultValueType } from '../../goal/value-objects/key-result-value-type';
-import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
+import {
+  GeneratedGoalDraftSchema,
+  KeyResultPreviewSchema,
+} from '../dtos/goal-generation-result.dto';
 
-export const GeneratedGoalDraftSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  motivation: z.string().optional(),
-  category: z.nativeEnum(GoalCategory),
-  suggestedStartDate: z.number(),
-  suggestedEndDate: z.number(),
-  importance: z.nativeEnum(ImportanceLevel),
-  tags: z.array(z.string()),
-  feasibilityAnalysis: z.string().optional(),
-  aiInsights: z.string().optional(),
-});
-
-export const KeyResultPreviewSchema = z.object({
-  title: z.string(),
-  description: z.string().optional(),
-  valueType: z.enum(Object.values(KeyResultValueType)),
-  calculationMethod: z.enum(Object.values(KeyResultCalculationMethod)),
-  startValue: z.number(),
-  currentValue: z.number(),
-  targetValue: z.number(),
-  unit: z.string(),
-  weight: z.number().int().min(1).max(5),
-});
+// Residual 719: GeneratedGoalDraftSchema / KeyResultPreviewSchema live in
+// goal-generation-result.dto.ts (sole nested draft shapes); re-exported here
+// for automation OpenAPI consumers.
+export { GeneratedGoalDraftSchema, KeyResultPreviewSchema };
 
 export const GoalAutomationTaskTemplatePreviewSchema = z.object({
   name: z.string(),
