@@ -8,7 +8,7 @@ import { createComposableHandleError } from './create-composable-handle-error';
  * Sole body in create-composable-handle-error.ts.
  * Residual 973: schedule / notification / reminder / setting (default console.error).
  * Residual 975: task instances / templates / dependencies (toast.error via report).
- * Soft residual 984: tip focused suite numbers track Residual 984 evidence tip (282/1237).
+ * Soft residual 986: tip focused suite numbers track Residual 986 evidence tip (283/1240).
  * Does not flip §13.2 checkboxes.
  */
 describe('createComposableHandleError dual retired (residual 973/975)', () => {
