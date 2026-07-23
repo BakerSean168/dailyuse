@@ -1862,6 +1862,9 @@ importers:
       '@dailyuse/schedule':
         specifier: workspace:*
         version: link:../schedule
+      '@dailyuse/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils

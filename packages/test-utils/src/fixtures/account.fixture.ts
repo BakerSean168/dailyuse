@@ -14,6 +14,7 @@
 import { IdentityId } from '@dailyuse/domain-shared';
 
 /**
+ * Residual 1033: sole anIdentityId fixture helper (task testing re-exports).
  * Generate a branded IdentityId for tests.
  * Uses the domain's own `IdentityId.generate()` to ensure the prefix format is correct.
  *

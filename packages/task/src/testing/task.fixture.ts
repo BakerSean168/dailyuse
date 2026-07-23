@@ -26,10 +26,8 @@ function titleFor(prefix: string): string {
   return `${prefix} ${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function anIdentityId(value?: string): IdentityId {
-  if (value) return IdentityId.of(value);
-  return IdentityId.generate();
-}
+/** Residual 1033: anIdentityId dual retired onto @dailyuse/test-utils/fixtures sole. */
+export { anIdentityId } from '@dailyuse/test-utils/fixtures';
 
 export interface OneTimeTaskOverrides {
   identityId?: IdentityId;
