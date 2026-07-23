@@ -32,7 +32,10 @@ import {
   VerifyEmailCodeSchema,
   OAuthCallbackSchema,
   GetOAuthUrlSchema,
+  GetOAuthUrlResSchema,
+  OAuthProvidersResSchema,
   BindOAuthSchema,
+  BindOAuthResSchema,
   UnbindOAuthSchema,
   CurrentUserResponseSchema,
   SessionListResponseSchema,
@@ -115,17 +118,7 @@ export function registerAuthenticationRoutes(
       path: '/oauth/providers',
       summary: '列出已启用的 OAuth 提供者（不签发 state）',
       responses: {
-        200: successResponse(
-          z.object({
-            providers: z.array(
-              z.object({
-                provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
-                enabled: z.boolean(),
-              }),
-            ),
-          }),
-          '提供者列表',
-        ),
+        200: successResponse(OAuthProvidersResSchema, '提供者列表'),
       },
     },
     [],
@@ -140,10 +133,7 @@ export function registerAuthenticationRoutes(
       summary: '获取 OAuth 授权 URL（含 state/PKCE）',
       request: { body: { content: { 'application/json': { schema: GetOAuthUrlSchema } } } },
       responses: {
-        200: successResponse(
-          z.object({ authUrl: z.string(), state: z.string() }),
-          '授权 URL',
-        ),
+        200: successResponse(GetOAuthUrlResSchema, '授权 URL'),
         503: errorResponse('该 OAuth 提供者未启用'),
       },
     },
@@ -177,14 +167,7 @@ export function registerAuthenticationRoutes(
       summary: '绑定 OAuth 提供者到当前账号（已登录）',
       request: { body: { content: { 'application/json': { schema: BindOAuthSchema } } } },
       responses: {
-        200: successResponse(
-          z.object({
-            provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
-            providerSubjectId: z.string(),
-            created: z.boolean(),
-          }),
-          '绑定成功',
-        ),
+        200: successResponse(BindOAuthResSchema, '绑定成功'),
         401: errorResponse('未认证'),
         409: errorResponse('该 OAuth 账号已绑定其他身份'),
         503: errorResponse('该 OAuth 提供者未启用'),

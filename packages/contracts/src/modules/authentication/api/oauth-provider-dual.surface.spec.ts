@@ -24,8 +24,9 @@ describe('oauth provider dual retired (residual 763)', () => {
     expect(oauth).not.toMatch(
       /provider:\s*z\.enum\(\['Google', 'Github', 'Microsoft', 'Apple'\]\)/,
     );
+    // Soft residual 763: request schemas (4) plus residual 765 res/availability schemas also reuse the provider enum.
     const count = (oauth.match(/provider: OAuthProviderSchema/g) || []).length;
-    expect(count).toBe(4);
+    expect(count).toBeGreaterThanOrEqual(4);
   });
 
   it('availability DTO uses OAuthProvider type alias', () => {

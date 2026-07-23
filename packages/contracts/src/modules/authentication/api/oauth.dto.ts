@@ -25,10 +25,12 @@ export const GetOAuthUrlSchema = z.object({
 
 export type GetOAuthUrlReq = z.infer<typeof GetOAuthUrlSchema>;
 
-export interface GetOAuthUrlRes {
-  authUrl: string;
-  state: string;
-}
+// Residual 765: GetOAuthUrlRes dual retired — OpenAPI + transport use ResSchema.
+export const GetOAuthUrlResSchema = z.object({
+  authUrl: z.string(),
+  state: z.string(),
+});
+export type GetOAuthUrlRes = z.infer<typeof GetOAuthUrlResSchema>;
 
 // ============================================================================
 // OAuth Callback
@@ -79,14 +81,13 @@ export const BindOAuthSchema = OAuthCallbackSchema;
 
 export type BindOAuthReq = z.infer<typeof BindOAuthSchema>;
 
-export interface BindOAuthRes {
-  /** Provider that was bound. */
-  provider: BindOAuthReq['provider'];
-  /** Stable provider subject id (e.g. GitHub numeric user id). */
-  providerSubjectId: string;
-  /** Whether the binding was newly created (false when already bound to self). */
-  created: boolean;
-}
+// Residual 765: BindOAuthRes dual retired — OpenAPI + transport use ResSchema.
+export const BindOAuthResSchema = z.object({
+  provider: OAuthProviderSchema,
+  providerSubjectId: z.string(),
+  created: z.boolean(),
+});
+export type BindOAuthRes = z.infer<typeof BindOAuthResSchema>;
 
 /**
  * Unbind an OAuth provider from the currently authenticated identity.
@@ -102,11 +103,14 @@ export type UnbindOAuthReq = z.infer<typeof UnbindOAuthSchema>;
 // OAuth providers availability (UI gating, no state issuance)
 // ============================================================================
 
-export interface OAuthProviderAvailability {
-  provider: OAuthProvider;
-  enabled: boolean;
-}
+// Residual 765: OAuth providers list dual retired — OpenAPI + transport use ResSchema.
+export const OAuthProviderAvailabilitySchema = z.object({
+  provider: OAuthProviderSchema,
+  enabled: z.boolean(),
+});
+export type OAuthProviderAvailability = z.infer<typeof OAuthProviderAvailabilitySchema>;
 
-export interface OAuthProvidersRes {
-  providers: OAuthProviderAvailability[];
-}
+export const OAuthProvidersResSchema = z.object({
+  providers: z.array(OAuthProviderAvailabilitySchema),
+});
+export type OAuthProvidersRes = z.infer<typeof OAuthProvidersResSchema>;
