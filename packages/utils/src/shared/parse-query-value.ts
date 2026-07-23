@@ -4,6 +4,7 @@
  * Residual 1023: governance routes re-export parseString/parseNumber from this sole.
  * parseString prefers first array entry / stringifies scalars; parseNumber uses it.
  * Soft residual: schedule route parsers remain keep-boundary (empty-string / boolean shapes differ).
+ * Soft residual 1073: schedule route parsers keep-boundary surface (no force-merge).
  * Soft residual: goal parseBoolean sole (residual 985) is true/false-only, not this dual body.
  * Soft residual 1067: goal parseNumber + parseStringArray keep-boundary (no force-merge).
  */

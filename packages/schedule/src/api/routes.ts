@@ -44,6 +44,11 @@ interface PlatformMiddleware {
 }
 
 // ============ Helpers ============
+// Residual 1073 keep-boundary: schedule route-local query parsers.
+// Empty string → undefined; parseBoolean accepts boolean literals.
+// Not force-merged into utils parse-query-value sole (residual 989/1021):
+// utils uses parseString-first (array-first entry) and string "1"/"0" booleans
+// without empty-string short-circuit or boolean literal acceptance.
 
 function parseNumber(value: unknown): number | undefined {
   if (value === undefined || value === null || value === '') return undefined;

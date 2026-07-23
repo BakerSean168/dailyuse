@@ -10,6 +10,7 @@ import { parseBoolean, parseNumber, parseString } from './parse-query-value';
  * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
  * Soft residual 1023: governance parseString/parseNumber dual retired (re-export this sole).
  * Soft residual: schedule route parsers keep-boundary (different empty/boolean handling).
+ * Soft residual 1073: schedule route parsers keep-boundary surface (no force-merge).
  * Soft residual: goal parseBoolean sole (residual 985) is true/false-only keep-boundary vs this dual.
  * Soft residual 1067: goal parseNumber + parseStringArray keep-boundary (no force-merge).
  * Does not flip §13.2 checkboxes.
