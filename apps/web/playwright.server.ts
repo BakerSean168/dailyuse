@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from 'dotenv';
 import { expand } from 'dotenv-expand';
+import { normalizeOrigin } from './e2e/helpers/normalize-origin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -60,9 +61,7 @@ process.env.AI_SERVICE_BASE_URL ??= DEFAULT_AI_SERVICE_ORIGIN;
 process.env.AI_SERVICE_SECRET ??= DEFAULT_AI_SERVICE_SECRET;
 process.env.AI_PROVIDER_ENCRYPTION_KEY ??= DEFAULT_AI_PROVIDER_ENCRYPTION_KEY;
 
-function normalizeOrigin(origin: string): string {
-  return origin.replace(/\/+$/, '');
-}
+/** Residual 1027: normalizeOrigin sole imported from e2e/helpers. */
 
 function getApiOrigin(): string {
   const apiOrigin = normalizeOrigin(process.env.E2E_API_BASE_URL ?? DEFAULT_API_ORIGIN);

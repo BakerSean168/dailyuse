@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ensureTestDatabase } from '@dailyuse/test-utils/setup/database';
 import { buildApiApp } from './build-api';
+import { normalizeOrigin } from './normalize-origin';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, '..', '..', '..', '..');
@@ -10,9 +11,7 @@ const apiDistDir = path.resolve(workspaceRoot, 'apps', 'api', 'dist');
 
 const DEFAULT_API_ORIGIN = 'http://localhost:3000';
 
-function normalizeOrigin(origin: string): string {
-  return origin.replace(/\/+$/, '');
-}
+/** Residual 1027: normalizeOrigin sole imported from ./normalize-origin. */
 
 async function probeExistingApi(apiOrigin: string): Promise<{
   occupied: boolean;
