@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 891: honest §13.2 completion-definition open-items re-audit.
  * Locks the three still-unchecked DoD items as partial/external-block only.
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary is separate contracts surface.
- * Residual 900 (soft): tip focused suite numbers track Residual 900 evidence tip (246/1120).
+ * Residual 902 (soft): tip focused suite numbers track Residual 902 evidence tip (247/1123).
  * Does not flip any §13.2 checkbox; focused suite tip remains evidence, not full PR gate.
  */
 describe('§13.2 DoD open items honest audit (residual 891)', () => {
@@ -57,8 +57,8 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
 
   it('records tip focused suite evidence without claiming full PR gate completion', () => {
     const sec = section132();
-    expect(sec).toContain('246 文件 / 1120 测试');
-    expect(sec).toContain('Residual 900');
+    expect(sec).toContain('247 文件 / 1123 测试');
+    expect(sec).toContain('Residual 902');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');
     expect(sec).toContain('三入口完整 E2E');
