@@ -1,2 +1,5 @@
-export type { AccountClientDTO } from '../aggregates/account-client';
-export type { AccountServerDTO } from '../aggregates/account-server';
+/**
+ * Residual 655: account entities dual re-export barrel retired.
+ * Account client/server DTOs live under aggregates/ only.
+ */
+export {};
