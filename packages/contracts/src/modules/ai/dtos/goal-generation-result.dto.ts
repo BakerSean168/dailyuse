@@ -8,6 +8,7 @@ import type { AiProviderConfigId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
 import { KeyResultValueType } from '../../goal/value-objects/key-result-value-type';
+import { TokenUsageSchema } from '../value-objects/token-usage';
 
 export enum GoalCategory {
   WORK = 'work',
@@ -19,13 +20,8 @@ export enum GoalCategory {
   OTHER = 'other',
 }
 
-const GoalTokenUsageSchema = z.object({
-  promptTokens: z.number(),
-  completionTokens: z.number(),
-  totalTokens: z.number(),
-});
-
 // Residual 719: goal draft / key-result preview schemas are the sole shapes
+// Residual 727: tokenUsage reuses shared TokenUsageSchema (no local dual schema).
 // (GeneratedGoalDraft / KeyResultPreview / GenerateGoalResultDTO /
 // GenerateKeyResultsResultDTO are z.infer aliases).
 export const GeneratedGoalDraftSchema = z.object({
@@ -56,7 +52,7 @@ export const KeyResultPreviewSchema = z.object({
 export const GenerateGoalResultDTOSchema = z.object({
   goal: GeneratedGoalDraftSchema,
   keyResults: z.array(KeyResultPreviewSchema).optional(),
-  tokenUsage: GoalTokenUsageSchema,
+  tokenUsage: TokenUsageSchema,
   providerId: brandedId<AiProviderConfigId>(),
   processingTimeMs: z.number(),
   generatedAt: z.number(),
@@ -66,7 +62,7 @@ export const GenerateGoalResultDTOSchema = z.object({
 
 export const GenerateKeyResultsResultDTOSchema = z.object({
   keyResults: z.array(KeyResultPreviewSchema),
-  tokenUsage: GoalTokenUsageSchema,
+  tokenUsage: TokenUsageSchema,
   providerId: brandedId<AiProviderConfigId>(),
   processingTimeMs: z.number(),
   generatedAt: z.number(),

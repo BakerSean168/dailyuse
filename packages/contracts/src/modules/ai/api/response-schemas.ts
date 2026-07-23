@@ -7,6 +7,7 @@ import {
   KeyResultPreviewSchema,
 } from '../dtos/goal-generation-result.dto';
 import { TestAIProviderResultDTOSchema } from '../dtos/provider-test-result.dto';
+import { TokenUsageSchema } from '../value-objects/token-usage';
 import {
   GoalAutomationActionSchema,
   GoalAutomationExecutedActionSchema,
@@ -21,11 +22,9 @@ import { AIProviderType } from '../value-objects/ai-provider-type';
 // (GenerateGoalResultDTOSchema re-exported for OpenAPI route consumers).
 export { GenerateGoalResultDTOSchema, GeneratedGoalDraftSchema, KeyResultPreviewSchema };
 
-const TokenUsageSchema = z.object({
-  promptTokens: z.number(),
-  completionTokens: z.number(),
-  totalTokens: z.number(),
-});
+// Residual 727: TokenUsageSchema owned by value-objects/token-usage.ts
+// (re-exported for OpenAPI nested response consumers).
+export { TokenUsageSchema };
 
 const GoalClarificationQuestionSchema = z.object({
   question: z.string(),
