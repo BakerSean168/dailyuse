@@ -29,6 +29,8 @@ import type { CloneGoalReq, ListGoalFilters } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
+// Residual 985: sole parseBoolean (local dual retired).
+import { parseBoolean } from './parse-boolean';
 
 // ============ Helpers ============
 
@@ -36,12 +38,6 @@ function parseNumber(value: unknown): number | undefined {
   if (value === undefined || value === null) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function parseBoolean(value: unknown): boolean | undefined {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return undefined;
 }
 
 function parseStringArray(value: unknown): string[] | undefined {

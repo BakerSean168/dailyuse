@@ -22,14 +22,10 @@ import {
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalFolderId } from '@dailyuse/contracts/primitives';
 import type { GoalFolderController } from '../../server/transport/goal-folder.controller';
+// Residual 985: sole parseBoolean (local dual retired).
+import { parseBoolean } from './parse-boolean';
 
 // ============ Helpers ============
-
-function parseBoolean(value: unknown): boolean | undefined {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return undefined;
-}
 
 // ============ Types ============
 
