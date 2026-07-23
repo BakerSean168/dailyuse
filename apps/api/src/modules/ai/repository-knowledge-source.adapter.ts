@@ -2,6 +2,11 @@ import { createHash } from 'node:crypto';
 import type { IKnowledgeSourcePort, KnowledgeSourceNote } from '@dailyuse/ai/ports';
 import type { PrismaClient } from '@dailyuse/database';
 
+/**
+ * Residual 1153 keep-boundary: GitHub knowledge-projection search tokenize.
+ * Includes CJK range \u4e00-\u9fff for Chinese note path/title/content scoring.
+ * Soft residual 1153: AI knowledge-index tokenize stays ASCII alnum+underscore only (no force-merge).
+ */
 function tokenize(text: string): string[] {
   return (text.toLowerCase().match(/[a-z0-9\u4e00-\u9fff_]+/g) ?? []).filter(
     (token) => token.length > 1,

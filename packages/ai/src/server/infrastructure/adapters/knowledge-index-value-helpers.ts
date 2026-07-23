@@ -20,6 +20,8 @@ export function toNumberArray(value: unknown): number[] {
     : [];
 }
 
+// Residual 1153 keep-boundary: knowledge-index tokenize — ASCII alnum + underscore only.
+// Soft residual 1153: API repository-knowledge-source tokenize includes CJK (\u4e00-\u9fff) for projection search (no force-merge).
 export function tokenize(text: string): string[] {
   return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);
 }
