@@ -6,7 +6,7 @@ import { toPrismaJson } from './to-prisma-json';
 /**
  * Residual 979: toPrismaJson dual retired (AI Prisma adapters).
  * Sole body in to-prisma-json.ts; agent-checkpoint + knowledge-index Prisma adapters import it.
- * Soft residual 1014: tip focused suite numbers track Residual 1014 evidence tip (297/1291).
+ * Soft residual 1016: tip focused suite numbers track Residual 1016 evidence tip (298/1295).
  * Soft residual 981: toIso dual retired (authentication powersync mappers/to-iso-dual.surface.spec.ts).
  * Soft residual: account package toPrismaJson DTO cast remains keep-boundary.
  * Does not flip §13.2 checkboxes.

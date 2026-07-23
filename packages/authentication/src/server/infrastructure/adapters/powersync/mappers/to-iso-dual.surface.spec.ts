@@ -6,7 +6,7 @@ import { toIso } from './to-iso';
 /**
  * Residual 981: toIso dual retired (PowerSync auth mappers).
  * Sole body in to-iso.ts; identity + session mappers import it.
- * Soft residual 1014: tip focused suite numbers track Residual 1014 evidence tip (297/1291).
+ * Soft residual 1016: tip focused suite numbers track Residual 1016 evidence tip (298/1295).
  * Does not flip §13.2 checkboxes.
  */
 describe('toIso dual retired (residual 981)', () => {
