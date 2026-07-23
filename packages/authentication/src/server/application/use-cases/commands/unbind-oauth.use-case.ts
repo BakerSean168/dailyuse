@@ -13,23 +13,12 @@ import type { UnbindOAuthReq } from '@dailyuse/contracts/authentication';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { IAuthIdentityRepository } from '../../../domain';
-import { AuthDomainCode, OAuthProvider } from '../../../domain';
+import { AuthDomainCode } from '../../../domain';
 import { createLogger } from '@dailyuse/utils/logger';
+// Residual 991: sole toDomainProvider (local dual retired).
+import { toDomainProvider } from '../../../shared/to-domain-provider';
 
 const logger = createLogger('UnbindOAuth');
-
-function toDomainProvider(provider: UnbindOAuthReq['provider']): OAuthProvider | null {
-  switch (provider) {
-    case 'Github':
-      return OAuthProvider.Github;
-    case 'Google':
-      return OAuthProvider.Google;
-    case 'Apple':
-      return OAuthProvider.Apple;
-    default:
-      return null;
-  }
-}
 
 export class UnbindOAuthUseCase {
   constructor(private readonly identityRepository: IAuthIdentityRepository) {}

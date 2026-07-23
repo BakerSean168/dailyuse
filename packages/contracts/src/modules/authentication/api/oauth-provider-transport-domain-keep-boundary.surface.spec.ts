@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
  * Not an exact dual to collapse; keep separate bodies (no forced merge / type alias).
  * Residual 891 (soft): §13.2 open-items honest re-audit remains partial for OAuth E2E
  *   (packages/app-vue/src/views/section-13-2-dod-open-items.surface.spec.ts).
+ * Residual 991 (soft): toDomainProvider dual retired — Microsoft→null lives in
+ *   authentication/src/server/shared/to-domain-provider.ts (bind/unbind import sole).
  * Does not flip §13.2 checkboxes.
  */
 describe('oauth provider transport≠domain keep-boundary (residual 893)', () => {
@@ -21,11 +23,16 @@ describe('oauth provider transport≠domain keep-boundary (residual 893)', () =>
     apiDir,
     '../../../../../authentication/src/server/application/use-cases/commands/bind-oauth.use-case.ts',
   );
+  const toDomainProvider = resolve(
+    apiDir,
+    '../../../../../authentication/src/server/shared/to-domain-provider.ts',
+  );
 
   const oauthDto = readFileSync(resolve(apiDir, 'oauth.dto.ts'), 'utf8');
   const vo = readFileSync(resolve(voDir, 'oauth-provider.ts'), 'utf8');
   const domain = readFileSync(domainVo, 'utf8');
   const bind = readFileSync(bindUseCase, 'utf8');
+  const mapper = readFileSync(toDomainProvider, 'utf8');
 
   it('keeps transport OAuthProviderSchema members (Microsoft; no Facebook/Wechat/Weibo)', () => {
     expect(oauthDto).toContain('Residual 893');
@@ -75,12 +82,16 @@ describe('oauth provider transport≠domain keep-boundary (residual 893)', () =>
     expect(domain).toContain('Wechat:');
     expect(domain).toContain('Weibo:');
     expect(domain).not.toMatch(/Microsoft\s*:/);
-    expect(bind).toContain('Residual 893');
-    expect(bind).toContain('case \'Github\':');
-    expect(bind).toContain('case \'Google\':');
-    expect(bind).toContain('case \'Apple\':');
-    // Microsoft is transport-only; bind maps unknown/default to null
-    expect(bind).not.toMatch(/case \'Microsoft\'\s*:/);
-    expect(bind).toContain('return null;');
+    // Residual 991: sole mapper owns Residual 893 Microsoft→null keep-boundary body
+    expect(mapper).toContain('Residual 893');
+    expect(mapper).toContain('Residual 991');
+    expect(mapper).toContain("case 'Github':");
+    expect(mapper).toContain("case 'Google':");
+    expect(mapper).toContain("case 'Apple':");
+    expect(mapper).not.toMatch(/case 'Microsoft'\s*:/);
+    expect(mapper).toContain('return null;');
+    expect(bind).toContain('Residual 991');
+    expect(bind).toContain("import { toDomainProvider } from '../../../shared/to-domain-provider'");
+    expect(bind).not.toMatch(/function toDomainProvider\b/);
   });
 });

@@ -18,28 +18,15 @@ import type { IAuthIdentityRepository } from '../../../domain';
 import {
   AuthDomainCode,
   OAuthBinding,
-  OAuthProvider,
   AuthCredentialId,
 } from '../../../domain';
 import type { IGithubOAuthClient } from '../../../domain/services/providers/i-github-oauth-client';
 import type { IOAuthStateStore } from '../../../domain/services/i-oauth-state-store';
 import { createLogger } from '@dailyuse/utils/logger';
+// Residual 991: sole toDomainProvider (local dual retired).
+import { toDomainProvider } from '../../../shared/to-domain-provider';
 
 const logger = createLogger('BindOAuth');
-
-function toDomainProvider(provider: BindOAuthReq['provider']): OAuthProvider | null {
-  switch (provider) {
-    case 'Github':
-      return OAuthProvider.Github;
-    case 'Google':
-      return OAuthProvider.Google;
-    case 'Apple':
-      return OAuthProvider.Apple;
-    default:
-      // Residual 893: transport allows Microsoft; domain/VO catalog does not — treat as unavailable.
-      return null;
-  }
-}
 
 export class BindOAuthUseCase {
   constructor(
