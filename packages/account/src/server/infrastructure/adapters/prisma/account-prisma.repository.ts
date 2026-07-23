@@ -25,6 +25,10 @@ interface AccountDb {
   account: PrismaClient['account'];
 }
 
+/**
+ * Residual 1159 keep-boundary: account profile/settings DTO → Prisma.InputJsonObject cast only.
+ * Soft residual 1159: AI toPrismaJson deep-clones unknown → InputJsonValue (no force-merge).
+ */
 function toPrismaJson(value: AccountProfileDTO | AccountSettingsDTO): Prisma.InputJsonObject {
   return value as unknown as Prisma.InputJsonObject;
 }

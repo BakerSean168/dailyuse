@@ -9,6 +9,7 @@ import { toPrismaJson } from './to-prisma-json';
  * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
  * Soft residual 981: toIso dual retired (authentication powersync mappers/to-iso-dual.surface.spec.ts).
  * Soft residual: account package toPrismaJson DTO cast remains keep-boundary.
+ * Soft residual 1159: dedicated toPrismaJson keep-boundary surface (AI deep-clone vs account cast).
  * Does not flip §13.2 checkboxes.
  */
 describe('toPrismaJson dual retired (residual 979)', () => {
@@ -51,7 +52,9 @@ describe('toPrismaJson dual retired (residual 979)', () => {
 
   it('keeps account toPrismaJson as distinct keep-boundary', () => {
     expect(account).toMatch(/function toPrismaJson\b/);
+    expect(account).toContain('Residual 1159 keep-boundary');
     expect(account).toContain('Prisma.InputJsonObject');
+    expect(account).toContain('Soft residual 1159');
     expect(account).not.toContain("from './to-prisma-json'");
     expect(account).not.toContain('JSON.parse(JSON.stringify(value))');
   });
