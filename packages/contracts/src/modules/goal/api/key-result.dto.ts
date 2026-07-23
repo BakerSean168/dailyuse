@@ -11,6 +11,7 @@ import type { KeyResultClientDTO } from '../entities/key-result-client';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';
 import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 import { GoalIdParamsSchema } from './goal-crud.dto';
+import { KeyResultListResSchema } from './response-schemas';
 
 // ============================================================================
 // ADD Key Result
@@ -64,10 +65,8 @@ export type UpdateKeyResultReq = z.infer<typeof UpdateKeyResultSchema>;
 // Residual 677: reuses shared GoalIdParamsSchema (no dual body).
 export type GetKeyResultsReq = z.infer<typeof GoalIdParamsSchema>;
 
-export interface GetKeyResultsRes {
-  data: KeyResultClientDTO[];
-  total: number;
-}
+// Residual 689: list response dual body retired — OpenAPI + transport use KeyResultListResSchema.
+export type GetKeyResultsRes = z.infer<typeof KeyResultListResSchema>;
 
 // ============================================================================
 // UPDATE Progress

@@ -7,9 +7,9 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId } from '../../../primitives';
-import type { GoalReviewServerDTO } from '../entities/goal-review-server';
 import { ReviewType } from '../value-objects/review-type';
 import { GoalIdParamsSchema } from './goal-crud.dto';
+import { GoalReviewListResSchema } from './response-schemas';
 
 // ============================================================================
 // CREATE Review
@@ -74,7 +74,5 @@ export type DeleteGoalReviewReq = void;
 // Residual 677: reuses shared GoalIdParamsSchema (no dual body).
 export type GetGoalReviewsReq = z.infer<typeof GoalIdParamsSchema>;
 
-export interface GetGoalReviewsRes {
-  data: GoalReviewServerDTO[];
-  total: number;
-}
+// Residual 689: list response dual body retired — OpenAPI + transport use GoalReviewListResSchema (ClientDTO).
+export type GetGoalReviewsRes = z.infer<typeof GoalReviewListResSchema>;

@@ -289,6 +289,8 @@ export type GetGoalAggregateRes = z.infer<typeof GetGoalAggregateResSchema>;
 // List Response Schemas
 // ============================================================================
 
+// Residual 689: goal list OpenAPI schemas are the sole list response shapes
+// (GetKeyResultsRes / GetGoalRecordsRes / GetGoalReviewsRes are z.infer aliases).
 /**
  * 关键结果列表响应 Schema
  */
