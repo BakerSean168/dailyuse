@@ -11,7 +11,7 @@ const baseConfig = createPackageVitestConfig({
   aliasEntries: [
     {
       find: /^@dailyuse\/schedule$/,
-      replacement: path.resolve(__dirname, 'src/__tests__/schedule-package-shim.ts'),
+      replacement: path.resolve(__dirname, '../test-utils/src/shims/schedule-package-shim.ts'), // Residual 1035 sole
     },
   ],
 });
