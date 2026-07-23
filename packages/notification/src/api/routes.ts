@@ -27,7 +27,8 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 // Residual 989: sole parseString/parseNumber (local dual retired).
-import { parseNumber, parseString } from '@dailyuse/utils/shared';
+// Residual 1021: sole parseBoolean (local dual retired).
+import { parseBoolean, parseNumber, parseString } from '@dailyuse/utils/shared';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { NotificationId } from '@dailyuse/contracts/primitives';
 import {
@@ -49,15 +50,7 @@ interface PlatformMiddleware {
   requireRole(roles: string[]): RequestHandler;
 }
 
-// ============ Helpers ============
-
-function parseBoolean(value: unknown): boolean | undefined {
-  const raw = parseString(value);
-  if (raw === undefined) return undefined;
-  if (raw === 'true' || raw === '1') return true;
-  if (raw === 'false' || raw === '0') return false;
-  return undefined;
-}
+// Residual 1021: parseBoolean elevated to @dailyuse/utils/shared.
 
 // ============ Route Registration ============
 
