@@ -4,6 +4,8 @@ import path from 'node:path';
 import { dialog, shell } from 'electron';
 import matter from 'gray-matter';
 import type {
+// Residual 957: isMissing/isTemporaryFile duals retired — sole vault-fs-guards.
+import { isMissing, isTemporaryFile } from './vault-fs-guards';
   ConfirmedLocalVaultWriteReq,
   ConfirmedLocalVaultWriteRes,
   KnowledgeRepositoryContentState,
@@ -102,14 +104,6 @@ function toPortablePath(value: string): string {
   return value.split(path.sep).join('/');
 }
 
-function isMissing(error: unknown): boolean {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'code' in error &&
-    (error as NodeJS.ErrnoException).code === 'ENOENT'
-  );
-}
 
 function normalizeRelativeMarkdownPath(relativePath: string): string {
   const normalized = relativePath.replace(/\\/g, '/').trim().replace(/^\.\//, '');
@@ -183,15 +177,6 @@ function buildExcerpt(markdownBody: string): string {
     .slice(0, 240);
 }
 
-function isTemporarySyncFile(name: string): boolean {
-  return (
-    name === '.DS_Store' ||
-    name === 'Thumbs.db' ||
-    name.startsWith('.#') ||
-    name.endsWith('~') ||
-    /\.(?:swp|swo|tmp|temp)$/i.test(name)
-  );
-}
 
 async function writeJsonAtomically(filePath: string, value: unknown): Promise<void> {
   await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
@@ -468,7 +453,7 @@ export class LocalVaultRuntime implements LocalVaultElectronPort {
           if (await containsUserContent(absolutePath)) return true;
           continue;
         }
-        if (!entry.isFile() || isTemporarySyncFile(entry.name)) continue;
+        if (!entry.isFile() || isTemporaryFile(entry.name)) continue;
         return true;
       }
       return false;

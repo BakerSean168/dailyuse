@@ -7,6 +7,8 @@ import {
   type KnowledgeRepositoryConnectionClientDTO,
 } from '@dailyuse/contracts/repository';
 import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
+// Residual 957: isMissing/isTemporaryFile duals retired — sole repository electron vault-fs-guards.
+import { isMissing, isTemporaryFile } from '@dailyuse/repository/electron';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { DesktopKnowledgeRepositorySyncService } from './desktop-knowledge-repository-sync.service';
 import type { KnowledgeRepositoryDesktopRemotePort } from './knowledge-repository-desktop-remote.port';
@@ -58,15 +60,6 @@ export interface KnowledgeRepositoryAutoSyncSchedulerPort {
   stop(options?: { commitPendingChanges?: boolean }): Promise<void>;
 }
 
-function isTemporaryFile(name: string): boolean {
-  return (
-    name === '.DS_Store' ||
-    name === 'Thumbs.db' ||
-    name.startsWith('.#') ||
-    name.endsWith('~') ||
-    /\.(?:swp|swo|tmp|temp)$/i.test(name)
-  );
-}
 
 /** Keep watcher input aligned with the paths accepted by the managed Git runtime. */
 export function shouldIgnoreKnowledgeRepositoryWatchPath(
@@ -100,14 +93,6 @@ function selectAutomaticConnection(
   return eligible[0]!;
 }
 
-function isMissing(error: unknown): boolean {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'code' in error &&
-    (error as NodeJS.ErrnoException).code === 'ENOENT'
-  );
-}
 
 export class DesktopKnowledgeRepositoryAutoSyncScheduler implements KnowledgeRepositoryAutoSyncSchedulerPort {
   private readonly watchFactory: (rootPath: string, options: ChokidarOptions) => FSWatcher;

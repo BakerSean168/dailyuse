@@ -29,6 +29,8 @@ export {
   type LocalVaultPlatform,
   type LocalVaultRuntimeOptions,
 } from './local-vault-runtime';
+// Residual 957: sole vault FS guards (isMissing + isTemporaryFile) for Local Vault + Desktop knowledge repo.
+export { isMissing, isTemporaryFile } from './vault-fs-guards';
 
 const logger = createLogger('RepositoryElectron');
 

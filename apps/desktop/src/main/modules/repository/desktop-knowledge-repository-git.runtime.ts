@@ -2,6 +2,8 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+// Residual 957: isMissing/isTemporaryFile duals retired — sole repository electron vault-fs-guards.
+import { isMissing, isTemporaryFile } from '@dailyuse/repository/electron';
 import type {
   KnowledgeRepositoryExecutableReconciliationAction,
   KnowledgeRepositorySyncConflictContext,
@@ -209,14 +211,6 @@ export interface KnowledgeRepositorySyncGitRuntimePort {
   ): Promise<KnowledgeRepositorySyncGitRuntimeResult>;
 }
 
-function isMissing(error: unknown): boolean {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'code' in error &&
-    (error as NodeJS.ErrnoException).code === 'ENOENT'
-  );
-}
 
 function portablePath(value: string): string {
   return value.split(path.sep).join('/');
@@ -230,15 +224,6 @@ function replaceLiteral(value: string, search: string, replacement: string): str
   return search.length === 0 ? value : value.split(search).join(replacement);
 }
 
-function isTemporaryFile(name: string): boolean {
-  return (
-    name === '.DS_Store' ||
-    name === 'Thumbs.db' ||
-    name.startsWith('.#') ||
-    name.endsWith('~') ||
-    /\.(?:swp|swo|tmp|temp)$/i.test(name)
-  );
-}
 
 function isSyncablePath(relativePath: string): boolean {
   const normalized = relativePath.replace(/\\/g, '/').replace(/^\.\//, '');
