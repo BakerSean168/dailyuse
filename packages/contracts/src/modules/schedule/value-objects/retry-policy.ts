@@ -2,6 +2,8 @@
  * Retry Policy Value Object
  */
 
+import { z } from 'zod';
+
 // ============ Interface Definitions ============
 
 /** Retry policy interface. */
@@ -38,15 +40,16 @@ export interface IRetryPolicy {
   // DTO conversion methods
 }
 
-// ============ DTO Definitions ============
+// Residual 749: RetryPolicyDTO dual body retired — OpenAPI response transport uses
+// RetryPolicySchema (semantic type is a z.infer alias). Request schemas stay local
+// (partial/optional field set).
 
-/**
- * Retry Policy DTO
- */
-export interface RetryPolicyDTO {
-  enabled: boolean;
-  maxRetries: number;
-  retryDelay: number;
-  backoffMultiplier: number;
-  maxRetryDelay: number;
-}
+export const RetryPolicySchema = z.object({
+  enabled: z.boolean(),
+  maxRetries: z.number(),
+  retryDelay: z.number(),
+  backoffMultiplier: z.number(),
+  maxRetryDelay: z.number(),
+});
+
+export type RetryPolicyDTO = z.infer<typeof RetryPolicySchema>;

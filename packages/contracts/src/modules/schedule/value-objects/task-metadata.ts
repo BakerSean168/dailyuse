@@ -2,7 +2,9 @@
  * Task Metadata Value Object
  */
 
+import { z } from 'zod';
 import type { TaskPriority } from './task-priority';
+import { TaskPriority as TaskPriorityEnum } from './task-priority';
 
 // ============ Interface Definitions ============
 
@@ -33,14 +35,15 @@ export interface ITaskMetadata {
   // DTO conversion methods
 }
 
-// ============ DTO Definitions ============
+// Residual 749: TaskMetadataDTO dual body retired — OpenAPI response transport uses
+// TaskMetadataSchema (semantic type is a z.infer alias). Request schemas stay local
+// (partial/optional field set).
 
-/**
- * Task Metadata DTO
- */
-export interface TaskMetadataDTO {
-  payload: Record<string, unknown>;
-  tags: string[];
-  priority: TaskPriority;
-  timeout: number | null;
-}
+export const TaskMetadataSchema = z.object({
+  payload: z.record(z.string(), z.unknown()),
+  tags: z.array(z.string()),
+  priority: z.enum(TaskPriorityEnum),
+  timeout: z.number().nullable(),
+});
+
+export type TaskMetadataDTO = z.infer<typeof TaskMetadataSchema>;

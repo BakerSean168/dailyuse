@@ -17,22 +17,25 @@ export type {
   IScheduleConfig,
   ScheduleConfigDTO,
 } from './schedule-config';
+export { ScheduleConfigSchema } from './schedule-config';
 
 export type {
   IExecutionInfo,
   ExecutionInfoDTO,
 } from './execution-info';
-export { ExecutionHealthStatus } from './execution-info';
+export { ExecutionHealthStatus, ExecutionInfoSchema } from './execution-info';
 
 export type {
   IRetryPolicy,
   RetryPolicyDTO,
 } from './retry-policy';
+export { RetryPolicySchema } from './retry-policy';
 
 export type {
   ITaskMetadata,
   TaskMetadataDTO,
 } from './task-metadata';
+export { TaskMetadataSchema } from './task-metadata';
 
 export {
   ConflictDetailSchema,

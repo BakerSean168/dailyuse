@@ -10,8 +10,6 @@ import type { ScheduleTaskId, ScheduleId, ScheduleExecutionId, IdentityId } from
 import { ScheduleTaskStatus } from '../value-objects/schedule-task-status';
 import { SourceModule } from '../value-objects/source-module';
 import { ExecutionStatus } from '../value-objects/execution-status';
-import { TaskPriority } from '../value-objects/task-priority';
-import { Timezone } from '../value-objects/timezone';
 import {
   ConflictDetectionResultSchema,
   ConflictDetailSchema,
@@ -26,39 +24,21 @@ export {
   ConflictSuggestionSchema,
 };
 
-// ============ Inline Value Object Schemas ============
+import { ScheduleConfigSchema } from '../value-objects/schedule-config';
+import { ExecutionInfoSchema } from '../value-objects/execution-info';
+import { RetryPolicySchema } from '../value-objects/retry-policy';
+import { TaskMetadataSchema } from '../value-objects/task-metadata';
 
-const ScheduleConfigSchema = z.object({
-  cronExpression: z.string().nullable(),
-  timezone: z.enum(Timezone),
-  startDate: z.string().nullable(),
-  endDate: z.string().nullable(),
-  maxExecutions: z.number().nullable(),
-});
+// Residual 749: schedule nested VO response schemas owned by value-objects
+// (semantic DTOs are z.infer aliases). Request modules keep local partial schemas
+// with different validation/shapes.
+export {
+  ScheduleConfigSchema,
+  ExecutionInfoSchema,
+  RetryPolicySchema,
+  TaskMetadataSchema,
+};
 
-const ExecutionInfoSchema = z.object({
-  nextRunAt: z.string().nullable(),
-  lastRunAt: z.string().nullable(),
-  executionCount: z.number(),
-  lastExecutionStatus: z.enum(ExecutionStatus).nullable(),
-  lastExecutionDuration: z.number().nullable(),
-  consecutiveFailures: z.number(),
-});
-
-const RetryPolicySchema = z.object({
-  enabled: z.boolean(),
-  maxRetries: z.number(),
-  retryDelay: z.number(),
-  backoffMultiplier: z.number(),
-  maxRetryDelay: z.number(),
-});
-
-const TaskMetadataSchema = z.object({
-  payload: z.record(z.string(), z.unknown()),
-  tags: z.array(z.string()),
-  priority: z.enum(TaskPriority),
-  timeout: z.number().nullable(),
-});
 
 const ScheduleExecutionResponseSchema: z.ZodType<{
   id: ScheduleExecutionId;
