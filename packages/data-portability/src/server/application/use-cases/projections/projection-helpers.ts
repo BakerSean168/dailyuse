@@ -32,6 +32,7 @@ export function toDateString(value: unknown): string | undefined {
 
 // Residual 1101 keep-boundary: unknown → number|undefined (any number + Date + Date.parse string).
 // Intentionally not: AI goal-planning (positive-only), notification (string→null), app-react (0 fallback).
+// Soft residual 1141: auth PowerSync toMillis string→null co-located keep-boundary (no force-merge).
 export function toTimestamp(value: unknown): number | undefined {
   if (value === null || value === undefined || value === '') return undefined;
   if (typeof value === 'number') return value;

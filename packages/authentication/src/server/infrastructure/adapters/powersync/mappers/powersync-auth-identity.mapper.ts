@@ -109,6 +109,10 @@ export interface PowerSyncAuthIdentityWriteData {
 }
 
 
+// Residual 1141 keep-boundary: auth PowerSync ISO string → number|null (empty/invalid → null).
+// Same private PowerSync string→null shape as notification toTimestamp; intentionally co-located
+// (no force-merge into shared sole). Soft residual 1141: projection unknown→undefined / AI positive /
+// app-react 0-fallback stay separate.
 function toMillis(value: string | null | undefined): number | null {
   if (!value) return null;
   const ts = new Date(value).getTime();

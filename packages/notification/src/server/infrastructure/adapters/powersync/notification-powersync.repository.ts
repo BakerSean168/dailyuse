@@ -38,6 +38,7 @@ interface NotificationRow {
 
 // Residual 1101 keep-boundary: PowerSync row ISO string → number|null (empty/invalid → null).
 // Soft residual 1101: projection unknown→undefined and AI positive-only keep-boundaries (no force-merge).
+// Soft residual 1141: auth PowerSync toMillis (same string→null shape; co-located; no force-merge).
 function toTimestamp(value: string | null | undefined): number | null {
   if (!value) return null;
   const timestamp = new Date(value).getTime();

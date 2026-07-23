@@ -12,6 +12,7 @@ import { toTimestamp } from './projection-helpers';
  * Soft residual 1095/1099: parseJsonField + asRecord/toRecord keep-boundaries remain.
  * Soft residual 1105: AI toNumber keep-boundary remains separate (number-only vs string parse).
  * Soft residual 1123: toDate/toDateString keep-boundary remains separate.
+ * Soft residual 1141: auth PowerSync toMillis string→null co-located keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */
 describe('toTimestamp cross-package keep-boundary (residual 1101)', () => {
