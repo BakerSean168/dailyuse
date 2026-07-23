@@ -1,3 +1,6 @@
+/**
+ * Residual 981: toIso sole import (./to-iso.ts).
+ */
 import type { AuthCredentialId, PasswordCredentialServerDTO, AuthIdentifierDTO, HashedPassword as IHashedPassword, OAuthBindingServerDTO } from '@dailyuse/contracts/authentication';
 import { createHash } from 'node:crypto';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
@@ -12,6 +15,7 @@ import {
 } from '../../../../domain';
 import { OAuthBinding, PasswordCredential } from '../../../../domain/entities';
 import { EmailIdentifier, PhoneIdentifier } from '../../../../domain/value-objects';
+import { toIso } from './to-iso';
 
 export interface PowerSyncAuthIdentityRow {
   id: string;
@@ -104,10 +108,6 @@ export interface PowerSyncAuthIdentityWriteData {
   }[];
 }
 
-function toIso(value: number | null | undefined): string | null {
-  if (value === null || value === undefined) return null;
-  return new Date(value).toISOString();
-}
 
 function toMillis(value: string | null | undefined): number | null {
   if (!value) return null;

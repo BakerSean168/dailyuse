@@ -7323,6 +7323,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
+> 续进展 2026-07-23（阶段 6 残留九百八十一轮）：authentication **toIso dual retired**（仍不打勾）——
+> PowerSync auth identity/session mappers 本地 dual 收口；mappers/to-iso 唯 helper；
+> epoch-ms→ISO；surface Residual 981 锁。
 
 
 
@@ -8479,6 +8482,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留九百七十八轮：§13.2 focused evidence suite re-run (1227 tests, residuals 250–977 locks, no checkbox changes)。
   残留九百七十九轮：retire toPrismaJson dual (ai prisma sole JSON clone helper; account keep-boundary).
   残留九百八十轮：§13.2 focused evidence suite re-run (1231 tests, residuals 250–979 locks, no checkbox changes)。
+  残留九百八十一轮：retire toIso dual (authentication PowerSync mappers sole epoch-ms→ISO helper).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -8892,6 +8896,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留九百七十八轮：§13.2 focused evidence suite re-run（1227 tests，residuals 250–977 锁；不改 checkbox）。
   残留九百七十九轮：retire toPrismaJson dual（ai prisma 唯 JSON clone helper；account keep-boundary）。
   残留九百八十轮：§13.2 focused evidence suite re-run（1231 tests，residuals 250–979 锁；不改 checkbox）。
+  残留九百八十一轮：retire toIso dual（authentication PowerSync mappers 唯 epoch-ms→ISO helper）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -9917,6 +9922,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留九百七十八轮：tip 上 1227 项 focused evidence suite（含 residual 250–977 parseSSE dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留九百七十九轮：toPrismaJson dual retired surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留九百八十轮：tip 上 1231 项 focused evidence suite（含 residual 250–979 toPrismaJson dual retired 锁）通过；仍不构成全量 PR 门禁证据。
+  残留九百八十一轮：toIso dual retired surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
