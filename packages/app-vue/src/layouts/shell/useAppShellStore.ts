@@ -18,6 +18,8 @@
  */
 import { defineStore } from 'pinia';
 import { PANEL_MIN, computePanelGeometry } from './panel-geometry';
+// Residual 1001: sole clamp (local dual retired).
+import { clamp } from './clamp';
 
 /** 面板可容纳的最大 Tab 数（V2 §2.3 建议 8）。 */
 export const MAX_BUSINESS_TABS = 8;
@@ -97,9 +99,7 @@ function nextTabId(module: ShellModule): string {
   return `tab-${module}-${Date.now().toString(36)}-${tabSeq}`;
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
+// Residual 1001: clamp elevated to ./clamp.
 
 function isBusinessModule(value: unknown): value is ShellModule {
   return typeof value === 'string' && BUSINESS_MODULES.has(value as ShellModule);

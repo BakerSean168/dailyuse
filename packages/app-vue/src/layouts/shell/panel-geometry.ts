@@ -5,6 +5,9 @@
  * 固定 320–750 已退役；上限由视口、侧栏和 AI 最小宽度共同决定。
  */
 
+// Residual 1001: sole clamp (local dual retired).
+import { clamp } from './clamp';
+
 export const PANEL_MIN = 360;
 export const PANEL_MAX_CAP = 760;
 export const CHAT_MIN = 420;
@@ -52,10 +55,7 @@ export interface ComposerLayout {
   left: number;
 }
 
-function clamp(value: number, min: number, max: number): number {
-  if (max < min) return min;
-  return Math.max(min, Math.min(max, value));
-}
+// Residual 1001: clamp elevated to ./clamp.
 
 /** 计算当前视口下的业务面板可用宽度区间与默认值。 */
 export function computePanelGeometry(input: PanelGeometryInput): PanelGeometry {
