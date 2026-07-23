@@ -8,6 +8,7 @@ import { toChallengePurpose } from './to-challenge-purpose';
  * Residual 961: toChallengePurpose dual retired.
  * Sole body in to-challenge-purpose.ts; send-email-verification-code + verify-email-code import it.
  * Soft residual 959: normalizeEmail dual retired (normalize-email-dual.surface.spec.ts).
+ * Soft residual 962: tip focused suite numbers track Residual 962 evidence tip (272/1203).
  * Transport EmailVerificationPurpose maps onto domain VerificationChallengePurpose.
  * Does not flip §13.2 checkboxes.
  */
