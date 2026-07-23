@@ -43,6 +43,8 @@ export {
 
 // ============ Route Response Schemas ============
 
+// Residual 807: MessageClientDTO dual retired — this schema is the sole message client shape
+// (semantic MessageClientDTO is z.infer alias in entities/message-client.ts).
 export const MessageClientDTOSchema = z.object({
   id: brandedId<AiMessageId>(),
   conversationId: brandedId<AiConversationId>(),
