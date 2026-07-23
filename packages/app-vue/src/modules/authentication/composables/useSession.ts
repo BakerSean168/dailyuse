@@ -4,6 +4,8 @@
  * 通过 DI 注入的 AuthClientService 与后端交互。
  * Service 返回 Result<T>，Composable 负责 Result 解包 + Store 更新 + UI 状态。
  *
+ * Residual 1055: createComposableHandleError toast report path (session load/revoke duals retired).
+ *
  * @module authentication/composables
  */
 
@@ -13,7 +15,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthenticationStore } from '../stores/authentication-store';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 
 export function useSession() {
   const store = useAuthenticationStore();
@@ -25,12 +27,16 @@ export function useSession() {
   const currentSession = computed(() => store.currentSession);
   const sessionCount = computed(() => store.getActiveSessionCount);
 
-  function getSessionErrorMessage(error: unknown, fallbackKey: string) {
-    return translateResultError(error, t, {
-      scope: 'auth',
-      fallbackKey,
-    });
-  }
+  const handleLoadError = createComposableHandleError({
+    t,
+    setError: (message) => store.setError(message),
+    report: (message) => toast.error(t('auth.toast.loadFailed'), { description: message }),
+  });
+  const handleOperationError = createComposableHandleError({
+    t,
+    setError: (message) => store.setError(message),
+    report: (message) => toast.error(t('auth.toast.operationFailed'), { description: message }),
+  });
 
   // ========== 会话操作 ==========
 
@@ -45,9 +51,7 @@ export function useSession() {
       store.setActiveSessions(result.data.sessions);
       return true;
     }
-    const message = getSessionErrorMessage(result.error, 'auth.toast.loadSessionsFailed');
-    store.setError(message);
-    toast.error(t('auth.toast.loadFailed'), { description: message });
+    handleLoadError(result.error, 'auth.toast.loadSessionsFailed');
     return false;
   }
 
@@ -65,9 +69,7 @@ export function useSession() {
       toast.success(t('auth.toast.sessionRevoked'));
       return true;
     }
-    const message = getSessionErrorMessage(result.error, 'auth.toast.revokeSessionFailed');
-    store.setError(message);
-    toast.error(t('auth.toast.operationFailed'), { description: message });
+    handleOperationError(result.error, 'auth.toast.revokeSessionFailed');
     return false;
   }
 

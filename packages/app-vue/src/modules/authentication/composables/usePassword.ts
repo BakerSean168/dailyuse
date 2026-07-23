@@ -5,6 +5,9 @@
  * Service 返回 Result<T>，Composable 负责 Result 解包 + UI 状态。
  *
  * @module authentication/composables
+ *
+ * Soft residual 1055: toast-only failure path keep-boundary
+ * (no store.setError; not handle-error sole dual body).
  */
 
 import { ref } from 'vue';
