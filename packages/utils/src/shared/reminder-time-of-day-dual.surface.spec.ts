@@ -11,7 +11,7 @@ import {
 /**
  * Residual 1007: normalizeReminderTimeOfDay + buildReminderStartTimestamp dual retired.
  * Sole bodies in @dailyuse/utils/shared/reminder-time-of-day.
- * Soft residual 1010: tip focused suite numbers track Residual 1010 evidence tip (295/1283).
+ * Soft residual 1012: tip focused suite numbers track Residual 1012 evidence tip (296/1287).
  * Does not flip §13.2 checkboxes.
  */
 describe('reminder time-of-day dual retired (residual 1007)', () => {

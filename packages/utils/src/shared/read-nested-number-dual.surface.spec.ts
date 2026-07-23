@@ -6,8 +6,7 @@ import { readNestedNumber } from './read-nested-number';
 /**
  * Residual 1009: readNestedNumber dual retired (API + Desktop automation executors).
  * Sole body in @dailyuse/utils/shared/read-nested-number.
- * Soft residual 1010: tip focused suite numbers track Residual 1010 evidence tip (295/1283)
- *   until residual 1012 suite re-run.
+ * Soft residual 1012: tip focused suite numbers track Residual 1012 evidence tip (296/1287).
  * Soft residual 1011: previewText dual retired (utils sole; API maxLength 200 call sites).
  * Does not flip §13.2 checkboxes.
  */
