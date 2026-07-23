@@ -6,7 +6,7 @@ import { buildRecurrenceRule } from './build-recurrence-rule';
 /**
  * Residual 1015: buildRecurrenceRule dual retired (API + Desktop automation).
  * Sole body in @dailyuse/utils/shared/build-recurrence-rule.
- * Soft residual 1032: tip focused suite numbers track Residual 1032 evidence tip (306/1327).
+ * Soft residual 1034: tip focused suite numbers track Residual 1034 evidence tip (307/1331).
  * Soft residual 1013: buildReminderTemplateInput dual retired.
  * Does not flip §13.2 checkboxes.
  */

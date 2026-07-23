@@ -7,7 +7,7 @@ import { normalizeOrigin } from '../../e2e/helpers/normalize-origin';
  * Residual 1027: web e2e normalizeOrigin dual retired onto e2e/helpers sole.
  * Soft residual: desktop main trimTrailingSlash remains keep-boundary (same body, different host).
  * Soft residual: e2e sync credentials inline replace(/\/+$/, '') remains keep-boundary (not dual fn).
- * Soft residual 1032: tip focused suite numbers track Residual 1032 evidence tip (306/1327).
+ * Soft residual 1034: tip focused suite numbers track Residual 1034 evidence tip (307/1331).
  * Does not flip §13.2 checkboxes.
  */
 describe('normalizeOrigin dual retired (residual 1027)', () => {
