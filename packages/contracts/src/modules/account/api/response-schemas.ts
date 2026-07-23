@@ -55,6 +55,8 @@ export const AccountResponseSchema = z.object({
 
 /**
  * Availability Response Schema
+ *
+ * Residual 767: sole availability response shape (CheckAvailabilityRes is z.infer alias).
  */
 export const AvailabilityResponseSchema = z.object({
   available: z.boolean(),

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AvailabilityResponseSchema } from './response-schemas';
 
 export const AccountAvailabilityFieldSchema = z.enum(['nickname', 'email']);
 
@@ -9,7 +10,6 @@ export const CheckAvailabilitySchema = z.object({
 
 export type CheckAvailabilityReq = z.infer<typeof CheckAvailabilitySchema>;
 
-export interface CheckAvailabilityRes {
-  available: boolean;
-  suggestion?: string;
-}
+// Residual 767: availability response dual retired — OpenAPI + transport use
+// AvailabilityResponseSchema (semantic Res is a z.infer alias).
+export type CheckAvailabilityRes = z.infer<typeof AvailabilityResponseSchema>;
