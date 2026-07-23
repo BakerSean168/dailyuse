@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
+import { CheckExpiredTaskInstancesResponseSchema } from './response-schemas';
 
 // ============================================================================
 // GET Task Operations
@@ -26,10 +27,8 @@ export interface GetTaskInstancesByRangeRes {
   total: number;
 }
 
-export interface CheckExpiredTaskInstancesRes {
-  count: number;
-  instances: TaskInstanceClientDTO[];
-}
+// Residual 697: list response dual body retired — OpenAPI + transport use CheckExpiredTaskInstancesResponseSchema.
+export type CheckExpiredTaskInstancesRes = z.infer<typeof CheckExpiredTaskInstancesResponseSchema>;
 
 export const CompleteTaskInstanceSchema = z.object({
   duration: z.number().optional(),

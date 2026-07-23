@@ -125,6 +125,8 @@ export const TaskInstanceResponseSchema = z.object({
   deletedAt: z.number().nullable(),
 });
 
+// Residual 697: CheckExpiredTaskInstancesResponseSchema is the sole expired-list response shape
+// (CheckExpiredTaskInstancesRes is a z.infer alias).
 export const CheckExpiredTaskInstancesResponseSchema = z.object({
   count: z.number(),
   instances: z.array(TaskInstanceResponseSchema),
