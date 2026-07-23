@@ -5,19 +5,12 @@
  * authenticated renderer shell.
  */
 import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
+// Residual 943: escapeHtml dual retired — @dailyuse/utils/shared sole helper.
+import { escapeHtml } from '@dailyuse/utils/shared';
 
 import './styles/index.css';
 // Residual 941: host bridge via ensureElectronBridgeAvailable sole helper.
 import { ensureElectronBridgeAvailable } from './platform/electron-bridge';
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 function formatError(error: unknown): string {
   if (error instanceof Error) {

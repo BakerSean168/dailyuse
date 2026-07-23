@@ -9,6 +9,8 @@ import { describe, expect, it } from 'vitest';
  * Soft residual 911: CustomNotificationView local ElectronBridge dual retired.
  * Soft residual 929: app-vue window-controls ElectronBridge keep-boundary.
  * Soft residual 909: app-vue DesktopAuthApi invoke-only keep-boundary.
+ * Residual 943 (soft): escapeHtml dual retired
+ *   (packages/utils/src/shared/escape-html-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('host ElectronBridge helper duals retired (residual 941)', () => {

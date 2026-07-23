@@ -12,6 +12,8 @@ import type StateBlock from 'markdown-it/lib/rules_block/state_block.mjs';
 import type StateCore from 'markdown-it/lib/rules_core/state_core.mjs';
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs';
 import type Token from 'markdown-it/lib/token.mjs';
+// Residual 943: escapeHtml dual retired — @dailyuse/utils/shared sole helper.
+import { escapeHtml } from '@dailyuse/utils/shared';
 
 const ALLOWED_CALLOUT_TYPES = new Set([
   'abstract',
@@ -433,11 +435,3 @@ export function renderSafeMarkdownExcerpt(source: string, maxChars = 500): strin
   return renderSafeMarkdown(source.slice(0, maxChars));
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}

@@ -8,3 +8,4 @@ export * from './date';
 export * from './time';
 export * from './env-config';
 export * from './persistence';
+export * from './escape-html';
