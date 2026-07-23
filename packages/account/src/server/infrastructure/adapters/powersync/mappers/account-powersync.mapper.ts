@@ -3,6 +3,7 @@
  * Residual 1081 keep-boundary: private static parseJson throws on invalid JSON
  * (required string columns). Intentionally not utils parseJson/parseJsonSafe
  * (null/undefined + fallback, never throw).
+ * Soft residual 1091: api PowerSync parseJsonLikeString keep-boundary (no force-merge).
  */
 import type { AccountState } from '../../../../domain';
 import { Account } from '../../../../domain';

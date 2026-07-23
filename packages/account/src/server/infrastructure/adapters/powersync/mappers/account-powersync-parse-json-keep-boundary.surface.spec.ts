@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
  * Intentionally not merged into utils persistence parseJson / parseJsonSafe
  * (null/undefined input + fallback, never throw).
  * Soft residual 1025: notification parseJsonSafe dual retired onto utils sole.
+ * Soft residual 1091: api PowerSync parseJsonLikeString keep-boundary surface (no force-merge).
  * Does not flip §13.2 checkboxes.
  */
 describe('account PowerSync parseJson keep-boundary (residual 1081)', () => {

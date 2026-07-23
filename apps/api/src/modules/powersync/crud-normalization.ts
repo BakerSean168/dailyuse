@@ -4,6 +4,10 @@
  * PowerSync clients send CRUD operations with string-encoded JSON and
  * string/number booleans. These helpers normalize values to their proper
  * Prisma-compatible types before upsert.
+ * Residual 1091 keep-boundary: parseJsonLikeString only parses brace/bracket
+ * JSON-looking strings and leaves other strings as-is; outer try/catch keeps
+ * malformed JSON unchanged. Intentionally not utils parseJson/parseJsonSafe
+ * (null/undefined + fallback) and not account PowerSync throw-on-invalid parseJson.
  */
 
 export const JSON_FIELDS_BY_TABLE: Record<string, ReadonlySet<string>> = {
@@ -51,6 +55,7 @@ function snakeToCamel(key: string): string {
   return key.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
 }
 
+// Residual 1091 keep-boundary: JSON-looking strings only; non-JSON text stays string.
 function parseJsonLikeString(value: string): unknown {
   const trimmed = value.trim();
   if (
