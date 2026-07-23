@@ -43,6 +43,8 @@ export const AuthResponseSchema = z.object({
   session: AuthSessionSchema,
 });
 
+// Residual 713: CurrentUser / SessionList OpenAPI schemas are the sole response shapes
+// (CurrentUserDTO / ListSessionsRes are z.infer aliases).
 export const CurrentUserResponseSchema = z.object({
   identity: AuthIdentitySchema,
   session: AuthSessionSchema.nullable(),
