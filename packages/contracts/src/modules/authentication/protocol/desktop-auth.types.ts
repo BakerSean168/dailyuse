@@ -208,7 +208,18 @@ export interface LoginRequest {
 }
 
 // Residual 867: LoginResponse dual deleted (zero consumers).
-// Desktop offline login returns OfflineLoginResponse (session-types); online auth uses AuthResponseDTO.
+// Residual 873: sole offline login result shape (desktop session-types re-exports type alias).
+// Online auth uses AuthResponseDTO.
+export interface OfflineLoginResponse {
+  ok: boolean;
+  sessionId?: string;
+  accessToken?: string;
+  identityId?: string;
+  expiresIn?: number;
+  error?: string;
+  authMode?: AuthMode;
+}
+
 // ============================================================================
 // Auth Status (aggregate status for renderer)
 // ============================================================================

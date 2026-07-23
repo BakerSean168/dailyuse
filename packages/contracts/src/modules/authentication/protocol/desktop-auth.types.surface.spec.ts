@@ -82,6 +82,8 @@ describe('desktop-auth AuthStatusDTO dual retired (residual 865)', () => {
  * Desktop offline login uses OfflineLoginResponse; online auth uses AuthResponseDTO.
  * Residual 869 (soft): DesktopLoginRequest dual retired via EmailLoginCredentials type alias
  *   (apps/desktop .../desktop-login-request-dual.surface.spec.ts).
+ * Residual 873 (soft): OfflineLoginResponse dual retired — sole body in contracts
+ *   (offline-login-response-dual.surface.spec.ts).
  */
 describe('desktop-auth LoginResponse dual retired (residual 867)', () => {
   const source = readFileSync(resolve(__dirname, 'desktop-auth.types.ts'), 'utf8');
@@ -90,7 +92,8 @@ describe('desktop-auth LoginResponse dual retired (residual 867)', () => {
   it('does not define or export LoginResponse dual', () => {
     expect(source).toContain('Residual 867');
     expect(source).not.toMatch(/export interface LoginResponse\b/);
-    expect(protocolIndex).not.toContain('LoginResponse');
+    // Word boundary: OfflineLoginResponse (residual 873) must not trip this lock.
+    expect(protocolIndex).not.toMatch(/(?<![A-Za-z])LoginResponse(?![A-Za-z])/);
   });
 
   it('keeps LoginRequest and AuthStatus sole status shape', () => {
