@@ -37,6 +37,8 @@ import {
 import { isRecord } from './isRecord';
 // Residual 953: createAgentId dual retired — sole AI composable helper.
 import { createAgentId } from './createAgentId';
+// Residual 955: getRecordString dual retired — sole AI composable helper.
+import { getRecordString } from './getRecordString';
 
 export interface UseAIKnowledgeNoteWorkflowOptions {
   service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
@@ -105,14 +107,9 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
   function getArtifactString(artifact: AgentArtifact | null, key: string): string {
     if (!artifact) return '';
-    const value = artifact.data[key];
-    return typeof value === 'string' ? value.trim() : '';
+    return getRecordString(artifact.data, key);
   }
 
-  function getRecordString(data: Record<string, unknown>, key: string): string {
-    const value = data[key];
-    return typeof value === 'string' ? value.trim() : '';
-  }
 
   function normalizeIndexStatus(value: string): NoteSummary['indexStatus'] | undefined {
     return value === 'pending' || value === 'indexed' || value === 'failed' ? value : undefined;

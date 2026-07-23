@@ -61,6 +61,8 @@ import {
 import { isRecord } from './isRecord';
 // Residual 953: createAgentId dual retired — sole AI composable helper.
 import { createAgentId } from './createAgentId';
+// Residual 955: getRecordString dual retired — sole AI composable helper (was local getString).
+import { getRecordString } from './getRecordString';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -249,8 +251,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     const questions = rawQuestions
       .filter(isRecord)
       .map((item) => ({
-        question: getString(item, 'question'),
-        context: getString(item, 'context') || null,
+        question: getRecordString(item, 'question'),
+        context: getRecordString(item, 'context') || null,
       }))
       .filter((item) => item.question);
 
@@ -259,7 +261,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return {
       needsClarification: true,
       questions,
-      rationale: getString(interrupt, 'rationale') || null,
+      rationale: getRecordString(interrupt, 'rationale') || null,
     };
   }
 
@@ -287,10 +289,6 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     syncGoalAgentStage(result);
   }
 
-  function getString(data: Record<string, unknown>, key: string): string {
-    const value = data[key];
-    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '';
-  }
 
   function getNumber(data: Record<string, unknown>, key: string, fallback: number): number {
     const value = data[key];
@@ -334,14 +332,14 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     const keyResults = value
       .filter(isRecord)
       .map((item) => ({
-        title: getString(item, 'title'),
-        description: getString(item, 'description') || undefined,
-        valueType: getString(item, 'valueType') as KeyResultPreview['valueType'],
-        calculationMethod: getString(item, 'calculationMethod') as KeyResultPreview['calculationMethod'],
+        title: getRecordString(item, 'title'),
+        description: getRecordString(item, 'description') || undefined,
+        valueType: getRecordString(item, 'valueType') as KeyResultPreview['valueType'],
+        calculationMethod: getRecordString(item, 'calculationMethod') as KeyResultPreview['calculationMethod'],
         startValue: getNumber(item, 'startValue', 0),
         currentValue: getNumber(item, 'currentValue', getNumber(item, 'startValue', 0)),
         targetValue: getNumber(item, 'targetValue', 1),
-        unit: getString(item, 'unit') || t('aiAssistant.goalDraft.unit'),
+        unit: getRecordString(item, 'unit') || t('aiAssistant.goalDraft.unit'),
         weight: getNumber(item, 'weight', 1),
       }))
       .filter((item) => item.title && item.valueType && item.calculationMethod);
@@ -353,11 +351,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return value
       .filter(isRecord)
       .map((item) => ({
-        name: getString(item, 'name'),
-        description: getString(item, 'description'),
-        importance: normalizeImportance(getString(item, 'importance')),
-        cadence: normalizeCadence(getString(item, 'cadence')),
-        timeOfDay: getString(item, 'timeOfDay') || '09:00',
+        name: getRecordString(item, 'name'),
+        description: getRecordString(item, 'description'),
+        importance: normalizeImportance(getRecordString(item, 'importance')),
+        cadence: normalizeCadence(getRecordString(item, 'cadence')),
+        timeOfDay: getRecordString(item, 'timeOfDay') || '09:00',
       }))
       .filter((item) => item.name);
   }
@@ -367,11 +365,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return value
       .filter(isRecord)
       .map((item) => ({
-        title: getString(item, 'title'),
-        description: getString(item, 'description'),
-        importance: normalizeImportance(getString(item, 'importance')),
-        cadence: normalizeCadence(getString(item, 'cadence')),
-        timeOfDay: normalizeReminderTimeOfDay(getString(item, 'timeOfDay')),
+        title: getRecordString(item, 'title'),
+        description: getRecordString(item, 'description'),
+        importance: normalizeImportance(getRecordString(item, 'importance')),
+        cadence: normalizeCadence(getRecordString(item, 'cadence')),
+        timeOfDay: normalizeReminderTimeOfDay(getRecordString(item, 'timeOfDay')),
       }))
       .filter((item) => item.title);
   }
@@ -421,12 +419,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!goalData) return;
 
     editableGoal.value = {
-      name: getString(goalData, 'title') || artifact?.title || '',
-      description: getString(goalData, 'description'),
-      category: getString(goalData, 'category'),
-      importance: normalizeImportance(getString(goalData, 'importance')),
-      motivation: getString(goalData, 'motivation'),
-      feasibilityAnalysis: getString(goalData, 'feasibilityAnalysis'),
+      name: getRecordString(goalData, 'title') || artifact?.title || '',
+      description: getRecordString(goalData, 'description'),
+      category: getRecordString(goalData, 'category'),
+      importance: normalizeImportance(getRecordString(goalData, 'importance')),
+      motivation: getRecordString(goalData, 'motivation'),
+      feasibilityAnalysis: getRecordString(goalData, 'feasibilityAnalysis'),
       tags: getStringArray(goalData, 'tags'),
       startDate: getOptionalNumber(goalData, 'suggestedStartDate'),
       targetDate: getOptionalNumber(goalData, 'suggestedEndDate'),
@@ -457,11 +455,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       ...goalData,
       title:
         editableGoal.value.name.trim() ||
-        getString(goalData, 'title') ||
+        getRecordString(goalData, 'title') ||
         options.conversationTitle.value,
       description:
         editableGoal.value.description.trim() ||
-        getString(goalData, 'description') ||
+        getRecordString(goalData, 'description') ||
         options.buildConversationTranscript(),
       motivation: editableGoal.value.motivation.trim() || undefined,
       category: normalizeGoalCategory(editableGoal.value.category),
@@ -505,7 +503,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
 
   function getGoalAgentActionPlanSummary(run: AgentRunResult): string {
     const actionPlanData = findGoalAgentArtifactData(run, 'action_plan');
-    return getString(actionPlanData, 'summary') || 'Execute approved Agent goal action plan.';
+    return getRecordString(actionPlanData, 'summary') || 'Execute approved Agent goal action plan.';
   }
 
   function buildEditedApprovedActions(run: AgentRunResult): AgentAction[] {
@@ -643,7 +641,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
         ? { description: createGoalData['description'] }
         : {}),
     };
-    const title = getString(mergedDraftData, 'title') || options.conversationTitle.value;
+    const title = getRecordString(mergedDraftData, 'title') || options.conversationTitle.value;
     return run.state.artifacts.map((artifact) => {
       if (artifact.kind === 'goal_draft') {
         return {
