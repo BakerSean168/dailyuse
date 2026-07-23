@@ -17,6 +17,7 @@ import {
   UpdateGoalFolderSchema,
   GoalFolderClientDTOSchema,
   ListGoalFolderFiltersSchema,
+  QueryGoalFoldersResSchema,
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalFolderId } from '@dailyuse/contracts/primitives';
@@ -82,10 +83,7 @@ export function registerGoalFolderRoutes(
         query: ListGoalFolderFiltersSchema,
       },
       responses: {
-        200: successResponse(
-          z.object({ data: z.array(GoalFolderClientDTOSchema), total: z.number() }),
-          '获取成功',
-        ),
+        200: successResponse(QueryGoalFoldersResSchema, '获取成功'),
       },
     },
     [auth],
