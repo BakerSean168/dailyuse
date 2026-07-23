@@ -35,9 +35,13 @@ export const ReindexKnowledgeResultItemSchema = z.object({
   error: z.string().optional(),
 });
 
-export interface ReindexKnowledgeRes {
-  indexedCount: number;
-  reusedCount: number;
-  failedCount: number;
-  results: Array<z.infer<typeof ReindexKnowledgeResultItemSchema>>;
-}
+// Residual 761: ReindexKnowledgeRes dual retired — OpenAPI + transport use
+// ReindexKnowledgeResSchema (semantic Res is a z.infer alias).
+export const ReindexKnowledgeResSchema = z.object({
+  indexedCount: z.number().int().nonnegative(),
+  reusedCount: z.number().int().nonnegative(),
+  failedCount: z.number().int().nonnegative(),
+  results: z.array(ReindexKnowledgeResultItemSchema),
+});
+
+export type ReindexKnowledgeRes = z.infer<typeof ReindexKnowledgeResSchema>;
