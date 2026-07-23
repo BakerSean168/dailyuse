@@ -76,7 +76,12 @@ describe('schedule batch operation response dual name retired (residual 639)', (
 
   it('schedule uses ScheduleBatchOperationResponseDTO / Schema only', () => {
     expect(taskReq).toContain('Residual 639');
-    expect(taskReq).toContain('export interface ScheduleBatchOperationResponseDTO');
+    expect(taskReq).toContain('Residual 717');
+    expect(taskReq).toContain(
+      'export type ScheduleBatchOperationResponseDTO = z.infer<',
+    );
+    expect(taskReq).toContain('typeof ScheduleBatchOperationResponseSchema');
+    expect(taskReq).not.toMatch(/export interface ScheduleBatchOperationResponseDTO\b/);
     expect(taskReq).not.toMatch(/export interface BatchOperationResponseDTO\b/);
     expect(responseSchemas).toContain('ScheduleBatchOperationResponseSchema');
     expect(responseSchemas).not.toMatch(/export const BatchOperationResponseSchema\b/);

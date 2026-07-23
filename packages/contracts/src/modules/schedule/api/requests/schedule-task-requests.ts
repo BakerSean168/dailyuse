@@ -10,6 +10,7 @@ import { SourceModule } from '../../value-objects/source-module';
 import { ScheduleTaskStatus } from '../../value-objects/schedule-task-status';
 import { TaskPriority } from '../../value-objects/task-priority';
 import { Timezone } from '../../value-objects/timezone';
+import { ScheduleBatchOperationResponseSchema } from '../response-schemas';
 
 export const ScheduleTaskSortBy = {
   CreatedAt: 'createdAt',
@@ -135,14 +136,8 @@ export type BatchScheduleTaskOperationRequest = z.infer<
 /**
  * 批量操作响应
  */
-/** Residual 639: schedule-scoped batch result (not shared BatchOperationResponseDTO dual). */
-export interface ScheduleBatchOperationResponseDTO {
-  readonly success: readonly string[];
-  readonly failed: readonly {
-    taskId: ScheduleTaskId;
-    error: string;
-  }[];
-  readonly total: number;
-  readonly successCount: number;
-  readonly failedCount: number;
-}
+// Residual 639: schedule-scoped batch result (not shared BatchOperationResponseDTO dual).
+// Residual 717: batch response dual body retired — OpenAPI + transport use ScheduleBatchOperationResponseSchema.
+export type ScheduleBatchOperationResponseDTO = z.infer<
+  typeof ScheduleBatchOperationResponseSchema
+>;

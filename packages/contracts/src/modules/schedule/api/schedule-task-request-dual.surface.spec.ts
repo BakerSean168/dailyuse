@@ -53,8 +53,13 @@ describe('schedule-task request dual retired (residual 709)', () => {
     expect(dto).not.toMatch(/export interface BatchScheduleTaskOperationRequest\b/);
   });
 
-  it('keeps ScheduleBatchOperationResponseDTO interface (residual 639 schedule-scoped)', () => {
-    expect(dto).toContain('export interface ScheduleBatchOperationResponseDTO');
+  it('keeps ScheduleBatchOperationResponseDTO semantic type (residual 639/717 schedule-scoped)', () => {
+    expect(dto).toContain('Residual 639');
+    expect(dto).toContain('Residual 717');
+    expect(dto).toContain(
+      'export type ScheduleBatchOperationResponseDTO = z.infer<',
+    );
+    expect(dto).not.toMatch(/export interface ScheduleBatchOperationResponseDTO\b/);
   });
 
   it('routes and controller use schedule-task request schemas', () => {

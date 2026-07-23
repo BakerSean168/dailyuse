@@ -125,6 +125,8 @@ export const CalendarEntryResponseSchema = z.object({
  * Schedule BatchOperation Response Schema
  */
 /** Residual 639: schedule batch result schema (renamed off shared dual name). */
+// Residual 717: ScheduleBatchOperationResponseSchema is the sole batch response shape
+// (ScheduleBatchOperationResponseDTO is a z.infer alias).
 export const ScheduleBatchOperationResponseSchema = z.object({
   success: z.array(z.string()),
   failed: z.array(z.object({ taskId: brandedId<ScheduleTaskId>(), error: z.string() })),
