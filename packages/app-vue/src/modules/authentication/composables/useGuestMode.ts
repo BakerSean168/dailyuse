@@ -2,8 +2,10 @@ import { toast } from 'vue-sonner';
 import type { AutoLoginResult } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
 import { isDesktopEnvironment } from './useAuthContext';
-import { hydrateDesktopBootstrapAuthState, type DesktopBootstrapApi } from '../../../shared/utils/desktop-bootstrap-auth';
+import { hydrateDesktopBootstrapAuthState } from '../../../shared/utils/desktop-bootstrap-auth';
+import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
 
+// Residual 913: host access via getDesktopAuthApi (no inline host cast dual).
 export function useGuestMode(ctx: AuthContext) {
   const { store, service, t, lastResultError, getLocalizedAuthError } = ctx;
 
@@ -11,7 +13,7 @@ export function useGuestMode(ctx: AuthContext) {
     if (!store.isAuthenticated) return false;
 
     if (isDesktopEnvironment()) {
-      const hydrated = await hydrateDesktopBootstrapAuthState((window as unknown as { electronAPI?: DesktopBootstrapApi }).electronAPI);
+      const hydrated = await hydrateDesktopBootstrapAuthState(getDesktopAuthApi(window));
       return hydrated;
     }
 

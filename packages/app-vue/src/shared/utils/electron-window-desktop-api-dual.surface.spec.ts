@@ -10,6 +10,8 @@ import { describe, expect, it } from 'vitest';
  *   (modules/setting/.../theme-sync-desktop-api-dual.surface.spec.ts).
  * Residual 905 (soft): reminder DesktopApi dual retired
  *   (modules/reminder/.../reminder-desktop-api-dual.surface.spec.ts).
+ * Residual 913 (soft): host-access cast duals retired
+ *   (desktop-host-access-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('electron window DesktopAuthApi dual retired (residual 909)', () => {

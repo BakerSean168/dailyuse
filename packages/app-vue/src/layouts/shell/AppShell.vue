@@ -27,6 +27,7 @@ import { defaultModuleCapsules } from '../../di/navigation';
 import { useAppShellStore, MAX_BUSINESS_TABS, type ShellModule } from './useAppShellStore';
 import { useShellRouterSync, AUTO_FOCUS_VIEWPORT } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
+import { hasDesktopAuthApi } from '../../shared/utils/desktop-auth-recovery';
 import { useNotification } from '../../modules/notification/composables/useNotification';
 import { useDashboard } from '../../modules/dashboard/composables/useDashboard';
 import { formatScheduleCapsuleLabel, useCalendarView } from '../../modules/schedule/composables/useCalendarView';
@@ -59,9 +60,9 @@ const { tabs, activeTabId, activeTab, isChatOnly, layout, sidebarCollapsed, side
 const sync = useShellRouterSync();
 
 // ── 宿主环境（沿 isDesktopEnvironment 分支模式，V2 决策 #6） ──
+// Residual 913: detect via hasDesktopAuthApi (no electronAPI unknown cast dual).
 const isDesktop =
-  typeof window !== 'undefined' &&
-  !!(window as Window & { electronAPI?: unknown }).electronAPI;
+  typeof window !== 'undefined' && hasDesktopAuthApi(window);
 const isMac =
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
