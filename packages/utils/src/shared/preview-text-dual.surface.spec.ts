@@ -6,7 +6,7 @@ import { previewText } from './preview-text';
 /**
  * Residual 1011: previewText dual retired (AI package re-export + API automation).
  * Sole body in @dailyuse/utils/shared/preview-text (default maxLength 240).
- * Soft residual 1012: tip focused suite numbers track Residual 1012 evidence tip (296/1287).
+ * Soft residual 1014: tip focused suite numbers track Residual 1014 evidence tip (297/1291).
  * Soft residual 1009: readNestedNumber dual retired (read-nested-number-dual.surface.spec.ts).
  * Soft residual 995: AI consumers keep package-local re-export path (preview-text.ts).
  * Does not flip §13.2 checkboxes.

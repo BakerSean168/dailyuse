@@ -11,7 +11,7 @@ import {
  * Residual 1005: presentation preference duals retired
  * (detectBrowserLocale + normalizeLocale + normalizeTheme).
  * Sole bodies in @dailyuse/utils/shared/presentation-preference.
- * Soft residual 1012: tip focused suite numbers track Residual 1012 evidence tip (296/1287).
+ * Soft residual 1014: tip focused suite numbers track Residual 1014 evidence tip (297/1291).
  * Does not flip §13.2 checkboxes.
  */
 describe('presentation preference duals retired (residual 1005)', () => {
