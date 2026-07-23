@@ -9,8 +9,7 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import {
-  CreateConversationSchema,
-  UpdateConversationSchema,
+  ConversationNameSchema,
   SendMessageSchema,
   ListMessagesSchema,
   AIConversationClientDTOSchema,
@@ -47,7 +46,7 @@ export function registerAIChatRoutes(
       method: 'post',
       path: '/conversations',
       summary: '创建 AI 对话',
-      request: { body: { content: { 'application/json': { schema: CreateConversationSchema } } } },
+      request: { body: { content: { 'application/json': { schema: ConversationNameSchema } } } },
       responses: {
         201: successResponse(AIConversationClientDTOSchema, '创建成功'),
         400: errorResponse('参数错误'),
@@ -109,7 +108,7 @@ export function registerAIChatRoutes(
       summary: '更新 AI 对话',
       request: {
         params: z.object({ id: brandedId<AiConversationId>() }),
-        body: { content: { 'application/json': { schema: UpdateConversationSchema } } },
+        body: { content: { 'application/json': { schema: ConversationNameSchema } } },
       },
       responses: {
         200: successResponse(AIConversationClientDTOSchema, '更新成功'),

@@ -1,10 +1,10 @@
 import { fail, ok, type Result } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
-  CreateConversationSchema,
+  ConversationNameSchema,
   ListMessagesSchema,
   SendMessageSchema,
-  UpdateConversationSchema,
+  ConversationNameSchema,
   type CreateConversationRes,
   type ConversationListRes,
   type GetConversationRes,
@@ -65,7 +65,7 @@ export class AIChatController {
     input: unknown,
     cx: ExecutionContext,
   ): Promise<Result<CreateConversationRes>> {
-    const parsed = CreateConversationSchema.safeParse(input);
+    const parsed = ConversationNameSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -99,7 +99,7 @@ export class AIChatController {
     input: unknown,
     cx: ExecutionContext,
   ): Promise<Result<UpdateConversationRes>> {
-    const parsed = UpdateConversationSchema.safeParse(input);
+    const parsed = ConversationNameSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',

@@ -194,7 +194,7 @@ describe('ai chat route contracts', () => {
       getRegisteredRoute(registry, 'post', `${BASE}/conversations`),
     );
 
-    // CreateConversationSchema requires name (non-empty string)
+    // ConversationNameSchema requires name (non-empty string)
     expect(createSchema.safeParse({ name: 'My chat' }).success).toBe(true);
     expect(createSchema.safeParse({}).success).toBe(false);
     expect(createSchema.safeParse({ name: '' }).success).toBe(false);

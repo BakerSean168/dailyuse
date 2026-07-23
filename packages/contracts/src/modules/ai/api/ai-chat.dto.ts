@@ -4,16 +4,14 @@ import type { AiConversationId, AiProviderConfigId } from '../../../primitives';
 import type { AIConversationClientDTO } from '../aggregates/ai-conversation-client';
 import type { MessageClientDTO } from '../entities/message-client';
 
-export const CreateConversationSchema = z.object({
+/** Residual 673: shared conversation name body (create + update). */
+export const ConversationNameSchema = z.object({
   name: z.string().trim().min(1).max(200),
 });
-export type CreateConversationReq = z.infer<typeof CreateConversationSchema>;
+export type CreateConversationReq = z.infer<typeof ConversationNameSchema>;
 export type CreateConversationRes = AIConversationClientDTO;
 
-export const UpdateConversationSchema = z.object({
-  name: z.string().trim().min(1).max(200),
-});
-export type UpdateConversationReq = z.infer<typeof UpdateConversationSchema>;
+export type UpdateConversationReq = z.infer<typeof ConversationNameSchema>;
 export type UpdateConversationRes = AIConversationClientDTO;
 
 const positiveIntFromQuery = z.coerce.number().int().min(1);
