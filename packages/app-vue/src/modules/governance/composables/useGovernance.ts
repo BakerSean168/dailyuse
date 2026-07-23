@@ -10,6 +10,9 @@
  * - 调用注入的治理客户端 seam
  * - 让 Pinia 作为规范化 POJO 缓存
  * - 在 app 层本地派生轻量展示模型
+ *
+ * Residual 1057: createComposableHandleError console report path
+ * (setGovernanceError dual retired onto sole).
  */
 
 import { computed, ref } from 'vue';
@@ -26,7 +29,7 @@ import type {
   UpdateRuleReq,
 } from '@dailyuse/contracts/governance';
 import { toGovernanceDisplayRule } from '../display-rule';
-import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 
 export function useGovernance() {
   const store = useGovernanceStore();
@@ -49,9 +52,10 @@ export function useGovernance() {
   const isSaving = computed(() => savingId.value !== null);
   const currentRuleView = computed(() => toGovernanceDisplayRule(currentRule.value));
 
-  function setGovernanceError(error: unknown, fallbackKey: string) {
-    store.setError(translateResultError(error, t, { fallbackKey }));
-  }
+  const handleError = createComposableHandleError({
+    t,
+    setError: (message) => store.setError(message),
+  });
 
   async function fetchRules(): Promise<void> {
     store.setLoading(true);
@@ -61,7 +65,7 @@ export function useGovernance() {
       if (result.ok) {
         store.setRules(result.data.items ?? [], result.data.total ?? 0);
       } else {
-        setGovernanceError(result.error, 'governance.error.loadListFailed');
+        handleError(result.error, 'governance.error.loadListFailed');
       }
     } finally {
       store.setLoading(false);
@@ -83,7 +87,7 @@ export function useGovernance() {
         store.setCurrentRule(result.data);
         return result.data;
       }
-      setGovernanceError(result.error, 'governance.error.loadRuleFailed');
+      handleError(result.error, 'governance.error.loadRuleFailed');
       return null;
     } finally {
       store.setLoading(false);
@@ -100,7 +104,7 @@ export function useGovernance() {
         store.setCurrentRule(result.data);
         return result.data;
       }
-      setGovernanceError(result.error, 'governance.error.createRuleFailed');
+      handleError(result.error, 'governance.error.createRuleFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -117,7 +121,7 @@ export function useGovernance() {
         store.setCurrentRule(result.data);
         return result.data;
       }
-      setGovernanceError(result.error, 'governance.error.updateRuleFailed');
+      handleError(result.error, 'governance.error.updateRuleFailed');
       return null;
     } finally {
       savingId.value = null;
@@ -133,7 +137,7 @@ export function useGovernance() {
         store.removeRule(id);
         return true;
       }
-      setGovernanceError(result.error, 'governance.error.deleteRuleFailed');
+      handleError(result.error, 'governance.error.deleteRuleFailed');
       return false;
     } finally {
       savingId.value = null;
@@ -161,7 +165,7 @@ export function useGovernance() {
       if (result.ok) {
         store.setRules(result.data.items ?? [], result.data.total ?? 0);
       } else {
-        setGovernanceError(result.error, 'governance.error.searchRuleFailed');
+        handleError(result.error, 'governance.error.searchRuleFailed');
       }
     } finally {
       store.setLoading(false);
@@ -180,7 +184,7 @@ export function useGovernance() {
       if (result.ok) {
         store.setRevisions(result.data.items ?? ([] as RuleRevisionClientDTO[]));
       } else {
-        setGovernanceError(result.error, 'governance.error.loadRevisionFailed');
+        handleError(result.error, 'governance.error.loadRevisionFailed');
       }
     } finally {
       store.setLoading(false);

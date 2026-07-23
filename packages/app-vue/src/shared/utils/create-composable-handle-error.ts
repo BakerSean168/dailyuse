@@ -1,10 +1,12 @@
 /**
- * Residual 973 + 975 + 1055: sole createComposableHandleError factory for app-vue composables.
+ * Residual 973 + 975 + 1055 + 1057: sole createComposableHandleError factory for app-vue composables.
  * Residual 973: schedule / notification / reminder / setting (default console.error report).
  * Residual 975: task instances / templates / dependencies (toast.error report via `report`).
  * Residual 1055: authentication useSession + account useAccount (toast.error report via `report`).
+ * Residual 1057: governance useGovernance (default console.error report; setGovernanceError dual retired).
  * Local handleError duals retired in these clusters.
  * Soft residual: usePassword / account checkAvailability toast-only (no setError) keep-boundary.
+ * Soft residual: useDashboard local ref error + console path (no store.setError dual shape).
  */
 
 import type { ResultErrorTranslateFn } from '@dailyuse/http-client';

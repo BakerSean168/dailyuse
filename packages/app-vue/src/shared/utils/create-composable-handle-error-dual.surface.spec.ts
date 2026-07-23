@@ -4,15 +4,17 @@ import { describe, expect, it, vi } from 'vitest';
 import { createComposableHandleError } from './create-composable-handle-error';
 
 /**
- * Residual 973 + 975 + 1055: createComposableHandleError dual retired.
+ * Residual 973 + 975 + 1055 + 1057: createComposableHandleError dual retired.
  * Sole body in create-composable-handle-error.ts.
  * Residual 973: schedule / notification / reminder / setting (default console.error).
  * Residual 975: task instances / templates / dependencies (toast.error via report).
  * Residual 1055: authentication useSession + account useAccount (toast.error via report).
+ * Residual 1057: governance useGovernance (default console.error; setGovernanceError dual retired).
  * Soft residual: usePassword / account checkAvailability toast-only keep-boundary.
+ * Soft residual: useDashboard local ref error path keep-boundary.
  * Does not flip §13.2 checkboxes.
  */
-describe('createComposableHandleError dual retired (residual 973/975/1055)', () => {
+describe('createComposableHandleError dual retired (residual 973/975/1055/1057)', () => {
   const utilsDir = __dirname;
   const sole = readFileSync(resolve(utilsDir, 'create-composable-handle-error.ts'), 'utf8');
   const consoleConsumers = {
@@ -30,6 +32,10 @@ describe('createComposableHandleError dual retired (residual 973/975/1055)', () 
     ),
     setting: readFileSync(
       resolve(utilsDir, '../../modules/setting/composables/useUserSetting.ts'),
+      'utf8',
+    ),
+    governance: readFileSync(
+      resolve(utilsDir, '../../modules/governance/composables/useGovernance.ts'),
       'utf8',
     ),
   } as const;
@@ -66,6 +72,7 @@ describe('createComposableHandleError dual retired (residual 973/975/1055)', () 
     expect(sole).toContain('Residual 973');
     expect(sole).toContain('Residual 975');
     expect(sole).toContain('Residual 1055');
+    expect(sole).toContain('Residual 1057');
     expect(sole).toMatch(/export function createComposableHandleError\b/);
     expect(sole).toContain('translateResultError');
     expect(sole).toContain('console.error');
@@ -73,13 +80,15 @@ describe('createComposableHandleError dual retired (residual 973/975/1055)', () 
     expect(sole).toContain('report');
   });
 
-  it('console cluster imports sole without local dual bodies (residual 973)', () => {
+  it('console cluster imports sole without local dual bodies (residual 973/1057)', () => {
     for (const [label, source] of Object.entries(consoleConsumers)) {
-      expect(source, label).toContain('Residual 973');
+      const residualMarker = label === 'governance' ? 'Residual 1057' : 'Residual 973';
+      expect(source, label).toContain(residualMarker);
       expect(source, label).toContain(
         "import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error'",
       );
       expect(source, label).not.toMatch(/function handleError\b/);
+      expect(source, label).not.toMatch(/function setGovernanceError\b/);
       expect(source, label).toContain('const handleError = createComposableHandleError');
       expect(source, label).not.toContain('toast.error');
     }
