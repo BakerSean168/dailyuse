@@ -27,11 +27,12 @@ export interface AutoLoginResult extends ContractAutoLoginResult {
   session?: AuthSession;
 }
 
-/** Session status (extends DTO with device info). */
-export interface SessionStatus extends Omit<SessionStatusDTO, 'device'> {
+/** Session status (SessionStatusDTO + device; residual 867: drop bogus Omit<'device'>). */
+export interface SessionStatus extends SessionStatusDTO {
   device: DeviceInfoClientDTO;
 }
 
+// Residual 867: sole offline login result (contracts LoginResponse dual deleted).
 export type OfflineLoginResponse = {
   ok: boolean;
   sessionId?: string;

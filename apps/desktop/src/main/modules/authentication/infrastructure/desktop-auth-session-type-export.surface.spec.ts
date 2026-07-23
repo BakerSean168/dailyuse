@@ -6,6 +6,9 @@ import { describe, expect, it } from 'vitest';
  * Residual 236: session domain types live in session-types.
  * SessionManager does not dual-re-export them; index exports from session-types.
  */
+/**
+ * Residual 867 (soft): contracts LoginResponse dual deleted; OfflineLoginResponse remains sole offline result.
+ */
 describe('desktop auth session type export single-track surface', () => {
   const dir = __dirname;
   const sessionManager = readFileSync(resolve(dir, 'session-manager.ts'), 'utf8');
@@ -33,6 +36,8 @@ describe('desktop auth session type export single-track surface', () => {
     expect(index).toContain('AutoLoginResult');
     expect(index).toContain('SessionStatus');
     expect(index).toContain('OfflineLoginResponse');
+    // Residual 867: contracts LoginResponse dual not re-exported (word boundary; OfflineLoginResponse ok).
+    expect(index).not.toMatch(/(?<![A-Za-z])LoginResponse(?![A-Za-z])/);
     expect(index).not.toContain(
       "export type { SessionRestoreResult, AutoLoginResult, SessionStatus } from './session-manager'",
     );

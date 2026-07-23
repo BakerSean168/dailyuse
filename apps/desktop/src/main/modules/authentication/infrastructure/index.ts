@@ -24,7 +24,6 @@ export type {
   RefreshSessionRequest,
   RefreshSessionResponse,
   LoginRequest,
-  LoginResponse,
   AuthMode,
   DeviceInfoClientDTO,
 } from '@dailyuse/contracts/authentication';

@@ -44,13 +44,15 @@ describe('desktop-auth AuthOperationResult dual retired (residual 637)', () => {
     expect(source).toMatch(/export interface SessionRestoreResult/);
     expect(source).toMatch(/export interface TokenRefreshResult/);
     expect(source).toMatch(/export interface AutoLoginResult/);
-    expect(source).toMatch(/export interface LoginResponse/);
+    // Residual 867: LoginResponse dual deleted (OfflineLoginResponse is sole offline result).
+    expect(source).not.toMatch(/export interface LoginResponse\b/);
   });
 });
 
 /**
  * Residual 865: AuthStatusDTO simplified dual deleted (zero consumers).
  * Sole desktop status shape is AuthStatus (getStatus / bootstrap snapshot).
+ * Residual 867 (soft): LoginResponse dual also deleted (OfflineLoginResponse sole offline result).
  */
 describe('desktop-auth AuthStatusDTO dual retired (residual 865)', () => {
   const source = readFileSync(resolve(__dirname, 'desktop-auth.types.ts'), 'utf8');
@@ -71,6 +73,35 @@ describe('desktop-auth AuthStatusDTO dual retired (residual 865)', () => {
 
   it('does not reintroduce AuthOperationResult dual envelope (residual 637)', () => {
     expect(source).not.toMatch(/export interface AuthOperationResult/);
+    expect(protocolIndex).not.toContain('AuthOperationResult');
+  });
+});
+
+/**
+ * Residual 867: LoginResponse dual deleted (zero consumers).
+ * Desktop offline login uses OfflineLoginResponse; online auth uses AuthResponseDTO.
+ */
+describe('desktop-auth LoginResponse dual retired (residual 867)', () => {
+  const source = readFileSync(resolve(__dirname, 'desktop-auth.types.ts'), 'utf8');
+  const protocolIndex = readFileSync(resolve(__dirname, 'index.ts'), 'utf8');
+
+  it('does not define or export LoginResponse dual', () => {
+    expect(source).toContain('Residual 867');
+    expect(source).not.toMatch(/export interface LoginResponse\b/);
+    expect(protocolIndex).not.toContain('LoginResponse');
+  });
+
+  it('keeps LoginRequest and AuthStatus sole status shape', () => {
+    expect(source).toMatch(/export interface LoginRequest\b/);
+    expect(source).toMatch(/export interface AuthStatus\b/);
+    expect(protocolIndex).toContain('LoginRequest');
+    expect(protocolIndex).toContain('AuthStatus');
+  });
+
+  it('does not reintroduce AuthStatusDTO or AuthOperationResult duals', () => {
+    expect(source).not.toMatch(/export interface AuthStatusDTO\b/);
+    expect(source).not.toMatch(/export interface AuthOperationResult/);
+    expect(protocolIndex).not.toContain('AuthStatusDTO');
     expect(protocolIndex).not.toContain('AuthOperationResult');
   });
 });

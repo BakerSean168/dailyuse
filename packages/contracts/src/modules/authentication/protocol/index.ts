@@ -14,7 +14,6 @@ export type {
   RefreshSessionRequest,
   RefreshSessionResponse,
   LoginRequest,
-  LoginResponse,
   UserInfo,
   SessionInfo,
   DeviceInfoClientDTO,

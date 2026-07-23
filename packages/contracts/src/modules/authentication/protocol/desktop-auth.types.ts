@@ -207,20 +207,8 @@ export interface LoginRequest {
   autoLogin?: boolean;
 }
 
-/**
- * Login response from main process to renderer.
- */
-export interface LoginResponse {
-  ok: boolean;
-  sessionId?: string;
-  accessToken?: string;
-  refreshToken?: string;
-  identityId?: IdentityId;
-  expiresIn?: number;
-  authMode?: AuthMode;
-  error?: string;
-}
-
+// Residual 867: LoginResponse dual deleted (zero consumers).
+// Desktop offline login returns OfflineLoginResponse (session-types); online auth uses AuthResponseDTO.
 // ============================================================================
 // Auth Status (aggregate status for renderer)
 // ============================================================================
