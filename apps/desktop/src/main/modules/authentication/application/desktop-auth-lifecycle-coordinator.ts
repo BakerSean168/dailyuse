@@ -47,6 +47,7 @@ import {
 // Reuse infrastructure AutoLoginResult; lifecycle adds hasValidSession for initialize/bootstrap.
 // Residual 883: intentional extension — required hasValidSession on lifecycle restore path.
 
+// Residual 887: AutoLoginResult re-export only (sole extension body in session-types).
 export type { AutoLoginResult } from '../infrastructure/session-types';
 
 export interface SessionRestoreResult extends InfrastructureSessionRestoreResult {

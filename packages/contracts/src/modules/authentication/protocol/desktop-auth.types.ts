@@ -156,6 +156,7 @@ export interface SessionRestoreResult {
 
 /**
  * Result of automatic login attempt.
+ * Residual 887: protocol DTO sole base shape (desktop infrastructure may extend with domain session).
  */
 export interface AutoLoginResult {
   ok: boolean;

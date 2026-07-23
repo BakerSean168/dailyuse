@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 883: SessionRestoreResult intentional layered extension keep-boundary.
  * Protocol DTO base → infrastructure (+ domain session) → lifecycle (required hasValidSession).
+ * Residual 887 (soft): AutoLoginResult layered extension keep-boundary
+ *   (auto-login-result-extension-keep-boundary.surface.spec.ts).
  * Not an exact dual to collapse; each layer stays a separate interface body.
  * Does not flip §13.2 checkboxes.
  */

@@ -25,7 +25,9 @@ export interface SessionRestoreResult extends ContractSessionRestoreResult {
   session?: AuthSession;
 }
 
-/** Extended auto-login result (includes domain objects). */
+/** Extended auto-login result (includes domain objects).
+ * Residual 887: intentional extension of contracts AutoLoginResult (+ domain session).
+ */
 export interface AutoLoginResult extends ContractAutoLoginResult {
   session?: AuthSession;
 }
