@@ -9,6 +9,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 867 (soft): contracts LoginResponse dual deleted; OfflineLoginResponse remains sole offline result.
  * Residual 873 (soft): OfflineLoginResponse dual retired — sole body in contracts desktop-auth.types.
+ * Residual 889 (soft): SessionStatus extension keep-boundary
+ *   (session-status-extension-keep-boundary.surface.spec.ts).
  */
 describe('desktop auth session type export single-track surface', () => {
   const dir = __dirname;

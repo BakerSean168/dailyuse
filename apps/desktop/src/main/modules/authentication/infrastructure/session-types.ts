@@ -32,7 +32,9 @@ export interface AutoLoginResult extends ContractAutoLoginResult {
   session?: AuthSession;
 }
 
-/** Session status (SessionStatusDTO + device; residual 867: drop bogus Omit<'device'>). */
+/** Session status (SessionStatusDTO + device; residual 867: drop bogus Omit<'device'>).
+ * Residual 889: intentional extension — required device (DeviceInfoClientDTO); not type-alias dual.
+ */
 export interface SessionStatus extends SessionStatusDTO {
   device: DeviceInfoClientDTO;
 }

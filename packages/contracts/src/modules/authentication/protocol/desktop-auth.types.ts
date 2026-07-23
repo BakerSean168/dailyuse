@@ -169,6 +169,7 @@ export interface AutoLoginResult {
 
 /**
  * Session status DTO for IPC transport.
+ * Residual 889: protocol sole base shape (desktop SessionStatus may extend with required device).
  */
 export interface SessionStatusDTO {
   hasActiveSession: boolean;
