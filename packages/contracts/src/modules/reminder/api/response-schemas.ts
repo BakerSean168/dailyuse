@@ -101,7 +101,8 @@ export const ReminderTemplateListResponseSchema = z.object({
 // ============ ReminderGroup Response Schema ============
 
 /**
- * 与 ReminderGroupClientDTO 严格对齐的响应 schema。
+ * Residual 827: ReminderGroupClientDTO dual retired — sole ReminderGroupResponseSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/reminder-group-client.ts).
  */
 export const ReminderGroupResponseSchema = z.object({
   id: brandedId<ReminderGroupId>(),
@@ -130,6 +131,8 @@ export const ReminderGroupListResponseSchema = z.object({
 });
 
 // ============ ReminderHistory Response Schema ============
+// Residual 827: ReminderHistoryClientDTO dual retired — sole ReminderHistoryResponseSchema + z.infer
+// (semantic type is z.infer alias in entities/reminder-history-client.ts).
 
 export const ReminderHistoryResponseSchema = z.object({
   id: brandedId<ReminderHistoryId>(),

@@ -1,32 +1,11 @@
 /**
  * Reminder History Entity - Client Interface
+ *
+ * Residual 827: ReminderHistoryClientDTO dual retired — sole ReminderHistoryResponseSchema + z.infer.
  */
 
-import type {
-  ReminderTemplateId,
-  ReminderHistoryId,
-  TransferDate,
-} from '../../../primitives';
-import type { TriggerResult } from '../value-objects/trigger-result';
-import type { NotificationChannel } from '../value-objects/notification-channel';
+import type { z } from 'zod';
+import { ReminderHistoryResponseSchema } from '../api/response-schemas';
 
-// ============ DTO Definitions ============
-
-/**
- * Reminder History Client DTO
- */
-export interface ReminderHistoryClientDTO {
-  id: ReminderHistoryId;
-  templateId: ReminderTemplateId;
-  triggeredAt: TransferDate;
-  result: TriggerResult;
-  error: string | null;
-  notificationSent: boolean;
-  notificationChannels: NotificationChannel[] | null;
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-}
-
-/** Static factory method interface for Reminder History Client. */
+// Residual 827: ReminderHistoryClientDTO dual retired — OpenAPI + transport use ReminderHistoryResponseSchema.
+export type ReminderHistoryClientDTO = z.infer<typeof ReminderHistoryResponseSchema>;

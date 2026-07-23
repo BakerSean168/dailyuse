@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 733: reminder active-hours / group-stats dual bodies retired.
  * ActiveHoursConfigDTO / GroupStatsDTO reuse *Schema only (VO-owned).
+  *
+ * Soft residual 827: ReminderGroupClientDTO dual retired via ReminderGroupResponseSchema
+ * (see reminder-group-history-client-dto-dual surface).
  */
 describe('reminder hours/stats dual retired (residual 733)', () => {
   const apiDir = __dirname;

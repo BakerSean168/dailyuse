@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 693: reminder list response dual bodies retired.
  * ReminderTemplateListRes / ReminderGroupListRes reuse *ListResponseSchema only.
+ *
+ * Soft residual 827: ReminderGroupClientDTO / ReminderHistoryClientDTO duals retired
+ * (see reminder-group-history-client-dto-dual surface).
  */
 describe('reminder list response dual retired (residual 693)', () => {
   const apiDir = __dirname;
