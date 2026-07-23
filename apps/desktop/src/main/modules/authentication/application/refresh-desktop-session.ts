@@ -9,6 +9,7 @@ import {
   type AuthFlowResult,
 } from './auth-flow-types';
 
+// Residual 895: application online refresh AuthFlowResult (≠ protocol TokenRefreshResult / RefreshSessionResponse).
 export type DesktopRefreshResult = AuthFlowResult<AuthResponseDTO>;
 
 interface RefreshDesktopSessionDependencies {
