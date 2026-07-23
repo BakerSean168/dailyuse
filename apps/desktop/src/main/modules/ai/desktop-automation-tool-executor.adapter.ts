@@ -11,8 +11,6 @@ import { createGoalPowerSyncModule } from '@dailyuse/goal';
 import { createReminderPowerSyncModule } from '@dailyuse/reminder';
 import { createTaskPowerSyncModule } from '@dailyuse/task';
 import {
-  DayOfWeek,
-  RecurrenceFrequency,
   TaskGoalBindingTrigger,
   TaskType,
 } from '@dailyuse/contracts/task';
@@ -21,7 +19,9 @@ import { createLogger } from '@dailyuse/utils/logger';
 // Residual 1007: sole reminder time helpers (local dual retired).
 // Residual 1009: sole readNestedNumber (local dual retired).
 // Residual 1013: sole buildReminderTemplateInput (local dual retired).
+// Residual 1015: sole buildRecurrenceRule (local dual retired).
 import {
+  buildRecurrenceRule,
   buildReminderTemplateInput,
   readNestedNumber,
 } from '@dailyuse/utils/shared';
@@ -30,8 +30,8 @@ import { DesktopAnalyticsReadAdapter } from './desktop-analytics-read.adapter';
 import { DesktopKnowledgeSourceAdapter } from './desktop-knowledge-source.adapter';
 
 const logger = createLogger('DesktopAutomationToolExecutor');
-// Residual 1013: buildReminderTemplateInput elevated to @dailyuse/utils/shared.
-// Residual 1011/1009/1007: related helpers elevated to @dailyuse/utils/shared.
+// Residual 1015: buildRecurrenceRule elevated to @dailyuse/utils/shared.
+// Residual 1013/1011/1009/1007: related helpers elevated to @dailyuse/utils/shared.
 
 export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolExecutorPort {
   private readonly goalModule;
@@ -164,7 +164,7 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
               timePoint: null,
               timeRange: null,
             },
-            recurrenceRule: this.buildRecurrenceRule(taskTemplate.cadence),
+            recurrenceRule: buildRecurrenceRule(taskTemplate.cadence),
             reminderConfig: null,
             importance: taskTemplate.importance,
             folderId: null,
@@ -277,27 +277,4 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
     return actions;
   }
 
-  private buildRecurrenceRule(cadence: 'daily' | 'weekly' | 'once') {
-    if (cadence === 'once') {
-      return null;
-    }
-
-    if (cadence === 'weekly') {
-      return {
-        frequency: RecurrenceFrequency.Weekly,
-        interval: 1,
-        daysOfWeek: [new Date().getDay() as (typeof DayOfWeek)[keyof typeof DayOfWeek]],
-        endDate: null,
-        occurrences: null,
-      };
-    }
-
-    return {
-      frequency: RecurrenceFrequency.Daily,
-      interval: 1,
-      daysOfWeek: [],
-      endDate: null,
-      occurrences: null,
-    };
-  }
 }
