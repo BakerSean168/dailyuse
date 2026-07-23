@@ -13,6 +13,9 @@
  * @module patterns/scheduler
  */
 
+// Residual 1039: sole MinHeap lives in patterns; schedule dual file deleted.
+
+
 /**
  * 堆元素接口
  */

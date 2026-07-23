@@ -8,6 +8,9 @@
  * @module patterns/scheduler
  */
 
+// Residual 1039: sole schedule timer lives in patterns; schedule dual file deleted.
+
+
 /**
  * Timer 抽象接口
  */
