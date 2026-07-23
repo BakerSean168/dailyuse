@@ -8,6 +8,7 @@ import type { ImportanceLevel } from '../../../shared/index';
 
 /**
  * 渠道偏好配置
+ * Residual 877: sole channel boolean-flags shape (ChannelConfig is type alias).
  */
 export interface ChannelPreference {
   inApp: boolean;

@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 851: CategoryPreferenceDTO / NotificationActionDTO / DoNotDisturbConfigDTO /
  * NotificationMetadataDTO dual bodies retired.
  * Sole VO interface + `export type XDTO = X` for each exact-match pair.
+ * Residual 877 (soft): ChannelConfig dual retired via ChannelPreference type alias
+ *   (channel-config-preference-dual.surface.spec.ts).
  */
 describe('notification preference vo dto duals retired (residual 851)', () => {
   const voDir = __dirname;
