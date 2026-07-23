@@ -46,8 +46,14 @@ describe('goal automation plan dual retired (residual 705)', () => {
     );
   });
 
-  it('GenerateGoalAutomationRes still uses GoalAutomationPlanDTO semantic type', () => {
-    expect(dto).toContain('export interface GenerateGoalAutomationRes');
-    expect(dto).toContain('plan: GoalAutomationPlanDTO');
+  it('GenerateGoalAutomationRes nests GoalAutomationPlanSchema (residual 787 Res dual retired)', () => {
+    // Soft residual: residual 787 retired Res interface dual; plan nests schema.
+    expect(dto).toContain('Residual 787');
+    expect(dto).toContain('export const GenerateGoalAutomationResSchema = z.object({');
+    expect(dto).toContain(
+      'export type GenerateGoalAutomationRes = z.infer<typeof GenerateGoalAutomationResSchema>',
+    );
+    expect(dto).toContain('plan: GoalAutomationPlanSchema');
+    expect(dto).not.toMatch(/export interface GenerateGoalAutomationRes\b/);
   });
 });

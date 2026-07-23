@@ -6,6 +6,7 @@ import {
   GeneratedGoalDraftSchema,
   KeyResultPreviewSchema,
 } from '../dtos/goal-generation-result.dto';
+import { TokenUsageSchema } from '../value-objects/token-usage';
 
 // Residual 719: GeneratedGoalDraftSchema / KeyResultPreviewSchema live in
 // goal-generation-result.dto.ts (sole nested draft shapes); re-exported here
@@ -91,17 +92,15 @@ export const GoalAutomationExecutedActionSchema = z.object({
 export type GoalAutomationExecutedAction = z.infer<typeof GoalAutomationExecutedActionSchema>;
 
 
-export interface GenerateGoalAutomationRes {
-  summary: string;
-  requiresConfirmation: boolean;
-  plan: GoalAutomationPlanDTO;
-  actions: GoalAutomationAction[];
-  executedActions?: GoalAutomationExecutedAction[];
-  providerId: AiProviderConfigId;
-  tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  processingTimeMs: number;
-}
+// Residual 787: GenerateGoalAutomationRes dual retired — sole ResSchema + z.infer.
+export const GenerateGoalAutomationResSchema = z.object({
+  summary: z.string(),
+  requiresConfirmation: z.boolean(),
+  plan: GoalAutomationPlanSchema,
+  actions: z.array(GoalAutomationActionSchema),
+  executedActions: z.array(GoalAutomationExecutedActionSchema).optional(),
+  providerId: brandedId<AiProviderConfigId>(),
+  tokenUsage: TokenUsageSchema,
+  processingTimeMs: z.number(),
+});
+export type GenerateGoalAutomationRes = z.infer<typeof GenerateGoalAutomationResSchema>;
