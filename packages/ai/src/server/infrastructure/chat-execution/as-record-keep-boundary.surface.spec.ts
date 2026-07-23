@@ -10,6 +10,7 @@ import { toRecord } from '../../../../../data-portability/src/server/application
  * - data-portability projection toRecord: parseJsonField then plain-object or undefined
  * Soft residual 1095: parseJsonField keep-boundary remains (toRecord depends on it).
  * Soft residual 1089: isRecord plain-object vs envelope arrays remains separate.
+ * Soft residual 1101: toTimestamp keep-boundary family (null/undefined/positive/0-fallback).
  * Does not flip §13.2 checkboxes.
  */
 describe('asRecord/toRecord cross-package keep-boundary (residual 1099)', () => {

@@ -1,5 +1,6 @@
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 
+// Soft residual 1101: presentation 0-fallback toTimestamp keep-boundary (≠ projection/AI/notification).
 function toTimestamp(value: number | string | null | undefined): number {
   if (value === null || value === undefined) {
     return 0;

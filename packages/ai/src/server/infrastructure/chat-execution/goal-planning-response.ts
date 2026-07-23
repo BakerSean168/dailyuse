@@ -166,6 +166,8 @@ function toNumber(value: unknown): number | undefined {
   return undefined;
 }
 
+// Residual 1101 keep-boundary: positive finite number or Date.parse string → number|undefined.
+// Soft residual 1101: data-portability projection toTimestamp (any number/Date) + notification null (no force-merge).
 function toTimestamp(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
     return Math.round(value);
