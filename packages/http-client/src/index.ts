@@ -43,6 +43,12 @@ export {
   classifyNetworkErrorMessage,
   statusToResultCode,
   statusToResultError,
+  translateResultErrorMessage,
+} from './result-error';
+export type {
+  ResultErrorTranslateFn,
+  TranslateResultErrorOptions,
+  ResultErrorMessageKey,
 } from './result-error';
 
 // ── Factories ──

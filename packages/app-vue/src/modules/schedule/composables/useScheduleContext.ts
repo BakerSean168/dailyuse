@@ -1,3 +1,6 @@
+/**
+ * Residual 973: createComposableHandleError sole factory.
+ */
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useScheduleStore } from '../stores/schedule-store';
@@ -5,6 +8,7 @@ import { SCHEDULE_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { IScheduleService } from '../../../di/types';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 
 export interface ScheduleContext {
   store: ReturnType<typeof useScheduleStore>;
@@ -20,11 +24,10 @@ export function createScheduleContext(): ScheduleContext {
   const store = useScheduleStore();
   const savingId = ref<string | null>(null);
 
-  function handleError(error: unknown, fallbackKey: string): void {
-    const message = translateResultError(error, t, { fallbackKey });
-    store.setError(message);
-    console.error(message);
-  }
+  const handleError = createComposableHandleError({
+    t,
+    setError: (message) => store.setError(message),
+  });
 
   return {
     store,

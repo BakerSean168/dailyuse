@@ -10,6 +10,7 @@ import type { AIExecutionLogInput } from '../../application/ports';
  * Soft residual 969: knowledge-index value helpers dual retired
  *   (knowledge-index-value-helpers-dual.surface.spec.ts).
  * Soft residual 972: tip focused suite numbers track Residual 972 evidence tip (277/1219).
+ * Soft residual 973: createComposableHandleError dual retired (packages/app-vue/src/shared/utils/create-composable-handle-error-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('withObservabilityPayload dual retired (residual 971)', () => {

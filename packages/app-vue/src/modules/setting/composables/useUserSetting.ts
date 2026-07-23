@@ -1,4 +1,5 @@
 /**
+ * Residual 973: createComposableHandleError sole factory.
  * useUserSetting - 设置模块主 composable
  *
  * 通过 inject 获取 setting client seam。
@@ -20,6 +21,7 @@ import type {
   UserSettingPreferences,
 } from '@dailyuse/contracts/setting';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 
 export function useUserSetting() {
   const { t } = useI18n();
@@ -32,11 +34,10 @@ export function useUserSetting() {
   const userSetting = computed(() => store.userSetting);
   const defaults = computed(() => store.defaults);
 
-  function handleError(error: unknown, fallbackKey: string): void {
-    const message = translateResultError(error, t, { fallbackKey });
-    store.setError(message);
-    console.error(message);
-  }
+  const handleError = createComposableHandleError({
+    t,
+    setError: (message) => store.setError(message),
+  });
 
   /** 获取指定分类设置 */
   function getCategory<K extends PreferenceCategory>(
