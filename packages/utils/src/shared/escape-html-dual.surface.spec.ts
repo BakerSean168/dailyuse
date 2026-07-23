@@ -7,6 +7,8 @@ import { escapeHtml } from './escape-html';
  * Residual 943: escapeHtml dual retired.
  * Sole body in @dailyuse/utils/shared/escape-html; desktop main + app-vue
  * safe-markdown import it (local function duals dropped).
+ * Residual 945 (soft): formatZodErrors dual retired
+ *   (result/format-zod-errors-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('escapeHtml dual retired (residual 943)', () => {

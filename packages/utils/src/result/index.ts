@@ -72,9 +72,11 @@ export type {
 
 export {
   expressAdapter,
-  formatZodErrors,
   type ExpressAdapterOptions,
 } from './express-adapter';
+
+// Residual 945: formatZodErrors sole body (not adapter-local dual).
+export { formatZodErrors } from './format-zod-errors';
 
 // ============================================================================
 // IPC Adapter

@@ -31,13 +31,15 @@
 import {
   extractStructuredResultError,
   type Result,
-  type ResultErrorDetail,
   isOk,
   errorCodeToHttpStatus,
   createHttpResponseBuilder,
 } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import { mapPrismaError } from '../errors/prisma-error-mapper';
+// Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
+import { formatZodErrors } from './format-zod-errors';
+export { formatZodErrors };
 
 // ============================================================================
 // Types
@@ -164,19 +166,6 @@ function inferDeviceType(userAgent: string | null | undefined): string {
   if (ua.includes('ipad') || ua.includes('tablet')) return 'Tablet';
   if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) return 'Mobile';
   return 'Browser';
-}
-
-/**
- * Format Zod issues into ResultErrorDetail array
- */
-export function formatZodErrors(
-  issues: Array<{ path: PropertyKey[]; message: string }>,
-): ResultErrorDetail[] {
-  return issues.map((issue) => ({
-    field: issue.path.map(String).join('.'),
-    code: 'INVALID_FIELD',
-    message: issue.message,
-  }));
 }
 
 // ============================================================================

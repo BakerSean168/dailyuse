@@ -30,11 +30,12 @@ import {
   extractStructuredResultError,
   type Result,
   type IpcResult,
-  type ResultErrorDetail,
   toIpcResult,
   fail,
 } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
+// Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
+import { formatZodErrors } from './format-zod-errors';
 
 // ============================================================================
 // Types
@@ -134,19 +135,6 @@ interface ZodLikeSchema<T> {
   ):
     | { success: true; data: T }
     | { success: false; error: { issues: Array<{ path: PropertyKey[]; message: string }> } };
-}
-
-/**
- * Format Zod issues into ResultErrorDetail array
- */
-function formatZodErrors(
-  issues: Array<{ path: PropertyKey[]; message: string }>,
-): ResultErrorDetail[] {
-  return issues.map((issue) => ({
-    field: issue.path.map(String).join('.'),
-    code: 'INVALID_FIELD',
-    message: issue.message,
-  }));
 }
 
 /**
