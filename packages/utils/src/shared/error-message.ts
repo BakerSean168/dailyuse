@@ -1,5 +1,6 @@
 /**
- * Residual 999: sole errorMessage helper for AI runtime + app-vue local vault.
+ * Residual 999 / Residual 1019: sole errorMessage helper for AI runtime, app-vue local vault,
+ * and database CLI scripts (toErrorMessage alias import).
  * Coerces unknown errors to a human-readable message string.
  */
 

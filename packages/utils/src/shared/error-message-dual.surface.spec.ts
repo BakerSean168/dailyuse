@@ -6,8 +6,9 @@ import { errorMessage } from './error-message';
 /**
  * Residual 999: errorMessage dual retired (AI runtime + app-vue local vault).
  * Sole body in @dailyuse/utils/shared/error-message.
- * Soft residual 1018: tip focused suite numbers track Residual 1018 evidence tip (299/1299).
- * Soft residual: database knowledge-index scripts keep local toErrorMessage (CLI scripts).
+ * Soft residual 1018: tip focused suite numbers track Residual 1018 evidence tip (299/1299)
+ *   until residual 1020 suite re-run.
+ * Soft residual 1019: database CLI scripts dual retired onto this sole (toErrorMessage alias).
  * Does not flip §13.2 checkboxes.
  */
 describe('errorMessage dual retired (residual 999)', () => {
@@ -54,10 +55,38 @@ describe('errorMessage dual retired (residual 999)', () => {
     }
   });
 
-  it('database knowledge-index scripts remain keep-boundary (local toErrorMessage)', () => {
-    expect(databaseScript).toMatch(/function toErrorMessage\b/);
-    expect(databaseScript).toContain('error instanceof Error');
-    expect(databaseScript).not.toContain('@dailyuse/utils/shared');
+  it('database CLI scripts dual retired onto sole (residual 1019)', () => {
+    for (const [label, source] of [
+      ['prepare-ai-knowledge-index-pgvector', databaseScript],
+      [
+        'bootstrap-ai-knowledge-index',
+        readFileSync(
+          resolve(sharedDir, '../../../database/scripts/bootstrap-ai-knowledge-index.ts'),
+          'utf8',
+        ),
+      ],
+      [
+        'verify-ai-knowledge-index',
+        readFileSync(
+          resolve(sharedDir, '../../../database/scripts/verify-ai-knowledge-index.ts'),
+          'utf8',
+        ),
+      ],
+      [
+        'prepare-editor-workspace-natural-key',
+        readFileSync(
+          resolve(sharedDir, '../../../database/scripts/prepare-editor-workspace-natural-key.ts'),
+          'utf8',
+        ),
+      ],
+    ] as const) {
+      expect(source, label).toContain('Residual 1019');
+      expect(source, label).toContain(
+        "import { errorMessage as toErrorMessage } from '@dailyuse/utils/shared'",
+      );
+      expect(source, label).not.toMatch(/function toErrorMessage\b/);
+      expect(source, label).toContain('toErrorMessage(');
+    }
   });
 
   it('coerces Error and non-Error values to message strings', () => {

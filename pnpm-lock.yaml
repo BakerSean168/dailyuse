@@ -1446,6 +1446,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@dailyuse/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@prisma/adapter-pg':
         specifier: 7.8.0
         version: 7.8.0

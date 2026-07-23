@@ -1,10 +1,9 @@
 import { Client } from 'pg';
 import { loadWorkspaceEnv } from '../src/load-workspace-env';
+// Residual 1019: sole errorMessage (local toErrorMessage dual retired).
+import { errorMessage as toErrorMessage } from '@dailyuse/utils/shared';
 import { prepareEditorWorkspaceNaturalKey } from '../src/schema/editor-workspace-natural-key';
 
-function toErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
 
 async function main(): Promise<void> {
   loadWorkspaceEnv();

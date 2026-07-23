@@ -1,5 +1,7 @@
 import { Client } from 'pg';
 import { loadWorkspaceEnv } from '../src/load-workspace-env';
+// Residual 1019: sole errorMessage (local toErrorMessage dual retired).
+import { errorMessage as toErrorMessage } from '@dailyuse/utils/shared';
 
 const KNOWLEDGE_INDEX_TABLE = 'ai_knowledge_index_entries';
 const KNOWLEDGE_INDEX_SCHEMA = 'public';
@@ -64,13 +66,6 @@ function buildVectorLiteral(): string {
   return `[${Array.from({ length: RETRIEVAL_VECTOR_DIMENSION }, () => 0).join(',')}]`;
 }
 
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return String(error);
-}
 
 function printReport(report: SmokeReport, asJson: boolean): void {
   if (asJson) {
