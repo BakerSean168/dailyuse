@@ -20,6 +20,8 @@ import type {
 } from '@dailyuse/contracts/authentication';
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, ok } from '@dailyuse/contracts/result';
+// Residual 947: isRecord/hasDataKey duals retired — sole desktop http-envelope-guards.
+import { hasDataKey, isRecord } from '../../../utils/http-envelope-guards';
 
 // Residual 875: RegistrationRequestPayload dual retired — EmailRegisterCredentials sole shape.
 // Residual 931: RegisterRequest name dual fully retired.
@@ -70,14 +72,6 @@ type AuthHttpEnvelope<T = unknown> = {
       };
   code?: string | number;
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object';
-}
-
-function hasDataKey(body: unknown): body is AuthHttpEnvelope {
-  return isRecord(body) && 'data' in body;
-}
 
 function readEnvelopeData<T>(body: unknown): T | undefined {
   if (!hasDataKey(body)) {

@@ -12,6 +12,8 @@ import { describe, expect, it } from 'vitest';
  * Keep-boundary: RegisterApiResponse remains loose register payload (≠ strict AuthResponseDTO).
  * Residual 939 (soft): readErrorPayload uses AuthRemoteErrorData sole return
  *   (to-error-log-dual.surface.spec.ts).
+ * Residual 947 (soft): isRecord/hasDataKey dual retired
+ *   (main/utils/http-envelope-guards-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('desktop AuthRemoteApiResult dual retired (residual 933)', () => {

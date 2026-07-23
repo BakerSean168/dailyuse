@@ -15,6 +15,8 @@ import type {
 import { fail, ok, type Result } from '@dailyuse/contracts/result';
 import { createApiUrl } from '../../utils/api-config';
 import { toCloudAccessToken } from '../authentication/infrastructure/session-types';
+// Residual 947: isRecord/hasDataKey duals retired — sole desktop http-envelope-guards.
+import { hasDataKey, isRecord } from '../../utils/http-envelope-guards';
 
 /**
  * First-party knowledge-repository HTTP body.
@@ -30,14 +32,6 @@ interface HttpEnvelope<T> {
     context?: Record<string, unknown>;
   };
   message?: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object';
-}
-
-function hasDataKey(body: unknown): body is HttpEnvelope<unknown> {
-  return isRecord(body) && 'data' in body;
 }
 
 export interface KnowledgeRepositoryRemoteGatewayOptions {
