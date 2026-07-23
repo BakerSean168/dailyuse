@@ -1,7 +1,4 @@
-import { ensureTestDatabase } from '@dailyuse/test-utils/setup/database';
-
-export async function setup() {
-  await ensureTestDatabase();
-}
-
-export async function teardown() {}
+/**
+ * Residual 1037: integration-global-setup dual retired onto test-utils sole.
+ */
+export { setup, teardown } from '../../../test-utils/src/setup/integration-global-setup';

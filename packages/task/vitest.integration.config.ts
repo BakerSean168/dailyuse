@@ -28,7 +28,7 @@ export default defineConfig({
     testTimeout: 30000,
     passWithNoTests: false,
     env: createIntegrationTestEnv(),
-    globalSetup: [path.resolve(__dirname, './src/__tests__/integration-global-setup.ts')],
+    globalSetup: [path.resolve(__dirname, '../test-utils/src/setup/integration-global-setup.ts')], // Residual 1037 sole
     fileParallelism: false,
     sequence: {
       groupOrder: 1,
