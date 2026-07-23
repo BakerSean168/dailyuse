@@ -8,16 +8,11 @@ import {
   INTERNAL_TIMESTAMP_HEADER,
   signInternalRequest,
 } from './internal-ai-service-request-signer';
+// Residual 995: sole previewText (local dual retired).
+import { previewText } from '../../../shared/preview-text';
 
 const logger = createLogger('AIServiceInternalClient');
 
-function previewText(value: string, maxLength = 240): string {
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength - 3)}...`;
-}
 
 export interface AIServiceInternalClientOptions {
   baseUrl: string;

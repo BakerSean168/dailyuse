@@ -6,20 +6,11 @@ import type {
 import { createLogger } from '@dailyuse/utils/logger';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
+// Residual 995: sole previewText (local dual retired).
+import { previewText } from '../../../shared/preview-text';
 
 const logger = createLogger('AIServiceGoalAutomationAdapter');
 
-function previewText(value: string | undefined, maxLength = 220): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength - 3)}...`;
-}
 
 interface AIServiceGoalAutomationResponse {
   summary: string;
@@ -46,7 +37,7 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
     logger.info('ai-service goal automation adapter request started', {
       identityId: input.identityId,
       requestId: input.requestId,
-      ideaPreview: previewText(input.idea),
+      ideaPreview: previewText(input.idea, 220),
       category: input.category,
       timeframe: input.timeframe,
       includeKeyResults: input.includeKeyResults,
@@ -143,7 +134,7 @@ export class AIServiceGoalAutomationAdapter implements IGoalAutomationPlanningPo
     logger.info('ai-service goal automation adapter response completed', {
       identityId: input.identityId,
       requestId: input.requestId,
-      summary: previewText(payload.summary),
+      summary: previewText(payload.summary, 220),
       goalTitle: payload.goal.title,
       keyResultCount: payload.keyResults?.length ?? 0,
       taskTemplateCount: payload.taskTemplates?.length ?? 0,

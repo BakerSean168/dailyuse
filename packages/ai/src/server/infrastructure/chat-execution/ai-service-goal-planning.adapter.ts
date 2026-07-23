@@ -6,20 +6,11 @@ import type {
 import { createLogger } from '@dailyuse/utils/logger';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
+// Residual 995: sole previewText (local dual retired).
+import { previewText } from '../../../shared/preview-text';
 
 const logger = createLogger('AIServiceGoalPlanningAdapter');
 
-function previewText(value: string | undefined, maxLength = 200): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength - 3)}...`;
-}
 
 interface AIServiceGoalPlanningResponse {
   state?: GoalPlanningResult['state'];
@@ -44,7 +35,7 @@ export class AIServiceGoalPlanningAdapter implements IGoalPlanningPort {
     logger.info('ai-service goal planning adapter request started', {
       identityId: input.identityId,
       requestId: input.requestId,
-      ideaPreview: previewText(input.idea),
+      ideaPreview: previewText(input.idea, 200),
       category: input.category,
       timeframe: input.timeframe,
       includeKeyResults: input.includeKeyResults,

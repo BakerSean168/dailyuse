@@ -27,6 +27,8 @@ import {
   createAIRequestId,
   withAICostEstimate,
 } from './ai-observability';
+// Residual 995: sole previewText (local dual retired).
+import { previewText } from '../../../../shared/preview-text';
 
 const logger = createLogger('GenerateAIGoalUseCase');
 const SIDE_EFFECT_TOOLS = new Set<GoalAutomationAction['tool']>([
@@ -36,17 +38,6 @@ const SIDE_EFFECT_TOOLS = new Set<GoalAutomationAction['tool']>([
   'create_reminder',
 ]);
 
-function previewText(value: string | null | undefined, maxLength = 240): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength - 3)}...`;
-}
 
 function summarizeProviderConfig(providerConfig: {
   provider: string;
