@@ -8,16 +8,15 @@
  * Soft residual 1091: api PowerSync parseJsonLikeString keep-boundary (JSON-looking only; no force-merge).
  * Soft residual 1095: data-portability parseJsonField keep-boundary (unknown + passthrough; no force-merge).
  * Soft residual 1123: toDate always-Date+now vs toDateOrNull vs portable toDateString vs AI PowerSync Date|null.
+ * Soft residual 1127: extractErrorMessage dual retired onto errorMessage sole (withCause).
  */
 
-export function extractErrorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === 'string') return err;
-  return String(err);
-}
+// Residual 1127: extractErrorMessage dual retired onto errorMessage sole.
+import { errorMessage } from './error-message';
 
+// Residual 1127: extractErrorMessage dual retired — withCause uses errorMessage sole.
 export function withCause(message: string, err: unknown): string {
-  return `${message} [cause: ${extractErrorMessage(err)}]`;
+  return `${message} [cause: ${errorMessage(err)}]`;
 }
 
 export function fromDbDate(value: Date | string): Date {

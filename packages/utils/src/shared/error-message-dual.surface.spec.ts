@@ -8,6 +8,7 @@ import { errorMessage } from './error-message';
  * Sole body in @dailyuse/utils/shared/error-message.
  * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
  * Soft residual 1019: database CLI scripts dual retired onto this sole (toErrorMessage alias).
+ * Soft residual 1127: extractErrorMessage dual retired onto this sole (withCause).
  * Does not flip §13.2 checkboxes.
  */
 describe('errorMessage dual retired (residual 999)', () => {

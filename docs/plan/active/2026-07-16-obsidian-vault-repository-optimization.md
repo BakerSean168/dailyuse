@@ -8115,6 +8115,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
+> 续进展 2026-07-23（阶段 6 残留一千一百二十七轮）：utils **extractErrorMessage dual retired**（仍不打勾）——
+> withCause 改用 errorMessage sole；删除 extractErrorMessage 导出双轨；surface Residual 1127 锁。
 
 
 
@@ -9423,6 +9425,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百二十四轮：§13.2 focused evidence suite re-run (1464 tests, residuals 250–1123 locks, no checkbox changes)。
   残留一千一百二十五轮：§13.2 evidence tip refresh (1124 tip 338/1464) + open-items surface lock (no checkbox flips).
   残留一千一百二十六轮：§13.2 focused evidence suite re-run (1464 tests, residuals 250–1125 locks, no checkbox changes)。
+  残留一千一百二十七轮：retire extractErrorMessage dual onto errorMessage sole (withCause; no force-merge of other error helpers).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -9982,6 +9985,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百二十四轮：§13.2 focused evidence suite re-run（1464 tests，residuals 250–1123 锁；不改 checkbox）。
   残留一千一百二十五轮：§13.2 evidence tip 刷新（1124 tip 338/1464）+ open-items surface 锁（不改 checkbox）。
   残留一千一百二十六轮：§13.2 focused evidence suite re-run（1464 tests，residuals 250–1125 锁；不改 checkbox）。
+  残留一千一百二十七轮：retire extractErrorMessage dual onto errorMessage sole（withCause；不强制合并其他错误助手）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11153,6 +11157,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百二十四轮：tip 上 1464 项 focused evidence suite（含 residual 250–1123 toDate/toDateString keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
   残留一千一百二十五轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千一百二十六轮：tip 上 1464 项 focused evidence suite（含 residual 250–1125 tip refresh 锁）通过；仍不构成全量 PR 门禁证据。
+  残留一千一百二十七轮：extractErrorMessage dual retired surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
