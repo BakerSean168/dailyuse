@@ -251,14 +251,8 @@ export const GenerateInstancesSchema = z.object({
 export type GenerateInstancesReq = z.infer<typeof GenerateInstancesSchema>;
 export type GenerateInstancesRes = TaskInstanceClientDTO[];
 
-export const BindToGoalSchema = z.object({
-  goalId: brandedId<GoalId>(),
-  keyResultId: brandedId<KeyResultId>(),
-  goalRecordValue: z.number().nonnegative(),
-  progressTrigger: z.enum(TaskGoalBindingTrigger).default(TaskGoalBindingTrigger.PerInstance),
-});
-
-export type BindToGoalReq = z.infer<typeof BindToGoalSchema>;
+// Residual 667: bind-to-goal request reuses TaskGoalBindingSchema (no dual body).
+export type BindToGoalReq = z.infer<typeof TaskGoalBindingSchema>;
 export type BindToGoalRes = TaskTemplateClientDTO;
 
 export type UnbindFromGoalReq = void;

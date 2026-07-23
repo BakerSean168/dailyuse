@@ -259,7 +259,7 @@ describe('task-template route contracts', () => {
     ).toBe(false);
   });
 
-  it('POST /{id}/bind-goal body uses BindToGoalSchema', () => {
+  it('POST /{id}/bind-goal body uses TaskGoalBindingSchema', () => {
     const registry = new TestOpenApiRegistry();
     registerAll(registry);
 

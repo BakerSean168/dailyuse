@@ -21,7 +21,7 @@ import {
   TaskTemplateResponseSchema,
   TaskTemplateListResponseSchema,
   GenerateInstancesSchema,
-  BindToGoalSchema,
+  TaskGoalBindingSchema,
   TaskInstanceResponseSchema,
   ListTaskTemplateFiltersSchema,
   TaskTemplateInstancesQuerySchema,
@@ -334,7 +334,7 @@ export function registerTaskTemplateRoutes(
       summary: '绑定任务模板到目标',
       request: {
         params: z.object({ id: brandedId<TaskTemplateId>() }),
-        body: { content: { 'application/json': { schema: BindToGoalSchema } } },
+        body: { content: { 'application/json': { schema: TaskGoalBindingSchema } } },
       },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '绑定成功'),

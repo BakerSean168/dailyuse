@@ -16,7 +16,7 @@ import {
   CreateTaskTemplateSchema,
   UpdateTaskTemplateSchema,
   GenerateInstancesSchema,
-  BindToGoalSchema,
+  TaskGoalBindingSchema,
 } from '@dailyuse/contracts/task';
 import type {
   TaskTemplateClientDTO,
@@ -322,7 +322,7 @@ export class TaskTemplateController {
     input: unknown,
     ctx: Context,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    const parsed = BindToGoalSchema.safeParse(input);
+    const parsed = TaskGoalBindingSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
