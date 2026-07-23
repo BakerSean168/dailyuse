@@ -201,6 +201,8 @@ export const SendMessageResSchema = z.object({
   processingTimeMs: z.number(),
 });
 
+// Residual 691: AI chat list OpenAPI schemas are the sole list response shapes
+// (ConversationListRes / MessageListRes are z.infer aliases).
 export const ConversationListResSchema = z.object({
   data: z.array(AIConversationClientDTOSchema),
   total: z.number(),

@@ -3,6 +3,10 @@ import { brandedId } from '../../../primitives';
 import type { AiConversationId, AiProviderConfigId } from '../../../primitives';
 import type { AIConversationClientDTO } from '../aggregates/ai-conversation-client';
 import type { MessageClientDTO } from '../entities/message-client';
+import {
+  ConversationListResSchema,
+  MessageListResSchema,
+} from './response-schemas';
 
 /** Residual 673: shared conversation name body (create + update). */
 export const ConversationNameSchema = z.object({
@@ -22,12 +26,8 @@ export const ListConversationsSchema = z.object({
 });
 export type ListConversationsQuery = z.infer<typeof ListConversationsSchema>;
 
-export interface ConversationListRes {
-  data: AIConversationClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+// Residual 691: list response dual body retired — OpenAPI + transport use ConversationListResSchema.
+export type ConversationListRes = z.infer<typeof ConversationListResSchema>;
 
 export type GetConversationReq = void;
 export type GetConversationRes = AIConversationClientDTO;
@@ -66,9 +66,5 @@ export const ListMessagesSchema = z.object({
 });
 export type ListMessagesQuery = z.infer<typeof ListMessagesSchema>;
 
-export interface MessageListRes {
-  data: MessageClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+// Residual 691: list response dual body retired — OpenAPI + transport use MessageListResSchema.
+export type MessageListRes = z.infer<typeof MessageListResSchema>;
