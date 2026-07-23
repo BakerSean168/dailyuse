@@ -1,3 +1,6 @@
+/**
+ * Residual 963: findSSEBoundary sole import (packages/ai/src/shared/find-sse-boundary.ts).
+ */
 import type {
   ChatExecutionCompleteInput,
   ChatExecutionCompleteResult,
@@ -7,6 +10,7 @@ import type {
 } from '../../application/ports';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
+import { findSSEBoundary } from '../../../shared/find-sse-boundary';
 
 interface AIServiceChatCompleteResponse {
   content: string;
@@ -195,16 +199,3 @@ async function* parseSSE(
   }
 }
 
-function findSSEBoundary(buffer: string): { index: number; length: number } | null {
-  const crlfBoundaryIndex = buffer.indexOf('\r\n\r\n');
-  if (crlfBoundaryIndex >= 0) {
-    return { index: crlfBoundaryIndex, length: 4 };
-  }
-
-  const lfBoundaryIndex = buffer.indexOf('\n\n');
-  if (lfBoundaryIndex >= 0) {
-    return { index: lfBoundaryIndex, length: 2 };
-  }
-
-  return null;
-}

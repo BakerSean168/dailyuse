@@ -1,3 +1,6 @@
+/**
+ * Residual 963: findSSEBoundary sole import (packages/ai/src/shared/find-sse-boundary.ts).
+ */
 import type { IAIMessageApiClient, IResultHttpClient } from '../types';
 import type { Result, ResultErrorDetail } from '@dailyuse/contracts/result';
 import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
@@ -5,6 +8,7 @@ import {
   createResultClientError,
   createResultClientErrorFromResponse,
 } from '../result-client-error';
+import { findSSEBoundary } from '../../../shared/find-sse-boundary';
 
 export class AIMessageHttpAdapter implements IAIMessageApiClient {
   private readonly baseUrl = '/ai/chat/messages';
@@ -169,22 +173,6 @@ async function* parseSSE(
       };
     }
   }
-}
-
-function findSSEBoundary(buffer: string): { index: number; length: number } | null {
-  // Support both CRLF and LF line endings because different servers / proxies
-  // may normalize SSE framing differently.
-  const crlfBoundaryIndex = buffer.indexOf('\r\n\r\n');
-  if (crlfBoundaryIndex >= 0) {
-    return { index: crlfBoundaryIndex, length: 4 };
-  }
-
-  const lfBoundaryIndex = buffer.indexOf('\n\n');
-  if (lfBoundaryIndex >= 0) {
-    return { index: lfBoundaryIndex, length: 2 };
-  }
-
-  return null;
 }
 
 function isAbortLikeError(error: unknown): boolean {
