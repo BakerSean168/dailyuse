@@ -6849,6 +6849,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 
+> 续进展 2026-07-23（阶段 6 残留八百九十一轮）：§13.2 **诚实完成定义再审计**（仍不打勾）——
+> 3 项未打勾仍为部分/外部阻塞（三入口、Agent 确认边界、全量 PR 门禁）；
+> tip focused suite **241/1105** + GOV_EXIT:0；surface Residual 891 锁 open items。
+> 状态保持 **实施中**；不改 §13.2 checkbox；PR 就绪仍为否。
+
 
 
 
@@ -7014,9 +7019,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-22（残留六百二十六轮刷新：三入口/Agent/门禁仍为部分或外部阻塞；不改 checkbox）。
+> 审计时间 2026-07-23（Residual 891 诚实刷新：三入口/Agent/门禁仍为部分或外部阻塞；**不改 checkbox**）。
 > 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
-> focused evidence suite tip（残留六百二十六轮）：**113 文件 / 724 测试** + governance-check GOV_EXIT:0。
+> focused evidence suite tip（残留八百九十轮）：**241 文件 / 1105 测试** + governance-check GOV_EXIT:0。
+> Residual 891：再确认 3 项仍未打勾——账密/GitHub/访客（部分）、Agent 确认边界（部分）、全量 PR 门禁（部分+外部阻塞）。
 > 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
 > 阶段 6 dual 收口（残留 250–300；四百八十七轮补 task DAG *ViewModel 消费者收口；五百三十九轮 portable editor_* / knowledge routes / /note strip 再锁）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
 > Host task.create 进程内产品路径（残留 427–491 + 501–589）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
@@ -7901,6 +7907,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留八百八十八轮：§13.2 focused evidence suite re-run (1102 tests, residuals 250–887 locks, no checkbox changes)。
   残留八百八十九轮：SessionStatus extension keep-boundary (SessionStatusDTO + required device; VO enum separate).
   残留八百九十轮：§13.2 focused evidence suite re-run (1105 tests, residuals 250–889 locks, no checkbox changes)。
+  残留八百九十一轮：honest §13.2 DoD open-items re-audit (3 partial/external-block; no checkbox flips).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -8224,6 +8231,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留八百八十八轮：§13.2 focused evidence suite re-run（1102 tests，residuals 250–887 锁；不改 checkbox）。
   残留八百八十九轮：SessionStatus extension keep-boundary（SessionStatusDTO + device；VO enum 分离）。
   残留八百九十轮：§13.2 focused evidence suite re-run（1105 tests，residuals 250–889 锁；不改 checkbox）。
+  残留八百九十一轮：§13.2 诚实再审计（3 项部分/外部阻塞；不改 checkbox）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -9159,6 +9167,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留八百八十八轮：tip 上 1102 项 focused evidence suite（含 residual 250–887 AutoLoginResult keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
   残留八百八十九轮：SessionStatus extension keep-boundary surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留八百九十轮：tip 上 1105 项 focused evidence suite（含 residual 250–889 SessionStatus keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
+  残留八百九十一轮：§13.2 open-items honest re-audit surface 锁落地；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

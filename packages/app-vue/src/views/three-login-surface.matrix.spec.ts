@@ -1,4 +1,7 @@
 /**
+ * Residual 891 (soft): §13.2 open three-login item remains partial
+ *   (section-13-2-dod-open-items.surface.spec.ts).
+ *
  * ADR-034 / vault-plan three-login surface matrix + same-fixture journey.
  * Documents the product entry contract without mounting full OAuth or guest flows.
  * 三入口产品面契约：不启动完整 OAuth / 访客流程，只锁定平台入口边界。
