@@ -23,7 +23,13 @@ import { fail, ok } from '@dailyuse/contracts/result';
 
 // Residual 875: RegistrationRequestPayload dual retired — EmailRegisterCredentials sole shape.
 // Residual 931: RegisterRequest name dual fully retired.
+// Residual 933: LoginApiResult / RefreshApiResult / RegisterApiResult duals retired —
+//   AuthRemoteApiResult<T> is sole remote HTTP status+data envelope.
 
+/**
+ * Loose register success/error payload fields retained for legacy envelope variants.
+ * Keep-boundary vs strict AuthResponseDTO (identity/session nested shapes).
+ */
 export interface RegisterApiResponse extends Partial<AuthResponseDTO> {
   identityId?: string;
   sessionId?: string;
@@ -37,23 +43,14 @@ export interface RegisterApiResponse extends Partial<AuthResponseDTO> {
   error?: string;
 }
 
-export interface RegisterApiResult {
-  ok: boolean;
-  status: number;
-  data: RegisterApiResponse;
-}
+export type AuthRemoteErrorData = { message?: string; error?: string };
 
-export interface LoginApiResult {
+/** Sole remote HTTP status+data envelope for first-party auth gateway calls. */
+export type AuthRemoteApiResult<T> = {
   ok: boolean;
   status: number;
-  data: AuthResponseDTO | { message?: string; error?: string };
-}
-
-export interface RefreshApiResult {
-  ok: boolean;
-  status: number;
-  data: AuthResponseDTO | { message?: string; error?: string };
-}
+  data: T;
+};
 
 /**
  * First-party auth HTTP body. Memoflow API always serializes Result via HttpResponse
@@ -220,7 +217,7 @@ export class AuthRemoteGateway {
   async register(
     request: EmailRegisterCredentials,
     registerUrl: string = this.createRegisterUrl(),
-  ): Promise<RegisterApiResult> {
+  ): Promise<AuthRemoteApiResult<RegisterApiResponse>> {
     const response = await this.fetchImpl(registerUrl, {
       method: 'POST',
       headers: {
@@ -260,7 +257,7 @@ export class AuthRemoteGateway {
   async login(
     request: { email: string; password: string },
     loginUrl: string = this.createLoginUrl(),
-  ): Promise<LoginApiResult> {
+  ): Promise<AuthRemoteApiResult<AuthResponseDTO | AuthRemoteErrorData>> {
     const response = await this.fetchImpl(loginUrl, {
       method: 'POST',
       headers: {
@@ -299,7 +296,7 @@ export class AuthRemoteGateway {
   async refreshToken(
     request: RefreshSessionRequest,
     refreshUrl: string = this.createRefreshUrl(),
-  ): Promise<RefreshApiResult> {
+  ): Promise<AuthRemoteApiResult<AuthResponseDTO | AuthRemoteErrorData>> {
     const response = await this.fetchImpl(refreshUrl, {
       method: 'POST',
       headers: {

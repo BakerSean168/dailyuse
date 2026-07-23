@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
  * DesktopAuthFlowResult in auth-flow-types (application AuthFlowResult<AuthResponseDTO>).
  * Residual 895 (soft): layered keep-boundary vs TokenRefreshResult / RefreshSessionResponse
  *   (refresh-result-layered-keep-boundary.surface.spec.ts).
+ * Residual 933 (soft): AuthRemoteApiResult dual retired
+ *   (auth-remote-api-result-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('auth-flow-result named duals retired (residual 917)', () => {
