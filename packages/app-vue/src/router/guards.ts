@@ -1,13 +1,12 @@
 import type { NavigationGuard, RouteLocationNormalized } from 'vue-router';
+import { hasDesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 
+// Residual 909: detect via hasDesktopAuthApi (no inline invoke dual).
 function hasDesktopElectronBridge(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
-  return (
-    typeof (window as unknown as { electronAPI?: { invoke?: unknown } }).electronAPI?.invoke ===
-    'function'
-  );
+  return hasDesktopAuthApi(window);
 }
 
 function shouldUseHardLoginRedirect(option?: boolean): boolean {

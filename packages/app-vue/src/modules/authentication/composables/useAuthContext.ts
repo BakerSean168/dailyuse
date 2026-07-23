@@ -8,9 +8,11 @@ import { useAuthenticationStore } from '../stores/authentication-store';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { hasDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
 
+// Residual 909: detect via hasDesktopAuthApi (DesktopAuthApi sole body; no inline dual).
 export const isDesktopEnvironment = () =>
-  typeof window !== 'undefined' && typeof (window as unknown as { electronAPI?: { invoke?: unknown } }).electronAPI?.invoke === 'function';
+  typeof window !== 'undefined' && hasDesktopAuthApi(window);
 
 export interface AuthContext {
   store: ReturnType<typeof useAuthenticationStore>;

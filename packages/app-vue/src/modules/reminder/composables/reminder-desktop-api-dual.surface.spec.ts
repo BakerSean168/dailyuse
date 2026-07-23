@@ -9,6 +9,8 @@ import { describe, expect, it } from 'vitest';
  *   (shared/utils/desktop-bootstrap-api-dual.surface.spec.ts).
  * Residual 907 (soft): setting themeSync electronAPI dual retired
  *   (modules/setting/.../theme-sync-desktop-api-dual.surface.spec.ts).
+ * Residual 909 (soft): Window.electronAPI + desktop-detect duals retired
+ *   (shared/utils/electron-window-desktop-api-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('reminder DesktopApi dual retired (residual 905)', () => {

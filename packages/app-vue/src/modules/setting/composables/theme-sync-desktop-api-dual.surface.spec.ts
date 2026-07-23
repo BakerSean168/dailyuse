@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
  * useThemeSync uses DesktopAuthApi sole invoke-api shape (no local inline dual object type).
  * Residual 905 (soft): reminder DesktopApi dual retired
  *   (modules/reminder/.../reminder-desktop-api-dual.surface.spec.ts).
+ * Residual 909 (soft): Window.electronAPI + desktop-detect duals retired
+ *   (shared/utils/electron-window-desktop-api-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('theme-sync DesktopAuthApi dual retired (residual 907)', () => {
