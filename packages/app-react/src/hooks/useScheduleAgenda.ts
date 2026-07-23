@@ -27,6 +27,10 @@ export type ScheduleAgendaOptions = {
   daysAfter?: number;
 };
 
+/**
+ * Residual 1165 keep-boundary: schedule agenda startOfDay — Date in/out (local calendar day).
+ * Soft residual 1165: dashboard projection startOfDay uses timestamp ms in/out (no force-merge).
+ */
 function startOfDay(date: Date) {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);

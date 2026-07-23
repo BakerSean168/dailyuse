@@ -278,6 +278,8 @@ function normalizePercentage(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+// Residual 1165 keep-boundary: dashboard projection startOfDay — timestamp ms → timestamp ms.
+// Soft residual 1165: app-react agenda startOfDay takes/returns Date (no force-merge).
 function startOfDay(timestamp: number): number {
   const date = new Date(timestamp);
   date.setHours(0, 0, 0, 0);
