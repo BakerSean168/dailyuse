@@ -7770,6 +7770,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-23（阶段 6 残留一千零六十九轮）：governance **parseStringArray keep-boundary**（仍不打勾）——
 > package-local query array（empty→undefined + trim）≠ goal/utils persistence；不强制合并；
 > surface Residual 1069 锁。
+> 续进展 2026-07-23（阶段 6 残留一千零七十轮）：§13.2 聚焦证据套件复跑（含 residual 250–1069
+> governance parseStringArray keep-boundary 锁，不改 checkbox）——**319 文件 / 1383 测试**（app-vue 46/381、
+> ai 44/290、repository 7/38、contracts 130/385、governance 3/10、api 11/28、
+> desktop 21/59、utils 15/58、authentication 9/28、goal 6/22、web 2/8、patterns 1/4）+
+> governance-check GOV_EXIT:0；FAILED_EXITS: []。
+> 相对 residual 1068：governance +1 file / +6 tests（residual 1069 surface）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
+> GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
+> 状态保持 **实施中**；PR 就绪仍为否。
 
 
 
@@ -9020,6 +9029,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千零六十七轮：lock goal parseNumber/parseStringArray keep-boundary (vs utils query/persistence; no force-merge).
   残留一千零六十八轮：§13.2 focused evidence suite re-run (1377 tests, residuals 250–1067 locks, no checkbox changes)。
   残留一千零六十九轮：lock governance parseStringArray keep-boundary (vs goal/utils persistence; no force-merge).
+  残留一千零七十轮：§13.2 focused evidence suite re-run (1383 tests, residuals 250–1069 locks, no checkbox changes)。
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -9522,6 +9532,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千零六十七轮：lock goal parseNumber/parseStringArray keep-boundary（vs utils query/persistence；不强制合并）。
   残留一千零六十八轮：§13.2 focused evidence suite re-run（1377 tests，residuals 250–1067 锁；不改 checkbox）。
   残留一千零六十九轮：lock governance parseStringArray keep-boundary（vs goal/utils persistence；不强制合并）。
+  残留一千零七十轮：§13.2 focused evidence suite re-run（1383 tests，residuals 250–1069 锁；不改 checkbox）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -10636,6 +10647,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千零六十七轮：goal parseNumber/parseStringArray keep-boundary surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千零六十八轮：tip 上 1377 项 focused evidence suite（含 residual 250–1067 goal parseNumber/parseStringArray keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
   残留一千零六十九轮：governance parseStringArray keep-boundary surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留一千零七十轮：tip 上 1383 项 focused evidence suite（含 residual 250–1069 governance parseStringArray keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
