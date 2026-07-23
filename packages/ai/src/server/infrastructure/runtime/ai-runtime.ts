@@ -22,6 +22,9 @@ import {
 } from '@dailyuse/contracts/ai';
 import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
+
+// Residual 1121: asNonEmptyString sole (shared/as-non-empty-string).
+import { asNonEmptyString } from '../../../shared/as-non-empty-string';
 import { CapabilityResolver } from '../capability-resolver';
 import {
   buildHostTaskCreateStartResult,
@@ -286,8 +289,7 @@ function ensureAgentRunOwnedByIdentity(
 }
 
 function getStringInput(input: Record<string, unknown>, key: string): string | undefined {
-  const value = input[key];
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+  return asNonEmptyString(input[key]);
 }
 
 function getPositiveIntegerInput(input: Record<string, unknown>, key: string): number | undefined {
@@ -383,8 +385,7 @@ function getAgentRuntimeProviderMetadata(input: Record<string, unknown>): {
 }
 
 function getAgentEventDataString(event: AgentEvent, key: string): string | undefined {
-  const value = event.data[key];
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+  return asNonEmptyString(event.data[key]);
 }
 
 function getAgentEventDataNumber(event: AgentEvent, key: string): number | undefined {
@@ -888,8 +889,7 @@ export function createAgentRuntimeService(
   }
 
   function getPayloadString(payload: Record<string, unknown>, key: string): string | undefined {
-    const value = payload[key];
-    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+    return asNonEmptyString(payload[key]);
   }
 
   function getKnowledgeNoteDraftArtifactMarkdown(
@@ -902,7 +902,7 @@ export function createAgentRuntimeService(
         (!contentArtifactId || item.artifactId === contentArtifactId),
     );
     const value = artifact?.data['markdown'];
-    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+    return asNonEmptyString(value);
   }
 
   async function executeKnowledgeGenerateInterrupt(

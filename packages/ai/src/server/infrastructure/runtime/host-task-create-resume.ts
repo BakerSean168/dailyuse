@@ -69,6 +69,9 @@ import {
   type AgentRunResult,
 } from '@dailyuse/contracts/ai';
 
+// Residual 1121: asNonEmptyString sole (shared/as-non-empty-string).
+import { asNonEmptyString } from '../../../shared/as-non-empty-string';
+
 /** Residual 453: confirm without client settlement receipts is fail-closed. */
 export const HOST_TASK_CREATE_CONFIRM_REQUIRES_CLIENT_SETTLEMENT_MESSAGE =
   'Host task.create confirm requires non-empty client executedActions settlement (create_task_template).';
@@ -161,10 +164,6 @@ function cloneActions(
 }
 
 
-function asNonEmptyTrimmedString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
-}
-
 /**
  * Residual 463/469: resolve settlement title without rebinding approved draft title.
  * Approved draft title is source of truth when present; executed may omit and inherit.
@@ -177,14 +176,14 @@ function resolveConfirmSettlementTitle(
   // Residual 545: sole process-local create_task_template draftAction (no multi-index invent).
   const pending = draftAction.payload ?? {};
   const approvedTitle =
-    asNonEmptyTrimmedString(pending['title']) ??
-    asNonEmptyTrimmedString(pending['name']);
+    asNonEmptyString(pending['title']) ??
+    asNonEmptyString(pending['name']);
   const data = executed.data;
   let executedTitle: string | undefined;
   if (data && typeof data === 'object' && !Array.isArray(data)) {
     executedTitle =
-      asNonEmptyTrimmedString((data as Record<string, unknown>)['title']) ??
-      asNonEmptyTrimmedString((data as Record<string, unknown>)['name']);
+      asNonEmptyString((data as Record<string, unknown>)['title']) ??
+      asNonEmptyString((data as Record<string, unknown>)['name']);
   }
   if (approvedTitle && executedTitle && approvedTitle !== executedTitle) {
     throw new Error(HOST_TASK_CREATE_CONFIRM_TITLE_REBIND_FORBIDDEN_MESSAGE);
@@ -197,15 +196,15 @@ function resolveConfirmSettlementTitle(
  * Product confirm records the domain createTemplate id for receipt deep-link / reopen.
  */
 function resolveConfirmSettlementTemplateId(executed: AgentExecutedAction): string | undefined {
-  const fromEntity = asNonEmptyTrimmedString(executed.entityId);
+  const fromEntity = asNonEmptyString(executed.entityId);
   if (fromEntity) return fromEntity;
   const data = executed.data;
   if (data && typeof data === 'object' && !Array.isArray(data)) {
     const record = data as Record<string, unknown>;
     return (
-      asNonEmptyTrimmedString(record['templateId']) ??
-      asNonEmptyTrimmedString(record['entityId']) ??
-      asNonEmptyTrimmedString(record['taskId'])
+      asNonEmptyString(record['templateId']) ??
+      asNonEmptyString(record['entityId']) ??
+      asNonEmptyString(record['taskId'])
     );
   }
   return undefined;
@@ -214,8 +213,8 @@ function resolveConfirmSettlementTemplateId(executed: AgentExecutedAction): stri
 function readGoalIdFromRecord(record: Record<string, unknown> | undefined): string | undefined {
   if (!record) return undefined;
   return (
-    asNonEmptyTrimmedString(record['goalId']) ??
-    asNonEmptyTrimmedString(record['goal_id'])
+    asNonEmptyString(record['goalId']) ??
+    asNonEmptyString(record['goal_id'])
   );
 }
 

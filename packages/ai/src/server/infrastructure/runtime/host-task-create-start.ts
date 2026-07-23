@@ -22,9 +22,8 @@ import {
   type AgentStartRunRequest,
 } from '@dailyuse/contracts/ai';
 
-function asNonEmptyString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
-}
+// Residual 1121: asNonEmptyString sole (shared/as-non-empty-string).
+import { asNonEmptyString } from '../../../shared/as-non-empty-string';
 
 /** Residual 461: fail-closed when task.create start lacks a session conversationId. */
 export const HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE =

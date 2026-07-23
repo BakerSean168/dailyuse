@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
  * - data-portability schedule.importer optionalString: null/undefined → null; else String(value)
  * - AI goal-planning toNonEmptyString/toOptionalString: non-empty trimmed string | undefined
  * Soft residual 1099/1105/1109: asRecord / toNumber / toStringArray keep-boundaries remain.
+ * Soft residual 1121: Host/runtime asNonEmptyString dual retired sole remains separate.
  * Does not flip §13.2 checkboxes.
  */
 describe('optionalString/toNonEmptyString keep-boundary (residual 1117)', () => {
