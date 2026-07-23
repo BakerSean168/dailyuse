@@ -6,7 +6,7 @@ import { parseBoolean } from './parse-boolean';
 /**
  * Residual 985: parseBoolean dual retired (goal API routes).
  * Sole body in parse-boolean.ts; goal + goal-folder routes import it.
- * Soft residual 1000: tip focused suite numbers track Residual 1000 evidence tip (290/1265).
+ * Soft residual 1002: tip focused suite numbers track Residual 1002 evidence tip (291/1268).
  * Does not flip §13.2 checkboxes.
  */
 describe('parseBoolean dual retired (residual 985)', () => {

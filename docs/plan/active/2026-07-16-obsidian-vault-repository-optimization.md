@@ -7426,6 +7426,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-23（阶段 6 残留一千零一轮）：app-vue shell **clamp dual retired**（仍不打勾）——
 > panel-geometry + useAppShellStore 本地 dual 收口；layouts/shell/clamp 唯 helper；
 > max<min fail-safe；surface Residual 1001 锁。
+> 续进展 2026-07-23（阶段 6 残留一千零二轮）：§13.2 聚焦证据套件复跑（含 residual 250–1001
+> clamp dual retired 锁，不改 checkbox）——**291 文件 / 1268 测试**（app-vue 42/364、
+> ai 44/290、repository 7/38、contracts 130/385、governance 2/4、api 10/24、data-portability 5/21、… utils 4/15、desktop 21/59、authentication 9/28、task 4/11、goal 2/5）+ `GOV_EXIT:0`。
+> 相对 residual 1000：app-vue +1 file / +3 tests（residual 1001 surface×1×3）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
+> GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
+> 状态保持 **实施中**；PR 就绪仍为否。
 
 
 
@@ -7606,7 +7613,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 > 审计时间 2026-07-23（Residual 891 诚实刷新：三入口/Agent/门禁仍为部分或外部阻塞；**不改 checkbox**）。
 > 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
-> focused evidence suite tip（Residual 1000）：**290 文件 / 1265 测试** + governance-check GOV_EXIT:0。
+> focused evidence suite tip（Residual 1002）：**291 文件 / 1268 测试** + governance-check GOV_EXIT:0。
 > Residual 891：再确认 3 项仍未打勾——账密/GitHub/访客（部分）、Agent 确认边界（部分）、全量 PR 门禁（部分+外部阻塞）。
 > 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
 > 阶段 6 dual 收口（残留 250–300；四百八十七轮补 task DAG *ViewModel 消费者收口；五百三十九轮 portable editor_* / knowledge routes / /note strip 再锁）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
@@ -8603,6 +8610,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留九百九十九轮：retire errorMessage dual (utils shared sole; AI runtime + local vault).
   残留一千轮：§13.2 focused evidence suite re-run (1265 tests, residuals 250–999 locks, no checkbox changes)。
   残留一千零一轮：retire clamp dual (app-vue shell sole; panel-geometry + store widths).
+  残留一千零二轮：§13.2 focused evidence suite re-run (1268 tests, residuals 250–1001 locks, no checkbox changes)。
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -9037,6 +9045,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留九百九十九轮：retire errorMessage dual（utils shared 唯 helper；AI runtime + local vault）。
   残留一千轮：§13.2 focused evidence suite re-run（1265 tests，residuals 250–999 锁；不改 checkbox）。
   残留一千零一轮：retire clamp dual（app-vue shell 唯 helper；panel-geometry + store）。
+  残留一千零二轮：§13.2 focused evidence suite re-run（1268 tests，residuals 250–1001 锁；不改 checkbox）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -10083,6 +10092,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留九百九十九轮：errorMessage dual retired surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千轮：tip 上 1265 项 focused evidence suite（含 residual 250–999 errorMessage dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留一千零一轮：clamp dual retired surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留一千零二轮：tip 上 1268 项 focused evidence suite（含 residual 250–1001 clamp dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
