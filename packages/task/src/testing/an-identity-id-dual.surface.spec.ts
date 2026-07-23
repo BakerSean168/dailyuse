@@ -6,7 +6,7 @@ import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 
 /**
  * Residual 1033: task anIdentityId dual retired onto test-utils fixtures sole.
- * Soft residual 1036: tip focused suite numbers track Residual 1036 evidence tip (308/1335).
+ * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
  * Does not flip §13.2 checkboxes.
  */
 describe('anIdentityId dual retired (residual 1033)', () => {

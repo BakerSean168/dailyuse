@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 1037: goal/schedule/reminder/task integration-global-setup duals retired
  * onto test-utils setup sole.
- * Soft residual 1036: tip focused suite numbers track Residual 1036 evidence tip (308/1335).
+ * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
  * Does not flip §13.2 checkboxes.
  */
 describe('integration-global-setup dual retired (residual 1037)', () => {

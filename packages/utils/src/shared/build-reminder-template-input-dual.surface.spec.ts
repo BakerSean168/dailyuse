@@ -11,7 +11,7 @@ import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contra
 /**
  * Residual 1013: buildReminderTemplateInput dual retired (API + Desktop automation).
  * Sole body in @dailyuse/utils/shared/build-reminder-template-input.
- * Soft residual 1036: tip focused suite numbers track Residual 1036 evidence tip (308/1335).
+ * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339).
  * Soft residual 1007: reminder time-of-day helpers remain sole dependency.
  * Soft residual 835: activeTime uses activatedAt only.
  * Does not flip §13.2 checkboxes.
