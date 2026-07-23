@@ -5,7 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 689: goal list response dual bodies retired.
  * GetKeyResultsRes / GetGoalRecordsRes / GetGoalReviewsRes reuse *ListResSchema only (ClientDTO items).
- */
+ 
+ * Soft residual 815: GoalRecordClientDTO dual retired via GoalRecordClientDTOSchema
+ * (see goal-record-client-dto-dual surface).*/
 describe('goal list response dual retired (residual 689)', () => {
   const apiDir = __dirname;
   const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');

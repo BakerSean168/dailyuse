@@ -192,6 +192,8 @@ export const FocusSessionClientDTOSchema = z.object({
 
 /**
  * GoalRecord Client DTO Schema
+ * Residual 815: GoalRecordClientDTO dual retired — this schema is the sole goal-record client shape
+ * (semantic GoalRecordClientDTO is z.infer alias in aggregates/goal-record-client.ts).
  */
 export const GoalRecordClientDTOSchema = z.object({
   id: brandedId<GoalRecordId>(),
