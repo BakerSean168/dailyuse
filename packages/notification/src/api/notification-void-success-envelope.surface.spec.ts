@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Notification void/batch envelope surface (stage-6 residual 92):
  * single delete uses z.null()/ok(null);
  * batch delete/cleanup use BatchOperationResultDTO { deletedCount }
+ * Soft residual 799: BatchOperationResultDTO is z.infer of NotificationBatchResultSchema (contracts).
  * (no { success, affected } dual-track); mark-all/batch-read align count shapes.
  */
 describe('notification void success envelope surface', () => {

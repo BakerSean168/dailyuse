@@ -16,6 +16,8 @@ import { NotificationCategory } from '../value-objects/notification-category';
 // ============================================================================
 
 /** Residual 671: shared notification id-batch request (mark-read + batch-delete). */
+// Residual 799: Mark/Delete/Cleanup *Res reuse BatchOperationResultDTO = z.infer of NotificationBatchResultSchema.
+
 export const NotificationIdsBatchSchema = z.object({
   notificationIds: z.array(brandedId<NotificationId>()).min(1),
 });

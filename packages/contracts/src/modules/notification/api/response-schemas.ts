@@ -30,6 +30,8 @@ export const NotificationResponseSchema = z.object({
 
 /**
  * BatchResult Schema
+ * Residual 799: BatchOperationResultDTO dual retired — this schema is the sole batch-result shape
+ * (semantic BatchOperationResultDTO is z.infer alias).
  */
 export const NotificationBatchResultSchema = z.object({
   updatedCount: z.number().optional(),

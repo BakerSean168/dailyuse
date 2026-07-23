@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 671: notification mark-read / batch-delete request dual bodies retired.
  * Both operations use NotificationIdsBatchSchema only.
+ * Soft residual 799: BatchOperationResultDTO dual retired via NotificationBatchResultSchema
+ * (see notification-batch-result-dual surface; not asserted here to avoid dual-surface lock drift).
  */
 describe('notification ids batch request dual retired (residual 671)', () => {
   const apiDir = __dirname;
