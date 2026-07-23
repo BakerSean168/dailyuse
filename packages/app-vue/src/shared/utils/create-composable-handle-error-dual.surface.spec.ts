@@ -7,7 +7,7 @@ import { createComposableHandleError } from './create-composable-handle-error';
  * Residual 973: createComposableHandleError dual retired (console.error path).
  * Sole body in create-composable-handle-error.ts; schedule / notification / reminder /
  * setting composables import it.
- * Soft residual 972: tip focused suite numbers track Residual 972 evidence tip (277/1219).
+ * Soft residual 974: tip focused suite numbers track Residual 974 evidence tip (278/1223).
  * Soft residual: task handleError toast.error path remains keep-boundary
  *   (useTaskInstances / useTaskTemplates / useTaskDependencies).
  * Does not flip §13.2 checkboxes.
