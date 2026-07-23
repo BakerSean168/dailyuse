@@ -6,14 +6,15 @@ import {
   GeneratedGoalDraftSchema,
   KeyResultPreviewSchema,
 } from '../dtos/goal-generation-result.dto';
+import {
+  GoalWorkflowClarificationResultDTOSchema,
+  GoalWorkflowConfirmResultDTOSchema,
+  GoalWorkflowDraftResultDTOSchema,
+  GoalWorkflowExecutionResultDTOSchema,
+  GoalWorkflowResultDTOSchema,
+} from '../dtos/goal-workflow-result.dto';
 import { TestAIProviderResultDTOSchema } from '../dtos/provider-test-result.dto';
 import { TokenUsageSchema } from '../value-objects/token-usage';
-import {
-  GoalAutomationActionSchema,
-  GoalAutomationExecutedActionSchema,
-  GoalAutomationReminderPreviewSchema,
-  GoalAutomationTaskTemplatePreviewSchema,
-} from './ai-goal-automation.dto';
 import { ConversationStatus } from '../value-objects/conversation-status';
 import { MessageRole } from '../value-objects/message-role';
 import { AIProviderType } from '../value-objects/ai-provider-type';
@@ -26,79 +27,15 @@ export { GenerateGoalResultDTOSchema, GeneratedGoalDraftSchema, KeyResultPreview
 // (re-exported for OpenAPI nested response consumers).
 export { TokenUsageSchema };
 
-const GoalClarificationQuestionSchema = z.object({
-  question: z.string(),
-  context: z.string().nullable().optional(),
-});
-
-const GoalClarificationSchema = z.object({
-  needsClarification: z.literal(true),
-  questions: z.array(GoalClarificationQuestionSchema).min(2).max(4),
-  rationale: z.string().nullable().optional(),
-});
-
-export const GoalWorkflowDraftResultDTOSchema = GenerateGoalResultDTOSchema.extend({
-  state: z.literal('draft'),
-});
-
-export const GoalWorkflowClarificationResultDTOSchema = z.object({
-  state: z.literal('clarification'),
-  clarification: GoalClarificationSchema,
-  tokenUsage: TokenUsageSchema,
-  providerId: brandedId<AiProviderConfigId>(),
-  processingTimeMs: z.number(),
-  generatedAt: z.number(),
-  providerUsed: z.string().optional(),
-  modelUsed: z.string().optional(),
-});
-
-const GoalWorkflowPlanPayloadSchema = z.object({
-  summary: z.string(),
-  plan: z.object({
-    goal: GeneratedGoalDraftSchema,
-    keyResults: z.array(KeyResultPreviewSchema).optional(),
-    taskTemplates: z.array(GoalAutomationTaskTemplatePreviewSchema).optional(),
-    reminders: z.array(GoalAutomationReminderPreviewSchema).optional(),
-  }),
-  actions: z.array(GoalAutomationActionSchema),
-  tokenUsage: TokenUsageSchema,
-  providerId: brandedId<AiProviderConfigId>(),
-  processingTimeMs: z.number(),
-  generatedAt: z.number(),
-  providerUsed: z.string().optional(),
-  modelUsed: z.string().optional(),
-});
-
-const GoalWorkflowExecutionSummaryDTOSchema = z.object({
-  status: z.enum(['success', 'partial', 'failed']),
-  executedCount: z.number().int().nonnegative(),
-  skippedCount: z.number().int().nonnegative(),
-  failedCount: z.number().int().nonnegative(),
-});
-
-const GoalWorkflowRecoveryDTOSchema = z.object({
-  canRetry: z.boolean(),
-  failedActions: z.array(GoalAutomationExecutedActionSchema),
-  suggestions: z.array(z.string()),
-});
-
-export const GoalWorkflowConfirmResultDTOSchema = GoalWorkflowPlanPayloadSchema.extend({
-  state: z.literal('confirm'),
-});
-
-export const GoalWorkflowExecutionResultDTOSchema = GoalWorkflowPlanPayloadSchema.extend({
-  state: z.literal('result'),
-  executedActions: z.array(GoalAutomationExecutedActionSchema),
-  executionSummary: GoalWorkflowExecutionSummaryDTOSchema,
-  recovery: GoalWorkflowRecoveryDTOSchema,
-});
-
-export const GoalWorkflowResultDTOSchema = z.discriminatedUnion('state', [
+// Residual 729: goal workflow schemas owned by goal-workflow-result.dto.ts
+// (re-exported for OpenAPI route consumers).
+export {
   GoalWorkflowClarificationResultDTOSchema,
-  GoalWorkflowDraftResultDTOSchema,
   GoalWorkflowConfirmResultDTOSchema,
+  GoalWorkflowDraftResultDTOSchema,
   GoalWorkflowExecutionResultDTOSchema,
-]);
+  GoalWorkflowResultDTOSchema,
+};
 
 // ============ Route Response Schemas ============
 

@@ -15,12 +15,25 @@ export type {
   GenerateGoalResultDTO,
   GenerateKeyResultsResultDTO,
 } from './goal-generation-result.dto';
+export {
+  GoalClarificationQuestionSchema,
+  GoalClarificationSchema,
+  GoalWorkflowClarificationResultDTOSchema,
+  GoalWorkflowDraftResultDTOSchema,
+  GoalWorkflowConfirmResultDTOSchema,
+  GoalWorkflowExecutionSummaryDTOSchema,
+  GoalWorkflowRecoveryDTOSchema,
+  GoalWorkflowExecutionResultDTOSchema,
+  GoalWorkflowResultDTOSchema,
+} from './goal-workflow-result.dto';
 export type {
   GoalClarificationQuestionDTO,
   GoalClarificationDTO,
   GoalWorkflowClarificationResultDTO,
   GoalWorkflowDraftResultDTO,
   GoalWorkflowConfirmResultDTO,
+  GoalWorkflowExecutionSummaryDTO,
+  GoalWorkflowRecoveryDTO,
   GoalWorkflowExecutionResultDTO,
   GoalWorkflowResultDTO,
 } from './goal-workflow-result.dto';
