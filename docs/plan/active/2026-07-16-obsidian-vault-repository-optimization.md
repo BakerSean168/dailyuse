@@ -5485,6 +5485,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > surface Residual 681 锁。
 > 非跨端 multi-engine E2E / 全量 PR 门禁。状态保持 **实施中**；不改 §13.2 checkbox。
 
+> 续进展 2026-07-23（阶段 6 残留六百八十二轮）：§13.2 聚焦证据套件复跑（含 residual 250–681
+> governance OpenAPI response schema name dual retired 锁，不改 checkbox）——**138 文件 / 795 测试**（app-vue 26/312、
+> ai 34/257、repository 6/35、contracts 33/93、governance 2/4、api 10/24、data-portability 4/18、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`。
+> 相对 residual 680：governance +1 file / +2 tests（residual 681 surface×2）；contracts 不变。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
+> GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
+> 状态保持 **实施中**；PR 就绪仍为否。
+
 
 
 
@@ -6309,6 +6317,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百七十九轮：retire schedule detect-conflicts response schema name dual (ConflictDetectionResultSchema only).
   残留六百八十轮：§13.2 focused evidence suite re-run (793 tests, residuals 250–679 locks, no checkbox changes)。
   残留六百八十一轮：retire governance OpenAPI response schema name duals (contracts schemas only).
+  残留六百八十二轮：§13.2 focused evidence suite re-run (795 tests, residuals 250–681 locks, no checkbox changes)。
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -6423,6 +6432,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百七十九轮：schedule detect-conflicts response schema 名称双轨收口。
   残留六百八十轮：§13.2 focused evidence suite re-run（793 tests，residuals 250–679 锁；不改 checkbox）。
   残留六百八十一轮：governance OpenAPI response schema 名称双轨收口。
+  残留六百八十二轮：§13.2 focused evidence suite re-run（795 tests，residuals 250–681 锁；不改 checkbox）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -7148,6 +7158,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留六百七十九轮：schedule detect-conflicts response schema 名称双轨收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留六百八十轮：tip 上 793 项 focused evidence suite（含 residual 250–679 detect-conflicts response schema name dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留六百八十一轮：governance OpenAPI response schema 名称双轨收口落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留六百八十二轮：tip 上 795 项 focused evidence suite（含 residual 250–681 governance OpenAPI response schema name dual retired 锁）通过；仍不构成全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
