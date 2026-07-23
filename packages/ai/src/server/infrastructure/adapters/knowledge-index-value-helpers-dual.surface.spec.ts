@@ -13,6 +13,7 @@ import {
  * Sole body in knowledge-index-value-helpers.ts; PowerSync + Prisma repositories import it.
  * Soft residual 967: isAbortLikeError dual retired (shared/is-abort-like-error-dual.surface.spec.ts).
  * Soft residual 970: tip focused suite numbers track Residual 970 evidence tip (276/1216).
+ * Soft residual 971: withObservabilityPayload dual retired (with-observability-payload-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('knowledge-index value helpers dual retired (residual 969)', () => {
