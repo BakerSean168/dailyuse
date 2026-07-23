@@ -12,6 +12,7 @@ import {
  * Residual 1007: normalizeReminderTimeOfDay + buildReminderStartTimestamp dual retired.
  * Sole bodies in @dailyuse/utils/shared/reminder-time-of-day.
  * Soft residual 1012: tip focused suite numbers track Residual 1012 evidence tip (296/1287).
+ * Soft residual 1013: API/Desktop compose via buildReminderTemplateInput sole (no direct import).
  * Does not flip §13.2 checkboxes.
  */
 describe('reminder time-of-day dual retired (residual 1007)', () => {
@@ -56,15 +57,22 @@ describe('reminder time-of-day dual retired (residual 1007)', () => {
     expect(index).toContain("export * from './reminder-time-of-day'");
   });
 
-  it('API + Desktop automation executors import sole without local dual bodies', () => {
+  it('API + Desktop automation executors keep residual 1007 marker without local dual bodies', () => {
+    const composer = readFileSync(
+      resolve(sharedDir, 'build-reminder-template-input.ts'),
+      'utf8',
+    );
+    expect(composer).toContain('normalizeReminderTimeOfDay');
+    expect(composer).toContain('buildReminderStartTimestamp');
+    expect(composer).toContain("from './reminder-time-of-day'");
     for (const [label, source] of [
       ['api', api],
       ['desktop', desktop],
     ] as const) {
       expect(source, label).toContain('Residual 1007');
+      expect(source, label).toContain('Residual 1013');
       expect(source, label).toContain("from '@dailyuse/utils/shared'");
-      expect(source, label).toContain('normalizeReminderTimeOfDay');
-      expect(source, label).toContain('buildReminderStartTimestamp');
+      expect(source, label).toContain('buildReminderTemplateInput');
       expect(source, label).not.toMatch(/function normalizeReminderTimeOfDay\b/);
       expect(source, label).not.toMatch(/function buildReminderStartTimestamp\b/);
       expect(source, label).not.toMatch(/const DEFAULT_REMINDER_TIME_OF_DAY\b/);

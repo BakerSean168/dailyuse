@@ -3,20 +3,12 @@ import {
   type IAIAutomationToolExecutorPort,
 } from '@dailyuse/ai/ports';
 import type { IdentityId } from '@dailyuse/contracts';
-import type {
-  GoalAutomationExecutedAction,
-  GoalAutomationReminderPreview,
-} from '@dailyuse/contracts/ai';
+import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
 import type { PrismaClient } from '@dailyuse/database';
 import { createGoalPrismaModule } from '@dailyuse/goal';
 import { createReminderPrismaModule } from '@dailyuse/reminder';
 import { createTaskPrismaModule } from '@dailyuse/task';
-import {
-  NotificationChannel,
-  ReminderType,
-  TriggerType,
-} from '@dailyuse/contracts/reminder';
 import {
   DayOfWeek,
   RecurrenceFrequency,
@@ -28,9 +20,9 @@ import { createLogger } from '@dailyuse/utils/logger';
 // Residual 1007: sole reminder time helpers (local dual retired).
 // Residual 1009: sole readNestedNumber (local dual retired).
 // Residual 1011: sole previewText (local dual retired; call sites keep maxLength 200).
+// Residual 1013: sole buildReminderTemplateInput (local dual retired).
 import {
-  buildReminderStartTimestamp,
-  normalizeReminderTimeOfDay,
+  buildReminderTemplateInput,
   previewText,
   readNestedNumber,
 } from '@dailyuse/utils/shared';
@@ -39,57 +31,8 @@ import { ControlledAnalyticsReadAdapter } from './controlled-analytics-read.adap
 import { RepositoryKnowledgeSourceAdapter } from './repository-knowledge-source.adapter';
 
 const logger = createLogger('BackendAutomationToolExecutor');
-const DAILY_REVIEW_INTERVAL_MINUTES = 24 * 60;
-const WEEKLY_REVIEW_INTERVAL_MINUTES = 7 * DAILY_REVIEW_INTERVAL_MINUTES;
-
-// Residual 1011: previewText elevated to @dailyuse/utils/shared.
-// Residual 1009: readNestedNumber elevated to @dailyuse/utils/shared.
-// Residual 1007: reminder time helpers elevated to @dailyuse/utils/shared.
-
-function buildReminderTemplateInput(reminder: GoalAutomationReminderPreview, now = Date.now()) {
-  const isOneTime = reminder.cadence === 'once';
-  const timeOfDay = normalizeReminderTimeOfDay(reminder.timeOfDay);
-  const startTime = buildReminderStartTimestamp(timeOfDay, now);
-  return {
-    title: reminder.title,
-    description: reminder.description,
-    type: isOneTime ? ReminderType.OneTime : ReminderType.Recurring,
-    trigger: isOneTime
-      ? {
-          type: TriggerType.FixedTime,
-          fixedTime: {
-            time: timeOfDay,
-            timezone: null,
-          },
-          interval: null,
-        }
-      : {
-          type: TriggerType.Interval,
-          fixedTime: null,
-          interval: {
-            minutes:
-              reminder.cadence === 'daily'
-                ? DAILY_REVIEW_INTERVAL_MINUTES
-                : WEEKLY_REVIEW_INTERVAL_MINUTES,
-            startTime,
-          },
-        },
-    activeTime: {
-      startDate: startTime,
-      endDate: null,
-    },
-    notificationConfig: {
-      channels: [NotificationChannel.InApp],
-      title: reminder.title,
-      body: reminder.description ?? null,
-      sound: null,
-      vibration: null,
-      actions: null,
-    },
-    importanceLevel: reminder.importance,
-    tags: ['goal-agent'],
-  };
-}
+// Residual 1013: buildReminderTemplateInput elevated to @dailyuse/utils/shared.
+// Residual 1011/1009/1007: related helpers elevated to @dailyuse/utils/shared.
 
 export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolExecutorPort {
   private readonly goalModule;

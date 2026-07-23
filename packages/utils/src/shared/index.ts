@@ -15,3 +15,4 @@ export * from './presentation-preference';
 export * from './reminder-time-of-day';
 export * from './read-nested-number';
 export * from './preview-text';
+export * from './build-reminder-template-input';
