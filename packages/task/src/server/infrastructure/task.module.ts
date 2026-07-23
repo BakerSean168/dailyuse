@@ -175,6 +175,8 @@ export interface TaskModuleInstance {
 //    组装函数和工厂。
 // ---------------------------------------------------------------------------
 
+// Residual 987 keep-boundary: composition-root local normalize (TaskRuntimeContributionsInput host).
+// Sole API/Electron helper lives in normalize-runtime-contributions.ts (avoids circular import).
 function normalizeRuntimeContributions(
   runtimeContributions?: TaskRuntimeContributionsInput,
 ): readonly TaskModuleRuntimeContribution[] {

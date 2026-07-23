@@ -34,6 +34,8 @@ import { createLogger } from '@dailyuse/utils/logger';
 import type { ITaskTemplateRepository } from '../server/domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../server/domain/repositories/i-task-instance-repository';
 import { withAuthenticatedValue } from './authenticated-ipc';
+// Residual 987: sole runtime-contribution normalize helpers (local dual retired).
+import { normalizeRuntimeContributions } from '../server/infrastructure/normalize-runtime-contributions';
 
 const logger = createLogger('TaskElectron');
 
@@ -42,14 +44,6 @@ const allChannels = Object.values(TaskChannels);
 let activeTaskModule: TaskModuleInstance | null = null;
 let taskTemplateRepository: ITaskTemplateRepository | null = null;
 let taskInstanceRepository: ITaskInstanceRepository | null = null;
-
-function isRuntimeContributionArray(
-  runtimeContributions:
-    | TaskModuleRuntimeContribution
-    | readonly TaskModuleRuntimeContribution[],
-): runtimeContributions is readonly TaskModuleRuntimeContribution[] {
-  return Array.isArray(runtimeContributions);
-}
 
 export interface CreateTaskElectronModuleOptions {
   readonly runtimeContributions?:
@@ -83,22 +77,6 @@ function normalizeTemplateListParams(
     ...(params ?? {}),
     status: Array.isArray(status) ? status : typeof status === 'string' ? [status] : undefined,
   };
-}
-
-function normalizeRuntimeContributions(
-  runtimeContributions?:
-    | TaskModuleRuntimeContribution
-    | readonly TaskModuleRuntimeContribution[],
-): readonly TaskModuleRuntimeContribution[] {
-  if (!runtimeContributions) {
-    return [];
-  }
-
-  if (isRuntimeContributionArray(runtimeContributions)) {
-    return Array.from(runtimeContributions);
-  }
-
-  return [runtimeContributions];
 }
 
 export function createTaskElectronModule(
