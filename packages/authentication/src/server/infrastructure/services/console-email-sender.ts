@@ -1,4 +1,6 @@
 import type { IEmailSender } from '../../domain';
+// Residual 949: maskEmail dual retired — sole server shared mask-email helper.
+import { maskEmail } from '../../shared/mask-email';
 
 export type CapturedAuthEmail = {
   readonly kind: 'password-reset' | 'email-verify';
@@ -6,13 +8,6 @@ export type CapturedAuthEmail = {
   readonly code: string;
   readonly sentAt: number;
 };
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split('@');
-  if (!local || !domain) return '***';
-  if (local.length <= 2) return `${local[0] ?? '*'}***@${domain}`;
-  return `${local[0]}***${local.slice(-1)}@${domain}`;
-}
 
 /**
  * Console-based IEmailSender for local development / e2e.

@@ -8,6 +8,8 @@ import { hasDataKey, isRecord } from './http-envelope-guards';
  * Sole bodies in http-envelope-guards.ts; auth + knowledge gateways import them.
  * Soft residual 945: formatZodErrors dual retired
  *   (packages/utils/src/result/format-zod-errors-dual.surface.spec.ts).
+ * Soft residual 949: maskEmail dual retired
+ *   (packages/authentication/src/server/shared/mask-email-dual.surface.spec.ts).
  * Keep-boundary: AuthHttpEnvelope ≠ knowledge HttpEnvelope payload shapes.
  * Does not flip §13.2 checkboxes.
  */
