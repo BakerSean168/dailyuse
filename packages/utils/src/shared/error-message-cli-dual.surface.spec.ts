@@ -6,7 +6,7 @@ import { errorMessage } from './error-message';
 /**
  * Residual 1019: database CLI toErrorMessage dual retired onto residual 999 sole.
  * Sole body in @dailyuse/utils/shared/error-message; scripts alias import as toErrorMessage.
- * Soft residual 1022: tip focused suite numbers track Residual 1022 evidence tip (301/1307).
+ * Soft residual 1024: tip focused suite numbers track Residual 1024 evidence tip (302/1311).
  * Soft residual 999: AI runtime + local vault already on sole.
  * Does not flip §13.2 checkboxes.
  */
