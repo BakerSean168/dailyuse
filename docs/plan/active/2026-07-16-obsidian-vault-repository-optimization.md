@@ -6230,6 +6230,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 删除 Select/Read/Search/Open/ConfirmedWrite Req interface dual；新增 `*ReqSchema` + z.infer；
 > surface Residual 795 锁。非跨端 multi-engine E2E / 全量 PR 门禁。状态保持 **实施中**；不改 §13.2 checkbox。
 
+> 续进展 2026-07-23（阶段 6 残留七百九十六轮）：§13.2 聚焦证据套件复跑（含 residual 250–795
+> local vault Req dual retired 锁，不改 checkbox）——**196 文件 / 964 测试**（app-vue 26/312、
+> ai 34/257、repository 6/35、contracts 91/262、governance 2/4、api 10/24、data-portability 4/18、… desktop 5/9、task 2/4）+ `GOV_EXIT:0`。
+> 相对 residual 794：contracts +1 file / +3 tests（residual 795 surface×1×3）。
+> 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
+> GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
+> 状态保持 **实施中**；PR 就绪仍为否。
+
 
 
 
@@ -7414,6 +7422,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留七百九十三轮：local vault Res dual 收口。
   残留七百九十四轮：§13.2 focused evidence suite re-run（961 tests，residuals 250–793 锁；不改 checkbox）。
   残留七百九十五轮：local vault Req dual 收口。
+  残留七百九十六轮：§13.2 focused evidence suite re-run（964 tests，residuals 250–795 锁；不改 checkbox）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
