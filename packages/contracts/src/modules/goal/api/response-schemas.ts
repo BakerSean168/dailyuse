@@ -19,8 +19,6 @@ import type {
 } from '../../../primitives';
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import { KeyResultValueType } from '../value-objects/key-result-value-type';
-import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 import { ReviewType } from '../value-objects/review-type';
 import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
 import { FocusSessionStatus } from '../value-objects/focus-session-status';
@@ -33,21 +31,18 @@ import type { GoalReviewClientDTO } from '../entities/goal-review-client';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
 import type { FocusModeDTO } from '../value-objects/focus-mode';
 
+import { KeyResultProgressDTOSchema } from '../value-objects/key-result-progress';
+import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot';
+
+// Residual 737: KeyResultProgressDTOSchema / KeyResultSnapshotDTOSchema owned by value-objects
+// (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
+export { KeyResultProgressDTOSchema, KeyResultSnapshotDTOSchema };
+
+
 // ============================================================================
 // Sub-entity Schemas
 // ============================================================================
 
-/**
- * KeyResultProgress DTO Schema (嵌入式)
- */
-export const KeyResultProgressDTOSchema = z.object({
-  valueType: z.enum(KeyResultValueType),
-  aggregationMethod: z.enum(KeyResultCalculationMethod),
-  initialValue: z.number(),
-  targetValue: z.number(),
-  currentValue: z.number(),
-  unit: z.string().nullable(),
-});
 
 /**
  * KeyResult Client DTO Schema
@@ -65,16 +60,6 @@ export const KeyResultClientDTOSchema: z.ZodType<KeyResultClientDTO> = z.object(
   deletedAt: z.number().nullable(),
 });
 
-/**
- * KeyResult Snapshot DTO Schema (复盘快照)
- */
-export const KeyResultSnapshotDTOSchema = z.object({
-  keyResultId: brandedId<KeyResultId>(),
-  title: z.string(),
-  targetValue: z.number(),
-  currentValue: z.number(),
-  progressPercentage: z.number(),
-});
 
 /**
  * GoalReview Client DTO Schema

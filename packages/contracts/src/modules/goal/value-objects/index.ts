@@ -19,11 +19,13 @@ export type {
   KeyResultProgress,
   KeyResultProgressDTO,
 } from './key-result-progress';
+export { KeyResultProgressDTOSchema } from './key-result-progress';
 
 export type {
   KeyResultSnapshot,
   KeyResultSnapshotDTO,
 } from './key-result-snapshot';
+export { KeyResultSnapshotDTOSchema } from './key-result-snapshot';
 
 export type {
   ReminderTrigger,
