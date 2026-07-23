@@ -11,14 +11,13 @@ import { RuleStatus } from '../value-objects/rule-status';
 import { ChangeType } from '../value-objects/change-type';
 import { CodeSnippetDTOSchema } from '../value-objects/code-snippet';
 import { RuleTagDTOSchema } from '../value-objects/rule-tag';
-import type { RuleClientDTO } from '../aggregates/rule-client';
-import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
-
 // Residual 731: CodeSnippetDTOSchema / RuleTagDTOSchema owned by value-objects
 // (re-exported for OpenAPI nested response consumers).
 export { CodeSnippetDTOSchema, RuleTagDTOSchema };
 
-export const RuleClientDTOSchema: z.ZodType<RuleClientDTO> = z.object({
+// Residual 821: RuleClientDTO dual retired — sole RuleClientDTOSchema + z.infer
+// (semantic type is z.infer alias in aggregates/rule-client.ts).
+export const RuleClientDTOSchema = z.object({
   id: brandedId<RuleId>(),
   code: z.string(),
   title: z.string(),
@@ -36,7 +35,9 @@ export const RuleClientDTOSchema: z.ZodType<RuleClientDTO> = z.object({
   updatedAt: z.number(),
 });
 
-export const RuleRevisionClientDTOSchema: z.ZodType<RuleRevisionClientDTO> = z.object({
+// Residual 821: RuleRevisionClientDTO dual retired — sole RuleRevisionClientDTOSchema + z.infer
+// (semantic type is z.infer alias in entities/rule-revision-client.ts).
+export const RuleRevisionClientDTOSchema = z.object({
   id: brandedId<RuleRevisionId>(),
   ruleId: brandedId<RuleId>(),
   revisionNumber: z.number(),

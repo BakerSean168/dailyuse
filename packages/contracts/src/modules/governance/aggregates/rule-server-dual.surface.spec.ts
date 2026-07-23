@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 651: rule server dual retired.
  * Governance API + domain toClientDTO use RuleClientDTO only.
+ *
+ * Soft residual 821: RuleClientDTO dual retired via RuleClientDTOSchema
+ * (see rule-client-dto-dual surface; assertion updated below).
  */
 describe('governance rule server dual single-track surface (residual 651)', () => {
   const aggregates = __dirname;
@@ -16,7 +19,10 @@ describe('governance rule server dual single-track surface (residual 651)', () =
     expect(index).not.toMatch(/export type \{[^}]*RuleServerDTO/);
     expect(index).not.toMatch(/from '\.\/rule-server'/);
     expect(index).toContain('RuleClientDTO');
-    expect(client).toContain('export interface RuleClientDTO');
+    expect(client).toContain(
+      'export type RuleClientDTO = z.infer<typeof RuleClientDTOSchema>',
+    );
+    expect(client).not.toMatch(/export interface RuleClientDTO\b/);
   });
 
   it('seed liveReference points at rule-client not rule-server', () => {

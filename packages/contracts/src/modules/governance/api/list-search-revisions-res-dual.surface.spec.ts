@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 783: governance list/search/revisions Res dual bodies retired.
  * Sole *ResSchema + z.infer in response-schemas; rules/rule-revisions drop dual bodies.
+ *
+ * Soft residual 821: RuleClientDTO / RuleRevisionClientDTO duals retired
+ * (see rule-client-dto-dual surface).
  */
 describe('governance list/search/revisions res duals retired (residual 783)', () => {
   const apiDir = __dirname;
