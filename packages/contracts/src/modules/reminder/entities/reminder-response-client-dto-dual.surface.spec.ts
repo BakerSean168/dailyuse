@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 861: near-exact Client/Server dual bodies retired via Omit (not forced type X = Y).
  * ReminderResponseClientDTO = Omit<Server, 'identityId'>.
  * NotificationChannelServerDTO = Omit<Client, 'version' | 'updatedAt' | 'deletedAt'>.
+ * Residual 863 (soft): NotificationClientDTO dual also retired via nested-channel Omit
+ *   (notification-client-dto-dual.surface.spec.ts); this file keeps Residual 861 only.
  * DomainDate≠TransferDate duals remain separate (residual 859).
  */
 describe('reminder/notification response channel subset duals retired (residual 861)', () => {
