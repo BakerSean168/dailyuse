@@ -1,18 +1,21 @@
 import { toast } from 'vue-sonner';
 import type { AutoLoginResult } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
-import { isDesktopEnvironment } from './useAuthContext';
+import {
+  getDesktopAuthApi,
+  hasDesktopAuthApi,
+} from '../../../shared/utils/desktop-auth-recovery';
 import { hydrateDesktopBootstrapAuthState } from '../../../shared/utils/desktop-bootstrap-auth';
-import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
 
 // Residual 913: host access via getDesktopAuthApi (no inline host cast dual).
+// Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
 export function useGuestMode(ctx: AuthContext) {
   const { store, service, t, lastResultError, getLocalizedAuthError } = ctx;
 
   async function refreshToken(): Promise<boolean> {
     if (!store.isAuthenticated) return false;
 
-    if (isDesktopEnvironment()) {
+    if (typeof window !== 'undefined' && hasDesktopAuthApi(window)) {
       const hydrated = await hydrateDesktopBootstrapAuthState(getDesktopAuthApi(window));
       return hydrated;
     }
@@ -42,7 +45,7 @@ export function useGuestMode(ctx: AuthContext) {
     } finally {
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
-      if (!isDesktopEnvironment()) {
+      if (!(typeof window !== 'undefined' && hasDesktopAuthApi(window))) {
         if (typeof window !== 'undefined') {
           window.location.replace('/auth');
         }
@@ -51,7 +54,7 @@ export function useGuestMode(ctx: AuthContext) {
   }
 
   async function enterGuestMode(): Promise<boolean> {
-    if (!isDesktopEnvironment()) {
+    if (!(typeof window !== 'undefined' && hasDesktopAuthApi(window))) {
       toast.error(t('auth.toast.guestModeFailed'), {
         description: t('auth.validation.guestModeUnavailable'),
       });
@@ -91,7 +94,7 @@ export function useGuestMode(ctx: AuthContext) {
   }
 
   async function autoLoginDesktop(): Promise<AutoLoginResult> {
-    if (!isDesktopEnvironment()) {
+    if (!(typeof window !== 'undefined' && hasDesktopAuthApi(window))) {
       return { ok: false, authenticated: false, error: 'Desktop only' };
     }
 

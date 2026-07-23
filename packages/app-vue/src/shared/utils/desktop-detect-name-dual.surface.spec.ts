@@ -10,6 +10,8 @@ import { describe, expect, it } from 'vitest';
  *   (desktop-bootstrap-api-dual.surface.spec.ts).
  * Residual 909 (soft): Window typing + hasDesktopAuthApi detect
  *   (electron-window-desktop-api-dual.surface.spec.ts).
+ * Residual 923 (soft): isDesktopEnvironment name dual retired
+ *   (desktop-environment-name-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('desktop detect/bootstrap name duals retired (residual 919)', () => {

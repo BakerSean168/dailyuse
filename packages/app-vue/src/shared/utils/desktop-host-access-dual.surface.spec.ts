@@ -11,6 +11,8 @@ import { describe, expect, it } from 'vitest';
  *   (electron-window-desktop-api-dual.surface.spec.ts).
  * Residual 907 (soft): themeSync DesktopAuthApi dual retired
  *   (modules/setting/.../theme-sync-desktop-api-dual.surface.spec.ts).
+ * Residual 923 (soft): isDesktopEnvironment name dual retired
+ *   (desktop-environment-name-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('desktop host-access dual retired (residual 913)', () => {
@@ -32,9 +34,12 @@ describe('desktop host-access dual retired (residual 913)', () => {
 
   it('useGuestMode hydrates via getDesktopAuthApi (no DesktopBootstrapApi cast dual)', () => {
     expect(guest).toContain('Residual 913');
-    expect(guest).toContain(
-      "import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery'",
+    expect(guest).toContain('Residual 923');
+    expect(guest).toMatch(
+      /import\s*\{[\s\S]*getDesktopAuthApi[\s\S]*\}\s*from\s*['"]\.\.\/\.\.\/\.\.\/shared\/utils\/desktop-auth-recovery['"]/,
     );
+    expect(guest).toContain('getDesktopAuthApi');
+    expect(guest).toContain('hasDesktopAuthApi');
     expect(guest).toContain('hydrateDesktopBootstrapAuthState(getDesktopAuthApi(window))');
     expect(guest).not.toMatch(/import type \{ DesktopBootstrapApi\b/);
     expect(guest).not.toMatch(/electronAPI\?: DesktopBootstrapApi/);

@@ -14,6 +14,8 @@ import { describe, expect, it } from 'vitest';
  *   (desktop-host-access-dual.surface.spec.ts).
  * Residual 919 (soft): DesktopBootstrapApi name + hasDesktopElectronBridge wrapper retired
  *   (desktop-detect-name-dual.surface.spec.ts).
+ * Residual 923 (soft): isDesktopEnvironment name dual retired
+ *   (desktop-environment-name-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('electron window DesktopAuthApi dual retired (residual 909)', () => {
@@ -49,12 +51,10 @@ describe('electron window DesktopAuthApi dual retired (residual 909)', () => {
     expect(recovery).toContain('typeof host?.electronAPI?.invoke === \'function\'');
   });
 
-  it('isDesktopEnvironment and router guards detect via hasDesktopAuthApi', () => {
+  it('auth context retires isDesktopEnvironment; router guards detect via hasDesktopAuthApi', () => {
     expect(authContext).toContain('Residual 909');
-    expect(authContext).toContain(
-      "import { hasDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery'",
-    );
-    expect(authContext).toContain('hasDesktopAuthApi(window)');
+    expect(authContext).toContain('Residual 923');
+    expect(authContext).not.toMatch(/export const isDesktopEnvironment\b/);
     expect(authContext).not.toMatch(/electronAPI\?:\s*\{\s*invoke\?/);
 
     expect(guards).toContain('Residual 909');

@@ -1,7 +1,9 @@
 import { toast } from 'vue-sonner';
 import type { RegisterByEmailReq } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
-import { isDesktopEnvironment } from './useAuthContext';
+import { hasDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
+
+// Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
 
 export function useRegister(ctx: AuthContext) {
   const { store, service, t, lastResultError, redirectWithReload, handleAuthSuccess, getLocalizedAuthError } = ctx;
@@ -11,13 +13,13 @@ export function useRegister(ctx: AuthContext) {
     title: string,
     description: string,
   ): Promise<boolean> {
-    if (isDesktopEnvironment()) {
+    if (typeof window !== 'undefined' && hasDesktopAuthApi(window)) {
       store.reset();
     } else {
       handleAuthSuccess(data);
     }
     toast.success(title, { description });
-    if (isDesktopEnvironment()) return true;
+    if (typeof window !== 'undefined' && hasDesktopAuthApi(window)) return true;
     redirectWithReload('/');
     return true;
   }
