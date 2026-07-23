@@ -2,10 +2,10 @@ import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { AuthBootstrapSnapshot } from '@dailyuse/contracts/authentication';
 import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
+import type { DesktopAuthApi } from './desktop-auth-recovery';
 
-export type DesktopBootstrapApi = {
-  invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
-};
+// Residual 903: DesktopBootstrapApi dual retired — exact shape of DesktopAuthApi (type alias only).
+export type DesktopBootstrapApi = DesktopAuthApi;
 
 export async function hydrateDesktopBootstrapAuthState(
   api?: DesktopBootstrapApi,

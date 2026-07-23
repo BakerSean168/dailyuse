@@ -2,6 +2,7 @@ import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { AuthStatus } from '@dailyuse/contracts/authentication';
 import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result';
 
+// Residual 903: sole desktop invoke-api shape (DesktopBootstrapApi is type alias).
 export type DesktopAuthApi = {
   invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
 };

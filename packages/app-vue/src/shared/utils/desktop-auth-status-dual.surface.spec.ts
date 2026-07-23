@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 865 (soft): AuthStatusDTO simplified dual already deleted in contracts protocol.
  * Residual 899 (soft): LoginRequest ≠ EmailLoginCredentials keep-boundary
  *   (apps/desktop .../login-request-email-credentials-keep-boundary.surface.spec.ts).
+ * Residual 903 (soft): DesktopBootstrapApi dual retired
+ *   (desktop-bootstrap-api-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('desktop AuthStatus dual retired (residual 901)', () => {

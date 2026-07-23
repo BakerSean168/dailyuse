@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Desktop bootstrap auth surface (stage-6 residual 72):
  * GET_BOOTSTRAP_SNAPSHOT returns IpcResult; hydrate unwraps via fromIpcResult.
+ * Residual 903 (soft): DesktopBootstrapApi dual retired
+ *   (desktop-bootstrap-api-dual.surface.spec.ts).
  */
 describe('desktop-bootstrap-auth Result surface', () => {
   const source = readFileSync(resolve(__dirname, 'desktop-bootstrap-auth.ts'), 'utf8');
