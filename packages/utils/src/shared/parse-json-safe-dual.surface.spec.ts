@@ -5,7 +5,7 @@ import { parseJson, parseJsonSafe } from './persistence';
 
 /**
  * Residual 1025: notification parseJsonSafe dual retired onto utils persistence sole.
- * Soft residual 1034: tip focused suite numbers track Residual 1034 evidence tip (307/1331)
+ * Soft residual 1036: tip focused suite numbers track Residual 1036 evidence tip (308/1335)
  *   until residual 1026 suite re-run.
  * Soft residual: account powersync private parseJson remains keep-boundary (throws on invalid).
  * Does not flip §13.2 checkboxes.

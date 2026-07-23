@@ -5,7 +5,7 @@ import { ScheduleTask } from '../../../test-utils/src/shims/schedule-package-shi
 
 /**
  * Residual 1035: goal/task/reminder schedule-package-shim duals retired onto test-utils sole.
- * Soft residual 1034: tip focused suite numbers track Residual 1034 evidence tip (307/1331).
+ * Soft residual 1036: tip focused suite numbers track Residual 1036 evidence tip (308/1335).
  * Does not flip §13.2 checkboxes.
  */
 describe('schedule-package-shim dual retired (residual 1035)', () => {
