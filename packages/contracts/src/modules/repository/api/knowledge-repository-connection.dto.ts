@@ -100,6 +100,8 @@ export type CreateKnowledgeRepositoryConnectionReq = z.infer<
   typeof CreateKnowledgeRepositoryConnectionSchema
 >;
 
+// Residual 803: KnowledgeRepositoryConnectionClientDTO dual retired — sole ClientSchema + z.infer
+// (never includes installation tokens / private keys).
 export const KnowledgeRepositoryConnectionClientSchema = z.object({
   id: z.string().min(1),
   identityId: brandedId<IdentityId>(),
@@ -116,6 +118,10 @@ export const KnowledgeRepositoryConnectionClientSchema = z.object({
   createdAt: z.number(),
   updatedAt: z.number(),
 });
+
+export type KnowledgeRepositoryConnectionClientDTO = z.infer<
+  typeof KnowledgeRepositoryConnectionClientSchema
+>;
 
 export const ListKnowledgeRepositoryConnectionsResSchema = z.object({
   connections: z.array(KnowledgeRepositoryConnectionClientSchema),

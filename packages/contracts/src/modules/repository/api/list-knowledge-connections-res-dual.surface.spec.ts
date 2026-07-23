@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 773: ListKnowledgeRepositoryConnectionsRes dual body retired.
  * Res is z.infer of ListKnowledgeRepositoryConnectionsResSchema.
+ * Soft residual 803: nested KnowledgeRepositoryConnectionClientDTO dual retired via ClientSchema
+ * (see knowledge-connection-client-dto-dual surface; not asserted here to avoid dual-surface lock drift).
  */
 describe('list knowledge connections res dual retired (residual 773)', () => {
   const dto = readFileSync(

@@ -35,23 +35,6 @@ export interface KnowledgeRepositoryConnectionServerDTO {
   deletedAt: TransferDate | null;
 }
 
-/**
- * Client DTO — never includes installation tokens or private keys.
- * 客户端 DTO —— 不包含 installation token 或私钥。
- */
-export interface KnowledgeRepositoryConnectionClientDTO {
-  id: string;
-  identityId: IdentityId;
-  githubUserId: string;
-  githubRepositoryId: string;
-  githubRepositoryFullName: string;
-  installationId: string;
-  defaultBranch: string;
-  status: KnowledgeRepositoryConnectionStatus;
-  lastSyncedCommitSha: string | null;
-  lastProjectedCommitSha?: string | null;
-  lastErrorCode: string | null;
-  canSync: boolean;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
+// Residual 803: KnowledgeRepositoryConnectionClientDTO dual retired —
+// sole KnowledgeRepositoryConnectionClientSchema + z.infer in api/knowledge-repository-connection.dto.ts
+// (exported via @dailyuse/contracts/repository api barrel; ServerDTO remains aggregate-owned).
