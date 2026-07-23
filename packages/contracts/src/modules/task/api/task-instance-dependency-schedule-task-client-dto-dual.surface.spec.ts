@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 831: TaskDependencyClientDTO / TaskInstanceClientDTO / ScheduleTaskClientDTO
  * dual bodies retired. Sole *ResponseSchema + z.infer.
  * DependencyChainClientDTO remains interface (shape mismatch vs DependencyChainResponseSchema).
+ * Soft residual 837: TaskFolderClientDTO / TaskTemplateHistoryClientDTO duals also retired
+ * via TaskFolderResponseSchema / TaskTemplateHistoryResponseSchema (see task-folder-history-client-dto-dual surface).
  */
 describe('task/schedule client dto duals retired (residual 831)', () => {
   const taskApi = __dirname;

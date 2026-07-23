@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
   *
  * Soft residual 831: TaskDependencyClientDTO dual retired via TaskDependencyResponseSchema; DependencyChain stays interface
  * (see task-instance-dependency-schedule-task-client-dto-dual surface).
+ * Soft residual 837: TaskFolderClientDTO / TaskTemplateHistoryClientDTO duals retired via *ResponseSchema.
  */
 describe('task dependency/subtask server dual single-track surface (residual 649)', () => {
   const aggregates = __dirname;
