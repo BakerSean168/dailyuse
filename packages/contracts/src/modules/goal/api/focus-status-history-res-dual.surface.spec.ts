@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 785: GetFocusStatusRes / GetFocusHistoryRes dual bodies retired.
  * Sole ResSchema + z.infer nested FocusSessionClientDTOSchema.
+ * Soft residual 813: FocusSessionClientDTO dual retired via FocusSessionClientDTOSchema
+ * (see focus-session-client-dto-dual surface).
  */
 describe('focus status/history res duals retired (residual 785)', () => {
   const apiDir = __dirname;

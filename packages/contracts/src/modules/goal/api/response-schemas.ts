@@ -164,6 +164,8 @@ export const GoalFolderClientDTOSchema: z.ZodType<GoalFolderClientDTO> = z.objec
 /**
  * FocusSession Client DTO Schema
  */
+// Residual 813: FocusSessionClientDTO dual retired — this schema is the sole focus-session client shape
+// (semantic FocusSessionClientDTO is z.infer alias in aggregates/focus-session-client.ts).
 export const FocusSessionClientDTOSchema = z.object({
   id: brandedId<FocusSessionId>(),
   identityId: brandedId<IdentityId>(),
