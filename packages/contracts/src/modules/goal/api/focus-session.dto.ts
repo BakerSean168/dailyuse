@@ -88,16 +88,18 @@ export interface GetFocusHistoryRes {
  */
 export type GetFocusStatisticsReq = void;
 
-export interface GetFocusStatisticsRes {
-  todayDurationMinutes: number;
-  weekDurationMinutes: number;
-  monthDurationMinutes: number;
-  totalSessions: number;
-  completedSessions: number;
-  averageSessionDurationMinutes: number;
-  longestStreak: number;
-  currentStreak: number;
-}
+// Residual 777: focus statistics Res dual retired — sole ResSchema + z.infer.
+export const GetFocusStatisticsResSchema = z.object({
+  todayDurationMinutes: z.number(),
+  weekDurationMinutes: z.number(),
+  monthDurationMinutes: z.number(),
+  totalSessions: z.number(),
+  completedSessions: z.number(),
+  averageSessionDurationMinutes: z.number(),
+  longestStreak: z.number(),
+  currentStreak: z.number(),
+});
+export type GetFocusStatisticsRes = z.infer<typeof GetFocusStatisticsResSchema>;
 
 // ============================================================================
 // GET Pomodoro Config
@@ -108,13 +110,15 @@ export interface GetFocusStatisticsRes {
  */
 export type GetPomodoroConfigReq = void;
 
-export interface GetPomodoroConfigRes {
-  focusDurationMinutes: number;
-  shortBreakMinutes: number;
-  longBreakMinutes: number;
-  sessionsBeforeLongBreak: number;
-  autoStartBreaks: boolean;
-  autoStartFocus: boolean;
-  soundEnabled: boolean;
-  notificationEnabled: boolean;
-}
+// Residual 777: pomodoro config Res dual retired — sole ResSchema + z.infer.
+export const GetPomodoroConfigResSchema = z.object({
+  focusDurationMinutes: z.number(),
+  shortBreakMinutes: z.number(),
+  longBreakMinutes: z.number(),
+  sessionsBeforeLongBreak: z.number(),
+  autoStartBreaks: z.boolean(),
+  autoStartFocus: z.boolean(),
+  soundEnabled: z.boolean(),
+  notificationEnabled: z.boolean(),
+});
+export type GetPomodoroConfigRes = z.infer<typeof GetPomodoroConfigResSchema>;
