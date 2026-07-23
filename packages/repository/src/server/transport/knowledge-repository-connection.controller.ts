@@ -21,10 +21,9 @@ import {
   type StartKnowledgeRepositoryInstallationRes,
   type DisconnectKnowledgeRepositoryConnectionRes,
   type PreviewKnowledgeRepositoryReconciliationReq,
-  ListKnowledgeNoteProjectionsSchema,
+  ListKnowledgeProjectionsSchema,
   CreateConfirmedKnowledgeNoteSchema,
   GetKnowledgeNoteLinkGraphSchema,
-  ListKnowledgeAttachmentProjectionsSchema,
   type CreateConfirmedKnowledgeNoteReq,
   type CreateConfirmedKnowledgeNoteResponse,
   type KnowledgeNoteProjectionClientDTO,
@@ -211,7 +210,7 @@ export class KnowledgeRepositoryConnectionController {
   }
 
   async listNotes(ctx: Context, input: unknown) {
-    const parsed = ListKnowledgeNoteProjectionsSchema.safeParse(input ?? {});
+    const parsed = ListKnowledgeProjectionsSchema.safeParse(input ?? {});
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -242,7 +241,7 @@ export class KnowledgeRepositoryConnectionController {
   }
 
   async listAttachments(ctx: Context, input: unknown) {
-    const parsed = ListKnowledgeAttachmentProjectionsSchema.safeParse(input ?? {});
+    const parsed = ListKnowledgeProjectionsSchema.safeParse(input ?? {});
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',

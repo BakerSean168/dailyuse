@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ListKnowledgeProjectionsSchema } from './knowledge-note-projection.dto';
 
 export const MAX_KNOWLEDGE_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
@@ -46,13 +47,9 @@ export type KnowledgeAttachmentProjectionClientDTO = z.infer<
   typeof KnowledgeAttachmentProjectionClientSchema
 >;
 
-export const ListKnowledgeAttachmentProjectionsSchema = z.object({
-  connectionId: z.string().min(1).optional(),
-  query: z.string().trim().max(200).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-});
+// Residual 675: attachment list reuses shared list-knowledge projections filter.
 export type ListKnowledgeAttachmentProjectionsReq = z.infer<
-  typeof ListKnowledgeAttachmentProjectionsSchema
+  typeof ListKnowledgeProjectionsSchema
 >;
 
 export const KnowledgeAttachmentProjectionListResponseSchema = z.object({

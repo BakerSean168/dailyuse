@@ -58,12 +58,13 @@ export const KnowledgeNoteProjectionClientSchema = z.object({
 });
 export type KnowledgeNoteProjectionClientDTO = z.infer<typeof KnowledgeNoteProjectionClientSchema>;
 
-export const ListKnowledgeNoteProjectionsSchema = z.object({
+/** Residual 675: shared list filter for knowledge note/attachment projections. */
+export const ListKnowledgeProjectionsSchema = z.object({
   connectionId: z.string().min(1).optional(),
   query: z.string().trim().max(200).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
-export type ListKnowledgeNoteProjectionsReq = z.infer<typeof ListKnowledgeNoteProjectionsSchema>;
+export type ListKnowledgeNoteProjectionsReq = z.infer<typeof ListKnowledgeProjectionsSchema>;
 
 export const KnowledgeNoteProjectionListResponseSchema = z.object({
   notes: z.array(KnowledgeNoteProjectionClientSchema),
