@@ -9,7 +9,7 @@ import { normalizeEmail } from './normalize-email';
  * Soft residual 949: maskEmail dual retired (mask-email-dual.surface.spec.ts).
  * Soft residual 957: vault FS guards dual retired
  *   (packages/repository/src/electron/vault-fs-guards-dual.surface.spec.ts).
- * Soft residual 968: tip focused suite numbers track Residual 968 evidence tip (275/1213).
+ * Soft residual 970: tip focused suite numbers track Residual 970 evidence tip (276/1216).
  * Soft residual 961: toChallengePurpose dual retired (to-challenge-purpose-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */

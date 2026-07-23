@@ -7,7 +7,7 @@ import { findSSEBoundary } from './find-sse-boundary';
  * Residual 963: findSSEBoundary dual retired.
  * Sole body in find-sse-boundary.ts; assistant/message HTTP adapters +
  * server chat-execution adapter import it.
- * Soft residual 968: tip focused suite numbers track Residual 968 evidence tip (275/1213).
+ * Soft residual 970: tip focused suite numbers track Residual 970 evidence tip (276/1216).
  * Soft residual 965: getRequestId dual retired (get-request-id-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
