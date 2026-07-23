@@ -6,7 +6,6 @@
 import { z } from 'zod';
 import type { IdentityId } from '../../../primitives';
 import { brandedId } from '../../../primitives';
-import type { KnowledgeRepositoryConnectionClientDTO } from '../aggregates/knowledge-repository-connection';
 
 export const KnowledgeRepositoryConnectionStatusSchema = z.enum([
   'PendingInstall',
@@ -122,9 +121,11 @@ export const ListKnowledgeRepositoryConnectionsResSchema = z.object({
   connections: z.array(KnowledgeRepositoryConnectionClientSchema),
 });
 
-export type ListKnowledgeRepositoryConnectionsRes = {
-  connections: KnowledgeRepositoryConnectionClientDTO[];
-};
+// Residual 773: list connections Res dual retired — OpenAPI + transport use ResSchema
+// (semantic Res is a z.infer alias; nested connection shape is ClientSchema).
+export type ListKnowledgeRepositoryConnectionsRes = z.infer<
+  typeof ListKnowledgeRepositoryConnectionsResSchema
+>;
 
 export const KnowledgeRepositoryConnectionParamsSchema = z.object({
   connectionId: z.string().min(1),
