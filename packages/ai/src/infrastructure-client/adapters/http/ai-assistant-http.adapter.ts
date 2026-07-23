@@ -2,6 +2,7 @@
  * AIAssistantHttpAdapter — residual 347 client for AssistantFacade SSE dispatch.
  * POST /ai/assistant/dispatch/sse streams Host-normalized AssistantEvent.
  * Residual 963: findSSEBoundary sole import (packages/ai/src/shared/find-sse-boundary.ts).
+ * Residual 977: parseSSE sole import (packages/ai/src/shared/parse-sse.ts).
  * Residual 967: isAbortLikeError sole import (packages/ai/src/shared/is-abort-like-error.ts).
  */
 import type { AssistantClientCommand, AssistantEvent } from '@dailyuse/contracts/ai';
@@ -11,7 +12,7 @@ import {
   createResultClientError,
   createResultClientErrorFromResponse,
 } from '../result-client-error';
-import { findSSEBoundary } from '../../../shared/find-sse-boundary';
+import { parseSSE } from '../../../shared/parse-sse';
 import { isAbortLikeError } from '../../../shared/is-abort-like-error';
 
 export class AIAssistantHttpAdapter implements IAIAssistantApiClient {
@@ -99,50 +100,4 @@ export class AIAssistantHttpAdapter implements IAIAssistantApiClient {
   }
 }
 
-async function* parseSSE(
-  response: Response,
-): AsyncGenerator<{ event: string; data: string }, void, void> {
-  if (!response.body) {
-    return;
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-    while (true) {
-      const boundary = findSSEBoundary(buffer);
-      if (!boundary) {
-        break;
-      }
-
-      const rawEvent = buffer.slice(0, boundary.index);
-      buffer = buffer.slice(boundary.index + boundary.length);
-
-      let event = 'message';
-      const dataLines: string[] = [];
-      for (const line of rawEvent.split(/\r?\n/)) {
-        if (line.startsWith('event:')) {
-          event = line.slice(6).trim();
-          continue;
-        }
-        if (line.startsWith('data:')) {
-          dataLines.push(line.slice(5).trimStart());
-        }
-      }
-
-      yield {
-        event,
-        data: dataLines.join('\n'),
-      };
-    }
-  }
-}
 

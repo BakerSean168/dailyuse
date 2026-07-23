@@ -1,5 +1,6 @@
 /**
  * Residual 963: findSSEBoundary sole import (packages/ai/src/shared/find-sse-boundary.ts).
+ * Residual 977: parseSSE sole import (packages/ai/src/shared/parse-sse.ts).
  */
 import type {
   ChatExecutionCompleteInput,
@@ -10,7 +11,7 @@ import type {
 } from '../../application/ports';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
-import { findSSEBoundary } from '../../../shared/find-sse-boundary';
+import { parseSSE } from '../../../shared/parse-sse';
 
 interface AIServiceChatCompleteResponse {
   content: string;
@@ -152,50 +153,4 @@ function toNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
-async function* parseSSE(
-  response: Response,
-): AsyncGenerator<{ event: string; data: string }, void, void> {
-  if (!response.body) {
-    return;
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-    while (true) {
-      const boundary = findSSEBoundary(buffer);
-      if (!boundary) {
-        break;
-      }
-
-      const rawEvent = buffer.slice(0, boundary.index);
-      buffer = buffer.slice(boundary.index + boundary.length);
-
-      let event = 'message';
-      const dataLines: string[] = [];
-      for (const line of rawEvent.split(/\r?\n/)) {
-        if (line.startsWith('event:')) {
-          event = line.slice(6).trim();
-          continue;
-        }
-        if (line.startsWith('data:')) {
-          dataLines.push(line.slice(5).trimStart());
-        }
-      }
-
-      yield {
-        event,
-        data: dataLines.join('\n'),
-      };
-    }
-  }
-}
 
