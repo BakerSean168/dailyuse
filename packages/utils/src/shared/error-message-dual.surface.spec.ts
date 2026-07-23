@@ -6,7 +6,7 @@ import { errorMessage } from './error-message';
 /**
  * Residual 999: errorMessage dual retired (AI runtime + app-vue local vault).
  * Sole body in @dailyuse/utils/shared/error-message.
- * Soft residual 1026: tip focused suite numbers track Residual 1026 evidence tip (303/1315).
+ * Soft residual 1028: tip focused suite numbers track Residual 1028 evidence tip (304/1319).
  * Soft residual 1019: database CLI scripts dual retired onto this sole (toErrorMessage alias).
  * Does not flip §13.2 checkboxes.
  */

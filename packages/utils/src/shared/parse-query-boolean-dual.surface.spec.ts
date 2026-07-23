@@ -5,7 +5,7 @@ import { parseBoolean } from './parse-query-value';
 
 /**
  * Residual 1021: notification parseBoolean dual retired onto parse-query-value sole.
- * Soft residual 1026: tip focused suite numbers track Residual 1026 evidence tip (303/1315).
+ * Soft residual 1028: tip focused suite numbers track Residual 1028 evidence tip (304/1319).
  * Soft residual 989: parseString/parseNumber already sole for notification + reminder.
  * Soft residual 985: goal parseBoolean remains true/false-only keep-boundary.
  * Soft residual: schedule parseBoolean remains keep-boundary (boolean literal + empty shapes).

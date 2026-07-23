@@ -8,7 +8,7 @@ import { RefAllocator } from '../../portable-runtime';
 /**
  * Residual 1017: goal/editor resolveRef dual retired onto residual 1003 sole.
  * Sole bodies in projection-helpers (entityLabel message domain).
- * Soft residual 1026: tip focused suite numbers track Residual 1026 evidence tip (303/1315).
+ * Soft residual 1028: tip focused suite numbers track Residual 1028 evidence tip (304/1319).
  * Soft residual 1003: task/reminder/repository already on sole.
  * Does not flip §13.2 checkboxes.
  */

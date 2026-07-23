@@ -7,7 +7,7 @@ import { parseSSE } from './parse-sse';
  * Residual 977: parseSSE dual retired.
  * Sole body in parse-sse.ts; assistant/message HTTP adapters + server chat-execution import it.
  * Soft residual 963: findSSEBoundary dual retired (find-sse-boundary-dual.surface.spec.ts).
- * Soft residual 1026: tip focused suite numbers track Residual 1026 evidence tip (303/1315).
+ * Soft residual 1028: tip focused suite numbers track Residual 1028 evidence tip (304/1319).
  * Soft residual 979: toPrismaJson dual retired (adapters/prisma/to-prisma-json-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
