@@ -1,13 +1,11 @@
 /**
  * DoNotDisturbConfig Value Object
  * 勿扰模式配置值对象
+ *
+ * Residual 851: DoNotDisturbConfigDTO dual retired — sole DoNotDisturbConfig interface + type alias.
  */
 
-// ============ 接口定义 ============
-
-/**
- * DoNotDisturbConfig 接口
- */
+// Residual 851: sole DoNotDisturbConfig body.
 export interface DoNotDisturbConfig {
   enabled: boolean;
   startTime: string; // 'HH:mm' format
@@ -15,15 +13,5 @@ export interface DoNotDisturbConfig {
   daysOfWeek: number[]; // 0-6 (0=Sunday)
 }
 
-// ============ DTO 定义 ============
-
-/**
- * DoNotDisturbConfig DTO (传输层)
- */
-export interface DoNotDisturbConfigDTO {
-  enabled: boolean;
-  startTime: string;
-  endTime: string;
-  daysOfWeek: number[];
-}
-
+// Residual 851: DoNotDisturbConfigDTO dual retired — DTO is the DoNotDisturbConfig shape.
+export type DoNotDisturbConfigDTO = DoNotDisturbConfig;

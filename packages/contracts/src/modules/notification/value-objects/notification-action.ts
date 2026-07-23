@@ -1,15 +1,13 @@
 /**
  * NotificationAction Value Object
  * 通知动作值对象
+ *
+ * Residual 851: NotificationActionDTO dual retired — sole NotificationAction interface + type alias.
  */
 
 import type { NotificationActionType } from './notification-action-type';
 
-// ============ 接口定义 ============
-
-/**
- * NotificationAction 接口
- */
+// Residual 851: sole NotificationAction body.
 export interface NotificationAction {
   id: string;
   label: string;
@@ -17,15 +15,5 @@ export interface NotificationAction {
   payload?: unknown;
 }
 
-// ============ DTO 定义 ============
-
-/**
- * NotificationAction DTO (传输层)
- */
-export interface NotificationActionDTO {
-  id: string;
-  label: string;
-  type: NotificationActionType;
-  payload?: unknown;
-}
-
+// Residual 851: NotificationActionDTO dual retired — DTO is the NotificationAction shape.
+export type NotificationActionDTO = NotificationAction;
