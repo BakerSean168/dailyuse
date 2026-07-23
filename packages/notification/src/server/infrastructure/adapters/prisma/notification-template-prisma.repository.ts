@@ -1,3 +1,5 @@
+// Residual 1025: sole parseJsonSafe (local dual retired).
+import { parseJsonSafe } from '@dailyuse/utils/shared';
 /**
  * NotificationTemplate Prisma Repository
  *
@@ -46,14 +48,6 @@ type PrismaNotificationTemplate = {
 // Mappers: Prisma → Domain
 // ============================================================
 
-function parseJsonSafe<T>(value: string | null | undefined): T | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
-  }
-}
 
 function mapPrismaTemplateToDomain(row: PrismaNotificationTemplate): NotificationTemplate {
   return NotificationTemplate.load({

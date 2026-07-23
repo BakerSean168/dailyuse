@@ -11,6 +11,8 @@ import type { INotificationRepository } from '../../../domain/repositories/i-not
 import { Notification } from '../../../domain/aggregates/notification';
 import { NotificationId, NotificationAction, NotificationMetadata } from '../../../domain/value-objects';
 import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
+// Residual 1025: sole parseJsonSafe (local dual retired).
+import { parseJsonSafe } from '@dailyuse/utils/shared';
 
 const notificationEventPublisher = createTypedEventPublisher<NotificationEventMap>(eventBus);
 
@@ -40,14 +42,6 @@ function toTimestamp(value: string | null | undefined): number | null {
   return Number.isNaN(timestamp) ? null : timestamp;
 }
 
-function parseJson<T>(value: string | null): T | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
-  }
-}
 
 function toServerDTO(row: NotificationRow): NotificationServerDTO {
   return {
@@ -61,8 +55,8 @@ function toServerDTO(row: NotificationRow): NotificationServerDTO {
     status: row.status as NotificationStatus,
     isRead: Boolean(row.is_read ?? 0),
     readAt: toTimestamp(row.read_at),
-    actions: parseJson<NotificationServerDTO['actions']>(row.actions),
-    metadata: parseJson<NotificationServerDTO['metadata']>(row.metadata),
+    actions: parseJsonSafe<NotificationServerDTO['actions']>(row.actions),
+    metadata: parseJsonSafe<NotificationServerDTO['metadata']>(row.metadata),
     expiresAt: toTimestamp(row.expires_at),
     version: row.version ?? 1,
     createdAt: toTimestamp(row.created_at) ?? Date.now(),

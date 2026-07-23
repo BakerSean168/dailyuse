@@ -3,6 +3,7 @@
  *
  * Used by Prisma and PowerSync mappers for defensive parsing of database
  * values such as dates, JSON payloads, and SQL LIKE fragments.
+ * Residual 1025: parseJsonSafe elevated for notification mapper dual retirement.
  */
 
 export function extractErrorMessage(err: unknown): string {
@@ -45,6 +46,14 @@ export function parseJson<T>(value: string | null | undefined, fallback: T): T {
   } catch {
     return fallback;
   }
+}
+
+/**
+ * Residual 1025: sole null-fallback JSON parser for notification prisma/powersync mappers.
+ * Equivalent to parseJson(value, null); local parseJsonSafe duals retired.
+ */
+export function parseJsonSafe<T>(value: string | null | undefined): T | null {
+  return parseJson(value, null);
 }
 
 export function parseStringArray(value: string | null | undefined): string[] {
