@@ -41,6 +41,8 @@ export function toTimestamp(value: unknown): number | undefined {
   return undefined;
 }
 
+// Residual 1113 keep-boundary: always boolean (fallback); numbers + case-insensitive 1/0/true/false.
+// Intentionally not query parseBoolean family (utils/schedule/goal → boolean|undefined, no fallback).
 export function toBoolean(value: unknown, fallback = false): boolean {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return value !== 0;

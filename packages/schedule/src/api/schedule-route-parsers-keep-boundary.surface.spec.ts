@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
  * utils parseString prefers first array entry and has no empty-string early return;
  * utils parseBoolean accepts "1"/"0" strings only (no boolean literals).
  * Soft residual 1067/1069: goal/governance parse helpers remain package-local too.
+ * Soft residual 1113: data-portability toBoolean keep-boundary (fallback boolean; no force-merge).
  * Does not flip §13.2 checkboxes.
  */
 describe('schedule route parsers keep-boundary (residual 1073)', () => {

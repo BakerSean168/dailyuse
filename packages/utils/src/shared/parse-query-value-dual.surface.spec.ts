@@ -13,6 +13,7 @@ import { parseBoolean, parseNumber, parseString } from './parse-query-value';
  * Soft residual 1073: schedule route parsers keep-boundary surface (no force-merge).
  * Soft residual: goal parseBoolean sole (residual 985) is true/false-only keep-boundary vs this dual.
  * Soft residual 1067: goal parseNumber + parseStringArray keep-boundary (no force-merge).
+ * Soft residual 1113: data-portability toBoolean keep-boundary (always boolean + numbers; no force-merge).
  * Does not flip §13.2 checkboxes.
  */
 describe('parseString/parseNumber dual retired (residual 989)', () => {

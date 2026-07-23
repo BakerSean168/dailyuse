@@ -11,6 +11,7 @@ import { toStringArray as portableToStringArray } from '../../../../../data-port
  * - data-portability projection: parseJsonField first then typeof string filter
  * Soft residual 969: knowledge-index dual retired remains.
  * Soft residual 1095: parseJsonField keep-boundary remains (portable depends on it).
+ * Soft residual 1113: data-portability toBoolean keep-boundary remains.
  * Does not flip §13.2 checkboxes.
  */
 describe('toStringArray cross-package keep-boundary (residual 1109)', () => {
