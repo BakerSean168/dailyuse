@@ -8,15 +8,14 @@ import type { TestAIProviderResultDTO } from '../dtos/provider-test-result.dto';
 
 export const OpenAICompatibleProviderType = 'openai_compatible' as const;
 
-const ProviderBaseSchema = z.object({
+// Residual 683: create request owns the provider base body (no private base schema name dual).
+export const CreateAIProviderConfigSchema = z.object({
   name: z.string().trim().min(1).max(100),
   baseUrl: z.string().trim().url(),
   apiKey: z.string().trim().min(1),
   model: z.string().trim().min(1).max(120),
   isDefault: z.boolean().default(false).optional(),
 });
-
-export const CreateAIProviderConfigSchema = ProviderBaseSchema;
 export type CreateAIProviderConfigReq = z.infer<typeof CreateAIProviderConfigSchema>;
 export type CreateAIProviderConfigRes = AIProviderConfigClientDTO;
 
