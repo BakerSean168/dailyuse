@@ -5,7 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 899: LoginRequest ≠ EmailLoginCredentials intentional keep-boundary.
  * Offline/local uses identifier; online email login uses email.
- * DesktopLoginRequest remains type alias of EmailLoginCredentials (residual 869).
+ * Residual 869/921 (soft): DesktopLoginRequest name dual fully retired —
+ *   online login uses EmailLoginCredentials sole body
+ *   (application/desktop-login-request-dual.surface.spec.ts).
  * Residual 897 (soft): TokenStorageData ≠ SaveTokenRequest keep-boundary
  *   (token-storage-save-request-keep-boundary.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
@@ -48,7 +50,7 @@ describe('login request vs email credentials keep-boundary (residual 899)', () =
     );
   });
 
-  it('keeps EmailLoginCredentials as online email sole body (DesktopLoginRequest alias)', () => {
+  it('keeps EmailLoginCredentials as online email sole body (no DesktopLoginRequest name dual)', () => {
     expect(contractsAuth).toContain('Residual 899');
     expect(contractsAuth).toMatch(/export interface EmailLoginCredentials\b/);
     const body = interfaceBody(contractsAuth, 'EmailLoginCredentials');
@@ -60,21 +62,28 @@ describe('login request vs email credentials keep-boundary (residual 899)', () =
     expect(contractsAuth).not.toContain(
       'export type EmailLoginCredentials = LoginRequest',
     );
-    expect(loginDesktop).toContain('export type DesktopLoginRequest = EmailLoginCredentials');
+    expect(loginDesktop).toContain('Residual 921');
+    expect(loginDesktop).toContain('request: EmailLoginCredentials');
+    expect(loginDesktop).not.toMatch(/export type DesktopLoginRequest\b/);
     expect(loginDesktop).not.toMatch(/export interface DesktopLoginRequest\b/);
   });
 
   it('infra offline path uses LoginRequest; application online path uses EmailLoginCredentials', () => {
     expect(loginOrchestrator).toContain('async loginOffline(request: LoginRequest)');
     expect(sessionManager).toContain('async loginOffline(request: LoginRequest)');
-    expect(loginDesktop).toContain('request: DesktopLoginRequest');
-    expect(loginDesktop).toContain('export type DesktopLoginRequest = EmailLoginCredentials');
+    expect(loginDesktop).toContain('request: EmailLoginCredentials');
+    expect(loginDesktop).toContain(
+      'onSuccess?: (response: AuthResponseDTO, request: EmailLoginCredentials)',
+    );
     // Must not collapse offline identifier shape into email credentials
     expect(loginOrchestrator).not.toContain(
       'export type LoginRequest = EmailLoginCredentials',
     );
     expect(loginDesktop).not.toContain(
       'export type DesktopLoginRequest = LoginRequest',
+    );
+    expect(loginDesktop).not.toContain(
+      'export type DesktopLoginRequest = EmailLoginCredentials',
     );
   });
 });

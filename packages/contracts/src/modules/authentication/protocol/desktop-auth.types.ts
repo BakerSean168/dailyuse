@@ -304,7 +304,8 @@ export interface AuthBootstrapSnapshot {
 
 /**
  * Email + password login credentials.
- * Residual 869: sole desktop email-login request shape (DesktopLoginRequest is type alias).
+ * Residual 869: sole desktop email-login request shape.
+ * Residual 921 (soft): DesktopLoginRequest name dual fully retired — consumers use EmailLoginCredentials.
  * Residual 899: online email credentials keep-boundary (≠ LoginRequest identifier offline shape).
  */
 export interface EmailLoginCredentials {

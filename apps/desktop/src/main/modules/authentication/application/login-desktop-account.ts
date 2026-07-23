@@ -15,8 +15,7 @@ import {
 } from './auth-flow-types';
 
 // Residual 869: DesktopLoginRequest dual retired — EmailLoginCredentials is the sole shape.
-export type DesktopLoginRequest = EmailLoginCredentials;
-
+// Residual 921: DesktopLoginRequest name fully retired — login uses EmailLoginCredentials sole body.
 // Residual 917: DesktopLoginResult dual retired — DesktopAuthFlowResult sole application name.
 
 function toErrorLog(error: unknown): unknown {
@@ -42,11 +41,11 @@ interface LoginDesktopAccountDependencies {
   isOnline: () => boolean;
   remoteGateway: Pick<AuthRemoteGateway, 'createLoginUrl' | 'login'>;
   logger: AuthFlowLogger;
-  onSuccess?: (response: AuthResponseDTO, request: DesktopLoginRequest) => Promise<void>;
+  onSuccess?: (response: AuthResponseDTO, request: EmailLoginCredentials) => Promise<void>;
 }
 
 export async function loginDesktopAccount(
-  request: DesktopLoginRequest,
+  request: EmailLoginCredentials,
   dependencies: LoginDesktopAccountDependencies,
 ): Promise<DesktopAuthFlowResult> {
   const { isOnline, remoteGateway, logger, onSuccess } = dependencies;

@@ -80,7 +80,7 @@ describe('desktop-auth AuthStatusDTO dual retired (residual 865)', () => {
 /**
  * Residual 867: LoginResponse dual deleted (zero consumers).
  * Desktop offline login uses OfflineLoginResponse; online auth uses AuthResponseDTO.
- * Residual 869 (soft): DesktopLoginRequest dual retired via EmailLoginCredentials type alias
+ * Residual 869/921 (soft): DesktopLoginRequest name dual fully retired — EmailLoginCredentials sole body
  *   (apps/desktop .../desktop-login-request-dual.surface.spec.ts).
  * Residual 873 (soft): OfflineLoginResponse dual retired — sole body in contracts
  *   (offline-login-response-dual.surface.spec.ts).
