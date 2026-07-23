@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 869: DesktopLoginRequest dual retired.
  * Exact shape of EmailLoginCredentials — type alias only (no second interface body).
  * Soft residual 871: RegisterRequest dual retired in desktop-register-request-dual.surface.spec.ts.
+ * Residual 899 (soft): LoginRequest ≠ EmailLoginCredentials keep-boundary
+ *   (infrastructure/login-request-email-credentials-keep-boundary.surface.spec.ts).
  */
 describe('desktop DesktopLoginRequest dual retired (residual 869)', () => {
   const appDir = __dirname;

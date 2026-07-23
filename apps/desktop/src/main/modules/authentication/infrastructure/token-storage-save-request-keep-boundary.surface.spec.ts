@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
  * token-manager maps request → storage; not exact duals to collapse / type-alias.
  * Residual 895 (soft): refresh-result layered dual keep-boundary
  *   (application/refresh-result-layered-keep-boundary.surface.spec.ts).
+ * Residual 899 (soft): LoginRequest ≠ EmailLoginCredentials keep-boundary
+ *   (infrastructure/login-request-email-credentials-keep-boundary.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('token storage vs save-request keep-boundary (residual 897)', () => {

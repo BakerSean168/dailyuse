@@ -206,6 +206,7 @@ export interface RefreshSessionResponse {
 
 /**
  * Login request from renderer to main process.
+ * Residual 899: offline/local identifier login shape (≠ EmailLoginCredentials email online shape).
  */
 export interface LoginRequest {
   identifier: string;
@@ -303,6 +304,7 @@ export interface AuthBootstrapSnapshot {
 /**
  * Email + password login credentials.
  * Residual 869: sole desktop email-login request shape (DesktopLoginRequest is type alias).
+ * Residual 899: online email credentials keep-boundary (≠ LoginRequest identifier offline shape).
  */
 export interface EmailLoginCredentials {
   email: string;
