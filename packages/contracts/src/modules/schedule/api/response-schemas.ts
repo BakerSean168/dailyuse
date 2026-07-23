@@ -40,20 +40,9 @@ export {
 };
 
 
-const ScheduleExecutionResponseSchema: z.ZodType<{
-  id: ScheduleExecutionId;
-  scheduleTaskId: ScheduleTaskId;
-  executionTime: number;
-  status: ExecutionStatus;
-  duration: number | null;
-  result: Record<string, unknown> | null;
-  error: string | null;
-  retryCount: number;
-  version: number;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt: number | null;
-}> = z.object({
+// Residual 833: ScheduleExecutionClientDTO dual retired — sole ScheduleExecutionResponseSchema + z.infer
+// (semantic type is z.infer alias in entities/schedule-execution-client.ts).
+export const ScheduleExecutionResponseSchema = z.object({
   id: brandedId<ScheduleExecutionId>(),
   scheduleTaskId: brandedId<ScheduleTaskId>(),
   executionTime: z.number(),

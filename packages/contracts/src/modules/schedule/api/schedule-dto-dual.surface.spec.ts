@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 260: schedule detail response dual aliases are gone.
  * Callers use ScheduleTaskClientDTO / ScheduleExecutionClientDTO directly.
+  *
+ * Soft residual 833: ScheduleExecutionClientDTO dual retired via ScheduleExecutionResponseSchema
+ * (see reminder-template-active-time-schedule-execution-dual surface).
  */
 describe('schedule Schedule*DTO dual single-track surface', () => {
   const apiDir = __dirname;

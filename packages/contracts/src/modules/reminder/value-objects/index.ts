@@ -38,6 +38,7 @@ export type {
   TriggerConfigDTO,
 } from './trigger-config';
 
+export { ActiveTimeConfigSchema } from './active-time-config';
 export type {
   IActiveTimeConfig,
   ActiveTimeConfigDTO,

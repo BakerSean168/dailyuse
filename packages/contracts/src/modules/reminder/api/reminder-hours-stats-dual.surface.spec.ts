@@ -8,6 +8,9 @@ import { describe, expect, it } from 'vitest';
   *
  * Soft residual 827: ReminderGroupClientDTO dual retired via ReminderGroupResponseSchema
  * (see reminder-group-history-client-dto-dual surface).
+  *
+ * Soft residual 833: ActiveTimeConfigSchema also re-exported from VO (activatedAt)
+ * (see reminder-template-active-time-schedule-execution-dual surface).
  */
 describe('reminder hours/stats dual retired (residual 733)', () => {
   const apiDir = __dirname;
@@ -41,7 +44,7 @@ describe('reminder hours/stats dual retired (residual 733)', () => {
     expect(responseSchemas).toContain("from '../value-objects/active-hours-config'");
     expect(responseSchemas).toContain("from '../value-objects/group-stats'");
     expect(responseSchemas).toContain(
-      'export { ActiveHoursConfigSchema, GroupStatsSchema }',
+      'export { ActiveHoursConfigSchema, GroupStatsSchema, ActiveTimeConfigSchema }',
     );
     expect(responseSchemas).not.toMatch(
       /const ActiveHoursConfigSchema = z\.object\(\{/,

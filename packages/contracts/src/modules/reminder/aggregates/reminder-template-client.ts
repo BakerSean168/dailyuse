@@ -1,67 +1,12 @@
 /**
  * Reminder Template Aggregate Root - Client Interface
- * 提醒模板聚合?- 客户端接?
+ * 提醒模板聚合根 - 客户端接口
+ *
+ * Residual 833: ReminderTemplateClientDTO dual retired — sole ReminderTemplateResponseSchema + z.infer.
  */
 
-import type {
-  ReminderTemplateId,
-  ReminderGroupId,
-  IdentityId,
-  TransferDate,
-} from '../../../primitives';
-import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import type { ReminderType } from '../value-objects/reminder-type';
-import type { ReminderStatus } from '../value-objects/reminder-status';
+import type { z } from 'zod';
+import { ReminderTemplateResponseSchema } from '../api/response-schemas';
 
-// 从值对象导入类型
-import type {
-  NotificationConfigDTO,
-  TriggerConfigDTO,
-  ActiveTimeConfigDTO,
-  ActiveHoursConfigDTO,
-} from '../value-objects';
-import type { ReminderHistoryClientDTO } from '../entities/reminder-history-client';
-
-// ============ DTO 定义 ============
-
-/**
- * Reminder Template Client DTO
- */
-export interface ReminderTemplateClientDTO {
-  id: ReminderTemplateId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  type: ReminderType;
-  trigger: TriggerConfigDTO;
-  activeTime: ActiveTimeConfigDTO;
-  activeHours: ActiveHoursConfigDTO | null;
-  notificationConfig: NotificationConfigDTO;
-  selfEnabled: boolean;
-  status: ReminderStatus;
-  effectiveEnabled: boolean; // 实际启用状态（计算得出?
-  groupId: ReminderGroupId | null;
-  groupName?: string | null;
-  importanceLevel: ImportanceLevel;
-  tags: string[];
-  color: string | null;
-  icon: string | null;
-  nextTriggerAt: TransferDate | null;
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-
-  // ===== 子实?DTO =====
-  history: ReminderHistoryClientDTO[] | null; // 提醒历史列表（可选加载）
-
-  // UI 扩展
-  isActive: boolean;
-  isPaused: boolean;
-  controlledByGroup: boolean; // 是否受组控制
-  lifecycleSource: 'global' | 'group' | 'template';
-  effectiveEnabledReason: string;
-  groupControlMode: 'Group' | 'Individual' | null;
-  groupEnabled: boolean | null;
-  globalReminderEnabled: boolean;
-}
+// Residual 833: ReminderTemplateClientDTO dual retired — OpenAPI + transport use ReminderTemplateResponseSchema.
+export type ReminderTemplateClientDTO = z.infer<typeof ReminderTemplateResponseSchema>;

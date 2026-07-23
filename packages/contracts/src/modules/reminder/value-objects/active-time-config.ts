@@ -5,7 +5,20 @@
  * - Removed endDate field (lifecycle control handled by status field)
  * - Renamed startDate to activatedAt (clearer semantics)
  * - activatedAt serves as the calculation base for recurring reminders
+ *
+ * Residual 833: ActiveTimeConfigDTO dual retired — sole ActiveTimeConfigSchema + z.infer
+ * (response schema no longer uses shadow startDate/endDate transport dual).
  */
+
+import { z } from 'zod';
+
+// Residual 833: ActiveTimeConfigDTO dual retired — OpenAPI + transport use ActiveTimeConfigSchema.
+export const ActiveTimeConfigSchema = z.object({
+  /** Activation timestamp (epoch ms) - last enablement / recurrence base */
+  activatedAt: z.number(),
+});
+
+export type ActiveTimeConfigDTO = z.infer<typeof ActiveTimeConfigSchema>;
 
 // ============ Interface Definitions ============
 
@@ -22,14 +35,4 @@ export interface IActiveTimeConfig {
   ): IActiveTimeConfig;
 
   // DTO conversion methods
-}
-
-// ============ DTO Definitions ============
-
-/**
- * Active Time Config DTO
- */
-export interface ActiveTimeConfigDTO {
-  /** Activation timestamp */
-  activatedAt: number;
 }

@@ -12,6 +12,9 @@ import { describe, expect, it } from 'vitest';
   *
  * Soft residual 831: ScheduleTaskClientDTO dual retired via ScheduleTaskResponseSchema
  * (see task-instance-dependency-schedule-task-client-dto-dual surface).
+  *
+ * Soft residual 833: ScheduleExecutionResponseSchema exported without ZodType dual; nested under ScheduleTask
+ * (see reminder-template-active-time-schedule-execution-dual surface).
  */
 describe('schedule response dual retired (residual 715)', () => {
   const apiDir = __dirname;

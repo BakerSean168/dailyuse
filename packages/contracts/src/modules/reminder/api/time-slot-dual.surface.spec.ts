@@ -8,6 +8,9 @@ import { describe, expect, it } from 'vitest';
   *
  * Soft residual 829: UserReminderPreferencesClientDTO dual retired via UserReminderPreferencesResponseSchema
  * (see notification-preference-calendar-prefs-client-dto-dual surface).
+  *
+ * Soft residual 833: ActiveTimeConfigDTO dual retired via ActiveTimeConfigSchema (activatedAt)
+ * (see reminder-template-active-time-schedule-execution-dual surface).
  */
 describe('reminder time-slot dual retired (residual 751)', () => {
   const apiDir = __dirname;

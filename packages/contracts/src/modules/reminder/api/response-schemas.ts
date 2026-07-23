@@ -22,6 +22,7 @@ import { NotificationChannel } from '../value-objects/notification-channel';
 import { ControlMode } from '../value-objects/control-mode';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { ActiveHoursConfigSchema } from '../value-objects/active-hours-config';
+import { ActiveTimeConfigSchema } from '../value-objects/active-time-config';
 import { GroupStatsSchema } from '../value-objects/group-stats';
 import { TriggerConfigSchema } from '../value-objects/trigger-config';
 import { NotificationConfigSchema } from '../value-objects/notification-config';
@@ -31,8 +32,9 @@ import { TimeSlotSchema } from '../value-objects/time-slot';
 export { TimeSlotSchema };
 
 // Residual 733: ActiveHoursConfigSchema / GroupStatsSchema owned by value-objects
+// Residual 833: ActiveTimeConfigSchema owned by value-objects (activatedAt; no startDate/endDate dual).
 // (re-exported for OpenAPI nested response consumers).
-export { ActiveHoursConfigSchema, GroupStatsSchema };
+export { ActiveHoursConfigSchema, GroupStatsSchema, ActiveTimeConfigSchema };
 
 // Residual 735: TriggerConfigSchema / NotificationConfigSchema owned by value-objects
 // (re-exported for OpenAPI nested response consumers).
@@ -40,16 +42,12 @@ export { TriggerConfigSchema, NotificationConfigSchema };
 
 // ============ 值对象 Zod Schema ============
 
-const ActiveTimeConfigSchema = z.object({
-  startDate: z.number(),
-  endDate: z.number().nullable(),
-});
-
-
 // ============ ReminderTemplate Response Schema ============
 
 /**
- * 与 ReminderTemplateClientDTO 严格对齐的响应 schema。
+ * Residual 833: ReminderTemplateClientDTO dual retired — sole ReminderTemplateResponseSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/reminder-template-client.ts).
+ * activeTime uses VO-owned ActiveTimeConfigSchema (activatedAt).
  */
 export const ReminderTemplateResponseSchema = z.object({
   id: brandedId<ReminderTemplateId>(),
