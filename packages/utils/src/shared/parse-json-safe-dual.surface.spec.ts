@@ -8,6 +8,7 @@ import { parseJson, parseJsonSafe } from './persistence';
  * Soft residual 1038: tip focused suite numbers track Residual 1038 evidence tip (309/1339)
  *   until residual 1026 suite re-run.
  * Soft residual: account powersync private parseJson remains keep-boundary (throws on invalid).
+ * Soft residual 1081: account PowerSync parseJson keep-boundary surface (no force-merge).
  * Does not flip §13.2 checkboxes.
  */
 describe('parseJsonSafe dual retired (residual 1025)', () => {

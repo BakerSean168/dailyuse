@@ -1,3 +1,9 @@
+/**
+ * Account PowerSync row mapper.
+ * Residual 1081 keep-boundary: private static parseJson throws on invalid JSON
+ * (required string columns). Intentionally not utils parseJson/parseJsonSafe
+ * (null/undefined + fallback, never throw).
+ */
 import type { AccountState } from '../../../../domain';
 import { Account } from '../../../../domain';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
@@ -104,6 +110,7 @@ export class AccountPowerSyncMapper {
     };
   }
 
+  // Residual 1081 keep-boundary: throw-on-invalid parse (no fallback dual).
   private static parseJson<T>(value: string): T {
     return JSON.parse(value) as T;
   }

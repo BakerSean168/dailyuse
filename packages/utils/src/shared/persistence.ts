@@ -4,6 +4,7 @@
  * Used by Prisma and PowerSync mappers for defensive parsing of database
  * values such as dates, JSON payloads, and SQL LIKE fragments.
  * Residual 1025: parseJsonSafe elevated for notification mapper dual retirement.
+ * Soft residual 1081: account PowerSync private parseJson keep-boundary (throws; no force-merge).
  */
 
 export function extractErrorMessage(err: unknown): string {
@@ -39,6 +40,7 @@ export function toDateOrNull(value: Date | number | string | null | undefined): 
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+/** Soft residual 1081: keep-boundary vs account PowerSync throw-on-invalid parseJson. */
 export function parseJson<T>(value: string | null | undefined, fallback: T): T {
   if (!value) return fallback;
   try {
