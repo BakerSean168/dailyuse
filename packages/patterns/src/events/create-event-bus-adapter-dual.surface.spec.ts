@@ -5,7 +5,7 @@ import { createEventBusAdapter } from './index';
 
 /**
  * Residual 1031: patterns goal/createEventBusAdapter dual retired onto events sole.
- * Soft residual 1030: tip focused suite numbers track Residual 1030 evidence tip (305/1323).
+ * Soft residual 1032: tip focused suite numbers track Residual 1032 evidence tip (306/1327).
  * Does not flip §13.2 checkboxes.
  */
 describe('createEventBusAdapter dual retired (residual 1031)', () => {

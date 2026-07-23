@@ -11,7 +11,7 @@ import {
 /**
  * Residual 1007: normalizeReminderTimeOfDay + buildReminderStartTimestamp dual retired.
  * Sole bodies in @dailyuse/utils/shared/reminder-time-of-day.
- * Soft residual 1030: tip focused suite numbers track Residual 1030 evidence tip (305/1323).
+ * Soft residual 1032: tip focused suite numbers track Residual 1032 evidence tip (306/1327).
  * Soft residual 1013: API/Desktop compose via buildReminderTemplateInput sole (no direct import).
  * Does not flip §13.2 checkboxes.
  */
