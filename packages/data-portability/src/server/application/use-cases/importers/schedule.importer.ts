@@ -7,6 +7,8 @@ import type { PortableScheduleData } from '@dailyuse/contracts/data-portability'
 import type { TxClient } from './import-helpers';
 import { allocateId, optRef, jsonStringify, inc, rec, timestamps } from './import-helpers';
 
+// Residual 1099 keep-boundary: plain-object or empty {} fallback for portable import fields.
+// Soft residual 1099: AI goal-planning asRecord returns null; projection toRecord returns undefined.
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)

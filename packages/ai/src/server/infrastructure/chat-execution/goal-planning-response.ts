@@ -129,6 +129,8 @@ function safeParseJson(content: string): Record<string, unknown> | null {
   }
 }
 
+// Residual 1099 keep-boundary: plain-object or null (never empty {}).
+// Intentionally not data-portability schedule.importer asRecord ({} fallback) or toRecord (undefined).
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)

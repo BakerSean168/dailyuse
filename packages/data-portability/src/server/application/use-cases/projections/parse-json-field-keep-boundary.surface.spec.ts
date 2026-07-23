@@ -13,6 +13,7 @@ import { parseJsonField } from './projection-helpers';
  * - account PowerSync private parseJson (required string, throws)
  * Soft residual 1091: api parseJsonLikeString keep-boundary remains.
  * Soft residual 1081: account PowerSync throw parseJson keep-boundary remains.
+ * Soft residual 1099: asRecord/toRecord keep-boundary family (null vs {} vs undefined).
  * Does not flip §13.2 checkboxes.
  */
 describe('data-portability parseJsonField keep-boundary (residual 1095)', () => {

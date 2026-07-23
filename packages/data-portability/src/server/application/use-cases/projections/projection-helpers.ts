@@ -55,6 +55,8 @@ export function toStringArray(value: unknown): string[] {
   return parsed.filter((item): item is string => typeof item === 'string');
 }
 
+// Residual 1099 keep-boundary: parseJsonField then plain-object or undefined (not {} / null).
+// Soft residual 1099: AI asRecord null + schedule.importer asRecord {} keep-boundaries (no force-merge).
 export function toRecord(value: unknown): Record<string, unknown> | undefined {
   const parsed = parseJsonField(value);
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
