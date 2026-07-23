@@ -12,6 +12,7 @@ import type {
   BatchOperationResultDTO,
   NotificationClientDTO,
   NotificationPreferenceClientDTO,
+  UnreadCountResponse,
   UpdateNotificationPreferenceReq,
 } from '@dailyuse/contracts/notification';
 
@@ -42,9 +43,8 @@ export interface NotificationListResponse {
   hasMore: boolean;
 }
 
-export interface UnreadCountResponse {
-  count: number;
-}
+// Residual 801: UnreadCountResponse dual retired — contracts UnreadCountResponseSchema + z.infer.
+export type { UnreadCountResponse };
 
 // ============ Port Interface ============
 

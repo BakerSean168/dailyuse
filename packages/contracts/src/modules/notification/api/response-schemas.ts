@@ -40,10 +40,15 @@ export const NotificationBatchResultSchema = z.object({
 
 /**
  * Unread Count Response Schema
+ * Residual 801: UnreadCountResponse dual retired — this schema is the sole unread-count shape
+ * (semantic UnreadCountResponse is z.infer alias owned here for contracts consumers).
  */
 export const UnreadCountResponseSchema = z.object({
   count: z.number(),
 });
+
+// Residual 801: UnreadCountResponse dual retired from notification package port interface.
+export type UnreadCountResponse = z.infer<typeof UnreadCountResponseSchema>;
 
 /**
  * Notification Preference Response Schema (residual 196)
