@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import type { ReminderGroupClientDTO } from '../aggregates/reminder-group-client';
+import { ReminderGroupListResponseSchema } from './response-schemas';
 import { ControlMode } from '../value-objects/control-mode';
 
 // ============================================================================
@@ -71,13 +72,8 @@ export interface BatchGroupTemplatesRes {
   }>;
 }
 
-export interface ReminderGroupListRes {
-  groups: ReminderGroupClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
+// Residual 693: list response dual body retired — OpenAPI + transport use ReminderGroupListResponseSchema.
+export type ReminderGroupListRes = z.infer<typeof ReminderGroupListResponseSchema>;
 
 // Residual 635: ReminderOperationRes / ReminderTriggerRes { ok } dual envelopes
 // and unused TemplateScheduleStatusRes dead surface deleted.

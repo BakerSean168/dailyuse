@@ -131,6 +131,8 @@ export const ReminderTemplateResponseSchema = z.object({
   globalReminderEnabled: z.boolean(),
 });
 
+// Residual 693: reminder list OpenAPI schemas are the sole list response shapes
+// (ReminderTemplateListRes / ReminderGroupListRes are z.infer aliases).
 export const ReminderTemplateListResponseSchema = z.object({
   templates: z.array(ReminderTemplateResponseSchema),
   total: z.number(),

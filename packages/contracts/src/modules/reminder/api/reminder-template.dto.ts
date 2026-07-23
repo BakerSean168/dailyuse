@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { ReminderGroupId, ReminderTemplateId } from '../../../primitives';
 import type { ReminderTemplateClientDTO } from '../aggregates/reminder-template-client';
+import { ReminderTemplateListResponseSchema } from './response-schemas';
 import { ReminderType } from '../value-objects/reminder-type';
 import { TriggerType } from '../value-objects/trigger-type';
 import { NotificationChannel } from '../value-objects/notification-channel';
@@ -144,10 +145,5 @@ export interface GetReminderTodayScheduleRes {
   total: number;
 }
 
-export interface ReminderTemplateListRes {
-  templates: ReminderTemplateClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
+// Residual 693: list response dual body retired — OpenAPI + transport use ReminderTemplateListResponseSchema.
+export type ReminderTemplateListRes = z.infer<typeof ReminderTemplateListResponseSchema>;
