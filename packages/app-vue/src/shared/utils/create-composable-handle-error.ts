@@ -1,9 +1,8 @@
 /**
- * Residual 973: sole createComposableHandleError factory for app-vue composables.
- * schedule / notification / reminder / setting import this (console.error report path);
- * local duals retired.
- * Soft residual: task composables keep toast.error report path — keep-boundary until a
- * dedicated residual elevates that variant via the optional report hook.
+ * Residual 973 + 975: sole createComposableHandleError factory for app-vue composables.
+ * Residual 973: schedule / notification / reminder / setting (default console.error report).
+ * Residual 975: task instances / templates / dependencies (toast.error report via `report`).
+ * Local handleError duals retired in both clusters.
  */
 
 import type { ResultErrorTranslateFn } from '@dailyuse/http-client';

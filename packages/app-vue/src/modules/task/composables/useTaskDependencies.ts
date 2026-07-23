@@ -1,3 +1,6 @@
+/**
+ * Residual 975: createComposableHandleError toast report path.
+ */
 import { inject } from 'vue';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
@@ -7,7 +10,7 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { DependencyType } from '@dailyuse/contracts/task';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { Result } from '@dailyuse/contracts/result';
-import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
 
 export function useTaskDependencies() {
@@ -16,11 +19,13 @@ export function useTaskDependencies() {
   const store = useTaskStore();
   const { t } = useI18n();
 
-  function handleError(error: unknown, fallbackKey: string): void {
-    const message = translateResultError(error, t, { fallbackKey });
-    store.setError(message);
-    toast.error(t('task.error.operationFailed'), { description: message });
-  }
+  const handleError = createComposableHandleError({
+    t,
+    setError: (message) => store.setError(message),
+    report: (message) => {
+      toast.error(t('task.error.operationFailed'), { description: message });
+    },
+  });
 
   async function executeTaskOperation<T>(
     operation: () => Promise<Result<T>>,

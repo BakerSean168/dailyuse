@@ -4,18 +4,17 @@ import { describe, expect, it, vi } from 'vitest';
 import { createComposableHandleError } from './create-composable-handle-error';
 
 /**
- * Residual 973: createComposableHandleError dual retired (console.error path).
- * Sole body in create-composable-handle-error.ts; schedule / notification / reminder /
- * setting composables import it.
+ * Residual 973 + 975: createComposableHandleError dual retired.
+ * Sole body in create-composable-handle-error.ts.
+ * Residual 973: schedule / notification / reminder / setting (default console.error).
+ * Residual 975: task instances / templates / dependencies (toast.error via report).
  * Soft residual 974: tip focused suite numbers track Residual 974 evidence tip (278/1223).
- * Soft residual: task handleError toast.error path remains keep-boundary
- *   (useTaskInstances / useTaskTemplates / useTaskDependencies).
  * Does not flip §13.2 checkboxes.
  */
-describe('createComposableHandleError dual retired (residual 973)', () => {
+describe('createComposableHandleError dual retired (residual 973/975)', () => {
   const utilsDir = __dirname;
   const sole = readFileSync(resolve(utilsDir, 'create-composable-handle-error.ts'), 'utf8');
-  const consumers = {
+  const consoleConsumers = {
     schedule: readFileSync(
       resolve(utilsDir, '../../modules/schedule/composables/useScheduleContext.ts'),
       'utf8',
@@ -33,35 +32,54 @@ describe('createComposableHandleError dual retired (residual 973)', () => {
       'utf8',
     ),
   } as const;
-  const taskToast = readFileSync(
-    resolve(utilsDir, '../../modules/task/composables/useTaskInstances.ts'),
-    'utf8',
-  );
+  const toastConsumers = {
+    instances: readFileSync(
+      resolve(utilsDir, '../../modules/task/composables/useTaskInstances.ts'),
+      'utf8',
+    ),
+    templates: readFileSync(
+      resolve(utilsDir, '../../modules/task/composables/useTaskTemplates.ts'),
+      'utf8',
+    ),
+    dependencies: readFileSync(
+      resolve(utilsDir, '../../modules/task/composables/useTaskDependencies.ts'),
+      'utf8',
+    ),
+  } as const;
 
   it('owns sole createComposableHandleError factory body', () => {
     expect(sole).toContain('Residual 973');
+    expect(sole).toContain('Residual 975');
     expect(sole).toMatch(/export function createComposableHandleError\b/);
     expect(sole).toContain('translateResultError');
     expect(sole).toContain('console.error');
     expect(sole).toContain('setError');
+    expect(sole).toContain('report');
   });
 
-  it('schedule/notification/reminder/setting import sole without local dual bodies', () => {
-    for (const [label, source] of Object.entries(consumers)) {
+  it('console cluster imports sole without local dual bodies (residual 973)', () => {
+    for (const [label, source] of Object.entries(consoleConsumers)) {
       expect(source, label).toContain('Residual 973');
       expect(source, label).toContain(
         "import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error'",
       );
       expect(source, label).not.toMatch(/function handleError\b/);
-      expect(source, label).toContain('createComposableHandleError({');
       expect(source, label).toContain('const handleError = createComposableHandleError');
+      expect(source, label).not.toContain('toast.error');
     }
   });
 
-  it('keeps task toast handleError path as distinct keep-boundary', () => {
-    expect(taskToast).toMatch(/function handleError\b/);
-    expect(taskToast).toContain('toast.error');
-    expect(taskToast).not.toContain('create-composable-handle-error');
+  it('task toast cluster imports sole with toast report hook (residual 975)', () => {
+    for (const [label, source] of Object.entries(toastConsumers)) {
+      expect(source, label).toContain('Residual 975');
+      expect(source, label).toContain(
+        "import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error'",
+      );
+      expect(source, label).not.toMatch(/function handleError\b/);
+      expect(source, label).toContain('const handleError = createComposableHandleError');
+      expect(source, label).toContain("toast.error(t('task.error.operationFailed')");
+      expect(source, label).toContain('report:');
+    }
   });
 
   it('translates, sets error, and reports via default console.error', () => {
@@ -71,10 +89,22 @@ describe('createComposableHandleError dual retired (residual 973)', () => {
       t: (key) => (key === 'x.fail' ? 'translated-fail' : key),
       setError,
     });
-    // Prefer fallbackKey when error lacks a normalized Result message.
     handleError({ code: 'UNKNOWN' }, 'x.fail');
     expect(setError).toHaveBeenCalledWith('translated-fail');
     expect(errorSpy).toHaveBeenCalledWith('translated-fail');
     errorSpy.mockRestore();
+  });
+
+  it('uses custom report hook for toast-style paths', () => {
+    const setError = vi.fn();
+    const report = vi.fn();
+    const handleError = createComposableHandleError({
+      t: (key) => (key === 'task.error.x' ? 'task-fail' : key),
+      setError,
+      report,
+    });
+    handleError({ code: 'UNKNOWN' }, 'task.error.x');
+    expect(setError).toHaveBeenCalledWith('task-fail');
+    expect(report).toHaveBeenCalledWith('task-fail');
   });
 });
