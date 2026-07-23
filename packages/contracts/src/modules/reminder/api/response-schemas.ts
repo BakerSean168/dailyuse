@@ -17,64 +17,24 @@ import type {
 } from '../../../primitives';
 import { ReminderType } from '../value-objects/reminder-type';
 import { ReminderStatus } from '../value-objects/reminder-status';
-import { TriggerType } from '../value-objects/trigger-type';
 import { TriggerResult } from '../value-objects/trigger-result';
 import { NotificationChannel } from '../value-objects/notification-channel';
-import { NotificationAction } from '../value-objects/notification-action';
 import { ControlMode } from '../value-objects/control-mode';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { ActiveHoursConfigSchema } from '../value-objects/active-hours-config';
 import { GroupStatsSchema } from '../value-objects/group-stats';
+import { TriggerConfigSchema } from '../value-objects/trigger-config';
+import { NotificationConfigSchema } from '../value-objects/notification-config';
 
 // Residual 733: ActiveHoursConfigSchema / GroupStatsSchema owned by value-objects
 // (re-exported for OpenAPI nested response consumers).
 export { ActiveHoursConfigSchema, GroupStatsSchema };
 
+// Residual 735: TriggerConfigSchema / NotificationConfigSchema owned by value-objects
+// (re-exported for OpenAPI nested response consumers).
+export { TriggerConfigSchema, NotificationConfigSchema };
+
 // ============ 值对象 Zod Schema ============
-
-const TriggerConfigSchema = z.object({
-  type: z.enum(TriggerType),
-  fixedTime: z
-    .object({
-      time: z.string(),
-      timezone: z.string().nullable(),
-    })
-    .nullable(),
-  interval: z
-    .object({
-      minutes: z.number(),
-      startTime: z.number().nullable(),
-    })
-    .nullable(),
-});
-
-const NotificationConfigSchema = z.object({
-  channels: z.array(z.enum(NotificationChannel)),
-  title: z.string().nullable(),
-  body: z.string().nullable(),
-  sound: z
-    .object({
-      enabled: z.boolean(),
-      soundName: z.string().nullable(),
-    })
-    .nullable(),
-  vibration: z
-    .object({
-      enabled: z.boolean(),
-      pattern: z.array(z.number()).nullable(),
-    })
-    .nullable(),
-  actions: z
-    .array(
-      z.object({
-        id: z.string(),
-        label: z.string(),
-        action: z.enum(NotificationAction),
-        customAction: z.string().nullable(),
-      }),
-    )
-    .nullable(),
-});
 
 const ActiveTimeConfigSchema = z.object({
   startDate: z.number(),

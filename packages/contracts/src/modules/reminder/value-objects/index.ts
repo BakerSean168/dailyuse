@@ -12,6 +12,12 @@ export { NotificationChannel } from './notification-channel';
 export { NotificationAction } from './notification-action';
 export { TriggerResult } from './trigger-result';
 
+export {
+  SoundConfigSchema,
+  VibrationConfigSchema,
+  NotificationActionConfigSchema,
+  NotificationConfigSchema,
+} from './notification-config';
 export type {
   SoundConfig,
   VibrationConfig,
@@ -20,6 +26,11 @@ export type {
   NotificationConfigDTO,
 } from './notification-config';
 
+export {
+  FixedTimeTriggerSchema,
+  IntervalTriggerSchema,
+  TriggerConfigSchema,
+} from './trigger-config';
 export type {
   FixedTimeTrigger,
   IntervalTrigger,

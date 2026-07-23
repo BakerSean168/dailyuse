@@ -2,30 +2,43 @@
  * Notification Config Value Object
  */
 
-import type { NotificationChannel } from './notification-channel';
-import type { NotificationAction } from './notification-action';
+import { z } from 'zod';
+import { NotificationChannel } from './notification-channel';
+import { NotificationAction } from './notification-action';
 
-// ============ Sub-config Interfaces ============
+// Residual 735: notification config dual bodies retired — OpenAPI + transport use
+// NotificationConfigSchema (semantic types are z.infer aliases).
 
-/** Sound configuration. */
-export interface SoundConfig {
-  enabled: boolean;
-  soundName: string | null;
-}
+export const SoundConfigSchema = z.object({
+  enabled: z.boolean(),
+  soundName: z.string().nullable(),
+});
 
-/** Vibration configuration. */
-export interface VibrationConfig {
-  enabled: boolean;
-  pattern: number[] | null;
-}
+export const VibrationConfigSchema = z.object({
+  enabled: z.boolean(),
+  pattern: z.array(z.number()).nullable(),
+});
 
-/** Notification action configuration. */
-export interface NotificationActionConfig {
-  id: string;
-  label: string;
-  action: NotificationAction;
-  customAction: string | null;
-}
+export const NotificationActionConfigSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  action: z.enum(NotificationAction),
+  customAction: z.string().nullable(),
+});
+
+export const NotificationConfigSchema = z.object({
+  channels: z.array(z.enum(NotificationChannel)),
+  title: z.string().nullable(),
+  body: z.string().nullable(),
+  sound: SoundConfigSchema.nullable(),
+  vibration: VibrationConfigSchema.nullable(),
+  actions: z.array(NotificationActionConfigSchema).nullable(),
+});
+
+export type SoundConfig = z.infer<typeof SoundConfigSchema>;
+export type VibrationConfig = z.infer<typeof VibrationConfigSchema>;
+export type NotificationActionConfig = z.infer<typeof NotificationActionConfigSchema>;
+export type NotificationConfigDTO = z.infer<typeof NotificationConfigSchema>;
 
 // ============ Interface Definitions ============
 
@@ -46,18 +59,4 @@ export interface INotificationConfig {
   ): INotificationConfig;
 
   // DTO conversion methods
-}
-
-// ============ DTO Definitions ============
-
-/**
- * Notification Config DTO
- */
-export interface NotificationConfigDTO {
-  channels: NotificationChannel[];
-  title: string | null;
-  body: string | null;
-  sound: SoundConfig | null;
-  vibration: VibrationConfig | null;
-  actions: NotificationActionConfig[] | null;
 }
