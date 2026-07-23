@@ -111,7 +111,7 @@ class Rule {
     severity: RuleSeverity.Mandatory,
     status: RuleStatus.Active,
     tags: ['ddd', 'dto', 'contracts', 'separation-of-concerns'],
-    liveReferenceLocation: 'packages/contracts/src/modules/governance/aggregates/rule-server.ts',
+    liveReferenceLocation: 'packages/contracts/src/modules/governance/aggregates/rule-client.ts',
     goodExamples: [
       makeSnippet(
         Language.TypeScript,

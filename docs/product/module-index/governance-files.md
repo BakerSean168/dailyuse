@@ -68,8 +68,7 @@ updated: 2026-07-22T00:00:00+08:00
 | 文件 | 说明 |
 | --- | --- |
 | [`packages/contracts/src/modules/governance/index.ts`](../../../packages/contracts/src/modules/governance/index.ts) | 治理公共 contracts 主入口 |
-| [`packages/contracts/src/modules/governance/aggregates/rule-server.ts`](../../../packages/contracts/src/modules/governance/aggregates/rule-server.ts) | Rule 服务端 DTO |
-| [`packages/contracts/src/modules/governance/aggregates/rule-client.ts`](../../../packages/contracts/src/modules/governance/aggregates/rule-client.ts) | Rule 客户端 DTO |
+| [`packages/contracts/src/modules/governance/aggregates/rule-client.ts`](../../../packages/contracts/src/modules/governance/aggregates/rule-client.ts) | Rule 客户端 DTO（API 唯一传输面） |
 | [`packages/contracts/src/modules/governance/entities/rule-revision-server.ts`](../../../packages/contracts/src/modules/governance/entities/rule-revision-server.ts) | RuleRevision 服务端 DTO |
 | [`packages/contracts/src/modules/governance/api/rules.ts`](../../../packages/contracts/src/modules/governance/api/rules.ts) | 规则 API 请求 / 查询 schema |
 | [`packages/contracts/src/modules/governance/api/rule-revisions.ts`](../../../packages/contracts/src/modules/governance/api/rule-revisions.ts) | 修订历史 API schema |
