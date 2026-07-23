@@ -4,6 +4,7 @@
  * Only GitHub-backed knowledge repository routes are mounted by the API host.
  * Legacy database Repository/Folder/Resource CRUD builders are gone.
  * Residual 539: stage-6 dual-track retirement — no Folder/Resource CRUD remount.
+ * Residual 885: portable boundary re-lock — knowledge-only routes; no editor API remount.
  */
 
 import { Router, type RequestHandler } from 'express';

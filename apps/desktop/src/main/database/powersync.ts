@@ -49,6 +49,7 @@ const PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES = [
   'user_settings',
   'repositories',
   // Residual 539: editor_* bootstrap tables are portable backup continuity only —
+  // Residual 885: portable boundary re-lock — no first-party @dailyuse/editor remount.
   // Desktop never remounts @dailyuse/editor as a first-party editing surface.
   'editor_workspaces',
   'editor_workspace_sessions',

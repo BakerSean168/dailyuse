@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Server-held disclosure import boundary surface (stage-6 residual 106):
  * disclosure envelopes must never enter the import store transaction path.
+ * Residual 885 (soft): portable boundary re-lock
+ *   (portable-boundary-re-lock.surface.spec.ts).
  */
 describe('server-held disclosure not-importable surface', () => {
   const importSafety = readFileSync(

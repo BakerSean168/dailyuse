@@ -27,6 +27,7 @@ export class ExportServerHeldDataDisclosureUseCase {
 
     const envelope: ServerHeldDataDisclosureEnvelopeV1 =
       ServerHeldDataDisclosureEnvelopeV1Schema.parse({
+        // Residual 885: disclosure product surface is not-importable (Web-only export).
         kind: 'memoflow.server-held-data-disclosure',
         schemaVersion: 1,
         disclosedAt,

@@ -233,6 +233,7 @@ export const useAppShellStore = defineStore('app-shell', {
         (tab) =>
           isBusinessModule(tab.module) &&
           // Residual 539: retired existing-note editor routes (/note/:id) no longer exist
+          // Residual 885: portable boundary re-lock — strip /note tabs from persisted shell state.
           !(tab.route === '/note' || tab.route.startsWith('/note/') || tab.route.startsWith('/note?')),
       );
       if (next.length === this.tabs.length) return;

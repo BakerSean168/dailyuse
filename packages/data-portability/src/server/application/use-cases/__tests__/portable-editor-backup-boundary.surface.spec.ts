@@ -11,6 +11,8 @@ import { describe, expect, it } from 'vitest';
  * split (no disclosure IPC channel).
  * Residual 539: PowerSync editor_* + knowledge knowledge-only routes + Vue /note
  * retirement stay dual-track closed (backup continuity only, not product editor).
+ * Residual 885 (soft): portable boundary re-lock surface
+ *   (portable-boundary-re-lock.surface.spec.ts).
  */
 describe('portable editor backup boundary surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../../');

@@ -83,6 +83,7 @@ export function parseUserDataExportEnvelope(raw: unknown): ParseUserDataExportEn
     raw !== null &&
     typeof raw === 'object' &&
     !Array.isArray(raw) &&
+  // Residual 885: server-held disclosure envelopes remain not-importable (portable user-data-export only).
     (raw as { kind?: unknown }).kind === 'memoflow.server-held-data-disclosure'
   ) {
     return {
