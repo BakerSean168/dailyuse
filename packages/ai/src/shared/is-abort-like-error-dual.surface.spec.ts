@@ -9,6 +9,7 @@ import { isAbortLikeError } from './is-abort-like-error';
  * Soft residual 963: findSSEBoundary dual retired (find-sse-boundary-dual.surface.spec.ts).
  * Soft residual 965: getRequestId dual retired (get-request-id-dual.surface.spec.ts).
  * Soft residual 968: tip focused suite numbers track Residual 968 evidence tip (275/1213).
+ * Soft residual 969: knowledge-index value helpers dual retired (adapters/knowledge-index-value-helpers-dual.surface.spec.ts).
  * Keep-boundary: server ai-chat-helpers and app-vue useAIChatSession keep distinct
  * abort predicates (category / DOMException / ABORTED code).
  * Does not flip §13.2 checkboxes.

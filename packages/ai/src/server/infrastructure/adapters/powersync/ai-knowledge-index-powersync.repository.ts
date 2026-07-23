@@ -1,3 +1,7 @@
+/**
+ * Residual 969: knowledge-index value helpers sole import
+ * (../knowledge-index-value-helpers.ts).
+ */
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type {
   IKnowledgeIndexRepository,
@@ -6,6 +10,12 @@ import type {
   KnowledgeIndexedChunk,
   KnowledgeIndexedNote,
 } from '../../../application/ports';
+import {
+  toChunkArray,
+  toNumberArray,
+  toStringArray,
+  tokenize,
+} from '../knowledge-index-value-helpers';
 
 const KNOWLEDGE_INDEX_KEY = 'aiKnowledgeIndex';
 
@@ -47,47 +57,6 @@ function parseJsonRecord(value: string | null): Record<string, unknown> {
   }
 }
 
-function toStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === 'string')
-    : [];
-}
-
-function toNumberArray(value: unknown): number[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is number => typeof item === 'number')
-    : [];
-}
-
-function tokenize(text: string): string[] {
-  return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);
-}
-
-function toChunkArray(value: unknown): KnowledgeIndexedChunk[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((item) => {
-      if (!item || typeof item !== 'object' || Array.isArray(item)) {
-        return null;
-      }
-
-      const row = item as Record<string, unknown>;
-      return {
-        chunkIndex: typeof row.chunkIndex === 'number' ? row.chunkIndex : 0,
-        content: typeof row.content === 'string' ? row.content : '',
-        contentHash: typeof row.contentHash === 'string' ? row.contentHash : '',
-        startOffset: typeof row.startOffset === 'number' ? row.startOffset : 0,
-        endOffset: typeof row.endOffset === 'number' ? row.endOffset : 0,
-        headingPath: toStringArray(row.headingPath),
-        keywords: toStringArray(row.keywords),
-        embedding: toNumberArray(row.embedding),
-      } satisfies KnowledgeIndexedChunk;
-    })
-    .filter((item): item is KnowledgeIndexedChunk => item !== null && item.content.length > 0);
-}
 
 function parseStoredIndex(metadata: Record<string, unknown>): StoredKnowledgeIndexRecord | null {
   const candidate = metadata[KNOWLEDGE_INDEX_KEY];

@@ -1,3 +1,7 @@
+/**
+ * Residual 969: knowledge-index value helpers sole import
+ * (../knowledge-index-value-helpers.ts).
+ */
 import { createHash, randomUUID } from 'node:crypto';
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -9,6 +13,12 @@ import type {
   KnowledgeIndexedChunk,
   KnowledgeIndexedNote,
 } from '../../../application/ports';
+import {
+  toChunkArray,
+  toNumberArray,
+  toStringArray,
+  tokenize,
+} from '../knowledge-index-value-helpers';
 
 const RETRIEVAL_VECTOR_DIMENSION = 48;
 
@@ -44,97 +54,6 @@ function toObjectRecord(value: unknown): Record<string, unknown> {
   return { ...(value as Record<string, unknown>) };
 }
 
-function toStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === 'string')
-    : [];
-}
-
-function toNumberArray(value: unknown): number[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is number => typeof item === 'number')
-    : [];
-}
-
-function tokenize(text: string): string[] {
-  return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);
-}
-
-function charNGrams(token: string, minSize = 3, maxSize = 5): string[] {
-  const padded = `^${token}$`;
-  const grams: string[] = [];
-  for (let size = minSize; size <= Math.min(maxSize, padded.length); size += 1) {
-    for (let index = 0; index <= padded.length - size; index += 1) {
-      grams.push(padded.slice(index, index + size));
-    }
-  }
-  return grams;
-}
-
-function projectFeature(feature: string): { bucket: number; sign: number } {
-  const digest = createHash('sha256').update(feature).digest();
-  const bucket = digest.readUInt32BE(0) % RETRIEVAL_VECTOR_DIMENSION;
-  const sign = digest[4] % 2 === 0 ? 1 : -1;
-  return { bucket, sign };
-}
-
-function normalizeVector(vector: number[]): number[] {
-  const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
-  if (magnitude === 0) {
-    return vector;
-  }
-  return vector.map((value) => Number((value / magnitude).toFixed(6)));
-}
-
-function buildRetrievalEmbedding(text: string): number[] {
-  const tokenCounts = new Map<string, number>();
-  for (const token of tokenize(text)) {
-    tokenCounts.set(token, (tokenCounts.get(token) ?? 0) + 1);
-  }
-
-  const vector = Array.from({ length: RETRIEVAL_VECTOR_DIMENSION }, () => 0);
-  for (const [token, count] of tokenCounts) {
-    const tokenProjection = projectFeature(`tok:${token}`);
-    vector[tokenProjection.bucket] += tokenProjection.sign * (1 + Math.log1p(count));
-
-    for (const gram of charNGrams(token)) {
-      const gramProjection = projectFeature(`ng:${gram}`);
-      vector[gramProjection.bucket] += gramProjection.sign * (0.2 * count);
-    }
-  }
-
-  return normalizeVector(vector);
-}
-
-function toVectorLiteral(vector: number[]): string {
-  return `[${vector.map((value) => Number(value.toFixed(6))).join(',')}]`;
-}
-
-function toChunkArray(value: unknown): KnowledgeIndexedChunk[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((item) => {
-      if (!item || typeof item !== 'object' || Array.isArray(item)) {
-        return null;
-      }
-
-      const row = item as Record<string, unknown>;
-      return {
-        chunkIndex: typeof row.chunkIndex === 'number' ? row.chunkIndex : 0,
-        content: typeof row.content === 'string' ? row.content : '',
-        contentHash: typeof row.contentHash === 'string' ? row.contentHash : '',
-        startOffset: typeof row.startOffset === 'number' ? row.startOffset : 0,
-        endOffset: typeof row.endOffset === 'number' ? row.endOffset : 0,
-        headingPath: toStringArray(row.headingPath),
-        keywords: toStringArray(row.keywords),
-        embedding: toNumberArray(row.embedding),
-      } satisfies KnowledgeIndexedChunk;
-    })
-    .filter((item): item is KnowledgeIndexedChunk => item !== null && item.content.length > 0);
-}
 
 function toPrismaJson(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
