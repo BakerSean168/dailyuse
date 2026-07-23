@@ -59,6 +59,8 @@ import {
 } from './hostProposalLifecycle';
 // Residual 951: isRecord dual retired — sole AI composable plain-object helper.
 import { isRecord } from './isRecord';
+// Residual 953: createAgentId dual retired — sole AI composable helper.
+import { createAgentId } from './createAgentId';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -214,11 +216,6 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return recovery?.canRetry === true;
   });
 
-  function createAgentId(prefix: string): string {
-    const randomId = globalThis.crypto?.randomUUID?.() ??
-      `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    return `${prefix}-${randomId}`;
-  }
 
   function syncGoalAgentStage(result: AgentRunResult) {
     if (result.run.status === 'waiting_clarification') {

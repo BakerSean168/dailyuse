@@ -35,6 +35,8 @@ import {
 } from './hostProposalLifecycle';
 // Residual 951: isRecord dual retired — sole AI composable plain-object helper.
 import { isRecord } from './isRecord';
+// Residual 953: createAgentId dual retired — sole AI composable helper.
+import { createAgentId } from './createAgentId';
 
 export interface UseAIKnowledgeNoteWorkflowOptions {
   service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
@@ -100,12 +102,6 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       options.hasWorkflowMessages.value,
   );
 
-  function createAgentId(prefix: string): string {
-    const randomId =
-      globalThis.crypto?.randomUUID?.() ??
-      `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    return `${prefix}-${randomId}`;
-  }
 
   function getArtifactString(artifact: AgentArtifact | null, key: string): string {
     if (!artifact) return '';

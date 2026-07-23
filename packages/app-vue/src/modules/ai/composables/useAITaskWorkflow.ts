@@ -24,6 +24,8 @@ import type {
 } from '@dailyuse/contracts/ai';
 import type { AIChatService, ChatModelOption, ChatItem } from './types';
 import { getAIErrorMessage } from './error';
+// Residual 953: createAgentId dual retired — sole AI composable helper.
+import { createAgentId } from './createAgentId';
 import { applyHostTaskPatchToAgentActions, resolveLinkedGoalIdFromTaskAgentRun } from './hostProposalLifecycle';
 import { toast } from 'vue-sonner';
 
@@ -42,9 +44,6 @@ export type UseAITaskWorkflowOptions = {
   taskAgentRun: Ref<AgentRunResult | null>;
 };
 
-function createAgentId(prefix: string): string {
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
 
 export function useAITaskWorkflow(options: UseAITaskWorkflowOptions) {
   const { t, locale } = useI18n();

@@ -12,6 +12,8 @@ import type {
   UseAIKnowledgeQaWorkflowOptions,
 } from './types';
 import { getAIErrorMessage } from './error';
+// Residual 953: createAgentId dual retired — sole AI composable helper.
+import { createAgentId } from './createAgentId';
 import { unwrap } from '@dailyuse/contracts/result';
 
 type KnowledgeRelatedNote = NonNullable<KnowledgeAnswer['relatedNotes']>[number];
@@ -44,12 +46,6 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
     knowledgeQaAgentRun.value = null;
   }
 
-  function createAgentId(prefix: string): string {
-    const randomId =
-      globalThis.crypto?.randomUUID?.() ??
-      `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    return `${prefix}-${randomId}`;
-  }
 
   function buildRelatedNotesFromCitations(
     citations: KnowledgeAnswer['citations'],
