@@ -8,7 +8,7 @@ import { getRequestId } from './get-request-id';
  * Sole body in get-request-id.ts; agent-checkpoint / agent-runtime /
  * langgraph-checkpoint routes import it.
  * Soft residual 963: findSSEBoundary dual retired (find-sse-boundary-dual.surface.spec.ts).
- * Soft residual 964: tip focused suite numbers track Residual 964 evidence tip (273/1206).
+ * Soft residual 966: tip focused suite numbers track Residual 966 evidence tip (274/1209).
  * Does not flip §13.2 checkboxes.
  */
 describe('getRequestId dual retired (residual 965)', () => {
