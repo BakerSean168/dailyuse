@@ -84,6 +84,34 @@ describe('schedule batch operation response dual name retired (residual 639)', (
 });
 
 /**
+ * Residual 665: schedule batch-delete OpenAPI schema dual retired.
+ * POST /tasks/batch and /tasks/batch/delete both document ScheduleBatchOperationResponseSchema.
+ */
+describe('schedule batch-delete response schema dual retired (residual 665)', () => {
+  const apiDir = __dirname;
+  const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
+  const routes = readFileSync(
+    resolve(apiDir, '../../../../../schedule/src/api/routes.ts'),
+    'utf8',
+  );
+
+  it('does not export a separate batch-delete response schema dual', () => {
+    expect(responseSchemas).toContain('Residual 665');
+    expect(responseSchemas).not.toMatch(/export const BatchDeleteResponseSchema\b/);
+    expect(responseSchemas).toContain('export const ScheduleBatchOperationResponseSchema');
+  });
+
+  it('batch and batch-delete routes share ScheduleBatchOperationResponseSchema', () => {
+    expect(routes).not.toContain('BatchDeleteResponseSchema');
+    expect(routes).toContain('ScheduleBatchOperationResponseSchema');
+    const sharedSchemaHits = routes.split(
+      'successResponse(ScheduleBatchOperationResponseSchema',
+    ).length - 1;
+    expect(sharedSchemaHits).toBeGreaterThanOrEqual(2);
+  });
+});
+
+/**
  * Residual 663: schedule dead list/stats ResponseDTO duals + detect-conflicts wrapper dual retired.
  * Live detect-conflicts / get-conflicts bodies are ConflictDetectionResult (RPC + client + OpenAPI).
  */

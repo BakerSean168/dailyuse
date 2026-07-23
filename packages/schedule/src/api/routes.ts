@@ -31,7 +31,6 @@ import {
   BatchScheduleTaskOperationRequestSchema,
   ScheduleTaskResponseSchema,
   ScheduleBatchOperationResponseSchema,
-  BatchDeleteResponseSchema,
   UpdateTaskMetadataRequestSchema,
 } from '@dailyuse/contracts/schedule';
 import { brandedId } from '@dailyuse/contracts/primitives';
@@ -113,7 +112,7 @@ export function registerScheduleRoutes(
         },
       },
       responses: {
-        200: successResponse(BatchDeleteResponseSchema, '删除成功'),
+        200: successResponse(ScheduleBatchOperationResponseSchema, '删除成功'),
         400: errorResponse('参数错误'),
       },
     },

@@ -186,13 +186,4 @@ export const ResolveConflictResponseSchema = z.object({
   applied: AppliedResolutionSchema,
 });
 
-/**
- * BatchDelete Response Schema
- */
-export const BatchDeleteResponseSchema = z.object({
-  success: z.array(z.string()),
-  failed: z.array(z.object({ taskId: brandedId<ScheduleTaskId>(), error: z.string() })),
-  total: z.number(),
-  successCount: z.number(),
-  failedCount: z.number(),
-});
+// Residual 665: batch-delete OpenAPI body reuses schedule batch operation schema (no dual).
