@@ -7,6 +7,7 @@ import { createAgentId } from './createAgentId';
  * Residual 953: app-vue AI createAgentId dual retired.
  * Sole body in createAgentId.ts; goal / knowledge-note / knowledge-qa / task workflows import it.
  * Soft residual 951: AI isRecord dual retired (is-record-dual.surface.spec.ts).
+ * Soft residual 954: tip focused suite numbers track Residual 954 evidence tip (268/1191).
  * Task previously used a weaker Date.now+random body — unified onto sole crypto-preferring policy.
  * Does not flip §13.2 checkboxes.
  */
