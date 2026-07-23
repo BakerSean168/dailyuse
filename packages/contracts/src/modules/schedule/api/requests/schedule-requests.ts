@@ -6,8 +6,11 @@
 import { z } from 'zod';
 import { brandedId } from '../../../../primitives';
 import type { IdentityId, ScheduleId } from '../../../../primitives';
-import type { CalendarEntryClientDTO } from '../../aggregates/calendar-entry-client';
-import type { ConflictDetectionResult } from '../../value-objects/conflict-detection-result';
+import {
+  AppliedResolutionSchema,
+  CreateScheduleResponseSchema,
+  ResolveConflictResponseSchema,
+} from '../response-schemas';
 
 // ============ Zod Schemas ============
 
@@ -106,33 +109,15 @@ export interface DetectConflictsInternalQuery {
 }
 
 // ============ Response Types ============
-
-/**
- * Response DTO for creating a schedule
- */
-export interface CreateScheduleResponseDTO {
-  schedule: CalendarEntryClientDTO;
-  conflicts?: ConflictDetectionResult;
-}
-
 // Residual 663: detect-conflicts response dual wrapper retired
 // (live transport body is ConflictDetectionResult).
+// Residual 715: create/resolve response dual bodies retired — OpenAPI + transport use *ResponseSchema only.
 
-/**
- * Information about the applied resolution
- */
-export interface AppliedResolution {
-  strategy: ResolutionStrategy;
-  previousStartTime?: number;
-  previousEndTime?: number;
-  changes: string[];
-}
+/** Response DTO for creating a schedule */
+export type CreateScheduleResponseDTO = z.infer<typeof CreateScheduleResponseSchema>;
 
-/**
- * Response DTO for resolving a schedule conflict
- */
-export interface ResolveConflictResponseDTO {
-  schedule: CalendarEntryClientDTO;
-  conflicts: ConflictDetectionResult;
-  applied: AppliedResolution;
-}
+/** Information about the applied resolution */
+export type AppliedResolution = z.infer<typeof AppliedResolutionSchema>;
+
+/** Response DTO for resolving a schedule conflict */
+export type ResolveConflictResponseDTO = z.infer<typeof ResolveConflictResponseSchema>;

@@ -163,12 +163,14 @@ export const ConflictDetectionResultSchema = z.object({
 /**
  * CreateSchedule (with conflict detection) Response Schema
  */
+// Residual 715: CreateSchedule / ResolveConflict OpenAPI schemas are the sole response shapes
+// (CreateScheduleResponseDTO / ResolveConflictResponseDTO / AppliedResolution are z.infer aliases).
 export const CreateScheduleResponseSchema = z.object({
   schedule: CalendarEntryResponseSchema,
   conflicts: ConflictDetectionResultSchema.optional(),
 });
 
-const AppliedResolutionSchema = z.object({
+export const AppliedResolutionSchema = z.object({
   strategy: z.string(),
   previousStartTime: z.number().optional(),
   previousEndTime: z.number().optional(),
