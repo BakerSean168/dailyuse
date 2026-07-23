@@ -160,20 +160,8 @@ export interface UpdateTaskMetadataRequest {
   readonly timeout?: number | null;
 }
 
-/**
- * 任务查询参数
- */
-export interface ScheduleTaskQueryParamsDTO {
-  readonly sourceModule?: SourceModule;
-  readonly sourceEntityId?: string;
-  readonly status?: ScheduleTaskStatus;
-  readonly enabled?: boolean;
-  readonly search?: string;
-  readonly page?: number;
-  readonly limit?: number;
-  readonly sortBy?: ScheduleTaskSortBy;
-  readonly sortOrder?: 'asc' | 'desc';
-}
+// Residual 703: query params dual body retired — OpenAPI + transport use ScheduleTaskQueryParamsSchema.
+export type ScheduleTaskQueryParamsDTO = z.infer<typeof ScheduleTaskQueryParamsSchema>;
 
 /**
  * 批量操作请求

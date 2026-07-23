@@ -23,19 +23,8 @@ export const ScheduleExecutionQueryParamsSchema = z.object({
 
 // ============ Request Types ============
 
-/**
- * 执行记录查询参数
- */
-export interface ScheduleExecutionQueryParamsDTO {
-  readonly taskId?: ScheduleTaskId;
-  readonly status?: ExecutionStatus;
-  readonly startTime?: number;
-  readonly endTime?: number;
-  readonly page?: number;
-  readonly limit?: number;
-  readonly sortBy?: 'executionTime' | 'duration';
-  readonly sortOrder?: 'asc' | 'desc';
-}
+// Residual 703: query params dual body retired — OpenAPI + transport use ScheduleExecutionQueryParamsSchema.
+export type ScheduleExecutionQueryParamsDTO = z.infer<typeof ScheduleExecutionQueryParamsSchema>;
 
 // Residual 663: dead execution list/stats response duals retired
 // (RPC query uses ClientDTO item arrays; get-stats remains module-local).
