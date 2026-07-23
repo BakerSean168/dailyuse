@@ -46,11 +46,13 @@ export type LogoutReq = void;
  */
 export type ValidateTokenReq = void;
 
-export interface ValidateTokenRes {
-  valid: boolean;
-  identityId?: IdentityId;
-  expiresAt?: number;
-}
+// Residual 769: ValidateTokenRes dual retired — sole ResSchema + z.infer alias.
+export const ValidateTokenResSchema = z.object({
+  valid: z.boolean(),
+  identityId: brandedId<IdentityId>().optional(),
+  expiresAt: z.number().optional(),
+});
+export type ValidateTokenRes = z.infer<typeof ValidateTokenResSchema>;
 
 // ============================================================================
 // Get Current User
@@ -82,8 +84,10 @@ export type RevokeSessionRes = void;
 // Guest Mode (Desktop)
 // ============================================================================
 
-export interface GuestModeRes {
-  identityId: IdentityId;
-  mode: string;
-  message: string;
-}
+// Residual 769: GuestModeRes dual retired — sole ResSchema + z.infer alias.
+export const GuestModeResSchema = z.object({
+  identityId: brandedId<IdentityId>(),
+  mode: z.string(),
+  message: z.string(),
+});
+export type GuestModeRes = z.infer<typeof GuestModeResSchema>;
