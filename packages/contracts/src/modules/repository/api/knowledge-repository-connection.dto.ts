@@ -40,11 +40,6 @@ export type StartKnowledgeRepositoryInstallationReq = z.infer<
   typeof StartKnowledgeRepositoryInstallationSchema
 >;
 
-export interface StartKnowledgeRepositoryInstallationRes {
-  installationUrl: string;
-  expiresAt: number;
-}
-
 export interface GitHubInstallationRepositoryDTO {
   id: string;
   nodeId: string;
@@ -82,6 +77,11 @@ export const StartKnowledgeRepositoryInstallationResponseSchema = z.object({
   expiresAt: z.number(),
 });
 
+// Residual 699: response dual body retired — OpenAPI + transport use ResponseSchema only.
+export type StartKnowledgeRepositoryInstallationRes = z.infer<
+  typeof StartKnowledgeRepositoryInstallationResponseSchema
+>;
+
 export const CompleteKnowledgeRepositoryInstallationSchema = z.object({
   state: z.string().min(16),
   installationId: z.string().min(1),
@@ -92,19 +92,17 @@ export type CompleteKnowledgeRepositoryInstallationReq = z.infer<
   typeof CompleteKnowledgeRepositoryInstallationSchema
 >;
 
-export interface CompleteKnowledgeRepositoryInstallationRes {
-  installationId: string;
-  githubAccountId: string;
-  repositories: GitHubInstallationRepositoryDTO[];
-  returnUrl: string | null;
-}
-
 export const CompleteKnowledgeRepositoryInstallationResponseSchema = z.object({
   installationId: z.string().min(1),
   githubAccountId: z.string().min(1),
   repositories: z.array(GitHubInstallationRepositorySchema),
   returnUrl: z.string().nullable(),
 });
+
+// Residual 699: response dual body retired — OpenAPI + transport use ResponseSchema only.
+export type CompleteKnowledgeRepositoryInstallationRes = z.infer<
+  typeof CompleteKnowledgeRepositoryInstallationResponseSchema
+>;
 
 export const CreateKnowledgeRepositoryConnectionSchema = z.object({
   installationId: z.string().min(1),
