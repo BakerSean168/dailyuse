@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 767: CheckAvailabilityRes dual body retired.
  * OpenAPI + transport use AvailabilityResponseSchema; Res is z.infer alias.
+  *
+ * Soft residual 825: AccountClientDTO dual retired via AccountResponseSchema
+ * (see account-client-dto-dual surface).
  */
 describe('check availability res dual retired (residual 767)', () => {
   const apiDir = __dirname;

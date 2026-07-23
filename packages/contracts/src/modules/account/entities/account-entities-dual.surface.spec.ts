@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 655: retire dual re-export barrels that re-exported aggregate DTOs
  * under entities/ — canonical export is aggregates/* only.
+ *
+ * Soft residual 825: AccountClientDTO dual retired via AccountResponseSchema
+ * (see account-client-dto-dual surface).
  */
 describe('account/goal entities dual re-export single-track surface (residual 655)', () => {
   const accountEntities = __dirname;
