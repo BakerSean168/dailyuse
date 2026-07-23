@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 869: DesktopLoginRequest dual retired (type alias of EmailLoginCredentials).
  * Residual 921: DesktopLoginRequest name fully retired — login uses EmailLoginCredentials sole body.
- * Soft residual 871: RegisterRequest dual retired in desktop-register-request-dual.surface.spec.ts.
+ * Soft residual 871/931: RegisterRequest name dual fully retired — EmailRegisterCredentials
+ *   (desktop-register-request-dual.surface.spec.ts).
  * Residual 899 (soft): LoginRequest ≠ EmailLoginCredentials keep-boundary
  *   (infrastructure/login-request-email-credentials-keep-boundary.surface.spec.ts).
  * Does not flip §13.2 checkboxes.

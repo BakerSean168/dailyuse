@@ -1,3 +1,5 @@
+import type { EmailRegisterCredentials } from '@dailyuse/contracts/authentication';
+
 import type { AuthRemoteGateway, RegisterApiResponse } from './auth-remote-gateway';
 import {
   createConfigError,
@@ -8,24 +10,19 @@ import {
   type DesktopAuthFlowResult,
 } from './auth-flow-types';
 
-// Residual 871: sole desktop register request shape (coordinator re-exports type only).
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  username?: string;
-}
-
+// Residual 871: RegisterRequest dual retired — sole body elevated to contracts.
+// Residual 931: RegisterRequest name fully retired — EmailRegisterCredentials sole body.
 // Residual 917: RegisterResult dual retired — DesktopAuthFlowResult sole application name.
 
 interface RegisterDesktopAccountDependencies {
   isOnline: () => boolean;
   remoteGateway: Pick<AuthRemoteGateway, 'createRegisterUrl' | 'register'>;
   logger: AuthFlowLogger;
-  onSuccess?: (response: RegisterApiResponse, request: RegisterRequest) => Promise<void>;
+  onSuccess?: (response: RegisterApiResponse, request: EmailRegisterCredentials) => Promise<void>;
 }
 
 export async function registerDesktopAccount(
-  request: RegisterRequest,
+  request: EmailRegisterCredentials,
   dependencies: RegisterDesktopAccountDependencies,
 ): Promise<DesktopAuthFlowResult> {
   const { isOnline, remoteGateway, logger, onSuccess } = dependencies;

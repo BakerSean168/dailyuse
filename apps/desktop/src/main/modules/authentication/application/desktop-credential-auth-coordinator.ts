@@ -14,20 +14,19 @@ import {
   AuthRuntimeState,
   type AuthResponseDTO,
   type EmailLoginCredentials,
+  type EmailRegisterCredentials,
   type RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
+// Residual 871: RegisterRequest dual retired.
+// Residual 931: RegisterRequest name fully retired — EmailRegisterCredentials sole body.
+export type { EmailRegisterCredentials };
 import {
   TokenManager,
   SessionManager,
   NetworkStateManager,
 } from '../infrastructure';
 import type { WindowManager } from '../../../lifecycle/window-manager';
-import {
-  registerDesktopAccount,
-  type RegisterRequest,
-} from './register-desktop-account';
-// Residual 871: RegisterRequest dual retired — re-export sole body from register-desktop-account.
-export type { RegisterRequest };
+import { registerDesktopAccount } from './register-desktop-account';
 import type { RegisterApiResponse } from './auth-remote-gateway';
 import { AuthRemoteGateway } from './auth-remote-gateway';
 import { loginDesktopAccount } from './login-desktop-account';
@@ -213,7 +212,7 @@ export class DesktopCredentialAuthCoordinator {
     }
   }
 
-  async register(request: RegisterRequest): Promise<IpcResult<AuthResponseDTO>> {
+  async register(request: EmailRegisterCredentials): Promise<IpcResult<AuthResponseDTO>> {
     const result = await registerDesktopAccount(request, {
       isOnline: () => this.deps.networkStateManager.isOnline(),
       remoteGateway: this.deps.remoteGateway,
@@ -231,7 +230,7 @@ export class DesktopCredentialAuthCoordinator {
 
   async completeRegisterSuccess(
     data: RegisterApiResponse | AuthResponseDTO,
-    request: RegisterRequest,
+    request: EmailRegisterCredentials,
   ): Promise<void> {
     const registerLike = data as RegisterApiResponse & {
       user?: { id?: string };

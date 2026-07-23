@@ -16,12 +16,13 @@ import type {
   BindOAuthReq,
   BindOAuthRes,
   UnbindOAuthReq,
+  EmailRegisterCredentials,
 } from '@dailyuse/contracts/authentication';
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, ok } from '@dailyuse/contracts/result';
 
-import type { RegisterRequest } from './register-desktop-account';
-// Residual 875: RegistrationRequestPayload dual retired — RegisterRequest is sole shape.
+// Residual 875: RegistrationRequestPayload dual retired — EmailRegisterCredentials sole shape.
+// Residual 931: RegisterRequest name dual fully retired.
 
 export interface RegisterApiResponse extends Partial<AuthResponseDTO> {
   identityId?: string;
@@ -217,7 +218,7 @@ export class AuthRemoteGateway {
   }
 
   async register(
-    request: RegisterRequest,
+    request: EmailRegisterCredentials,
     registerUrl: string = this.createRegisterUrl(),
   ): Promise<RegisterApiResult> {
     const response = await this.fetchImpl(registerUrl, {

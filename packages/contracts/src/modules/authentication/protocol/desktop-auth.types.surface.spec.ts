@@ -82,6 +82,8 @@ describe('desktop-auth AuthStatusDTO dual retired (residual 865)', () => {
  * Desktop offline login uses OfflineLoginResponse; online auth uses AuthResponseDTO.
  * Residual 869/921 (soft): DesktopLoginRequest name dual fully retired — EmailLoginCredentials sole body
  *   (apps/desktop .../desktop-login-request-dual.surface.spec.ts).
+ * Residual 931 (soft): RegisterRequest name dual fully retired — EmailRegisterCredentials sole body
+ *   (apps/desktop .../desktop-register-request-dual.surface.spec.ts).
  * Residual 873/925 (soft): OfflineLoginResponse name dual fully retired — contracts sole body
  *   (offline-login-response-dual.surface.spec.ts).
  */

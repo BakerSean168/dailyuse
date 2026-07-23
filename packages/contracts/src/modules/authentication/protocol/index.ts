@@ -21,6 +21,7 @@ export type {
   AuthStatus,
   AuthBootstrapSnapshot,
   EmailLoginCredentials,
+  EmailRegisterCredentials,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,
 } from './desktop-auth.types';

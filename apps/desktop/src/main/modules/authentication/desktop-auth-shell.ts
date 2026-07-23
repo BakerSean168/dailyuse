@@ -9,10 +9,9 @@ import type { DesktopProfileRuntimeManager } from '../../profile';
 import type { RememberedAccountsService, NetworkStateManager } from './infrastructure';
 import type { AuthDesktopApplicationService } from './application/auth-desktop-application-service';
 import { loginDesktopAccount } from './application/login-desktop-account';
-import {
-  registerDesktopAccount,
-  type RegisterRequest,
-} from './application/register-desktop-account';
+import { registerDesktopAccount } from './application/register-desktop-account';
+import type { EmailRegisterCredentials } from '@dailyuse/contracts/authentication';
+// Residual 931: RegisterRequest name dual fully retired — EmailRegisterCredentials sole body.
 import { AuthRemoteGateway } from './application/auth-remote-gateway';
 
 const logger = createLogger('DesktopAuthShell');
@@ -218,7 +217,7 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(AuthChannels.REGISTER, async (_event, request: RegisterRequest) => {
+  ipcMain.handle(AuthChannels.REGISTER, async (_event, request: EmailRegisterCredentials) => {
     try {
       const result = await registerDesktopAccount(request, {
         isOnline: () => networkStateManager.isOnline(),

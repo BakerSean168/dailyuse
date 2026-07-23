@@ -316,6 +316,17 @@ export interface EmailLoginCredentials {
   autoLogin?: boolean;
 }
 
+/**
+ * Email + password register credentials (desktop online).
+ * Residual 931: sole desktop email-register request shape (RegisterRequest name dual retired).
+ * Residual 931 keep-boundary: ≠ RegisterByEmailReq API DTO (no username; zod API boundary).
+ */
+export interface EmailRegisterCredentials {
+  email: string;
+  password: string;
+  username?: string;
+}
+
 export interface RememberedDesktopAccountDTO {
   identityId: IdentityId;
   identifier: string;

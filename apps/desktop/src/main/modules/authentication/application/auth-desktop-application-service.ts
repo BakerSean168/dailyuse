@@ -52,7 +52,7 @@ import type { RememberedAccountsService, NetworkStateManager } from '../infrastr
 import { AuthRemoteGateway, type RegisterApiResponse } from './auth-remote-gateway';
 import { DesktopAuthAccountProjectionService } from './desktop-auth-account-projection-service';
 import { DesktopRememberedAccountService } from './desktop-remembered-account-service';
-import { DesktopCredentialAuthCoordinator, type AuthState, type RegisterRequest } from './desktop-credential-auth-coordinator';
+import { DesktopCredentialAuthCoordinator, type AuthState, type EmailRegisterCredentials } from './desktop-credential-auth-coordinator';
 import {
   DesktopAuthLifecycleCoordinator,
   type AutoLoginResult,
@@ -260,13 +260,13 @@ export class AuthDesktopApplicationService {
     return this.requireCoordinator().loginRememberedAccount(request);
   }
 
-  async register(request: RegisterRequest): Promise<IpcResult<AuthResponseDTO>> {
+  async register(request: EmailRegisterCredentials): Promise<IpcResult<AuthResponseDTO>> {
     return this.requireCoordinator().register(request);
   }
 
   async completeRegisterSuccess(
     data: RegisterApiResponse | AuthResponseDTO,
-    request: RegisterRequest,
+    request: EmailRegisterCredentials,
   ): Promise<void> {
     return this.requireCoordinator().completeRegisterSuccess(data, request);
   }
