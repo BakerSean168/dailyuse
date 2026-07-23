@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { KnowledgeCitationSchema } from './response-schemas';
 
 export const AgentIntentSchema = z.enum([
   'chat',
@@ -79,14 +80,8 @@ export const AgentArtifactSchema = z.object({
 });
 export type AgentArtifact = z.infer<typeof AgentArtifactSchema>;
 
-export const AgentCitationSchema = z.object({
-  resourceId: z.string().min(1),
-  resourcePath: z.string().min(1),
-  title: z.string().nullish(),
-  chunkIndex: z.number().int().nonnegative(),
-  excerpt: z.string().min(1),
-  score: z.number().nonnegative(),
-});
+// Residual 757: AgentCitation dual body retired — reuses residual 755 KnowledgeCitationSchema.
+export const AgentCitationSchema = KnowledgeCitationSchema;
 export type AgentCitation = z.infer<typeof AgentCitationSchema>;
 
 export const AgentToolNameSchema = z.enum([
