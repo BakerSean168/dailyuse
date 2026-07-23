@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
  * packages/app-vue/src/shared/utils/result-helpers.ts had no consumers;
  * composable error duals retire onto createComposableHandleError sole (973/975/1055/1057/1059).
  * Soft residual: usePassword / account checkAvailability toast-only keep-boundary remains.
+ * Soft residual 1071: dead useViewportBreakpoint composable removed (no consumers).
  * Does not flip §13.2 checkboxes.
  */
 describe('result-helpers dead dual removed (residual 1063)', () => {
