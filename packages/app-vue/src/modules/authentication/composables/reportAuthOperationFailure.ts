@@ -1,6 +1,7 @@
 /**
- * Residual 1049: sole auth operation failure reporters for login/register/remembered-desktop.
- * Exact duals retired from useLogin / useRegister / useRememberedAccounts result+catch paths.
+ * Residual 1049/1051: sole auth operation failure reporters for login/register/remembered/guest.
+ * Exact duals retired from useLogin / useRegister / useRememberedAccounts / useGuestMode
+ * enterGuestMode result+catch paths.
  */
 import { toast } from 'vue-sonner';
 import type { ResultError } from '@dailyuse/contracts/result';

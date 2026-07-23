@@ -6,11 +6,17 @@ import {
   hasDesktopAuthApi,
 } from '../../../shared/utils/desktop-auth-recovery';
 import { hydrateDesktopBootstrapAuthState } from '../../../shared/utils/desktop-bootstrap-auth';
+import {
+  reportAuthCatchFailure,
+  reportAuthResultFailure,
+} from './reportAuthOperationFailure';
 
 // Residual 913: host access via getDesktopAuthApi (no inline host cast dual).
 // Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
+// Residual 1051: enterGuestMode result/catch failure duals retired onto reportAuthOperationFailure sole.
 export function useGuestMode(ctx: AuthContext) {
   const { store, service, t, lastResultError, getLocalizedAuthError } = ctx;
+  const failureDeps = { store, t, lastResultError, getLocalizedAuthError };
 
   async function refreshToken(): Promise<boolean> {
     if (!store.isAuthenticated) return false;
@@ -73,21 +79,9 @@ export function useGuestMode(ctx: AuthContext) {
         });
         return true;
       }
-      lastResultError.value = result.error;
-      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
-      store.setError(message);
-      toast.error(t('auth.toast.guestModeFailed'), { description: message });
-      return false;
+      return reportAuthResultFailure(failureDeps, result.error, 'auth.toast.guestModeFailed');
     } catch (e) {
-      console.error('[auth] enterGuestMode failed', e);
-      lastResultError.value = {
-        code: 'UNKNOWN',
-        message: e instanceof Error ? e.message : 'Unknown error',
-      };
-      const message = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
-      store.setError(message);
-      toast.error(t('auth.toast.guestModeFailed'), { description: message });
-      return false;
+      return reportAuthCatchFailure(failureDeps, e, 'enterGuestMode', 'auth.toast.guestModeFailed');
     } finally {
       store.setLoading(false);
     }
