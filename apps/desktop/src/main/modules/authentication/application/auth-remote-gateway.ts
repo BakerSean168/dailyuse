@@ -20,6 +20,9 @@ import type {
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, ok } from '@dailyuse/contracts/result';
 
+import type { RegisterRequest } from './register-desktop-account';
+// Residual 875: RegistrationRequestPayload dual retired — RegisterRequest is sole shape.
+
 export interface RegisterApiResponse extends Partial<AuthResponseDTO> {
   identityId?: string;
   sessionId?: string;
@@ -31,12 +34,6 @@ export interface RegisterApiResponse extends Partial<AuthResponseDTO> {
   };
   message?: string;
   error?: string;
-}
-
-export interface RegistrationRequestPayload {
-  email: string;
-  password: string;
-  username?: string;
 }
 
 export interface RegisterApiResult {
@@ -220,7 +217,7 @@ export class AuthRemoteGateway {
   }
 
   async register(
-    request: RegistrationRequestPayload,
+    request: RegisterRequest,
     registerUrl: string = this.createRegisterUrl(),
   ): Promise<RegisterApiResult> {
     const response = await this.fetchImpl(registerUrl, {

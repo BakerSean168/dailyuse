@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 871: RegisterRequest dual retired.
  * Sole interface body in register-desktop-account; coordinator re-exports type only.
+ * Soft residual 875: RegistrationRequestPayload dual retired in
+ *   desktop-registration-request-payload-dual.surface.spec.ts.
  */
 describe('desktop RegisterRequest dual retired (residual 871)', () => {
   const appDir = __dirname;
