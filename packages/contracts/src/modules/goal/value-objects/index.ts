@@ -56,6 +56,7 @@ export type {
   DeactivateFocusModeReq,
 } from './focus-mode';
 export {
+  FocusModeClientDTOSchema,
   ActivateFocusModeSchema,
   DeactivateFocusModeSchema,
   ExtendFocusModeSchema,

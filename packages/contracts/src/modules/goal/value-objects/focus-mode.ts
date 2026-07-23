@@ -9,7 +9,6 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type {
   DomainDate,
-  TransferDate,
   IdentityId,
   FocusModeId,
   GoalId,
@@ -47,41 +46,23 @@ export interface FocusMode {
   updatedAt: DomainDate;
 }
 
-// ============ Transfer DTO (传输层) ============
+// Residual 745: FocusModeDTO dual body retired — OpenAPI + transport use
+// FocusModeClientDTOSchema (semantic type is a z.infer alias).
 
-/**
- * FocusMode DTO
- * API 传输用
- */
-export interface FocusModeDTO {
-  id: FocusModeId;
-  identityId: IdentityId;
-  focusedGoalIds: GoalId[];
-  startTime: TransferDate;
-  endTime: TransferDate;
-  hiddenGoalsMode: HiddenGoalsMode;
-  isActive: boolean;
-  actualEndTime: TransferDate | null;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
+export const FocusModeClientDTOSchema = z.object({
+  id: brandedId<FocusModeId>(),
+  identityId: brandedId<IdentityId>(),
+  focusedGoalIds: z.array(brandedId<GoalId>()),
+  startTime: z.number(),
+  endTime: z.number(),
+  hiddenGoalsMode: z.enum(HiddenGoalsMode),
+  isActive: z.boolean(),
+  actualEndTime: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
 
-// ============ API Request DTOs ============
-
-/**
- * 激活聚焦模式请求
- */
-export interface ActivateFocusModeRequest {
-  focusedGoalIds: GoalId[]; // 1-3个目标
-  hiddenGoalsMode?: HiddenGoalsMode; // 隐藏模式，默认 'hide'
-}
-
-/**
- * 延长聚焦模式请求
- */
-export interface ExtendFocusModeRequest {
-  newEndTime: TransferDate; // 新的结束时间 (timestamp)
-}
+export type FocusModeDTO = z.infer<typeof FocusModeClientDTOSchema>;
 
 // ============ Request Schemas ============
 
@@ -103,3 +84,7 @@ export const ExtendFocusModeSchema = z
 export type ActivateFocusModeReq = z.infer<typeof ActivateFocusModeSchema>;
 export type DeactivateFocusModeReq = z.infer<typeof DeactivateFocusModeSchema>;
 export type ExtendFocusModeReq = z.infer<typeof ExtendFocusModeSchema>;
+
+// Residual 745: request interface duals retired — aliases of schema-inferred types.
+export type ActivateFocusModeRequest = ActivateFocusModeReq;
+export type ExtendFocusModeRequest = ExtendFocusModeReq;

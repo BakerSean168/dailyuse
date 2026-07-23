@@ -15,20 +15,17 @@ import type {
   IdentityId,
   GoalRecordId,
   FocusSessionId,
-  FocusModeId,
 } from '../../../primitives';
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { ReviewType } from '../value-objects/review-type';
 import { FocusSessionStatus } from '../value-objects/focus-session-status';
 import { FolderType } from '../value-objects/folder-type';
-import { HiddenGoalsMode } from '../value-objects/focus-mode';
 
 import type { GoalClientDTO } from '../aggregates/goal-client';
 import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
 import type { GoalReviewClientDTO } from '../entities/goal-review-client';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
-import type { FocusModeDTO } from '../value-objects/focus-mode';
 
 import { KeyResultProgressDTOSchema } from '../value-objects/key-result-progress';
 import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot';
@@ -45,6 +42,12 @@ import {
 // Residual 741: GoalReminderConfigDTOSchema / ReminderTriggerSchema owned by value-objects
 // (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
 export { GoalReminderConfigDTOSchema, ReminderTriggerSchema };
+
+import { FocusModeClientDTOSchema } from '../value-objects/focus-mode';
+
+// Residual 745: FocusModeClientDTOSchema owned by value-objects
+// (semantic FocusModeDTO is a z.infer alias). Re-export for OpenAPI/route consumers.
+export { FocusModeClientDTOSchema };
 
 
 // ============================================================================
@@ -90,21 +93,6 @@ export const GoalReviewClientDTOSchema: z.ZodType<GoalReviewClientDTO> = z.objec
 });
 
 
-/**
- * FocusMode Client DTO Schema
- */
-export const FocusModeClientDTOSchema: z.ZodType<FocusModeDTO> = z.object({
-  id: brandedId<FocusModeId>(),
-  identityId: brandedId<IdentityId>(),
-  focusedGoalIds: z.array(brandedId<GoalId>()),
-  startTime: z.number(),
-  endTime: z.number(),
-  hiddenGoalsMode: z.enum(HiddenGoalsMode),
-  isActive: z.boolean(),
-  actualEndTime: z.number().nullable(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
 
 // ============================================================================
 // Aggregate Root Response Schemas
