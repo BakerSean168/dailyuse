@@ -23,9 +23,11 @@ import {
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
 // Residual 1007: sole reminder time helpers (local dual retired).
+// Residual 1009: sole readNestedNumber (local dual retired).
 import {
   buildReminderStartTimestamp,
   normalizeReminderTimeOfDay,
+  readNestedNumber,
 } from '@dailyuse/utils/shared';
 
 import { DesktopAnalyticsReadAdapter } from './desktop-analytics-read.adapter';
@@ -35,18 +37,7 @@ const logger = createLogger('DesktopAutomationToolExecutor');
 const DAILY_REVIEW_INTERVAL_MINUTES = 24 * 60;
 const WEEKLY_REVIEW_INTERVAL_MINUTES = 7 * DAILY_REVIEW_INTERVAL_MINUTES;
 
-function readNestedNumber(source: unknown, path: readonly string[]): number {
-  let current = source;
-
-  for (const segment of path) {
-    if (!current || typeof current !== 'object' || !(segment in current)) {
-      return 0;
-    }
-    current = (current as Record<string, unknown>)[segment];
-  }
-
-  return typeof current === 'number' ? current : 0;
-}
+// Residual 1009: readNestedNumber elevated to @dailyuse/utils/shared.
 
 
 // Residual 1007: reminder time helpers elevated to @dailyuse/utils/shared.
