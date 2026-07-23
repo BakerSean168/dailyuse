@@ -1,3 +1,5 @@
+import type { ExportContext } from '../../portable-runtime';
+
 export function parseJsonField<T = unknown>(value: unknown, fallback?: T): T | unknown {
   if (value === null || value === undefined) return fallback;
   if (typeof value !== 'string') return value;
@@ -50,4 +52,32 @@ export function toRecord(value: unknown): Record<string, unknown> | undefined {
     return parsed as Record<string, unknown>;
   }
   return undefined;
+}
+
+/**
+ * Residual 1003: sole export ref resolvers for task/reminder/repository projections.
+ * entityLabel selects the dual warning / throw message domain word.
+ * Soft residual: goal/editor keep local resolveRef (message shapes differ).
+ */
+
+export function resolveExportRef(
+  id: string | null | undefined,
+  ctx: ExportContext,
+  entityLabel: string,
+): string | null {
+  if (!id) return null;
+  const ref = ctx.refToIdMap.get(id);
+  if (ref) return ref;
+  ctx.warnings.push(`Unresolved ${entityLabel} reference to ${id}`);
+  return null;
+}
+
+export function resolveExportRefOrThrow(
+  id: string,
+  ctx: ExportContext,
+  entityLabel: string,
+): string {
+  const ref = ctx.refToIdMap.get(id);
+  if (ref) return ref;
+  throw new Error(`EXPORT_VALIDATION_ERROR: Unresolved ${entityLabel} reference to ${id}`);
 }
