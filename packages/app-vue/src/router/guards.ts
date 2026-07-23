@@ -2,13 +2,7 @@ import type { NavigationGuard, RouteLocationNormalized } from 'vue-router';
 import { hasDesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 
 // Residual 909: detect via hasDesktopAuthApi (no inline invoke dual).
-function hasDesktopElectronBridge(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-  return hasDesktopAuthApi(window);
-}
-
+// Residual 919: hasDesktopElectronBridge name dual retired — use hasDesktopAuthApi directly.
 function shouldUseHardLoginRedirect(option?: boolean): boolean {
   if (typeof option === 'boolean') {
     return option;
@@ -16,7 +10,7 @@ function shouldUseHardLoginRedirect(option?: boolean): boolean {
   // Web owns a separate AuthApp bootstrap for `/auth`. SPA navigation would load the
   // legacy in-shell AuthView fallback (including guest UI), so unauthenticated web
   // access must full-page navigate to the platform auth entry.
-  return typeof window !== 'undefined' && !hasDesktopElectronBridge();
+  return typeof window !== 'undefined' && !hasDesktopAuthApi(window);
 }
 
 function buildLoginRedirectUrl(loginRoute: string, redirectPath: string): string {

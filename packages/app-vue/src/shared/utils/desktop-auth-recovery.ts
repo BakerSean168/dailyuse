@@ -2,7 +2,8 @@ import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { AuthStatus } from '@dailyuse/contracts/authentication';
 import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result';
 
-// Residual 903: sole desktop invoke-api shape (DesktopBootstrapApi is type alias).
+// Residual 903: sole desktop invoke-api shape DesktopAuthApi.
+// Residual 919: DesktopBootstrapApi name dual fully retired — hydrate uses DesktopAuthApi.
 // Residual 905: reminder DesktopApi dual retired — use DesktopAuthApi sole body.
 // Residual 907: setting themeSync inline electronAPI dual retired — use DesktopAuthApi.
 // Residual 909: app-vue Window.electronAPI + desktop-detect duals retired — use DesktopAuthApi.

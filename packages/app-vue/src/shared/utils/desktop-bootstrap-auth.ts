@@ -4,11 +4,10 @@ import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result'
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
 import type { DesktopAuthApi } from './desktop-auth-recovery';
 
-// Residual 903: DesktopBootstrapApi dual retired — exact shape of DesktopAuthApi (type alias only).
-export type DesktopBootstrapApi = DesktopAuthApi;
-
+// Residual 903: DesktopBootstrapApi dual retired — exact shape of DesktopAuthApi.
+// Residual 919: DesktopBootstrapApi name fully retired — hydrate accepts DesktopAuthApi sole body.
 export async function hydrateDesktopBootstrapAuthState(
-  api?: DesktopBootstrapApi,
+  api?: DesktopAuthApi,
 ): Promise<boolean> {
   if (!api?.invoke) {
     useAuthenticationStore().reset();
