@@ -8,7 +8,8 @@
  *
  * Residual 1055: createComposableHandleError toast report path
  * (profile/settings/close setError+toast duals retired).
- * Soft residual: checkAvailability toast-only (no setError) keep-boundary.
+ * Soft residual / Residual 1075 keep-boundary: checkAvailability toast-only
+ * (no setError; not createComposableHandleError dual body).
  */
 
 import { computed } from 'vue';
@@ -122,7 +123,7 @@ export function useAccount() {
     if (result.ok) {
       return result.data.available;
     } else {
-      // Soft residual: toast-only (no store.setError) keep-boundary vs handleError sole.
+      // Residual 1075 keep-boundary: toast-only (no store.setError) vs handleError sole.
       const message = translateResultError(result.error, t, {
         fallbackKey: 'account.toast.checkAvailabilityFailed',
       });

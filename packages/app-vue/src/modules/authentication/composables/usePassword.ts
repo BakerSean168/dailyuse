@@ -6,8 +6,9 @@
  *
  * @module authentication/composables
  *
- * Soft residual 1055: toast-only failure path keep-boundary
- * (no store.setError; not handle-error sole dual body).
+ * Soft residual 1055 / Residual 1075 keep-boundary: toast-only failure path
+ * (no store.setError; not createComposableHandleError dual body).
+ * Password flows report via toast only; intentional UX keep-boundary.
  */
 
 import { ref } from 'vue';

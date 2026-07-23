@@ -12,6 +12,7 @@ import { createComposableHandleError } from './create-composable-handle-error';
  * Residual 1057: governance useGovernance (default console.error; setGovernanceError dual retired).
  * Residual 1059: dashboard useDashboard (default console.error; local ref error dual retired).
  * Soft residual: usePassword / account checkAvailability toast-only keep-boundary.
+ * Soft residual 1075: password/checkAvailability toast-only keep-boundary surface (no force-merge).
  * Soft residual 1065: goal createGoalErrorHandler rich-log keep-boundary (no force-merge).
  * Does not flip §13.2 checkboxes.
  */
@@ -130,12 +131,12 @@ describe('createComposableHandleError dual retired (residual 973/975/1055/1057/1
     expect(authAccountToastConsumers.session).toContain('handleLoadError');
     expect(authAccountToastConsumers.session).toContain('handleOperationError');
     expect(authAccountToastConsumers.account).toContain('makeAccountHandleError');
-    // soft residual: password keeps toast-only dual path (no setError via sole)
+    // soft residual 1075: password keeps toast-only dual path (no setError via sole)
     expect(passwordSoft).not.toContain("from '../../../shared/utils/create-composable-handle-error'");
     expect(passwordSoft).toContain('getPasswordErrorMessage');
-    expect(passwordSoft).toContain('Soft residual 1055');
-    // soft residual: account checkAvailability toast-only keep-boundary
-    expect(authAccountToastConsumers.account).toContain('Soft residual: toast-only');
+    expect(passwordSoft).toContain('Residual 1075 keep-boundary');
+    // soft residual 1075: account checkAvailability toast-only keep-boundary
+    expect(authAccountToastConsumers.account).toContain('Residual 1075 keep-boundary');
     expect(authAccountToastConsumers.account).toContain('checkAvailabilityFailed');
   });
 
