@@ -3,6 +3,8 @@ import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/c
 import { unwrapOrThrowError, type Result } from '@dailyuse/contracts/result';
 import type { IAIMessageApiClient, IResultIpcClient } from '../types';
 import { createResultClientError, unwrapResultOrThrow } from '../result-client-error';
+// Residual 993: sole createStreamId (local dual retired).
+import { createStreamId } from '../../../shared/create-stream-id';
 
 type StreamDonePayload = {
   userMessage: SendMessageRes['userMessage'];
@@ -171,11 +173,3 @@ function lastArg<T>(args: unknown[]): T | undefined {
   return args.length > 0 ? (args[args.length - 1] as T | undefined) : undefined;
 }
 
-function createStreamId(): string {
-  const crypto = globalThis.crypto;
-  if (crypto && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-
-  return `stream-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
