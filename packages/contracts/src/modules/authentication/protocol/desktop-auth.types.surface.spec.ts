@@ -6,6 +6,7 @@ import type { SessionRestoreResult } from './desktop-auth.types';
 /**
  * Desktop auth protocol surface (stage-6 residual 70):
  * SessionRestoreResult uses ok only — no success dual-track field.
+  * Soft residual 847: DeviceInfoDTO dual retired via DeviceInfo type alias (value-objects/device-info).
  */
 describe('desktop-auth SessionRestoreResult surface', () => {
   const source = readFileSync(resolve(__dirname, 'desktop-auth.types.ts'), 'utf8');
