@@ -293,6 +293,8 @@ export const ArchiveExpiredResSchema = z.object({ archivedCount: z.number() });
 /**
  * 进度分解响应 Schema
  */
+// Residual 805: ProgressBreakdown dual retired — this schema is the sole progress-breakdown shape
+// (semantic ProgressBreakdown is z.infer alias in value-objects/progress-breakdown.ts).
 export const ProgressBreakdownResSchema = z.object({
   totalProgress: z.number(),
   calculationMode: z.literal('WeightedAverage'),
