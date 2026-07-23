@@ -6,6 +6,7 @@ import {
   GeneratedGoalDraftSchema,
   KeyResultPreviewSchema,
 } from '../dtos/goal-generation-result.dto';
+import { TestAIProviderResultDTOSchema } from '../dtos/provider-test-result.dto';
 import {
   GoalAutomationActionSchema,
   GoalAutomationExecutedActionSchema,
@@ -189,13 +190,9 @@ export const MessageListResSchema = z.object({
   pageSize: z.number(),
 });
 
-export const TestAIProviderResultDTOSchema = z.object({
-  ok: z.boolean(),
-  response: z.string().optional(),
-  model: z.string().optional(),
-  error: z.string().optional(),
-  latencyMs: z.number(),
-});
+// Residual 721: TestAIProviderResultDTOSchema owned by provider-test-result.dto.ts
+// (re-exported for OpenAPI route consumers).
+export { TestAIProviderResultDTOSchema };
 
 const KnowledgeCitationResSchema = z.object({
   resourceId: z.string(),

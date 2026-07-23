@@ -25,4 +25,7 @@ export type {
   GoalWorkflowResultDTO,
 } from './goal-workflow-result.dto';
 
+export {
+  TestAIProviderResultDTOSchema,
+} from './provider-test-result.dto';
 export type { TestAIProviderResultDTO } from './provider-test-result.dto';
