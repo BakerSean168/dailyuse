@@ -4,8 +4,9 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 837: TaskFolderClientDTO / TaskTemplateHistoryClientDTO dual bodies retired.
- * Sole *ResponseSchema + z.infer. Server DTOs remain separate interfaces (identical shape).
+ * Sole *ResponseSchema + z.infer.
  * Soft residual 841: SubtaskClientDTO dual also retired via SubtaskResponseSchema.
+ * Soft residual 843: Server DTOs also z.infer of same *ResponseSchema (see task-folder-history-server-dto-dual).
  */
 describe('task folder/history client dto duals retired (residual 837)', () => {
   const apiDir = __dirname;
@@ -36,7 +37,11 @@ describe('task folder/history client dto duals retired (residual 837)', () => {
     expect(schemas).toContain('Residual 837');
     expect(schemas).toContain('export const TaskFolderResponseSchema = z.object({');
     expect(schemas).toContain('icon: z.string().nullable()');
-    expect(folderServer).toMatch(/export interface TaskFolderServerDTO\b/);
+    // Soft residual 843: Server is z.infer of same schema (no interface dual body).
+    expect(folderServer).toContain(
+      'export type TaskFolderServerDTO = z.infer<typeof TaskFolderResponseSchema>',
+    );
+    expect(folderServer).not.toMatch(/export interface TaskFolderServerDTO\b/);
   });
 
   it('owns TaskTemplateHistoryClientDTO as z.infer of TaskTemplateHistoryResponseSchema', () => {
@@ -49,13 +54,21 @@ describe('task folder/history client dto duals retired (residual 837)', () => {
       'export const TaskTemplateHistoryResponseSchema = z.object({',
     );
     expect(schemas).toContain('changes: z.unknown()');
-    expect(historyServer).toMatch(/export interface TaskTemplateHistoryServerDTO\b/);
+    // Soft residual 843: Server is z.infer of same schema (no interface dual body).
+    expect(historyServer).toContain(
+      'export type TaskTemplateHistoryServerDTO = z.infer<typeof TaskTemplateHistoryResponseSchema>',
+    );
+    expect(historyServer).not.toMatch(/export interface TaskTemplateHistoryServerDTO\b/);
   });
 
-  it('keeps server DTO files as sole interface bodies (no client interface dual)', () => {
+  it('client and server both use response-schemas (no interface dual bodies)', () => {
     expect(folderServer).not.toMatch(/export interface TaskFolderClientDTO\b/);
     expect(historyServer).not.toMatch(/export interface TaskTemplateHistoryClientDTO\b/);
+    expect(folderServer).not.toMatch(/export interface TaskFolderServerDTO\b/);
+    expect(historyServer).not.toMatch(/export interface TaskTemplateHistoryServerDTO\b/);
     expect(folder).toContain("from '../api/response-schemas'");
     expect(history).toContain("from '../api/response-schemas'");
+    expect(folderServer).toContain("from '../api/response-schemas'");
+    expect(historyServer).toContain("from '../api/response-schemas'");
   });
 });

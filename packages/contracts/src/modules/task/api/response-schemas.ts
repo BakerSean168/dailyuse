@@ -143,6 +143,7 @@ export const CheckExpiredTaskInstancesResponseSchema = z.object({
 
 // Residual 837: TaskFolderClientDTO dual retired — sole TaskFolderResponseSchema + z.infer
 // (semantic type is z.infer alias in aggregates/task-folder-client.ts).
+// Residual 843: TaskFolderServerDTO also z.infer of this schema (client+server single-track).
 export const TaskFolderResponseSchema = z.object({
   id: brandedId<TaskFolderId>(),
   identityId: brandedId<IdentityId>(),
@@ -158,6 +159,7 @@ export const TaskFolderResponseSchema = z.object({
 
 // Residual 837: TaskTemplateHistoryClientDTO dual retired — sole TaskTemplateHistoryResponseSchema + z.infer
 // (semantic type is z.infer alias in entities/task-template-history-client.ts).
+// Residual 843: TaskTemplateHistoryServerDTO also z.infer of this schema (client+server single-track).
 export const TaskTemplateHistoryResponseSchema = z.object({
   id: z.string(),
   templateId: z.string(),
