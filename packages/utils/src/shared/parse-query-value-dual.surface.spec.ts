@@ -6,7 +6,7 @@ import { parseNumber, parseString } from './parse-query-value';
 /**
  * Residual 989: parseString + parseNumber dual retired (notification + reminder API routes).
  * Sole body in @dailyuse/utils/shared/parse-query-value.
- * Soft residual 998: tip focused suite numbers track Residual 998 evidence tip (289/1261).
+ * Soft residual 1000: tip focused suite numbers track Residual 1000 evidence tip (290/1265).
  * Soft residual: schedule route parsers keep-boundary (different empty/boolean handling).
  * Soft residual: goal parseBoolean sole (residual 985) is true/false-only keep-boundary vs this dual.
  * Does not flip §13.2 checkboxes.
