@@ -18,6 +18,10 @@ import { TokenUsageSchema } from '../value-objects/token-usage';
 import { ConversationStatus } from '../value-objects/conversation-status';
 import { MessageRole } from '../value-objects/message-role';
 import { AIProviderType } from '../value-objects/ai-provider-type';
+import { AIModelInfoSchema } from '../aggregates/ai-provider-config-client';
+
+// Residual 751: AIModelInfoSchema owned by aggregates (AIModelInfo is z.infer alias).
+export { AIModelInfoSchema };
 
 // Residual 719: draft/preview/result schemas owned by goal-generation-result.dto.ts
 // (GenerateGoalResultDTOSchema re-exported for OpenAPI route consumers).
@@ -69,14 +73,6 @@ export const AIConversationClientDTOSchema = z.object({
   messages: z.array(MessageClientDTOSchema).nullable(),
 });
 
-const AIModelInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  contextWindow: z.number().optional(),
-  inputCostPer1M: z.number().optional(),
-  outputCostPer1M: z.number().optional(),
-});
 
 export const AIProviderConfigClientDTOSchema = z.object({
   id: brandedId<AiProviderConfigId>(),

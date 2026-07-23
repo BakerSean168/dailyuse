@@ -25,6 +25,10 @@ import { ActiveHoursConfigSchema } from '../value-objects/active-hours-config';
 import { GroupStatsSchema } from '../value-objects/group-stats';
 import { TriggerConfigSchema } from '../value-objects/trigger-config';
 import { NotificationConfigSchema } from '../value-objects/notification-config';
+import { TimeSlotSchema } from '../value-objects/time-slot';
+
+// Residual 751: TimeSlotSchema owned by value-objects (TimeSlotDTO is z.infer alias).
+export { TimeSlotSchema };
 
 // Residual 733: ActiveHoursConfigSchema / GroupStatsSchema owned by value-objects
 // (re-exported for OpenAPI nested response consumers).
@@ -160,12 +164,6 @@ export const ReminderBatchResultSchema = z.object({
 
 // ============ UserReminderPreferences Response Schema ============
 
-const TimeSlotSchema = z.object({
-  hourStart: z.number(),
-  hourEnd: z.number(),
-  avgResponseRate: z.number(),
-  sampleCount: z.number(),
-});
 
 export const UserReminderPreferencesResponseSchema = z.object({
   id: brandedId<UserReminderPreferencesId>(),

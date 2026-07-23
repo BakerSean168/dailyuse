@@ -64,3 +64,6 @@ export type {
   FrequencyAdjustmentDTO,
   FrequencyAdjustment,
 } from './frequency-adjustment';
+
+export type { TimeSlotDTO } from './time-slot';
+export { TimeSlotSchema } from './time-slot';

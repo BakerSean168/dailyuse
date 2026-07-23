@@ -4,19 +4,8 @@
  */
 
 import type { UserReminderPreferencesId, IdentityId } from '../../../primitives';
-
-// ============ 值对象：TimeSlot ============
-
-/**
- * Time Slot DTO
- * 时间段（用于记录最佳/最差响应时间段）
- */
-export interface TimeSlotDTO {
-  readonly hourStart: number; // 开始小时 (0-23)
-  readonly hourEnd: number; // 结束小时 (0-23)
-  readonly avgResponseRate: number; // 平均响应率 (0-100)
-  readonly sampleCount: number; // 样本数量
-}
+// Residual 751: TimeSlotDTO owned by value-objects/time-slot (z.infer of TimeSlotSchema).
+export type { TimeSlotDTO } from '../value-objects/time-slot';
 
 // ============ DTO 定义 ============
 

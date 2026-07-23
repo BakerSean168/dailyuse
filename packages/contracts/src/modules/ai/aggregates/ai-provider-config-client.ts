@@ -3,8 +3,23 @@
  * 用户自定义 AI 服务提供商配置（客户端视图）
  */
 
+import { z } from 'zod';
 import type { AiProviderConfigId, IdentityId } from '../../../primitives';
 import type { AIProviderType } from '../value-objects/ai-provider-type';
+
+// Residual 751: AIModelInfo dual body retired — OpenAPI + transport use
+// AIModelInfoSchema (semantic type is a z.infer alias).
+
+export const AIModelInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  contextWindow: z.number().optional(),
+  inputCostPer1M: z.number().optional(),
+  outputCostPer1M: z.number().optional(),
+});
+
+export type AIModelInfo = z.infer<typeof AIModelInfoSchema>;
 
 /**
  * AI Provider 配置 - 客户端 DTO
@@ -42,22 +57,3 @@ export interface AIProviderConfigClientDTO {
   /** 软删除时间戳 */
   deletedAt: number | null;
 }
-
-/**
- * AI 模型信息
- */
-export interface AIModelInfo {
-  /** 模型 ID（用于 API 调用） */
-  id: string;
-  /** 模型显示名称 */
-  name: string;
-  /** 模型描述（可选） */
-  description?: string;
-  /** 上下文窗口大小（可选） */
-  contextWindow?: number;
-  /** 每百万输入 token 成本（美元） */
-  inputCostPer1M?: number;
-  /** 每百万输出 token 成本（美元） */
-  outputCostPer1M?: number;
-}
-
