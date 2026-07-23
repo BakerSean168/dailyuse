@@ -1,3 +1,7 @@
+/**
+ * Residual 1047 keep-boundary: plain sequential dotenv load for api scripts.
+ * Distinct from packages/database preserve+normalize loadWorkspaceEnv (no force-merge).
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
