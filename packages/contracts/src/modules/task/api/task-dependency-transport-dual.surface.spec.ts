@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 711: task dependency transport dual bodies retired.
  * Create/Update/Validate *Body + ValidateDependencyResponse reuse *Schema only.
  * Internal use-case request types with identityId remain explicit.
+ * Soft residual 797: TaskGraphDependencyDTO dual retired via TaskDependencyResponseSchema
+ * (see task-graph-dependency-dto-dual surface; not asserted here to avoid dual-surface lock drift).
  */
 describe('task dependency transport dual retired (residual 711)', () => {
   const apiDir = __dirname;

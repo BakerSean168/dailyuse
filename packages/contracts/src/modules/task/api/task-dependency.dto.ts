@@ -15,7 +15,10 @@ import type {
 } from '../../../primitives';
 import type { DependencyType } from '../value-objects/dependency-type';
 import type { TaskDependencyClientDTO } from '../aggregates/task-dependency-client';
-import { ValidateDependencyResponseSchema } from './response-schemas';
+import {
+  TaskDependencyResponseSchema,
+  ValidateDependencyResponseSchema,
+} from './response-schemas';
 
 // ============ Zod Schemas (route request bodies) ============
 
@@ -79,6 +82,10 @@ export interface UpdateTaskDependencyRequest {
 // Residual 711: validate response dual body retired — OpenAPI + transport use ValidateDependencyResponseSchema.
 /** 验证依赖响应 */
 export type ValidateDependencyResponse = z.infer<typeof ValidateDependencyResponseSchema>;
+
+// Residual 797: TaskGraphDependencyDTO dual retired — graph edges reuse TaskDependencyResponseSchema only
+// (optional predecessor/successor titles are schema-owned superset).
+export type TaskGraphDependencyDTO = z.infer<typeof TaskDependencyResponseSchema>;
 
 /**
  * 批量创建依赖请求

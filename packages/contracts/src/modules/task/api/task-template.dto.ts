@@ -5,13 +5,12 @@ import type {
   TaskFolderId,
   GoalId,
   TaskTemplateId,
-  TaskDependencyId,
 } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO } from '../aggregates/task-template-client';
 import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
 import { TaskType } from '../value-objects/task-type';
-import type { DependencyType } from '../value-objects/dependency-type';
+import type { TaskGraphDependencyDTO } from './task-dependency.dto';
 import {
   TaskReminderConfigSchema,
 } from '../value-objects/task-reminder-config';
@@ -117,15 +116,9 @@ export interface QueryTaskTemplatesRes {
   total: number;
 }
 
-export interface TaskGraphDependencyDTO {
-  id: TaskDependencyId;
-  predecessorTaskId: TaskTemplateId;
-  successorTaskId: TaskTemplateId;
-  dependencyType: DependencyType;
-  lagDays?: number;
-  createdAt: number;
-  updatedAt: number;
-}
+// Residual 797: TaskGraphDependencyDTO dual retired — sole TaskDependencyResponseSchema
+// (semantic type is z.infer alias owned via task-dependency.dto; re-exported for graph consumers).
+export type { TaskGraphDependencyDTO };
 
 export interface QueryTaskTemplateGraphRes {
   templates: TaskTemplateClientDTO[];

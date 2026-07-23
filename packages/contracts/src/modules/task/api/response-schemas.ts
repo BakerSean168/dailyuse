@@ -70,6 +70,8 @@ export const TaskTemplateListResponseSchema = z.object({
 });
 
 // ============ TaskDependency Response Schema ============
+// Residual 797: TaskGraphDependencyDTO dual retired — this schema is the sole graph-edge shape
+// (semantic TaskGraphDependencyDTO is z.infer alias).
 
 export const TaskDependencyResponseSchema = z.object({
   id: brandedId<TaskDependencyId>(),
