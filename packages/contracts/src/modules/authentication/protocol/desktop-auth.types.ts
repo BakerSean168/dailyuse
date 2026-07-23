@@ -294,6 +294,7 @@ export interface AuthBootstrapSnapshot {
 
 // Residual 865: AuthStatusDTO simplified dual deleted (zero consumers).
 // Sole desktop status shape is AuthStatus (used by getStatus / bootstrap snapshot).
+// Residual 901: app-vue recovery no longer reintroduces a local DesktopAuthStatus dual.
 // Residual 637: AuthOperationResult { ok, error? } generic dual envelope deleted.
 // Concrete desktop auth flows use typed *Result DTOs + Result/IpcResult envelopes.
 

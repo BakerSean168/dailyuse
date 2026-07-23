@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 /**
  * Desktop auth recovery surface (stage-6 residual 72):
  * GET_STATUS/INITIALIZE use IpcResult envelopes; recovery unwraps status data.
+ * Residual 901 (soft): DesktopAuthStatus dual retired
+ *   (desktop-auth-status-dual.surface.spec.ts).
  */
 describe('desktop-auth-recovery Result surface', () => {
   const source = readFileSync(resolve(__dirname, 'desktop-auth-recovery.ts'), 'utf8');

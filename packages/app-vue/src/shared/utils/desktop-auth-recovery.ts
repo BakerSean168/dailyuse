@@ -1,14 +1,13 @@
 import { AuthChannels } from '@dailyuse/contracts/electron';
+import type { AuthStatus } from '@dailyuse/contracts/authentication';
 import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result';
 
 export type DesktopAuthApi = {
   invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
 };
 
-type DesktopAuthStatus = {
-  authenticated?: boolean;
-  runtimeState?: string;
-};
+// Residual 901: local DesktopAuthStatus dual retired — sole status shape is contracts AuthStatus
+// (residual 865 already deleted AuthStatusDTO; recovery must not reintroduce a slim dual body).
 
 type DesktopAuthErrorLike = {
   code?: string | null;
@@ -26,8 +25,8 @@ export function getDesktopAuthApi(
 
 async function readAuthStatus(
   api: DesktopAuthApi,
-): Promise<DesktopAuthStatus | null> {
-  const response = (await api.invoke!(AuthChannels.GET_STATUS)) as IpcResult<DesktopAuthStatus>;
+): Promise<AuthStatus | null> {
+  const response = (await api.invoke!(AuthChannels.GET_STATUS)) as IpcResult<AuthStatus>;
   const result = fromIpcResult(response);
   return isOk(result) ? result.data : null;
 }
