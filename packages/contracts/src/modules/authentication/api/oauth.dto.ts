@@ -7,6 +7,10 @@
 import { z } from 'zod';
 import type { AuthResponseDTO } from '../dtos/auth-response';
 
+// Residual 763: OAuth provider enum dual retired — sole OAuthProviderSchema body.
+export const OAuthProviderSchema = z.enum(['Google', 'Github', 'Microsoft', 'Apple']);
+export type OAuthProvider = z.infer<typeof OAuthProviderSchema>;
+
 // ============================================================================
 // Get OAuth URL
 // ============================================================================
@@ -15,7 +19,7 @@ import type { AuthResponseDTO } from '../dtos/auth-response';
  * 获取 OAuth 授权 URL Schema
  */
 export const GetOAuthUrlSchema = z.object({
-  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+  provider: OAuthProviderSchema,
   redirectUri: z.string().url().optional(),
 });
 
@@ -35,7 +39,7 @@ export interface GetOAuthUrlRes {
  */
 // Residual 759: OAuth callback/bind share one authorize-callback payload schema.
 export const OAuthCallbackSchema = z.object({
-  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+  provider: OAuthProviderSchema,
   code: z.string().min(1),
   state: z.string().min(1),
 });
@@ -51,7 +55,7 @@ export type OAuthCallbackRes = AuthResponseDTO;
  * OAuth 授权 Schema
  */
 export const OAuthAuthorizeSchema = z.object({
-  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+  provider: OAuthProviderSchema,
   code: z.string(),
   state: z.string().optional(),
   redirectUri: z.string().url().optional(),
@@ -89,7 +93,7 @@ export interface BindOAuthRes {
  * 从当前已登录身份解绑 OAuth 提供者。
  */
 export const UnbindOAuthSchema = z.object({
-  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+  provider: OAuthProviderSchema,
 });
 
 export type UnbindOAuthReq = z.infer<typeof UnbindOAuthSchema>;
@@ -99,7 +103,7 @@ export type UnbindOAuthReq = z.infer<typeof UnbindOAuthSchema>;
 // ============================================================================
 
 export interface OAuthProviderAvailability {
-  provider: 'Google' | 'Github' | 'Microsoft' | 'Apple';
+  provider: OAuthProvider;
   enabled: boolean;
 }
 
