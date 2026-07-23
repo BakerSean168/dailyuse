@@ -4,14 +4,14 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 891: honest §13.2 completion-definition open-items re-audit.
- * Residual 1133: tip focused suite pointer refresh (Residual 1132 evidence tip 340/1472)
+ * Residual 1137: tip focused suite pointer refresh (Residual 1136 evidence tip 341/1476)
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
- * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID +
+ * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
  * clampPercentage + isRecord keep-boundaries (no force-merge).
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary is separate contracts surface.
  * Residual 1047 (soft): loadWorkspaceEnv keep-boundary surface remains locked in api package.
- * Residual 1129 (soft): prior tip refresh 339/1468 still in history notes only.
+ * Residual 1133 (soft): prior tip refresh 340/1472 still in history notes only.
  * Does not flip any §13.2 checkbox; focused suite tip remains evidence, not full PR gate.
  */
 describe('§13.2 DoD open items honest audit (residual 891)', () => {
@@ -34,8 +34,8 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
   it('keeps exactly three unchecked §13.2 items with partial/external-block labels', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
-    expect(plan).toContain('Residual 1133');
-    expect(plan).toContain('残留一千一百三十三轮');
+    expect(plan).toContain('Residual 1137');
+    expect(plan).toContain('残留一千一百三十七轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
     const checked = sec.match(/- \[x\]/g) ?? [];
@@ -62,9 +62,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
 
   it('records tip focused suite evidence without claiming full PR gate completion', () => {
     const sec = section132();
-    expect(sec).toContain('340 文件 / 1472 测试');
-    expect(sec).toContain('Residual 1132');
-    expect(sec).toContain('Residual 1133');
+    expect(sec).toContain('341 文件 / 1476 测试');
+    expect(sec).toContain('Residual 1136');
+    expect(sec).toContain('Residual 1137');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');
     expect(sec).toContain('三入口完整 E2E');
@@ -84,11 +84,12 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('toDate');
     expect(sec).toContain('extractErrorMessage');
     expect(sec).toContain('generateUUID');
+    expect(sec).toContain('newId');
     expect(sec).toContain('isRecord');
     expect(sec).not.toMatch(/全量 PR 门禁.*已证明/);
+    expect(sec).not.toContain('focused evidence suite tip（Residual 1132）：**340 文件 / 1472 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1128）：**339 文件 / 1468 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1124）：**338 文件 / 1464 测试**');
-    expect(sec).not.toContain('focused evidence suite tip（Residual 1118）：**336 文件 / 1454 测试**');
   });
 
   it('three-login matrix remains source/fixture evidence only (not real OAuth E2E)', () => {
