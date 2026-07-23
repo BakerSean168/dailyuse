@@ -23,6 +23,8 @@ export const UserSettingResponseSchema = z.object({
 
 /**
  * Export Settings Response Schema
+ *
+ * Residual 771: sole export settings response shape (ExportSettingsRes is z.infer alias).
  */
 export const ExportSettingsResponseSchema = z.object({
   data: z.string(),
@@ -31,6 +33,8 @@ export const ExportSettingsResponseSchema = z.object({
 
 /**
  * Import Settings Response Schema
+ *
+ * Residual 771: sole import settings response shape (ImportSettingsRes is z.infer alias).
  */
 export const ImportSettingsResponseSchema = z.object({
   imported: z.number(),
