@@ -8,7 +8,7 @@ import { getRequestId } from './get-request-id';
  * Sole body in get-request-id.ts; agent-checkpoint / agent-runtime /
  * langgraph-checkpoint routes import it.
  * Soft residual 963: findSSEBoundary dual retired (find-sse-boundary-dual.surface.spec.ts).
- * Soft residual 966: tip focused suite numbers track Residual 966 evidence tip (274/1209).
+ * Soft residual 968: tip focused suite numbers track Residual 968 evidence tip (275/1213).
  * Soft residual 967: isAbortLikeError dual retired (is-abort-like-error-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
