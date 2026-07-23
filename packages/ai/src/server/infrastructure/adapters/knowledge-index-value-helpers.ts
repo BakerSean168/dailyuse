@@ -1,10 +1,13 @@
 /**
  * Residual 969: sole knowledge-index value helpers for PowerSync + Prisma repositories.
  * toStringArray / toNumberArray / tokenize / toChunkArray duals retired.
+ * Residual 1109 keep-boundary: toStringArray keeps empty strings (no trim).
+ * Soft residual 1109: goal-planning trims/non-empty; data-portability parseJsonField first (no force-merge).
  */
 
 import type { KnowledgeIndexedChunk } from '../../application/ports';
 
+// Residual 1109 keep-boundary: array filter typeof string only (keeps empty; no trim; no JSON parse).
 export function toStringArray(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === 'string')

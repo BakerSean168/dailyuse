@@ -51,6 +51,8 @@ export function toBoolean(value: unknown, fallback = false): boolean {
   return fallback;
 }
 
+// Residual 1109 keep-boundary: parseJsonField then typeof string filter (JSON strings ok; no trim).
+// Soft residual 1109: AI knowledge-index keep-empty + goal-planning trim/non-empty (no force-merge).
 export function toStringArray(value: unknown): string[] {
   const parsed = parseJsonField(value, []);
   if (!Array.isArray(parsed)) return [];

@@ -14,6 +14,7 @@ import {
  * Soft residual 967: isAbortLikeError dual retired (shared/is-abort-like-error-dual.surface.spec.ts).
  * Soft residual 974: tip focused suite numbers track Residual 974 evidence tip (278/1223).
  * Soft residual 971: withObservabilityPayload dual retired (with-observability-payload-dual.surface.spec.ts).
+ * Soft residual 1109: toStringArray keep-boundary vs goal-planning trim + portable parseJsonField.
  * Does not flip §13.2 checkboxes.
  */
 describe('knowledge-index value helpers dual retired (residual 969)', () => {

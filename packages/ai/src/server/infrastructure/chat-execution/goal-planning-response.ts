@@ -188,6 +188,8 @@ function toTimestamp(value: unknown): number | undefined {
   return undefined;
 }
 
+// Residual 1109 keep-boundary: LLM arrays → trim + drop empty (not knowledge-index keep-empty).
+// Soft residual 1109: knowledge-index sole + portable projection parseJsonField toStringArray (no force-merge).
 function toStringArray(value: unknown): string[] {
   return Array.isArray(value)
     ? value

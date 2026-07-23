@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
  * - goal-planning-response: number + numeric string Number() (LLM JSON)
  * Soft residual 1101: toTimestamp keep-boundary family remains.
  * Soft residual 1099: asRecord/toRecord keep-boundary remains.
+ * Soft residual 1109: toStringArray keep-boundary family remains.
  * Does not flip §13.2 checkboxes.
  */
 describe('toNumber AI chat-execution keep-boundary (residual 1105)', () => {
