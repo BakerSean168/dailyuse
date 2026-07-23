@@ -1,9 +1,13 @@
+/**
+ * Residual 979: toPrismaJson sole import (./to-prisma-json.ts).
+ */
 import type { PrismaClient } from '@dailyuse/database';
 import type { AgentRun, AgentRunResult } from '@dailyuse/contracts/ai';
 import { AgentRunSchema, AgentRunResultSchema, AgentStateSchema } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils/logger';
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@dailyuse/database/prisma';
+import { toPrismaJson } from './to-prisma-json';
 import { ResultErrorException, toResultErrorException } from '@dailyuse/contracts/result';
 import type {
   AgentCheckpointDeleteInput,
@@ -15,9 +19,6 @@ import type {
 
 const logger = createLogger('AgentCheckpointPrismaAdapter');
 
-function toPrismaJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-}
 
 function toNullablePrismaJson(
   value: unknown,

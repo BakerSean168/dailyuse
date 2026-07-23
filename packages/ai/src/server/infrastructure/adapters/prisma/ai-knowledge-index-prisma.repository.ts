@@ -1,11 +1,13 @@
 /**
  * Residual 969: knowledge-index value helpers sole import
  * (../knowledge-index-value-helpers.ts).
+ * Residual 979: toPrismaJson sole import (./to-prisma-json.ts).
  */
 import { createHash, randomUUID } from 'node:crypto';
 
 import type { PrismaClient } from '@dailyuse/database';
 import { Prisma } from '@dailyuse/database/prisma';
+import { toPrismaJson } from './to-prisma-json';
 import type {
   IKnowledgeIndexRepository,
   KnowledgeIndexDiagnostics,
@@ -55,9 +57,6 @@ function toObjectRecord(value: unknown): Record<string, unknown> {
 }
 
 
-function toPrismaJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-}
 
 function mapEntryRowToIndexedResource(
   row: KnowledgeIndexEntryRow,
