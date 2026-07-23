@@ -4,21 +4,13 @@ import type {
   ReminderTrigger,
 } from '@dailyuse/contracts/goal';
 import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
-import { SourceModule, TaskPriority, Timezone } from '@dailyuse/contracts/schedule';
+import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/schedule';
 import type { IGoalRepository } from '../domain';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function mapPriority(goal: GoalServerDTO): (typeof TaskPriority)[keyof typeof TaskPriority] {
-  if (goal.importance === 'Vital') {
-    return TaskPriority.Urgent;
-  }
-  if (goal.importance === 'Important') {
-    return TaskPriority.High;
-  }
-  return TaskPriority.Normal;
-}
+/** Soft residual 1168: dual mapPriority retired onto contracts mapImportanceToTaskPriority sole. */
 
 function calculateTriggerAt(goal: GoalServerDTO, trigger: ReminderTrigger): number | null {
   if (trigger.type === ReminderTriggerType.RemainingDays) {
@@ -165,7 +157,7 @@ export function createGoalScheduleProjectionSource(deps: {
                 triggerAt,
               },
               tags: ['goal', 'goal-reminder', `trigger:${trigger.type}`],
-              priority: mapPriority(goalDTO),
+              priority: mapImportanceToTaskPriority(goalDTO.importance),
               timeout: null,
             },
           });

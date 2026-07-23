@@ -9,3 +9,21 @@ export const TaskPriority = {
 } as const;
 
 export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority];
+
+/**
+ * Residual 1168: sole importance → TaskPriority mapper for schedule projections.
+ * Goal + Task schedule-projection-source dual mapPriority bodies retired onto this helper.
+ * Soft residual 1168: buildTaskName / trigger math stay domain-specific (no force-merge).
+ */
+export function mapImportanceToTaskPriority(
+  importance: string,
+): TaskPriority {
+  if (importance === 'Vital') {
+    return TaskPriority.Urgent;
+  }
+  if (importance === 'Important') {
+    return TaskPriority.High;
+  }
+  return TaskPriority.Normal;
+}
+

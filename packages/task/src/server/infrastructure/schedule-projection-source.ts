@@ -5,7 +5,7 @@ import type {
   TaskTemplateServerDTO,
 } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus, TaskTimeType } from '@dailyuse/contracts/task';
-import { SourceModule, TaskPriority, Timezone } from '@dailyuse/contracts/schedule';
+import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/schedule';
 import type {
   ITaskInstanceRepository,
@@ -14,15 +14,7 @@ import type {
 
 const DEFAULT_ALL_DAY_REMINDER_MINUTES = 9 * 60;
 
-function mapPriority(importance: string): (typeof TaskPriority)[keyof typeof TaskPriority] {
-  if (importance === 'Vital') {
-    return TaskPriority.Urgent;
-  }
-  if (importance === 'Important') {
-    return TaskPriority.High;
-  }
-  return TaskPriority.Normal;
-}
+/** Soft residual 1168: dual mapPriority retired onto contracts mapImportanceToTaskPriority sole. */
 
 function formatUnit(unit: ReminderTimeUnit): string {
   switch (unit) {
@@ -281,7 +273,7 @@ export function createTaskScheduleProjectionSource(deps: {
                     reminderTime: reminderAt,
                   },
                   tags: ['task', 'task-reminder', `template:${templateDTO.id}`],
-                  priority: mapPriority(templateDTO.importance),
+                  priority: mapImportanceToTaskPriority(templateDTO.importance),
                   timeout: null,
                 },
               });
