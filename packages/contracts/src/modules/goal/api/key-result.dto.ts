@@ -10,6 +10,7 @@ import type { GoalId, KeyResultId } from '../../../primitives';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';
 import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
+import { GoalIdParamsSchema } from './goal-crud.dto';
 
 // ============================================================================
 // ADD Key Result
@@ -60,11 +61,8 @@ export type UpdateKeyResultReq = z.infer<typeof UpdateKeyResultSchema>;
 /**
  * 获取关键结果列表
  */
-export const GetKeyResultsSchema = z.object({
-  goalId: brandedId<GoalId>(),
-});
-
-export type GetKeyResultsReq = z.infer<typeof GetKeyResultsSchema>;
+// Residual 677: reuses shared GoalIdParamsSchema (no dual body).
+export type GetKeyResultsReq = z.infer<typeof GoalIdParamsSchema>;
 
 export interface GetKeyResultsRes {
   data: KeyResultClientDTO[];

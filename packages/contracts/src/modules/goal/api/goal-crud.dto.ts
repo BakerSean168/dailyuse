@@ -30,6 +30,12 @@ const GoalReminderConfigSchema = z.object({
   triggers: z.array(ReminderTriggerSchema).max(10),
 });
 
+/** Residual 677: shared goalId params for goal-scoped list queries. */
+export const GoalIdParamsSchema = z.object({
+  goalId: brandedId<GoalId>(),
+});
+
+
 // ============================================================================
 // CREATE Goal
 // ============================================================================
