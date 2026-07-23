@@ -1,30 +1,12 @@
 /**
  * AIConversation Aggregate Root - Client Interface
  * AI对话聚合根 - 客户端接口
+ *
+ * Residual 809: AIConversationClientDTO dual retired — sole AIConversationClientDTOSchema + z.infer.
  */
 
-import type { AiConversationId, IdentityId, TransferDate } from '../../../primitives';
-import type { ConversationStatus } from '../value-objects/conversation-status';
-import type { MessageClientDTO } from '../entities/message-client';
+import type { z } from 'zod';
+import { AIConversationClientDTOSchema } from '../api/response-schemas';
 
-// ============ DTO 定义 ============
-
-/**
- * AIConversation Client DTO
- * 使用 TransferDate (number) 时间戳
- */
-export interface AIConversationClientDTO {
-  id: AiConversationId;
-  identityId: IdentityId;
-  name: string;
-  status: ConversationStatus;
-  messageCount: number;
-  lastMessageAt: TransferDate | null;
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-
-  // 子实体 DTO
-  messages: MessageClientDTO[] | null;
-}
+// Residual 809: AIConversationClientDTO dual retired — OpenAPI + transport use AIConversationClientDTOSchema.
+export type AIConversationClientDTO = z.infer<typeof AIConversationClientDTOSchema>;

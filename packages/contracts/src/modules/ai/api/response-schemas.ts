@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { AiProviderConfigId, AiConversationId, AiMessageId } from '../../../primitives';
+import type { AiProviderConfigId, AiConversationId, AiMessageId, IdentityId } from '../../../primitives';
 import {
   GenerateGoalResultDTOSchema,
   GeneratedGoalDraftSchema,
@@ -61,9 +61,11 @@ export const MessageClientDTOSchema = z.object({
   formattedTime: z.string(),
 });
 
+// Residual 809: AIConversationClientDTO dual retired — sole ClientDTOSchema + z.infer
+// (identityId tightened to brandedId to match prior ClientDTO).
 export const AIConversationClientDTOSchema = z.object({
   id: brandedId<AiConversationId>(),
-  identityId: z.string(),
+  identityId: brandedId<IdentityId>(),
   name: z.string(),
   status: z.enum(Object.values(ConversationStatus)),
   messageCount: z.number(),

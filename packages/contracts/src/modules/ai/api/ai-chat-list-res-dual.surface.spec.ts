@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
  * ConversationListRes / MessageListRes reuse *ListResSchema only (ClientDTO items).
  * Soft residual 807: MessageClientDTO dual retired via MessageClientDTOSchema
  * (see message-client-dto-dual surface; not asserted here to avoid dual-surface lock drift).
+ * Soft residual 809: AIConversationClientDTO dual retired via AIConversationClientDTOSchema
+ * (see ai-conversation-client-dto-dual surface).
  */
 describe('ai chat list response dual retired (residual 691)', () => {
   const apiDir = __dirname;
