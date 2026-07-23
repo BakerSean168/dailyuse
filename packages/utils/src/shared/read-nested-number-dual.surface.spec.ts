@@ -6,10 +6,9 @@ import { readNestedNumber } from './read-nested-number';
 /**
  * Residual 1009: readNestedNumber dual retired (API + Desktop automation executors).
  * Sole body in @dailyuse/utils/shared/read-nested-number.
- * Soft residual 1010: tip focused suite numbers track Residual 1010 evidence tip (295/1283).
- * Soft residual: API backend-automation still has local previewText (default maxLength 200)
- *   vs packages/ai shared previewText sole (residual 995, default 240) — keep-boundary
- *   until apps import a public export path without package boundary churn.
+ * Soft residual 1010: tip focused suite numbers track Residual 1010 evidence tip (295/1283)
+ *   until residual 1012 suite re-run.
+ * Soft residual 1011: previewText dual retired (utils sole; API maxLength 200 call sites).
  * Does not flip §13.2 checkboxes.
  */
 describe('readNestedNumber dual retired (residual 1009)', () => {
@@ -53,15 +52,20 @@ describe('readNestedNumber dual retired (residual 1009)', () => {
     }
   });
 
-  it('API previewText remains keep-boundary vs AI shared sole (residual 995)', () => {
-    expect(api).toMatch(/function previewText\b/);
-    expect(api).toContain('maxLength = 200');
-    const aiSole = readFileSync(
+  it('API previewText dual retired to utils sole (residual 1011)', () => {
+    expect(api).toContain('Residual 1011');
+    expect(api).toContain("from '@dailyuse/utils/shared'");
+    expect(api).not.toMatch(/function previewText\b/);
+    expect(api).toMatch(/previewText\([^)]+,\s*200\)/);
+    const aiReexport = readFileSync(
       resolve(sharedDir, '../../../ai/src/shared/preview-text.ts'),
       'utf8',
     );
-    expect(aiSole).toContain('Residual 995');
-    expect(aiSole).toContain('maxLength = 240');
+    const utilsSole = readFileSync(resolve(sharedDir, 'preview-text.ts'), 'utf8');
+    expect(aiReexport).toContain('Residual 1011');
+    expect(aiReexport).toContain("export { previewText } from '@dailyuse/utils/shared'");
+    expect(utilsSole).toContain('Residual 1011');
+    expect(utilsSole).toContain('maxLength = 240');
   });
 
   it('walks nested number paths and returns 0 for missing/non-number leaves', () => {

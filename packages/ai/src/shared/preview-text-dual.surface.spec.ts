@@ -5,15 +5,22 @@ import { previewText } from './preview-text';
 
 /**
  * Residual 995: previewText dual retired (AI goal/chat observability previews).
- * Sole body in preview-text.ts; generate-ai-goal + automation/planning adapters +
- * internal client import it (call sites keep their maxLength args).
- * Soft residual 1010: tip focused suite numbers track Residual 1010 evidence tip (295/1283).
+ * Residual 1011: sole body elevated to @dailyuse/utils/shared/preview-text;
+ * this package re-exports so package-local import paths stay stable.
+ * generate-ai-goal + automation/planning adapters + internal client import it
+ * (call sites keep their maxLength args).
+ * Soft residual 1010: tip focused suite numbers track Residual 1010 evidence tip (295/1283)
+ *   until residual 1012 suite re-run.
  * Soft residual 993: createStreamId dual retired (create-stream-id-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
-describe('previewText dual retired (residual 995)', () => {
+describe('previewText dual retired (residual 995 / elevated residual 1011)', () => {
   const dir = __dirname;
-  const sole = readFileSync(resolve(dir, 'preview-text.ts'), 'utf8');
+  const reexport = readFileSync(resolve(dir, 'preview-text.ts'), 'utf8');
+  const sole = readFileSync(
+    resolve(dir, '../../../utils/src/shared/preview-text.ts'),
+    'utf8',
+  );
   const generateGoal = readFileSync(
     resolve(dir, '../server/application/use-cases/commands/generate-ai-goal.use-case.ts'),
     'utf8',
@@ -37,15 +44,20 @@ describe('previewText dual retired (residual 995)', () => {
     'utf8',
   );
 
-  it('owns sole previewText helper body', () => {
-    expect(sole).toContain('Residual 995');
+  it('re-exports utils sole previewText helper body', () => {
+    expect(reexport).toContain('Residual 995');
+    expect(reexport).toContain('Residual 1011');
+    expect(reexport).toContain("export { previewText } from '@dailyuse/utils/shared'");
+    expect(reexport).not.toMatch(/export function previewText\b/);
+    expect(sole).toContain('Residual 1011');
     expect(sole).toMatch(/export function previewText\b/);
     expect(sole).toContain("value.replace(/\\s+/g, ' ')");
     expect(sole).toContain('maxLength - 3');
     expect(sole).toContain('...');
+    expect(sole).toContain('maxLength = 240');
   });
 
-  it('consumers import sole without local dual bodies', () => {
+  it('consumers import package-local re-export without local dual bodies', () => {
     for (const [label, source, importPath] of [
       [
         'generate-ai-goal',

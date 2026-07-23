@@ -27,9 +27,11 @@ import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
 // Residual 1007: sole reminder time helpers (local dual retired).
 // Residual 1009: sole readNestedNumber (local dual retired).
+// Residual 1011: sole previewText (local dual retired; call sites keep maxLength 200).
 import {
   buildReminderStartTimestamp,
   normalizeReminderTimeOfDay,
+  previewText,
   readNestedNumber,
 } from '@dailyuse/utils/shared';
 
@@ -40,21 +42,8 @@ const logger = createLogger('BackendAutomationToolExecutor');
 const DAILY_REVIEW_INTERVAL_MINUTES = 24 * 60;
 const WEEKLY_REVIEW_INTERVAL_MINUTES = 7 * DAILY_REVIEW_INTERVAL_MINUTES;
 
-function previewText(value: string | null | undefined, maxLength = 200): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength - 3)}...`;
-}
-
+// Residual 1011: previewText elevated to @dailyuse/utils/shared.
 // Residual 1009: readNestedNumber elevated to @dailyuse/utils/shared.
-
-
 // Residual 1007: reminder time helpers elevated to @dailyuse/utils/shared.
 
 function buildReminderTemplateInput(reminder: GoalAutomationReminderPreview, now = Date.now()) {
@@ -153,7 +142,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
       keyResultCount: input.plan.keyResults?.length ?? 0,
       taskTemplateCount: input.plan.taskTemplates?.length ?? 0,
       reminderCount: input.plan.reminders?.length ?? 0,
-      requestIdeaPreview: previewText(input.request.idea),
+      requestIdeaPreview: previewText(input.request.idea, 200),
     });
 
     for (const action of input.actions) {
@@ -162,7 +151,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
           identityId: input.identityId,
           tool: action.tool,
           index: action.index ?? null,
-          rationale: previewText(action.rationale),
+          rationale: previewText(action.rationale, 200),
           hasCreatedGoal: Boolean(createdGoalId),
         });
         if (action.tool === 'create_goal') {
