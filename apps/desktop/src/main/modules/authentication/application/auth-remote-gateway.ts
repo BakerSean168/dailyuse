@@ -43,6 +43,7 @@ export interface RegisterApiResponse extends Partial<AuthResponseDTO> {
   error?: string;
 }
 
+// Residual 939 (soft): readErrorPayload returns AuthRemoteErrorData sole shape (no inline dual).
 export type AuthRemoteErrorData = { message?: string; error?: string };
 
 /** Sole remote HTTP status+data envelope for first-party auth gateway calls. */
@@ -85,7 +86,7 @@ function readEnvelopeData<T>(body: unknown): T | undefined {
   return body.data as T | undefined;
 }
 
-function readErrorPayload(body: unknown): { message?: string; error?: string } {
+function readErrorPayload(body: unknown): AuthRemoteErrorData {
   if (!isRecord(body)) {
     return {};
   }

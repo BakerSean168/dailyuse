@@ -10,6 +10,8 @@ import { describe, expect, it } from 'vitest';
  * Soft residual 917: DesktopAuthFlowResult named dual retired
  *   (auth-flow-result-named-dual.surface.spec.ts).
  * Keep-boundary: RegisterApiResponse remains loose register payload (≠ strict AuthResponseDTO).
+ * Residual 939 (soft): readErrorPayload uses AuthRemoteErrorData sole return
+ *   (to-error-log-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('desktop AuthRemoteApiResult dual retired (residual 933)', () => {

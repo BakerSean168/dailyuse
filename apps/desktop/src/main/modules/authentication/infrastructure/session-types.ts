@@ -46,6 +46,7 @@ export interface SessionStatus extends SessionStatusDTO {
 // ============ Utility Functions ============
 // Residual 937: sole toIdentityId / toDeviceInfoDTO helper bodies
 // (guest/offline/remembered local duals retired).
+// Residual 939: sole toErrorLog helper body (login-desktop-account local dual retired).
 
 export function toIdentityId(value: string | IdentityId): IdentityId {
   return IdentityIdValue.of(String(value));

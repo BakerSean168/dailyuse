@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
  * Soft residual 935: LifecycleSessionRestoreResult name dual retired
  *   (application/session-restore-result-extension-keep-boundary.surface.spec.ts).
  * Soft residual 925: OfflineLoginResponse contracts sole body.
+ * Residual 939 (soft): toErrorLog dual retired
+ *   (application/to-error-log-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('session helper duals retired (residual 937)', () => {

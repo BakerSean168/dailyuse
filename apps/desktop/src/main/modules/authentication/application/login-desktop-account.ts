@@ -13,29 +13,12 @@ import {
   type AuthFlowLogger,
   type DesktopAuthFlowResult,
 } from './auth-flow-types';
+// Residual 939: toErrorLog dual retired — session-types sole helper.
+import { toErrorLog } from '../infrastructure/session-types';
 
 // Residual 869: DesktopLoginRequest dual retired — EmailLoginCredentials is the sole shape.
 // Residual 921: DesktopLoginRequest name fully retired — login uses EmailLoginCredentials sole body.
 // Residual 917: DesktopLoginResult dual retired — DesktopAuthFlowResult sole application name.
-
-function toErrorLog(error: unknown): unknown {
-  if (error instanceof Error) {
-    const details: Record<string, unknown> = {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    };
-
-    const withCause = error as Error & { cause?: unknown };
-    if (withCause.cause !== undefined) {
-      details.cause = toErrorLog(withCause.cause);
-    }
-
-    return details;
-  }
-
-  return error;
-}
 
 interface LoginDesktopAccountDependencies {
   isOnline: () => boolean;
