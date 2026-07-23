@@ -6,7 +6,6 @@
 import { z } from 'zod';
 import { brandedId } from '../../../../primitives';
 import type { ScheduleTaskId } from '../../../../primitives';
-import type { ScheduleExecutionClientDTO } from '../../entities/schedule-execution-client';
 import { ExecutionStatus } from '../../value-objects/execution-status';
 
 // ============ Zod Schemas ============
@@ -38,26 +37,5 @@ export interface ScheduleExecutionQueryParamsDTO {
   readonly sortOrder?: 'asc' | 'desc';
 }
 
-// ============ Response Types ============
-
-/**
- * 执行记录列表响应
- */
-export interface ScheduleExecutionListResponseDTO {
-  readonly items: readonly ScheduleExecutionClientDTO[];
-  readonly total: number;
-  readonly page: number;
-  readonly limit: number;
-}
-
-/**
- * 执行历史统计响应
- */
-export interface ExecutionHistoryStatsDTO {
-  readonly taskId: ScheduleTaskId;
-  readonly totalExecutions: number;
-  readonly successfulExecutions: number;
-  readonly failedExecutions: number;
-  readonly avgDuration: number;
-  readonly recentExecutions: readonly ScheduleExecutionClientDTO[];
-}
+// Residual 663: dead execution list/stats response duals retired
+// (RPC query uses ClientDTO item arrays; get-stats remains module-local).

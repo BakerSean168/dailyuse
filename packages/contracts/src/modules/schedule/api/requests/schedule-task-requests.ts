@@ -6,7 +6,6 @@
 import { z } from 'zod';
 import { brandedId } from '../../../../primitives';
 import type { ScheduleTaskId } from '../../../../primitives';
-import type { ScheduleTaskClientDTO } from '../../aggregates/schedule-task-client';
 import type { ScheduleConfigDTO } from '../../value-objects/schedule-config';
 import type { RetryPolicyDTO } from '../../value-objects/retry-policy';
 import type { TaskMetadataDTO } from '../../value-objects/task-metadata';
@@ -186,16 +185,7 @@ export interface BatchScheduleTaskOperationRequest {
 }
 
 // ============ Response Types ============
-
-/**
- * 任务列表响应
- */
-export interface ScheduleTaskListResponseDTO {
-  readonly items: readonly ScheduleTaskClientDTO[];
-  readonly total: number;
-  readonly page: number;
-  readonly limit: number;
-}
+// Residual 663: dead task-list response dual retired (query bodies use ClientDTO item arrays).
 
 /**
  * 批量操作响应

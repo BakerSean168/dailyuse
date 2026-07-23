@@ -13,6 +13,7 @@ describe('schedule Schedule*DTO dual single-track surface', () => {
     resolve(apiDir, 'requests/schedule-execution-requests.ts'),
     'utf8',
   );
+  const rpcMap = readFileSync(resolve(apiDir, '../protocol/schedule-rpc-map.ts'), 'utf8');
 
   it('does not dual-alias ScheduleTaskDTO / ScheduleExecutionDTO', () => {
     expect(taskReq).not.toMatch(/export type ScheduleTaskDTO\s*=/);
@@ -21,9 +22,12 @@ describe('schedule Schedule*DTO dual single-track surface', () => {
     expect(execReq).not.toContain('export type ScheduleExecutionDTO');
   });
 
-  it('list/detail response shapes use ClientDTO names', () => {
-    expect(taskReq).toContain('ScheduleTaskClientDTO');
-    expect(execReq).toContain('ScheduleExecutionClientDTO');
+  it('list/detail transport shapes use ClientDTO names (not dead list duals)', () => {
+    expect(rpcMap).toContain('ScheduleTaskClientDTO');
+    expect(rpcMap).toContain('ScheduleExecutionClientDTO');
+    expect(taskReq).not.toMatch(/export interface ScheduleTaskListResponseDTO\b/);
+    expect(execReq).not.toMatch(/export interface ScheduleExecutionListResponseDTO\b/);
+    expect(execReq).not.toMatch(/export interface ExecutionHistoryStatsDTO\b/);
   });
 });
 
@@ -79,3 +83,42 @@ describe('schedule batch operation response dual name retired (residual 639)', (
   });
 });
 
+/**
+ * Residual 663: schedule dead list/stats ResponseDTO duals + detect-conflicts wrapper dual retired.
+ * Live detect-conflicts / get-conflicts bodies are ConflictDetectionResult (RPC + client + OpenAPI).
+ */
+describe('schedule list/stats + detect-conflicts dual retired (residual 663)', () => {
+  const apiDir = __dirname;
+  const taskReq = readFileSync(resolve(apiDir, 'requests/schedule-task-requests.ts'), 'utf8');
+  const execReq = readFileSync(
+    resolve(apiDir, 'requests/schedule-execution-requests.ts'),
+    'utf8',
+  );
+  const scheduleReq = readFileSync(resolve(apiDir, 'requests/schedule-requests.ts'), 'utf8');
+  const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
+  const rpcMap = readFileSync(resolve(apiDir, '../protocol/schedule-rpc-map.ts'), 'utf8');
+
+  it('does not export dead task/execution list or stats ResponseDTO duals', () => {
+    expect(taskReq).toContain('Residual 663');
+    expect(execReq).toContain('Residual 663');
+    expect(taskReq).not.toMatch(/export interface ScheduleTaskListResponseDTO\b/);
+    expect(execReq).not.toMatch(/export interface ScheduleExecutionListResponseDTO\b/);
+    expect(execReq).not.toMatch(/export interface ExecutionHistoryStatsDTO\b/);
+  });
+
+  it('detect-conflicts has no { result } response dual wrapper', () => {
+    expect(scheduleReq).toContain('Residual 663');
+    expect(scheduleReq).not.toMatch(/export interface DetectConflictsResponseDTO\b/);
+    expect(responseSchemas).toContain('Residual 663');
+    expect(responseSchemas).toContain(
+      'export const DetectConflictsResponseSchema = ConflictDetectionResultSchema',
+    );
+    expect(responseSchemas).not.toMatch(
+      /DetectConflictsResponseSchema\s*=\s*z\.object\(\{\s*result:/,
+    );
+    expect(rpcMap).toContain('ConflictDetectionResult');
+    expect(rpcMap).toMatch(
+      /'schedule:detect-conflicts':\s*\[[\s\S]*ConflictDetectionResult[\s\S]*?\]/,
+    );
+  });
+});

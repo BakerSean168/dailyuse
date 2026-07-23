@@ -153,12 +153,8 @@ export interface CreateScheduleResponseDTO {
   conflicts?: ConflictDetectionResult;
 }
 
-/**
- * Response DTO for conflict detection endpoint
- */
-export interface DetectConflictsResponseDTO {
-  result: ConflictDetectionResult;
-}
+// Residual 663: detect-conflicts response dual wrapper retired
+// (live transport body is ConflictDetectionResult).
 
 /**
  * Information about the applied resolution

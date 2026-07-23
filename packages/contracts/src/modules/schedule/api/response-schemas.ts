@@ -158,11 +158,9 @@ export const ConflictDetectionResultSchema = z.object({
 });
 
 /**
- * DetectConflicts Response Schema
+ * Residual 663: detect-conflicts OpenAPI body is ConflictDetectionResult (no wrapper dual).
  */
-export const DetectConflictsResponseSchema = z.object({
-  result: ConflictDetectionResultSchema,
-});
+export const DetectConflictsResponseSchema = ConflictDetectionResultSchema;
 
 /**
  * CreateSchedule (with conflict detection) Response Schema
