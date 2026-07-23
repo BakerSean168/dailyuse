@@ -2,7 +2,6 @@ export { useAI } from './useAI';
 export { useAssistantDispatch } from './useAssistantDispatch';
 export { useAIChatSession } from './useAIChatSession';
 export { useAIChatView } from './useAIChatView';
-export { useAIDraftPersistence } from './useAIDraftPersistence';
 export { useAIFormatters } from './useAIFormatters';
 export { useAIGoalWorkflow } from './useAIGoalWorkflow';
 export { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';

@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
  * instead of this planned UI redesign helper.
  * Soft residual: usePassword / account checkAvailability toast-only keep-boundary remains.
  * Soft residual 1065: goalOperations createGoalErrorHandler keep-boundary remains.
+ * Soft residual 1087: dead useAIDraftPersistence composable removed (no consumers).
  * Does not flip §13.2 checkboxes.
  */
 describe('useViewportBreakpoint dead composable removed (residual 1071)', () => {
