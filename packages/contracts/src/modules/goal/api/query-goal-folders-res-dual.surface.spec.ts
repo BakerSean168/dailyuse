@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 779: QueryGoalFoldersRes dual body retired.
  * OpenAPI + transport use QueryGoalFoldersResSchema; Res is z.infer alias.
+ *
+ * Soft residual 819: GoalFolderClientDTO dual retired via GoalFolderClientDTOSchema
+ * (see goal-aggregate-client-dto-dual surface).
  */
 describe('query goal folders res dual retired (residual 779)', () => {
   const apiDir = __dirname;

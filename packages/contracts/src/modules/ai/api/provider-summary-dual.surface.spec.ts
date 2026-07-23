@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
  * canonical ClientDTO / UpcomingReminderDTO only.
  * Soft residual 811: AIProviderConfigClientDTO dual retired via ClientDTOSchema
  * (see ai-provider-config-client-dto-dual surface; assertion updated below).
+ * Soft residual 819: GoalClientDTO dual retired via GoalClientDTOSchema
+ * (see goal-aggregate-client-dto-dual surface; assertion updated below).
  */
 describe('contracts summary dual single-track surface (residual 647)', () => {
   const aiApi = __dirname;
@@ -52,7 +54,7 @@ describe('contracts summary dual single-track surface (residual 647)', () => {
     expect(reminderDtos).toContain('export interface UpcomingReminderDTO');
   });
 
-  it('retires GoalTimeRangeSummary dual; GoalClientDTO remains', () => {
+  it('retires GoalTimeRangeSummary dual; GoalClientDTO remains as z.infer', () => {
     const goalClient = readFileSync(
       resolve(modules, 'goal/aggregates/goal-client.ts'),
       'utf8',
@@ -63,6 +65,9 @@ describe('contracts summary dual single-track surface (residual 647)', () => {
     );
     expect(goalClient).not.toMatch(/export interface GoalTimeRangeSummary\b/);
     expect(goalIndex).not.toContain('GoalTimeRangeSummary');
-    expect(goalClient).toContain('export interface GoalClientDTO');
+    expect(goalClient).toContain(
+      'export type GoalClientDTO = z.infer<typeof GoalClientDTOSchema>',
+    );
+    expect(goalClient).not.toMatch(/export interface GoalClientDTO\b/);
   });
 });

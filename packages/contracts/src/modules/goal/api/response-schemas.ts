@@ -22,9 +22,6 @@ import { ReviewType } from '../value-objects/review-type';
 import { FocusSessionStatus } from '../value-objects/focus-session-status';
 import { FolderType } from '../value-objects/folder-type';
 
-import type { GoalClientDTO } from '../aggregates/goal-client';
-import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
-
 import { KeyResultProgressDTOSchema } from '../value-objects/key-result-progress';
 import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot';
 
@@ -103,9 +100,10 @@ export const GoalReviewClientDTOSchema = z.object({
 /**
  * Goal Client DTO Schema — 核心聚合根响应
  *
- * 严格约束为 GoalClientDTO 类型，用于 OpenAPI 文档和运行时校验。
+ * Residual 819: GoalClientDTO dual retired — sole GoalClientDTOSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/goal-client.ts).
  */
-export const GoalClientDTOSchema: z.ZodType<GoalClientDTO> = z.object({
+export const GoalClientDTOSchema = z.object({
   id: brandedId<GoalId>(),
   identityId: brandedId<IdentityId>(),
   name: z.string(),
@@ -139,8 +137,11 @@ export const GoalClientDTOSchema: z.ZodType<GoalClientDTO> = z.object({
 
 /**
  * GoalFolder Client DTO Schema
+ *
+ * Residual 819: GoalFolderClientDTO dual retired — sole GoalFolderClientDTOSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/goal-folder-client.ts).
  */
-export const GoalFolderClientDTOSchema: z.ZodType<GoalFolderClientDTO> = z.object({
+export const GoalFolderClientDTOSchema = z.object({
   id: brandedId<GoalFolderId>(),
   identityId: brandedId<IdentityId>(),
   name: z.string(),

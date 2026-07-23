@@ -9,7 +9,9 @@ import { describe, expect, it } from 'vitest';
  * Soft residual 815: GoalRecordClientDTO dual retired via GoalRecordClientDTOSchema
  * (see goal-record-client-dto-dual surface).
  * Soft residual 817: KeyResultClientDTO / GoalReviewClientDTO duals retired
- * (see goal-entity-client-dto-dual surface).*/
+ * (see goal-entity-client-dto-dual surface).
+ * Soft residual 819: GoalClientDTO / GoalFolderClientDTO duals retired
+ * (see goal-aggregate-client-dto-dual surface).*/
 describe('goal list response dual retired (residual 689)', () => {
   const apiDir = __dirname;
   const responseSchemas = readFileSync(resolve(apiDir, 'response-schemas.ts'), 'utf8');
