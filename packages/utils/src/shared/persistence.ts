@@ -7,6 +7,7 @@
  * Soft residual 1081: account PowerSync private parseJson keep-boundary (throws; no force-merge).
  * Soft residual 1091: api PowerSync parseJsonLikeString keep-boundary (JSON-looking only; no force-merge).
  * Soft residual 1095: data-portability parseJsonField keep-boundary (unknown + passthrough; no force-merge).
+ * Soft residual 1123: toDate always-Date+now vs toDateOrNull vs portable toDateString vs AI PowerSync Date|null.
  */
 
 export function extractErrorMessage(err: unknown): string {
@@ -28,6 +29,8 @@ export function fromDbDate(value: Date | string): Date {
   return date;
 }
 
+// Residual 1123 keep-boundary: always Date; nullish/invalid → new Date() (now fallback).
+// Soft residual 1123: not portable toDateString / AI PowerSync toDate (Date|null) / fromDbDate throw.
 export function toDate(value: Date | number | string | null | undefined): Date {
   if (!value) return new Date();
   if (value instanceof Date) return value;
@@ -35,6 +38,7 @@ export function toDate(value: Date | number | string | null | undefined): Date {
   return Number.isNaN(date.getTime()) ? new Date() : date;
 }
 
+// Residual 1123 family: nullish/invalid → null (no now invent).
 export function toDateOrNull(value: Date | number | string | null | undefined): Date | null {
   if (!value) return null;
   if (value instanceof Date) return value;

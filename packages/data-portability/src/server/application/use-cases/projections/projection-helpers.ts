@@ -20,6 +20,8 @@ export function parseJsonField<T = unknown>(value: unknown, fallback?: T): T | u
   }
 }
 
+// Residual 1123 keep-boundary: unknown → string|undefined (Date/number→ISO; string passthrough; no Date object return).
+// Intentionally not: utils toDate (always Date + now fallback), AI PowerSync toDate (string→Date|null), utils fromDbDate (throws).
 export function toDateString(value: unknown): string | undefined {
   if (value === null || value === undefined || value === '') return undefined;
   if (value instanceof Date) return value.toISOString();
