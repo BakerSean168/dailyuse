@@ -10,6 +10,7 @@ import { isRecord } from './isRecord';
  *   (packages/authentication/src/server/shared/mask-email-dual.surface.spec.ts).
  * Soft residual 947: desktop http-envelope isRecord is a keep-boundary
  *   (arrays allowed; apps/desktop/src/main/utils/http-envelope-guards.ts).
+ * Soft residual 952: tip focused suite numbers track Residual 952 evidence tip (267/1188).
  * Does not flip §13.2 checkboxes.
  */
 describe('AI isRecord dual retired (residual 951)', () => {
