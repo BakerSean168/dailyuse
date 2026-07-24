@@ -16,8 +16,8 @@ from ai_service.evals.agent_runtime_harness import (
     run_agent_runtime_knowledge_generate_case,
     run_agent_runtime_knowledge_qa_case,
 )
-from ai_service.evals.eval_models import EvalCase
 from ai_service.evals.eval_case_loader import load_eval_cases
+from ai_service.evals.eval_models import EvalCase
 from ai_service.evals.eval_reporter import build_report
 from ai_service.evals.runner import evaluate_cases
 

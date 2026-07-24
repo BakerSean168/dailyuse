@@ -27,7 +27,6 @@ from ai_service.schemas import (
 )
 from ai_service.services.analytics_query_service import AnalyticsQueryService
 from ai_service.services.chat_service import ChatService
-
 from ai_service.services.goal_planning_parsers import (
     parse_clarification_payload,
     parse_goal_payload,

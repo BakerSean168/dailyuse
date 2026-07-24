@@ -59,11 +59,11 @@ from .knowledge import (
     KnowledgeExpansionResponse,
     KnowledgeIndexNoteRequest,
     KnowledgeIndexNoteResponse,
+    KnowledgeNoteDocument,
     KnowledgeNoteRequest,
     KnowledgeNoteResponse,
     KnowledgeQueryRequest,
     KnowledgeQueryResponse,
-    KnowledgeNoteDocument,
 )
 
 __all__ = [

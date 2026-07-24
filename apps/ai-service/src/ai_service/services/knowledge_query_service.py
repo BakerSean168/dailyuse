@@ -13,8 +13,8 @@ from ai_service.schemas import (
     IndexedKnowledgeChunk,
     IndexedKnowledgeNote,
     KnowledgeCitation,
-    KnowledgeQueryResponse,
     KnowledgeNoteDocument,
+    KnowledgeQueryResponse,
     ProviderConfig,
 )
 from ai_service.services.chat_service import ChatService

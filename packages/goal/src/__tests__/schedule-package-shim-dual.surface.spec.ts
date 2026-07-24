@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ScheduleTask } from '../../../test-utils/src/shims/schedule-package-shim';
+import { ScheduleTask } from '@dailyuse/test-utils';
 
 /**
  * Residual 1035: goal/task/reminder schedule-package-shim duals retired onto test-utils sole.
@@ -44,7 +44,7 @@ describe('schedule-package-shim dual retired (residual 1035)', () => {
       ['reminder', reminderShim],
     ] as const) {
       expect(source, label).toContain('Residual 1035');
-      expect(source, label).toContain("from '../../../test-utils/src/shims/schedule-package-shim'");
+      expect(source, label).toContain("from '@dailyuse/test-utils'");
       expect(source, label).toContain('ScheduleTask');
       expect(source, label).not.toMatch(/export class ScheduleTask\b/);
       expect(source, label).not.toMatch(/function createMetadata\b/);

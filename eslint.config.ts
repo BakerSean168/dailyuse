@@ -116,9 +116,10 @@ const moduleBoundaryDepConstraints = [
     ],
   },
   {
-    // testing: test support libraries, can consume shared layer
+    // testing: test support libraries may orchestrate shared contracts and
+    // infrastructure fixtures (for example database-backed integration setup).
     sourceTag: 'layer:testing',
-    onlyDependOnLibsWithTags: ['layer:shared', 'layer:testing'],
+    onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra', 'layer:testing'],
   },
   {
     // service: standalone deployable services (e.g. ai-service Python backend).

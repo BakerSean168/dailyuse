@@ -31,7 +31,7 @@ describe('integration-global-setup dual retired (residual 1037)', () => {
       );
       expect(source, pkg).toContain('Residual 1037');
       expect(source, pkg).toContain(
-        "from '../../../test-utils/src/setup/integration-global-setup'",
+        "from '@dailyuse/test-utils/setup/integration-global-setup'",
       );
       expect(source, pkg).toContain('setup');
       expect(source, pkg).toContain('teardown');

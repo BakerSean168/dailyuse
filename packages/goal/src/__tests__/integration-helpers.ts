@@ -6,4 +6,4 @@ export {
   disconnectPrisma,
   cleanAll,
   seedAccount,
-} from '../../../test-utils/src/setup/integration-helpers';
+} from '@dailyuse/test-utils/setup/integration-helpers';

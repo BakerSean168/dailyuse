@@ -8,8 +8,8 @@ from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
     KnowledgeExpansionResponse,
-    KnowledgeQueryResponse,
     KnowledgeNoteDocument,
+    KnowledgeQueryResponse,
     ProviderConfig,
 )
 from ai_service.services.knowledge_query_service import (

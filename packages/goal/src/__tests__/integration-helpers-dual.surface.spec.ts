@@ -35,7 +35,7 @@ describe('integration-helpers dual retired (residual 1043)', () => {
       );
       expect(source, pkg).toContain('Residual 1043');
       expect(source, pkg).toContain(
-        "from '../../../test-utils/src/setup/integration-helpers'",
+        "from '@dailyuse/test-utils/setup/integration-helpers'",
       );
       expect(source, pkg).toContain('getPrisma');
       expect(source, pkg).toContain('disconnectPrisma');
