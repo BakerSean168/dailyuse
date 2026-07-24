@@ -449,6 +449,10 @@ export function getTemplatesByIndustry(industry: string): GoalTemplate[] {
 }
 
 /**
+ * Residual 1186 keep-boundary: goal getTemplateById — GoalTemplate OKR catalog lookup.
+ * Finds in BUILT_IN_TEMPLATES (category/roles/keyResults fields).
+ * Soft residual 1186: AI provider getTemplateById returns AIProviderTemplate (no force-merge).
+ *
  * 按 ID 获取模板
  */
 export function getTemplateById(id: string): GoalTemplate | undefined {
