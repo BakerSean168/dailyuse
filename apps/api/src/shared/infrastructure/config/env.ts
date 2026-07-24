@@ -177,22 +177,37 @@ export function getJwtConfig() {
  * Returns null when GitHub login is not configured, so the composition root
  * can skip registering the GitHub provider entirely.
  * 未配置时返回 null，组合根据此跳过注册 GitHub 提供者。
+ *
+ * Residual 1333: Playwright e2e lane always uses the deterministic `e2e-mock`
+ * identity provider so auth-oauth can complete without browser consent. Real
+ * `GITHUB_OAUTH_*` values may still be present in gitignored `.env.test.local`
+ * for GitHub App / live-github wiring; they must not displace the e2e mock.
+ * Knowledge-repo App credentials stay on `getGithubAppConfig()` (separate).
  */
 export function getGithubOAuthConfig(): { clientId: string; clientSecret: string } | null {
+  // E2E lane: mock identity OAuth only (no interactive GitHub authorize).
+  if (env.RUNTIME_LANE === 'e2e') {
+    return {
+      clientId: 'e2e-mock',
+      clientSecret: 'e2e-mock-secret',
+    };
+  }
+
   if (env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET) {
     return {
       clientId: env.GITHUB_OAUTH_CLIENT_ID,
       clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
     };
   }
-  // E2E / test lanes get a deterministic mock provider so OAuth product flows are exercisable.
-  // e2e / test 车道注入确定性 mock 提供者，便于演练 OAuth 产品流。
-  if (env.RUNTIME_LANE === 'e2e' || env.NODE_ENV === 'test') {
+
+  // Unit/integration test without explicit credentials: same mock provider.
+  if (env.NODE_ENV === 'test') {
     return {
       clientId: 'e2e-mock',
       clientSecret: 'e2e-mock-secret',
     };
   }
+
   return null;
 }
 

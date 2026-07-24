@@ -9357,6 +9357,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > prod-like 六服务 healthy + 探针 200；全仓 test 30/30 + lint 36/36 + typecheck 34/34 EXIT:0；
 > residual suites 仍绿；§13.2 **12 [x] / 3 [ ]** 不改 checkbox；PR readiness no。
 > 安装仍需浏览器：https://github.com/apps/memoflow-dev-test/installations/new
+> 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — e2e-mock OAuth）：真实 GITHUB_OAUTH_* 不再挤掉 e2e mock；
+> auth-oauth e2e **1/1 绿**；install 仍 0；§13.2 **12 [x] / 3 [ ]** 不改 checkbox。
 
 
 
@@ -13129,6 +13131,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - 全仓标准 test **30/30 EXIT:0**；lint **36/36**（0 errors）；typecheck **34/34 EXIT:0**。
   - residual suites 仍绿：goal-workflow 8/8、repo GitHub 46/46、desktop guest e2e 1/1、web auth 5/5、note-boundary 1/1。
   - §13.2 **12 [x] / 3 [ ]**，**不改 checkbox**；真实 App install 仍需浏览器同意；PR readiness 仍为 no。
+
+
+  残留一千三百三十三轮续（e2e-mock OAuth keep-boundary；install 仍外部阻塞）：
+  - 根因：gitignored `.env.test.local` 写入真实 `GITHUB_OAUTH_*` 后覆盖 e2e 车道默认 `e2e-mock`，`auth-oauth` 跳到真实 github.com/login（无浏览器同意则超时）。
+  - 修复：`getGithubOAuthConfig()` 在 `RUNTIME_LANE=e2e` 时强制 `e2e-mock`（App 凭据仍走 `getGithubAppConfig()` / live-github 独立路径）。
+  - 验证：surface **2/2**；`auth-oauth` e2e **1/1 绿**；page-contract 此前 **5/5**；install count 仍 **0**；§13.2 **不改 checkbox**。
 
 
 ## 14. 相关资料
