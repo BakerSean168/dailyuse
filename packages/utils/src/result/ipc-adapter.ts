@@ -62,6 +62,10 @@ export interface IpcAdapterOptions {
 // ============================================================================
 
 /**
+ * Residual 1183 keep-boundary: IPC defaultExtractContext — desktop stub Context.
+ * Always returns identityId '' and deviceId 'desktop' (no HTTP header/body mining).
+ * Soft residual 1183: Express defaultExtractContext builds rich device Context (no force-merge).
+ *
  * Default context extractor from IPC event
  */
 function defaultExtractContext(_event: IpcInvokeEvent): Context {

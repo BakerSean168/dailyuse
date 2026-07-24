@@ -91,6 +91,10 @@ export interface ExpressAdapterOptions {
 // ============================================================================
 
 /**
+ * Residual 1183 keep-boundary: Express defaultExtractContext — HTTP request-rich Context.
+ * Reads headers/body for deviceId, IP, UA, platform; identityId from req.user.
+ * Soft residual 1183: IPC defaultExtractContext is desktop stub (identity '', deviceId 'desktop').
+ *
  * Default context extractor from Express request
  */
 function defaultExtractContext(req: ExpressLikeRequest): Context {
