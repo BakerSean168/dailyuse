@@ -2,12 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   AccountChannels,
   AIChannels,
+  AIStreamChannels,
   AuthChannels,
   DashboardChannels,
   DataPortabilityChannels,
   DesktopFeatureChannels,
   GoalChannels,
-  GovernanceChannels,
   NotificationChannels,
   ReminderChannels,
   ScheduleChannels,
@@ -15,7 +15,8 @@ import {
   SystemChannels,
   TaskChannels,
   WindowChannels,
-} from '../../shared/types/ipc-channels';
+} from '@dailyuse/contracts/electron';
+import { GovernanceChannels } from '@dailyuse/contracts/governance';
 import { ALLOWED_CHANNELS, SUPPORTED_REPOSITORY_CHANNELS } from '../allowed-channels';
 import { createAccountIpcClient } from '@dailyuse/account/client';
 import { AuthIpcAdapter } from '@dailyuse/authentication/client';
@@ -44,12 +45,8 @@ function allowedByPrefix(prefix: string) {
 }
 
 function aiChannelSet() {
-  return new Set<string>([
-    ...Object.values(AIChannels),
-    'ai:chat:message:stream:chunk',
-    'ai:chat:message:stream:done',
-    'ai:chat:message:stream:error',
-  ]);
+  // Residual 1331: preload allowlist unions AIChannels + AIStreamChannels (product sole).
+  return new Set<string>([...Object.values(AIChannels), ...Object.values(AIStreamChannels)]);
 }
 
 function expectChannelsRegistered(channels: string[], registered: Set<string>) {
@@ -507,23 +504,26 @@ describe('desktop IPC contract alignment', () => {
     expectChannelsRegistered(recorder.channels(), channelSet(AIChannels));
   });
 
-  it('ai provider adapter accepts raw provider-list payloads from desktop IPC', async () => {
+  it('ai provider adapter accepts list envelope payloads from desktop IPC', async () => {
     const recorder = createIpcRecorder((channel) => {
       if (channel === AIChannels.PROVIDER_LIST) {
+        // Residual 86/1331: ListAIProviderConfigsRes is { data: ClientDTO[] }.
         return {
           ok: true,
-          data: [
-            {
-              id: 'provider-1',
-              name: 'OpenAI',
-              baseUrl: 'https://api.openai.com/v1',
-              apiKeyMasked: 'sk-****1234',
-              defaultModel: 'gpt-4o-mini',
-              availableModels: [{ id: 'gpt-4o-mini', name: 'gpt-4o-mini' }],
-              isActive: true,
-              isDefault: true,
-            },
-          ],
+          data: {
+            data: [
+              {
+                id: 'provider-1',
+                name: 'OpenAI',
+                baseUrl: 'https://api.openai.com/v1',
+                apiKeyMasked: 'sk-****1234',
+                defaultModel: 'gpt-4o-mini',
+                availableModels: [{ id: 'gpt-4o-mini', name: 'gpt-4o-mini' }],
+                isActive: true,
+                isDefault: true,
+              },
+            ],
+          },
         };
       }
       return { ok: true, data: null };
@@ -532,8 +532,12 @@ describe('desktop IPC contract alignment', () => {
 
     const providers = await adapter.getProviders();
 
-    expect(providers).toHaveLength(1);
-    expect(providers[0]?.id).toBe('provider-1');
-    expect(providers[0]?.defaultModel).toBe('gpt-4o-mini');
+    expect(providers.ok).toBe(true);
+    if (!providers.ok) {
+      throw new Error(providers.error.message);
+    }
+    expect(providers.data).toHaveLength(1);
+    expect(providers.data[0]?.id).toBe('provider-1');
+    expect(providers.data[0]?.defaultModel).toBe('gpt-4o-mini');
   });
 });

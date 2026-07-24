@@ -9304,12 +9304,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 全 workspace 标准 test 目标 **30** 个；首次 19 通过 / 11 失败（EXIT:1）。
 > 根因收口：Zod `.openapi()` 扩展装载顺序、Windows path.relative 归一、清理 `packages/editor`
 > 残留 dist/node_modules、测试与 ownership/list/reminder activatedAt/addKeyResult 三参对齐。
-> 复跑后 **27 通过 / 3 失败（EXIT:1）**。剩余：data-portability powersync-round-trip
-> （Missing INSERT goal_records）、desktop git runtime（GitProcessError）、app-vue
-> AIChatView TaskService inject + KnowledgeProjection useRoute mock。
+> 复跑后 **27 通过 / 3 失败（EXIT:1）**。
+> Residual 1331 续：desktop 低风险 harness 收口——3 个 ipc-channels dual import 改走
+> `@dailyuse/contracts/electron` + governance、`vault-path` 用 `path.resolve` 对齐 Windows、
+> AI allowlist 并入 AIStreamChannels、provider list 信封测试对齐；focused desktop harness
+> **6 文件 / 58 测试通过**。全量 desktop 仍剩 **2 文件 / 16 测试**（knowledge git runtime +
+> sync acceptance 的 GitProcessError），另有 data-portability powersync-round-trip
+> （Missing INSERT goal_records）与 app-vue AIChatView TaskService inject /
+> KnowledgeProjection useRoute mock。
 > 近端：api automation、ai ownership/list/events、host lifecycle surface 通过；
 > open-items + governance-check 本轮同步。
-> 边界：这只证明 test 门禁从 11→3 失败的收缩 + 本轮 focused/governance；全仓 test 未绿、
+> 边界：这只证明 test 门禁从 11→3 失败的收缩 + desktop harness 低风险收口；全仓 test 未绿、
 > Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环。状态保持 **实施中**；PR 就绪仍为否。
 
 
@@ -9512,7 +9517,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 依赖 build 日志仍可能打印既有 declaration/rootDir 诊断但 typecheck target exit 0。
 > Residual 1331：全 workspace 标准 test 目标 **30**；首次 11 失败收缩为 **3 失败 / 27 通过（EXIT:1）**。
 > 根因含 Zod openapi 装载、Windows path 归一、editor 残骸清理与 ownership/list/reminder/addKeyResult 测试对齐。
-> 剩余 data-portability powersync-round-trip、desktop git runtime、app-vue AIChatView/KnowledgeProjection 测试夹具。
+> Residual 1331 续：desktop 低风险 harness 已收口（ipc dual import→contracts、vault-path resolve、
+> AIStreamChannels allowlist、provider list 信封）；focused desktop harness 6/58 通过。
+> 剩余失败类：**data-portability** powersync-round-trip（Missing INSERT goal_records）、
+> **desktop** knowledge git runtime + sync acceptance（16 测试 GitProcessError）、
+> **app-vue** AIChatView 缺 TaskService inject、KnowledgeProjection 缺 useRoute mock。
 > 这只证明 lint + typecheck + test 门禁收缩与本轮 focused/governance；全仓 test 未完全绿、Web/Desktop E2E、prod-like 一揽子
 > 与真实 OAuth/GitHub App fixture 仍未闭环，故不改 checkbox。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
@@ -10850,7 +10859,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十八轮：P0 lint/typecheck blocker reduction (`web:typecheck` + 24 dependencies passed; the same 12-project lint set passed 12/12; focused regressions 8 files/160 tests; governance 4/23 + GOV_EXIT:0); `@dailyuse/test-utils:lint` still exposes 2 pre-existing layer-boundary errors, the full workspace gate bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百二十九轮：P0 workspace lint blocker closure (`test-utils:lint` 0 errors, `test-utils:typecheck` + 4 dependencies, `goal:lint`, integration seam 3/12, AI Service 4/25, open-items 1/3, governance 4/23 + governance-check, and full workspace lint 36/36 passed after fixing 7 Ruff I001 errors); full workspace typecheck/test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百三十轮：P0 workspace typecheck blocker closure (first full run 8 failures → after minimal fixes full workspace typecheck 34/34 EXIT:0; utils recurrence 1/4, schedule-orchestration 4/7, governance-check EXIT:0); full workspace test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
-  残留一千三百三十一轮：P0 workspace test blocker reduction (30 standard test targets; first run 11 failures → after root-cause fixes 3 failures / 27 pass EXIT:1; remaining data-portability powersync-round-trip, desktop git runtime, app-vue AIChatView/KnowledgeProjection harness); full green test + Web/Desktop E2E + prod-like + OAuth/App remain incomplete/external, so no checkbox flips.
+  残留一千三百三十一轮：P0 workspace test blocker reduction (30 standard test targets; first run 11 failures → after root-cause fixes 3 failures / 27 pass EXIT:1; desktop low-risk harness closed: ipc dual imports→contracts/electron+governance, vault-path path.resolve, AIStreamChannels allowlist, provider list envelope; remaining data-portability powersync-round-trip, desktop git runtime/sync GitProcessError 16 tests, app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock); full green test + Web/Desktop E2E + prod-like + OAuth/App remain incomplete/external, so no checkbox flips.
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -11614,7 +11623,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十八轮：P0 lint/typecheck 真阻塞收缩（正式 web:typecheck + 24 个依赖任务通过；同一 12-project lint 集合 12/12 通过；focused 回归 8 文件/160 测试；governance 4/23 + GOV_EXIT:0）；test-utils lint 仍有 2 个既有 layer-boundary error，全仓门禁套件与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
   残留一千三百二十九轮：P0 全仓 lint 真阻塞收口（test-utils lint 0 errors、typecheck + 4 个依赖任务、goal lint、integration seam 3/12、AI Service 4/25、open-items 1/3、governance 4/23 + governance-check 通过；修复 7 个 Ruff I001 后全 workspace lint 36/36 通过）；全仓 typecheck/test、Web/Desktop E2E、prod-like 一揽子与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
   残留一千三百三十轮：P0 全仓 typecheck 真阻塞收口（首次 8 失败 → 最小修复后全 workspace typecheck 34/34 EXIT:0；utils recurrence 1/4、schedule-orchestration 4/7、governance-check EXIT:0）；全仓 test、Web/Desktop E2E、prod-like 一揽子与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
-  残留一千三百三十一轮：P0 全仓 test 真阻塞收缩（标准 test 目标 30；首次 11 失败 → 根因修复后 3 失败 / 27 通过 EXIT:1；剩余 data-portability powersync-round-trip、desktop git runtime、app-vue AIChatView/KnowledgeProjection 夹具）；全绿 test + Web/Desktop E2E + prod-like + OAuth/App 仍未完成/外部阻塞，不改 checkbox。
+  残留一千三百三十一轮：P0 全仓 test 真阻塞收缩（标准 test 目标 30；首次 11 失败 → 根因修复后 3 失败 / 27 通过 EXIT:1；desktop 低风险 harness 已收口：ipc dual→contracts、vault-path resolve、AIStreamChannels、provider 信封；剩余 data-portability powersync-round-trip、desktop git runtime/sync GitProcessError 16 测试、app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock）；全绿 test + Web/Desktop E2E + prod-like + OAuth/App 仍未完成/外部阻塞，不改 checkbox。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11911,8 +11920,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   governance-check EXIT:0。全仓 test、Web/Desktop E2E、prod-like 与 OAuth/App
   fixture 仍未闭环，故不打勾。
   残留一千三百三十一轮：全 workspace 标准 test 30 目标，首次 11 失败收缩为
-  3 失败 / 27 通过（EXIT:1）；剩余 data-portability powersync-round-trip、
-  desktop git runtime、app-vue AIChatView/KnowledgeProjection 测试夹具。
+  3 失败 / 27 通过（EXIT:1）；desktop 低风险 harness 已收口（focused 6/58 通过）；
+  剩余 data-portability powersync-round-trip、desktop git runtime/sync GitProcessError
+  16 测试、app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock。
   全仓 test 未完全绿、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环，故不打勾。
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
@@ -13013,7 +13023,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十八轮：`web:typecheck` + 24 个依赖任务通过、同一 12-project lint 12/12 通过、focused 回归 8/160、governance 4/23 + GOV_EXIT:0；test-utils lint 仍有 2 个既有 layer-boundary error，全仓 test/E2E/prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   残留一千三百二十九轮：test-utils lint 0 errors、typecheck + 4 个依赖任务、goal lint、integration seam focused 3/12、AI Service 4/25、open-items 1/3、governance 4/23 + governance-check 通过；修复 7 个 Ruff I001 后全 workspace lint 36/36 通过；全仓 typecheck/test、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   残留一千三百三十轮：全 workspace typecheck 34/34 项目通过（EXIT:0）；utils recurrence 1/4、schedule-orchestration 4/7、governance-check EXIT:0；全仓 test、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
-  残留一千三百三十一轮：全 workspace 标准 test 30 目标 11→3 失败 / 27 通过（EXIT:1）；剩余 data-portability powersync-round-trip、desktop git runtime、app-vue harness；全仓 test 未完全绿、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
+  残留一千三百三十一轮：全 workspace 标准 test 30 目标 11→3 失败 / 27 通过（EXIT:1）；desktop 低风险 harness 已收口（ipc dual/vault-path/AIStream/provider 信封；focused 6/58）；剩余 data-portability powersync-round-trip、desktop git runtime/sync GitProcessError 16 测试、app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock；全仓 test 未完全绿、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

@@ -22,9 +22,11 @@ import { describe, expect, it } from 'vitest';
  * utils recurrence 1/4, schedule-orchestration 4/7, and governance-check pass, while
  * full workspace test/Web/Desktop E2E/prod-like/OAuth remain incomplete/external;
  * Residual 1331: full workspace standard test 30 targets from 11 failures to 3 failures /
- * 27 pass EXIT:1 (remaining data-portability powersync-round-trip, desktop git runtime,
- * app-vue AIChatView/KnowledgeProjection harness), while full-green test/Web/Desktop
- * E2E/prod-like/OAuth remain incomplete/external;
+ * 27 pass EXIT:1; desktop low-risk harness closed (ipc dual→contracts, vault-path
+ * path.resolve, AIStreamChannels allowlist, provider list envelope; focused 6/58);
+ * remaining data-portability powersync-round-trip, desktop git runtime/sync
+ * GitProcessError 16 tests, app-vue AIChatView TaskService inject + KnowledgeProjection
+ * useRoute mock; full-green test/Web/Desktop E2E/prod-like/OAuth remain incomplete/external;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
@@ -116,6 +118,8 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('schedule-orchestration **4 文件 / 7 测试**');
     expect(sec).toContain('全 workspace 标准 test 目标 **30**');
     expect(sec).toContain('**3 失败 / 27 通过（EXIT:1）**');
+    expect(sec).toContain('desktop 低风险 harness 已收口');
+    expect(sec).toContain('GitProcessError');
     expect(sec).toContain('这只证明 lint + typecheck + test 门禁收缩与本轮 focused/governance');
     expect(sec).toContain('OAuth/App fixture 无凭据为外部阻塞');
     expect(sec).toContain('GOV_EXIT:0');

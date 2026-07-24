@@ -5,7 +5,6 @@ import {
   AIChannels,
   AuthChannels,
   DataPortabilityChannels,
-  GovernanceChannels,
   NotificationChannels,
   AccountChannels,
   GoalChannels,
@@ -14,7 +13,8 @@ import {
   ScheduleChannels,
   SettingChannels,
   TaskChannels,
-} from '../../../shared/types/ipc-channels';
+} from '@dailyuse/contracts/electron';
+import { GovernanceChannels } from '@dailyuse/contracts/governance';
 
 const workspaceRoot = resolve(__dirname, '../../../../../..');
 

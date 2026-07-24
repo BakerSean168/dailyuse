@@ -10,13 +10,14 @@ describe('vault-path', () => {
   });
 
   it('resolves paths inside the vault root', () => {
-    const root = path.join('/tmp', 'vault-root');
+    // Residual 1331: path.resolve matches resolvePathInsideVault on Windows (drive letter).
+    const root = path.resolve('/tmp', 'vault-root');
     const resolved = resolvePathInsideVault(root, 'folder/note.md');
-    expect(resolved).toBe(path.join(root, 'folder', 'note.md'));
+    expect(resolved).toBe(path.resolve(root, 'folder', 'note.md'));
   });
 
   it('rejects path traversal outside the vault root', () => {
-    const root = path.join('/tmp', 'vault-root');
+    const root = path.resolve('/tmp', 'vault-root');
     expect(() => resolvePathInsideVault(root, '../secret.txt')).toThrow(/escapes vault root/);
   });
 });
