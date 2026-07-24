@@ -9342,6 +9342,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Windows 本机 guest 两轮 1/1 仍有效，Linux 不构成补证。
 > OAuth/App fixture / 真实跨端 GitHub E2E 仍为**外部阻塞**。§13.2 保持 **12 [x] / 3 [ ]**，**不改 checkbox**。
 > 状态保持 **实施中**；PR 就绪仍为否。证据日志：`/tmp/residual-1333/`。
+> 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — manifest callback re-submit）：用户再次提交
+> Manifest 转换回调 URL；`POST …/app-manifests/<code>/conversions` **404**（code 已消费）。保留 App
+> `memoflow-dev-test` id 4385206。JWT `GET /app` 200、`installations_count=0`；`desktop:test:live-github`
+> 缺 INSTALLATION_ID fail-fast（拒 PAT）。**外部阻塞**仍为浏览器安装同意：
+> https://github.com/apps/memoflow-dev-test/installations/new 。§13.2 **12 [x] / 3 [ ]** 不改 checkbox。
+> 状态保持 **实施中**；PR 就绪仍为否。SCRATCH：`/tmp/grok-goal-c4fbe856261c/implementer/`。
 
 
 
@@ -13090,6 +13096,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - Web 账密主线再验：auth-login 3 + auth-password 1 + auth-register 1 = **5/5 绿**（非 OAuth 伪造）。
   - Repository GitHubAppClient + connection service focused **46/46**；install 再轮询仍 **0**。
   - Verification 报告：`{SCRATCH}/VERIFICATION-REPORT.txt`；§13.2 **不改 checkbox**。
+  残留一千三百三十三轮续（manifest callback re-submit + install still external）：
+  - 用户再次提交 Manifest 转换回调 URL（`/memoflow-github-app-manifest-callback?code=…&state=…`）。
+  - `POST https://api.github.com/app-manifests/<code>/conversions` → **404 Not Found**（code 单次消费已用尽；非 install 回调）。
+  - 保留既有 App 凭据：id **4385206** slug **memoflow-dev-test**（`~/.config/memoflow/` mode 600；git 外）。
+  - 再轮询：`GET /app` 200 `installations_count=0`；`GET /app/installations` count **0**；假 installation `POST …/access_tokens` **404 fail-closed**；**NO_PAT**。
+  - `desktop:test:live-github` 缺 `GITHUB_TEST_INSTALLATION_ID` 时 fail-fast（shipped message，拒 PAT）——预期红，非伪造。
+  - 仍需浏览器安装同意（选 fixture 仓）：https://github.com/apps/memoflow-dev-test/installations/new
+  - §13.2 仍 **12 [x] / 3 [ ]**，**不改 checkbox**；PR readiness 仍为 no。
 
 ## 14. 相关资料
 
