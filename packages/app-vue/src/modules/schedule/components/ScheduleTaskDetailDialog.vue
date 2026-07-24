@@ -313,6 +313,11 @@ defineEmits<Emits>();
 
 const { t, locale } = useI18n();
 
+/**
+ * Residual 1204 keep-boundary: app-vue schedule formatDateTime — i18n locale toLocaleString.
+ * Empty → 'N/A'; component-local (not shared utils / not fixed zh-CN Intl).
+ * Soft residual 1204: app-react entity-presentation formatDateTime is Intl zh-CN (no force-merge).
+ */
 function formatDateTime(timestamp: number | string | null | undefined): string {
   if (!timestamp) return 'N/A';
   const time = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;

@@ -14,6 +14,11 @@ function toTimestamp(value: number | string | null | undefined): number {
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
+/**
+ * Residual 1204 keep-boundary: app-react formatDateTime — fixed Intl zh-CN presentation.
+ * Uses toTimestamp 0-fallback; empty → '-'; not i18n locale-driven.
+ * Soft residual 1204: app-vue component-local toLocaleString(locale) variants (no force-merge).
+ */
 export function formatDateTime(value: number | string | null | undefined): string {
   const timestamp = toTimestamp(value);
   if (!timestamp) {

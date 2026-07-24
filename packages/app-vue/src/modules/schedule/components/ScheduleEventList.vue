@@ -148,6 +148,7 @@ function getScheduleActions(schedule: CalendarEntryClientDTO): MenuAction[] {
   ];
 }
 
+/** Soft residual 1204: component-local formatDateTime (month/day/hour/minute); ≠ app-react Intl zh-CN sole. */
 function formatDateTime(timestamp: number): string {
   const date = new Date(timestamp);
   return date.toLocaleString(locale.value, {

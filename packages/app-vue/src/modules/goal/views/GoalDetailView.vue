@@ -372,6 +372,7 @@ function formatDate(value: number | null | undefined): string {
     : t('goal.detail.notSet');
 }
 
+/** Soft residual 1204: component-local formatDateTime (locale default); ≠ app-react Intl zh-CN sole. */
 function formatDateTime(value: number): string {
   return new Date(value).toLocaleString(locale.value);
 }
