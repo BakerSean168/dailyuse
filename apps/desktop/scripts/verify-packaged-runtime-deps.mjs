@@ -23,6 +23,11 @@ function normalizePath(filePath) {
   return filePath.replace(/\\/g, '/').replace(/^\/+/, '');
 }
 
+/**
+ * Residual 1198 keep-boundary: desktop packaged-deps readJson — filesystem path → parsed JSON.
+ * Synchronous fs.readFileSync + JSON.parse for package.json inspection (throws on bad JSON).
+ * Soft residual 1198: auth-web Response→unknown|null and e2e stream→Record differ (no force-merge).
+ */
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }

@@ -29,6 +29,11 @@ function createFailure(error: ResultError, cause?: unknown): Result<never> {
   };
 }
 
+/**
+ * Residual 1198 keep-boundary: web auth fetch readJson — Response → unknown|null.
+ * Parses fetch Response JSON; parse failures become null (envelope recovery).
+ * Soft residual 1198: e2e mock stream→Record and desktop fs file readJson differ (no force-merge).
+ */
 async function readJson(response: Response): Promise<unknown> {
   try {
     return await response.json();
