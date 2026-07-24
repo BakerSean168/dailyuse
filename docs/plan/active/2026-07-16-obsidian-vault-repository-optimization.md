@@ -8583,6 +8583,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、完整跨端 multi-engine product E2E、真实 Pi spawn、
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
+> 续进展 2026-07-23（阶段 6 残留一千二百零六轮）：§13.2 **诚实证据 tip 刷新**（仍不打勾）——
+> tip 指针 Residual 1205：**363 文件 / 1566 测试** + GOV_EXIT:0；再确认 3 项仍为部分/外部阻塞；
+> open-items surface Residual 1206 锁。
 
 
 
@@ -8762,11 +8765,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-23（Residual 1203 诚实刷新：三入口/Agent/门禁仍为部分或外部阻塞；**不改 checkbox**）。
+> 审计时间 2026-07-23（Residual 1206 诚实刷新：三入口/Agent/门禁仍为部分或外部阻塞；**不改 checkbox**）。
 > 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
-> focused evidence suite tip（Residual 1202）：**362 文件 / 1561 测试** + governance-check GOV_EXIT:0。
-> Residual 1203：再确认 3 项仍未打勾——账密/GitHub/访客（部分）、Agent 确认边界（部分）、全量 PR 门禁（部分+外部阻塞）。
-> Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1198–1201 readJson / handleAuthSuccess keep-boundary 锁）。
+> focused evidence suite tip（Residual 1205）：**363 文件 / 1566 测试** + governance-check GOV_EXIT:0。
+> Residual 1206：再确认 3 项仍未打勾——账密/GitHub/访客（部分）、Agent 确认边界（部分）、全量 PR 门禁（部分+外部阻塞）。
+> Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1201–1204 handleAuthSuccess / formatDateTime keep-boundary 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
 > Soft residual：goal createGoalErrorHandler rich-log keep-boundary（scope/details ≠ createComposableHandleError）不强制合并。
@@ -9970,6 +9973,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百零三轮：§13.2 evidence tip refresh (1202 tip 362/1561) + open-items surface lock (no checkbox flips).
   残留一千二百零四轮：lock formatDateTime keep-boundary (app-react Intl zh-CN vs app-vue locale toLocaleString; no force-merge).
   残留一千二百零五轮：§13.2 focused evidence suite re-run (1566 tests, residuals 250–1204 locks, no checkbox changes)。
+  残留一千二百零六轮：§13.2 evidence tip refresh (1205 tip 363/1566) + open-items surface lock (no checkbox flips).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -10608,6 +10612,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百零三轮：§13.2 evidence tip 刷新（1202 tip 362/1561）+ open-items surface 锁（不改 checkbox）。
   残留一千二百零四轮：lock formatDateTime keep-boundary（app-react Intl zh-CN vs app-vue locale toLocaleString；不强制合并）。
   残留一千二百零五轮：§13.2 focused evidence suite re-run（1566 tests，residuals 250–1204 锁；不改 checkbox）。
+  残留一千二百零六轮：§13.2 evidence tip 刷新（1205 tip 363/1566）+ open-items surface 锁（不改 checkbox）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11858,6 +11863,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百零三轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千二百零四轮：formatDateTime keep-boundary surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千二百零五轮：tip 上 1566 项 focused evidence suite（含 residual 250–1204 formatDateTime keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
+  残留一千二百零六轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
