@@ -413,6 +413,10 @@ function refreshGraph() {
   });
 }
 
+/**
+ * Soft residual 1243: task dependency graph formatDuration — concatenative task.dependencyGraph hours/minutes.
+ * Always appends minutes even when hours>0; not schedule.duration.* and not Intl formatTaskDuration (no force-merge).
+ */
 function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;

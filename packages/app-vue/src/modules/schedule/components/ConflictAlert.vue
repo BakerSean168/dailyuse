@@ -79,6 +79,10 @@ function handleDismiss() {
   emit('dismiss');
 }
 
+/**
+ * Soft residual 1243: ConflictAlert formatDuration — ms → floor minutes; hoursMinutes always when h>0 (no hours-only).
+ * Always passes m remainder; differs from ScheduleConflictAlert hours-only band (no force-merge).
+ */
 function formatDuration(ms: number): string {
   const minutes = Math.floor(ms / 60000);
   const hours = Math.floor(minutes / 60);

@@ -131,6 +131,11 @@ const getSeverityLabel = (severity?: ConflictSeverity): string => {
   return severity ? labels[severity] || t('common.unknown') : t('common.unknown');
 };
 
+/**
+ * Residual 1243 keep-boundary: schedule conflict formatDuration — total minutes → schedule.duration.* i18n.
+ * Minutes unit input (not ms); supports hours-only band; not presentation durationMs/Sec path.
+ * Soft residual 1243: ConflictAlert ms floor path + FormDemo local duplicate + task graph differ (no force-merge).
+ */
 const formatDuration = (minutes: number): string => {
   if (minutes < 60) {
     return t('schedule.duration.minutes', { n: minutes });

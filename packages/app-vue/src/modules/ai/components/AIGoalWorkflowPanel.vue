@@ -1140,6 +1140,10 @@ function getAgentEventDataNumber(event: AgentRuntimeEvent, key: string): number 
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Soft residual 1243: AI formatDurationMs — ms/sec i18n with toFixed(1); not schedule.presentation keys.
+ * Similar ms/sec shape to Residual 1243 schedule export but AI agent i18n + 1 decimal (no force-merge).
+ */
 function formatDurationMs(ms: number): string {
   if (ms < 1000) {
     return t('aiAssistant.dialogs.agent.durationMs', { ms });

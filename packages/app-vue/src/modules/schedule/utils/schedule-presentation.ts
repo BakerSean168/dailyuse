@@ -109,6 +109,11 @@ export function formatTimestamp(timestamp: number | null | undefined): string {
 /**
  * Formats a duration in milliseconds to a human-readable string.
  */
+/**
+ * Residual 1243 keep-boundary: app-vue schedule formatDuration — durationMs → i18n ms/sec.
+ * Exported presentation helper; null|undefined → '-'; <1000ms → durationMs; else durationSec fixed(2).
+ * Soft residual 1243: minutes-based schedule.duration.* / task graph / Intl formatTaskDuration differ (no force-merge).
+ */
 export function formatDuration(t: Translate, durationMs: number | null | undefined): string {
   if (durationMs === null || durationMs === undefined) return '-';
   if (durationMs < 1000) return t('schedule.presentation.durationMs', { ms: durationMs });

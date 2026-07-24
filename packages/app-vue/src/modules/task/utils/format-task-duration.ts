@@ -1,3 +1,7 @@
+/**
+ * Soft residual 1243: formatTaskDuration — Intl.NumberFormat unit hour/minute by locale.
+ * Shared task util; minutes input; not schedule.presentation durationMs/Sec (no force-merge).
+ */
 export function formatTaskDuration(totalMinutes: number, locale: string): string {
   const normalizedMinutes = Math.max(0, Math.round(totalMinutes));
   const hours = Math.floor(normalizedMinutes / 60);

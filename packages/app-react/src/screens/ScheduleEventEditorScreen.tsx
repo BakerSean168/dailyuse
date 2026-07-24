@@ -55,6 +55,10 @@ function parseTimestamp(dateValue: string, timeValue: string) {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
+/**
+ * Soft residual 1243: app-react buildDuration — start/end epoch → minutes (compute only, no display i18n).
+ * Not a formatDuration presentation helper; min 1 minute (no force-merge).
+ */
 function buildDuration(startTime: number, endTime: number) {
   return Math.max(1, Math.round((endTime - startTime) / 60000));
 }

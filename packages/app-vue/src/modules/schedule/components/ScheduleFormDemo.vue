@@ -178,6 +178,10 @@ const isFormValid = computed(() => {
   return form.title && form.startTime && form.endTime && form.endTime > form.startTime;
 });
 
+/**
+ * Soft residual 1243: ScheduleFormDemo local formatDuration — same minutes schedule.duration.* map as conflict alert.
+ * Package-local demo helper; no force-extract merge into ScheduleConflictAlert.
+ */
 function formatDuration(minutes: number): string {
   if (minutes < 60) return t('schedule.duration.minutes', { n: minutes });
   const hours = Math.floor(minutes / 60);
