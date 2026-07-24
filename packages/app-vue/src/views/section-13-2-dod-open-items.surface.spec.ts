@@ -4,14 +4,14 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 891: honest §13.2 completion-definition open-items re-audit.
- * Residual 1215: tip focused suite pointer refresh (Residual 1214 evidence tip 366/1579)
+ * Residual 1218: tip focused suite pointer refresh (Residual 1217 evidence tip 367/1584)
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
- * isPlainObject + toMillis + formatFileSize + toKnowledgeNoteRef + tokenize + toDashboardTaskInstanceRecord + toPrismaJson + contracts-isRecord + startOfDay + mapImportanceToTaskPriority + readString + normalizePath + buildTaskName + comparePriority + defaultExtractContext + getTemplateById + getCorsOrigins + delay dual-retired + scoreIndexedResource dual-retired + readJson + handleAuthSuccess + formatDateTime + formatMessageTime + formatDateToInput + formatTimeRange + clampPercentage + isRecord keep-boundaries (no force-merge).
+ * isPlainObject + toMillis + formatFileSize + toKnowledgeNoteRef + tokenize + toDashboardTaskInstanceRecord + toPrismaJson + contracts-isRecord + startOfDay + mapImportanceToTaskPriority + readString + normalizePath + buildTaskName + comparePriority + defaultExtractContext + getTemplateById + getCorsOrigins + delay dual-retired + scoreIndexedResource dual-retired + readJson + handleAuthSuccess + formatDateTime + formatMessageTime + formatDateToInput + formatTimeRange + formatTimestamp + clampPercentage + isRecord keep-boundaries (no force-merge).
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary is separate contracts surface.
  * Residual 1047 (soft): loadWorkspaceEnv keep-boundary surface remains locked in api package.
- * Residual 1212 (soft): prior tip refresh 365/1574 still in history notes only.
+ * Residual 1215 (soft): prior tip refresh 366/1579 still in history notes only.
  * Does not flip any §13.2 checkbox; focused suite tip remains evidence, not full PR gate.
  */
 describe('§13.2 DoD open items honest audit (residual 891)', () => {
@@ -34,8 +34,8 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
   it('keeps exactly three unchecked §13.2 items with partial/external-block labels', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
-    expect(plan).toContain('Residual 1215');
-    expect(plan).toContain('残留一千二百一十五轮');
+    expect(plan).toContain('Residual 1218');
+    expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
     const checked = sec.match(/- \[x\]/g) ?? [];
@@ -62,9 +62,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
 
   it('records tip focused suite evidence without claiming full PR gate completion', () => {
     const sec = section132();
-    expect(sec).toContain('366 文件 / 1579 测试');
-    expect(sec).toContain('Residual 1214');
-    expect(sec).toContain('Residual 1215');
+    expect(sec).toContain('367 文件 / 1584 测试');
+    expect(sec).toContain('Residual 1217');
+    expect(sec).toContain('Residual 1218');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');
     expect(sec).toContain('三入口完整 E2E');
@@ -109,6 +109,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('formatMessageTime');
     expect(sec).toContain('formatDateToInput');
     expect(sec).toContain('formatTimeRange');
+    expect(sec).toContain('formatTimestamp');
     expect(sec).toContain('isRecord');
     expect(sec).not.toMatch(/全量 PR 门禁.*已证明/);
     expect(sec).not.toContain('focused evidence suite tip（Residual 1146）：**344 文件 / 1488 测试**');
@@ -126,6 +127,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).not.toContain('focused evidence suite tip（Residual 1205）：**363 文件 / 1566 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1208）：**364 文件 / 1570 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1211）：**365 文件 / 1574 测试**');
+    expect(sec).not.toContain('focused evidence suite tip（Residual 1214）：**366 文件 / 1579 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1142）：**343 文件 / 1484 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1136）：**341 文件 / 1476 测试**');
   });
