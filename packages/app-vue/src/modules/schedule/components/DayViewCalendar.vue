@@ -72,6 +72,7 @@ import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { calendarEventBgClass, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatHour } from '../../../shared/utils/format-hour';
+import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 
 interface Props {
   schedules: CalendarEventItem[];
@@ -121,16 +122,13 @@ function isCurrentHour(hour: number): boolean {
 // Residual 1288: eventBgClass dual retired onto calendarEventBgClass sole.
 /**
  * Residual 1279 keep-boundary: Day formatEventTime — space-hyphen-space " - " between HH:mm.
- * all-day → i18n; padStart local clock (not Intl).
+ * Residual 1300: inner HH:mm dual retired onto formatLocalHHmm sole (separator keep-boundary remains).
+ * all-day → i18n; not Intl.
  * Soft residual 1279: Week compact "-" + formatCalendarEventTimeRange en-dash sole (no force-merge).
  */
 function formatEventTime(event: CalendarEventItem): string {
   if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
-  const fmt = (ts: number) => {
-    const d = new Date(ts);
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-  };
-  return `${fmt(event.startTime)} - ${fmt(event.endTime)}`;
+  return `${formatLocalHHmm(event.startTime)} - ${formatLocalHHmm(event.endTime)}`;
 }
 
 function getEventStyle(event: CalendarEventItem) {

@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
  * Soft residual 1279:
  * - formatCalendarEventTimeRange dual-retired sole uses en-dash " – " (Residual 1273)
  * Soft residual 1276: formatHour dual-retired sole remains separate
+ * Residual 1300: inner HH:mm dual retired onto formatLocalHHmm (separator keep-boundary remains)
  * Does not flip §13.2 checkboxes.
  */
 describe('formatEventTime keep-boundary (residual 1279)', () => {
@@ -33,7 +34,8 @@ describe('formatEventTime keep-boundary (residual 1279)', () => {
     expect(day).toContain('Soft residual 1279');
     const body = day.match(/function formatEventTime\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain("displayMode === 'all-day'");
-    expect(body).toContain('padStart');
+    expect(body).toContain('formatLocalHHmm');
+    expect(body).not.toContain('padStart');
     expect(body).toContain(' - ');
     expect(body).not.toContain('–');
     expect(body).not.toContain('formatCalendarEventTimeRange');
@@ -46,7 +48,8 @@ describe('formatEventTime keep-boundary (residual 1279)', () => {
     expect(week).toContain('Soft residual 1279');
     const body = week.match(/function formatEventTime\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain("displayMode === 'all-day'");
-    expect(body).toContain('padStart');
+    expect(body).toContain('formatLocalHHmm');
+    expect(body).not.toContain('padStart');
     expect(body).toContain('}-${');
     expect(body).not.toContain(' - ');
     expect(body).not.toContain('–');
