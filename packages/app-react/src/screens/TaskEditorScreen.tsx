@@ -29,6 +29,10 @@ const IMPORTANCE_OPTIONS = [
 
 const TIME_TYPE_OPTIONS = [TaskTimeType.AllDay, TaskTimeType.TimePoint, TaskTimeType.TimeRange] as const;
 
+/**
+ * Soft residual 1228: app-react task toDateInput — falsy → today's UTC YMD (not empty string).
+ * Same ISO slice body as GoalEditor when timestamp present; empty-default differs (no force-merge).
+ */
 function toDateInput(timestamp: number | null) {
   if (!timestamp) {
     return new Date().toISOString().slice(0, 10);

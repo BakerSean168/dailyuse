@@ -17,6 +17,10 @@ import {
   ThemedText,
 } from '@dailyuse/ui-react-native';
 
+/**
+ * Soft residual 1228: app-react schedule toDateInput — null|undefined → ''; UTC ISO YMD.
+ * Accepts undefined (broader than GoalEditor number|null); same empty+UTC body (no force-extract).
+ */
 function toDateInput(timestamp: number | null | undefined) {
   if (!timestamp) {
     return '';

@@ -438,6 +438,11 @@ function updateKeyResult(
   });
 }
 
+/**
+ * Residual 1228 keep-boundary: app-vue AI goal toDateInputValue — epoch → local calendar YMD.
+ * Offset-normalized then toISOString().slice(0, 10); falsy → ''.
+ * Soft residual 1228: app-react GoalEditor pure UTC ISO slice differs (no force-merge).
+ */
 function toDateInputValue(value: number | null): string {
   if (!value) {
     return '';

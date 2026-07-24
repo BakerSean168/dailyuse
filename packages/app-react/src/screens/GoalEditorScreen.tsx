@@ -27,6 +27,11 @@ const IMPORTANCE_OPTIONS: ImportanceLevelType[] = [
   ImportanceLevel.Trivial,
 ];
 
+/**
+ * Residual 1228 keep-boundary: app-react goal toDateInput — epoch → UTC ISO YMD.
+ * Goal editor targetDate helper; falsy → ''; toISOString().slice(0, 10) (UTC calendar day).
+ * Soft residual 1228: vue AIGoalDraftEditor offset-normalized local day + TaskEditor today-default differ (no force-merge).
+ */
 function toDateInput(timestamp: number | null) {
   if (!timestamp) {
     return '';

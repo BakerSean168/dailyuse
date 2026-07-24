@@ -8699,6 +8699,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-24（阶段 6 残留一千二百二十七轮）：§13.2 **诚实证据 tip 刷新**（仍不打勾）——
 > tip 指针 Residual 1226：**370 文件 / 1600 测试** + GOV_EXIT:0；再确认 3 项仍为部分/外部阻塞；
 > open-items surface Residual 1227 锁。
+> 续进展 2026-07-24（阶段 6 残留一千二百二十八轮）：**toDateInput keep-boundary**（仍不打勾）——
+> app-react GoalEditor：UTC ISO YMD / 空串；app-vue AIGoalDraftEditor：offset 本地日；
+> TaskEditor soft residual（falsy→today）；ScheduleEventEditor soft residual（undefined 空串）；
+> 不强制合并；surface Residual 1228 锁。
 
 
 
@@ -8886,7 +8890,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
 > Soft residual：goal createGoalErrorHandler rich-log keep-boundary（scope/details ≠ createComposableHandleError）不强制合并。
-> Soft residual：account PowerSync parseJson throw、api parseJsonLikeString、data-portability parseJsonField、asRecord/toRecord、toTimestamp、toNumber、toStringArray、toBoolean、optionalString/toNonEmptyString、asNonEmptyString、toDate/toDateString、extractErrorMessage、generateUUID、newId、isPlainObject、toMillis、formatFileSize、toKnowledgeNoteRef、tokenize、toPrismaJson account cast vs AI deep-clone、goal clampPercentage、isRecord cross-package keep-boundary、contracts private isRecord、startOfDay、mapImportanceToTaskPriority dual-retired、readString、normalizePath、buildTaskName、comparePriority、defaultExtractContext、getTemplateById、getCorsOrigins、delay dual-retired、scoreIndexedResource dual-retired、readJson、handleAuthSuccess、formatDateTime、formatMessageTime、formatDateToInput、formatTimeRange、formatTimestamp、getImportanceLabel、getStatusLabel、parseDateInput 不强制合并其他 delay 语义。
+> Soft residual：account PowerSync parseJson throw、api parseJsonLikeString、data-portability parseJsonField、asRecord/toRecord、toTimestamp、toNumber、toStringArray、toBoolean、optionalString/toNonEmptyString、asNonEmptyString、toDate/toDateString、extractErrorMessage、generateUUID、newId、isPlainObject、toMillis、formatFileSize、toKnowledgeNoteRef、tokenize、toPrismaJson account cast vs AI deep-clone、goal clampPercentage、isRecord cross-package keep-boundary、contracts private isRecord、startOfDay、mapImportanceToTaskPriority dual-retired、readString、normalizePath、buildTaskName、comparePriority、defaultExtractContext、getTemplateById、getCorsOrigins、delay dual-retired、scoreIndexedResource dual-retired、readJson、handleAuthSuccess、formatDateTime、formatMessageTime、formatDateToInput、formatTimeRange、formatTimestamp、getImportanceLabel、getStatusLabel、parseDateInput、toDateInput 不强制合并其他 delay 语义。
 > 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
 > 阶段 6 dual 收口（残留 250–300；四百八十七轮补 task DAG *ViewModel 消费者收口；五百三十九轮 portable editor_* / knowledge routes / /note strip 再锁）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
 > Host task.create 进程内产品路径（残留 427–491 + 501–589）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
@@ -10108,6 +10112,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百二十五轮：lock parseDateInput keep-boundary (vue task falsy getTime vs react goal trim+Date.parse; no force-merge).
   残留一千二百二十六轮：§13.2 focused evidence suite re-run (1600 tests, residuals 250–1225 locks, no checkbox changes)。
   残留一千二百二十七轮：§13.2 evidence tip refresh (1226 tip 370/1600) + open-items surface lock (no checkbox flips).
+  残留一千二百二十八轮：lock toDateInput keep-boundary (react UTC ISO YMD vs vue offset-local day; TaskEditor today-default soft; no force-merge).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -10768,6 +10773,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百二十五轮：lock parseDateInput keep-boundary（vue task falsy getTime vs react goal trim+Date.parse；不强制合并）。
   残留一千二百二十六轮：§13.2 focused evidence suite re-run（1600 tests，residuals 250–1225 锁；不改 checkbox）。
   残留一千二百二十七轮：§13.2 evidence tip 刷新（1226 tip 370/1600）+ open-items surface 锁（不改 checkbox）。
+  残留一千二百二十八轮：lock toDateInput keep-boundary（react UTC ISO YMD vs vue offset-local day；TaskEditor today-default soft；不强制合并）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -12040,6 +12046,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百二十五轮：parseDateInput keep-boundary surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千二百二十六轮：tip 上 1600 项 focused evidence suite（含 residual 250–1225 parseDateInput keep-boundary 锁）通过；仍不构成全量 PR 门禁证据。
   残留一千二百二十七轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留一千二百二十八轮：toDateInput keep-boundary surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
