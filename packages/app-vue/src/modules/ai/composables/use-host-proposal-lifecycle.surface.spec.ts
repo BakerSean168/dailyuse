@@ -1278,7 +1278,8 @@ describe('Host proposal lifecycle surface (residual 355/357)', () => {
     expect(nextSlice).toContain('Residual 599');
     // Ghost drop when non-primary goal / knowledge present even for builders.
     expect(nextSlice).toContain('otherProductSessionPresent');
-    expect(nextSlice).toContain("agentType !== 'task.create'");
+    // Residual 1331: exclusive process-local task.create lane uses === gate first.
+    expect(nextSlice).toContain("agentType === 'task.create'");
     expect(helper).not.toContain('executeApproved');
   });
 

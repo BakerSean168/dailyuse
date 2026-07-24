@@ -21,6 +21,10 @@ import { describe, expect, it } from 'vitest';
  * Residual 1330: full workspace typecheck contracts from 8 failures to 34/34 EXIT:0;
  * utils recurrence 1/4, schedule-orchestration 4/7, and governance-check pass, while
  * full workspace test/Web/Desktop E2E/prod-like/OAuth remain incomplete/external;
+ * Residual 1331: full workspace standard test 30 targets from 11 failures to 3 failures /
+ * 27 pass EXIT:1 (remaining data-portability powersync-round-trip, desktop git runtime,
+ * app-vue AIChatView/KnowledgeProjection harness), while full-green test/Web/Desktop
+ * E2E/prod-like/OAuth remain incomplete/external;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
@@ -54,6 +58,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(plan).toContain('Residual 1328');
     expect(plan).toContain('Residual 1329');
     expect(plan).toContain('Residual 1330');
+    expect(plan).toContain('Residual 1331');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
@@ -88,6 +93,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Residual 1328');
     expect(sec).toContain('Residual 1329');
     expect(sec).toContain('Residual 1330');
+    expect(sec).toContain('Residual 1331');
     expect(sec).toContain('Web 账密两轮 3/3');
     expect(sec).toContain('Desktop production Electron guest 两轮 1/1');
     expect(sec).toContain('Agent/Vault/Pi fixture 7/114');
@@ -108,7 +114,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('**34/34 项目通过（EXIT:0）**');
     expect(sec).toContain('utils recurrence **1 文件 / 4 测试**');
     expect(sec).toContain('schedule-orchestration **4 文件 / 7 测试**');
-    expect(sec).toContain('这只证明 lint + typecheck 门禁与本轮 focused/governance');
+    expect(sec).toContain('全 workspace 标准 test 目标 **30**');
+    expect(sec).toContain('**3 失败 / 27 通过（EXIT:1）**');
+    expect(sec).toContain('这只证明 lint + typecheck + test 门禁收缩与本轮 focused/governance');
     expect(sec).toContain('OAuth/App fixture 无凭据为外部阻塞');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');

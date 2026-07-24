@@ -2,6 +2,8 @@
  * TaskReminderConfig Value Object - Server Interface
  */
 
+// Ensure Zod.openapi() is available before schema construction (residual 1331).
+import '../../../primitives/zod-extensions';
 import { z } from 'zod';
 import { TaskReminderType } from './task-reminder-type';
 import { ReminderTimeUnit } from './reminder-time-unit';

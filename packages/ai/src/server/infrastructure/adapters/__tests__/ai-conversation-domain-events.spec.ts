@@ -63,6 +63,8 @@ function captureConversationEventTypes(): {
 function createPrismaClientMock(): PrismaClient {
   const client = {
     aiConversation: {
+      // Residual 1331: save path owns via findUnique before upsert.
+      findUnique: vi.fn(async () => null),
       upsert: vi.fn(async () => undefined),
     },
     aiMessage: {

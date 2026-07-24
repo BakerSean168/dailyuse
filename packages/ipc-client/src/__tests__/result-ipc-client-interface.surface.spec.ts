@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -65,10 +65,12 @@ describe('IResultIpcClient single-track surface', () => {
           continue;
         }
         if (!entry.name.endsWith('.ts') && !entry.name.endsWith('.tsx')) continue;
-        if (full.includes(`${packagesRoot}/ipc-client/`)) continue;
+        // Residual 1331: path.relative works on Windows; skip canonical ipc-client sole.
+        const rel = relative(packagesRoot, full).split('\\').join('/');
+        if (rel.startsWith('ipc-client/')) continue;
         const text = readFileSync(full, 'utf8');
         if (/export interface IResultIpcClient\s*\{/.test(text)) {
-          offenders.push(full.replace(packagesRoot + '/', ''));
+          offenders.push(rel);
         }
       }
     }

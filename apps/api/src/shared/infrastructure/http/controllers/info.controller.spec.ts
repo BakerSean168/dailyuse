@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Request, Response } from 'express';
 
 vi.mock('../../config/env.js', () => ({
@@ -7,9 +7,9 @@ vi.mock('../../config/env.js', () => ({
     BUILD_TIMESTAMP: '2026-07-22T00:00:00Z',
     GIT_COMMIT: 'abc1234',
   },
+  isDevelopment: false,
+  isProduction: false,
 }));
-
-import { infoController } from './info.controller';
 
 function mockRes() {
   const res = {
@@ -28,7 +28,14 @@ function mockRes() {
 }
 
 describe('infoController.getInfo (residual 625)', () => {
-  it('returns HttpResponse ok envelope with app info payload', () => {
+  beforeEach(() => {
+    // Residual 1331: full-suite workers may cache env before this file's mock;
+    // re-import the controller against the mocked env module each run.
+    vi.resetModules();
+  });
+
+  it('returns HttpResponse ok envelope with app info payload', async () => {
+    const { infoController } = await import('./info.controller');
     const res = mockRes();
     infoController.getInfo({} as Request, res);
     expect(res.statusCode).toBe(200);

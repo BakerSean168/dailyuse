@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -92,7 +92,8 @@ describe('agent-host stage-0 ports freeze surface', () => {
         const source = readFileSync(full, 'utf8');
         if (full.endsWith(`${'agent-host'}/ports.ts`)) continue;
         if (source.includes('export interface ITurnEnginePort')) continue;
-        const rel = full.replace(repoRoot + '/', '');
+        // Residual 1331: normalize Windows absolute paths to repo-relative posix form.
+        const rel = relative(repoRoot, full).split('\\').join('/');
         if (source.includes('implements ITurnEnginePort')) {
           turnEngines.push(rel);
         }

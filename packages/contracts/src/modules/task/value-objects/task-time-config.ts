@@ -2,6 +2,8 @@
  * TaskTimeConfig Value Object - Server Interface
  */
 
+// Ensure Zod.openapi() is available before schema construction (residual 1331).
+import '../../../primitives/zod-extensions';
 import { z } from 'zod';
 import type { DomainDate } from '../../../primitives';
 import { TaskTimeType } from './task-time-type';

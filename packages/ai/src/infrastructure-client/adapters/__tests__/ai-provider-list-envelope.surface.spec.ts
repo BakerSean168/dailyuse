@@ -62,6 +62,11 @@ describe('ai provider list envelope surface', () => {
     const schemaBlock = listSchema.slice(listSchema.indexOf('ListAIProviderConfigsResSchema'));
     expect(schemaBlock).toContain('data: z.array(AIProviderConfigClientDTOSchema)');
     expect(schemaBlock.split('export const')[0]).not.toContain('AIProviderConfigSummarySchema');
-    expect(listDto).toContain('data: AIProviderConfigClientDTO[]');
+    // Residual 695/1331: list Res is z.infer of schema (no interface body dual).
+    expect(listDto).toContain(
+      'export type ListAIProviderConfigsRes = z.infer<typeof ListAIProviderConfigsResSchema>',
+    );
+    expect(listDto).not.toMatch(/export interface ListAIProviderConfigsRes\b/);
+    expect(listDto).not.toContain('AIProviderConfigSummary');
   });
 });

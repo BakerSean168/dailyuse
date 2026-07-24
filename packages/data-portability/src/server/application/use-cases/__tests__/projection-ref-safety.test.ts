@@ -33,9 +33,7 @@ describe('projection ref safety', () => {
 
     expect(projected[0]?.focusedGoalRefs).toEqual([]);
     expect(JSON.stringify(projected)).not.toContain('goal-db-id');
-    expect(ctx.warnings).toContain(
-      'Unresolved reference to goal-db-id — entity may not have been exported',
-    );
+    expect(ctx.warnings).toContain('Unresolved goal reference to goal-db-id');
   });
 
   it('fails export when a goal record requires an unresolved key result ref', () => {
@@ -46,7 +44,7 @@ describe('projection ref safety', () => {
         [{ id: 'record-db-id', keyResultId: 'missing-key-result', value: 1 }],
         ctx,
       ),
-    ).toThrow('EXPORT_VALIDATION_ERROR: Unresolved reference to missing-key-result');
+    ).toThrow('EXPORT_VALIDATION_ERROR: Unresolved goal reference to missing-key-result');
   });
 
   it('fails export when a task instance requires an unresolved template ref', () => {

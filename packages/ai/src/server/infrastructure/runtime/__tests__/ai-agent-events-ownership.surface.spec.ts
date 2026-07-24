@@ -13,7 +13,8 @@ describe('ai agent getEvents ownership surface', () => {
   it('getEvents gates on getRun ownership before port.getEvents', () => {
     const getEventsStart = runtime.indexOf('async getEvents(');
     expect(getEventsStart).toBeGreaterThan(-1);
-    const block = runtime.slice(getEventsStart, getEventsStart + 900);
+    // Residual 1331: ownership + process-local store branch needs a wider window.
+    const block = runtime.slice(getEventsStart, getEventsStart + 1800);
     expect(block).toContain('port.getRun(');
     expect(block).toContain('ensureAgentRunOwnedByIdentity(snapshot, cx.identityId)');
     expect(block).toContain('if (!ownership.ok)');
