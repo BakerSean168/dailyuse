@@ -328,7 +328,9 @@ function formatDateToYMD(date: Date): string {
 }
 
 /**
- * 格式化日期为 input[type=date] 格式
+ * Residual 1210 keep-boundary: app-vue task formatDateToInput — epoch ms → local YMD.
+ * Task time-config form helper; timestamp number input (not Date / not date-fns).
+ * Soft residual 1210: utils formatDateToInput is Date + date-fns (no force-merge).
  */
 const formatDateToInput = (timestamp: number): string => {
   const date = new Date(timestamp);

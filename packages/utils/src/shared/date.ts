@@ -30,6 +30,11 @@ export function toDayEnd(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
 }
 
+/**
+ * Residual 1210 keep-boundary: utils formatDateToInput — Date → date-fns yyyy-MM-dd.
+ * Shared form input helper; empty/falsy Date-like → ''.
+ * Soft residual 1210: app-vue TimeConfigSection formatDateToInput is timestamp→YMD local (no force-merge).
+ */
 export function formatDateToInput(dateObj: Date): string {
   if (!dateObj) return '';
   return format(dateObj, 'yyyy-MM-dd');
