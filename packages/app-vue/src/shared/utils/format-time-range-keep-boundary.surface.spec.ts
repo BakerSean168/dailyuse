@@ -9,6 +9,7 @@ import { formatCalendarEventTimeRange } from './format-calendar-event-time-range
  * - app-vue event/all-day shape lives in formatCalendarEventTimeRange sole (Residual 1273 dual-retired)
  * Soft residual 1213 / Residual 1273: DayDetailSheet + TaskEventActionPanel dual-retired onto sole.
  * Soft residual 1210: formatDateToInput keep-boundary remains separate.
+ * Residual 1303: vue sole inner HH:mm dual retired onto formatLocalHHmm (en-dash keeps separate from react " - ").
  * Does not flip §13.2 checkboxes.
  */
 describe('formatTimeRange keep-boundary (residual 1213)', () => {
@@ -46,12 +47,15 @@ describe('formatTimeRange keep-boundary (residual 1213)', () => {
     expect(vue).toContain('Soft residual 1213');
     expect(vue).toContain('CalendarEventItem');
     expect(sole).toContain('Residual 1273');
+    expect(sole).toContain('Residual 1303');
     expect(sole).toContain("displayMode === 'all-day'");
-    expect(sole).toContain('padStart');
+    expect(sole).toContain('formatLocalHHmm');
+    expect(sole).not.toContain('padStart');
     expect(sole).toContain('–');
     const body = sole.match(/export function formatCalendarEventTimeRange\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('all-day');
-    expect(body).toContain('padStart');
+    expect(body).toContain('formatLocalHHmm');
+    expect(body).not.toContain('padStart');
     expect(body).toContain('–');
     expect(body).not.toContain('Intl.DateTimeFormat');
     expect(body).not.toContain('zh-CN');
