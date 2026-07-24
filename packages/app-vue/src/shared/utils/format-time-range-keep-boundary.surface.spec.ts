@@ -1,12 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { formatCalendarEventTimeRange } from './format-calendar-event-time-range';
 
 /**
  * Residual 1213: formatTimeRange keep-boundary (app-react Intl pair vs app-vue event/all-day).
  * - app-react useScheduleAgenda: (startTime, endTime) → Intl zh-CN hour:minute + " - "
- * - app-vue DayDetailSheet: CalendarEventItem + all-day i18n + padStart HH:mm + en-dash
- * Soft residual 1213: TaskEventActionPanel same vue shape stays separate local.
+ * - app-vue event/all-day shape lives in formatCalendarEventTimeRange sole (Residual 1273 dual-retired)
+ * Soft residual 1213 / Residual 1273: DayDetailSheet + TaskEventActionPanel dual-retired onto sole.
  * Soft residual 1210: formatDateToInput keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */
@@ -24,6 +25,7 @@ describe('formatTimeRange keep-boundary (residual 1213)', () => {
     resolve(dir, '../../modules/schedule/components/TaskEventActionPanel.vue'),
     'utf8',
   );
+  const sole = readFileSync(resolve(dir, 'format-calendar-event-time-range.ts'), 'utf8');
 
   it('owns Residual 1213 keep-boundary markers on app-react Intl zh-CN formatTimeRange', () => {
     expect(react).toContain('Residual 1213 keep-boundary');
@@ -39,14 +41,15 @@ describe('formatTimeRange keep-boundary (residual 1213)', () => {
     expect(body).not.toContain('padStart');
   });
 
-  it('differs from app-vue schedule event/all-day formatTimeRange (no force-merge)', () => {
+  it('differs from app-vue event/all-day sole shape (no force-merge)', () => {
     expect(vue).toContain('Residual 1213 keep-boundary');
-    expect(vue).toMatch(/function formatTimeRange\b/);
     expect(vue).toContain('Soft residual 1213');
     expect(vue).toContain('CalendarEventItem');
-    expect(vue).toContain("displayMode === 'all-day'");
-    expect(vue).toContain('padStart');
-    const body = vue.match(/function formatTimeRange\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(sole).toContain('Residual 1273');
+    expect(sole).toContain("displayMode === 'all-day'");
+    expect(sole).toContain('padStart');
+    expect(sole).toContain('–');
+    const body = sole.match(/export function formatCalendarEventTimeRange\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('all-day');
     expect(body).toContain('padStart');
     expect(body).toContain('–');
@@ -55,11 +58,21 @@ describe('formatTimeRange keep-boundary (residual 1213)', () => {
     expect(body).not.toContain('startTime: number, endTime: number');
   });
 
-  it('soft residual 1213 TaskEventActionPanel same vue shape stays separate', () => {
-    expect(panel).toContain('Soft residual 1213');
-    expect(panel).toMatch(/function formatTimeRange\b/);
-    expect(panel).toContain("displayMode === 'all-day'");
-    expect(panel).toContain('padStart');
+  it('Residual 1273 vue DayDetail/Panel dual retired onto formatCalendarEventTimeRange sole', () => {
+    expect(vue).toContain('Residual 1273');
+    expect(vue).toContain('format-calendar-event-time-range');
+    expect(vue).toContain('formatCalendarEventTimeRange');
+    expect(vue).toMatch(/function formatTimeRange\b/);
+    const vueBody = vue.match(/function formatTimeRange\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(vueBody).toContain('formatCalendarEventTimeRange');
+    expect(vueBody).not.toContain('padStart');
+
+    expect(panel).toContain('Residual 1273');
+    expect(panel).toContain('format-calendar-event-time-range');
+    expect(panel).toContain('formatCalendarEventTimeRange');
+    const panelBody = panel.match(/function formatTimeRange\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(panelBody).toContain('formatCalendarEventTimeRange');
+    expect(panelBody).not.toContain('padStart');
     expect(panel).not.toContain('Intl.DateTimeFormat');
   });
 
@@ -71,27 +84,18 @@ describe('formatTimeRange keep-boundary (residual 1213)', () => {
       });
       return `${formatter.format(new Date(startTime))} - ${formatter.format(new Date(endTime))}`;
     }
-    function vueFormatTimeRange(event: {
-      displayMode?: string;
-      startTime: number;
-      endTime: number;
-    }): string {
-      if (event.displayMode === 'all-day') return 'All day';
-      const fmt = (ts: number) => {
-        const d = new Date(ts);
-        return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-      };
-      return `${fmt(event.startTime)} – ${fmt(event.endTime)}`;
-    }
     const start = Date.UTC(2024, 0, 2, 9, 0, 0);
     const end = Date.UTC(2024, 0, 2, 10, 30, 0);
     const reactOut = reactFormatTimeRange(start, end);
     expect(typeof reactOut).toBe('string');
     expect(reactOut).toContain(' - ');
-    expect(vueFormatTimeRange({ displayMode: 'all-day', startTime: start, endTime: end })).toBe(
-      'All day',
-    );
-    const vueOut = vueFormatTimeRange({ startTime: start, endTime: end });
+    expect(
+      formatCalendarEventTimeRange(
+        { displayMode: 'all-day', startTime: start, endTime: end },
+        'All day',
+      ),
+    ).toBe('All day');
+    const vueOut = formatCalendarEventTimeRange({ startTime: start, endTime: end }, 'All day');
     expect(vueOut).toContain('–');
     expect(vueOut).not.toContain(' - ');
   });

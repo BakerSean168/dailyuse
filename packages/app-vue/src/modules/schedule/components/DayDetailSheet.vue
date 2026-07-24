@@ -79,6 +79,7 @@ import {
   Button,
 } from '@dailyuse/ui-vue-shadcn';
 import type { CalendarEventItem } from '../composables/useCalendarView';
+import { formatCalendarEventTimeRange } from '../../../shared/utils/format-calendar-event-time-range';
 
 interface Props {
   open: boolean;
@@ -107,17 +108,12 @@ const dateTitle = computed(() => {
 });
 
 /**
- * Residual 1213 keep-boundary: app-vue schedule formatTimeRange — CalendarEventItem + all-day.
- * padStart HH:mm range with en-dash; all-day → i18n label (not fixed zh-CN Intl pair).
+ * Residual 1213 keep-boundary: app-vue schedule event/all-day time range (vs app-react Intl pair).
+ * Residual 1273: local dual retired onto formatCalendarEventTimeRange sole.
  * Soft residual 1213: app-react useScheduleAgenda formatTimeRange is Intl zh-CN pair (no force-merge).
  */
 function formatTimeRange(event: CalendarEventItem): string {
-  if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
-  const fmt = (ts: number) => {
-    const d = new Date(ts);
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-  };
-  return `${fmt(event.startTime)} – ${fmt(event.endTime)}`;
+  return formatCalendarEventTimeRange(event, t('schedule.calendar.allDay'));
 }
 
 function sourceLabel(source: CalendarEventItem['source']): string {
