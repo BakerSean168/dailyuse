@@ -14,6 +14,8 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps ./apps
 COPY packages ./packages
+# Root postinstall runs tools/mcp/ensure-nx-src-link.mjs (nx-mcp symlink helper).
+COPY tools/mcp ./tools/mcp
 
 RUN pnpm install --frozen-lockfile
 
