@@ -240,6 +240,7 @@ import {
 import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';
+import { padTwoDigits } from '../../../../../shared/utils/pad-two-digits';
 
 const { t, locale } = useI18n();
 
@@ -250,8 +251,9 @@ const { t, locale } = useI18n();
 const ReminderType = TaskReminderType;
 
 // ── Time picker options ────────────────────────────────────────────────
-const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+/** Residual 1312: hour/minute option pad dual retired onto padTwoDigits sole. */
+const hourOptions = Array.from({ length: 24 }, (_, i) => padTwoDigits(i));
+const minuteOptions = Array.from({ length: 60 }, (_, i) => padTwoDigits(i));
 
 // ── Calendar/DateTime helpers ──────────────────────────────────────────
 
@@ -261,16 +263,16 @@ function getAbsoluteDatePart(ts?: number | null): string | null {
   return formatDateToYMD(new Date(ts));
 }
 
-/** Get hour string from a timestamp */
+/** Residual 1312: absolute hour/minute pad dual retired onto padTwoDigits sole. */
 function getAbsoluteHour(ts?: number | null): string {
   if (!ts) return '00';
-  return String(new Date(ts).getHours()).padStart(2, '0');
+  return padTwoDigits(new Date(ts).getHours());
 }
 
-/** Get minute string from a timestamp */
+/** Residual 1312: absolute minute pad dual retired onto padTwoDigits sole. */
 function getAbsoluteMinute(ts?: number | null): string {
   if (!ts) return '00';
-  return String(new Date(ts).getMinutes()).padStart(2, '0');
+  return padTwoDigits(new Date(ts).getMinutes());
 }
 
 /** Get a Date for Calendar :selected from a timestamp */

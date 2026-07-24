@@ -243,6 +243,7 @@ import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd'
 import { parseToDate } from '../../../../../shared/utils/parse-to-date';
 import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
+import { padTwoDigits } from '../../../../../shared/utils/pad-two-digits';
 
 const { t, locale } = useI18n();
 
@@ -266,8 +267,9 @@ const emit = defineEmits<{
 }>();
 
 // ── Time picker options ────────────────────────────────────────────────
-const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+/** Residual 1312: hour/minute option pad dual retired onto padTwoDigits sole. */
+const hourOptions = Array.from({ length: 24 }, (_, i) => padTwoDigits(i));
+const minuteOptions = Array.from({ length: 60 }, (_, i) => padTwoDigits(i));
 
 // ── Form data ──────────────────────────────────────────────────────────
 const timeType = ref<TaskTimeType>(TaskTimeType.AllDay);
@@ -341,13 +343,14 @@ function combineTimeParts(hour: string, minute: string): number {
 /**
  * Split minute-of-day into hour / minute parts
  */
+/** Residual 1312: minute-of-day split pad dual retired onto padTwoDigits sole. */
 function splitMinutes(minutes: number): { hour: string; minute: string } {
   const normalized = Number.isFinite(minutes) ? Math.max(0, Math.min(1439, minutes)) : 0;
   const h = Math.floor(normalized / 60);
   const m = normalized % 60;
   return {
-    hour: String(h).padStart(2, '0'),
-    minute: String(m).padStart(2, '0'),
+    hour: padTwoDigits(h),
+    minute: padTwoDigits(m),
   };
 }
 
