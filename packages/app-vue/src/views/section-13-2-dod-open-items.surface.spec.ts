@@ -4,14 +4,14 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 891: honest §13.2 completion-definition open-items re-audit.
- * Residual 1224: tip focused suite pointer refresh (Residual 1223 evidence tip 369/1595)
+ * Residual 1227: tip focused suite pointer refresh (Residual 1226 evidence tip 370/1600)
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
  * isPlainObject + toMillis + formatFileSize + toKnowledgeNoteRef + tokenize + toDashboardTaskInstanceRecord + toPrismaJson + contracts-isRecord + startOfDay + mapImportanceToTaskPriority + readString + normalizePath + buildTaskName + comparePriority + defaultExtractContext + getTemplateById + getCorsOrigins + delay dual-retired + scoreIndexedResource dual-retired + readJson + handleAuthSuccess + formatDateTime + formatMessageTime + formatDateToInput + formatTimeRange + formatTimestamp + clampPercentage + isRecord keep-boundaries (no force-merge).
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary is separate contracts surface.
  * Residual 1047 (soft): loadWorkspaceEnv keep-boundary surface remains locked in api package.
- * Residual 1221 (soft): prior tip refresh 368/1589 still in history notes only.
+ * Residual 1224 (soft): prior tip refresh 369/1595 still in history notes only.
  * Does not flip any §13.2 checkbox; focused suite tip remains evidence, not full PR gate.
  */
 describe('§13.2 DoD open items honest audit (residual 891)', () => {
@@ -34,7 +34,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
   it('keeps exactly three unchecked §13.2 items with partial/external-block labels', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
-    expect(plan).toContain('Residual 1224');
+    expect(plan).toContain('Residual 1227');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
@@ -62,9 +62,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
 
   it('records tip focused suite evidence without claiming full PR gate completion', () => {
     const sec = section132();
-    expect(sec).toContain('369 文件 / 1595 测试');
-    expect(sec).toContain('Residual 1223');
-    expect(sec).toContain('Residual 1224');
+    expect(sec).toContain('370 文件 / 1600 测试');
+    expect(sec).toContain('Residual 1226');
+    expect(sec).toContain('Residual 1227');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');
     expect(sec).toContain('三入口完整 E2E');
@@ -112,6 +112,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('formatTimestamp');
     expect(sec).toContain('getImportanceLabel');
     expect(sec).toContain('getStatusLabel');
+    expect(sec).toContain('parseDateInput');
     expect(sec).toContain('isRecord');
     expect(sec).not.toMatch(/全量 PR 门禁.*已证明/);
     expect(sec).not.toContain('focused evidence suite tip（Residual 1146）：**344 文件 / 1488 测试**');
@@ -129,6 +130,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).not.toContain('focused evidence suite tip（Residual 1205）：**363 文件 / 1566 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1208）：**364 文件 / 1570 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1211）：**365 文件 / 1574 测试**');
+    expect(sec).not.toContain('focused evidence suite tip（Residual 1223）：**369 文件 / 1595 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1220）：**368 文件 / 1589 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1217）：**367 文件 / 1584 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1214）：**366 文件 / 1579 测试**');
