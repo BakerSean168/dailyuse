@@ -8,7 +8,8 @@ import { formatHHmmParts } from './format-hhmm-parts';
  * Residual 1312: multi-site two-digit padStart dual retired onto padTwoDigits sole.
  * - sole: packages/app-vue/src/shared/utils/pad-two-digits.ts
  * - consumers: TimeConfigSection, ReminderSection, CreateScheduleDialog hour/minute options + parts
- * Soft residual: ScheduleFormDemo datetime-local composition stays separate
+ * Soft residual Residual 1315: ScheduleFormDemo datetime-local dual-retired onto formatDateToYMD + formatLocalHHmm;
+ * formatHHmmParts/formatLocalHHmm/formatHour/formatDateToYMD padStart compose onto padTwoDigits optional
  * Does not flip §13.2 checkboxes.
  */
 describe('padTwoDigits dual retired (residual 1312)', () => {
@@ -69,13 +70,17 @@ describe('padTwoDigits dual retired (residual 1312)', () => {
     expect(minuteFn).not.toContain('padStart');
   });
 
-  it('soft residual: ScheduleFormDemo datetime-local composition stays separate', () => {
+  it('soft residual Residual 1315: ScheduleFormDemo composes YMD+HH:mm soles (not padTwoDigits)', () => {
     const demo = readFileSync(
       resolve(dir, '../../modules/schedule/components/ScheduleFormDemo.vue'),
       'utf8',
     );
-    expect(demo).toContain('padStart');
+    expect(demo).toContain('Residual 1315');
+    expect(demo).toContain('formatDateToYMD');
+    expect(demo).toContain('formatLocalHHmm');
     expect(demo).not.toContain('padTwoDigits');
+    const body = demo.match(/function formatDateTimeToInput\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(body).not.toContain('padStart');
   });
 
   it('runtime: padTwoDigits and formatHHmmParts composition agree', () => {
