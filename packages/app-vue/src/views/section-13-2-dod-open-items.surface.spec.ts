@@ -31,8 +31,9 @@ import { describe, expect, it } from 'vitest';
  * typecheck 34/34 + standard test 30/30 re-verified; governance-check GOV_EXIT:0;
  * historical plan note still records goal-workflow 8/8 red; follow-up green is goal-workflow
  * 8/8 after Host SSE mock + conversation list persistence (not a full PR gate);
- * Desktop Linux guest not stable; GitHub App JWT wired but installations_count=0 (browser
- * install consent external); Web/Desktop full E2E/OAuth remain incomplete/external;
+ * Desktop Linux guest e2e fixed via safeStorage basic_text on Linux E2E (1/1 under xvfb);
+ * GitHub App JWT wired but installations_count=0 (browser install consent external);
+ * Web/Desktop full E2E/OAuth remain incomplete/external;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +

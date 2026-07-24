@@ -11,13 +11,14 @@ test('production Electron exposes password + guest and enters an isolated guest 
   const mainEntry = path.resolve('dist-electron/main.cjs');
 
   const electronApp = await electron.launch({
-    args: [mainEntry],
+    args: [mainEntry, '--disable-gpu', '--disable-dev-shm-usage'],
     cwd: process.cwd(),
     env: {
       ...process.env,
       NODE_ENV: 'test',
       DAILYUSE_DESKTOP_USER_DATA_PATH: userDataPath,
       DAILYUSE_DESKTOP_USER_FILES_PATH: userFilesPath,
+      ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
     },
   });
   electronApp.on('console', (message) => {
@@ -25,6 +26,19 @@ test('production Electron exposes password + guest and enters an isolated guest 
   });
 
   try {
+    // Residual 1333: headless Linux CI/agent hosts have no Secret Service keyring.
+    // Enable Electron's basic_text backend for this disposable E2E process only
+    // (same shipped path as apps/web/e2e/sync/helpers/desktop.ts).
+    if (process.platform === 'linux') {
+      const encryptionAvailable = await electronApp.evaluate(({ safeStorage }) => {
+        safeStorage.setUsePlainTextEncryption(true);
+        return safeStorage.isEncryptionAvailable();
+      });
+      if (!encryptionAvailable) {
+        throw new Error('Electron safeStorage is unavailable in the Linux E2E runtime.');
+      }
+    }
+
     const loginWindow = await electronApp.firstWindow();
     loginWindow.on('console', (message) => {
       console.log(`[electron-renderer:${message.type()}] ${message.text()}`);

@@ -13081,6 +13081,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - `pnpm runtime:preflight --profile e2e` OK；`desktop:test:live-github` 在缺 `GITHUB_TEST_INSTALLATION_ID` 时 fail-fast（shipped message，拒 PAT）。
   - `GitHubAppClient` unit **15/15**；goal-workflow 复验 **8/8**（SCRATCH residual-suites）。
   - §13.2 仍 **12 [x] / 3 [ ]**，**不改 checkbox**；真实 install 仍需浏览器：https://github.com/apps/memoflow-dev-test/installations/new
+  残留一千三百三十三轮续（Desktop Linux guest + verification evidence）：
+  - Desktop production Electron guest e2e 在 xvfb 下根因：`Token encryption is not available`（无 Secret Service）。
+  - 修复：`apps/desktop/e2e/authentication/desktop-auth-flow.spec.ts` 在 Linux 上启用 Electron `safeStorage.setUsePlainTextEncryption(true)`（与 web sync desktop helper 同一 shipped 路径），**1/1 绿**。
+  - guest unit/coordinator + toCloudAccessToken focused **42** 通过；install 再轮询仍 **0**（外部阻塞不变）。
+  - Verification SCRATCH：secrets-layout / app-install / github-real-path / residual-suites（goal-workflow 8/8、desktop guest 1/1）。
 
 ## 14. 相关资料
 
