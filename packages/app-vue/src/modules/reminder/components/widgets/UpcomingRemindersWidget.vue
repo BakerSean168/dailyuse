@@ -79,6 +79,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { formatLocalHHmm } from '../../../../shared/utils/format-local-hhmm';
 import {
   Card,
   CardContent,
@@ -166,10 +167,12 @@ const visibleItems = computed<ReminderTodayScheduleItem[]>(() =>
   remainingItems.value.slice(0, props.maxItems),
 );
 
+/**
+ * Residual 1294: HH:mm dual retired onto formatLocalHHmm sole; null → '--:--' stays local.
+ */
 function formatReminderTime(timestamp: number | null): string {
   if (!timestamp) return '--:--';
-  const date = new Date(timestamp);
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  return formatLocalHHmm(timestamp);
 }
 
 onMounted(() => {

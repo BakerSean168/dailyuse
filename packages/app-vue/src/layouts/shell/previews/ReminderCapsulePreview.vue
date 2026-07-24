@@ -7,6 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useReminder } from '../../../modules/reminder/composables/useReminder';
 import type { ReminderTodayScheduleItem } from '@dailyuse/contracts/reminder';
+import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 
 const RECENT_LIMIT = 4;
 const CACHE_MS = 45_000;
@@ -34,12 +35,11 @@ const remaining = computed(() =>
 const visible = computed(() => remaining.value.slice(0, RECENT_LIMIT));
 
 /**
- * Soft residual 1237: reminder capsule formatTime — local HH:mm padStart only (no date, no relative).
- * Preview capsule clock; not dashboard relative/i18n path (no force-merge).
+ * Residual 1294: formatTime dual retired onto formatLocalHHmm sole.
+ * Soft residual 1237: still HH:mm-only capsule clock (no relative/date-fns) vs dashboard formatTime keep-boundary.
  */
 function formatTime(ts: number): string {
-  const d = new Date(ts);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return formatLocalHHmm(ts);
 }
 
 async function load(force = false) {

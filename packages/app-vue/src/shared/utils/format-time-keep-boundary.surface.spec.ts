@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
  * - goal ProgressBreakdown: date-fns absolute yyyy-MM-dd HH:mm
  * - goal WeightSnapshot: date-fns absolute + locale map
  * - goal GoalFocusView: toLocaleString options
- * - reminder ReminderCapsulePreview: local HH:mm only
+ * - reminder ReminderCapsulePreview: Residual 1294 formatLocalHHmm sole (still HH:mm-only vs dashboard relative)
  * Soft residual 1231: toTimeInput keep-boundary remains separate.
  * Soft residual 1207: formatMessageTime keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
@@ -86,12 +86,13 @@ describe('formatTime keep-boundary (residual 1237)', () => {
     expect(focus).toContain("year: 'numeric'");
     expect(focus).not.toContain('dashboard.time');
 
-    expect(capsule).toContain('Soft residual 1237');
+    expect(capsule).toContain('Residual 1294');
+    expect(capsule).toContain('format-local-hhmm');
+    expect(capsule).toContain('formatLocalHHmm');
     expect(capsule).toMatch(/function formatTime\b/);
-    expect(capsule).toContain('getHours()');
-    expect(capsule).toContain('getMinutes()');
     const body = capsule.match(/function formatTime\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(body).toContain('padStart');
+    expect(body).toContain('formatLocalHHmm');
+    expect(body).not.toContain('padStart');
     expect(body).not.toContain('justNow');
     expect(body).not.toContain('yyyy-MM-dd');
   });

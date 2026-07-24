@@ -6,6 +6,7 @@
  */
 
 import { computed, ref } from 'vue';
+import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 import { startOfDay, endOfDay } from 'date-fns';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
@@ -73,7 +74,7 @@ export function calendarEventBgClass(event: Pick<CalendarEventItem, 'source' | '
 /**
  * Residual 1291: sole calendarEventSourceLabel — schedule/goal/task source → i18n label.
  * Dual-retired from DayDetailSheet + EventDetailSheet local sourceLabel copies.
- * Soft residual 1291: formatCapsuleTime / multi-site HH:mm padStart keep-boundary remains separate.
+ * Soft residual 1294: formatLocalHHmm dual-retired sole (formatCapsuleTime alias) remains separate.
  * Soft residual 1288: Month eventClass translucent + getEventStyle Day/Week layout keep-boundaries remain separate.
  */
 export function calendarEventSourceLabel(
@@ -91,12 +92,12 @@ export function calendarEventSourceLabel(
 
 
 
-/** HH:mm in local time for shell schedule capsule. */
+/**
+ * Residual 1294: formatCapsuleTime dual body retired onto formatLocalHHmm sole.
+ * Thin schedule alias for shell capsule consumers (same HH:mm local padStart contract).
+ */
 export function formatCapsuleTime(ms: number): string {
-  const date = new Date(ms);
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
+  return formatLocalHHmm(ms);
 }
 
 export type ScheduleCapsuleSnapshot = {
