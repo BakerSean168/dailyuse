@@ -63,6 +63,11 @@ function buildDuration(startTime: number, endTime: number) {
   return Math.max(1, Math.round((endTime - startTime) / 60000));
 }
 
+/**
+ * Residual 1246 keep-boundary: app-react describeConflict — English status pill strings.
+ * No conflict / N conflicts detected; not vue-i18n schedule.conflictAlert.* keys.
+ * Soft residual 1246: vue ConflictAlert hasConflict-only + formatSuggestion key duals (no force-merge).
+ */
 function describeConflict(conflicts: ConflictDetectionResult | null) {
   if (!conflicts?.hasConflict) {
     return 'No conflict detected';

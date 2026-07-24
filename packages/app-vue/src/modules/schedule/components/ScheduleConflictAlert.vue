@@ -116,6 +116,12 @@ const emit = defineEmits<Emits>();
 
 const { t, locale } = useI18n();
 
+/**
+ * Residual 1246 keep-boundary: ScheduleConflictAlert conflict summary — i18n noConflict / conflictsDetected.
+ * Full loading/error/no-conflict/has-conflict states; not English describeConflict pill strings.
+ * Soft residual 1246: ConflictAlert hasConflict-only path + formatSuggestion advanceTo family (no force-merge).
+ */
+
 const getSeverityVariant = (severity?: ConflictSeverity): 'default' | 'destructive' | 'outline' => {
   if (severity === ConflictSeverity.Severe) return 'destructive';
   if (severity === ConflictSeverity.Moderate) return 'default';

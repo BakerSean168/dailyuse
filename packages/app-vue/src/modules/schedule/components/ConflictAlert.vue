@@ -92,6 +92,10 @@ function formatDuration(ms: number): string {
   return t('schedule.duration.minutes', { n: minutes });
 }
 
+/**
+ * Soft residual 1246: ConflictAlert conflict summary — conflictsDetected only when hasConflict (no noConflict empty path).
+ * formatSuggestion uses advanceTo/delayTo/shortenTo; differs from ScheduleConflictAlert getSuggestionLabel moveEarlier family.
+ */
 function formatSuggestion(suggestion: ConflictSuggestion): string {
   const startTime = new Date(suggestion.newStartTime).toLocaleTimeString(locale.value, {
     hour: '2-digit',
