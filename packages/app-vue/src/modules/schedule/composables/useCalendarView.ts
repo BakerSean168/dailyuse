@@ -30,7 +30,7 @@ export interface CalendarEventItem {
  * Residual 1282: sole toLocalDateKey — Date | number → YYYY-MM-DD local calendar key.
  * Dual-retired from Day/Week/Month calendar local toDateStr copies.
  * Soft residual 1252: formatDateToYMD Date-only form sole remains separate (storage encoding).
- * Soft residual 1282: getWeekStart Day/Week dual remains co-located (not force-merged).
+ * Soft residual 1285: getWeekStart dual retired onto schedule sole in residual 1285.
  */
 export function toLocalDateKey(value: Date | number): string {
   const date = typeof value === 'number' ? new Date(value) : value;
@@ -39,6 +39,21 @@ export function toLocalDateKey(value: Date | number): string {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+/**
+ * Residual 1285: sole getWeekStart — Monday-start local week (hours zeroed).
+ * Dual-retired from WeekViewCalendar + ScheduleCalendarView local copies.
+ * Soft residual 1282: toLocalDateKey dual-retired sole remains separate.
+ */
+export function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // Monday as week start
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 
 /** HH:mm in local time for shell schedule capsule. */
 export function formatCapsuleTime(ms: number): string {

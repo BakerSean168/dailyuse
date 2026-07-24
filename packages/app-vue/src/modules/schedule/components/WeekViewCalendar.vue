@@ -93,7 +93,7 @@ import { computed } from 'vue';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
+import { getWeekStart, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatHour } from '../../../shared/utils/format-hour';
 
 interface Props {
@@ -137,15 +137,6 @@ const weekDays = computed(() => {
 
 const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
 
-function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Monday as week start
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
 function getDayName(day: number): string {
   const dayKeys = [
     'schedule.calendar.daySun',
@@ -161,6 +152,7 @@ function getDayName(day: number): string {
 
 // Residual 1276: formatHour dual retired onto shared sole.
 // Residual 1282: toDateStr dual retired onto toLocalDateKey sole.
+// Residual 1285: getWeekStart dual retired onto schedule sole.
 /**
  * Residual 1279 keep-boundary: Week formatEventTime — compact "-" between HH:mm (dense week cells).
  * all-day → i18n; padStart local clock (not Intl).

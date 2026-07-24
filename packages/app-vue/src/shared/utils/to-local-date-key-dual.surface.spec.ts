@@ -9,7 +9,7 @@ import { formatDateToYMD } from './format-date-to-ymd';
  * - sole: packages/app-vue/src/modules/schedule/composables/useCalendarView.ts#toLocalDateKey
  * - consumers: DayViewCalendar + WeekViewCalendar + MonthViewCalendar
  * Soft residual 1252: formatDateToYMD dual-retired Date-only form sole remains separate
- * Soft residual 1282: getWeekStart dual (WeekView + ScheduleCalendarView) remains co-located
+ * Soft residual 1285: getWeekStart dual retired onto schedule sole in residual 1285.
  * Does not flip §13.2 checkboxes.
  */
 describe('toLocalDateKey dual retired (residual 1282)', () => {
@@ -60,7 +60,7 @@ describe('toLocalDateKey dual retired (residual 1282)', () => {
     }
   });
 
-  it('soft residual 1252 formatDateToYMD Date-only sole + getWeekStart dual stay separate', () => {
+  it('soft residual 1252 formatDateToYMD Date-only sole stays separate; getWeekStart dual retired 1285', () => {
     expect(formatYmd).toContain('Residual 1252');
     expect(formatYmd).toMatch(/export function formatDateToYMD\b/);
     const ymdBody = formatYmd.match(/export function formatDateToYMD\([\s\S]*?\n\}/)?.[0] ?? '';
@@ -70,12 +70,15 @@ describe('toLocalDateKey dual retired (residual 1282)', () => {
     // Date branch parity without force-merging form sole into calendar key sole
     expect(formatDateToYMD(new Date(2026, 6, 24))).toBe(toLocalDateKey(new Date(2026, 6, 24)));
 
-    expect(week).toMatch(/function getWeekStart\b/);
+    // Residual 1285: getWeekStart dual retired onto schedule sole.
+    expect(week).toContain('Residual 1285');
+    expect(week).not.toMatch(/function getWeekStart\b/);
     const scheduleView = readFileSync(
       resolve(dir, '../../modules/schedule/views/ScheduleCalendarView.vue'),
       'utf8',
     );
-    expect(scheduleView).toMatch(/function getWeekStart\b/);
+    expect(scheduleView).toContain('Residual 1285');
+    expect(scheduleView).not.toMatch(/function getWeekStart\b/);
   });
 
   it('runtime: sole formats Date and ms timestamp to YYYY-MM-DD', () => {
