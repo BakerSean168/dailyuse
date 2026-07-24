@@ -7,7 +7,7 @@ import { formatDateToYMD } from './format-date-to-ymd';
  * Residual 1252: formatDateToYMD dual retired onto app-vue shared sole.
  * - sole: packages/app-vue/src/shared/utils/format-date-to-ymd.ts
  * - consumers: CreateScheduleDialog, TimeConfigSection, ReminderSection, RecurrenceSection
- * Soft residual 1252: parseToDate / parseInputToDate local YYYY-MM-DD→Date helpers stay co-located.
+ * Soft residual 1252/1255: parseToDate dual retired onto shared sole in residual 1255.
  * Soft residual 1249: formatDisplayDate dual-retired sole remains separate.
  * Soft residual 1240: formatDate keep-boundary remains separate (timestamp display).
  * Does not flip §13.2 checkboxes.
@@ -61,12 +61,13 @@ describe('formatDateToYMD dual retired (residual 1252)', () => {
     }
   });
 
-  it('soft residual 1252 local parseToDate/parseInputToDate stay co-located', () => {
-    expect(schedule).toMatch(/function parseToDate\b/);
-    expect(timeConfig).toMatch(/function parseInputToDate\b/);
-    const parseSchedule = schedule.match(/function parseToDate\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(parseSchedule).toContain("dateStr + 'T00:00:00'");
-    expect(parseSchedule).toContain('undefined');
+  it('soft residual 1252 superseded: parseToDate dual retired in residual 1255', () => {
+    // Residual 1255 dual-retired parseToDate/parseInputToDate onto shared sole.
+    expect(schedule).toContain('Residual 1255');
+    expect(schedule).toContain('parse-to-date');
+    expect(schedule).not.toMatch(/function parseToDate\b/);
+    expect(timeConfig).toContain('Residual 1255');
+    expect(timeConfig).not.toMatch(/function parseInputToDate\b/);
   });
 
   it('runtime: sole formats local Date to YYYY-MM-DD', () => {

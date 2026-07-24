@@ -71,7 +71,7 @@
             <PopoverContent class="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                :selected="parseInputToDate(startDate)"
+                :selected="parseToDate(startDate)"
                 @update:model-value="
                   (d: Date | undefined) =>
                     handleCalendarSelect(d, (v) => {
@@ -240,11 +240,12 @@ import {
 import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
 import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
+import { parseToDate } from '../../../../../shared/utils/parse-to-date';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 
 const { t, locale } = useI18n();
 
-// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252).
+// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252); parseInputToDate dual retired onto parseToDate sole (Residual 1255).
 
 const props = withDefaults(
   defineProps<{
@@ -298,11 +299,6 @@ const timeRangeEndMinute = ref<string>('00');
 
 /** Format a YYYY-MM-DD string for display */
 /** Convert a YYYY-MM-DD string to a Date for Calendar :selected */
-function parseInputToDate(dateStr: string): Date | undefined {
-  if (!dateStr) return undefined;
-  return new Date(dateStr + 'T00:00:00');
-}
-
 /** Handle Calendar selection — works with both Date and radix DateValue objects */
 function handleCalendarSelect(date: unknown, setter: (v: string) => void) {
   if (date instanceof Date) {

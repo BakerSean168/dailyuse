@@ -200,6 +200,7 @@ const { t, locale } = useI18n();
 // Residual 1249 / Residual 1252: formatEndDateDisplay dual retired onto formatDisplayDate sole; formatDateToYMD dual retired onto shared sole (Residual 1252).
 
 /** Convert endDate string to Date for Calendar :selected */
+/** Soft residual 1255: endDateAsDate inline YYYY-MM-DD→Date (parseToDate sole available; keep co-located). */
 const endDateAsDate = computed(() => {
   if (!endDate.value) return undefined;
   return new Date(endDate.value + 'T00:00:00');
