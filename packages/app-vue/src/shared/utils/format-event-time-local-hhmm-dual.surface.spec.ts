@@ -59,7 +59,8 @@ describe('formatEventTime local HH:mm dual retired (residual 1300)', () => {
     );
     expect(month).toMatch(/function eventClass\b/);
     expect(month).toContain('bg-warning/15');
-    expect(month).not.toContain('calendarEventBgClass');
+    expect(month).toContain(':class="eventClass(event)"');
+    expect(month).not.toContain(':class="calendarEventBgClass(event)"');
     const dayStyle = dayView.match(/function getEventStyle\([\s\S]*?\n\}/)?.[0] ?? '';
     const weekStyle = weekView.match(/function getEventStyle\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(dayStyle).toContain('px');

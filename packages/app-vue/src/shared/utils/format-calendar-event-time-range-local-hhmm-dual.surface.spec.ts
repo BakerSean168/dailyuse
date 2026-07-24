@@ -56,7 +56,8 @@ describe('formatCalendarEventTimeRange → formatLocalHHmm dual retired (residua
     );
     expect(month).toMatch(/function eventClass\b/);
     expect(month).toContain('bg-warning/15');
-    expect(month).not.toContain('calendarEventBgClass');
+    expect(month).toContain(':class="eventClass(event)"');
+    expect(month).not.toContain(':class="calendarEventBgClass(event)"');
     const dayStyle = day.match(/function getEventStyle\([\s\S]*?\n\}/)?.[0] ?? '';
     const weekStyle = week.match(/function getEventStyle\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(dayStyle).toContain('64');

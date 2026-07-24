@@ -62,7 +62,9 @@ describe('calendarEventBgClass dual retired (residual 1288)', () => {
     expect(month).toMatch(/function eventClass\b/);
     expect(month).toContain('bg-primary/10');
     expect(month).toContain('text-primary');
-    expect(month).not.toContain('calendarEventBgClass');
+    // Residual 1306 may mention calendarEventBgClass in keep-boundary comments only
+    expect(month).toContain(':class="eventClass(event)"');
+    expect(month).not.toContain(':class="calendarEventBgClass(event)"');
 
     const dayStyle = day.match(/function getEventStyle\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(dayStyle).toContain('px');
