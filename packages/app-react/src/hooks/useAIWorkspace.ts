@@ -17,6 +17,11 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'AI request failed';
 }
 
+/**
+ * Residual 1207 keep-boundary: app-react formatMessageTime — fixed Intl zh-CN hour:minute.
+ * AI workspace message clock only; not i18n locale-driven.
+ * Soft residual 1207: app-vue SSE monitor toLocaleTimeString(locale) differs (no force-merge).
+ */
 function formatMessageTime(timestamp: number) {
   return new Intl.DateTimeFormat('zh-CN', {
     hour: '2-digit',

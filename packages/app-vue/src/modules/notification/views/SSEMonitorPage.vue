@@ -110,6 +110,11 @@ function toggleConnection() {
   }
 }
 
+/**
+ * Residual 1207 keep-boundary: app-vue SSE formatMessageTime — i18n locale toLocaleTimeString.
+ * Notification SSE monitor clock; component-local (not fixed zh-CN Intl).
+ * Soft residual 1207: app-react useAIWorkspace formatMessageTime is Intl zh-CN (no force-merge).
+ */
 function formatMessageTime(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString(locale.value);
 }
