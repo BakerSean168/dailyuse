@@ -49,6 +49,10 @@ export function formatTimeToInput(dateObj: Date): string {
   return format(dateObj, 'HH:mm');
 }
 
+/**
+ * Soft residual 1234: utils updateDateKeepTime — mutate Date calendar while keeping clock.
+ * Not epoch merge of free-standing date/time strings; no force-merge with combineDateAndTime/parseTimestamp.
+ */
 export function updateDateKeepTime(dateObj: Date, dateStr: string): Date {
   if (!dateObj || !dateStr) return dateObj;
   const [year, month, day] = dateStr.split('-').map(Number);
@@ -57,6 +61,10 @@ export function updateDateKeepTime(dateObj: Date, dateStr: string): Date {
   return newDate;
 }
 
+/**
+ * Soft residual 1234: utils updateTimeKeepDate — mutate Date clock while keeping calendar.
+ * Companion to updateDateKeepTime; not force-merged with app-react date+time merge keep-boundary.
+ */
 export function updateTimeKeepDate(dateObj: Date, timeStr: string): Date {
   if (!dateObj || !timeStr) return dateObj;
   const [hour, minute] = timeStr.split(':').map(Number);

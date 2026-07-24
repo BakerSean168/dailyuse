@@ -40,6 +40,11 @@ function toTimeInput(timestamp: number | null | undefined) {
   return new Date(timestamp).toISOString().slice(11, 16);
 }
 
+/**
+ * Residual 1234 keep-boundary: app-react schedule parseTimestamp — YMD+HH:mm → epoch|null.
+ * trim; empty either → null; Date.parse(`${date}T${time}:00`); isNaN → null (not local Date ctor).
+ * Soft residual 1234: task combineDateAndTime always-number local path differs (no force-merge).
+ */
 function parseTimestamp(dateValue: string, timeValue: string) {
   const date = dateValue.trim();
   const time = timeValue.trim();

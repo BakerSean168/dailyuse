@@ -57,6 +57,11 @@ function toTimeInput(timestamp: number | null) {
   return `${hours}:${minutes}`;
 }
 
+/**
+ * Residual 1234 keep-boundary: app-react task combineDateAndTime — YMD+HH:mm → local epoch ms.
+ * Local Date(y,m-1,d,h,min) constructor; always returns number (no empty/NaN null path).
+ * Soft residual 1234: schedule parseTimestamp trim+Date.parse+null differs (no force-merge).
+ */
 function combineDateAndTime(dateValue: string, timeValue: string) {
   const [year, month, day] = dateValue.split('-').map(Number);
   const [hours, minutes] = timeValue.split(':').map(Number);
