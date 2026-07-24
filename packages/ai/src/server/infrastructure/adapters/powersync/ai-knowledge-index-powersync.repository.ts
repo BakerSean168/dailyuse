@@ -14,7 +14,7 @@ import {
   toChunkArray,
   toNumberArray,
   toStringArray,
-  tokenize,
+  scoreIndexedResource,
 } from '../knowledge-index-value-helpers';
 
 const KNOWLEDGE_INDEX_KEY = 'aiKnowledgeIndex';
@@ -103,40 +103,7 @@ function resolveMimeType(metadata: Record<string, unknown>, fallbackType: string
   return 'text/plain';
 }
 
-function scoreIndexedResource(resource: KnowledgeIndexedNote, query: string): number {
-  const trimmedQuery = query.trim().toLowerCase();
-  if (trimmedQuery.length === 0) {
-    return 1;
-  }
-
-  const tokens = new Set(tokenize(trimmedQuery));
-  const keywordSet = new Set(resource.keywords.map((keyword) => keyword.toLowerCase()));
-  const haystack =
-    `${resource.title ?? ''} ${resource.resourcePath} ${resource.summary} ${resource.keywords.join(' ')}`.toLowerCase();
-  let score = 0;
-
-  for (const token of tokens) {
-    if (keywordSet.has(token)) {
-      score += 3;
-      continue;
-    }
-    if (haystack.includes(token)) {
-      score += 1;
-    }
-  }
-
-  if ((resource.title ?? '').toLowerCase().includes(trimmedQuery)) {
-    score += 3;
-  }
-  if (resource.resourcePath.toLowerCase().includes(trimmedQuery)) {
-    score += 2;
-  }
-  if (resource.summary.toLowerCase().includes(trimmedQuery)) {
-    score += 2;
-  }
-
-  return score;
-}
+/** Soft residual 1195: scoreIndexedResource dual retired onto knowledge-index-value-helpers sole. */
 
 export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepository {
   constructor(private readonly db: IElectronDatabase) {}

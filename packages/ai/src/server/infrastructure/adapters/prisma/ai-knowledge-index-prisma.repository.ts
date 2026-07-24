@@ -19,7 +19,7 @@ import {
   toChunkArray,
   toNumberArray,
   toStringArray,
-  tokenize,
+  scoreIndexedResource,
 } from '../knowledge-index-value-helpers';
 
 const RETRIEVAL_VECTOR_DIMENSION = 48;
@@ -82,44 +82,7 @@ function mapEntryRowToIndexedResource(
   } satisfies KnowledgeIndexedNote;
 }
 
-function scoreIndexedResource(
-  resource: KnowledgeIndexedNote,
-  query: string,
-  semanticScore = 0,
-): number {
-  const trimmedQuery = query.trim().toLowerCase();
-  if (trimmedQuery.length === 0) {
-    return semanticScore > 0 ? semanticScore : 1;
-  }
-
-  const tokens = new Set(tokenize(trimmedQuery));
-  const keywordSet = new Set(resource.keywords.map((keyword) => keyword.toLowerCase()));
-  const haystack =
-    `${resource.title ?? ''} ${resource.resourcePath} ${resource.summary} ${resource.keywords.join(' ')}`.toLowerCase();
-  let score = 0;
-
-  for (const token of tokens) {
-    if (keywordSet.has(token)) {
-      score += 3;
-      continue;
-    }
-    if (haystack.includes(token)) {
-      score += 1;
-    }
-  }
-
-  if ((resource.title ?? '').toLowerCase().includes(trimmedQuery)) {
-    score += 3;
-  }
-  if (resource.resourcePath.toLowerCase().includes(trimmedQuery)) {
-    score += 2;
-  }
-  if (resource.summary.toLowerCase().includes(trimmedQuery)) {
-    score += 2;
-  }
-
-  return score + semanticScore * 4;
-}
+/** Soft residual 1195: scoreIndexedResource dual retired onto knowledge-index-value-helpers sole. */
 
 function buildRetrievalEmbeddingSource(resource: KnowledgeIndexedNote): string {
   return [

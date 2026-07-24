@@ -8521,6 +8521,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-23（阶段 6 残留一千一百九十四轮）：§13.2 **诚实证据 tip 刷新**（仍不打勾）——
 > tip 指针 Residual 1193：**359 文件 / 1548 测试** + GOV_EXIT:0；再确认 3 项仍为部分/外部阻塞；
 > open-items surface Residual 1194 锁。
+> 续进展 2026-07-23（阶段 6 残留一千一百九十五轮）：**scoreIndexedResource dual 收口**（仍不打勾）——
+> knowledge-index-value-helpers：sole lexical + optional semanticScore boost；
+> Prisma hybrid + PowerSync 仓储本地 dual body 删除，import sole；
+> surface Residual 1195 锁（知识索引打分 dual 收口）。
 
 
 
@@ -9897,6 +9901,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百九十二轮：retire delay dual onto utils frontend sole (desktop IPC test-helpers/setup + web E2E runner; no local bodies).
   残留一千一百九十三轮：§13.2 focused evidence suite re-run (1548 tests, residuals 250–1192 locks, no checkbox changes)。
   残留一千一百九十四轮：§13.2 evidence tip refresh (1193 tip 359/1548) + open-items surface lock (no checkbox flips).
+  残留一千一百九十五轮：retire scoreIndexedResource dual onto knowledge-index-value-helpers sole (Prisma semanticScore + PowerSync lexical).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -10524,6 +10529,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百九十二轮：retire delay dual onto utils frontend sole（desktop IPC test-helpers/setup + web E2E runner；不保留本地 body）。
   残留一千一百九十三轮：§13.2 focused evidence suite re-run（1548 tests，residuals 250–1192 锁；不改 checkbox）。
   残留一千一百九十四轮：§13.2 evidence tip 刷新（1193 tip 359/1548）+ open-items surface 锁（不改 checkbox）。
+  残留一千一百九十五轮：retire scoreIndexedResource dual onto knowledge-index-value-helpers sole（Prisma semanticScore + PowerSync lexical）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11763,6 +11769,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百九十二轮：delay dual 收口 surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千一百九十三轮：tip 上 1548 项 focused evidence suite（含 residual 250–1192 delay dual 收口锁）通过；仍不构成全量 PR 门禁证据。
   残留一千一百九十四轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留一千一百九十五轮：scoreIndexedResource dual 收口 surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

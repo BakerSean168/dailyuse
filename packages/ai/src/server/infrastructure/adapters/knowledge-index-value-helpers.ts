@@ -3,9 +3,10 @@
  * toStringArray / toNumberArray / tokenize / toChunkArray duals retired.
  * Residual 1109 keep-boundary: toStringArray keeps empty strings (no trim).
  * Soft residual 1109: goal-planning trims/non-empty; data-portability parseJsonField first (no force-merge).
+ * Residual 1195: scoreIndexedResource dual retired (Prisma semanticScore + PowerSync lexical).
  */
 
-import type { KnowledgeIndexedChunk } from '../../application/ports';
+import type { KnowledgeIndexedChunk, KnowledgeIndexedNote } from '../../application/ports';
 
 // Residual 1109 keep-boundary: array filter typeof string only (keeps empty; no trim; no JSON parse).
 export function toStringArray(value: unknown): string[] {
@@ -51,3 +52,48 @@ export function toChunkArray(value: unknown): KnowledgeIndexedChunk[] {
     })
     .filter((item): item is KnowledgeIndexedChunk => item !== null && item.content.length > 0);
 }
+
+/**
+ * Residual 1195: sole knowledge-index scoreIndexedResource.
+ * Lexical keyword/path/title/summary scoring; optional semanticScore boost (Prisma hybrid).
+ * Empty query → semanticScore if > 0 else 1.
+ */
+export function scoreIndexedResource(
+  resource: KnowledgeIndexedNote,
+  query: string,
+  semanticScore = 0,
+): number {
+  const trimmedQuery = query.trim().toLowerCase();
+  if (trimmedQuery.length === 0) {
+    return semanticScore > 0 ? semanticScore : 1;
+  }
+
+  const tokens = new Set(tokenize(trimmedQuery));
+  const keywordSet = new Set(resource.keywords.map((keyword) => keyword.toLowerCase()));
+  const haystack =
+    `${resource.title ?? ''} ${resource.resourcePath} ${resource.summary} ${resource.keywords.join(' ')}`.toLowerCase();
+  let score = 0;
+
+  for (const token of tokens) {
+    if (keywordSet.has(token)) {
+      score += 3;
+      continue;
+    }
+    if (haystack.includes(token)) {
+      score += 1;
+    }
+  }
+
+  if ((resource.title ?? '').toLowerCase().includes(trimmedQuery)) {
+    score += 3;
+  }
+  if (resource.resourcePath.toLowerCase().includes(trimmedQuery)) {
+    score += 2;
+  }
+  if (resource.summary.toLowerCase().includes(trimmedQuery)) {
+    score += 2;
+  }
+
+  return score + semanticScore * 4;
+}
+
