@@ -7,7 +7,7 @@ import { calendarEventSourceLabel } from '../../modules/schedule/composables/use
  * Residual 1291: sourceLabel dual retired onto schedule calendarEventSourceLabel sole.
  * - sole: packages/app-vue/src/modules/schedule/composables/useCalendarView.ts#calendarEventSourceLabel
  * - consumers: DayDetailSheet + EventDetailSheet
- * Soft residual 1291: formatCapsuleTime / multi-site HH:mm padStart keep-boundary remains separate
+ * Soft residual 1294: formatLocalHHmm dual-retired sole (formatCapsuleTime alias) remains separate
  * Soft residual 1288: Month eventClass + getEventStyle Day/Week layout keep-boundaries remain separate
  * Does not flip §13.2 checkboxes.
  */
@@ -51,12 +51,17 @@ describe('calendarEventSourceLabel dual retired (residual 1291)', () => {
     }
   });
 
-  it('soft residual 1291 formatCapsuleTime HH:mm sole stays separate from source labels', () => {
+  it('soft residual 1294 formatLocalHHmm dual-retired sole stays separate from source labels', () => {
+    // Residual 1294: formatCapsuleTime is thin alias onto formatLocalHHmm sole.
     expect(sole).toMatch(/export function formatCapsuleTime\b/);
-    expect(sole).toContain("padStart(2, '0')");
     const cap = sole.match(/export function formatCapsuleTime\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(cap).toContain('getHours');
+    expect(cap).toContain('formatLocalHHmm');
     expect(cap).not.toContain('schedule.source');
+    expect(sole).toContain('Residual 1294');
+    const hhmm = readFileSync(resolve(dir, 'format-local-hhmm.ts'), 'utf8');
+    expect(hhmm).toContain('Residual 1294');
+    expect(hhmm).toMatch(/export function formatLocalHHmm\b/);
+    expect(hhmm).toContain("padStart(2, '0')");
   });
 
   it('runtime: sole maps source keys through translate', () => {
