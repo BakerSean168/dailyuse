@@ -8,7 +8,7 @@ import { formatCapsuleTime } from '../../modules/schedule/composables/useCalenda
  * Residual 1294: multi-site HH:mm padStart dual retired onto formatLocalHHmm sole.
  * - sole: packages/app-vue/src/shared/utils/format-local-hhmm.ts
  * - consumers: formatCapsuleTime alias, ReminderCapsulePreview formatTime, UpcomingRemindersWidget formatReminderTime
- * Soft residual 1237: dashboard/goal formatTime keep-boundaries remain separate
+ * Soft residual 1237: dashboard relative i18n keep-boundary remains (Residual 1309 composes absolute HH:mm only)
  * Does not flip §13.2 checkboxes.
  */
 describe('formatLocalHHmm dual retired (residual 1294)', () => {
@@ -65,7 +65,11 @@ describe('formatLocalHHmm dual retired (residual 1294)', () => {
     );
     expect(dashboard).toMatch(/function formatTime\b/);
     expect(dashboard).toContain('dashboard.time');
-    expect(dashboard).not.toContain('formatLocalHHmm');
+    expect(dashboard).toContain("t('dashboard.time.justNow')");
+    // Residual 1309: absolute branch may compose formatLocalHHmm; relative i18n stays local.
+    const body = dashboard.match(/function formatTime\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(body).toContain('dashboard.time');
+    expect(body).not.toContain('date-fns');
   });
 
   it('runtime: sole and formatCapsuleTime alias agree on local HH:mm', () => {

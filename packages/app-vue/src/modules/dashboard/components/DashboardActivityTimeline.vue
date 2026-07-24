@@ -26,6 +26,7 @@ import {
   TrendingUp,
 } from '@lucide/vue';
 import type { ActivityItem } from '@dailyuse/contracts/dashboard';
+import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 
 withDefaults(
   defineProps<{
@@ -41,7 +42,8 @@ const open = ref(false);
 
 /**
  * Residual 1237 keep-boundary: dashboard formatTime — relative i18n + short m/d HH:mm.
- * justNow/minutesAgo/hoursAgo via t('dashboard.time.*'); older → local m/d HH:mm padStart.
+ * justNow/minutesAgo/hoursAgo via t('dashboard.time.*'); older → local m/d + HH:mm.
+ * Residual 1309: absolute HH:mm dual retired onto formatLocalHHmm sole (relative i18n keep-boundary remains).
  * Soft residual 1237: setting relative+toLocaleString, goal date-fns/toLocaleString, capsule HH:mm differ (no force-merge).
  */
 function formatTime(ts: number): string {
@@ -55,7 +57,7 @@ function formatTime(ts: number): string {
   if (diff < 86_400_000) {
     return t('dashboard.time.hoursAgo', { count: Math.floor(diff / 3_600_000) });
   }
-  return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  return `${date.getMonth() + 1}/${date.getDate()} ${formatLocalHHmm(ts)}`;
 }
 
 function activityIcon(type: string) {
