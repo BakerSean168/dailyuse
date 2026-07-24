@@ -239,10 +239,12 @@ import {
 } from '@lucide/vue';
 import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
+import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';
 
 const { t, locale } = useI18n();
 
 // Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252).
+// Residual 1270: handleAbsoluteDateSelect Date/toDate dual retired onto handleCalendarSelect sole; absoluteTime composition stays co-located.
 
 // 类型别名
 const ReminderType = TaskReminderType;
@@ -278,14 +280,14 @@ function getAbsoluteCalendarDate(ts?: number | null): Date | undefined {
 }
 
 /** Handle calendar date selection for absolute time trigger */
+/** Residual 1270: Date/toDate dual retired onto handleCalendarSelect sole. */
+/** Soft residual 1270: absoluteTime hour/minute composition remains co-located (no force-merge into sole). */
 function handleAbsoluteDateSelect(index: number, date: unknown) {
-  let dateStr: string;
-  if (date instanceof Date) {
-    /* Soft residual 1258: Reminder calendar select inline (no handleCalendarSelect sole). */
-    dateStr = formatDateToYMD(date);
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    dateStr = formatDateToYMD((date as { toDate: () => Date }).toDate());
-  } else {
+  let dateStr = '';
+  handleCalendarSelect(date, (value) => {
+    dateStr = value;
+  });
+  if (!dateStr) {
     triggers.value[index].absoluteTime = null;
     updateTriggers();
     return;

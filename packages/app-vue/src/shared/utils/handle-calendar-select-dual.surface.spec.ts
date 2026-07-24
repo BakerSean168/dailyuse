@@ -6,9 +6,8 @@ import { handleCalendarSelect } from './handle-calendar-select';
 /**
  * Residual 1258: handleCalendarSelect dual retired onto app-vue shared sole.
  * - sole: packages/app-vue/src/shared/utils/handle-calendar-select.ts
- * - consumers: CreateScheduleDialog, TimeConfigSection, RecurrenceSection (Residual 1267)
- * Soft residual 1258 / 1267:
- * - ReminderSection inline calendar → dateStr+timestamp path
+ * - consumers: CreateScheduleDialog, TimeConfigSection, RecurrenceSection (1267), ReminderSection (1270)
+ * Soft residual 1270: Reminder absoluteTime hour/minute composition remains co-located
  * Soft residual 1267: Recurrence handleEndDateCalendarSelect dual-retired onto sole.
  * Soft residual 1252: formatDateToYMD dual-retired sole remains separate.
  * Soft residual 1255: parseToDate dual-retired sole remains separate.
@@ -67,11 +66,17 @@ describe('handleCalendarSelect dual retired (residual 1258)', () => {
     expect(endBody).not.toContain('formatDateToYMD');
   });
 
-  it('soft residual 1258/1267 reminder calendar path stays separate', () => {
-    expect(reminder).toContain('Soft residual 1258');
-    expect(reminder).toContain('formatDateToYMD(date)');
-    expect(reminder).not.toContain('handle-calendar-select');
-    expect(reminder).not.toMatch(/function handleCalendarSelect\b/);
+  it('Residual 1270 reminder calendar Date/toDate dual retired onto sole; composition soft', () => {
+    expect(reminder).toContain('Residual 1270');
+    expect(reminder).toContain('handle-calendar-select');
+    expect(reminder).toContain('handleCalendarSelect');
+    expect(reminder).toMatch(/function handleAbsoluteDateSelect\b/);
+    const body = reminder.match(/function handleAbsoluteDateSelect\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(body).toContain('handleCalendarSelect');
+    expect(body).toContain('absoluteTime');
+    expect(body).not.toContain('instanceof Date');
+    expect(body).not.toContain('formatDateToYMD(date)');
+    expect(reminder).toContain('Soft residual 1270');
   });
 
   it('runtime: sole Date / toDate / empty contracts', () => {

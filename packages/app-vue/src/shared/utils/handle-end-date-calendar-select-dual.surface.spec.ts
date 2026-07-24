@@ -7,8 +7,8 @@ import { handleCalendarSelect } from './handle-calendar-select';
  * Residual 1267: handleEndDateCalendarSelect dual retired onto handleCalendarSelect sole.
  * - sole: packages/app-vue/src/shared/utils/handle-calendar-select.ts (Residual 1258)
  * - consumer: RecurrenceSection handleEndDateCalendarSelect → setter(endDate ref)
- * Soft residual 1267 / 1258:
- * - ReminderSection inline calendar dateStr + absoluteTime composition (no force-merge)
+ * Soft residual 1270: Reminder absoluteTime hour/minute composition remains co-located
+ * Residual 1270: Reminder Date/toDate dual retired onto handleCalendarSelect sole.
  * Soft residual 1255: endDateAsDate inline YYYY-MM-DD→Date remains co-located
  * Soft residual 1252: formatDateToYMD dual-retired sole remains separate
  * Does not flip §13.2 checkboxes.
@@ -45,12 +45,16 @@ describe('handleEndDateCalendarSelect dual retired (residual 1267)', () => {
     expect(recurrence).not.toContain("from '../../../../../shared/utils/format-date-to-ymd'");
   });
 
-  it('soft residual 1267 reminder calendar composition stays separate', () => {
-    expect(reminder).toContain('Soft residual 1258');
-    expect(reminder).toContain('formatDateToYMD(date)');
+  it('soft residual 1270 reminder absoluteTime composition stays co-located after Date dual-retire', () => {
+    expect(reminder).toContain('Residual 1270');
+    expect(reminder).toContain('handle-calendar-select');
+    expect(reminder).toContain('Soft residual 1270');
     expect(reminder).toContain('absoluteTime');
-    expect(reminder).not.toContain('handle-calendar-select');
-    expect(reminder).not.toContain('Residual 1267');
+    const body = reminder.match(/function handleAbsoluteDateSelect\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(body).toContain('handleCalendarSelect');
+    expect(body).toContain('getAbsoluteHour');
+    expect(body).toContain('getAbsoluteMinute');
+    expect(body).not.toContain('instanceof Date');
   });
 
   it('runtime: sole setter path still maps Date / empty for endDate-style use', () => {
