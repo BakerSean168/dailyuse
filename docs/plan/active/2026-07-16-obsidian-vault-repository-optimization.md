@@ -9348,6 +9348,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 缺 INSTALLATION_ID fail-fast（拒 PAT）。**外部阻塞**仍为浏览器安装同意：
 > https://github.com/apps/memoflow-dev-test/installations/new 。§13.2 **12 [x] / 3 [ ]** 不改 checkbox。
 > 状态保持 **实施中**；PR 就绪仍为否。SCRATCH：`/tmp/grok-goal-c4fbe856261c/implementer/`。
+> 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — verification plan re-run）：凭据盘检 OK；
+> install count 仍 0（EXTERNAL_BLOCK_BROWSER_CONSENT）；live-github fail-fast + preflight OK；
+> residual suites：goal-workflow 8/8、repo GitHub 46/46、desktop guest e2e 1/1、web auth 5/5；
+> open-items 3/3 + governance GOV_EXIT:0。§13.2 **12 [x] / 3 [ ]** 不改 checkbox；PR readiness no。
+> 安装：https://github.com/apps/memoflow-dev-test/installations/new
 
 
 
@@ -13104,6 +13109,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - `desktop:test:live-github` 缺 `GITHUB_TEST_INSTALLATION_ID` 时 fail-fast（shipped message，拒 PAT）——预期红，非伪造。
   - 仍需浏览器安装同意（选 fixture 仓）：https://github.com/apps/memoflow-dev-test/installations/new
   - §13.2 仍 **12 [x] / 3 [ ]**，**不改 checkbox**；PR readiness 仍为 no。
+
+  残留一千三百三十三轮续（verification plan re-run + residual suites green）：
+  - 凭据盘检 OK：`~/.config/memoflow/{github-app-credentials.json,github-app.env,github-app.pem}` mode 600；App id 4385206 slug memoflow-dev-test；repo gitignored `.env.*.local` 已接线 OAuth/App + fixture 仓，**无** INSTALLATION_ID。
+  - install 轮询仍 **0**；installation-metadata 写入 SCRATCH（无 secret）；`gh` user token 不能创建 App install（需浏览器同意）。
+  - 真实路径：JWT `GET /app` 200；假 installation token 404 fail-closed；`desktop:test:live-github` 缺 INSTALLATION_ID fail-fast（拒 PAT）；`runtime:preflight --profile e2e` OK。
+  - residual suites 复验：goal-workflow **8/8**；repository GitHub **46/46**；desktop guest unit **15**；desktop guest e2e xvfb **1/1**；web auth login+password+register **5/5**。
+  - open-items **3/3** + governance-check **GOV_EXIT:0**；§13.2 **12 [x] / 3 [ ]**，**不改 checkbox**；PR readiness 仍为 no。
+  - 安装仍需浏览器：https://github.com/apps/memoflow-dev-test/installations/new （fixture `BakerSean168/memoflow-github-app-e2e-fixture`）。
+
 
 ## 14. 相关资料
 
