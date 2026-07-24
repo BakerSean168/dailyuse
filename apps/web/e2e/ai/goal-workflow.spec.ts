@@ -93,6 +93,51 @@ async function seedAiLocalState(
  * Real JWT via register/login, then AI route mocks, then optional AI local state, then navigate.
  * Mocks are installed after auth so register/login/settings are not blocked incorrectly.
  */
+
+/**
+ * Residual 1333: Vue-controlled composer uses :value + @input.
+ * Wait for model readiness, drive input via fill+input event, and assert SSE completes
+ * so hasWorkflowUserMessages/chatLoading unlock Start Agent / knowledge actions.
+ */
+async function sendComposerMessage(page: Page, message: string): Promise<void> {
+  const composer = page.getByTestId('ai-chat-composer');
+  await expect(composer).toBeEnabled({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  // Model select populated → canSendMessage can become true once text is non-empty.
+  await expect(page.getByTestId('ai-chat-empty-models')).toHaveCount(0, {
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+
+  await composer.click();
+  await composer.fill(message);
+  await expect(composer).toHaveValue(message);
+
+  const sendButton = page.getByTestId('ai-chat-send-message');
+  await expect(sendButton).toBeEnabled({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+
+  const sseResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes('/ai/assistant/dispatch/sse') &&
+      response.request().method() === 'POST' &&
+      response.status() === 200,
+    { timeout: TIMEOUT_CONFIG.NAVIGATION },
+  );
+  await sendButton.click();
+  await sseResponse;
+
+  // Composer clears after a successful Host open-chat turn starts.
+  await expect(composer).toHaveValue('', {
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  // Stop button disappears once chatLoading clears (stream closed + finally).
+  await expect(page.getByTestId('ai-chat-stop-generating')).toHaveCount(0, {
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
 async function bootstrapGoalWorkflowSession(
   page: Page,
   options: GoalWorkflowSessionOptions = {},
@@ -117,6 +162,13 @@ async function bootstrapGoalWorkflowSession(
 
   await page.goto(WEB_CONFIG.getFullUrl(landingPath), {
     waitUntil: 'domcontentloaded',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+
+  // Cold Vite main-app graph often exceeds ELEMENT_WAIT (10s); wait for shell mount
+  // before tests assert AI controls (see residual goal-workflow splash flake).
+  await page.getByTestId('ai-chat-view').waitFor({
+    state: 'visible',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
 
@@ -157,10 +209,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await expect(composer).toBeVisible();
-    await composer.fill('How should knowledge answers stay grounded in citations?');
-    await page.getByTestId('ai-chat-send-message').click();
+    await sendComposerMessage(
+      page,
+      'How should knowledge answers stay grounded in citations?',
+    );
 
     await expect(page.getByTestId('knowledge-qa-ask')).toBeEnabled({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
@@ -186,9 +238,13 @@ test.describe('AI Goal Workflow', () => {
     await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
 
     await page.reload({ waitUntil: 'domcontentloaded' });
+    // Full main-app remount after reload needs NAVIGATION budget (same as bootstrap).
+    await expect(page.getByTestId('ai-chat-view')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
+    });
 
     await expect(agentPanel).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
     await expect(agentPanel).toContainText(/waiting_approval/i);
     await expect(agentPanel).toContainText(/Runtime restored Agent workspace/i);
@@ -204,11 +260,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-goal-create').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill(
+    await sendComposerMessage(
+      page,
       'Create a structured AI workflow goal through the Agent runtime and execute the approved plan.',
     );
-    await page.getByTestId('ai-chat-send-message').click();
 
     const startButton = page.getByTestId('goal-agent-start-run');
     await expect(startButton).toBeEnabled({
@@ -277,9 +332,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill('How should knowledge answers stay grounded in citations?');
-    await page.getByTestId('ai-chat-send-message').click();
+    await sendComposerMessage(
+      page,
+      'How should knowledge answers stay grounded in citations?',
+    );
 
     const askButton = page.getByTestId('knowledge-qa-ask');
     await expect(askButton).toBeEnabled({
@@ -324,11 +380,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-generate').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill(
+    await sendComposerMessage(
+      page,
       'Turn this planning conversation into a reusable knowledge note about agent checkpoints.',
     );
-    await page.getByTestId('ai-chat-send-message').click();
 
     const draftButton = page.getByTestId('knowledge-note-agent-start-run');
     await expect(draftButton).toBeEnabled({
@@ -361,9 +416,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill('What does my repository say about the unindexed archive migration plan?');
-    await page.getByTestId('ai-chat-send-message').click();
+    await sendComposerMessage(
+      page,
+      'What does my repository say about the unindexed archive migration plan?',
+    );
 
     const askButton = page.getByTestId('knowledge-qa-ask');
     await expect(askButton).toBeEnabled({
@@ -399,11 +455,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-goal-create').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill(
+    await sendComposerMessage(
+      page,
       'Create a structured AI workflow goal through the Agent runtime and cancel before approving execution.',
     );
-    await page.getByTestId('ai-chat-send-message').click();
 
     const startButton = page.getByTestId('goal-agent-start-run');
     await expect(startButton).toBeEnabled({
@@ -1169,6 +1224,10 @@ async function installGoalWorkflowMocks(
 
     const body = route.request().postDataJSON() as { name?: string };
     conversationName = body.name || conversationName;
+    // Residual 1333: after create, listConversations must return this id.
+    // Otherwise loadConversationList after open-chat completion calls
+    // startNewConversation() and wipes hasWorkflowUserMessages.
+    generateGoalStep = Math.max(generateGoalStep, 1);
 
     await fulfillJson(route, {
       id: conversationId,
@@ -1226,61 +1285,176 @@ async function installGoalWorkflowMocks(
     await route.continue();
   });
 
+  // Residual 1333: seed open-chat timeline messages so post-send listConversations
+  // / selectConversation reloads do not erase hasWorkflowUserMessages.
+  const openChatMessages: Array<{
+    id: string;
+    conversationId: string;
+    role: string;
+    content: string;
+    createdAt: number;
+  }> = [];
+
   await page.route(
     '**/api/v1/ai/chat/messages?conversationId=*&page=*&pageSize=*',
     async (route) => {
       await fulfillJson(route, {
-        data: [],
-        total: 0,
+        data: openChatMessages,
+        total: openChatMessages.length,
         page: 1,
         pageSize: 80,
       });
     },
   );
 
-  await page.route('**/api/v1/ai/chat/messages/sse', async (route) => {
-    const request = route.request().postDataJSON() as { content?: string };
+  // Residual 1333: open chat + Host proposal lifecycle use AssistantFacade SSE
+  // (`/ai/assistant/dispatch/sse`), not legacy chat/messages/sse. Missing mocks leave
+  // chatLoading stuck and block confirm/cancel (dispatchHostProposalDecision fails closed).
+  await page.route('**/api/v1/ai/assistant/dispatch/sse', async (route) => {
+    const request = (route.request().postDataJSON() ?? {}) as {
+
+      type?: string;
+      content?: string;
+      runId?: string;
+      conversationId?: string;
+      proposalId?: string;
+      revision?: number;
+      reason?: string;
+    };
+    const fulfillSse = async (assistantEvents: Record<string, unknown>[]) => {
+      // Match AIAssistantHttpAdapter unit fixtures: event/data pairs terminated by \n\n.
+      // Explicit content-length so Chromium closes the fetch body (chunked/keep-alive
+      // without a length can leave parseSSE waiting and stick chatLoading).
+      const frames: string[] = [];
+      for (const event of assistantEvents) {
+        frames.push(
+          `event: assistant\ndata: ${JSON.stringify(event)}\n\n`,
+        );
+      }
+      frames.push(
+        `event: done\ndata: ${JSON.stringify({ eventCount: assistantEvents.length })}\n\n`,
+      );
+      const body = frames.join('');
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream; charset=utf-8',
+        body,
+        headers: {
+          'cache-control': 'no-cache',
+          'content-length': String(Buffer.byteLength(body, 'utf8')),
+          connection: 'close',
+        },
+      });
+    };
+
+    if (request.type === 'cancel_run') {
+      await fulfillSse([
+        {
+          type: 'run.cancelled',
+          runId: request.runId ?? 'run-e2e-open-chat',
+        },
+      ]);
+      return;
+    }
+
+    if (request.type === 'approve_proposal') {
+      const revision = (request.revision ?? 1) + 0;
+      await fulfillSse([
+        {
+          type: 'proposal.approved',
+          runId: request.runId ?? 'run-e2e',
+          proposalId: request.proposalId ?? 'proposal-e2e',
+          revision,
+        },
+      ]);
+      return;
+    }
+
+    if (request.type === 'reject_proposal') {
+      const revision = request.revision ?? 1;
+      await fulfillSse([
+        {
+          type: 'proposal.rejected',
+          runId: request.runId ?? 'run-e2e',
+          proposalId: request.proposalId ?? 'proposal-e2e',
+          revision,
+          reason: request.reason ?? 'user_cancel',
+        },
+      ]);
+      return;
+    }
+
+    if (request.type === 'revise_proposal') {
+      const revision = (request.revision ?? 1) + 1;
+      await fulfillSse([
+        {
+          type: 'proposal.revised',
+          runId: request.runId ?? 'run-e2e',
+          proposalId: request.proposalId ?? 'proposal-e2e',
+          revision,
+        },
+      ]);
+      return;
+    }
+
     const userContent = request.content ?? '';
-    const payload = [
-      'event: message',
-      'data: {"role":"assistant","content":"先把目标拆清楚，我会帮你补全 workflow。"}',
-      '',
-      'event: done',
-      `data: ${JSON.stringify({
+    const runId = request.runId ?? 'run-e2e-open-chat';
+    const assistantContent = '先把目标拆清楚，我会帮你补全 workflow。';
+    const now = Date.now();
+    const convId = request.conversationId ?? conversationId;
+    const userMsgId = `msg-user-${openChatMessages.length + 1}`;
+    const assistantMsgId = `msg-assistant-${openChatMessages.length + 1}`;
+    if (userContent.trim()) {
+      openChatMessages.push({
+        id: userMsgId,
+        conversationId: convId,
+        role: 'user',
+        content: userContent,
+        createdAt: now,
+      });
+      openChatMessages.push({
+        id: assistantMsgId,
+        conversationId: convId,
+        role: 'assistant',
+        content: assistantContent,
+        createdAt: now + 1,
+      });
+    }
+    // Ensure conversation appears in list after first open-chat turn.
+    generateGoalStep = Math.max(generateGoalStep, 1);
+    await fulfillSse([
+      {
+        type: 'run.started',
+        runId,
+        engineId: 'engine.direct_turn',
+        profile: 'direct_turn',
+      },
+      {
+        type: 'message.delta',
+        runId,
+        content: assistantContent,
+      },
+      {
+        type: 'message.completed',
+        runId,
+        status: 'completed',
+        content: assistantContent,
         userMessage: {
-          id: 'msg-user-1',
-          conversationId,
+          id: userMsgId,
+          conversationId: convId,
           role: 'user',
           content: userContent,
-          createdAt: Date.now(),
+          createdAt: now,
         },
         assistantMessage: {
-          id: 'msg-assistant-1',
-          conversationId,
+          id: assistantMsgId,
+          conversationId: convId,
           role: 'assistant',
-          content: '先把目标拆清楚，我会帮你补全 workflow。',
-          createdAt: Date.now(),
+          content: assistantContent,
+          createdAt: now + 1,
         },
-        tokenUsage: {
-          promptTokens: 120,
-          completionTokens: 36,
-          totalTokens: 156,
-        },
-        providerId: 'provider-e2e-openai',
-        processingTimeMs: 120,
-      })}`,
-      '',
-    ].join('\n');
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'text/event-stream',
-      body: payload,
-      headers: {
-        'cache-control': 'no-cache',
-        connection: 'keep-alive',
       },
-    });
+    ]);
   });
 
   await page.route('**/api/v1/ai/knowledge/query', async (route) => {
@@ -1373,17 +1547,21 @@ async function installGoalWorkflowMocks(
         topic?: string;
         title?: string;
         source?: string;
+        // Residual 1333: client AgentStartRun uses snake_case provider_id (Host contract).
+        provider_id?: string;
         providerId?: string;
         model?: string;
       };
     };
+    const requestProviderId = request.input?.provider_id ?? request.input?.providerId;
+    const requestModel = request.input?.model;
 
     if (request.agentType === 'goal.create') {
       telemetry.goalAgentStartCount += 1;
       telemetry.lastGoalAgentStart = {
         idea: request.input?.idea,
-        providerId: request.input?.providerId,
-        model: request.input?.model,
+        providerId: requestProviderId,
+        model: requestModel,
       };
 
       const mockRun = createGoalAgentMockRun(request);
@@ -1393,7 +1571,7 @@ async function installGoalWorkflowMocks(
     }
 
     if (request.agentType === 'knowledge.qa') {
-      expect(request.input?.providerId).toBe('provider-e2e-openai');
+      expect(requestProviderId).toBe('provider-e2e-openai');
       expect(request.input?.question).toBeTruthy();
 
       const question = request.input?.question ?? '';
@@ -1483,8 +1661,8 @@ async function installGoalWorkflowMocks(
       return;
     }
 
-    expect(request.input?.providerId).toBe('provider-e2e-openai');
-    expect(request.input?.model).toBe('gpt-4.1-mini');
+    expect(requestProviderId).toBe('provider-e2e-openai');
+    expect(requestModel).toBe('gpt-4.1-mini');
 
     const source = request.input?.source ?? '';
     const isConversationDraft = source.includes('reusable knowledge note about agent checkpoints');
@@ -1609,14 +1787,18 @@ async function installGoalWorkflowMocks(
     });
   });
 
-  await page.route('**/api/v1/ai/agents/runs/*/resume', async (route) => {
+  // Match absolute and relative resume URLs (Vite proxy + direct API).
+  await page.route(/\/api\/v1\/ai\/agents\/runs\/[^/]+\/resume(?:\?|$)/, async (route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
       return;
     }
 
     const url = new URL(route.request().url());
-    const runId = decodeURIComponent(url.pathname.split('/').at(-2) ?? '');
+    const segments = url.pathname.split('/').filter(Boolean);
+    // .../ai/agents/runs/:runId/resume
+    const runIdIndex = segments.lastIndexOf('runs') + 1;
+    const runId = decodeURIComponent(segments[runIdIndex] ?? '');
     const goalAgentRun = goalAgentRunsByRunId.get(runId);
     if (goalAgentRun) {
       const request = route.request().postDataJSON() as {

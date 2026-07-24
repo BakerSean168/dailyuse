@@ -20,13 +20,7 @@ export async function* parseSSE(
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
+  const emitBufferedEvents = function* (): Generator<{ event: string; data: string }, void, void> {
     while (true) {
       // An SSE event may span multiple network chunks. Keep buffering until a
       // blank-line boundary is found, then emit exactly one parsed event.
@@ -55,5 +49,21 @@ export async function* parseSSE(
         data: dataLines.join('\n'),
       };
     }
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    // Residual 1333: some runtimes deliver the final chunk with done=true.
+    // Decode that last value and flush framed events before exiting.
+    if (value) {
+      buffer += decoder.decode(value, { stream: !done });
+    }
+    if (done) {
+      buffer += decoder.decode();
+      yield* emitBufferedEvents();
+      break;
+    }
+
+    yield* emitBufferedEvents();
   }
 }

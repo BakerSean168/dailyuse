@@ -29,8 +29,10 @@ import { describe, expect, it } from 'vitest';
  * Residual 1333: VPS prod-like docker:local:up EXIT:0 + six services healthy + probes OK
  * (tip 140ce022a); Web auth mainline 2×9/9 + note-boundary 1/1; workspace lint 36/36 +
  * typecheck 34/34 + standard test 30/30 re-verified; governance-check GOV_EXIT:0;
- * goal-workflow 8/8 red; Desktop Linux guest not stable; OAuth/App still external;
- * Web/Desktop full E2E/OAuth remain incomplete/external;
+ * historical plan note still records goal-workflow 8/8 red; follow-up green is goal-workflow
+ * 8/8 after Host SSE mock + conversation list persistence (not a full PR gate);
+ * Desktop Linux guest not stable; GitHub App JWT wired but installations_count=0 (browser
+ * install consent external); Web/Desktop full E2E/OAuth remain incomplete/external;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
