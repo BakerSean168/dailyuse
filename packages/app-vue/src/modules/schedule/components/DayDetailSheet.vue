@@ -39,7 +39,7 @@
                 'bg-info/15 text-info': event.source === 'task',
               }"
             >
-              {{ sourceLabel(event.source) }}
+              {{ calendarEventSourceLabel(event.source, t) }}
             </span>
           </div>
           <AlertCircle v-if="event.hasConflict" class="mt-0.5 h-4 w-4 shrink-0 text-warning" />
@@ -78,7 +78,7 @@ import {
   SheetTitle,
   Button,
 } from '@dailyuse/ui-vue-shadcn';
-import type { CalendarEventItem } from '../composables/useCalendarView';
+import { calendarEventSourceLabel, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatCalendarEventTimeRange } from '../../../shared/utils/format-calendar-event-time-range';
 
 interface Props {
@@ -110,18 +110,11 @@ const dateTitle = computed(() => {
 /**
  * Residual 1213 keep-boundary: app-vue schedule event/all-day time range (vs app-react Intl pair).
  * Residual 1273: local dual retired onto formatCalendarEventTimeRange sole.
+ * Residual 1291: sourceLabel dual retired onto calendarEventSourceLabel sole.
  * Soft residual 1213: app-react useScheduleAgenda formatTimeRange is Intl zh-CN pair (no force-merge).
  */
 function formatTimeRange(event: CalendarEventItem): string {
   return formatCalendarEventTimeRange(event, t('schedule.calendar.allDay'));
 }
 
-function sourceLabel(source: CalendarEventItem['source']): string {
-  const map: Record<CalendarEventItem['source'], string> = {
-    schedule: t('schedule.source.schedule'),
-    goal: t('schedule.source.goal'),
-    task: t('schedule.source.task'),
-  };
-  return map[source];
-}
 </script>

@@ -70,6 +70,25 @@ export function calendarEventBgClass(event: Pick<CalendarEventItem, 'source' | '
   return map[event.source];
 }
 
+/**
+ * Residual 1291: sole calendarEventSourceLabel — schedule/goal/task source → i18n label.
+ * Dual-retired from DayDetailSheet + EventDetailSheet local sourceLabel copies.
+ * Soft residual 1291: formatCapsuleTime / multi-site HH:mm padStart keep-boundary remains separate.
+ * Soft residual 1288: Month eventClass translucent + getEventStyle Day/Week layout keep-boundaries remain separate.
+ */
+export function calendarEventSourceLabel(
+  source: CalendarEventItem['source'],
+  translate: (key: string) => string,
+): string {
+  const keys: Record<CalendarEventItem['source'], string> = {
+    schedule: 'schedule.source.schedule',
+    goal: 'schedule.source.goal',
+    task: 'schedule.source.task',
+  };
+  return translate(keys[source]);
+}
+
+
 
 
 /** HH:mm in local time for shell schedule capsule. */

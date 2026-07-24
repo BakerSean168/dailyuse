@@ -9,6 +9,7 @@ import { calendarEventBgClass } from '../../modules/schedule/composables/useCale
  * - consumers: DayViewCalendar + WeekViewCalendar
  * Soft residual 1288: Month eventClass translucent/text variants keep-boundary
  * Soft residual 1288: getEventStyle Day px vs Week % layout keep-boundary
+ * Soft residual 1291: sourceLabel dual retired onto calendarEventSourceLabel sole
  * Does not flip §13.2 checkboxes.
  */
 describe('calendarEventBgClass dual retired (residual 1288)', () => {

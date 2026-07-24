@@ -9053,6 +9053,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-24（阶段 6 残留一千二百九十轮）：§13.2 **诚实证据 tip 刷新**（仍不打勾）——
 > tip 指针 Residual 1289：**391 文件 / 1706 测试** + GOV_EXIT:0；再确认 3 项仍为部分/外部阻塞；
 > open-items surface Residual 1290 锁。
+> 续进展 2026-07-24（阶段 6 残留一千二百九十一轮）：**calendarEventSourceLabel dual-retired**（仍不打勾）——
+> schedule sole：source → schedule.source.* i18n key via translate；DayDetailSheet / EventDetailSheet dual 收口；
+> soft residual：formatCapsuleTime / multi-site HH:mm padStart、Month eventClass、getEventStyle Day/Week keep-boundary 不强制合并；
+> surface Residual 1291 锁。
 
 
 
@@ -9240,7 +9244,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
 > Soft residual：goal createGoalErrorHandler rich-log keep-boundary（scope/details ≠ createComposableHandleError）不强制合并。
-> Soft residual：account PowerSync parseJson throw、api parseJsonLikeString、data-portability parseJsonField、asRecord/toRecord、toTimestamp、toNumber、toStringArray、toBoolean、optionalString/toNonEmptyString、asNonEmptyString、toDate/toDateString、extractErrorMessage、generateUUID、newId、isPlainObject、toMillis、formatFileSize、toKnowledgeNoteRef、tokenize、toPrismaJson account cast vs AI deep-clone、goal clampPercentage、isRecord cross-package keep-boundary、contracts private isRecord、startOfDay、mapImportanceToTaskPriority dual-retired、readString、normalizePath、buildTaskName、comparePriority、defaultExtractContext、getTemplateById、getCorsOrigins、delay dual-retired、scoreIndexedResource dual-retired、readJson、handleAuthSuccess、formatDateTime、formatMessageTime、formatDateToInput、formatTimeRange、formatTimestamp、getImportanceLabel、getStatusLabel、parseDateInput、toDateInput、toTimeInput、combineDateAndTime/parseTimestamp、formatTime、formatDate、formatDuration、describeConflict、formatDisplayDate dual-retired、formatDateToYMD dual-retired、parseToDate dual-retired、handleCalendarSelect dual-retired、formatDateNotSet dual-retired、formatDateUnknown dual-retired、handleEndDateCalendarSelect dual-retired、handleAbsoluteDateSelect dual-retired、formatCalendarEventTimeRange dual-retired、formatHour dual-retired、formatEventTime、toLocalDateKey dual-retired、getWeekStart dual-retired、calendarEventBgClass dual-retired 不强制合并其他 delay 语义。
+> Soft residual：account PowerSync parseJson throw、api parseJsonLikeString、data-portability parseJsonField、asRecord/toRecord、toTimestamp、toNumber、toStringArray、toBoolean、optionalString/toNonEmptyString、asNonEmptyString、toDate/toDateString、extractErrorMessage、generateUUID、newId、isPlainObject、toMillis、formatFileSize、toKnowledgeNoteRef、tokenize、toPrismaJson account cast vs AI deep-clone、goal clampPercentage、isRecord cross-package keep-boundary、contracts private isRecord、startOfDay、mapImportanceToTaskPriority dual-retired、readString、normalizePath、buildTaskName、comparePriority、defaultExtractContext、getTemplateById、getCorsOrigins、delay dual-retired、scoreIndexedResource dual-retired、readJson、handleAuthSuccess、formatDateTime、formatMessageTime、formatDateToInput、formatTimeRange、formatTimestamp、getImportanceLabel、getStatusLabel、parseDateInput、toDateInput、toTimeInput、combineDateAndTime/parseTimestamp、formatTime、formatDate、formatDuration、describeConflict、formatDisplayDate dual-retired、formatDateToYMD dual-retired、parseToDate dual-retired、handleCalendarSelect dual-retired、formatDateNotSet dual-retired、formatDateUnknown dual-retired、handleEndDateCalendarSelect dual-retired、handleAbsoluteDateSelect dual-retired、formatCalendarEventTimeRange dual-retired、formatHour dual-retired、formatEventTime、toLocalDateKey dual-retired、getWeekStart dual-retired、calendarEventBgClass dual-retired、calendarEventSourceLabel dual-retired 不强制合并其他 delay 语义。
 > 不因此把三入口完整 E2E、Agent multi-engine 全量、全量 PR 门禁未完成项打勾。
 > 阶段 6 dual 收口（残留 250–300；四百八十七轮补 task DAG *ViewModel 消费者收口；五百三十九轮 portable editor_* / knowledge routes / /note strip 再锁）与身份隔离 dual-method 收口（残留 169–192）指针仍有效。
 > Host task.create 进程内产品路径（残留 427–491 + 501–589）：AgentType + toolMode + start/store/resume(cancel/confirm/edit)
@@ -10525,6 +10529,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百八十八轮：retire eventBgClass dual onto calendarEventBgClass sole (solid Day/Week; Month translucent + getEventStyle soft).
   残留一千二百八十九轮：§13.2 focused evidence suite re-run (1706 tests, residuals 250–1288 locks, no checkbox changes)。
   残留一千二百九十轮：§13.2 evidence tip refresh (1289 tip 391/1706) + open-items surface lock (no checkbox flips).
+  残留一千二百九十一轮：retire sourceLabel dual onto calendarEventSourceLabel sole (DayDetail/EventDetail; formatCapsuleTime HH:mm soft).
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -11248,6 +11253,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百八十八轮：retire eventBgClass dual onto calendarEventBgClass sole（solid Day/Week；Month translucent + getEventStyle soft）。
   残留一千二百八十九轮：§13.2 focused evidence suite re-run（1706 tests，residuals 250–1288 锁；不改 checkbox）。
   残留一千二百九十轮：§13.2 evidence tip 刷新（1289 tip 391/1706）+ open-items surface 锁（不改 checkbox）。
+  残留一千二百九十一轮：retire sourceLabel dual onto calendarEventSourceLabel sole（DayDetail/EventDetail；formatCapsuleTime HH:mm soft）。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -12583,6 +12589,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千二百八十八轮：calendarEventBgClass dual-retired surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千二百八十九轮：tip 上 1706 项 focused evidence suite（含 residual 250–1288 calendarEventBgClass dual-retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留一千二百九十轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留一千二百九十一轮：calendarEventSourceLabel dual-retired surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

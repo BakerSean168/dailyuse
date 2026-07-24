@@ -38,7 +38,7 @@
               'bg-info/15 text-info': event.source === 'task',
             }"
           >
-            {{ sourceLabel(event.source) }}
+            {{ calendarEventSourceLabel(event.source, t) }}
           </span>
         </div>
 
@@ -77,7 +77,8 @@ import {
   SheetTitle,
 } from '@dailyuse/ui-vue-shadcn';
 import { AlertTriangle } from '@lucide/vue';
-import type { CalendarEventItem } from '../composables/useCalendarView';
+import { calendarEventSourceLabel, type CalendarEventItem } from '../composables/useCalendarView';
+// Residual 1291: sourceLabel dual retired onto calendarEventSourceLabel sole.
 
 const props = defineProps<{
   open: boolean;
@@ -101,12 +102,4 @@ const timeRange = computed(() => {
   return `${formatter.format(props.event.startTime)} – ${formatter.format(props.event.endTime)}`;
 });
 
-function sourceLabel(source: CalendarEventItem['source']): string {
-  const map: Record<CalendarEventItem['source'], string> = {
-    schedule: t('schedule.source.schedule'),
-    task: t('schedule.source.task'),
-    goal: t('schedule.source.goal'),
-  };
-  return map[source];
-}
 </script>
