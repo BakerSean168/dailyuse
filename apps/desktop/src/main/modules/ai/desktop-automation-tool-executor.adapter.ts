@@ -117,16 +117,20 @@ export class DesktopAutomationToolExecutorAdapter implements IAIAutomationToolEx
             throw new Error(`Missing key result draft for index ${action.index ?? -1}`);
           }
 
-          const result = await this.goalModule.api.addKeyResult(createdGoalId, {
-            title: keyResult.title,
-            valueType: keyResult.valueType,
-            aggregationMethod: keyResult.calculationMethod,
-            startValue: keyResult.startValue,
-            currentValue: keyResult.currentValue,
-            targetValue: keyResult.targetValue,
-            unit: keyResult.unit,
-            weight: keyResult.weight,
-          });
+          const result = await this.goalModule.api.addKeyResult(
+            createdGoalId,
+            input.identityId,
+            {
+              title: keyResult.title,
+              valueType: keyResult.valueType,
+              aggregationMethod: keyResult.calculationMethod,
+              startValue: keyResult.startValue,
+              currentValue: keyResult.currentValue,
+              targetValue: keyResult.targetValue,
+              unit: keyResult.unit,
+              weight: keyResult.weight,
+            },
+          );
 
           const createdKeyResult = unwrapOrThrowError(result);
           createdKeyResultIds.set(action.index ?? 0, createdKeyResult.id as KeyResultId);

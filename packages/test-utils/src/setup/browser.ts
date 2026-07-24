@@ -10,10 +10,43 @@ export interface BrowserMockOptions {
   silenceConsole?: ConsoleMethod[];
 }
 
-type BrowserGlobal = typeof globalThis & {
-  IntersectionObserver: typeof IntersectionObserver;
-  ResizeObserver: typeof ResizeObserver;
-  fetch: typeof fetch;
+/**
+ * Local DOM-like stubs so non-DOM package typechecks (goal/reminder) can pull the
+ * test-utils barrel without requiring the DOM lib.
+ */
+type BrowserWindowLike = {
+  matchMedia?: unknown;
+};
+
+type IntersectionObserverCtor = new (
+  callback?: (...args: unknown[]) => void,
+  options?: unknown,
+) => {
+  root: null;
+  rootMargin: string;
+  thresholds: unknown[];
+  observe: (...args: unknown[]) => void;
+  unobserve: (...args: unknown[]) => void;
+  disconnect: () => void;
+  takeRecords: () => unknown[];
+};
+
+type ResizeObserverCtor = new (callback?: (...args: unknown[]) => void) => {
+  observe: (...args: unknown[]) => void;
+  unobserve: (...args: unknown[]) => void;
+  disconnect: () => void;
+};
+
+/**
+ * Isolated host shape — cast via unknown so packages with and without DOM lib
+ * both typecheck. Intersecting `typeof globalThis` would collide with real DOM
+ * constructors when DOM is present.
+ */
+type BrowserGlobal = {
+  IntersectionObserver: IntersectionObserverCtor;
+  ResizeObserver: ResizeObserverCtor;
+  fetch: (...args: unknown[]) => Promise<unknown>;
+  window?: BrowserWindowLike;
 };
 
 /**
@@ -31,10 +64,11 @@ export function installCommonBrowserMocks(options: BrowserMockOptions = {}) {
     silenceConsole = [],
   } = options;
 
-  const browserGlobal = globalThis as BrowserGlobal;
+  const browserGlobal = globalThis as unknown as BrowserGlobal;
+  const browserWindow = browserGlobal.window;
 
-  if (mockMatchMedia && typeof window !== 'undefined') {
-    Object.defineProperty(window, 'matchMedia', {
+  if (mockMatchMedia && browserWindow) {
+    Object.defineProperty(browserWindow, 'matchMedia', {
       configurable: true,
       writable: true,
       value: createMatchMediaMock(),
@@ -53,7 +87,7 @@ export function installCommonBrowserMocks(options: BrowserMockOptions = {}) {
     }
 
     browserGlobal.IntersectionObserver =
-      MockIntersectionObserver as unknown as typeof IntersectionObserver;
+      MockIntersectionObserver as unknown as IntersectionObserverCtor;
   }
 
   if (mockResizeObserver) {
@@ -63,14 +97,14 @@ export function installCommonBrowserMocks(options: BrowserMockOptions = {}) {
       disconnect = vi.fn();
     }
 
-    browserGlobal.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+    browserGlobal.ResizeObserver = MockResizeObserver as unknown as ResizeObserverCtor;
   }
 
   if (mockFetch) {
     Object.defineProperty(browserGlobal, 'fetch', {
       configurable: true,
       writable: true,
-      value: vi.fn() as unknown as typeof fetch,
+      value: vi.fn() as unknown as BrowserGlobal['fetch'],
     });
   }
 

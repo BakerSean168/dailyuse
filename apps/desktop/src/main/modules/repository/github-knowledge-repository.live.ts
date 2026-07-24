@@ -69,6 +69,13 @@ class LiveConnectionRepository implements IKnowledgeRepositoryConnectionReposito
     return id === this.row.id ? this.row : null;
   }
 
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<KnowledgeRepositoryConnectionServerDTO | null> {
+    return identityId === this.row.identityId && id === this.row.id ? this.row : null;
+  }
+
   async findByIdentityId(identityId: string): Promise<KnowledgeRepositoryConnectionServerDTO[]> {
     return identityId === this.row.identityId ? [this.row] : [];
   }
@@ -89,7 +96,10 @@ class LiveConnectionRepository implements IKnowledgeRepositoryConnectionReposito
       : null;
   }
 
-  async listProjectionCandidates(): Promise<KnowledgeRepositoryConnectionServerDTO[]> {
+  async listProjectionCandidates(
+    _limit: number,
+    _cursor?: { updatedAt: number; id: string },
+  ): Promise<KnowledgeRepositoryConnectionServerDTO[]> {
     return [this.row];
   }
 
@@ -98,10 +108,14 @@ class LiveConnectionRepository implements IKnowledgeRepositoryConnectionReposito
   }
 
   async updateStatus(
+    identityId: string,
     id: string,
     status: KnowledgeRepositoryConnectionServerDTO['status'],
+    _error?: { code: string; message: string } | null,
   ): Promise<void> {
-    if (id === this.row.id) this.row = { ...this.row, status };
+    if (identityId === this.row.identityId && id === this.row.id) {
+      this.row = { ...this.row, status };
+    }
   }
 }
 
@@ -168,9 +182,11 @@ class LiveWriteRequestRepository implements IKnowledgeWriteRequestRepository {
     return true;
   }
 
-  async retryFailed(id: string, updatedAt: number): Promise<boolean> {
+  async retryFailed(identityId: string, id: string, updatedAt: number): Promise<boolean> {
     for (const [key, record] of this.records) {
-      if (record.id !== id || record.status !== 'Failed') continue;
+      if (record.identityId !== identityId || record.id !== id || record.status !== 'Failed') {
+        continue;
+      }
       this.records.set(key, {
         ...record,
         status: 'Pending',

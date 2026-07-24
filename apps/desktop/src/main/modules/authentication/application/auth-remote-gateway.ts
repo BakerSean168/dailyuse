@@ -85,11 +85,15 @@ function readErrorPayload(body: unknown): AuthRemoteErrorData {
     return {};
   }
   const nested = body.error;
+  const nestedRecord =
+    nested && typeof nested === 'object' && nested !== null
+      ? (nested as { message?: unknown })
+      : null;
   const nestedMessage =
     typeof nested === 'string'
       ? nested
-      : nested && typeof nested === 'object' && typeof nested.message === 'string'
-        ? nested.message
+      : nestedRecord && typeof nestedRecord.message === 'string'
+        ? nestedRecord.message
         : undefined;
   const message =
     (typeof body.message === 'string' && body.message) || nestedMessage || undefined;

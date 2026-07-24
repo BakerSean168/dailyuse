@@ -8,6 +8,7 @@ import type {
   AuthIdentityClientDTO,
   AuthResponseDTO,
   AuthSessionClientDTO,
+  CurrentUserDTO,
   ForgotPasswordReq,
   LoginByEmailReq,
   RegisterByEmailReq,
@@ -75,6 +76,84 @@ function getIdentityLabel(identity: AuthIdentityClientDTO): string {
   return preferredIdentifier.type === 'Email' ? preferredIdentifier.value : preferredIdentifier.value.value;
 }
 
+/**
+ * CurrentUser/OpenAPI response identity is intentionally slim ({id,status}).
+ * Promote it to the client DTO shape used by session UI with fail-closed defaults.
+ */
+function toClientIdentity(
+  identity: AuthIdentityClientDTO | CurrentUserDTO['identity'],
+): AuthIdentityClientDTO {
+  if ('identifiers' in identity && Array.isArray(identity.identifiers)) {
+    return identity;
+  }
+
+  const now = Date.now();
+  return {
+    id: identity.id,
+    status: identity.status,
+    failedLoginAttempts: 0,
+    lastFailedAttempt: null,
+    lockedUntil: null,
+    identifiers: [],
+    credentials: [],
+    hasPassword: false,
+    hasEmail: false,
+    hasPhone: false,
+    hasOAuth: false,
+    version: 0,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+  };
+}
+
+function toClientSession(
+  session: AuthSessionClientDTO | CurrentUserDTO['session'] | null | undefined,
+): AuthSessionClientDTO | null {
+  if (!session) {
+    return null;
+  }
+
+  if (
+    'deviceInfo' in session &&
+    session.deviceInfo &&
+    'deviceFingerprint' in session.deviceInfo
+  ) {
+    return session as AuthSessionClientDTO;
+  }
+
+  const deviceInfo = session.deviceInfo as { deviceId?: string; deviceType?: string };
+  const now = Date.now();
+  const deviceId = deviceInfo.deviceId ?? 'unknown-device';
+  return {
+    id: session.id,
+    identityId: session.identityId,
+    deviceInfo: {
+      deviceId,
+      deviceFingerprint: deviceId,
+      deviceType:
+        (deviceInfo.deviceType as AuthSessionClientDTO['deviceInfo']['deviceType']) ?? 'Unknown',
+      deviceName: null,
+      os: null,
+      osVersion: null,
+      browser: null,
+      appVersion: null,
+      ipAddress: null,
+      userAgent: null,
+      location: null,
+      firstSeenAt: now,
+      lastSeenAt: now,
+    },
+    isCurrentSession: session.isCurrentSession,
+    version: session.version,
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt,
+    expiresAt: session.expiresAt,
+    lastActiveAt: session.lastActiveAt,
+    deletedAt: session.deletedAt,
+  };
+}
+
 function createWorkspaceName(kind: AppSessionKind): string {
   if (kind === 'authenticated') {
     return 'Remote workspace';
@@ -123,8 +202,8 @@ export function AppSessionProvider({ children }: PropsWithChildren) {
   }
 
   function applyAuthenticatedState(args: {
-    identity: AuthIdentityClientDTO;
-    session?: AuthSessionClientDTO | null;
+    identity: AuthIdentityClientDTO | CurrentUserDTO['identity'];
+    session?: AuthSessionClientDTO | CurrentUserDTO['session'] | null;
     tokens?: { accessToken: string; refreshToken?: string | null };
   }) {
     if (args.tokens) {
@@ -136,8 +215,8 @@ export function AppSessionProvider({ children }: PropsWithChildren) {
     }
 
     startTransition(() => {
-      setCurrentIdentity(args.identity);
-      setCurrentSession(args.session ?? null);
+      setCurrentIdentity(toClientIdentity(args.identity));
+      setCurrentSession(toClientSession(args.session));
       setSessionKind('authenticated');
       setLastError(null);
     });

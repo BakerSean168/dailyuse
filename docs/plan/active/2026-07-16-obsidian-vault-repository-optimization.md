@@ -9289,6 +9289,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > governance **4 文件 / 23 测试**及 governance-check 通过。
 > 边界：这只证明全仓 lint 与本轮 focused/governance；全仓 typecheck/test、Web/Desktop E2E、prod-like
 > 一揽子与真实 OAuth/GitHub App fixture 仍未闭环。状态保持 **实施中**；PR 就绪仍为否。
+> 续进展 2026-07-24（阶段 6 残留一千三百三十轮）：**P0 全仓 typecheck 真阻塞收口**（仍不打勾）——
+> 首次全 workspace typecheck（34 targets）失败 8 项（reminder/goal/schedule-orchestration/
+> app-vue/app-react/desktop/api/mobile）；最小修复后复跑 **34/34 项目通过（EXIT:0）**。
+> 修复面：`addKeyResult` identityId 三参、`buildRecurrenceRule` DayOfWeek 收窄、test-utils
+> browser DOM-free stubs、schedule-orchestration `findByIdForIdentity` mocks、desktop live
+> GitHub repo ownership 签名、auth-remote-gateway message 收窄、app-react session slim→client
+> 提升与 reminder `activatedAt`、desktop vue shim、app-vue typecheck 排除 `*.spec/test`
+> （对齐 goal/reminder）。近端：utils recurrence **1 文件 / 4 测试**、schedule-orchestration
+> **4 文件 / 7 测试**、governance-check EXIT:0。
+> 边界：这只证明全仓 typecheck + 本轮 focused/governance；全仓 test、Web/Desktop E2E、prod-like
+> 一揽子与真实 OAuth/GitHub App fixture 仍未闭环。状态保持 **实施中**；PR 就绪仍为否。
 
 
 
@@ -9468,7 +9479,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-24（Residual 1329 P0 全仓 lint 阻塞收口：三入口/Agent/全量门禁仍为部分或外部阻塞；**不改 checkbox**）。
+> 审计时间 2026-07-24（Residual 1330 P0 全仓 typecheck 阻塞收口：三入口/Agent/全量门禁仍为部分或外部阻塞；**不改 checkbox**）。
 > 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > focused evidence suite tip（Residual 1325）：**403 文件 / 1766 测试** + governance-check GOV_EXIT:0。
 > Residual 1326：再确认 3 项仍未打勾——账密/GitHub/访客（部分）、Agent 确认边界（部分）、全量 PR 门禁（部分+外部阻塞）。
@@ -9484,7 +9495,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 修复 `ai-service` 7 个 Ruff I001 后，全 workspace lint **36/36 项目通过**。
 > AI Service **4 文件 / 25 测试**、open-items **1 文件 / 3 测试**、
 > governance **4 文件 / 23 测试**及 governance-check 通过。
-> 这只证明 lint 门禁与本轮 focused/governance；全仓 typecheck/test、Web/Desktop E2E、prod-like 一揽子
+> Residual 1330：全 workspace typecheck 由 8 失败收缩为 **34/34 项目通过（EXIT:0）**；
+> utils recurrence **1 文件 / 4 测试**、schedule-orchestration **4 文件 / 7 测试**、
+> governance-check EXIT:0。`app-vue:typecheck` 排除 `*.spec/test`（对齐 goal/reminder）；
+> 依赖 build 日志仍可能打印既有 declaration/rootDir 诊断但 typecheck target exit 0。
+> 这只证明 lint + typecheck 门禁与本轮 focused/governance；全仓 test、Web/Desktop E2E、prod-like 一揽子
 > 与真实 OAuth/GitHub App fixture 仍未闭环，故不改 checkbox。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
@@ -10820,6 +10835,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十七轮：P0 real E2E/runtime blocker reduction (Web password 2×3/3; Desktop production Electron guest 2×1/1; Agent/Vault/Pi fixture 7/114; governance 4/23 + GOV_EXIT:0); 12-project lint has 8 failures, web:typecheck failed, and OAuth/App fixture credentials remain externally blocked, so no checkbox flips.
   残留一千三百二十八轮：P0 lint/typecheck blocker reduction (`web:typecheck` + 24 dependencies passed; the same 12-project lint set passed 12/12; focused regressions 8 files/160 tests; governance 4/23 + GOV_EXIT:0); `@dailyuse/test-utils:lint` still exposes 2 pre-existing layer-boundary errors, the full workspace gate bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百二十九轮：P0 workspace lint blocker closure (`test-utils:lint` 0 errors, `test-utils:typecheck` + 4 dependencies, `goal:lint`, integration seam 3/12, AI Service 4/25, open-items 1/3, governance 4/23 + governance-check, and full workspace lint 36/36 passed after fixing 7 Ruff I001 errors); full workspace typecheck/test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
+  残留一千三百三十轮：P0 workspace typecheck blocker closure (first full run 8 failures → after minimal fixes full workspace typecheck 34/34 EXIT:0; utils recurrence 1/4, schedule-orchestration 4/7, governance-check EXIT:0); full workspace test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -11582,6 +11598,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十七轮：P0 真实 E2E/runtime 阻塞收缩（Web 账密两轮 3/3、Desktop production Electron guest 两轮 1/1、Agent/Vault/Pi fixture 7/114、governance 4/23 + GOV_EXIT:0）；12-project lint 有 8 个失败、web:typecheck 失败且 OAuth/App fixture 凭据外部阻塞，不改 checkbox。
   残留一千三百二十八轮：P0 lint/typecheck 真阻塞收缩（正式 web:typecheck + 24 个依赖任务通过；同一 12-project lint 集合 12/12 通过；focused 回归 8 文件/160 测试；governance 4/23 + GOV_EXIT:0）；test-utils lint 仍有 2 个既有 layer-boundary error，全仓门禁套件与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
   残留一千三百二十九轮：P0 全仓 lint 真阻塞收口（test-utils lint 0 errors、typecheck + 4 个依赖任务、goal lint、integration seam 3/12、AI Service 4/25、open-items 1/3、governance 4/23 + governance-check 通过；修复 7 个 Ruff I001 后全 workspace lint 36/36 通过）；全仓 typecheck/test、Web/Desktop E2E、prod-like 一揽子与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
+  残留一千三百三十轮：P0 全仓 typecheck 真阻塞收口（首次 8 失败 → 最小修复后全 workspace typecheck 34/34 EXIT:0；utils recurrence 1/4、schedule-orchestration 4/7、governance-check EXIT:0）；全仓 test、Web/Desktop E2E、prod-like 一揽子与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11873,6 +11890,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   修复 7 个 Ruff I001 后全 workspace lint 36/36 项目通过；AI Service 4/25、
   open-items 1/3、governance 4/23 + governance-check 通过。全仓 typecheck/test、
   Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环，故不打勾。
+  残留一千三百三十轮：全 workspace typecheck 34/34 项目通过（EXIT:0）；
+  utils recurrence 1 文件 / 4 测试、schedule-orchestration 4 文件 / 7 测试、
+  governance-check EXIT:0。全仓 test、Web/Desktop E2E、prod-like 与 OAuth/App
+  fixture 仍未闭环，故不打勾。
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
   `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
@@ -12971,6 +12992,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十七轮：Web 账密两轮 3/3、Desktop production Electron guest 两轮 1/1、Agent/Vault/Pi fixture 7/114、governance 4/23 + GOV_EXIT:0；12-project lint 有 8 个失败、`web:typecheck` 失败，OAuth/App fixture 无凭据为外部阻塞；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   残留一千三百二十八轮：`web:typecheck` + 24 个依赖任务通过、同一 12-project lint 12/12 通过、focused 回归 8/160、governance 4/23 + GOV_EXIT:0；test-utils lint 仍有 2 个既有 layer-boundary error，全仓 test/E2E/prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   残留一千三百二十九轮：test-utils lint 0 errors、typecheck + 4 个依赖任务、goal lint、integration seam focused 3/12、AI Service 4/25、open-items 1/3、governance 4/23 + governance-check 通过；修复 7 个 Ruff I001 后全 workspace lint 36/36 通过；全仓 typecheck/test、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
+  残留一千三百三十轮：全 workspace typecheck 34/34 项目通过（EXIT:0）；utils recurrence 1/4、schedule-orchestration 4/7、governance-check EXIT:0；全仓 test、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
