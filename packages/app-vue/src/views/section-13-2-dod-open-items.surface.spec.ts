@@ -4,7 +4,11 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 891: honest §13.2 completion-definition open-items re-audit.
- * Residual 1326: tip focused suite pointer refresh (Residual 1325 evidence tip 403/1766)
+ * Residual 1327: P0 real E2E/runtime blocker reduction after Residual 1326 tip refresh
+ * (Web password 2x3/3, Desktop production Electron guest 2x1/1, Agent/Vault/Pi fixture 7/114,
+ * governance 4/23 + GOV_EXIT:0)
+ * while 12-project lint has 8 failures, web:typecheck remains red, and OAuth/App fixture
+ * credentials remain externally blocked;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
@@ -34,7 +38,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
   it('keeps exactly three unchecked §13.2 items with partial/external-block labels', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
-    expect(plan).toContain('Residual 1326');
+    expect(plan).toContain('Residual 1327');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
@@ -65,6 +69,14 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('403 文件 / 1766 测试');
     expect(sec).toContain('Residual 1325');
     expect(sec).toContain('Residual 1326');
+    expect(sec).toContain('Residual 1327');
+    expect(sec).toContain('Web 账密两轮 3/3');
+    expect(sec).toContain('Desktop production Electron guest 两轮 1/1');
+    expect(sec).toContain('Agent/Vault/Pi fixture 7/114');
+    expect(sec).toContain('governance 4/23 + GOV_EXIT:0');
+    expect(sec).toContain('web:typecheck');
+    expect(sec).toContain('12-project lint 集合仍有 8 个失败');
+    expect(sec).toContain('OAuth/App fixture 无凭据为外部阻塞');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');
     expect(sec).toContain('三入口完整 E2E');

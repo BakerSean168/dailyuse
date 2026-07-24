@@ -45,10 +45,12 @@ import { ScheduleEventApplicationService } from '../application/services/schedul
 import { ScheduleConflictDetectionService } from '../application/services/schedule-conflict-detection-service';
 import { ScheduleConflictResolutionService } from '../application/services/schedule-conflict-resolution-service';
 import { toResultErrorException } from '@dailyuse/contracts/result';
-import type { RetryPolicyDTO } from '@dailyuse/contracts/schedule';
+import type { RetryPolicyDTO, ScheduleConfigDTO } from '@dailyuse/contracts/schedule';
 import type {
   CreateScheduleRequest,
+  CreateScheduleTaskRequest,
   UpdateScheduleRequest,
+  UpdateScheduleTaskRequest,
 } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { resultify } from '@dailyuse/utils/result';
@@ -158,6 +160,39 @@ function toUpdateSchedulePayload(data: UpdateScheduleRequest) {
   };
 }
 
+function toScheduleConfigDTO(
+  schedule: CreateScheduleTaskRequest['schedule'],
+): ScheduleConfigDTO {
+  return {
+    cronExpression: schedule.cronExpression,
+    timezone: schedule.timezone,
+    startDate: schedule.startDate == null ? null : new Date(schedule.startDate).toISOString(),
+    endDate: schedule.endDate == null ? null : new Date(schedule.endDate).toISOString(),
+    maxExecutions: schedule.maxExecutions ?? null,
+  };
+}
+
+function toPartialScheduleConfigDTO(
+  schedule: UpdateScheduleTaskRequest['schedule'],
+): Partial<ScheduleConfigDTO> | undefined {
+  if (!schedule) {
+    return undefined;
+  }
+
+  const dto: Partial<ScheduleConfigDTO> = {};
+  if (schedule.cronExpression !== undefined) dto.cronExpression = schedule.cronExpression;
+  if (schedule.timezone !== undefined) dto.timezone = schedule.timezone;
+  if (schedule.startDate !== undefined) {
+    dto.startDate =
+      schedule.startDate === null ? null : new Date(schedule.startDate).toISOString();
+  }
+  if (schedule.endDate !== undefined) {
+    dto.endDate = schedule.endDate === null ? null : new Date(schedule.endDate).toISOString();
+  }
+  if (schedule.maxExecutions !== undefined) dto.maxExecutions = schedule.maxExecutions;
+  return dto;
+}
+
 /**
  * Pure assembly helper used by the class facade and tests.
  * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
@@ -253,7 +288,7 @@ export function createScheduleModule(
         name: data.name,
         sourceModule: data.sourceModule,
         sourceId: data.sourceEntityId,
-        scheduleConfig: data.schedule,
+        scheduleConfig: toScheduleConfigDTO(data.schedule),
         handlerType: data.sourceModule,
         description: data.description,
         retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
@@ -281,7 +316,7 @@ export function createScheduleModule(
       return useCases.updateScheduleTask.execute(
         {
           id,
-          scheduleConfig: data.schedule,
+          scheduleConfig: toPartialScheduleConfigDTO(data.schedule),
           retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
           enabled: data.enabled,
           description: data.description,

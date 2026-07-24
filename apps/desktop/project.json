@@ -160,6 +160,15 @@
         "cwd": "apps/desktop"
       }
     },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "native-rebuild"],
+      "cache": false,
+      "options": {
+        "command": "node ../../node_modules/@playwright/test/cli.js test --config playwright.config.ts",
+        "cwd": "apps/desktop"
+      }
+    },
     "db:reset": {
       "executor": "nx:run-commands",
       "cache": false,

@@ -60,12 +60,12 @@ export class ConflictDetectionResult
     return this.props.hasConflict;
   }
 
-  public get conflicts(): readonly ConflictDetail[] {
-    return this.props.conflicts;
+  public get conflicts(): ConflictDetail[] {
+    return [...this.props.conflicts];
   }
 
-  public get suggestions(): readonly ConflictSuggestion[] {
-    return this.props.suggestions;
+  public get suggestions(): ConflictSuggestion[] {
+    return [...this.props.suggestions];
   }
 
   // ================= 计算属性 =================

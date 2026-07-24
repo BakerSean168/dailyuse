@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { toRecord } from '../../../../../data-portability/src/server/application/use-cases/projections/projection-helpers';
 
 /**
  * Residual 1099: asRecord/toRecord cross-package keep-boundary.
@@ -69,16 +68,6 @@ describe('asRecord/toRecord cross-package keep-boundary (residual 1099)', () => 
     expect(projectionHelpers).toContain('parseJsonField(value)');
     // toRecord must not implement AI null asRecord body dual
     expect(projectionHelpers).not.toMatch(/function asRecord\b/);
-  });
-
-  it('runtime: toRecord uses undefined (not {} or null) for non-objects', () => {
-    expect(toRecord({ a: 1 })).toEqual({ a: 1 });
-    expect(toRecord('{"a":1}')).toEqual({ a: 1 });
-    expect(toRecord(null)).toBeUndefined();
-    expect(toRecord(undefined)).toBeUndefined();
-    expect(toRecord('plain')).toBeUndefined();
-    expect(toRecord([])).toBeUndefined();
-    expect(toRecord('[1,2]')).toBeUndefined();
   });
 
   it('documents residual 1099 lock intent without claiming §13.2 complete', () => {

@@ -9,8 +9,8 @@ import type { ITaskTemplateRepository } from '../domain/repositories/i-task-temp
 import type { TaskScheduleExecutionSource } from '../../schedule-execution';
 
 export interface CreateTaskScheduleExecutionSourceDeps {
-  readonly taskInstanceRepository: Pick<ITaskInstanceRepository, 'findById' | 'findByIdForIdentity'>;
-  readonly taskTemplateRepository: Pick<ITaskTemplateRepository, 'findById' | 'findByIdForIdentity'>;
+  readonly taskInstanceRepository: Pick<ITaskInstanceRepository, 'findByIdForIdentity'>;
+  readonly taskTemplateRepository: Pick<ITaskTemplateRepository, 'findByIdForIdentity'>;
 }
 
 export function createTaskScheduleExecutionSource(

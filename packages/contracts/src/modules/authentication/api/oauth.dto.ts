@@ -10,7 +10,6 @@ import type { AuthResponseDTO } from '../dtos/auth-response';
 // Residual 763: OAuth provider enum dual retired — sole OAuthProviderSchema body.
 // Residual 893: transport OAuthProviderSchema keep-boundary (≠ domain/VO OAuthProvider catalog).
 export const OAuthProviderSchema = z.enum(['Google', 'Github', 'Microsoft', 'Apple']);
-export type OAuthProvider = z.infer<typeof OAuthProviderSchema>;
 
 // ============================================================================
 // Get OAuth URL

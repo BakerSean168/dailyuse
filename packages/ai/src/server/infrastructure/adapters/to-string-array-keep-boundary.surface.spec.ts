@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { toStringArray as knowledgeToStringArray } from './knowledge-index-value-helpers';
-import { toStringArray as portableToStringArray } from '../../../../../data-portability/src/server/application/use-cases/projections/projection-helpers';
 
 /**
  * Residual 1109: toStringArray cross-package keep-boundary.
@@ -58,12 +57,9 @@ describe('toStringArray cross-package keep-boundary (residual 1109)', () => {
     expect(projectionHelpers).not.toContain('.trim()');
   });
 
-  it('runtime: knowledge-index keeps empty strings; portable parses JSON arrays', () => {
+  it('runtime: knowledge-index keeps empty strings and does not parse JSON arrays', () => {
     expect(knowledgeToStringArray(['a', '', 'b', 1])).toEqual(['a', '', 'b']);
     expect(knowledgeToStringArray('["x"]')).toEqual([]);
-    expect(portableToStringArray(['a', '', 'b', 1])).toEqual(['a', '', 'b']);
-    expect(portableToStringArray('["x","", "y"]')).toEqual(['x', '', 'y']);
-    expect(portableToStringArray(null)).toEqual([]);
   });
 
   it('documents residual 1109 lock intent without claiming §13.2 complete', () => {

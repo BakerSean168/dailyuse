@@ -4,8 +4,6 @@ import path from 'node:path';
 import { dialog, shell } from 'electron';
 import matter from 'gray-matter';
 import type {
-// Residual 957: isMissing/isTemporaryFile duals retired — sole vault-fs-guards.
-import { isMissing, isTemporaryFile } from './vault-fs-guards';
   ConfirmedLocalVaultWriteReq,
   ConfirmedLocalVaultWriteRes,
   KnowledgeRepositoryContentState,
@@ -19,6 +17,8 @@ import { isMissing, isTemporaryFile } from './vault-fs-guards';
   SearchLocalVaultRes,
   SelectLocalVaultReq,
 } from '@dailyuse/contracts/repository';
+// Residual 957: isMissing/isTemporaryFile duals retired — sole vault-fs-guards.
+import { isMissing, isTemporaryFile } from './vault-fs-guards';
 
 const MAX_NOTE_BYTES = 2 * 1024 * 1024;
 const MAX_WRITE_BYTES = 1024 * 1024;

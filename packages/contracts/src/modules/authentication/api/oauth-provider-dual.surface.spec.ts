@@ -11,14 +11,12 @@ import { describe, expect, it } from 'vitest';
 describe('oauth provider dual retired (residual 763)', () => {
   const oauth = readFileSync(resolve(__dirname, 'oauth.dto.ts'), 'utf8');
 
-  it('owns one OAuthProviderSchema body', () => {
+  it('owns one OAuthProviderSchema body without a colliding transport alias', () => {
     expect(oauth).toContain('Residual 763');
     expect(oauth).toContain(
       "export const OAuthProviderSchema = z.enum(['Google', 'Github', 'Microsoft', 'Apple'])",
     );
-    expect(oauth).toContain(
-      'export type OAuthProvider = z.infer<typeof OAuthProviderSchema>',
-    );
+    expect(oauth).not.toContain('export type OAuthProvider =');
   });
 
   it('request schemas reuse OAuthProviderSchema (no local enum duals)', () => {
@@ -31,8 +29,8 @@ describe('oauth provider dual retired (residual 763)', () => {
     expect(count).toBeGreaterThanOrEqual(4);
   });
 
-  it('availability DTO uses OAuthProvider type alias', () => {
-    expect(oauth).toContain('provider: OAuthProvider');
+  it('availability DTO reuses OAuthProviderSchema', () => {
+    expect(oauth).toContain('provider: OAuthProviderSchema');
     expect(oauth).not.toContain(
       "provider: 'Google' | 'Github' | 'Microsoft' | 'Apple'",
     );

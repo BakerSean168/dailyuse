@@ -517,7 +517,7 @@ export function buildHostTaskCreateResumeResult(input: {
       throw new Error(HOST_TASK_CREATE_EDIT_REQUIRES_NONEMPTY_TITLE_MESSAGE);
     }
     // Normalize trimmed title into pending payload so getRun/list rehydrate clean values.
-    const firstPayload = {
+    const firstPayload: Record<string, unknown> = {
       ...(draftAction.payload ?? {}),
       title,
     };

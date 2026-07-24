@@ -7,6 +7,8 @@ import {
   type PresentationThemeMode,
 } from '@dailyuse/utils/shared';
 
+export { normalizeLocale };
+
 export type AuthLocale = PresentationLocale;
 export type AuthThemeMode = PresentationThemeMode;
 

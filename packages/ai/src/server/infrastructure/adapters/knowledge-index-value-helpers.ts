@@ -6,7 +6,10 @@
  * Residual 1195: scoreIndexedResource dual retired (Prisma semanticScore + PowerSync lexical).
  */
 
+import { createHash } from 'node:crypto';
 import type { KnowledgeIndexedChunk, KnowledgeIndexedNote } from '../../application/ports';
+
+const RETRIEVAL_VECTOR_DIMENSION = 48;
 
 // Residual 1109 keep-boundary: array filter typeof string only (keeps empty; no trim; no JSON parse).
 export function toStringArray(value: unknown): string[] {
@@ -97,3 +100,52 @@ export function scoreIndexedResource(
   return score + semanticScore * 4;
 }
 
+function charNGrams(token: string, minSize = 3, maxSize = 5): string[] {
+  const padded = `^${token}$`;
+  const grams: string[] = [];
+  for (let size = minSize; size <= Math.min(maxSize, padded.length); size += 1) {
+    for (let index = 0; index <= padded.length - size; index += 1) {
+      grams.push(padded.slice(index, index + size));
+    }
+  }
+  return grams;
+}
+
+function projectFeature(feature: string): { bucket: number; sign: number } {
+  const digest = createHash('sha256').update(feature).digest();
+  const bucket = digest.readUInt32BE(0) % RETRIEVAL_VECTOR_DIMENSION;
+  const sign = digest[4] % 2 === 0 ? 1 : -1;
+  return { bucket, sign };
+}
+
+function normalizeVector(vector: number[]): number[] {
+  const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
+  if (magnitude === 0) {
+    return vector;
+  }
+  return vector.map((value) => Number((value / magnitude).toFixed(6)));
+}
+
+export function buildRetrievalEmbedding(text: string): number[] {
+  const tokenCounts = new Map<string, number>();
+  for (const token of tokenize(text)) {
+    tokenCounts.set(token, (tokenCounts.get(token) ?? 0) + 1);
+  }
+
+  const vector = Array.from({ length: RETRIEVAL_VECTOR_DIMENSION }, () => 0);
+  for (const [token, count] of tokenCounts) {
+    const tokenProjection = projectFeature(`tok:${token}`);
+    vector[tokenProjection.bucket] += tokenProjection.sign * (1 + Math.log1p(count));
+
+    for (const gram of charNGrams(token)) {
+      const gramProjection = projectFeature(`ng:${gram}`);
+      vector[gramProjection.bucket] += gramProjection.sign * (0.2 * count);
+    }
+  }
+
+  return normalizeVector(vector);
+}
+
+export function toVectorLiteral(vector: number[]): string {
+  return `[${vector.map((value) => Number(value.toFixed(6))).join(',')}]`;
+}

@@ -428,7 +428,7 @@ function toAgentCitations(citations: QueryKnowledgeRes['citations']): AgentCitat
   return citations.map((citation) => ({
     resourceId: citation.resourceId,
     resourcePath: citation.resourcePath,
-    title: citation.title ?? null,
+    title: citation.title ?? undefined,
     chunkIndex: citation.chunkIndex,
     excerpt: citation.excerpt,
     score: citation.score,

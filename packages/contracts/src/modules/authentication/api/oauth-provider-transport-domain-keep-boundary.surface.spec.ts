@@ -39,9 +39,7 @@ describe('oauth provider transport≠domain keep-boundary (residual 893)', () =>
     expect(oauthDto).toContain(
       "export const OAuthProviderSchema = z.enum(['Google', 'Github', 'Microsoft', 'Apple'])",
     );
-    expect(oauthDto).toContain(
-      'export type OAuthProvider = z.infer<typeof OAuthProviderSchema>',
-    );
+    expect(oauthDto).not.toContain('export type OAuthProvider =');
     // Transport catalog includes Microsoft; domain/VO catalog does not.
     expect(oauthDto).toContain("'Microsoft'");
     expect(oauthDto).not.toMatch(/z\.enum\(\[[^\]]*Facebook/);

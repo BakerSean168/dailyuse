@@ -9257,6 +9257,18 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-24（阶段 6 残留一千三百二十六轮）：§13.2 **诚实证据 tip 刷新**（仍不打勾）——
 > tip 指针 Residual 1325：**403 文件 / 1766 测试** + GOV_EXIT:0；再确认 3 项仍为部分/外部阻塞；
 > open-items surface Residual 1326 锁。
+> 续进展 2026-07-24（阶段 6 残留一千三百二十七轮）：**P0 真实 E2E / runtime 阻塞收缩**（仍不打勾）——
+> API production build 24 tasks 通过；Web 账密 `auth-flow.spec.ts` 两轮均 **3/3**（注册、登出后登录、错误密码拒绝）；
+> 新增 Desktop production Electron E2E target（build + native-rebuild + 隔离 userData/userFiles），访客入口两轮均 **1/1**；
+> Agent/Vault/Pi fixture 对抗套件 **7 文件 / 114 测试**通过，覆盖临时 Vault 路径/符号链接逃逸拒绝、
+> cancel 不持久化、confirm 写入、identity 隔离、multi-engine conformance 与 Pi readonly process fixture。
+> governance-check 同轮通过（依赖测试 **4 文件 / 23 测试**，GOV_EXIT:0）。
+> 同轮真实门禁诊断：12 个涉及项目 lint 集合有 8 个失败（既有 module-boundary/解析错误），
+> `web:typecheck` 失败（app-vue Electron bridge/account/goal/AI/auth/governance/schedule 既有类型错误）；
+> GitHub OAuth/App fixture 无凭据为**外部阻塞**。本轮改动文件排除已知仓库级阻塞面后的 ESLint 通过。
+> 仍缺真实 GitHub 入口、完整跨端
+> multi-engine / durable Task LangGraph、全量 lint/typecheck/test/E2E/governance/prod-like 一揽子证据。
+> 状态保持 **实施中**；PR 就绪仍为否。
 
 
 
@@ -9436,10 +9448,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-24（Residual 1326 诚实刷新：三入口/Agent/门禁仍为部分或外部阻塞；**不改 checkbox**）。
+> 审计时间 2026-07-24（Residual 1327 P0 真实 E2E/runtime 阻塞收缩：三入口/Agent/门禁仍为部分或外部阻塞；**不改 checkbox**）。
 > 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > focused evidence suite tip（Residual 1325）：**403 文件 / 1766 测试** + governance-check GOV_EXIT:0。
 > Residual 1326：再确认 3 项仍未打勾——账密/GitHub/访客（部分）、Agent 确认边界（部分）、全量 PR 门禁（部分+外部阻塞）。
+> Residual 1327：Web 账密两轮 3/3、Desktop production Electron guest 两轮 1/1、
+> Agent/Vault/Pi fixture 7/114、governance 4/23 + GOV_EXIT:0；`web:typecheck` 仍失败，
+> 12-project lint 集合仍有 8 个失败；OAuth/App fixture 无凭据为外部阻塞。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
@@ -9459,6 +9474,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
+  残留一千三百二十七轮：Web 账密 `auth-flow.spec.ts` 两轮均 3/3；Desktop production Electron
+  guest E2E 两轮均 1/1。真实 GitHub OAuth/App fixture 无凭据（外部阻塞），故三入口整体仍为部分。
   残留二十三轮补 surface contract 单测：`packages/app-vue/src/views/DesktopAuthView.spec.ts`
   （账密 + guest-mode-button，无 login-github-button）；`apps/web/src/auth/WebAuthView.spec.ts`
   （账密 + 条件 login-github-button，无 guest-mode-button；OAuth 不可用时隐藏 GitHub）。
@@ -9512,6 +9529,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   projection `editDraft` 仅 draft 回退、Local Vault 独占创建与 Obsidian 外链编辑。
 - [x] AI 无固定默认目录设置，完整写入提案必须获得用户确认。 **（已证明）**
 - [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**
+  残留一千三百二十七轮：Agent/Vault/Pi fixture 对抗套件 7 文件 / 114 测试通过，覆盖临时 Vault
+  traversal/符号链接逃逸拒绝、cancel 无持久化、confirm 写入、identity 隔离、multi-engine
+  conformance 与 Pi readonly process fixture；仍缺跨进程 durable / 完整 Task LangGraph /
+  跨端 Playwright-Electron multi-engine E2E，故不打勾。
   证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
   `.`/`..`（contracts dto specs）；`AIKnowledgeNotePathResolver` 应用层同样拒绝 vault-escaping
   路径；runtime 仅在 `userDecision=confirm` 时解析 `execution.required` 并执行 side-effect
@@ -10765,6 +10786,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十四轮：retire ScheduleConflictAlert + ScheduleFormDemo minutes formatDuration dual onto formatScheduleDurationMinutes sole.
   残留一千三百二十五轮：§13.2 focused evidence suite re-run (1766 tests, residuals 250–1324 locks, no checkbox changes)。
   残留一千三百二十六轮：§13.2 evidence tip refresh (1325 tip 403/1766) + open-items surface lock (no checkbox flips).
+  残留一千三百二十七轮：P0 real E2E/runtime blocker reduction (Web password 2×3/3; Desktop production Electron guest 2×1/1; Agent/Vault/Pi fixture 7/114; governance 4/23 + GOV_EXIT:0); 12-project lint has 8 failures, web:typecheck failed, and OAuth/App fixture credentials remain externally blocked, so no checkbox flips.
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -11524,6 +11546,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十四轮：retire ScheduleConflictAlert + ScheduleFormDemo minutes formatDuration dual onto formatScheduleDurationMinutes sole。
   残留一千三百二十五轮：§13.2 focused evidence suite re-run（1766 tests，residuals 250–1324 锁；不改 checkbox）。
   残留一千三百二十六轮：§13.2 evidence tip 刷新（1325 tip 403/1766）+ open-items surface 锁（不改 checkbox）。
+  残留一千三百二十七轮：P0 真实 E2E/runtime 阻塞收缩（Web 账密两轮 3/3、Desktop production Electron guest 两轮 1/1、Agent/Vault/Pi fixture 7/114、governance 4/23 + GOV_EXIT:0）；12-project lint 有 8 个失败、web:typecheck 失败且 OAuth/App fixture 凭据外部阻塞，不改 checkbox。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11800,6 +11823,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   **仍缺**：第二生产 Turn Engine、统一助手 UI、完整 multi-engine runtime E2E、跨端对抗
   Playwright/Electron 与真实 OAuth/GitHub fixture。
 - [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**
+  残留一千三百二十七轮：API production build 24 tasks 通过；Web 账密 E2E 两轮 3/3；
+  Desktop production Electron guest E2E 两轮 1/1；Agent/Vault/Pi fixture 7/114。
+  governance-check 及其依赖测试 4/23 通过（GOV_EXIT:0）。
+  12 个涉及项目 lint 集合有 8 个失败，`web:typecheck` 真实复跑失败，且 OAuth/App fixture
+  无凭据为外部阻塞；不构成全量 PR 门禁。
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
   `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
@@ -12895,6 +12923,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十四轮：formatScheduleDurationMinutes dual-retired surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千三百二十五轮：tip 上 1766 项 focused evidence suite（含 residual 250–1324 formatScheduleDurationMinutes dual-retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留一千三百二十六轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
+  残留一千三百二十七轮：Web 账密两轮 3/3、Desktop production Electron guest 两轮 1/1、Agent/Vault/Pi fixture 7/114、governance 4/23 + GOV_EXIT:0；12-project lint 有 8 个失败、`web:typecheck` 失败，OAuth/App fixture 无凭据为外部阻塞；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

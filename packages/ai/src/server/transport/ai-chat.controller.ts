@@ -4,7 +4,6 @@ import {
   ConversationNameSchema,
   ListMessagesSchema,
   SendMessageSchema,
-  ConversationNameSchema,
   type CreateConversationRes,
   type ConversationListRes,
   type GetConversationRes,

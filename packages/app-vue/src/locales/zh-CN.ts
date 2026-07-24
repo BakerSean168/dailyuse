@@ -137,6 +137,18 @@ export default {
     },
   },
 
+  account: {
+    actions: {
+      logout: '退出登录',
+    },
+    logoutConfirm: {
+      title: '确认退出登录？',
+      description: '退出后需要重新登录才能继续使用。',
+      confirmText: '退出登录',
+      cancelText: '取消',
+    },
+  },
+
   shell: {
     newChat: '新对话',
     search: '搜索',

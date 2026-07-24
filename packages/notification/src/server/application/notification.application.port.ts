@@ -1,4 +1,8 @@
 import type { Result } from '@dailyuse/contracts/result';
+import type {
+  DeleteNotificationsBatchReq,
+  MarkAsReadBatchReq,
+} from '@dailyuse/contracts/notification';
 
 export interface NotificationApplicationPort {
   createNotification(data: unknown): Promise<Result<unknown>>;
@@ -10,11 +14,11 @@ export interface NotificationApplicationPort {
   markAllAsRead(identityId: string): Promise<Result<unknown>>;
   getUnreadCount(identityId: string): Promise<Result<unknown>>;
   batchMarkAsRead(
-    data: { notificationIds?: string[] },
+    data: MarkAsReadBatchReq,
     identityId: string,
   ): Promise<Result<unknown>>;
   batchDelete(
-    data: { notificationIds?: string[] },
+    data: DeleteNotificationsBatchReq,
     identityId: string,
   ): Promise<Result<unknown>>;
   cleanupOldNotifications(data: {

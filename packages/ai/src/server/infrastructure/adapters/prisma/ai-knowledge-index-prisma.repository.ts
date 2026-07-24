@@ -3,7 +3,7 @@
  * (../knowledge-index-value-helpers.ts).
  * Residual 979: toPrismaJson sole import (./to-prisma-json.ts).
  */
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 
 import type { PrismaClient } from '@dailyuse/database';
 import { Prisma } from '@dailyuse/database/prisma';
@@ -12,7 +12,6 @@ import type {
   IKnowledgeIndexRepository,
   KnowledgeIndexDiagnostics,
   KnowledgeIndexFailureRecord,
-  KnowledgeIndexedChunk,
   KnowledgeIndexedNote,
 } from '../../../application/ports';
 import {
@@ -20,9 +19,9 @@ import {
   toNumberArray,
   toStringArray,
   scoreIndexedResource,
+  buildRetrievalEmbedding,
+  toVectorLiteral,
 } from '../knowledge-index-value-helpers';
-
-const RETRIEVAL_VECTOR_DIMENSION = 48;
 
 type KnowledgeIndexEntryRow = {
   id: string;

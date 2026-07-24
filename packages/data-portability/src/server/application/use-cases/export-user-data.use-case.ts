@@ -125,7 +125,7 @@ export class ExportUserDataUseCase {
       const goalIds = (goals as { id: string }[]).map((g) => g.id);
       const allRecords: unknown[] = [];
       for (const goalId of goalIds) {
-        const records = await this.deps.goalRecordRepository.findByGoalId(goalId);
+        const records = await this.deps.goalRecordRepository.findByGoalId(identityId, goalId);
         allRecords.push(...records);
       }
 
@@ -178,7 +178,10 @@ export class ExportUserDataUseCase {
 
       const allResponses: unknown[] = [];
       for (const template of templates as { id: string }[]) {
-        const responses = await this.deps.reminderResponseRepository.findByTemplateId(template.id);
+        const responses = await this.deps.reminderResponseRepository.findByTemplateId(
+          template.id,
+          identityId,
+        );
         allResponses.push(...responses);
       }
 

@@ -37,7 +37,6 @@ export interface TaskSmokeApp {
 export function createMockTemplateRepo(): ITaskTemplateRepository {
   return {
     save: vi.fn().mockResolvedValue(undefined),
-    findById: vi.fn().mockResolvedValue(null),
     findByIdForIdentity: vi.fn().mockResolvedValue(null),
     findByIdWithChildren: vi.fn().mockResolvedValue(null),
     findByIdentityId: vi.fn().mockResolvedValue([]),
@@ -69,7 +68,6 @@ export function createMockInstanceRepo(): ITaskInstanceRepository {
   return {
     save: vi.fn().mockResolvedValue(undefined),
     saveMany: vi.fn().mockResolvedValue(undefined),
-    findById: vi.fn().mockResolvedValue(null),
     findByIdForIdentity: vi.fn().mockResolvedValue(null),
     findByTemplateId: vi.fn().mockResolvedValue([]),
     findByIdentityId: vi.fn().mockResolvedValue([]),
@@ -89,7 +87,6 @@ export function createMockInstanceRepo(): ITaskInstanceRepository {
 export function createMockDependencyRepo(): ITaskDependencyRepository {
   return {
     create: vi.fn().mockResolvedValue(null as never),
-    findById: vi.fn().mockResolvedValue(null),
     findByIdForIdentity: vi.fn().mockResolvedValue(null),
     findBySuccessorId: vi.fn().mockResolvedValue([]),
     findByPredecessorId: vi.fn().mockResolvedValue([]),

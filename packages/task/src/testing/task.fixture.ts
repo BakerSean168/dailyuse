@@ -8,6 +8,7 @@
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { DayOfWeek, TaskType } from '@dailyuse/contracts/task';
+import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import {
   TaskTemplateId,
   TaskInstanceId,
@@ -27,7 +28,7 @@ function titleFor(prefix: string): string {
 }
 
 /** Residual 1033: anIdentityId dual retired onto @dailyuse/test-utils/fixtures sole. */
-export { anIdentityId } from '@dailyuse/test-utils/fixtures';
+export { anIdentityId };
 
 export interface OneTimeTaskOverrides {
   identityId?: IdentityId;

@@ -137,6 +137,18 @@ export default {
     },
   },
 
+  account: {
+    actions: {
+      logout: 'Log out',
+    },
+    logoutConfirm: {
+      title: 'Log out of your account?',
+      description: 'You will need to sign in again to continue.',
+      confirmText: 'Log out',
+      cancelText: 'Cancel',
+    },
+  },
+
   shell: {
     newChat: 'New Chat',
     search: 'Search',
