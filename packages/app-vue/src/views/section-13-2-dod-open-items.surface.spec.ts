@@ -24,9 +24,9 @@ import { describe, expect, it } from 'vitest';
  * Residual 1331: full workspace standard test 30 targets from 11 failures to 3 failures /
  * 27 pass EXIT:1; desktop low-risk harness closed (ipc dual→contracts, vault-path
  * path.resolve, AIStreamChannels allowlist, provider list envelope; focused 6/58);
- * remaining data-portability powersync-round-trip, desktop git runtime/sync
- * GitProcessError 16 tests, app-vue AIChatView TaskService inject + KnowledgeProjection
- * useRoute mock; full-green test/Web/Desktop E2E/prod-like/OAuth remain incomplete/external;
+ * Residual 1332: full workspace standard test 30/30 EXIT:0 (powersync goal_records bind,
+ * desktop GIT_CONFIG_GLOBAL=NUL, app-vue TaskService/useRoute/LangGraph stub/icon a11y);
+ * Web/Desktop full E2E/prod-like/OAuth remain incomplete/external;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
@@ -61,6 +61,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(plan).toContain('Residual 1329');
     expect(plan).toContain('Residual 1330');
     expect(plan).toContain('Residual 1331');
+    expect(plan).toContain('Residual 1332');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
@@ -96,6 +97,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Residual 1329');
     expect(sec).toContain('Residual 1330');
     expect(sec).toContain('Residual 1331');
+    expect(sec).toContain('Residual 1332');
     expect(sec).toContain('Web 账密两轮 3/3');
     expect(sec).toContain('Desktop production Electron guest 两轮 1/1');
     expect(sec).toContain('Agent/Vault/Pi fixture 7/114');
@@ -119,8 +121,8 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('全 workspace 标准 test 目标 **30**');
     expect(sec).toContain('**3 失败 / 27 通过（EXIT:1）**');
     expect(sec).toContain('desktop 低风险 harness 已收口');
-    expect(sec).toContain('GitProcessError');
-    expect(sec).toContain('这只证明 lint + typecheck + test 门禁收缩与本轮 focused/governance');
+    expect(sec).toContain('**30/30 项目通过（EXIT:0）**');
+    expect(sec).toContain('这只证明 lint + typecheck + **标准 test** 门禁已绿');
     expect(sec).toContain('OAuth/App fixture 无凭据为外部阻塞');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');

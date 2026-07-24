@@ -14,10 +14,18 @@ import KnowledgeProjectionWorkspaceView from './KnowledgeProjectionWorkspaceView
 
 const routerMocks = vi.hoisted(() => ({
   push: vi.fn(async () => undefined),
+  route: {
+    query: {} as Record<string, string | string[] | undefined>,
+    params: {} as Record<string, string>,
+    path: '/notes',
+    name: 'notes',
+  },
 }));
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: routerMocks.push }),
+  // Residual 1332: view reads route.query for connection/note selection.
+  useRoute: () => routerMocks.route,
 }));
 
 const messages = {

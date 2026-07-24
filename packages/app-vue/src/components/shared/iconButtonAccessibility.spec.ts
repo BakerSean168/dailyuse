@@ -11,6 +11,7 @@ function vueFiles(directory: string): string[] {
 }
 
 describe('icon button accessibility contract', () => {
+  // Residual 1332: full-suite filesystem walk can exceed default 5s under load.
   it('gives every icon-only Button an explicit accessible name', () => {
     const sourceRoot = resolve(process.cwd(), 'src');
     const violations: string[] = [];
@@ -28,5 +29,5 @@ describe('icon button accessibility contract', () => {
     }
 
     expect(violations, `Unnamed icon Buttons:\n${violations.join('\n')}`).toEqual([]);
-  });
+  }, 60_000);
 });

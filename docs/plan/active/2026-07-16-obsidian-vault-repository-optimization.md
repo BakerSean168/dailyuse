@@ -9316,6 +9316,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > open-items + governance-check 本轮同步。
 > 边界：这只证明 test 门禁从 11→3 失败的收缩 + desktop harness 低风险收口；全仓 test 未绿、
 > Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环。状态保持 **实施中**；PR 就绪仍为否。
+> 续进展 2026-07-24（阶段 6 残留一千三百三十二轮）：**P0 全仓标准 test 全绿**（仍不打勾 §13.2 门禁项）——
+> 收口 Residual 1331 剩余三类根因：
+> 1) data-portability FakePowerSyncDb `goal_records` 查询绑定对齐 export SQL `[identityId, goalId]`；
+> 2) desktop `GIT_CONFIG_GLOBAL` Windows 用 `NUL` 替代 `os.devNull`（`\\.\nul` 导致 git 128），
+>    git suite timeout/EBUSY 清理加固；
+> 3) app-vue AIChatView 提供 `TASK_SERVICE_KEY`、KnowledgeProjection `useRoute` mock、
+>    observability stub 走 LangGraph humanize、icon a11y timeout 60s。
+> 全 workspace 标准 test **30/30 项目通过（EXIT:0）**（parallel=1 复跑）。
+> open-items + governance-check 本轮同步。
+> 边界：这只证明标准 workspace test 全绿；Web/Desktop 完整 E2E、prod-like、真实 OAuth/App
+> fixture 仍未闭环，故 **不改 checkbox**。状态保持 **实施中**；PR 就绪仍为否。
 
 
 
@@ -9519,10 +9530,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 根因含 Zod openapi 装载、Windows path 归一、editor 残骸清理与 ownership/list/reminder/addKeyResult 测试对齐。
 > Residual 1331 续：desktop 低风险 harness 已收口（ipc dual import→contracts、vault-path resolve、
 > AIStreamChannels allowlist、provider list 信封）；focused desktop harness 6/58 通过。
-> 剩余失败类：**data-portability** powersync-round-trip（Missing INSERT goal_records）、
-> **desktop** knowledge git runtime + sync acceptance（16 测试 GitProcessError）、
-> **app-vue** AIChatView 缺 TaskService inject、KnowledgeProjection 缺 useRoute mock。
-> 这只证明 lint + typecheck + test 门禁收缩与本轮 focused/governance；全仓 test 未完全绿、Web/Desktop E2E、prod-like 一揽子
+> Residual 1332：收口 powersync goal_records 假库绑定、desktop Windows `GIT_CONFIG_GLOBAL=NUL`、
+> app-vue TaskService/useRoute/LangGraph stub/icon a11y timeout；全 workspace 标准 test
+> **30/30 项目通过（EXIT:0）**。
+> 这只证明 lint + typecheck + **标准 test** 门禁已绿；Web/Desktop 完整 E2E、prod-like 一揽子
 > 与真实 OAuth/GitHub App fixture 仍未闭环，故不改 checkbox。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
@@ -10860,6 +10871,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十九轮：P0 workspace lint blocker closure (`test-utils:lint` 0 errors, `test-utils:typecheck` + 4 dependencies, `goal:lint`, integration seam 3/12, AI Service 4/25, open-items 1/3, governance 4/23 + governance-check, and full workspace lint 36/36 passed after fixing 7 Ruff I001 errors); full workspace typecheck/test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百三十轮：P0 workspace typecheck blocker closure (first full run 8 failures → after minimal fixes full workspace typecheck 34/34 EXIT:0; utils recurrence 1/4, schedule-orchestration 4/7, governance-check EXIT:0); full workspace test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百三十一轮：P0 workspace test blocker reduction (30 standard test targets; first run 11 failures → after root-cause fixes 3 failures / 27 pass EXIT:1; desktop low-risk harness closed: ipc dual imports→contracts/electron+governance, vault-path path.resolve, AIStreamChannels allowlist, provider list envelope; remaining data-portability powersync-round-trip, desktop git runtime/sync GitProcessError 16 tests, app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock); full green test + Web/Desktop E2E + prod-like + OAuth/App remain incomplete/external, so no checkbox flips.
+  残留一千三百三十二轮：P0 full workspace standard test green (30/30 EXIT:0): powersync goal_records fake bind [identityId,goalId]; desktop GIT_CONFIG_GLOBAL=NUL on Windows + git suite timeout/EBUSY cleanup; app-vue TASK_SERVICE_KEY + useRoute mock + LangGraph diagnostic stub + icon a11y 60s timeout. Web/Desktop full E2E + prod-like + OAuth/App still incomplete/external, so no checkbox flips.
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -11624,6 +11636,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十九轮：P0 全仓 lint 真阻塞收口（test-utils lint 0 errors、typecheck + 4 个依赖任务、goal lint、integration seam 3/12、AI Service 4/25、open-items 1/3、governance 4/23 + governance-check 通过；修复 7 个 Ruff I001 后全 workspace lint 36/36 通过）；全仓 typecheck/test、Web/Desktop E2E、prod-like 一揽子与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
   残留一千三百三十轮：P0 全仓 typecheck 真阻塞收口（首次 8 失败 → 最小修复后全 workspace typecheck 34/34 EXIT:0；utils recurrence 1/4、schedule-orchestration 4/7、governance-check EXIT:0）；全仓 test、Web/Desktop E2E、prod-like 一揽子与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
   残留一千三百三十一轮：P0 全仓 test 真阻塞收缩（标准 test 目标 30；首次 11 失败 → 根因修复后 3 失败 / 27 通过 EXIT:1；desktop 低风险 harness 已收口：ipc dual→contracts、vault-path resolve、AIStreamChannels、provider 信封；剩余 data-portability powersync-round-trip、desktop git runtime/sync GitProcessError 16 测试、app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock）；全绿 test + Web/Desktop E2E + prod-like + OAuth/App 仍未完成/外部阻塞，不改 checkbox。
+  残留一千三百三十二轮：P0 全仓标准 test 全绿（30/30 EXIT:0）：powersync goal_records 假库绑定、desktop Windows GIT_CONFIG_GLOBAL=NUL + git timeout/EBUSY、app-vue TaskService/useRoute/LangGraph stub/icon a11y；Web/Desktop 完整 E2E + prod-like + OAuth/App 仍未完成/外部阻塞，不改 checkbox。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11923,7 +11936,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   3 失败 / 27 通过（EXIT:1）；desktop 低风险 harness 已收口（focused 6/58 通过）；
   剩余 data-portability powersync-round-trip、desktop git runtime/sync GitProcessError
   16 测试、app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock。
-  全仓 test 未完全绿、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环，故不打勾。
+  残留一千三百三十二轮：全 workspace 标准 test **30/30 项目通过（EXIT:0）**
+  （powersync 假库、desktop GIT_CONFIG_GLOBAL=NUL、app-vue inject/mock/timeout）。
+  Web/Desktop 完整 E2E、prod-like 与 OAuth/App fixture 仍未闭环，故不打勾。
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
   `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
@@ -13024,6 +13039,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十九轮：test-utils lint 0 errors、typecheck + 4 个依赖任务、goal lint、integration seam focused 3/12、AI Service 4/25、open-items 1/3、governance 4/23 + governance-check 通过；修复 7 个 Ruff I001 后全 workspace lint 36/36 通过；全仓 typecheck/test、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   残留一千三百三十轮：全 workspace typecheck 34/34 项目通过（EXIT:0）；utils recurrence 1/4、schedule-orchestration 4/7、governance-check EXIT:0；全仓 test、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   残留一千三百三十一轮：全 workspace 标准 test 30 目标 11→3 失败 / 27 通过（EXIT:1）；desktop 低风险 harness 已收口（ipc dual/vault-path/AIStream/provider 信封；focused 6/58）；剩余 data-portability powersync-round-trip、desktop git runtime/sync GitProcessError 16 测试、app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock；全仓 test 未完全绿、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
+  残留一千三百三十二轮：全 workspace 标准 test 30/30 项目通过（EXIT:0）；lint 36/36 + typecheck 34/34 + 标准 test 30/30 已齐；Web/Desktop 完整 E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

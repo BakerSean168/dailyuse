@@ -16,9 +16,14 @@ const COMMIT_MESSAGE = 'chore(vault): initialize Memoflow knowledge repository';
 const SYNC_COMMIT_MESSAGE = 'chore(vault): synchronize knowledge changes';
 const GIT_OWNERSHIP_MARKER = 'memoflow-repository.json';
 const GIT_SYNC_STATE = 'memoflow-sync-state.json';
+/**
+ * Residual 1332: Git cannot open Windows `os.devNull` (`\\.\nul`) as GIT_CONFIG_GLOBAL.
+ * Use platform null device names Git accepts (`NUL` / `/dev/null`).
+ */
+const SAFE_GIT_CONFIG_GLOBAL = process.platform === 'win32' ? 'NUL' : os.devNull;
 const SAFE_GIT_PROCESS_ENVIRONMENT = {
   GIT_CONFIG_NOSYSTEM: '1',
-  GIT_CONFIG_GLOBAL: os.devNull,
+  GIT_CONFIG_GLOBAL: SAFE_GIT_CONFIG_GLOBAL,
 };
 const REQUIRED_GITIGNORE_LINES = [
   '.obsidian/workspace*',

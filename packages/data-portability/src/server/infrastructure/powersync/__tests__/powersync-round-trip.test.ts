@@ -337,12 +337,17 @@ class FakePowerSyncDb {
 
     switch (table) {
       case 'goal_records': {
-        const goalId = firstParameter;
+        // Residual 1332: export SQL binds [identityId, goalId] (not goalId alone).
+        const identityId = parameters?.[0];
+        const goalId = parameters?.[1];
         const keyResultIds = this.liveRows('key_results')
           .filter((row) => row.goal_id === goalId)
           .map((row) => row.id);
 
-        return rows.filter((row) => keyResultIds.includes(row.key_result_id));
+        return rows.filter(
+          (row) =>
+            row.identity_id === identityId && keyResultIds.includes(row.key_result_id),
+        );
       }
       case 'key_results':
       case 'goal_reviews':

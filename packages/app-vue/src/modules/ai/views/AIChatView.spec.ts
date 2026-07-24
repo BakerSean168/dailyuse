@@ -44,7 +44,8 @@ vi.mock('../../setting/composables/useUserSetting', () => ({
 }));
 
 import AIChatView from './AIChatView.vue';
-import { DASHBOARD_SERVICE_KEY } from '../../../di/keys';
+import { DASHBOARD_SERVICE_KEY, TASK_SERVICE_KEY } from '../../../di/keys';
+import { formatLangGraphVendorDiagnosticEventLabel } from '../composables/hostLangGraphUiBoundary';
 
 const i18n = createI18n({
   legacy: false,
@@ -639,7 +640,15 @@ const AIGoalWorkflowPanelStub = defineComponent({
                   ...props.knowledgeQaAgentRun.events.map((event: Record<string, unknown>) =>
                     h(
                       'p',
-                      `${String(event.type)} · ${String((event.data as Record<string, unknown> | undefined)?.node ?? (event.data as Record<string, unknown> | undefined)?.tool ?? '')}`,
+                      // Residual 1332/415: product path humanizes node.* via LangGraph boundary.
+                      formatLangGraphVendorDiagnosticEventLabel({
+                        type: String(event.type ?? ''),
+                        detail: String(
+                          (event.data as Record<string, unknown> | undefined)?.node ??
+                            (event.data as Record<string, unknown> | undefined)?.tool ??
+                            '',
+                        ),
+                      }),
                     ),
                   ),
                 ]
@@ -1183,12 +1192,26 @@ const dashboardServiceFake = {
   }),
 };
 
+const taskServiceFake = {
+  listTemplates: vi.fn(async () => ok([])),
+  getTaskGraph: vi.fn(async () => ok({ nodes: [], edges: [] })),
+  getTemplate: vi.fn(async () => ok(null)),
+  createTemplate: vi.fn(async () => ok({ template: { id: 'task-template-1', name: 'Task' } })),
+  updateTemplate: vi.fn(async () => ok(null)),
+  deleteTemplate: vi.fn(async () => ok(undefined)),
+  activateTemplate: vi.fn(async () => ok(null)),
+  pauseTemplate: vi.fn(async () => ok(null)),
+  archiveTemplate: vi.fn(async () => ok(null)),
+};
+
 function mountView() {
   return shallowMount(AIChatView, {
     global: {
       plugins: [i18n],
       provide: {
         [DASHBOARD_SERVICE_KEY as symbol]: dashboardServiceFake,
+        // Residual 1332: AIChatView mounts useTaskTemplates() for Host task.create settlement.
+        [TASK_SERVICE_KEY as symbol]: taskServiceFake,
       },
       stubs: {
         Button: ButtonStub,

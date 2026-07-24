@@ -110,16 +110,34 @@ async function commitAndPush(
   return (await realGit.run(['rev-parse', 'HEAD'], { cwd: worktree })).stdout.trim();
 }
 
+async function removeDirectoryQuietly(directory: string): Promise<void> {
+  // Residual 1332: Windows can keep git index locks briefly after process exit (EBUSY).
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      await fs.promises.rm(directory, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      const code =
+        error && typeof error === 'object' && 'code' in error
+          ? String((error as { code?: unknown }).code)
+          : '';
+      if (code !== 'EBUSY' && code !== 'EPERM' && code !== 'ENOTEMPTY') {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    }
+  }
+}
+
 afterEach(async () => {
-  await Promise.all(
-    temporaryDirectories
-      .splice(0)
-      .map((directory) => fs.promises.rm(directory, { recursive: true, force: true })),
-  );
+  await Promise.all(temporaryDirectories.splice(0).map((directory) => removeDirectoryQuietly(directory)));
 });
 
 describe('DesktopKnowledgeRepositorySyncService acceptance', () => {
-  it('pulls a remote commit into the bound Vault and confirms the new HEAD', async () => {
+  // Residual 1332: real git clone/push under full suite load can exceed default 5s.
+  it(
+    'pulls a remote commit into the bound Vault and confirms the new HEAD',
+    async () => {
     const remotePath = await createBareRemote();
     const vaultPath = await temporaryDirectory('sync-acceptance-vault');
     await fs.promises.writeFile(path.join(vaultPath, 'local.md'), 'local note\n', 'utf8');
@@ -179,5 +197,7 @@ describe('DesktopKnowledgeRepositorySyncService acceptance', () => {
       'created on Web\n',
     );
     expect(confirmedConnection?.lastSyncedCommitSha).toBe(remoteHead);
-  });
+  },
+    30_000,
+  );
 });

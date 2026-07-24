@@ -138,18 +138,31 @@ function input(
   };
 }
 
+async function removeDirectoryQuietly(directory: string): Promise<void> {
+  // Residual 1332: Windows can keep git index locks briefly after process exit (EBUSY).
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      await fs.promises.rm(directory, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      const code =
+        error && typeof error === 'object' && 'code' in error
+          ? String((error as { code?: unknown }).code)
+          : '';
+      if (code !== 'EBUSY' && code !== 'EPERM' && code !== 'ENOTEMPTY') {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    }
+  }
+}
+
 afterEach(async () => {
-  await Promise.all(
-    temporaryDirectories.splice(0).map((directory) =>
-      fs.promises.rm(directory, {
-        recursive: true,
-        force: true,
-      }),
-    ),
-  );
+  await Promise.all(temporaryDirectories.splice(0).map((directory) => removeDirectoryQuietly(directory)));
 });
 
-describe('DesktopKnowledgeRepositoryGitRuntime', () => {
+// Residual 1332: real multi-git flows exceed default 5s under concurrent suite load.
+describe('DesktopKnowledgeRepositoryGitRuntime', { timeout: 30_000 }, () => {
   it('initializes and pushes a real local repository without persisting credentials', async () => {
     const remote = await createBareRemote();
     const vault = await temporaryDirectory('git-vault');
