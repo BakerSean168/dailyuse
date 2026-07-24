@@ -192,12 +192,13 @@ import {
   Calendar,
 } from '@dailyuse/ui-vue-shadcn';
 import { Repeat, Info, Calendar as CalendarIcon } from '@lucide/vue';
-import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
+import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';
 
 const { t, locale } = useI18n();
 
 // Residual 1249 / Residual 1252: formatEndDateDisplay dual retired onto formatDisplayDate sole; formatDateToYMD dual retired onto shared sole (Residual 1252).
+// Residual 1267: handleEndDateCalendarSelect dual retired onto handleCalendarSelect sole (setter → endDate ref).
 
 /** Convert endDate string to Date for Calendar :selected */
 /** Soft residual 1255: endDateAsDate inline YYYY-MM-DD→Date (parseToDate sole available; keep co-located). */
@@ -206,16 +207,11 @@ const endDateAsDate = computed(() => {
   return new Date(endDate.value + 'T00:00:00');
 });
 
-/** Handle Calendar selection for end date */
-/** Soft residual 1258: handleEndDateCalendarSelect — direct endDate ref assign (no setter); no force-merge with handleCalendarSelect sole. */
+/** Handle Calendar selection for end date — Residual 1267 dual retired onto handleCalendarSelect sole. */
 function handleEndDateCalendarSelect(date: unknown) {
-  if (date instanceof Date) {
-    endDate.value = formatDateToYMD(date);
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    endDate.value = formatDateToYMD((date as { toDate: () => Date }).toDate());
-  } else {
-    endDate.value = '';
-  }
+  handleCalendarSelect(date, (value) => {
+    endDate.value = value;
+  });
 }
 
 /**

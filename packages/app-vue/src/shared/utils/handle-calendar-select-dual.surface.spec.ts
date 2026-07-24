@@ -6,10 +6,10 @@ import { handleCalendarSelect } from './handle-calendar-select';
 /**
  * Residual 1258: handleCalendarSelect dual retired onto app-vue shared sole.
  * - sole: packages/app-vue/src/shared/utils/handle-calendar-select.ts
- * - consumers: CreateScheduleDialog, TimeConfigSection
- * Soft residual 1258:
- * - RecurrenceSection handleEndDateCalendarSelect (direct ref assign)
- * - ReminderSection inline calendar → dateStr path
+ * - consumers: CreateScheduleDialog, TimeConfigSection, RecurrenceSection (Residual 1267)
+ * Soft residual 1258 / 1267:
+ * - ReminderSection inline calendar → dateStr+timestamp path
+ * Soft residual 1267: Recurrence handleEndDateCalendarSelect dual-retired onto sole.
  * Soft residual 1252: formatDateToYMD dual-retired sole remains separate.
  * Soft residual 1255: parseToDate dual-retired sole remains separate.
  * Does not flip §13.2 checkboxes.
@@ -55,16 +55,19 @@ describe('handleCalendarSelect dual retired (residual 1258)', () => {
     expect(timeConfig).toContain('handle-calendar-select');
     expect(timeConfig).toContain('handleCalendarSelect');
     expect(timeConfig).not.toMatch(/function handleCalendarSelect\b/);
-  });
 
-  it('soft residual 1258 endDate/reminder calendar paths stay separate', () => {
-    expect(recurrence).toContain('Soft residual 1258');
+    // Residual 1267 dual-retired Recurrence endDate calendar onto sole.
+    expect(recurrence).toContain('Residual 1267');
+    expect(recurrence).toContain('handle-calendar-select');
+    expect(recurrence).toContain('handleCalendarSelect');
     expect(recurrence).toMatch(/function handleEndDateCalendarSelect\b/);
     const endBody = recurrence.match(/function handleEndDateCalendarSelect\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(endBody).toContain('handleCalendarSelect');
     expect(endBody).toContain('endDate.value');
-    expect(endBody).toContain('formatDateToYMD');
-    expect(endBody).not.toContain('setter');
+    expect(endBody).not.toContain('formatDateToYMD');
+  });
 
+  it('soft residual 1258/1267 reminder calendar path stays separate', () => {
     expect(reminder).toContain('Soft residual 1258');
     expect(reminder).toContain('formatDateToYMD(date)');
     expect(reminder).not.toContain('handle-calendar-select');

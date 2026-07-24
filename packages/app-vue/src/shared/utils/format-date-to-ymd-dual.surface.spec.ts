@@ -6,7 +6,7 @@ import { formatDateToYMD } from './format-date-to-ymd';
 /**
  * Residual 1252: formatDateToYMD dual retired onto app-vue shared sole.
  * - sole: packages/app-vue/src/shared/utils/format-date-to-ymd.ts
- * - consumers: CreateScheduleDialog, TimeConfigSection, ReminderSection, RecurrenceSection
+ * - consumers: CreateScheduleDialog, TimeConfigSection, ReminderSection; Recurrence via handleCalendarSelect (Residual 1267)
  * Soft residual 1252/1255: parseToDate dual retired onto shared sole in residual 1255.
  * Soft residual 1249: formatDisplayDate dual-retired sole remains separate.
  * Soft residual 1240: formatDate keep-boundary remains separate (timestamp display).
@@ -49,7 +49,6 @@ describe('formatDateToYMD dual retired (residual 1252)', () => {
       ['schedule', schedule],
       ['timeConfig', timeConfig],
       ['reminder', reminder],
-      ['recurrence', recurrence],
     ] as const) {
       expect(source, label).toContain('Residual 1252');
       expect(source, label).toContain('format-date-to-ymd');
@@ -59,6 +58,13 @@ describe('formatDateToYMD dual retired (residual 1252)', () => {
         /function formatDateToYMD\b[\s\S]*?getFullYear/,
       );
     }
+    // Residual 1267: Recurrence endDate calendar uses handleCalendarSelect (formatDateToYMD via sole).
+    expect(recurrence).toContain('Residual 1252');
+    expect(recurrence).toContain('formatDateToYMD dual retired');
+    expect(recurrence).toContain('Residual 1267');
+    expect(recurrence).toContain('handle-calendar-select');
+    expect(recurrence).not.toMatch(/function formatDateToYMD\b/);
+    expect(recurrence).not.toContain("from '../../../../../shared/utils/format-date-to-ymd'");
   });
 
   it('soft residual 1252 superseded: parseToDate dual retired in residual 1255', () => {
