@@ -316,6 +316,7 @@ import { MapPin, X, Loader2, Calendar as CalendarIcon } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { formatDateToYMD } from '../../../shared/utils/format-date-to-ymd';
 import { parseToDate } from '../../../shared/utils/parse-to-date';
+import { handleCalendarSelect } from '../../../shared/utils/handle-calendar-select';
 import { formatDisplayDate } from '../../../shared/utils/format-display-date';
 import type { CalendarEntryClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 
@@ -339,23 +340,13 @@ const emit = defineEmits<Emits>();
 
 const { t, locale } = useI18n();
 
-// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252); parseToDate dual retired onto shared sole (Residual 1255).
+// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252); parseToDate dual retired onto shared sole (Residual 1255); handleCalendarSelect dual retired onto shared sole (Residual 1258).
 
 // ── Time picker options ────────────────────────────────────────────────
 const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
 const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
 // ── Calendar/DateTime helpers ──────────────────────────────────────────
-
-function handleCalendarSelect(date: unknown, setter: (v: string) => void) {
-  if (date instanceof Date) {
-    setter(formatDateToYMD(date));
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    setter(formatDateToYMD((date as { toDate: () => Date }).toDate()));
-  } else {
-    setter('');
-  }
-}
 
 /** Split HH:MM string into hour/minute parts */
 function splitTime(timeStr: string): { hour: string; minute: string } {

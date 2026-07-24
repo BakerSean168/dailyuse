@@ -241,11 +241,12 @@ import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
 import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { parseToDate } from '../../../../../shared/utils/parse-to-date';
+import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 
 const { t, locale } = useI18n();
 
-// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252); parseInputToDate dual retired onto parseToDate sole (Residual 1255).
+// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252); parseInputToDate dual retired onto parseToDate sole (Residual 1255); handleCalendarSelect dual retired onto shared sole (Residual 1258).
 
 const props = withDefaults(
   defineProps<{
@@ -300,16 +301,6 @@ const timeRangeEndMinute = ref<string>('00');
 /** Format a YYYY-MM-DD string for display */
 /** Convert a YYYY-MM-DD string to a Date for Calendar :selected */
 /** Handle Calendar selection — works with both Date and radix DateValue objects */
-function handleCalendarSelect(date: unknown, setter: (v: string) => void) {
-  if (date instanceof Date) {
-    setter(formatDateToYMD(date));
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    setter(formatDateToYMD((date as { toDate: () => Date }).toDate()));
-  } else {
-    setter('');
-  }
-}
-
 /**
  * Residual 1210 keep-boundary: app-vue task formatDateToInput — epoch ms → local YMD.
  * Task time-config form helper; timestamp number input (not Date / not date-fns).

@@ -281,6 +281,7 @@ function getAbsoluteCalendarDate(ts?: number | null): Date | undefined {
 function handleAbsoluteDateSelect(index: number, date: unknown) {
   let dateStr: string;
   if (date instanceof Date) {
+    /* Soft residual 1258: Reminder calendar select inline (no handleCalendarSelect sole). */
     dateStr = formatDateToYMD(date);
   } else if (date && typeof date === 'object' && 'toDate' in date) {
     dateStr = formatDateToYMD((date as { toDate: () => Date }).toDate());

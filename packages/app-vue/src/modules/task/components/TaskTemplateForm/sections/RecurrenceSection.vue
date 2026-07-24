@@ -207,6 +207,7 @@ const endDateAsDate = computed(() => {
 });
 
 /** Handle Calendar selection for end date */
+/** Soft residual 1258: handleEndDateCalendarSelect — direct endDate ref assign (no setter); no force-merge with handleCalendarSelect sole. */
 function handleEndDateCalendarSelect(date: unknown) {
   if (date instanceof Date) {
     endDate.value = formatDateToYMD(date);
