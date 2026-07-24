@@ -26,7 +26,11 @@ import { describe, expect, it } from 'vitest';
  * path.resolve, AIStreamChannels allowlist, provider list envelope; focused 6/58);
  * Residual 1332: full workspace standard test 30/30 EXIT:0 (powersync goal_records bind,
  * desktop GIT_CONFIG_GLOBAL=NUL, app-vue TaskService/useRoute/LangGraph stub/icon a11y);
- * Web/Desktop full E2E/prod-like/OAuth remain incomplete/external;
+ * Residual 1333: VPS prod-like docker:local:up EXIT:0 + six services healthy + probes OK
+ * (tip 140ce022a); Web auth mainline 2×9/9 + note-boundary 1/1; workspace lint 36/36 +
+ * typecheck 34/34 + standard test 30/30 re-verified; governance-check GOV_EXIT:0;
+ * goal-workflow 8/8 red; Desktop Linux guest not stable; OAuth/App still external;
+ * Web/Desktop full E2E/OAuth remain incomplete/external;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
@@ -62,6 +66,8 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(plan).toContain('Residual 1330');
     expect(plan).toContain('Residual 1331');
     expect(plan).toContain('Residual 1332');
+    expect(plan).toContain('Residual 1333');
+    expect(plan).toContain('残留一千三百三十三轮');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
@@ -98,6 +104,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Residual 1330');
     expect(sec).toContain('Residual 1331');
     expect(sec).toContain('Residual 1332');
+    expect(sec).toContain('Residual 1333');
     expect(sec).toContain('Web 账密两轮 3/3');
     expect(sec).toContain('Desktop production Electron guest 两轮 1/1');
     expect(sec).toContain('Agent/Vault/Pi fixture 7/114');
@@ -124,6 +131,11 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('**30/30 项目通过（EXIT:0）**');
     expect(sec).toContain('这只证明 lint + typecheck + **标准 test** 门禁已绿');
     expect(sec).toContain('OAuth/App fixture 无凭据为外部阻塞');
+    expect(sec).toContain('docker:local:up');
+    expect(sec).toContain('六服务 healthy');
+    expect(sec).toContain('Web 认证主线两轮 **9/9**');
+    expect(sec).toContain('note-boundary **1/1**');
+    expect(sec).toContain('goal-workflow 8/8 红');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');
     expect(sec).toContain('三入口完整 E2E');

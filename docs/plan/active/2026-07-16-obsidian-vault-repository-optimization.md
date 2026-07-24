@@ -9327,6 +9327,21 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > open-items + governance-check 本轮同步。
 > 边界：这只证明标准 workspace test 全绿；Web/Desktop 完整 E2E、prod-like、真实 OAuth/App
 > fixture 仍未闭环，故 **不改 checkbox**。状态保持 **实施中**；PR 就绪仍为否。
+> 续进展 2026-07-24（阶段 6 残留一千三百三十三轮）：**P0 prod-like + Web 认证/边界 E2E + 全仓门禁 VPS 复验**（仍不打勾）——
+> tip `140ce022a`（`fix(docker): copy tools/mcp into API image for root postinstall`）。
+> prod-like：`pnpm docker:local:up` **EXIT:0**；六服务 healthy（postgres/redis/api/web/ai-service/powersync）；
+> 探针 Web `/` 200、API `/healthz` 200、AI `/healthz` 200、PowerSync `/probes/liveness` 200；
+> OCI revision label `140ce022a11e6eba25e0313d526036fc3dc79ce7`。
+> Web 认证主线（login + page-contract + password）**两轮 9/9 通过（EXIT:0）**；
+> note-boundary **1/1 通过（EXIT:0）**。
+> 全仓复验：lint **36/36**、typecheck **34/34**、标准 test **30/30**（parallel=1）均 EXIT:0；
+> governance-check **GOV_EXIT:0**。
+> 加分尝试：goal-workflow **8/8 失败**（`ai-chat-view` 未挂载 / knowledge-qa/goal-agent 按钮 disabled；诚实记红，不装绿）。
+> Desktop Linux guest：裸跑缺 `$DISPLAY`；`xvfb-run` 可启动 Electron，但 guest 进入失败
+> （`GUEST_MODE_ERROR: Token encryption is not available on this system` + waitForEvent window 超时）；
+> Windows 本机 guest 两轮 1/1 仍有效，Linux 不构成补证。
+> OAuth/App fixture / 真实跨端 GitHub E2E 仍为**外部阻塞**。§13.2 保持 **12 [x] / 3 [ ]**，**不改 checkbox**。
+> 状态保持 **实施中**；PR 就绪仍为否。证据日志：`/tmp/residual-1333/`。
 
 
 
@@ -9535,6 +9550,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > **30/30 项目通过（EXIT:0）**。
 > 这只证明 lint + typecheck + **标准 test** 门禁已绿；Web/Desktop 完整 E2E、prod-like 一揽子
 > 与真实 OAuth/GitHub App fixture 仍未闭环，故不改 checkbox。
+> Residual 1333：VPS tip `140ce022a`；prod-like `docker:local:up` EXIT:0 + **六服务 healthy** + 关键探针 OK
+> （Web/API/AI/PowerSync；revision label 对齐 tip）；Web 认证主线两轮 **9/9**、note-boundary **1/1**；
+> 全仓 lint **36/36** + typecheck **34/34** + 标准 test **30/30** 复验 EXIT:0；governance-check GOV_EXIT:0；
+> goal-workflow 8/8 红（AI workspace 按钮/视图未就绪）；Desktop Linux 未稳定复现 guest（缺 DISPLAY / xvfb 路径）；
+> OAuth/App fixture 无凭据为外部阻塞；**不改 checkbox**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
@@ -10872,6 +10892,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百三十轮：P0 workspace typecheck blocker closure (first full run 8 failures → after minimal fixes full workspace typecheck 34/34 EXIT:0; utils recurrence 1/4, schedule-orchestration 4/7, governance-check EXIT:0); full workspace test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百三十一轮：P0 workspace test blocker reduction (30 standard test targets; first run 11 failures → after root-cause fixes 3 failures / 27 pass EXIT:1; desktop low-risk harness closed: ipc dual imports→contracts/electron+governance, vault-path path.resolve, AIStreamChannels allowlist, provider list envelope; remaining data-portability powersync-round-trip, desktop git runtime/sync GitProcessError 16 tests, app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock); full green test + Web/Desktop E2E + prod-like + OAuth/App remain incomplete/external, so no checkbox flips.
   残留一千三百三十二轮：P0 full workspace standard test green (30/30 EXIT:0): powersync goal_records fake bind [identityId,goalId]; desktop GIT_CONFIG_GLOBAL=NUL on Windows + git suite timeout/EBUSY cleanup; app-vue TASK_SERVICE_KEY + useRoute mock + LangGraph diagnostic stub + icon a11y 60s timeout. Web/Desktop full E2E + prod-like + OAuth/App still incomplete/external, so no checkbox flips.
+  残留一千三百三十三轮：VPS Residual 1333 — prod-like docker:local:up EXIT:0 + six services healthy + probes OK (tip 140ce022a); Web auth mainline 2×9/9 + note-boundary 1/1; workspace lint 36/36 + typecheck 34/34 + standard test 30/30 re-verified EXIT:0; governance-check GOV_EXIT:0; goal-workflow 8/8 red (AI workspace not ready); Desktop Linux guest not stably reproduced (missing DISPLAY); OAuth/App still external, so no checkbox flips.
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -11637,6 +11658,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百三十轮：P0 全仓 typecheck 真阻塞收口（首次 8 失败 → 最小修复后全 workspace typecheck 34/34 EXIT:0；utils recurrence 1/4、schedule-orchestration 4/7、governance-check EXIT:0）；全仓 test、Web/Desktop E2E、prod-like 一揽子与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
   残留一千三百三十一轮：P0 全仓 test 真阻塞收缩（标准 test 目标 30；首次 11 失败 → 根因修复后 3 失败 / 27 通过 EXIT:1；desktop 低风险 harness 已收口：ipc dual→contracts、vault-path resolve、AIStreamChannels、provider 信封；剩余 data-portability powersync-round-trip、desktop git runtime/sync GitProcessError 16 测试、app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock）；全绿 test + Web/Desktop E2E + prod-like + OAuth/App 仍未完成/外部阻塞，不改 checkbox。
   残留一千三百三十二轮：P0 全仓标准 test 全绿（30/30 EXIT:0）：powersync goal_records 假库绑定、desktop Windows GIT_CONFIG_GLOBAL=NUL + git timeout/EBUSY、app-vue TaskService/useRoute/LangGraph stub/icon a11y；Web/Desktop 完整 E2E + prod-like + OAuth/App 仍未完成/外部阻塞，不改 checkbox。
+  残留一千三百三十三轮：VPS Residual 1333 — prod-like docker:local:up EXIT:0 + 六服务 healthy + 探针 OK（tip 140ce022a）；Web 认证主线两轮 9/9 + note-boundary 1/1；全仓 lint 36/36 + typecheck 34/34 + 标准 test 30/30 复验 EXIT:0；governance-check GOV_EXIT:0；goal-workflow 8/8 红；Desktop Linux guest 未稳定复现；OAuth/App 仍外部阻塞，不改 checkbox。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11939,6 +11961,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百三十二轮：全 workspace 标准 test **30/30 项目通过（EXIT:0）**
   （powersync 假库、desktop GIT_CONFIG_GLOBAL=NUL、app-vue inject/mock/timeout）。
   Web/Desktop 完整 E2E、prod-like 与 OAuth/App fixture 仍未闭环，故不打勾。
+  残留一千三百三十三轮：VPS tip `140ce022a`；prod-like `docker:local:up` EXIT:0 + **六服务 healthy** +
+  关键探针 OK；Web 认证主线两轮 **9/9**、note-boundary **1/1**；全仓 lint **36/36** +
+  typecheck **34/34** + 标准 test **30/30** 复验 EXIT:0；governance-check GOV_EXIT:0。
+  goal-workflow 8/8 红（AI workspace 未就绪）；Desktop Linux guest 未稳定复现（缺 DISPLAY）；
+  OAuth/App fixture 仍外部阻塞；**不改 checkbox**，仍不构成全量 PR 门禁。
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
   `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
@@ -13040,7 +13067,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百三十轮：全 workspace typecheck 34/34 项目通过（EXIT:0）；utils recurrence 1/4、schedule-orchestration 4/7、governance-check EXIT:0；全仓 test、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   残留一千三百三十一轮：全 workspace 标准 test 30 目标 11→3 失败 / 27 通过（EXIT:1）；desktop 低风险 harness 已收口（ipc dual/vault-path/AIStream/provider 信封；focused 6/58）；剩余 data-portability powersync-round-trip、desktop git runtime/sync GitProcessError 16 测试、app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock；全仓 test 未完全绿、Web/Desktop E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   残留一千三百三十二轮：全 workspace 标准 test 30/30 项目通过（EXIT:0）；lint 36/36 + typecheck 34/34 + 标准 test 30/30 已齐；Web/Desktop 完整 E2E、prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
-  仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
+  残留一千三百三十三轮：VPS prod-like docker:local:up EXIT:0 + 六服务 healthy + 探针 OK（tip 140ce022a）；Web 认证主线两轮 9/9 + note-boundary 1/1；全仓 lint/typecheck/标准 test 复验 36/36 + 34/34 + 30/30 EXIT:0；governance-check GOV_EXIT:0；goal-workflow 8/8 红；Desktop Linux guest 未稳定复现；OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
+  仍缺：全量 Web/Desktop 业务 E2E 与 OAuth/App fixture 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 
 ## 14. 相关资料
