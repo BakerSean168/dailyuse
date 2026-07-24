@@ -7,9 +7,8 @@ import { formatLocalHHmm } from './format-local-hhmm';
 /**
  * Residual 1315: ScheduleFormDemo datetime-local composition dual retired onto
  * formatDateToYMD (YYYY-MM-DD) + formatLocalHHmm (HH:mm) soles.
- * Soft residual: formatDateToYMD / formatLocalHHmm / formatHHmmParts / formatHour
- * internal padStart bodies (padTwoDigits compose optional); setting/goal multi-site
- * formatTime keep-boundary; toLocalDateKey Date|number sole stays separate.
+ * Residual 1318: formatDateToYMD / formatLocalHHmm / formatHHmmParts / formatHour compose padTwoDigits.
+ * Soft residual: toLocalDateKey Date|number sole padStart; setting/goal multi-site formatTime keep-boundary.
  * Does not flip §13.2 checkboxes.
  */
 describe('ScheduleFormDemo datetime-local dual retired (residual 1315)', () => {
@@ -43,13 +42,19 @@ describe('ScheduleFormDemo datetime-local dual retired (residual 1315)', () => {
     expect(hhmm).not.toContain('formatDateToYMD');
   });
 
-  it('soft residual: padTwoDigits compose optional; setting/goal formatTime keep-boundary', () => {
+  it('Residual 1318: YMD/HH:mm soles compose padTwoDigits; setting/goal formatTime keep-boundary', () => {
     const parts = readFileSync(resolve(dir, 'format-hhmm-parts.ts'), 'utf8');
     const hour = readFileSync(resolve(dir, 'format-hour.ts'), 'utf8');
-    expect(parts).toContain("padStart(2, '0')");
-    expect(hour).toContain("padStart(2, '0')");
-    expect(ymd).toContain("padStart(2, '0')");
-    expect(hhmm).toContain("padStart(2, '0')");
+    for (const [label, source, re] of [
+      ['parts', parts, /export function formatHHmmParts\([\s\S]*?\n\}/],
+      ['hour', hour, /export function formatHour\([\s\S]*?\n\}/],
+      ['ymd', ymd, /export function formatDateToYMD\([\s\S]*?\n\}/],
+      ['hhmm', hhmm, /export function formatLocalHHmm\([\s\S]*?\n\}/],
+    ] as const) {
+      const body = source.match(re)?.[0] ?? '';
+      expect(body, label).toContain('padTwoDigits');
+      expect(body, label).not.toContain('padStart');
+    }
     const setting = readFileSync(
       resolve(dir, '../../modules/setting/components/SettingAdvancedActions.vue'),
       'utf8',

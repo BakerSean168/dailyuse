@@ -6,6 +6,7 @@ import { formatCapsuleTime } from '../../modules/schedule/composables/useCalenda
 
 /**
  * Residual 1294: multi-site HH:mm padStart dual retired onto formatLocalHHmm sole.
+ * Residual 1318: sole body padStart dual retired onto padTwoDigits composition.
  * - sole: packages/app-vue/src/shared/utils/format-local-hhmm.ts
  * - consumers: formatCapsuleTime alias, ReminderCapsulePreview formatTime, UpcomingRemindersWidget formatReminderTime
  * Soft residual 1237: dashboard relative i18n keep-boundary remains (Residual 1309 composes absolute HH:mm only)
@@ -32,7 +33,8 @@ describe('formatLocalHHmm dual retired (residual 1294)', () => {
     expect(sole).toMatch(/export function formatLocalHHmm\b/);
     const body = sole.match(/export function formatLocalHHmm\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('ms: number');
-    expect(body).toContain("padStart(2, '0')");
+    expect(body).toContain('padTwoDigits');
+    expect(body).not.toContain('padStart');
     expect(body).toContain('getHours');
     expect(body).toContain('getMinutes');
   });

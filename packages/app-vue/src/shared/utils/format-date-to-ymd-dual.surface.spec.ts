@@ -5,6 +5,7 @@ import { formatDateToYMD } from './format-date-to-ymd';
 
 /**
  * Residual 1252: formatDateToYMD dual retired onto app-vue shared sole.
+ * Residual 1318: sole body padStart dual retired onto padTwoDigits composition.
  * - sole: packages/app-vue/src/shared/utils/format-date-to-ymd.ts
  * - consumers: CreateScheduleDialog, TimeConfigSection, ReminderSection; Recurrence via handleCalendarSelect (Residual 1267)
  * Soft residual 1252/1255: parseToDate dual retired onto shared sole in residual 1255.
@@ -37,11 +38,12 @@ describe('formatDateToYMD dual retired (residual 1252)', () => {
     expect(sole).toContain('Residual 1252');
     expect(sole).toMatch(/export function formatDateToYMD\b/);
     expect(sole).toContain('getFullYear');
-    expect(sole).toContain("padStart(2, '0')");
     const body = sole.match(/export function formatDateToYMD\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('date: Date');
     expect(body).toContain('getMonth()');
     expect(body).toContain('getDate()');
+    expect(body).toContain('padTwoDigits');
+    expect(body).not.toContain('padStart');
     expect(body).toContain('`${y}-${m}-${d}`');
   });
 

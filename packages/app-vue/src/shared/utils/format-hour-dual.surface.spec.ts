@@ -5,6 +5,7 @@ import { formatHour } from './format-hour';
 
 /**
  * Residual 1276: formatHour dual retired onto app-vue shared sole.
+ * Residual 1318: sole body padStart dual retired onto padTwoDigits composition.
  * - sole: packages/app-vue/src/shared/utils/format-hour.ts
  * - consumers: DayViewCalendar + WeekViewCalendar
  * Soft residual 1276 / Residual 1279: formatEventTime keep-boundary (Day " - " vs Week "-") remains separate
@@ -30,10 +31,11 @@ describe('formatHour dual retired (residual 1276)', () => {
   it('owns sole formatHour body (Residual 1276)', () => {
     expect(sole).toContain('Residual 1276');
     expect(sole).toMatch(/export function formatHour\b/);
-    expect(sole).toContain("padStart(2, '0')");
     expect(sole).toContain(':00');
     const body = sole.match(/export function formatHour\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('hour: number');
+    expect(body).toContain('padTwoDigits');
+    expect(body).not.toContain('padStart');
     expect(body).not.toContain('CalendarEventItem');
     expect(body).not.toContain('all-day');
   });

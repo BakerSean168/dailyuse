@@ -5,6 +5,7 @@ import { formatHHmmParts } from './format-hhmm-parts';
 
 /**
  * Residual 1297: multi-site hour+minute HH:mm padStart dual retired onto formatHHmmParts sole.
+ * Residual 1318: sole body padStart dual retired onto padTwoDigits composition.
  * - sole: packages/app-vue/src/shared/utils/format-hhmm-parts.ts
  * - consumers: TaskCapsulePreview, DailyTodoWidget, task-template-presentation, TaskInstanceCard
  * Soft residual: formatLocalHHmm ms sole / formatHour :00 / formatEventTime separators stay separate
@@ -36,7 +37,8 @@ describe('formatHHmmParts dual retired (residual 1297)', () => {
     const body = sole.match(/export function formatHHmmParts\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('hour: number');
     expect(body).toContain('minute: number');
-    expect(body).toContain("padStart(2, '0')");
+    expect(body).toContain('padTwoDigits');
+    expect(body).not.toContain('padStart');
   });
 
   it('retires TaskCapsule / DailyTodo / presentation / TaskInstanceCard dual bodies onto sole', () => {

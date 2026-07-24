@@ -8,8 +8,9 @@ import { formatHHmmParts } from './format-hhmm-parts';
  * Residual 1312: multi-site two-digit padStart dual retired onto padTwoDigits sole.
  * - sole: packages/app-vue/src/shared/utils/pad-two-digits.ts
  * - consumers: TimeConfigSection, ReminderSection, CreateScheduleDialog hour/minute options + parts
- * Soft residual Residual 1315: ScheduleFormDemo datetime-local dual-retired onto formatDateToYMD + formatLocalHHmm;
- * formatHHmmParts/formatLocalHHmm/formatHour/formatDateToYMD padStart compose onto padTwoDigits optional
+ * Residual 1315: ScheduleFormDemo datetime-local dual-retired onto formatDateToYMD + formatLocalHHmm.
+ * Residual 1318: formatHHmmParts/formatLocalHHmm/formatHour/formatDateToYMD compose padTwoDigits.
+ * Soft residual: toLocalDateKey Date|number padStart; setting/goal multi-site formatTime keep-boundary.
  * Does not flip §13.2 checkboxes.
  */
 describe('padTwoDigits dual retired (residual 1312)', () => {

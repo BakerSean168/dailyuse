@@ -61,7 +61,9 @@ describe('calendarEventSourceLabel dual retired (residual 1291)', () => {
     const hhmm = readFileSync(resolve(dir, 'format-local-hhmm.ts'), 'utf8');
     expect(hhmm).toContain('Residual 1294');
     expect(hhmm).toMatch(/export function formatLocalHHmm\b/);
-    expect(hhmm).toContain("padStart(2, '0')");
+    const hhmmBody = hhmm.match(/export function formatLocalHHmm\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(hhmmBody).toContain('padTwoDigits');
+    expect(hhmmBody).not.toContain('padStart');
   });
 
   it('runtime: sole maps source keys through translate', () => {
