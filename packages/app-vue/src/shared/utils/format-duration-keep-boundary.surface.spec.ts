@@ -6,9 +6,11 @@ import { describe, expect, it } from 'vitest';
  * Residual 1243: formatDuration keep-boundary (schedule ms export vs minutes i18n vs task/AI variants).
  * - app-vue schedule-presentation: durationMs null→'-'; ms/sec presentation i18n
  * - app-vue ScheduleConflictAlert: total minutes → schedule.duration.* (hours-only band)
+ * Residual 1324: ScheduleConflictAlert + ScheduleFormDemo minutes maps dual-retired onto
+ * formatScheduleDurationMinutes sole (still minutes unit vs presentation durationMs).
  * Soft residual 1243:
  * - ConflictAlert: ms floor; hoursMinutes always when h>0
- * - ScheduleFormDemo: local minutes map duplicate
+ * - schedule-presentation durationMs/Sec keep-boundary remains
  * - TaskDependencyGraph: concatenative task.dependencyGraph labels
  * - formatTaskDuration: Intl unit hour/minute
  * - AI formatDurationMs: agent durationMs/Sec toFixed(1)
@@ -69,16 +71,19 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
 
   it('differs from minutes-based ScheduleConflictAlert formatDuration (no force-merge)', () => {
     expect(conflictAlert).toContain('Residual 1243 keep-boundary');
+    expect(conflictAlert).toContain('Residual 1324');
     expect(conflictAlert).toMatch(/const formatDuration\b/);
-    expect(conflictAlert).toContain('schedule.duration.minutes');
-    expect(conflictAlert).toContain('schedule.duration.hours');
-    expect(conflictAlert).toContain('schedule.duration.hoursMinutes');
-    const body = conflictAlert.match(/const formatDuration = \([\s\S]*?\n\};/)?.[0] ?? '';
-    expect(body).toContain('minutes < 60');
-    expect(body).toContain('hours');
+    expect(conflictAlert).toContain('formatScheduleDurationMinutes');
+    const body = conflictAlert.match(/const formatDuration = \([\s\S]*?;/)?.[0] ?? '';
+    expect(body).toContain('formatScheduleDurationMinutes');
     expect(body).not.toContain('durationMs');
     expect(body).not.toContain("return '-'");
     expect(body).not.toContain('schedule.presentation');
+    // sole owns minutes schedule.duration.* bands
+    const sole = readFileSync(resolve(dir, 'format-schedule-duration-minutes.ts'), 'utf8');
+    expect(sole).toContain('schedule.duration.minutes');
+    expect(sole).toContain('schedule.duration.hours');
+    expect(sole).toContain('schedule.duration.hoursMinutes');
   });
 
   it('soft residual 1243 ms floor / demo / task graph / Intl / AI / buildDuration stay separate', () => {
@@ -90,8 +95,12 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
     expect(msBody).not.toContain('schedule.duration.hours"');
     expect(msBody).toContain('schedule.duration.hoursMinutes');
 
-    expect(formDemo).toContain('Soft residual 1243');
-    expect(formDemo).toContain('schedule.duration.hours');
+    // Residual 1324: FormDemo minutes dual retired onto formatScheduleDurationMinutes sole
+    expect(formDemo).toContain('Residual 1324');
+    expect(formDemo).toContain('formatScheduleDurationMinutes');
+    const formBody = formDemo.match(/function formatDuration\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(formBody).toContain('formatScheduleDurationMinutes');
+    expect(formBody).not.toContain('schedule.duration.minutes');
 
     expect(taskGraph).toContain('Soft residual 1243');
     const graphBody = taskGraph.match(/function formatDuration\([\s\S]*?\n\}/)?.[0] ?? '';

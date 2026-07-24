@@ -127,6 +127,7 @@ import type {
 } from '@dailyuse/contracts/schedule';
 import { formatDateToYMD } from '../../../shared/utils/format-date-to-ymd';
 import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
+import { formatScheduleDurationMinutes } from '../../../shared/utils/format-schedule-duration-minutes';
 
 interface Props {
   loading?: boolean;
@@ -175,17 +176,9 @@ const isFormValid = computed(() => {
   return form.title && form.startTime && form.endTime && form.endTime > form.startTime;
 });
 
-/**
- * Soft residual 1243: ScheduleFormDemo local formatDuration — same minutes schedule.duration.* map as conflict alert.
- * Package-local demo helper; no force-extract merge into ScheduleConflictAlert.
- */
+/** Residual 1324: formatDuration dual retired onto formatScheduleDurationMinutes sole. */
 function formatDuration(minutes: number): string {
-  if (minutes < 60) return t('schedule.duration.minutes', { n: minutes });
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return mins > 0
-    ? t('schedule.duration.hoursMinutes', { h: hours, m: mins })
-    : t('schedule.duration.hours', { h: hours });
+  return formatScheduleDurationMinutes(minutes, t);
 }
 
 function handleStartTimeChange(event: Event) {
