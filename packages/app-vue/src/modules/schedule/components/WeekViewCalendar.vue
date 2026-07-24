@@ -160,7 +160,11 @@ function getDayName(day: number): string {
 }
 
 // Residual 1276: formatHour dual retired onto shared sole.
-// Soft residual 1276: formatEventTime Week separator "-" (≠ Day " - "; ≠ formatCalendarEventTimeRange en-dash).
+/**
+ * Residual 1279 keep-boundary: Week formatEventTime — compact "-" between HH:mm (dense week cells).
+ * all-day → i18n; padStart local clock (not Intl).
+ * Soft residual 1279: Day spaced " - " + formatCalendarEventTimeRange en-dash sole (no force-merge).
+ */
 function formatEventTime(event: CalendarEventItem): string {
   if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
   const fmt = (ts: number) => {

@@ -125,7 +125,11 @@ function isCurrentHour(hour: number): boolean {
 }
 
 // Residual 1276: formatHour dual retired onto shared sole.
-// Soft residual 1276: formatEventTime Day separator " - " (≠ Week "-"; ≠ formatCalendarEventTimeRange en-dash).
+/**
+ * Residual 1279 keep-boundary: Day formatEventTime — space-hyphen-space " - " between HH:mm.
+ * all-day → i18n; padStart local clock (not Intl).
+ * Soft residual 1279: Week compact "-" + formatCalendarEventTimeRange en-dash sole (no force-merge).
+ */
 function formatEventTime(event: CalendarEventItem): string {
   if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
   const fmt = (ts: number) => {

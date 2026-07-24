@@ -7,7 +7,7 @@ import { formatHour } from './format-hour';
  * Residual 1276: formatHour dual retired onto app-vue shared sole.
  * - sole: packages/app-vue/src/shared/utils/format-hour.ts
  * - consumers: DayViewCalendar + WeekViewCalendar
- * Soft residual 1276: formatEventTime Day (" - ") vs Week ("-") separators stay co-located
+ * Soft residual 1276 / Residual 1279: formatEventTime keep-boundary (Day " - " vs Week "-") remains separate
  * Soft residual 1273: formatCalendarEventTimeRange dual-retired sole remains separate
  * Does not flip §13.2 checkboxes.
  */
@@ -53,14 +53,14 @@ describe('formatHour dual retired (residual 1276)', () => {
     }
   });
 
-  it('soft residual 1276 formatEventTime separators + event-range sole stay separate', () => {
-    expect(day).toContain('Soft residual 1276');
+  it('soft residual 1279 formatEventTime keep-boundary + event-range sole stay separate', () => {
+    expect(day).toContain('Residual 1279 keep-boundary');
     const dayEvent = day.match(/function formatEventTime\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(dayEvent).toContain(' - ');
     expect(dayEvent).not.toContain('–');
     expect(dayEvent).not.toContain('formatCalendarEventTimeRange');
 
-    expect(week).toContain('Soft residual 1276');
+    expect(week).toContain('Residual 1279 keep-boundary');
     const weekEvent = week.match(/function formatEventTime\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(weekEvent).toContain('}-${');
     expect(weekEvent).not.toContain(' - ');
