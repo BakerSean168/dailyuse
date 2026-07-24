@@ -750,6 +750,146 @@ export default {
     },
   },
 
+  // ── 目标模块 ───────────────────────────────────────────
+  goal: {
+    dialog: {
+      titleCreate: '创建目标',
+      titleEdit: '编辑目标',
+      descCreate: '用清晰结果与时间定义目标。',
+      descEdit: '更新目标的名称、描述与详情。',
+      tabBasicInfo: '基本信息',
+      tabKeyResults: '关键结果',
+      goalTitle: '目标名称',
+      goalTitlePlaceholder: '你想达成什么？',
+      description: '描述',
+      descriptionPlaceholder: '成功标准、背景或备注',
+      category: '分类',
+      categoryPlaceholder: '选择分类',
+      categoryProduct: '产品',
+      categoryEngineering: '工程',
+      categoryMarketing: '市场',
+      categoryPersonal: '个人',
+      categoryHealth: '健康',
+      categoryFinance: '财务',
+      categoryLearning: '学习',
+      titleRequired: '目标名称不能为空',
+    },
+  },
+
+  // ── 任务模块 ───────────────────────────────────────────
+  task: {
+    templateCard: {
+      statusActive: '进行中',
+      statusPaused: '已暂停',
+      statusArchived: '已归档',
+      priorityScore: '优先级 {score}/100',
+      noDescription: '暂无描述',
+      startsAt: '开始于',
+      noRecurrence: '不重复',
+      noTags: '无标签',
+      linkedGoal: '关联目标',
+      parentTask: '父任务',
+      subtasksCount: '{count} 个子任务',
+      predecessorsCount: '{count} 个前置',
+      successorsCount: '{count} 个后置',
+      blockedState: '已阻塞',
+      totalCount: '总数',
+      completionRate: '完成率',
+      pause: '暂停',
+      resume: '恢复',
+      activate: '激活',
+      locateInGraph: '在图中定位',
+      createdAt: '创建于',
+    },
+    metadata: {
+      importanceCritical: '关键',
+      importanceHigh: '高',
+      importanceMedium: '中',
+      importanceLow: '低',
+      importanceMinimal: '极低',
+      selectColor: '选择颜色',
+    },
+    timeConfig: {
+      allDay: '全天',
+      timePoint: '时间点',
+      timeRange: '时间段',
+    },
+    recurrence: {
+      description: '每 {interval} {unit}',
+      intervalHintDay: '天',
+      intervalHintWeek: '周',
+      intervalHintMonth: '月',
+      intervalHintYear: '年',
+    },
+    error: {
+      createTemplateWithTodayInstanceSuccess: '已生成今日任务实例（{count}）',
+      createTemplateWithoutTodayInstanceSuccess: '今日没有生成任务实例（{count}）',
+      createFailed: '创建任务模板失败',
+      updateSuccess: '任务模板已更新',
+      updateFailed: '更新任务模板失败',
+      deleteSuccess: '任务模板已删除',
+      deleteFailed: '删除任务模板失败',
+      activateSuccess: '任务模板已激活',
+      pauseSuccess: '任务模板已暂停',
+      archiveSuccess: '任务模板已归档',
+      completeSuccess: '任务已完成',
+      skipSuccess: '任务已跳过',
+    },
+  },
+
+  // ── 通知模块 ───────────────────────────────────────────
+  notification: {
+    title: '通知',
+    empty: '暂无通知',
+    emptyDescription: '目前没有新通知。',
+    allCaughtUp: '已全部处理',
+    filter: {
+      all: '全部',
+      unread: '未读',
+      unreadBadge: '{count}',
+    },
+    action: {
+      markAllRead: '全部标为已读',
+    },
+    toast: {
+      allMarkedRead: '已全部标为已读',
+      deleted: '通知已删除',
+    },
+  },
+
+  // ── 提醒模块 ───────────────────────────────────────────
+  reminder: {
+    schedule: {
+      trigger: '触发',
+      nextTrigger: '下次触发',
+      recurrence: '重复',
+      daily: '每天',
+      oneTime: '一次性',
+      everyMinutes: '每 {minutes} 分钟',
+      notConfigured: '未配置',
+      noNextTrigger: '无下次触发',
+      state: {
+        upcoming: '即将到来',
+        missed: '已错过',
+        paused: '已暂停',
+        failed: '上次触发失败',
+        unscheduled: '未调度',
+      },
+    },
+    templateDetail: {
+      triggerSummaryTime: '{time}',
+      triggerSummaryInterval: '每 {minutes} 分钟',
+      notConfigured: '未配置',
+    },
+    lifecycle: {
+      statusRunning: '运行中',
+      statusPaused: '已暂停',
+      badgeGlobalPaused: '全局暂停',
+      badgeGroupControlled: '分组控制',
+      badgeSelfControlled: '自主控制',
+    },
+  },
+
   // ── 设置 ───────────────────────────────────────────────
   setting: {
     notifications: {

@@ -46,8 +46,8 @@ test.describe('Goal CRUD', () => {
     const dialog = goalDialog(page);
     await expect(dialog).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
 
-    await page.getByRole('textbox', { name: /Goal Name|目标名称/i }).fill(updatedName);
-    await page.getByRole('textbox', { name: /Description|描述/i }).fill(updatedDescription);
+    await page.getByTestId('goal-name-input').fill(updatedName);
+    await page.getByTestId('goal-description-input').fill(updatedDescription);
     await goalSubmitButton(page).click();
 
     await expect(dialog).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
@@ -192,8 +192,9 @@ async function createGoal(
   await openCreateGoalDialog(page);
 
   const dialog = goalDialog(page);
-  await page.getByRole('textbox', { name: /Goal Name|目标名称/i }).fill(data.name);
-  await page.getByRole('textbox', { name: /Description|描述/i }).fill(data.description);
+  // Prefer stable testids (sync helpers); role+accessible name still depends on i18n labels.
+  await page.getByTestId('goal-name-input').fill(data.name);
+  await page.getByTestId('goal-description-input').fill(data.description);
   await goalSubmitButton(page).click();
   await expect(dialog).toBeHidden({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
 
@@ -217,7 +218,7 @@ async function openCreateGoalDialog(page: Page): Promise<void> {
 }
 
 function goalDialog(page: Page): Locator {
-  return page.getByRole('dialog');
+  return page.getByTestId('goal-dialog');
 }
 
 function goalSubmitButton(page: Page): Locator {

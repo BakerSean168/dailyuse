@@ -102,9 +102,9 @@ function createReminderPayload(title: string, triggerAt: number) {
       fixedTime: null,
       interval: { minutes: 1, startTime: triggerAt },
     },
+    // Residual 835: ActiveTimeConfigDTO uses activatedAt (not startDate/endDate).
     activeTime: {
-      startDate: triggerAt,
-      endDate: null,
+      activatedAt: triggerAt,
     },
     notificationConfig: {
       channels: ['InApp'],

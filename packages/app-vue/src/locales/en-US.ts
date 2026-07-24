@@ -782,6 +782,148 @@ export default {
     },
   },
 
+  // ── Goal module ────────────────────────────────────────
+  goal: {
+    dialog: {
+      titleCreate: 'Create goal',
+      titleEdit: 'Edit goal',
+      descCreate: 'Define a goal with clear outcomes and timing.',
+      descEdit: 'Update this goal’s title, description, and details.',
+      tabBasicInfo: 'Basic info',
+      tabKeyResults: 'Key results',
+      goalTitle: 'Goal name',
+      goalTitlePlaceholder: 'What do you want to achieve?',
+      description: 'Description',
+      descriptionPlaceholder: 'Success criteria, context, or notes',
+      category: 'Category',
+      categoryPlaceholder: 'Select a category',
+      categoryProduct: 'Product',
+      categoryEngineering: 'Engineering',
+      categoryMarketing: 'Marketing',
+      categoryPersonal: 'Personal',
+      categoryHealth: 'Health',
+      categoryFinance: 'Finance',
+      categoryLearning: 'Learning',
+      titleRequired: 'Goal name is required',
+    },
+  },
+
+  // ── Task module ────────────────────────────────────────
+  task: {
+    templateCard: {
+      statusActive: 'Active',
+      statusPaused: 'Paused',
+      statusArchived: 'Archived',
+      priorityScore: 'Priority {score}/100',
+      noDescription: 'No description',
+      startsAt: 'Starts',
+      noRecurrence: 'No recurrence',
+      noTags: 'No tags',
+      linkedGoal: 'Linked goal',
+      parentTask: 'Parent task',
+      subtasksCount: '{count} subtasks',
+      predecessorsCount: '{count} predecessors',
+      successorsCount: '{count} successors',
+      blockedState: 'Blocked',
+      totalCount: 'Total',
+      completionRate: 'Completion',
+      pause: 'Pause',
+      resume: 'Resume',
+      activate: 'Activate',
+      locateInGraph: 'Locate in graph',
+      createdAt: 'Created',
+    },
+    metadata: {
+      importanceCritical: 'Critical',
+      importanceHigh: 'High',
+      importanceMedium: 'Medium',
+      importanceLow: 'Low',
+      importanceMinimal: 'Minimal',
+      selectColor: 'Select color',
+    },
+    timeConfig: {
+      allDay: 'All day',
+      timePoint: 'Time point',
+      timeRange: 'Time range',
+    },
+    recurrence: {
+      description: 'Every {interval} {unit}',
+      intervalHintDay: 'day(s)',
+      intervalHintWeek: 'week(s)',
+      intervalHintMonth: 'month(s)',
+      intervalHintYear: 'year(s)',
+    },
+    error: {
+      createTemplateWithTodayInstanceSuccess:
+        "Task template created and today's task instance generated ({count})",
+      createTemplateWithoutTodayInstanceSuccess:
+        'Task template created — no task instance was generated for today ({count})',
+      createFailed: 'Could not create task template',
+      updateSuccess: 'Task template updated',
+      updateFailed: 'Could not update task template',
+      deleteSuccess: 'Task template deleted',
+      deleteFailed: 'Could not delete task template',
+      activateSuccess: 'Task template activated',
+      pauseSuccess: 'Task template paused',
+      archiveSuccess: 'Task template archived',
+      completeSuccess: 'Task completed',
+      skipSuccess: 'Task skipped',
+    },
+  },
+
+  // ── Notification module ────────────────────────────────
+  notification: {
+    title: 'Notifications',
+    empty: 'No notifications',
+    emptyDescription: 'You are all caught up.',
+    allCaughtUp: 'All caught up',
+    filter: {
+      all: 'All',
+      unread: 'Unread',
+      unreadBadge: '{count}',
+    },
+    action: {
+      markAllRead: 'Mark all as read',
+    },
+    toast: {
+      allMarkedRead: 'All notifications marked as read',
+      deleted: 'Notification deleted',
+    },
+  },
+
+  // ── Reminder module ────────────────────────────────────
+  reminder: {
+    schedule: {
+      trigger: 'Trigger',
+      nextTrigger: 'Next trigger',
+      recurrence: 'Recurrence',
+      daily: 'Daily',
+      oneTime: 'One time',
+      everyMinutes: 'Every {minutes} minutes',
+      notConfigured: 'Not configured',
+      noNextTrigger: 'No next trigger',
+      state: {
+        upcoming: 'Upcoming',
+        missed: 'Missed',
+        paused: 'Paused',
+        failed: 'Last trigger failed',
+        unscheduled: 'Not scheduled',
+      },
+    },
+    templateDetail: {
+      triggerSummaryTime: 'At {time}',
+      triggerSummaryInterval: 'Every {minutes} minutes',
+      notConfigured: 'Not configured',
+    },
+    lifecycle: {
+      statusRunning: 'Running',
+      statusPaused: 'Paused',
+      badgeGlobalPaused: 'Paused globally',
+      badgeGroupControlled: 'Group-controlled',
+      badgeSelfControlled: 'Self-controlled',
+    },
+  },
+
   // ── Settings ───────────────────────────────────────────
   setting: {
     notifications: {

@@ -9361,6 +9361,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > auth-oauth e2e **1/1 绿**；install 仍 0；§13.2 **12 [x] / 3 [ ]** 不改 checkbox。
 > 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — verification re-run）：Web auth full **14/14**、
 > goal-workflow+note-boundary **9/9**、Desktop guest **1/1**；install count 仍 0；§13.2 不改 checkbox。
+> 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — core business e2e）：manifest code 再提交仍 404；
+> install count 仍 0；goal/reminder/task/notification e2e 原 7 红已收口（testid + activatedAt + locales）；
+> §13.2 **12 [x] / 3 [ ]** 不改 checkbox；PR readiness no。
 
 
 
@@ -13146,6 +13149,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - Web 认证全套（flow+login+password+register+oauth+page-contract）**14/14 绿**；goal-workflow+note-boundary **9/9**；Desktop guest xvfb **1/1**。
   - 三入口证据增强但仍为部分：账密/e2e-mock GitHub/访客 e2e 绿；真实 App install + installation-token 路径仍外部阻塞。
   - §13.2 **12 [x] / 3 [ ]**，**不改 checkbox**；PR readiness 仍为 no。
+
+  残留一千三百三十三轮续（manifest callback 再提交 + core business e2e 7 红收口；install 仍外部阻塞）：
+  - 用户再提交 Manifest 转换回调 `code=…&state=…`；convert **HTTP 404**（code 已消费）；保留既有 App **4385206** / slug `memoflow-dev-test`；JWT 再轮询 **installations_count=0** → `EXTERNAL_BLOCK_BROWSER_CONSENT`。
+  - 可实现残留：core business e2e 先前 **41 pass / 7 fail** → 根因修复后目标套件全绿：
+    - goal-crud：稳定 testid（`goal-dialog` / `goal-name-input` / `goal-description-input`），不再依赖缺失 i18n 的 accessible name。
+    - reminder-notification-loop：`activeTime.activatedAt`（Residual 835；弃用 startDate/endDate）。
+    - app-vue locales 补 `goal.dialog`、`task.templateCard|metadata|timeConfig|recurrence|error`、`reminder.schedule|templateDetail`、`notification.filter`（en-US + zh-CN），消除 raw key 渲染。
+  - 验证：`web:e2e` goal+reminder+task+notification 相关 **18/18 绿**（中间轮 16/18 后补 toast/badge 键再 **2/2 绿**）；install 仍 0；§13.2 **不改 checkbox**；PR readiness 仍为 no。
 
 
 ## 14. 相关资料
