@@ -35,6 +35,11 @@ function toDateInput(timestamp: number | null) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
+/**
+ * Residual 1225 keep-boundary: app-react goal parseDateInput — trim + Date.parse + isNaN→null.
+ * Goal editor targetDate helper; empty after trim → null; invalid parse → null.
+ * Soft residual 1225: app-vue task time-config falsy-only + getTime (no force-merge).
+ */
 function parseDateInput(value: string) {
   const normalized = value.trim();
   if (normalized.length === 0) {

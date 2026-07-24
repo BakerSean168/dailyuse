@@ -338,7 +338,9 @@ const formatDateToInput = (timestamp: number): string => {
 };
 
 /**
- * 解析日期字符串为时间戳
+ * Residual 1225 keep-boundary: app-vue task parseDateInput — YMD string → epoch ms (no trim/NaN guard).
+ * Task time-config form helper; falsy empty → null; Date(dateStr+'T00:00:00').getTime().
+ * Soft residual 1225: app-react GoalEditor trim + Date.parse + isNaN→null differ (no force-merge).
  */
 const parseDateInput = (dateStr: string): number | null => {
   if (!dateStr) return null;
