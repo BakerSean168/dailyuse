@@ -8,6 +8,7 @@ import { formatCalendarEventTimeRange } from './format-calendar-event-time-range
  * - sole: packages/app-vue/src/shared/utils/format-calendar-event-time-range.ts
  * - consumers: DayDetailSheet + TaskEventActionPanel (was identical local formatTimeRange)
  * Soft residual 1213: app-react useScheduleAgenda Intl zh-CN pair keep-boundary remains separate.
+ * Residual 1303: inner HH:mm dual retired onto formatLocalHHmm (en-dash range contract remains).
  * Does not flip §13.2 checkboxes.
  */
 describe('formatCalendarEventTimeRange dual retired (residual 1273)', () => {
@@ -30,10 +31,12 @@ describe('formatCalendarEventTimeRange dual retired (residual 1273)', () => {
     expect(sole).toContain('Residual 1273');
     expect(sole).toMatch(/export function formatCalendarEventTimeRange\b/);
     expect(sole).toContain("displayMode === 'all-day'");
-    expect(sole).toContain('padStart');
+    expect(sole).toContain('formatLocalHHmm');
+    expect(sole).not.toContain('padStart');
     expect(sole).toContain('–');
     const body = sole.match(/export function formatCalendarEventTimeRange\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('allDayLabel');
+    expect(body).toContain('formatLocalHHmm');
     expect(body).not.toContain('Intl.DateTimeFormat');
     expect(body).not.toContain('zh-CN');
   });

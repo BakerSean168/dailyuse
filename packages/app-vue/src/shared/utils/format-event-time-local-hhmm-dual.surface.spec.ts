@@ -6,7 +6,7 @@ import { formatLocalHHmm } from './format-local-hhmm';
 /**
  * Residual 1300: Day/Week formatEventTime inner HH:mm dual retired onto formatLocalHHmm sole.
  * Residual 1279 separator keep-boundary remains (Day " - " vs Week compact "-").
- * Soft residual: formatCalendarEventTimeRange en-dash sole body may still padStart locally.
+ * Soft residual: Month eventClass translucent/text vs calendarEventBgClass; getEventStyle Day px vs Week %.
  * Does not flip §13.2 checkboxes.
  */
 describe('formatEventTime local HH:mm dual retired (residual 1300)', () => {
@@ -44,11 +44,26 @@ describe('formatEventTime local HH:mm dual retired (residual 1300)', () => {
     expect(weekBody).not.toContain(' - ');
   });
 
-  it('soft residual: formatCalendarEventTimeRange en-dash sole stays separate', () => {
-    const range = readFileSync(resolve(dir, 'format-calendar-event-time-range.ts'), 'utf8');
-    expect(range).toContain('Residual 1273');
-    expect(range).toContain('–');
-    expect(range).not.toContain('formatLocalHHmm');
+  it('soft residual: Month eventClass + getEventStyle Day/Week keep-boundaries stay separate', () => {
+    const month = readFileSync(
+      resolve(dir, '../../modules/schedule/components/MonthViewCalendar.vue'),
+      'utf8',
+    );
+    const dayView = readFileSync(
+      resolve(dir, '../../modules/schedule/components/DayViewCalendar.vue'),
+      'utf8',
+    );
+    const weekView = readFileSync(
+      resolve(dir, '../../modules/schedule/components/WeekViewCalendar.vue'),
+      'utf8',
+    );
+    expect(month).toMatch(/function eventClass\b/);
+    expect(month).toContain('bg-warning/15');
+    expect(month).not.toContain('calendarEventBgClass');
+    const dayStyle = dayView.match(/function getEventStyle\([\s\S]*?\n\}/)?.[0] ?? '';
+    const weekStyle = weekView.match(/function getEventStyle\([\s\S]*?\n\}/)?.[0] ?? '';
+    expect(dayStyle).toContain('px');
+    expect(weekStyle).toContain('%');
   });
 
   it('runtime: formatLocalHHmm agrees with Day/Week clock fragment', () => {
