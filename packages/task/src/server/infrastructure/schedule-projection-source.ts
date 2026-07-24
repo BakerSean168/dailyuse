@@ -90,6 +90,11 @@ function calculateReminderAt(
   return getInstanceAnchorTime(instance) - convertUnitToMs(trigger.relativeValue, trigger.relativeUnit);
 }
 
+/**
+ * Residual 1177 keep-boundary: task schedule-projection buildTaskName — Template + TaskReminder domain.
+ * Relative pre-reminder / Absolute timed wording; not goal RemainingDays/progress naming.
+ * Soft residual 1177: goal schedule-projection buildTaskName stays Goal+ReminderTrigger domain-specific (no force-merge).
+ */
 function buildTaskName(
   template: TaskTemplateServerDTO,
   trigger: {

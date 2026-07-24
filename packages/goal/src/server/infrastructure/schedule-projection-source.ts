@@ -30,6 +30,11 @@ function calculateTriggerAt(goal: GoalServerDTO, trigger: ReminderTrigger): numb
   return null;
 }
 
+/**
+ * Residual 1177 keep-boundary: goal schedule-projection buildTaskName — Goal + ReminderTrigger domain.
+ * RemainingDays / TimeProgressPercentage wording; not task template Relative/Absolute naming.
+ * Soft residual 1177: task schedule-projection buildTaskName stays template+trigger domain-specific (no force-merge).
+ */
 function buildTaskName(goal: GoalServerDTO, trigger: ReminderTrigger): string {
   if (trigger.type === ReminderTriggerType.RemainingDays) {
     return `${goal.name} · 剩余 ${trigger.value} 天提醒`;
