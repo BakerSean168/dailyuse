@@ -14,13 +14,8 @@ import {
   ThemedText,
 } from '@dailyuse/ui-react-native';
 
-function formatDate(timestamp: number | null) {
-  if (!timestamp) {
-    return 'Not set';
-  }
-
-  return new Date(timestamp).toLocaleDateString();
-}
+// Residual 1261: formatDate dual retired onto shared formatDateNotSet sole (date-only + English 'Not set').
+import { formatDateNotSet as formatDate } from '../utils/format-date-not-set';
 
 export function AccountScreen() {
   const router = useRouter();
