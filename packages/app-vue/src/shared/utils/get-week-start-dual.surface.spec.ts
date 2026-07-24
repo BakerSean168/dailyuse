@@ -9,6 +9,7 @@ import { getWeekStart, toLocalDateKey } from '../../modules/schedule/composables
  * - consumers: WeekViewCalendar + ScheduleCalendarView
  * Soft residual 1282: toLocalDateKey dual-retired sole remains separate
  * Soft residual 1285: formatCapsuleTime / multi-site HH:mm padStart keep-boundaries remain separate
+ * Soft residual 1288: eventBgClass dual retired onto calendarEventBgClass sole
  * Does not flip §13.2 checkboxes.
  */
 describe('getWeekStart dual retired (residual 1285)', () => {

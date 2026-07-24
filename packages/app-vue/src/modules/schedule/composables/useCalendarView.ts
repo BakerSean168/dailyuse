@@ -54,6 +54,23 @@ export function getWeekStart(date: Date): Date {
   return d;
 }
 
+/**
+ * Residual 1288: sole calendarEventBgClass — conflict/source solid bg for Day/Week timed cells.
+ * Dual-retired from DayViewCalendar + WeekViewCalendar local eventBgClass copies.
+ * Soft residual 1288: Month eventClass uses translucent /text variants (keep-boundary).
+ * Soft residual 1288: getEventStyle Day px vs Week % layout keep-boundary (no force-merge).
+ */
+export function calendarEventBgClass(event: Pick<CalendarEventItem, 'source' | 'hasConflict'>): string {
+  if (event.hasConflict) return 'bg-warning';
+  const map: Record<CalendarEventItem['source'], string> = {
+    schedule: 'bg-primary',
+    goal: 'bg-success',
+    task: 'bg-info',
+  };
+  return map[event.source];
+}
+
+
 
 /** HH:mm in local time for shell schedule capsule. */
 export function formatCapsuleTime(ms: number): string {

@@ -37,7 +37,7 @@
               v-for="event in getAllDayEventsForDay(day.date)"
               :key="event.id"
               class="block w-full rounded px-2 py-1 text-left text-[11px] text-white"
-              :class="eventBgClass(event)"
+              :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
             >
               <span class="block truncate">{{ event.title }}</span>
@@ -74,7 +74,7 @@
               :key="event.id"
               class="event-card absolute left-0.5 right-0.5 rounded px-2 py-1 cursor-pointer transition-transform hover:scale-105 z-20 text-white"
               :style="getEventStyle(event)"
-              :class="eventBgClass(event)"
+              :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
             >
               <div class="text-[10px] opacity-90">{{ formatEventTime(event) }}</div>
@@ -93,7 +93,7 @@ import { computed } from 'vue';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { getWeekStart, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
+import { calendarEventBgClass, getWeekStart, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatHour } from '../../../shared/utils/format-hour';
 
 interface Props {
@@ -153,6 +153,7 @@ function getDayName(day: number): string {
 // Residual 1276: formatHour dual retired onto shared sole.
 // Residual 1282: toDateStr dual retired onto toLocalDateKey sole.
 // Residual 1285: getWeekStart dual retired onto schedule sole.
+// Residual 1288: eventBgClass dual retired onto calendarEventBgClass sole.
 /**
  * Residual 1279 keep-boundary: Week formatEventTime — compact "-" between HH:mm (dense week cells).
  * all-day → i18n; padStart local clock (not Intl).
@@ -181,16 +182,6 @@ function getAllDayEventsForDay(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter(
     (event) => event.displayMode === 'all-day' && toLocalDateKey(event.startTime) === dateStr,
   );
-}
-
-function eventBgClass(event: CalendarEventItem): string {
-  if (event.hasConflict) return 'bg-warning';
-  const map: Record<CalendarEventItem['source'], string> = {
-    schedule: 'bg-primary',
-    goal: 'bg-success',
-    task: 'bg-info',
-  };
-  return map[event.source];
 }
 
 function getEventStyle(event: CalendarEventItem) {

@@ -15,7 +15,7 @@
               v-for="event in allDayEvents"
               :key="event.id"
               class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white"
-              :class="eventBgClass(event)"
+              :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
             >
               <span class="truncate">{{ event.title }}</span>
@@ -53,7 +53,7 @@
             :key="event.id"
             class="absolute left-1 right-1 rounded-md px-2 py-1 cursor-pointer transition-all hover:shadow-md z-20 text-white text-xs"
             :style="getEventStyle(event)"
-            :class="eventBgClass(event)"
+            :class="calendarEventBgClass(event)"
             @click="emit('event-click', event)"
           >
             <div class="font-medium truncate">{{ event.title }}</div>
@@ -70,7 +70,7 @@
 import { computed } from 'vue';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
+import { calendarEventBgClass, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatHour } from '../../../shared/utils/format-hour';
 
 interface Props {
@@ -118,6 +118,7 @@ function isCurrentHour(hour: number): boolean {
 
 // Residual 1276: formatHour dual retired onto shared sole.
 // Residual 1282: toDateStr dual retired onto toLocalDateKey sole.
+// Residual 1288: eventBgClass dual retired onto calendarEventBgClass sole.
 /**
  * Residual 1279 keep-boundary: Day formatEventTime — space-hyphen-space " - " between HH:mm.
  * all-day → i18n; padStart local clock (not Intl).
@@ -130,16 +131,6 @@ function formatEventTime(event: CalendarEventItem): string {
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
   };
   return `${fmt(event.startTime)} - ${fmt(event.endTime)}`;
-}
-
-function eventBgClass(event: CalendarEventItem): string {
-  if (event.hasConflict) return 'bg-warning';
-  const map: Record<CalendarEventItem['source'], string> = {
-    schedule: 'bg-primary',
-    goal: 'bg-success',
-    task: 'bg-info',
-  };
-  return map[event.source];
 }
 
 function getEventStyle(event: CalendarEventItem) {
