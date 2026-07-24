@@ -9359,6 +9359,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 安装仍需浏览器：https://github.com/apps/memoflow-dev-test/installations/new
 > 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — e2e-mock OAuth）：真实 GITHUB_OAUTH_* 不再挤掉 e2e mock；
 > auth-oauth e2e **1/1 绿**；install 仍 0；§13.2 **12 [x] / 3 [ ]** 不改 checkbox。
+> 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — verification re-run）：Web auth full **14/14**、
+> goal-workflow+note-boundary **9/9**、Desktop guest **1/1**；install count 仍 0；§13.2 不改 checkbox。
 
 
 
@@ -13137,6 +13139,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - 根因：gitignored `.env.test.local` 写入真实 `GITHUB_OAUTH_*` 后覆盖 e2e 车道默认 `e2e-mock`，`auth-oauth` 跳到真实 github.com/login（无浏览器同意则超时）。
   - 修复：`getGithubOAuthConfig()` 在 `RUNTIME_LANE=e2e` 时强制 `e2e-mock`（App 凭据仍走 `getGithubAppConfig()` / live-github 独立路径）。
   - 验证：surface **2/2**；`auth-oauth` e2e **1/1 绿**；page-contract 此前 **5/5**；install count 仍 **0**；§13.2 **不改 checkbox**。
+
+
+  残留一千三百三十三轮续（verification re-run after e2e-mock；install 仍外部阻塞）：
+  - install 再轮询 count **0**；live-github fail-fast；preflight OK；prod-like 探针 200。
+  - Web 认证全套（flow+login+password+register+oauth+page-contract）**14/14 绿**；goal-workflow+note-boundary **9/9**；Desktop guest xvfb **1/1**。
+  - 三入口证据增强但仍为部分：账密/e2e-mock GitHub/访客 e2e 绿；真实 App install + installation-token 路径仍外部阻塞。
+  - §13.2 **12 [x] / 3 [ ]**，**不改 checkbox**；PR readiness 仍为 no。
 
 
 ## 14. 相关资料
