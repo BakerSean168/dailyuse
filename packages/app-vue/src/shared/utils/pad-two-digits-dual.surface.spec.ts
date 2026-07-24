@@ -10,7 +10,8 @@ import { formatHHmmParts } from './format-hhmm-parts';
  * - consumers: TimeConfigSection, ReminderSection, CreateScheduleDialog hour/minute options + parts
  * Residual 1315: ScheduleFormDemo datetime-local dual-retired onto formatDateToYMD + formatLocalHHmm.
  * Residual 1318: formatHHmmParts/formatLocalHHmm/formatHour/formatDateToYMD compose padTwoDigits.
- * Soft residual: toLocalDateKey Date|number padStart; setting/goal multi-site formatTime keep-boundary.
+ * Residual 1321: toLocalDateKey Date|number composes padTwoDigits.
+ * Soft residual: setting/goal multi-site formatTime keep-boundary.
  * Does not flip §13.2 checkboxes.
  */
 describe('padTwoDigits dual retired (residual 1312)', () => {

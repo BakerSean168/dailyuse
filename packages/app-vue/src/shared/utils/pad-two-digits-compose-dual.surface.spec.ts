@@ -11,7 +11,8 @@ import { formatDateToYMD } from './format-date-to-ymd';
  * Residual 1318: multi-sole padStart dual retired onto padTwoDigits composition.
  * - formatHHmmParts / formatLocalHHmm / formatHour / formatDateToYMD bodies compose padTwoDigits
  * - join contracts remain on Residual 1297/1294/1276/1252 soles
- * Soft residual: toLocalDateKey Date|number padStart body; setting/goal multi-site formatTime keep-boundary.
+ * Residual 1321: toLocalDateKey Date|number sole composes padTwoDigits.
+ * Soft residual: setting/goal multi-site formatTime keep-boundary.
  * Does not flip §13.2 checkboxes.
  */
 describe('padTwoDigits multi-sole compose dual retired (residual 1318)', () => {
@@ -54,14 +55,15 @@ describe('padTwoDigits multi-sole compose dual retired (residual 1318)', () => {
     expect(ymd).toContain('`${y}-${m}-${d}`');
   });
 
-  it('soft residual: toLocalDateKey padStart + setting/goal formatTime keep-boundary', () => {
+  it('Residual 1321: toLocalDateKey composes padTwoDigits; setting/goal formatTime keep-boundary', () => {
     const calendar = readFileSync(
       resolve(dir, '../../modules/schedule/composables/useCalendarView.ts'),
       'utf8',
     );
     const key = calendar.match(/export function toLocalDateKey\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(key).toContain("padStart(2, '0')");
-    expect(key).not.toContain('padTwoDigits');
+    expect(key).toContain('padTwoDigits');
+    expect(key).not.toContain('padStart');
+    expect(calendar).toContain('Residual 1321');
     const setting = readFileSync(
       resolve(dir, '../../modules/setting/components/SettingAdvancedActions.vue'),
       'utf8',

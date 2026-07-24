@@ -7,6 +7,7 @@
 
 import { computed, ref } from 'vue';
 import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
+import { padTwoDigits } from '../../../shared/utils/pad-two-digits';
 import { startOfDay, endOfDay } from 'date-fns';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
@@ -30,14 +31,15 @@ export interface CalendarEventItem {
 /**
  * Residual 1282: sole toLocalDateKey — Date | number → YYYY-MM-DD local calendar key.
  * Dual-retired from Day/Week/Month calendar local toDateStr copies.
+ * Residual 1321: padStart dual retired onto padTwoDigits sole (Date|number key contract stays local).
  * Soft residual 1252: formatDateToYMD Date-only form sole remains separate (storage encoding).
  * Soft residual 1285: getWeekStart dual retired onto schedule sole in residual 1285.
  */
 export function toLocalDateKey(value: Date | number): string {
   const date = typeof value === 'number' ? new Date(value) : value;
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = padTwoDigits(date.getMonth() + 1);
+  const day = padTwoDigits(date.getDate());
   return `${year}-${month}-${day}`;
 }
 

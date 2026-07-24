@@ -8,6 +8,7 @@ import { formatDateToYMD } from './format-date-to-ymd';
  * Residual 1282: toDateStr dual retired onto schedule toLocalDateKey sole.
  * - sole: packages/app-vue/src/modules/schedule/composables/useCalendarView.ts#toLocalDateKey
  * - consumers: DayViewCalendar + WeekViewCalendar + MonthViewCalendar
+ * Residual 1321: sole body padStart dual retired onto padTwoDigits composition.
  * Soft residual 1252: formatDateToYMD dual-retired Date-only form sole remains separate
  * Soft residual 1285: getWeekStart dual retired onto schedule sole in residual 1285.
  * Does not flip §13.2 checkboxes.
@@ -34,14 +35,16 @@ describe('toLocalDateKey dual retired (residual 1282)', () => {
 
   it('owns sole toLocalDateKey body (Residual 1282)', () => {
     expect(sole).toContain('Residual 1282');
+    expect(sole).toContain('Residual 1321');
     expect(sole).toMatch(/export function toLocalDateKey\b/);
-    expect(sole).toContain("padStart(2, '0')");
     const body = sole.match(/export function toLocalDateKey\([\s\S]*?\n\}/)?.[0] ?? '';
     expect(body).toContain('Date | number');
     expect(body).toContain('getFullYear');
     expect(body).toContain('getMonth()');
     expect(body).toContain('getDate()');
     expect(body).toContain('typeof value === \'number\'');
+    expect(body).toContain('padTwoDigits');
+    expect(body).not.toContain('padStart');
   });
 
   it('retires Day/Week/Month toDateStr dual bodies onto toLocalDateKey sole', () => {
