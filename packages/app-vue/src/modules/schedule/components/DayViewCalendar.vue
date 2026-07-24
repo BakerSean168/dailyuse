@@ -70,7 +70,7 @@
 import { computed } from 'vue';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import type { CalendarEventItem } from '../composables/useCalendarView';
+import { toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatHour } from '../../../shared/utils/format-hour';
 
 interface Props {
@@ -92,16 +92,16 @@ const currentDate = computed(() => props.date ?? new Date());
 const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
 
 const dayEvents = computed(() => {
-  const dateStr = toDateStr(currentDate.value);
+  const dateStr = toLocalDateKey(currentDate.value);
   return props.schedules.filter(
-    (event) => event.displayMode === 'timed' && toDateStr(event.startTime) === dateStr,
+    (event) => event.displayMode === 'timed' && toLocalDateKey(event.startTime) === dateStr,
   );
 });
 
 const allDayEvents = computed(() => {
-  const dateStr = toDateStr(currentDate.value);
+  const dateStr = toLocalDateKey(currentDate.value);
   return props.schedules.filter(
-    (event) => event.displayMode === 'all-day' && toDateStr(event.startTime) === dateStr,
+    (event) => event.displayMode === 'all-day' && toLocalDateKey(event.startTime) === dateStr,
   );
 });
 
@@ -110,21 +110,14 @@ const currentMinuteOffset = computed(() => {
   return (now.getMinutes() / 60) * 100;
 });
 
-function toDateStr(d: Date | number): string {
-  const value = typeof d === 'number' ? new Date(d) : d;
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, '0');
-  const day = String(value.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 function isCurrentHour(hour: number): boolean {
   const now = new Date();
-  const today = toDateStr(now);
-  return toDateStr(currentDate.value) === today && now.getHours() === hour;
+  const today = toLocalDateKey(now);
+  return toLocalDateKey(currentDate.value) === today && now.getHours() === hour;
 }
 
 // Residual 1276: formatHour dual retired onto shared sole.
+// Residual 1282: toDateStr dual retired onto toLocalDateKey sole.
 /**
  * Residual 1279 keep-boundary: Day formatEventTime — space-hyphen-space " - " between HH:mm.
  * all-day → i18n; padStart local clock (not Intl).

@@ -26,6 +26,12 @@ export interface CalendarEventItem {
   instanceStatus?: string;
 }
 
+/**
+ * Residual 1282: sole toLocalDateKey — Date | number → YYYY-MM-DD local calendar key.
+ * Dual-retired from Day/Week/Month calendar local toDateStr copies.
+ * Soft residual 1252: formatDateToYMD Date-only form sole remains separate (storage encoding).
+ * Soft residual 1282: getWeekStart Day/Week dual remains co-located (not force-merged).
+ */
 export function toLocalDateKey(value: Date | number): string {
   const date = typeof value === 'number' ? new Date(value) : value;
   const year = date.getFullYear();

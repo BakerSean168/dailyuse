@@ -93,7 +93,7 @@ import { computed } from 'vue';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import type { CalendarEventItem } from '../composables/useCalendarView';
+import { toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatHour } from '../../../shared/utils/format-hour';
 
 interface Props {
@@ -122,7 +122,7 @@ const weekDays = computed(() => {
   for (let i = 0; i < 7; i++) {
     const date = new Date(start);
     date.setDate(start.getDate() + i);
-    const dateStr = toDateStr(date);
+    const dateStr = toLocalDateKey(date);
 
     days.push({
       date: dateStr,
@@ -160,6 +160,7 @@ function getDayName(day: number): string {
 }
 
 // Residual 1276: formatHour dual retired onto shared sole.
+// Residual 1282: toDateStr dual retired onto toLocalDateKey sole.
 /**
  * Residual 1279 keep-boundary: Week formatEventTime — compact "-" between HH:mm (dense week cells).
  * all-day → i18n; padStart local clock (not Intl).
@@ -178,23 +179,15 @@ const weekAllDayCount = computed(
   () => props.schedules.filter((event) => event.displayMode === 'all-day').length,
 );
 
-function toDateStr(value: Date | number): string {
-  const date = typeof value === 'number' ? new Date(value) : value;
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 function getTimedEventsForDay(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter(
-    (event) => event.displayMode === 'timed' && toDateStr(event.startTime) === dateStr,
+    (event) => event.displayMode === 'timed' && toLocalDateKey(event.startTime) === dateStr,
   );
 }
 
 function getAllDayEventsForDay(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter(
-    (event) => event.displayMode === 'all-day' && toDateStr(event.startTime) === dateStr,
+    (event) => event.displayMode === 'all-day' && toLocalDateKey(event.startTime) === dateStr,
   );
 }
 

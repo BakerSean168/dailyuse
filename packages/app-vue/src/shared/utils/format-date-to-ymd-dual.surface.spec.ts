@@ -10,6 +10,7 @@ import { formatDateToYMD } from './format-date-to-ymd';
  * Soft residual 1252/1255: parseToDate dual retired onto shared sole in residual 1255.
  * Soft residual 1249: formatDisplayDate dual-retired sole remains separate.
  * Soft residual 1240: formatDate keep-boundary remains separate (timestamp display).
+ * Soft residual 1282: calendar toDateStr dual retired onto toLocalDateKey (Date|number); Date-only form sole stays separate.
  * Does not flip §13.2 checkboxes.
  */
 describe('formatDateToYMD dual retired (residual 1252)', () => {
