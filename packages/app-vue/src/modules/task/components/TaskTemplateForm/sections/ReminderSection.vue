@@ -125,7 +125,7 @@
                               <CalendarIcon class="mr-2 h-4 w-4" />
                               {{
                                 getAbsoluteDatePart(trigger.absoluteTime)
-                                  ? formatDisplayDate(getAbsoluteDatePart(trigger.absoluteTime)!)
+                                  ? formatDisplayDate(getAbsoluteDatePart(trigger.absoluteTime)!, locale)
                                   : t('task.reminderSection.reminderTime')
                               }}
                             </Button>
@@ -237,8 +237,11 @@ import {
   Plus,
   Calendar as CalendarIcon,
 } from '@lucide/vue';
+import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 
 const { t, locale } = useI18n();
+
+// Residual 1249: formatDisplayDate dual retired onto shared sole.
 
 // 类型别名
 const ReminderType = TaskReminderType;
@@ -254,16 +257,6 @@ function formatDateToYMD(date: Date): string {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
-}
-
-function formatDisplayDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 /** Extract date part (YYYY-MM-DD) from a timestamp */

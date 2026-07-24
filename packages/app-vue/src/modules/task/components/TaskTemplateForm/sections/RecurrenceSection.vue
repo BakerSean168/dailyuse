@@ -123,7 +123,7 @@
                   >
                     <CalendarIcon class="mr-2 h-4 w-4" />
                     {{
-                      endDate ? formatEndDateDisplay(endDate) : t('task.recurrence.selectEndDate')
+                      endDate ? formatDisplayDate(endDate, locale) : t('task.recurrence.selectEndDate')
                     }}
                   </Button>
                 </PopoverTrigger>
@@ -192,19 +192,11 @@ import {
   Calendar,
 } from '@dailyuse/ui-vue-shadcn';
 import { Repeat, Info, Calendar as CalendarIcon } from '@lucide/vue';
+import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 
 const { t, locale } = useI18n();
 
-/** Format a YYYY-MM-DD date string for display */
-function formatEndDateDisplay(dateStr: string): string {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
+// Residual 1249: formatEndDateDisplay dual retired onto formatDisplayDate sole.
 
 /** Convert endDate string to Date for Calendar :selected */
 const endDateAsDate = computed(() => {

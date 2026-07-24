@@ -55,7 +55,7 @@
             disabled
           >
             <CalendarIcon class="mr-2 h-4 w-4" />
-            {{ startDate ? formatDisplayDate(startDate) : t('task.timeConfig.startDate') }}
+            {{ startDate ? formatDisplayDate(startDate, locale) : t('task.timeConfig.startDate') }}
           </Button>
           <Popover v-else>
             <PopoverTrigger as-child>
@@ -65,7 +65,7 @@
                 :class="{ 'text-muted-foreground': !startDate }"
               >
                 <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ startDate ? formatDisplayDate(startDate) : t('task.timeConfig.startDate') }}
+                {{ startDate ? formatDisplayDate(startDate, locale) : t('task.timeConfig.startDate') }}
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0" align="start">
@@ -239,8 +239,11 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
+import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 
 const { t, locale } = useI18n();
+
+// Residual 1249: formatDisplayDate dual retired onto shared sole.
 
 const props = withDefaults(
   defineProps<{
@@ -293,16 +296,6 @@ const timeRangeEndMinute = ref<string>('00');
 // ── Helpers ────────────────────────────────────────────────────────────
 
 /** Format a YYYY-MM-DD string for display */
-function formatDisplayDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 /** Convert a YYYY-MM-DD string to a Date for Calendar :selected */
 function parseInputToDate(dateStr: string): Date | undefined {
   if (!dateStr) return undefined;

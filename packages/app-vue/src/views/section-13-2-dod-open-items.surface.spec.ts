@@ -120,7 +120,8 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('formatTime、formatDate');
     expect(sec).toContain('formatDate、formatDuration');
     expect(sec).toContain('formatDuration、describeConflict');
-    expect(sec).toContain('describeConflict 不强制');
+    expect(sec).toContain('describeConflict、formatDisplayDate dual-retired');
+    expect(sec).toContain('formatDisplayDate dual-retired 不强制');
     expect(sec).toContain('isRecord');
     expect(sec).not.toMatch(/全量 PR 门禁.*已证明/);
     expect(sec).not.toContain('focused evidence suite tip（Residual 1146）：**344 文件 / 1488 测试**');

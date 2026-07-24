@@ -56,7 +56,7 @@
                     <CalendarIcon class="mr-2 h-4 w-4" />
                     {{
                       formData.startDate
-                        ? formatDisplayDate(formData.startDate)
+                        ? formatDisplayDate(formData.startDate, locale)
                         : t('schedule.createDialog.fieldStartDate')
                     }}
                   </Button>
@@ -125,7 +125,7 @@
                     <CalendarIcon class="mr-2 h-4 w-4" />
                     {{
                       formData.endDate
-                        ? formatDisplayDate(formData.endDate)
+                        ? formatDisplayDate(formData.endDate, locale)
                         : t('schedule.createDialog.fieldEndDate')
                     }}
                   </Button>
@@ -314,6 +314,7 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { MapPin, X, Loader2, Calendar as CalendarIcon } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import { formatDisplayDate } from '../../../shared/utils/format-display-date';
 import type { CalendarEntryClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 interface Props {
@@ -336,6 +337,8 @@ const emit = defineEmits<Emits>();
 
 const { t, locale } = useI18n();
 
+// Residual 1249: formatDisplayDate dual retired onto shared sole.
+
 // ── Time picker options ────────────────────────────────────────────────
 const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
 const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
@@ -347,16 +350,6 @@ function formatDateToYMD(date: Date): string {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
-}
-
-function formatDisplayDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 function parseToDate(dateStr: string): Date | undefined {
