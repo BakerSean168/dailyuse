@@ -71,6 +71,7 @@ import { computed } from 'vue';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type { CalendarEventItem } from '../composables/useCalendarView';
+import { formatHour } from '../../../shared/utils/format-hour';
 
 interface Props {
   schedules: CalendarEventItem[];
@@ -123,10 +124,8 @@ function isCurrentHour(hour: number): boolean {
   return toDateStr(currentDate.value) === today && now.getHours() === hour;
 }
 
-function formatHour(hour: number): string {
-  return `${hour.toString().padStart(2, '0')}:00`;
-}
-
+// Residual 1276: formatHour dual retired onto shared sole.
+// Soft residual 1276: formatEventTime Day separator " - " (≠ Week "-"; ≠ formatCalendarEventTimeRange en-dash).
 function formatEventTime(event: CalendarEventItem): string {
   if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
   const fmt = (ts: number) => {
