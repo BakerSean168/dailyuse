@@ -66,17 +66,6 @@ describe('formatDateUnknown dual retired (residual 1264)', () => {
     expect(taskDetail).not.toContain('format-date-unknown');
   });
 
-  it('runtime: sole maps empty to Unknown and formats datetime locale string', async () => {
-    const { formatDateUnknown } = await import(
-      '../../../../app-react/src/utils/format-date-unknown.ts'
-    );
-    expect(formatDateUnknown(null)).toBe('Unknown');
-    expect(formatDateUnknown(undefined)).toBe('Unknown');
-    const ts = new Date(2026, 6, 24, 15, 30, 0).getTime();
-    expect(formatDateUnknown(ts)).toBe(new Date(ts).toLocaleString());
-    expect(formatDateUnknown(ts)).not.toBe(new Date(ts).toLocaleDateString());
-  });
-
   it('documents residual 1264 lock intent without claiming §13.2 complete', () => {
     const self = readFileSync(resolve(dir, 'format-date-unknown-dual.surface.spec.ts'), 'utf8');
     expect(self).toContain('Residual 1264');

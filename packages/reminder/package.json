@@ -46,6 +46,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@dailyuse/test-utils": "workspace:*",
     "@types/express": "^5.0.0"
   }
 }

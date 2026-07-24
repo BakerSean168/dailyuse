@@ -9,6 +9,10 @@ import { describe, expect, it } from 'vitest';
  * governance 4/23 + GOV_EXIT:0)
  * while 12-project lint has 8 failures, web:typecheck remains red, and OAuth/App fixture
  * credentials remain externally blocked;
+ * Residual 1328: the same 12-project lint set is 12/12 green and formal web:typecheck
+ * plus 24 dependencies passes; focused regressions are 8 files/160 tests and governance
+ * remains green, while test-utils lint still has 2 pre-existing layer-boundary errors and
+ * the full workspace/E2E/prod-like/OAuth bundle remains incomplete;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
@@ -39,6 +43,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
     expect(plan).toContain('Residual 1327');
+    expect(plan).toContain('Residual 1328');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
@@ -70,12 +75,19 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Residual 1325');
     expect(sec).toContain('Residual 1326');
     expect(sec).toContain('Residual 1327');
+    expect(sec).toContain('Residual 1328');
     expect(sec).toContain('Web 账密两轮 3/3');
     expect(sec).toContain('Desktop production Electron guest 两轮 1/1');
     expect(sec).toContain('Agent/Vault/Pi fixture 7/114');
     expect(sec).toContain('governance 4/23 + GOV_EXIT:0');
     expect(sec).toContain('web:typecheck');
     expect(sec).toContain('12-project lint 集合仍有 8 个失败');
+    expect(sec).toContain('12-project lint 集合');
+    expect(sec).toContain('12/12 通过');
+    expect(sec).toContain('focused 回归 **8 文件 / 160 测试**');
+    expect(sec).toContain('@dailyuse/test-utils:lint');
+    expect(sec).toContain('2 个既有 layer-boundary error');
+    expect(sec).toContain('24 个依赖任务通过');
     expect(sec).toContain('OAuth/App fixture 无凭据为外部阻塞');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');

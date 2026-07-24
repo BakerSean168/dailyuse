@@ -53,13 +53,19 @@ function formatSessionTime(ms: number | undefined | null): string {
 
 function sessionLabel(session: (typeof activeSessions.value)[number]): string {
   const info = session.deviceInfo;
+  const richInfo = 'deviceName' in info ? info : null;
   const name =
-    info?.deviceName ||
-    info?.browser ||
-    info?.os ||
+    richInfo?.deviceName ||
+    richInfo?.browser ||
+    richInfo?.os ||
     info?.deviceType ||
     t('account.sessions.unknownDevice');
   return name;
+}
+
+function sessionIpAddress(session: (typeof activeSessions.value)[number]): string | null {
+  const info = session.deviceInfo;
+  return 'ipAddress' in info ? info.ipAddress : null;
 }
 
 async function refreshSessions(): Promise<void> {
@@ -161,7 +167,8 @@ async function refreshOAuthStatus() {
   try {
     const result = await authService.getCurrentUser();
     if (result.ok) {
-      hasOAuth.value = Boolean(result.data.identity.hasOAuth);
+      const identity = result.data.identity;
+      hasOAuth.value = 'hasOAuth' in identity && identity.hasOAuth === true;
     }
   } catch {
     // non-blocking — security card still renders
@@ -475,8 +482,8 @@ onMounted(() => {
                 {{ t('account.sessions.lastActive') }}:
                 {{ formatSessionTime(session.lastActiveAt) }}
               </div>
-              <div v-if="session.deviceInfo?.ipAddress" class="text-xs text-muted-foreground">
-                IP: {{ session.deviceInfo.ipAddress }}
+              <div v-if="sessionIpAddress(session)" class="text-xs text-muted-foreground">
+                IP: {{ sessionIpAddress(session) }}
               </div>
             </div>
             <Button

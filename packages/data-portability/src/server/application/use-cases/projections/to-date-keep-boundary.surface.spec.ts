@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { toDateString } from './projection-helpers';
-import { toDate, toDateOrNull } from '../../../../../../utils/src/shared/persistence';
+import { toDate, toDateOrNull } from '@dailyuse/utils/shared';
 
 /**
  * Residual 1123: toDate / toDateString cross-package keep-boundary.

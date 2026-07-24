@@ -740,8 +740,10 @@ const hostProposalPanelRef = ref<{
     next: {
       revision: number;
       title?: string;
+      description?: string | null;
       targetPath?: string;
       contentMarkdown?: string;
+      goalId?: string | null;
     },
   ) => void;
 } | null>(null);

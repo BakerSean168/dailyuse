@@ -1696,6 +1696,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@dailyuse/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1770,6 +1773,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@dailyuse/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6

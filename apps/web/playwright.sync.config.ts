@@ -32,7 +32,7 @@ export default defineConfig({
         ['list'],
       ],
   // 先准备 desktop 可执行入口，避免每个用例重复 build。
-  globalSetup: './e2e/helpers/desktop-build-global-setup.ts' // Residual 1041 sole,
+  globalSetup: './e2e/helpers/desktop-build-global-setup.ts', // Residual 1041 sole
   use: {
     baseURL: getE2EWebOrigin(),
     trace: 'on',

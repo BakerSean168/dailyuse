@@ -64,6 +64,7 @@ export type AgentMessage = z.infer<typeof AgentMessageSchema>;
 
 export const AgentArtifactKindSchema = z.enum([
   'goal_draft',
+  'task_draft',
   'knowledge_answer',
   'knowledge_note_draft',
   'action_plan',

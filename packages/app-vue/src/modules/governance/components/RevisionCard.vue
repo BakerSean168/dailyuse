@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { RuleRevisionClientDTO } from '../types';
+import type { RuleRevisionClientDTO } from '@dailyuse/contracts/governance';
 
 const props = defineProps<{
   revision: RuleRevisionClientDTO;

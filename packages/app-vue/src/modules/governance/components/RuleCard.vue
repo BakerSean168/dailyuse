@@ -71,7 +71,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from '@lucide/vue';
 import RuleStatusBadge from './RuleStatusBadge.vue';
-import type { RuleClientDTO } from '../types';
+import type { RuleClientDTO } from '@dailyuse/contracts/governance';
 
 const props = defineProps<{
   rule: RuleClientDTO;

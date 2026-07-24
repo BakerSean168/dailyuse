@@ -11,18 +11,11 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { ScheduleId } from '../../../primitives';
+import { ConflictSeverity } from './conflict-severity';
 
 /**
  * Result of conflict detection analysis
  */
-export const ConflictSeverity = {
-  Minor: 'Minor',
-  Moderate: 'Moderate',
-  Severe: 'Severe',
-} as const;
-
-export type ConflictSeverity = (typeof ConflictSeverity)[keyof typeof ConflictSeverity];
-
 export const ConflictSuggestionType = {
   MoveEarlier: 'MoveEarlier',
   MoveLater: 'MoveLater',
@@ -41,11 +34,21 @@ export const ConflictDetailSchema = z.object({
   overlapStart: z.number(),
   overlapEnd: z.number(),
   overlapDuration: z.number(),
-  severity: z.enum(Object.values(ConflictSeverity) as [string, ...string[]]).optional(),
+  severity: z
+    .enum([
+      ConflictSeverity.Minor,
+      ConflictSeverity.Moderate,
+      ConflictSeverity.Severe,
+    ])
+    .optional(),
 });
 
 export const ConflictSuggestionSchema = z.object({
-  type: z.enum(Object.values(ConflictSuggestionType) as [string, ...string[]]),
+  type: z.enum([
+    ConflictSuggestionType.MoveEarlier,
+    ConflictSuggestionType.MoveLater,
+    ConflictSuggestionType.Shorten,
+  ]),
   newStartTime: z.number(),
   newEndTime: z.number(),
   description: z.string().optional(),

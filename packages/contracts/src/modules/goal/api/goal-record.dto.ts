@@ -7,7 +7,6 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
-import type { GoalRecordClientDTO } from '../aggregates/goal-record-client';
 import { GoalRecordListResSchema } from './response-schemas';
 
 // ============================================================================

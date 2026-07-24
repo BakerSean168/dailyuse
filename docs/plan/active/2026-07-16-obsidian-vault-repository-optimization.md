@@ -9269,6 +9269,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 仍缺真实 GitHub 入口、完整跨端
 > multi-engine / durable Task LangGraph、全量 lint/typecheck/test/E2E/governance/prod-like 一揽子证据。
 > 状态保持 **实施中**；PR 就绪仍为否。
+> 续进展 2026-07-24（阶段 6 残留一千三百二十八轮）：**P0 lint/typecheck 真阻塞收缩**（仍不打勾）——
+> 修复 app-vue Electron/account/auth/AI/governance/schedule 类型边界，正式 `web:typecheck`
+> 及其 24 个依赖任务通过；修复 AI inline type import 被 Nx 误判 lazy-loaded、Web Playwright
+> 配置逗号、测试跨项目相对导入与死导入后，同一 12-project lint 集合由 8 个失败收缩为 **12/12 通过**。
+> focused 回归 **8 文件 / 160 测试**通过（5/147 + 1/5 + 2/8）；governance 依赖测试
+> **4 文件 / 23 测试**及 governance-check 通过。
+> 边界：`app-vue` / `ui-vue-shadcn` 依赖 build 仍打印既有 declaration 诊断但 target exit 0；
+> 额外探测 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；尚未运行全仓
+> lint/typecheck/test/E2E/prod-like 一揽子，OAuth/App fixture 仍缺凭据（外部阻塞）。
+> 状态保持 **实施中**；PR 就绪仍为否。
 
 
 
@@ -9448,13 +9458,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 13.2 完成定义
 
-> 审计时间 2026-07-24（Residual 1327 P0 真实 E2E/runtime 阻塞收缩：三入口/Agent/门禁仍为部分或外部阻塞；**不改 checkbox**）。
+> 审计时间 2026-07-24（Residual 1328 P0 lint/typecheck 阻塞收缩：三入口/Agent/全量门禁仍为部分或外部阻塞；**不改 checkbox**）。
 > 状态标记：已证明 / 部分实现 / 外部阻塞 / 仍未实现。只有证据充分才改 checkbox。
 > focused evidence suite tip（Residual 1325）：**403 文件 / 1766 测试** + governance-check GOV_EXIT:0。
 > Residual 1326：再确认 3 项仍未打勾——账密/GitHub/访客（部分）、Agent 确认边界（部分）、全量 PR 门禁（部分+外部阻塞）。
 > Residual 1327：Web 账密两轮 3/3、Desktop production Electron guest 两轮 1/1、
 > Agent/Vault/Pi fixture 7/114、governance 4/23 + GOV_EXIT:0；`web:typecheck` 仍失败，
 > 12-project lint 集合仍有 8 个失败；OAuth/App fixture 无凭据为外部阻塞。
+> Residual 1328：正式 `web:typecheck` + 24 个依赖任务通过，同一 12-project lint 集合
+> **12/12 通过**，focused 回归 **8 文件 / 160 测试**、governance 4/23 + GOV_EXIT:0；
+> 但 `@dailyuse/test-utils:lint` 额外探测仍有 2 个既有 layer-boundary error，且尚无全仓
+> lint/typecheck/test/E2E/prod-like 一揽子证据；OAuth/App fixture 无凭据仍为外部阻塞。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
@@ -10787,6 +10801,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十五轮：§13.2 focused evidence suite re-run (1766 tests, residuals 250–1324 locks, no checkbox changes)。
   残留一千三百二十六轮：§13.2 evidence tip refresh (1325 tip 403/1766) + open-items surface lock (no checkbox flips).
   残留一千三百二十七轮：P0 real E2E/runtime blocker reduction (Web password 2×3/3; Desktop production Electron guest 2×1/1; Agent/Vault/Pi fixture 7/114; governance 4/23 + GOV_EXIT:0); 12-project lint has 8 failures, web:typecheck failed, and OAuth/App fixture credentials remain externally blocked, so no checkbox flips.
+  残留一千三百二十八轮：P0 lint/typecheck blocker reduction (`web:typecheck` + 24 dependencies passed; the same 12-project lint set passed 12/12; focused regressions 8 files/160 tests; governance 4/23 + GOV_EXIT:0); `@dailyuse/test-utils:lint` still exposes 2 pre-existing layer-boundary errors, the full workspace gate bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留五百六十八轮：§13.2 focused evidence suite re-run（657 tests，residuals 250–567 锁；不改 checkbox）。
   残留五百六十九轮：Host panel shared product ownership resolver（resolveHostPanelOwnedProductRun）。
   残留五百七十轮：§13.2 focused evidence suite re-run（660 tests，residuals 250–569 锁；不改 checkbox）。
@@ -11547,6 +11562,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十五轮：§13.2 focused evidence suite re-run（1766 tests，residuals 250–1324 锁；不改 checkbox）。
   残留一千三百二十六轮：§13.2 evidence tip 刷新（1325 tip 403/1766）+ open-items surface 锁（不改 checkbox）。
   残留一千三百二十七轮：P0 真实 E2E/runtime 阻塞收缩（Web 账密两轮 3/3、Desktop production Electron guest 两轮 1/1、Agent/Vault/Pi fixture 7/114、governance 4/23 + GOV_EXIT:0）；12-project lint 有 8 个失败、web:typecheck 失败且 OAuth/App fixture 凭据外部阻塞，不改 checkbox。
+  残留一千三百二十八轮：P0 lint/typecheck 真阻塞收缩（正式 web:typecheck + 24 个依赖任务通过；同一 12-project lint 集合 12/12 通过；focused 回归 8 文件/160 测试；governance 4/23 + GOV_EXIT:0）；test-utils lint 仍有 2 个既有 layer-boundary error，全仓门禁套件与 OAuth/App 凭据仍未完成/外部阻塞，不改 checkbox。
   残留五百六十六轮：§13.2 focused evidence suite re-run（655 tests，residuals 250–565 锁；不改 checkbox）。
   残留五百六十七轮：Host panel product revise pre-lifecycle waiting_approval gate。
   残留五百六十四轮：§13.2 focused evidence suite re-run（653 tests，residuals 250–563 锁；不改 checkbox）。
@@ -11828,6 +11844,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   governance-check 及其依赖测试 4/23 通过（GOV_EXIT:0）。
   12 个涉及项目 lint 集合有 8 个失败，`web:typecheck` 真实复跑失败，且 OAuth/App fixture
   无凭据为外部阻塞；不构成全量 PR 门禁。
+  残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
+  集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
+  额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
+  依赖 build 的 declaration 诊断、全仓 test/E2E/prod-like 与 OAuth/App fixture 仍未闭环，
+  因此仍不构成全量 PR 门禁。
   证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
   `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
@@ -12924,6 +12945,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十五轮：tip 上 1766 项 focused evidence suite（含 residual 250–1324 formatScheduleDurationMinutes dual-retired 锁）通过；仍不构成全量 PR 门禁证据。
   残留一千三百二十六轮：§13.2 tip 指针刷新 + open-items surface 锁落地；仍不构成跨端 Playwright/Electron multi-engine E2E / 全量 PR 门禁证据。
   残留一千三百二十七轮：Web 账密两轮 3/3、Desktop production Electron guest 两轮 1/1、Agent/Vault/Pi fixture 7/114、governance 4/23 + GOV_EXIT:0；12-project lint 有 8 个失败、`web:typecheck` 失败，OAuth/App fixture 无凭据为外部阻塞；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
+  残留一千三百二十八轮：`web:typecheck` + 24 个依赖任务通过、同一 12-project lint 12/12 通过、focused 回归 8/160、governance 4/23 + GOV_EXIT:0；test-utils lint 仍有 2 个既有 layer-boundary error，全仓 test/E2E/prod-like 与 OAuth/App fixture 仍未闭环；仍不构成三入口完整 E2E / 全量 PR 门禁证据。
   仍缺：全量 lint/typecheck/test/E2E/governance 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺凭据（外部阻塞）。
 

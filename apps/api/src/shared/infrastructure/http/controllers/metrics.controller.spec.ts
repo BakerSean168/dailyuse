@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Request, Response } from 'express';
 import { createMetricsController } from './metrics.controller';
 

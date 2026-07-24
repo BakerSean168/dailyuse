@@ -14,6 +14,8 @@ export type DesktopAuthApi = {
   invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
 };
 
+type DesktopAuthHost = object | null | undefined;
+
 // Residual 901: local DesktopAuthStatus dual retired — sole status shape is contracts AuthStatus
 // (residual 865 already deleted AuthStatusDTO; recovery must not reintroduce a slim dual body).
 
@@ -26,16 +28,16 @@ export function isDesktopAuthRecoverable(error: DesktopAuthErrorLike): boolean {
 }
 
 export function getDesktopAuthApi(
-  host?: { electronAPI?: DesktopAuthApi },
+  host?: DesktopAuthHost,
 ): DesktopAuthApi | undefined {
-  return host?.electronAPI;
+  return (host as { electronAPI?: DesktopAuthApi } | null | undefined)?.electronAPI;
 }
 
 // Residual 909: sole desktop-detect helper (no inline { invoke?: unknown } duals at call sites).
 export function hasDesktopAuthApi(
-  host?: { electronAPI?: DesktopAuthApi } | null,
+  host?: DesktopAuthHost,
 ): boolean {
-  return typeof host?.electronAPI?.invoke === 'function';
+  return typeof getDesktopAuthApi(host)?.invoke === 'function';
 }
 
 async function readAuthStatus(

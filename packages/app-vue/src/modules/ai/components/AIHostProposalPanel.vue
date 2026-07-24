@@ -189,6 +189,7 @@ function applyRevised(
     description?: string | null;
     targetPath?: string;
     contentMarkdown?: string;
+    goalId?: string | null;
   },
 ) {
   const draft = drafts[proposalId];
@@ -220,6 +221,15 @@ function applyRevised(
     draft.baselineContentMarkdown = next.contentMarkdown;
   } else {
     draft.baselineContentMarkdown = draft.contentMarkdown;
+  }
+  if (typeof next.goalId === 'string') {
+    draft.goalId = next.goalId.trim();
+    draft.baselineGoalId = draft.goalId;
+  } else if (next.goalId === null) {
+    draft.goalId = '';
+    draft.baselineGoalId = '';
+  } else {
+    draft.baselineGoalId = draft.goalId.trim();
   }
 }
 

@@ -48,7 +48,7 @@ describe('electron window DesktopAuthApi dual retired (residual 909)', () => {
       'invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>',
     );
     expect(recovery).toContain('export function hasDesktopAuthApi');
-    expect(recovery).toContain('typeof host?.electronAPI?.invoke === \'function\'');
+    expect(recovery).toContain("typeof getDesktopAuthApi(host)?.invoke === 'function'");
   });
 
   it('auth context retires isDesktopEnvironment; router guards detect via hasDesktopAuthApi', () => {

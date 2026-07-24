@@ -15,6 +15,8 @@ export type {
   ChatModelOption,
   ConversationSummary,
   EditableGoal,
+  EditableGoalReminder,
+  EditableGoalTaskTemplate,
   EditableKeyResult,
   GoalAutomationResult,
   GoalExecutedAction,

@@ -631,7 +631,6 @@ function goalDraftTitle(run: AgentRunResult): string {
   const goalArtifact = run.state.artifacts.find(
     (artifact) =>
       artifact.kind === 'goal_draft' ||
-      artifact.kind === 'goal' ||
       artifact.kind === 'action_plan',
   );
   if (goalArtifact && typeof goalArtifact.title === 'string' && goalArtifact.title.trim()) {
@@ -648,7 +647,7 @@ function goalDraftTitle(run: AgentRunResult): string {
  */
 function goalDraftDescription(run: AgentRunResult): string {
   const goalArtifact = run.state.artifacts.find(
-    (artifact) => artifact.kind === 'goal_draft' || artifact.kind === 'goal',
+    (artifact) => artifact.kind === 'goal_draft',
   );
   const fromData = goalArtifact?.data?.['description'];
   if (typeof fromData === 'string') return fromData;
@@ -962,10 +961,7 @@ function firstCreateTaskTemplateAction(run: AgentRunResult): AgentAction | undef
  */
 function taskDraftTitle(run: AgentRunResult): string {
   const draft = run.state.artifacts.find(
-    (artifact) =>
-      artifact.kind === 'task_draft' ||
-      artifact.kind === 'task' ||
-      artifact.kind === 'task_template_draft',
+    (artifact) => artifact.kind === 'task_draft',
   );
   if (draft && typeof draft.title === 'string' && draft.title.trim()) {
     return draft.title.trim();
@@ -1015,10 +1011,7 @@ function taskDraftTitle(run: AgentRunResult): string {
  */
 function taskDraftGoalId(run: AgentRunResult): string | null {
   const draft = run.state.artifacts.find(
-    (artifact) =>
-      artifact.kind === 'task_draft' ||
-      artifact.kind === 'task' ||
-      artifact.kind === 'task_template_draft',
+    (artifact) => artifact.kind === 'task_draft',
   );
   const fromData = draft?.data?.['goalId'];
   if (typeof fromData === 'string' && fromData.trim()) return fromData.trim();
@@ -1043,10 +1036,7 @@ export function isTaskShapedHostAgentRun(
 ): boolean {
   if (!result?.state?.artifacts?.length) return false;
   return result.state.artifacts.some(
-    (artifact) =>
-      artifact.kind === 'task_draft' ||
-      artifact.kind === 'task' ||
-      artifact.kind === 'task_template_draft',
+    (artifact) => artifact.kind === 'task_draft',
   );
 }
 
@@ -1064,10 +1054,7 @@ export function isPrimaryTaskHostAgentRun(
   if (!isTaskShapedHostAgentRun(result)) return false;
   const hasGoalDraft = result.state.artifacts.some((artifact) => artifact.kind === 'goal_draft');
   const hasNoteDraft = result.state.artifacts.some(
-    (artifact) =>
-      artifact.kind === 'note_draft' ||
-      artifact.kind === 'knowledge_note_draft' ||
-      artifact.kind === 'knowledge_draft',
+    (artifact) => artifact.kind === 'knowledge_note_draft',
   );
   return !hasGoalDraft && !hasNoteDraft;
 }
@@ -1129,8 +1116,7 @@ export function nextDualMirroredTaskAgentRun(input: {
     return goal;
   }
   if (!task?.run) return null;
-  const isDualMirroredPrimaryTask =
-    isPrimaryTaskHostAgentRun(task) && task.run.agentType !== 'task.create';
+  const isDualMirroredPrimaryTask = isPrimaryTaskHostAgentRun(task);
   // Residual 589/595/599/601: drop dual-mirror primary-task when:
   // - session sync (dropStale): goal left primary-task or is absent
   // - builders (dropStale false): when a non-primary-task goal or knowledge session is present
@@ -2149,4 +2135,3 @@ export function composeHostWorkbenchTimelineArtifacts(input: {
     isolationOk: isolationViolations.length === 0,
   };
 }
-

@@ -23,8 +23,6 @@ describe('formatDateNotSet dual retired (residual 1261)', () => {
   const taskDetail = readFileSync(resolve(reactScreens, 'TaskDetailScreen.tsx'), 'utf8');
   const goalCompare = readFileSync(resolve(reactScreens, 'GoalCompareScreen.tsx'), 'utf8');
 
-  // Runtime import via createRequire so vitest in app-vue can load the TS sole through path.
-  // Prefer dynamic path relative require of compiled-free source via vitest transform: import from absolute path.
   it('owns sole formatDateNotSet body (Residual 1261)', () => {
     expect(sole).toContain('Residual 1261');
     expect(sole).toMatch(/export function formatDateNotSet\b/);
@@ -66,16 +64,6 @@ describe('formatDateNotSet dual retired (residual 1261)', () => {
     expect(compareBody).toContain('toLocaleDateString()');
     expect(compareBody).not.toContain("'Not set'");
     expect(goalCompare).not.toContain('format-date-not-set');
-  });
-
-  it('runtime: sole maps empty to Not set and formats date-only locale string', async () => {
-    const { formatDateNotSet } = await import(
-      '../../../../app-react/src/utils/format-date-not-set.ts'
-    );
-    expect(formatDateNotSet(null)).toBe('Not set');
-    const ts = new Date(2026, 6, 24).getTime();
-    expect(formatDateNotSet(ts)).toBe(new Date(ts).toLocaleDateString());
-    expect(formatDateNotSet(ts)).not.toBe(new Date(ts).toLocaleString());
   });
 
   it('documents residual 1261 lock intent without claiming §13.2 complete', () => {

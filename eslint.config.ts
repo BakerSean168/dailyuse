@@ -373,6 +373,7 @@ export default tseslint.config(
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/e2e/**',
         '**/src/test/**',
+        '**/src/testing/**',
         'packages/test-utils/**',
       ],
       rules: {

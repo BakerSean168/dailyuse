@@ -4,7 +4,7 @@
  * Extracted from useAIChatView.ts to reduce composable size.
  */
 
-import type { WorkflowMode, GoalWorkflowStage } from './types';
+import type { AIChatService, WorkflowMode, GoalWorkflowStage } from './types';
 import { unwrap } from '@dailyuse/contracts/result';
 
 /** Parameters for workflowStatusText computation. */
@@ -132,7 +132,7 @@ export async function maybeRenameConversation(
   name: string,
   currentTitle: string,
   conversationId: string | null,
-  service: { updateConversation: (id: string, data: { name: string }) => Promise<unknown> },
+  service: Pick<AIChatService, 'updateConversation'>,
   reload: () => Promise<void>,
 ): Promise<void> {
   const nextName = name.trim();

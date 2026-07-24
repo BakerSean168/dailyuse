@@ -4,7 +4,7 @@
  * identityId always comes from ExecutionContext (never trusted from client body).
  * Approve/reject stay lifecycle-only via facade (no executeApproved).
  */
-import { fail, ok, type Result } from '@dailyuse/contracts/result';
+import { fail, type Result } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type {
   AssistantCommand,

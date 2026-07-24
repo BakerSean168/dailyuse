@@ -16,7 +16,7 @@ export default defineConfig({
         ['list'],
       ]
     : [['html', { outputFolder: 'playwright-desktop-screenshot-report' }], ['list']],
-  globalSetup: './e2e/helpers/desktop-build-global-setup.ts' // Residual 1041 sole,
+  globalSetup: './e2e/helpers/desktop-build-global-setup.ts', // Residual 1041 sole
   use: {
     actionTimeout: 15 * 1000,
     trace: 'retain-on-failure',

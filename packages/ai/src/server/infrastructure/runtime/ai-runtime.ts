@@ -19,6 +19,13 @@ import {
   resolveRunPlan,
   type AICapabilities,
   type CapabilityOffer,
+  type IAssistantFacadePort,
+  type ICapabilityResolverPort,
+  type IModelGatewayPort,
+  type IProposalKernelPort,
+  type ITurnEnginePort,
+  type IWorkflowAdapterPort,
+  type ResolvedRunPlan,
 } from '@dailyuse/contracts/ai';
 import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
@@ -127,36 +134,36 @@ export interface AIRuntimeOutput {
   readonly capabilities: AICapabilities;
   readonly runtimeContributions: readonly AIModuleRuntimeContribution[];
   /** First production Turn Engine (DirectTurnEngine); also powers open chat use cases. */
-  readonly turnEngine: import('@dailyuse/contracts/ai').ITurnEnginePort;
+  readonly turnEngine: ITurnEnginePort;
   /**
    * Second production Turn Engine (ReadonlyAnalysisTurnEngine / engine.pi_readonly).
    * Residual 341 — Model Gateway-backed readonly analysis; not open-chat default.
    */
-  readonly readonlyTurnEngine: import('@dailyuse/contracts/ai').ITurnEnginePort;
+  readonly readonlyTurnEngine: ITurnEnginePort;
   /**
    * LangGraph workflow adapter when remote agent runtime is present; otherwise null.
    * Residual 318 — wraps IAgentRuntimePort without replacing Python graphs.
    */
-  readonly workflowAdapter: import('@dailyuse/contracts/ai').IWorkflowAdapterPort | null;
+  readonly workflowAdapter: IWorkflowAdapterPort | null;
   /**
    * Proposal Kernel lifecycle port (residual 320). Always present on the Host;
    * does not execute business mutations.
    */
-  readonly proposalKernel: import('@dailyuse/contracts/ai').IProposalKernelPort;
+  readonly proposalKernel: IProposalKernelPort;
   /**
    * Capability Resolver (residual 322). Fail-closed offer projection; never
    * silent-emits engine.* labels.
    */
-  readonly capabilityResolver: import('@dailyuse/contracts/ai').ICapabilityResolverPort;
+  readonly capabilityResolver: ICapabilityResolverPort;
   /**
    * Custom Model Gateway (residual 337). OpenAI-compatible catalog/complete/stream;
    * credentials request-scoped only (never on results/events).
    */
-  readonly modelGateway: import('@dailyuse/contracts/ai').IModelGatewayPort;
+  readonly modelGateway: IModelGatewayPort;
   /**
    * Assistant Facade (residual 343). Unified Host dispatch over Turn Engines + ProposalKernel.
    */
-  readonly assistantFacade: import('@dailyuse/contracts/ai').IAssistantFacadePort;
+  readonly assistantFacade: IAssistantFacadePort;
 }
 
 export function buildCapabilityUnavailableMessage(
@@ -241,7 +248,7 @@ export function assertAgentStartCapabilityPlan(
   if (agentType === 'knowledge.generate') {
     const requirements = knowledgeWriteRequirements('web');
     // Residual 324: prefer production CapabilityResolver when provided.
-    let plan: import('@dailyuse/contracts/ai').ResolvedRunPlan;
+    let plan: ResolvedRunPlan;
     if (offersOrResolver instanceof CapabilityResolver) {
       plan = offersOrResolver.resolveFor('knowledge.generate', requirements, 'web');
     } else {

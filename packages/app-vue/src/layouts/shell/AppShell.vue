@@ -209,9 +209,11 @@ async function handleNewConversation() {
 const authStore = useAuthenticationStore();
 const { isAuthenticated, logout } = useAuth();
 const userName = computed<string | undefined>(() => {
-  const identifier = authStore.currentIdentity?.identifiers?.[0] as
-    | { value?: string }
-    | undefined;
+  const identity = authStore.currentIdentity;
+  const identifier =
+    identity && 'identifiers' in identity
+      ? (identity.identifiers[0] as { value?: string } | undefined)
+      : undefined;
   return identifier?.value || undefined;
 });
 
@@ -600,6 +602,5 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     </div>
   </div>
 </template>
-
 
 
