@@ -142,6 +142,9 @@ export function createQueryString(params: Record<string, unknown>): string {
 }
 
 /**
+ * Residual 1192: sole delay helper (setTimeout → Promise).
+ * Duals in desktop IPC test-helpers and web E2E runner retired onto this sole.
+ *
  * 延迟函数（用于重试机制）
  */
 export function delay(ms: number): Promise<void> {

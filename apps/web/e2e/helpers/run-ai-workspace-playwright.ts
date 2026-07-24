@@ -1,4 +1,5 @@
 import { spawn, type ChildProcess } from 'node:child_process';
+import { delay } from '@dailyuse/utils/frontend';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -12,9 +13,7 @@ const webHost = process.env.AI_WORKSPACE_E2E_HOST ?? '127.0.0.1';
 const webPort = Number(process.env.AI_WORKSPACE_E2E_PORT ?? '4174');
 const webBaseUrl = `http://${webHost}:${webPort}`;
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolveDelay) => setTimeout(resolveDelay, ms));
-}
+/** Residual 1192: dual delay retired onto @dailyuse/utils/frontend sole. */
 
 async function waitForServer(url: string, timeoutMs: number): Promise<void> {
   const deadline = Date.now() + timeoutMs;
