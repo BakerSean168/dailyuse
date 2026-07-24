@@ -472,6 +472,11 @@ function getStatusLabel(status: string): string {
   return labels[status] ?? status;
 }
 
+/**
+ * Residual 1219 keep-boundary: app-vue goal getImportanceLabel — Vital-scale i18n map.
+ * Goal domain importance enum → t('goal.dialog.importance*'); not English identity.
+ * Soft residual 1219: app-react English literals + KRPreviewList high/medium/low differ (no force-merge).
+ */
 function getImportanceLabel(importance: string): string {
   const labels: Record<string, string> = {
     Vital: t('goal.dialog.importanceVital'),

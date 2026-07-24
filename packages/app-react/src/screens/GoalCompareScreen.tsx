@@ -54,6 +54,11 @@ export function GoalCompareScreen() {
     );
   }
 
+  /**
+   * Residual 1219 keep-boundary: app-react getImportanceLabel — English identity labels.
+   * Goal compare screen; Vital-scale keys map to themselves (no i18n t()).
+   * Soft residual 1219: app-vue goal i18n map + KR high/medium/low differ (no force-merge).
+   */
   function getImportanceLabel(importance: string): string {
     const labels: Record<string, string> = {
       Vital: 'Vital',
