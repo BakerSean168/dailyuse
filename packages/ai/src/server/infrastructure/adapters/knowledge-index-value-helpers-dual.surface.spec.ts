@@ -16,6 +16,7 @@ import {
  * Soft residual 971: withObservabilityPayload dual retired (with-observability-payload-dual.surface.spec.ts).
  * Soft residual 1109: toStringArray keep-boundary vs goal-planning trim + portable parseJsonField.
  * Soft residual 1153: API repository-knowledge-source tokenize CJK keep-boundary remains separate.
+ * Soft residual 1195: scoreIndexedResource dual retired (score-indexed-resource-dual.surface.spec.ts).
  * Does not flip §13.2 checkboxes.
  */
 describe('knowledge-index value helpers dual retired (residual 969)', () => {
@@ -54,8 +55,9 @@ describe('knowledge-index value helpers dual retired (residual 969)', () => {
       expect(source, label).not.toMatch(/function toChunkArray\b/);
       expect(source, label).toContain('toStringArray(');
       expect(source, label).toContain('toNumberArray(');
-      expect(source, label).toContain('tokenize(');
       expect(source, label).toContain('toChunkArray(');
+      // Residual 1195: tokenize only used inside scoreIndexedResource sole (may not appear in repo callers).
+      expect(source, label).toContain('scoreIndexedResource(');
     }
   });
 
