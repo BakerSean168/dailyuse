@@ -178,6 +178,10 @@ export function getPriorityText(level: PriorityLevel): string {
 }
 
 /**
+ * Residual 1180 keep-boundary: schedule comparePriority — options pair → totalWeight delta.
+ * Computes weight via calculatePriority(importance/urgency/dueDate); not precomputed scores.
+ * Soft residual 1180: goal comparePriority is number-score DailyPriority compare (no force-merge).
+ *
  * 比较两个实体的优先级
  * 返回：
  * - 负数：a 的优先级高于 b

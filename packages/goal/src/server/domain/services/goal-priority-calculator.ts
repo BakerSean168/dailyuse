@@ -90,8 +90,12 @@ export function mapPriorityToText(priority: number): string {
 }
 
 /**
+ * Residual 1180 keep-boundary: goal comparePriority — precomputed score pair (number, number).
+ * Delegates to DailyPriorityCalculator.compare for daily-precision score ranking.
+ * Soft residual 1180: schedule comparePriority takes PriorityCalculationOptions pairs (no force-merge).
+ *
  * 比较两个优先级分数（用于排序）
- * 
+ *
  * @param a - 分数A
  * @param b - 分数B
  * @returns 比较结果（降序排序）
