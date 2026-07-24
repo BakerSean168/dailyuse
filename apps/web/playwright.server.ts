@@ -87,6 +87,11 @@ function getWebServerRuntimeConfig() {
   };
 }
 
+/**
+ * Residual 1189 keep-boundary: Playwright getCorsOrigins — E2E joined CORS string.
+ * Unions E2E web origin + legacy localhost + env CORS_ORIGIN; returns comma-joined string.
+ * Soft residual 1189: API getCorsOrigins is env-only string[] (no force-merge).
+ */
 function getCorsOrigins(): string {
   const configuredOrigins = (process.env.CORS_ORIGIN ?? '')
     .split(',')

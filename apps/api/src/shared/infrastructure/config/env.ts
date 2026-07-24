@@ -141,6 +141,10 @@ export function getRedisConfig() {
 }
 
 /**
+ * Residual 1189 keep-boundary: API getCorsOrigins — production env string[] list.
+ * Splits env.CORS_ORIGIN into trimmed non-empty origins (no E2E web origin injection).
+ * Soft residual 1189: Playwright getCorsOrigins returns joined string with E2E/legacy origins (no force-merge).
+ *
  * 获取 CORS 允许的来源列表
  */
 export function getCorsOrigins(): string[] {
