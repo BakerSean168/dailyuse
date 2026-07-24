@@ -19,6 +19,10 @@ import {
   ThemedView,
 } from '@dailyuse/ui-react-native';
 
+/**
+ * Soft residual 1240: app-react task formatDate — toLocaleString + English 'Not set'.
+ * Package-local empty label + datetime locale string; differs from GoalCompare date-only '-' (no force-merge).
+ */
 function formatDate(timestamp: number | null) {
   if (!timestamp) {
     return 'Not set';

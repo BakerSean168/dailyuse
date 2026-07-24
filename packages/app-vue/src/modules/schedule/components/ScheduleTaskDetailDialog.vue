@@ -324,6 +324,10 @@ function formatDateTime(timestamp: number | string | null | undefined): string {
   return new Date(time).toLocaleString(locale.value);
 }
 
+/**
+ * Soft residual 1240: schedule formatDate — number|string + 'N/A' empty + locale toLocaleDateString.
+ * Accepts ISO string; empty label N/A not goal notSet / '-' (no force-merge).
+ */
 function formatDate(timestamp: number | string | null | undefined): string {
   if (!timestamp) return 'N/A';
   const time = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;

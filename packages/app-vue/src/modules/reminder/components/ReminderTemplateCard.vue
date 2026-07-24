@@ -424,6 +424,10 @@ const getTemplateIcon = () => {
   return Bell;
 };
 
+/**
+ * Soft residual 1240: reminder formatDate — date-fns yyyy-MM-dd HH:mm:ss + common.unknown.
+ * Datetime absolute path; not date-only toLocaleDateString family (no force-merge).
+ */
 const formatDate = (timestamp: number | undefined): string => {
   if (!timestamp) return t('common.unknown');
   try {

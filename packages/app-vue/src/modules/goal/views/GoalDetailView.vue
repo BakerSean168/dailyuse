@@ -366,6 +366,11 @@ const ringDashOffset = computed(
   () => ringCircumference * (1 - Math.min(100, Math.max(0, goalProgress.value)) / 100),
 );
 
+/**
+ * Residual 1240 keep-boundary: app-vue goal formatDate — locale toLocaleDateString + i18n notSet.
+ * Goal detail display; falsy → t('goal.detail.notSet'); not English '-' / 'Not set'.
+ * Soft residual 1240: react English empty labels + schedule N/A + reminder date-fns differ (no force-merge).
+ */
 function formatDate(value: number | null | undefined): string {
   return value
     ? new Date(value).toLocaleDateString(locale.value)

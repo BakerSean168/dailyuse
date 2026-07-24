@@ -90,6 +90,10 @@ const truncatedDescription = computed(() => {
 
 const severityIcon = computed(() => (props.rule.severity === 'Mandatory' ? AlertCircle : Info));
 
+/**
+ * Soft residual 1240: governance RuleCard formatDate — locale month short + day only.
+ * Compact card display; no empty path; not full date goal detail (no force-merge).
+ */
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
   return date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });

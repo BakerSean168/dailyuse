@@ -85,6 +85,11 @@ export function GoalCompareScreen() {
     return labels[status] ?? status;
   }
 
+  /**
+   * Residual 1240 keep-boundary: app-react goal formatDate — toLocaleDateString + English '-'.
+   * Goal compare screen; falsy → '-'; no i18n t() / no locale argument.
+   * Soft residual 1240: vue goal i18n notSet + other empty labels differ (no force-merge).
+   */
   function formatDate(timestamp: number | null): string {
     if (!timestamp) return '-';
     return new Date(timestamp).toLocaleDateString();
