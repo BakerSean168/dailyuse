@@ -28,6 +28,11 @@ function toDateInput(timestamp: number | null | undefined) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
+/**
+ * Residual 1231 keep-boundary: app-react schedule toTimeInput — epoch → UTC HH:mm ISO slice.
+ * Schedule event editor; falsy → ''; toISOString().slice(11, 16) (UTC clock, not local getHours).
+ * Soft residual 1231: task local padStart + '09:00' default differs (no force-merge).
+ */
 function toTimeInput(timestamp: number | null | undefined) {
   if (!timestamp) {
     return '';

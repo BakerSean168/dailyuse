@@ -40,6 +40,10 @@ export function formatDateToInput(dateObj: Date): string {
   return format(dateObj, 'yyyy-MM-dd');
 }
 
+/**
+ * Soft residual 1231: utils formatTimeToInput — Date → date-fns HH:mm; falsy → ''.
+ * Shared form helper; not epoch timestamp; not force-merged with app-react toTimeInput keep-boundary.
+ */
 export function formatTimeToInput(dateObj: Date): string {
   if (!dateObj) return '';
   return format(dateObj, 'HH:mm');
