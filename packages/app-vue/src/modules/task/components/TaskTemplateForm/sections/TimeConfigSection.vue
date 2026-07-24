@@ -239,11 +239,12 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
+import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 
 const { t, locale } = useI18n();
 
-// Residual 1249: formatDisplayDate dual retired onto shared sole.
+// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252).
 
 const props = withDefaults(
   defineProps<{
@@ -311,13 +312,6 @@ function handleCalendarSelect(date: unknown, setter: (v: string) => void) {
   } else {
     setter('');
   }
-}
-
-function formatDateToYMD(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 /**

@@ -237,11 +237,12 @@ import {
   Plus,
   Calendar as CalendarIcon,
 } from '@lucide/vue';
+import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 
 const { t, locale } = useI18n();
 
-// Residual 1249: formatDisplayDate dual retired onto shared sole.
+// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252).
 
 // 类型别名
 const ReminderType = TaskReminderType;
@@ -251,13 +252,6 @@ const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '
 const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
 // ── Calendar/DateTime helpers ──────────────────────────────────────────
-
-function formatDateToYMD(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
 
 /** Extract date part (YYYY-MM-DD) from a timestamp */
 function getAbsoluteDatePart(ts?: number | null): string | null {

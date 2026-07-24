@@ -192,11 +192,12 @@ import {
   Calendar,
 } from '@dailyuse/ui-vue-shadcn';
 import { Repeat, Info, Calendar as CalendarIcon } from '@lucide/vue';
+import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
 
 const { t, locale } = useI18n();
 
-// Residual 1249: formatEndDateDisplay dual retired onto formatDisplayDate sole.
+// Residual 1249 / Residual 1252: formatEndDateDisplay dual retired onto formatDisplayDate sole; formatDateToYMD dual retired onto shared sole (Residual 1252).
 
 /** Convert endDate string to Date for Calendar :selected */
 const endDateAsDate = computed(() => {
@@ -213,13 +214,6 @@ function handleEndDateCalendarSelect(date: unknown) {
   } else {
     endDate.value = '';
   }
-}
-
-function formatDateToYMD(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 /**
