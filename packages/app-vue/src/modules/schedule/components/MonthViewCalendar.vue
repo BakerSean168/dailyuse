@@ -181,6 +181,10 @@ function getEventsForDate(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter((event) => toLocalDateKey(event.startTime) === dateStr);
 }
 
+/**
+ * Residual 1306 keep-boundary: Month eventClass — translucent/text chips for dense month cells.
+ * Soft residual 1288 / 1303: not force-merged into calendarEventBgClass solid Day/Week bars.
+ */
 function eventClass(event: CalendarEventItem): string {
   if (event.hasConflict) {
     return 'bg-warning/15 text-warning';

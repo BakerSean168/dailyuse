@@ -131,6 +131,10 @@ function formatEventTime(event: CalendarEventItem): string {
   return `${formatLocalHHmm(event.startTime)} - ${formatLocalHHmm(event.endTime)}`;
 }
 
+/**
+ * Residual 1306 keep-boundary: Day getEventStyle — absolute px layout (64px/hour rail).
+ * Soft residual 1288 / 1303: Week uses % of day column height (no force-merge).
+ */
 function getEventStyle(event: CalendarEventItem) {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);

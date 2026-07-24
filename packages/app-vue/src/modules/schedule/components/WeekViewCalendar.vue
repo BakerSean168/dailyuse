@@ -182,6 +182,10 @@ function getAllDayEventsForDay(dateStr: string): CalendarEventItem[] {
   );
 }
 
+/**
+ * Residual 1306 keep-boundary: Week getEventStyle — percent-of-day column layout.
+ * Soft residual 1288 / 1303: Day uses absolute px rail (64px/hour; no force-merge).
+ */
 function getEventStyle(event: CalendarEventItem) {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
