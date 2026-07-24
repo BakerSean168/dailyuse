@@ -237,6 +237,10 @@ const emit = defineEmits<{
   showVersionHistory: [];
 }>();
 
+/**
+ * Soft residual 1237: setting formatTime — relative i18n (+days) + toLocaleString fallback.
+ * setting.time.* keys; includes daysAgo band; not dashboard.time.* short m/d path (no force-merge).
+ */
 function formatTime(timestamp: number): string {
   const date = new Date(timestamp);
   const now = new Date();

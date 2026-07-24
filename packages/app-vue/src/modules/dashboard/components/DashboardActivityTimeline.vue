@@ -39,6 +39,11 @@ const { t } = useI18n();
 
 const open = ref(false);
 
+/**
+ * Residual 1237 keep-boundary: dashboard formatTime — relative i18n + short m/d HH:mm.
+ * justNow/minutesAgo/hoursAgo via t('dashboard.time.*'); older → local m/d HH:mm padStart.
+ * Soft residual 1237: setting relative+toLocaleString, goal date-fns/toLocaleString, capsule HH:mm differ (no force-merge).
+ */
 function formatTime(ts: number): string {
   const date = new Date(ts);
   const now = Date.now();

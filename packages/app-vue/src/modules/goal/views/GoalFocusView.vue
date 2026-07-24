@@ -124,6 +124,10 @@ const remainingDays = computed(() => {
   return Math.max(0, Math.ceil((mode.endTime - Date.now()) / (1000 * 60 * 60 * 24)));
 });
 
+/**
+ * Soft residual 1237: goal Focus formatTime — toLocaleString with year/month/day/hour/minute options.
+ * Locale-driven absolute display; not date-fns and not relative dashboard path (no force-merge).
+ */
 function formatTime(value: number): string {
   return new Date(value).toLocaleString(locale.value, {
     year: 'numeric',

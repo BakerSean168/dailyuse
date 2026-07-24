@@ -33,6 +33,10 @@ const remaining = computed(() =>
 
 const visible = computed(() => remaining.value.slice(0, RECENT_LIMIT));
 
+/**
+ * Soft residual 1237: reminder capsule formatTime — local HH:mm padStart only (no date, no relative).
+ * Preview capsule clock; not dashboard relative/i18n path (no force-merge).
+ */
 function formatTime(ts: number): string {
   const d = new Date(ts);
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
