@@ -4,7 +4,9 @@ import type { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/sched
 type Translate = ComposerTranslation;
 
 /**
- * Maps a ScheduleTaskStatus to its i18n label.
+ * Residual 1222 keep-boundary: app-vue schedule getStatusLabel — ScheduleTaskStatus typed i18n.
+ * Active/Paused/Completed/Failed/Cancelled → schedule.taskStatus.*; t injected as first arg.
+ * Soft residual 1222: goal domain Draft/Archived i18n + react English identity differ (no force-merge).
  */
 export function getStatusLabel(t: Translate, status: ScheduleTaskStatus): string {
   const keyMap: Record<ScheduleTaskStatus, string> = {

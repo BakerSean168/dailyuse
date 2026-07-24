@@ -462,6 +462,11 @@ function calculateKRProgress(kr: KeyResultClientDTO): number {
   return Math.min(100, Math.round(((current - initial) / (target - initial)) * 100));
 }
 
+/**
+ * Residual 1222 keep-boundary: app-vue goal getStatusLabel — Draft/Active/… goalStatus i18n.
+ * Goal domain status enum → t('goal.cards.goalStatus.*'); not schedule taskStatus keys.
+ * Soft residual 1222: schedule typed i18n + app-react English identity differ (no force-merge).
+ */
 function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     Active: t('goal.cards.goalStatus.active'),

@@ -70,6 +70,11 @@ export function GoalCompareScreen() {
     return labels[importance] ?? importance;
   }
 
+  /**
+   * Residual 1222 keep-boundary: app-react getStatusLabel — English identity labels.
+   * Goal compare screen; Draft/Active/Completed/Archived map to themselves (no i18n t()).
+   * Soft residual 1222: app-vue goal i18n map + schedule taskStatus differ (no force-merge).
+   */
   function getStatusLabel(status: GoalStatus): string {
     const labels: Record<string, string> = {
       Draft: 'Draft',
