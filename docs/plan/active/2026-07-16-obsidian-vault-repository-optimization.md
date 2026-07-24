@@ -13075,6 +13075,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - 仍缺：真实 GitHub App install + installation-token 路径 E2E、全量 Web/Desktop 业务 E2E 一揽子、§13.2 未勾选项（12 部分 / 15 部分）不因本轮翻勾。
   仍缺：全量 Web/Desktop 业务 E2E 与 OAuth/App fixture 作为 PR 门禁一揽子证据；
   真实 GitHub App fixture E2E 缺 **installation**（App/OAuth 凭据已就绪；安装浏览器同意仍为外部阻塞）。
+  残留一千三百三十三轮续（install 轮询 + host-dev 接线 + live fail-fast）：
+  - 再轮询 `GET /app/installations` → count **0**；`POST .../access_tokens` 对假 installation 404 fail-closed。
+  - 凭据 layout：`~/.config/memoflow/{github-app-credentials.json,github-app.env}` mode 600；repo 侧 gitignored `.env.test.local` + `.env.development.local`（从 secret store 注入，含 OAuth/App + fixture 仓，无 INSTALLATION_ID）。
+  - `pnpm runtime:preflight --profile e2e` OK；`desktop:test:live-github` 在缺 `GITHUB_TEST_INSTALLATION_ID` 时 fail-fast（shipped message，拒 PAT）。
+  - `GitHubAppClient` unit **15/15**；goal-workflow 复验 **8/8**（SCRATCH residual-suites）。
+  - §13.2 仍 **12 [x] / 3 [ ]**，**不改 checkbox**；真实 install 仍需浏览器：https://github.com/apps/memoflow-dev-test/installations/new
 
 ## 14. 相关资料
 
