@@ -9353,6 +9353,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > residual suites：goal-workflow 8/8、repo GitHub 46/46、desktop guest e2e 1/1、web auth 5/5；
 > open-items 3/3 + governance GOV_EXIT:0。§13.2 **12 [x] / 3 [ ]** 不改 checkbox；PR readiness no。
 > 安装：https://github.com/apps/memoflow-dev-test/installations/new
+> 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — workspace gates）：install count 仍 0；
+> prod-like 六服务 healthy + 探针 200；全仓 test 30/30 + lint 36/36 + typecheck 34/34 EXIT:0；
+> residual suites 仍绿；§13.2 **12 [x] / 3 [ ]** 不改 checkbox；PR readiness no。
+> 安装仍需浏览器：https://github.com/apps/memoflow-dev-test/installations/new
 
 
 
@@ -13117,6 +13121,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - residual suites 复验：goal-workflow **8/8**；repository GitHub **46/46**；desktop guest unit **15**；desktop guest e2e xvfb **1/1**；web auth login+password+register **5/5**。
   - open-items **3/3** + governance-check **GOV_EXIT:0**；§13.2 **12 [x] / 3 [ ]**，**不改 checkbox**；PR readiness 仍为 no。
   - 安装仍需浏览器：https://github.com/apps/memoflow-dev-test/installations/new （fixture `BakerSean168/memoflow-github-app-e2e-fixture`）。
+
+
+  残留一千三百三十三轮续（workspace gates + prod-like probes；install 仍外部阻塞）：
+  - 再轮询 install count **0**；JWT App 路径 OK；live-github 缺 INSTALLATION_ID fail-fast（拒 PAT）。
+  - prod-like local-docker：六服务 healthy；探针 web/api/ai/powersync 均 **200**。
+  - 全仓标准 test **30/30 EXIT:0**；lint **36/36**（0 errors）；typecheck **34/34 EXIT:0**。
+  - residual suites 仍绿：goal-workflow 8/8、repo GitHub 46/46、desktop guest e2e 1/1、web auth 5/5、note-boundary 1/1。
+  - §13.2 **12 [x] / 3 [ ]**，**不改 checkbox**；真实 App install 仍需浏览器同意；PR readiness 仍为 no。
 
 
 ## 14. 相关资料
