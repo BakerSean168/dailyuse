@@ -93,7 +93,9 @@ export function computeHealthStatus(consecutiveFailures: number): 'healthy' | 'w
 }
 
 /**
- * Formats a timestamp (TransferDate) as a locale-aware date string.
+ * Residual 1216 keep-boundary: app-vue schedule formatTimestamp — TransferDate → toLocaleString.
+ * Exported schedule presentation helper; null|undefined empty → '-'; invalid → '-'.
+ * Soft residual 1216: app-react ScheduleTaskCard local formatTimestamp is package-local (no force-merge).
  */
 export function formatTimestamp(timestamp: number | null | undefined): string {
   if (!timestamp) return '-';
