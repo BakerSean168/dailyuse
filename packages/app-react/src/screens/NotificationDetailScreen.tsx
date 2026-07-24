@@ -17,13 +17,8 @@ import {
   ThemedText,
 } from '@dailyuse/ui-react-native';
 
-function formatDate(value: number | null | undefined) {
-  if (!value) {
-    return 'Unknown';
-  }
-
-  return new Date(value).toLocaleString();
-}
+// Residual 1264: formatDate dual retired onto shared formatDateUnknown sole (datetime + English 'Unknown').
+import { formatDateUnknown as formatDate } from '../utils/format-date-unknown';
 
 export function NotificationDetailScreen() {
   const router = useRouter();

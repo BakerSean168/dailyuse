@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
  * Soft residual 1261 / 1240:
  * - TaskDetailScreen: toLocaleString + 'Not set'
  * - GoalCompareScreen: toLocaleDateString + '-' (Residual 1240 keep-boundary)
- * - Notification*: toLocaleString + 'Unknown'
+ * - formatDateUnknown dual-retired sole (Residual 1264) remains separate
  * Soft residual 1240: vue goal i18n notSet / schedule N/A / reminder date-fns remain separate.
  * Soft residual 1258: handleCalendarSelect dual-retired sole remains separate.
  * Does not flip §13.2 checkboxes.

@@ -4,7 +4,7 @@
  * Soft residual 1261 / 1240:
  * - TaskDetailScreen: toLocaleString + 'Not set' (datetime presentation)
  * - GoalCompareScreen: toLocaleDateString + '-' (keep-boundary Residual 1240)
- * - Notification*: toLocaleString + 'Unknown'
+ * - formatDateUnknown dual-retired sole (Residual 1264) remains separate (datetime + 'Unknown')
  * Soft residual 1240: vue goal i18n notSet / schedule N/A / reminder date-fns remain separate.
  */
 export function formatDateNotSet(timestamp: number | null): string {
