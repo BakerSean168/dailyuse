@@ -36,6 +36,11 @@ export function createAuthContext(): AuthContext {
     void router.push(path);
   }
 
+  /**
+   * Residual 1201 keep-boundary: app-vue handleAuthSuccess — Pinia store session apply.
+   * store.handleAuthResponse + clear error; no localStorage writes here.
+   * Soft residual 1201: web useWebAuth handleAuthSuccess is localStorage-only (no force-merge).
+   */
   function handleAuthSuccess(data: AuthResponseDTO) {
     store.handleAuthResponse(data);
     store.setError(null);

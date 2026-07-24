@@ -44,6 +44,11 @@ export function useWebAuth() {
       : null,
   );
 
+  /**
+   * Residual 1201 keep-boundary: web auth handleAuthSuccess — localStorage token persistence.
+   * Writes access/refresh/auth-state into window.localStorage (no Pinia/store path).
+   * Soft residual 1201: app-vue useAuthContext handleAuthSuccess is store-only (no force-merge).
+   */
   function handleAuthSuccess(data: AuthResponseDTO) {
     error.value = null;
 
