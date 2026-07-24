@@ -74,6 +74,7 @@ const emit = defineEmits<Emits>();
 const { t } = useI18n();
 const completing = ref(false);
 
+/** Soft residual 1213: component-local formatTimeRange (event+all-day+padStart); ≠ app-react Intl zh-CN pair. */
 function formatTimeRange(event: CalendarEventItem): string {
   if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
   const fmt = (ts: number) => {

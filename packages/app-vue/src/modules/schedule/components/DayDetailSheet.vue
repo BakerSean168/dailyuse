@@ -106,6 +106,11 @@ const dateTitle = computed(() => {
   });
 });
 
+/**
+ * Residual 1213 keep-boundary: app-vue schedule formatTimeRange — CalendarEventItem + all-day.
+ * padStart HH:mm range with en-dash; all-day → i18n label (not fixed zh-CN Intl pair).
+ * Soft residual 1213: app-react useScheduleAgenda formatTimeRange is Intl zh-CN pair (no force-merge).
+ */
 function formatTimeRange(event: CalendarEventItem): string {
   if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
   const fmt = (ts: number) => {
