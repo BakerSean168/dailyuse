@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 891: honest §13.2 completion-definition open-items re-audit.
- * Residual 1314: tip focused suite pointer refresh (Residual 1313 evidence tip 399/1746)
+ * Residual 1317: tip focused suite pointer refresh (Residual 1316 evidence tip 400/1751)
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
@@ -34,7 +34,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
   it('keeps exactly three unchecked §13.2 items with partial/external-block labels', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
-    expect(plan).toContain('Residual 1314');
+    expect(plan).toContain('Residual 1317');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
@@ -62,9 +62,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
 
   it('records tip focused suite evidence without claiming full PR gate completion', () => {
     const sec = section132();
-    expect(sec).toContain('399 文件 / 1746 测试');
-    expect(sec).toContain('Residual 1313');
-    expect(sec).toContain('Residual 1314');
+    expect(sec).toContain('400 文件 / 1751 测试');
+    expect(sec).toContain('Residual 1316');
+    expect(sec).toContain('Residual 1317');
     expect(sec).toContain('GOV_EXIT:0');
     expect(sec).toContain('不改 checkbox');
     expect(sec).toContain('三入口完整 E2E');
@@ -155,6 +155,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).not.toContain('focused evidence suite tip（Residual 1205）：**363 文件 / 1566 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1208）：**364 文件 / 1570 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1211）：**365 文件 / 1574 测试**');
+    expect(sec).not.toContain('focused evidence suite tip（Residual 1313）：**399 文件 / 1746 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1310）：**398 文件 / 1741 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1307）：**397 文件 / 1736 测试**');
     expect(sec).not.toContain('focused evidence suite tip（Residual 1304）：**396 文件 / 1731 测试**');
