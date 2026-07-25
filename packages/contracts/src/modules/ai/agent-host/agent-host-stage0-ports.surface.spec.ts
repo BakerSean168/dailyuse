@@ -35,6 +35,14 @@ describe('agent-host stage-0 ports freeze surface', () => {
     expect(ports).toContain("status: 'completed' | 'aborted' | 'failed' | 'waiting_approval'");
   });
 
+  it('Residual N1: run.started may carry conversationId for Conversation↔Host association', () => {
+    // Multi-run per conversation; conversationId is optional on the event for
+    // backward-compatible clients, while direct_turn still requires it before stream.
+    expect(ports).toContain("type: 'run.started'");
+    expect(ports).toContain('conversationId?: string');
+    expect(ports).toContain('Residual N1');
+  });
+
   it('declares multi-engine capability kinds without silent expansion', () => {
     expect(capabilities).toContain("'engine.direct_turn'");
     expect(capabilities).toContain("'engine.langgraph_workflow'");

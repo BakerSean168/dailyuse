@@ -209,6 +209,7 @@ describe('ADR-035 production multi-engine Host journey (residual 375)', () => {
       runId: FIXTURE.runDirect,
       engineId: 'engine.direct_turn',
       profile: 'direct_turn',
+      conversationId,
     });
     expect(directEvents.some((e) => e.type === 'message.delta')).toBe(true);
     expect(directEvents.at(-1)).toMatchObject({
@@ -234,6 +235,7 @@ describe('ADR-035 production multi-engine Host journey (residual 375)', () => {
       runId: FIXTURE.runReadonly,
       engineId: 'engine.pi_readonly',
       profile: 'pi_readonly',
+      conversationId,
     });
     expect(readonlyEvents.at(-1)).toMatchObject({
       type: 'message.completed',

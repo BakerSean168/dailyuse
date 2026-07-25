@@ -287,6 +287,8 @@ async function installMultiEngineHostMocks(page: Page): Promise<DispatchCapture>
         runId,
         engineId,
         profile,
+        // Residual N1: product SSE mirrors AssistantFacade conversation binding.
+        conversationId: convId,
       },
       {
         type: 'message.delta',
@@ -464,6 +466,7 @@ test.describe('AI multi-engine Host product (residual 1342)', () => {
           runId,
           engineId: 'engine.direct_turn',
           profile: 'direct_turn',
+          conversationId,
         },
         {
           type: 'message.delta',

@@ -19,9 +19,14 @@ updated: 2026-07-22T00:00:00
 
 本文执行 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)，承接 Open Design、`earendil-works/pi`、当前 TypeScript AI 模块、Python LangGraph runtime、checkpoint、tool executor 和 Obsidian/GitHub 知识仓库方案的专项调研。
 
-状态：**实施中**（阶段 0/1/2/3/4 部分起步 + AssistantFacade residual 343 + 阶段 6 CustomModelGateway 部分；完成定义未宣称）。
+状态：**实施中**（阶段 0/1/2/3/4 部分起步 + AssistantFacade residual 343 + 阶段 6 CustomModelGateway 部分；完成定义未宣称）。  
+夜间持续协议：[`2026-07-25-nightly-hygiene-and-agent-host.md`](./2026-07-25-nightly-hygiene-and-agent-host.md)（vault §13.2 已 15/15 后主推本 plan）。
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
+
+### 当前进展（2026-07-25 续；与 vault residual 1342 + nightly N1 对齐）
+
+- **Nightly residual N1（AH-1）**：`AssistantEvent` `run.started` 可选 `conversationId`；`AssistantFacade` 在 open-chat（direct_turn / pi_readonly）下发 trimmed conversationId；缺 conversation 时 omit 字段且 direct_turn 仍 `CONVERSATION_REQUIRED`。**不**宣称 Conversation↔AgentRun 持久多对一产品完成定义已勾。
 
 ### 当前进展（2026-07-22，与 vault plan residual 305–387 对齐）
 
@@ -889,7 +894,7 @@ packages/contracts/src/modules/ai/
 ## 20. 完成定义
 
 - [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343/351 AssistantFacade + open chat dispatch；residual 355–387 Host Proposal/receipt/timeline 工作台部分落地；仍非全业务 Artifact 面）**
-- [ ] Conversation 与 AgentRun 有明确、多对一的关联。
+- [ ] Conversation 与 AgentRun 有明确、多对一的关联。 **（部分：AgentRun.conversationId + list 过滤 + Host open-chat `run.started.conversationId` nightly N1；统一助手恢复/UI 多对一仍未完成）**
 - [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
 - [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；residual 413 Host allowlist + residual 415 Goal workflow 诊断展示脱敏；内部 filter 仍可读 node.*）**
 - [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双标签 isolation + 生产 DirectTurnEngine + ReadonlyAnalysisTurnEngine；完整 multi-engine runtime E2E/Pi SDK 仍缺）**

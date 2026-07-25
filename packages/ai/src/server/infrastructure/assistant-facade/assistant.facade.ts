@@ -100,12 +100,17 @@ export class AssistantFacade implements IAssistantFacadePort {
     const profile: AssistantExecutionProfileId = command.executionProfileId ?? 'direct_turn';
     const runId = command.runId?.trim() || newRunId();
 
+    // Residual N1: surface Conversation↔Host-run association on run.started
+    // (trimmed non-empty only; empty/missing stay omitted).
+    const conversationId = command.conversationId?.trim() || undefined;
+
     if (profile === 'pi_readonly') {
       yield {
         type: 'run.started',
         runId,
         engineId: this.readonlyTurnEngine.engineId,
         profile,
+        ...(conversationId ? { conversationId } : {}),
       };
       const result = await this.readonlyTurnEngine.startTurn({
         runId,
@@ -129,6 +134,7 @@ export class AssistantFacade implements IAssistantFacadePort {
       runId,
       engineId: this.openChatTurn.engineId || DIRECT_TURN_ENGINE_ID,
       profile: 'direct_turn',
+      ...(conversationId ? { conversationId } : {}),
     };
 
     if (!command.conversationId?.trim()) {

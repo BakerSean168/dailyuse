@@ -100,6 +100,7 @@ describe('AssistantFacade', () => {
       runId: 'run-1',
       engineId: 'engine.direct_turn',
       profile: 'direct_turn',
+      conversationId: 'conv-1',
     });
     expect(events).toContainEqual({ type: 'message.delta', runId: 'run-1', content: 'hel' });
     expect(events).toContainEqual({ type: 'message.delta', runId: 'run-1', content: 'lo' });
@@ -147,8 +148,35 @@ describe('AssistantFacade', () => {
       type: 'run.started',
       engineId: 'engine.pi_readonly',
       profile: 'pi_readonly',
+      conversationId: 'conv-1',
     });
     expect(readonlyEngine.startTurn).toHaveBeenCalledOnce();
+    expect(openChat.streamConversationTurn).not.toHaveBeenCalled();
+  });
+
+  it('omits conversationId on run.started when command has no conversation (N1)', async () => {
+    const openChat = createOpenChat();
+    const readonlyEngine = createReadonlyEngine();
+    const primary = createReadonlyEngine({ engineId: 'engine.direct_turn' });
+    const facade = new AssistantFacade(openChat, readonlyEngine, createKernel(), primary);
+
+    const events = await collect(facade, {
+      type: 'message',
+      identityId: 'user-1',
+      content: 'hi',
+      surface: 'web',
+      runId: 'run-no-conv',
+    });
+
+    expect(events[0]).toMatchObject({
+      type: 'run.started',
+      runId: 'run-no-conv',
+      profile: 'direct_turn',
+    });
+    expect(events[0]).not.toHaveProperty('conversationId');
+    expect(events.some((e) => e.type === 'error' && e.code === 'CONVERSATION_REQUIRED')).toBe(
+      true,
+    );
     expect(openChat.streamConversationTurn).not.toHaveBeenCalled();
   });
 

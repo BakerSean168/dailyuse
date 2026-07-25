@@ -235,7 +235,18 @@ export type AssistantCommand =
     };
 
 export type AssistantEvent =
-  | { type: 'run.started'; runId: string; engineId: string; profile: AssistantExecutionProfileId }
+  /**
+   * Residual N1 (nightly AH-1): optional conversationId binds Host open-chat runs
+   * to the product Conversation (multi-run per conversation; nullish when command
+   * omitted it — direct_turn still fail-closed CONVERSATION_REQUIRED before stream).
+   */
+  | {
+      type: 'run.started';
+      runId: string;
+      engineId: string;
+      profile: AssistantExecutionProfileId;
+      conversationId?: string;
+    }
   | { type: 'message.delta'; runId: string; content: string }
   | {
       type: 'message.completed';
