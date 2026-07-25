@@ -1,5 +1,8 @@
 **/node_modules
-**/build
+# Residual 1335: do not ignore tools/build (tsup.base.config.ts is required by package builds in Docker).
+# Only drop package/app `build` output dirs, not the tools/build sources.
+packages/**/build
+apps/**/build
 **/coverage
 **/.nx
 **/dist-electron

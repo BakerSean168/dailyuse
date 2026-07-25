@@ -9615,6 +9615,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   **GitHub OAuth 登录**端到端（用户同意）与「三入口产品故事」跨端 Playwright 串联，故入口 DoD 仍为部分。
   **残留 1334 handoff（仍不打勾）**：round2 复验 Web auth **14/14** + Desktop guest **1/1** + live-github **1/1** +
   three-login matrix **15/15**；仍无交互式 OAuth 登录同意与跨端三入口串联 → **部分实现**。
+  **残留 1335 handoff（仍不打勾）**：**明确延后**交互式 OAuth 同意；继续用 e2e-mock + 账密 + guest + App install 证据。
   残留二十三轮补 surface contract 单测：`packages/app-vue/src/views/DesktopAuthView.spec.ts`
   （账密 + guest-mode-button，无 login-github-button）；`apps/web/src/auth/WebAuthView.spec.ts`
   （账密 + 条件 login-github-button，无 guest-mode-button；OAuth 不可用时隐藏 GitHub）。
@@ -11986,6 +11987,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   **残留 1334 handoff（仍不打勾）**：本 tip 再验 lint **36/36** + typecheck **34/34** + 标准 test **30/30** +
   governance **GOV_EXIT:0** + Web auth E2E **14/14** + Desktop guest **1/1** + live-github **1/1**；
   仍缺全量 Web 业务 E2E 一揽子与本 tip prod-like 复跑 → **部分验证**；PR readiness **no**。
+  **残留 1335 handoff（仍不打勾；跳过交互式 OAuth）**：业务 E2E 子集 **10/24** 绿、goal-workflow **7/9**；
+  e2e LOG_DIR 修复；prod-like 本 tip **六服务 healthy** + 探针 200（contracts dist 镜像内重建）；全量业务 E2E 仍未宣称。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
   额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
@@ -13208,6 +13211,18 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - 门禁项：本 tip 复验 lint+typecheck+标准 test+governance+Web 认证 E2E+Desktop guest E2E+live-github；
     **仍缺**全量 Web 业务 E2E 一揽子与本 tip 的 prod-like `docker:local:up` 复跑 → **部分验证**；
     **PR readiness = no**；§13.2 **12 [x] / 3 [ ]**，**不改 checkbox**。
+
+
+  残留一千三百三十五轮（跳过交互式 OAuth；推进门禁/E2E/prod-like；**不改 checkbox**）：
+  - **决策**：交互式浏览器 GitHub OAuth 用户登录同意 **延后**（凭据与 e2e-mock 边界已在位；不阻塞后续验证）。
+  - e2e API 启动：`start-api-server` 在 `apps/api/dist` cwd 下相对 `logs` 曾 ENOENT → 固定绝对 `LOG_DIR=apps/api/logs`（Residual 1335）。
+  - Web 业务 E2E（goal/task/reminder/notification 子集）：**10 passed / 14 failed**（认证成功后部分页面 testid 未挂载：`goal-list-view` / `notification-center` 等）；
+    goal-workflow+note-boundary：**7 passed / 2 failed**；reminder-notification-loop + task-completion-loop 等主路径仍绿。
+  - prod-like：本 tip 镜像重建后 API 曾 **unhealthy**（缺 workspace `dist`：`utils → @dailyuse/contracts/reminder`）。
+    根因：`dist` gitignore + `.dockerignore` 的 `**/build` 误伤 `tools/build`。修复：
+    `Dockerfile.api` 在 builder 内重建 `packages/contracts` dist；`.dockerignore` 改为只忽略 `packages/**/build`/`apps/**/build`。
+    复验：`docker:local:up` 六服务 **healthy**；探针 web/api/ai **200**（本 tip dirty 镜像）。
+  - §13.2 仍 **12 [x] / 3 [ ]**；三入口 OAuth 真人同意仍延后；Agent 仍部分；全量门禁仍部分；**PR readiness = no**。
 
 
 ## 14. 相关资料

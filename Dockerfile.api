@@ -11,13 +11,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-cert
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json tsconfig.workspace-src.json tsconfig.workspace-dist.json tsconfig.json ./
 COPY apps ./apps
 COPY packages ./packages
 # Root postinstall runs tools/mcp/ensure-nx-src-link.mjs (nx-mcp symlink helper).
+# Package tsup builds resolve tools/build/tsup.base.config.ts from package roots.
 COPY tools/mcp ./tools/mcp
+COPY tools/build ./tools/build
 
 RUN pnpm install --frozen-lockfile
+
+# Residual 1335: package `dist/` is gitignored and may be missing or stale in the
+# docker context. Migration scripts import workspace exports such as
+# `@dailyuse/contracts/reminder` through utils. Always rebuild contracts dist
+# in-image (same as packages/contracts:build). Host-built package dists for
+# other packages are still copied via `COPY packages` when present.
+RUN cd packages/contracts \
+  && node ../../node_modules/tsup/dist/cli-default.js \
+  && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json
 
 FROM node:24-bookworm-slim AS runtime
 
