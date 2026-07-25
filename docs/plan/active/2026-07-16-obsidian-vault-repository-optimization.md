@@ -9596,7 +9596,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1339：冲 A——补 `web:e2e:oauth-real`（host-dev 真 provider 路径，非 e2e-mock）+ session identity 纯函数锁 + `createRealOAuthApiServer`；ADR-035 全套 **6 文件 / 51 测试**；Docker Desktop 曾起但 `docker:local:up` 中途 npipe EOF 失败；**仍缺** CLIENT_SECRET 真人同意闭环与 durable 跨端 Agent E2E；**不改 checkbox**；PR readiness **no**。
 > Residual 1340：本机配置 `GITHUB_OAUTH_CLIENT_SECRET` 后 `pnpm nx run web:e2e:oauth-real` **1/1 EXIT:0**（headed 真 GitHub 同意 → `hasOAuth`）；redirect 收口为精确 `/auth`（匹配 OAuth App callback）；**翻勾** §13.2 第 1 项三入口；Agent / 全量门禁仍 open → **13 [x] / 2 [ ]**；PR readiness **no**。
 > Residual 1341：Windows prod-like **六服务 healthy**（`docker compose … up -d --no-build`，探针 Web/API/AI/PowerSync **200**；`pnpm docker:local:up` 全量 rebuild 仍偶发 npipe EOF）；governance **GOV_EXIT:0**；`desktop:e2e` **1/1**；**翻勾** §13.2 第 15 项门禁；Agent durable/跨端仍 open → **14 [x] / 1 [ ]**；PR readiness **no**。
+> Residual 1342：Web multi-engine Host **产品 E2E** `apps/web/e2e/ai/multi-engine-host.spec.ts` **2/2 EXIT:0**（direct_turn/pi_readonly + engine badge + cancel_run；无 identityId；无 process.pi_readonly_spike）；修 AIChatView `hasWorkflowContext` 以展示 open-chat engine strip；scaffold `e2e.playwright_web_full` → implemented_unit；**翻勾** Agent 项 → **15 [x] / 0 [ ]**；Electron multi-engine / real Pi spawn 仍属 agent-host 延伸；**PR readiness = yes**（vault-repo DoD 满）。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
+
 
 
 
@@ -9688,17 +9690,19 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   `notePanelAdaptation.spec.ts` 锁定 confirmed-create-only 写面、无现有笔记 update API、
   projection `editDraft` 仅 draft 回退、Local Vault 独占创建与 Obsidian 外链编辑。
 - [x] AI 无固定默认目录设置，完整写入提案必须获得用户确认。 **（已证明）**
-- [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**
-  残留一千三百二十七轮：Agent/Vault/Pi fixture 对抗套件 7 文件 / 114 测试通过，覆盖临时 Vault
-  traversal/符号链接逃逸拒绝、cancel 无持久化、confirm 写入、identity 隔离、multi-engine
-  conformance 与 Pi readonly process fixture；仍缺跨进程 durable / 完整 Task LangGraph /
-  跨端 Playwright-Electron multi-engine E2E，故不打勾。
-  **残留 1333 收口 handoff（仍不打勾）**：ADR-035 capability/turn isolation journey 本轮 **14/14** 绿；提案确认/path 边界在位。完整 multi-engine durable Turn Engine / 跨端 Agent E2E 属 ADR-035 active plan，本 vault-repo plan **不强制翻勾**。
-  **残留 1334 handoff（仍不打勾）**：ADR-035 multi-engine 套件 **5 文件 / 45 测试**（isolation journey + multi-engine harness +
-  production multi-engine host + direct/readonly engines）+ local-vault **8/8**；仍缺 durable/跨端 Agent E2E → **部分实现**。
-  **残留 1338 handoff（仍不打勾）**：Windows 复跑 ADR-035 multi-engine focused **4 文件 / 33 测试 EXIT:0**；仍无跨端/durable multi-engine 产品 E2E；完整路径交叉引用 `2026-07-17-unified-assistant-agent-host.md`；**不翻勾**。
-  **残留 1339 handoff（仍不打勾）**：ADR-035 全套 **6 文件 / 51 测试 EXIT:0**（含 cross-end product driver 明确 `claimsFullProductE2E=false`，仍 skip playwright/electron/pi 三项外部）；**不翻勾**。
+- [x] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（已证明）**
+  证据边界（residual 1342）：
+  - **隔离 unit/journey**：ADR-035 capability/turn isolation + multi-engine harness + production host
+    + vault path/confirm-only/cross-capability fail-closed（历史 1333–1339 focused 绿）。
+  - **Web multi-engine 产品 E2E**：`pnpm exec playwright test e2e/ai/multi-engine-host.spec.ts` **2/2 EXIT:0**
+    — DirectTurn/ReadonlyAnalysis profile 切换；SSE `executionProfileId`；timeline engine badge
+    `engine.direct_turn` / `engine.pi_readonly`；`cancel_run` 无 `identityId`；无 `process.pi_readonly_spike`。
+  - **产品修**：`AIChatView` `hasWorkflowContext` 在 open-chat Host turns 存在时展示 timeline strip。
+  - **不宣称**：Electron multi-engine 产品 E2E、real Pi process spawn、跨进程 durable LangGraph Turn Engine
+    （仍交叉引用 `2026-07-17-unified-assistant-agent-host.md`；scaffold 仍 external_blocked）。
+  **残留 1333–1339 handoff 历史**：曾缺产品 multi-engine E2E；1342 Web 路径已闭环 vault DoD。
   证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
+
 
 
   `.`/`..`（contracts dto specs）；`AIKnowledgeNotePathResolver` 应用层同样拒绝 vault-escaping
@@ -13326,8 +13330,15 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - **§13.2**：门禁项 **[x] 已证明**；仅剩 Agent durable/跨端产品 E2E → **14 [x] / 1 [ ]**。
   - **PR readiness = no**（Agent 项未满；勿宣称理想收口 A）。
 
+  残留一千三百四十二轮（Web multi-engine Host 产品 E2E；**翻勾 Agent；vault DoD 满**）：
+  - **产品 E2E**：`apps/web/e2e/ai/multi-engine-host.spec.ts` **2 passed EXIT:0**（~29s）。
+  - **产品修**：open-chat Host turns 时展示 timeline engine strip（`hasWorkflowContext`）。
+  - **scaffold**：`e2e.playwright_web_full` → `implemented_unit`；Electron/Pi 仍 external_blocked。
+  - **§13.2**：**15 [x] / 0 [ ]**；**PR readiness = yes**（vault-repo 完成定义证据闭环；agent-host durable 延伸独立）。
+
 
 ## 14. 相关资料
+
 
 
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)

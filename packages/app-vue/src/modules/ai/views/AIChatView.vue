@@ -731,8 +731,12 @@ const hasWorkflowContext = computed(
     toolMode.value !== 'chat' ||
     hasWorkflowArtifact.value ||
     hasPendingHostProposals.value ||
-    hasHostExecutionReceipts.value,
+    hasHostExecutionReceipts.value ||
+    // Residual 1342: open-chat multi-engine Host turns need the timeline strip
+    // (engine badges for direct_turn / pi_readonly) even in pure chat mode.
+    openChatHostTurns.value.length > 0,
 );
+
 const hostProposalBusy = ref(false);
 const hostProposalPanelRef = ref<{
   applyRevised: (

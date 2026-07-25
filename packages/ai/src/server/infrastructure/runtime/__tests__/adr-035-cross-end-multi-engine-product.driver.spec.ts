@@ -28,8 +28,9 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
     const summary = summarizeCrossEndMultiEngineProductDriverRun(run);
 
     expect(summary.total).toBe(17);
-    expect(summary.passed).toBe(14);
-    expect(summary.skippedExternal).toBe(3);
+    // Residual 1342: e2e.playwright_web_full is implemented_unit (Web product Playwright).
+    expect(summary.passed).toBe(15);
+    expect(summary.skippedExternal).toBe(2);
     expect(summary.failed).toBe(0);
     expect(summary.unitPathGreen).toBe(true);
     expect(summary.claimsFullProductE2E).toBe(false);
@@ -39,11 +40,11 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
 
     const skipped = run.results.filter((r) => r.status === 'skipped_external');
     expect(skipped.map((r) => r.stepId)).toEqual([
-      'e2e.playwright_web_full',
       'e2e.electron_desktop_full',
       'e2e.real_pi_spawn',
     ]);
     expect(skipped.every((r) => Boolean(r.blockedReason))).toBe(true);
+
 
     const failed = run.results.filter((r) => r.status === 'failed');
     expect(failed).toEqual([]);
@@ -116,8 +117,8 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
     expect(byId['ui.timeline_surface_isolation']?.status).toBe('passed');
     expect(byId['ui.workbench_timeline_composition']?.status).toBe('passed');
     expect(byId['ui.langgraph_diagnostic_sanitization']?.status).toBe('passed');
-    expect(run.passed).toBe(14);
-    expect(run.skippedExternal).toBe(3);
+    expect(run.passed).toBe(15);
+    expect(run.skippedExternal).toBe(2);
     expect(run.claimsFullProductE2E).toBe(false);
   });
 
@@ -130,8 +131,9 @@ describe('ADR-035 cross-end multi-engine product unit driver (residual 407)', ()
     const byId = Object.fromEntries(run.results.map((r) => [r.stepId, r]));
     expect(byId['ui.task_create_proposal_receipt_lane']?.status).toBe('passed');
     expect(byId['ui.task_create_proposal_receipt_lane']?.missingContracts).toEqual([]);
-    expect(run.passed).toBe(14);
-    expect(run.skippedExternal).toBe(3);
+    expect(byId['e2e.playwright_web_full']?.status).toBe('passed');
+    expect(run.passed).toBe(15);
+    expect(run.skippedExternal).toBe(2);
     expect(run.claimsFullProductE2E).toBe(false);
     expect(run.claimsRealPiSpawn).toBe(false);
   });

@@ -126,6 +126,8 @@ export function resolveCrossEndMultiEngineProductStepSources(
         'packages/contracts/src/modules/ai/api/ai-agent.dto.ts',
       ];
     case 'e2e.playwright_web_full':
+      // Residual 1342: Web product multi-engine Host Playwright e2e.
+      return ['apps/web/e2e/ai/multi-engine-host.spec.ts'];
     case 'e2e.electron_desktop_full':
     case 'e2e.real_pi_spawn':
       return [];
@@ -133,6 +135,7 @@ export function resolveCrossEndMultiEngineProductStepSources(
       return [];
   }
 }
+
 
 /**
  * Optional contract rewrite when the scaffold string is conceptual and the

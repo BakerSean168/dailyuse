@@ -197,3 +197,4 @@ pnpm nx run web:e2e:shell
 | 2026-07-25 | residual 1339 | 冲 A：入库 `web:e2e:oauth-real` host-dev 真 provider；ADR-035 6/51；docker:local:up npipe 失败；仍缺 CLIENT_SECRET；**不改 checkbox** | 12/15 | no |
 | 2026-07-25 | residual 1340 | `web:e2e:oauth-real` **1/1** 真 GitHub 同意 `hasOAuth`；翻勾 §13.2 入口项；Agent/门禁仍 open | **13/15** | no |
 | 2026-07-25 | residual 1341 | prod-like 六服务 healthy + 探针 200；governance GOV_EXIT:0；desktop:e2e 1/1；翻勾门禁项；仅剩 Agent | **14/15** | no |
+| 2026-07-25 | residual 1342 | Web multi-engine Host e2e **2/2**；翻勾 Agent；§13.2 **15/15** | **15/15** | **yes** |

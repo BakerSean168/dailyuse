@@ -508,10 +508,24 @@ export function buildCrossEndMultiEngineProductJourney(): CrossEndMultiEnginePro
       surface: 'web',
       transport: 'http_sse',
       title: 'Full Playwright Web multi-engine product E2E',
-      contracts: ['apps/web/e2e multi-engine Host journey'],
-      status: 'external_blocked',
-      blockedReason: 'Requires live Web stack + auth fixture; not claimed green in residual 405',
+      // Residual 1342: product Playwright path (not unit-only).
+      contracts: [
+        'apps/web/e2e/ai/multi-engine-host.spec.ts',
+        'Residual 1342',
+        'ai-chat-execution-profile',
+        'ai-chat-execution-profile-direct',
+        'ai-chat-execution-profile-readonly',
+        'executionProfileId',
+        'engine.direct_turn',
+        'engine.pi_readonly',
+        'POST /ai/assistant/dispatch/sse',
+        'ai-host-timeline-artifact',
+        'no process.pi_readonly_spike',
+        'cancel_run',
+      ],
+      status: 'implemented_unit',
     },
+
     {
       id: 'e2e.electron_desktop_full',
       surface: 'desktop',

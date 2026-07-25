@@ -54,11 +54,13 @@ import { describe, expect, it } from 'vitest';
  * still 13/15 (Agent + full gate open); PR readiness no;
  * Residual 1341: prod-like six services healthy + probes 200; governance GOV_EXIT:0;
  * desktop:e2e 1/1; flip gate item; still 14/15 (Agent only); PR readiness no;
+ * Residual 1342: multi-engine-host.spec.ts 2/2 Web product E2E; flip Agent; 15/15; PR readiness yes;
  * reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
  * isPlainObject + toMillis + formatFileSize + toKnowledgeNoteRef + tokenize + toDashboardTaskInstanceRecord + toPrismaJson + contracts-isRecord + startOfDay + mapImportanceToTaskPriority + readString + normalizePath + buildTaskName + comparePriority + defaultExtractContext + getTemplateById + getCorsOrigins + delay dual-retired + scoreIndexedResource dual-retired + readJson + handleAuthSuccess + formatDateTime + formatMessageTime + formatDateToInput + formatTimeRange + formatTimestamp + clampPercentage + isRecord keep-boundaries (no force-merge).
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary is separate contracts surface.
+
 
 
 
@@ -84,7 +86,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     return plan.slice(start, end > start ? end : undefined);
   }
 
-  it('keeps exactly one unchecked §13.2 item after residual 1341 gate flip', () => {
+  it('keeps zero unchecked §13.2 items after residual 1342 Agent flip', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
     expect(plan).toContain('Residual 1327');
@@ -111,25 +113,29 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(plan).toContain('残留一千三百四十轮');
     expect(plan).toContain('Residual 1341');
     expect(plan).toContain('残留一千三百四十一轮');
+    expect(plan).toContain('Residual 1342');
+    expect(plan).toContain('残留一千三百四十二轮');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
     const checked = sec.match(/- \[x\]/g) ?? [];
-    expect(unchecked).toHaveLength(1);
-    expect(checked.length).toBeGreaterThanOrEqual(14);
+    expect(unchecked).toHaveLength(0);
+    expect(checked.length).toBeGreaterThanOrEqual(15);
 
     expect(sec).toContain('- [x] 账密、GitHub 和访客入口均可用。 **（已证明）**');
     expect(sec).toContain(
-      '- [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**',
+      '- [x] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（已证明）**',
     );
     expect(sec).toContain(
       '- [x] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（已证明）**',
     );
+    expect(sec).toContain('multi-engine-host.spec.ts');
+    expect(sec).toContain('PR readiness = yes');
     expect(sec).not.toContain(
       '- [ ] 账密、GitHub 和访客入口均可用。',
     );
     expect(sec).not.toContain(
-      '- [x] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。',
+      '- [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。',
     );
     expect(sec).not.toContain(
       '- [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。',
@@ -156,7 +162,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Residual 1339');
     expect(sec).toContain('Residual 1340');
     expect(sec).toContain('Residual 1341');
+    expect(sec).toContain('Residual 1342');
     expect(sec).toContain('Web 账密两轮 3/3');
+
 
 
 
@@ -220,10 +228,12 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('残留一千三百三十九轮');
     expect(sec).toContain('残留一千三百四十轮');
     expect(sec).toContain('残留一千三百四十一轮');
+    expect(sec).toContain('残留一千三百四十二轮');
     expect(sec).toContain('web:e2e:oauth-real');
     expect(sec).toContain('createRealOAuthApiServer');
     expect(sec).toContain('hasOAuth');
-    expect(sec).toContain('14 [x] / 1 [ ]');
+    expect(sec).toContain('15 [x] / 0 [ ]');
+    expect(sec).toContain('multi-engine-host.spec.ts');
     expect(sec).toContain('六服务');
     expect(sec).toContain('healthy');
     expect(sec).toContain('desktop:e2e');
@@ -231,6 +241,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Docker Desktop');
     expect(sec).toContain('claimsFullProductE2E');
     expect(sec).toContain('ensureE2EAccount');
+
 
 
 

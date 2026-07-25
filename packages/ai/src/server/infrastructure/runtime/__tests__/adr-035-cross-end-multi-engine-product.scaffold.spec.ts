@@ -41,12 +41,16 @@ describe('ADR-035 cross-end multi-engine product E2E scaffold (residual 405)', (
       'e2e.real_pi_spawn',
     ]);
     expect(summary.total).toBe(17);
-    expect(summary.implementedUnit).toBe(14);
-    expect(summary.externalBlocked).toBe(3);
+    // Residual 1342: Web Playwright multi-engine Host product e2e is implemented_unit.
+    expect(summary.implementedUnit).toBe(15);
+    expect(summary.externalBlocked).toBe(2);
     expect(summary.readyForDriver).toBe(true);
     expect(
       journey.filter((step) => step.status === 'external_blocked').every((step) => step.blockedReason),
     ).toBe(true);
+    const webE2e = journey.find((step) => step.id === 'e2e.playwright_web_full');
+    expect(webE2e?.status).toBe('implemented_unit');
+    expect(webE2e?.contracts.join(' ')).toContain('multi-engine-host.spec.ts');
   });
 
   it('locks Web HTTP SSE multi-profile + cancel_run transport contracts', () => {
