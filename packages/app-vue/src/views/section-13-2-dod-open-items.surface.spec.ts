@@ -50,11 +50,14 @@ import { describe, expect, it } from 'vitest';
  * Residual 1339: push-A attempt — web:e2e:oauth-real host-dev real provider harness +
  * createRealOAuthApiServer + readWebAuthSessionIdentity; ADR-035 6 files / 51 tests;
  * docker:local:up npipe EOF; still no CLIENT_SECRET consent session; still 12/15; PR readiness no;
- * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
+ * Residual 1340: web:e2e:oauth-real 1/1 real GitHub consent hasOAuth; flip §13.2 entry item;
+ * still 13/15 (Agent + full gate open); PR readiness no;
+ * reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
  * isPlainObject + toMillis + formatFileSize + toKnowledgeNoteRef + tokenize + toDashboardTaskInstanceRecord + toPrismaJson + contracts-isRecord + startOfDay + mapImportanceToTaskPriority + readString + normalizePath + buildTaskName + comparePriority + defaultExtractContext + getTemplateById + getCorsOrigins + delay dual-retired + scoreIndexedResource dual-retired + readJson + handleAuthSuccess + formatDateTime + formatMessageTime + formatDateToInput + formatTimeRange + formatTimestamp + clampPercentage + isRecord keep-boundaries (no force-merge).
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary is separate contracts surface.
+
 
 
  * Residual 1047 (soft): loadWorkspaceEnv keep-boundary surface remains locked in api package.
@@ -78,7 +81,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     return plan.slice(start, end > start ? end : undefined);
   }
 
-  it('keeps exactly three unchecked §13.2 items with partial/external-block labels', () => {
+  it('keeps exactly two unchecked §13.2 items after residual 1340 entry flip', () => {
     expect(plan).toContain('Residual 891');
     expect(plan).toContain('残留八百九十一轮');
     expect(plan).toContain('Residual 1327');
@@ -101,16 +104,16 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(plan).toContain('残留一千三百三十八轮');
     expect(plan).toContain('Residual 1339');
     expect(plan).toContain('残留一千三百三十九轮');
+    expect(plan).toContain('Residual 1340');
+    expect(plan).toContain('残留一千三百四十轮');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
     const checked = sec.match(/- \[x\]/g) ?? [];
-    expect(unchecked).toHaveLength(3);
-    expect(checked.length).toBeGreaterThanOrEqual(12);
+    expect(unchecked).toHaveLength(2);
+    expect(checked.length).toBeGreaterThanOrEqual(13);
 
-
-
-    expect(sec).toContain('- [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**');
+    expect(sec).toContain('- [x] 账密、GitHub 和访客入口均可用。 **（已证明）**');
     expect(sec).toContain(
       '- [ ] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。 **（部分实现）**',
     );
@@ -118,7 +121,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
       '- [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**',
     );
     expect(sec).not.toContain(
-      '- [x] 账密、GitHub 和访客入口均可用。',
+      '- [ ] 账密、GitHub 和访客入口均可用。',
     );
     expect(sec).not.toContain(
       '- [x] Agent 上下文不能逃逸 Vault、执行代码、扩大授权或绕过用户确认。',
@@ -146,7 +149,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Residual 1337');
     expect(sec).toContain('Residual 1338');
     expect(sec).toContain('Residual 1339');
+    expect(sec).toContain('Residual 1340');
     expect(sec).toContain('Web 账密两轮 3/3');
+
 
     expect(sec).toContain('Desktop production Electron guest 两轮 1/1');
     expect(sec).toContain('Agent/Vault/Pi fixture 7/114');
@@ -206,13 +211,16 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('残留一千三百三十八轮');
     expect(sec).toContain('残留 1339 handoff（仍不打勾');
     expect(sec).toContain('残留一千三百三十九轮');
+    expect(sec).toContain('残留一千三百四十轮');
     expect(sec).toContain('web:e2e:oauth-real');
     expect(sec).toContain('createRealOAuthApiServer');
-    expect(sec).toContain('GITHUB_OAUTH_CLIENT_SECRET');
+    expect(sec).toContain('hasOAuth');
+    expect(sec).toContain('13 [x] / 2 [ ]');
     expect(sec).toContain('Windows `desktop:e2e` **1/1 EXIT:0**');
     expect(sec).toContain('Docker Desktop');
     expect(sec).toContain('claimsFullProductE2E');
     expect(sec).toContain('ensureE2EAccount');
+
 
     expect(sec).toContain('残留一千三百三十四轮');
     expect(sec).toContain('Web auth **14/14**');
@@ -356,6 +364,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(threeLogin).toContain('not a real GitHub/OAuth E2E');
     expect(threeLogin).toContain('enterGuestMode');
     expect(threeLogin).toMatch(/GitHub OAuth/i);
-    expect(section132()).toContain('账密、GitHub 和访客入口均可用。 **（部分实现）**');
+    expect(section132()).toContain('账密、GitHub 和访客入口均可用。 **（已证明）**');
+    expect(section132()).toContain('web:e2e:oauth-real');
   });
 });

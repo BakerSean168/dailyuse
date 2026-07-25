@@ -374,8 +374,9 @@ describe('ADR-034 three-login same-fixture journey', () => {
     expect(productAuth).toContain('知识仓库 GitHub App');
     expect(productAuth).toContain('installation/token');
 
-    // UI hosts: AuthApp owns GitHub OAuth callback scene; Desktop first screen is guest, not OAuth.
-    expect(webAuth).toContain('scene=oauth-callback');
+    // UI hosts: AuthApp OAuth callback lands on exact `/auth` (code+state); Desktop first screen is guest, not OAuth.
+    expect(webAuth).toContain('`${window.location.origin}/auth`');
+    expect(webAuth).not.toContain('scene=oauth-callback');
     expect(webAuth).toContain('data-testid="login-github-button"');
     expect(webAuth).not.toContain('guest-mode-button');
     expect(desktopAuth).toContain('data-testid="guest-mode-button"');

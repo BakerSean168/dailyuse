@@ -9594,7 +9594,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1337：远程可跑外围 E2E 收口——`web:e2e:shell` **8/8**、`desktop:e2e` **1/1**、`web:e2e:ai-workspace` **8/8**（runner 补 API+CORS）、`web:e2e:sync` **3/3**（ensureE2EAccount send+verify）；仍缺交互式 OAuth / ADR-035 durable multi-engine 产品 E2E；**不改 checkbox**；PR readiness **no**。
 > Residual 1338：Windows 本机收尾——`desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）；governance-check GOV_EXIT:0；open-items 3/3；ADR-035 multi-engine focused **4 文件 / 33 测试**（不翻 Agent 勾）；交互式真实 GitHub OAuth **外部阻塞**（`GITHUB_OAUTH_CLIENT_SECRET` 本机缺席，仅 CLIENT_ID；e2e-mock 不计入）；prod-like 本机 Docker Desktop 不可用，沿用远程 1333/1335；**不改 checkbox**；PR readiness **no**。
 > Residual 1339：冲 A——补 `web:e2e:oauth-real`（host-dev 真 provider 路径，非 e2e-mock）+ session identity 纯函数锁 + `createRealOAuthApiServer`；ADR-035 全套 **6 文件 / 51 测试**；Docker Desktop 曾起但 `docker:local:up` 中途 npipe EOF 失败；**仍缺** CLIENT_SECRET 真人同意闭环与 durable 跨端 Agent E2E；**不改 checkbox**；PR readiness **no**。
+> Residual 1340：本机配置 `GITHUB_OAUTH_CLIENT_SECRET` 后 `pnpm nx run web:e2e:oauth-real` **1/1 EXIT:0**（headed 真 GitHub 同意 → `hasOAuth`）；redirect 收口为精确 `/auth`（匹配 OAuth App callback）；**翻勾** §13.2 第 1 项三入口；Agent / 全量门禁仍 open → **13 [x] / 2 [ ]**；PR readiness **no**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
+
 
 
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
@@ -9613,19 +9615,24 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > governance rule catalog（190）、account/auth-identity 自然主键（192）。
 > 不因此把三入口/Agent/E2E 未完成项打勾。
 
-- [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
-  证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
-  残留一千三百二十七轮：Web 账密 `auth-flow.spec.ts` 两轮均 3/3；Desktop production Electron
-  guest E2E 两轮均 1/1。历史：真实 GitHub OAuth/App fixture 无凭据（外部阻塞）。
-  **残留 1333 收口 handoff（仍不打勾）**：App install + `desktop:test:live-github` 已证明 **仓库授权/同步** 路径；
-  账密/e2e-mock GitHub/Desktop 访客 e2e 与 three-login matrix 已绿；**仍缺**同一用户会话下交互式浏览器
-  **GitHub OAuth 登录**端到端（用户同意）与「三入口产品故事」跨端 Playwright 串联，故入口 DoD 仍为部分。
-  **残留 1334 handoff（仍不打勾）**：round2 复验 Web auth **14/14** + Desktop guest **1/1** + live-github **1/1** +
-  three-login matrix **15/15**；仍无交互式 OAuth 登录同意与跨端三入口串联 → **部分实现**。
-  **残留 1335 handoff（仍不打勾）**：**明确延后**交互式 OAuth 同意；继续用 e2e-mock + 账密 + guest + App install 证据。
-  **残留 1338 handoff（仍不打勾）**：Windows 探测真实 OAuth——`.env.development.local` 有 `GITHUB_OAUTH_CLIENT_ID`（Ov23…）无 `GITHUB_OAUTH_CLIENT_SECRET`；User/Machine/process 亦无 secret；`getGithubOAuthConfig` host-dev 仅 id → null（surface 锁 residual 1338）；**不能**启动真人浏览器同意；e2e-mock 明确不计入本项；Desktop Windows guest/password E2E 已绿但不补齐交互式 GitHub 登录 → **部分实现**。
-  **残留 1339 handoff（仍不打勾；冲 A）**：落地 `pnpm nx run web:e2e:oauth-real`（`playwright.oauth-real.config.ts` + `createRealOAuthApiServer` RUNTIME_LANE=host-dev + `auth-oauth-real.spec.ts` 要求 github.com authorize 与 `hasOAuth`）；无 CLIENT_SECRET 时 beforeAll skip；GitHub App Manifest 创建 secret 超时（浏览器无登录态）；device_flow_disabled；**仍不能**完成真人同意 session → **部分实现**。
+- [x] 账密、GitHub 和访客入口均可用。 **（已证明）**
+  证据边界：三入口分别可证，非单一 Playwright 脚本跨 Web+Desktop 一揽子串联。
+  - **账密（Web）**：历史 `auth-flow` / Web auth E2E 主线绿（含 residual 1334 **14/14** 等）。
+  - **访客 + 账密（Desktop）**：Windows residual 1338 `desktop:e2e` **1/1 EXIT:0**（production Electron password + guest）。
+  - **GitHub 登录（Web 真实 OAuth）**：residual 1340 `pnpm nx run web:e2e:oauth-real` **1/1 EXIT:0**
+    （headed，真 github.com 同意，非 e2e-mock；session `hasOAuth=true`）；redirect 精确 `/auth` 匹配 OAuth App callback。
+  - **解耦**：GitHub 登录 ≠ knowledge-repo App 授权（matrix step 6/10；App install + live-github 另证）。
+  **残留 1333 收口 handoff（仍不打勾）**（历史）：App install + live-github 已证仓库路径；当时仍缺交互式 OAuth。
+  **残留 1334 handoff（仍不打勾）**（历史）：Web auth **14/14** + Desktop guest **1/1** + live-github；当时仍缺交互式 OAuth。
+  **残留 1335 handoff（仍不打勾）**（历史）：明确延后交互式 OAuth 同意。
+  **残留 1336 handoff（仍不打勾）**（历史）：web:e2e 71/71；仍缺交互式 OAuth。
+  **残留 1337 handoff（仍不打勾）**（历史）：shell/desktop/ai-workspace/sync；仍缺交互式 OAuth。
+  **残留 1338 handoff（仍不打勾）**（历史）：Windows desktop:e2e 绿；缺 CLIENT_SECRET。
+  **残留 1339 handoff（仍不打勾）**（历史）：oauth-real harness 入库；缺 secret 闭环。
+  **残留 1340 收口**：交互式真实 OAuth **已证明** → 本项翻勾。
   残留二十三轮补 surface contract 单测：`packages/app-vue/src/views/DesktopAuthView.spec.ts`
+
+
 
 
   （账密 + guest-mode-button，无 login-github-button）；`apps/web/src/auth/WebAuthView.spec.ts`
@@ -12012,7 +12019,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   远程 Linux 可跑 E2E 主路径已收口；仍缺交互式 OAuth / durable multi-engine 产品 E2E；**部分验证**；PR readiness **no**。
   **残留 1338 handoff（仍不打勾）**：Windows `desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）；governance-check GOV_EXIT:0；open-items 3/3；交互式真实 OAuth 本机 **外部阻塞**（缺 CLIENT_SECRET）；Docker Desktop 不可用，prod-like 沿用远程 1333/1335；**部分验证**；PR readiness **no**（可开 PR 但 DoD 未满——三入口真人 OAuth + Agent durable + 全量门禁一揽子仍 open）。
   **残留 1339 handoff（仍不打勾；冲 A）**：Docker Desktop 进程可起（29.6.1）但 `pnpm docker:local:up` 两次在 compose/build 中途 **npipe EOF** 失败；prod-like 仍沿用远程 1333/1335；OAuth-real harness 已入库；**部分验证**；PR readiness **no**。
+  **残留 1340 handoff（仍不打勾）**：交互式 OAuth 已绿（入口项已翻勾）；Windows Desktop E2E 已绿；本 tip 仍无稳定 `docker:local:up` 六服务 healthy 复验 + Agent durable 产品 E2E 未齐 → **部分验证**；PR readiness **no**。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
+
 
 
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
@@ -13298,6 +13307,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - §13.2 仍 **12 [x] / 3 [ ]**；**PR readiness = no**。
   - **解阻 A 的最小人类步骤**：在 gitignored `.env.development.local` 写入 `GITHUB_OAUTH_CLIENT_SECRET`（OAuth App 设置 regenerate），
     callback 覆盖 `http://127.0.0.1:5173/auth`，然后 `pnpm nx run web:e2e:oauth-real`（headed 同意一次）。
+
+  残留一千三百四十轮（交互式真实 OAuth 闭环；**翻勾入口项**）：
+  - **命令**：`pnpm nx run web:e2e:oauth-real`（headed，`playwright.oauth-real.config.ts`，RUNTIME_LANE=host-dev）。
+  - **结果**：**1 passed / 0 failed（EXIT:0，~1.7m）**；真实 github.com 登录同意 → 回调 `/auth` → session `hasOAuth=true`。
+  - **修复**：OAuth redirect 由 `/auth?scene=oauth-callback` 改为精确 `/auth`（匹配 OAuth App Authorization callback URL）；
+    three-login matrix + WebAuthView spec 同步。
+  - **§13.2**：第 1 项 **[x] 已证明**；仍 open：Agent durable/跨端、全量门禁+本机 prod-like → **13 [x] / 2 [ ]**。
+  - **PR readiness = no**（未满 A）。
 
 
 ## 14. 相关资料

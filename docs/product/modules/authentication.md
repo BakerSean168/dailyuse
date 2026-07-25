@@ -27,7 +27,7 @@ updated: 2026-07-22T00:00:00
 - GitHub 登录（OAuth identity）已贯通：
   - `GET/POST` 面：`/oauth/providers`、`/oauth/url`（state/PKCE）、`/oauth/callback`、已登录 `/oauth/bind` / `/oauth/unbind`
   - 仅当 `GITHUB_OAUTH_CLIENT_ID` 与 `GITHUB_OAUTH_CLIENT_SECRET` 同时配置时启用；否则 providers 门控与 `SERVICE_UNAVAILABLE`
-  - Web 登录按钮条件渲染；callback 场景 `oauth-callback` 完成会话签发
+  - Web 登录按钮条件渲染；callback 回 `/auth` 后凭 `code`+`state` 完成会话签发
   - 账户页可 bind/unbind GitHub identity binding（与知识仓库 GitHub App 授权分离）
   - Desktop 远程 gateway/IPC 已暴露 OAuth 调用；登录首屏仍不提供 GitHub 入口
 - OAuthBinding 与 Daily Use session 分离；GitHub user access token 不写入业务 session。

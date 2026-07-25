@@ -175,7 +175,7 @@ describe('WebAuthView three-login surface contract', () => {
     await flushPromises();
 
     expect(webAuthMocks.startGithubLogin).toHaveBeenCalledWith(
-      expect.stringContaining('/auth?scene=oauth-callback'),
+      expect.stringMatching(/\/auth$/),
     );
     expect(webAuthMocks.loginByEmail).not.toHaveBeenCalled();
 

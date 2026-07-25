@@ -63,13 +63,17 @@ test.describe('Authentication - GitHub OAuth (real provider)', () => {
     expect(page.url()).toMatch(/github\.com/);
     expect(page.url()).not.toContain('e2e-github-');
 
-    // Semi-manual: human completes authorize/consent in the headed browser.
-    // Wait for product callback with code+state, then completeGithubOAuth redirect.
+    // Semi-manual: human signs in + authorizes in the headed Chromium window.
+    // Allow up to 10 minutes for interactive GitHub login/2FA/consent.
+    console.log(
+      '[oauth-real] Waiting up to 10m for human GitHub sign-in + authorize. ' +
+        'Complete login in the Playwright Chromium window (app: memoflow-local-oauth).',
+    );
     await page.waitForURL(
       (url) =>
         url.hostname !== 'github.com' &&
         (url.searchParams.has('code') || !url.pathname.includes(WEB_CONFIG.LOGIN_PATH)),
-      { timeout: 5 * 60 * 1000 },
+      { timeout: 10 * 60 * 1000 },
     );
 
     await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {

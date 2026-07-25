@@ -283,7 +283,9 @@ const githubAvailable = ref(false);
 async function handleGithubLogin() {
   if (!githubAvailable.value) return;
   authAction.value = 'login';
-  const redirectUri = `${window.location.origin}/auth?scene=oauth-callback`;
+  // Exact match with OAuth App registered callback (no query string).
+  // Callback completion keys off code+state on /auth (see onMounted).
+  const redirectUri = `${window.location.origin}/auth`;
   await startGithubLogin(redirectUri);
   authAction.value = null;
 }
