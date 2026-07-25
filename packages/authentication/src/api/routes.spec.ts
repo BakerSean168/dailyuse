@@ -8,6 +8,9 @@ import {
   ForgotPasswordSchema,
   LoginByEmailSchema,
   OAuthCallbackSchema,
+  GetOAuthUrlSchema,
+  BindOAuthSchema,
+  UnbindOAuthSchema,
   RefreshTokenSchema,
   RegisterByEmailSchema,
   ResetPasswordSchema,
@@ -64,11 +67,12 @@ function getResponseStatuses(route: RegisteredRoute): string[] {
 function createStubs(): AuthenticationApplicationPort {
   return {
     register: vi.fn(),
-    registerByPhone: vi.fn(),
     login: vi.fn(),
-    loginByPhone: vi.fn(),
     oauthCallback: vi.fn(),
-    sendSmsCode: vi.fn(),
+    getOAuthUrl: vi.fn(),
+    listOAuthProviders: vi.fn(),
+    bindOAuth: vi.fn(),
+    unbindOAuth: vi.fn(),
     logout: vi.fn(),
     refreshToken: vi.fn(),
     getCurrentUser: vi.fn(),
@@ -104,6 +108,29 @@ describe('registerAuthenticationRoutes', () => {
 
     expect(bodySchema).toBe(LoginByEmailSchema);
     expect(responseSchema).toBe(AuthResponseSchema);
+  });
+
+  it('GET /oauth/providers — documents provider availability', () => {
+    const route = getRegisteredRoute(registry, 'get', '/api/v1/auth/oauth/providers');
+    expect(route).toBeTruthy();
+  });
+
+  it('POST /oauth/url — documents GetOAuthUrlSchema', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/oauth/url');
+    expect(getJsonBodySchema(route)).toBe(GetOAuthUrlSchema);
+    expect(getResponseStatuses(route)).toContain('503');
+  });
+
+  it('POST /oauth/bind — documents BindOAuthSchema and requires auth', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/oauth/bind');
+    expect(getJsonBodySchema(route)).toBe(BindOAuthSchema);
+    expect(getResponseStatuses(route)).toContain('409');
+  });
+
+  it('POST /oauth/unbind — documents UnbindOAuthSchema', () => {
+    const route = getRegisteredRoute(registry, 'post', '/api/v1/auth/oauth/unbind');
+    expect(getJsonBodySchema(route)).toBe(UnbindOAuthSchema);
+    expect(getResponseStatuses(route)).toContain('409');
   });
 
   it('POST /oauth/callback — documents the OAuth callback schema and disabled-provider response', () => {

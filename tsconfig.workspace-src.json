@@ -80,12 +80,6 @@
       "@dailyuse/repository/*": [
         "packages/repository/src/*/index.ts"
       ],
-      "@dailyuse/editor": [
-        "packages/editor/src/index.ts"
-      ],
-      "@dailyuse/editor/*": [
-        "packages/editor/src/*/index.ts"
-      ],
       "@dailyuse/reminder": [
         "packages/reminder/src/index.ts"
       ],

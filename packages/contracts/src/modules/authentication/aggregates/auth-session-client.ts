@@ -17,6 +17,7 @@ import type { TransferDate } from '../../../primitives';
  * Client DTO (API Response)
  * 这就是返回给前端的数据结构
  */
+// Residual 879: intentional Client≠Server dual (isCurrentSession/updatedAt/deletedAt vs refreshTokenHash/status/isRevoked).
 export interface AuthSessionClientDTO {
   id: AuthSessionId;
   identityId: IdentityId;

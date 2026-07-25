@@ -69,10 +69,10 @@ export class PowerSyncTaskFolderRepository implements ITaskFolderRepository {
     }
   }
 
-  async findById(id: string): Promise<TaskFolderServerDTO | null> {
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskFolderServerDTO | null> {
     const row = await this.db.getOptional<PowerSyncTaskFolderRow>(
-      'SELECT * FROM task_folders WHERE id = ? LIMIT 1',
-      [id],
+      'SELECT * FROM task_folders WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
     );
     return row ? PowerSyncTaskFolderMapper.toDTO(row) : null;
   }
@@ -85,14 +85,21 @@ export class PowerSyncTaskFolderRepository implements ITaskFolderRepository {
     return rows.map((row) => PowerSyncTaskFolderMapper.toDTO(row));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM task_folders WHERE id = ?', [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task folder not found for the current identity.');
+    }
+    await this.db.execute('DELETE FROM task_folders WHERE id = ? AND identity_id = ?', [
+      id,
+      identityId,
+    ]);
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(identityId: string, id: string): Promise<boolean> {
     const row = await this.db.getOptional<{ id: string }>(
-      'SELECT id FROM task_folders WHERE id = ? LIMIT 1',
-      [id],
+      'SELECT id FROM task_folders WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
     );
     return !!row;
   }

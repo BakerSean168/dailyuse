@@ -15,7 +15,7 @@ import type {
 } from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils/domain';
 
-import { SessionStatus, DeviceInfo, AuthSessionId } from '..';
+import { SessionStatus, DeviceInfo, DeviceType, AuthSessionId } from '..';
 
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { ITokenProvider } from '../services/token-provider.interface';
@@ -49,6 +49,19 @@ export interface AuthSessionState {
  * AuthSession Aggregate Root.
  * Manages a user's login session.
  */
+
+function normalizeDeviceType(value: string | undefined | null): string | null {
+  if (!value) return null;
+  if (DeviceType.isValid(value)) return value;
+  const upper = value.toUpperCase();
+  if (upper === 'WEB' || upper === 'BROWSER') return DeviceType.Browser;
+  if (upper === 'MOBILE') return DeviceType.Mobile;
+  if (upper === 'TABLET') return DeviceType.Tablet;
+  if (upper === 'DESKTOP') return DeviceType.Desktop;
+  if (upper === 'API') return DeviceType.Api;
+  return null;
+}
+
 export class AuthSession extends AggregateRoot<AuthSessionId> {
   // ================= 1. Internal State =================
   private _props: AuthSessionState;
@@ -136,6 +149,19 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     identityId: IdentityId;
     deviceId: string;
     tokenProvider: ITokenProvider;
+    /**
+     * Optional richer device metadata (UA/platform/IP) captured at login.
+     * 登录时可选写入更完整的设备元数据（UA/平台/IP）。
+     */
+    device?: {
+      deviceName?: string | null;
+      os?: string | null;
+      browser?: string | null;
+      ipAddress?: string | null;
+      userAgent?: string | null;
+      deviceType?: string;
+      deviceFingerprint?: string;
+    };
   }): { AuthSession: AuthSession; tokens: { accessToken: string; refreshToken: string } } {
     // Use a single session ID for both the JWT token and the persisted session
     const sessionId = AuthSessionId.generate();
@@ -145,7 +171,20 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       sessionId,
     });
 
-    const deviceInfo = DeviceInfo.createDefault(params.deviceId);
+    const base = DeviceInfo.createDefault(params.deviceId).toDTO();
+    const override = params.device ?? {};
+    const normalizedType = normalizeDeviceType(override.deviceType);
+    const deviceType = normalizedType ? DeviceType.of(normalizedType) : base.deviceType;
+    const deviceInfo = DeviceInfo.create({
+      ...base,
+      deviceName: override.deviceName ?? base.deviceName,
+      os: override.os ?? base.os,
+      browser: override.browser ?? base.browser,
+      ipAddress: override.ipAddress ?? base.ipAddress,
+      userAgent: override.userAgent ?? base.userAgent,
+      deviceFingerprint: override.deviceFingerprint ?? base.deviceFingerprint,
+      deviceType,
+    });
 
     const authSession = AuthSession.create({
       id: sessionId,

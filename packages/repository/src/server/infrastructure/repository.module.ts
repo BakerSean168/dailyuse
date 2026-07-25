@@ -1,500 +1,176 @@
 /**
- * createRepositoryModule — explicit composition root for the repository server runtime.
- * createRepositoryModule —— 仓库模块服务端运行时的显式组合根。
+ * Repository Module Composition Root
  *
- * The outer app selects concrete adapters and passes them in here.
- * This module then assembles the application layer exactly once and exposes a
- * stable facade to HTTP / IPC transports.
- *
- * 外层应用负责选择具体适配器并传入这里。
- * 组合根只做一次组装，然后向 HTTP / IPC 等传输层暴露稳定门面。
- *
- * Repository uses this file as the module's composition root following the
- * governance canonical pattern: one composition root per module, constructor
- * injection only, no hidden service locator.
- *
- * 仓库模块遵循治理模块的规范模式：每个模块一个组合根，
- * 仅使用构造函数注入，不使用隐藏的服务定位器。
+ * Knowledge-repository runtime only: GitHub App connection, projection,
+ * confirmed note create, and webhook ingest. Legacy database Repository /
+ * Folder / Resource / Bookmark CRUD is no longer assembled here.
  */
 
-import type { IRepositoryRepository } from '../domain/repositories/i-repository-repository';
-import type { IResourceRepository } from '../domain/repositories/i-resource-repository';
-import type { IFolderRepository } from '../domain/repositories/i-folder-repository';
-import type { IResourceBookmarkRepository } from '../domain/repositories/i-resource-bookmark-repository';
-import type { IStoragePort } from '../application/ports/i-storage-port';
-import {
-  CreateRepositoryUseCase,
-  UpdateRepositoryStatsUseCase,
-  GetResourceUseCase,
-  ListResourcesUseCase,
-  CreateResourceUseCase,
-  UpdateResourceContentUseCase,
-  UploadResourcesUseCase,
-  CreateFolderUseCase,
-  GetFolderUseCase,
-  GetFolderTreeUseCase,
-  RenameFolderUseCase,
-  MoveFolderUseCase,
-  DeleteFolderUseCase,
-  CreateResourceBookmarkUseCase,
-  UpdateResourceBookmarkUseCase,
-  ReorderResourceBookmarksUseCase,
-  DeleteResourceBookmarkUseCase,
-  ListResourceBookmarksUseCase,
-  DeleteResourceUseCase,
-} from '../application';
-import { RepositoryResolutionService } from '../application/services/repository-resolution.service';
-import { StoredResourceHydrationService } from '../application/services/stored-resource-hydration.service';
-import { ResourceMutationService } from '../application/services/resource-mutation.service';
-import { ok } from '@dailyuse/contracts/result';
-import type { BookmarkId } from '@dailyuse/contracts/primitives';
-import type {
-  UploadResourceFileDTO,
-  UploadResourcesRequestDTO,
-  RepositoryStatsDTO,
-} from '@dailyuse/contracts/repository';
+import { fail, type Result } from '@dailyuse/contracts/result';
 import type { RepositoryApplicationPort } from '../application';
+import { KnowledgeRepositoryConnectionService } from '../application/services/knowledge-repository-connection.service';
+import { KnowledgeRepositoryProjectionService } from '../application/services/knowledge-repository-projection.service';
+import { KnowledgeNoteCommitService } from '../application/services/knowledge-note-commit.service';
 
-// ---------------------------------------------------------------------------
-// Dependencies — 依赖类型
-// ---------------------------------------------------------------------------
-
-/**
- * Everything the repository server runtime needs from the outside world.
- * 仓库模块服务端运行时向外部索取的全部依赖。
- *
- * Refactor rule for other modules:
- * 重构规则：
- * - only put ports or runtime contributions here
- *   这里只放端口或运行时贡献
- * - never put transport objects (Express req/res, ipcMain, Router) here
- *   绝不在此放传输对象（Express req/res、ipcMain、Router）
- * - never hide these dependencies behind a singleton container
- *   绝不将依赖隐藏在单例容器之后
- */
 export type RepositoryRuntimeContributionsInput =
   | RepositoryModuleRuntimeContribution
   | readonly RepositoryModuleRuntimeContribution[];
 
 export interface RepositoryModuleDependencies {
-  readonly repositoryRepository: IRepositoryRepository;
-  readonly resourceRepository: IResourceRepository;
-  readonly folderRepository: IFolderRepository;
-  readonly resourceBookmarkRepository: IResourceBookmarkRepository;
-  readonly storagePort: IStoragePort;
   readonly runtimeContributions?: RepositoryRuntimeContributionsInput;
-  readonly autoCreateCanonicalRepository?: boolean;
+  readonly knowledgeRepositoryConnectionService?: KnowledgeRepositoryConnectionService | null;
+  readonly knowledgeRepositoryProjectionService?: KnowledgeRepositoryProjectionService | null;
+  readonly knowledgeNoteCommitService?: KnowledgeNoteCommitService | null;
 }
 
-// ---------------------------------------------------------------------------
-// Runtime contribution — 运行时贡献
-// ---------------------------------------------------------------------------
-
-/**
- * Module-owned runtime side effects.
- * 模块拥有的运行时副作用。
- *
- * A contribution is the unit we start/stop together with the module instance.
- * This is the replacement for older global initialization hooks.
- *
- * 一个贡献是我们与模块实例一起启动/停止的单元。
- * 它替代了旧的全局初始化钩子。
- */
 export interface RepositoryModuleRuntimeContribution {
   start(): void;
   stop(): void;
 }
 
-// ---------------------------------------------------------------------------
-// Use cases — 用例集合
-// ---------------------------------------------------------------------------
-
-/**
- * Lower-level assembled use cases.
- * 已完成接线的底层 use case 集合。
- *
- * We keep this type because tests and low-level assembly sometimes need direct
- * access to use-case objects, but transports should prefer `RepositoryApplicationPort`.
- *
- * 保留此类型供测试和低层组装使用；传输层应优先使用 RepositoryApplicationPort。
- */
-export interface RepositoryModuleUseCases {
-  readonly createRepository: CreateRepositoryUseCase;
-  readonly updateRepositoryStats: UpdateRepositoryStatsUseCase;
-  readonly getResource: GetResourceUseCase;
-  readonly listResources: ListResourcesUseCase;
-  readonly createResource: CreateResourceUseCase;
-  readonly updateResourceContent: UpdateResourceContentUseCase;
-  readonly uploadResources: UploadResourcesUseCase;
-  readonly deleteResource: DeleteResourceUseCase;
-  readonly createFolder: CreateFolderUseCase;
-  readonly getFolder: GetFolderUseCase;
-  readonly getFolderTree: GetFolderTreeUseCase;
-  readonly renameFolder: RenameFolderUseCase;
-  readonly moveFolder: MoveFolderUseCase;
-  readonly deleteFolder: DeleteFolderUseCase;
-  readonly createResourceBookmark: CreateResourceBookmarkUseCase;
-  readonly updateResourceBookmark: UpdateResourceBookmarkUseCase;
-  readonly reorderResourceBookmarks: ReorderResourceBookmarksUseCase;
-  readonly deleteResourceBookmark: DeleteResourceBookmarkUseCase;
-  readonly listResourceBookmarks: ListResourceBookmarksUseCase;
-}
-
-// ---------------------------------------------------------------------------
-// Module instance — 模块实例
-// ---------------------------------------------------------------------------
-
-/**
- * Primary repository composition root return type.
- * 仓库模块主组合根返回类型。
- *
- * `api` is the transport-facing surface.
- * `useCases` is kept for low-level tests and diagnostics.
- * `start` / `dispose` own runtime side effects.
- *
- * `api` 是面向传输层的表面。
- * `useCases` 保留给低层测试和诊断使用。
- * `start` / `dispose` 管理运行时副作用。
- */
 export interface RepositoryModuleInstance {
-  readonly repositoryRepository: IRepositoryRepository;
-  readonly resourceRepository: IResourceRepository;
-  readonly folderRepository: IFolderRepository;
-  readonly resourceBookmarkRepository: IResourceBookmarkRepository;
-  readonly useCases: RepositoryModuleUseCases;
+  readonly knowledgeRepositoryConnectionService: KnowledgeRepositoryConnectionService | null;
+  readonly knowledgeRepositoryProjectionService: KnowledgeRepositoryProjectionService | null;
+  readonly knowledgeNoteCommitService: KnowledgeNoteCommitService | null;
   readonly api: RepositoryApplicationPort;
   start(): void;
   dispose(): void;
 }
 
-// ---------------------------------------------------------------------------
-// Assembly helpers — 组装辅助函数
-// ---------------------------------------------------------------------------
-
-/**
- * Pure assembly helper used by the composition root and tests.
- * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
- */
-export function createRepositoryUseCases(
-  deps: RepositoryModuleDependencies,
-): RepositoryModuleUseCases {
-  const {
-    repositoryRepository,
-    resourceRepository,
-    folderRepository,
-    resourceBookmarkRepository,
-    storagePort,
-  } = deps;
-
-  const createResource = new CreateResourceUseCase(resourceRepository, repositoryRepository, storagePort);
-  const deleteResource = new DeleteResourceUseCase(resourceRepository, repositoryRepository, storagePort);
-  const updateResourceContent = new UpdateResourceContentUseCase(
-    resourceRepository,
-    repositoryRepository,
-    storagePort,
-  );
-
-  const mutationService = new ResourceMutationService({
-    resourceRepository,
-    repositoryRepository,
-    folderRepository,
-    storagePort,
-    createResource,
-    deleteResource,
-    updateResourceContent,
-  });
-
-  return {
-    createRepository: new CreateRepositoryUseCase(repositoryRepository),
-    updateRepositoryStats: new UpdateRepositoryStatsUseCase(repositoryRepository),
-    getResource: new GetResourceUseCase(resourceRepository),
-    listResources: new ListResourcesUseCase(resourceRepository),
-    createResource,
-    updateResourceContent,
-    uploadResources: new UploadResourcesUseCase(
-      mutationService,
-    ),
-    deleteResource,
-    createFolder: new CreateFolderUseCase(folderRepository, repositoryRepository, storagePort),
-    getFolder: new GetFolderUseCase(folderRepository),
-    getFolderTree: new GetFolderTreeUseCase(folderRepository),
-    renameFolder: new RenameFolderUseCase(
-      folderRepository,
-      resourceRepository,
-      repositoryRepository,
-      storagePort,
-    ),
-    moveFolder: new MoveFolderUseCase(
-      folderRepository,
-      resourceRepository,
-      repositoryRepository,
-      storagePort,
-    ),
-    deleteFolder: new DeleteFolderUseCase(
-      folderRepository,
-      resourceRepository,
-      repositoryRepository,
-      storagePort,
-    ),
-    createResourceBookmark: new CreateResourceBookmarkUseCase(
-      resourceBookmarkRepository,
-      resourceRepository,
-    ),
-    updateResourceBookmark: new UpdateResourceBookmarkUseCase(
-      resourceBookmarkRepository,
-      resourceRepository,
-    ),
-    reorderResourceBookmarks: new ReorderResourceBookmarksUseCase(
-      resourceBookmarkRepository,
-      resourceRepository,
-    ),
-    deleteResourceBookmark: new DeleteResourceBookmarkUseCase(resourceBookmarkRepository),
-    listResourceBookmarks: new ListResourceBookmarksUseCase(
-      resourceBookmarkRepository,
-      resourceRepository,
-    ),
-  };
-}
-
 function normalizeRuntimeContributions(
-  runtimeContributions?:
-    | RepositoryModuleRuntimeContribution
-    | ReadonlyArray<RepositoryModuleRuntimeContribution>,
+  runtimeContributions?: RepositoryRuntimeContributionsInput,
 ): readonly RepositoryModuleRuntimeContribution[] {
   if (!runtimeContributions) {
     return [];
   }
-
   if (Array.isArray(runtimeContributions)) {
     return Array.from(runtimeContributions);
   }
-
   return [runtimeContributions as RepositoryModuleRuntimeContribution];
 }
 
-// ---------------------------------------------------------------------------
-// Application port builder — 应用层门面构建
-// ---------------------------------------------------------------------------
-
-/**
- * Builds the transport-neutral application port from assembled use cases.
- * 从已组装的 use case 构建传输层无关的应用层门面。
- *
- * Use cases now return Result<T>. The api is a thin passthrough —
- * failed Results propagate directly, successful Results may be
- * unwrapped and re-wrapped when the api produces different data.
- *
- * 用例现在返回 Result<T>。api 层是薄透传——
- * 失败的 Result 直接传播，成功的 Result 在 api 产出不同数据时解包再包装。
- */
-function buildApplicationPort(
-  useCases: RepositoryModuleUseCases,
-  deps: RepositoryModuleDependencies,
-): RepositoryApplicationPort {
-  const repositoryResolution = new RepositoryResolutionService({
-    repositoryRepository: deps.repositoryRepository,
-    createRepository: useCases.createRepository,
-    autoCreateCanonicalRepository: deps.autoCreateCanonicalRepository !== false,
-  });
-
-  const hydration = new StoredResourceHydrationService({
-    storagePort: deps.storagePort,
-  });
-
-  const mutation = new ResourceMutationService({
-    resourceRepository: deps.resourceRepository,
-    repositoryRepository: deps.repositoryRepository,
-    folderRepository: deps.folderRepository,
-    storagePort: deps.storagePort,
-    createResource: useCases.createResource,
-    deleteResource: useCases.deleteResource,
-    updateResourceContent: useCases.updateResourceContent,
-  });
+function buildApplicationPort(deps: RepositoryModuleDependencies): RepositoryApplicationPort {
+  const connectionService = deps.knowledgeRepositoryConnectionService ?? null;
+  const projectionService = deps.knowledgeRepositoryProjectionService ?? null;
+  const noteCommitService = deps.knowledgeNoteCommitService ?? null;
+  const unavailable = <T>(): Promise<Result<T>> =>
+    Promise.resolve(
+      fail({
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'GitHub App knowledge repository connections are not configured',
+      }),
+    );
 
   return {
-    getCurrentRepository: async (ctx) => {
-      return repositoryResolution.ensureCanonicalRepository(ctx.identityId);
+    startKnowledgeRepositoryInstallation: async (ctx, request) =>
+      connectionService
+        ? connectionService.startInstallation(ctx.identityId, request)
+        : unavailable(),
+    completeKnowledgeRepositoryInstallation: async (ctx, request) =>
+      connectionService
+        ? connectionService.completeInstallation(ctx.identityId, request)
+        : unavailable(),
+    listKnowledgeRepositoryConnections: async (ctx) =>
+      connectionService ? connectionService.list(ctx.identityId) : unavailable(),
+    connectKnowledgeRepository: async (ctx, request) =>
+      connectionService ? connectionService.connect(ctx.identityId, request) : unavailable(),
+    disconnectKnowledgeRepository: async (ctx, connectionId, purgeCloudData) =>
+      connectionService
+        ? connectionService.disconnect(ctx.identityId, connectionId, purgeCloudData)
+        : unavailable(),
+    issueDesktopKnowledgeRepositoryToken: async (ctx, connectionId) => {
+      const deviceType = ctx.device?.deviceType?.toLowerCase();
+      if (deviceType !== 'desktop') {
+        return fail({
+          code: 'FORBIDDEN',
+          message: 'GitHub installation tokens are available only to Desktop clients',
+        });
+      }
+      return connectionService
+        ? connectionService.issueInstallationToken(ctx.identityId, connectionId)
+        : unavailable();
     },
-
-    // ---- Resource CRUD — 资源增删改查 ----
-    createResource: async (data, ctx) => {
-      return mutation.createResource({
-        repositoryId: data.repositoryId,
-        identityId: ctx.identityId,
-        folderId: data.folderId,
-        name: data.name,
-        type: data.type,
-        path: data.path,
-        content: data.content,
-        mimeType: data.mimeType,
-      });
+    previewKnowledgeRepositoryReconciliation: async (ctx, connectionId, request) => {
+      const deviceType = ctx.device?.deviceType?.toLowerCase();
+      if (deviceType !== 'desktop') {
+        return fail({
+          code: 'FORBIDDEN',
+          message: 'Knowledge repository reconciliation is available only to Desktop clients',
+        });
+      }
+      return connectionService
+        ? connectionService.previewFirstReconciliation(ctx.identityId, connectionId, request)
+        : unavailable();
     },
-    listResources: async (repositoryId) => {
-      const result = await useCases.listResources.execute({ repositoryId });
-      if (!result.ok) return result;
-      return ok(result.data.resources);
+    confirmKnowledgeRepositoryHead: async (ctx, connectionId, request) => {
+      const deviceType = ctx.device?.deviceType?.toLowerCase();
+      if (deviceType !== 'desktop') {
+        return fail({
+          code: 'FORBIDDEN',
+          message: 'Knowledge repository head confirmation is available only to Desktop clients',
+        });
+      }
+      return connectionService
+        ? connectionService.confirmHead(ctx.identityId, connectionId, request)
+        : unavailable();
     },
-    getResource: async (id) => {
-      const result = await useCases.getResource.execute({ id });
-      if (!result.ok) return result;
-      return ok(await hydration.hydrateContent(result.data.resource));
-    },
-    updateResource: async (id, data) => {
-      return mutation.updateResource(id, data);
-    },
-    moveResource: async (id, targetFolderId) => {
-      return mutation.moveResource(id, targetFolderId);
-    },
-    deleteResource: async (id) => {
-      return mutation.deleteResource(id);
-    },
-    uploadResources: async (data, ctx) => {
-      return useCases.uploadResources.execute({
-        repositoryId: data.repositoryId,
-        identityId: ctx.identityId,
-        files: data.files as UploadResourceFileDTO[],
-        metadata: data.metadata as UploadResourcesRequestDTO | undefined,
-      });
-    },
-
-    // ---- Repository stats — 仓库统计 ----
-    updateRepositoryStats: async (id, data) => {
-      return useCases.updateRepositoryStats.execute({ id, stats: data as Partial<RepositoryStatsDTO> });
-    },
-
-    // ---- Folder CRUD — 文件夹增删改查 ----
-    createFolder: async (data, ctx) => {
-      return useCases.createFolder.execute({
-        repositoryId: data.repositoryId,
-        identityId: ctx.identityId,
-        name: data.name,
-        parentId: data.parentId,
-        order: data.order,
-      });
-    },
-    getFolderTree: async (repositoryId) => {
-      return useCases.getFolderTree.execute({ repositoryId });
-    },
-    getFolder: async (id) => {
-      return useCases.getFolder.execute({ id });
-    },
-    renameFolder: async (id, newName) => {
-      return useCases.renameFolder.execute({ id, newName });
-    },
-    moveFolder: async (id, newParentId) => {
-      return useCases.moveFolder.execute({ id, newParentId });
-    },
-    deleteFolder: async (id) => {
-      return useCases.deleteFolder.execute({ id });
-    },
-
-    // ---- Bookmark CRUD — 书签增删改查 ----
-    listResourceBookmarks: async (repositoryId, ctx) => {
-      return useCases.listResourceBookmarks.execute({
-        repositoryId,
-        identityId: ctx.identityId,
-      });
-    },
-    createResourceBookmark: async (repositoryId, data, ctx) => {
-      return useCases.createResourceBookmark.execute({
-        repositoryId,
-        identityId: ctx.identityId,
-        resourceId: data.resourceId,
-        aliasName: data.aliasName,
-        icon: data.icon,
-        color: data.color,
-      });
-    },
-    updateResourceBookmark: async (repositoryId, bookmarkId, data, ctx) => {
-      return useCases.updateResourceBookmark.execute({
-        repositoryId,
-        identityId: ctx.identityId,
-        bookmarkId: bookmarkId as BookmarkId,
-        aliasName: data.aliasName,
-        icon: data.icon,
-        color: data.color,
-      });
-    },
-    reorderResourceBookmarks: async (repositoryId, data, ctx) => {
-      return useCases.reorderResourceBookmarks.execute({
-        repositoryId,
-        identityId: ctx.identityId,
-        bookmarkIds: data.bookmarkIds.map((bookmarkId) => bookmarkId as BookmarkId),
-      });
-    },
-    deleteResourceBookmark: async (repositoryId, bookmarkId, ctx) => {
-      return useCases.deleteResourceBookmark.execute({
-        repositoryId,
-        identityId: ctx.identityId,
-        bookmarkId: bookmarkId as BookmarkId,
-      });
-    },
-
-    // ---- Repository resolution — 仓库解析 ----
-    findActiveRepository: async (identityId) => {
-      return repositoryResolution.ensureCanonicalRepository(identityId);
-    },
+    listKnowledgeNoteProjections: async (ctx, request) =>
+      projectionService
+        ? projectionService.listNotes(ctx.identityId, request)
+        : unavailable(),
+    getKnowledgeNoteProjection: async (ctx, projectionId) =>
+      projectionService
+        ? projectionService.getNote(ctx.identityId, projectionId)
+        : unavailable(),
+    getKnowledgeNoteLinkGraph: async (ctx, projectionId, request) =>
+      projectionService
+        ? projectionService.getLinkGraph(ctx.identityId, projectionId, request)
+        : unavailable(),
+    listKnowledgeAttachmentProjections: async (ctx, request) =>
+      projectionService
+        ? projectionService.listAttachments(ctx.identityId, request)
+        : unavailable(),
+    getKnowledgeAttachmentContent: async (ctx, projectionId) =>
+      projectionService
+        ? projectionService.getAttachmentContent(ctx.identityId, projectionId)
+        : unavailable(),
+    createConfirmedKnowledgeNote: async (ctx, request) =>
+      noteCommitService
+        ? noteCommitService.create(ctx.identityId, request)
+        : unavailable(),
+    updateKnowledgeNoteProjectionIndexStatus: async (ctx, request) =>
+      projectionService
+        ? projectionService.updateIndexStatus(ctx.identityId, request)
+        : unavailable(),
+    ingestGithubWebhook: async (request) =>
+      projectionService ? projectionService.ingest(request) : unavailable(),
   };
 }
 
-// ---------------------------------------------------------------------------
-// Composition root — 组合根
-// ---------------------------------------------------------------------------
-
-/**
- * Canonical composition root.
- * 规范化的仓库模块主组合根。
- *
- * This is the file other modules should copy first when migrating away from a
- * container-based assembly. The expected reading order is:
- *
- * 这是其他模块从容器式组装迁移时应首先参照的文件。推荐阅读顺序：
- *
- * 1. define `Dependencies` — 定义依赖
- * 2. define transport-neutral `ApplicationPort` — 定义传输层无关的应用层门面
- * 3. assemble use cases once — 一次性组装 use case
- * 4. wrap them in `api` — 用 api 包装
- * 5. let the module instance own `start` / `dispose` — 模块实例管理 start / dispose
- */
 export function createRepositoryModule(
   dependencies: RepositoryModuleDependencies,
 ): RepositoryModuleInstance {
-  const { repositoryRepository, resourceRepository, folderRepository, resourceBookmarkRepository } =
-    dependencies;
-
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
-  const useCases = createRepositoryUseCases(dependencies);
   let started = false;
-
-  const api: RepositoryApplicationPort = buildApplicationPort(useCases, dependencies);
+  const api = buildApplicationPort(dependencies);
 
   return {
-    repositoryRepository,
-    resourceRepository,
-    folderRepository,
-    resourceBookmarkRepository,
-    useCases,
+    knowledgeRepositoryConnectionService: dependencies.knowledgeRepositoryConnectionService ?? null,
+    knowledgeRepositoryProjectionService: dependencies.knowledgeRepositoryProjectionService ?? null,
+    knowledgeNoteCommitService: dependencies.knowledgeNoteCommitService ?? null,
     api,
-    start(): void {
-      if (started) {
-        return;
+    start() {
+      if (started) return;
+      for (const contribution of runtimeContributions) {
+        contribution.start();
       }
-
-      for (const runtime of runtimeContributions) {
-        runtime.start();
-      }
-
       started = true;
     },
-    dispose(): void {
-      if (!started) {
-        return;
+    dispose() {
+      if (!started) return;
+      for (const contribution of [...runtimeContributions].reverse()) {
+        contribution.stop();
       }
-
-      for (const runtime of [...runtimeContributions].reverse()) {
-        runtime.stop();
-      }
-
       started = false;
     },
   };

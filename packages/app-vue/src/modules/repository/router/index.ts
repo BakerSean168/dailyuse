@@ -1,7 +1,9 @@
 /**
  * Repository / Note 模块路由配置（UI 重构 V2 §3 / §6 Note）
  *
- * 路径契约不变：`/repository`、`/note/:id`。
+ * `/repository` is the only note workspace entry. Existing-note editing is
+ * intentionally absent; Desktop delegates edits to Obsidian and Web remains
+ * projection-only.
  * 与 governance 共用 NoteModuleLayout 顶部分区 [笔记 | 规范]。
  */
 
@@ -24,31 +26,10 @@ export const repositoryRoutes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'repository',
-        component: () => import('../views/RepositoryWorkspaceView.vue'),
+        component: () => import('../views/RepositoryEntryView.vue'),
         meta: {
           title: 'repository.route.workspace',
           requiresAuth: true,
-        },
-      },
-    ],
-  },
-  {
-    path: '/note/:id',
-    component: NoteModuleLayout,
-    meta: {
-      title: 'repository.route.noteEdit',
-      requiresAuth: true,
-      hideSidebar: true,
-    },
-    children: [
-      {
-        path: '',
-        name: 'note-edit',
-        component: () => import('../../editor/views/EditorLinearView.vue'),
-        meta: {
-          title: 'repository.route.noteEdit',
-          requiresAuth: true,
-          hideSidebar: true,
         },
       },
     ],

@@ -5,7 +5,7 @@ import type {
   TaskTemplateServerDTO,
 } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus, TaskTimeType } from '@dailyuse/contracts/task';
-import { SourceModule, TaskPriority, Timezone } from '@dailyuse/contracts/schedule';
+import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/schedule';
 import type {
   ITaskInstanceRepository,
@@ -14,15 +14,7 @@ import type {
 
 const DEFAULT_ALL_DAY_REMINDER_MINUTES = 9 * 60;
 
-function mapPriority(importance: string): (typeof TaskPriority)[keyof typeof TaskPriority] {
-  if (importance === 'Vital') {
-    return TaskPriority.Urgent;
-  }
-  if (importance === 'Important') {
-    return TaskPriority.High;
-  }
-  return TaskPriority.Normal;
-}
+/** Soft residual 1168: dual mapPriority retired onto contracts mapImportanceToTaskPriority sole. */
 
 function formatUnit(unit: ReminderTimeUnit): string {
   switch (unit) {
@@ -98,6 +90,11 @@ function calculateReminderAt(
   return getInstanceAnchorTime(instance) - convertUnitToMs(trigger.relativeValue, trigger.relativeUnit);
 }
 
+/**
+ * Residual 1177 keep-boundary: task schedule-projection buildTaskName — Template + TaskReminder domain.
+ * Relative pre-reminder / Absolute timed wording; not goal RemainingDays/progress naming.
+ * Soft residual 1177: goal schedule-projection buildTaskName stays Goal+ReminderTrigger domain-specific (no force-merge).
+ */
 function buildTaskName(
   template: TaskTemplateServerDTO,
   trigger: {
@@ -135,7 +132,7 @@ function isSchedulableInstance(instance: {
 
 export interface TaskScheduleProjectionSelection {
   readonly sourceModule: SourceModule;
-  readonly identityId?: string;
+  readonly identityId: string;
   readonly sourceEntityId?: string;
   matches(task: ScheduleTask): boolean;
 }
@@ -146,15 +143,15 @@ export interface TaskScheduleProjectionPlan {
 }
 
 export interface TaskScheduleProjectionSource {
-  buildTemplatePlan(templateId: string, identityId?: string): Promise<TaskScheduleProjectionPlan>;
-  buildTemplateDeletionSelection(templateId: string, identityId?: string): TaskScheduleProjectionSelection;
-  buildInstanceDeletionSelection(instanceId: string, identityId?: string): TaskScheduleProjectionSelection;
+  buildTemplatePlan(templateId: string, identityId: string): Promise<TaskScheduleProjectionPlan>;
+  buildTemplateDeletionSelection(templateId: string, identityId: string): TaskScheduleProjectionSelection;
+  buildInstanceDeletionSelection(instanceId: string, identityId: string): TaskScheduleProjectionSelection;
 }
 
 export interface TaskScheduleProjectionHandlers {
-  upsertTemplate(templateId: string, identityId?: string): Promise<void>;
-  deleteTemplate(templateId: string, identityId?: string): Promise<void>;
-  deleteInstance(instanceId: string, identityId?: string): Promise<void>;
+  upsertTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteInstance(instanceId: string, identityId: string): Promise<void>;
 }
 
 export type TaskScheduleProjectionEventMap = Pick<
@@ -188,7 +185,7 @@ export const taskScheduleProjectionEventNames = [
 
 function selectTemplateProjection(
   templateId: string,
-  identityId?: string,
+  identityId: string,
 ): TaskScheduleProjectionSelection {
   return {
     sourceModule: SourceModule.Task,
@@ -201,7 +198,7 @@ function selectTemplateProjection(
 
 function selectInstanceProjection(
   instanceId: string,
-  identityId?: string,
+  identityId: string,
 ): TaskScheduleProjectionSelection {
   return {
     sourceModule: SourceModule.Task,
@@ -219,7 +216,10 @@ export function createTaskScheduleProjectionSource(deps: {
 }): TaskScheduleProjectionSource {
   return {
     async buildTemplatePlan(templateId, identityId) {
-      const template = await deps.taskTemplateRepository.findById(templateId);
+      const template = await deps.taskTemplateRepository.findByIdForIdentity(
+        identityId,
+        templateId,
+      );
       if (!template) {
         return {
           selection: selectTemplateProjection(templateId, identityId),
@@ -237,7 +237,10 @@ export function createTaskScheduleProjectionSource(deps: {
         };
       }
 
-      const instances = await deps.taskInstanceRepository.findByTemplateId(templateId);
+      const instances = await deps.taskInstanceRepository.findByTemplateId(
+        templateId,
+        String(templateDTO.identityId),
+      );
       const now = Date.now();
       const nextTasks = instances
         .filter(isSchedulableInstance)
@@ -275,7 +278,7 @@ export function createTaskScheduleProjectionSource(deps: {
                     reminderTime: reminderAt,
                   },
                   tags: ['task', 'task-reminder', `template:${templateDTO.id}`],
-                  priority: mapPriority(templateDTO.importance),
+                  priority: mapImportanceToTaskPriority(templateDTO.importance),
                   timeout: null,
                 },
               });

@@ -14,6 +14,9 @@ import { LanguageCode } from '../value-objects/language-code';
 
 /**
  * Account Response Schema
+ *
+ * Residual 825: AccountClientDTO dual retired — sole AccountResponseSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/account-client.ts).
  */
 export const AccountResponseSchema = z.object({
   id: brandedId<IdentityId>(),
@@ -55,6 +58,8 @@ export const AccountResponseSchema = z.object({
 
 /**
  * Availability Response Schema
+ *
+ * Residual 767: sole availability response shape (CheckAvailabilityRes is z.infer alias).
  */
 export const AvailabilityResponseSchema = z.object({
   available: z.boolean(),

@@ -141,6 +141,10 @@ export function getRedisConfig() {
 }
 
 /**
+ * Residual 1189 keep-boundary: API getCorsOrigins — production env string[] list.
+ * Splits env.CORS_ORIGIN into trimmed non-empty origins (no E2E web origin injection).
+ * Soft residual 1189: Playwright getCorsOrigins returns joined string with E2E/legacy origins (no force-merge).
+ *
  * 获取 CORS 允许的来源列表
  */
 export function getCorsOrigins(): string[] {
@@ -173,14 +177,72 @@ export function getJwtConfig() {
  * Returns null when GitHub login is not configured, so the composition root
  * can skip registering the GitHub provider entirely.
  * 未配置时返回 null，组合根据此跳过注册 GitHub 提供者。
+ *
+ * Residual 1333: Playwright e2e lane always uses the deterministic `e2e-mock`
+ * identity provider so auth-oauth can complete without browser consent. Real
+ * `GITHUB_OAUTH_*` values may still be present in gitignored `.env.test.local`
+ * for GitHub App / live-github wiring; they must not displace the e2e mock.
+ * Knowledge-repo App credentials stay on `getGithubAppConfig()` (separate).
  */
 export function getGithubOAuthConfig(): { clientId: string; clientSecret: string } | null {
-  if (!env.GITHUB_OAUTH_CLIENT_ID || !env.GITHUB_OAUTH_CLIENT_SECRET) {
+  // E2E lane: mock identity OAuth only (no interactive GitHub authorize).
+  if (env.RUNTIME_LANE === 'e2e') {
+    return {
+      clientId: 'e2e-mock',
+      clientSecret: 'e2e-mock-secret',
+    };
+  }
+
+  if (env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET) {
+    return {
+      clientId: env.GITHUB_OAUTH_CLIENT_ID,
+      clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
+    };
+  }
+
+  // Unit/integration test without explicit credentials: same mock provider.
+  if (env.NODE_ENV === 'test') {
+    return {
+      clientId: 'e2e-mock',
+      clientSecret: 'e2e-mock-secret',
+    };
+  }
+
+  return null;
+}
+
+export interface GithubAppConfig {
+  appId: string;
+  appSlug: string;
+  privateKey: string;
+  webhookSecret: string;
+}
+
+/**
+ * GitHub App configuration for knowledge repository authorization.
+ * A partial configuration is rejected so the runtime cannot expose a flow
+ * that later fails at token issuance or webhook verification.
+ */
+export function getGithubAppConfig(): GithubAppConfig | null {
+  const values = [
+    env.GITHUB_APP_ID,
+    env.GITHUB_APP_SLUG,
+    env.GITHUB_APP_PRIVATE_KEY,
+    env.GITHUB_APP_WEBHOOK_SECRET,
+  ];
+  if (values.every((value) => value === undefined)) {
     return null;
   }
+  if (values.some((value) => value === undefined)) {
+    throw new Error(
+      'GITHUB_APP_ID, GITHUB_APP_SLUG, GITHUB_APP_PRIVATE_KEY and GITHUB_APP_WEBHOOK_SECRET must be configured together',
+    );
+  }
   return {
-    clientId: env.GITHUB_OAUTH_CLIENT_ID,
-    clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
+    appId: env.GITHUB_APP_ID!,
+    appSlug: env.GITHUB_APP_SLUG!,
+    privateKey: env.GITHUB_APP_PRIVATE_KEY!,
+    webhookSecret: env.GITHUB_APP_WEBHOOK_SECRET!,
   };
 }
 

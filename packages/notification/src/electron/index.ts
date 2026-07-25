@@ -13,10 +13,11 @@
 
 import { ipcMain } from 'electron';
 import {
+  NotificationChannels,
   type IElectronModule,
   type IElectronModuleContext,
 } from '@dailyuse/contracts/electron';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import { CreateNotificationUseCase } from '../commands';
 import type { ScheduleNotificationPort } from '../schedule-execution';
 import {
@@ -36,28 +37,28 @@ import { withAuthenticatedIdentity, withAuthenticatedValue } from './authenticat
 
 const logger = createLogger('NotificationElectron');
 
-const Ch = {
-  LIST: 'notification:list',
-  GET: 'notification:get',
-  CREATE: 'notification:create',
-  MARK_READ: 'notification:mark-read',
-  MARK_ALL_READ: 'notification:mark-all-read',
-  DELETE: 'notification:delete',
-  CLEAR_ALL: 'notification:clear-all',
-  GET_UNREAD_COUNT: 'notification:unread-count',
-} as const;
-
-const RendererCh = {
-  CUSTOM_RECEIVE: 'notification:custom:receive',
-  CUSTOM_CLICK: 'notification:custom:click',
-  CUSTOM_CLOSE: 'notification:custom:close',
-  CUSTOM_RESIZE: 'notification:custom:resize',
-  CUSTOM_MOUSE_ENTER: 'notification:custom:mouse-enter',
-  CUSTOM_MOUSE_LEAVE: 'notification:custom:mouse-leave',
-  CUSTOM_RENDERER_READY: 'notification:custom:renderer-ready',
-} as const;
-
-const channels = [...Object.values(Ch), ...Object.values(RendererCh)];
+// Destroy tears down the full NotificationChannels surface.
+// Core CRUD handlers are registered here; custom renderer channels are registered by
+// desktop custom-notification.manager but share this cleanup set.
+const allChannels = [
+  NotificationChannels.LIST,
+  NotificationChannels.GET,
+  NotificationChannels.CREATE,
+  NotificationChannels.MARK_READ,
+  NotificationChannels.MARK_ALL_READ,
+  NotificationChannels.DELETE,
+  NotificationChannels.CLEAR_ALL,
+  NotificationChannels.GET_UNREAD_COUNT,
+  NotificationChannels.PREFERENCES_GET,
+  NotificationChannels.PREFERENCES_UPDATE,
+  NotificationChannels.CUSTOM_RECEIVE,
+  NotificationChannels.CUSTOM_CLICK,
+  NotificationChannels.CUSTOM_CLOSE,
+  NotificationChannels.CUSTOM_RESIZE,
+  NotificationChannels.CUSTOM_MOUSE_ENTER,
+  NotificationChannels.CUSTOM_MOUSE_LEAVE,
+  NotificationChannels.CUSTOM_RENDERER_READY,
+] as const;
 let activeNotificationModule: NotificationModuleInstance | null = null;
 
 export function getNotificationRepository(): INotificationRepository {
@@ -111,36 +112,58 @@ export const NotificationElectronModule: IElectronModule = {
 
     // 2. IPC Handlers — preserve all existing channels.
     // IPC 处理器 — 保留所有现有通道。
-    ipcMain.handle(Ch.LIST, async (_, params) => {
+    ipcMain.handle(NotificationChannels.LIST, async (_, params) => {
       return withAuthenticatedValue(ctx, (requestContext) =>
         controller.list({
           ...(params ?? {}),
         }, requestContext),
       );
     });
-    ipcMain.handle(Ch.GET, (_, id) => controller.get(id));
-    ipcMain.handle(Ch.CREATE, async (_, dto) =>
+    ipcMain.handle(NotificationChannels.GET, (_, id) =>
+      withAuthenticatedValue(ctx, (requestContext) => controller.get(id, requestContext)),
+    );
+    ipcMain.handle(NotificationChannels.CREATE, async (_, dto) =>
       withAuthenticatedValue(ctx, (requestContext) => controller.create(dto, requestContext)),
     );
-    ipcMain.handle(Ch.MARK_READ, (_, id) => controller.markAsRead(id));
-    ipcMain.handle(Ch.MARK_ALL_READ, async () => {
+    ipcMain.handle(NotificationChannels.MARK_READ, (_, id) =>
+      withAuthenticatedValue(ctx, (requestContext) => controller.markAsRead(id, requestContext)),
+    );
+    ipcMain.handle(NotificationChannels.MARK_ALL_READ, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) => controller.markAllAsRead(identityId));
     });
-    ipcMain.handle(Ch.DELETE, (_, id) => controller.delete(id));
-    ipcMain.handle(Ch.CLEAR_ALL, async (_, ids) => {
+    ipcMain.handle(NotificationChannels.DELETE, async (_, id) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await controller.delete(id, requestContext);
+        if (!result.ok) return result;
+        return ok(null);
+      }),
+    );
+    ipcMain.handle(NotificationChannels.CLEAR_ALL, async (_, ids) => {
       if (Array.isArray(ids) && ids.length > 0) {
-        return controller.batchDelete({ notificationIds: ids });
+        return withAuthenticatedValue(ctx, (requestContext) =>
+          controller.batchDelete({ notificationIds: ids }, requestContext),
+        );
       }
       return fail({ code: 'VALIDATION_ERROR', message: 'notification ids are required' });
     });
-    ipcMain.handle(Ch.GET_UNREAD_COUNT, async () => {
+    ipcMain.handle(NotificationChannels.GET_UNREAD_COUNT, async () => {
       return withAuthenticatedIdentity(ctx, (identityId) => controller.getUnreadCount(identityId));
+    });
+    ipcMain.handle(NotificationChannels.PREFERENCES_GET, async () => {
+      return withAuthenticatedValue(ctx, (requestContext) =>
+        controller.getPreferences(requestContext),
+      );
+    });
+    ipcMain.handle(NotificationChannels.PREFERENCES_UPDATE, async (_, dto) => {
+      return withAuthenticatedValue(ctx, (requestContext) =>
+        controller.updatePreferences(dto ?? {}, requestContext),
+      );
     });
     logger.info('Notification module registered');
   },
 
   destroy(): void {
-    for (const ch of channels) {
+    for (const ch of allChannels) {
       ipcMain.removeHandler(ch);
     }
     activeNotificationModule?.dispose();

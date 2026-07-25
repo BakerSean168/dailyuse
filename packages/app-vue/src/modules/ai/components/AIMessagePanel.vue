@@ -60,9 +60,11 @@
                     ? NotebookPen
                     : toolMode === 'goal-create'
                       ? Sparkles
-                      : toolMode === 'knowledge-qa'
-                        ? Search
-                        : Bot
+                      : toolMode === 'task-create'
+                        ? ClipboardCheck
+                        : toolMode === 'knowledge-qa'
+                          ? Search
+                          : Bot
                 "
                 class="h-5 w-5"
               />
@@ -83,7 +85,7 @@
             </p>
           </div>
 
-          <!-- Four shortcut cards: prefill composer + set tool mode (V2 §6.0) -->
+          <!-- Shortcut cards: prefill composer + set tool mode (V2 §6.0; residual 429 task-create) -->
           <div v-if="toolMode === 'chat'" class="grid gap-2 sm:grid-cols-2">
             <button
               v-for="entry in shortcutEntries"
@@ -104,7 +106,7 @@
           </div>
 
           <!-- Tool-mode empty: keep workflow entry cards -->
-          <div v-else class="grid gap-2 sm:grid-cols-3">
+          <div v-else class="grid gap-2 sm:grid-cols-2">
             <button
               v-for="entry in workflowEntries"
               :key="entry.mode"
@@ -151,7 +153,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Bot, MessageSquare, NotebookPen, Search, Sparkles } from '@lucide/vue';
+import { Bot, ClipboardCheck, MessageSquare, NotebookPen, Search, Sparkles } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { getToolLocaleKey, type ChatItem, type WorkflowMode } from '../composables/types';
 import { useAIFormatters } from '../composables/useAIFormatters';
@@ -179,12 +181,14 @@ defineEmits<{
 const shortcutEntries = [
   { mode: 'chat' as const, localeKey: 'chat', icon: MessageSquare },
   { mode: 'goal-create' as const, localeKey: 'goalCreate', icon: Sparkles },
+  { mode: 'task-create' as const, localeKey: 'taskCreate', icon: ClipboardCheck },
   { mode: 'knowledge-generate' as const, localeKey: 'knowledgeGenerate', icon: NotebookPen },
   { mode: 'knowledge-qa' as const, localeKey: 'knowledgeQa', icon: Search },
 ];
 
 const workflowEntries = [
   { mode: 'goal-create' as const, localeKey: getToolLocaleKey('goal-create'), icon: Sparkles },
+  { mode: 'task-create' as const, localeKey: getToolLocaleKey('task-create'), icon: ClipboardCheck },
   {
     mode: 'knowledge-generate' as const,
     localeKey: getToolLocaleKey('knowledge-generate'),

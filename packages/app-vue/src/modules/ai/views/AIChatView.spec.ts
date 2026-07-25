@@ -2,6 +2,7 @@ import { defineComponent, h, ref } from 'vue';
 import { flushPromises, shallowMount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ok } from '@dailyuse/contracts/result';
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
@@ -9,9 +10,8 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   useAI: vi.fn(),
   useGoal: vi.fn(),
-  useRepository: vi.fn(),
+  useRecentKnowledgeNotes: vi.fn(),
   useUserSetting: vi.fn(),
-  useEditorWorkspaceActions: vi.fn(),
 }));
 
 vi.mock('vue-router', () => ({
@@ -35,20 +35,17 @@ vi.mock('../../goal/composables/useGoal', () => ({
   useGoal: mocks.useGoal,
 }));
 
-vi.mock('../../repository/composables/useRepository', () => ({
-  useRepository: mocks.useRepository,
+vi.mock('../../repository/composables/useRecentKnowledgeNotes', () => ({
+  useRecentKnowledgeNotes: mocks.useRecentKnowledgeNotes,
 }));
 
 vi.mock('../../setting/composables/useUserSetting', () => ({
   useUserSetting: mocks.useUserSetting,
 }));
 
-vi.mock('../../editor/composables', () => ({
-  useEditorWorkspaceActions: mocks.useEditorWorkspaceActions,
-}));
-
 import AIChatView from './AIChatView.vue';
-import { DASHBOARD_SERVICE_KEY } from '../../../di/keys';
+import { DASHBOARD_SERVICE_KEY, TASK_SERVICE_KEY } from '../../../di/keys';
+import { formatLangGraphVendorDiagnosticEventLabel } from '../composables/hostLangGraphUiBoundary';
 
 const i18n = createI18n({
   legacy: false,
@@ -133,12 +130,10 @@ const i18n = createI18n({
             toolLabels: {
               createReminder: 'Create Reminder',
               createKnowledgeNote: 'Create Knowledge Note',
-              updateKnowledgeNote: 'Update Knowledge Note',
-              reindexResource: 'Reindex Resource',
               searchExistingGoals: 'Search Existing Goals',
               searchKnowledge: 'Search Knowledge',
               fetchGoalStats: 'Fetch Goal Stats',
-              fetchResource: 'Fetch Resource',
+              fetchResource: 'Fetch Note',
               findRelatedNotes: 'Find Related Notes',
             },
           },
@@ -153,11 +148,13 @@ const i18n = createI18n({
             executionStatus: 'Execution Status',
             executionTimeline: 'Execution Timeline',
             executionResult: 'Execution Result',
-            executionSummaryText: '{status}: {executed} executed, {skipped} skipped, {failed} failed.',
+            executionSummaryText:
+              '{status}: {executed} executed, {skipped} skipped, {failed} failed.',
             awaitingConfirmation: 'awaiting confirmation',
             executionRecorded: 'execution recorded',
             recoveryTitle: 'Recovery',
-            recoveryRetryReady: 'You can retry execution after fixing the failed action inputs or runtime issue.',
+            recoveryRetryReady:
+              'You can retry execution after fixing the failed action inputs or runtime issue.',
             recoverySuggestions: 'Recommended recovery steps:',
             planReady: 'Automation plan ready',
             planFailed: 'Automation plan failed',
@@ -200,7 +197,7 @@ const i18n = createI18n({
             citations: 'Citations',
             grounded: 'Grounded in repository citations',
             insufficientEvidence: 'Current knowledge base evidence is insufficient',
-            matchedResources: '{count} resource(s) matched in {ms} ms.',
+            matchedResources: '{count} note(s) matched in {ms} ms.',
             queryCompleted: 'Knowledge answer ready',
             queryFailed: 'Failed to query knowledge',
             relatedNotes: 'Related Notes',
@@ -218,6 +215,38 @@ const i18n = createI18n({
           emptyModels: 'No models available',
           context: {
             title: 'Context',
+            hostWorkbenchTitle: 'Host Proposal Workbench',
+            hostProposalPending: '{count} proposal(s) waiting for approval',
+            hostReceiptTitle: 'Host Execution Report',
+            hostReceiptSubtitle: 'Post-approval execution outcomes',
+            hostReceiptPending: '{count} execution report(s)',
+            hostReceiptKindGoal: 'Goal create',
+            hostReceiptKindKnowledge: 'Knowledge write',
+            hostReceiptStatusOk: 'Succeeded',
+            hostReceiptStatusPartial: 'Partial',
+            hostReceiptStatusFailed: 'Failed',
+            hostReceiptStatusCancelled: 'Cancelled',
+            hostReceiptExecuted: 'Executed',
+            hostReceiptSkipped: 'Skipped',
+            hostReceiptFailed: 'Failed',
+            hostReceiptEntities: 'Entities: {ids}',
+            hostTimelineTitle: 'Host artifacts (timeline)',
+            hostTimelineProposal: 'Pending proposal',
+            hostTimelineReceipt: 'Execution report',
+            hostTimelineStatusPending: 'Awaiting approval',
+            hostTimelineOpenWorkbench: 'Open Host workbench',
+            hostTimelineEngineGoal: 'Agent · Goal',
+            hostTimelineEngineKnowledge: 'Agent · Knowledge',
+            hostTimelineEngineTask: 'Agent · Task',
+            hostTimelineEngineUnknown: 'Host · Unknown',
+            hostTimelineOpenChat: 'Open chat',
+            hostTimelineOpenChatKind: 'Turn',
+            hostTimelineOpenChatHint: 'Host open-chat turn (engine badge)',
+            hostReceiptActionExecuted: 'Executed',
+            hostReceiptActionSkipped: 'Skipped',
+            hostReceiptActionFailed: 'Failed',
+            hostReceiptOpenGoal: 'Open goal',
+            hostReceiptOpenNote: 'Open note',
             show: 'Show context',
             hide: 'Hide context',
             todayOverview: 'Today',
@@ -225,7 +254,12 @@ const i18n = createI18n({
           shortcuts: {
             chat: { title: 'Just chat', description: 'Chat', prefill: 'chat prefill' },
             goalCreate: { title: 'Plan a goal', description: 'Goal', prefill: 'goal prefill' },
-            knowledgeGenerate: { title: 'Write a note', description: 'Note', prefill: 'note prefill' },
+            taskCreate: { title: 'Create a task', description: 'Task', prefill: 'task prefill' },
+            knowledgeGenerate: {
+              title: 'Write a note',
+              description: 'Note',
+              prefill: 'note prefill',
+            },
             knowledgeQa: { title: 'Ask KB', description: 'QA', prefill: 'qa prefill' },
           },
           sidebar: {
@@ -277,16 +311,36 @@ const i18n = createI18n({
             startAnotherNote: 'Start another note',
             defaultConversationNames: {
               goalCreate: 'Goal conversation',
+              taskCreate: 'Task conversation',
               knowledgeQa: 'Knowledge Q&A conversation',
               knowledgeGenerate: 'Knowledge note conversation',
             },
             tools: {
               chat: 'Chat',
               goalCreate: 'Goal',
+              taskCreate: 'Task',
               knowledgeQa: 'Knowledge Q&A',
               knowledgeGenerate: 'Knowledge note',
             },
             noteTopicFallback: 'New note topic',
+          },
+          hostProposals: {
+            title: 'Host Proposals',
+            lifecycleOnly: 'Host lifecycle only — business execution runs after approval.',
+            kindGoal: 'Goal create',
+            kindKnowledge: 'Knowledge write',
+            kindTask: 'Task create',
+            revision: 'Rev {revision}',
+            pendingActions: '{count} pending action(s)',
+            editTitle: 'Proposal title',
+            editTargetPath: 'Vault-relative path',
+            editContent: 'Note markdown',
+            revise: 'Save revision',
+            approve: 'Approve',
+            reject: 'Reject',
+            rejectReason: 'Reject reason (optional)',
+            rejectReasonPlaceholder: 'Why is this proposal being rejected?',
+            busy: 'Updating...',
           },
         },
         actions: {
@@ -330,10 +384,11 @@ const SelectItemStub = defineComponent({
 const AIFooterComposerStub = defineComponent({
   name: 'AIFooterComposerStub',
   setup(_, { slots }) {
-    return () => h('div', { 'data-testid': 'ai-footer-composer-stub' }, [
-      slots.default?.(),
-      slots['action-rail']?.(),
-    ]);
+    return () =>
+      h('div', { 'data-testid': 'ai-footer-composer-stub' }, [
+        slots.default?.(),
+        slots['action-rail']?.(),
+      ]);
   },
 });
 
@@ -347,14 +402,28 @@ const AIMessagePanelStub = defineComponent({
 const AIGoalWorkflowPanelStub = defineComponent({
   name: 'AIGoalWorkflowPanelStub',
   props: [
-    'toolMode', 'goalClarification', 'goalDraft', 'goalAutomationResult',
-    'goalAgentRun', 'goalAgentPendingActions', 'goalAgentExecutedActions',
-    'clarificationAnswers', 'editableGoal', 'editableKeyResults',
-    'editableTaskTemplates', 'editableReminders',
-    'showGoalDraftEditor', 'creatingGoal', 'goalExecutedActions',
-    'goalExecutionSummary', 'goalExecutionRecovery', 'knowledgeAnswer',
+    'toolMode',
+    'goalClarification',
+    'goalDraft',
+    'goalAutomationResult',
+    'goalAgentRun',
+    'goalAgentPendingActions',
+    'goalAgentExecutedActions',
+    'clarificationAnswers',
+    'editableGoal',
+    'editableKeyResults',
+    'editableTaskTemplates',
+    'editableReminders',
+    'showGoalDraftEditor',
+    'creatingGoal',
+    'goalExecutedActions',
+    'goalExecutionSummary',
+    'goalExecutionRecovery',
+    'knowledgeAnswer',
     'knowledgeQaAgentRun',
-    'noteAgentRun', 'noteSummary', 'notePreview',
+    'noteAgentRun',
+    'noteSummary',
+    'notePreview',
   ],
   emits: [
     'update:clarification-answers',
@@ -375,103 +444,131 @@ const AIGoalWorkflowPanelStub = defineComponent({
       const fragments = [];
       if (props.toolMode === 'goal-create') {
         if (props.goalDraft) {
-          fragments.push(h('div', { 'data-testid': 'goal-draft-panel' }, [
-            h('h3', 'Goal draft'),
-            h('p', props.goalDraft.goal?.title ?? ''),
-            h('p', props.goalDraft.goal?.description ?? ''),
-          ]));
+          fragments.push(
+            h('div', { 'data-testid': 'goal-draft-panel' }, [
+              h('h3', 'Goal draft'),
+              h('p', props.goalDraft.goal?.title ?? ''),
+              h('p', props.goalDraft.goal?.description ?? ''),
+            ]),
+          );
         }
         if (props.goalClarification) {
           const answers = [...(props.clarificationAnswers ?? [])];
-          fragments.push(h('div', { 'data-testid': 'goal-clarification-panel' }, [
-            h('h3', 'Goal clarification'),
-            h('p', props.goalClarification.rationale ?? ''),
-            ...(props.goalClarification.questions ?? []).map((q: { question: string; context?: string }, i: number) =>
-              h('div', [
-                h('p', q.question),
-                h('textarea', {
-                  placeholder: 'Answer here',
-                  value: answers[i] ?? '',
-                  onInput: (e: Event) => {
-                    const next = [...answers];
-                    next[i] = (e.target as HTMLTextAreaElement).value;
-                    emit('update:clarification-answers', next);
-                  },
-                }),
-              ]),
-            ),
-          ]));
+          fragments.push(
+            h('div', { 'data-testid': 'goal-clarification-panel' }, [
+              h('h3', 'Goal clarification'),
+              h('p', props.goalClarification.rationale ?? ''),
+              ...(props.goalClarification.questions ?? []).map(
+                (q: { question: string; context?: string }, i: number) =>
+                  h('div', [
+                    h('p', q.question),
+                    h('textarea', {
+                      placeholder: 'Answer here',
+                      value: answers[i] ?? '',
+                      onInput: (e: Event) => {
+                        const next = [...answers];
+                        next[i] = (e.target as HTMLTextAreaElement).value;
+                        emit('update:clarification-answers', next);
+                      },
+                    }),
+                  ]),
+              ),
+            ]),
+          );
         }
         if (props.goalAgentRun) {
           const run = props.goalAgentRun;
-          fragments.push(h('div', { 'data-testid': 'goal-agent-panel' }, [
-            h('h3', 'Agent Run'),
-            h('p', run.run.status),
-            h('p', run.state.stage),
-            ...(props.showGoalDraftEditor ? [
-              h('button', {
-                'data-testid': 'goal-agent-draft-editor-update',
-                onClick: () => {
-                  emit('update-goal', {
-                    ...props.editableGoal,
-                    name: 'Edited Agent AI Goal',
-                    description: 'Edited before Agent approval.',
-                  });
-                  if ((props.editableTaskTemplates ?? []).length) {
-                    emit('update-task-template', {
-                      index: 0,
-                      value: {
-                        ...props.editableTaskTemplates[0],
-                        name: 'Edited weekly implementation block',
-                        description: 'Edited task template before Agent approval.',
-                        cadence: 'daily',
+          fragments.push(
+            h('div', { 'data-testid': 'goal-agent-panel' }, [
+              h('h3', 'Agent Run'),
+              h('p', run.run.status),
+              h('p', run.state.stage),
+              ...(props.showGoalDraftEditor
+                ? [
+                    h(
+                      'button',
+                      {
+                        'data-testid': 'goal-agent-draft-editor-update',
+                        onClick: () => {
+                          emit('update-goal', {
+                            ...props.editableGoal,
+                            name: 'Edited Agent AI Goal',
+                            description: 'Edited before Agent approval.',
+                          });
+                          if ((props.editableTaskTemplates ?? []).length) {
+                            emit('update-task-template', {
+                              index: 0,
+                              value: {
+                                ...props.editableTaskTemplates[0],
+                                name: 'Edited weekly implementation block',
+                                description: 'Edited task template before Agent approval.',
+                                cadence: 'daily',
+                              },
+                            });
+                          }
+                          if ((props.editableReminders ?? []).length) {
+                            emit('update-reminder', {
+                              index: 0,
+                              value: {
+                                ...props.editableReminders[0],
+                                title: 'Edited weekly review reminder',
+                                description: 'Edited reminder before Agent approval.',
+                                cadence: 'daily',
+                                timeOfDay: '10:30',
+                              },
+                            });
+                          }
+                        },
                       },
-                    });
-                  }
-                  if ((props.editableReminders ?? []).length) {
-                    emit('update-reminder', {
-                      index: 0,
-                      value: {
-                        ...props.editableReminders[0],
-                        title: 'Edited weekly review reminder',
-                        description: 'Edited reminder before Agent approval.',
-                        cadence: 'daily',
-                        timeOfDay: '10:30',
-                      },
-                    });
-                  }
-                },
-              }, 'Edit agent draft'),
-            ] : []),
-            ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
-              h('p', String(artifact.title ?? artifact.kind ?? '')),
-            ),
-            ...(props.goalAgentPendingActions ?? []).map((action: Record<string, unknown>) =>
-              h('p', String(action.rationale ?? action.tool ?? '')),
-            ),
-            ...(props.goalAgentExecutedActions ?? []).map((action: Record<string, unknown>) =>
-              h('p', String(action.message ?? action.tool ?? '')),
-            ),
-          ]));
+                      'Edit agent draft',
+                    ),
+                  ]
+                : []),
+              ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
+                h('p', String(artifact.title ?? artifact.kind ?? '')),
+              ),
+              ...(props.goalAgentPendingActions ?? []).map((action: Record<string, unknown>) =>
+                h('p', String(action.rationale ?? action.tool ?? '')),
+              ),
+              ...(props.goalAgentExecutedActions ?? []).map((action: Record<string, unknown>) =>
+                h('p', String(action.message ?? action.tool ?? '')),
+              ),
+            ]),
+          );
         }
         if (props.goalAutomationResult) {
           const result = props.goalAutomationResult;
-          fragments.push(h('div', { 'data-testid': 'goal-automation-panel' }, [
-            h('h3', 'Summary'),
-            h('p', result.summary ?? ''),
-            ...(result.actions ?? []).map((a: Record<string, unknown>) => h('p', (a.rationale as string) ?? '')),
-            h('h3', 'Execution Status'),
-            ...(result.executedActions ?? []).map((a: Record<string, unknown>) => h('p', (a.message as string) ?? '')),
-            ...(props.goalExecutionSummary ? [
-              h('p', `${props.goalExecutionSummary.status === 'partial' ? 'Partial success' : props.goalExecutionSummary.status === 'success' ? 'Success' : 'Failed'}: ${props.goalExecutionSummary.executedCount} executed, ${props.goalExecutionSummary.skippedCount} skipped, ${props.goalExecutionSummary.failedCount} failed.`),
-            ] : []),
-            h('h3', 'Execution Timeline'),
-            ...(result.executedActions ?? []).map((a: Record<string, unknown>) => h('p', (a.message as string) ?? '')),
-            ...(result.recovery ? [
-              h('h3', 'Recovery'),
-              ...(result.recovery.suggestions ?? []).map((s: string) => h('p', s)),
-            ] : []),
-          ]));
+          fragments.push(
+            h('div', { 'data-testid': 'goal-automation-panel' }, [
+              h('h3', 'Summary'),
+              h('p', result.summary ?? ''),
+              ...(result.actions ?? []).map((a: Record<string, unknown>) =>
+                h('p', (a.rationale as string) ?? ''),
+              ),
+              h('h3', 'Execution Status'),
+              ...(result.executedActions ?? []).map((a: Record<string, unknown>) =>
+                h('p', (a.message as string) ?? ''),
+              ),
+              ...(props.goalExecutionSummary
+                ? [
+                    h(
+                      'p',
+                      `${props.goalExecutionSummary.status === 'partial' ? 'Partial success' : props.goalExecutionSummary.status === 'success' ? 'Success' : 'Failed'}: ${props.goalExecutionSummary.executedCount} executed, ${props.goalExecutionSummary.skippedCount} skipped, ${props.goalExecutionSummary.failedCount} failed.`,
+                    ),
+                  ]
+                : []),
+              h('h3', 'Execution Timeline'),
+              ...(result.executedActions ?? []).map((a: Record<string, unknown>) =>
+                h('p', (a.message as string) ?? ''),
+              ),
+              ...(result.recovery
+                ? [
+                    h('h3', 'Recovery'),
+                    ...(result.recovery.suggestions ?? []).map((s: string) => h('p', s)),
+                  ]
+                : []),
+            ]),
+          );
         }
       }
       if (props.toolMode === 'knowledge-qa' && props.knowledgeAnswer) {
@@ -479,65 +576,85 @@ const AIGoalWorkflowPanelStub = defineComponent({
         const relatedNotes = answer.relatedNotes?.length
           ? answer.relatedNotes
           : (answer.citations ?? []).filter(
-              (citation: Record<string, unknown>, index: number, citations: Array<Record<string, unknown>>) =>
-                citations.findIndex((item) => item.resourceId === citation.resourceId) === index,
+              (
+                citation: Record<string, unknown>,
+                index: number,
+                citations: Array<Record<string, unknown>>,
+              ) => citations.findIndex((item) => item.resourceId === citation.resourceId) === index,
             );
-        fragments.push(h('div', { 'data-testid': 'knowledge-answer-panel' }, [
-          h('h3', 'Knowledge Answer'),
-          h('p', answer.evidenceStatus === 'grounded'
-            ? 'Grounded in repository citations'
-            : 'Current knowledge base evidence is insufficient'),
-          h('p', answer.question ?? ''),
-          h('p', answer.answer ?? ''),
-          h('p', `${answer.matchedResourceCount} resource(s) matched in ${answer.processingTimeMs} ms.`),
-          ...(relatedNotes ?? []).map((note: Record<string, unknown>) =>
-            h('div', [
-              h('h4', 'Related Notes'),
-              h('p', String(note.title ?? '')),
-              h('p', String(note.resourcePath ?? '')),
-              h(
-                'button',
-                {
-                  type: 'button',
-                  'data-testid': 'knowledge-related-note-open',
-                  onClick: () => emit('open-knowledge-citation', String(note.resourceId ?? '')),
-                },
-                'Open Source',
-              ),
-            ]),
-          ),
-          ...(answer.citations ?? []).map((citation: Record<string, unknown>) =>
-            h('div', [
-              h('p', String(citation.title ?? '')),
-              h('p', String(citation.resourcePath ?? '')),
-              h('p', String(citation.excerpt ?? '')),
-              h(
-                'button',
-                {
-                  type: 'button',
-                  'data-testid': 'knowledge-citation-open',
-                  onClick: () => emit('open-knowledge-citation', String(citation.resourceId ?? '')),
-                },
-                'Open Source',
-              ),
-            ]),
-          ),
-          ...(props.knowledgeQaAgentRun
-            ? [
-                h('h4', 'Observability'),
+        fragments.push(
+          h('div', { 'data-testid': 'knowledge-answer-panel' }, [
+            h('h3', 'Knowledge Answer'),
+            h(
+              'p',
+              answer.evidenceStatus === 'grounded'
+                ? 'Grounded in repository citations'
+                : 'Current knowledge base evidence is insufficient',
+            ),
+            h('p', answer.question ?? ''),
+            h('p', answer.answer ?? ''),
+            h(
+              'p',
+              `${answer.matchedResourceCount} note(s) matched in ${answer.processingTimeMs} ms.`,
+            ),
+            ...(relatedNotes ?? []).map((note: Record<string, unknown>) =>
+              h('div', [
+                h('h4', 'Related Notes'),
+                h('p', String(note.title ?? '')),
+                h('p', String(note.resourcePath ?? '')),
                 h(
-                  'p',
-                  `${props.knowledgeQaAgentRun.state.usage.promptTokens ?? 0} prompt · ${props.knowledgeQaAgentRun.state.usage.completionTokens ?? 0} completion · ${props.knowledgeQaAgentRun.state.usage.totalTokens ?? 0} total`,
+                  'button',
+                  {
+                    type: 'button',
+                    'data-testid': 'knowledge-related-note-open',
+                    onClick: () => emit('open-knowledge-citation', String(note.resourceId ?? '')),
+                  },
+                  'Open Source',
                 ),
-                ...props.knowledgeQaAgentRun.events.map((event: Record<string, unknown>) =>
+              ]),
+            ),
+            ...(answer.citations ?? []).map((citation: Record<string, unknown>) =>
+              h('div', [
+                h('p', String(citation.title ?? '')),
+                h('p', String(citation.resourcePath ?? '')),
+                h('p', String(citation.excerpt ?? '')),
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    'data-testid': 'knowledge-citation-open',
+                    onClick: () =>
+                      emit('open-knowledge-citation', String(citation.resourceId ?? '')),
+                  },
+                  'Open Source',
+                ),
+              ]),
+            ),
+            ...(props.knowledgeQaAgentRun
+              ? [
+                  h('h4', 'Observability'),
                   h(
                     'p',
-                    `${String(event.type)} · ${String((event.data as Record<string, unknown> | undefined)?.node ?? (event.data as Record<string, unknown> | undefined)?.tool ?? '')}`,
+                    `${props.knowledgeQaAgentRun.state.usage.promptTokens ?? 0} prompt · ${props.knowledgeQaAgentRun.state.usage.completionTokens ?? 0} completion · ${props.knowledgeQaAgentRun.state.usage.totalTokens ?? 0} total`,
                   ),
-                ),
-              ]
-            : []),
-        ]));
+                  ...props.knowledgeQaAgentRun.events.map((event: Record<string, unknown>) =>
+                    h(
+                      'p',
+                      // Residual 1332/415: product path humanizes node.* via LangGraph boundary.
+                      formatLangGraphVendorDiagnosticEventLabel({
+                        type: String(event.type ?? ''),
+                        detail: String(
+                          (event.data as Record<string, unknown> | undefined)?.node ??
+                            (event.data as Record<string, unknown> | undefined)?.tool ??
+                            '',
+                        ),
+                      }),
+                    ),
+                  ),
+                ]
+              : []),
+          ]),
+        );
       }
       if (
         (props.toolMode === 'knowledge-generate' || props.toolMode === 'knowledge-qa') &&
@@ -545,29 +662,36 @@ const AIGoalWorkflowPanelStub = defineComponent({
         !props.noteSummary
       ) {
         const run = props.noteAgentRun;
-        fragments.push(h('div', { 'data-testid': 'knowledge-note-agent-panel' }, [
-          h('h3', 'Knowledge Note Draft'),
-          h('p', run.run.status),
-          h('p', run.state.stage),
-          ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
-            h('div', [
-              h('p', String(artifact.title ?? artifact.kind ?? '')),
-              h('p', String((artifact.data as Record<string, unknown> | undefined)?.markdown ?? '')),
-            ]),
-          ),
-        ]));
+        fragments.push(
+          h('div', { 'data-testid': 'knowledge-note-agent-panel' }, [
+            h('h3', 'Knowledge Note Draft'),
+            h('p', run.run.status),
+            h('p', run.state.stage),
+            ...(run.state.artifacts ?? []).map((artifact: Record<string, unknown>) =>
+              h('div', [
+                h('p', String(artifact.title ?? artifact.kind ?? '')),
+                h(
+                  'p',
+                  String((artifact.data as Record<string, unknown> | undefined)?.markdown ?? ''),
+                ),
+              ]),
+            ),
+          ]),
+        );
       }
       if (
         (props.toolMode === 'knowledge-generate' || props.toolMode === 'knowledge-qa') &&
         props.noteSummary
       ) {
-        fragments.push(h('div', { 'data-testid': 'knowledge-note-summary-panel' }, [
-          h('h3', 'Knowledge Note Created'),
-          h('p', props.noteSummary.resource?.name ?? ''),
-          h('p', props.noteSummary.resolvedPath ?? ''),
-          h('p', props.noteSummary.indexStatus ?? ''),
-          h('p', props.notePreview ?? ''),
-        ]));
+        fragments.push(
+          h('div', { 'data-testid': 'knowledge-note-summary-panel' }, [
+            h('h3', 'Knowledge Note Created'),
+            h('p', props.noteSummary.note?.name ?? ''),
+            h('p', props.noteSummary.resolvedPath ?? ''),
+            h('p', props.noteSummary.indexStatus ?? ''),
+            h('p', props.notePreview ?? ''),
+          ]),
+        );
       }
       return h('div', { 'data-testid': 'goal-workflow-stub' }, fragments);
     };
@@ -681,85 +805,89 @@ function createAgentRunResult(overrides?: {
       messages: [],
       intent: 'goal-create',
       stage: overrides?.stage ?? 'approval',
-      artifacts: overrides?.artifacts ?? (status === 'waiting_clarification'
-        ? []
-        : [
-            {
-              artifactId: 'artifact-1',
-              kind: 'goal_draft',
-              title: 'Agent AI Goal',
-              data: {
+      artifacts:
+        overrides?.artifacts ??
+        (status === 'waiting_clarification'
+          ? []
+          : [
+              {
+                artifactId: 'artifact-1',
+                kind: 'goal_draft',
                 title: 'Agent AI Goal',
-                description: 'Generated by the Agent runtime',
-                category: 'learning',
-                importance: 'Important',
-                tags: ['ai'],
-                suggestedStartDate: 1,
-                suggestedEndDate: 2,
-                taskTemplates: [
-                  {
-                    name: 'Weekly implementation block',
-                    description: 'Reserve implementation time.',
-                    importance: 'Important',
-                    cadence: 'weekly',
-                  },
-                ],
-                reminders: [
-                  {
-                    title: 'Weekly review reminder',
-                    description: 'Review Agent implementation progress.',
-                    importance: 'Moderate',
-                    cadence: 'weekly',
-                    timeOfDay: '09:00',
-                  },
-                ],
+                data: {
+                  title: 'Agent AI Goal',
+                  description: 'Generated by the Agent runtime',
+                  category: 'learning',
+                  importance: 'Important',
+                  tags: ['ai'],
+                  suggestedStartDate: 1,
+                  suggestedEndDate: 2,
+                  taskTemplates: [
+                    {
+                      name: 'Weekly implementation block',
+                      description: 'Reserve implementation time.',
+                      importance: 'Important',
+                      cadence: 'weekly',
+                    },
+                  ],
+                  reminders: [
+                    {
+                      title: 'Weekly review reminder',
+                      description: 'Review Agent implementation progress.',
+                      importance: 'Moderate',
+                      cadence: 'weekly',
+                      timeOfDay: '09:00',
+                    },
+                  ],
+                },
+                updatedAt: 2,
               },
-              updatedAt: 2,
-            },
-            {
-              artifactId: 'artifact-2',
-              kind: 'action_plan',
-              title: 'Approval plan',
-              data: {
-                summary: 'Create one goal after approval.',
+              {
+                artifactId: 'artifact-2',
+                kind: 'action_plan',
+                title: 'Approval plan',
+                data: {
+                  summary: 'Create one goal after approval.',
+                },
+                updatedAt: 2,
               },
-              updatedAt: 2,
-            },
-          ]),
+            ]),
       citations: [],
       retrievedContext: [],
-      pendingActions: status === 'waiting_approval'
-        ? [
-            {
-              tool: 'create_goal',
-              payload: { title: 'Agent AI Goal' },
-              rationale: 'Create the approved goal draft after user confirmation.',
-              index: 0,
-              dependsOn: [],
-            },
-            {
-              tool: 'create_task_template',
-              payload: { name: 'Weekly implementation block' },
-              rationale: 'Create the weekly implementation task template.',
-              index: 0,
-              dependsOn: [0],
-            },
-            {
-              tool: 'create_reminder',
-              payload: { title: 'Weekly review reminder' },
-              rationale: 'Create the weekly review reminder.',
-              index: 0,
-              dependsOn: [0],
-            },
-          ]
-        : [],
+      pendingActions:
+        status === 'waiting_approval'
+          ? [
+              {
+                tool: 'create_goal',
+                payload: { title: 'Agent AI Goal' },
+                rationale: 'Create the approved goal draft after user confirmation.',
+                index: 0,
+                dependsOn: [],
+              },
+              {
+                tool: 'create_task_template',
+                payload: { name: 'Weekly implementation block' },
+                rationale: 'Create the weekly implementation task template.',
+                index: 0,
+                dependsOn: [0],
+              },
+              {
+                tool: 'create_reminder',
+                payload: { title: 'Weekly review reminder' },
+                rationale: 'Create the weekly review reminder.',
+                index: 0,
+                dependsOn: [0],
+              },
+            ]
+          : [],
       approvedActions: overrides?.approvedActions ?? [],
       executedActions: overrides?.executedActions ?? [],
       usage: {},
       errors: [],
     },
     events: [],
-    interrupts: overrides?.interrupts ??
+    interrupts:
+      overrides?.interrupts ??
       (status === 'waiting_approval'
         ? [{ runId: 'run-1' }]
         : status === 'waiting_clarification'
@@ -797,8 +925,7 @@ function createKnowledgeAnswer(overrides?: {
     processingTimeMs: 42,
     matchedResourceCount: citations.length,
     question: overrides?.question ?? 'How should knowledge answers be grounded?',
-    evidenceStatus:
-      overrides?.evidenceStatus ?? (citations.length ? 'grounded' : 'insufficient'),
+    evidenceStatus: overrides?.evidenceStatus ?? (citations.length ? 'grounded' : 'insufficient'),
   };
 }
 
@@ -808,10 +935,12 @@ function createKnowledgeQaAgentRunResult(overrides?: {
   runId?: string;
   threadId?: string;
 }) {
-  const answer = overrides?.answer ?? createKnowledgeAnswer({
-    question: 'What does run history say about grounded answers?',
-    answer: 'Run history answers should keep citations attached.',
-  });
+  const answer =
+    overrides?.answer ??
+    createKnowledgeAnswer({
+      question: 'What does run history say about grounded answers?',
+      answer: 'Run history answers should keep citations attached.',
+    });
   const runId = overrides?.runId ?? 'knowledge-qa-run-1';
   return {
     run: {
@@ -871,7 +1000,7 @@ function createKnowledgeQaAgentRunResult(overrides?: {
 
 function createKnowledgeNoteResult() {
   return {
-    resource: {
+    note: {
       id: 'note-resource-1',
       name: 'Grounded Q&A Note.md',
       content: '# Grounded Q&A Note\n\nSaved from the knowledge answer.',
@@ -1026,15 +1155,15 @@ function createSavedKnowledgeNoteAgentRunResult(overrides?: {
       {
         tool: 'create_knowledge_note',
         status: 'executed',
-        entityId: saved.resource.id,
+        entityId: saved.note.id,
         message: `Saved knowledge note to ${saved.resolvedPath}.`,
         data: {
           resolvedPath: saved.resolvedPath,
           indexStatus: saved.indexStatus,
-          resource: {
-            id: saved.resource.id,
-            name: saved.resource.name,
-            content: saved.resource.content,
+          note: {
+            id: saved.note.id,
+            name: saved.note.name,
+            content: saved.note.content,
           },
         },
       },
@@ -1063,12 +1192,26 @@ const dashboardServiceFake = {
   }),
 };
 
+const taskServiceFake = {
+  listTemplates: vi.fn(async () => ok([])),
+  getTaskGraph: vi.fn(async () => ok({ nodes: [], edges: [] })),
+  getTemplate: vi.fn(async () => ok(null)),
+  createTemplate: vi.fn(async () => ok({ template: { id: 'task-template-1', name: 'Task' } })),
+  updateTemplate: vi.fn(async () => ok(null)),
+  deleteTemplate: vi.fn(async () => ok(undefined)),
+  activateTemplate: vi.fn(async () => ok(null)),
+  pauseTemplate: vi.fn(async () => ok(null)),
+  archiveTemplate: vi.fn(async () => ok(null)),
+};
+
 function mountView() {
   return shallowMount(AIChatView, {
     global: {
       plugins: [i18n],
       provide: {
         [DASHBOARD_SERVICE_KEY as symbol]: dashboardServiceFake,
+        // Residual 1332: AIChatView mounts useTaskTemplates() for Host task.create settlement.
+        [TASK_SERVICE_KEY as symbol]: taskServiceFake,
       },
       stubs: {
         Button: ButtonStub,
@@ -1092,6 +1235,10 @@ function mountView() {
         // goal-agent-* / ai-context-panel 等契约断言依赖其真实模板。
         AIContextPanel: false,
         AIWorkflowActionBar: false,
+        // Residual 357: Host proposal panel real template for ai-host-proposal-* contracts.
+        AIHostProposalPanel: false,
+        AIHostExecutionReceiptPanel: false,
+        AIHostTimelineArtifactStrip: false,
       },
     },
   });
@@ -1105,12 +1252,10 @@ describe('AIChatView', () => {
     mocks.toastError.mockReset();
     mocks.useAI.mockReset();
     mocks.useGoal.mockReset();
-    mocks.useRepository.mockReset();
+    mocks.useRecentKnowledgeNotes.mockReset();
     mocks.useUserSetting.mockReset();
-    mocks.useEditorWorkspaceActions.mockReset();
 
     const providers = ref<unknown[]>([]);
-    const resources = ref([]);
     const goals = ref([]);
     const aiService = {
       listConversations: vi.fn(),
@@ -1120,13 +1265,46 @@ describe('AIChatView', () => {
       deleteConversation: vi.fn(),
       generateGoal: vi.fn(),
       queryKnowledge: vi.fn(),
-      listAgentRuns: vi.fn(async () => []),
+      listAgentRuns: vi.fn(async () => ok([])),
       startAgentRun: vi.fn(),
       resumeAgentRun: vi.fn(),
       getAgentRun: vi.fn(),
       getAgentEvents: vi.fn(),
       createKnowledgeNote: vi.fn(),
-      streamMessage: vi.fn(),
+      dispatchAssistant: vi.fn(async (command, handlers) => {
+        if (command?.type === 'revise_proposal') {
+          handlers?.onEvent?.({
+            type: 'proposal.revised',
+            runId: command.runId,
+            proposalId: command.proposalId,
+            revision: (command.revision ?? 1) + 1,
+            kind: String(command.proposalId).includes('knowledge.write')
+              ? 'knowledge.write'
+              : 'goal.create',
+            title: command.patch?.title,
+          });
+          return;
+        }
+        if (command?.type === 'approve_proposal') {
+          handlers?.onEvent?.({
+            type: 'proposal.approved',
+            runId: command.runId,
+            proposalId: command.proposalId,
+            revision: command.revision,
+          });
+          return;
+        }
+        if (command?.type === 'reject_proposal') {
+          handlers?.onEvent?.({
+            type: 'proposal.rejected',
+            runId: command.runId,
+            proposalId: command.proposalId,
+            revision: command.revision,
+            reason: command.reason,
+          });
+          return;
+        }
+      }),
     };
     const loadProviders = vi.fn(async () => {
       providers.value = [
@@ -1143,9 +1321,10 @@ describe('AIChatView', () => {
     const createGoal = vi.fn();
     const addKeyResult = vi.fn();
     const fetchGoals = vi.fn(async () => {});
-    const initRepository = vi.fn(async () => {});
-    const fetchResources = vi.fn(async () => {});
-    const requestOpenResource = vi.fn();
+    const recentNotes = ref<
+      Array<{ id: string; title: string; path: string; updatedAt: number; source: 'projection' | 'local-vault' }>
+    >([]);
+    const loadRecentKnowledgeNotes = vi.fn(async () => {});
 
     mocks.useAI.mockReturnValue({
       service: aiService,
@@ -1158,16 +1337,14 @@ describe('AIChatView', () => {
       createGoal,
       addKeyResult,
     });
-    mocks.useRepository.mockReturnValue({
-      initRepository,
-      fetchResources,
-      resources,
+    mocks.useRecentKnowledgeNotes.mockReturnValue({
+      notes: recentNotes,
+      error: ref(null),
+      isLoading: ref(false),
+      load: loadRecentKnowledgeNotes,
     });
     mocks.useUserSetting.mockReturnValue({
-      getCategory: () => ({ knowledgeNoteSubpath: 'notes/ai' }),
-    });
-    mocks.useEditorWorkspaceActions.mockReturnValue({
-      requestOpenResource,
+      getCategory: () => ({}),
     });
 
     vi.spyOn(window, 'getComputedStyle').mockReturnValue({
@@ -1215,12 +1392,12 @@ describe('AIChatView', () => {
       }),
     );
     const { service, loadProviders } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
+    }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1261,12 +1438,12 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
+    }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1287,9 +1464,9 @@ describe('AIChatView', () => {
       runId: 'run-active-1',
       updatedAt: 20,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({ data: [] });
-    service.listMessages.mockResolvedValue({ data: [] });
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
+    service.listConversations.mockResolvedValue(ok({ data: [] }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1303,8 +1480,9 @@ describe('AIChatView', () => {
   it('loads recent goals and knowledge notes into the conversation sidebar', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     const { goals, fetchGoals } = mocks.useGoal.mock.results[0]?.value ?? mocks.useGoal();
-    const { resources, fetchResources } =
-      mocks.useRepository.mock.results[0]?.value ?? mocks.useRepository();
+    const recentKnowledge = mocks.useRecentKnowledgeNotes.mock.results[0]?.value
+      ?? mocks.useRecentKnowledgeNotes();
+    const { notes: recentNotes, load: loadRecentKnowledgeNotes } = recentKnowledge;
     goals.value = [
       {
         id: 'goal-old',
@@ -1334,60 +1512,30 @@ describe('AIChatView', () => {
         deletedAt: 40,
       },
     ];
-    resources.value = [
+    recentNotes.value = [
       {
         id: 'note-old',
-        name: 'Older Note.md',
+        title: 'Older Note.md',
         path: 'notes/older.md',
-        extension: '.md',
-        mimeType: 'text/markdown',
         updatedAt: 10,
-        deletedAt: null,
-        isDeleted: false,
-        isArchived: false,
+        source: 'projection',
       },
       {
         id: 'note-new',
-        name: 'Recent Note.md',
+        title: 'Recent Note.md',
         path: 'notes/recent.md',
-        extension: '.MD',
-        mimeType: 'text/markdown',
         updatedAt: 50,
-        deletedAt: null,
-        isDeleted: false,
-        isArchived: false,
-      },
-      {
-        id: 'note-archived',
-        name: 'Archived Note.md',
-        path: 'notes/archived.md',
-        extension: '.md',
-        mimeType: 'text/markdown',
-        updatedAt: 60,
-        deletedAt: null,
-        isDeleted: false,
-        isArchived: true,
-      },
-      {
-        id: 'image-1',
-        name: 'Diagram.png',
-        path: 'images/diagram.png',
-        extension: '.png',
-        mimeType: 'image/png',
-        updatedAt: 70,
-        deletedAt: null,
-        isDeleted: false,
-        isArchived: false,
+        source: 'projection',
       },
     ];
-    service.listConversations.mockResolvedValue({ data: [] });
-    service.listMessages.mockResolvedValue({ data: [] });
+    service.listConversations.mockResolvedValue(ok({ data: [] }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
 
     const wrapper = mountView();
     await flushPromises();
 
     expect(fetchGoals).toHaveBeenCalled();
-    expect(fetchResources).toHaveBeenCalled();
+    expect(loadRecentKnowledgeNotes).toHaveBeenCalled();
     const sidebar = wrapper.findComponent({ name: 'AIConversationSidebar' });
     expect(sidebar.props('recentGoals')).toEqual([
       {
@@ -1425,10 +1573,8 @@ describe('AIChatView', () => {
 
   it('opens selected recent goals and knowledge notes from the sidebar', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    const { requestOpenResource } =
-      mocks.useEditorWorkspaceActions.mock.results[0]?.value ?? mocks.useEditorWorkspaceActions();
-    service.listConversations.mockResolvedValue({ data: [] });
-    service.listMessages.mockResolvedValue({ data: [] });
+    service.listConversations.mockResolvedValue(ok({ data: [] }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1442,14 +1588,13 @@ describe('AIChatView', () => {
     sidebar.vm.$emit('select-knowledge-note', 'note-new');
     await flushPromises();
 
-    expect(requestOpenResource).toHaveBeenCalledWith('note-new');
-    expect(mocks.push).toHaveBeenCalledWith('/repository');
+    expect(mocks.push).toHaveBeenCalledWith({ path: '/repository', query: { note: 'note-new' } });
   });
 
   it('opens the mobile sidebar drawer and closes it after a sidebar selection', async () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({ data: [] });
-    service.listMessages.mockResolvedValue({ data: [] });
+    service.listConversations.mockResolvedValue(ok({ data: [] }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1508,10 +1653,10 @@ describe('AIChatView', () => {
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.listAgentRuns.mockRejectedValueOnce(new Error('run history unavailable'));
     service.getAgentRun.mockRejectedValueOnce(new Error('runtime snapshot unavailable'));
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-4', name: 'Runtime-only Knowledge Q&A session' }],
-    });
-    service.listMessages.mockResolvedValue({ data: [] });
+    }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1529,14 +1674,14 @@ describe('AIChatView', () => {
       conversationId: 'conv-2',
       updatedAt: 20,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
+    service.listConversations.mockResolvedValue(ok({
       data: [
         { id: 'conv-1', name: 'First session' },
         { id: 'conv-2', name: 'Agent session' },
       ],
-    });
-    service.listMessages.mockResolvedValue({ data: [] });
+    }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1559,12 +1704,12 @@ describe('AIChatView', () => {
       conversationId: 'conv-3',
       updatedAt: 30,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-3', name: 'Runtime-only Agent session' }],
-    });
-    service.listMessages.mockResolvedValue({ data: [] });
-    service.getAgentRun.mockResolvedValueOnce(
+    }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
+    service.getAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'waiting_approval',
         stage: 'approval',
@@ -1595,7 +1740,7 @@ describe('AIChatView', () => {
           },
         ],
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1615,12 +1760,12 @@ describe('AIChatView', () => {
       ...createKnowledgeQaAgentRunResult().run,
       updatedAt: 40,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-4', name: 'Runtime-only Knowledge Q&A session' }],
-    });
-    service.listMessages.mockResolvedValue({ data: [] });
-    service.getAgentRun.mockResolvedValueOnce(createKnowledgeQaAgentRunResult());
+    }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
+    service.getAgentRun.mockResolvedValueOnce(ok(createKnowledgeQaAgentRunResult()));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1637,7 +1782,8 @@ describe('AIChatView', () => {
     expect(wrapper.text()).toContain('notes/ai/grounded-answer.md');
     expect(wrapper.text()).toContain('Observability');
     expect(wrapper.text()).toContain('12 prompt · 8 completion · 20 total');
-    expect(wrapper.text()).toContain('node.completed · search_knowledge');
+    expect(wrapper.text()).toContain('Workflow step completed · search_knowledge');
+    expect(wrapper.text()).not.toContain('node.completed');
   });
 
   it('clears a stale Knowledge Q&A answer when the selected Agent run has no answer artifact', async () => {
@@ -1678,12 +1824,12 @@ describe('AIChatView', () => {
     const runWithoutAnswerArtifact = createKnowledgeQaAgentRunResult();
     runWithoutAnswerArtifact.state.artifacts = [];
     runWithoutAnswerArtifact.state.citations = [];
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-4', name: 'Runtime-only Knowledge Q&A session' }],
-    });
-    service.listMessages.mockResolvedValue({ data: [] });
-    service.getAgentRun.mockResolvedValueOnce(runWithoutAnswerArtifact);
+    }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
+    service.getAgentRun.mockResolvedValueOnce(ok(runWithoutAnswerArtifact));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1693,7 +1839,9 @@ describe('AIChatView', () => {
     await flushPromises();
 
     expect(service.getAgentRun).toHaveBeenCalledWith('knowledge-qa-run-1');
-    expect(wrapper.text()).not.toContain('Old persisted answer should not survive selecting this run.');
+    expect(wrapper.text()).not.toContain(
+      'Old persisted answer should not survive selecting this run.',
+    );
     expect(wrapper.find('[data-testid="knowledge-answer-panel"]').exists()).toBe(false);
   });
 
@@ -1727,12 +1875,12 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
+    }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1773,14 +1921,14 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
-    service.startAgentRun.mockResolvedValueOnce(createAgentRunResult());
-    service.resumeAgentRun.mockResolvedValueOnce(
+    }));
+    service.startAgentRun.mockResolvedValueOnce(ok(createAgentRunResult()));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'completed',
         stage: 'result',
@@ -1793,7 +1941,7 @@ describe('AIChatView', () => {
           },
         ],
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -1813,7 +1961,7 @@ describe('AIChatView', () => {
         input: expect.objectContaining({
           idea: 'User: Help me design an AI goal.',
           conversationTitle: 'Goal session',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o-mini',
         }),
       }),
@@ -1822,6 +1970,8 @@ describe('AIChatView', () => {
     expect(wrapper.text()).toContain('waiting_approval');
     expect(wrapper.text()).toContain('Agent AI Goal');
     expect(wrapper.text()).toContain('Create the approved goal draft after user confirmation.');
+    expect(wrapper.find('[data-testid="ai-host-proposal-panel"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ai-host-proposal-approve-goal"]').exists()).toBe(true);
 
     const toggleEditorButton = wrapper.find('[data-testid="goal-agent-toggle-editor"]');
     expect(toggleEditorButton.exists()).toBe(true);
@@ -1840,6 +1990,15 @@ describe('AIChatView', () => {
     await confirmButton!.trigger('click');
     await flushPromises();
 
+    expect(service.dispatchAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'approve_proposal',
+        runId: 'run-1',
+        proposalId: 'agent-run:run-1:goal.create',
+        revision: 1,
+      }),
+      expect.any(Object),
+    );
     expect(service.resumeAgentRun).toHaveBeenCalledTimes(1);
     expect(service.resumeAgentRun).toHaveBeenCalledWith(
       'run-1',
@@ -2003,19 +2162,19 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Get fit' }],
-    });
-    service.startAgentRun.mockResolvedValueOnce(
+    }));
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'waiting_clarification',
         stage: 'clarify',
       }),
-    );
-    service.resumeAgentRun.mockResolvedValueOnce(createAgentRunResult());
+    ));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(createAgentRunResult()));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2047,10 +2206,7 @@ describe('AIChatView', () => {
 
     expect(service.resumeAgentRun).toHaveBeenCalledWith('run-1', {
       userDecision: 'clarify',
-      clarificationAnswers: [
-        'Run a 5K without stopping.',
-        'Review progress every Sunday.',
-      ],
+      clarificationAnswers: ['Run a 5K without stopping.', 'Review progress every Sunday.'],
     });
     expect(service.generateGoal).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('waiting_approval');
@@ -2101,13 +2257,13 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
-    service.resumeAgentRun.mockResolvedValueOnce(
+    }));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'completed',
         stage: 'result',
@@ -2120,7 +2276,7 @@ describe('AIChatView', () => {
           },
         ],
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2190,19 +2346,19 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
-    service.getAgentRun.mockResolvedValueOnce(
+    }));
+    service.getAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'waiting_execution',
         stage: 'execute',
         approvedActions,
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2323,13 +2479,13 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
-    service.resumeAgentRun.mockResolvedValueOnce(
+    }));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createAgentRunResult({
         status: 'completed',
         stage: 'result',
@@ -2344,7 +2500,7 @@ describe('AIChatView', () => {
           },
         ],
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2372,7 +2528,10 @@ describe('AIChatView', () => {
         'conv-1': {
           mode: 'goal-create',
           goalWorkflowStage: 'result',
-          goalDraft: createGoalDraft('Generated AI Goal', 'Generated from the current conversation'),
+          goalDraft: createGoalDraft(
+            'Generated AI Goal',
+            'Generated from the current conversation',
+          ),
           goalClarification: null,
           goalAutomationResult: {
             state: 'result',
@@ -2430,12 +2589,12 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Goal session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Help me design an AI goal.' }],
-    });
+    }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2477,22 +2636,22 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [
         { id: 'm-1', role: 'user', content: 'What is older context?' },
         { id: 'm-2', role: 'assistant', content: 'Older answer.' },
         { id: 'm-3', role: 'user', content: 'How should knowledge answers be grounded?' },
       ],
-    });
-    service.startAgentRun.mockResolvedValueOnce(
+    }));
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeQaAgentRunResult({
         answer: createKnowledgeAnswer(),
         conversationId: 'conv-1',
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2510,7 +2669,7 @@ describe('AIChatView', () => {
         agentType: 'knowledge.qa',
         input: expect.objectContaining({
           question: 'How should knowledge answers be grounded?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
         }),
       }),
@@ -2521,7 +2680,9 @@ describe('AIChatView', () => {
     expect(wrapper.text()).toContain('Use cited repository excerpts to answer the question.');
     expect(wrapper.text()).toContain('notes/ai/grounded-answer.md');
     expect(wrapper.text()).toContain('Grounded Answer');
-    expect(wrapper.text()).toContain('Repository evidence says to keep answers grounded in citations.');
+    expect(wrapper.text()).toContain(
+      'Repository evidence says to keep answers grounded in citations.',
+    );
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Knowledge answer ready');
   });
 
@@ -2559,13 +2720,13 @@ describe('AIChatView', () => {
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
     service.getAgentRun.mockRejectedValueOnce(new Error('runtime snapshot unavailable'));
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'What is the latest grounding rule?' }],
-    });
-    service.startAgentRun.mockResolvedValueOnce(
+    }));
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeQaAgentRunResult({
         answer: createKnowledgeAnswer({
           question: 'What is the latest grounding rule?',
@@ -2574,13 +2735,14 @@ describe('AIChatView', () => {
         conversationId: 'conv-1',
         runId: 'knowledge-qa-run-2',
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
 
     expect(wrapper.text()).toContain('Restored Agent answer with runtime observability.');
-    expect(wrapper.text()).toContain('node.completed · search_knowledge');
+    expect(wrapper.text()).toContain('Workflow step completed · search_knowledge');
+    expect(wrapper.text()).not.toContain('node.completed');
 
     const askButton = wrapper
       .findAll('button')
@@ -2595,7 +2757,7 @@ describe('AIChatView', () => {
         agentType: 'knowledge.qa',
         input: expect.objectContaining({
           question: 'What is the latest grounding rule?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
         }),
       }),
@@ -2603,7 +2765,8 @@ describe('AIChatView', () => {
     expect(service.queryKnowledge).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('Agent runtime answer should own the visible answer panel.');
     expect(wrapper.text()).not.toContain('Restored Agent answer with runtime observability.');
-    expect(wrapper.text()).toContain('node.completed · search_knowledge');
+    expect(wrapper.text()).toContain('Workflow step completed · search_knowledge');
+    expect(wrapper.text()).not.toContain('node.completed');
   });
 
   it('shows insufficient evidence when the knowledge answer has no citations', async () => {
@@ -2635,22 +2798,22 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'What does the repo say about unknown topic?' }],
-    });
-    service.startAgentRun.mockResolvedValueOnce(
+    }));
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeQaAgentRunResult({
         answer: createKnowledgeAnswer({
           question: 'What does the repo say about unknown topic?',
-          answer: 'No relevant repository resources were found for this question.',
+          answer: 'No relevant knowledge notes were found for this question.',
           citations: [],
         }),
         conversationId: 'conv-1',
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2668,14 +2831,16 @@ describe('AIChatView', () => {
         agentType: 'knowledge.qa',
         input: expect.objectContaining({
           question: 'What does the repo say about unknown topic?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
         }),
       }),
     );
     expect(service.queryKnowledge).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('Current knowledge base evidence is insufficient');
-    expect(wrapper.text()).toContain('No relevant repository resources were found for this question.');
+    expect(wrapper.text()).toContain(
+      'No relevant knowledge notes were found for this question.',
+    );
     expect(wrapper.find('[data-testid="knowledge-citation-open"]').exists()).toBe(false);
     const draftNoteButton = wrapper.find('[data-testid="knowledge-qa-draft-note"]');
     expect(draftNoteButton.exists()).toBe(true);
@@ -2715,12 +2880,12 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'What did we already ask?' }],
-    });
+    }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2761,24 +2926,24 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'How should knowledge answers be grounded?' }],
-    });
-    service.startAgentRun.mockResolvedValueOnce(
+    }));
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeNoteAgentRunResult({
         topic:
           'Question: How should knowledge answers be grounded? Answer: Use cited repository excerpts to answer the question. Sources: Grounded Answer',
       }),
-    );
-    service.resumeAgentRun.mockResolvedValueOnce(
+    ));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createSavedKnowledgeNoteAgentRunResult({
         topic:
           'Question: How should knowledge answers be grounded? Answer: Use cited repository excerpts to answer the question. Sources: Grounded Answer',
       }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2797,8 +2962,7 @@ describe('AIChatView', () => {
             'Question: How should knowledge answers be grounded? Answer: Use cited repository excerpts to answer the question. Sources: Grounded Answer',
           title: 'How should knowledge answers be grounded?',
           source: expect.stringContaining('Question: How should knowledge answers be grounded?'),
-          targetSubpath: 'notes/ai',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o-mini',
         }),
       }),
@@ -2866,18 +3030,18 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge note session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
-    });
-    service.startAgentRun.mockResolvedValueOnce(
+    }));
+    service.startAgentRun.mockResolvedValueOnce(ok(
       createKnowledgeNoteAgentRunResult({ targetSubpath: 'notes/agent-drafts' }),
-    );
-    service.resumeAgentRun.mockResolvedValueOnce(
+    ));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createSavedKnowledgeNoteAgentRunResult({ targetSubpath: 'notes/agent-drafts' }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -2895,8 +3059,7 @@ describe('AIChatView', () => {
           topic: 'Summarize agent notes.',
           source: 'User: Summarize agent notes.',
           title: 'Knowledge note session',
-          targetSubpath: 'notes/ai',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o-mini',
         }),
       }),
@@ -2961,12 +3124,12 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge note session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
-    });
+    }));
     service.getAgentRun.mockRejectedValueOnce(new Error('runtime snapshot unavailable'));
 
     const wrapper = mountView();
@@ -2987,12 +3150,12 @@ describe('AIChatView', () => {
       ...createSavedKnowledgeNoteAgentRunResult().run,
       updatedAt: 70,
     };
-    service.listAgentRuns.mockResolvedValueOnce([activeRun]);
-    service.listConversations.mockResolvedValue({
+    service.listAgentRuns.mockResolvedValueOnce(ok([activeRun]));
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Runtime-only Knowledge note session' }],
-    });
-    service.listMessages.mockResolvedValue({ data: [] });
-    service.getAgentRun.mockResolvedValueOnce(createSavedKnowledgeNoteAgentRunResult());
+    }));
+    service.listMessages.mockResolvedValue(ok({ data: [] }));
+    service.getAgentRun.mockResolvedValueOnce(ok(createSavedKnowledgeNoteAgentRunResult()));
 
     const wrapper = mountView();
     await flushPromises();
@@ -3041,15 +3204,15 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge note session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
-    });
-    service.resumeAgentRun.mockResolvedValueOnce(
+    }));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createSavedKnowledgeNoteAgentRunResult({ targetSubpath: 'notes/agent-drafts' }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -3103,15 +3266,15 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge note session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'Summarize agent notes.' }],
-    });
-    service.resumeAgentRun.mockResolvedValueOnce(
+    }));
+    service.resumeAgentRun.mockResolvedValueOnce(ok(
       createFailedKnowledgeNoteAgentRunResult({ targetSubpath: 'notes/agent-drafts' }),
-    );
+    ));
 
     const wrapper = mountView();
     await flushPromises();
@@ -3162,14 +3325,12 @@ describe('AIChatView', () => {
       }),
     );
     const { service } = mocks.useAI.mock.results[0]?.value ?? mocks.useAI();
-    const { requestOpenResource } =
-      mocks.useEditorWorkspaceActions.mock.results[0]?.value ?? mocks.useEditorWorkspaceActions();
-    service.listConversations.mockResolvedValue({
+    service.listConversations.mockResolvedValue(ok({
       data: [{ id: 'conv-1', name: 'Knowledge session' }],
-    });
-    service.listMessages.mockResolvedValue({
+    }));
+    service.listMessages.mockResolvedValue(ok({
       data: [{ id: 'm-1', role: 'user', content: 'How should knowledge answers be grounded?' }],
-    });
+    }));
 
     const wrapper = mountView();
     await flushPromises();
@@ -3177,7 +3338,6 @@ describe('AIChatView', () => {
     await wrapper.find('[data-testid="knowledge-citation-open"]').trigger('click');
     await flushPromises();
 
-    expect(requestOpenResource).toHaveBeenCalledWith('resource-1');
-    expect(mocks.push).toHaveBeenCalledWith('/repository');
+    expect(mocks.push).toHaveBeenCalledWith({ path: '/repository', query: { note: 'resource-1' } });
   });
 });

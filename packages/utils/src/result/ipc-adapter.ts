@@ -30,11 +30,12 @@ import {
   extractStructuredResultError,
   type Result,
   type IpcResult,
-  type ResultErrorDetail,
   toIpcResult,
   fail,
 } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
+// Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
+import { formatZodErrors } from './format-zod-errors';
 
 // ============================================================================
 // Types
@@ -61,6 +62,10 @@ export interface IpcAdapterOptions {
 // ============================================================================
 
 /**
+ * Residual 1183 keep-boundary: IPC defaultExtractContext — desktop stub Context.
+ * Always returns identityId '' and deviceId 'desktop' (no HTTP header/body mining).
+ * Soft residual 1183: Express defaultExtractContext builds rich device Context (no force-merge).
+ *
  * Default context extractor from IPC event
  */
 function defaultExtractContext(_event: IpcInvokeEvent): Context {
@@ -134,19 +139,6 @@ interface ZodLikeSchema<T> {
   ):
     | { success: true; data: T }
     | { success: false; error: { issues: Array<{ path: PropertyKey[]; message: string }> } };
-}
-
-/**
- * Format Zod issues into ResultErrorDetail array
- */
-function formatZodErrors(
-  issues: Array<{ path: PropertyKey[]; message: string }>,
-): ResultErrorDetail[] {
-  return issues.map((issue) => ({
-    field: issue.path.map(String).join('.'),
-    code: 'INVALID_FIELD',
-    message: issue.message,
-  }));
 }
 
 /**

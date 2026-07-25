@@ -4,7 +4,7 @@ import type { Publisher } from '@dailyuse/utils/domain';
 
 export interface ProjectionSelection {
   readonly sourceModule: SourceModule;
-  readonly identityId?: string;
+  readonly identityId: string;
   readonly sourceEntityId?: string;
   matches(task: ScheduleTask): boolean;
 }
@@ -24,7 +24,10 @@ export async function findMatchingTasks(
         selection.sourceEntityId,
         selection.identityId,
       )
-    : await scheduleTaskRepository.findBySourceModule(selection.sourceModule, selection.identityId);
+    : await scheduleTaskRepository.findBySourceModule(
+        selection.sourceModule,
+        selection.identityId,
+      );
 
   return existingTasks.filter((task) => selection.matches(task));
 }
@@ -39,7 +42,16 @@ export async function deleteSelection(
     return;
   }
 
-  await scheduleTaskRepository.deleteBatch(existingTasks.map((task) => task.id));
+  const idsByIdentity = new Map<string, string[]>();
+  for (const task of existingTasks) {
+    const identityId = selection.identityId;
+    const ids = idsByIdentity.get(identityId) ?? [];
+    ids.push(task.id);
+    idsByIdentity.set(identityId, ids);
+  }
+  for (const [identityId, ids] of idsByIdentity) {
+    await scheduleTaskRepository.deleteBatch(identityId, ids);
+  }
   for (const task of existingTasks) {
     scheduleEvents.send('schedule:task-deleted', { taskId: task.id });
   }

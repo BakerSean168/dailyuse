@@ -1,4 +1,5 @@
 import { spawn, type ChildProcess } from 'node:child_process';
+import { delay } from '@dailyuse/utils/frontend';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,13 +9,16 @@ const webRoot = resolve(__dirname, '..', '..');
 const workspaceRoot = resolve(webRoot, '..', '..');
 const viteBinPath = resolve(workspaceRoot, 'node_modules/vite/bin/vite.js');
 const playwrightCliPath = resolve(workspaceRoot, 'node_modules/playwright/cli.js');
+const startApiServerPath = resolve(webRoot, 'e2e/helpers/start-api-server.ts');
+const tsxCliPath = resolve(workspaceRoot, 'node_modules/tsx/dist/cli.mjs');
 const webHost = process.env.AI_WORKSPACE_E2E_HOST ?? '127.0.0.1';
 const webPort = Number(process.env.AI_WORKSPACE_E2E_PORT ?? '4174');
 const webBaseUrl = `http://${webHost}:${webPort}`;
+/** Residual 1337: goal-workflow still registers via real API; Vite-only boot left :3000 refused. */
+const apiOrigin = process.env.E2E_API_BASE_URL ?? 'http://localhost:3000';
+const apiHealthUrl = `${apiOrigin.replace(/\/$/, '')}/healthz`;
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolveDelay) => setTimeout(resolveDelay, ms));
-}
+/** Residual 1192: dual delay retired onto @dailyuse/utils/frontend sole. */
 
 async function waitForServer(url: string, timeoutMs: number): Promise<void> {
   const deadline = Date.now() + timeoutMs;
@@ -91,6 +95,7 @@ function waitForExit(child: ChildProcess, name: string): Promise<number> {
 }
 
 async function main(): Promise<void> {
+  let apiServer: ChildProcess | undefined;
   let viteServer: ChildProcess | undefined;
   let playwrightProcess: ChildProcess | undefined;
   let exitCode = 0;
@@ -98,6 +103,7 @@ async function main(): Promise<void> {
   const forwardShutdown = async () => {
     await killProcessTree(playwrightProcess);
     await killProcessTree(viteServer);
+    await killProcessTree(apiServer);
   };
 
   const signalHandler = (signal: NodeJS.Signals) => {
@@ -110,6 +116,26 @@ async function main(): Promise<void> {
   process.once('SIGTERM', signalHandler);
 
   try {
+    // Residual 1337: register/login needs the e2e API (same as default web:e2e webServer).
+    // CORS must allow the external Vite origin (4174), not only the default 5173 e2e web.
+    const corsOrigins = [
+      ...(process.env.CORS_ORIGIN ?? '').split(',').map((o) => o.trim()).filter(Boolean),
+      webBaseUrl,
+      'http://127.0.0.1:5173',
+      'http://localhost:5173',
+    ];
+    apiServer = spawnChild(process.execPath, [tsxCliPath, startApiServerPath], {
+      cwd: webRoot,
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+        RUNTIME_LANE: 'e2e',
+        E2E_API_BASE_URL: apiOrigin,
+        CORS_ORIGIN: [...new Set(corsOrigins)].join(','),
+      },
+    });
+    await waitForServer(apiHealthUrl, 300_000);
+
     viteServer = spawnChild(
       process.execPath,
       [viteBinPath, '--config', 'vite.config.ts', '--host', webHost, '--port', String(webPort)],
@@ -118,6 +144,7 @@ async function main(): Promise<void> {
         env: {
           ...process.env,
           NODE_ENV: 'test',
+          PROXY_TARGET_URL: apiOrigin,
         },
       },
     );
@@ -131,20 +158,21 @@ async function main(): Promise<void> {
         cwd: webRoot,
         env: {
           ...process.env,
-          CI: process.env.CI ?? 'true',
+          // Residual 1337: do not force CI=true (that enables retries and github reporter noise).
           PLAYWRIGHT_DISABLE_WEBSERVER: 'true',
           E2E_WEB_BASE_URL: webBaseUrl,
+          E2E_API_BASE_URL: apiOrigin,
         },
       },
     );
 
     exitCode = await waitForExit(playwrightProcess, 'playwright');
-    await killProcessTree(viteServer);
   } finally {
     process.off('SIGINT', signalHandler);
     process.off('SIGTERM', signalHandler);
     await killProcessTree(playwrightProcess);
     await killProcessTree(viteServer);
+    await killProcessTree(apiServer);
   }
 
   process.exit(exitCode);

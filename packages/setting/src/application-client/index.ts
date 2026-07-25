@@ -8,29 +8,18 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
-import type { ISettingApiClient } from '../infrastructure-client/adapters/types';
+import type { ISettingApiClient } from './ports/setting-api-client.port';
 
 // Re-export the port so consumers can import from the application layer.
-export type { ISettingApiClient } from '../infrastructure-client/adapters/types';
+export type { ISettingApiClient } from './ports/setting-api-client.port';
 
 // ─── Client Application Port ────────────────────────────────────────────────
 
 /**
- * High-level client-side operations for the setting module.
- *
- * Unlike the server-side `SettingApplicationPort`, this port returns
- * `Result<T>` directly so the UI layer can decide how to handle errors.
+ * Application-facing client port.
+ * Identical to ISettingApiClient (importSettings options included).
  */
-export interface SettingClientPort {
-  getUserSettings(): Promise<Result<UserSettingClientDTO>>;
-  patchCategory(
-    category: PreferenceCategory,
-    patch: Record<string, unknown>,
-  ): Promise<Result<UserSettingClientDTO>>;
-  resetUserSettings(category?: string): Promise<Result<UserSettingClientDTO>>;
-  exportSettings(): Promise<Result<string>>;
-  importSettings(data: string): Promise<Result<UserSettingClientDTO>>;
-}
+export type SettingClientPort = ISettingApiClient;
 
 // ─── Client Service ──────────────────────────────────────────────────────────
 
@@ -39,7 +28,7 @@ export interface SettingClientPort {
  *
  * Returns `Result<T>` (no throwing) so the caller keeps full control.
  */
-export class SettingClientService implements SettingClientPort {
+export class SettingClientService implements ISettingApiClient {
   constructor(private readonly apiClient: ISettingApiClient) {
     this.getUserSettings = this.getUserSettings.bind(this);
     this.patchCategory = this.patchCategory.bind(this);
@@ -67,8 +56,11 @@ export class SettingClientService implements SettingClientPort {
     return this.apiClient.exportSettings();
   }
 
-  importSettings(data: string): Promise<Result<UserSettingClientDTO>> {
-    return this.apiClient.importSettings(data);
+  importSettings(
+    data: string,
+    options?: { merge?: boolean },
+  ): Promise<Result<UserSettingClientDTO>> {
+    return this.apiClient.importSettings(data, options);
   }
 }
 

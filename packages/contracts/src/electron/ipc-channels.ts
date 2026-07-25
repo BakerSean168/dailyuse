@@ -36,6 +36,7 @@ export const GoalChannels = {
   CREATE: 'goal:create',
   UPDATE: 'goal:update',
   DELETE: 'goal:delete',
+  ARCHIVE_EXPIRED: 'goal:archiveExpired',
   ARCHIVE: 'goal:archive',
   ACTIVATE: 'goal:activate',
   COMPLETE: 'goal:complete',
@@ -121,9 +122,6 @@ export const DashboardChannels = {
 } as const;
 
 export const AccountChannels = {
-  LIST: 'account:list',
-  GET: 'account:get',
-  GET_CURRENT: 'account:current',
   GET_ME: 'account:get-me',
   UPDATE_PROFILE: 'account:update-profile',
   UPDATE_SETTINGS: 'account:update-settings',
@@ -145,34 +143,18 @@ export const AuthChannels = {
   REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
   REMEMBERED_ACCOUNTS_LOGIN: 'auth:remembered-accounts:login',
   REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
-  VERIFY_TOKEN: 'auth:verify-token',
-  TOKEN_STATUS: 'auth:token-status',
-  SESSION_STATUS: 'auth:session-status',
-  CLEANUP_SESSIONS: 'auth:cleanup-sessions',
-  TWO_FACTOR_ENABLE: 'auth:2fa:enable',
-  TWO_FACTOR_DISABLE: 'auth:2fa:disable',
-  TWO_FACTOR_VERIFY: 'auth:2fa:verify',
-  TWO_FACTOR_STATUS: 'auth:2fa:get-status',
-  TWO_FACTOR_BACKUP_CODES: 'auth:2fa:generate-backup-codes',
-  API_KEY_CREATE: 'auth:api-key:create',
-  API_KEY_LIST: 'auth:api-key:list',
-  API_KEY_REVOKE: 'auth:api-key:revoke',
-  API_KEY_ROTATE: 'auth:api-key:rotate',
   SESSION_LIST: 'auth:session:list',
-  SESSION_GET_CURRENT: 'auth:session:get-current',
   SESSION_REVOKE: 'auth:session:revoke',
-  SESSION_REVOKE_ALL: 'auth:session:revoke-all',
-  DEVICE_LIST: 'auth:device:list',
-  DEVICE_GET_CURRENT: 'auth:device:get-current',
-  DEVICE_TRUST: 'auth:device:trust',
-  DEVICE_REVOKE: 'auth:device:revoke',
-  DEVICE_RENAME: 'auth:device:rename',
   FORGOT_PASSWORD: 'auth:forgot-password',
   RESET_PASSWORD: 'auth:reset-password',
   CHANGE_PASSWORD: 'auth:change-password',
-  SEND_SMS_CODE: 'auth:send-sms-code',
   SEND_EMAIL_CODE: 'auth:send-email-code',
   VERIFY_EMAIL_CODE: 'auth:verify-email-code',
+  GET_OAUTH_URL: 'auth:get-oauth-url',
+  OAUTH_PROVIDERS: 'auth:oauth-providers',
+  OAUTH_CALLBACK: 'auth:oauth-callback',
+  OAUTH_BIND: 'auth:oauth-bind',
+  OAUTH_UNBIND: 'auth:oauth-unbind',
 } as const;
 
 export const AIChannels = {
@@ -195,6 +177,9 @@ export const AIChannels = {
   MESSAGE_LIST: 'ai:chat:message:list',
   MESSAGE_STREAM_START: 'ai:chat:message:stream:start',
   MESSAGE_STREAM_CANCEL: 'ai:chat:message:stream:cancel',
+  /** Residual 353: AssistantFacade dispatch stream start/cancel. */
+  ASSISTANT_DISPATCH_START: 'ai:assistant:dispatch:start',
+  ASSISTANT_DISPATCH_CANCEL: 'ai:assistant:dispatch:cancel',
   KNOWLEDGE_EXPAND: 'ai:knowledge:expand',
   KNOWLEDGE_QUERY: 'ai:knowledge:query',
   KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
@@ -212,6 +197,10 @@ export const AIStreamChannels = {
   MESSAGE_STREAM_CHUNK: 'ai:chat:message:stream:chunk',
   MESSAGE_STREAM_DONE: 'ai:chat:message:stream:done',
   MESSAGE_STREAM_ERROR: 'ai:chat:message:stream:error',
+  /** Residual 353: AssistantFacade Host event stream. */
+  ASSISTANT_DISPATCH_EVENT: 'ai:assistant:dispatch:event',
+  ASSISTANT_DISPATCH_DONE: 'ai:assistant:dispatch:done',
+  ASSISTANT_DISPATCH_ERROR: 'ai:assistant:dispatch:error',
 } as const;
 
 export const NotificationChannels = {
@@ -223,6 +212,9 @@ export const NotificationChannels = {
   DELETE: 'notification:delete',
   CLEAR_ALL: 'notification:clear-all',
   GET_UNREAD_COUNT: 'notification:unread-count',
+  // Residual 196: identity-scoped preference get/update (no dual-track body identityId).
+  PREFERENCES_GET: 'notification:preferences:get',
+  PREFERENCES_UPDATE: 'notification:preferences:update',
   CUSTOM_RECEIVE: 'notification:custom:receive',
   CUSTOM_CLICK: 'notification:custom:click',
   CUSTOM_CLOSE: 'notification:custom:close',
@@ -233,23 +225,27 @@ export const NotificationChannels = {
 } as const;
 
 export const RepositoryChannels = {
-  CURRENT: 'repository:current',
-  RESOURCE_LIST: 'repository:resource:list',
-  RESOURCE_GET: 'repository:resource:get',
-  RESOURCE_CREATE: 'repository:resource:create',
-  RESOURCE_UPLOAD: 'repository:resource:upload',
-  RESOURCE_UPDATE: 'repository:resource:update',
-  RESOURCE_DELETE: 'repository:resource:delete',
-  BOOKMARK_LIST: 'repository:bookmark:list',
-  BOOKMARK_CREATE: 'repository:bookmark:create',
-  BOOKMARK_UPDATE: 'repository:bookmark:update',
-  BOOKMARK_REORDER: 'repository:bookmark:reorder',
-  BOOKMARK_DELETE: 'repository:bookmark:delete',
-  FOLDER_LIST: 'repository:folder:list',
-  FOLDER_CREATE: 'repository:folder:create',
-  FOLDER_UPDATE: 'repository:folder:update',
-  FOLDER_DELETE: 'repository:folder:delete',
-  SEARCH: 'repository:search',
+  // Knowledge repository + Local Vault only. Legacy resource/folder/bookmark CRUD IPC removed.
+  KNOWLEDGE_CONNECTION_INSTALLATION_START: 'repository:knowledge-connection:installation:start',
+  KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE:
+    'repository:knowledge-connection:installation:complete',
+  KNOWLEDGE_CONNECTION_LIST: 'repository:knowledge-connection:list',
+  KNOWLEDGE_CONNECTION_CONNECT: 'repository:knowledge-connection:connect',
+  KNOWLEDGE_CONNECTION_DISCONNECT: 'repository:knowledge-connection:disconnect',
+  KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW:
+    'repository:knowledge-connection:reconciliation-preview',
+  KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE:
+    'repository:knowledge-connection:reconciliation-execute',
+  KNOWLEDGE_CONNECTION_SYNC: 'repository:knowledge-connection:sync',
+  KNOWLEDGE_CONNECTION_DESKTOP_TOKEN: 'repository:knowledge-connection:desktop-token',
+  LOCAL_VAULT_GET: 'repository:local-vault:get',
+  LOCAL_VAULT_SELECT: 'repository:local-vault:select',
+  LOCAL_VAULT_DETACH: 'repository:local-vault:detach',
+  LOCAL_VAULT_SCAN: 'repository:local-vault:scan',
+  LOCAL_VAULT_NOTE_READ: 'repository:local-vault:note:read',
+  LOCAL_VAULT_SEARCH: 'repository:local-vault:search',
+  LOCAL_VAULT_OPEN_OBSIDIAN: 'repository:local-vault:open-obsidian',
+  LOCAL_VAULT_NOTE_WRITE_CONFIRMED: 'repository:local-vault:note:write-confirmed',
 } as const;
 
 export const SettingChannels = {
@@ -260,37 +256,11 @@ export const SettingChannels = {
   EXPORT: 'setting:export',
 } as const;
 
-export const EditorChannels = {
-  WORKSPACE_LIST: 'editor:list-workspaces',
-  WORKSPACE_GET: 'editor:get-workspace',
-  WORKSPACE_CREATE: 'editor:create-workspace',
-  WORKSPACE_UPDATE: 'editor:update-workspace',
-  WORKSPACE_DELETE: 'editor:delete-workspace',
-  SESSION_LIST: 'editor:list-sessions',
-  SESSION_GET: 'editor:get-session',
-  SESSION_CREATE: 'editor:create-session',
-  SESSION_UPDATE: 'editor:update-session',
-  SESSION_ACTIVATE: 'editor:activate-session',
-  SESSION_DELETE: 'editor:delete-session',
-  GROUP_CREATE: 'editor:create-group',
-  GROUP_UPDATE: 'editor:update-group',
-  GROUP_DELETE: 'editor:delete-group',
-  TAB_CREATE: 'editor:create-tab',
-  TAB_UPDATE: 'editor:update-tab',
-  TAB_ACTIVATE: 'editor:activate-tab',
-  TAB_DELETE: 'editor:delete-tab',
-  GET_CONTENT: 'editor:get-content',
-  SAVE_CONTENT: 'editor:save-content',
-  AUTO_SAVE: 'editor:auto-save-content',
-  SEARCH: 'editor:search-resources',
-} as const;
-
-
 export const SystemChannels = {
   GET_APP_VERSION: 'system:getAppVersion',
-  GET_LAZY_MODULE_STATS: 'system:getLazyModuleStats',
   GET_MEMORY_USAGE: 'system:getMemoryUsage',
   GET_IPC_CACHE_STATS: 'system:getIpcCacheStats',
+  OPEN_EXTERNAL_URL: 'system:openExternalUrl',
   USER_FILES_SAVE_TEXT: 'system:userFiles:saveText',
   USER_FILES_OPEN_TEXT: 'system:userFiles:openText',
   USER_FILES_GET_PATH: 'system:userFiles:getPath',
@@ -314,6 +284,7 @@ export const RendererEventChannels = {
   SHORTCUT_TRIGGERED: 'shortcut:triggered',
   DB_CHANGED: 'db:changed',
   WINDOW_STATE_CHANGED: 'window-state:changed',
+  NOTIFICATION_CLICKED: 'notification:clicked',
 } as const;
 
 export const CacheChannels = {
@@ -328,6 +299,15 @@ export const DevChannels = {
   MEMORY_FORCE_GC: 'dev:memory:force-gc',
 } as const;
 
+export const AutoUpdateChannels = {
+  CHECK: 'auto-update:check',
+  DOWNLOAD: 'auto-update:download',
+  INSTALL: 'auto-update:install',
+  STATUS: 'auto-update:status',
+  CONFIG: 'auto-update:config',
+} as const;
+
+// Residual 885: portable user-data export/import only — no server-held disclosure IPC channel.
 export const DataPortabilityChannels = {
   EXPORT: 'data-portability:export',
   IMPORT: 'data-portability:import',
@@ -346,4 +326,3 @@ export const WindowChannels = {
   CLOSE_AUTH_REGISTER: 'window:close-auth-register',
   FOCUS_MAIN_WINDOW: 'window:focus-main-window',
 } as const;
-

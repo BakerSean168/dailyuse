@@ -2,6 +2,8 @@
  * Group Stats Value Object
  */
 
+import { z } from 'zod';
+
 // ============ Interface Definitions ============
 
 /** Group stats interface. */
@@ -29,13 +31,14 @@ export interface IGroupStats {
 
 // ============ DTO Definitions ============
 
-/**
- * Group Stats DTO
- */
-export interface GroupStatsDTO {
-  totalTemplates: number;
-  activeTemplates: number;
-  pausedTemplates: number;
-  selfEnabledTemplates: number;
-  selfPausedTemplates: number;
-}
+// Residual 733: group stats dual body retired — OpenAPI + transport use
+// GroupStatsSchema (semantic GroupStatsDTO is a z.infer alias).
+export const GroupStatsSchema = z.object({
+  totalTemplates: z.number(),
+  activeTemplates: z.number(),
+  pausedTemplates: z.number(),
+  selfEnabledTemplates: z.number(),
+  selfPausedTemplates: z.number(),
+});
+
+export type GroupStatsDTO = z.infer<typeof GroupStatsSchema>;

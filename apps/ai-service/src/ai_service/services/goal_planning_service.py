@@ -21,20 +21,15 @@ from ai_service.schemas import (
     ChatMessage,
     GoalAutomationResponse,
     GoalPlanningResponse,
-    KnowledgeResourceDocument,
+    KnowledgeNoteDocument,
     PlannedGoal,
     ProviderConfig,
 )
 from ai_service.services.analytics_query_service import AnalyticsQueryService
 from ai_service.services.chat_service import ChatService
-
-# Re-export helpers for backward compatibility
-from ai_service.services.goal_planning_parsers import (  # noqa: F401
+from ai_service.services.goal_planning_parsers import (
     parse_clarification_payload,
-    parse_goal_automation_payload,
-    parse_goal_automation_tool_arguments,
     parse_goal_payload,
-    strip_code_fence,  # noqa: F401
 )
 from ai_service.services.goal_planning_prompts import (
     build_goal_clarification_system_prompt,
@@ -43,11 +38,6 @@ from ai_service.services.goal_planning_prompts import (
     build_goal_user_prompt,
 )
 from ai_service.services.goal_planning_strategies import execute_automation_strategy
-from ai_service.services.goal_planning_tools import (  # noqa: F401
-    build_goal_automation_fetch_stats_tool,
-    build_goal_automation_search_notes_tool,
-    build_goal_automation_submission_tool,
-)
 from ai_service.services.knowledge_query_service import (
     KnowledgeIndexingService,
     KnowledgeQueryService,
@@ -172,7 +162,7 @@ class GoalPlanningService:
         timeframe: str | None,
         include_key_results: bool,
         include_task_templates: bool,
-        related_resources: list[KnowledgeResourceDocument] | None = None,
+        related_resources: list[KnowledgeNoteDocument] | None = None,
         analytics_context: AnalyticsQueryContext | None = None,
         provider_config: ProviderConfig,
         locale: str = "en-US",

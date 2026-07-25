@@ -8,6 +8,7 @@ import {
   type MessageClientDTO,
   type SendMessageReq,
 } from '@dailyuse/contracts/ai';
+import { unwrap } from '@dailyuse/contracts/result';
 
 import { useAppSession } from './useAppSession';
 import { useAIService } from './useAIService';
@@ -16,6 +17,11 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'AI request failed';
 }
 
+/**
+ * Residual 1207 keep-boundary: app-react formatMessageTime — fixed Intl zh-CN hour:minute.
+ * AI workspace message clock only; not i18n locale-driven.
+ * Soft residual 1207: app-vue SSE monitor toLocaleTimeString(locale) differs (no force-merge).
+ */
 function formatMessageTime(timestamp: number) {
   return new Intl.DateTimeFormat('zh-CN', {
     hour: '2-digit',
@@ -57,7 +63,7 @@ export function useAIWorkspace() {
 
   async function loadConversation(id: string) {
     try {
-      const conversation = await service.getConversation(id);
+      const conversation = unwrap(await service.getConversation(id));
       setActiveConversation(conversation);
     } catch (loadError) {
       setError(getErrorMessage(loadError));
@@ -81,11 +87,14 @@ export function useAIWorkspace() {
     setError(null);
 
     try {
-      const [list, nextProviders, nextCapabilities] = await Promise.all([
+      const [listResult, providersResult, capabilitiesResult] = await Promise.all([
         service.listConversations({ page: 1, pageSize: 20 }),
         service.listProviders(),
         service.getCapabilities(),
       ]);
+      const list = unwrap(listResult);
+      const nextProviders = unwrap(providersResult);
+      const nextCapabilities = unwrap(capabilitiesResult);
 
       setConversations(list.data);
       setProviders(nextProviders);
@@ -95,7 +104,7 @@ export function useAIWorkspace() {
       const targetId =
         preferredConversationId ?? activeConversation?.id ?? list.data[0]?.id ?? null;
       if (targetId) {
-        const conversation = await service.getConversation(String(targetId));
+        const conversation = unwrap(await service.getConversation(String(targetId)));
         setActiveConversation(conversation);
       } else {
         setActiveConversation(null);
@@ -124,7 +133,7 @@ export function useAIWorkspace() {
     setError(null);
 
     try {
-      const conversation = await service.createConversation({ name });
+      const conversation = unwrap(await service.createConversation({ name }));
       await loadWorkspace(String(conversation.id));
       return conversation;
     } catch (createError) {
@@ -155,8 +164,8 @@ export function useAIWorkspace() {
     setError(null);
 
     try {
-      await service.setDefaultProvider(providerId);
-      const nextProviders = await service.listProviders();
+      unwrap(await service.setDefaultProvider(providerId));
+      const nextProviders = unwrap(await service.listProviders());
       setProviders(nextProviders);
       resolveSelectedProvider(nextProviders, providerId);
       return true;
@@ -175,9 +184,11 @@ export function useAIWorkspace() {
     try {
       const conversation =
         activeConversation ??
-        (await service.createConversation({
-          name: content.slice(0, 40) || 'New conversation',
-        }));
+        unwrap(
+          await service.createConversation({
+            name: content.slice(0, 40) || 'New conversation',
+          }),
+        );
 
       const request: SendMessageReq = {
         conversationId: conversation.id as SendMessageReq['conversationId'],
@@ -267,7 +278,7 @@ export function useAIWorkspace() {
         return true;
       }
 
-      await service.sendMessage(request);
+      unwrap(await service.sendMessage(request));
       await loadWorkspace(String(conversation.id));
       return true;
     } catch (sendError) {

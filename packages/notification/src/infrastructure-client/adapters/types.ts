@@ -5,13 +5,13 @@
  * Port interfaces moved to application-client/ports/.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-
 // ============ Transport Client Interfaces ============
 
-export interface IResultIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
-}
+/**
+ * IPC Client interface (Result-returning).
+ * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
+ */
+export type { IResultIpcClient } from '@dailyuse/ipc-client';
 
 // ============ Port Interface Re-exports ============
 export type {

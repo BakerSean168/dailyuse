@@ -11,7 +11,7 @@
  * - 值对象（Value Objects）：TaskRecurrence, TaskDuration, TaskPriority 等
  * - 仓储接口（Repositories）：ITaskRepository, ITaskInstanceRepository
  * - 领域服务（Domain Services）：TaskDependencyPolicy
- * - 领域事件（Domain Events）：TaskCreated, TaskCompleted 等
+ * - 领域事件（Domain Events）：发布 TaskEventMap 键；事件类型以 @dailyuse/contracts/task 为真值
  * - 错误类（Errors）：TaskErrors - 任务相关业务异常
  * 
  * 【业务特性】
@@ -47,9 +47,6 @@ export * from './repositories';
 
 // 领域服务
 export * from './services';
-
-// 领域事件
-export * from './events';
 
 // 错误类
 export * from './value-objects/task-errors';

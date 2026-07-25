@@ -17,19 +17,20 @@ async function createTempReportsRoot(): Promise<string> {
 }
 
 function buildReport(overrides: Record<string, unknown> = {}) {
+  // On-disk Python eval report shape (snake_case wire).
   return {
-    generatedAt: '2026-03-27T12:00:00.000Z',
+    generated_at: '2026-03-27T12:00:00.000Z',
     mode: 'deterministic',
-    casesPath: 'evals/regression_cases.json',
-    totalCases: 4,
-    passedCases: 4,
-    failedCases: 0,
-    passRate: 1,
-    byType: { chat_sanity: 1, goal_planning: 1, knowledge_grounding: 2 },
-    failedCaseIds: [],
-    gatePassed: true,
-    gateFailures: [],
-    archivePath: 'reports/apps/ai-service/evals/history/2026-03-27T12-00-00.000Z.json',
+    cases_path: 'evals/regression_cases.json',
+    total_cases: 4,
+    passed_cases: 4,
+    failed_cases: 0,
+    pass_rate: 1,
+    by_type: { chat_sanity: 1, goal_planning: 1, knowledge_grounding: 2 },
+    failed_case_ids: [],
+    gate_passed: true,
+    gate_failures: [],
+    archive_path: 'reports/apps/ai-service/evals/history/2026-03-27T12-00-00.000Z.json',
     results: [],
     ...overrides,
   };
@@ -54,7 +55,7 @@ describe('AIEvaluationReportFileAdapter', () => {
           mode: 'live',
           provider: 'openai',
           model: 'gpt-5.4',
-          archivePath: 'reports/apps/ai-service/evals/live-history/2026-03-27T12-05-00.000Z.json',
+          archive_path: 'reports/apps/ai-service/evals/live-history/2026-03-27T12-05-00.000Z.json',
         }),
       ),
       'utf8',
@@ -63,8 +64,8 @@ describe('AIEvaluationReportFileAdapter', () => {
       path.join(reportsRoot, 'history', '2026-03-27T11-00-00.000Z.json'),
       JSON.stringify(
         buildReport({
-          generatedAt: '2026-03-27T11:00:00.000Z',
-          archivePath: 'reports/apps/ai-service/evals/history/2026-03-27T11-00-00.000Z.json',
+          generated_at: '2026-03-27T11:00:00.000Z',
+          archive_path: 'reports/apps/ai-service/evals/history/2026-03-27T11-00-00.000Z.json',
         }),
       ),
       'utf8',
@@ -73,8 +74,8 @@ describe('AIEvaluationReportFileAdapter', () => {
       path.join(reportsRoot, 'history', '2026-03-26T11-00-00.000Z.json'),
       JSON.stringify(
         buildReport({
-          generatedAt: '2026-03-26T11:00:00.000Z',
-          archivePath: 'reports/apps/ai-service/evals/history/2026-03-26T11-00-00.000Z.json',
+          generated_at: '2026-03-26T11:00:00.000Z',
+          archive_path: 'reports/apps/ai-service/evals/history/2026-03-26T11-00-00.000Z.json',
         }),
       ),
       'utf8',

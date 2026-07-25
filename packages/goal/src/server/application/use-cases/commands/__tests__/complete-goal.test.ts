@@ -34,16 +34,16 @@ describe('CompleteGoalUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new CompleteGoalUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should return error when goal does not exist', async () => {
-    vi.mocked(goalRepo.findById).mockResolvedValue(null);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -54,9 +54,9 @@ describe('CompleteGoalUseCase', () => {
 
   it('should complete an active goal', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result.ok).toBe(true);
     expect(goal.status).toBe('Archived');
@@ -72,9 +72,9 @@ describe('CompleteGoalUseCase', () => {
   it('should be idempotent for already completed goals', async () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result.ok).toBe(true);
     expect(goal.status).toBe('Archived');
@@ -87,9 +87,9 @@ describe('CompleteGoalUseCase', () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
     goal.archive();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -105,9 +105,9 @@ describe('CompleteGoalUseCase', () => {
       targetValue: 100,
       weight: 3,
     });
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result.ok).toBe(true);
     if (result.ok) {

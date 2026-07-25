@@ -32,6 +32,7 @@ import type {
   IGoalAutomationPlanningPort,
   IGoalPlanningPort,
   IKnowledgeIndexRepository,
+  IKnowledgeIndexStatusPort,
   IKnowledgeIngestionPort,
   IKnowledgeQueryPort,
   IKnowledgeNoteGenerationPort,
@@ -39,15 +40,9 @@ import type {
   IKnowledgeSourcePort,
 } from '../application/ports';
 
-import {
-  // Concrete classes used by createAIUseCases()
-  CreateConversationUseCase,
-  DeleteConversationUseCase,
-  ListConversationsUseCase,
-  GetConversationUseCase,
-} from '../application/use-cases';
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
+import type { IAssistantFacadePort, ICapabilityResolverPort, IModelGatewayPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@dailyuse/contracts/ai';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -82,22 +77,19 @@ import type {
   ListAIProvidersUseCase,
   TestAIProviderConnectionUseCase,
   SetDefaultAIProviderUseCase,
-  GetDefaultAIProviderUseCase,
   RefreshAIProviderModelsUseCase,
   SendAIMessageUseCase,
   StreamAIMessageUseCase,
-  CreateConversationV2UseCase,
-  GetConversationV2UseCase,
-  ListConversationsV2UseCase,
-  DeleteConversationV2UseCase,
+  CreateConversationUseCase,
+  GetConversationUseCase,
+  ListConversationsUseCase,
+  DeleteConversationUseCase,
   UpdateConversationUseCase,
-  AddConversationMessageUseCase,
-  GetConversationsByStatusUseCase,
-  UpdateConversationStatusUseCase,
-  SyncKnowledgeResourcesUseCase,
+  SyncKnowledgeNotesUseCase,
   ReindexAllKnowledgeUseCase,
   SyncRelevantKnowledgeUseCase,
-  SyncResourceByIdUseCase,
+  SyncNoteByIdUseCase,
+  RemoveKnowledgeIndexNoteUseCase,
 } from '../application/use-cases';
 
 // ---------------------------------------------------------------------------
@@ -121,6 +113,7 @@ export interface AIModuleDependencies {
   readonly goalAutomationPlanningPort?: IGoalAutomationPlanningPort;
   readonly automationToolExecutorPort?: IAIAutomationToolExecutorPort;
   readonly knowledgeIndexRepository?: IKnowledgeIndexRepository;
+  readonly knowledgeIndexStatusPort?: IKnowledgeIndexStatusPort;
   readonly knowledgeIngestionPort?: IKnowledgeIngestionPort;
   readonly knowledgeQueryPort?: IKnowledgeQueryPort;
   readonly knowledgeNoteGenerationPort?: IKnowledgeNoteGenerationPort;
@@ -141,12 +134,6 @@ export interface AIModuleDependencies {
   readonly knowledgeNotePersistence?: IKnowledgeNotePersistencePort;
 
   /**
-   * Resolves the knowledge-note subdirectory for a given identity.
-   * 根据身份 ID 解析知识笔记子目录。
-   */
-  readonly getKnowledgeNoteSubpath?: (identityId: string) => Promise<string>;
-
-  /**
    * Optional runtime side effects to start/stop with the module.
    * 可选的运行时副作用，随模块一起启动/停止。
    */
@@ -158,8 +145,7 @@ export interface AIModuleDependencies {
 // ---------------------------------------------------------------------------
 
 export type AIRuntimeContributionsInput =
-  | AIModuleRuntimeContribution
-  | readonly AIModuleRuntimeContribution[];
+  AIModuleRuntimeContribution | readonly AIModuleRuntimeContribution[];
 
 /**
  * Module-owned runtime side effects.
@@ -173,24 +159,6 @@ export interface AIModuleRuntimeContribution {
   stop(): void;
 }
 
-// ---------------------------------------------------------------------------
-// Use Cases — 已完成接线的底层 use case 集合
-// ---------------------------------------------------------------------------
-
-/**
- * Lower-level assembled use cases.
- * 已完成接线的底层 use case 集合。
- *
- * We keep this type because tests and low-level assembly sometimes need direct
- * access to use-case objects, but transports should prefer `AIApplicationPort`.
- */
-export interface AIModuleUseCases {
-  readonly createConversation: CreateConversationUseCase;
-  readonly deleteConversation: DeleteConversationUseCase;
-  readonly listConversations: ListConversationsUseCase;
-  readonly getConversation: GetConversationUseCase;
-}
-
 /**
  * Provider config decomposed use cases.
  */
@@ -202,22 +170,18 @@ export interface AIProviderServices {
   readonly list: ListAIProvidersUseCase;
   readonly testConnection: TestAIProviderConnectionUseCase;
   readonly setDefault: SetDefaultAIProviderUseCase;
-  readonly getDefault: GetDefaultAIProviderUseCase;
   readonly refreshModels: RefreshAIProviderModelsUseCase;
 }
 
 /**
- * Conversation decomposed use cases (from ManageAIConversationUseCase).
+ * Conversation use cases (canonical host path).
  */
 export interface AIConversationServices {
-  readonly createConversationV2: CreateConversationV2UseCase;
-  readonly getConversationV2: GetConversationV2UseCase;
-  readonly listConversationsV2: ListConversationsV2UseCase;
-  readonly deleteConversationV2: DeleteConversationV2UseCase;
+  readonly createConversation: CreateConversationUseCase;
+  readonly getConversation: GetConversationUseCase;
+  readonly listConversations: ListConversationsUseCase;
+  readonly deleteConversation: DeleteConversationUseCase;
   readonly updateConversation: UpdateConversationUseCase;
-  readonly addMessage: AddConversationMessageUseCase;
-  readonly getByStatus: GetConversationsByStatusUseCase;
-  readonly updateStatus: UpdateConversationStatusUseCase;
 }
 
 /**
@@ -232,10 +196,11 @@ export interface AIChatServices {
  * Knowledge index decomposed use cases.
  */
 export interface AIKnowledgeIndexServices {
-  readonly syncResources: SyncKnowledgeResourcesUseCase;
+  readonly syncResources: SyncKnowledgeNotesUseCase;
   readonly reindexAll: ReindexAllKnowledgeUseCase;
   readonly syncRelevant: SyncRelevantKnowledgeUseCase;
-  readonly syncById: SyncResourceByIdUseCase;
+  readonly syncById: SyncNoteByIdUseCase;
+  readonly removeById: RemoveKnowledgeIndexNoteUseCase;
 }
 
 /**
@@ -244,22 +209,13 @@ export interface AIKnowledgeIndexServices {
 export interface AIKnowledgeQueryServices {
   readonly isAvailable: boolean;
   readonly query: {
-    execute(
-      req: QueryKnowledgeReq,
-      cx: ExecutionContext,
-    ): Promise<Result<QueryKnowledgeRes>>;
+    execute(req: QueryKnowledgeReq, cx: ExecutionContext): Promise<Result<QueryKnowledgeRes>>;
   };
   readonly expand: {
-    execute(
-      req: ExpandKnowledgeReq,
-      cx: ExecutionContext,
-    ): Promise<Result<ExpandKnowledgeRes>>;
+    execute(req: ExpandKnowledgeReq, cx: ExecutionContext): Promise<Result<ExpandKnowledgeRes>>;
   };
   readonly reindex: {
-    execute(
-      req: ReindexKnowledgeReq,
-      cx: ExecutionContext,
-    ): Promise<Result<ReindexKnowledgeRes>>;
+    execute(req: ReindexKnowledgeReq, cx: ExecutionContext): Promise<Result<ReindexKnowledgeRes>>;
   };
 }
 
@@ -273,17 +229,12 @@ export interface AIKnowledgeNoteService {
 
 export interface AIAnalyticsQueryService {
   readonly isAvailable: boolean;
-  queryAnalytics(
-    req: QueryAnalyticsReq,
-    cx: ExecutionContext,
-  ): Promise<Result<QueryAnalyticsRes>>;
+  queryAnalytics(req: QueryAnalyticsReq, cx: ExecutionContext): Promise<Result<QueryAnalyticsRes>>;
 }
 
 export interface AIEvaluationReportService {
   readonly isAvailable: boolean;
-  getOverview(
-    req?: GetAIEvaluationOverviewReq,
-  ): Promise<Result<GetAIEvaluationOverviewRes>>;
+  getOverview(req?: GetAIEvaluationOverviewReq): Promise<Result<GetAIEvaluationOverviewRes>>;
 }
 
 export interface AIAgentRuntimeService {
@@ -350,20 +301,47 @@ export interface AIModuleServices {
  * AI 模块主组合根返回类型。
  *
  * `api` is the transport-facing surface.
- * `useCases` is kept for low-level tests and diagnostics.
  * `services` exposes higher-level orchestrators.
  * `start` / `dispose` own runtime side effects.
  */
 export interface AIModuleInstance {
   readonly conversationRepository: IAIConversationRepository;
   readonly providerConfigRepository: IAIProviderConfigRepository;
-  readonly useCases: AIModuleUseCases;
   readonly services: AIModuleServices;
   readonly api: AIApplicationPort;
+  /**
+   * First production Turn Engine (ADR-035 stage 4). Open chat/analysis only;
+   * not a Workflow and never a mutation executor.
+   */
+  readonly turnEngine: ITurnEnginePort;
+  /**
+   * Second production Turn Engine (residual 341). Readonly analysis via Model
+   * Gateway (`engine.pi_readonly`); not the open-chat default.
+   */
+  readonly readonlyTurnEngine: ITurnEnginePort;
+  /**
+   * LangGraph workflow adapter when remote agent runtime is present (stage 3 / residual 318).
+   */
+  readonly workflowAdapter: IWorkflowAdapterPort | null;
+  /**
+   * Proposal Kernel lifecycle (stage 1 / residual 320). Always present; no mutation execution.
+   */
+  readonly proposalKernel: IProposalKernelPort;
+  /**
+   * Capability Resolver (stage 2 / residual 322). Fail-closed; no silent engine.* expansion.
+   */
+  readonly capabilityResolver: ICapabilityResolverPort;
+  /**
+   * Custom Model Gateway (stage 6 / residual 337). OpenAI-compatible catalog/complete/stream.
+   */
+  readonly modelGateway: IModelGatewayPort;
+  /**
+   * Assistant Facade (residual 343). Unified Host dispatch over Turn Engines + ProposalKernel.
+   */
+  readonly assistantFacade: IAssistantFacadePort;
   start(): void;
   dispose(): void;
 }
-
 
 async function getKnowledgeIndexDiagnostics(
   dependencies: AIModuleDependencies,
@@ -399,28 +377,6 @@ function normalizeRuntimeContributions(
 }
 
 // ---------------------------------------------------------------------------
-// Use-case assembly — 纯组装函数
-// ---------------------------------------------------------------------------
-
-/**
- * Pure assembly helper used by the composition root and tests.
- * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
- */
-export function createAIUseCases(
-  dependencies: Pick<AIModuleDependencies, 'conversationRepository'>,
-): AIModuleUseCases {
-  const { conversationRepository } = dependencies;
-
-  return {
-    createConversation: new CreateConversationUseCase(conversationRepository),
-    deleteConversation: new DeleteConversationUseCase(conversationRepository),
-    listConversations: new ListConversationsUseCase(conversationRepository),
-    getConversation: new GetConversationUseCase(conversationRepository),
-  };
-}
-
-
-// ---------------------------------------------------------------------------
 // Composition Root — 规范化的 AI 模块主组合根
 // ---------------------------------------------------------------------------
 
@@ -437,19 +393,17 @@ export function createAIUseCases(
  */
 export function createAIModule(dependencies: AIModuleDependencies): AIModuleInstance {
   const { conversationRepository, providerConfigRepository } = dependencies;
-  const useCases = createAIUseCases({ conversationRepository });
-
   // --- Runtime selection: delegate to the appropriate runtime ---
 
   const isRemoteMode = Boolean(
     dependencies.chatExecutionPort ||
-      dependencies.goalPlanningPort ||
-      dependencies.goalAutomationPlanningPort ||
-      dependencies.knowledgeIngestionPort ||
-      dependencies.knowledgeQueryPort ||
-      dependencies.knowledgeNoteGenerationPort ||
-      dependencies.analyticsQueryPort ||
-      dependencies.agentRuntimePort,
+    dependencies.goalPlanningPort ||
+    dependencies.goalAutomationPlanningPort ||
+    dependencies.knowledgeIngestionPort ||
+    dependencies.knowledgeQueryPort ||
+    dependencies.knowledgeNoteGenerationPort ||
+    dependencies.analyticsQueryPort ||
+    dependencies.agentRuntimePort,
   );
 
   const runtime = isRemoteMode
@@ -488,9 +442,10 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
 
     // -- Provider Config --
     createProvider: (req, cx) => services.providerServices.create.execute(req, cx),
-    updateProvider: (id, req) => services.providerServices.update.execute(id, req),
-    deleteProvider: (id) => services.providerServices.delete.execute(id),
-    getProvider: (id) => services.providerServices.get.execute(id),
+    updateProvider: (id, req, cx) =>
+      services.providerServices.update.execute(cx.identityId, id, req),
+    deleteProvider: (id, cx) => services.providerServices.delete.execute(cx.identityId, id),
+    getProvider: (id, cx) => services.providerServices.get.execute(cx.identityId, id),
     listProviders: (cx) => services.providerServices.list.execute(cx),
     testConnection: (req, cx) => services.providerServices.testConnection.execute(req, cx),
     setDefaultProvider: (id, cx) => services.providerServices.setDefault.execute(id, cx),
@@ -499,13 +454,14 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
 
     // -- Conversations --
     createConversation: (cx, name) =>
-      services.conversationServices.createConversationV2.execute(cx, name),
-    updateConversation: (id, req) =>
-      services.conversationServices.updateConversation.execute(id, req),
+      services.conversationServices.createConversation.execute(cx, name),
+    updateConversation: (id, req, cx) =>
+      services.conversationServices.updateConversation.execute(cx.identityId, id, req),
     listConversations: (cx, page, pageSize) =>
-      services.conversationServices.listConversationsV2.execute(cx, page, pageSize),
-    getConversation: async (id, includeMessages) => {
-      const result = await services.conversationServices.getConversationV2.execute(
+      services.conversationServices.listConversations.execute(cx, page, pageSize),
+    getConversation: async (id, cx, includeMessages) => {
+      const result = await services.conversationServices.getConversation.execute(
+        cx.identityId,
         id,
         includeMessages,
       );
@@ -515,8 +471,8 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       }
       return ok(result.data.toClientDTO());
     },
-    deleteConversation: (id) =>
-      services.conversationServices.deleteConversationV2.execute(id),
+    deleteConversation: (id, cx) =>
+      services.conversationServices.deleteConversation.execute(cx.identityId, id),
 
     // -- Chat --
     sendMessage: (conversationId, content, cx, providerId, model) =>
@@ -552,14 +508,31 @@ export function createAIModule(dependencies: AIModuleDependencies): AIModuleInst
       services.agentRuntimeService.listRuns(params, cx, requestId, signal),
     getAgentEvents: (runId, cx, requestId, signal) =>
       services.agentRuntimeService.getEvents(runId, cx, requestId, signal),
+
+    // Residual 345: AssistantFacade transport surface (identity must already be set on command).
+    dispatchAssistant: async (command, onEvent, signal) => {
+      let eventCount = 0;
+      for await (const event of runtime.assistantFacade.dispatch(command, signal)) {
+        eventCount += 1;
+        onEvent(event);
+      }
+      return ok({ eventCount });
+    },
   };
 
+  // Turn Engine comes from runtime (same instance that powers open chat use cases).
   return {
     conversationRepository,
     providerConfigRepository,
-    useCases,
     services,
     api,
+    turnEngine: runtime.turnEngine,
+    readonlyTurnEngine: runtime.readonlyTurnEngine,
+    workflowAdapter: runtime.workflowAdapter,
+    proposalKernel: runtime.proposalKernel,
+    capabilityResolver: runtime.capabilityResolver,
+    modelGateway: runtime.modelGateway,
+    assistantFacade: runtime.assistantFacade,
     start(): void {
       if (started) {
         return;

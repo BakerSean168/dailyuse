@@ -27,6 +27,8 @@ import {
   createAIRequestId,
   withAICostEstimate,
 } from './ai-observability';
+// Residual 995: sole previewText (local dual retired).
+import { previewText } from '../../../../shared/preview-text';
 
 const logger = createLogger('GenerateAIGoalUseCase');
 const SIDE_EFFECT_TOOLS = new Set<GoalAutomationAction['tool']>([
@@ -36,17 +38,6 @@ const SIDE_EFFECT_TOOLS = new Set<GoalAutomationAction['tool']>([
   'create_reminder',
 ]);
 
-function previewText(value: string | null | undefined, maxLength = 240): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength - 3)}...`;
-}
 
 function summarizeProviderConfig(providerConfig: {
   provider: string;
@@ -437,7 +428,7 @@ export class GenerateAIGoalUseCase {
     }
 
     const automationIdea = this.buildAutomationIdea(input.params);
-    const relatedResources = await this.loadRelatedKnowledgeResources(
+    const relatedNotes = await this.loadRelatedKnowledgeNotes(
       input.params.identityId,
       automationIdea,
     );
@@ -448,7 +439,7 @@ export class GenerateAIGoalUseCase {
     logger.info('Goal automation planning dependencies loaded', {
       identityId: input.params.identityId,
       requestId: input.requestId,
-      relatedResourceCount: relatedResources?.length ?? 0,
+      relatedResourceCount: relatedNotes?.length ?? 0,
       hasAnalyticsContext: Boolean(analyticsContext),
       analyticsGoalCount: analyticsContext?.goals?.length ?? 0,
     });
@@ -461,7 +452,7 @@ export class GenerateAIGoalUseCase {
       timeframe: input.params.timeframe,
       includeKeyResults: input.params.includeKeyResults ?? true,
       includeTaskTemplates: input.params.includeTaskTemplates ?? true,
-      relatedResources,
+      relatedNotes,
       analyticsContext,
       requestId: input.requestId,
     });
@@ -594,7 +585,7 @@ export class GenerateAIGoalUseCase {
     }
   }
 
-  private async loadRelatedKnowledgeResources(
+  private async loadRelatedKnowledgeNotes(
     identityId: string,
     query: string,
   ) {
@@ -607,8 +598,8 @@ export class GenerateAIGoalUseCase {
     }
 
     try {
-      const resources = await this.knowledgeSourcePort.listRelevantResources(identityId, query, 6);
-      logger.info('Goal automation knowledge resources loaded', {
+      const resources = await this.knowledgeSourcePort.listRelevantNotes(identityId, query, 6);
+      logger.info('Goal automation knowledge notes loaded', {
         identityId,
         queryPreview: previewText(query),
         resourceCount: resources.length,
@@ -616,7 +607,7 @@ export class GenerateAIGoalUseCase {
       });
       return resources.length ? resources : undefined;
     } catch (err) {
-      logger.warn('Failed to load related knowledge resources for goal automation planning', {
+      logger.warn('Failed to load related knowledge notes for goal automation planning', {
         error: err,
         identityId,
       });
@@ -700,7 +691,7 @@ export class GenerateAIGoalUseCase {
     }
     if (failedActions.some((action) => action.tool === 'search_notes')) {
       suggestions.add(
-        'Refresh repository resources or narrow the note query before retrying execution.',
+        'Refresh knowledge notes or narrow the note query before retrying execution.',
       );
     }
     if (failedActions.some((action) => action.tool === 'fetch_stats')) {

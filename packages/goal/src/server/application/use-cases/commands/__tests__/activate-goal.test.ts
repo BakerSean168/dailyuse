@@ -35,16 +35,16 @@ describe('ActivateGoalUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new ActivateGoalUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should return NOT_FOUND when goal does not exist', async () => {
-    vi.mocked(goalRepo.findById).mockResolvedValue(null);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -53,9 +53,9 @@ describe('ActivateGoalUseCase', () => {
   it('should reject activating a completed goal', async () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result).toBeErrorWithCode('INVALID_STATE');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -63,9 +63,9 @@ describe('ActivateGoalUseCase', () => {
 
   it('should activate an already active goal (idempotent)', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result).toBeOk();
     expect(goal.status).toBe('Active');
@@ -75,18 +75,18 @@ describe('ActivateGoalUseCase', () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
     goal.archive();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result).toBeErrorWithCode('INVALID_STATE');
   });
 
   it('should return the goal DTO on success', async () => {
     const goal = createTestGoal('Activate Me');
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result).toBeOk();
     if (result.ok) {

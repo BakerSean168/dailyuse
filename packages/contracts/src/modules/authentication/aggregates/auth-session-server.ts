@@ -19,6 +19,7 @@ import type { TransferDate } from '../../../primitives';
  * Server DTO (内部构造用)
  * 使用 TransferDate (number) 时间戳
  */
+// Residual 879: intentional Client≠Server dual (refreshTokenHash/status/isRevoked vs client isCurrentSession fields).
 export interface AuthSessionServerDTO {
   id: AuthSessionId;
   identityId: IdentityId;

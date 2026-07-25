@@ -8,6 +8,8 @@
  */
 
 import { ipcMain } from 'electron';
+import { DevChannels } from '@dailyuse/contracts/electron';
+import { ok } from '@dailyuse/contracts/result';
 import { isDesktopDevelopmentRuntime } from './dev-runtime';
 
 // ============ Types ============
@@ -267,16 +269,16 @@ export function registerMemoryMonitorIpcHandlers(): void {
 
   const monitor = getMemoryMonitor();
 
-  ipcMain.handle('dev:memory:status', async () => {
-    return monitor.getCurrentStatus();
+  ipcMain.handle(DevChannels.MEMORY_STATUS, async () => {
+    return ok(monitor.getCurrentStatus());
   });
 
-  ipcMain.handle('dev:memory:snapshots', async () => {
-    return monitor.getSnapshots();
+  ipcMain.handle(DevChannels.MEMORY_SNAPSHOTS, async () => {
+    return ok(monitor.getSnapshots());
   });
 
-  ipcMain.handle('dev:memory:force-gc', async () => {
-    return monitor.forceGC();
+  ipcMain.handle(DevChannels.MEMORY_FORCE_GC, async () => {
+    return ok(monitor.forceGC());
   });
 
   console.log('[MemoryMonitor] IPC handlers registered');

@@ -1,11 +1,7 @@
-import type {
-  AuthCredentialId,
-  AuthCredentialServerDTO,
-  AuthIdentifierDTO,
-  HashedPassword as IHashedPassword,
-  OAuthBindingServerDTO,
-  PasswordCredentialServerDTO,
-} from '@dailyuse/contracts/authentication';
+/**
+ * Residual 981: toIso sole import (./to-iso.ts).
+ */
+import type { AuthCredentialId, PasswordCredentialServerDTO, AuthIdentifierDTO, HashedPassword as IHashedPassword, OAuthBindingServerDTO } from '@dailyuse/contracts/authentication';
 import { createHash } from 'node:crypto';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { AuthIdentity } from '../../../../domain';
@@ -19,6 +15,7 @@ import {
 } from '../../../../domain';
 import { OAuthBinding, PasswordCredential } from '../../../../domain/entities';
 import { EmailIdentifier, PhoneIdentifier } from '../../../../domain/value-objects';
+import { toIso } from './to-iso';
 
 export interface PowerSyncAuthIdentityRow {
   id: string;
@@ -111,11 +108,11 @@ export interface PowerSyncAuthIdentityWriteData {
   }[];
 }
 
-function toIso(value: number | null | undefined): string | null {
-  if (value === null || value === undefined) return null;
-  return new Date(value).toISOString();
-}
 
+// Residual 1141 keep-boundary: auth PowerSync ISO string → number|null (empty/invalid → null).
+// Same private PowerSync string→null shape as notification toTimestamp; intentionally co-located
+// (no force-merge into shared sole). Soft residual 1141: projection unknown→undefined / AI positive /
+// app-react 0-fallback stay separate.
 function toMillis(value: string | null | undefined): number | null {
   if (!value) return null;
   const ts = new Date(value).getTime();
@@ -242,7 +239,7 @@ export class PowerSyncAuthIdentityMapper {
         is_verified: i.isVerified ? 1 : 0,
         created_at: createdAtIso,
       })),
-      credentials: dto.credentials.map((c: AuthCredentialServerDTO) => {
+      credentials: dto.credentials.map((c: PasswordCredentialServerDTO) => {
         const base = {
           id: c.id,
           identity_id: identityId,

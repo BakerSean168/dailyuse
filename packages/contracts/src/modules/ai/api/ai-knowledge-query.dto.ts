@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
+import {
+  KnowledgeCitationSchema,
+  QueryKnowledgeResSchema,
+} from './response-schemas';
 
 export const QueryKnowledgeSchema = z.object({
   query: z.string().trim().min(3).max(2000),
@@ -10,29 +14,11 @@ export const QueryKnowledgeSchema = z.object({
 
 export type QueryKnowledgeReq = z.infer<typeof QueryKnowledgeSchema>;
 
-export const KnowledgeCitationSchema = z.object({
-  resourceId: z.string().min(1),
-  resourcePath: z.string().min(1),
-  title: z.string().optional(),
-  chunkIndex: z.number().int().nonnegative(),
-  excerpt: z.string().min(1),
-  score: z.number().nonnegative(),
-});
-
+// Residual 755: citation dual retired — response-schemas owns KnowledgeCitationSchema.
 export type KnowledgeCitation = z.infer<typeof KnowledgeCitationSchema>;
 
-export interface QueryKnowledgeRes {
-  answer: string;
-  citations: KnowledgeCitation[];
-  providerId: AiProviderConfigId;
-  tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  processingTimeMs: number;
-  matchedResourceCount: number;
-}
+// Residual 695: response dual body retired — OpenAPI + transport use QueryKnowledgeResSchema.
+export type QueryKnowledgeRes = z.infer<typeof QueryKnowledgeResSchema>;
 
 export const ReindexKnowledgeSchema = z.object({
   limit: z.number().int().min(1).max(500).default(200).optional(),
@@ -49,9 +35,13 @@ export const ReindexKnowledgeResultItemSchema = z.object({
   error: z.string().optional(),
 });
 
-export interface ReindexKnowledgeRes {
-  indexedCount: number;
-  reusedCount: number;
-  failedCount: number;
-  results: Array<z.infer<typeof ReindexKnowledgeResultItemSchema>>;
-}
+// Residual 761: ReindexKnowledgeRes dual retired — OpenAPI + transport use
+// ReindexKnowledgeResSchema (semantic Res is a z.infer alias).
+export const ReindexKnowledgeResSchema = z.object({
+  indexedCount: z.number().int().nonnegative(),
+  reusedCount: z.number().int().nonnegative(),
+  failedCount: z.number().int().nonnegative(),
+  results: z.array(ReindexKnowledgeResultItemSchema),
+});
+
+export type ReindexKnowledgeRes = z.infer<typeof ReindexKnowledgeResSchema>;

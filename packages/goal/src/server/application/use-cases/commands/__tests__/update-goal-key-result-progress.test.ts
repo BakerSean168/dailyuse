@@ -38,12 +38,12 @@ describe('UpdateGoalKeyResultProgressUseCase', () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
-    const result = await useCase.execute('goal-id-1', 'kr-1', 50);
+    const result = await useCase.execute('goal-id-1', 'identity-1', 'kr-1', 50);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -58,12 +58,12 @@ describe('UpdateGoalKeyResultProgressUseCase', () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
-    await useCase.execute('goal-id-1', 'kr-1', 75, 'Good progress this week');
+    await useCase.execute('goal-id-1', 'identity-1', 'kr-1', 75, 'Good progress this week');
 
     expect(goal.updateKeyResultProgress).toHaveBeenCalledWith(
       'kr-1',
@@ -75,12 +75,12 @@ describe('UpdateGoalKeyResultProgressUseCase', () => {
   it('should return NOT_FOUND when goal does not exist', async () => {
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
-    const result = await useCase.execute('non-existent', 'kr-1', 50);
+    const result = await useCase.execute('non-existent', 'identity-1', 'kr-1', 50);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -97,42 +97,42 @@ describe('UpdateGoalKeyResultProgressUseCase', () => {
       }),
     } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
-    await expect(useCase.execute('goal-id-1', 'kr-1', 50)).rejects.toThrow(
+    await expect(useCase.execute('goal-id-1', 'identity-1', 'kr-1', 50)).rejects.toThrow(
       'Goal cannot be modified',
     );
     expect(goalRepo.save).not.toHaveBeenCalled();
     expect(goal.updateKeyResultProgress).not.toHaveBeenCalled();
   });
 
-  it('should call findById with includeChildren option', async () => {
+  it('should call findByIdForIdentity with includeChildren option', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
-    await useCase.execute('goal-id-1', 'kr-1', 50);
+    await useCase.execute('goal-id-1', 'identity-1', 'kr-1', 50);
 
-    expect(goalRepo.findById).toHaveBeenCalledWith('goal-id-1', { includeChildren: true });
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-id-1', { includeChildren: true });
   });
 
   it('should call key result toClientDTO', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new UpdateGoalKeyResultProgressUseCase(goalRepo, goalPolicy);
 
-    await useCase.execute('goal-id-1', 'kr-1', 50);
+    await useCase.execute('goal-id-1', 'identity-1', 'kr-1', 50);
 
     expect(goal.getKeyResult).toHaveBeenCalledWith('kr-1');
     expect(goal.keyResults[0].toClientDTO).toHaveBeenCalled();

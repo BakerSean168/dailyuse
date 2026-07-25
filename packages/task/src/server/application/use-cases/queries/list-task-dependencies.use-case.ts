@@ -13,13 +13,19 @@ import { ok } from '@dailyuse/contracts/result';
 export class ListTaskDependenciesUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}
 
-  async executeDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    const dependencies = await this.dependencyRepository.findBySuccessorId(taskId);
+  async executeDependencies(
+    taskId: string,
+    identityId: string,
+  ): Promise<Result<TaskDependencyClientDTO[]>> {
+    const dependencies = await this.dependencyRepository.findBySuccessorId(taskId, identityId);
     return ok(dependencies.map(dependencyServerToClientDTO));
   }
 
-  async executeDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    const dependents = await this.dependencyRepository.findByPredecessorId(taskId);
+  async executeDependents(
+    taskId: string,
+    identityId: string,
+  ): Promise<Result<TaskDependencyClientDTO[]>> {
+    const dependents = await this.dependencyRepository.findByPredecessorId(taskId, identityId);
     return ok(dependents.map(dependencyServerToClientDTO));
   }
 }

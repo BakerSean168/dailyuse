@@ -1,13 +1,23 @@
 import { AuthChannels } from '@dailyuse/contracts/electron';
+import type { AuthStatus } from '@dailyuse/contracts/authentication';
+import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result';
 
+// Residual 903: sole desktop invoke-api shape DesktopAuthApi.
+// Residual 919: DesktopBootstrapApi name dual fully retired — hydrate uses DesktopAuthApi.
+// Residual 905: reminder DesktopApi dual retired — use DesktopAuthApi sole body.
+// Residual 907: setting themeSync inline electronAPI dual retired — use DesktopAuthApi.
+// Residual 909: app-vue Window.electronAPI + desktop-detect duals retired — use DesktopAuthApi.
+// Residual 913: remaining host-access cast duals retired — use getDesktopAuthApi/hasDesktopAuthApi.
+// Residual 915: DESKTOP_AUTH_API_KEY InjectionKey dual retired — InjectionKey<DesktopAuthApi>.
+// Residual 923: isDesktopEnvironment name dual retired — callers use hasDesktopAuthApi directly.
 export type DesktopAuthApi = {
   invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
 };
 
-type DesktopAuthStatus = {
-  authenticated?: boolean;
-  runtimeState?: string;
-};
+type DesktopAuthHost = object | null | undefined;
+
+// Residual 901: local DesktopAuthStatus dual retired — sole status shape is contracts AuthStatus
+// (residual 865 already deleted AuthStatusDTO; recovery must not reintroduce a slim dual body).
 
 type DesktopAuthErrorLike = {
   code?: string | null;
@@ -18,9 +28,24 @@ export function isDesktopAuthRecoverable(error: DesktopAuthErrorLike): boolean {
 }
 
 export function getDesktopAuthApi(
-  host?: { electronAPI?: DesktopAuthApi },
+  host?: DesktopAuthHost,
 ): DesktopAuthApi | undefined {
-  return host?.electronAPI;
+  return (host as { electronAPI?: DesktopAuthApi } | null | undefined)?.electronAPI;
+}
+
+// Residual 909: sole desktop-detect helper (no inline { invoke?: unknown } duals at call sites).
+export function hasDesktopAuthApi(
+  host?: DesktopAuthHost,
+): boolean {
+  return typeof getDesktopAuthApi(host)?.invoke === 'function';
+}
+
+async function readAuthStatus(
+  api: DesktopAuthApi,
+): Promise<AuthStatus | null> {
+  const response = (await api.invoke!(AuthChannels.GET_STATUS)) as IpcResult<AuthStatus>;
+  const result = fromIpcResult(response);
+  return isOk(result) ? result.data : null;
 }
 
 export async function ensureDesktopAuthReadyWithApi(
@@ -32,7 +57,7 @@ export async function ensureDesktopAuthReadyWithApi(
   }
 
   try {
-    const status = (await api.invoke(AuthChannels.GET_STATUS)) as DesktopAuthStatus;
+    const status = await readAuthStatus(api);
 
     if (status?.authenticated) {
       return true;
@@ -40,7 +65,7 @@ export async function ensureDesktopAuthReadyWithApi(
 
     if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
       await api.invoke(AuthChannels.INITIALIZE);
-      const refreshed = (await api.invoke(AuthChannels.GET_STATUS)) as DesktopAuthStatus;
+      const refreshed = await readAuthStatus(api);
       return Boolean(refreshed?.authenticated);
     }
   } catch (error) {

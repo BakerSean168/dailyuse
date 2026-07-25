@@ -177,9 +177,9 @@ describe('TaskTemplateController', () => {
         ok(FAKE_TEMPLATE_DTO),
       );
 
-      await controller.getTemplate('tmpl_abc123');
+      await controller.getTemplate('tmpl_abc123', ctx);
 
-      expect(useCases.getTemplate).toHaveBeenCalledWith('tmpl_abc123', false);
+      expect(useCases.getTemplate).toHaveBeenCalledWith('tmpl_abc123', TEST_IDENTITY_ID, false);
     });
 
     it('should call getTemplate use case with includeChildren=true', async () => {
@@ -187,9 +187,9 @@ describe('TaskTemplateController', () => {
         ok(FAKE_TEMPLATE_DTO),
       );
 
-      await controller.getTemplate('tmpl_abc123', true);
+      await controller.getTemplate('tmpl_abc123', ctx, true);
 
-      expect(useCases.getTemplate).toHaveBeenCalledWith('tmpl_abc123', true);
+      expect(useCases.getTemplate).toHaveBeenCalledWith('tmpl_abc123', TEST_IDENTITY_ID, true);
     });
 
     it('should pass through use case result data directly', async () => {
@@ -198,7 +198,7 @@ describe('TaskTemplateController', () => {
         ok(FAKE_TEMPLATE_DTO),
       );
 
-      const result = await controller.getTemplate('tmpl_abc123');
+      const result = await controller.getTemplate('tmpl_abc123', ctx);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -210,7 +210,7 @@ describe('TaskTemplateController', () => {
       // GetTaskTemplate use case returns ok(null) when not found
       (useCases.getTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(ok(null));
 
-      const result = await controller.getTemplate('tmpl_nonexistent');
+      const result = await controller.getTemplate('tmpl_nonexistent', ctx);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -319,7 +319,7 @@ describe('TaskTemplateController', () => {
   describe('updateTemplate', () => {
     it('should return VALIDATION_ERROR for invalid input', async () => {
       // name must be min(1) if provided
-      const result = await controller.updateTemplate('tmpl_1', { name: '' });
+      const result = await controller.updateTemplate('tmpl_1', { name: '' }, ctx);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -333,9 +333,9 @@ describe('TaskTemplateController', () => {
         ok(FAKE_TEMPLATE_DTO),
       );
 
-      await controller.updateTemplate('tmpl_1', VALID_UPDATE_INPUT);
+      await controller.updateTemplate('tmpl_1', VALID_UPDATE_INPUT, ctx);
 
-      expect(useCases.updateTemplate).toHaveBeenCalledWith('tmpl_1', {
+      expect(useCases.updateTemplate).toHaveBeenCalledWith('tmpl_1', TEST_IDENTITY_ID, {
         name: 'Updated Name',
         description: undefined,
         recurrenceRule: undefined,
@@ -352,7 +352,7 @@ describe('TaskTemplateController', () => {
         expectedResult,
       );
 
-      const result = await controller.updateTemplate('tmpl_1', VALID_UPDATE_INPUT);
+      const result = await controller.updateTemplate('tmpl_1', VALID_UPDATE_INPUT, ctx);
 
       expect(result).toBe(expectedResult);
     });
@@ -362,7 +362,7 @@ describe('TaskTemplateController', () => {
         ok(FAKE_TEMPLATE_DTO),
       );
 
-      const result = await controller.updateTemplate('tmpl_1', {});
+      const result = await controller.updateTemplate('tmpl_1', {}, ctx);
 
       expect(isOk(result)).toBe(true);
       expect(useCases.updateTemplate).toHaveBeenCalledOnce();
@@ -378,20 +378,19 @@ describe('TaskTemplateController', () => {
         ok(undefined),
       );
 
-      await controller.deleteTemplate('tmpl_1');
+      await controller.deleteTemplate('tmpl_1', ctx);
 
-      expect(useCases.deleteTemplate).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.deleteTemplate).toHaveBeenCalledWith('tmpl_1', TEST_IDENTITY_ID);
     });
 
-    it('should pass through use case result', async () => {
-      const expectedResult = ok(undefined);
+    it('should normalize success to ok(null)', async () => {
       (useCases.deleteTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(
-        expectedResult,
+        ok(undefined),
       );
 
-      const result = await controller.deleteTemplate('tmpl_1');
+      const result = await controller.deleteTemplate('tmpl_1', ctx);
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toEqual(ok(null));
     });
   });
 
@@ -404,9 +403,9 @@ describe('TaskTemplateController', () => {
         ok({ template: FAKE_TEMPLATE_DTO, instancesGenerated: 10 }),
       );
 
-      await controller.activateTemplate('tmpl_1');
+      await controller.activateTemplate('tmpl_1', ctx);
 
-      expect(useCases.activateTemplate).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.activateTemplate).toHaveBeenCalledWith('tmpl_1', TEST_IDENTITY_ID);
     });
 
     it('should unwrap result.data.template', async () => {
@@ -414,7 +413,7 @@ describe('TaskTemplateController', () => {
         ok({ template: FAKE_TEMPLATE_DTO, instancesGenerated: 10 }),
       );
 
-      const result = await controller.activateTemplate('tmpl_1');
+      const result = await controller.activateTemplate('tmpl_1', ctx);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -428,7 +427,7 @@ describe('TaskTemplateController', () => {
         useCaseError,
       );
 
-      const result = await controller.activateTemplate('tmpl_1');
+      const result = await controller.activateTemplate('tmpl_1', ctx);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -446,9 +445,9 @@ describe('TaskTemplateController', () => {
         ok({ template: FAKE_TEMPLATE_DTO, instancesDeleted: 3 }),
       );
 
-      await controller.pauseTemplate('tmpl_1');
+      await controller.pauseTemplate('tmpl_1', ctx);
 
-      expect(useCases.pauseTemplate).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.pauseTemplate).toHaveBeenCalledWith('tmpl_1', TEST_IDENTITY_ID);
     });
 
     it('should unwrap result.data.template', async () => {
@@ -456,7 +455,7 @@ describe('TaskTemplateController', () => {
         ok({ template: FAKE_TEMPLATE_DTO, instancesDeleted: 3 }),
       );
 
-      const result = await controller.pauseTemplate('tmpl_1');
+      const result = await controller.pauseTemplate('tmpl_1', ctx);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -468,7 +467,7 @@ describe('TaskTemplateController', () => {
       const useCaseError = fail({ code: 'NOT_FOUND', message: 'Not found' });
       (useCases.pauseTemplate as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
-      const result = await controller.pauseTemplate('tmpl_1');
+      const result = await controller.pauseTemplate('tmpl_1', ctx);
 
       expect(isOk(result)).toBe(false);
     });
@@ -483,9 +482,9 @@ describe('TaskTemplateController', () => {
         ok(FAKE_TEMPLATE_DTO),
       );
 
-      await controller.archiveTemplate('tmpl_1');
+      await controller.archiveTemplate('tmpl_1', ctx);
 
-      expect(useCases.archiveTemplate).toHaveBeenCalledWith('tmpl_1');
+      expect(useCases.archiveTemplate).toHaveBeenCalledWith('tmpl_1', TEST_IDENTITY_ID);
     });
 
     it('should pass through use case result directly (no unwrap)', async () => {
@@ -494,7 +493,7 @@ describe('TaskTemplateController', () => {
         expectedResult,
       );
 
-      const result = await controller.archiveTemplate('tmpl_1');
+      const result = await controller.archiveTemplate('tmpl_1', ctx);
 
       // archiveTemplate passes through directly (no .data.template unwrap)
       expect(result).toBe(expectedResult);

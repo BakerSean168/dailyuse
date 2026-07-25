@@ -1,32 +1,12 @@
 /**
  * ScheduleExecution Entity - Client Interface
- * 调度执行记录实体 - 客户端接?
+ * 调度执行记录实体 - 客户端接口
+ *
+ * Residual 833: ScheduleExecutionClientDTO dual retired — sole ScheduleExecutionResponseSchema + z.infer.
  */
 
-import type { ScheduleExecutionId, ScheduleTaskId, TransferDate } from '../../../primitives';
-import type { ExecutionStatus } from '../value-objects/execution-status';
+import type { z } from 'zod';
+import { ScheduleExecutionResponseSchema } from '../api/response-schemas';
 
-// ============ DTO 定义 ============
-
-/**
- * ScheduleExecution Client DTO
- */
-export interface ScheduleExecutionClientDTO {
-  id: ScheduleExecutionId;
-  scheduleTaskId: ScheduleTaskId;
-  executionTime: TransferDate;
-  status: ExecutionStatus;
-  duration: number | null;
-  result: Record<string, unknown> | null;
-  error: string | null;
-  retryCount: number;
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-
-}
-
-/**
- * ScheduleExecution 静态工厂方法接?
- */
+// Residual 833: ScheduleExecutionClientDTO dual retired — OpenAPI + transport use ScheduleExecutionResponseSchema.
+export type ScheduleExecutionClientDTO = z.infer<typeof ScheduleExecutionResponseSchema>;

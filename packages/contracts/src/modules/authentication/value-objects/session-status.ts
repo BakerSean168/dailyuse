@@ -1,5 +1,6 @@
 /**
  * 会话状态枚举
+ * Residual 889: domain enum SessionStatus ≠ desktop protocol SessionStatusDTO/SessionStatus extension.
  */
 
 export const SessionStatus = {

@@ -41,6 +41,10 @@ describe('desktop-auth-shell', () => {
     getActiveAuthService: ReturnType<typeof vi.fn>;
     prepareGuestProfile: ReturnType<typeof vi.fn>;
     prepareProfile: ReturnType<typeof vi.fn>;
+    upgradeGuestProfileToOnlineIdentity: ReturnType<typeof vi.fn>;
+    isGuestProfileIdentity: ReturnType<typeof vi.fn>;
+    getActiveOrPreparedIdentityId: ReturnType<typeof vi.fn>;
+    getActiveProfileDescriptor: ReturnType<typeof vi.fn>;
     activatePreparedProfile: ReturnType<typeof vi.fn>;
     discardPreparedProfile: ReturnType<typeof vi.fn>;
     deactivateProfile: ReturnType<typeof vi.fn>;
@@ -88,6 +92,10 @@ describe('desktop-auth-shell', () => {
       getActiveAuthService: vi.fn(() => authService),
       prepareGuestProfile: vi.fn().mockResolvedValue({}),
       prepareProfile: vi.fn().mockResolvedValue({ authService }),
+      upgradeGuestProfileToOnlineIdentity: vi.fn().mockResolvedValue({ authService }),
+      isGuestProfileIdentity: vi.fn(() => false),
+      getActiveOrPreparedIdentityId: vi.fn(() => null),
+      getActiveProfileDescriptor: vi.fn().mockResolvedValue(null),
       activatePreparedProfile: vi.fn().mockResolvedValue(undefined),
       discardPreparedProfile: vi.fn().mockResolvedValue(undefined),
       deactivateProfile: vi.fn().mockResolvedValue(undefined),
@@ -184,7 +192,7 @@ describe('desktop-auth-shell', () => {
     expect(authService.autoLogin).toHaveBeenCalledOnce();
     expect(runtimeManager.activatePreparedProfile).toHaveBeenCalledWith({ syncMode: 'online' });
     expect(windowManager.transitionToMainWindow).toHaveBeenCalledOnce();
-    expect(result).toEqual({ ok: true, authenticated: true });
+    expect(result).toEqual({ ok: true, data: { ok: true, authenticated: true } });
   });
 
   it('auth:remembered-accounts:login activates local mode for offline remembered logins', async () => {
@@ -240,4 +248,50 @@ describe('desktop-auth-shell', () => {
       error: { code: 'AUTH_FAILED', message: 'Bad credentials' },
     });
   });
+
+  it('auth:login upgrades guest profile ownership instead of creating a new profile dir', async () => {
+    runtimeManager.isGuestProfileIdentity.mockImplementation((id: string | null | undefined) => id === '__desktop_guest_profile__');
+    runtimeManager.getActiveOrPreparedIdentityId.mockReturnValue('__desktop_guest_profile__');
+    runtimeManager.getActiveProfileDescriptor.mockResolvedValue({
+      identityId: '__desktop_guest_profile__',
+      profileId: 'p_guest',
+    });
+    (authService as any).completeRemoteLoginSuccess = vi.fn().mockResolvedValue(undefined);
+
+    mocks.loginDesktopAccount.mockResolvedValue({
+      ok: true,
+      response: {
+        accessToken: 'access',
+        refreshToken: 'refresh',
+        identity: { id: 'identity-online', email: 'online@example.com' },
+        session: { id: 'session-1' },
+      },
+    });
+
+    const { registerDesktopAuthShellHandlers } = await import('./desktop-auth-shell');
+    registerDesktopAuthShellHandlers(runtimeManager as never, {
+      rememberedAccountsService: rememberedAccountsService as never,
+      networkStateManager: networkStateManager as never,
+      windowManager: windowManager as never,
+    });
+
+    const handler = getRegisteredHandler(AuthChannels.LOGIN);
+    const result = await handler({}, {
+      email: 'online@example.com',
+      password: 'secret',
+      rememberPassword: false,
+      autoLogin: false,
+    });
+
+    expect(result).toMatchObject({ ok: true });
+    expect(runtimeManager.upgradeGuestProfileToOnlineIdentity).toHaveBeenCalledWith({
+      onlineIdentityId: 'identity-online',
+      displayName: 'online@example.com',
+      identifier: 'online@example.com',
+      snapshotAccessToken: 'access',
+    });
+    expect(runtimeManager.prepareProfile).not.toHaveBeenCalled();
+    expect(authService.completeRemoteLoginSuccess).toHaveBeenCalled();
+  });
+
 });

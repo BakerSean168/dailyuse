@@ -15,44 +15,47 @@ import type {
   IdentityId,
   GoalRecordId,
   FocusSessionId,
-  FocusModeId,
 } from '../../../primitives';
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import { KeyResultValueType } from '../value-objects/key-result-value-type';
-import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 import { ReviewType } from '../value-objects/review-type';
-import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
 import { FocusSessionStatus } from '../value-objects/focus-session-status';
 import { FolderType } from '../value-objects/folder-type';
-import { HiddenGoalsMode } from '../value-objects/focus-mode';
 
-import type { GoalClientDTO } from '../aggregates/goal-client';
-import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
-import type { GoalReviewClientDTO } from '../entities/goal-review-client';
-import type { KeyResultClientDTO } from '../entities/key-result-client';
-import type { FocusModeDTO } from '../value-objects/focus-mode';
+import { KeyResultProgressDTOSchema } from '../value-objects/key-result-progress';
+import { KeyResultSnapshotDTOSchema } from '../value-objects/key-result-snapshot';
+
+// Residual 737: KeyResultProgressDTOSchema / KeyResultSnapshotDTOSchema owned by value-objects
+// (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
+export { KeyResultProgressDTOSchema, KeyResultSnapshotDTOSchema };
+
+import {
+  GoalReminderConfigDTOSchema,
+  ReminderTriggerSchema,
+} from '../value-objects/goal-reminder-config';
+
+// Residual 741: GoalReminderConfigDTOSchema / ReminderTriggerSchema owned by value-objects
+// (semantic DTOs are z.infer aliases). Re-export for OpenAPI/route consumers.
+export { GoalReminderConfigDTOSchema, ReminderTriggerSchema };
+
+import { FocusModeClientDTOSchema } from '../value-objects/focus-mode';
+
+// Residual 745: FocusModeClientDTOSchema owned by value-objects
+// (semantic FocusModeDTO is a z.infer alias). Re-export for OpenAPI/route consumers.
+export { FocusModeClientDTOSchema };
+
 
 // ============================================================================
 // Sub-entity Schemas
 // ============================================================================
 
-/**
- * KeyResultProgress DTO Schema (嵌入式)
- */
-export const KeyResultProgressDTOSchema = z.object({
-  valueType: z.enum(KeyResultValueType),
-  aggregationMethod: z.enum(KeyResultCalculationMethod),
-  initialValue: z.number(),
-  targetValue: z.number(),
-  currentValue: z.number(),
-  unit: z.string().nullable(),
-});
 
 /**
  * KeyResult Client DTO Schema
  */
-export const KeyResultClientDTOSchema: z.ZodType<KeyResultClientDTO> = z.object({
+// Residual 817: KeyResultClientDTO dual retired — sole KeyResultClientDTOSchema + z.infer
+// (semantic type is z.infer alias in entities/key-result-client.ts).
+export const KeyResultClientDTOSchema = z.object({
   id: brandedId<KeyResultId>(),
   title: z.string(),
   description: z.string().nullable(),
@@ -65,21 +68,13 @@ export const KeyResultClientDTOSchema: z.ZodType<KeyResultClientDTO> = z.object(
   deletedAt: z.number().nullable(),
 });
 
-/**
- * KeyResult Snapshot DTO Schema (复盘快照)
- */
-export const KeyResultSnapshotDTOSchema = z.object({
-  keyResultId: brandedId<KeyResultId>(),
-  title: z.string(),
-  targetValue: z.number(),
-  currentValue: z.number(),
-  progressPercentage: z.number(),
-});
 
 /**
  * GoalReview Client DTO Schema
  */
-export const GoalReviewClientDTOSchema: z.ZodType<GoalReviewClientDTO> = z.object({
+// Residual 817: GoalReviewClientDTO dual retired — sole GoalReviewClientDTOSchema + z.infer
+// (semantic type is z.infer alias in entities/goal-review-client.ts).
+export const GoalReviewClientDTOSchema = z.object({
   id: brandedId<GoalReviewId>(),
   goalId: brandedId<GoalId>(),
   type: z.enum(ReviewType),
@@ -96,38 +91,7 @@ export const GoalReviewClientDTOSchema: z.ZodType<GoalReviewClientDTO> = z.objec
   deletedAt: z.number().nullable(),
 });
 
-/**
- * Reminder Trigger Schema (嵌入式)
- */
-const ReminderTriggerSchema = z.object({
-  type: z.enum(ReminderTriggerType),
-  value: z.number(),
-  enabled: z.boolean(),
-});
 
-/**
- * GoalReminderConfig DTO Schema
- */
-const GoalReminderConfigDTOSchema = z.object({
-  enabled: z.boolean(),
-  triggers: z.array(ReminderTriggerSchema),
-});
-
-/**
- * FocusMode Client DTO Schema
- */
-export const FocusModeClientDTOSchema: z.ZodType<FocusModeDTO> = z.object({
-  id: brandedId<FocusModeId>(),
-  identityId: brandedId<IdentityId>(),
-  focusedGoalIds: z.array(brandedId<GoalId>()),
-  startTime: z.number(),
-  endTime: z.number(),
-  hiddenGoalsMode: z.enum(HiddenGoalsMode),
-  isActive: z.boolean(),
-  actualEndTime: z.number().nullable(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
 
 // ============================================================================
 // Aggregate Root Response Schemas
@@ -136,9 +100,10 @@ export const FocusModeClientDTOSchema: z.ZodType<FocusModeDTO> = z.object({
 /**
  * Goal Client DTO Schema — 核心聚合根响应
  *
- * 严格约束为 GoalClientDTO 类型，用于 OpenAPI 文档和运行时校验。
+ * Residual 819: GoalClientDTO dual retired — sole GoalClientDTOSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/goal-client.ts).
  */
-export const GoalClientDTOSchema: z.ZodType<GoalClientDTO> = z.object({
+export const GoalClientDTOSchema = z.object({
   id: brandedId<GoalId>(),
   identityId: brandedId<IdentityId>(),
   name: z.string(),
@@ -172,8 +137,11 @@ export const GoalClientDTOSchema: z.ZodType<GoalClientDTO> = z.object({
 
 /**
  * GoalFolder Client DTO Schema
+ *
+ * Residual 819: GoalFolderClientDTO dual retired — sole GoalFolderClientDTOSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/goal-folder-client.ts).
  */
-export const GoalFolderClientDTOSchema: z.ZodType<GoalFolderClientDTO> = z.object({
+export const GoalFolderClientDTOSchema = z.object({
   id: brandedId<GoalFolderId>(),
   identityId: brandedId<IdentityId>(),
   name: z.string(),
@@ -199,6 +167,8 @@ export const GoalFolderClientDTOSchema: z.ZodType<GoalFolderClientDTO> = z.objec
 /**
  * FocusSession Client DTO Schema
  */
+// Residual 813: FocusSessionClientDTO dual retired — this schema is the sole focus-session client shape
+// (semantic FocusSessionClientDTO is z.infer alias in aggregates/focus-session-client.ts).
 export const FocusSessionClientDTOSchema = z.object({
   id: brandedId<FocusSessionId>(),
   identityId: brandedId<IdentityId>(),
@@ -225,6 +195,8 @@ export const FocusSessionClientDTOSchema = z.object({
 
 /**
  * GoalRecord Client DTO Schema
+ * Residual 815: GoalRecordClientDTO dual retired — this schema is the sole goal-record client shape
+ * (semantic GoalRecordClientDTO is z.infer alias in aggregates/goal-record-client.ts).
  */
 export const GoalRecordClientDTOSchema = z.object({
   id: brandedId<GoalRecordId>(),
@@ -289,6 +261,8 @@ export type GetGoalAggregateRes = z.infer<typeof GetGoalAggregateResSchema>;
 // List Response Schemas
 // ============================================================================
 
+// Residual 689: goal list OpenAPI schemas are the sole list response shapes
+// (GetKeyResultsRes / GetGoalRecordsRes / GetGoalReviewsRes are z.infer aliases).
 /**
  * 关键结果列表响应 Schema
  */
@@ -317,10 +291,6 @@ export const GoalReviewListResSchema = z.object({
 // Simple Response Schemas
 // ============================================================================
 
-/**
- * 删除操作成功响应 Schema
- */
-export const DeleteSuccessResSchema = z.object({ success: z.boolean() });
 
 /**
  * 归档过期目标响应 Schema
@@ -330,6 +300,8 @@ export const ArchiveExpiredResSchema = z.object({ archivedCount: z.number() });
 /**
  * 进度分解响应 Schema
  */
+// Residual 805: ProgressBreakdown dual retired — this schema is the sole progress-breakdown shape
+// (semantic ProgressBreakdown is z.infer alias in value-objects/progress-breakdown.ts).
 export const ProgressBreakdownResSchema = z.object({
   totalProgress: z.number(),
   calculationMode: z.literal('WeightedAverage'),

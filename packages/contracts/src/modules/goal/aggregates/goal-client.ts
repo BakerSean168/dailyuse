@@ -1,68 +1,12 @@
 /**
  * Goal Aggregate Root - Client Contracts
+ *
+ * Residual 819: GoalClientDTO dual retired — sole GoalClientDTOSchema + z.infer.
  */
 
-import type {
-  TransferDate,
-  GoalId,
-  IdentityId,
-  GoalFolderId,
-} from '../../../primitives';
-import type { ImportanceLevel } from '../../../shared/index';
-import type { GoalStatus } from '../value-objects/goal-status';
-import type { KeyResultClientDTO } from '../entities/key-result-client';
-import type { GoalReviewClientDTO } from '../entities/goal-review-client';
-import type { GoalReminderConfigDTO } from '../value-objects';
+import type { z } from 'zod';
+import { GoalClientDTOSchema } from '../api/response-schemas';
 
-// ============ Transfer DTO ============
-
-/** Goal time range summary for UI display. */
-export interface GoalTimeRangeSummary {
-  startDate: TransferDate | null;
-  targetDate: TransferDate | null;
-  actualStartDate: TransferDate | null;
-  actualEndDate: TransferDate | null;
-  durationDays: number | null;
-  elapsedDays: number | null;
-  remainingDays: number | null;
-}
-
-/**
- * Goal Client DTO
- */
-export interface GoalClientDTO {
-  id: GoalId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  color: string | null;
-  feasibilityAnalysis: string | null;
-  motivation: string | null;
-  status: GoalStatus;
-  importance: ImportanceLevel;
-  /** Dynamic priority score */
-  priority: number;
-  category: string | null;
-  tags: string[];
-  startDate: TransferDate | null;
-  targetDate: TransferDate | null;
-  completedAt: TransferDate | null;
-  archivedAt: TransferDate | null;
-  folderId: GoalFolderId | null;
-  parentGoalId: GoalId | null;
-  sortOrder: number;
-  reminderConfig: GoalReminderConfigDTO | null;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-  version: number;
-
-  // Child entity DTOs
-  keyResults: KeyResultClientDTO[] | null;
-  reviews: GoalReviewClientDTO[] | null;
-
-  // Key result summary (for lightweight list display)
-  totalKeyResults?: number;
-  completedKeyResults?: number;
-  overallProgress?: number;
-}
+// Residual 647: GoalTimeRangeSummary dead dual retired (fields live on GoalClientDTO).
+// Residual 819: GoalClientDTO dual retired — OpenAPI + transport use GoalClientDTOSchema.
+export type GoalClientDTO = z.infer<typeof GoalClientDTOSchema>;

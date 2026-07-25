@@ -5,7 +5,7 @@ tags:
   - ai
 description: AI 模块当前功能资产说明
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # AI 模块说明
@@ -19,7 +19,7 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - AI Chat：用户与 AI 进行对话，支持消息发送和流式响应。
 - 目标生成：通过 goal workflow 生成结构化目标草稿，支持澄清、编辑和确认后写入目标模块。
 - 目标自动化：AI 可生成任务模板并绑定到目标，支持自动化 tool execution。
-- 知识笔记：当前实现可写入数据库 Repository；ADR-034 迁移后，Desktop 可确认写入本地 Vault，绑定 GitHub 后 Web 也可确认创建 Git commit。
+- 知识笔记：ADR-034 已落地——Desktop 本地 Vault 确认写入；绑定 GitHub 后 Web 仅 confirmed-create 新笔记（Git commit），不开放已有笔记全文编辑；旧数据库 Repository 笔记 CRUD 运行时已摘除。
 - 知识查询：基于向量索引的知识检索和问答。
 - 知识扩展：对已有知识进行扩展和深化。
 - 知识索引：自动同步和索引 repository 中的资源内容。
@@ -30,7 +30,62 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - 会话管理：创建、删除、列出对话，支持对话状态管理。
 - 双运行时模式：支持直连 LLM provider 和远程 ai-service 两种运行时。
 
-已采纳但尚未完成的目标态：一个统一助手通过 Daily Use Agent Host 组合 Workflow Engine、Turn Engine 和 Model Gateway；右侧业务面板统一展示 Artifact、Proposal、审批和执行结果。当前 direct-provider/remote-ai-service 仍是迁移前实现。
+已采纳且部分落地的目标态：统一助手通过 Daily Use Agent Host 组合 Workflow Engine、Turn Engine 和 Model Gateway；右侧业务面板统一展示 Artifact、Proposal、审批和执行结果。
+当前仍保留 direct-provider / remote-ai-service 双运行时装配，但 ADR-035 Host 生产适配已部分接线：
+`DirectTurnEngine`（开放式 chat）、`ReadonlyAnalysisTurnEngine`（readonly analysis /
+`engine.pi_readonly`，经 Model Gateway）、`LangGraphWorkflowAdapter`（remote workflow）、
+`ProposalKernel`（提案生命周期）、`CapabilityResolver`（fail-closed start gate）、
+`CustomModelGateway`（OpenAI-compatible Model Gateway，凭据仅请求作用域）、
+`AssistantFacade`（统一 Host dispatch：message/approve/reject/cancel）。
+Host UI 工作台已部分落地（vault residual 355–387：Host Proposal 面板、approve/revise、
+execution receipt 富回放、时间线 Artifact 卡与 focus）；真实 Pi SDK/CLI 进程 adapter、
+完整 multi-engine runtime E2E 与跨端 Playwright/Electron 仍未完成（residual 405–407 仅 scaffold/unit driver，不宣称全绿）。
+
+### 2.1 ADR-035 Host 当前边界（与 vault residual 314–435 对齐）
+
+- 生产允许：`DirectTurnEngine`、`ReadonlyAnalysisTurnEngine`、`LangGraphWorkflowAdapter`、
+  `ProposalKernel`、`CapabilityResolver`、`CustomModelGateway`、`AssistantFacade`。
+- open chat send/stream 经 `AssistantFacade` → 同一 `DirectTurnEngine`（`IOpenChatTurnPort`），不旁路 raw chatExecution；
+  `ReadonlyAnalysisTurnEngine` 不接管 open chat 默认路径。
+- 新工作台应经 `AssistantFacade.dispatch`（message / approve_proposal / reject_proposal /
+  cancel_run）；approve 只做 ProposalKernel 生命周期，不自动 `executeApproved` 业务 mutation。
+- residual 345：HTTP `POST /api/v1/ai/assistant/dispatch/sse` 经 `AIAssistantFacadeController` →
+  `handlers.dispatchAssistant` → `module.assistantFacade`；`identityId` 仅来自 auth ExecutionContext。
+- residual 347/353：客户端 `AIClientPort.dispatchAssistant` + `AIAssistantHttpAdapter`（Web SSE）+
+  Desktop `AIAssistantIpcAdapter` stream（`ASSISTANT_DISPATCH_*` 通道）；body 永不带 `identityId`。
+- residual 349：Vue `useAssistantDispatch` 薄入口（message/approve/reject/cancel）；body 永不带 `identityId`。
+- residual 351：open chat 默认发送路径经 `dispatchAssistant`/`AssistantFacade`（live `message.delta` +
+  model selection）；不再走 `AIChatService.streamMessage` 旁路。
+- residual 355–371：Host Proposal 生命周期 UI（approve/reject/revise）+ 右侧工作台 auto-open；
+  knowledge/goal Host patch 映射到 AgentRun executor 的 approvedActions。
+- residual 377：`executionProfileId: pi_readonly` 经 controller/HTTP/IPC 全路径转发；body 永不带
+  `identityId`；未知 profile fail-closed。
+- residual 379–387：Host execution receipt 工作台（计数/actionLines/path/preview/entity deep-link）+
+  Conversation 时间线 Artifact 卡 + 点击 focus/scroll 到对应 proposal/receipt 行。
+- residual 393–403：open-chat stop→`cancel_run`、mid-turn abort、multi-engine timeline badge、
+  open-chat turn session memory（会话内 stash/restore，不写浏览器存储）。
+- residual 405–407：跨端 multi-engine Host 产品 E2E scaffold + unit driver（源码契约校验
+  HTTP SSE/Desktop IPC/Vue selectors）；Playwright/Electron 全量 product E2E 与真实 Pi spawn 仍外部阻塞。
+- residual 409：Host 时间线 open_chat 与 AgentRun（proposal/receipt）surface isolation 分区与 fail-closed 审计。
+- residual 411：`composeHostWorkbenchTimelineArtifacts` 接入 AIChatView 实时时间线（composition + isolationOk）。
+- residual 413：Host 工作台 LangGraph UI 泄漏边界（product event allowlist vs node/checkpoint 诊断；Host 面无 vendor 依赖）。
+- residual 415：Goal/Knowledge workflow 诊断事件展示脱敏（`formatLangGraphVendorDiagnosticEventLabel`；UI 不再直出 node.*）。
+- residual 417：跨端 multi-engine product scaffold/driver 扩至 16 步（+isolation/composition/LangGraph 脱敏 unit；仍非 Playwright 全绿）。
+- residual 419：Host **task.create** 提案/回执 lane 基础（title+goalId 编辑、receipt 深链 `/tasks/:id`；域 executor 仍未接线）。
+- residual 421：Goal 可观测性 i18n 去 LangGraph「node」产品语（`diagnosticWorkflowStepTiming`）；cross-end scaffold/driver 增 `ui.task_create_proposal_receipt_lane` unit 步（16→17）。
+- residual 423：Host **task.create** 实时 lane 接线 + 域 executor 基础（`resolveLiveHostWorkbenchAgentRuns`；approve 经 goal resume 或 `createTemplate` fallback；title/goalId 补丁）。
+- residual 425：Host **task.create** 客户端 settle + 执行回执（`createTemplate` fallback 后 `buildHostTaskClientExecutionReceipt`/`settledProposalIds`；receipt 深链 template id）。
+- residual 427：Host **AgentType task.create** 基础 + 专用会话字段 `taskAgentRun`；Host lane/`isPrimaryTaskHostAgentRun` 识别；start 能力门禁不阻塞；完整 Task Agent 工作流仍未齐。
+- residual 429：Host **task.create** 产品 toolMode `task-create` + Welcome/Footer 入口；AgentType 同步 toolMode；完整 Task Agent start/runtime 仍未齐。
+- residual 431：Host **task.create** 产品 start 基础（TS `buildHostTaskCreateStartResult` waiting_approval + create_task_template；客户端 `startTaskAgentRun`）；完整 LangGraph Task 工作流仍未齐。
+- residual 433：Host **task.create** 会话 restore/refresh + 启动时可选关联 `goalId`（`task-agent-linked-goal`）；完整 LangGraph 仍未齐。
+- residual 435：Host **task.create** 进程内 run store 基础（`taskCreateRunStore` 支持 get/list/events 再水合；非跨进程 durable DB）；完整 LangGraph 仍未齐。
+- direct-provider completion 经共享 `CustomModelGateway`（`IModelGatewayPort`）；结果只回 `modelBindingId`，
+  不把 API key 写入结果/事件。
+- `knowledge.generate` start 门禁经共享 `CapabilityResolver.resolveFor` fail-closed；
+  workflow offers 永不含 `tool.mutation` / `tool.proposal`。
+- Engine 标签永不静默替代 mutation/context；CapabilityResolver 永不静默 expand `engine.*`。
+- ProposalKernel `executeApproved` 只发 lifecycle receipt，业务 mutation 仍须用户确认后的 executor。
 
 ## 3. 用户路径
 
@@ -67,16 +122,20 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - Provider capability、workflow command、response contract 的一致性需要持续维护。
 - ai-service 的部署和运维复杂度较高（独立 Python 应用 + HMAC 签名 + LLM provider 抽象）。
 - 知识索引的向量搜索能力和准确性需要进一步验证。
-- 当前 Web AI 写入数据库 Repository，而目标态要求创建 Git commit。
-- 当前知识索引流程尚未覆盖 GitHub webhook、commit 幂等和删除 commit 后的向量清理。
-- ADR-035 已明确统一 Proposal、Capability、Context 和 Engine 边界，但对应 contracts、Host 和 adapters 尚未实现。
+- Web 知识笔记已走 confirmed-create → Git commit；旧数据库 Repository 写路径不应再作为产品叙述。
+- 知识索引/webhook/幂等/删除后向量清理仍需持续 harden。
+- ADR-035 contracts 与 Host adapters（DirectTurn / ReadonlyAnalysisTurn / LangGraph workflow /
+  ProposalKernel / CapabilityResolver / CustomModelGateway / AssistantFacade）已部分落地；
+  Host UI 工作台已部分落地（Proposal/receipt/timeline/focus，residual 355–387）；真实 Pi SDK/CLI
+  进程 adapter 与完整 multi-engine runtime E2E 仍未完成。
 - 当前 `AgentAction` 的开放 payload、`supportsXxx` 布尔能力和 framework-oriented node event 仍需按新方案收敛。
 - 当前缺少 Pi Turn Engine、自定义 Model Gateway 收口和 Desktop local CLI adapter。
 
 ## 7. 优化机会
 
-- 按 ADR-035 建立 AssistantFacade、Agent Host、Proposal Kernel 和 Capability Resolver。
-- 将右侧业务面板升级为 Goal/Knowledge/Task 共用的 Artifact 与审批工作台。
+- 在已落地的 AssistantFacade + Host Proposal/receipt 工作台之上补齐 Task Artifact 共用面与
+  完整 Artifact 富编辑/回放。
+- 将右侧业务面板继续收敛为 Goal/Knowledge/Task 共用的 Artifact 与审批工作台（当前 Goal/Knowledge Host 路径已部分接线）。
 - 梳理 AI 模块与业务模块的写入边界，建立更清晰的“AI 建议 → 用户确认 → 业务写入”链路。
 - 为知识索引提供更好的管理和维护能力。
 - 考虑 AI 模块的缓存和成本控制策略。

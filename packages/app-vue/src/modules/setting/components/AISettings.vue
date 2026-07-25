@@ -5,345 +5,301 @@
       <CardDescription>{{ t('setting.ai.description') }}</CardDescription>
     </CardHeader>
     <CardContent class="space-y-6">
-      <div class="grid gap-6 @3xl/panel:grid-cols-[1.05fr_0.95fr]">
-        <div class="space-y-6">
-          <div class="space-y-3 rounded-lg border border-border/70 bg-muted/20 p-4">
-            <div class="space-y-1">
-              <Label for="knowledge-note-subpath" class="text-base font-medium">
-                {{ t('setting.ai.knowledgeNoteSubpath') }}
-              </Label>
-              <p class="text-sm text-muted-foreground">
-                {{ t('setting.ai.knowledgeNoteSubpathDescription') }}
-              </p>
-            </div>
-
-            <Input
-              id="knowledge-note-subpath"
-              v-model="draftSubpath"
-              :disabled="isSavingSettings"
-              :placeholder="t('setting.ai.knowledgeNoteSubpathPlaceholder')"
-            />
-
+      <div class="space-y-4">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-base font-semibold">{{ t('setting.ai.quickProviderSectionTitle') }}</h3>
             <p class="text-sm text-muted-foreground">
-              {{ t('setting.ai.knowledgeNoteResolvedPath', { path: resolvedPathPreview }) }}
+              {{ t('setting.ai.quickProviderSectionDescription') }}
             </p>
+          </div>
+          <Button variant="outline" size="sm" :disabled="isLoadingProviders" @click="loadProviders">
+            {{ t('setting.ai.refreshProviders') }}
+          </Button>
+        </div>
 
-            <div class="flex items-center justify-between gap-3">
-              <p v-if="subpathError" class="text-sm text-destructive">{{ subpathError }}</p>
-              <div class="ml-auto flex gap-2">
-                <Button variant="outline" :disabled="isSavingSettings" @click="resetSubpath">
-                  {{ t('setting.ai.resetPath') }}
-                </Button>
-                <Button :disabled="isSaveSubpathDisabled" @click="saveSubpath">
-                  {{ t('setting.ai.savePath') }}
-                </Button>
+        <div class="space-y-3">
+          <div
+            v-for="template in quickProviderTemplates"
+            :key="template.id"
+            class="rounded-xl border border-border/60 bg-background/70 p-4"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <p class="font-medium">{{ template.name }}</p>
+                  <Badge v-if="getPresetProvider(template.id)" variant="secondary">
+                    {{ t('setting.ai.quickProviderConfigured') }}
+                  </Badge>
+                </div>
+                <p class="text-sm text-muted-foreground">{{ template.description }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ getPresetModelSummary(template) }}
+                </p>
               </div>
+              <a
+                v-if="template.apiKeyUrl"
+                :href="template.apiKeyUrl"
+                target="_blank"
+                rel="noreferrer"
+                class="text-xs text-primary underline underline-offset-2"
+              >
+                {{ t('setting.ai.getApiKey') }}
+              </a>
             </div>
+
+            <div class="mt-3 flex flex-col gap-2 @2xl/panel:flex-row">
+              <Input
+                v-model="presetApiKeys[template.id]"
+                type="password"
+                class="flex-1"
+                :placeholder="
+                  t('setting.ai.quickProviderApiKeyPlaceholder', { provider: template.name })
+                "
+              />
+              <Button
+                :disabled="isQuickProviderSubmitting(template.id) || !canSubmitPreset(template)"
+                @click="submitQuickProvider(template)"
+              >
+                {{ getPresetActionLabel(template) }}
+              </Button>
+              <Button
+                v-if="getPresetProvider(template.id)"
+                variant="outline"
+                :disabled="
+                  isQuickProviderSubmitting(template.id) ||
+                  isProviderRefreshing(getProviderId(getPresetProvider(template.id)))
+                "
+                @click="handleRefreshModels(getProviderId(getPresetProvider(template.id)))"
+              >
+                {{
+                  isProviderRefreshing(getProviderId(getPresetProvider(template.id)))
+                    ? t('setting.ai.refreshingModels')
+                    : t('setting.ai.refreshModels')
+                }}
+              </Button>
+              <Button
+                v-if="getPresetProvider(template.id)"
+                variant="ghost"
+                :disabled="isQuickProviderSubmitting(template.id)"
+                @click="populateForm(getPresetProvider(template.id))"
+              >
+                {{ t('setting.ai.manageAdvancedConfig') }}
+              </Button>
+            </div>
+
+            <div
+              class="mt-3 flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
+            >
+              <div>
+                <p class="text-sm font-medium">{{ t('setting.ai.markAsDefault') }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{
+                    isPresetDefaultLocked(template.id)
+                      ? t('setting.ai.quickProviderCurrentDefault')
+                      : t('setting.ai.quickProviderDefaultHint')
+                  }}
+                </p>
+              </div>
+              <Switch
+                :checked="shouldUsePresetAsDefault(template.id)"
+                :disabled="
+                  isPresetDefaultLocked(template.id) || isQuickProviderSubmitting(template.id)
+                "
+                @update:checked="updatePresetDefaultSelection(template.id, $event)"
+              />
+            </div>
+
+            <p
+              v-if="
+                getPresetProvider(template.id) &&
+                getProviderStatus(getProviderId(getPresetProvider(template.id)))
+              "
+              class="mt-3 text-xs"
+              :class="
+                getProviderStatusTone(getProviderId(getPresetProvider(template.id))) === 'error'
+                  ? 'text-destructive'
+                  : 'text-muted-foreground'
+              "
+            >
+              {{ getProviderStatus(getProviderId(getPresetProvider(template.id))) }}
+            </p>
           </div>
         </div>
 
-        <div class="space-y-4 rounded-2xl border border-border/70 bg-muted/15 p-4">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-base font-semibold">{{ t('setting.ai.quickProviderSectionTitle') }}</h3>
-              <p class="text-sm text-muted-foreground">
-                {{ t('setting.ai.quickProviderSectionDescription') }}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="isLoadingProviders"
-              @click="loadProviders"
-            >
-              {{ t('setting.ai.refreshProviders') }}
-            </Button>
-          </div>
+        <Separator />
 
-          <div class="space-y-3">
-            <div
-              v-for="template in quickProviderTemplates"
-              :key="template.id"
-              class="rounded-xl border border-border/60 bg-background/70 p-4"
-            >
-              <div class="flex items-start justify-between gap-3">
-                <div class="space-y-1">
-                  <div class="flex items-center gap-2">
-                    <p class="font-medium">{{ template.name }}</p>
-                    <Badge v-if="getPresetProvider(template.id)" variant="secondary">
-                      {{ t('setting.ai.quickProviderConfigured') }}
-                    </Badge>
-                  </div>
-                  <p class="text-sm text-muted-foreground">{{ template.description }}</p>
-                  <p class="text-xs text-muted-foreground">
-                    {{ getPresetModelSummary(template) }}
-                  </p>
+        <div>
+          <h3 class="text-base font-semibold">{{ t('setting.ai.providerSectionTitle') }}</h3>
+          <p class="text-sm text-muted-foreground">
+            {{ t('setting.ai.providerSectionDescription') }}
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <div
+            v-for="provider in providerItems"
+            :key="getProviderId(provider)"
+            class="rounded-xl border border-border/60 bg-background/70 p-3"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <p class="font-medium">{{ getProviderName(provider) }}</p>
+                  <Badge v-if="isDefaultProvider(provider)" variant="secondary">{{
+                    t('setting.ai.defaultProvider')
+                  }}</Badge>
+                  <Badge v-if="!isProviderActive(provider)" variant="outline">{{
+                    t('setting.ai.inactiveProvider')
+                  }}</Badge>
                 </div>
-                <a
-                  v-if="template.apiKeyUrl"
-                  :href="template.apiKeyUrl"
-                  target="_blank"
-                  rel="noreferrer"
-                  class="text-xs text-primary underline underline-offset-2"
+                <p class="text-xs text-muted-foreground">{{ getProviderBaseUrl(provider) }}</p>
+                <p class="text-xs text-muted-foreground">{{ getProviderModel(provider) }}</p>
+                <p v-if="getProviderApiKeyMasked(provider)" class="text-xs text-muted-foreground">
+                  {{ getProviderApiKeyMasked(provider) }}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {{
+                    t('setting.ai.providerModelsSummary', {
+                      count: getAvailableModelCount(provider),
+                    })
+                  }}
+                </p>
+                <p
+                  v-if="getProviderStatus(getProviderId(provider))"
+                  class="text-xs"
+                  :class="
+                    getProviderStatusTone(getProviderId(provider)) === 'error'
+                      ? 'text-destructive'
+                      : 'text-muted-foreground'
+                  "
                 >
-                  {{ t('setting.ai.getApiKey') }}
-                </a>
+                  {{ getProviderStatus(getProviderId(provider)) }}
+                </p>
               </div>
-
-              <div class="mt-3 flex flex-col gap-2 @2xl/panel:flex-row">
-                <Input
-                  v-model="presetApiKeys[template.id]"
-                  type="password"
-                  class="flex-1"
-                  :placeholder="t('setting.ai.quickProviderApiKeyPlaceholder', { provider: template.name })"
-                />
+              <div class="flex flex-wrap justify-end gap-2">
                 <Button
-                  :disabled="isQuickProviderSubmitting(template.id) || !canSubmitPreset(template)"
-                  @click="submitQuickProvider(template)"
+                  v-if="!isDefaultProvider(provider)"
+                  variant="outline"
+                  size="sm"
+                  @click="handleSetDefault(getProviderId(provider))"
                 >
-                  {{ getPresetActionLabel(template) }}
+                  {{ t('setting.ai.setDefaultProvider') }}
                 </Button>
                 <Button
-                  v-if="getPresetProvider(template.id)"
                   variant="outline"
-                  :disabled="
-                    isQuickProviderSubmitting(template.id) ||
-                    isProviderRefreshing(getProviderId(getPresetProvider(template.id)))
-                  "
-                  @click="handleRefreshModels(getProviderId(getPresetProvider(template.id)))"
+                  size="sm"
+                  :disabled="isProviderRefreshing(getProviderId(provider))"
+                  @click="handleRefreshModels(getProviderId(provider))"
                 >
                   {{
-                    isProviderRefreshing(getProviderId(getPresetProvider(template.id)))
+                    isProviderRefreshing(getProviderId(provider))
                       ? t('setting.ai.refreshingModels')
                       : t('setting.ai.refreshModels')
                   }}
                 </Button>
+                <Button variant="outline" size="sm" @click="populateForm(provider)">
+                  {{ t('setting.ai.loadIntoForm') }}
+                </Button>
                 <Button
-                  v-if="getPresetProvider(template.id)"
                   variant="ghost"
-                  :disabled="isQuickProviderSubmitting(template.id)"
-                  @click="populateForm(getPresetProvider(template.id))"
+                  size="sm"
+                  class="text-destructive"
+                  @click="handleDeleteProvider(getProviderId(provider))"
                 >
-                  {{ t('setting.ai.manageAdvancedConfig') }}
+                  {{ t('setting.ai.deleteProvider') }}
                 </Button>
               </div>
-
-              <div
-                class="mt-3 flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
-              >
-                <div>
-                  <p class="text-sm font-medium">{{ t('setting.ai.markAsDefault') }}</p>
-                  <p class="text-xs text-muted-foreground">
-                    {{
-                      isPresetDefaultLocked(template.id)
-                        ? t('setting.ai.quickProviderCurrentDefault')
-                        : t('setting.ai.quickProviderDefaultHint')
-                    }}
-                  </p>
-                </div>
-                <Switch
-                  :checked="shouldUsePresetAsDefault(template.id)"
-                  :disabled="isPresetDefaultLocked(template.id) || isQuickProviderSubmitting(template.id)"
-                  @update:checked="updatePresetDefaultSelection(template.id, $event)"
-                />
-              </div>
-
-              <p
-                v-if="getPresetProvider(template.id) && getProviderStatus(getProviderId(getPresetProvider(template.id)))"
-                class="mt-3 text-xs"
-                :class="
-                  getProviderStatusTone(getProviderId(getPresetProvider(template.id))) === 'error'
-                    ? 'text-destructive'
-                    : 'text-muted-foreground'
-                "
-              >
-                {{ getProviderStatus(getProviderId(getPresetProvider(template.id))) }}
-              </p>
             </div>
           </div>
 
-          <Separator />
+          <div
+            v-if="!providerItems.length"
+            class="rounded-xl border border-dashed border-border/70 p-4 text-sm text-muted-foreground"
+          >
+            {{ t('setting.ai.noProviders') }}
+          </div>
+        </div>
 
+        <Separator />
+
+        <div class="space-y-4">
           <div>
-            <h3 class="text-base font-semibold">{{ t('setting.ai.providerSectionTitle') }}</h3>
+            <h4 class="font-medium">{{ t('setting.ai.advancedProviderSectionTitle') }}</h4>
             <p class="text-sm text-muted-foreground">
-              {{ t('setting.ai.providerSectionDescription') }}
+              {{ t('setting.ai.advancedProviderSectionDescription') }}
             </p>
           </div>
 
-          <div class="space-y-3">
+          <div class="grid gap-3">
+            <Input
+              v-model="providerForm.name"
+              :placeholder="t('setting.ai.providerNamePlaceholder')"
+            />
+            <Input
+              v-model="providerForm.baseUrl"
+              :placeholder="t('setting.ai.providerBaseUrlPlaceholder')"
+            />
+            <Input
+              v-model="providerForm.model"
+              :placeholder="t('setting.ai.providerModelPlaceholder')"
+            />
+            <Input
+              v-model="providerForm.apiKey"
+              type="password"
+              :placeholder="t('setting.ai.providerApiKeyPlaceholder')"
+            />
+            <p v-if="editingProviderApiKeyMasked" class="text-xs text-muted-foreground">
+              {{ editingProviderApiKeyMasked }}
+            </p>
             <div
-              v-for="provider in providerItems"
-              :key="getProviderId(provider)"
-              class="rounded-xl border border-border/60 bg-background/70 p-3"
+              class="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
             >
-              <div class="flex items-start justify-between gap-3">
-                <div class="space-y-1">
-                  <div class="flex items-center gap-2">
-                    <p class="font-medium">{{ getProviderName(provider) }}</p>
-                    <Badge v-if="isDefaultProvider(provider)" variant="secondary">{{
-                      t('setting.ai.defaultProvider')
-                    }}</Badge>
-                    <Badge v-if="!isProviderActive(provider)" variant="outline">{{
-                      t('setting.ai.inactiveProvider')
-                    }}</Badge>
-                  </div>
-                  <p class="text-xs text-muted-foreground">{{ getProviderBaseUrl(provider) }}</p>
-                  <p class="text-xs text-muted-foreground">{{ getProviderModel(provider) }}</p>
-                  <p v-if="getProviderApiKeyMasked(provider)" class="text-xs text-muted-foreground">
-                    {{ getProviderApiKeyMasked(provider) }}
-                  </p>
-                  <p class="text-xs text-muted-foreground">
-                    {{
-                      t('setting.ai.providerModelsSummary', {
-                        count: getAvailableModelCount(provider),
-                      })
-                    }}
-                  </p>
-                  <p
-                    v-if="getProviderStatus(getProviderId(provider))"
-                    class="text-xs"
-                    :class="
-                      getProviderStatusTone(getProviderId(provider)) === 'error'
-                        ? 'text-destructive'
-                        : 'text-muted-foreground'
-                    "
-                  >
-                    {{ getProviderStatus(getProviderId(provider)) }}
-                  </p>
-                </div>
-                <div class="flex flex-wrap justify-end gap-2">
-                  <Button
-                    v-if="!isDefaultProvider(provider)"
-                    variant="outline"
-                    size="sm"
-                    @click="handleSetDefault(getProviderId(provider))"
-                  >
-                    {{ t('setting.ai.setDefaultProvider') }}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    :disabled="isProviderRefreshing(getProviderId(provider))"
-                    @click="handleRefreshModels(getProviderId(provider))"
-                  >
-                    {{
-                      isProviderRefreshing(getProviderId(provider))
-                        ? t('setting.ai.refreshingModels')
-                        : t('setting.ai.refreshModels')
-                    }}
-                  </Button>
-                  <Button variant="outline" size="sm" @click="populateForm(provider)">
-                    {{ t('setting.ai.loadIntoForm') }}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="text-destructive"
-                    @click="handleDeleteProvider(getProviderId(provider))"
-                  >
-                    {{ t('setting.ai.deleteProvider') }}
-                  </Button>
-                </div>
+              <div>
+                <p class="text-sm font-medium">{{ t('setting.ai.markAsDefault') }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ t('setting.ai.markAsDefaultDescription') }}
+                </p>
               </div>
-            </div>
-
-            <div
-              v-if="!providerItems.length"
-              class="rounded-xl border border-dashed border-border/70 p-4 text-sm text-muted-foreground"
-            >
-              {{ t('setting.ai.noProviders') }}
+              <Switch
+                :checked="providerForm.isDefault"
+                @update:checked="providerForm.isDefault = $event"
+              />
             </div>
           </div>
 
-          <Separator />
-
-          <div class="space-y-4">
-            <div>
-              <h4 class="font-medium">{{ t('setting.ai.advancedProviderSectionTitle') }}</h4>
-              <p class="text-sm text-muted-foreground">
-                {{ t('setting.ai.advancedProviderSectionDescription') }}
-              </p>
-            </div>
-
-            <div class="grid gap-3">
-              <Input
-                v-model="providerForm.name"
-                :placeholder="t('setting.ai.providerNamePlaceholder')"
-              />
-              <Input
-                v-model="providerForm.baseUrl"
-                :placeholder="t('setting.ai.providerBaseUrlPlaceholder')"
-              />
-              <Input
-                v-model="providerForm.model"
-                :placeholder="t('setting.ai.providerModelPlaceholder')"
-              />
-              <Input
-                v-model="providerForm.apiKey"
-                type="password"
-                :placeholder="t('setting.ai.providerApiKeyPlaceholder')"
-              />
-              <p
-                v-if="editingProviderApiKeyMasked"
-                class="text-xs text-muted-foreground"
-              >
-                {{ editingProviderApiKeyMasked }}
-              </p>
-              <div
-                class="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
-              >
-                <div>
-                  <p class="text-sm font-medium">{{ t('setting.ai.markAsDefault') }}</p>
-                  <p class="text-xs text-muted-foreground">
-                    {{ t('setting.ai.markAsDefaultDescription') }}
-                  </p>
-                </div>
-                <Switch
-                  :checked="providerForm.isDefault"
-                  @update:checked="providerForm.isDefault = $event"
-                />
-              </div>
-            </div>
-
-            <div class="flex flex-wrap gap-2">
-              <Button
-                :disabled="isSubmittingProvider || !canSubmitProvider"
-                @click="submitProvider"
-              >
-                {{
-                  isEditingProvider
-                    ? t('setting.ai.updateProvider')
-                    : t('setting.ai.createProvider')
-                }}
-              </Button>
-              <Button
-                variant="outline"
-                :disabled="isTestingProvider || !canTestProvider"
-                @click="testProviderConnection"
-              >
-                {{
-                  isTestingProvider ? t('setting.ai.testingProvider') : t('setting.ai.testProvider')
-                }}
-              </Button>
-              <Button variant="ghost" :disabled="isSubmittingProvider" @click="resetProviderForm">
-                {{ t('setting.ai.resetProviderForm') }}
-              </Button>
-            </div>
-
-            <div
-              v-if="providerTestResult"
-              class="rounded-xl border border-border/60 bg-background/70 p-3 text-sm"
+          <div class="flex flex-wrap gap-2">
+            <Button :disabled="isSubmittingProvider || !canSubmitProvider" @click="submitProvider">
+              {{
+                isEditingProvider ? t('setting.ai.updateProvider') : t('setting.ai.createProvider')
+              }}
+            </Button>
+            <Button
+              variant="outline"
+              :disabled="isTestingProvider || !canTestProvider"
+              @click="testProviderConnection"
             >
-              <p class="font-medium">
-                {{
-                  providerTestResult.ok
-                    ? t('setting.ai.providerTestPassed')
-                    : t('setting.ai.providerTestFailed')
-                }}
-              </p>
-              <p class="mt-1 text-muted-foreground">{{ providerTestDetails }}</p>
-            </div>
+              {{
+                isTestingProvider ? t('setting.ai.testingProvider') : t('setting.ai.testProvider')
+              }}
+            </Button>
+            <Button variant="ghost" :disabled="isSubmittingProvider" @click="resetProviderForm">
+              {{ t('setting.ai.resetProviderForm') }}
+            </Button>
+          </div>
+
+          <div
+            v-if="providerTestResult"
+            class="rounded-xl border border-border/60 bg-background/70 p-3 text-sm"
+          >
+            <p class="font-medium">
+              {{
+                providerTestResult.ok
+                  ? t('setting.ai.providerTestPassed')
+                  : t('setting.ai.providerTestFailed')
+              }}
+            </p>
+            <p class="mt-1 text-muted-foreground">{{ providerTestDetails }}</p>
           </div>
         </div>
       </div>
@@ -352,7 +308,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import {
@@ -373,14 +329,8 @@ import {
   type AIProviderConfigClientDTO,
   type AIProviderTemplate,
 } from '@dailyuse/contracts/ai';
-import { KnowledgeNoteSubpathSchema } from '@dailyuse/contracts/setting';
-import { useUserSetting } from '../composables/useUserSetting';
 import { useAI } from '../../ai/composables/useAI';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
-
-interface AIFormState {
-  knowledgeNoteSubpath: string;
-}
 
 interface ProviderFormState {
   name: string;
@@ -409,7 +359,6 @@ interface ProviderStatusState {
 }
 
 const { t } = useI18n();
-const { getCategory, updateCategory } = useUserSetting();
 const {
   providers,
   isLoadingProviders,
@@ -423,14 +372,6 @@ const {
 } = useAI();
 
 const QUICK_PROVIDER_TEMPLATE_IDS = ['gemini', 'openai', 'openrouter'] as const;
-
-const fallbackState: AIFormState = {
-  knowledgeNoteSubpath: '',
-};
-
-const preferences = ref<AIFormState>({ ...fallbackState });
-const draftSubpath = ref('');
-const isSavingSettings = ref(false);
 
 const providerForm = reactive<ProviderFormState>({
   name: '',
@@ -467,23 +408,6 @@ function getAISettingErrorMessage(error: unknown, fallbackKey: string) {
   return translateResultError(error, t, { fallbackKey });
 }
 
-const aiSettings = computed(() => getCategory('ai'));
-
-function normalizeAIFormState(value?: Partial<AIFormState> | null): AIFormState {
-  return {
-    knowledgeNoteSubpath: value?.knowledgeNoteSubpath ?? fallbackState.knowledgeNoteSubpath,
-  };
-}
-
-watch(
-  aiSettings,
-  (value) => {
-    preferences.value = normalizeAIFormState(value);
-    draftSubpath.value = preferences.value.knowledgeNoteSubpath;
-  },
-  { immediate: true },
-);
-
 onMounted(() => {
   void loadProviders();
 });
@@ -491,44 +415,30 @@ onMounted(() => {
 const providerItems = computed<ProviderListItem[]>(() => providers.value);
 const editingProvider = computed(() =>
   editingProviderId.value
-    ? providerItems.value.find((provider) => provider.id === editingProviderId.value) ?? null
+    ? (providerItems.value.find((provider) => provider.id === editingProviderId.value) ?? null)
     : null,
 );
 const editingProviderApiKeyMasked = computed(() => editingProvider.value?.apiKeyMasked ?? '');
 const quickProviderTemplates = computed(() =>
   AI_PROVIDER_TEMPLATES.filter((template) =>
-    QUICK_PROVIDER_TEMPLATE_IDS.includes(template.id as (typeof QUICK_PROVIDER_TEMPLATE_IDS)[number]),
+    QUICK_PROVIDER_TEMPLATE_IDS.includes(
+      template.id as (typeof QUICK_PROVIDER_TEMPLATE_IDS)[number],
+    ),
   ),
 );
-const presetProviderMap = computed(() =>
-  Object.fromEntries(
-    quickProviderTemplates.value.map((template) => [
-      template.id,
-      providerItems.value.find(
-        (provider) => normalizeProviderBaseUrl(provider.baseUrl) === normalizeProviderBaseUrl(template.baseUrl),
-      ) ?? null,
-    ]),
-  ) as Record<string, ProviderListItem | null>,
+const presetProviderMap = computed(
+  () =>
+    Object.fromEntries(
+      quickProviderTemplates.value.map((template) => [
+        template.id,
+        providerItems.value.find(
+          (provider) =>
+            normalizeProviderBaseUrl(provider.baseUrl) ===
+            normalizeProviderBaseUrl(template.baseUrl),
+        ) ?? null,
+      ]),
+    ) as Record<string, ProviderListItem | null>,
 );
-
-const parsedSubpath = computed(() => KnowledgeNoteSubpathSchema.safeParse(draftSubpath.value));
-const subpathError = computed(() => {
-  if (parsedSubpath.value.success) return '';
-  return parsedSubpath.value.error.issues[0]?.message ?? t('setting.ai.invalidSubpath');
-});
-const resolvedPathPreview = computed(() => {
-  const subpath = parsedSubpath.value.success
-    ? parsedSubpath.value.data
-    : preferences.value.knowledgeNoteSubpath;
-  return subpath ? `notes/${subpath}/` : 'notes/';
-});
-const isSaveSubpathDisabled = computed(() => {
-  return (
-    isSavingSettings.value ||
-    !parsedSubpath.value.success ||
-    parsedSubpath.value.data === preferences.value.knowledgeNoteSubpath
-  );
-});
 
 const isEditingProvider = computed(() => editingProviderId.value !== null);
 const canSubmitProvider = computed(() => {
@@ -562,30 +472,6 @@ const providerTestDetails = computed(() => {
     .filter(Boolean)
     .join(' · ');
 });
-
-async function patchAISettings(patch: Partial<AIFormState>) {
-  isSavingSettings.value = true;
-  try {
-    const nextState = { ...preferences.value, ...patch };
-    const updated = await updateCategory('ai', nextState);
-    if (!updated) return;
-
-    preferences.value = normalizeAIFormState(updated.preferences?.ai);
-    draftSubpath.value = preferences.value.knowledgeNoteSubpath;
-    toast.success(t('setting.ai.saved'));
-  } finally {
-    isSavingSettings.value = false;
-  }
-}
-
-async function saveSubpath() {
-  if (!parsedSubpath.value.success) return;
-  await patchAISettings({ knowledgeNoteSubpath: parsedSubpath.value.data });
-}
-
-function resetSubpath() {
-  draftSubpath.value = preferences.value.knowledgeNoteSubpath;
-}
 
 function resetProviderForm() {
   editingProviderId.value = null;
@@ -864,9 +750,7 @@ async function testProviderConnection() {
     } else {
       toast.error(
         getAISettingErrorMessage(
-          providerTestResult.value.error
-            ? { message: providerTestResult.value.error }
-            : null,
+          providerTestResult.value.error ? { message: providerTestResult.value.error } : null,
           'setting.ai.providerTestFailed',
         ),
       );
@@ -899,4 +783,3 @@ async function handleDeleteProvider(providerId: string) {
   }
 }
 </script>
-

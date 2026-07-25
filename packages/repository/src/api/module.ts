@@ -30,11 +30,9 @@ import {
   type RepositoryModuleInstance,
 } from '../server/infrastructure';
 import { createRepositoryRuntimeContribution } from '../server/infrastructure/runtime';
-import {
-  registerRepositoryRoutes,
-  registerResourceRoutes,
-  registerFolderRoutes,
-} from './routes/index';
+import type { RepositoryApplicationPort } from '../server/application';
+import type { IKnowledgeRepositoryCloudDataPurger } from '../server/application';
+import { registerRepositoryRoutes } from './routes/index';
 
 // ---------------------------------------------------------------------------
 // Module context — 模块注册上下文
@@ -48,19 +46,26 @@ export type RepositoryApiModuleContext = ServerModuleContext<PrismaClient>;
 
 export interface RepositoryApiModuleDef {
   readonly name: string;
+  /** The composed application surface for sibling modules in the same host. */
+  readonly getApplicationPort: () => RepositoryApplicationPort | null;
   register(context: RepositoryApiModuleContext): Promise<void> | void;
   destroy?(): Promise<void> | void;
 }
 
 export interface CreateRepositoryApiModuleOptions {
   readonly storageBaseDir?: string;
+  readonly githubApp?: {
+    readonly appId: string;
+    readonly appSlug: string;
+    readonly privateKey: string;
+    readonly webhookSecret: string;
+  };
+  readonly knowledgeRepositoryCloudDataPurger?: IKnowledgeRepositoryCloudDataPurger;
 }
 
 // ---------------------------------------------------------------------------
 // Module singleton — 模块单例
 // ---------------------------------------------------------------------------
-
-let activeRepositoryModule: RepositoryModuleInstance | null = null;
 
 // ---------------------------------------------------------------------------
 // API Module — API 模块
@@ -69,8 +74,11 @@ let activeRepositoryModule: RepositoryModuleInstance | null = null;
 export function createRepositoryApiModule(
   options: CreateRepositoryApiModuleOptions = {},
 ): RepositoryApiModuleDef {
+  let repositoryModule: RepositoryModuleInstance | null = null;
+
   return {
     name: 'Repository',
+    getApplicationPort: () => repositoryModule?.api ?? null,
 
     register(context) {
       const { router, middleware, db } = context;
@@ -79,11 +87,12 @@ export function createRepositoryApiModule(
       const storageBaseDir = resolveRepositoryStorageBaseDir({
         storageBaseDir: options.storageBaseDir,
       });
-      const repositoryModule = createRepositoryPrismaModule(prismaClient, {
+      repositoryModule = createRepositoryPrismaModule(prismaClient, {
         storageBaseDir,
+        githubApp: options.githubApp,
+        knowledgeRepositoryCloudDataPurger: options.knowledgeRepositoryCloudDataPurger,
         runtimeContributions: createRepositoryRuntimeContribution(),
       });
-      activeRepositoryModule = repositoryModule;
       repositoryModule.start();
 
       const repositoryRoutes = registerRepositoryRoutes(
@@ -91,25 +100,12 @@ export function createRepositoryApiModule(
         middleware,
         context.openApiRegistry,
       );
-      const resourceRoutes = registerResourceRoutes(
-        repositoryModule.api,
-        middleware,
-        context.openApiRegistry,
-      );
-      const folderRoutes = registerFolderRoutes(
-        repositoryModule.api,
-        middleware,
-        context.openApiRegistry,
-      );
-
       router.use('/repositories', repositoryRoutes);
-      router.use('/resources', resourceRoutes);
-      router.use('/folders', folderRoutes);
     },
 
     destroy() {
-      activeRepositoryModule?.dispose();
-      activeRepositoryModule = null;
+      repositoryModule?.dispose();
+      repositoryModule = null;
     },
   };
 }

@@ -23,12 +23,14 @@ const i18n = createI18n({
           context: { todayOverview: 'Today' },
           toolIntro: {
             goalCreate: { title: 'Goal mode', description: 'Goal desc' },
+            taskCreate: { title: 'Task mode', description: 'Task desc' },
             knowledgeQa: { title: 'QA mode', description: 'QA desc' },
             knowledgeGenerate: { title: 'Note mode', description: 'Note desc' },
           },
           shortcuts: {
             chat: { title: 'Just chat', description: 'Chat desc', prefill: 'chat prefill' },
             goalCreate: { title: 'Plan a goal', description: 'Goal shortcut', prefill: 'goal prefill' },
+            taskCreate: { title: 'Create a task', description: 'Task shortcut', prefill: 'task prefill' },
             knowledgeGenerate: {
               title: 'Write a note',
               description: 'Note shortcut',
@@ -43,7 +45,7 @@ const i18n = createI18n({
 });
 
 describe('AIMessagePanel (V2 §6.0 welcome)', () => {
-  it('renders four shortcut cards and today overview when idle in chat mode', () => {
+  it('renders shortcut cards and today overview when idle in chat mode', () => {
     const wrapper = mount(AIMessagePanel, {
       props: {
         timeline: [],
@@ -60,6 +62,7 @@ describe('AIMessagePanel (V2 §6.0 welcome)', () => {
     expect(wrapper.text()).toContain('What do you want to move forward today?');
     expect(wrapper.find('[data-testid="ai-welcome-entry-chat"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="ai-welcome-entry-goal-create"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ai-welcome-entry-task-create"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="ai-welcome-entry-knowledge-generate"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="ai-welcome-entry-knowledge-qa"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="ai-today-overview"]').exists()).toBe(true);

@@ -4,7 +4,8 @@
 
 import type { ExportContext } from '../../portable-runtime';
 import type { PortableTaskFolder, PortableTaskTemplate, PortableTaskInstance, PortableTaskDependency } from '@dailyuse/contracts/data-portability';
-import { parseJsonField, toDateString, toRecord, toStringArray, toTimestamp } from './projection-helpers';
+// Residual 1003: sole resolveExportRef/OrThrow (local dual retired).
+import { parseJsonField, toDateString, toRecord, toStringArray, toTimestamp, resolveExportRef, resolveExportRefOrThrow } from './projection-helpers';
 
 function buildTimeConfig(entity: Record<string, unknown>): unknown {
   const existing = parseJsonField(entity.timeConfig);
@@ -103,12 +104,12 @@ export function projectTaskTemplates(templates: unknown[], ctx: ExportContext): 
       tags: toStringArray(entity.tags),
       color: entity.color as string | null | undefined,
       status: entity.status as string,
-      folderRef: resolveRef(entity.folderId as string | null, ctx),
-      goalRef: resolveRef(goalId, ctx),
-      keyResultRef: resolveRef(keyResultId, ctx),
+      folderRef: resolveExportRef(entity.folderId as string | null, ctx, 'task'),
+      goalRef: resolveExportRef(goalId, ctx, 'task'),
+      keyResultRef: resolveExportRef(keyResultId, ctx, 'task'),
       goalBinding,
       checklist: (parseJsonField(entity.checklist, []) as unknown[]) ?? [],
-      parentTaskRef: resolveRef(entity.parentTaskId as string | null, ctx),
+      parentTaskRef: resolveExportRef(entity.parentTaskId as string | null, ctx, 'task'),
       timeConfig: buildTimeConfig(entity),
       recurrenceRule,
       reminderConfig: buildReminderConfig(entity),
@@ -131,7 +132,7 @@ export function projectTaskInstances(instances: unknown[], ctx: ExportContext): 
     ctx.refToIdMap.set(entity.id as string, ref);
     return {
       _ref: ref,
-      templateRef: resolveRefOrThrow(entity.templateId as string, ctx),
+      templateRef: resolveExportRefOrThrow(entity.templateId as string, ctx, 'task'),
       instanceDate: toTimestamp(entity.instanceDate) ?? Date.now(),
       timeConfig: parseJsonField(entity.timeConfig, {}),
       importance: entity.importance as string,
@@ -155,8 +156,8 @@ export function projectTaskDependencies(deps: unknown[], ctx: ExportContext): Po
     ctx.refToIdMap.set(entity.id as string, ref);
     return {
       _ref: ref,
-      predecessorTaskRef: resolveRefOrThrow(entity.predecessorTaskId as string, ctx),
-      successorTaskRef: resolveRefOrThrow(entity.successorTaskId as string, ctx),
+      predecessorTaskRef: resolveExportRefOrThrow(entity.predecessorTaskId as string, ctx, 'task'),
+      successorTaskRef: resolveExportRefOrThrow(entity.successorTaskId as string, ctx, 'task'),
       dependencyType: entity.dependencyType as string,
       lagDays: entity.lagDays as number | undefined,
       createdAt: toDateString(entity.createdAt),
@@ -165,16 +166,4 @@ export function projectTaskDependencies(deps: unknown[], ctx: ExportContext): Po
   });
 }
 
-function resolveRef(id: string | null | undefined, ctx: ExportContext): string | null {
-  if (!id) return null;
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  ctx.warnings.push(`Unresolved task reference to ${id}`);
-  return null;
-}
-
-function resolveRefOrThrow(id: string, ctx: ExportContext): string {
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  throw new Error(`EXPORT_VALIDATION_ERROR: Unresolved task reference to ${id}`);
-}
+// Residual 1003: resolveExportRef/OrThrow elevated to projection-helpers.

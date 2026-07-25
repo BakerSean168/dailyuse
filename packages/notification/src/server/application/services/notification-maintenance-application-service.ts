@@ -11,11 +11,15 @@ interface CleanupOldNotificationsCommand extends CleanupOldNotificationsReq {
   identityId: string;
 }
 
+interface DeleteNotificationsBatchCommand extends DeleteNotificationsBatchReq {
+  identityId: string;
+}
+
 export class NotificationMaintenanceApplicationService {
   constructor(private readonly notificationRepository: INotificationRepository) {}
 
-  async deleteNotification(id: string): Promise<Result<undefined>> {
-    const notification = await this.notificationRepository.findById(id);
+  async deleteNotification(id: string, identityId: string): Promise<Result<void>> {
+    const notification = await this.notificationRepository.findByIdForIdentity(identityId, id);
     if (!notification) {
       return fail({ code: 'NOT_FOUND', message: 'notification not found' });
     }
@@ -27,10 +31,12 @@ export class NotificationMaintenanceApplicationService {
   }
 
   async batchDelete(
-    data: DeleteNotificationsBatchReq,
-  ): Promise<Result<{ success: true; affected: number }>> {
+    data: DeleteNotificationsBatchCommand,
+  ): Promise<Result<{ deletedCount: number }>> {
     const notifications = await Promise.all(
-      data.notificationIds.map((id) => this.notificationRepository.findById(id)),
+      data.notificationIds.map((id) =>
+        this.notificationRepository.findByIdForIdentity(data.identityId, id),
+      ),
     );
     const existingNotifications = notifications.filter(
       (notification): notification is NonNullable<typeof notification> => notification !== null,
@@ -43,14 +49,13 @@ export class NotificationMaintenanceApplicationService {
     await this.notificationRepository.saveMany(existingNotifications);
 
     return ok({
-      success: true,
-      affected: data.notificationIds.length,
+      deletedCount: existingNotifications.length,
     });
   }
 
   async cleanupOldNotifications(
     data: CleanupOldNotificationsCommand,
-  ): Promise<Result<{ success: true; affected: number }>> {
+  ): Promise<Result<{ deletedCount: number }>> {
     const beforeTimestamp = Date.now() - data.beforeDays * 24 * 60 * 60 * 1000;
     const notifications = await this.notificationRepository.findByIdentityId(data.identityId, {
       includeDeleted: false,
@@ -63,12 +68,11 @@ export class NotificationMaintenanceApplicationService {
       .map((notification) => String(notification.id));
 
     if (expiredIds.length > 0) {
-      await this.notificationRepository.deleteMany(expiredIds);
+      await this.notificationRepository.deleteMany(data.identityId, expiredIds);
     }
 
     return ok({
-      success: true,
-      affected: expiredIds.length,
+      deletedCount: expiredIds.length,
     });
   }
 

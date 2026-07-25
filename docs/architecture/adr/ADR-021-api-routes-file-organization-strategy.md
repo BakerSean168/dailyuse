@@ -9,6 +9,10 @@
 
 ## Context
 
+## Implementation note (Residual 619 / 2026-07-22)
+Historical route samples used the removed `@dailyuse/contracts/response` package. Use `@dailyuse/contracts/result` `createHttpResponseBuilder` / `Result` + `expressAdapter` / `RouteRegistrar` instead.
+
+
 在 ADR-020 中，我们决定将所有业务逻辑从 API 项目迁移到 packages。随之而来的是如何组织 API 中剩余的路由文件的问题。
 
 **现状问题**:
@@ -71,11 +75,11 @@ import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { SomeApplicationService } from '@dailyuse/application-server';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
+import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FeatureRoutes');
-const responseBuilder = createResponseBuilder();
+const responseBuilder = createHttpResponseBuilder();
 
 /**
  * 注册功能路由
@@ -341,11 +345,11 @@ import {
   AuthenticationApplicationService,
   AccountApplicationService,
 } from '@dailyuse/application-server';
-import { createResponseBuilder } from '@dailyuse/contracts/response';
+import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AuthenticationLoginRoutes');
-const responseBuilder = createResponseBuilder();
+const responseBuilder = createHttpResponseBuilder();
 
 export function registerLoginRoutes(): Router {
   const router: Router = ExpressRouter();
@@ -445,11 +449,11 @@ import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { SessionManagementApplicationService } from '@dailyuse/application-server';
-import { createResponseBuilder } from '@dailyuse/contracts/response';
+import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AuthenticationSessionRoutes');
-const responseBuilder = createResponseBuilder();
+const responseBuilder = createHttpResponseBuilder();
 
 export function registerSessionRoutes(): Router {
   const router: Router = ExpressRouter();

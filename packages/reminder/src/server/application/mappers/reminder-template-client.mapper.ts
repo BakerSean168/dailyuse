@@ -1,6 +1,7 @@
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplate } from '../../domain/aggregates/reminder-template';
 import type { IReminderGroupRepository } from '../../domain/repositories/i-reminder-group-repository';
+import type { ReminderGroup } from '../../domain/aggregates/reminder-group';
 import { ReminderDomainService } from '../../domain/services/reminder-domain-service';
 import type { ITemplateEffectiveStatus } from '../../domain/services';
 
@@ -15,7 +16,12 @@ export class ReminderTemplateClientMapper {
   ) {}
 
   async toDTO(template: ReminderTemplate): Promise<ReminderTemplateClientDTO> {
-    const group = template.groupId ? await this.reminderGroupRepository.findById(template.groupId) : null;
+    const group = template.groupId
+      ? await this.reminderGroupRepository.findByIdForIdentity(
+          String(template.identityId),
+          template.groupId,
+        )
+      : null;
     const effectiveStatus = await this.reminderDomainService
       .getControlService()
       .calculateEffectiveStatus(template, group);
@@ -35,10 +41,21 @@ export class ReminderTemplateClientMapper {
 
   async toDTOList(templates: ReminderTemplate[]): Promise<ReminderTemplateClientDTO[]> {
     const controlService = this.reminderDomainService.getControlService();
-    const groups = await this.reminderGroupRepository.findByIds(
-      Array.from(new Set(templates.map((template) => template.groupId).filter(Boolean) as string[])),
-    );
-    const groupMap = new Map(groups.map((group) => [group.id, group]));
+    const groupMap = new Map<string, ReminderGroup>();
+    const groupIdsByIdentity = new Map<string, Set<string>>();
+    for (const template of templates) {
+      if (!template.groupId) continue;
+      const identityId = String(template.identityId);
+      const set = groupIdsByIdentity.get(identityId) ?? new Set<string>();
+      set.add(template.groupId);
+      groupIdsByIdentity.set(identityId, set);
+    }
+    for (const [identityId, groupIds] of groupIdsByIdentity) {
+      const groups = await this.reminderGroupRepository.findByIds(identityId, Array.from(groupIds));
+      for (const group of groups) {
+        groupMap.set(group.id, group);
+      }
+    }
     const effectiveStatuses = await controlService.calculateEffectiveStatusBatch(templates);
     const statusMap = new Map<string, ITemplateEffectiveStatus>(
       effectiveStatuses.map((status) => [status.templateId, status]),

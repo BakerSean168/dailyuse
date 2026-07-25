@@ -14,9 +14,10 @@ export class BindTaskToGoalUseCase {
 
   async execute(
     templateId: string,
+    identityId: string,
     request: BindToGoalReq,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    const template = await this.templateRepository.findById(templateId);
+    const template = await this.templateRepository.findByIdForIdentity(identityId, templateId);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${templateId} not found`);
     }

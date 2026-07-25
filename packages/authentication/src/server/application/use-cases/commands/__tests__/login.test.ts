@@ -34,10 +34,8 @@ const createMockIdentityRepo = (
   save: vi.fn().mockResolvedValue(undefined),
   findById: vi.fn().mockResolvedValue(null),
   findByEmail: vi.fn().mockResolvedValue(null),
-  findByPhone: vi.fn().mockResolvedValue(null),
   findByOAuth: vi.fn().mockResolvedValue(null),
   existsByEmail: vi.fn().mockResolvedValue(false),
-  existsByPhone: vi.fn().mockResolvedValue(false),
   delete: vi.fn().mockResolvedValue(undefined),
   ...overrides,
 });
@@ -47,6 +45,7 @@ const createMockSessionRepo = (
 ): IAuthSessionRepository => ({
   save: vi.fn().mockResolvedValue(undefined),
   findById: vi.fn().mockResolvedValue(null),
+  findByIdForIdentity: vi.fn().mockResolvedValue(null),
   findByIdentityId: vi.fn().mockResolvedValue([]),
   remove: vi.fn().mockResolvedValue(undefined),
   removeAllByIdentityId: vi.fn().mockResolvedValue(undefined),
@@ -219,4 +218,26 @@ describe('Login (Application Command)', () => {
       expect(identityRepo.save).toHaveBeenCalledWith(identity);
     });
   });
+
+  it('rejects disabled identities as invalid credentials', async () => {
+    const identity = await AuthIdentity.createWithEmailAndPassword({
+      email: 'closed@example.com',
+      plainPassword: 'StrongP@ss1',
+      hasher: passwordHasher,
+    });
+    identity.disable();
+    (identityRepo.findByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(identity);
+
+    const result = await useCase.execute(
+      { email: 'closed@example.com', password: 'StrongP@ss1' },
+      { identityId: String(identity.id) } as any,
+      'device-1',
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('UNAUTHORIZED');
+    }
+  });
+
 });

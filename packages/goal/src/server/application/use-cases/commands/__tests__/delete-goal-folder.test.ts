@@ -36,7 +36,7 @@ describe('DeleteGoalFolderUseCase', () => {
   it('should soft delete the folder and return ok', async () => {
     const folder = createFolderFixture();
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById: vi.fn().mockResolvedValue(folder),
+      findByIdForIdentity: vi.fn().mockResolvedValue(folder),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new DeleteGoalFolderUseCase(folderRepo);
@@ -44,14 +44,14 @@ describe('DeleteGoalFolderUseCase', () => {
     const result = await useCase.execute('folder-id-1', 'identity-123');
 
     expect(result.ok).toBe(true);
-    expect(folderRepo.findById).toHaveBeenCalledWith('folder-id-1');
+    expect(folderRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-123', 'folder-id-1');
     expect(folder.softDelete).toHaveBeenCalledTimes(1);
     expect(folderRepo.save).toHaveBeenCalledWith(folder);
   });
 
   it('should return NOT_FOUND error when folder is not found', async () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new DeleteGoalFolderUseCase(folderRepo);
@@ -66,31 +66,29 @@ describe('DeleteGoalFolderUseCase', () => {
     expect(folderRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should return FORBIDDEN error when identity does not own the folder', async () => {
-    const folder = createFolderFixture({ identityId: 'other-identity' });
+  it('should return NOT_FOUND error when identity does not own the folder', async () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById: vi.fn().mockResolvedValue(folder),
-      save: vi.fn().mockResolvedValue(undefined),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     const useCase = new DeleteGoalFolderUseCase(folderRepo);
 
-    const result = await useCase.execute('folder-id-1', 'identity-123');
+    const result = await useCase.execute(
+      'folder-id-1',
+      'identity-other',
+    );
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.code).toBe('FORBIDDEN');
-      expect(result.error.message).toContain('Unauthorized access');
+      expect(result.error.code).toBe('NOT_FOUND');
     }
-    expect(folder.softDelete).not.toHaveBeenCalled();
-    expect(folderRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should call findById before attempting save', async () => {
+  it('should call findByIdForIdentity before attempting save', async () => {
     const folder = createFolderFixture();
     const callOrder: string[] = [];
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById: vi.fn().mockImplementation(async () => {
-        callOrder.push('findById');
+      findByIdForIdentity: vi.fn().mockImplementation(async () => {
+        callOrder.push('findByIdForIdentity');
         return folder;
       }),
       save: vi.fn().mockImplementation(async () => {
@@ -101,13 +99,13 @@ describe('DeleteGoalFolderUseCase', () => {
 
     await useCase.execute('folder-id-1', 'identity-123');
 
-    expect(callOrder).toEqual(['findById', 'save']);
+    expect(callOrder).toEqual(['findByIdForIdentity', 'save']);
   });
 
   it('should propagate repository save errors', async () => {
     const folder = createFolderFixture();
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById: vi.fn().mockResolvedValue(folder),
+      findByIdForIdentity: vi.fn().mockResolvedValue(folder),
       save: vi.fn().mockRejectedValue(new Error('Database connection failed')),
     });
     const useCase = new DeleteGoalFolderUseCase(folderRepo);

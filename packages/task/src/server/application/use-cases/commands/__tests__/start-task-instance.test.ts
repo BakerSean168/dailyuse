@@ -11,16 +11,16 @@ describe('StartTaskInstanceUseCase', () => {
 
   beforeEach(() => {
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new StartTaskInstanceUseCase(instanceRepo);
   });
 
   it('should return NOT_FOUND when instance does not exist', async () => {
-    vi.mocked(instanceRepo.findById).mockResolvedValue(null);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(instanceRepo.save).not.toHaveBeenCalled();
@@ -28,9 +28,9 @@ describe('StartTaskInstanceUseCase', () => {
 
   it('should start a Pending instance and return ok', async () => {
     const instance = await aTaskInstance();
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    const result = await useCase.execute(instance.id);
+    const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeOk();
     expect(instanceRepo.save).toHaveBeenCalledWith(instance);
@@ -42,9 +42,9 @@ describe('StartTaskInstanceUseCase', () => {
     const instance = await aTaskInstance();
     instance.start();
     instance.complete();
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    const result = await useCase.execute(instance.id);
+    const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeErrorWithCode('VALIDATION_ERROR');
     expect(instanceRepo.save).not.toHaveBeenCalled();
@@ -52,9 +52,9 @@ describe('StartTaskInstanceUseCase', () => {
 
   it('should return the instance client DTO on success', async () => {
     const instance = await aTaskInstance();
-    vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
+    vi.mocked(instanceRepo.findByIdForIdentity).mockResolvedValue(instance);
 
-    const result = await useCase.execute(instance.id);
+    const result = await useCase.execute(instance.id, instance.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {

@@ -5,9 +5,9 @@ import type { Publisher } from '@dailyuse/utils/domain';
 import { deleteSelection, replaceSelection } from './shared-projection';
 
 export interface TaskProjector {
-  upsertTemplate(templateId: string, identityId?: string): Promise<void>;
-  deleteTemplate(templateId: string, identityId?: string): Promise<void>;
-  deleteInstance(instanceId: string, identityId?: string): Promise<void>;
+  upsertTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteTemplate(templateId: string, identityId: string): Promise<void>;
+  deleteInstance(instanceId: string, identityId: string): Promise<void>;
 }
 
 export interface CreateTaskProjectorDeps {

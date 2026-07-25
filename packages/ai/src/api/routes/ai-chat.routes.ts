@@ -9,15 +9,13 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import {
-  CreateConversationSchema,
-  UpdateConversationSchema,
+  ConversationNameSchema,
   SendMessageSchema,
   ListMessagesSchema,
   AIConversationClientDTOSchema,
   SendMessageResSchema,
   ConversationListResSchema,
   MessageListResSchema,
-  ActionSuccessSchema,
 } from '@dailyuse/contracts/ai';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { AiConversationId } from '@dailyuse/contracts/primitives';
@@ -48,7 +46,7 @@ export function registerAIChatRoutes(
       method: 'post',
       path: '/conversations',
       summary: '创建 AI 对话',
-      request: { body: { content: { 'application/json': { schema: CreateConversationSchema } } } },
+      request: { body: { content: { 'application/json': { schema: ConversationNameSchema } } } },
       responses: {
         201: successResponse(AIConversationClientDTOSchema, '创建成功'),
         400: errorResponse('参数错误'),
@@ -99,7 +97,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req) => controller.getConversation(req.params!.id),
+    (req, ctx) => controller.getConversation(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // PATCH /conversations/:id — Update conversation
@@ -110,7 +108,7 @@ export function registerAIChatRoutes(
       summary: '更新 AI 对话',
       request: {
         params: z.object({ id: brandedId<AiConversationId>() }),
-        body: { content: { 'application/json': { schema: UpdateConversationSchema } } },
+        body: { content: { 'application/json': { schema: ConversationNameSchema } } },
       },
       responses: {
         200: successResponse(AIConversationClientDTOSchema, '更新成功'),
@@ -119,7 +117,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req) => controller.updateConversation(req.params!.id, req.body),
+    (req, ctx) => controller.updateConversation(req.params!.id, req.body, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // DELETE /conversations/:id — Delete conversation
@@ -132,12 +130,12 @@ export function registerAIChatRoutes(
         params: z.object({ id: brandedId<AiConversationId>() }),
       },
       responses: {
-        200: successResponse(ActionSuccessSchema, '删除成功'),
+        200: successResponse(z.null(), '删除成功'),
         404: errorResponse('未找到'),
       },
     },
     [auth],
-    (req) => controller.deleteConversation(req.params!.id),
+    (req, ctx) => controller.deleteConversation(req.params!.id, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   // POST /messages — Send message
@@ -171,7 +169,7 @@ export function registerAIChatRoutes(
       },
     },
     [auth],
-    (req) => controller.listMessages(req.query),
+    (req, ctx) => controller.listMessages(req.query, { identityId: ctx.identityId } as ExecutionContext),
   );
 
   router.post('/messages/sse', auth, async (req, res) => {

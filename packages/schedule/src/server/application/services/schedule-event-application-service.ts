@@ -53,13 +53,14 @@ export class ScheduleEventApplicationService {
         schedule.endTime,
       );
 
-      const refreshed = await scheduleRepository.findById(schedule.id);
+      const refreshed = await scheduleRepository.findByIdForIdentity(params.identityId, schedule.id);
       return (refreshed ?? schedule).toClientDTO();
     });
   }
 
   async updateSchedule(
     id: string,
+    identityId: string,
     params: {
       title?: string;
       startTime?: number;
@@ -72,7 +73,7 @@ export class ScheduleEventApplicationService {
   ): Promise<CalendarEntryClientDTO> {
     return this.withScheduleRepository(async (scheduleRepository) => {
       const conflictCacheService = new ScheduleConflictCacheService(scheduleRepository);
-      const schedule = await scheduleRepository.findById(id);
+      const schedule = await scheduleRepository.findByIdForIdentity(identityId, id);
       if (!schedule) {
         ScheduleEventApplicationService.notFound(id);
       }
@@ -98,15 +99,15 @@ export class ScheduleEventApplicationService {
         Math.max(previousEndTime, schedule.endTime),
       );
 
-      const refreshed = await scheduleRepository.findById(id);
+      const refreshed = await scheduleRepository.findByIdForIdentity(identityId, id);
       return (refreshed ?? schedule).toClientDTO();
     });
   }
 
-  async deleteSchedule(id: string): Promise<void> {
+  async deleteSchedule(id: string, identityId: string): Promise<void> {
     await this.withScheduleRepository(async (scheduleRepository) => {
       const conflictCacheService = new ScheduleConflictCacheService(scheduleRepository);
-      const schedule = await scheduleRepository.findById(id);
+      const schedule = await scheduleRepository.findByIdForIdentity(identityId, id);
       if (!schedule) {
         ScheduleEventApplicationService.notFound(id);
       }
@@ -121,8 +122,8 @@ export class ScheduleEventApplicationService {
     });
   }
 
-  async getSchedule(id: string): Promise<CalendarEntryClientDTO | null> {
-    const schedule = await this.scheduleRepository.findById(id);
+  async getSchedule(id: string, identityId: string): Promise<CalendarEntryClientDTO | null> {
+    const schedule = await this.scheduleRepository.findByIdForIdentity(identityId, id);
     return schedule ? schedule.toClientDTO() : null;
   }
 

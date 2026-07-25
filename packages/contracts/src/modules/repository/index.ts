@@ -1,16 +1,13 @@
 /**
  * Repository Module Exports
  * 仓库模块 - 统一导出
+ *
+ * Knowledge connection / Local Vault / projection contracts only.
+ * Empty legacy entities/value-objects/dtos barrels were removed.
  */
 
 // ============ Aggregates ============
 export * from './aggregates';
-
-// ============ Entities ============
-export * from './entities';
-
-// ============ Value Objects ============
-export * from './value-objects';
 
 // ============ Domain Events ============
 export * from './domain';
@@ -20,6 +17,3 @@ export * from './protocol';
 
 // ============ API ============
 export * from './api';
-
-// ============ DTOs ============
-export * from './dtos';

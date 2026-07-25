@@ -29,6 +29,10 @@ const IMPORTANCE_OPTIONS = [
 
 const TIME_TYPE_OPTIONS = [TaskTimeType.AllDay, TaskTimeType.TimePoint, TaskTimeType.TimeRange] as const;
 
+/**
+ * Soft residual 1228: app-react task toDateInput — falsy → today's UTC YMD (not empty string).
+ * Same ISO slice body as GoalEditor when timestamp present; empty-default differs (no force-merge).
+ */
 function toDateInput(timestamp: number | null) {
   if (!timestamp) {
     return new Date().toISOString().slice(0, 10);
@@ -37,6 +41,11 @@ function toDateInput(timestamp: number | null) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
+/**
+ * Residual 1231 keep-boundary: app-react task toTimeInput — epoch → local HH:mm.
+ * Task editor helper; falsy → '09:00'; getHours/getMinutes padStart (local clock).
+ * Soft residual 1231: schedule UTC ISO slice + utils formatTimeToInput Date+date-fns differ (no force-merge).
+ */
 function toTimeInput(timestamp: number | null) {
   if (!timestamp) {
     return '09:00';
@@ -48,6 +57,11 @@ function toTimeInput(timestamp: number | null) {
   return `${hours}:${minutes}`;
 }
 
+/**
+ * Residual 1234 keep-boundary: app-react task combineDateAndTime — YMD+HH:mm → local epoch ms.
+ * Local Date(y,m-1,d,h,min) constructor; always returns number (no empty/NaN null path).
+ * Soft residual 1234: schedule parseTimestamp trim+Date.parse+null differs (no force-merge).
+ */
 function combineDateAndTime(dateValue: string, timeValue: string) {
   const [year, month, day] = dateValue.split('-').map(Number);
   const [hours, minutes] = timeValue.split(':').map(Number);

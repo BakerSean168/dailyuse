@@ -11,7 +11,6 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { RuleId, RuleRevisionId } from '../primitives/ids';
-import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
 import { PaginationSchema } from './rules';
 
 // ============================================================================
@@ -40,12 +39,8 @@ export type GetRuleRevisionsQuery = z.infer<typeof GetRuleRevisionsQuerySchema>;
  */
 export type GetRuleRevisionsQueryInput = z.input<typeof GetRuleRevisionsQuerySchema>;
 
-export type GetRuleRevisionsRes = {
-  items: RuleRevisionClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-};
+// Residual 783: GetRuleRevisionsRes dual body retired — sole GetRuleRevisionsResSchema + z.infer
+// (owned by response-schemas; semantic type is z.infer alias there).
 
 // ============================================================================
 // GET SINGLE Operation - 获取单个修订记录详情
@@ -60,4 +55,3 @@ export const GetRuleRevisionSchema = z.object({
 
 export type GetRuleRevisionReq = z.infer<typeof GetRuleRevisionSchema>;
 
-export type GetRuleRevisionRes = RuleRevisionClientDTO;

@@ -3,23 +3,21 @@ import type {
   GetAIEvaluationOverviewReq,
   GetAIEvaluationOverviewRes,
 } from '@dailyuse/contracts/ai';
-import { unwrapResultOrThrow } from '../result-client-error';
+import type { Result } from '@dailyuse/contracts/result';
 
+/** HTTP adapter — returns Result, never throws (residual 98). */
 export class AIEvaluationReportHttpAdapter implements AIEvaluationReportApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
 
   async getEvaluationOverview(
     request: GetAIEvaluationOverviewReq = {},
-  ): Promise<GetAIEvaluationOverviewRes> {
+  ): Promise<Result<GetAIEvaluationOverviewRes>> {
     const params = new URLSearchParams();
     if (typeof request.historyLimit === 'number') {
       params.set('historyLimit', String(request.historyLimit));
     }
 
     const suffix = params.size > 0 ? `?${params.toString()}` : '';
-    const result = await this.httpClient.get<GetAIEvaluationOverviewRes>(
-      `/ai/evaluations/overview${suffix}`,
-    );
-    return unwrapResultOrThrow(result);
+    return this.httpClient.get<GetAIEvaluationOverviewRes>(`/ai/evaluations/overview${suffix}`);
   }
 }

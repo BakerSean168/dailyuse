@@ -40,6 +40,14 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
 
     // 多条写入放进单事务，避免 upsert 成功而 message 同步失败导致的半持久化。
     await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const existing = await tx.aiConversation.findUnique({
+        where: { id: String(dto.id) },
+        select: { identityId: true },
+      });
+      if (existing && existing.identityId !== String(dto.identityId)) {
+        throw new Error('Conversation not found for the current identity.');
+      }
+
       await tx.aiConversation.upsert({
         where: { id: String(dto.id) },
         create: {
@@ -94,9 +102,13 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     flushDomainEvents(aiEventPublisher, conversation);
   }
 
-  async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: AIConversationQueryOptions,
+  ): Promise<AIConversation | null> {
     const row = await this.prisma.aiConversation.findFirst({
-      where: { id, deletedAt: null },
+      where: { id, identityId, deletedAt: null },
       include: options?.includeChildren
         ? { messages: { orderBy: { createdAt: 'asc' } } }
         : undefined,
@@ -126,52 +138,21 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     );
   }
 
-  async findByStatus(
-    identityId: string,
-    status: ConversationStatus,
-    options?: AIConversationQueryOptions,
-  ): Promise<AIConversation[]> {
-    const rows = await this.prisma.aiConversation.findMany({
-      where: { identityId, status, deletedAt: null },
-      include: options?.includeChildren
-        ? { messages: { orderBy: { createdAt: 'asc' } } }
-        : undefined,
-      orderBy: { updatedAt: 'desc' },
-    });
 
-    return rows.map((row: PrismaAiConversationWithMessages) =>
-      this.toDomain(row, Boolean(options?.includeChildren)),
-    );
-  }
 
-  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
-    const rows = await this.prisma.aiConversation.findMany({
-      where: { identityId, deletedAt: null },
-      orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
-      take: limit,
-      skip: offset ?? 0,
-    });
-
-    return rows.map((row: PrismaAiConversationWithMessages) => this.toDomain(row, false));
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.prisma.aiConversation.update({
-      where: { id },
+  async delete(identityId: string, id: string): Promise<void> {
+    const updated = await this.prisma.aiConversation.updateMany({
+      where: { id, identityId, deletedAt: null },
       data: {
         status: 'Archived',
         deletedAt: new Date(),
       },
     });
+    if (updated.count !== 1) {
+      throw new Error('Conversation not found for the current identity.');
+    }
   }
 
-  async exists(id: string): Promise<boolean> {
-    const count = await this.prisma.aiConversation.count({
-      where: { id, deletedAt: null },
-    });
-
-    return count > 0;
-  }
 
   private toDomain(
     row: PrismaAiConversationWithMessages,

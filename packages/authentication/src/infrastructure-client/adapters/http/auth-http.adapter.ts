@@ -14,13 +14,8 @@ import type {
   AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -29,6 +24,14 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -48,9 +51,6 @@ export class AuthHttpAdapter implements IAuthApiClient {
     return this.httpClient.post(`${this.baseUrl}/login`, req);
   }
 
-  async loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>> {
-    return this.httpClient.post(`${this.baseUrl}/login/phone`, req);
-  }
 
   // ========== Register ==========
 
@@ -58,15 +58,9 @@ export class AuthHttpAdapter implements IAuthApiClient {
     return this.httpClient.post(`${this.baseUrl}/register`, req);
   }
 
-  async registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>> {
-    return this.httpClient.post(`${this.baseUrl}/register/phone`, req);
-  }
 
   // ========== SMS ==========
 
-  async sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>> {
-    return this.httpClient.post(`${this.baseUrl}/sms/send`, req);
-  }
 
   // ========== Token ==========
 
@@ -112,6 +106,26 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   async verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
     return this.httpClient.post(`${this.baseUrl}/email/verify`, req);
+  }
+
+  async getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>> {
+    return this.httpClient.post(`${this.baseUrl}/oauth/url`, req);
+  }
+
+  async listOAuthProviders(): Promise<Result<OAuthProvidersRes>> {
+    return this.httpClient.get(`${this.baseUrl}/oauth/providers`);
+  }
+
+  async oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {
+    return this.httpClient.post(`${this.baseUrl}/oauth/callback`, req);
+  }
+
+  async bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>> {
+    return this.httpClient.post(`${this.baseUrl}/oauth/bind`, req);
+  }
+
+  async unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/oauth/unbind`, req);
   }
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {

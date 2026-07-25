@@ -58,24 +58,33 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
     return this.mapToDTO(dependency);
   }
 
-  async findById(id: string): Promise<TaskDependencyServerDTO | null> {
-    const dependency = await this.prisma.taskDependency.findUnique({
-      where: { id },
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<TaskDependencyServerDTO | null> {
+    const dependency = await this.prisma.taskDependency.findFirst({
+      where: { id, identityId },
     });
     return dependency ? this.mapToDTO(dependency) : null;
   }
 
-  async findBySuccessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
+  async findBySuccessorId(
+    taskId: string,
+    identityId: string,
+  ): Promise<TaskDependencyServerDTO[]> {
     const dependencies = await this.prisma.taskDependency.findMany({
-      where: { successorTaskId: taskId },
+      where: { successorTaskId: taskId, identityId },
       orderBy: { createdAt: 'asc' },
     });
     return dependencies.map((dep) => this.mapToDTO(dep));
   }
 
-  async findByPredecessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
+  async findByPredecessorId(
+    taskId: string,
+    identityId: string,
+  ): Promise<TaskDependencyServerDTO[]> {
     const dependencies = await this.prisma.taskDependency.findMany({
-      where: { predecessorTaskId: taskId },
+      where: { predecessorTaskId: taskId, identityId },
       orderBy: { createdAt: 'asc' },
     });
     return dependencies.map((dep) => this.mapToDTO(dep));
@@ -84,11 +93,13 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   async findByPredecessorAndSuccessorId(
     predecessorId: string,
     successorId: string,
+    identityId: string,
   ): Promise<TaskDependencyServerDTO | null> {
     const dependency = await this.prisma.taskDependency.findFirst({
       where: {
         predecessorTaskId: predecessorId,
         successorTaskId: successorId,
+        identityId,
       },
     });
     return dependency ? this.mapToDTO(dependency) : null;
@@ -97,85 +108,101 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   /**
    * 递归查找所有前置任务（完整依赖链）
    */
-  async findAllPredecessorIds(taskId: string): Promise<string[]> {
+  async findAllPredecessorIds(taskId: string, identityId: string): Promise<string[]> {
     const visited = new Set<string>();
     const result: string[] = [];
-    await this.traversePredecessors(taskId, visited, result);
+    await this.traversePredecessors(taskId, identityId, visited, result);
     return result;
   }
 
   private async traversePredecessors(
     taskId: string,
+    identityId: string,
     visited: Set<string>,
     result: string[],
   ): Promise<void> {
     if (visited.has(taskId)) return;
     visited.add(taskId);
 
-    const deps = await this.findBySuccessorId(taskId);
+    const deps = await this.findBySuccessorId(taskId, identityId);
     for (const dep of deps) {
       if (!result.includes(dep.predecessorTaskId)) {
         result.push(dep.predecessorTaskId);
       }
-      await this.traversePredecessors(dep.predecessorTaskId, visited, result);
+      await this.traversePredecessors(dep.predecessorTaskId, identityId, visited, result);
     }
   }
 
   /**
    * 递归查找所有后续任务（完整依赖链）
    */
-  async findAllSuccessorIds(taskId: string): Promise<string[]> {
+  async findAllSuccessorIds(taskId: string, identityId: string): Promise<string[]> {
     const visited = new Set<string>();
     const result: string[] = [];
-    await this.traverseSuccessors(taskId, visited, result);
+    await this.traverseSuccessors(taskId, identityId, visited, result);
     return result;
   }
 
   private async traverseSuccessors(
     taskId: string,
+    identityId: string,
     visited: Set<string>,
     result: string[],
   ): Promise<void> {
     if (visited.has(taskId)) return;
     visited.add(taskId);
 
-    const deps = await this.findByPredecessorId(taskId);
+    const deps = await this.findByPredecessorId(taskId, identityId);
     for (const dep of deps) {
       if (!result.includes(dep.successorTaskId)) {
         result.push(dep.successorTaskId);
       }
-      await this.traverseSuccessors(dep.successorTaskId, visited, result);
+      await this.traverseSuccessors(dep.successorTaskId, identityId, visited, result);
     }
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.taskDependency.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const deleted = await this.prisma.taskDependency.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Task dependency not found for the current identity.');
+    }
   }
 
   async deleteAggregate(dependency: TaskDependency): Promise<void> {
-    await this.prisma.taskDependency.delete({ where: { id: dependency.id } });
+    const deleted = await this.prisma.taskDependency.deleteMany({
+      where: { id: dependency.id, identityId: dependency.identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Task dependency not found for the current identity.');
+    }
     await publishAggregateEvents(dependency, eventBusAdapter);
   }
 
-  async findAggregateById(id: string): Promise<TaskDependency | null> {
-    const data = await this.prisma.taskDependency.findUnique({ where: { id } });
+  async findAggregateById(identityId: string, id: string): Promise<TaskDependency | null> {
+    const data = await this.prisma.taskDependency.findFirst({
+      where: { id, identityId },
+    });
     return data ? PrismaTaskDependencyMapper.toAggregate(data) : null;
   }
 
-  async deleteByTaskId(taskId: string): Promise<void> {
+  async deleteByTaskId(identityId: string, taskId: string): Promise<void> {
     await this.prisma.taskDependency.deleteMany({
       where: {
+        identityId,
         OR: [{ predecessorTaskId: taskId }, { successorTaskId: taskId }],
       },
     });
   }
 
   async update(
+    identityId: string,
     id: string,
     data: { dependencyType?: DependencyType; lagDays?: number },
   ): Promise<TaskDependencyServerDTO> {
-    const dependency = await this.prisma.taskDependency.update({
-      where: { id },
+    const updated = await this.prisma.taskDependency.updateMany({
+      where: { id, identityId },
       data: {
         ...(data.dependencyType !== undefined
           ? { dependencyType: String(data.dependencyType) }
@@ -183,6 +210,15 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
         ...(data.lagDays !== undefined ? { lagDays: data.lagDays } : {}),
       },
     });
+    if (updated.count !== 1) {
+      throw new Error('Task dependency not found for the current identity.');
+    }
+    const dependency = await this.prisma.taskDependency.findFirst({
+      where: { id, identityId },
+    });
+    if (!dependency) {
+      throw new Error('Task dependency not found for the current identity.');
+    }
     return this.mapToDTO(dependency);
   }
 

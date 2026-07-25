@@ -30,7 +30,7 @@ describe('CreateGoalUseCase', () => {
     vi.clearAllMocks();
     goalRepo = createMockRepo<IGoalRepository>({
       save: vi.fn().mockResolvedValue(undefined),
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     useCase = new CreateGoalUseCase(goalRepo, new GoalPolicy());
   });
@@ -66,7 +66,7 @@ describe('CreateGoalUseCase', () => {
   });
 
   it('should return NOT_FOUND when parentGoalId references a non-existent goal', async () => {
-    vi.mocked(goalRepo.findById).mockResolvedValue(null);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
     const result = await useCase.execute(
       aCreateInput({ parentGoalId: 'non-existent-id' }),
@@ -93,7 +93,7 @@ describe('CreateGoalUseCase', () => {
       parentGoalId: null,
       reminderConfig: null,
     });
-    vi.mocked(goalRepo.findById).mockResolvedValue(parentGoal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(parentGoal);
 
     const result = await useCase.execute(aCreateInput({ parentGoalId: parentGoal.id }), aContext());
 

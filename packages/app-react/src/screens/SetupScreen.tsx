@@ -48,12 +48,6 @@ const MODULE_SCOPE = [
     phase: 'Live',
     route: './ai',
   },
-  {
-    title: 'Repository',
-    description: '浏览仓库、资源和笔记。',
-    phase: 'Live',
-    route: './repository',
-  },
 ] as const;
 
 export function SetupScreen() {
@@ -80,15 +74,30 @@ export function SetupScreen() {
       actionSections={actionSections}
       eyebrow="More"
       title="More"
-      subtitle="账户、消息、提醒、仓库和偏好设置。">
+      subtitle="账户、消息、提醒和偏好设置。"
+    >
       <SectionCard
         title="Workspace"
-        description={currentUser ? `${currentUser.displayName} is active in ${currentUser.workspaceName}.` : 'No shell session is active.'}>
+        description={
+          currentUser
+            ? `${currentUser.displayName} is active in ${currentUser.workspaceName}.`
+            : 'No shell session is active.'
+        }
+      >
         <View style={styles.pillRow}>
-          <StatusPill label={`Mode: ${sessionKind}`} tone={isRemoteAuthenticated ? 'success' : 'warning'} />
-          <StatusPill label={Platform.OS === 'web' ? 'Web preview' : 'Native runtime'} tone="tint" />
+          <StatusPill
+            label={`Mode: ${sessionKind}`}
+            tone={isRemoteAuthenticated ? 'success' : 'warning'}
+          />
+          <StatusPill
+            label={Platform.OS === 'web' ? 'Web preview' : 'Native runtime'}
+            tone="tint"
+          />
           <StatusPill label={APP_NAME} tone="textSecondary" />
-          <StatusPill label={`${unreadCount} unread`} tone={unreadCount > 0 ? 'warning' : 'success'} />
+          <StatusPill
+            label={`${unreadCount} unread`}
+            tone={unreadCount > 0 ? 'warning' : 'success'}
+          />
           <StatusPill label={`${todaySchedule.length} today`} tone="textSecondary" />
           <StatusPill label={`${templates.length} templates`} tone="textSecondary" />
         </View>
@@ -100,9 +109,7 @@ export function SetupScreen() {
         </ThemedText>
       </SectionCard>
 
-      <SectionCard
-        title="Quick access"
-        description="打开更多业务模块。">
+      <SectionCard title="Quick access" description="打开更多业务模块。">
         <View style={styles.tileGrid}>
           {MODULE_SCOPE.map((item) => (
             <FeatureTile

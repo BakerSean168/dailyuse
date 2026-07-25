@@ -89,6 +89,7 @@ export interface IGoalRecordRepository {
    * @returns 实体列表（按 recordedAt 排序）
    */
   findByKeyResultId(
+    identityId: string,
     keyResultId: string,
     options?: GoalRecordQueryOptions,
   ): Promise<GoalRecord[]>;
@@ -104,6 +105,7 @@ export interface IGoalRecordRepository {
    * @returns 实体列表（按 recordedAt 排序）
    */
   findByGoalId(
+    identityId: string,
     goalId: string,
     options?: GoalRecordQueryOptions,
   ): Promise<GoalRecord[]>;
@@ -119,6 +121,7 @@ export interface IGoalRecordRepository {
    * @returns Map<keyResultId, records[]>
    */
   findByKeyResultIds(
+    identityId: string,
     keyResultIds: string[],
     options?: GoalRecordQueryOptions,
   ): Promise<Map<string, GoalRecord[]>>;
@@ -132,7 +135,7 @@ export interface IGoalRecordRepository {
    * @param keyResultId KeyResult 的 UUID
    * @returns 记录数量
    */
-  countByKeyResultId(keyResultId: string): Promise<number>;
+  countByKeyResultId(identityId: string, keyResultId: string): Promise<number>;
 
   /**
    * 保存单条记录
@@ -142,16 +145,26 @@ export interface IGoalRecordRepository {
   save(record: GoalRecord): Promise<void>;
 
   /**
-   * 删除记录
+   * 通过 identity + ID 查找记录（身份隔离读路径）
    *
+   * @param identityId 用户身份 ID
+   * @param recordId 记录 UUID
+   * @returns 实体，不存在或不属于该 identity 则返回 null
+   */
+  findByIdForIdentity(identityId: string, recordId: string): Promise<GoalRecord | null>;
+
+  /**
+   * 删除记录（必须同时匹配 identity）
+   *
+   * @param identityId 用户身份 ID
    * @param recordId 记录 UUID
    */
-  delete(recordId: string): Promise<void>;
+  delete(identityId: string, recordId: string): Promise<void>;
 
   /**
    * 批量删除记录
    *
    * @param recordIds 记录 UUID 列表
    */
-  deleteMany(recordIds: string[]): Promise<void>;
+  deleteMany(identityId: string, recordIds: string[]): Promise<void>;
 }

@@ -1,17 +1,12 @@
-import type { NotificationCategory } from '../value-objects/notification-category';
-import type { NotificationType } from '../value-objects/notification-type';
-import type { NotificationTemplateConfigServerDTO } from '../value-objects/notification-template-config';
-import type { NotificationTemplateId, TransferDate } from '../../../primitives';
+/**
+ * NotificationTemplate Aggregate Root - Server Interface
+ *
+ * Residual 845: NotificationTemplateServerDTO dual retired — sole NotificationTemplateResponseSchema + z.infer
+ * (same schema as NotificationTemplateClientDTO; identical shape).
+ */
 
-export interface NotificationTemplateServerDTO {
-  id: NotificationTemplateId;
-  name: string;
-  description: string | null;
-  type: NotificationType;
-  category: NotificationCategory;
-  template: NotificationTemplateConfigServerDTO;
-  isActive: boolean;
-  isSystemTemplate: boolean;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
+import type { z } from 'zod';
+import { NotificationTemplateResponseSchema } from '../api/response-schemas';
+
+// Residual 845: NotificationTemplateServerDTO dual retired — shared NotificationTemplateResponseSchema with client.
+export type NotificationTemplateServerDTO = z.infer<typeof NotificationTemplateResponseSchema>;

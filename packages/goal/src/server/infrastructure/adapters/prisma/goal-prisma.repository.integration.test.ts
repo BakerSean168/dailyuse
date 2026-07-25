@@ -88,7 +88,7 @@ describe('GoalPrismaRepository integration', () => {
         keyResultWeightSnapshots: true,
       },
     });
-    const loaded = await repository.findById(String(goal.id), { includeChildren: true });
+    const loaded = await repository.findByIdForIdentity(String(identityId), String(goal.id), { includeChildren: true });
 
     expect(row).not.toBeNull();
     expect(row?.folderId).toBeNull();

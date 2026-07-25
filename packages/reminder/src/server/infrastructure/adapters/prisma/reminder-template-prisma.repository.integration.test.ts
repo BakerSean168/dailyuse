@@ -96,7 +96,7 @@ describe('ReminderTemplatePrismaRepository integration', () => {
       where: { id: String(template.id) },
       include: { history: true },
     });
-    const loaded = await repository.findById(String(template.id), { includeHistory: true });
+    const loaded = await repository.findByIdForIdentity(String(identityId), String(template.id), { includeHistory: true });
 
     expect(row).not.toBeNull();
     expect(row?.activeHours).toBeNull();

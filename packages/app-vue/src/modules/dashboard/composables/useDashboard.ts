@@ -3,14 +3,17 @@
  *
  * Fetches aggregated dashboard statistics via DASHBOARD_SERVICE_KEY.
  * Transport-agnostic: works with both HTTP (web) and IPC (desktop) adapters.
+ *
+ * Residual 1059: createComposableHandleError console report path
+ * (local ref error + console dual retired onto sole).
  */
 
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { DASHBOARD_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import type { DashboardData } from '../types';
-import { translateResultError } from '../../../shared/utils/translate-result-error';
+import type { DashboardData } from '@dailyuse/contracts/dashboard';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 
 // ── Default empty state ──
 
@@ -47,6 +50,13 @@ export function useDashboard() {
   const taskBoard = computed(() => data.value.taskBoard);
   const upcomingSchedule = computed(() => data.value.upcomingSchedule);
 
+  const handleError = createComposableHandleError({
+    t,
+    setError: (message) => {
+      error.value = message;
+    },
+  });
+
   async function fetchDashboard() {
     isLoading.value = true;
     error.value = null;
@@ -62,10 +72,7 @@ export function useDashboard() {
           upcomingSchedule: result.data.upcomingSchedule ?? [],
         };
       } else {
-        error.value = translateResultError(result.error, t, {
-          fallbackKey: 'dashboard.error.loadFailed',
-        });
-        console.error('[dashboard]', error.value);
+        handleError(result.error, 'dashboard.error.loadFailed');
       }
     } finally {
       isLoading.value = false;

@@ -79,7 +79,6 @@
     "xtend": "4.0.2"
   },
   "devDependencies": {
-    "@dailyuse/editor": "workspace:*",
     "@electron/rebuild": "4.2.0",
     "@eslint/js": "^10.0.1",
     "@eslint/markdown": "^7.1.0",

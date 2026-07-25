@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aTaskInstance, aTaskTemplateId } from '@/testing';
+import { aTaskInstance, aTaskTemplateId, aOneTimeTask } from '@/testing';
 import type { ITaskInstanceRepository } from '@/server/domain/repositories/i-task-instance-repository';
+import type { ITaskTemplateRepository } from '@/server/domain/repositories/i-task-template-repository';
 import { ListTaskInstancesByTemplateUseCase } from '../list-task-instances-by-template.use-case';
 
 describe('ListTaskInstancesByTemplateUseCase', () => {
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
+  let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let useCase: ListTaskInstancesByTemplateUseCase;
 
   beforeEach(() => {
@@ -14,11 +16,29 @@ describe('ListTaskInstancesByTemplateUseCase', () => {
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findByTemplateId: vi.fn().mockResolvedValue([]),
     });
-    useCase = new ListTaskInstancesByTemplateUseCase(instanceRepo);
+    templateRepo = createMockRepo<ITaskTemplateRepository>({
+      findByIdForIdentity: vi.fn(),
+    });
+    useCase = new ListTaskInstancesByTemplateUseCase(instanceRepo, templateRepo);
+  });
+
+  it('should return empty array when template is not owned', async () => {
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
+
+    const result = await useCase.execute('template-1', 'identity-1');
+
+    expect(result).toBeOk();
+    if (result.ok) {
+      expect(result.data).toEqual([]);
+    }
+    expect(instanceRepo.findByTemplateId).not.toHaveBeenCalled();
   });
 
   it('should return empty array when no instances exist for template', async () => {
-    const result = await useCase.execute('template-1');
+    const template = aOneTimeTask();
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
+
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -27,12 +47,13 @@ describe('ListTaskInstancesByTemplateUseCase', () => {
   });
 
   it('should return all instances for the template', async () => {
-    const templateId = aTaskTemplateId();
-    const instance1 = await aTaskInstance({ templateId });
-    const instance2 = await aTaskInstance({ templateId });
+    const template = aOneTimeTask();
+    const instance1 = await aTaskInstance({ templateId: template.id as any });
+    const instance2 = await aTaskInstance({ templateId: template.id as any });
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([instance1, instance2]);
 
-    const result = await useCase.execute(templateId);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -42,11 +63,13 @@ describe('ListTaskInstancesByTemplateUseCase', () => {
     }
   });
 
-  it('should pass templateId to repository', async () => {
-    const templateId = 'my-template-id';
+  it('should pass identity and templateId to ownership lookup', async () => {
+    const template = aOneTimeTask();
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    await useCase.execute(templateId);
+    await useCase.execute(template.id, template.identityId);
 
-    expect(instanceRepo.findByTemplateId).toHaveBeenCalledWith(templateId);
+    expect(templateRepo.findByIdForIdentity).toHaveBeenCalledWith(template.identityId, template.id);
+    expect(instanceRepo.findByTemplateId).toHaveBeenCalledWith(template.id, template.identityId);
   });
 });

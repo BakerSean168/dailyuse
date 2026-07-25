@@ -4,6 +4,8 @@
 >
 > **⚠️ 笔记边界更新（2026-07-16）**：§9/§10 中仍保留的跨端轻编辑、新建和保存描述已由 [ADR-034](./architecture/adr/ADR-034-obsidian-vault-repository.md) 取代。目标态为 Desktop 在 Obsidian 外部编辑；绑定 GitHub 知识仓库后 Web 可快捷创建新文件，但已有笔记编辑仍延期。本文相关内容只用于理解迁移前 UI。
 >
+> **⚠️ 路由/DTO 退役（2026-07-21）**：`/note/:id`、`EditorLinearView`、`ResourceClientDTO` 与旧 Repository CRUD 已从运行时删除；AI 打开笔记改为 repository projection / Local Vault 工作区。以 product 模块文档与 ADR-034 为准。
+>
 > 状态：~~实施方案~~ → 内容级参考。上游分析见 `docs/UI_REDESIGN_BRIEF.md`（下称 Brief），本文不重复分析，只给可执行的页面级方案。
 > 生成日期：2026-07-11。范围：`packages/app-vue`（Web 与 Desktop 共用前端层）。
 > 原则：**不追求花哨视觉；优先信息层级、业务清晰度、可维护性**。全部改动为现有能力的重排与减法，不新增业务功能（唯一例外：日程事件"查看详情"留位，Brief §8-P3 已定性为必须补的缺口）。
@@ -21,7 +23,7 @@
 | ------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
 | **ListPageShell（列表壳）**    | 仪表盘、目标列表、任务、提醒、通知、治理              | `LinearPageHeader`（sticky：标题 + 描述 + 右置操作）→ 可选 FilterBar 行 → 内容 `max-w-7xl mx-auto px-6 py-6` | `custom/linear/LinearPageHeader.vue` 已存在（`px-6 py-3 border-b sticky top-0`），直接采用 |
 | **DetailPageShell（详情壳）**  | 目标详情、KR 详情、复盘、任务详情、规则详情/编辑/历史 | 返回按钮 + 标题 + 状态徽章 + 右置操作 → 内容 `max-w-4xl`                                                     | 从 `GoalDetailView` / `TaskDetailView` 现有头部抽取                                        |
-| **WorkspaceShell（工作区壳）** | AI 首页、日程日历、笔记工作区、`/note/:id`            | 全宽无 max-w；`ResizablePanel` 分栏；模块第二侧栏统一 `w-64` 可折叠                                          | repository 的 ResizablePanel collapse 模式推广到 goal/reminder                             |
+| **WorkspaceShell（工作区壳）** | AI 首页、日程日历、笔记工作区（`/repository`；`/note/:id` 已退役） | 全宽无 max-w；`ResizablePanel` 分栏；模块第二侧栏统一 `w-64` 可折叠                                          | repository 的 ResizablePanel collapse 模式推广到 goal/reminder                             |
 
 操作层级约定（每页强制执行）：
 
@@ -96,15 +98,15 @@
 | `AppEmptyState.vue`   | §0.3                                                                                      |
 | `FilterBar.vue`       | 「状态 Tabs + 过滤下拉 + 搜索框」标准行（task / governance / notification 共用，slot 化） |
 
-**删除（孤儿 / 调试，Brief §3、§8-P3）**：`goal/views/FocusModeView.vue`、`goal/views/FocusCycle.vue`、`goal/views/WeightSnapshotView.vue`、`schedule/views/ScheduleWeekView.vue`（4 个孤儿视图，无路由无引用）；`/goals/rules-demo` 补 DEV 守卫（或直接删除）；AIChatView 中 legacy goal workflow 分支。
+**删除（孤儿 / 调试，Brief §3、§8-P3）**：`goal/views/FocusModeView.vue`、`goal/views/FocusCycle.vue`、`goal/views/WeightSnapshotView.vue`、`schedule/views/ScheduleWeekView.vue`（孤儿视图已删除；Vue 日程仅 `/schedule/calendar`）；`/goals/rules-demo` 补 DEV 守卫（或直接删除）；AIChatView 中 legacy goal workflow 分支。
 
 ### 0.6 全局不可破坏契约（每页默认适用，不再逐页重复）
 
 - `data-testid` 随组件迁移（5 份 Playwright 配置锚定，Brief §11）。
-- `?dialog=goal&goalId=` URL 对话框契约；`/note/:id`、`/goals/:id` 等 AI 工作流硬引用路径。
+- `?dialog=goal&goalId=` URL 对话框契约；`/repository?note=`、`/goals/:id` 等 AI 工作流硬引用路径（`/note/:id` 已退役）。
 - 一切数据访问走 DI 端口与 composable 门面，布局重构不得直连 HTTP/IPC。
 - 每页改动在 Web + Electron 双端回归（Brief §12-1）。
-- 删除/改名路由一律先加 redirect（沿用 schedule 模块 `week/dashboard → calendar` 先例）。
+- 删除/改名路由若需过渡可加 redirect；**当前** Vue schedule 已收口为单一 `/schedule/calendar` 入口（不再保留 week/dashboard 双轨）。
 
 ---
 
@@ -149,7 +151,7 @@
 | recentGoals / recentKnowledgeNotes | 侧栏折叠段                               | 快捷入口有价值但非首要，折叠保留而非删除                                                 |
 | legacy 工作流按钮组                | **删除**                                 | `localStorage['ai:debug:legacy-goal-workflow']` 调试残留，新状态机已全覆盖（Brief §4.1） |
 
-**6) 表单 / 卡片 / 列表 / 详情组织**：无传统表单，对话即输入。草稿编辑（Goal/KR/任务模板/提醒草稿，`AIGoalDraftEditor` + `AIGoalWorkflowPanel`）全部在右栏，保持"默认折叠、有产物才出现"契约；会话列表项用 `LinearListItem`；证据引用列表在右栏，点击走 `openRecentKnowledgeNote` → `/note/:id`。
+**6) 表单 / 卡片 / 列表 / 详情组织**：无传统表单，对话即输入。草稿编辑（Goal/KR/任务模板/提醒草稿，`AIGoalDraftEditor` + `AIGoalWorkflowPanel`）全部在右栏，保持"默认折叠、有产物才出现"契约；会话列表项用 `LinearListItem`；证据引用列表在右栏，点击走 `openRecentKnowledgeNote` → `/repository?note=`。
 
 **7) 空 / 加载 / 错误**：空会话 = 欢迎态（见 4）；会话切换 = 消息行 skeleton；流式生成 = 现有打字指示 + stop 按钮（保留）；发送失败 = 消息气泡内 inline 重试；工作流执行失败 = 操作条 retry 分支（现有状态机，不动）。
 
@@ -383,7 +385,7 @@ FilterBar：[全部|进行中|已暂停|已归档](计数Tabs) [关系过滤▾]
 
 ---
 
-## 7. 日程 `/schedule/calendar`（`ScheduleDashboardView.vue`）
+## 7. 日程 `/schedule/calendar`（`ScheduleCalendarView.vue`）
 
 **1) 页面目标**："执行"分组默认入口——以日/周/月日历查看**日程事件 + 任务实例投影**，在日历里直接完成任务、创建日程。它是"我今天/本周要做什么"的正解页面。
 
@@ -419,7 +421,7 @@ FilterBar：[全部|进行中|已暂停|已归档](计数Tabs) [关系过滤▾]
 | ------ | -------------------------------------------------------- | ------------------------------------------------------------- |
 | 重命名 | `ScheduleDashboardView.vue` → `ScheduleCalendarView.vue` | 文件名含 "Dashboard" 与 `/dashboard` 心智冲突；路由 path 不变 |
 | 新增   | `EventDetailSheet.vue`                                   | 只读详情留位（见 5/6），参照 `DayDetailSheet` 实现            |
-| 删除   | `ScheduleWeekView.vue` 孤儿视图                          | §0.5；`week → calendar` redirect 路由名保留                   |
+| 删除   | `ScheduleWeekView.vue` 孤儿视图                          | §0.5；Vue 仅保留 `/schedule/calendar` 单入口（无 week redirect） |
 
 ---
 
@@ -474,11 +476,16 @@ FilterBar：[全部|进行中|已暂停|已归档](计数Tabs) [关系过滤▾]
 
 ---
 
-## 9. 笔记工作区 `/repository`（`RepositoryWorkspaceView.vue`）
+## 9. 笔记工作区 `/repository`（`RepositoryWorkspaceView.vue`）— **历史方案（已 supersede）**
 
-> 本页执行 Brief §13.3 **阶段 0（UI 收缩）**。说明：Brief §4.7 的"不可删除交互状态"以自建编辑器为长期方向为前提；§13 已拍板 Obsidian vault 方向（2026-07-11），两处冲突**以 §13 为准**——多标签/分屏/导出/批量导入按阶段 0 退役。
+> **⚠️ 运行时 supersede（2026-07-21；残留 301）**：`RepositoryWorkspaceView.vue` 已从运行时删除。
+> 当前 `/repository` 入口为 `RepositoryEntryView` → `KnowledgeProjectionWorkspaceView`（GitHub 投影）/
+> `LocalVaultWorkspaceView`（Desktop 本地 Vault）；confirmed-create-only；AI 着陆 `/repository?note=`。
+> 以下布局/动作描述保留为 UI redesign 历史方案，**不得**当作当前实现清单。真值见 product 模块文档与 ADR-034。
+>
+> 本页原执行 Brief §13.3 **阶段 0（UI 收缩）**。说明：Brief §4.7 的"不可删除交互状态"以自建编辑器为长期方向为前提；§13 已拍板 Obsidian vault 方向（2026-07-11），两处冲突**以 §13 / ADR-034 为准**。
 
-**1) 页面目标**：个人 markdown 知识库的浏览与轻编辑——文件树导航、单文档编辑/预览、`[[wikilink]]` 双链。长期定位（阶段 1 后）：**预览 + 反链 + 快速捕获 + 跳转 Obsidian**，重编辑退出。
+**1) 页面目标（历史）**：个人 markdown 知识库的浏览与轻编辑——文件树导航、单文档编辑/预览、`[[wikilink]]` 双链。长期定位（阶段 1 后）：**预览 + 反链 + 快速捕获 + 跳转 Obsidian**，重编辑退出。
 
 **2) 最重要的动作**
 
@@ -531,9 +538,9 @@ FilterBar：[全部|进行中|已暂停|已归档](计数Tabs) [关系过滤▾]
 
 ---
 
-## 10. 笔记单页 `/note/:id`（`EditorLinearView.vue`）
+## 10. 笔记单页 `/note/:id`（`EditorLinearView.vue`）— **已退役（2026-07-21）**
 
-**1) 页面目标**：单笔记聚焦阅读与轻编辑；**AI 工作流的着陆页**（`openRecentKnowledgeNote` → `/note/:id`，AI 创建的笔记与问答引用都落这里）。阶段 0 起**预览优先**。
+**1) 页面目标（历史）**：单笔记聚焦阅读与轻编辑。**当前着陆**为 `/repository?note=`（projection / Local Vault 预览）；`/note/:id` 与 `EditorLinearView` 已从运行时删除。
 
 **2) 最重要的动作**
 
@@ -726,7 +733,7 @@ RuleCard 列表（code + title + RuleStatusBadge + severity）
 | `/schedule/calendar` | 创建日程                              | 视图切换、完成任务事件                  |
 | `/reminders`         | 新建提醒                              | 启停 Switch、全局开关、新建分组(⋯)      |
 | `/repository`        | 新建笔记                              | 搜索、保存、重命名                      |
-| `/note/:id`          | 编辑/保存（→阶段1: 在 Obsidian 打开） | 反链、图谱                              |
+| ~~`/note/:id`~~ → `/repository?note=` | 预览 / Desktop 在 Obsidian 打开 | 反链、图谱（projection） |
 | `/notifications`     | 全部已读                              | 逐条已读/删除、跳转来源                 |
 | `/governance`        | 新建规则                              | 搜索、过滤、看历史                      |
 | `/settings`          | 保存当前分组设置                      | 导入导出、登出                          |
@@ -755,7 +762,7 @@ RuleCard 列表（code + title + RuleStatusBadge + severity）
 
 1. 5 份 Playwright 配置全绿（`ai-workspace` 专项重点回归——testid 已随组件迁移）。
 2. Electron 桌面端手动回归：导航、`isDesktopEnvironment` 分支、桌面通知弹窗路由 `/custom-notification`、IPC 数据链路。
-3. 深链契约逐条验证：`?dialog=goal&goalId=`、`/note/:id`、`/goals/:id`、`/ai/chat` redirect、`/account/center` redirect、schedule `week/dashboard` redirect。
+3. 深链契约逐条验证：`?dialog=goal&goalId=`、`/repository?note=`、`/goals/:id`、`/ai/chat` redirect、`/account/center` redirect、schedule `/schedule/calendar` 单入口。
 4. i18n：zh-CN / en-US 无缺 key（新增 `nav.group.*`、更名「笔记」「任务库」）。
 5. 断点走查：xl / lg / md / sm 四档，每页首屏无横向滚动、主操作可达。
 6. 移动端（RN）文案同步：模块更名（仓库→笔记、任务模板→任务库）通知 mobile 维护者（Brief §12-6）。

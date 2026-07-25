@@ -126,6 +126,19 @@
         }
       }
     },
+    "e2e:oauth-real": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "outputs": [
+        "{workspaceRoot}/apps/web/test-results",
+        "{workspaceRoot}/apps/web/playwright-report"
+      ],
+      "options": {
+        "command": "playwright test --config playwright.oauth-real.config.ts --headed",
+        "cwd": "apps/web"
+      }
+    },
+
     "e2e:ai-workspace": {
       "executor": "nx:run-commands",
       "outputs": [

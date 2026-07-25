@@ -1,18 +1,16 @@
 /**
- * Data Portability Infrastructure Client — Port Interfaces
+ * Data Portability Infrastructure Client — Transport Types
  */
 
-import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
-import type { ExportUserDataReq, ExportUserDataRes, ImportUserDataReq, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
 
 export type { IResultHttpClient };
 
-export interface IResultIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
-}
+/**
+ * IPC Client interface (Result-returning).
+ * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
+ */
+export type { IResultIpcClient } from '@dailyuse/ipc-client';
 
-export interface IDataPortabilityApiClient {
-  exportUserData(data: ExportUserDataReq): Promise<Result<ExportUserDataRes>>;
-  importUserData(data: ImportUserDataReq): Promise<Result<ImportUserDataRes>>;
-}
+// ============ Port Interface Re-exports ============
+export type { IDataPortabilityApiClient } from '../../application-client/ports/data-portability-api-client.port';

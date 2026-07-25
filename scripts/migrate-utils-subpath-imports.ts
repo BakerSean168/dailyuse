@@ -71,7 +71,7 @@ map('@dailyuse/utils/result', [
   'HttpResponseBuilder', 'createHttpResponseBuilder', 'ResultCodeToHttpStatus',
   'isClientError', 'isServerError',
   // IPC
-  'toIpcResult', 'fromIpcResult', 'createIpcClientWrapper',
+  'toIpcResult', 'fromIpcResult',
   // Types
   'Result', 'SuccessResult', 'FailureResult', 'ResultError', 'ResultErrorDetail',
   'ResultMeta', 'StructuredResultError', 'AsyncResult', 'PageInfo', 'PagedList',

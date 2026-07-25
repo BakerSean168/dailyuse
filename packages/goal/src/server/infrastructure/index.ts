@@ -42,7 +42,6 @@ export {
 } from './prisma';
 export {
   createGoalRuntimeContribution,
-  type GoalRuntimeContribution,
 } from './runtime';
 export {
   createGoalPowerSyncModule,

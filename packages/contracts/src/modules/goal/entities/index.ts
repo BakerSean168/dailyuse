@@ -1,14 +1,13 @@
 /**
  * Goal Entities Export
+ *
+ * Residual 655: record client DTO dual re-export from aggregates retired.
+ * Client record DTO lives under aggregates only.
  */
 
 export type {
   GoalRecordServerDTO,
 } from './goal-record-server';
-
-export type {
-  GoalRecordClientDTO,
-} from '../aggregates/goal-record-client';
 
 export type {
   GoalReviewServerDTO,

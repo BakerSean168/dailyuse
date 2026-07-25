@@ -9,13 +9,9 @@ import {
   type IAuthSessionRepository,
 } from '../../../domain';
 import { AuthSessionId } from '../../../domain';
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split('@');
-  if (!local || !domain) return email;
-  if (local.length <= 2) return `${local[0] ?? '*'}***@${domain}`;
-  return `${local[0]}***${local.slice(-1)}@${domain}`;
-}
+// Residual 949: maskEmail dual retired — sole server shared mask-email helper.
+// Invalid-email policy unified to non-leaking '***' (was: return raw email).
+import { maskEmail } from '../../../shared/mask-email';
 
 export class GetCurrentUserUseCase {
   constructor(
@@ -31,8 +27,11 @@ export class GetCurrentUserUseCase {
 
     let session = null;
     if (sessionId) {
-      const currentSession = await this.sessionRepository.findById(AuthSessionId.of(sessionId));
-      if (currentSession && String(currentSession.identityId) === String(identity.id)) {
+      const currentSession = await this.sessionRepository.findByIdForIdentity(
+        IdentityId.of(cx.identityId),
+        AuthSessionId.of(sessionId),
+      );
+      if (currentSession) {
         session = currentSession.toClientDTO(true);
       }
     }

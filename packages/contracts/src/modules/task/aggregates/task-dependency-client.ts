@@ -1,64 +1,22 @@
 /**
  * Task Dependency Client DTOs
  * 任务依赖关系客户端数据传输对象
+ *
+ * Residual 831: TaskDependencyClientDTO dual retired — sole TaskDependencyResponseSchema + z.infer.
+ * DependencyChainClientDTO keeps interface body (extra estimatedCompletionDate vs ResponseSchema).
  */
 
+import type { z } from 'zod';
 import type {
-  TaskDependencyId,
   TaskTemplateId,
-  TransferDate,
   DomainDate,
 } from '../../../primitives';
-import type { DependencyType } from '../value-objects/dependency-type';
-import type { DependencyStatus } from '../value-objects/dependency-status';
+import { TaskDependencyResponseSchema } from '../api/response-schemas';
 
-/**
- * 任务依赖关系实体（客户端）
- */
-export interface TaskDependencyClientDTO {
-  id: TaskDependencyId;
-  predecessorTaskId: TaskTemplateId;
-  successorTaskId: TaskTemplateId;
-  dependencyType: DependencyType;
-  lagDays?: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
+// Residual 831: TaskDependencyClientDTO dual retired — OpenAPI + transport use TaskDependencyResponseSchema.
+export type TaskDependencyClientDTO = z.infer<typeof TaskDependencyResponseSchema>;
 
-  /**
-   * 前置任务的标题（用于显示）
-   */
-  predecessorTaskTitle?: string;
-
-  /**
-   * 后续任务的标题（用于显示）
-   */
-  successorTaskTitle?: string;
-}
-
-/**
- * 带依赖信息的任务模板（客户端）
- */
-export interface TaskTemplateWithDependenciesClientDTO {
-  id: TaskTemplateId;
-  title: string;
-  // ... 其他 TaskTemplate 字段
-
-  dependencies: TaskDependencyClientDTO[];
-  dependents: TaskTemplateId[];
-  dependencyStatus: DependencyStatus;
-  isBlocked: boolean;
-  blockingReason?: string;
-
-  /**
-   * 可以开始的最早时间（基于依赖计算）
-   */
-  earliestStartTime?: DomainDate;
-
-  /**
-   * 依赖层级（用于可视化）
-   */
-  dependencyLevel?: number;
-}
+// Residual 649: task-template-with-dependencies client dual retired.
 
 /**
  * 将 ServerDTO 转换为 ClientDTO
@@ -80,6 +38,7 @@ export function dependencyServerToClientDTO(
 
 /**
  * 依赖链信息（客户端）
+ * Keep interface dual intentionally — ResponseSchema omits estimatedCompletionDate.
  */
 export interface DependencyChainClientDTO {
   taskId: TaskTemplateId;

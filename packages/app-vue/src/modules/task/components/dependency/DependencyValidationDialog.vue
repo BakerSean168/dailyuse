@@ -112,12 +112,13 @@ import {
   Separator,
 } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, CheckCircle, ArrowDown, RefreshCw, Info, Network } from '@lucide/vue';
-import type { TaskDependencyValidationError, TaskForDAGViewModel } from '../types';
+import type { TaskDependencyValidationError } from '../types';
+import type { TaskForDAG } from '../../types/task-dag.types';
 
 const props = defineProps<{
   modelValue: boolean;
   error: TaskDependencyValidationError | null;
-  tasks?: TaskForDAGViewModel[];
+  tasks?: TaskForDAG[];
 }>();
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];

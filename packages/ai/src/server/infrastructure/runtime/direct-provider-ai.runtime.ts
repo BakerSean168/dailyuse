@@ -18,6 +18,7 @@ import type {
 } from '../ai.module';
 import type { AIRuntimeOutput } from './ai-runtime';
 import {
+  buildAgentRuntimeCapabilityOffers,
   createAgentRuntimeService,
   createAnalyticsRuntimeService,
   createEvaluationRuntimeService,
@@ -32,18 +33,14 @@ import {
   ListAIProvidersUseCase,
   TestAIProviderConnectionUseCase,
   SetDefaultAIProviderUseCase,
-  GetDefaultAIProviderUseCase,
   RefreshAIProviderModelsUseCase,
   SendAIMessageUseCase,
   StreamAIMessageUseCase,
-  CreateConversationV2UseCase,
-  GetConversationV2UseCase,
-  ListConversationsV2UseCase,
-  DeleteConversationV2UseCase,
+  CreateConversationUseCase,
+  GetConversationUseCase,
+  ListConversationsUseCase,
+  DeleteConversationUseCase,
   UpdateConversationUseCase,
-  AddConversationMessageUseCase,
-  GetConversationsByStatusUseCase,
-  UpdateConversationStatusUseCase,
   GenerateAIGoalUseCase,
   ManageAIKnowledgeNoteUseCase,
 } from '../../application/use-cases';
@@ -52,8 +49,13 @@ import {
   DirectProviderGoalPlanningAdapter,
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
+import { DirectTurnEngine, ReadonlyAnalysisTurnEngine } from '../turn-engine';
+import { AssistantFacade } from '../assistant-facade';
+import { ProposalKernel } from '../proposal-kernel';
+import { CapabilityResolver } from '../capability-resolver';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
+import { CustomModelGateway } from '../model-gateway';
 
 const ADVANCED_AI_REASON =
   'Advanced AI features require a remote ai-service runtime. Configure AI_SERVICE_BASE_URL and AI_SERVICE_SECRET to enable goal automation, knowledge retrieval, analytics, and reindexing.';
@@ -65,10 +67,14 @@ const ADVANCED_AI_REASON =
 export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies): AIRuntimeOutput {
   const { conversationRepository, providerConfigRepository } = dependencies;
 
-  // Direct-provider always uses local adapters
-  const chatExecutionPort = new DirectProviderChatExecutionAdapter();
-  const goalPlanningPort = new DirectProviderGoalPlanningAdapter();
-  const knowledgeNoteGenerationPort = new DirectProviderKnowledgeNoteGenerationAdapter();
+  // Residual 337: shared CustomModelGateway for Host + direct provider adapters.
+  const modelGateway = new CustomModelGateway();
+  // Direct-provider always uses local adapters through the Host Model Gateway.
+  const chatExecutionPort = new DirectProviderChatExecutionAdapter(modelGateway);
+  const goalPlanningPort = new DirectProviderGoalPlanningAdapter(modelGateway);
+  const knowledgeNoteGenerationPort = new DirectProviderKnowledgeNoteGenerationAdapter(
+    modelGateway,
+  );
   const modelCatalogPort = new OpenAICompatibleModelCatalogGateway();
 
   // Provider services
@@ -78,38 +84,49 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     delete: new DeleteAIProviderUseCase(providerConfigRepository),
     get: new GetAIProviderUseCase(providerConfigRepository),
     list: new ListAIProvidersUseCase(providerConfigRepository),
-    testConnection: new TestAIProviderConnectionUseCase(providerConfigRepository, chatExecutionPort),
+    testConnection: new TestAIProviderConnectionUseCase(
+      providerConfigRepository,
+      chatExecutionPort,
+    ),
     setDefault: new SetDefaultAIProviderUseCase(providerConfigRepository),
-    getDefault: new GetDefaultAIProviderUseCase(providerConfigRepository),
     refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogPort),
   };
 
   // Conversation services
   const conversationServices: AIConversationServices = {
-    createConversationV2: new CreateConversationV2UseCase(conversationRepository),
-    getConversationV2: new GetConversationV2UseCase(conversationRepository),
-    listConversationsV2: new ListConversationsV2UseCase(conversationRepository),
-    deleteConversationV2: new DeleteConversationV2UseCase(conversationRepository),
+    createConversation: new CreateConversationUseCase(conversationRepository),
+    getConversation: new GetConversationUseCase(conversationRepository),
+    listConversations: new ListConversationsUseCase(conversationRepository),
+    deleteConversation: new DeleteConversationUseCase(conversationRepository),
     updateConversation: new UpdateConversationUseCase(conversationRepository),
-    addMessage: new AddConversationMessageUseCase(conversationRepository),
-    getByStatus: new GetConversationsByStatusUseCase(conversationRepository),
-    updateStatus: new UpdateConversationStatusUseCase(conversationRepository),
   };
+
+  // Open chat routes through DirectTurnEngine (residual 316).
+  const turnEngine = new DirectTurnEngine(
+    conversationRepository,
+    providerConfigRepository,
+    chatExecutionPort,
+  );
+  // Residual 341: second production Turn Engine (readonly analysis via Model Gateway).
+  const readonlyTurnEngine = new ReadonlyAnalysisTurnEngine(
+    providerConfigRepository,
+    modelGateway,
+  );
+
+  // Residual 320: Host proposal lifecycle (no mutation execution).
+  const proposalKernel = new ProposalKernel();
+  // Residual 343: unified Host dispatch (open chat default stays DirectTurnEngine).
+  const assistantFacade = new AssistantFacade(
+    turnEngine,
+    readonlyTurnEngine,
+    proposalKernel,
+    turnEngine,
+  );
 
   // Chat services
   const chatServices: AIChatServices = {
-    send: new SendAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
-    stream: new StreamAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
+    send: new SendAIMessageUseCase(turnEngine, dependencies.executionLogPort),
+    stream: new StreamAIMessageUseCase(turnEngine, dependencies.executionLogPort),
   };
 
   // Goal generation
@@ -123,18 +140,16 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     dependencies.analyticsReadPort,
   );
 
-  // Knowledge notes — optional, requires persistence + subpath
-  const knowledgeNoteUseCase =
-    dependencies.knowledgeNotePersistence && dependencies.getKnowledgeNoteSubpath
-      ? new ManageAIKnowledgeNoteUseCase(
-          providerConfigRepository,
-          knowledgeNoteGenerationPort,
-          dependencies.knowledgeNotePersistence,
-          dependencies.getKnowledgeNoteSubpath,
-          new AIKnowledgeNotePathResolver(),
-          dependencies.executionLogPort,
-        )
-      : null;
+  // Knowledge notes — optional, requires host persistence.
+  const knowledgeNoteUseCase = dependencies.knowledgeNotePersistence
+    ? new ManageAIKnowledgeNoteUseCase(
+        providerConfigRepository,
+        knowledgeNoteGenerationPort,
+        dependencies.knowledgeNotePersistence,
+        new AIKnowledgeNotePathResolver(),
+        dependencies.executionLogPort,
+      )
+    : null;
 
   const capabilities: AICapabilities = {
     runtimeMode: 'direct-provider',
@@ -150,6 +165,11 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     advancedFeaturesReason: ADVANCED_AI_REASON,
   };
 
+  // Residual 322/324: fail-closed capability projection shared with agent start gate.
+  const capabilityResolver = new CapabilityResolver(
+    buildAgentRuntimeCapabilityOffers({ knowledgeNoteUseCase }),
+  );
+
   const services: AIModuleServices = {
     providerServices,
     conversationServices,
@@ -160,8 +180,29 @@ export function createDirectProviderAIRuntime(dependencies: AIModuleDependencies
     knowledgeQueryServices: createKnowledgeQueryRuntimeServices(null, capabilities),
     analyticsQueryService: createAnalyticsRuntimeService(null, capabilities),
     evaluationReportService: createEvaluationRuntimeService(null),
-    agentRuntimeService: createAgentRuntimeService(undefined),
+    agentRuntimeService: createAgentRuntimeService(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      knowledgeNoteUseCase,
+      undefined,
+      capabilityResolver,
+    ),
   };
 
-  return { services, capabilities, runtimeContributions: [] };
+  return {
+    services,
+    capabilities,
+    runtimeContributions: [],
+    turnEngine,
+    readonlyTurnEngine,
+    workflowAdapter: null,
+    proposalKernel,
+    capabilityResolver,
+    modelGateway,
+    assistantFacade,
+  };
 }

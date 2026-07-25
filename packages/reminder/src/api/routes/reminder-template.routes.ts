@@ -20,12 +20,15 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
+// Residual 989: sole parseString/parseNumber (local dual retired).
+import { parseNumber, parseString } from '@dailyuse/utils/shared';
 import {
   CreateReminderTemplateSchema,
   UpdateReminderTemplateSchema,
   GetUpcomingRemindersSchema,
+  GetUpcomingRemindersResSchema,
   GetReminderTodayScheduleSchema,
-  ReminderTodayScheduleItemSchema,
+  GetReminderTodayScheduleResSchema,
   ReminderTemplateResponseSchema,
   ReminderTemplateListResponseSchema,
   ReminderHistoryResponseSchema,
@@ -40,23 +43,7 @@ import type { ReminderTemplateId } from '@dailyuse/contracts/primitives';
 import type { ReminderController } from '../../server/transport/reminder.controller';
 
 // ============ Helpers ============
-
-function parseString(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? String(value[0]) : undefined;
-  }
-  if (value === undefined || value === null) {
-    return undefined;
-  }
-  return String(value);
-}
-
-function parseNumber(value: unknown): number | undefined {
-  const raw = parseString(value);
-  if (!raw) return undefined;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
+// Residual 989: parseString/parseNumber elevated to @dailyuse/utils/shared.
 
 // ============ Types ============
 
@@ -126,13 +113,7 @@ export function registerReminderTemplateRoutes(
         query: GetUpcomingRemindersSchema,
       },
       responses: {
-        200: successResponse(
-          z.object({
-            data: z.array(ReminderTodayScheduleItemSchema),
-            total: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(GetUpcomingRemindersResSchema, '获取成功'),
       },
     },
     [auth],
@@ -158,13 +139,7 @@ export function registerReminderTemplateRoutes(
         query: GetReminderTodayScheduleSchema,
       },
       responses: {
-        200: successResponse(
-          z.object({
-            data: z.array(ReminderTodayScheduleItemSchema),
-            total: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(GetReminderTodayScheduleResSchema, '获取成功'),
       },
     },
     [auth],

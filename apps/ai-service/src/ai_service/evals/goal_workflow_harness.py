@@ -21,7 +21,7 @@ from ai_service.schemas import (
     GoalAutomationResponse,
     GoalAutomationToolCall,
     GoalPlanningResponse,
-    KnowledgeResourceDocument,
+    KnowledgeNoteDocument,
     ProviderConfig,
 )
 from ai_service.services.goal_planning_service import GoalPlanningService
@@ -98,7 +98,7 @@ class GoalWorkflowEvalCase(BaseModel):
     initial_request: GoalWorkflowEvalRequest
     clarification_answers: list[str] | None = None
     provider_script: list[ChatCompleteResponse] = Field(default_factory=list)
-    related_resources: list[KnowledgeResourceDocument] = Field(default_factory=list)
+    related_resources: list[KnowledgeNoteDocument] = Field(default_factory=list)
     analytics_context: AnalyticsQueryContext | None = None
     fake_execution: list[GoalWorkflowFakeActionOverride] = Field(default_factory=list)
     expected: GoalWorkflowExpectedOutcome
@@ -619,7 +619,7 @@ def build_execution_recovery(
         )
     if any(action.get("tool") == "search_notes" for action in failed_actions):
         suggestions.append(
-            "Refresh repository resources or narrow the "
+            "Refresh knowledge notes or narrow the "
             "note query before retrying execution."
         )
     if any(action.get("tool") == "fetch_stats" for action in failed_actions):

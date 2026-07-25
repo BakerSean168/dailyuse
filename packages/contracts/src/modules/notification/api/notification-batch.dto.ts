@@ -15,18 +15,17 @@ import { NotificationCategory } from '../value-objects/notification-category';
 // BATCH Operations
 // ============================================================================
 
-export const MarkAsReadBatchSchema = z.object({
+/** Residual 671: shared notification id-batch request (mark-read + batch-delete). */
+// Residual 799: Mark/Delete/Cleanup *Res reuse BatchOperationResultDTO = z.infer of NotificationBatchResultSchema.
+
+export const NotificationIdsBatchSchema = z.object({
   notificationIds: z.array(brandedId<NotificationId>()).min(1),
 });
 
-export type MarkAsReadBatchReq = z.infer<typeof MarkAsReadBatchSchema>;
+export type MarkAsReadBatchReq = z.infer<typeof NotificationIdsBatchSchema>;
 export type MarkAsReadBatchRes = BatchOperationResultDTO;
 
-export const DeleteNotificationsBatchSchema = z.object({
-  notificationIds: z.array(brandedId<NotificationId>()).min(1),
-});
-
-export type DeleteNotificationsBatchReq = z.infer<typeof DeleteNotificationsBatchSchema>;
+export type DeleteNotificationsBatchReq = z.infer<typeof NotificationIdsBatchSchema>;
 export type DeleteNotificationsBatchRes = BatchOperationResultDTO;
 
 export const CleanupOldNotificationsSchema = z.object({

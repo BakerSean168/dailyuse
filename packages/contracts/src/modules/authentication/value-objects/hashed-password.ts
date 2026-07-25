@@ -1,16 +1,13 @@
 /**
  * HashedPassword Value Object
  * 哈希密码值对象 - Server 端持有
+ *
+ * Residual 855: HashedPasswordDTO dual retired — sole HashedPassword interface + type alias.
  */
 
 import type { PasswordAlgorithm } from './password-algorithm';
 
-// ============ 值对象接口 ============
-
-/**
- * 哈希密码 (Server 端才能持有)
- * 这是一个敏感的值对象，不应该序列化到客户端
- */
+// Residual 855: sole HashedPassword body (server-held sensitive VO).
 export interface HashedPassword {
   /**
    * 哈希值
@@ -33,15 +30,5 @@ export interface HashedPassword {
   createdAt: number;
 }
 
-// ============ DTO 定义 ============
-
-/**
- * 传输 DTO（客户端交互）
- */
-export interface HashedPasswordDTO {
-  hash: string;
-  salt: string;
-  algorithm: PasswordAlgorithm;
-  createdAt: number;
-}
-
+// Residual 855: HashedPasswordDTO dual retired — DTO is the HashedPassword shape.
+export type HashedPasswordDTO = HashedPassword;

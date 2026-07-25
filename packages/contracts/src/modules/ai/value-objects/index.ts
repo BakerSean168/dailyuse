@@ -4,6 +4,7 @@
 
 // ============ DTOs ============
 
+export { TokenUsageSchema } from './token-usage';
 export type {
   TokenUsageDTO,
 } from './token-usage';

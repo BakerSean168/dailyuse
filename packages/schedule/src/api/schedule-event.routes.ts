@@ -25,7 +25,7 @@ import {
   DetectConflictsRequestSchema,
   ResolveConflictRequestSchema,
   CalendarEntryResponseSchema,
-  DetectConflictsResponseSchema,
+  ConflictDetectionResultSchema,
   CreateScheduleResponseSchema,
   ResolveConflictResponseSchema,
 } from '@dailyuse/contracts/schedule';
@@ -117,7 +117,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id),
+    (req, ctx) => controller.get(req.params!.id, ctx),
   );
 
   // PUT /:id — 更新日程
@@ -136,7 +136,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // PATCH /:id — 更新日程（别名）
@@ -147,7 +147,7 @@ export function registerScheduleEventRoutes(
       skipOpenApi: true,
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // DELETE /:id — 删除日程
@@ -163,7 +163,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.delete(req.params!.id),
+    (req, ctx) => controller.delete(req.params!.id, ctx),
   );
 
   // ==================== Conflict Detection Routes ====================
@@ -178,7 +178,7 @@ export function registerScheduleEventRoutes(
         body: { content: { 'application/json': { schema: DetectConflictsRequestSchema } } },
       },
       responses: {
-        200: successResponse(DetectConflictsResponseSchema, '检测完成'),
+        200: successResponse(ConflictDetectionResultSchema, '检测完成'),
       },
     },
     [auth],
@@ -212,12 +212,12 @@ export function registerScheduleEventRoutes(
       summary: '获取日程事件冲突',
       request: { params: z.object({ id: brandedId<ScheduleId>() }) },
       responses: {
-        200: successResponse(DetectConflictsResponseSchema, '获取成功'),
+        200: successResponse(ConflictDetectionResultSchema, '获取成功'),
         404: errorResponse('日程不存在'),
       },
     },
     [auth],
-    (req) => controller.getConflicts(req.params!.id),
+    (req, ctx) => controller.getConflicts(req.params!.id, ctx),
   );
 
   // POST /:id/resolve-conflict — 解决日程冲突
@@ -240,7 +240,7 @@ export function registerScheduleEventRoutes(
       },
     },
     [auth],
-    (req) => controller.resolveConflict(req.params!.id, req.body),
+    (req, ctx) => controller.resolveConflict(req.params!.id, req.body, ctx),
   );
 
   return router;

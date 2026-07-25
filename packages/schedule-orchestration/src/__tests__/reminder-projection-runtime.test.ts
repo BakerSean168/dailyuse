@@ -91,6 +91,7 @@ describe('reminder projection runtime', () => {
     const scheduleTaskRepository: IScheduleTaskRepository = {
       save: vi.fn(),
       findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       deleteById: vi.fn(),
       findByIdentityId: vi.fn(),
       findBySourceModule: vi.fn(),

@@ -2,8 +2,6 @@
 
 from .checkpoint_factory import (
     build_checkpointer,
-    build_file_backed_run_history_store,
-    build_file_backed_saver,
     build_run_history_store,
 )
 from .checkpoints import (
@@ -33,7 +31,5 @@ __all__ = [
     "TSCheckpointAdapter",
     "TSCheckpointClient",
     "build_checkpointer",
-    "build_file_backed_run_history_store",
-    "build_file_backed_saver",
     "build_run_history_store",
 ]

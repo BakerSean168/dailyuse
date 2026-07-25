@@ -92,10 +92,13 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
     }
   }
 
-  async findById(id: string): Promise<AIProviderConfigServerDTO | null> {
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+  ): Promise<AIProviderConfigServerDTO | null> {
     const row = await this.db.getOptional<PowerSyncAIProviderConfigRow>(
-      `SELECT * FROM ai_provider_configs WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
-      [id],
+      `SELECT * FROM ai_provider_configs WHERE id = ? AND identity_id = ? AND deleted_at IS NULL LIMIT 1`,
+      [id, identityId],
     );
     return row ? PowerSyncAIProviderConfigMapper.toDTO(row, this.secretCipher) : null;
   }
@@ -120,33 +123,16 @@ export class PowerSyncAIProviderConfigRepository implements IAIProviderConfigRep
     return row ? PowerSyncAIProviderConfigMapper.toDTO(row, this.secretCipher) : null;
   }
 
-  async findByIdentityIdAndName(
-    identityId: string,
-    name: string,
-  ): Promise<AIProviderConfigServerDTO | null> {
-    const row = await this.db.getOptional<PowerSyncAIProviderConfigRow>(
-      `SELECT * FROM ai_provider_configs
-       WHERE identity_id = ? AND name = ? AND deleted_at IS NULL
-       LIMIT 1`,
-      [identityId, name],
-    );
-    return row ? PowerSyncAIProviderConfigMapper.toDTO(row, this.secretCipher) : null;
-  }
-
-  async delete(id: string): Promise<void> {
+    async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Provider config not found for the current identity.');
+    }
     const now = new Date().toISOString();
     await this.db.execute(
-      `UPDATE ai_provider_configs SET is_default = 0, deleted_at = ?, updated_at = ? WHERE id = ?`,
-      [now, now, id],
+      `UPDATE ai_provider_configs SET is_default = 0, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?`,
+      [now, now, id, identityId],
     );
-  }
-
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ one: number }>(
-      `SELECT 1 as one FROM ai_provider_configs WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
-      [id],
-    );
-    return row !== null;
   }
 
   async clearDefaultForIdentity(identityId: string): Promise<void> {

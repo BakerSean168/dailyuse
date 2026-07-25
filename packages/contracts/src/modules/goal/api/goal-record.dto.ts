@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
-import type { GoalRecordClientDTO } from '../aggregates/goal-record-client';
+import { GoalRecordListResSchema } from './response-schemas';
 
 // ============================================================================
 // CREATE Goal Record
@@ -23,7 +23,6 @@ export const CreateGoalRecordSchema = z.object({
 });
 
 export type CreateGoalRecordReq = z.infer<typeof CreateGoalRecordSchema>;
-export type CreateGoalRecordRes = GoalRecordClientDTO;
 
 // ============================================================================
 // GET Goal Records
@@ -41,14 +40,11 @@ export const GetGoalRecordsSchema = z.object({
 
 export type GetGoalRecordsReq = z.infer<typeof GetGoalRecordsSchema>;
 
-export interface GetGoalRecordsRes {
-  data: GoalRecordClientDTO[];
-  total: number;
-}
+// Residual 689: list response dual body retired — OpenAPI + transport use GoalRecordListResSchema.
+export type GetGoalRecordsRes = z.infer<typeof GoalRecordListResSchema>;
 
 // ============================================================================
 // DELETE Goal Record
 // ============================================================================
 
 export type DeleteGoalRecordReq = void;
-export type DeleteGoalRecordRes = GoalRecordClientDTO;

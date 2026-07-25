@@ -144,6 +144,8 @@ export function inferMimeType(filename: string): string {
 
 /**
  * Format file size for display.
+ * Soft residual 1145: utils formatFileSize keep-boundary uses "0 Bytes" + Bytes ladder +
+ * toFixed(2); this RN/mobile display uses "0 B" + B ladder + toFixed(1) (no force-merge).
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';

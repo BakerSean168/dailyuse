@@ -233,8 +233,25 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     return PowerSyncScheduleTaskMapper.toDomain(row, executions);
   }
 
-  async deleteById(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM schedule_tasks WHERE id = ?', [id]);
+  async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleTask | null> {
+    const row = await this.db.getOptional<PowerSyncScheduleTaskRow>(
+      'SELECT * FROM schedule_tasks WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
+    );
+    if (!row) return null;
+    const executions = await this.loadExecutions(row.id, 10);
+    return PowerSyncScheduleTaskMapper.toDomain(row, executions);
+  }
+
+  async deleteById(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Schedule task not found for the current identity.');
+    }
+    await this.db.execute('DELETE FROM schedule_tasks WHERE id = ? AND identity_id = ?', [
+      id,
+      identityId,
+    ]);
   }
 
   async findByIdentityId(identityId: string): Promise<ScheduleTask[]> {
@@ -244,28 +261,28 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     );
   }
 
-  async findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]> {
+  async findBySourceModule(module: SourceModule, identityId: string): Promise<ScheduleTask[]> {
     return this.queryRows(
-      `SELECT * FROM schedule_tasks WHERE source_module = ?${identityId ? ' AND identity_id = ?' : ''} ORDER BY next_run_at ASC`,
-      identityId ? [module, identityId] : [module],
+      `SELECT * FROM schedule_tasks WHERE source_module = ? AND identity_id = ? ORDER BY next_run_at ASC`,
+      [module, identityId],
     );
   }
 
   async findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    identityId?: string,
+    identityId: string,
   ): Promise<ScheduleTask[]> {
     return this.queryRows(
-      `SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ?${identityId ? ' AND identity_id = ?' : ''} ORDER BY next_run_at ASC`,
-      identityId ? [module, entityId, identityId] : [module, entityId],
+      `SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ? AND identity_id = ? ORDER BY next_run_at ASC`,
+      [module, entityId, identityId],
     );
   }
 
-  async findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]> {
+  async findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]> {
     return this.queryRows(
-      `SELECT * FROM schedule_tasks WHERE status = ?${identityId ? ' AND identity_id = ?' : ''} ORDER BY next_run_at ASC`,
-      identityId ? [status, identityId] : [status],
+      `SELECT * FROM schedule_tasks WHERE status = ? AND identity_id = ? ORDER BY next_run_at ASC`,
+      [status, identityId],
     );
   }
 
@@ -288,13 +305,9 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
   }
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
-    const clauses: string[] = [];
-    const params: unknown[] = [];
+    const clauses: string[] = ['identity_id = ?'];
+    const params: unknown[] = [options.identityId];
 
-    if (options.identityId) {
-      clauses.push('identity_id = ?');
-      params.push(options.identityId);
-    }
     if (options.sourceModule) {
       clauses.push('source_module = ?');
       params.push(options.sourceModule);
@@ -312,10 +325,7 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
       params.push(options.isEnabled ? 1 : 0);
     }
 
-    let sql = 'SELECT * FROM schedule_tasks';
-    if (clauses.length > 0) {
-      sql += ` WHERE ${clauses.join(' AND ')}`;
-    }
+    let sql = `SELECT * FROM schedule_tasks WHERE ${clauses.join(' AND ')}`;
     sql += ' ORDER BY next_run_at ASC';
     if (options.limit) {
       sql += ' LIMIT ?';
@@ -330,13 +340,9 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
-    const clauses: string[] = [];
-    const params: unknown[] = [];
+    const clauses: string[] = ['identity_id = ?'];
+    const params: unknown[] = [options.identityId];
 
-    if (options.identityId) {
-      clauses.push('identity_id = ?');
-      params.push(options.identityId);
-    }
     if (options.sourceModule) {
       clauses.push('source_module = ?');
       params.push(options.sourceModule);
@@ -354,13 +360,9 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
       params.push(options.isEnabled ? 1 : 0);
     }
 
-    let sql = 'SELECT COUNT(*) as count FROM schedule_tasks';
-    if (clauses.length > 0) {
-      sql += ` WHERE ${clauses.join(' AND ')}`;
-    }
-
-    const result = await this.db.get<{ count: number }>(sql, params);
-    return Number(result.count ?? 0);
+    const sql = `SELECT COUNT(*) as count FROM schedule_tasks WHERE ${clauses.join(' AND ')}`;
+    const row = await this.db.getOptional<{ count: number }>(sql, params);
+    return Number(row?.count ?? 0);
   }
 
   async saveBatch(tasks: ScheduleTask[]): Promise<void> {
@@ -369,10 +371,13 @@ export class PowerSyncScheduleTaskRepository implements IScheduleTaskRepository 
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
-    for (const id of ids) {
-      await this.deleteById(id);
-    }
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    const placeholders = ids.map(() => '?').join(', ');
+    await this.db.execute(
+      `DELETE FROM schedule_tasks WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
+    );
   }
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {

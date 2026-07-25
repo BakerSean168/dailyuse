@@ -8,8 +8,8 @@ from ai_service.schemas import (
     ChatCompleteResponse,
     ChatMessage,
     KnowledgeExpansionResponse,
+    KnowledgeNoteDocument,
     KnowledgeQueryResponse,
-    KnowledgeResourceDocument,
     ProviderConfig,
 )
 from ai_service.services.knowledge_query_service import (
@@ -84,7 +84,7 @@ class FakeSemanticEmbeddingChatService(FakeChatService):
 class TestKnowledgeIndexRoute:
     """Tests for deterministic resource indexing."""
 
-    def test_index_resource_success(self, client):
+    def test_index_note_success(self, client):
         """A text resource is chunked into an indexed representation."""
 
         response = client.post(
@@ -254,8 +254,8 @@ async def test_hybrid_retrieval_scores_semantically_related_content():
     indexing_service = KnowledgeIndexingService()
     query_service = KnowledgeQueryService(FakeChatService(), indexing_service)
     indexed_resources = [
-        indexing_service.index_resource(
-            KnowledgeResourceDocument(
+        indexing_service.index_note(
+            KnowledgeNoteDocument(
                 identity_id="identity-1",
                 repository_id="repo-1",
                 resource_id="resource-grounding",
@@ -263,14 +263,14 @@ async def test_hybrid_retrieval_scores_semantically_related_content():
                 title="Repository Grounding",
                 mime_type="text/markdown",
                 content=(
-                    "Citations should reference repository resources after chunk "
+                    "Citations should reference knowledge notes after chunk "
                     "selection so grounded answers stay traceable."
                 ),
                 metadata={},
             )
         ),
-        indexing_service.index_resource(
-            KnowledgeResourceDocument(
+        indexing_service.index_note(
+            KnowledgeNoteDocument(
                 identity_id="identity-1",
                 repository_id="repo-1",
                 resource_id="resource-groceries",
@@ -302,8 +302,8 @@ async def test_provider_embeddings_override_local_vectors_when_available():
     """Provider embeddings should replace local fallback vectors during indexing."""
 
     indexing_service = KnowledgeIndexingService(FakeEmbeddingChatService())
-    indexed_resource = await indexing_service.index_resource_async(
-        KnowledgeResourceDocument(
+    indexed_resource = await indexing_service.index_note_async(
+        KnowledgeNoteDocument(
             identity_id="identity-1",
             repository_id="repo-1",
             resource_id="resource-grounding",
@@ -312,7 +312,7 @@ async def test_provider_embeddings_override_local_vectors_when_available():
             mime_type="text/markdown",
             content=(
                 "# Repository Grounding\n\n"
-                "Grounded answers should cite repository resources after retrieval."
+                "Grounded answers should cite knowledge notes after retrieval."
             ),
             metadata={},
         ),
@@ -345,8 +345,8 @@ async def test_query_uses_provider_embeddings_when_indexed_vectors_are_provider_
         api_key="test-key",
     )
     indexed_resources = [
-        await indexing_service.index_resource_async(
-            KnowledgeResourceDocument(
+        await indexing_service.index_note_async(
+            KnowledgeNoteDocument(
                 identity_id="identity-1",
                 repository_id="repo-1",
                 resource_id="resource-provenance",
@@ -358,8 +358,8 @@ async def test_query_uses_provider_embeddings_when_indexed_vectors_are_provider_
             ),
             provider_config=provider_config,
         ),
-        await indexing_service.index_resource_async(
-            KnowledgeResourceDocument(
+        await indexing_service.index_note_async(
+            KnowledgeNoteDocument(
                 identity_id="identity-1",
                 repository_id="repo-1",
                 resource_id="resource-groceries",

@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { notificationSound, reminderSound } from '@dailyuse/assets/audio';
-import { NotificationChannels } from '../shared/types/ipc-channels';
-
-interface ElectronBridge {
-  invoke(channel: string, ...args: unknown[]): Promise<unknown>;
-  on(channel: string, listener: (...args: unknown[]) => void): void;
-  off(channel: string, listener: (...args: unknown[]) => void): void;
-}
-
-function getElectronBridge(): ElectronBridge | undefined {
-  return (window as unknown as { electronAPI?: ElectronBridge }).electronAPI;
-}
+import { NotificationChannels } from '@dailyuse/contracts/electron';
+// Residual 911: local ElectronBridge dual retired — sole body from @dailyuse/ipc-client.
+// Residual 941: local getElectronBridge dual retired — sole host helper in platform/electron-bridge.
+import { getElectronBridge } from './platform/electron-bridge';
 
 interface CustomNotification {
   id: string;

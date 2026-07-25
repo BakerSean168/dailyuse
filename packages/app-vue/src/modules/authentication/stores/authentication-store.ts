@@ -15,12 +15,22 @@ import type {
   AuthSessionClientDTO,
   AuthResponseDTO,
   AuthBootstrapSnapshot,
+  CurrentUserDTO,
+  ListSessionsRes,
 } from '@dailyuse/contracts/authentication';
+
+export type AuthenticationIdentity =
+  | AuthIdentityClientDTO
+  | CurrentUserDTO['identity'];
+
+export type AuthenticationSession =
+  | AuthSessionClientDTO
+  | ListSessionsRes['sessions'][number];
 
 // ============ State Interface ============
 export interface AuthenticationState {
   // 当前认证身份
-  currentIdentity: AuthIdentityClientDTO | null;
+  currentIdentity: AuthenticationIdentity | null;
 
   // 认证模式
   authMode: string | null;
@@ -32,10 +42,10 @@ export interface AuthenticationState {
   refreshToken: string | null;
 
   // 活动会话列表
-  activeSessions: AuthSessionClientDTO[];
+  activeSessions: AuthenticationSession[];
 
   // 当前会话
-  currentSession: AuthSessionClientDTO | null;
+  currentSession: AuthenticationSession | null;
 
   // UI 状态
   isLoading: boolean;
@@ -84,7 +94,7 @@ export const useAuthenticationStore = defineStore('authentication', {
 
   actions: {
     // ========== Identity Actions ==========
-    setCurrentIdentity(identity: AuthIdentityClientDTO | null) {
+    setCurrentIdentity(identity: AuthenticationIdentity | null) {
       this.currentIdentity = identity;
     },
 
@@ -111,11 +121,11 @@ export const useAuthenticationStore = defineStore('authentication', {
     },
 
     // ========== Session Actions ==========
-    setCurrentSession(session: AuthSessionClientDTO | null) {
+    setCurrentSession(session: AuthenticationSession | null) {
       this.currentSession = session;
     },
 
-    setActiveSessions(sessions: AuthSessionClientDTO[]) {
+    setActiveSessions(sessions: AuthenticationSession[]) {
       this.activeSessions = sessions;
     },
 

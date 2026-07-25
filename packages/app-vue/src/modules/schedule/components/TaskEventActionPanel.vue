@@ -57,6 +57,7 @@ import {
   Button,
 } from '@dailyuse/ui-vue-shadcn';
 import type { CalendarEventItem } from '../composables/useCalendarView';
+import { formatCalendarEventTimeRange } from '../../../shared/utils/format-calendar-event-time-range';
 
 interface Props {
   open: boolean;
@@ -74,13 +75,12 @@ const emit = defineEmits<Emits>();
 const { t } = useI18n();
 const completing = ref(false);
 
+/**
+ * Residual 1273: formatTimeRange dual retired onto formatCalendarEventTimeRange sole.
+ * Soft residual 1213: app-react useScheduleAgenda Intl zh-CN pair remains keep-boundary (no force-merge).
+ */
 function formatTimeRange(event: CalendarEventItem): string {
-  if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
-  const fmt = (ts: number) => {
-    const d = new Date(ts);
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-  };
-  return `${fmt(event.startTime)} – ${fmt(event.endTime)}`;
+  return formatCalendarEventTimeRange(event, t('schedule.calendar.allDay'));
 }
 
 const statusBadgeClass = computed(() => {

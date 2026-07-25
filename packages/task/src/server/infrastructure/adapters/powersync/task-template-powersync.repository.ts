@@ -180,21 +180,21 @@ export class PowerSyncTaskTemplateRepository
     }
   }
 
-  async findById(id: string): Promise<TaskTemplate | null> {
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null> {
     const row = await this.db.getOptional<PowerSyncTaskTemplateRow>(
-      'SELECT * FROM task_templates WHERE id = ? LIMIT 1',
-      [id],
+      'SELECT * FROM task_templates WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
     );
     return row ? PowerSyncTaskTemplateMapper.toDomain(row) : null;
   }
 
-  async findByIdWithChildren(id: string): Promise<TaskTemplate | null> {
-    const template = await this.findById(id);
+  async findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null> {
+    const template = await this.findByIdForIdentity(identityId, id);
     if (!template) return null;
 
     const instances = await this.db.getAll<PowerSyncTaskInstanceRow>(
-      'SELECT * FROM task_instances WHERE template_id = ? ORDER BY instance_date DESC',
-      [id],
+      'SELECT * FROM task_instances WHERE template_id = ? AND identity_id = ? ORDER BY instance_date DESC',
+      [id, identityId],
     );
     instances
       .map((row) => PowerSyncTaskInstanceMapper.toDomain(row))
@@ -220,17 +220,17 @@ export class PowerSyncTaskTemplateRepository
     return this.findByStatus(identityId, 'Active' as TaskTemplateStatus);
   }
 
-  async findByFolderId(folderId: string): Promise<TaskTemplate[]> {
+  async findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]> {
     return this.queryTemplates(
-      'SELECT * FROM task_templates WHERE folder_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
-      [folderId],
+      'SELECT * FROM task_templates WHERE identity_id = ? AND folder_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
+      [identityId, folderId],
     );
   }
 
-  async findByGoalId(goalId: string): Promise<TaskTemplate[]> {
+  async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
     const rows = await this.queryTemplates(
-      'SELECT * FROM task_templates WHERE goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
-      [],
+      'SELECT * FROM task_templates WHERE identity_id = ? AND goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
+      [identityId],
     );
     return rows.filter((template) => template.toServerDTO().goalBinding?.goalId === goalId);
   }
@@ -253,22 +253,37 @@ export class PowerSyncTaskTemplateRepository
     });
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM task_templates WHERE id = ?', [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task template not found for the current identity.');
+    }
+    await this.db.execute('DELETE FROM task_templates WHERE id = ? AND identity_id = ?', [
+      id,
+      identityId,
+    ]);
   }
 
-  async softDelete(id: string): Promise<void> {
+  async softDelete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task template not found for the current identity.');
+    }
     const now = new Date().toISOString();
     await this.db.execute(
-      'UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ?',
-      ['Deleted', now, now, id],
+      'UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ? AND identity_id = ?',
+      ['Deleted', now, now, id, identityId],
     );
   }
 
-  async restore(id: string): Promise<void> {
+  async restore(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Task template not found for the current identity.');
+    }
     await this.db.execute(
-      'UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ?',
-      ['Active', new Date().toISOString(), id],
+      'UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ? AND identity_id = ?',
+      ['Active', new Date().toISOString(), id, identityId],
     );
   }
 
@@ -285,20 +300,20 @@ export class PowerSyncTaskTemplateRepository
     return rows.filter((template) => template.isOverdue());
   }
 
-  async findByKeyResultId(keyResultId: string): Promise<TaskTemplate[]> {
+  async findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]> {
     const rows = await this.queryTemplates(
-      'SELECT * FROM task_templates WHERE goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
-      [],
+      'SELECT * FROM task_templates WHERE identity_id = ? AND goal_binding IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC',
+      [identityId],
     );
     return rows.filter(
       (template) => template.toServerDTO().goalBinding?.keyResultId === keyResultId,
     );
   }
 
-  async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
+  async findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]> {
     return this.queryTemplates(
-      'SELECT * FROM task_templates WHERE parent_task_id = ? AND deleted_at IS NULL ORDER BY created_at ASC',
-      [parentTaskId],
+      'SELECT * FROM task_templates WHERE identity_id = ? AND parent_task_id = ? AND deleted_at IS NULL ORDER BY created_at ASC',
+      [identityId, parentTaskId],
     );
   }
 
@@ -347,10 +362,13 @@ export class PowerSyncTaskTemplateRepository
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
-    await this.db.execute(`DELETE FROM task_templates WHERE id IN (${placeholders})`, ids);
+    await this.db.execute(
+      `DELETE FROM task_templates WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
+    );
   }
 
   private async queryByType(

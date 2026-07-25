@@ -3,9 +3,7 @@ import type { RepositoryModuleRuntimeContribution } from '../repository.module';
 
 const logger = createLogger('RepositoryRuntime');
 
-export type RepositoryRuntimeContribution = RepositoryModuleRuntimeContribution;
-
-export function createRepositoryRuntimeContribution(): RepositoryRuntimeContribution {
+export function createRepositoryRuntimeContribution(): RepositoryModuleRuntimeContribution {
   let started = false;
 
   return {

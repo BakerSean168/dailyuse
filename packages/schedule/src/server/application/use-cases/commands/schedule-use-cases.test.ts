@@ -28,7 +28,11 @@ class MockScheduleTaskRepository implements IScheduleTaskRepository {
     return this.tasks.get(id) ?? null;
   }
 
-  async deleteById(id: string): Promise<void> {
+  async findByIdForIdentity(_identityId: string, id: string): Promise<any> {
+    return this.tasks.get(id) ?? null;
+  }
+
+  async deleteById(_identityId: string, id: string): Promise<void> {
     this.tasks.delete(id);
   }
 
@@ -38,15 +42,15 @@ class MockScheduleTaskRepository implements IScheduleTaskRepository {
     );
   }
 
-  async findBySourceModule(): Promise<any[]> {
+  async findBySourceModule(module: any, identityId: string): Promise<any[]> {
     return [];
   }
 
-  async findBySourceEntity(): Promise<any[]> {
+  async findBySourceEntity(module: any, entityId: string, identityId: string): Promise<any[]> {
     return [];
   }
 
-  async findByStatus(): Promise<any[]> {
+  async findByStatus(status: any, identityId: string): Promise<any[]> {
     return [];
   }
 
@@ -72,7 +76,7 @@ class MockScheduleTaskRepository implements IScheduleTaskRepository {
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
     for (const id of ids) {
       this.tasks.delete(id);
     }

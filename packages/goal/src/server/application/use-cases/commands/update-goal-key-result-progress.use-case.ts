@@ -16,11 +16,14 @@ export class UpdateGoalKeyResultProgressUseCase {
 
   async execute(
     goalId: string,
+    identityId: string,
     keyResultId: string,
     currentValue: number,
     note?: string,
   ): Promise<Result<KeyResultClientDTO>> {
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }

@@ -132,6 +132,7 @@ import {
 import { ListTodo, ArrowRight, CheckCircle2, Check, Loader2 } from '@lucide/vue';
 import { useTask } from '../../composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { formatHHmmParts } from '../../../../shared/utils/format-hhmm-parts';
 
 const emit = defineEmits<{
   (e: 'view-all'): void;
@@ -205,11 +206,12 @@ function templateName(templateId: string): string {
 }
 
 // ── Time label ──
+/** Residual 1297: minutes-of-day HH:mm dual retired onto formatHHmmParts sole. */
 function timeLabel(inst: TaskInstanceClientDTO): string {
   const fmt = (minutes: number) => {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    return formatHHmmParts(h, m);
   };
   const tr = inst.timeConfig?.timeRange;
   if (tr && typeof tr.start === 'number') {

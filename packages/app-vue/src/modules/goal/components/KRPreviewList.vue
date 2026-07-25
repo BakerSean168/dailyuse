@@ -409,6 +409,7 @@ function getImportanceClass(importance: string): string {
   }
 }
 
+/** Soft residual 1219: KR high/medium/low getImportanceLabel (≠ goal Vital-scale i18n / react English). */
 function getImportanceLabel(importance: string): string {
   switch (importance) {
     case 'high':

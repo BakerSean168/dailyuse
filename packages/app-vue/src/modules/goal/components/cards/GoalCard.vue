@@ -181,6 +181,10 @@ const getStatusIcon = (status: string) => {
   }
 };
 
+/**
+ * Soft residual 1222: local GoalCard getStatusLabel — same goalStatus i18n map as GoalDetailView.
+ * Package-local card helper; not schedule taskStatus; no force-extract merge.
+ */
 const getStatusLabel = (status: string): string => {
   const map: Record<string, string> = {
     Active: t('goal.cards.goalStatus.active'),

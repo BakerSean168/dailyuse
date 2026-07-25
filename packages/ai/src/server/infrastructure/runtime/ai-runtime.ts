@@ -8,15 +8,58 @@
 
 import { z } from 'zod';
 import { createLogger } from '@dailyuse/utils/logger';
+// Residual 999: sole errorMessage (local dual retired).
+import { errorMessage } from '@dailyuse/utils/shared';
 import {
   AgentActionSchema,
   AgentArtifactSchema,
   CreateKnowledgeNoteSchema,
   GoalAutomationPlanSchema,
+  knowledgeWriteRequirements,
+  resolveRunPlan,
   type AICapabilities,
+  type CapabilityOffer,
+  type IAssistantFacadePort,
+  type ICapabilityResolverPort,
+  type IModelGatewayPort,
+  type IProposalKernelPort,
+  type ITurnEnginePort,
+  type IWorkflowAdapterPort,
+  type ResolvedRunPlan,
 } from '@dailyuse/contracts/ai';
 import { error, ok } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
+
+// Residual 1121: asNonEmptyString sole (shared/as-non-empty-string).
+import { asNonEmptyString } from '../../../shared/as-non-empty-string';
+import { CapabilityResolver } from '../capability-resolver';
+import {
+  buildHostTaskCreateStartResult,
+  resolveTaskCreateTitle,
+  resolveTaskCreateConversationId,
+  resolveTaskCreateThreadId,
+  resolveTaskCreateIdentityId,
+  resolveTaskCreateRunId,
+  HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
+  HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE,
+} from './host-task-create-start';
+import {
+  buildHostTaskCreateResumeResult,
+  HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE,
+  HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE,
+} from './host-task-create-resume';
+import {
+  getDefaultHostTaskCreateRunStore,
+  HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE,
+  HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE,
+  HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE,
+  HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
+  matchesHostTaskCreateIdentity,
+} from './host-task-create-run-store';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import type {
@@ -69,7 +112,7 @@ import type {
   IAgentRuntimePort,
   IKnowledgeSourcePort,
   AnalyticsQueryContext,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
 } from '../../application/ports';
 import {
   resolveActiveProviderConfig,
@@ -90,6 +133,37 @@ export interface AIRuntimeOutput {
   readonly services: AIModuleServices;
   readonly capabilities: AICapabilities;
   readonly runtimeContributions: readonly AIModuleRuntimeContribution[];
+  /** First production Turn Engine (DirectTurnEngine); also powers open chat use cases. */
+  readonly turnEngine: ITurnEnginePort;
+  /**
+   * Second production Turn Engine (ReadonlyAnalysisTurnEngine / engine.pi_readonly).
+   * Residual 341 — Model Gateway-backed readonly analysis; not open-chat default.
+   */
+  readonly readonlyTurnEngine: ITurnEnginePort;
+  /**
+   * LangGraph workflow adapter when remote agent runtime is present; otherwise null.
+   * Residual 318 — wraps IAgentRuntimePort without replacing Python graphs.
+   */
+  readonly workflowAdapter: IWorkflowAdapterPort | null;
+  /**
+   * Proposal Kernel lifecycle port (residual 320). Always present on the Host;
+   * does not execute business mutations.
+   */
+  readonly proposalKernel: IProposalKernelPort;
+  /**
+   * Capability Resolver (residual 322). Fail-closed offer projection; never
+   * silent-emits engine.* labels.
+   */
+  readonly capabilityResolver: ICapabilityResolverPort;
+  /**
+   * Custom Model Gateway (residual 337). OpenAI-compatible catalog/complete/stream;
+   * credentials request-scoped only (never on results/events).
+   */
+  readonly modelGateway: IModelGatewayPort;
+  /**
+   * Assistant Facade (residual 343). Unified Host dispatch over Turn Engines + ProposalKernel.
+   */
+  readonly assistantFacade: IAssistantFacadePort;
 }
 
 export function buildCapabilityUnavailableMessage(
@@ -107,15 +181,125 @@ function unavailableResult<T>(message: string): Promise<Result<T>> {
   return Promise.resolve(error('SERVICE_UNAVAILABLE', message));
 }
 
-function getStringInput(input: Record<string, unknown>, key: string): string | undefined {
-  const value = input[key];
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+/**
+ * Project runtime ports into ADR-035 capability offers for start-time fail-closed gating.
+ * 将运行时端口投影为 ADR-035 capability offers，供 start 时 fail-closed 门禁使用。
+ */
+export function buildAgentRuntimeCapabilityOffers(input: {
+  knowledgeNoteUseCase?: ManageAIKnowledgeNoteUseCase | null;
+  automationToolExecutorPort?: IAIAutomationToolExecutorPort;
+}): CapabilityOffer[] {
+  const offers: CapabilityOffer[] = [
+    {
+      kind: 'tool.proposal',
+      // Align with production ProposalKernel provider id (residual 320).
+      providerId: 'proposal-kernel',
+      surface: 'any',
+      readonly: false,
+    },
+  ];
+
+  if (input.knowledgeNoteUseCase) {
+    offers.push(
+      {
+        kind: 'tool.mutation',
+        providerId: 'knowledge-note-executor',
+        surface: 'any',
+        readonly: false,
+      },
+      {
+        // Server knowledge persistence is GitHub-projection backed (Web surface).
+        kind: 'context.cloud_rag',
+        providerId: 'server-github-projection',
+        surface: 'web',
+        readonly: true,
+      },
+    );
+  }
+
+  if (input.automationToolExecutorPort) {
+    offers.push(
+      {
+        kind: 'tool.mutation',
+        providerId: 'goal-automation-executor',
+        surface: 'any',
+        readonly: false,
+      },
+      {
+        kind: 'workflow.goal',
+        providerId: 'goal-create-adapter',
+        surface: 'any',
+        readonly: false,
+      },
+    );
+  }
+
+  return offers;
 }
 
-function getPositiveIntegerInput(
-  input: Record<string, unknown>,
-  key: string,
-): number | undefined {
+/**
+ * Fail closed before starting agent types that require host capabilities.
+ * 对需要 host 能力的 agent 类型在 start 前 fail-closed。
+ */
+export function assertAgentStartCapabilityPlan(
+  agentType: AgentStartRunRequest['agentType'],
+  offersOrResolver: readonly CapabilityOffer[] | CapabilityResolver,
+): Result<void> {
+  if (agentType === 'knowledge.generate') {
+    const requirements = knowledgeWriteRequirements('web');
+    // Residual 324: prefer production CapabilityResolver when provided.
+    let plan: ResolvedRunPlan;
+    if (offersOrResolver instanceof CapabilityResolver) {
+      plan = offersOrResolver.resolveFor('knowledge.generate', requirements, 'web');
+    } else {
+      plan = resolveRunPlan({
+        engineId: 'knowledge.generate',
+        offers: [...offersOrResolver],
+        requirements,
+        surface: 'web',
+      });
+    }
+    if (plan.engineId === 'none') {
+      return error(
+        'SERVICE_UNAVAILABLE',
+        `Knowledge generation is unavailable; missing capabilities: ${plan.missing
+          .map((item) => item.kind)
+          .join(', ')}`,
+      );
+    }
+    return ok(undefined);
+  }
+
+  // goal.create / task.create may start planning without the TS automation executor;
+  // mutation capability is enforced when execution.required is resolved, not at start.
+  // Residual 427/431/435: task.create Host AgentType + TS start + process-local store is allowed at start.
+  return ok(undefined);
+}
+
+
+/**
+ * Residual 503/517: ownership compare uses trimmed non-empty identity
+ * (matchesHostTaskCreateIdentity — process-local store + list merge symmetry).
+ * Blank/whitespace query never owns a run (fail-closed isolation).
+ */
+function ensureAgentRunOwnedByIdentity(
+  result: AgentRunResult,
+  identityId: string,
+): Result<AgentRunResult> {
+  if (!matchesHostTaskCreateIdentity(result.run.identityId, identityId)) {
+    return error(
+      'FORBIDDEN',
+      'Agent run is not owned by the current identity.',
+    );
+  }
+  return ok(result);
+}
+
+function getStringInput(input: Record<string, unknown>, key: string): string | undefined {
+  return asNonEmptyString(input[key]);
+}
+
+function getPositiveIntegerInput(input: Record<string, unknown>, key: string): number | undefined {
   const value = input[key];
   if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
     return undefined;
@@ -140,7 +324,7 @@ function getKnowledgeQaQuestion(input: Record<string, unknown>): string | undefi
   );
 }
 
-function toAIServiceKnowledgeResource(resource: KnowledgeSourceResource) {
+function toAIServiceKnowledgeNote(resource: KnowledgeSourceNote) {
   return {
     identity_id: resource.identityId,
     repository_id: resource.repositoryId,
@@ -163,9 +347,7 @@ function toAIServiceAnalyticsContext(context: AnalyticsQueryContext) {
   };
 }
 
-function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
-}
+// Residual 999: errorMessage elevated to @dailyuse/utils/shared.
 
 function toAgentRuntimeTaskType(operation: 'start' | 'resume'): string {
   return operation === 'start' ? 'AGENT_RUNTIME_START' : 'AGENT_RUNTIME_RESUME';
@@ -205,14 +387,12 @@ function getAgentRuntimeProviderMetadata(input: Record<string, unknown>): {
   const config = providerConfig as Record<string, unknown>;
   return {
     providerName: typeof config['provider'] === 'string' ? config['provider'] : undefined,
-    model:
-      typeof config['model'] === 'string' ? config['model'] : getStringInput(input, 'model'),
+    model: typeof config['model'] === 'string' ? config['model'] : getStringInput(input, 'model'),
   };
 }
 
 function getAgentEventDataString(event: AgentEvent, key: string): string | undefined {
-  const value = event.data[key];
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+  return asNonEmptyString(event.data[key]);
 }
 
 function getAgentEventDataNumber(event: AgentEvent, key: string): number | undefined {
@@ -255,7 +435,7 @@ function toAgentCitations(citations: QueryKnowledgeRes['citations']): AgentCitat
   return citations.map((citation) => ({
     resourceId: citation.resourceId,
     resourcePath: citation.resourcePath,
-    title: citation.title ?? null,
+    title: citation.title ?? undefined,
     chunkIndex: citation.chunkIndex,
     excerpt: citation.excerpt,
     score: citation.score,
@@ -275,13 +455,12 @@ async function withAgentProviderConfig(
   if (
     req.agentType !== 'goal.create' ||
     !providerConfigRepository ||
-    request.input['provider_config'] ||
-    request.input['providerConfig']
+    request.input['provider_config']
   ) {
     return request;
   }
 
-  const providerId = getStringInput(request.input, 'providerId');
+  const providerId = getStringInput(request.input, 'provider_id');
   const modelOverride = getStringInput(request.input, 'model');
   if (!providerId && !modelOverride) {
     return request;
@@ -331,14 +510,10 @@ async function withGoalAgentReadOnlyContext(
   const inputPatch: Record<string, unknown> = {};
   const contextErrors: Array<{ tool: string; message: string }> = [];
 
-  if (
-    knowledgeSourcePort &&
-    !req.input['related_resources'] &&
-    !req.input['relatedResources']
-  ) {
+  if (knowledgeSourcePort && !req.input['related_resources']) {
     try {
-      const resources = await knowledgeSourcePort.listRelevantResources(identityId, query, 6);
-      inputPatch['related_resources'] = resources.map(toAIServiceKnowledgeResource);
+      const resources = await knowledgeSourcePort.listRelevantNotes(identityId, query, 6);
+      inputPatch['related_resources'] = resources.map(toAIServiceKnowledgeNote);
     } catch (err) {
       contextErrors.push({
         tool: 'search_knowledge',
@@ -347,11 +522,7 @@ async function withGoalAgentReadOnlyContext(
     }
   }
 
-  if (
-    analyticsReadPort &&
-    !req.input['analytics_context'] &&
-    !req.input['analyticsContext']
-  ) {
+  if (analyticsReadPort && !req.input['analytics_context']) {
     try {
       inputPatch['analytics_context'] = toAIServiceAnalyticsContext(
         await analyticsReadPort.buildContext(identityId, query),
@@ -397,7 +568,7 @@ async function withKnowledgeQaAnswer(
     return ok(req);
   }
 
-  const providerId = getStringInput(req.input, 'providerId');
+  const providerId = getStringInput(req.input, 'provider_id');
   const maxResources = getPositiveIntegerInput(req.input, 'maxResources');
   const queryRequest: QueryKnowledgeReq = {
     query,
@@ -418,10 +589,10 @@ async function withKnowledgeQaAnswer(
         : {}),
       answer: queryResult.data.answer,
       citations: toAgentCitations(queryResult.data.citations),
-      providerId: queryResult.data.providerId,
-      tokenUsage: queryResult.data.tokenUsage,
-      processingTimeMs: queryResult.data.processingTimeMs,
-      matchedResourceCount: queryResult.data.matchedResourceCount,
+      provider_id: queryResult.data.providerId,
+      token_usage: queryResult.data.tokenUsage,
+      processing_time_ms: queryResult.data.processingTimeMs,
+      matched_resource_count: queryResult.data.matchedResourceCount,
     },
   });
 }
@@ -505,9 +676,7 @@ function isSupportedGoalAgentAutomationTool(
 
 function toAgentExecutedActions(actions: GoalAutomationExecutedAction[]): AgentExecutedAction[] {
   return actions.map((action) => ({
-    tool: isSupportedGoalAgentAutomationTool(action.tool)
-      ? action.tool
-      : 'create_goal',
+    tool: isSupportedGoalAgentAutomationTool(action.tool) ? action.tool : 'create_goal',
     status: action.status,
     entityId: action.entityId ?? null,
     message: isSupportedGoalAgentAutomationTool(action.tool)
@@ -589,10 +758,7 @@ export function createKnowledgeQueryRuntimeServices(
   return {
     isAvailable: Boolean(services),
     query: {
-      execute(
-        req: QueryKnowledgeReq,
-        cx: ExecutionContext,
-      ): Promise<Result<QueryKnowledgeRes>> {
+      execute(req: QueryKnowledgeReq, cx: ExecutionContext): Promise<Result<QueryKnowledgeRes>> {
         return services
           ? services.query.execute(req, cx)
           : unavailableResult(
@@ -601,10 +767,7 @@ export function createKnowledgeQueryRuntimeServices(
       },
     },
     expand: {
-      execute(
-        req: ExpandKnowledgeReq,
-        cx: ExecutionContext,
-      ): Promise<Result<ExpandKnowledgeRes>> {
+      execute(req: ExpandKnowledgeReq, cx: ExecutionContext): Promise<Result<ExpandKnowledgeRes>> {
         return services
           ? services.expand.execute(req, cx)
           : unavailableResult(
@@ -649,9 +812,7 @@ export function createEvaluationRuntimeService(
 ): AIEvaluationReportService {
   return {
     isAvailable: Boolean(service),
-    getOverview(
-      req: GetAIEvaluationOverviewReq = {},
-    ): Promise<Result<GetAIEvaluationOverviewRes>> {
+    getOverview(req: GetAIEvaluationOverviewReq = {}): Promise<Result<GetAIEvaluationOverviewRes>> {
       return service
         ? service.getOverview(req)
         : unavailableResult('AI evaluation report access is unavailable.');
@@ -668,8 +829,12 @@ export function createAgentRuntimeService(
   knowledgeQueryUseCase?: QueryKnowledgeUseCase,
   knowledgeNoteUseCase?: ManageAIKnowledgeNoteUseCase | null,
   executionLogPort?: IAIExecutionLogPort,
+  /** Residual 324: shared Host CapabilityResolver for start-time fail-closed gating. */
+  capabilityResolver?: CapabilityResolver,
 ): AIAgentRuntimeService {
   const isAvailable = Boolean(port);
+  // Residual 435: process-local task.create run registry for get/list/events restore.
+  const taskCreateRunStore = getDefaultHostTaskCreateRunStore();
 
   async function resolveExecutionInterrupt(
     result: AgentRunResult,
@@ -731,8 +896,7 @@ export function createAgentRuntimeService(
   }
 
   function getPayloadString(payload: Record<string, unknown>, key: string): string | undefined {
-    const value = payload[key];
-    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+    return asNonEmptyString(payload[key]);
   }
 
   function getKnowledgeNoteDraftArtifactMarkdown(
@@ -745,12 +909,13 @@ export function createAgentRuntimeService(
         (!contentArtifactId || item.artifactId === contentArtifactId),
     );
     const value = artifact?.data['markdown'];
-    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+    return asNonEmptyString(value);
   }
 
   async function executeKnowledgeGenerateInterrupt(
     interrupt: z.infer<typeof KnowledgeGenerateExecutionRequiredInterruptSchema>,
     identityId: string,
+    requestId?: string,
   ): Promise<AgentExecutedAction[]> {
     if (!knowledgeNoteUseCase) {
       throw new Error('Knowledge Generation execution requires the knowledge-note use case.');
@@ -768,6 +933,8 @@ export function createAgentRuntimeService(
       }
 
       const contentArtifactId = getPayloadString(action.payload, 'contentArtifactId');
+      const confirmationRequestId =
+        requestId ?? `${interrupt.runId}:knowledge-note:${action.index ?? 0}`;
       const parsed = CreateKnowledgeNoteSchema.safeParse({
         topic: getPayloadString(action.payload, 'topic'),
         title: getPayloadString(action.payload, 'title'),
@@ -775,8 +942,14 @@ export function createAgentRuntimeService(
           getPayloadString(action.payload, 'contentMarkdown') ??
           getKnowledgeNoteDraftArtifactMarkdown(interrupt.artifacts, contentArtifactId),
         targetSubpath: getPayloadString(action.payload, 'targetSubpath'),
+        connectionId: getPayloadString(action.payload, 'connectionId'),
         providerId: getPayloadString(action.payload, 'providerId'),
         model: getPayloadString(action.payload, 'model'),
+        confirmation: {
+          proposalId: `${interrupt.runId}:knowledge-note:${contentArtifactId ?? action.index ?? 0}`,
+          revision: 1,
+          requestId: confirmationRequestId,
+        },
       });
 
       if (!parsed.success) {
@@ -801,15 +974,15 @@ export function createAgentRuntimeService(
       executedActions.push({
         tool: action.tool,
         status: 'executed',
-        entityId: String(result.data.resource.id),
+        entityId: String(result.data.note.id),
         message: `Saved knowledge note to ${result.data.resolvedPath}.`,
         data: {
           resolvedPath: result.data.resolvedPath,
           indexStatus: result.data.indexStatus,
-          resource: {
-            id: String(result.data.resource.id),
-            name: result.data.resource.name,
-            content: result.data.resource.content,
+          note: {
+            id: String(result.data.note.id),
+            name: result.data.note.name,
+            content: result.data.note.content,
           },
         },
       });
@@ -835,7 +1008,11 @@ export function createAgentRuntimeService(
       throw new Error('Agent runtime execution requires the Agent runtime port.');
     }
 
-    const executedActions = await executeKnowledgeGenerateInterrupt(interrupt, input.identityId);
+    const executedActions = await executeKnowledgeGenerateInterrupt(
+      interrupt,
+      input.identityId,
+      input.requestId,
+    );
     return port.resumeRun({
       identityId: input.identityId,
       runId: input.runId,
@@ -865,8 +1042,7 @@ export function createAgentRuntimeService(
 
   function hasResolvableExecutionInterrupt(result: AgentRunResult): boolean {
     return Boolean(
-      findGoalAgentExecutionInterrupt(result) ||
-        findKnowledgeGenerateExecutionInterrupt(result),
+      findGoalAgentExecutionInterrupt(result) || findKnowledgeGenerateExecutionInterrupt(result),
     );
   }
 
@@ -966,6 +1142,20 @@ export function createAgentRuntimeService(
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
+      // Residual 324: use the module CapabilityResolver when wired; fall back to
+      // rebuilding offers only for legacy/test call sites without a resolver.
+      const capabilityGate = assertAgentStartCapabilityPlan(
+        req.agentType,
+        capabilityResolver ??
+          buildAgentRuntimeCapabilityOffers({
+            knowledgeNoteUseCase,
+            automationToolExecutorPort,
+          }),
+      );
+      if (!capabilityGate.ok) {
+        return capabilityGate;
+      }
+
       const requestWithProvider = await withAgentProviderConfig(
         req,
         cx.identityId,
@@ -986,6 +1176,108 @@ export function createAgentRuntimeService(
         return requestWithKnowledge;
       }
 
+      // Residual 431: task.create Host start foundation (TS runtime, no LangGraph yet).
+      // Produces waiting_approval + create_task_template for Host lane / client settle.
+      if (requestWithKnowledge.data.agentType === 'task.create') {
+        // Residual 499: agentType already gated here; builder also fail-closes (no silent retype).
+        // Residual 493: ExecutionContext identity fail-closed (builder also throws; no silent empty).
+        const taskCreateIdentityId = resolveTaskCreateIdentityId(cx.identityId);
+        if (!taskCreateIdentityId) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE,
+          );
+        }
+        // Residual 497: process-local runId fail-closed (builder also throws; no silent empty).
+        if (!resolveTaskCreateRunId(requestWithKnowledge.data.runId)) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE,
+          );
+        }
+        // Residual 479: title fail-closed (builder also throws; no silent 'New task').
+        if (!resolveTaskCreateTitle(requestWithKnowledge.data.input)) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE,
+          );
+        }
+        // Residual 461/483: session-bound product path — conversationId required (builder also throws).
+        if (!resolveTaskCreateConversationId(requestWithKnowledge.data.conversationId)) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE,
+          );
+        }
+        // Residual 485: process-local thread binding — blank/whitespace threadId fail-closed.
+        if (!resolveTaskCreateThreadId(requestWithKnowledge.data.threadId)) {
+          return error(
+            'VALIDATION_ERROR',
+            HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE,
+          );
+        }
+        const startedAt = Date.now();
+        try {
+          const taskResult = buildHostTaskCreateStartResult({
+            request: requestWithKnowledge.data,
+            identityId: taskCreateIdentityId,
+          });
+          const ownership = ensureAgentRunOwnedByIdentity(taskResult, taskCreateIdentityId);
+          if (!ownership.ok) {
+            return ownership;
+          }
+          await recordAgentRuntimeExecution({
+            operation: 'start',
+            identityId: taskCreateIdentityId,
+            requestId,
+            startedAt,
+            request: requestWithKnowledge.data,
+            result: taskResult,
+          });
+          // Residual 435: register for process-local getRun/listRuns restore.
+          // Residual 451: upsert fails closed on foreign runId identity takeover.
+          taskCreateRunStore.upsert(taskResult);
+          return ownership;
+        } catch (err) {
+          await recordAgentRuntimeExecution({
+            operation: 'start',
+            identityId: taskCreateIdentityId,
+            requestId,
+            startedAt,
+            request: requestWithKnowledge.data,
+            error: err,
+          });
+          if (err instanceof Error) {
+            if (err.message.includes(HOST_TASK_CREATE_RUN_ID_IDENTITY_BOUND_MESSAGE)) {
+              return error('FORBIDDEN', err.message);
+            }
+            // Residual 495: non-task.create store upsert is fail-closed validation.
+            if (err.message.includes(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE)) {
+              return error('VALIDATION_ERROR', err.message);
+            }
+            // Residual 457: conversation/thread rebinding is fail-closed (validation, not auth).
+            if (
+              err.message.includes(HOST_TASK_CREATE_RUN_ID_CONVERSATION_BOUND_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_RUN_ID_THREAD_BOUND_MESSAGE)
+            ) {
+              return error('VALIDATION_ERROR', err.message);
+            }
+            // Residual 479/483/485/493/497/499: builder binding/agentType fail-closed maps to validation.
+            if (
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_TITLE_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_CONVERSATION_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_THREAD_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_IDENTITY_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_RUN_ID_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_START_REQUIRES_AGENT_TYPE_MESSAGE)
+            ) {
+              return error('VALIDATION_ERROR', err.message);
+            }
+          }
+          throw err;
+        }
+      }
+
       const startedAt = Date.now();
       try {
         const result = await port.startRun({
@@ -993,6 +1285,11 @@ export function createAgentRuntimeService(
           requestId,
           signal,
         });
+        // Ownership must fail closed before host side-effects (residual 102).
+        const ownership = ensureAgentRunOwnedByIdentity(result, cx.identityId);
+        if (!ownership.ok) {
+          return ownership;
+        }
         const resolvedResult = await resolveRuntimeExecutionInterrupt(result, {
           runId: req.runId,
           identityId: cx.identityId,
@@ -1007,7 +1304,7 @@ export function createAgentRuntimeService(
           request: requestWithKnowledge.data,
           result: resolvedResult,
         });
-        return ok(resolvedResult);
+        return ensureAgentRunOwnedByIdentity(resolvedResult, cx.identityId);
       } catch (err) {
         await recordAgentRuntimeExecution({
           operation: 'start',
@@ -1027,12 +1324,57 @@ export function createAgentRuntimeService(
       requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      const startedAt = Date.now();
+      const request = { runId, payload };
+
+      // Residual 437: process-local task.create cancel/complete settle (no Python port).
+      const storedTask = taskCreateRunStore.get(runId, cx.identityId);
+      if (storedTask) {
+        try {
+          const resumed = buildHostTaskCreateResumeResult({
+            current: storedTask,
+            payload,
+          });
+          const ownership = ensureAgentRunOwnedByIdentity(resumed, cx.identityId);
+          if (!ownership.ok) {
+            return ownership;
+          }
+          taskCreateRunStore.upsert(resumed);
+          await recordAgentRuntimeExecution({
+            operation: 'resume',
+            identityId: cx.identityId,
+            requestId,
+            startedAt,
+            request,
+            result: resumed,
+          });
+          return ownership;
+        } catch (err) {
+          await recordAgentRuntimeExecution({
+            operation: 'resume',
+            identityId: cx.identityId,
+            requestId,
+            startedAt,
+            request,
+            error: err,
+          });
+          if (
+            err instanceof Error &&
+            (err.message.includes(HOST_TASK_CREATE_RESUME_UNSUPPORTED_USER_DECISION_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_RESUME_REQUIRES_AGENT_TYPE_MESSAGE) ||
+              err.message.includes(HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE) ||
+              err.message.includes('Host task.create'))
+          ) {
+            return error('VALIDATION_ERROR', err.message);
+          }
+          throw err;
+        }
+      }
+
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      const startedAt = Date.now();
-      const request = { runId, payload };
       try {
         if (
           payload.userDecision === 'confirm' &&
@@ -1047,6 +1389,11 @@ export function createAgentRuntimeService(
             requestId,
             signal,
           });
+          // Ownership must fail closed before host side-effects (residual 102).
+          const snapshotOwnership = ensureAgentRunOwnedByIdentity(snapshot, cx.identityId);
+          if (!snapshotOwnership.ok) {
+            return snapshotOwnership;
+          }
           if (hasResolvableExecutionInterrupt(snapshot)) {
             const resolvedSnapshot = await resolveRuntimeExecutionInterrupt(snapshot, {
               runId,
@@ -1062,7 +1409,7 @@ export function createAgentRuntimeService(
               request,
               result: resolvedSnapshot,
             });
-            return ok(resolvedSnapshot);
+            return ensureAgentRunOwnedByIdentity(resolvedSnapshot, cx.identityId);
           }
         }
 
@@ -1073,12 +1420,23 @@ export function createAgentRuntimeService(
           requestId,
           signal,
         });
-        const resolvedResult = await resolveRuntimeExecutionInterrupt(result, {
-          runId,
-          identityId: cx.identityId,
-          requestId,
-          signal,
-        });
+        // Ownership must fail closed before host side-effects (residual 102).
+        const ownership = ensureAgentRunOwnedByIdentity(result, cx.identityId);
+        if (!ownership.ok) {
+          return ownership;
+        }
+        // Defense-in-depth: side-effect execution only follows an explicit confirm.
+        // cancel/clarify/edit/regenerate must not auto-run approvedActions even if the
+        // upstream graph still reports execution.required.
+        const resolvedResult =
+          payload.userDecision === 'confirm'
+            ? await resolveRuntimeExecutionInterrupt(result, {
+                runId,
+                identityId: cx.identityId,
+                requestId,
+                signal,
+              })
+            : result;
         await recordAgentRuntimeExecution({
           operation: 'resume',
           identityId: cx.identityId,
@@ -1087,7 +1445,7 @@ export function createAgentRuntimeService(
           request,
           result: resolvedResult,
         });
-        return ok(resolvedResult);
+        return ensureAgentRunOwnedByIdentity(resolvedResult, cx.identityId);
       } catch (err) {
         await recordAgentRuntimeExecution({
           operation: 'resume',
@@ -1100,56 +1458,116 @@ export function createAgentRuntimeService(
         throw err;
       }
     },
-    getRun(
+    async getRun(
       runId: string,
       cx: ExecutionContext,
       requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRunResult>> {
+      // Residual 435: process-local task.create store before remote port lookup.
+      const stored = taskCreateRunStore.get(runId, cx.identityId);
+      if (stored) {
+        return ensureAgentRunOwnedByIdentity(stored, cx.identityId);
+      }
+
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port.getRun({
+      const result = await port.getRun({
         identityId: cx.identityId,
         runId,
         requestId,
         signal,
-      }).then(ok);
+      });
+      return ensureAgentRunOwnedByIdentity(result, cx.identityId);
     },
-    listRuns(
+    async listRuns(
       params: AgentRunListParams,
       cx: ExecutionContext,
       requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentRun[]>> {
+      // Residual 435: load unscoped-by-limit local runs, merge, then apply limit once.
+      const { limit: listLimit, ...listFilters } = params;
+      const localTaskRuns = taskCreateRunStore.list(cx.identityId, listFilters);
+
       if (!port) {
+        if (localTaskRuns.length > 0) {
+          const limitedLocal =
+            typeof listLimit === 'number' && listLimit > 0
+              ? localTaskRuns.slice(0, listLimit)
+              : localTaskRuns;
+          return ok(limitedLocal);
+        }
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port.listRuns({
-        ...params,
+      const remoteRuns = await port.listRuns({
+        ...listFilters,
+        // Fetch a wider remote window when merging local task.create runs.
+        ...(typeof listLimit === 'number' && listLimit > 0
+          ? { limit: Math.max(listLimit, localTaskRuns.length + listLimit) }
+          : {}),
         identityId: cx.identityId,
         requestId,
         signal,
-      }).then(ok);
+      });
+      // Residual 517: remote ownership uses trimmed identity match (store 503/515 symmetry).
+      // Blank/whitespace ExecutionContext never accepts foreign or unowned remote runs.
+      const ownedRemote = remoteRuns.filter((run) =>
+        matchesHostTaskCreateIdentity(run.identityId, cx.identityId),
+      );
+      // Residual 435: merge process-local task.create runs; local wins on runId clash.
+      const byId = new Map<string, (typeof ownedRemote)[number]>();
+      for (const run of ownedRemote) {
+        byId.set(run.runId, run);
+      }
+      for (const run of localTaskRuns) {
+        byId.set(run.runId, run);
+      }
+      const merged = [...byId.values()].sort((left, right) => right.updatedAt - left.updatedAt);
+      const limited =
+        typeof listLimit === 'number' && listLimit > 0
+          ? merged.slice(0, listLimit)
+          : merged;
+      return ok(limited);
     },
-    getEvents(
+    async getEvents(
       runId: string,
       cx: ExecutionContext,
       requestId?: string,
       signal?: AbortSignal,
     ): Promise<Result<AgentEvent[]>> {
+      // Residual 435: process-local task.create events.
+      const storedEvents = taskCreateRunStore.getEvents(runId, cx.identityId);
+      if (storedEvents) {
+        return ok(storedEvents);
+      }
+
       if (!port) {
         return unavailableResult('Agent runtime is unavailable in the current AI runtime.');
       }
 
-      return port.getEvents({
+      // Ownership must fail closed before returning run events (residual 103).
+      const snapshot = await port.getRun({
         identityId: cx.identityId,
         runId,
         requestId,
         signal,
-      }).then(ok);
+      });
+      const ownership = ensureAgentRunOwnedByIdentity(snapshot, cx.identityId);
+      if (!ownership.ok) {
+        return error(ownership.error.code, ownership.error.message);
+      }
+
+      const events = await port.getEvents({
+        identityId: cx.identityId,
+        runId,
+        requestId,
+        signal,
+      });
+      return ok(events);
     },
   };
 }

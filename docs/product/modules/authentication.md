@@ -5,14 +5,14 @@ tags:
   - authentication
 description: 认证模块当前实现及账密、GitHub、访客三入口目标态
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T23:59:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 认证模块说明
 
 ## 1. 功能定位
 
-认证模块管理账密账号、GitHub 身份、访客 profile 和 Daily Use 会话。GitHub 登录只解决“用户是谁”，GitHub 知识仓库连接属于 Repository 的独立同步授权，不能混成一个权限动作。
+认证模块管理账密账号、GitHub 身份、访客 profile 和 Daily Use 会话。GitHub 登录只解决“用户是谁”，authorize URL 仅请求 identity-only scopes（`read:user` / `user:email`），永不申请 repo Contents，也不签发知识仓库 GitHub App installation/token。GitHub 知识仓库连接属于 Repository 的独立同步授权，不能混成一个权限动作。
 
 ## 2. 当前实现
 
@@ -21,14 +21,18 @@ updated: 2026-07-17T23:59:00
 - 邮箱验证 API：`POST /api/v1/auth/email/send-code`、`POST /api/v1/auth/email/verify`；验证成功发 `auth:email-verified` 并可将 `Unverified` 身份 `activate`。
 - Unverified 门禁：敏感路由需已验证邮箱；白名单含 me / logout / refresh / email/* / password/*。
 - IP 限流：`/password/forgot` 与 `/email/send-code`（内存实现，多实例需外置）。
-- Web 认证页场景：password-login / register / forgot / reset / verify-email（含重发冷却与 domainCode i18n）。
-- access/refresh token、会话撤销和身份锁定。
-- Desktop 访客、离线认证、记住账号、自动登录和多 profile。
-- OAuthBinding 领域与持久化基础设施。
-- GitHub 登录服务端骨架：授权码换取 GitHub numeric user ID、按 OAuth binding 查找或创建 AuthIdentity，并签发 Daily Use session。
-- `POST /api/v1/auth/oauth/callback` 已接线；仅在 `GITHUB_OAUTH_CLIENT_ID` 与 `GITHUB_OAUTH_CLIENT_SECRET` 同时配置时启用 GitHub provider，未启用时返回 `SERVICE_UNAVAILABLE`。
-- 手机短信入口当前不可用。
-- OAuth 授权发起、state/PKCE 生命周期、Web/Desktop 登录 UI、Desktop deep link 和账号绑定尚未实现。
+- Web 认证页（AuthApp / `WebAuthView`）：password-login / register / forgot / reset / verify-email；主壳未认证硬跳转 AuthApp，`AuthPlatformEntry` 做 full-page 入口。
+- Desktop 认证页（`DesktopAuthView`）：账密登录/注册 + 访客入口；**不暴露 GitHub 登录按钮**（三入口边界：访客仅 Desktop）。
+- access/refresh token、会话撤销和身份锁定；Desktop 离线认证、记住账号、自动登录和多 profile。
+- GitHub 登录（OAuth identity）已贯通：
+  - `GET/POST` 面：`/oauth/providers`、`/oauth/url`（state/PKCE）、`/oauth/callback`、已登录 `/oauth/bind` / `/oauth/unbind`
+  - 仅当 `GITHUB_OAUTH_CLIENT_ID` 与 `GITHUB_OAUTH_CLIENT_SECRET` 同时配置时启用；否则 providers 门控与 `SERVICE_UNAVAILABLE`
+  - Web 登录按钮条件渲染；callback 回 `/auth` 后凭 `code`+`state` 完成会话签发
+  - 账户页可 bind/unbind GitHub identity binding（与知识仓库 GitHub App 授权分离）
+  - Desktop 远程 gateway/IPC 已暴露 OAuth 调用；登录首屏仍不提供 GitHub 入口
+- OAuthBinding 与 Daily Use session 分离；GitHub user access token 不写入业务 session。
+- 手机/SMS 登录注册运行时入口已删除（API 路由、client port/adapters、Desktop IPC channel、MSW）；无真实 SMS provider 前不再保留 stub。`PhoneIdentifier` 领域类型仍保留用于既有标识符模型。
+- E2E：账密注册/登录流与 mock GitHub OAuth 流已覆盖；真实 GitHub fixture 仍依赖外部凭据。
 
 ## 3. 已采纳目标态
 
@@ -40,7 +44,7 @@ updated: 2026-07-17T23:59:00
 
 - GitHub 登录使用稳定 numeric user ID 作为外部 subject。
 - 登录成功后仍由 Daily Use 签发自己的 session，不用 GitHub token 直接访问业务 API。
-- GitHub 登录只请求身份所需权限，不自动创建仓库或申请 Contents 权限。
+- GitHub 登录只请求 identity-only scopes（`read:user` / `user:email`），不自动创建仓库、不申请 repo Contents，也不获得知识仓库 GitHub App installation/token。
 - 账密用户可以绑定 GitHub 仓库，不要求切换主登录方式。
 - 访客启用同步时先升级账号，原 Vault 和本地内容保持不变。
 
@@ -59,32 +63,33 @@ updated: 2026-07-17T23:59:00
 - GitHub-only 账号移除最后一个 OAuth binding 前，需要增加账密凭据或明确处置账号。
 - 访客 profile 不上传业务和 Vault 数据。
 - Desktop 离线时允许已建立 profile 继续本地使用；GitHub/Daily Use 故障不得锁住 Vault。
-- 完整 OAuth 流程必须校验 state，并在 provider 支持时使用 PKCE；Desktop 只接收一次性 code，不在 deep link 暴露 provider token。当前服务端 callback 骨架尚未接入授权发起与 state/PKCE 存储校验。
+- 完整 OAuth 流程必须校验 state，并在 provider 支持时使用 PKCE；Desktop 只接收一次性 code，不在 deep link 暴露 provider token。服务端 authorize URL 与 state/PKCE 存储校验已接入；Desktop 仅接收一次性 code。
 
-## 6. 可插拔认证架构（已实现服务端骨架）
+## 6. 可插拔认证架构（已落地）
 
-服务端已落地"抽象登录接口 + 可插拔方式"的架构，为三入口和未来 SSO 提供优雅扩展点：
+服务端已落地"抽象登录接口 + 可插拔方式"的架构，为三入口和未来 SSO 提供扩展点：
 
 - `AuthenticationProvider`：抽象登录契约，每种方式实现凭据校验并返回已验证身份，不签发会话。
 - `AuthenticationProviderRegistry`：按方式 id 分发，组合期重复注册即快速失败。
 - `PasswordAuthenticationProvider`：包装既有 `LoginService`，账密行为不变。
-- `GithubAuthenticationProvider`：经 `IGithubOAuthClient` 端口用授权码换取稳定 numeric subject，find-or-create 身份；仅身份认证，不申请仓库权限。
-- `AuthenticateUseCase`：统一编排 provider 校验 + Daily Use 会话签发，新增方式无需重复会话逻辑或修改用例。
-- `GithubOAuthClient`：具体基础设施适配器（GitHub App user authorization），用授权码临时换取 user access token，再读取 `/user` 的 numeric ID；client secret 仅存服务端，user token 不写入 Daily Use session。
-- GitHub 登录通过 `POST /api/v1/auth/oauth/callback` 接收 `{ provider, code, state }`；`GITHUB_OAUTH_CLIENT_ID` 与 `GITHUB_OAUTH_CLIENT_SECRET` 配置齐全时才注册 GitHub provider，缺省仅账密登录。
-- 该端点当前是服务端骨架，不等于完整 OAuth 产品流程；授权 URL、state/PKCE 校验、浏览器回跳和 Desktop deep link 仍需后续接线。
+- `GithubAuthenticationProvider`：经 `IGithubOAuthClient` 端口用授权码换取稳定 numeric subject，find-or-create 身份；仅身份认证（login scopes：`read:user` / `user:email`），不申请仓库 Contents 权限。
+- `AuthenticateUseCase`：统一编排 provider 校验 + Daily Use 会话签发。
+- `GithubOAuthClient`：用授权码临时换取 user access token，再读取 `/user` 的 numeric ID；client secret 仅存服务端，user token 不写入 Daily Use session。
+- 路由面：`/oauth/providers`、`/oauth/url`（state/PKCE）、`/oauth/callback`、`/oauth/bind`、`/oauth/unbind`。
+- Web 产品流：`WebAuthView` 条件显示 GitHub 按钮 → 跳转 authorize URL → AuthApp callback 场景完成 session。
+- Desktop：gateway/IPC 已支持 OAuth API；首屏登录仍是账密 + 访客。知识仓库同步使用独立 GitHub App installation/token 授权，不复用登录 OAuth token。
 
 ## 7. 当前差距
 
-- 邮箱验证与密码找回：**服务端 + Web 已闭环**；e2e、主应用 Unverified banner、Desktop IPC 真实现、生产 SMTP 仍缺。
+- 邮箱验证与密码找回：**服务端 + Web 已闭环**；生产 SMTP、更完整 Unverified banner/Desktop 体验与更多 e2e 仍可加强。
 - 注销未级联：`closeAccount` 未同步禁用 Auth / 撤销全部 session（计划 Phase C）。
-- challenge 存储与 IP 限流为内存实现，多实例与生产需 Redis/外置。
-- 缺少 OAuth 授权发起、state/PKCE 存储校验、Web/Desktop GitHub 登录 UI、浏览器回跳与 Desktop deep link。
-- 缺少已登录账号的 GitHub binding 添加/移除与账号合并流程。
-- 访客 profile 升级为在线账号的接线尚未完成。
-- 访客升级后 profile/Vault ownership 的无移动接管尚未固化。
-- GitHub 登录与知识仓库授权需要在 UI 和 contract 上明确分离。
-- 手机短信和 2FA 占位会增加设置复杂度，应在无真实实现时隐藏。
+- challenge 存储与 IP 限流为内存实现，多实例与生产需 Redis/外置；旧 `IPasswordResetCodeStore` 双轨已删除，统一 `IVerificationChallengeStore`。
+- GitHub OAuth 登录主路径已接线；仍缺：真实 GitHub fixture E2E（外部凭据）、Desktop 系统浏览器 deep link 一等体验、跨账号安全合并确认 UX。
+- 账户页 bind/unbind 已实现；账号合并冲突处置仍需产品确认。
+- 访客升级：Desktop login/register 在访客态重绑 profile ownership，保留 profileId/本地 Vault；目标 identity 已有其他 profile 时拒绝静默合并——边界测试可继续加厚。
+- GitHub 登录与知识仓库 GitHub App 授权在 contract/token/UI 上已分离；需在真实 fixture 下持续回归。
+- 手机短信和 2FA：运行时 stub 面已删除；未来若引入真实 SMS/2FA 再新增完整链路，不做空壳双轨。
+- 三入口同一 fixture 端到端串联（Web 账密/GitHub + Desktop 访客升级 + 仓库边界）仍未齐。
 
 ## 8. 风险点
 

@@ -7,6 +7,10 @@
 import { z } from 'zod';
 import type { AuthResponseDTO } from '../dtos/auth-response';
 
+// Residual 763: OAuth provider enum dual retired — sole OAuthProviderSchema body.
+// Residual 893: transport OAuthProviderSchema keep-boundary (≠ domain/VO OAuthProvider catalog).
+export const OAuthProviderSchema = z.enum(['Google', 'Github', 'Microsoft', 'Apple']);
+
 // ============================================================================
 // Get OAuth URL
 // ============================================================================
@@ -15,16 +19,18 @@ import type { AuthResponseDTO } from '../dtos/auth-response';
  * 获取 OAuth 授权 URL Schema
  */
 export const GetOAuthUrlSchema = z.object({
-  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+  provider: OAuthProviderSchema,
   redirectUri: z.string().url().optional(),
 });
 
 export type GetOAuthUrlReq = z.infer<typeof GetOAuthUrlSchema>;
 
-export interface GetOAuthUrlRes {
-  authUrl: string;
-  state: string;
-}
+// Residual 765: GetOAuthUrlRes dual retired — OpenAPI + transport use ResSchema.
+export const GetOAuthUrlResSchema = z.object({
+  authUrl: z.string(),
+  state: z.string(),
+});
+export type GetOAuthUrlRes = z.infer<typeof GetOAuthUrlResSchema>;
 
 // ============================================================================
 // OAuth Callback
@@ -33,10 +39,11 @@ export interface GetOAuthUrlRes {
 /**
  * OAuth 回调处理 Schema
  */
+// Residual 759: OAuth callback/bind share one authorize-callback payload schema.
 export const OAuthCallbackSchema = z.object({
-  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
-  code: z.string(),
-  state: z.string(),
+  provider: OAuthProviderSchema,
+  code: z.string().min(1),
+  state: z.string().min(1),
 });
 
 export type OAuthCallbackReq = z.infer<typeof OAuthCallbackSchema>;
@@ -50,11 +57,60 @@ export type OAuthCallbackRes = AuthResponseDTO;
  * OAuth 授权 Schema
  */
 export const OAuthAuthorizeSchema = z.object({
-  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
+  provider: OAuthProviderSchema,
   code: z.string(),
   state: z.string().optional(),
   redirectUri: z.string().url().optional(),
 });
 
 export type OAuthAuthorizeReq = z.infer<typeof OAuthAuthorizeSchema>;
-export type OAuthAuthorizeRes = AuthResponseDTO;
+
+// ============================================================================
+// Bind / Unbind OAuth (authenticated account linking)
+// ============================================================================
+
+/**
+ * Bind an OAuth provider to the currently authenticated identity.
+ * 将 OAuth 提供者绑定到当前已登录身份。
+ *
+ * Uses the same authorize callback payload (code + state) issued by getOAuthUrl.
+ * 使用 getOAuthUrl 签发的同一授权回调载荷（code + state）。
+ */
+// Residual 759: bind reuses OAuthCallbackSchema (no dual body).
+export const BindOAuthSchema = OAuthCallbackSchema;
+
+export type BindOAuthReq = z.infer<typeof BindOAuthSchema>;
+
+// Residual 765: BindOAuthRes dual retired — OpenAPI + transport use ResSchema.
+export const BindOAuthResSchema = z.object({
+  provider: OAuthProviderSchema,
+  providerSubjectId: z.string(),
+  created: z.boolean(),
+});
+export type BindOAuthRes = z.infer<typeof BindOAuthResSchema>;
+
+/**
+ * Unbind an OAuth provider from the currently authenticated identity.
+ * 从当前已登录身份解绑 OAuth 提供者。
+ */
+export const UnbindOAuthSchema = z.object({
+  provider: OAuthProviderSchema,
+});
+
+export type UnbindOAuthReq = z.infer<typeof UnbindOAuthSchema>;
+
+// ============================================================================
+// OAuth providers availability (UI gating, no state issuance)
+// ============================================================================
+
+// Residual 765: OAuth providers list dual retired — OpenAPI + transport use ResSchema.
+export const OAuthProviderAvailabilitySchema = z.object({
+  provider: OAuthProviderSchema,
+  enabled: z.boolean(),
+});
+export type OAuthProviderAvailability = z.infer<typeof OAuthProviderAvailabilitySchema>;
+
+export const OAuthProvidersResSchema = z.object({
+  providers: z.array(OAuthProviderAvailabilitySchema),
+});
+export type OAuthProvidersRes = z.infer<typeof OAuthProvidersResSchema>;

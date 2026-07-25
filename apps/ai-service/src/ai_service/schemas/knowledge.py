@@ -29,8 +29,8 @@ class KnowledgeNoteResponse(BaseModel):
     usage: dict[str, Any] | None = None
 
 
-class KnowledgeResourceDocument(BaseModel):
-    """Repository-backed resource content used for indexing."""
+class KnowledgeNoteDocument(BaseModel):
+    """Repository-backed knowledge note content used for indexing."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -59,8 +59,8 @@ class IndexedKnowledgeChunk(BaseModel):
     embedding: list[float] = Field(default_factory=list)
 
 
-class IndexedKnowledgeResource(BaseModel):
-    """Indexed representation of a repository resource."""
+class IndexedKnowledgeNote(BaseModel):
+    """Indexed representation of a knowledge note."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -78,23 +78,23 @@ class IndexedKnowledgeResource(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-class KnowledgeIndexResourceRequest(BaseModel):
-    """Request for chunking and indexing one resource."""
+class KnowledgeIndexNoteRequest(BaseModel):
+    """Request for chunking and indexing one knowledge note."""
 
     model_config = ConfigDict(extra="forbid")
 
-    resource: KnowledgeResourceDocument
+    resource: KnowledgeNoteDocument
     provider_config: ProviderConfig | None = None
     max_chunk_chars: int = Field(default=1200, ge=400, le=4000)
     overlap_chars: int = Field(default=150, ge=0, le=1000)
 
 
-class KnowledgeIndexResourceResponse(BaseModel):
-    """Indexed resource output."""
+class KnowledgeIndexNoteResponse(BaseModel):
+    """Indexed knowledge note output."""
 
     model_config = ConfigDict(extra="forbid")
 
-    indexed_resource: IndexedKnowledgeResource
+    indexed_resource: IndexedKnowledgeNote
 
 
 class KnowledgeCitation(BaseModel):
@@ -116,7 +116,7 @@ class KnowledgeQueryRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(..., min_length=3, max_length=2000)
-    indexed_resources: list[IndexedKnowledgeResource] = Field(..., min_length=1)
+    indexed_resources: list[IndexedKnowledgeNote] = Field(..., min_length=1)
     provider_config: ProviderConfig
     max_citations: int = Field(default=3, ge=1, le=8)
     request_id: str | None = None
@@ -139,14 +139,14 @@ class KnowledgeExpansionRequest(BaseModel):
 
     instruction: str = Field(..., min_length=3, max_length=2000)
     current_content: str | None = None
-    related_resources: list[KnowledgeResourceDocument] = Field(default_factory=list)
+    related_resources: list[KnowledgeNoteDocument] = Field(default_factory=list)
     provider_config: ProviderConfig
     max_citations: int = Field(default=4, ge=1, le=8)
     request_id: str | None = None
 
 
 class KnowledgeExpansionResponse(BaseModel):
-    """Expanded note draft grounded in repository resources."""
+    """Expanded note draft grounded in knowledge notes."""
 
     model_config = ConfigDict(extra="forbid")
 

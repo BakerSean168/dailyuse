@@ -1,18 +1,20 @@
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ensureTestDatabase } from '@dailyuse/test-utils/setup/database';
 import { buildApiApp } from './build-api';
+import { normalizeOrigin } from './normalize-origin';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, '..', '..', '..', '..');
 const apiDistDir = path.resolve(workspaceRoot, 'apps', 'api', 'dist');
+/** Residual 1335: API process cwd is apps/api/dist; relative LOG_DIR=logs can ENOENT under that tree. */
+const apiLogDir = path.resolve(workspaceRoot, 'apps', 'api', 'logs');
 
 const DEFAULT_API_ORIGIN = 'http://localhost:3000';
 
-function normalizeOrigin(origin: string): string {
-  return origin.replace(/\/+$/, '');
-}
+/** Residual 1027: normalizeOrigin sole imported from ./normalize-origin. */
 
 async function probeExistingApi(apiOrigin: string): Promise<{
   occupied: boolean;
@@ -76,12 +78,22 @@ async function main(): Promise<void> {
   buildApiApp(workspaceRoot);
   await ensureTestDatabase(workspaceRoot);
 
+  fs.mkdirSync(apiLogDir, { recursive: true });
+
+  // Residual 1339: real interactive OAuth uses host-dev so getGithubOAuthConfig
+  // does not force e2e-mock (residual 1333). Default Playwright stays on e2e.
+  const runtimeLane =
+    process.env.E2E_REAL_GITHUB_OAUTH === '1' || process.env.RUNTIME_LANE === 'host-dev'
+      ? 'host-dev'
+      : 'e2e';
+
   const apiProcess = spawn(process.execPath, ['main.js'], {
     cwd: apiDistDir,
     env: {
       ...process.env,
-      RUNTIME_LANE: 'e2e',
+      RUNTIME_LANE: runtimeLane,
       NODE_ENV: process.env.NODE_ENV ?? 'test',
+      LOG_DIR: process.env.LOG_DIR || apiLogDir,
     },
     stdio: 'inherit',
   });

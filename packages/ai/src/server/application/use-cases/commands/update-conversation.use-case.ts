@@ -7,12 +7,17 @@ export class UpdateConversationUseCase {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   async execute(
+    identityId: string,
     conversationId: string,
     request: UpdateConversationReq,
   ): Promise<Result<AIConversationClientDTO>> {
-    const conversation = await this.conversationRepository.findById(conversationId, {
-      includeChildren: false,
-    });
+    const conversation = await this.conversationRepository.findByIdForIdentity(
+      identityId,
+      conversationId,
+      {
+        includeChildren: false,
+      },
+    );
     if (!conversation) {
       return error('NOT_FOUND', 'Conversation not found');
     }

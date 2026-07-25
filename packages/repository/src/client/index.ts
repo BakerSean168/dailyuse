@@ -25,27 +25,15 @@ import {
 import type {
   IRepositoryApiClient,
   IResultIpcClient,
-  CreateFolderRequest,
-  CreateResourceRequest,
-  UpdateResourceRequest,
-  UploadFileLike,
-  UploadResourcesRequest,
 } from '../infrastructure-client/adapters/types';
-import type { Repository } from '../domain-client';
 
 export type {
-  Repository,
   RepositoryClientPort,
   RepositoryHttpAdapters,
   RepositoryIpcAdapters,
   IRepositoryApiClient,
   IResultHttpClient,
   IResultIpcClient,
-  CreateFolderRequest,
-  CreateResourceRequest,
-  UpdateResourceRequest,
-  UploadFileLike,
-  UploadResourcesRequest,
 };
 
 export function createRepositoryHttpClient(

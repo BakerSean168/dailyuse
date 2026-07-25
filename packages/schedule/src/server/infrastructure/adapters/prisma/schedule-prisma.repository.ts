@@ -69,11 +69,11 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   }
 
   /**
-   * Find schedule by UUID
+   * Find schedule by UUID owned by identity
    */
-  async findById(id: string): Promise<CalendarEntry | null> {
-    const data = await this.db.schedule.findUnique({
-      where: { id },
+  async findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null> {
+    const data = await this.db.schedule.findFirst({
+      where: { id, identityId },
     });
 
     return data ? this.mapToEntity(data) : null;
@@ -120,18 +120,24 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   }
 
   /**
-   * Delete schedule by UUID
+   * Delete schedule by UUID for the owning identity
    */
-  async deleteById(id: string): Promise<void> {
-    await this.db.schedule.delete({
-      where: { id },
+  async deleteById(identityId: string, id: string): Promise<void> {
+    const deleted = await this.db.schedule.deleteMany({
+      where: { id, identityId },
     });
+    if (deleted.count !== 1) {
+      throw new Error('Schedule event not found for the current identity.');
+    }
   }
 
   async deleteAggregate(entry: CalendarEntry): Promise<void> {
-    await this.db.schedule.delete({
-      where: { id: entry.id },
+    const deleted = await this.db.schedule.deleteMany({
+      where: { id: entry.id, identityId: entry.identityId },
     });
+    if (deleted.count !== 1) {
+      throw new Error('Schedule event not found for the current identity.');
+    }
     await publishAggregateEvents(entry, eventBusAdapter);
   }
 

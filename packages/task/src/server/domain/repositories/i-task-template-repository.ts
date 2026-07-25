@@ -37,14 +37,14 @@ export interface ITaskTemplateRepository {
   save(template: TaskTemplate): Promise<void>;
 
   /**
-   * 根据 ID 查找任务模板
+   * 根据 ID + identity 查找任务模板（唯一授权敏感读路径）
    */
-  findById(id: string): Promise<TaskTemplate | null>;
+  findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null>;
 
   /**
-   * 根据 ID 查找任务模板（包含子实体：子任务、实例）
+   * 根据 ID + identity 查找任务模板（包含子实体：子任务、实例）
    */
-  findByIdWithChildren(id: string): Promise<TaskTemplate | null>;
+  findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null>;
 
   /**
    * 根据用户 ID 查找所有任务模板
@@ -62,14 +62,14 @@ export interface ITaskTemplateRepository {
   findActiveTemplates(identityId: string): Promise<TaskTemplate[]>;
 
   /**
-   * 根据文件夹查找任务模板
+   * 根据文件夹查找任务模板（identity-scoped）
    */
-  findByFolderId(folderId: string): Promise<TaskTemplate[]>;
+  findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]>;
 
   /**
-   * 根据目标查找任务模板
+   * 根据目标查找任务模板（identity-scoped）
    */
-  findByGoalId(goalId: string): Promise<TaskTemplate[]>;
+  findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]>;
 
   /**
    * 根据标签查找任务模板
@@ -82,19 +82,19 @@ export interface ITaskTemplateRepository {
   findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]>;
 
   /**
-   * 硬删除任务模板
+   * 硬删除任务模板（identity-scoped）
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * 软删除任务模板
    */
-  softDelete(id: string): Promise<void>;
+  softDelete(identityId: string, id: string): Promise<void>;
 
   /**
    * 恢复软删除的任务模板
    */
-  restore(id: string): Promise<void>;
+  restore(identityId: string, id: string): Promise<void>;
 
   // ===== 任务类型查询 =====
 
@@ -114,14 +114,14 @@ export interface ITaskTemplateRepository {
   findOverdueTasks(identityId: string): Promise<TaskTemplate[]>;
 
   /**
-   * 根据关键结果查找任务
+   * 根据关键结果查找任务（identity-scoped）
    */
-  findByKeyResultId(keyResultId: string): Promise<TaskTemplate[]>;
+  findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]>;
 
   /**
-   * 查找子任务
+   * 查找子任务（identity-scoped）
    */
-  findSubtasks(parentTaskId: string): Promise<TaskTemplate[]>;
+  findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]>;
 
   /**
    * 查找被阻塞的任务
@@ -156,5 +156,5 @@ export interface ITaskTemplateRepository {
   /**
    * 批量删除任务
    */
-  deleteBatch(ids: string[]): Promise<void>;
+  deleteBatch(identityId: string, ids: string[]): Promise<void>;
 }

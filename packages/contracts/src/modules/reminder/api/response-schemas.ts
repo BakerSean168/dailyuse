@@ -17,82 +17,37 @@ import type {
 } from '../../../primitives';
 import { ReminderType } from '../value-objects/reminder-type';
 import { ReminderStatus } from '../value-objects/reminder-status';
-import { TriggerType } from '../value-objects/trigger-type';
 import { TriggerResult } from '../value-objects/trigger-result';
 import { NotificationChannel } from '../value-objects/notification-channel';
-import { NotificationAction } from '../value-objects/notification-action';
 import { ControlMode } from '../value-objects/control-mode';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
+import { ActiveHoursConfigSchema } from '../value-objects/active-hours-config';
+import { ActiveTimeConfigSchema } from '../value-objects/active-time-config';
+import { GroupStatsSchema } from '../value-objects/group-stats';
+import { TriggerConfigSchema } from '../value-objects/trigger-config';
+import { NotificationConfigSchema } from '../value-objects/notification-config';
+import { TimeSlotSchema } from '../value-objects/time-slot';
+
+// Residual 751: TimeSlotSchema owned by value-objects (TimeSlotDTO is z.infer alias).
+export { TimeSlotSchema };
+
+// Residual 733: ActiveHoursConfigSchema / GroupStatsSchema owned by value-objects
+// Residual 833: ActiveTimeConfigSchema owned by value-objects (activatedAt; no startDate/endDate dual).
+// (re-exported for OpenAPI nested response consumers).
+export { ActiveHoursConfigSchema, GroupStatsSchema, ActiveTimeConfigSchema };
+
+// Residual 735: TriggerConfigSchema / NotificationConfigSchema owned by value-objects
+// (re-exported for OpenAPI nested response consumers).
+export { TriggerConfigSchema, NotificationConfigSchema };
 
 // ============ 值对象 Zod Schema ============
-
-const TriggerConfigSchema = z.object({
-  type: z.enum(TriggerType),
-  fixedTime: z
-    .object({
-      time: z.string(),
-      timezone: z.string().nullable(),
-    })
-    .nullable(),
-  interval: z
-    .object({
-      minutes: z.number(),
-      startTime: z.number().nullable(),
-    })
-    .nullable(),
-});
-
-const NotificationConfigSchema = z.object({
-  channels: z.array(z.enum(NotificationChannel)),
-  title: z.string().nullable(),
-  body: z.string().nullable(),
-  sound: z
-    .object({
-      enabled: z.boolean(),
-      soundName: z.string().nullable(),
-    })
-    .nullable(),
-  vibration: z
-    .object({
-      enabled: z.boolean(),
-      pattern: z.array(z.number()).nullable(),
-    })
-    .nullable(),
-  actions: z
-    .array(
-      z.object({
-        id: z.string(),
-        label: z.string(),
-        action: z.enum(NotificationAction),
-        customAction: z.string().nullable(),
-      }),
-    )
-    .nullable(),
-});
-
-const ActiveTimeConfigSchema = z.object({
-  startDate: z.number(),
-  endDate: z.number().nullable(),
-});
-
-const ActiveHoursConfigSchema = z.object({
-  enabled: z.boolean(),
-  startHour: z.number(),
-  endHour: z.number(),
-});
-
-const GroupStatsSchema = z.object({
-  totalTemplates: z.number(),
-  activeTemplates: z.number(),
-  pausedTemplates: z.number(),
-  selfEnabledTemplates: z.number(),
-  selfPausedTemplates: z.number(),
-});
 
 // ============ ReminderTemplate Response Schema ============
 
 /**
- * 与 ReminderTemplateClientDTO 严格对齐的响应 schema。
+ * Residual 833: ReminderTemplateClientDTO dual retired — sole ReminderTemplateResponseSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/reminder-template-client.ts).
+ * activeTime uses VO-owned ActiveTimeConfigSchema (activatedAt).
  */
 export const ReminderTemplateResponseSchema = z.object({
   id: brandedId<ReminderTemplateId>(),
@@ -131,6 +86,8 @@ export const ReminderTemplateResponseSchema = z.object({
   globalReminderEnabled: z.boolean(),
 });
 
+// Residual 693: reminder list OpenAPI schemas are the sole list response shapes
+// (ReminderTemplateListRes / ReminderGroupListRes are z.infer aliases).
 export const ReminderTemplateListResponseSchema = z.object({
   templates: z.array(ReminderTemplateResponseSchema),
   total: z.number(),
@@ -142,7 +99,8 @@ export const ReminderTemplateListResponseSchema = z.object({
 // ============ ReminderGroup Response Schema ============
 
 /**
- * 与 ReminderGroupClientDTO 严格对齐的响应 schema。
+ * Residual 827: ReminderGroupClientDTO dual retired — sole ReminderGroupResponseSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/reminder-group-client.ts).
  */
 export const ReminderGroupResponseSchema = z.object({
   id: brandedId<ReminderGroupId>(),
@@ -171,6 +129,8 @@ export const ReminderGroupListResponseSchema = z.object({
 });
 
 // ============ ReminderHistory Response Schema ============
+// Residual 827: ReminderHistoryClientDTO dual retired — sole ReminderHistoryResponseSchema + z.infer
+// (semantic type is z.infer alias in entities/reminder-history-client.ts).
 
 export const ReminderHistoryResponseSchema = z.object({
   id: brandedId<ReminderHistoryId>(),
@@ -198,6 +158,7 @@ export const ReminderResponseItemSchema = z.object({
 
 // ============ Batch Result Schema ============
 
+// Residual 781: sole batch result transport shape (BatchGroupTemplatesRes is z.infer alias).
 export const ReminderBatchResultSchema = z.object({
   successCount: z.number(),
   failedCount: z.number(),
@@ -205,13 +166,9 @@ export const ReminderBatchResultSchema = z.object({
 
 // ============ UserReminderPreferences Response Schema ============
 
-const TimeSlotSchema = z.object({
-  hourStart: z.number(),
-  hourEnd: z.number(),
-  avgResponseRate: z.number(),
-  sampleCount: z.number(),
-});
 
+// Residual 829: UserReminderPreferencesClientDTO dual retired — sole UserReminderPreferencesResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/user-reminder-preferences-server.ts).
 export const UserReminderPreferencesResponseSchema = z.object({
   id: brandedId<UserReminderPreferencesId>(),
   identityId: brandedId<IdentityId>(),
@@ -269,7 +226,6 @@ export const FrequencyAnalysisResultSchema = z.object({
 
 export const FrequencyAdjustmentResultSchema = z.object({
   templateId: brandedId<ReminderTemplateId>(),
-  success: z.boolean(),
   originalInterval: z.number(),
   adjustedInterval: z.number(),
   reason: z.string(),

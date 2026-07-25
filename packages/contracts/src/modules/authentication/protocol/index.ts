@@ -14,20 +14,16 @@ export type {
   RefreshSessionRequest,
   RefreshSessionResponse,
   LoginRequest,
-  LoginResponse,
+  OfflineLoginResponse,
   UserInfo,
   SessionInfo,
   DeviceInfoClientDTO,
   AuthStatus,
   AuthBootstrapSnapshot,
-  AuthStatusDTO,
-  AuthOperationResult,
   EmailLoginCredentials,
+  EmailRegisterCredentials,
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,
-  TwoFactorStatus,
-  ApiKeyInfo,
-  DeviceInfoUI,
 } from './desktop-auth.types';
 
 // Export individual event types for external consumers

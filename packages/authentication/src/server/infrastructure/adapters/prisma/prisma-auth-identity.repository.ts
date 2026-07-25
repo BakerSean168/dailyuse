@@ -106,13 +106,6 @@ export class PrismaAuthIdentityRepository
     return this.findById(identifier.identityId);
   }
 
-  async findByPhone(phoneNumber: string): Promise<AuthIdentity | null> {
-    const identifier = await this.prisma.authIdentifier.findFirst({
-      where: { type: 'Phone', value: phoneNumber },
-    });
-    if (!identifier) return null;
-    return this.findById(identifier.identityId);
-  }
 
   async findByOAuth(provider: OAuthProvider, subjectId: string): Promise<AuthIdentity | null> {
     const binding = await this.prisma.authOAuthBinding.findFirst({
@@ -132,12 +125,6 @@ export class PrismaAuthIdentityRepository
     return count > 0;
   }
 
-  async existsByPhone(phoneNumber: string): Promise<boolean> {
-    const count = await this.prisma.authIdentifier.count({
-      where: { type: 'Phone', value: phoneNumber },
-    });
-    return count > 0;
-  }
 
   // ================= Delete Operations =================
 

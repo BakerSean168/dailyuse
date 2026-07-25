@@ -304,7 +304,11 @@ import { useI18n } from 'vue-i18n';
 import { ChevronRight, Plus, CheckCircle, XCircle, Trash2 } from '@lucide/vue';
 import { TagInput } from '@dailyuse/ui-vue-shadcn';
 import { useGovernance } from '../composables/useGovernance';
-import type { CreateRuleReq, UpdateRuleReq, RuleSeverity } from '../types';
+import type {
+  CreateRuleReq,
+  UpdateRuleReq,
+  RuleSeverity,
+} from '@dailyuse/contracts/governance';
 
 const props = defineProps<{
   id?: string;

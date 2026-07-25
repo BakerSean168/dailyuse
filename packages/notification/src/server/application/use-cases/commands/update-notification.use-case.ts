@@ -12,8 +12,12 @@ import { toNotificationClientDTO } from './notification-dto-converters';
 export class UpdateNotificationUseCase {
   constructor(private readonly notificationRepository: INotificationRepository) {}
 
-  async execute(id: string, patch: UpdateNotificationReq): Promise<Result<NotificationClientDTO>> {
-    const notification = await this.notificationRepository.findById(id);
+  async execute(
+    id: string,
+    identityId: string,
+    patch: UpdateNotificationReq,
+  ): Promise<Result<NotificationClientDTO>> {
+    const notification = await this.notificationRepository.findByIdForIdentity(identityId, id);
     if (!notification) {
       return error('NOT_FOUND', 'notification not found');
     }

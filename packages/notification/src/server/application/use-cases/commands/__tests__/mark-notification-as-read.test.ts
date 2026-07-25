@@ -34,7 +34,7 @@ describe('MarkNotificationAsReadUseCase', () => {
     notificationRepo = createMockRepo<INotificationRepository>({
       save: vi.fn().mockResolvedValue(undefined),
       saveMany: vi.fn().mockResolvedValue(undefined),
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       findUnread: vi.fn().mockResolvedValue([]),
     });
 
@@ -44,9 +44,9 @@ describe('MarkNotificationAsReadUseCase', () => {
   describe('execute()', () => {
     it('should mark a notification as read and return a client DTO', async () => {
       const notification = aDeliveredNotification();
-      vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
+      vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(notification);
 
-      const result = await useCase.execute(String(notification.id));
+      const result = await useCase.execute(String(notification.id), String(notification.identityId));
 
       expect(result.ok).toBe(true);
       if (!result.ok) throw new Error('Expected ok');
@@ -56,30 +56,30 @@ describe('MarkNotificationAsReadUseCase', () => {
     });
 
     it('should return error when notification is not found', async () => {
-      vi.mocked(notificationRepo.findById).mockResolvedValue(null);
+      vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(null);
 
-      const result = await useCase.execute('non-existent');
+      const result = await useCase.execute('non-existent', anIdentityId());
 
       expect(result.ok).toBe(false);
       if (result.ok) throw new Error('Expected error');
       expect(result.error.code).toBe('NOT_FOUND');
     });
 
-    it('should call findById with the provided id', async () => {
+    it('should call findByIdForIdentity with identity and id', async () => {
       const notification = aDeliveredNotification();
-      vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
+      vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(notification);
 
-      await useCase.execute('test-id-123');
+      await useCase.execute('test-id-123', 'identity-1');
 
-      expect(notificationRepo.findById).toHaveBeenCalledWith('test-id-123');
+      expect(notificationRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'test-id-123');
     });
 
     it('should be idempotent when notification is already read', async () => {
       const notification = aDeliveredNotification();
       notification.markAsRead();
-      vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
+      vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(notification);
 
-      const result = await useCase.execute(String(notification.id));
+      const result = await useCase.execute(String(notification.id), String(notification.identityId));
 
       expect(result.ok).toBe(true);
       if (!result.ok) throw new Error('Expected ok');
@@ -96,12 +96,12 @@ describe('MarkNotificationAsReadUseCase', () => {
         aDeliveredNotification(),
       ];
       const ids = notifications.map((notification) => String(notification.id));
-      vi.mocked(notificationRepo.findById)
+      vi.mocked(notificationRepo.findByIdForIdentity)
         .mockResolvedValueOnce(notifications[0])
         .mockResolvedValueOnce(notifications[1])
         .mockResolvedValueOnce(notifications[2]);
 
-      const result = await useCase.executeMany(ids);
+      const result = await useCase.executeMany(ids, anIdentityId());
 
       expect(result.ok).toBe(true);
       if (!result.ok) throw new Error('Expected ok');
@@ -111,7 +111,7 @@ describe('MarkNotificationAsReadUseCase', () => {
     });
 
     it('should return 0 for empty array', async () => {
-      const result = await useCase.executeMany([]);
+      const result = await useCase.executeMany([], anIdentityId());
 
       expect(result.ok).toBe(true);
       if (!result.ok) throw new Error('Expected ok');

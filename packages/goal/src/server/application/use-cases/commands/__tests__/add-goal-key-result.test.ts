@@ -46,16 +46,16 @@ describe('AddGoalKeyResultUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new AddGoalKeyResultUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should return NOT_FOUND when goal does not exist', async () => {
-    vi.mocked(goalRepo.findById).mockResolvedValue(null);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent', aKeyResultInput());
+    const result = await useCase.execute('non-existent', 'identity-1', aKeyResultInput());
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -63,9 +63,9 @@ describe('AddGoalKeyResultUseCase', () => {
 
   it('should add a key result to an active goal', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, aKeyResultInput());
+    const result = await useCase.execute(goal.id, 'identity-1', aKeyResultInput());
 
     expect(result).toBeOk();
     expect(goal.keyResults).toHaveLength(1);
@@ -77,30 +77,30 @@ describe('AddGoalKeyResultUseCase', () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
     goal.archive();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id, aKeyResultInput())).rejects.toThrow();
+    await expect(useCase.execute(goal.id, 'identity-1', aKeyResultInput())).rejects.toThrow();
   });
 
   it('should validate key result weight', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id, aKeyResultInput({ weight: 0 }))).rejects.toThrow();
+    await expect(useCase.execute(goal.id, 'identity-1', aKeyResultInput({ weight: 0 }))).rejects.toThrow();
   });
 
   it('should reject weight exceeding 5', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id, aKeyResultInput({ weight: 6 }))).rejects.toThrow();
+    await expect(useCase.execute(goal.id, 'identity-1', aKeyResultInput({ weight: 6 }))).rejects.toThrow();
   });
 
   it('should return the newly created key result DTO on success', async () => {
     const goal = createTestGoal('Goal with KR');
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id, aKeyResultInput({ title: 'My KR' }));
+    const result = await useCase.execute(goal.id, 'identity-1', aKeyResultInput({ title: 'My KR' }));
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -110,10 +110,10 @@ describe('AddGoalKeyResultUseCase', () => {
 
   it('should allow adding multiple key results', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await useCase.execute(goal.id, aKeyResultInput({ title: 'KR1' }));
-    await useCase.execute(goal.id, aKeyResultInput({ title: 'KR2' }));
+    await useCase.execute(goal.id, 'identity-1', aKeyResultInput({ title: 'KR1' }));
+    await useCase.execute(goal.id, 'identity-1', aKeyResultInput({ title: 'KR2' }));
 
     expect(goal.keyResults).toHaveLength(2);
   });

@@ -45,10 +45,12 @@ import { ScheduleEventApplicationService } from '../application/services/schedul
 import { ScheduleConflictDetectionService } from '../application/services/schedule-conflict-detection-service';
 import { ScheduleConflictResolutionService } from '../application/services/schedule-conflict-resolution-service';
 import { toResultErrorException } from '@dailyuse/contracts/result';
-import type { RetryPolicyDTO } from '@dailyuse/contracts/schedule';
+import type { RetryPolicyDTO, ScheduleConfigDTO } from '@dailyuse/contracts/schedule';
 import type {
   CreateScheduleRequest,
+  CreateScheduleTaskRequest,
   UpdateScheduleRequest,
+  UpdateScheduleTaskRequest,
 } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { resultify } from '@dailyuse/utils/result';
@@ -158,6 +160,39 @@ function toUpdateSchedulePayload(data: UpdateScheduleRequest) {
   };
 }
 
+function toScheduleConfigDTO(
+  schedule: CreateScheduleTaskRequest['schedule'],
+): ScheduleConfigDTO {
+  return {
+    cronExpression: schedule.cronExpression,
+    timezone: schedule.timezone,
+    startDate: schedule.startDate == null ? null : new Date(schedule.startDate).toISOString(),
+    endDate: schedule.endDate == null ? null : new Date(schedule.endDate).toISOString(),
+    maxExecutions: schedule.maxExecutions ?? null,
+  };
+}
+
+function toPartialScheduleConfigDTO(
+  schedule: UpdateScheduleTaskRequest['schedule'],
+): Partial<ScheduleConfigDTO> | undefined {
+  if (!schedule) {
+    return undefined;
+  }
+
+  const dto: Partial<ScheduleConfigDTO> = {};
+  if (schedule.cronExpression !== undefined) dto.cronExpression = schedule.cronExpression;
+  if (schedule.timezone !== undefined) dto.timezone = schedule.timezone;
+  if (schedule.startDate !== undefined) {
+    dto.startDate =
+      schedule.startDate === null ? null : new Date(schedule.startDate).toISOString();
+  }
+  if (schedule.endDate !== undefined) {
+    dto.endDate = schedule.endDate === null ? null : new Date(schedule.endDate).toISOString();
+  }
+  if (schedule.maxExecutions !== undefined) dto.maxExecutions = schedule.maxExecutions;
+  return dto;
+}
+
 /**
  * Pure assembly helper used by the class facade and tests.
  * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
@@ -253,7 +288,7 @@ export function createScheduleModule(
         name: data.name,
         sourceModule: data.sourceModule,
         sourceId: data.sourceEntityId,
-        scheduleConfig: data.schedule,
+        scheduleConfig: toScheduleConfigDTO(data.schedule),
         handlerType: data.sourceModule,
         description: data.description,
         retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
@@ -263,36 +298,47 @@ export function createScheduleModule(
     },
     listTasks: async (query, ctx) => {
       if (query.status) {
-        return useCases.listScheduleTasksByStatus.execute(query.status as ScheduleTaskStatus);
+        return useCases.listScheduleTasksByStatus.execute(
+          query.status as ScheduleTaskStatus,
+          ctx.identityId,
+        );
       } else if (query.sourceModule && query.sourceEntityId) {
         return useCases.listScheduleTasksBySource.execute(
           query.sourceModule as SourceModule,
           query.sourceEntityId as string,
+          ctx.identityId,
         );
       } else {
         return useCases.listScheduleTasksByAccount.execute(ctx.identityId);
       }
     },
-    updateTask: async (id, data) => {
-      return useCases.updateScheduleTask.execute({
-        id,
-        scheduleConfig: data.schedule,
-        retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
-        enabled: data.enabled,
-        description: data.description,
-      });
+    updateTask: async (id, data, ctx) => {
+      return useCases.updateScheduleTask.execute(
+        {
+          id,
+          scheduleConfig: toPartialScheduleConfigDTO(data.schedule),
+          retryPolicy: data.retryPolicy as unknown as RetryPolicyDTO,
+          enabled: data.enabled,
+          description: data.description,
+        },
+        ctx.identityId,
+      );
     },
-    deleteTask: async (id) => useCases.deleteScheduleTask.execute(id),
-    pauseTask: async (id) => useCases.pauseScheduleTask.execute(id),
-    resumeTask: async (id) => useCases.resumeScheduleTask.execute(id),
-    triggerTask: async (id) => useCases.triggerScheduleTask.execute(id),
-    getTask: async (id) => useCases.getScheduleTask.execute(id),
-    completeTask: async (id) => useCases.completeScheduleTask.execute(id),
-    cancelTask: async (id, reason) => useCases.cancelScheduleTask.execute(id, reason),
+    deleteTask: async (id, ctx) => useCases.deleteScheduleTask.execute(id, ctx.identityId),
+    pauseTask: async (id, ctx) => useCases.pauseScheduleTask.execute(id, ctx.identityId),
+    resumeTask: async (id, ctx) => useCases.resumeScheduleTask.execute(id, ctx.identityId),
+    triggerTask: async (id, ctx) => useCases.triggerScheduleTask.execute(id, ctx.identityId),
+    getTask: async (id, ctx) => useCases.getScheduleTask.execute(id, ctx.identityId),
+    completeTask: async (id, ctx) => useCases.completeScheduleTask.execute(id, ctx.identityId),
+    cancelTask: async (id, reason, ctx) =>
+      useCases.cancelScheduleTask.execute(id, ctx.identityId, reason),
     getDueTasks: async () => useCases.getDueScheduleTasks.execute(),
-    batchOperateTasks: async (data) => useCases.batchOperateScheduleTasks.execute(data),
-    batchDeleteTasks: async (ids) => useCases.batchDeleteScheduleTasks.execute(ids),
-    updateTaskMetadata: async (id, metadata) => useCases.updateScheduleTaskMetadata.execute(id, metadata),
+    batchOperateTasks: async (data, ctx) =>
+      useCases.batchOperateScheduleTasks.execute(data, ctx.identityId),
+    batchDeleteTasks: async (ids, ctx) =>
+      useCases.batchDeleteScheduleTasks.execute(ids, ctx.identityId),
+    updateTaskMetadata: async (id, metadata, ctx) =>
+      useCases.updateScheduleTaskMetadata.execute(id, ctx.identityId, metadata),
   };
 
   const eventApi: ScheduleEventApplicationPort = {
@@ -302,9 +348,9 @@ export function createScheduleModule(
           useCases.scheduleEventService.createSchedule(toCreateSchedulePayload(data, ctx.identityId)),
         'Failed to create schedule event',
       ),
-    getEvent: async (id) =>
+    getEvent: async (id, ctx) =>
       resultify(async () => {
-        const event = await useCases.scheduleEventService.getSchedule(id);
+        const event = await useCases.scheduleEventService.getSchedule(id, ctx.identityId);
         if (!event) {
           throw toResultErrorException({ code: 'NOT_FOUND', message: '日程不存在' }, 404);
         }
@@ -320,18 +366,26 @@ export function createScheduleModule(
           ),
         'Failed to list schedule events',
       ),
-    updateEvent: async (id, data) =>
+    updateEvent: async (id, data, ctx) =>
       resultify(
-        () => useCases.scheduleEventService.updateSchedule(id, toUpdateSchedulePayload(data)),
+        () =>
+          useCases.scheduleEventService.updateSchedule(
+            id,
+            ctx.identityId,
+            toUpdateSchedulePayload(data),
+          ),
         'Failed to update schedule event',
       ),
-    deleteEvent: async (id) =>
+    deleteEvent: async (id, ctx) =>
       resultify(async () => {
-        await useCases.scheduleEventService.deleteSchedule(id);
+        await useCases.scheduleEventService.deleteSchedule(id, ctx.identityId);
         return null;
       }, 'Failed to delete schedule event'),
-    getConflicts: async (id) =>
-      resultify(() => useCases.conflictResolutionService.getConflicts(id), 'Failed to get schedule conflicts'),
+    getConflicts: async (id, ctx) =>
+      resultify(
+        () => useCases.conflictResolutionService.getConflicts(id, ctx.identityId),
+        'Failed to get schedule conflicts',
+      ),
     detectConflicts: async (data) =>
       resultify(() => useCases.conflictResolutionService.detectConflicts(data), 'Failed to detect schedule conflicts'),
     createEventWithConflictDetection: async (data, ctx) =>
@@ -339,9 +393,9 @@ export function createScheduleModule(
         () => useCases.conflictResolutionService.createWithConflictDetection(data, ctx.identityId),
         'Failed to create schedule event with conflict detection',
       ),
-    resolveConflict: async (id, data) =>
+    resolveConflict: async (id, data, ctx) =>
       resultify(
-        () => useCases.conflictResolutionService.resolveConflict(id, data),
+        () => useCases.conflictResolutionService.resolveConflict(id, data, ctx.identityId),
         'Failed to resolve schedule conflict',
       ),
   };

@@ -37,7 +37,7 @@
               v-for="event in getAllDayEventsForDay(day.date)"
               :key="event.id"
               class="block w-full rounded px-2 py-1 text-left text-[11px] text-white"
-              :class="eventBgClass(event)"
+              :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
             >
               <span class="block truncate">{{ event.title }}</span>
@@ -74,7 +74,7 @@
               :key="event.id"
               class="event-card absolute left-0.5 right-0.5 rounded px-2 py-1 cursor-pointer transition-transform hover:scale-105 z-20 text-white"
               :style="getEventStyle(event)"
-              :class="eventBgClass(event)"
+              :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
             >
               <div class="text-[10px] opacity-90">{{ formatEventTime(event) }}</div>
@@ -93,7 +93,9 @@ import { computed } from 'vue';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import type { CalendarEventItem } from '../composables/useCalendarView';
+import { calendarEventBgClass, getWeekStart, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
+import { formatHour } from '../../../shared/utils/format-hour';
+import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 
 interface Props {
   schedules: CalendarEventItem[];
@@ -121,7 +123,7 @@ const weekDays = computed(() => {
   for (let i = 0; i < 7; i++) {
     const date = new Date(start);
     date.setDate(start.getDate() + i);
-    const dateStr = toDateStr(date);
+    const dateStr = toLocalDateKey(date);
 
     days.push({
       date: dateStr,
@@ -136,15 +138,6 @@ const weekDays = computed(() => {
 
 const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
 
-function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Monday as week start
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
 function getDayName(day: number): string {
   const dayKeys = [
     'schedule.calendar.daySun',
@@ -158,53 +151,41 @@ function getDayName(day: number): string {
   return t(dayKeys[day]);
 }
 
-function formatHour(hour: number): string {
-  return `${hour.toString().padStart(2, '0')}:00`;
-}
-
+// Residual 1276: formatHour dual retired onto shared sole.
+// Residual 1282: toDateStr dual retired onto toLocalDateKey sole.
+// Residual 1285: getWeekStart dual retired onto schedule sole.
+// Residual 1288: eventBgClass dual retired onto calendarEventBgClass sole.
+/**
+ * Residual 1279 keep-boundary: Week formatEventTime — compact "-" between HH:mm (dense week cells).
+ * Residual 1300: inner HH:mm dual retired onto formatLocalHHmm sole (separator keep-boundary remains).
+ * all-day → i18n; not Intl.
+ * Soft residual 1279: Day spaced " - " + formatCalendarEventTimeRange en-dash sole (no force-merge).
+ */
 function formatEventTime(event: CalendarEventItem): string {
   if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
-  const fmt = (ts: number) => {
-    const d = new Date(ts);
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-  };
-  return `${fmt(event.startTime)}-${fmt(event.endTime)}`;
+  return `${formatLocalHHmm(event.startTime)}-${formatLocalHHmm(event.endTime)}`;
 }
 
 const weekAllDayCount = computed(
   () => props.schedules.filter((event) => event.displayMode === 'all-day').length,
 );
 
-function toDateStr(value: Date | number): string {
-  const date = typeof value === 'number' ? new Date(value) : value;
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 function getTimedEventsForDay(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter(
-    (event) => event.displayMode === 'timed' && toDateStr(event.startTime) === dateStr,
+    (event) => event.displayMode === 'timed' && toLocalDateKey(event.startTime) === dateStr,
   );
 }
 
 function getAllDayEventsForDay(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter(
-    (event) => event.displayMode === 'all-day' && toDateStr(event.startTime) === dateStr,
+    (event) => event.displayMode === 'all-day' && toLocalDateKey(event.startTime) === dateStr,
   );
 }
 
-function eventBgClass(event: CalendarEventItem): string {
-  if (event.hasConflict) return 'bg-warning';
-  const map: Record<CalendarEventItem['source'], string> = {
-    schedule: 'bg-primary',
-    goal: 'bg-success',
-    task: 'bg-info',
-  };
-  return map[event.source];
-}
-
+/**
+ * Residual 1306 keep-boundary: Week getEventStyle — percent-of-day column layout.
+ * Soft residual 1288 / 1303: Day uses absolute px rail (64px/hour; no force-merge).
+ */
 function getEventStyle(event: CalendarEventItem) {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);

@@ -26,7 +26,6 @@ const desktopTestWorkspaceEntries = [
   ['@dailyuse/schedule/client', 'packages/schedule/src/client/index.ts'],
   ['@dailyuse/schedule/electron', 'packages/schedule/src/electron/index.ts'],
   ['@dailyuse/reminder/client', 'packages/reminder/src/client/index.ts'],
-  ['@dailyuse/editor/client', 'packages/editor/src/client/index.ts'],
   ['@dailyuse/reminder/electron', 'packages/reminder/src/electron/index.ts'],
   ['@dailyuse/repository/client', 'packages/repository/src/client/index.ts'],
   ['@dailyuse/repository/electron', 'packages/repository/src/electron/index.ts'],
@@ -38,7 +37,6 @@ const desktopTestWorkspaceEntries = [
   ['@dailyuse/data-portability/electron', 'packages/data-portability/src/electron/index.ts'],
   ['@dailyuse/ai/client', 'packages/ai/src/client/index.ts'],
   ['@dailyuse/ai/electron', 'packages/ai/src/electron/index.ts'],
-  ['@dailyuse/editor/electron', 'packages/editor/src/electron/index.ts'],
   ['@dailyuse/dashboard', 'packages/dashboard/src/index.ts'],
   ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
 ] as const;

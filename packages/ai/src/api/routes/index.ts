@@ -9,3 +9,4 @@ export * from './ai-provider.routes';
 export * from './ai-chat.routes';
 export * from './ai-knowledge-query.routes';
 export * from './ai-knowledge-note.routes';
+export * from './ai-assistant.routes';

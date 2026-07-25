@@ -48,7 +48,7 @@ function isScheduleTaskRootDb(db: ScheduleTaskDb | ScheduleTaskRootDb): db is Sc
  * Query options for ScheduleTask.
  */
 interface IScheduleTaskQueryOptions {
-  identityId?: string;
+  identityId: string;
   sourceModule?: SourceModule;
   sourceEntityId?: string;
   status?: ScheduleTaskStatus;
@@ -147,10 +147,27 @@ export class ScheduleTaskPrismaRepository
     return data ? this.toDomain(data) : null;
   }
 
-  async deleteById(id: string): Promise<void> {
-    await this.db.scheduleTask.delete({
-      where: { id },
+  async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleTask | null> {
+    const data = await this.db.scheduleTask.findFirst({
+      where: { id, identityId },
+      include: {
+        executions: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+      },
     });
+
+    return data ? this.toDomain(data) : null;
+  }
+
+  async deleteById(identityId: string, id: string): Promise<void> {
+    const deleted = await this.db.scheduleTask.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Schedule task not found for the current identity.');
+    }
   }
 
   // ===== Query Methods =====
@@ -169,11 +186,11 @@ export class ScheduleTaskPrismaRepository
     return tasks.map((task) => this.toDomain(task));
   }
 
-  async findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]> {
+  async findBySourceModule(module: SourceModule, identityId: string): Promise<ScheduleTask[]> {
     const tasks = await this.db.scheduleTask.findMany({
       where: {
         sourceModule: module,
-        ...(identityId && { identityId }),
+        identityId,
       },
       include: {
         executions: {
@@ -189,13 +206,13 @@ export class ScheduleTaskPrismaRepository
   async findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    identityId?: string,
+    identityId: string,
   ): Promise<ScheduleTask[]> {
     const tasks = await this.db.scheduleTask.findMany({
       where: {
         sourceModule: module,
         sourceEntityId: entityId,
-        ...(identityId && { identityId }),
+        identityId,
       },
       include: {
         executions: {
@@ -208,11 +225,11 @@ export class ScheduleTaskPrismaRepository
     return tasks.map((task) => this.toDomain(task));
   }
 
-  async findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]> {
+  async findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]> {
     const tasks = await this.db.scheduleTask.findMany({
       where: {
         status: status,
-        ...(identityId && { identityId }),
+        identityId,
       },
       include: {
         executions: {
@@ -268,9 +285,10 @@ export class ScheduleTaskPrismaRepository
   }
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
-    const where: Prisma.ScheduleTaskWhereInput = {};
+    const where: Prisma.ScheduleTaskWhereInput = {
+      identityId: options.identityId,
+    };
 
-    if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;
     if (options.sourceEntityId) where.sourceEntityId = options.sourceEntityId;
     if (options.status) where.status = options.status;
@@ -292,9 +310,10 @@ export class ScheduleTaskPrismaRepository
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
-    const where: Prisma.ScheduleTaskWhereInput = {};
+    const where: Prisma.ScheduleTaskWhereInput = {
+      identityId: options.identityId,
+    };
 
-    if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;
     if (options.sourceEntityId) where.sourceEntityId = options.sourceEntityId;
     if (options.status) where.status = options.status;
@@ -311,9 +330,11 @@ export class ScheduleTaskPrismaRepository
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
     await this.db.scheduleTask.deleteMany({
       where: {
+        identityId,
         id: {
           in: ids,
         },

@@ -58,7 +58,7 @@ describe('TaskInstancePrismaRepository integration', () => {
 
     await instanceRepository.save(instance);
 
-    const saved = await instanceRepository.findById(instance.id);
+    const saved = await instanceRepository.findByIdForIdentity(identityId, instance.id);
 
     expect(saved).not.toBeNull();
     expect(saved?.id).toBe(instance.id);
@@ -159,7 +159,7 @@ describe('TaskInstancePrismaRepository integration', () => {
     await instanceRepository.save(instance1);
     await instanceRepository.save(instance2);
 
-    const instances = await instanceRepository.findByTemplateId(template.id);
+    const instances = await instanceRepository.findByTemplateId(template.id, String(template.identityId));
 
     expect(instances).toHaveLength(2);
     expect(instances.map((i) => i.id)).toContain(instance1.id);
@@ -201,7 +201,7 @@ describe('TaskInstancePrismaRepository integration', () => {
     instance.start();
     await instanceRepository.save(instance);
 
-    const saved = await instanceRepository.findById(instance.id);
+    const saved = await instanceRepository.findByIdForIdentity(identityId, instance.id);
 
     expect(saved?.status).toBe('InProgress');
   });
@@ -241,7 +241,7 @@ describe('TaskInstancePrismaRepository integration', () => {
     instance.complete();
     await instanceRepository.save(instance);
 
-    const saved = await instanceRepository.findById(instance.id);
+    const saved = await instanceRepository.findByIdForIdentity(identityId, instance.id);
 
     expect(saved?.status).toBe('Completed');
     expect(saved?.actualEndTime).not.toBeNull();
@@ -280,7 +280,7 @@ describe('TaskInstancePrismaRepository integration', () => {
 
     await instanceRepository.delete(instance.id);
 
-    const saved = await instanceRepository.findById(instance.id);
+    const saved = await instanceRepository.findByIdForIdentity(identityId, instance.id);
 
     expect(saved).toBeNull();
   });
@@ -316,7 +316,7 @@ describe('TaskInstancePrismaRepository integration', () => {
     });
 
     await instanceRepository.save(original);
-    const loaded = await instanceRepository.findById(original.id);
+    const loaded = await instanceRepository.findByIdForIdentity(String(original.identityId), original.id);
 
     expect(loaded).toBeDefined();
     expect(loaded?.id).toBe(original.id);

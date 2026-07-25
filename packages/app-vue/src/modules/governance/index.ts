@@ -5,7 +5,16 @@
  */
 
 // Types
-export type * from './types';
+export type {
+  RuleClientDTO,
+  RuleRevisionClientDTO,
+  RuleStatus,
+  RuleSeverity,
+  CreateRuleReq,
+  UpdateRuleReq,
+  ListRulesQuery,
+  SearchRulesQuery,
+} from '@dailyuse/contracts/governance';
 
 // Store
 export { useGovernanceStore } from './stores/governance-store';

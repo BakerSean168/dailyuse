@@ -39,11 +39,10 @@ export class CreateReminderTemplateUseCase {
     input: CreateReminderTemplateReq,
     cx: ExecutionContext,
   ): Promise<Result<ReminderTemplateClientDTO>> {
+    // Residual 835: request activeTime is already ActiveTimeConfigDTO (activatedAt).
     const normalizedInput = {
       ...input,
-      activeTime: {
-        activatedAt: input.activeTime.startDate,
-      },
+      activeTime: input.activeTime,
       activeHours: input.activeHours
         ? {
             enabled: true,

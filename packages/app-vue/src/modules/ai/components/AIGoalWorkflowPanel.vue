@@ -873,7 +873,7 @@
           {{ t('aiAssistant.chatPage.workflow.noteCreatedTitle') }}
         </p>
         <h2 class="mt-2 text-lg font-semibold text-foreground">
-          {{ noteSummary.resource?.name || t('aiAssistant.dialogs.note.newNoteCreated') }}
+          {{ noteSummary.note?.name || t('aiAssistant.dialogs.note.newNoteCreated') }}
         </h2>
       </div>
 
@@ -917,8 +917,17 @@
 </template>
 
 <script setup lang="ts">
+import type {
+  AgentAction,
+  AgentArtifact,
+  AgentExecutedAction,
+  AgentRunResult,
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
+} from '@dailyuse/contracts/ai';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { formatLangGraphVendorDiagnosticEventLabel } from '../composables/hostLangGraphUiBoundary';
 import {
   Button,
   Input,
@@ -936,29 +945,20 @@ import type {
   EditableGoalReminder,
   EditableGoalTaskTemplate,
   GoalAutomationResult,
-  GoalAgentAction,
-  GoalAgentArtifact,
-  GoalAgentExecutedAction,
-  GoalAgentRunResult,
-  GoalClarification,
-  GoalDraft,
   GoalExecutedAction,
   KnowledgeAnswer,
-  KnowledgeQaAgentRunResult,
-  KnowledgeNoteAgentArtifact,
-  KnowledgeNoteAgentRunResult,
   NoteSummary,
   WorkflowMode,
-} from '../composables/types';
+} from '../composables';
 
 const props = defineProps<{
   toolMode: WorkflowMode;
-  goalClarification: GoalClarification | null;
-  goalDraft: GoalDraft | null;
+  goalClarification: GoalClarificationDTO | null;
+  goalDraft: GoalWorkflowDraftResultDTO | null;
   goalAutomationResult: GoalAutomationResult | null;
-  goalAgentRun: GoalAgentRunResult | null;
-  goalAgentPendingActions: GoalAgentAction[];
-  goalAgentExecutedActions: GoalAgentExecutedAction[];
+  goalAgentRun: AgentRunResult | null;
+  goalAgentPendingActions: AgentAction[];
+  goalAgentExecutedActions: AgentExecutedAction[];
   clarificationAnswers: string[];
   editableGoal: EditableGoal;
   editableKeyResults: EditableKeyResult[];
@@ -970,12 +970,12 @@ const props = defineProps<{
   goalExecutionSummary: { status: 'success' | 'partial' | 'failed'; executedCount: number; skippedCount: number; failedCount: number } | null;
   goalExecutionRecovery: { canRetry: boolean; suggestions: string[] } | null;
   knowledgeAnswer: KnowledgeAnswer | null;
-  knowledgeQaAgentRun: KnowledgeQaAgentRunResult | null;
-  noteAgentRun: KnowledgeNoteAgentRunResult | null;
+  knowledgeQaAgentRun: AgentRunResult | null;
+  noteAgentRun: AgentRunResult | null;
   noteSummary: NoteSummary | null;
   notePreview: string;
   formatAutomationTool: (tool: GoalAutomationResult['actions'][number]['tool']) => string;
-  formatAgentTool: (tool: GoalAgentAction['tool'] | string) => string;
+  formatAgentTool: (tool: AgentAction['tool'] | string) => string;
   formatActionStatus: (status: GoalExecutedAction['status']) => string;
   formatExecutionOutcome: (status: 'success' | 'partial' | 'failed') => string;
 }>();
@@ -1002,7 +1002,7 @@ const { t } = useI18n();
 
 const MAX_AGENT_EVENTS = 6;
 
-type AgentRuntimeRun = GoalAgentRunResult | KnowledgeQaAgentRunResult | KnowledgeNoteAgentRunResult;
+type AgentRuntimeRun = AgentRunResult;
 type AgentRuntimeEvent = AgentRuntimeRun['events'][number];
 type KnowledgeRelatedNote = NonNullable<KnowledgeAnswer['relatedNotes']>[number];
 type AgentObservabilityItem = {
@@ -1054,7 +1054,7 @@ function updateReminder(index: number, patch: Partial<EditableGoalReminder>) {
   });
 }
 
-function formatArtifactSummary(artifact: GoalAgentArtifact | KnowledgeNoteAgentArtifact): string {
+function formatArtifactSummary(artifact: AgentArtifact | AgentArtifact): string {
   const data = artifact.data;
   if ('markdown' in data && typeof data.markdown === 'string') return data.markdown;
   if ('summary' in data && typeof data.summary === 'string') return data.summary;
@@ -1064,7 +1064,7 @@ function formatArtifactSummary(artifact: GoalAgentArtifact | KnowledgeNoteAgentA
   return artifact.kind;
 }
 
-function getGoalAgentActionPlanWarnings(run: GoalAgentRunResult | null): string[] {
+function getGoalAgentActionPlanWarnings(run: AgentRunResult | null): string[] {
   const data = run?.state.artifacts.find((artifact) => artifact.kind === 'action_plan')?.data;
   const warnings = data?.warnings;
   if (!Array.isArray(warnings)) return [];
@@ -1083,13 +1083,25 @@ function getAgentEventDataString(event: AgentRuntimeEvent, key: string): string 
 }
 
 function formatAgentEvent(event: AgentRuntimeEvent): string {
+  // Residual 415: diagnostic presentation only — never show raw LangGraph node.* types.
   const detail = [
     getAgentEventDataString(event, 'node'),
     getAgentEventDataString(event, 'tool'),
     getAgentEventDataString(event, 'kind'),
     getAgentEventDataString(event, 'status'),
   ].find(Boolean);
-  return detail ? `${event.type} · ${detail}` : event.type;
+  return formatLangGraphVendorDiagnosticEventLabel({
+    type: event.type,
+    detail,
+    labels: {
+      workflow_step_started: t('aiAssistant.dialogs.agent.diagnosticWorkflowStepStarted'),
+      workflow_step_completed: t('aiAssistant.dialogs.agent.diagnosticWorkflowStepCompleted'),
+      tool_completed: t('aiAssistant.dialogs.agent.diagnosticToolCompleted'),
+      checkpoint: t('aiAssistant.dialogs.agent.diagnosticCheckpoint'),
+      vendor_diagnostic: t('aiAssistant.dialogs.agent.diagnosticVendor'),
+      unknown: t('aiAssistant.dialogs.agent.diagnosticRuntimeEvent'),
+    },
+  });
 }
 
 function formatAgentActionNumber(index: number): string {
@@ -1097,8 +1109,8 @@ function formatAgentActionNumber(index: number): string {
 }
 
 function formatAgentActionDependencies(
-  action: GoalAgentAction,
-  actions: GoalAgentAction[],
+  action: AgentAction,
+  actions: AgentAction[],
 ): string {
   const dependencyLabels = action.dependsOn
     .map((dependencyIndex) => {
@@ -1128,6 +1140,10 @@ function getAgentEventDataNumber(event: AgentRuntimeEvent, key: string): number 
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Soft residual 1243: AI formatDurationMs — ms/sec i18n with toFixed(1); not schedule.presentation keys.
+ * Similar ms/sec shape to Residual 1243 schedule export but AI agent i18n + 1 decimal (no force-merge).
+ */
 function formatDurationMs(ms: number): string {
   if (ms < 1000) {
     return t('aiAssistant.dialogs.agent.durationMs', { ms });
@@ -1173,7 +1189,7 @@ function getAgentObservabilityItems(run: AgentRuntimeRun | null): AgentObservabi
       label:
         event.type === 'tool.completed'
           ? t('aiAssistant.dialogs.agent.toolTiming')
-          : t('aiAssistant.dialogs.agent.nodeTiming'),
+          : t('aiAssistant.dialogs.agent.diagnosticWorkflowStepTiming'),
       value: formatDurationMs(durationMs),
       detail: formatAgentEvent(event),
     });
@@ -1182,7 +1198,7 @@ function getAgentObservabilityItems(run: AgentRuntimeRun | null): AgentObservabi
   return items.slice(-6);
 }
 
-function getAgentExecutionSummary(actions: GoalAgentExecutedAction[]) {
+function getAgentExecutionSummary(actions: AgentExecutedAction[]) {
   const executedCount = actions.filter((action) => action.status === 'executed').length;
   const skippedCount = actions.filter((action) => action.status === 'skipped').length;
   const failedCount = actions.filter((action) => action.status === 'failed').length;
@@ -1201,7 +1217,7 @@ function getAgentExecutionSummary(actions: GoalAgentExecutedAction[]) {
   } as const;
 }
 
-function formatAgentExecutionSummary(actions: GoalAgentExecutedAction[]): string {
+function formatAgentExecutionSummary(actions: AgentExecutedAction[]): string {
   const summary = getAgentExecutionSummary(actions);
   return t('aiAssistant.dialogs.automation.executionSummaryText', {
     status: props.formatExecutionOutcome(summary.status),
@@ -1211,7 +1227,7 @@ function formatAgentExecutionSummary(actions: GoalAgentExecutedAction[]): string
   });
 }
 
-function getAgentRecoverySuggestions(actions: GoalAgentExecutedAction[]): string[] {
+function getAgentRecoverySuggestions(actions: AgentExecutedAction[]): string[] {
   return actions
     .filter((action) => action.status === 'failed' || action.status === 'skipped')
     .map((action) => `${props.formatAgentTool(action.tool)}: ${action.message}`);
@@ -1235,16 +1251,16 @@ function getKnowledgeRelatedNotes(answer: KnowledgeAnswer | null): KnowledgeRela
   return [...notesByResourceId.values()];
 }
 
-function getArtifactDataString(artifact: KnowledgeNoteAgentArtifact, key: string): string {
+function getArtifactDataString(artifact: AgentArtifact, key: string): string {
   const value = artifact.data[key];
   return typeof value === 'string' && value.trim() ? value.trim() : '';
 }
 
-function hasArtifactDataKey(artifact: KnowledgeNoteAgentArtifact, key: string): boolean {
+function hasArtifactDataKey(artifact: AgentArtifact, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(artifact.data, key);
 }
 
-function getArtifactTags(artifact: KnowledgeNoteAgentArtifact): string {
+function getArtifactTags(artifact: AgentArtifact): string {
   const value = artifact.data.tags;
   if (!Array.isArray(value)) return '';
   const tags = value
@@ -1253,7 +1269,7 @@ function getArtifactTags(artifact: KnowledgeNoteAgentArtifact): string {
   return tags.length ? tags.join(', ') : t('common.none');
 }
 
-function getNoteArtifactMetadata(artifact: KnowledgeNoteAgentArtifact) {
+function getNoteArtifactMetadata(artifact: AgentArtifact) {
   return [
     {
       label: t('aiAssistant.dialogs.note.savePath'),

@@ -1,11 +1,12 @@
 export { useAI } from './useAI';
+export { useAssistantDispatch } from './useAssistantDispatch';
 export { useAIChatSession } from './useAIChatSession';
 export { useAIChatView } from './useAIChatView';
-export { useAIDraftPersistence } from './useAIDraftPersistence';
 export { useAIFormatters } from './useAIFormatters';
 export { useAIGoalWorkflow } from './useAIGoalWorkflow';
 export { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
 export { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
+export { useAITaskWorkflow } from './useAITaskWorkflow';
 export { useAIModelSelection } from './useAIModelSelection';
 export { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 export type {
@@ -14,18 +15,13 @@ export type {
   ChatModelOption,
   ConversationSummary,
   EditableGoal,
+  EditableGoalReminder,
+  EditableGoalTaskTemplate,
   EditableKeyResult,
   GoalAutomationResult,
-  GoalAgentAction,
-  GoalAgentArtifact,
-  GoalAgentExecutedAction,
-  GoalAgentRunResult,
-  GoalClarification,
-  GoalDraft,
   GoalExecutedAction,
   GoalWorkflowStage,
   KnowledgeAnswer,
-  KnowledgeQaAgentRunResult,
   MessageStatus,
   NoteSummary,
   PersistedWorkflowEntry,

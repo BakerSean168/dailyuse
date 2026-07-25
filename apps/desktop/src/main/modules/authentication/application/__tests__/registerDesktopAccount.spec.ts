@@ -188,7 +188,7 @@ describe('registerDesktopAccount', () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => authPayload,
+      json: async () => ({ data: authPayload }),
     });
     const onSuccess = vi.fn();
 

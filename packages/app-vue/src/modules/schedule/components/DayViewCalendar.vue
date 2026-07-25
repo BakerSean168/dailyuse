@@ -15,7 +15,7 @@
               v-for="event in allDayEvents"
               :key="event.id"
               class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white"
-              :class="eventBgClass(event)"
+              :class="calendarEventBgClass(event)"
               @click="emit('event-click', event)"
             >
               <span class="truncate">{{ event.title }}</span>
@@ -53,7 +53,7 @@
             :key="event.id"
             class="absolute left-1 right-1 rounded-md px-2 py-1 cursor-pointer transition-all hover:shadow-md z-20 text-white text-xs"
             :style="getEventStyle(event)"
-            :class="eventBgClass(event)"
+            :class="calendarEventBgClass(event)"
             @click="emit('event-click', event)"
           >
             <div class="font-medium truncate">{{ event.title }}</div>
@@ -70,7 +70,9 @@
 import { computed } from 'vue';
 import { Loader2, AlertCircle } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import type { CalendarEventItem } from '../composables/useCalendarView';
+import { calendarEventBgClass, toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
+import { formatHour } from '../../../shared/utils/format-hour';
+import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 
 interface Props {
   schedules: CalendarEventItem[];
@@ -91,16 +93,16 @@ const currentDate = computed(() => props.date ?? new Date());
 const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
 
 const dayEvents = computed(() => {
-  const dateStr = toDateStr(currentDate.value);
+  const dateStr = toLocalDateKey(currentDate.value);
   return props.schedules.filter(
-    (event) => event.displayMode === 'timed' && toDateStr(event.startTime) === dateStr,
+    (event) => event.displayMode === 'timed' && toLocalDateKey(event.startTime) === dateStr,
   );
 });
 
 const allDayEvents = computed(() => {
-  const dateStr = toDateStr(currentDate.value);
+  const dateStr = toLocalDateKey(currentDate.value);
   return props.schedules.filter(
-    (event) => event.displayMode === 'all-day' && toDateStr(event.startTime) === dateStr,
+    (event) => event.displayMode === 'all-day' && toLocalDateKey(event.startTime) === dateStr,
   );
 });
 
@@ -109,43 +111,30 @@ const currentMinuteOffset = computed(() => {
   return (now.getMinutes() / 60) * 100;
 });
 
-function toDateStr(d: Date | number): string {
-  const value = typeof d === 'number' ? new Date(d) : d;
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, '0');
-  const day = String(value.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 function isCurrentHour(hour: number): boolean {
   const now = new Date();
-  const today = toDateStr(now);
-  return toDateStr(currentDate.value) === today && now.getHours() === hour;
+  const today = toLocalDateKey(now);
+  return toLocalDateKey(currentDate.value) === today && now.getHours() === hour;
 }
 
-function formatHour(hour: number): string {
-  return `${hour.toString().padStart(2, '0')}:00`;
-}
-
+// Residual 1276: formatHour dual retired onto shared sole.
+// Residual 1282: toDateStr dual retired onto toLocalDateKey sole.
+// Residual 1288: eventBgClass dual retired onto calendarEventBgClass sole.
+/**
+ * Residual 1279 keep-boundary: Day formatEventTime — space-hyphen-space " - " between HH:mm.
+ * Residual 1300: inner HH:mm dual retired onto formatLocalHHmm sole (separator keep-boundary remains).
+ * all-day → i18n; not Intl.
+ * Soft residual 1279: Week compact "-" + formatCalendarEventTimeRange en-dash sole (no force-merge).
+ */
 function formatEventTime(event: CalendarEventItem): string {
   if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
-  const fmt = (ts: number) => {
-    const d = new Date(ts);
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-  };
-  return `${fmt(event.startTime)} - ${fmt(event.endTime)}`;
+  return `${formatLocalHHmm(event.startTime)} - ${formatLocalHHmm(event.endTime)}`;
 }
 
-function eventBgClass(event: CalendarEventItem): string {
-  if (event.hasConflict) return 'bg-warning';
-  const map: Record<CalendarEventItem['source'], string> = {
-    schedule: 'bg-primary',
-    goal: 'bg-success',
-    task: 'bg-info',
-  };
-  return map[event.source];
-}
-
+/**
+ * Residual 1306 keep-boundary: Day getEventStyle — absolute px layout (64px/hour rail).
+ * Soft residual 1288 / 1303: Week uses % of day column height (no force-merge).
+ */
 function getEventStyle(event: CalendarEventItem) {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);

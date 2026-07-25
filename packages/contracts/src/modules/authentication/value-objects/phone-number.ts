@@ -1,19 +1,13 @@
 /**
  * PhoneNumber Value Object
+ *
+ * Residual 855: PhoneNumberDTO dual retired — sole PhoneNumber interface + type alias.
  */
 
-// ============ 值对象接口 ============
-
+// Residual 855: sole PhoneNumber body.
 export interface PhoneNumber {
-    readonly value: string;
+  readonly value: string;
 }
 
-// ============ DTO 定义 ============
-
-/**
- * PhoneNumber DTO
- */
-export interface PhoneNumberDTO {
-    value: string;
-}
-
+// Residual 855: PhoneNumberDTO dual retired — DTO is the PhoneNumber shape.
+export type PhoneNumberDTO = PhoneNumber;

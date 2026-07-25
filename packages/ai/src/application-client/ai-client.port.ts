@@ -32,30 +32,42 @@ import type {
   AgentResumePayload,
   AgentRunResult,
   AgentStartRunClientRequest,
+  AssistantClientCommand,
+  AssistantEvent,
 } from '@dailyuse/contracts/ai';
+import type { Result } from '@dailyuse/contracts/result';
 
 export interface AIClientPort {
-  getCapabilities(): Promise<AICapabilities>;
-  getEvaluationOverview(request?: GetAIEvaluationOverviewReq): Promise<GetAIEvaluationOverviewRes>;
+  getCapabilities(): Promise<Result<AICapabilities>>;
+  getEvaluationOverview(request?: GetAIEvaluationOverviewReq): Promise<Result<GetAIEvaluationOverviewRes>>;
 
-  createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
-  updateProvider(id: string, request: UpdateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
-  listProviders(): Promise<AIProviderConfigClientDTO[]>;
-  getProvider(id: string): Promise<AIProviderConfigClientDTO>;
-  deleteProvider(id: string): Promise<void>;
-  testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes>;
-  setDefaultProvider(providerId: string): Promise<void>;
-  refreshProviderModels(id: string): Promise<AIProviderConfigClientDTO>;
+  createProvider(request: CreateAIProviderConfigReq): Promise<Result<AIProviderConfigClientDTO>>;
+  updateProvider(
+    id: string,
+    request: UpdateAIProviderConfigReq,
+  ): Promise<Result<AIProviderConfigClientDTO>>;
+  listProviders(): Promise<Result<AIProviderConfigClientDTO[]>>;
+  getProvider(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  deleteProvider(id: string): Promise<Result<void>>;
+  testProvider(request: TestAIProviderReq): Promise<Result<TestAIProviderRes>>;
+  setDefaultProvider(providerId: string): Promise<Result<void>>;
+  refreshProviderModels(id: string): Promise<Result<AIProviderConfigClientDTO>>;
 
-  generateGoal(request: GenerateGoalsReq): Promise<GenerateGoalsRes>;
+  generateGoal(request: GenerateGoalsReq): Promise<Result<GenerateGoalsRes>>;
 
-  createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO>;
-  updateConversation(id: string, request: UpdateConversationReq): Promise<AIConversationClientDTO>;
-  listConversations(params?: { page?: number; pageSize?: number }): Promise<ConversationListRes>;
-  getConversation(id: string): Promise<AIConversationClientDTO>;
-  deleteConversation(id: string): Promise<void>;
+  createConversation(request: CreateConversationReq): Promise<Result<AIConversationClientDTO>>;
+  updateConversation(
+    id: string,
+    request: UpdateConversationReq,
+  ): Promise<Result<AIConversationClientDTO>>;
+  listConversations(params?: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<Result<ConversationListRes>>;
+  getConversation(id: string): Promise<Result<AIConversationClientDTO>>;
+  deleteConversation(id: string): Promise<Result<void>>;
 
-  sendMessage(request: SendMessageReq): Promise<SendMessageRes>;
+  sendMessage(request: SendMessageReq): Promise<Result<SendMessageRes>>;
   streamMessage(
     request: SendMessageReq,
     handlers: {
@@ -70,18 +82,28 @@ export interface AIClientPort {
     },
     signal?: AbortSignal,
   ): Promise<void>;
-  listMessages(conversationId: string, params?: { page?: number; pageSize?: number }): Promise<MessageListRes>;
+  listMessages(conversationId: string, params?: { page?: number; pageSize?: number }): Promise<Result<MessageListRes>>;
 
-  queryKnowledge(request: QueryKnowledgeReq): Promise<QueryKnowledgeRes>;
-  expandKnowledge(request: ExpandKnowledgeReq): Promise<ExpandKnowledgeRes>;
-  reindexKnowledge(request: ReindexKnowledgeReq): Promise<ReindexKnowledgeRes>;
-  createKnowledgeNote(request: CreateKnowledgeNoteReq): Promise<CreateKnowledgeNoteRes>;
+  queryKnowledge(request: QueryKnowledgeReq): Promise<Result<QueryKnowledgeRes>>;
+  expandKnowledge(request: ExpandKnowledgeReq): Promise<Result<ExpandKnowledgeRes>>;
+  reindexKnowledge(request: ReindexKnowledgeReq): Promise<Result<ReindexKnowledgeRes>>;
+  createKnowledgeNote(request: CreateKnowledgeNoteReq): Promise<Result<CreateKnowledgeNoteRes>>;
 
-  queryAnalytics(request: QueryAnalyticsReq): Promise<QueryAnalyticsRes>;
+  queryAnalytics(request: QueryAnalyticsReq): Promise<Result<QueryAnalyticsRes>>;
 
-  listAgentRuns(params?: AgentRunListParams): Promise<AgentRun[]>;
-  startAgentRun(request: AgentStartRunClientRequest): Promise<AgentRunResult>;
-  resumeAgentRun(runId: string, payload: AgentResumePayload): Promise<AgentRunResult>;
-  getAgentRun(runId: string): Promise<AgentRunResult>;
-  getAgentEvents(runId: string): Promise<AgentEvent[]>;
+  listAgentRuns(params?: AgentRunListParams): Promise<Result<AgentRun[]>>;
+  startAgentRun(request: AgentStartRunClientRequest): Promise<Result<AgentRunResult>>;
+  resumeAgentRun(runId: string, payload: AgentResumePayload): Promise<Result<AgentRunResult>>;
+  getAgentRun(runId: string): Promise<Result<AgentRunResult>>;
+  getAgentEvents(runId: string): Promise<Result<AgentEvent[]>>;
+
+  /** Residual 347: AssistantFacade client dispatch (no identityId in body). */
+  dispatchAssistant(
+    command: AssistantClientCommand,
+    handlers: {
+      onEvent?: (event: AssistantEvent) => void;
+      onDone?: (result: { eventCount: number }) => void;
+    },
+    signal?: AbortSignal,
+  ): Promise<void>;
 }

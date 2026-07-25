@@ -24,9 +24,7 @@ import type {
 import type { ControlMode } from '@dailyuse/contracts/reminder';
 import type { IReminderApiClient } from './ports/reminder-api-client.port';
 
-import type { ReminderClientPort } from './reminder-client.port';
-
-export class ReminderClientService implements ReminderClientPort {
+export class ReminderClientService implements IReminderApiClient {
   constructor(private readonly reminderApi: IReminderApiClient) {
     this.createReminderTemplate = this.createReminderTemplate.bind(this);
     this.getReminderTemplate = this.getReminderTemplate.bind(this);

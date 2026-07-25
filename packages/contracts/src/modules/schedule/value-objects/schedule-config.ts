@@ -2,7 +2,9 @@
  * Schedule Config Value Object
  */
 
+import { z } from 'zod';
 import type { Timezone } from './timezone';
+import { Timezone as TimezoneEnum } from './timezone';
 
 // ============ Interface Definitions ============
 
@@ -40,15 +42,16 @@ export interface IScheduleConfig {
   // DTO conversion methods
 }
 
-// ============ DTO Definitions ============
+// Residual 749: ScheduleConfigDTO dual body retired — OpenAPI response transport uses
+// ScheduleConfigSchema (semantic type is a z.infer alias). Request schemas stay local
+// (different field types / validation). Domain IScheduleConfig keeps number dates.
 
-/**
- * Schedule Config DTO
- */
-export interface ScheduleConfigDTO {
-  cronExpression: string | null;
-  timezone: Timezone;
-  startDate: string | null; // ISO string
-  endDate: string | null;
-  maxExecutions: number | null;
-}
+export const ScheduleConfigSchema = z.object({
+  cronExpression: z.string().nullable(),
+  timezone: z.enum(TimezoneEnum),
+  startDate: z.string().nullable(),
+  endDate: z.string().nullable(),
+  maxExecutions: z.number().nullable(),
+});
+
+export type ScheduleConfigDTO = z.infer<typeof ScheduleConfigSchema>;

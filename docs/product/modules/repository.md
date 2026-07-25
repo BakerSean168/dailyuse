@@ -5,7 +5,7 @@ tags:
   - repository
 description: 资源库模块当前实现、本地 Vault、可选 GitHub 同步与跨端边界
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-21T00:00:00
 ---
 
 # 资源库模块说明
@@ -16,16 +16,24 @@ updated: 2026-07-17T00:00:00
 
 [ADR-034](../../architecture/adr/ADR-034-obsidian-vault-repository.md) 已采纳：本地 Vault 优先；GitHub 登录与仓库授权解耦；用户需要同步时再连接 GitHub；绑定后 Web 可以安全地快捷创建新笔记。
 
-## 2. 当前实现（尚未完成 ADR-034）
+## 2. 当前实现
 
-- 每个用户自动创建一个数据库 Repository 工作区。
-- 支持文件夹、资源、标签、书签、搜索、上传和批量导入。
-- Desktop 内容仍位于 profile 的 `storage/repository-storage`。
-- Web 仍挂载完整 Repository/Editor HTTP service，提供数据库笔记的新建、编辑和保存。
-- OAuth binding 数据结构和 GitHub 登录服务端 callback 骨架已存在；OAuth UI/state/PKCE、GitHub App 安装和仓库连接尚未落地。
-- `SyncRepositoryUseCase` 仍是占位，没有 Git runtime 或 webhook ingestion。
-
-以上是迁移前代码事实，不代表最终产品边界。
+- Desktop 已支持 profile-owned 本地 Vault 选择、扫描、搜索、安全预览、Obsidian 打开和确认后写入；未连接 GitHub
+  时不上传 Vault 内容。
+- GitHub 登录与 GitHub App 仓库授权使用独立 contract、token 和 UI；只允许连接明确选择的 private、active、admin
+  repository。
+- Desktop 已实现首次对账、真实 Git commit/fetch/pull-rebase/push、冲突暂停、离线 pending commit 和 profile-scoped
+  自动同步。
+- 服务端已实现 GitHub webhook、default branch reconciliation、Markdown/附件投影、链接关系、受认证附件读取、短期附件
+  cache、Web 幂等新建笔记和 RAG 自动索引。
+- Web 设置页可下载独立、不可导入的服务端持有数据披露，覆盖 retained connection metadata、投影、附件缓存字节、
+  Webhook/write history 与 RAG index，不包含 Memoflow 管理的可重放 GitHub 授权。
+- Web 已收缩为投影浏览、搜索、安全 Markdown 预览、关系查看和确认后创建新 Markdown 文件，不开放已有笔记全文编辑。
+- 旧数据库 Repository/Folder/Resource CRUD、Editor content API、Desktop legacy IPC、Vue `/note/:id` 与 Mobile
+  Repository/note-editor 路由均已从 host 运行时移除；旧数据只保留在可重新导入备份边界内。
+- 断开仓库默认保留可重建云端数据；用户可显式选择永久清理 Memoflow 投影/cache/ledger/RAG，且两种模式都不删除
+  本地 Vault 或 GitHub repository。
+- 真实 Git 服务边界验收已覆盖；真实 GitHub fixture E2E 仍需在具备受控 GitHub App 凭据的环境执行。
 
 ## 3. 已采纳目标态
 
@@ -92,18 +100,28 @@ Web create
 - 移除 AI 固定默认目录设置；无指令时由用户确认提议路径。
 - 仓库改为 public 时告警并暂停新的 RAG ingestion。
 
-## 7. 当前差距
+## 7. 断开与导出
 
-- 缺少本地 Vault 绑定、扫描和外部打开。
-- 缺少 GitHub 登录的授权发起、state/PKCE 校验、完整 OAuth UI 和 Desktop deep link；当前只有服务端 callback 骨架。
-- 缺少独立 GitHub App installation/仓库授权。
-- 缺少 private repo 创建、首次对账和 Git runtime。
-- 缺少 webhook ingestion、read model 和仓库生命周期处理。
-- Web 创建仍写数据库，不会创建 Git commit。
-- AI 仍可能走固定路径或数据库 Resource 写入，尚未接入统一写入提案和用户确认契约。
-- Markdown 预览缺少真实仓库内容所需的 sanitizer。
+- 默认断开是可恢复撤销：停止同步并隐藏连接，但保留服务端可重建投影和索引。
+- 勾选“删除 Memoflow 云端投影与 AI 索引”后，服务端按当前 identity 在单事务中永久清理连接及所有派生数据。
+- 本地 Vault、本地 Git 历史和 GitHub repository 在两种模式下都保留。
+- 设置页“导出可重新导入的数据”生成 `memoflow.user-data-export` JSON，只用于业务数据 append-create-like
+  导入；它不是 Vault/GitHub 导出，也不是服务端持有数据披露。
+- GitHub authorization、installation token 和派生投影不得进入可导入文件。权威 Markdown/附件应从 Vault 或 GitHub
+  repository 导出/clone。
+- Web 的“服务端持有数据披露”生成 `memoflow.server-held-data-disclosure` JSON；它按认证 identity 包含 repository
+  connection metadata（含不可重放 installation identifier）、Markdown/附件投影、附件 cache bytes、Webhook delivery、
+  Web write ledger 与 AI knowledge index。该 artifact 没有 import route，并明确排除本地 Vault/Git history、GitHub
+  repository history、worker lease、数据库内部 retrieval vector 及所有 Memoflow 管理的可重放授权材料。Markdown、
+  frontmatter 和 cache bytes 属于用户仓库内容，按原样进入披露文件。
 
-## 8. 风险点
+## 8. 当前差距
+
+- 真实 GitHub App fixture E2E 仍依赖外部凭据与受控 private repository。
+- Mobile 尚未接入服务端 GitHub 投影的只读浏览、搜索与预览。
+- 统一 Agent Host 的完整 proposal/capability/tool-policy 协议由 ADR-035 和对应 active plan 继续收口。
+
+## 9. 风险点
 
 - GitHub private repository 不是对 GitHub/Daily Use 服务端不可见的 E2E 加密。
 - Git 冲突、仓库体积、大附件和 Git LFS 会增加 Desktop 复杂度。
@@ -112,7 +130,7 @@ Web create
 - Agent 读取的知识内容不可信，必须防止路径穿越、命令执行和提示注入越权。
 - Web 创建和 Desktop push 并发时必须通过远端 HEAD 和串行提交控制。
 
-## 9. 相关资料
+## 10. 相关资料
 
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
 - [ADR-035: 统一助手与可插拔 Agent Host](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)

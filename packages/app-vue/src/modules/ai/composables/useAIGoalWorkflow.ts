@@ -1,13 +1,33 @@
+/**
+ * Residual 557: goal.create confirm requires sole create_goal draftAction after
+ * Residual 575: primary-task Host path confirm requires sole create_task_template
+ * single-product-draft gate (knowledge residual 555 / task residual 547 symmetry;
+ * no multi product invent). Foreign companions (key_result/task_template/reminder)
+ * may remain for executor context; multi create_goal is fail-closed.
+ * Residual 559: goal.create confirm/cancel only from waiting_approval
+ * (task residual 489/477 + knowledge cancel symmetry).
+ * Residual 583: goal session primary-task confirm forwards Host-revised goalId
+ * into applyHostTaskPatch (title/description residual 365 symmetry; no drop).
+ * Residual 587: goal session Host lifecycle kind is task.create for primary-task-shaped
+ * (residual 585 exclusive workbench rows/focus) — not always goal.create.
+ * Residual 607: process-local edit revise after Host proposal revise (task residual 439
+ * + knowledge residual 605 symmetry). Patches sole create_goal or primary-task
+ * create_task_template so getRun/selectAgentRun reopen revised title/body/goalId.
+ */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import type {
+  AgentAction,
   AgentActionPlan,
   AgentArtifact,
   AgentResumePayload,
+  AgentRunResult,
   AgentStartRunClientRequest,
   GeneratedGoalDraft,
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
   KeyResultPreview,
 } from '@dailyuse/contracts/ai';
 import {
@@ -19,10 +39,6 @@ import {
   type EditableGoalReminder,
   type EditableGoalTaskTemplate,
   type GoalAutomationResult,
-  type GoalAgentAction,
-  type GoalAgentRunResult,
-  type GoalClarification,
-  type GoalDraft,
   type GoalWorkflowStage,
   type UseAIGoalWorkflowOptions,
 } from './types';
@@ -34,6 +50,21 @@ import {
   handleExecuteAutomation,
   type AutomationContext,
 } from './goalAutomationHelpers';
+import { unwrap } from '@dailyuse/contracts/result';
+import {
+  applyHostGoalPatchToAgentActions,
+  applyHostTaskPatchToAgentActions,
+  dispatchHostProposalDecision,
+  isPrimaryTaskHostAgentRun,
+} from './hostProposalLifecycle';
+// Residual 951: isRecord dual retired — sole AI composable plain-object helper.
+import { isRecord } from './isRecord';
+// Residual 953: createAgentId dual retired — sole AI composable helper.
+import { createAgentId } from './createAgentId';
+// Residual 955: getRecordString dual retired — sole AI composable helper (was local getString).
+import { getRecordString } from './getRecordString';
+// Residual 1007: sole normalizeReminderTimeOfDay (local dual retired).
+import { normalizeReminderTimeOfDay } from '@dailyuse/utils/shared';
 import {
   applyGoalDraft as applyGoalDraftHelper,
   applyGoalClarification as applyGoalClarificationHelper,
@@ -56,23 +87,21 @@ const GOAL_CATEGORIES = [
 ] as const;
 const IMPORTANCE_LEVELS = ['Vital', 'Important', 'Moderate', 'Minor', 'Trivial'] as const;
 const GOAL_CADENCES = ['daily', 'weekly', 'once'] as const;
-const DEFAULT_REMINDER_TIME_OF_DAY = '09:00';
-const REMINDER_TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   const { t, locale } = useI18n();
   const router = useRouter();
   const goalDraftLoading = ref(false);
   const goalWorkflowStage = ref<GoalWorkflowStage>('collect');
-  const goalDraft = ref<GoalDraft | null>(null);
-  const goalClarification = ref<GoalClarification | null>(null);
+  const goalDraft = ref<GoalWorkflowDraftResultDTO | null>(null);
+  const goalClarification = ref<GoalClarificationDTO | null>(null);
   const goalAutomationResult = ref<GoalAutomationResult | null>(null);
   const clarificationAnswers = ref<string[]>([]);
   const showGoalDraftEditor = ref(false);
   const creatingGoal = ref(false);
   const automationLoading = ref(false);
   const automationExecuting = ref(false);
-  const goalAgentRun = ref<GoalAgentRunResult | null>(null);
+  const goalAgentRun = ref<AgentRunResult | null>(null);
   const goalAgentLoading = ref(false);
   const goalAgentResuming = ref(false);
   const editableGoal = ref<EditableGoal>(createEmptyGoalDraft());
@@ -189,13 +218,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return recovery?.canRetry === true;
   });
 
-  function createAgentId(prefix: string): string {
-    const randomId = globalThis.crypto?.randomUUID?.() ??
-      `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    return `${prefix}-${randomId}`;
-  }
 
-  function syncGoalAgentStage(result: GoalAgentRunResult) {
+  function syncGoalAgentStage(result: AgentRunResult) {
     if (result.run.status === 'waiting_clarification') {
       goalWorkflowStage.value = 'clarification';
       return;
@@ -215,7 +239,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     goalWorkflowStage.value = 'plan';
   }
 
-  function getGoalAgentClarification(result: GoalAgentRunResult): GoalClarification | null {
+  function getGoalAgentClarification(result: AgentRunResult): GoalClarificationDTO | null {
     const interrupt = result.interrupts.find(
       (item) => isRecord(item) && item.type === 'clarification.required',
     );
@@ -227,8 +251,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     const questions = rawQuestions
       .filter(isRecord)
       .map((item) => ({
-        question: getString(item, 'question'),
-        context: getString(item, 'context') || null,
+        question: getRecordString(item, 'question'),
+        context: getRecordString(item, 'context') || null,
       }))
       .filter((item) => item.question);
 
@@ -237,11 +261,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return {
       needsClarification: true,
       questions,
-      rationale: getString(interrupt, 'rationale') || null,
+      rationale: getRecordString(interrupt, 'rationale') || null,
     };
   }
 
-  function syncGoalAgentRun(result: GoalAgentRunResult) {
+  function syncGoalAgentRun(result: AgentRunResult) {
     const previousRun = goalAgentRun.value;
     goalAgentRun.value = result;
     if (result.run.status === 'waiting_clarification') {
@@ -265,14 +289,6 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     syncGoalAgentStage(result);
   }
 
-  function isRecord(value: unknown): value is Record<string, unknown> {
-    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-  }
-
-  function getString(data: Record<string, unknown>, key: string): string {
-    const value = data[key];
-    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '';
-  }
 
   function getNumber(data: Record<string, unknown>, key: string, fallback: number): number {
     const value = data[key];
@@ -305,25 +321,21 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       : 'weekly';
   }
 
-  function normalizeReminderTimeOfDay(value: string): string {
-    return REMINDER_TIME_OF_DAY_PATTERN.test(value)
-      ? value
-      : DEFAULT_REMINDER_TIME_OF_DAY;
-  }
+  // Residual 1007: normalizeReminderTimeOfDay elevated to @dailyuse/utils/shared.
 
   function coerceKeyResults(value: unknown): KeyResultPreview[] | undefined {
     if (!Array.isArray(value)) return undefined;
     const keyResults = value
       .filter(isRecord)
       .map((item) => ({
-        title: getString(item, 'title'),
-        description: getString(item, 'description') || undefined,
-        valueType: getString(item, 'valueType') as KeyResultPreview['valueType'],
-        calculationMethod: getString(item, 'calculationMethod') as KeyResultPreview['calculationMethod'],
+        title: getRecordString(item, 'title'),
+        description: getRecordString(item, 'description') || undefined,
+        valueType: getRecordString(item, 'valueType') as KeyResultPreview['valueType'],
+        calculationMethod: getRecordString(item, 'calculationMethod') as KeyResultPreview['calculationMethod'],
         startValue: getNumber(item, 'startValue', 0),
         currentValue: getNumber(item, 'currentValue', getNumber(item, 'startValue', 0)),
         targetValue: getNumber(item, 'targetValue', 1),
-        unit: getString(item, 'unit') || t('aiAssistant.goalDraft.unit'),
+        unit: getRecordString(item, 'unit') || t('aiAssistant.goalDraft.unit'),
         weight: getNumber(item, 'weight', 1),
       }))
       .filter((item) => item.title && item.valueType && item.calculationMethod);
@@ -335,11 +347,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return value
       .filter(isRecord)
       .map((item) => ({
-        name: getString(item, 'name'),
-        description: getString(item, 'description'),
-        importance: normalizeImportance(getString(item, 'importance')),
-        cadence: normalizeCadence(getString(item, 'cadence')),
-        timeOfDay: getString(item, 'timeOfDay') || '09:00',
+        name: getRecordString(item, 'name'),
+        description: getRecordString(item, 'description'),
+        importance: normalizeImportance(getRecordString(item, 'importance')),
+        cadence: normalizeCadence(getRecordString(item, 'cadence')),
+        timeOfDay: getRecordString(item, 'timeOfDay') || '09:00',
       }))
       .filter((item) => item.name);
   }
@@ -349,25 +361,25 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     return value
       .filter(isRecord)
       .map((item) => ({
-        title: getString(item, 'title'),
-        description: getString(item, 'description'),
-        importance: normalizeImportance(getString(item, 'importance')),
-        cadence: normalizeCadence(getString(item, 'cadence')),
-        timeOfDay: normalizeReminderTimeOfDay(getString(item, 'timeOfDay')),
+        title: getRecordString(item, 'title'),
+        description: getRecordString(item, 'description'),
+        importance: normalizeImportance(getRecordString(item, 'importance')),
+        cadence: normalizeCadence(getRecordString(item, 'cadence')),
+        timeOfDay: normalizeReminderTimeOfDay(getRecordString(item, 'timeOfDay')),
       }))
       .filter((item) => item.title);
   }
 
-  function findGoalAgentArtifactData(run: GoalAgentRunResult, kind: string): Record<string, unknown> {
+  function findGoalAgentArtifactData(run: AgentRunResult, kind: string): Record<string, unknown> {
     const artifact = run.state.artifacts.find((item) => item.kind === kind);
     return isRecord(artifact?.data) ? artifact.data : {};
   }
 
-  function findGoalAgentArtifact(run: GoalAgentRunResult, kind: AgentArtifact['kind']) {
+  function findGoalAgentArtifact(run: AgentRunResult, kind: AgentArtifact['kind']) {
     return run.state.artifacts.find((item) => item.kind === kind) ?? null;
   }
 
-  function getGoalAgentExecutionRecovery(run: GoalAgentRunResult): Record<string, unknown> | null {
+  function getGoalAgentExecutionRecovery(run: AgentRunResult): Record<string, unknown> | null {
     const data = findGoalAgentArtifactData(run, 'execution_timeline');
     return isRecord(data.recovery) ? data.recovery : null;
   }
@@ -388,7 +400,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function syncEditableDraftFromGoalAgentRun(
-    result: GoalAgentRunResult,
+    result: AgentRunResult,
     options: { force: boolean },
   ) {
     if (
@@ -403,12 +415,12 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!goalData) return;
 
     editableGoal.value = {
-      name: getString(goalData, 'title') || artifact?.title || '',
-      description: getString(goalData, 'description'),
-      category: getString(goalData, 'category'),
-      importance: normalizeImportance(getString(goalData, 'importance')),
-      motivation: getString(goalData, 'motivation'),
-      feasibilityAnalysis: getString(goalData, 'feasibilityAnalysis'),
+      name: getRecordString(goalData, 'title') || artifact?.title || '',
+      description: getRecordString(goalData, 'description'),
+      category: getRecordString(goalData, 'category'),
+      importance: normalizeImportance(getRecordString(goalData, 'importance')),
+      motivation: getRecordString(goalData, 'motivation'),
+      feasibilityAnalysis: getRecordString(goalData, 'feasibilityAnalysis'),
       tags: getStringArray(goalData, 'tags'),
       startDate: getOptionalNumber(goalData, 'suggestedStartDate'),
       targetDate: getOptionalNumber(goalData, 'suggestedEndDate'),
@@ -428,7 +440,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     editableReminders.value = coerceReminders(goalData.reminders);
   }
 
-  function buildEditedGoalDraftData(run: GoalAgentRunResult): Record<string, unknown> {
+  function buildEditedGoalDraftData(run: AgentRunResult): Record<string, unknown> {
     const goalData = findGoalAgentArtifactData(run, 'goal_draft');
     const now = Date.now();
     const startDate = editableGoal.value.startDate ?? getNumber(goalData, 'suggestedStartDate', now);
@@ -439,11 +451,11 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
       ...goalData,
       title:
         editableGoal.value.name.trim() ||
-        getString(goalData, 'title') ||
+        getRecordString(goalData, 'title') ||
         options.conversationTitle.value,
       description:
         editableGoal.value.description.trim() ||
-        getString(goalData, 'description') ||
+        getRecordString(goalData, 'description') ||
         options.buildConversationTranscript(),
       motivation: editableGoal.value.motivation.trim() || undefined,
       category: normalizeGoalCategory(editableGoal.value.category),
@@ -485,15 +497,29 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     };
   }
 
-  function getGoalAgentActionPlanSummary(run: GoalAgentRunResult): string {
+  function getGoalAgentActionPlanSummary(run: AgentRunResult): string {
     const actionPlanData = findGoalAgentArtifactData(run, 'action_plan');
-    return getString(actionPlanData, 'summary') || 'Execute approved Agent goal action plan.';
+    return getRecordString(actionPlanData, 'summary') || 'Execute approved Agent goal action plan.';
   }
 
-  function buildEditedApprovedActions(run: GoalAgentRunResult): GoalAgentAction[] {
+  function buildEditedApprovedActions(run: AgentRunResult): AgentAction[] {
     const sourceActions = run.state.pendingActions.length
       ? run.state.pendingActions
       : run.state.approvedActions;
+    // Residual 423: primary task Host runs execute only create_task_template actions.
+    if (isPrimaryTaskHostAgentRun(run)) {
+      return sourceActions
+        .filter((action) => action.tool === 'create_task_template')
+        .map((action, index) => ({
+          ...action,
+          index,
+          dependsOn: [],
+          payload:
+            action.payload && typeof action.payload === 'object'
+              ? { ...(action.payload as Record<string, unknown>) }
+              : {},
+        }));
+    }
     const draftData = buildEditedGoalDraftData(run);
     const keyResults = Array.isArray(draftData.keyResults) ? draftData.keyResults : [];
     const taskTemplates = Array.isArray(draftData.taskTemplates) ? draftData.taskTemplates : [];
@@ -581,7 +607,7 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function normalizePreservedActionDependsOn(
-    action: GoalAgentAction,
+    action: AgentAction,
     keyResultCount: number,
   ): number[] {
     if (action.tool === 'create_task_template') {
@@ -594,18 +620,30 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function buildEditedGoalAgentArtifacts(
-    run: GoalAgentRunResult,
-    approvedActions: GoalAgentAction[],
+    run: AgentRunResult,
+    approvedActions: AgentAction[],
   ): AgentArtifact[] {
     const now = Date.now();
     const draftData = buildEditedGoalDraftData(run);
-    const title = getString(draftData, 'title') || options.conversationTitle.value;
+    // Residual 365: prefer create_goal payload (may include Host-revised title/description).
+    const createGoalPayload = approvedActions.find((action) => action.tool === 'create_goal')?.payload;
+    const createGoalData = isRecord(createGoalPayload) ? createGoalPayload : {};
+    const mergedDraftData: Record<string, unknown> = {
+      ...draftData,
+      ...(typeof createGoalData['title'] === 'string' && createGoalData['title'].trim()
+        ? { title: String(createGoalData['title']).trim() }
+        : {}),
+      ...(createGoalData['description'] !== undefined
+        ? { description: createGoalData['description'] }
+        : {}),
+    };
+    const title = getRecordString(mergedDraftData, 'title') || options.conversationTitle.value;
     return run.state.artifacts.map((artifact) => {
       if (artifact.kind === 'goal_draft') {
         return {
           ...artifact,
           title,
-          data: draftData,
+          data: mergedDraftData,
           updatedAt: now,
         };
       }
@@ -625,8 +663,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function buildEditedGoalAgentApprovedPlan(
-    run: GoalAgentRunResult,
-    approvedActions: GoalAgentAction[],
+    run: AgentRunResult,
+    approvedActions: AgentAction[],
   ): AgentActionPlan {
     const actionPlanData = findGoalAgentArtifactData(run, 'action_plan');
     return {
@@ -637,14 +675,31 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
   }
 
   function buildGoalAgentApprovalPayload(
-    run: GoalAgentRunResult,
+    run: AgentRunResult,
     userDecision: AgentResumePayload['userDecision'],
+    hostOptions?: {
+      title?: string;
+      description?: string | null;
+      /** Residual 423: Host task.create optional linked goal id. */
+      goalId?: string | null;
+    },
   ): AgentResumePayload {
-    if (userDecision !== 'confirm') {
+    // Residual 607: edit also carries Host-revised sole product draft (confirm residual 365 symmetry).
+    if (userDecision !== 'confirm' && userDecision !== 'edit') {
       return { userDecision };
     }
 
-    const approvedActions = buildEditedApprovedActions(run);
+    // Residual 365/423/607: Host lifecycle may revise fields; executor / reopen consume patched actions.
+    const baseActions = buildEditedApprovedActions(run);
+    const approvedActions = isPrimaryTaskHostAgentRun(run)
+      ? applyHostTaskPatchToAgentActions(baseActions, {
+          title: hostOptions?.title,
+          goalId: hostOptions?.goalId,
+        })
+      : applyHostGoalPatchToAgentActions(baseActions, {
+          title: hostOptions?.title,
+          description: hostOptions?.description,
+        });
     return {
       userDecision,
       approvedActions,
@@ -713,14 +768,14 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
           conversationTitle: options.conversationTitle.value,
           ...(selectedModel
             ? {
-                providerId: selectedModel.providerId,
+                provider_id: selectedModel.providerId,
                 model: selectedModel.modelId,
               }
             : {}),
         },
       };
 
-      const result = await options.service.startAgentRun(request);
+      const result = unwrap(await options.service.startAgentRun(request));
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.started'));
       options.scrollMessagesToBottom();
@@ -731,12 +786,142 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     }
   }
 
-  async function resumeGoalAgentRun(userDecision: AgentResumePayload['userDecision']) {
+  /**
+   * Residual 607: Host revise → process-local edit resume (stay waiting_approval).
+   * Patches sole create_goal (or primary-task create_task_template) so getRun/selectAgentRun
+   * reopen revised draft (task residual 439 / knowledge residual 605 symmetry).
+   * Residual 559: product revise only from waiting_approval.
+   * Residual 557/575: sole product draftAction only (foreign companions OK).
+   * Host lifecycle revise is dispatched by AIChatView first; this is the AgentRun edit path.
+   */
+  async function reviseGoalAgentRun(hostOptions?: {
+    title?: string;
+    description?: string | null;
+    goalId?: string | null;
+  }) {
     if (!goalAgentRun.value || goalAgentResuming.value) return;
+    // Residual 559/607: product revise only from waiting_approval.
+    if (goalAgentRun.value.run.status !== 'waiting_approval') return;
+    // Refuse blank title revise (task residual 455 / Host title fail-closed symmetry).
+    if (typeof hostOptions?.title === 'string' && !hostOptions.title.trim()) return;
+
+    const source =
+      goalAgentRun.value.state.pendingActions.length > 0
+        ? goalAgentRun.value.state.pendingActions
+        : goalAgentRun.value.state.approvedActions;
+    const primaryTask = isPrimaryTaskHostAgentRun(goalAgentRun.value);
+    const productTool = primaryTask ? 'create_task_template' : 'create_goal';
+    // Residual 557/575/607: sole product draftAction (no multi invent).
+    const productDraftCount = source.filter((action) => action.tool === productTool).length;
+    if (productDraftCount !== 1) return;
+
+    // Residual 365/423/551/607: Host-revised fields; keep foreign companions for executor context.
+    const approvedActions = primaryTask
+      ? applyHostTaskPatchToAgentActions(source, {
+          title: hostOptions?.title,
+          goalId: hostOptions?.goalId,
+        })
+      : applyHostGoalPatchToAgentActions(source, {
+          title: hostOptions?.title,
+          description: hostOptions?.description,
+        });
+
     goalAgentResuming.value = true;
     try {
-      const payload = buildGoalAgentApprovalPayload(goalAgentRun.value, userDecision);
-      const result = await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload);
+      const payload: AgentResumePayload = {
+        userDecision: 'edit',
+        approvedActions,
+        editedArtifacts: buildEditedGoalAgentArtifacts(goalAgentRun.value, approvedActions),
+        approvedPlan: buildEditedGoalAgentApprovedPlan(goalAgentRun.value, approvedActions),
+      };
+      const result = unwrap(
+        await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload),
+      );
+      syncGoalAgentRun(result);
+    } catch (error) {
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
+    } finally {
+      goalAgentResuming.value = false;
+    }
+  }
+
+  async function resumeGoalAgentRun(
+    userDecision: AgentResumePayload['userDecision'],
+    hostOptions?: {
+      /** When true, Host lifecycle already completed (panel revise/approve path). */
+      skipHostLifecycle?: boolean;
+      revision?: number;
+      /** Residual 365: Host-revised goal title applied to create_goal executor actions. */
+      title?: string;
+      /** Residual 365: Host-revised goal description applied to create_goal executor actions. */
+      description?: string | null;
+      /** Residual 423: Host-revised task goalId applied to create_task_template actions. */
+      goalId?: string | null;
+    },
+  ) {
+    if (!goalAgentRun.value || goalAgentResuming.value) return;
+
+    // Residual 559: confirm/cancel only from waiting_approval
+    // (task residual 489/477 + knowledge cancel symmetry; clarify/continue/retry own gates).
+    if (
+      (userDecision === 'confirm' || userDecision === 'cancel') &&
+      goalAgentRun.value.run.status !== 'waiting_approval'
+    ) {
+      return;
+    }
+
+    // Residual 557: goal.create confirm requires sole create_goal draftAction after
+    // single-product-draft gate (knowledge residual 555 / task residual 547 symmetry;
+    // no multi product invent). Foreign companions may remain for executor context.
+    // Residual 575: primary-task Host path requires sole create_task_template
+    // (task residual 547 / Host residual 563 symmetry; no multi invent).
+    if (userDecision === 'confirm') {
+      const baseActions = goalAgentRun.value.state.pendingActions.length
+        ? goalAgentRun.value.state.pendingActions
+        : goalAgentRun.value.state.approvedActions;
+      if (isPrimaryTaskHostAgentRun(goalAgentRun.value)) {
+        const productDraftCount = baseActions.filter(
+          (action) => action.tool === 'create_task_template',
+        ).length;
+        if (productDraftCount !== 1) return;
+      } else {
+        const productDraftCount = baseActions.filter(
+          (action) => action.tool === 'create_goal',
+        ).length;
+        if (productDraftCount !== 1) return;
+      }
+    }
+
+    goalAgentResuming.value = true;
+    try {
+      // Residual 355/359: Host ProposalKernel lifecycle via AssistantFacade first.
+      // resumeAgentRun remains the separate business mutation executor.
+      if (
+        !hostOptions?.skipHostLifecycle &&
+        (userDecision === 'confirm' || userDecision === 'cancel')
+      ) {
+        // Residual 587: primary-task-shaped exclusive Host kind is task.create
+        // (residual 585 workbench proposalId/focus). ActionBar confirm/cancel must
+        // share that bridge id with Host panel — not invent goal.create.
+        const hostProposalKind = isPrimaryTaskHostAgentRun(goalAgentRun.value)
+          ? 'task.create'
+          : 'goal.create';
+        await dispatchHostProposalDecision(options.service, {
+          decision: userDecision === 'confirm' ? 'approve' : 'reject',
+          runId: goalAgentRun.value.run.runId,
+          kind: hostProposalKind,
+          reason: userDecision === 'cancel' ? 'user_cancel' : undefined,
+          revision: hostOptions?.revision,
+        });
+      }
+      // Residual 583: forward Host-revised goalId for primary-task-shaped confirm
+      // (applyHostTaskPatchToAgentActions). Title/description residual 365; do not drop goalId.
+      const payload = buildGoalAgentApprovalPayload(goalAgentRun.value, userDecision, {
+        title: hostOptions?.title,
+        description: hostOptions?.description,
+        goalId: hostOptions?.goalId,
+      });
+      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, payload));
       syncGoalAgentRun(result);
       toast.success(
         userDecision === 'cancel'
@@ -755,10 +940,10 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!goalAgentRun.value || !canResumeGoalAgentClarification.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
         userDecision: 'clarify',
         clarificationAnswers: clarificationAnswers.value.map((item) => item.trim()),
-      });
+      }));
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();
@@ -773,9 +958,9 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!canContinueGoalAgentExecution.value || !goalAgentRun.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
         userDecision: 'confirm',
-      });
+      }));
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();
@@ -790,9 +975,9 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     if (!canRetryGoalAgentExecution.value || !goalAgentRun.value) return;
     goalAgentResuming.value = true;
     try {
-      const result = await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
+      const result = unwrap(await options.service.resumeAgentRun(goalAgentRun.value.run.runId, {
         userDecision: 'confirm',
-      });
+      }));
       syncGoalAgentRun(result);
       toast.success(t('aiAssistant.dialogs.agent.resumed'));
       options.scrollMessagesToBottom();
@@ -936,8 +1121,8 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     canResumeGoalAgentClarification,
     canContinueGoalAgentExecution,
     canRetryGoalAgentExecution,
-    applyGoalDraft: (nextDraft: GoalDraft) => applyGoalDraftHelper(draftState, nextDraft),
-    applyGoalClarification: (next: GoalClarification) => applyGoalClarificationHelper(draftState, next),
+    applyGoalDraft: (nextDraft: GoalWorkflowDraftResultDTO) => applyGoalDraftHelper(draftState, nextDraft),
+    applyGoalClarification: (next: GoalClarificationDTO) => applyGoalClarificationHelper(draftState, next),
     clearGoalAutomationResult: () => clearHelper(draftState),
     resetGoalArtifacts: () => {
       resetHelper(draftState);
@@ -948,8 +1133,21 @@ export function useAIGoalWorkflow(options: UseAIGoalWorkflowOptions) {
     handleExecuteGoalAutomation,
     startGoalAgentRun,
     submitGoalAgentClarification,
-    confirmGoalAgentRun: () => resumeGoalAgentRun('confirm'),
-    cancelGoalAgentRun: () => resumeGoalAgentRun('cancel'),
+    confirmGoalAgentRun: (hostOptions?: {
+      skipHostLifecycle?: boolean;
+      revision?: number;
+      title?: string;
+      description?: string | null;
+      goalId?: string | null;
+    }) => resumeGoalAgentRun('confirm', hostOptions),
+    cancelGoalAgentRun: (hostOptions?: {
+      skipHostLifecycle?: boolean;
+      revision?: number;
+      title?: string;
+      description?: string | null;
+      goalId?: string | null;
+    }) => resumeGoalAgentRun('cancel', hostOptions),
+    reviseGoalAgentRun,
     continueGoalAgentExecution,
     retryGoalAgentExecution,
     syncGoalAgentRun,

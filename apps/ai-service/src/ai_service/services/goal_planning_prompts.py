@@ -123,7 +123,7 @@ def build_goal_automation_system_prompt(
                 "call it exactly once.",
                 "Do not answer with free-form JSON when you can call the tool.",
                 (
-                    "Use search_notes only when repository resources are available "
+                    "Use search_notes only when knowledge notes are available "
                     "and external note evidence would materially improve the plan."
                 )
                 if allow_search_notes

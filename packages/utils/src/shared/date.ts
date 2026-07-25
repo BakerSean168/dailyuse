@@ -30,16 +30,29 @@ export function toDayEnd(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
 }
 
+/**
+ * Residual 1210 keep-boundary: utils formatDateToInput — Date → date-fns yyyy-MM-dd.
+ * Shared form input helper; empty/falsy Date-like → ''.
+ * Soft residual 1210: app-vue TimeConfigSection formatDateToInput is timestamp→YMD local (no force-merge).
+ */
 export function formatDateToInput(dateObj: Date): string {
   if (!dateObj) return '';
   return format(dateObj, 'yyyy-MM-dd');
 }
 
+/**
+ * Soft residual 1231: utils formatTimeToInput — Date → date-fns HH:mm; falsy → ''.
+ * Shared form helper; not epoch timestamp; not force-merged with app-react toTimeInput keep-boundary.
+ */
 export function formatTimeToInput(dateObj: Date): string {
   if (!dateObj) return '';
   return format(dateObj, 'HH:mm');
 }
 
+/**
+ * Soft residual 1234: utils updateDateKeepTime — mutate Date calendar while keeping clock.
+ * Not epoch merge of free-standing date/time strings; no force-merge with combineDateAndTime/parseTimestamp.
+ */
 export function updateDateKeepTime(dateObj: Date, dateStr: string): Date {
   if (!dateObj || !dateStr) return dateObj;
   const [year, month, day] = dateStr.split('-').map(Number);
@@ -48,6 +61,10 @@ export function updateDateKeepTime(dateObj: Date, dateStr: string): Date {
   return newDate;
 }
 
+/**
+ * Soft residual 1234: utils updateTimeKeepDate — mutate Date clock while keeping calendar.
+ * Companion to updateDateKeepTime; not force-merged with app-react date+time merge keep-boundary.
+ */
 export function updateTimeKeepDate(dateObj: Date, timeStr: string): Date {
   if (!dateObj || !timeStr) return dateObj;
   const [hour, minute] = timeStr.split(':').map(Number);

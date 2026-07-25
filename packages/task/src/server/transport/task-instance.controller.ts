@@ -11,6 +11,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import type { Context } from '@dailyuse/contracts/shared';
 import { fail, isOk, ok } from '@dailyuse/contracts/result';
 import { CompleteTaskInstanceSchema, SkipTaskInstanceSchema } from '@dailyuse/contracts/task';
 import type {
@@ -60,8 +61,8 @@ export class TaskInstanceController {
   /**
    * Get instance by ID
    */
-  async getInstance(id: string): Promise<Result<TaskInstanceClientDTO | null>> {
-    return await this.useCases.getTaskInstance(id);
+  async getInstance(id: string, ctx: Context): Promise<Result<TaskInstanceClientDTO | null>> {
+    return await this.useCases.getTaskInstance(id, ctx.identityId);
   }
 
   /**
@@ -75,7 +76,7 @@ export class TaskInstanceController {
     },
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     if (filters?.templateId) {
-      return await this.useCases.listByTemplate(filters.templateId);
+      return await this.useCases.listByTemplate(filters.templateId, identityId);
     } else if (filters?.status) {
       return await this.useCases.listByStatus(identityId, filters.status);
     } else {
@@ -106,7 +107,11 @@ export class TaskInstanceController {
   /**
    * Complete instance (with Zod validation)
    */
-  async completeInstance(id: string, input: unknown): Promise<Result<TaskInstanceClientDTO>> {
+  async completeInstance(
+    id: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<TaskInstanceClientDTO>> {
     const parsed = CompleteTaskInstanceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -116,7 +121,7 @@ export class TaskInstanceController {
       });
     }
 
-    const result = await this.useCases.complete(id, parsed.data);
+    const result = await this.useCases.complete(id, ctx.identityId, parsed.data);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
@@ -127,7 +132,11 @@ export class TaskInstanceController {
   /**
    * Skip instance (with Zod validation)
    */
-  async skipInstance(id: string, input: unknown): Promise<Result<TaskInstanceClientDTO>> {
+  async skipInstance(
+    id: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<TaskInstanceClientDTO>> {
     const parsed = SkipTaskInstanceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -137,7 +146,7 @@ export class TaskInstanceController {
       });
     }
 
-    const result = await this.useCases.skip(id, parsed.data);
+    const result = await this.useCases.skip(id, ctx.identityId, parsed.data);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
@@ -148,15 +157,20 @@ export class TaskInstanceController {
   /**
    * Start instance
    */
-  async startInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
-    return await this.useCases.start(id);
+  async startInstance(id: string, ctx: Context): Promise<Result<TaskInstanceClientDTO>> {
+    return await this.useCases.start(id, ctx.identityId);
   }
 
   /**
    * Delete instance
    */
-  async deleteInstance(id: string): Promise<Result<void>> {
-    return await this.useCases.deleteInstance(id);
+  async deleteInstance(id: string, ctx: Context): Promise<Result<null>> {
+    const result = await this.useCases.deleteInstance(id, ctx.identityId);
+    if (!isOk(result)) {
+      return result as Result<null>;
+    }
+    // Serialize as data:null (no Result.void / undefined dual-track).
+    return ok(null);
   }
 
   /**

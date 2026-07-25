@@ -138,14 +138,14 @@ import { Link2, ArrowRight, ArrowRightLeft, Trash2, Plus, AlertTriangle } from '
 import DependencyValidationDialog from './DependencyValidationDialog.vue';
 import BlockedTaskInfo from './BlockedTaskInfo.vue';
 import type {
-  TaskForDAGViewModel,
   TaskDependencyValidationError,
   TaskDependencyValidationWarning,
 } from '../types';
+import type { TaskForDAG } from '../../types/task-dag.types';
 
 const props = defineProps<{
   currentTaskId?: string;
-  allTasks: TaskForDAGViewModel[];
+  allTasks: TaskForDAG[];
   dependencies: TaskGraphDependencyDTO[];
 }>();
 
@@ -199,7 +199,7 @@ const blockingInfo = computed(() => {
 
   const blockingTasks = predecessors
     .map((id) => props.allTasks.find((task) => task.id === id))
-    .filter((task): task is TaskForDAGViewModel => !!task)
+    .filter((task): task is TaskForDAG => !!task)
     .filter((task) => task.status !== 'COMPLETED')
     .map((task) => ({
       id: task.id,

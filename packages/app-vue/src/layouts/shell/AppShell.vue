@@ -27,6 +27,7 @@ import { defaultModuleCapsules } from '../../di/navigation';
 import { useAppShellStore, MAX_BUSINESS_TABS, type ShellModule } from './useAppShellStore';
 import { useShellRouterSync, AUTO_FOCUS_VIEWPORT } from './useShellRouterSync';
 import { useDesktopWindowControls } from '../../shared/composables/useDesktopWindowControls';
+import { hasDesktopAuthApi } from '../../shared/utils/desktop-auth-recovery';
 import { useNotification } from '../../modules/notification/composables/useNotification';
 import { useDashboard } from '../../modules/dashboard/composables/useDashboard';
 import { formatScheduleCapsuleLabel, useCalendarView } from '../../modules/schedule/composables/useCalendarView';
@@ -59,9 +60,9 @@ const { tabs, activeTabId, activeTab, isChatOnly, layout, sidebarCollapsed, side
 const sync = useShellRouterSync();
 
 // ── 宿主环境（沿 isDesktopEnvironment 分支模式，V2 决策 #6） ──
+// Residual 913: detect via hasDesktopAuthApi (no electronAPI unknown cast dual).
 const isDesktop =
-  typeof window !== 'undefined' &&
-  !!(window as Window & { electronAPI?: unknown }).electronAPI;
+  typeof window !== 'undefined' && hasDesktopAuthApi(window);
 const isMac =
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
@@ -208,11 +209,21 @@ async function handleNewConversation() {
 const authStore = useAuthenticationStore();
 const { isAuthenticated, logout } = useAuth();
 const userName = computed<string | undefined>(() => {
-  const identifier = authStore.currentIdentity?.identifiers?.[0] as
-    | { value?: string }
-    | undefined;
+  const identity = authStore.currentIdentity;
+  const identifier =
+    identity && 'identifiers' in identity
+      ? (identity.identifiers[0] as { value?: string } | undefined)
+      : undefined;
   return identifier?.value || undefined;
 });
+
+const needsEmailVerification = computed(
+  () => isAuthenticated.value && authStore.currentIdentity?.status === 'Unverified',
+);
+
+function goVerifyEmail() {
+  void router.push({ path: '/auth', query: { scene: 'verify-email' } });
+}
 
 // ── 通知未读角标（SSE 启动钩子推流，胶囊消费；V2 §8-7） ──
 const notification = useNotification();
@@ -442,6 +453,23 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     :data-shell-state="isSettingsScene ? 'settings' : shellState"
     :data-shell-scene="shellScene"
   >
+    <div
+      v-if="needsEmailVerification"
+      data-testid="unverified-email-banner"
+      class="flex items-center justify-between gap-3 border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-100"
+      role="status"
+    >
+      <span>{{ t('shell.auth.unverifiedBanner', 'Verify your email to unlock all features.') }}</span>
+      <button
+        type="button"
+        class="rounded-md bg-amber-400/20 px-3 py-1 text-xs font-medium text-amber-50 hover:bg-amber-400/30"
+        data-testid="unverified-email-banner-action"
+        @click="goVerifyEmail"
+      >
+        {{ t('shell.auth.unverifiedAction', 'Verify now') }}
+      </button>
+    </div>
+
     <!-- 顶部窗口栏：胶囊导航 + 日程胶囊 + 窗控 -->
     <WindowHeader
       :mode="isSettingsScene ? 'settings' : 'workspace'"
@@ -574,6 +602,5 @@ function panelCacheKey(fullPath: string, routeName: unknown): string {
     </div>
   </div>
 </template>
-
 
 

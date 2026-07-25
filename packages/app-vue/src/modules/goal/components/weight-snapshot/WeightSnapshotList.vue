@@ -302,6 +302,10 @@ const getKRTitle = (krId: string) => {
 };
 
 // 格式化时间
+/**
+ * Soft residual 1237: goal WeightSnapshot formatTime — date-fns absolute with i18n locale map.
+ * Same pattern string as ProgressBreakdown but locale option; not relative dashboard path (no force-merge).
+ */
 const formatTime = (timestamp: number) => {
   return format(new Date(timestamp), 'yyyy-MM-dd HH:mm', {
     locale: dateFnsLocaleMap[locale.value] || zhCN,

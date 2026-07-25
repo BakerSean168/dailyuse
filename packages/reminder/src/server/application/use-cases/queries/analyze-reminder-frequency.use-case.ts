@@ -76,10 +76,11 @@ export class AnalyzeReminderFrequencyUseCase {
    */
   async execute(
     templateId: string,
+    identityId: string,
     lookbackDays: number = 30,
   ): Promise<Result<ResponseMetrics | null>> {
-    // 1. 获取提醒模板
-    const template = await this.templateRepository.findById(templateId);
+    // 1. 获取提醒模板（identity-scoped）
+    const template = await this.templateRepository.findByIdForIdentity(identityId, templateId);
     if (!template) {
       return error('NOT_FOUND', `Template ${templateId} not found`);
     }
@@ -99,7 +100,11 @@ export class AnalyzeReminderFrequencyUseCase {
     template: ReminderTemplate,
     lookbackDays: number,
   ): Promise<ResponseMetrics | null> {
-    const stats = await this.responseRepository.getResponseStats(template.id, lookbackDays);
+    const stats = await this.responseRepository.getResponseStats(
+      template.id,
+      String(template.identityId),
+      lookbackDays,
+    );
     return this.calculateMetrics(stats, template);
   }
 

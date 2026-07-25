@@ -1,31 +1,13 @@
+/**
+ * Residual 971: withObservabilityPayload sole import
+ * (../with-observability-payload.ts).
+ */
 import { randomUUID } from 'node:crypto';
 
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { AIExecutionLogInput, IAIExecutionLogPort } from '../../../application/ports';
+import { withObservabilityPayload } from '../with-observability-payload';
 
-function withObservabilityPayload(
-  payload: Record<string, unknown>,
-  input: AIExecutionLogInput,
-): Record<string, unknown> {
-  const observability = {
-    requestId: input.requestId,
-    providerId: input.providerId,
-    providerName: input.providerName,
-    model: input.model,
-    errorCategory: input.errorCategory,
-    costEstimate: input.costEstimate,
-  };
-  const definedEntries = Object.entries(observability).filter(([, value]) => value !== undefined);
-
-  if (definedEntries.length === 0) {
-    return payload;
-  }
-
-  return {
-    ...payload,
-    __observability: Object.fromEntries(definedEntries),
-  };
-}
 
 export class AIExecutionLogPowerSyncAdapter implements IAIExecutionLogPort {
   constructor(private readonly db: IElectronDatabase) {}

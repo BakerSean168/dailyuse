@@ -29,19 +29,19 @@ import type { CloneGoalReq, ListGoalFilters } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
+// Residual 985: sole parseBoolean (local dual retired).
+import { parseBoolean } from './parse-boolean';
 
 // ============ Helpers ============
+// Residual 1065 soft / Residual 1067 keep-boundary:
+// Local parseNumber + parseStringArray stay package-local. They are not
+// createComposable duals of utils parse-query-value (array-first string /
+// empty-string) nor persistence JSON parseStringArray.
 
 function parseNumber(value: unknown): number | undefined {
   if (value === undefined || value === null) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function parseBoolean(value: unknown): boolean | undefined {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return undefined;
 }
 
 function parseStringArray(value: unknown): string[] | undefined {
@@ -181,7 +181,12 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id, parseBoolean(req.query?.includeChildren) ?? true),
+    (req, ctx) =>
+      controller.get(
+        req.params!.id,
+        ctx,
+        parseBoolean(req.query?.includeChildren) ?? true,
+      ),
   );
 
   // PUT /:id — 更新目标
@@ -200,7 +205,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // PATCH /:id — 更新目标（别名，跳过 OpenAPI 避免重复）
@@ -211,7 +216,7 @@ export function registerGoalCrudRoutes(
       skipOpenApi: true,
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body),
+    (req, ctx) => controller.update(req.params!.id, req.body, ctx),
   );
 
   // DELETE /:id — 删除目标（软删除）
@@ -227,7 +232,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.delete(req.params!.id),
+    (req, ctx) => controller.delete(req.params!.id, ctx),
   );
 
   // ==================== Goal Status Operations ====================
@@ -258,7 +263,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.archive(req.params!.id),
+    (req, ctx) => controller.archive(req.params!.id, ctx),
   );
 
   // POST /:id/activate — 激活目标
@@ -274,7 +279,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.activate(req.params!.id),
+    (req, ctx) => controller.activate(req.params!.id, ctx),
   );
 
   // POST /:id/complete — 完成目标
@@ -290,7 +295,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.complete(req.params!.id),
+    (req, ctx) => controller.complete(req.params!.id, ctx),
   );
 
   // GET /:id/aggregate — 获取目标聚合视图
@@ -306,7 +311,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.getAggregate(req.params!.id),
+    (req, ctx) => controller.getAggregate(req.params!.id, ctx),
   );
 
   // GET /:id/progress-breakdown — 获取进度分解
@@ -322,7 +327,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.getProgressBreakdown(req.params!.id),
+    (req, ctx) => controller.getProgressBreakdown(req.params!.id, ctx),
   );
 
   // POST /:id/clone — 克隆目标
@@ -373,11 +378,12 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) =>
+    (req, ctx) =>
       controller.batchUpdateKeyResultWeights(
         req.params!.id,
         (req.body as { updates?: Array<{ keyResultId: string; weight: number }> } | undefined)
           ?.updates ?? [],
+        ctx,
       ),
   );
 

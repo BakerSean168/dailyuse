@@ -22,6 +22,7 @@ import { CustomNotificationManager } from './custom-notification.manager';
 import type { WindowManager } from '../lifecycle/window-manager';
 import { resolveAssetPath, resolveAssetPathFromKey } from '../utils/asset-path';
 import { assetManifest, type AssetImageKey } from '@dailyuse/assets';
+import { RendererEventChannels } from '@dailyuse/contracts/electron';
 
 const logger = createLogger('NotificationService');
 type NotificationServiceEventMap = Pick<NotificationEventMap, 'notification:dispatch_desktop'> &
@@ -346,7 +347,7 @@ export class NotificationService {
 
       // Send IPC message to renderer
       if (data) {
-        this.mainWindow.webContents.send('notification:clicked', data);
+        this.mainWindow.webContents.send(RendererEventChannels.NOTIFICATION_CLICKED, data);
       }
     }
   }

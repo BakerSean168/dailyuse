@@ -159,11 +159,11 @@ export class GoalController {
     return this.useCases.searchGoals(cx.identityId, query, systemView as GoalSystemView);
   }
 
-  async get(id: string, includeChildren = true): Promise<Result<unknown>> {
-    return this.useCases.getGoal(id, includeChildren);
+  async get(id: string, cx: ExecutionContext, includeChildren = true): Promise<Result<unknown>> {
+    return this.useCases.getGoal(id, cx.identityId, includeChildren);
   }
 
-  async update(id: string, input: unknown): Promise<Result<unknown>> {
+  async update(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = UpdateGoalSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -172,11 +172,11 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateGoal(id, parsed.data);
+    return this.useCases.updateGoal(id, cx.identityId, parsed.data);
   }
 
-  async delete(id: string): Promise<Result<unknown>> {
-    return this.useCases.deleteGoal(id);
+  async delete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.deleteGoal(id, cx.identityId);
   }
 
   async archiveExpired(cx: ExecutionContext): Promise<Result<unknown>> {
@@ -185,26 +185,26 @@ export class GoalController {
 
   // ==================== Goal Status Operations ====================
 
-  async archive(id: string): Promise<Result<unknown>> {
-    return this.useCases.archiveGoal(id);
+  async archive(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.archiveGoal(id, cx.identityId);
   }
 
-  async activate(id: string): Promise<Result<unknown>> {
-    return this.useCases.activateGoal(id);
+  async activate(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.activateGoal(id, cx.identityId);
   }
 
-  async complete(id: string): Promise<Result<unknown>> {
-    const result = await this.useCases.completeGoal(id);
+  async complete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    const result = await this.useCases.completeGoal(id, cx.identityId);
     if (!result.ok) return result;
     return ok(result.data.goal);
   }
 
-  async getAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>> {
-    return this.useCases.getGoalAggregate(goalId);
+  async getAggregate(goalId: string, cx: ExecutionContext): Promise<Result<GetGoalAggregateRes>> {
+    return this.useCases.getGoalAggregate(goalId, cx.identityId);
   }
 
-  async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
-    return this.useCases.getGoalProgressBreakdown(goalId);
+  async getProgressBreakdown(goalId: string, cx: ExecutionContext): Promise<Result<ProgressBreakdown>> {
+    return this.useCases.getGoalProgressBreakdown(goalId, cx.identityId);
   }
 
   async cloneGoal(goalId: string, params: unknown, cx: ExecutionContext): Promise<Result<GoalClientDTO>> {
@@ -223,14 +223,15 @@ export class GoalController {
   async batchUpdateKeyResultWeights(
     goalId: string,
     updates: Array<{ keyResultId: string; weight: number }>,
+    cx: ExecutionContext,
   ): Promise<Result<unknown>> {
-    return this.useCases.batchUpdateKeyResultWeights(goalId, updates);
+    return this.useCases.batchUpdateKeyResultWeights(goalId, cx.identityId, updates);
   }
 
   // ==================== Key Results ====================
 
-  async getKeyResults(goalId: string): Promise<Result<unknown>> {
-    const result = await this.useCases.getGoal(goalId, true);
+  async getKeyResults(goalId: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    const result = await this.useCases.getGoal(goalId, cx.identityId, true);
     if (!result.ok) return result;
     const goal = result.data as unknown as Record<string, unknown>;
     const keyResults = (goal.keyResults as unknown[]) ?? [];
@@ -240,7 +241,7 @@ export class GoalController {
     });
   }
 
-  async addKeyResult(goalId: string, input: unknown): Promise<Result<unknown>> {
+  async addKeyResult(goalId: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = AddKeyResultSchema.safeParse({
       ...(input as Record<string, unknown>),
       goalId,
@@ -252,7 +253,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.addKeyResult(goalId, {
+    return this.useCases.addKeyResult(goalId, cx.identityId, {
       title: parsed.data.title,
       valueType: parsed.data.valueType,
       aggregationMethod: parsed.data.calculationMethod,
@@ -264,7 +265,12 @@ export class GoalController {
     });
   }
 
-  async updateKeyResult(goalId: string, krId: string, input: unknown): Promise<Result<unknown>> {
+  async updateKeyResult(
+    goalId: string,
+    krId: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
     const parsed = UpdateKeyResultSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -273,7 +279,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateKeyResult(goalId, krId, {
+    return this.useCases.updateKeyResult(goalId, cx.identityId, krId, {
       title: parsed.data.title,
       description: parsed.data.description ?? undefined,
       weight: parsed.data.weight,
@@ -288,6 +294,7 @@ export class GoalController {
     goalId: string,
     krId: string,
     input: unknown,
+    cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     const parsed = UpdateKeyResultProgressSchema.safeParse({
       ...(input as Record<string, unknown>),
@@ -302,19 +309,23 @@ export class GoalController {
     }
     return this.useCases.updateKeyResultProgress(
       goalId,
+      cx.identityId,
       krId,
       parsed.data.newValue,
       parsed.data.note,
     );
   }
 
-  async deleteKeyResult(goalId: string, krId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteKeyResult(goalId, krId);
+  async deleteKeyResult(goalId: string, krId: string, cx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.useCases.deleteKeyResult(goalId, cx.identityId, krId);
+    if (!result.ok) return result;
+    // Serialize as data:null (no DeleteSuccess {success} / undefined dual-track).
+    return ok(null);
   }
 
   // ==================== Reviews ====================
 
-  async addReview(goalId: string, input: unknown): Promise<Result<unknown>> {
+  async addReview(goalId: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
     const parsed = CreateGoalReviewSchema.safeParse({
       ...(input as Record<string, unknown>),
       goalId,
@@ -326,7 +337,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.addReview(goalId, {
+    return this.useCases.addReview(goalId, cx.identityId, {
       title: parsed.data.title,
       content: parsed.data.content,
       reviewType: parsed.data.reviewType,
@@ -339,11 +350,16 @@ export class GoalController {
 
   // ==================== Reviews - List / Update / Delete ====================
 
-  async listReviews(goalId: string): Promise<Result<unknown>> {
-    return this.useCases.listReviews(goalId);
+  async listReviews(goalId: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.listReviews(goalId, cx.identityId);
   }
 
-  async updateReview(goalId: string, reviewId: string, input: unknown): Promise<Result<unknown>> {
+  async updateReview(
+    goalId: string,
+    reviewId: string,
+    input: unknown,
+    cx: ExecutionContext,
+  ): Promise<Result<unknown>> {
     const parsed = UpdateGoalReviewSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -352,7 +368,7 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateReview(goalId, reviewId, {
+    return this.useCases.updateReview(goalId, cx.identityId, reviewId, {
       title: parsed.data.title,
       content: parsed.data.content,
       rating: parsed.data.rating,
@@ -362,8 +378,10 @@ export class GoalController {
     });
   }
 
-  async deleteReview(goalId: string, reviewId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteReview(goalId, reviewId);
+  async deleteReview(goalId: string, reviewId: string, cx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.useCases.deleteReview(goalId, cx.identityId, reviewId);
+    if (!result.ok) return result;
+    return ok(null);
   }
 
   // ==================== Records ====================
@@ -398,9 +416,11 @@ export class GoalController {
 
   async listRecordsByGoal(
     goalId: string,
-    params?: { limit?: number; offset?: number },
+    params: { limit?: number; offset?: number } | undefined,
+    cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     return this.useCases.listRecords({
+      identityId: cx.identityId,
       goalId,
       limit: params?.limit,
       offset: params?.offset,
@@ -410,9 +430,11 @@ export class GoalController {
   async listRecordsByKeyResult(
     goalId: string,
     keyResultId: string,
-    params?: { limit?: number; offset?: number },
+    params: { limit?: number; offset?: number } | undefined,
+    cx: ExecutionContext,
   ): Promise<Result<unknown>> {
     return this.useCases.listRecords({
+      identityId: cx.identityId,
       goalId,
       keyResultId,
       limit: params?.limit,
@@ -420,8 +442,10 @@ export class GoalController {
     });
   }
 
-  async deleteRecord(recordId: string): Promise<Result<unknown>> {
-    return this.useCases.deleteRecord(recordId);
+  async deleteRecord(recordId: string, cx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.useCases.deleteRecord(recordId, cx.identityId);
+    if (!result.ok) return result;
+    return ok(null);
   }
 
   // ==================== Focus Mode ====================

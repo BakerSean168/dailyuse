@@ -49,19 +49,3 @@ export const RegisterByEmailSchema = z.object({
 
 export type RegisterByEmailReq = z.infer<typeof RegisterByEmailSchema>;
 export type RegisterByEmailRes = AuthResponseDTO;
-
-// ============================================================================
-// Phone Registration
-// ============================================================================
-
-/**
- * 手机号注册 Schema
- */
-export const RegisterByPhoneSchema = z.object({
-  phoneNumber: z.string().min(5, '手机号格式错误'),
-  code: z.string().length(6, '验证码必须是6位'),
-  nickname: z.string().optional(),
-});
-
-export type RegisterByPhoneReq = z.infer<typeof RegisterByPhoneSchema>;
-export type RegisterByPhoneRes = AuthResponseDTO;

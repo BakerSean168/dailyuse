@@ -1,3 +1,6 @@
+/**
+ * Residual 973: createComposableHandleError sole factory.
+ */
 import { inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useReminderStore } from '../stores/reminder-store';
@@ -6,14 +9,16 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { IReminderService } from '../../../di/types';
 import type { Result } from '@dailyuse/contracts/result';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
+import type { DesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
 
-type DesktopApi = { invoke?: (channel: string, ...args: unknown[]) => Promise<unknown> } | undefined;
+// Residual 905: local DesktopApi dual retired — DesktopAuthApi is the sole invoke-api shape.
 
 export interface ReminderContext {
   store: ReturnType<typeof useReminderStore>;
   service: IReminderService;
-  desktopApi: DesktopApi;
+  desktopApi: DesktopAuthApi | undefined;
   t: ReturnType<typeof useI18n>['t'];
   savingId: ReturnType<typeof ref<string | null>>;
   executeReminderOperation: <T>(operation: () => Promise<Result<T>>, fallbackKey: string) => Promise<Result<T>>;
@@ -26,11 +31,10 @@ export function createReminderContext(): ReminderContext {
   const store = useReminderStore();
   const savingId = ref<string | null>(null);
 
-  function handleError(error: unknown, fallbackKey: string): void {
-    const message = translateResultError(error, t, { fallbackKey });
-    store.setError(message);
-    console.error(message);
-  }
+  const handleError = createComposableHandleError({
+    t,
+    setError: (message) => store.setError(message),
+  });
 
   async function executeReminderOperation<T>(
     operation: () => Promise<Result<T>>,

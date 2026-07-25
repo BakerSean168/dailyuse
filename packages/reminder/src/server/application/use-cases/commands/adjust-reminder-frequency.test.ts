@@ -4,7 +4,7 @@ import { eventBus } from '@dailyuse/utils/domain';
 
 describe('AdjustReminderFrequencyUseCase', () => {
   const repo = {
-    findById: vi.fn(),
+    findByIdForIdentity: vi.fn(),
     save: vi.fn(),
   } as any;
 
@@ -13,7 +13,7 @@ describe('AdjustReminderFrequencyUseCase', () => {
   });
 
   it('returns NOT_FOUND when template is not found', async () => {
-    repo.findById.mockResolvedValue(null);
+    repo.findByIdForIdentity.mockResolvedValue(null);
     const useCase = new AdjustReminderFrequencyUseCase(repo);
 
     const result = await useCase.execute({
@@ -30,7 +30,7 @@ describe('AdjustReminderFrequencyUseCase', () => {
   });
 
   it('returns BAD_REQUEST when template trigger is not interval-based', async () => {
-    repo.findById.mockResolvedValue({
+    repo.findByIdForIdentity.mockResolvedValue({
       trigger: {
         type: 'EventBased',
         fixedTime: null,
@@ -65,7 +65,7 @@ describe('AdjustReminderFrequencyUseCase', () => {
       },
       update,
     };
-    repo.findById.mockResolvedValue(template);
+    repo.findByIdForIdentity.mockResolvedValue(template);
     repo.save.mockResolvedValue(undefined);
     const eventSpy = vi.spyOn(eventBus, 'send');
     const useCase = new AdjustReminderFrequencyUseCase(repo);
@@ -101,7 +101,6 @@ describe('AdjustReminderFrequencyUseCase', () => {
       expect(result.data).toEqual(
         expect.objectContaining({
           templateId: 'tpl-1',
-          success: true,
           originalInterval: 60,
           adjustedInterval: 30,
         }),
@@ -110,7 +109,7 @@ describe('AdjustReminderFrequencyUseCase', () => {
   });
 
   it('reject returns NOT_FOUND when template is not found', async () => {
-    repo.findById.mockResolvedValue(null);
+    repo.findByIdForIdentity.mockResolvedValue(null);
     const useCase = new AdjustReminderFrequencyUseCase(repo);
 
     const result = await useCase.reject('tpl-1', 'identity-1');
@@ -122,7 +121,7 @@ describe('AdjustReminderFrequencyUseCase', () => {
   });
 
   it('reject emits adjustment-rejected event', async () => {
-    repo.findById.mockResolvedValue({ id: 'tpl-1' });
+    repo.findByIdForIdentity.mockResolvedValue({ id: 'tpl-1' });
     const eventSpy = vi.spyOn(eventBus, 'send');
     const useCase = new AdjustReminderFrequencyUseCase(repo);
 

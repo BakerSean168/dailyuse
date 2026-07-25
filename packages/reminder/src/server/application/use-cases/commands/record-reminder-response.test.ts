@@ -60,9 +60,9 @@ describe('RecordReminderResponseUseCase', () => {
     repo.findByTemplateId.mockResolvedValue([{ id: 'r1' }]);
     const useCase = new RecordReminderResponseUseCase(repo);
 
-    const result = await useCase.getResponsesByTemplate('template-1', 5);
+    const result = await useCase.getResponsesByTemplate('template-1', 'identity-1', 5);
 
-    expect(repo.findByTemplateId).toHaveBeenCalledWith('template-1', 5);
+    expect(repo.findByTemplateId).toHaveBeenCalledWith('template-1', 'identity-1', 5);
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data).toEqual([{ id: 'r1' }]);
@@ -73,16 +73,16 @@ describe('RecordReminderResponseUseCase', () => {
     repo.findByTemplateId.mockRejectedValue(new Error('read error'));
     const useCase = new RecordReminderResponseUseCase(repo);
 
-    await expect(useCase.getResponsesByTemplate('template-1')).rejects.toThrow('read error');
+    await expect(useCase.getResponsesByTemplate('template-1', 'identity-1')).rejects.toThrow('read error');
   });
 
   it('deletes responses by template', async () => {
     repo.deleteByTemplateId.mockResolvedValue(3);
     const useCase = new RecordReminderResponseUseCase(repo);
 
-    const result = await useCase.deleteResponsesByTemplate('template-1');
+    const result = await useCase.deleteResponsesByTemplate('template-1', 'identity-1');
 
-    expect(repo.deleteByTemplateId).toHaveBeenCalledWith('template-1');
+    expect(repo.deleteByTemplateId).toHaveBeenCalledWith('template-1', 'identity-1');
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data).toBe(3);
@@ -93,7 +93,7 @@ describe('RecordReminderResponseUseCase', () => {
     repo.deleteByTemplateId.mockRejectedValue(new Error('delete error'));
     const useCase = new RecordReminderResponseUseCase(repo);
 
-    await expect(useCase.deleteResponsesByTemplate('template-1')).rejects.toThrow('delete error');
+    await expect(useCase.deleteResponsesByTemplate('template-1', 'identity-1')).rejects.toThrow('delete error');
   });
 
   it('returns response stats for a template', async () => {
@@ -108,9 +108,9 @@ describe('RecordReminderResponseUseCase', () => {
     });
     const useCase = new RecordReminderResponseUseCase(repo);
 
-    const result = await useCase.getResponseStats('template-1', 14);
+    const result = await useCase.getResponseStats('template-1', 'identity-1', 14);
 
-    expect(repo.getResponseStats).toHaveBeenCalledWith('template-1', 14);
+    expect(repo.getResponseStats).toHaveBeenCalledWith('template-1', 'identity-1', 14);
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.total).toBe(10);
@@ -122,6 +122,6 @@ describe('RecordReminderResponseUseCase', () => {
     repo.getResponseStats.mockRejectedValue(new Error('stats error'));
     const useCase = new RecordReminderResponseUseCase(repo);
 
-    await expect(useCase.getResponseStats('template-1')).rejects.toThrow('stats error');
+    await expect(useCase.getResponseStats('template-1', 'identity-1')).rejects.toThrow('stats error');
   });
 });

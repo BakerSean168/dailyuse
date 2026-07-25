@@ -2,21 +2,20 @@ import type { IAccountRepository } from '../../domain';
 import { createAccountEventListenerRuntime } from '../../application/handlers';
 import type { AccountModuleRuntimeContribution } from '../account.module';
 
-export type AccountRuntimeContribution = AccountModuleRuntimeContribution;
 export type AccountRuntimeContributionsInput =
-  | AccountRuntimeContribution
-  | readonly AccountRuntimeContribution[];
+  | AccountModuleRuntimeContribution
+  | readonly AccountModuleRuntimeContribution[];
 
 function normalizeRuntimeContributions(
   runtimeContributions?: AccountRuntimeContributionsInput,
-): readonly AccountRuntimeContribution[] {
+): readonly AccountModuleRuntimeContribution[] {
   if (!runtimeContributions) {
     return [];
   }
 
   return Array.isArray(runtimeContributions)
     ? Array.from(runtimeContributions)
-    : [runtimeContributions as AccountRuntimeContribution];
+    : [runtimeContributions as AccountModuleRuntimeContribution];
 }
 
 /**
@@ -25,7 +24,7 @@ function normalizeRuntimeContributions(
 export function createAccountRuntimeContributions(
   accountRepository: IAccountRepository,
   runtimeContributions?: AccountRuntimeContributionsInput,
-): readonly AccountRuntimeContribution[] {
+): readonly AccountModuleRuntimeContribution[] {
   return [
     createAccountEventListenerRuntime(accountRepository),
     ...normalizeRuntimeContributions(runtimeContributions),

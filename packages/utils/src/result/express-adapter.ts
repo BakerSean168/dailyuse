@@ -31,13 +31,15 @@
 import {
   extractStructuredResultError,
   type Result,
-  type ResultErrorDetail,
   isOk,
   errorCodeToHttpStatus,
   createHttpResponseBuilder,
 } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import { mapPrismaError } from '../errors/prisma-error-mapper';
+// Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
+import { formatZodErrors } from './format-zod-errors';
+export { formatZodErrors };
 
 // ============================================================================
 // Types
@@ -68,6 +70,8 @@ interface ExpressLikeRequest {
 interface ExpressLikeResponse {
   status(code: number): this;
   json(data: unknown): this;
+  /** Used for 204 No Content success responses (no JSON body). */
+  end?(): this;
 }
 
 /**
@@ -87,26 +91,85 @@ export interface ExpressAdapterOptions {
 // ============================================================================
 
 /**
+ * Residual 1183 keep-boundary: Express defaultExtractContext — HTTP request-rich Context.
+ * Reads headers/body for deviceId, IP, UA, platform; identityId from req.user.
+ * Soft residual 1183: IPC defaultExtractContext is desktop stub (identity '', deviceId 'desktop').
+ *
  * Default context extractor from Express request
  */
 function defaultExtractContext(req: ExpressLikeRequest): Context {
+  const headers = req.headers ?? {};
+  const userAgentHeader = headers['user-agent'];
+  const userAgent = Array.isArray(userAgentHeader)
+    ? userAgentHeader[0]
+    : typeof userAgentHeader === 'string'
+      ? userAgentHeader
+      : undefined;
+  const forwarded = headers['x-forwarded-for'];
+  const realIp = headers['x-real-ip'];
+  const ipFromForwarded = Array.isArray(forwarded)
+    ? forwarded[0]
+    : typeof forwarded === 'string'
+      ? forwarded.split(',')[0]?.trim()
+      : undefined;
+  const ipAddress =
+    ipFromForwarded ||
+    (Array.isArray(realIp) ? realIp[0] : typeof realIp === 'string' ? realIp : undefined) ||
+    null;
+
+  const body = (req.body ?? {}) as {
+    deviceId?: string;
+    deviceInfo?: {
+      deviceId?: string;
+      deviceName?: string | null;
+      platform?: string | null;
+      os?: string | null;
+      browser?: string | null;
+      ipAddress?: string | null;
+      userAgent?: string | null;
+      deviceType?: string;
+      deviceFingerprint?: string;
+    };
+    ipAddress?: string;
+  };
+
+  const deviceInfo = body.deviceInfo;
+  const deviceId =
+    (typeof headers['x-device-id'] === 'string' && headers['x-device-id']) ||
+    body.deviceId ||
+    deviceInfo?.deviceId ||
+    'unknown';
+
+  const ua = deviceInfo?.userAgent || userAgent || null;
+  const platform = deviceInfo?.platform || deviceInfo?.os || null;
+  const browser = deviceInfo?.browser || null;
+  const deviceType = deviceInfo?.deviceType || inferDeviceType(ua);
+  const deviceName =
+    deviceInfo?.deviceName ||
+    (platform || browser ? `${platform ?? 'Unknown'} - ${browser ?? 'Unknown'}` : null);
+
   return {
     identityId: req.user?.identityId ?? '',
-    deviceId: (req.headers?.['x-device-id'] as string) || 'unknown',
+    deviceId,
+    device: {
+      deviceName,
+      os: platform,
+      browser,
+      ipAddress: deviceInfo?.ipAddress || body.ipAddress || ipAddress,
+      userAgent: ua,
+      deviceType,
+      deviceFingerprint: deviceInfo?.deviceFingerprint || undefined,
+    },
   };
 }
 
-/**
- * Format Zod issues into ResultErrorDetail array
- */
-export function formatZodErrors(
-  issues: Array<{ path: PropertyKey[]; message: string }>,
-): ResultErrorDetail[] {
-  return issues.map((issue) => ({
-    field: issue.path.map(String).join('.'),
-    code: 'INVALID_FIELD',
-    message: issue.message,
-  }));
+function inferDeviceType(userAgent: string | null | undefined): string {
+  if (!userAgent) return 'Browser';
+  const ua = userAgent.toLowerCase();
+  if (ua.includes('electron')) return 'Desktop';
+  if (ua.includes('ipad') || ua.includes('tablet')) return 'Tablet';
+  if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) return 'Mobile';
+  return 'Browser';
 }
 
 // ============================================================================
@@ -158,6 +221,14 @@ export function expressAdapter<T>(
       const result = await controllerFn(req, context);
 
       if (isOk(result)) {
+        // HTTP 204 must not carry a JSON body (residual 108 void dual-track).
+        if (successStatus === 204) {
+          res.status(204);
+          if (typeof res.end === 'function') {
+            res.end();
+          }
+          return;
+        }
         res.status(successStatus).json(responseBuilder.success(result.data as T));
       } else {
         const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');
@@ -268,6 +339,14 @@ export function expressAdapterWithValidation<TInput, TOutput>(
       const result = await controllerFn(parsed.data, context, req);
 
       if (isOk(result)) {
+        // HTTP 204 must not carry a JSON body (residual 108 void dual-track).
+        if (successStatus === 204) {
+          res.status(204);
+          if (typeof res.end === 'function') {
+            res.end();
+          }
+          return;
+        }
         res.status(successStatus).json(responseBuilder.success(result.data as TOutput));
       } else {
         const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');

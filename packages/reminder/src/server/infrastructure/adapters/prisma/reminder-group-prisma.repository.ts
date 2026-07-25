@@ -53,9 +53,9 @@ export class ReminderGroupPrismaRepository
     });
   }
 
-  async findById(id: string): Promise<ReminderGroup | null> {
-    const data = await this.prisma.reminderGroup.findUnique({
-      where: { id },
+  async findByIdForIdentity(identityId: string, id: string): Promise<ReminderGroup | null> {
+    const data = await this.prisma.reminderGroup.findFirst({
+      where: { id, identityId },
     });
     return data ? this.mapToEntity(data) : null;
   }
@@ -93,15 +93,13 @@ export class ReminderGroupPrismaRepository
     return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
   }
 
-  async findActive(identityId?: string): Promise<ReminderGroup[]> {
+  async findActive(identityId: string): Promise<ReminderGroup[]> {
     const where: Prisma.ReminderGroupWhereInput = {
+      identityId,
       enabled: true,
       status: 'Active',
       deletedAt: null,
     };
-    if (identityId) {
-      where.identityId = identityId;
-    }
 
     const data = await this.prisma.reminderGroup.findMany({
       where,
@@ -110,11 +108,11 @@ export class ReminderGroupPrismaRepository
     return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
   }
 
-  async findByIds(ids: string[]): Promise<ReminderGroup[]> {
+  async findByIds(identityId: string, ids: string[]): Promise<ReminderGroup[]> {
     if (ids.length === 0) return [];
 
     const data = await this.prisma.reminderGroup.findMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
       orderBy: { order: 'asc' },
     });
     return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
@@ -138,15 +136,18 @@ export class ReminderGroupPrismaRepository
     return data ? this.mapToEntity(data) : null;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.reminderGroup.delete({
-      where: { id },
+  async delete(identityId: string, id: string): Promise<void> {
+    const result = await this.prisma.reminderGroup.deleteMany({
+      where: { id, identityId },
     });
+    if (result.count !== 1) {
+      throw new Error('Reminder group not found for the current identity.');
+    }
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(identityId: string, id: string): Promise<boolean> {
     const count = await this.prisma.reminderGroup.count({
-      where: { id },
+      where: { id, identityId },
     });
     return count > 0;
   }

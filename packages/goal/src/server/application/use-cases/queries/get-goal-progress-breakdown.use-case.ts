@@ -13,8 +13,10 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class GetGoalProgressBreakdownUseCase {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
-  async execute(goalId: string): Promise<Result<ProgressBreakdown>> {
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+  async execute(goalId: string, identityId: string): Promise<Result<ProgressBreakdown>> {
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }

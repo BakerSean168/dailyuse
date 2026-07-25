@@ -72,6 +72,7 @@ import { computed } from 'vue';
 import { Loader2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { toLocalDateKey, type CalendarEventItem } from '../composables/useCalendarView';
+// Residual 1282: toDateStr dual retired onto toLocalDateKey sole.
 
 interface CalendarDay {
   key: string;
@@ -133,7 +134,7 @@ const calendarDays = computed<CalendarDay[]>(() => {
   for (let i = startWeekDay - 1; i >= 0; i--) {
     const d = prevMonthLastDay - i;
     const date = new Date(year, month - 1, d);
-    const fullDate = toDateStr(date);
+    const fullDate = toLocalDateKey(date);
     days.push({
       key: `prev-${d}`,
       date: d,
@@ -147,7 +148,7 @@ const calendarDays = computed<CalendarDay[]>(() => {
   // Current month
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
-    const fullDate = toDateStr(date);
+    const fullDate = toLocalDateKey(date);
     days.push({
       key: `curr-${d}`,
       date: d,
@@ -162,7 +163,7 @@ const calendarDays = computed<CalendarDay[]>(() => {
   const remaining = 42 - days.length;
   for (let d = 1; d <= remaining; d++) {
     const date = new Date(year, month + 1, d);
-    const fullDate = toDateStr(date);
+    const fullDate = toLocalDateKey(date);
     days.push({
       key: `next-${d}`,
       date: d,
@@ -176,17 +177,14 @@ const calendarDays = computed<CalendarDay[]>(() => {
   return days;
 });
 
-function toDateStr(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 function getEventsForDate(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter((event) => toLocalDateKey(event.startTime) === dateStr);
 }
 
+/**
+ * Residual 1306 keep-boundary: Month eventClass — translucent/text chips for dense month cells.
+ * Soft residual 1288 / 1303: not force-merged into calendarEventBgClass solid Day/Week bars.
+ */
 function eventClass(event: CalendarEventItem): string {
   if (event.hasConflict) {
     return 'bg-warning/15 text-warning';

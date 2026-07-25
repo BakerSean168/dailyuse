@@ -1,18 +1,11 @@
 /**
  * UserSetting Aggregate Root - Client Interface
+ *
+ * Residual 823: UserSettingClientDTO dual retired — sole UserSettingResponseSchema + z.infer.
  */
 
-import type { SettingId, IdentityId, TransferDate } from '../../../primitives';
-import type { UserSettingPreferences } from '../preferences';
+import type { z } from 'zod';
+import { UserSettingResponseSchema } from '../api/response-schemas';
 
-/**
- * UserSetting Client DTO — User settings sent to client
- */
-export interface UserSettingClientDTO {
-  id: SettingId;
-  identityId: IdentityId;
-  preferences: UserSettingPreferences;
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
+// Residual 823: UserSettingClientDTO dual retired — OpenAPI + transport use UserSettingResponseSchema.
+export type UserSettingClientDTO = z.infer<typeof UserSettingResponseSchema>;

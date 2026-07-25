@@ -50,6 +50,8 @@ export interface PowerSyncAIMessageWriteRow {
   created_at: string;
 }
 
+// Residual 1123 keep-boundary: string|null|undefined → Date|null (invalid → null; no now invent; no unknown).
+// Soft residual 1123: utils toDate always-Date+now; portable toDateString → string|undefined (no force-merge).
 function toDate(value: string | null | undefined): Date | null {
   if (!value) return null;
   const parsed = new Date(value);

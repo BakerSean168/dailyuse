@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId } from '../../../primitives';
-import type { FocusSessionClientDTO } from '../aggregates/focus-session-client';
+import { FocusSessionClientDTOSchema } from './response-schemas';
 
 // ============================================================================
 // START Focus
@@ -23,7 +23,6 @@ export const StartFocusSchema = z.object({
 });
 
 export type StartFocusReq = z.infer<typeof StartFocusSchema>;
-export type StartFocusRes = FocusSessionClientDTO;
 
 // ============================================================================
 // STOP Focus
@@ -37,7 +36,6 @@ export const StopFocusSchema = z.object({
 });
 
 export type StopFocusReq = z.infer<typeof StopFocusSchema>;
-export type StopFocusRes = FocusSessionClientDTO;
 
 // ============================================================================
 // GET Focus Status
@@ -48,13 +46,15 @@ export type StopFocusRes = FocusSessionClientDTO;
  */
 export type GetFocusStatusReq = void;
 
-export interface GetFocusStatusRes {
-  isActive: boolean;
-  session: FocusSessionClientDTO | null;
-  goalTitle?: string;
-  remainingSeconds?: number;
-  elapsedSeconds?: number;
-}
+// Residual 785: focus status Res dual retired — sole ResSchema + z.infer.
+export const GetFocusStatusResSchema = z.object({
+  isActive: z.boolean(),
+  session: FocusSessionClientDTOSchema.nullable(),
+  goalTitle: z.string().optional(),
+  remainingSeconds: z.number().optional(),
+  elapsedSeconds: z.number().optional(),
+});
+export type GetFocusStatusRes = z.infer<typeof GetFocusStatusResSchema>;
 
 // ============================================================================
 // QUERY Focus History
@@ -73,13 +73,15 @@ export const GetFocusHistorySchema = z.object({
 
 export type GetFocusHistoryReq = z.infer<typeof GetFocusHistorySchema>;
 
-export interface GetFocusHistoryRes {
-  data: FocusSessionClientDTO[];
-  totalSessions: number;
-  totalDurationMinutes: number;
-  averageDurationMinutes: number;
-  completionRate: number;
-}
+// Residual 785: focus history Res dual retired — sole ResSchema + z.infer.
+export const GetFocusHistoryResSchema = z.object({
+  data: z.array(FocusSessionClientDTOSchema),
+  totalSessions: z.number(),
+  totalDurationMinutes: z.number(),
+  averageDurationMinutes: z.number(),
+  completionRate: z.number(),
+});
+export type GetFocusHistoryRes = z.infer<typeof GetFocusHistoryResSchema>;
 
 // ============================================================================
 // GET Focus Statistics
@@ -90,16 +92,18 @@ export interface GetFocusHistoryRes {
  */
 export type GetFocusStatisticsReq = void;
 
-export interface GetFocusStatisticsRes {
-  todayDurationMinutes: number;
-  weekDurationMinutes: number;
-  monthDurationMinutes: number;
-  totalSessions: number;
-  completedSessions: number;
-  averageSessionDurationMinutes: number;
-  longestStreak: number;
-  currentStreak: number;
-}
+// Residual 777: focus statistics Res dual retired — sole ResSchema + z.infer.
+export const GetFocusStatisticsResSchema = z.object({
+  todayDurationMinutes: z.number(),
+  weekDurationMinutes: z.number(),
+  monthDurationMinutes: z.number(),
+  totalSessions: z.number(),
+  completedSessions: z.number(),
+  averageSessionDurationMinutes: z.number(),
+  longestStreak: z.number(),
+  currentStreak: z.number(),
+});
+export type GetFocusStatisticsRes = z.infer<typeof GetFocusStatisticsResSchema>;
 
 // ============================================================================
 // GET Pomodoro Config
@@ -110,13 +114,15 @@ export interface GetFocusStatisticsRes {
  */
 export type GetPomodoroConfigReq = void;
 
-export interface GetPomodoroConfigRes {
-  focusDurationMinutes: number;
-  shortBreakMinutes: number;
-  longBreakMinutes: number;
-  sessionsBeforeLongBreak: number;
-  autoStartBreaks: boolean;
-  autoStartFocus: boolean;
-  soundEnabled: boolean;
-  notificationEnabled: boolean;
-}
+// Residual 777: pomodoro config Res dual retired — sole ResSchema + z.infer.
+export const GetPomodoroConfigResSchema = z.object({
+  focusDurationMinutes: z.number(),
+  shortBreakMinutes: z.number(),
+  longBreakMinutes: z.number(),
+  sessionsBeforeLongBreak: z.number(),
+  autoStartBreaks: z.boolean(),
+  autoStartFocus: z.boolean(),
+  soundEnabled: z.boolean(),
+  notificationEnabled: z.boolean(),
+});
+export type GetPomodoroConfigRes = z.infer<typeof GetPomodoroConfigResSchema>;

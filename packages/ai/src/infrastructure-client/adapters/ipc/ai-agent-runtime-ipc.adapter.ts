@@ -7,52 +7,36 @@ import type {
   AgentRunResult,
   AgentStartRunClientRequest,
 } from '@dailyuse/contracts/ai';
+import type { Result } from '@dailyuse/contracts/result';
 import type { AIAgentRuntimeApiClient, IResultIpcClient } from '../types';
-import { unwrapResultOrThrow } from '../result-client-error';
 
+/** IPC adapter — returns Result, never throws (residual 100). */
 export class AIAgentRuntimeIpcAdapter implements AIAgentRuntimeApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
-  async listAgentRuns(params: AgentRunListParams = {}): Promise<AgentRun[]> {
-    const result = await this.ipcClient.invoke<AgentRun[]>(
-      AIChannels.AGENT_RUN_LIST,
-      params,
-    );
-    return unwrapResultOrThrow(result);
+  async listAgentRuns(params: AgentRunListParams = {}): Promise<Result<AgentRun[]>> {
+    return this.ipcClient.invoke<AgentRun[]>(AIChannels.AGENT_RUN_LIST, params);
   }
 
-  async startAgentRun(request: AgentStartRunClientRequest): Promise<AgentRunResult> {
-    const result = await this.ipcClient.invoke<AgentRunResult>(
-      AIChannels.AGENT_RUN_START,
-      request,
-    );
-    return unwrapResultOrThrow(result);
+  async startAgentRun(request: AgentStartRunClientRequest): Promise<Result<AgentRunResult>> {
+    return this.ipcClient.invoke<AgentRunResult>(AIChannels.AGENT_RUN_START, request);
   }
 
   async resumeAgentRun(
     runId: string,
     payload: AgentResumePayload,
-  ): Promise<AgentRunResult> {
-    const result = await this.ipcClient.invoke<AgentRunResult>(
-      AIChannels.AGENT_RUN_RESUME,
-      { runId, payload },
-    );
-    return unwrapResultOrThrow(result);
+  ): Promise<Result<AgentRunResult>> {
+    return this.ipcClient.invoke<AgentRunResult>(AIChannels.AGENT_RUN_RESUME, {
+      runId,
+      payload,
+    });
   }
 
-  async getAgentRun(runId: string): Promise<AgentRunResult> {
-    const result = await this.ipcClient.invoke<AgentRunResult>(
-      AIChannels.AGENT_RUN_GET,
-      runId,
-    );
-    return unwrapResultOrThrow(result);
+  async getAgentRun(runId: string): Promise<Result<AgentRunResult>> {
+    return this.ipcClient.invoke<AgentRunResult>(AIChannels.AGENT_RUN_GET, runId);
   }
 
-  async getAgentEvents(runId: string): Promise<AgentEvent[]> {
-    const result = await this.ipcClient.invoke<AgentEvent[]>(
-      AIChannels.AGENT_EVENTS_GET,
-      runId,
-    );
-    return unwrapResultOrThrow(result);
+  async getAgentEvents(runId: string): Promise<Result<AgentEvent[]>> {
+    return this.ipcClient.invoke<AgentEvent[]>(AIChannels.AGENT_EVENTS_GET, runId);
   }
 }

@@ -21,7 +21,6 @@ export default defineConfig({
     '@dailyuse/reminder',
     '@dailyuse/repository',
     '@dailyuse/schedule',
-    '@dailyuse/editor',
     '@dailyuse/ai',
     '@dailyuse/notification',
     '@dailyuse/setting',

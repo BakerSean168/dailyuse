@@ -17,8 +17,12 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { AIStreamChannels } from '@dailyuse/contracts/electron';
+import {
+  AIChannels,
+  AIStreamChannels,
+  type IElectronModule,
+  type IElectronModuleContext,
+} from '@dailyuse/contracts/electron';
 import { fail, ok } from '@dailyuse/contracts/result';
 import {
   AIServiceAnalyticsQueryAdapter,
@@ -45,47 +49,7 @@ import { getAIServiceRuntimeConfig } from '../shared/config/env';
 
 const logger = createLogger('AIElectron');
 
-// ---------------------------------------------------------------------------
-// IPC Channel Constants — IPC 频道常量
-// ---------------------------------------------------------------------------
-
-const Ch = {
-  CAPABILITIES_GET: 'ai:capabilities:get',
-  PROVIDER_CREATE: 'ai:provider:create',
-  PROVIDER_LIST: 'ai:provider:list',
-  PROVIDER_GET: 'ai:provider:get',
-  PROVIDER_UPDATE: 'ai:provider:update',
-  PROVIDER_DELETE: 'ai:provider:delete',
-  PROVIDER_TEST: 'ai:provider:test',
-  PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
-  PROVIDER_REFRESH_MODELS: 'ai:provider:refresh-models',
-  GOAL_GENERATE: 'ai:goal:generate',
-  CONVERSATION_CREATE: 'ai:chat:conversation:create',
-  CONVERSATION_UPDATE: 'ai:chat:conversation:update',
-  CONVERSATION_LIST: 'ai:chat:conversation:list',
-  CONVERSATION_GET: 'ai:chat:conversation:get',
-  CONVERSATION_DELETE: 'ai:chat:conversation:delete',
-  MESSAGE_SEND: 'ai:chat:message:send',
-  MESSAGE_LIST: 'ai:chat:message:list',
-  MESSAGE_STREAM_START: 'ai:chat:message:stream:start',
-  MESSAGE_STREAM_CANCEL: 'ai:chat:message:stream:cancel',
-  MESSAGE_STREAM_CHUNK: 'ai:chat:message:stream:chunk',
-  MESSAGE_STREAM_DONE: 'ai:chat:message:stream:done',
-  MESSAGE_STREAM_ERROR: 'ai:chat:message:stream:error',
-  KNOWLEDGE_EXPAND: 'ai:knowledge:expand',
-  KNOWLEDGE_QUERY: 'ai:knowledge:query',
-  KNOWLEDGE_REINDEX: 'ai:knowledge:reindex',
-  KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
-  ANALYTICS_QUERY: 'ai:analytics:query',
-  AGENT_RUN_LIST: 'ai:agent:run:list',
-  AGENT_RUN_START: 'ai:agent:run:start',
-  AGENT_RUN_RESUME: 'ai:agent:run:resume',
-  AGENT_RUN_GET: 'ai:agent:run:get',
-  AGENT_EVENTS_GET: 'ai:agent:events:get',
-  EVALUATION_OVERVIEW_GET: 'ai:evaluations:overview:get',
-} as const;
-
-const channels = Object.values(Ch);
+const allChannels = Object.values(AIChannels);
 
 type StreamSession = {
   abortController: AbortController;
@@ -93,32 +57,6 @@ type StreamSession = {
 };
 
 const activeStreamSessions = new Map<string, StreamSession>();
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function createKnowledgeNoteSubpathResolver(ctx: IElectronModuleContext) {
-  return async (identityId: string): Promise<string> => {
-    const row = await ctx.db.getOptional<{ preferences?: string }>(
-      'SELECT preferences FROM user_settings WHERE identity_id = ? LIMIT 1',
-      [identityId],
-    );
-
-    if (!row?.preferences) {
-      return '';
-    }
-
-    try {
-      const preferences = JSON.parse(row.preferences) as {
-        ai?: { knowledgeNoteSubpath?: string };
-      };
-      return preferences.ai?.knowledgeNoteSubpath ?? '';
-    } catch {
-      return '';
-    }
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Electron Module Factory — Electron 模块工厂
@@ -186,7 +124,6 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
         knowledgeNotePersistence: options.createKnowledgeNotePersistence(ctx),
         knowledgeSourcePort: options.createKnowledgeSourcePort(ctx),
         analyticsReadPort: options.createAnalyticsReadPort(ctx),
-        getKnowledgeNoteSubpath: createKnowledgeNoteSubpathResolver(ctx),
       });
       activeAIModule = aiModule;
       aiModule.start();
@@ -197,48 +134,70 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
       // ---------------------------------------------------------------
 
       // -- Provider Config --
-      ipcMain.handle(Ch.CAPABILITIES_GET, async () =>
+      ipcMain.handle(AIChannels.CAPABILITIES_GET, async () =>
         withAuthenticatedValue(ctx, async () => aiModule.api.getCapabilities()),
       );
-      ipcMain.handle(Ch.PROVIDER_CREATE, async (_, dto) =>
+      ipcMain.handle(AIChannels.PROVIDER_CREATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.createProvider(dto, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.PROVIDER_LIST, async () =>
+      ipcMain.handle(AIChannels.PROVIDER_LIST, async () =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.listProviders({
+            identityId: requestContext.identityId,
+          });
+          if (!result.ok) {
+            return result;
+          }
+          // Align Desktop IPC with contracts ListAIProviderConfigsRes / HTTP list envelope.
+          return ok({ data: result.data });
+        }),
+      );
+      ipcMain.handle(AIChannels.PROVIDER_GET, async (_, id) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.listProviders({ identityId: requestContext.identityId }),
+          aiModule.api.getProvider(id, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.PROVIDER_GET, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => aiModule.api.getProvider(id)),
-      );
-      ipcMain.handle(Ch.PROVIDER_UPDATE, async (_, payload) =>
-        withAuthenticatedValue(ctx, async () =>
-          aiModule.api.updateProvider(String(payload.id), payload),
+      ipcMain.handle(AIChannels.PROVIDER_UPDATE, async (_, payload) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.updateProvider(String(payload.id), payload, {
+            identityId: requestContext.identityId,
+          }),
         ),
       );
-      ipcMain.handle(Ch.PROVIDER_DELETE, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => aiModule.api.deleteProvider(id)),
+      ipcMain.handle(AIChannels.PROVIDER_DELETE, async (_, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.deleteProvider(id, {
+            identityId: requestContext.identityId,
+          });
+          if (!result.ok) return result;
+          // Align with HTTP void success: data:null (no undefined dual-track).
+          return ok(null);
+        }),
       );
-      ipcMain.handle(Ch.PROVIDER_TEST, async (_, dto) =>
+      ipcMain.handle(AIChannels.PROVIDER_TEST, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.testConnection(dto, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.PROVIDER_SET_DEFAULT, async (_, dto) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.setDefaultProvider(dto.providerId, { identityId: requestContext.identityId }),
-        ),
+      ipcMain.handle(AIChannels.PROVIDER_SET_DEFAULT, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.setDefaultProvider(dto.providerId, {
+            identityId: requestContext.identityId,
+          });
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
-      ipcMain.handle(Ch.PROVIDER_REFRESH_MODELS, async (_, id) =>
+      ipcMain.handle(AIChannels.PROVIDER_REFRESH_MODELS, async (_, id) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.refreshProviderModels(String(id), { identityId: requestContext.identityId }),
         ),
       );
 
       // -- Goal Generation --
-      ipcMain.handle(Ch.GOAL_GENERATE, async (_, dto) =>
+      ipcMain.handle(AIChannels.GOAL_GENERATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.generateGoal({
             identityId: requestContext.identityId,
@@ -248,19 +207,23 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
       );
 
       // -- Conversations --
-      ipcMain.handle(Ch.CONVERSATION_CREATE, async (_, dto) =>
+      ipcMain.handle(AIChannels.CONVERSATION_CREATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.createConversation({ identityId: requestContext.identityId }, dto.name),
         ),
       );
-      ipcMain.handle(Ch.CONVERSATION_UPDATE, async (_, dto) =>
-        withAuthenticatedValue(ctx, async () =>
-          aiModule.api.updateConversation(String(dto.id), {
-            name: String(dto.name),
-          }),
+      ipcMain.handle(AIChannels.CONVERSATION_UPDATE, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.updateConversation(
+            String(dto.id),
+            {
+              name: String(dto.name),
+            },
+            { identityId: requestContext.identityId },
+          ),
         ),
       );
-      ipcMain.handle(Ch.CONVERSATION_LIST, async (_, dto) =>
+      ipcMain.handle(AIChannels.CONVERSATION_LIST, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.listConversations(
             { identityId: requestContext.identityId },
@@ -269,19 +232,29 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
           ),
         ),
       );
-      ipcMain.handle(Ch.CONVERSATION_GET, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => {
-          const result = await aiModule.api.getConversation(String(id), true);
+      ipcMain.handle(AIChannels.CONVERSATION_GET, async (_, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.getConversation(
+            String(id),
+            { identityId: requestContext.identityId },
+            true,
+          );
           if (!result.ok) return result;
           return result.data ?? null;
         }),
       );
-      ipcMain.handle(Ch.CONVERSATION_DELETE, async (_, id) =>
-        withAuthenticatedValue(ctx, async () => aiModule.api.deleteConversation(String(id))),
+      ipcMain.handle(AIChannels.CONVERSATION_DELETE, async (_, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.deleteConversation(String(id), {
+            identityId: requestContext.identityId,
+          });
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
 
       // -- Chat Messages --
-      ipcMain.handle(Ch.MESSAGE_SEND, async (_, dto) =>
+      ipcMain.handle(AIChannels.MESSAGE_SEND, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.sendMessage(
             String(dto.conversationId),
@@ -292,7 +265,7 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
           ),
         ),
       );
-      ipcMain.handle(Ch.MESSAGE_STREAM_START, async (event, dto) =>
+      ipcMain.handle(AIChannels.MESSAGE_STREAM_START, async (event, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) => {
           const payload = dto as {
             streamId?: unknown;
@@ -358,7 +331,7 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
           return ok(null);
         }),
       );
-      ipcMain.handle(Ch.MESSAGE_STREAM_CANCEL, async (event, streamId) =>
+      ipcMain.handle(AIChannels.MESSAGE_STREAM_CANCEL, async (event, streamId) =>
         withAuthenticatedValue(ctx, async () => {
           const session = activeStreamSessions.get(String(streamId));
           if (session && session.webContentsId === event.sender.id) {
@@ -368,9 +341,100 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
           return ok(null);
         }),
       );
-      ipcMain.handle(Ch.MESSAGE_LIST, async (_, dto) =>
+
+      // Residual 353: AssistantFacade Host dispatch stream (open chat / approve / cancel).
+      ipcMain.handle(AIChannels.ASSISTANT_DISPATCH_START, async (event, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const payload = dto as {
+            streamId?: unknown;
+            command?: unknown;
+          };
+          const streamId = String(payload.streamId ?? '');
+          if (!streamId) {
+            return fail({ code: 'VALIDATION_ERROR', message: 'Missing streamId' });
+          }
+          if (!payload.command || typeof payload.command !== 'object') {
+            return fail({ code: 'VALIDATION_ERROR', message: 'Missing assistant command' });
+          }
+          if ('identityId' in (payload.command as object)) {
+            return fail({
+              code: 'VALIDATION_ERROR',
+              message: 'identityId must not be sent in assistant client commands',
+            });
+          }
+
+          const abortController = new AbortController();
+          activeStreamSessions.set(streamId, {
+            abortController,
+            webContentsId: event.sender.id,
+          });
+
+          void (async () => {
+            try {
+              const result = await aiModule.api.dispatchAssistant(
+                {
+                  ...(payload.command as object),
+                  identityId: requestContext.identityId,
+                } as Parameters<typeof aiModule.api.dispatchAssistant>[0],
+                (assistantEvent) => {
+                  if (!event.sender.isDestroyed()) {
+                    event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_EVENT, {
+                      streamId,
+                      event: assistantEvent,
+                    });
+                  }
+                },
+                abortController.signal,
+              );
+
+              if (!event.sender.isDestroyed()) {
+                if (!result.ok) {
+                  event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_ERROR, {
+                    streamId,
+                    code: result.error.code,
+                    message: result.error.message,
+                    details: result.error.details,
+                  });
+                } else {
+                  event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_DONE, {
+                    streamId,
+                    result: result.data,
+                  });
+                }
+              }
+            } catch (error) {
+              if (!event.sender.isDestroyed()) {
+                event.sender.send(AIStreamChannels.ASSISTANT_DISPATCH_ERROR, {
+                  streamId,
+                  code: 'INTERNAL_ERROR',
+                  message: error instanceof Error ? error.message : 'Assistant dispatch failed',
+                });
+              }
+            } finally {
+              activeStreamSessions.delete(streamId);
+            }
+          })();
+
+          return ok(null);
+        }),
+      );
+      ipcMain.handle(AIChannels.ASSISTANT_DISPATCH_CANCEL, async (event, streamId) =>
         withAuthenticatedValue(ctx, async () => {
-          const result = await aiModule.api.getConversation(String(dto.conversationId), true);
+          const session = activeStreamSessions.get(String(streamId));
+          if (session && session.webContentsId === event.sender.id) {
+            session.abortController.abort();
+            activeStreamSessions.delete(String(streamId));
+          }
+          return ok(null);
+        }),
+      );
+      ipcMain.handle(AIChannels.MESSAGE_LIST, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await aiModule.api.getConversation(
+            String(dto.conversationId),
+            { identityId: requestContext.identityId },
+            true,
+          );
           if (!result.ok) return result;
           if (!result.data) {
             return fail({ code: 'NOT_FOUND', message: 'Conversation not found' });
@@ -386,37 +450,37 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
       );
 
       // -- Knowledge Notes --
-      ipcMain.handle(Ch.KNOWLEDGE_NOTE_CREATE, async (_, dto) =>
+      ipcMain.handle(AIChannels.KNOWLEDGE_NOTE_CREATE, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.createKnowledgeNote(dto, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_QUERY, async (_, dto) =>
+      ipcMain.handle(AIChannels.KNOWLEDGE_QUERY, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.queryKnowledge(dto, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_EXPAND, async (_, dto) =>
+      ipcMain.handle(AIChannels.KNOWLEDGE_EXPAND, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.expandKnowledge(dto, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.KNOWLEDGE_REINDEX, async (_, dto) =>
+      ipcMain.handle(AIChannels.KNOWLEDGE_REINDEX, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.reindexKnowledge(dto ?? {}, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.ANALYTICS_QUERY, async (_, dto) =>
+      ipcMain.handle(AIChannels.ANALYTICS_QUERY, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.queryAnalytics(dto, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.AGENT_RUN_LIST, async (_, dto) =>
+      ipcMain.handle(AIChannels.AGENT_RUN_LIST, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.listAgentRuns(dto ?? {}, { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.AGENT_RUN_START, async (_, dto) =>
+      ipcMain.handle(AIChannels.AGENT_RUN_START, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.startAgentRun(
             {
@@ -427,26 +491,24 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
           ),
         ),
       );
-      ipcMain.handle(Ch.AGENT_RUN_RESUME, async (_, dto) =>
+      ipcMain.handle(AIChannels.AGENT_RUN_RESUME, async (_, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
-          aiModule.api.resumeAgentRun(
-            String(dto.runId),
-            dto.payload,
-            { identityId: requestContext.identityId },
-          ),
+          aiModule.api.resumeAgentRun(String(dto.runId), dto.payload, {
+            identityId: requestContext.identityId,
+          }),
         ),
       );
-      ipcMain.handle(Ch.AGENT_RUN_GET, async (_, runId) =>
+      ipcMain.handle(AIChannels.AGENT_RUN_GET, async (_, runId) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.getAgentRun(String(runId), { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.AGENT_EVENTS_GET, async (_, runId) =>
+      ipcMain.handle(AIChannels.AGENT_EVENTS_GET, async (_, runId) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           aiModule.api.getAgentEvents(String(runId), { identityId: requestContext.identityId }),
         ),
       );
-      ipcMain.handle(Ch.EVALUATION_OVERVIEW_GET, async (_, dto) =>
+      ipcMain.handle(AIChannels.EVALUATION_OVERVIEW_GET, async (_, dto) =>
         withAuthenticatedValue(ctx, async () => aiModule.api.getEvaluationOverview(dto ?? {})),
       );
 
@@ -454,7 +516,7 @@ function createAIElectronModuleWithOptions(options: AIElectronModuleOptions): IE
     },
 
     destroy(): void {
-      for (const channel of channels) {
+      for (const channel of allChannels) {
         ipcMain.removeHandler(channel);
       }
       for (const session of activeStreamSessions.values()) {

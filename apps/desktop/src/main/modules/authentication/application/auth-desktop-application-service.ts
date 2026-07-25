@@ -37,47 +37,31 @@ import {
   AuthRuntimeState,
   type AuthResponseDTO,
   type GetCurrentUserRes,
-  type TokenStatus,
-  type TwoFactorStatus,
-  type ApiKeyInfo,
   type AuthStatus,
   type EmailLoginCredentials,
-  type DeviceInfoUI,
   type ListSessionsRes,
   type RememberedDesktopAccountDTO,
   type RememberedDesktopAccountLoginReq,
   type AuthBootstrapSnapshot,
-  type SessionInfo,
 } from '@dailyuse/contracts/authentication';
 import {
   TokenManager,
-  SessionManager,
-  type SessionStatus,
+  SessionManager
 } from '../infrastructure';
 import type { RememberedAccountsService, NetworkStateManager } from '../infrastructure';
 import { AuthRemoteGateway, type RegisterApiResponse } from './auth-remote-gateway';
 import { DesktopAuthAccountProjectionService } from './desktop-auth-account-projection-service';
 import { DesktopRememberedAccountService } from './desktop-remembered-account-service';
-import { DesktopCredentialAuthCoordinator, type AuthState, type RegisterRequest } from './desktop-credential-auth-coordinator';
+import { DesktopCredentialAuthCoordinator, type AuthState, type EmailRegisterCredentials } from './desktop-credential-auth-coordinator';
 import {
   DesktopAuthLifecycleCoordinator,
   type AutoLoginResult,
-  type SessionRestoreResult,
+  type LifecycleSessionRestoreResult,
 } from './desktop-auth-lifecycle-coordinator';
 import { DesktopAuthSecurityAdminService } from './desktop-auth-security-admin-service';
 import { safeTransition } from './auth-coordinator-helpers';
 import type { WindowManager } from '../../../lifecycle/window-manager';
-
-// Re-export from contracts for convenience
-export type { IpcResult, TwoFactorStatus, ApiKeyInfo, AuthStatus, EmailLoginCredentials };
-export type { DeviceInfoUI } from '@dailyuse/contracts/authentication';
-export { AuthMode, toIpcResult, ok, fail };
-
-// Re-export lifecycle types
-export type { AutoLoginResult, SessionRestoreResult } from './desktop-auth-lifecycle-coordinator';
-
-// Alias for backward compatibility
-export type LoginCredentials = EmailLoginCredentials;
+import { toCloudAccessToken } from '../infrastructure/session-types';
 
 // ===== Application Service =====
 
@@ -258,7 +242,7 @@ export class AuthDesktopApplicationService {
   /**
    * 初始化认证服务
    */
-  async initialize(): Promise<SessionRestoreResult> {
+  async initialize(): Promise<LifecycleSessionRestoreResult> {
     return this.requireLifecycle().initialize();
   }
 
@@ -266,7 +250,7 @@ export class AuthDesktopApplicationService {
   // Core Auth Methods (delegated to credential coordinator)
   // ============================================
 
-  async login(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
+  async login(credentials: EmailLoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     return this.requireCoordinator().login(credentials);
   }
 
@@ -276,13 +260,13 @@ export class AuthDesktopApplicationService {
     return this.requireCoordinator().loginRememberedAccount(request);
   }
 
-  async register(request: RegisterRequest): Promise<IpcResult<AuthResponseDTO>> {
+  async register(request: EmailRegisterCredentials): Promise<IpcResult<AuthResponseDTO>> {
     return this.requireCoordinator().register(request);
   }
 
   async completeRegisterSuccess(
     data: RegisterApiResponse | AuthResponseDTO,
-    request: RegisterRequest,
+    request: EmailRegisterCredentials,
   ): Promise<void> {
     return this.requireCoordinator().completeRegisterSuccess(data, request);
   }
@@ -349,9 +333,6 @@ export class AuthDesktopApplicationService {
   /**
    * 验证令牌
    */
-  async verifyToken(token: string): Promise<{ valid: boolean; error?: string }> {
-    return this.requireLifecycle().verifyToken(token);
-  }
 
   /**
    * 获取认证状态
@@ -367,59 +348,22 @@ export class AuthDesktopApplicationService {
   /**
    * 获取 Token 状态
    */
-  async getTokenStatus(): Promise<TokenStatus> {
-    return this.requireLifecycle().getTokenStatus();
+
+  /**
+   * Synchronous cached access token for online API calls from the desktop shell.
+   * 桌面壳层在线 API 调用使用的同步缓存 access token。
+   */
+  getAccessToken(): string | null {
+    return toCloudAccessToken(this.tokenManager.getCachedTokenData()?.accessToken ?? null);
   }
 
   /**
    * 获取会话状态
    */
-  async getSessionStatus(): Promise<SessionStatus | null> {
-    return this.requireLifecycle().getSessionStatus();
-  }
 
   // ============================================
   // Security Admin Methods (delegated)
   // ============================================
-
-  async enable2FA(method: string): Promise<IpcResult<{ qrCodeUrl?: string; secret?: string }>> {
-    return this.requireSecurityAdmin().enable2FA(method);
-  }
-
-  async disable2FA(): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().disable2FA();
-  }
-
-  async verify2FA(code: string): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().verify2FA(code);
-  }
-
-  async get2FAStatus(): Promise<TwoFactorStatus> {
-    return this.requireSecurityAdmin().get2FAStatus();
-  }
-
-  async generateBackupCodes(): Promise<{ codes: string[] }> {
-    return this.requireSecurityAdmin().generateBackupCodes();
-  }
-
-  async createApiKey(request: {
-    name: string;
-    scopes?: string[];
-  }): Promise<{ id: string; key: string } | null> {
-    return this.requireSecurityAdmin().createApiKey(request);
-  }
-
-  async listApiKeys(): Promise<{ apiKeys: ApiKeyInfo[]; total: number }> {
-    return this.requireSecurityAdmin().listApiKeys();
-  }
-
-  async revokeApiKey(keyId: string): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().revokeApiKey(keyId);
-  }
-
-  async rotateApiKey(keyId: string): Promise<{ newKey: string | null }> {
-    return this.requireSecurityAdmin().rotateApiKey(keyId);
-  }
 
   async listSessions(): Promise<ListSessionsRes> {
     return this.requireSecurityAdmin().listSessions();
@@ -429,33 +373,11 @@ export class AuthDesktopApplicationService {
     return this.requireSecurityAdmin().getCurrentUser();
   }
 
-  async getCurrentSession(): Promise<SessionInfo | null> {
-    return this.requireSecurityAdmin().getCurrentSession();
-  }
 
   async revokeSession(sessionId?: string): Promise<IpcResult<void>> {
     return this.requireSecurityAdmin().revokeSession(sessionId);
   }
 
-  async revokeAllSessions(): Promise<{ ok: boolean; count: number }> {
-    return this.requireSecurityAdmin().revokeAllSessions();
-  }
-
-  async listDevices(): Promise<{ devices: DeviceInfoUI[]; total: number }> {
-    return this.requireSecurityAdmin().listDevices();
-  }
-
-  async getCurrentDevice(): Promise<DeviceInfoUI> {
-    return this.requireSecurityAdmin().getCurrentDevice();
-  }
-
-  async revokeDevice(deviceId: string): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().revokeDevice(deviceId);
-  }
-
-  async renameDevice(deviceId: string, name: string): Promise<IpcResult<void>> {
-    return this.requireSecurityAdmin().renameDevice(deviceId, name);
-  }
 
   // ============================================
   // Identity/Context Helpers (remain on facade)
@@ -539,9 +461,6 @@ export class AuthDesktopApplicationService {
   /**
    * 清理过期会话
    */
-  async cleanupExpiredSessions(): Promise<number> {
-    return this.requireLifecycle().cleanupExpiredSessions();
-  }
 
   /**
    * 清理资源

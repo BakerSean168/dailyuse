@@ -29,7 +29,7 @@ import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RuleRevision } from '@/server/domain/entities/rule-revision';
 import { RuleId } from '@/server/domain/value-objects/rule-id';
 import { RuleRevisionId } from '@/server/domain/value-objects/rule-revision-id';
-import { fromDbDate, parseStringArray, parseRecord } from '../../mapper-helpers';
+import { fromDbDate, parseStringArray, parseRecord } from '@dailyuse/utils/shared';
 
 // ---------------------------------------------------------------------------
 // ChangeType — imported from server/domain value object

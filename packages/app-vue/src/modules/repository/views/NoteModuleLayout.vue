@@ -15,7 +15,7 @@
  * NoteModuleLayout — Note 模块壳（UI 重构 V2 §3 / §6 Note）
  *
  * 顶部固定 [笔记 | 规范] 分区切换；内容区渲染
- * `/repository`、`/note/:id`、`/governance/**`（路径契约不变）。
+ * `/repository`（含 `?note=` 深链）、`/governance/**`。
  * 深链打开 governance 时 activeSegment 自动落「规范」。
  */
 import { computed } from 'vue';

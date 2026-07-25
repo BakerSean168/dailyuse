@@ -8,9 +8,15 @@ import type {
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
 } from '@dailyuse/contracts/ai';
+import { unwrap } from '@dailyuse/contracts/result';
 import { AI_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 
+/**
+ * AI provider/capabilities composable.
+ * Provider/capabilities/conversation/goal/knowledge/analytics methods consume
+ * Result ports (residual 96–98); message/stream/agent still throw-unwrap.
+ */
 export function useAI() {
   const service = useStrictInject(AI_SERVICE_KEY, 'AIService');
   const providers = ref<AIProviderConfigClientDTO[]>([]);
@@ -23,7 +29,7 @@ export function useAI() {
   async function loadProviders() {
     isLoadingProviders.value = true;
     try {
-      const nextProviders = await service.listProviders();
+      const nextProviders = unwrap(await service.listProviders());
       providers.value = nextProviders;
       console.debug('[AI] providers loaded', {
         count: providers.value.length,
@@ -38,7 +44,7 @@ export function useAI() {
   async function loadCapabilities() {
     isLoadingCapabilities.value = true;
     try {
-      capabilities.value = await service.getCapabilities();
+      capabilities.value = unwrap(await service.getCapabilities());
       return capabilities.value;
     } finally {
       isLoadingCapabilities.value = false;
@@ -46,39 +52,39 @@ export function useAI() {
   }
 
   async function createProvider(request: CreateAIProviderConfigReq) {
-    const provider = await service.createProvider(request);
+    const provider = unwrap(await service.createProvider(request));
     await loadProviders();
     return provider;
   }
 
   async function updateProvider(id: string, request: UpdateAIProviderConfigReq) {
-    const provider = await service.updateProvider(id, request);
+    const provider = unwrap(await service.updateProvider(id, request));
     await loadProviders();
     return provider;
   }
 
   async function deleteProvider(id: string) {
-    await service.deleteProvider(id);
+    unwrap(await service.deleteProvider(id));
     await loadProviders();
   }
 
   async function setDefaultProvider(providerId: string) {
-    await service.setDefaultProvider(providerId);
+    unwrap(await service.setDefaultProvider(providerId));
     await loadProviders();
   }
 
   async function refreshProviderModels(providerId: string) {
-    const provider = await service.refreshProviderModels(providerId);
+    const provider = unwrap(await service.refreshProviderModels(providerId));
     await loadProviders();
     return provider;
   }
 
-  function testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes> {
-    return service.testProvider(request);
+  async function testProvider(request: TestAIProviderReq): Promise<TestAIProviderRes> {
+    return unwrap(await service.testProvider(request));
   }
 
-  function expandKnowledge(request: ExpandKnowledgeReq) {
-    return service.expandKnowledge(request);
+  async function expandKnowledge(request: ExpandKnowledgeReq) {
+    return unwrap(await service.expandKnowledge(request));
   }
 
   return {

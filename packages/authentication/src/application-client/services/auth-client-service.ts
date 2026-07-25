@@ -14,13 +14,8 @@ import type {
   AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -29,6 +24,14 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -39,39 +42,17 @@ import type {
 
 // ─── Client Application Port ────────────────────────────────────────────────
 
-/** High-level client-side operations for the authentication module. */
-export interface AuthenticationClientPort {
-  loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>>;
-  registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>>;
-  sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>>;
-  refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>>;
-  logout(): Promise<Result<void>>;
-  getCurrentUser(): Promise<Result<GetCurrentUserRes>>;
-  listSessions(): Promise<Result<ListSessionsRes>>;
-  revokeSession(req: RevokeSessionReq): Promise<Result<void>>;
-  changePassword(req: ChangePasswordReq): Promise<Result<void>>;
-  forgotPassword(req: ForgotPasswordReq): Promise<Result<void>>;
-  resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
-  sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>>;
-  verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>>;
-  enterGuestMode(): Promise<Result<GuestModeRes>>;
-  autoLoginDesktop(): Promise<Result<AutoLoginResult>>;
-  listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>>;
-  loginRememberedDesktopAccount(
-    req: RememberedDesktopAccountLoginReq,
-  ): Promise<Result<LoginByEmailRes>>;
-  removeRememberedAccount(identityId: string): Promise<Result<void>>;
-}
+/**
+ * Application-facing client port.
+ * Identical to IAuthApiClient for this module (pure Result pass-through).
+ */
+export type AuthenticationClientPort = IAuthApiClient;
 
-export class AuthClientService implements AuthenticationClientPort {
+export class AuthClientService implements IAuthApiClient {
+
   constructor(private readonly apiClient: IAuthApiClient) {
     this.loginByEmail = this.loginByEmail.bind(this);
-    this.loginByPhone = this.loginByPhone.bind(this);
     this.registerByEmail = this.registerByEmail.bind(this);
-    this.registerByPhone = this.registerByPhone.bind(this);
-    this.sendSmsCode = this.sendSmsCode.bind(this);
     this.refreshToken = this.refreshToken.bind(this);
     this.logout = this.logout.bind(this);
     this.getCurrentUser = this.getCurrentUser.bind(this);
@@ -82,6 +63,11 @@ export class AuthClientService implements AuthenticationClientPort {
     this.resetPassword = this.resetPassword.bind(this);
     this.sendEmailCode = this.sendEmailCode.bind(this);
     this.verifyEmailCode = this.verifyEmailCode.bind(this);
+    this.getOAuthUrl = this.getOAuthUrl.bind(this);
+    this.listOAuthProviders = this.listOAuthProviders.bind(this);
+    this.oauthCallback = this.oauthCallback.bind(this);
+    this.bindOAuth = this.bindOAuth.bind(this);
+    this.unbindOAuth = this.unbindOAuth.bind(this);
     this.enterGuestMode = this.enterGuestMode.bind(this);
     this.autoLoginDesktop = this.autoLoginDesktop.bind(this);
     this.listRememberedAccounts = this.listRememberedAccounts.bind(this);
@@ -95,9 +81,6 @@ export class AuthClientService implements AuthenticationClientPort {
     return this.apiClient.loginByEmail(req);
   }
 
-  async loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>> {
-    return this.apiClient.loginByPhone(req);
-  }
 
   // ========== Register ==========
 
@@ -105,15 +88,9 @@ export class AuthClientService implements AuthenticationClientPort {
     return this.apiClient.registerByEmail(req);
   }
 
-  async registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>> {
-    return this.apiClient.registerByPhone(req);
-  }
 
   // ========== SMS ==========
 
-  async sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>> {
-    return this.apiClient.sendSmsCode(req);
-  }
 
   // ========== Token ==========
 
@@ -161,6 +138,26 @@ export class AuthClientService implements AuthenticationClientPort {
 
   async verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>> {
     return this.apiClient.verifyEmailCode(req);
+  }
+
+  async getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>> {
+    return this.apiClient.getOAuthUrl(req);
+  }
+
+  async listOAuthProviders(): Promise<Result<OAuthProvidersRes>> {
+    return this.apiClient.listOAuthProviders();
+  }
+
+  async oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>> {
+    return this.apiClient.oauthCallback(req);
+  }
+
+  async bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>> {
+    return this.apiClient.bindOAuth(req);
+  }
+
+  async unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>> {
+    return this.apiClient.unbindOAuth(req);
   }
 
   // ========== Guest Mode (Desktop) ==========

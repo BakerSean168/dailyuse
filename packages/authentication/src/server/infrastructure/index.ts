@@ -33,6 +33,13 @@ export { JwtTokenProvider } from './services/jwt-token-provider';
 export { InMemoryVerificationChallengeStore } from './services/in-memory-verification-challenge-store';
 export { ConsoleEmailSender } from './services/console-email-sender';
 export {
+  MockGithubOAuthClient,
+  isMockGithubOAuthClientId,
+  buildMockGithubAuthorizeUrl,
+  MOCK_GITHUB_CODE_PREFIX,
+} from './services/mock-github-oauth-client';
+export { InMemoryOAuthStateStore } from './services/in-memory-oauth-state-store';
+export {
   GithubOAuthClient,
   type GithubOAuthClientConfig,
 } from './services/github-oauth-client';
@@ -61,6 +68,6 @@ export {
 } from './prisma';
 export {
   createAuthenticationRuntimeContribution,
-  type AuthenticationRuntimeContribution,
+  type CreateAuthenticationRuntimeContributionOptions,
 } from './runtime';
 

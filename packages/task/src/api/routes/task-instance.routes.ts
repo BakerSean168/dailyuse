@@ -24,20 +24,14 @@ import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskInstanceController } from '../../server/transport/task-instance.controller';
+// Residual 983: sole getFirstQueryValue (local dual retired).
+import { getFirstQueryValue } from './get-first-query-value';
 
 // ============ Types ============
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
-}
-
-function getFirstQueryValue(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return typeof value[0] === 'string' ? value[0] : undefined;
-  }
-
-  return typeof value === 'string' ? value : undefined;
 }
 
 function parseTimestampQuery(value: unknown, fallback: number): number {
@@ -141,7 +135,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.getInstance(req.params!.id),
+    (req, ctx) => controller.getInstance(req.params!.id, ctx),
   );
 
   // POST /:id/complete — Complete instance
@@ -160,7 +154,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.completeInstance(req.params!.id, req.body),
+    (req, ctx) => controller.completeInstance(req.params!.id, req.body, ctx),
   );
 
   // POST /:id/skip — Skip instance
@@ -179,7 +173,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.skipInstance(req.params!.id, req.body),
+    (req, ctx) => controller.skipInstance(req.params!.id, req.body, ctx),
   );
 
   // POST /:id/start — Start instance
@@ -195,7 +189,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.startInstance(req.params!.id),
+    (req, ctx) => controller.startInstance(req.params!.id, ctx),
   );
 
   // DELETE /:id — Delete instance
@@ -211,7 +205,7 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteInstance(req.params!.id),
+    (req, ctx) => controller.deleteInstance(req.params!.id, ctx),
   );
 
   return router;

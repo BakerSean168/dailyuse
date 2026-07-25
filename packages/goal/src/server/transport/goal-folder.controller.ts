@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import {
   CreateGoalFolderSchema,
   UpdateGoalFolderSchema,
@@ -76,8 +76,8 @@ export class GoalFolderController {
     return this.useCases.listGoalFolders(query);
   }
 
-  async get(id: string): Promise<Result<unknown>> {
-    return this.useCases.getGoalFolder(id);
+  async get(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+    return this.useCases.getGoalFolder(id, cx.identityId);
   }
 
   async update(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
@@ -92,7 +92,9 @@ export class GoalFolderController {
     return this.useCases.updateGoalFolder(id, cx.identityId, parsed.data);
   }
 
-  async delete(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.deleteGoalFolder(id, cx.identityId);
+  async delete(id: string, cx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.useCases.deleteGoalFolder(id, cx.identityId);
+    if (!result.ok) return result;
+    return ok(null);
   }
 }

@@ -22,12 +22,6 @@ import type {
   TokenStatus,
 } from '@dailyuse/contracts/authentication';
 
-// ============ Type Re-exports (for convenience) ============
-export type { TokenStorageData, SaveTokenRequest, TokenRefreshResult, TokenStatus };
-
-// 内部类型别名（同时导出供其他模块使用）
-export type TokenData = TokenStorageData;
-
 // ============ Constants ============
 
 /** 提前刷新时间：10 分钟（毫秒） */
@@ -46,7 +40,7 @@ const DEFAULT_REFRESH_TOKEN_EXPIRES_IN = 30 * 24 * 60 * 60;
 export class TokenManager {
   private readonly logger: ILogger;
   private tokenPath: string;
-  private cachedTokenData: TokenData | null = null;
+  private cachedTokenData: TokenStorageData | null = null;
   private refreshTimer: NodeJS.Timeout | null = null;
   private refreshCallback: (() => Promise<TokenRefreshResult>) | null = null;
 
@@ -65,6 +59,7 @@ export class TokenManager {
    * @param request - Token 保存请求
    * @throws Error - 如果加密不可用或写入失败
    */
+  // Residual 897: maps SaveTokenRequest (*ExpiresIn) → TokenStorageData (*ExpiresAt); not a type alias collapse.
   async saveTokens(request: SaveTokenRequest): Promise<void> {
     this.logger.debug('Saving tokens', {
       identityId: request.identityId,
@@ -78,7 +73,7 @@ export class TokenManager {
     }
 
     const now = Date.now();
-    const tokenData: TokenData = {
+    const tokenData: TokenStorageData = {
       accessToken: request.accessToken,
       refreshToken: request.refreshToken,
       accessTokenExpiresAt: now + request.accessTokenExpiresIn * 1000,
@@ -103,9 +98,9 @@ export class TokenManager {
   /**
    * 加载 Token 从加密存储
    *
-   * @returns TokenData 或 null（如果不存在或已损坏）
+   * @returns TokenStorageData 或 null（如果不存在或已损坏）
    */
-  async loadTokens(): Promise<TokenData | null> {
+  async loadTokens(): Promise<TokenStorageData | null> {
     // 优先返回缓存
     if (this.cachedTokenData) {
       this.logger.debug('Returning cached token data');
@@ -357,7 +352,7 @@ export class TokenManager {
     this.cachedTokenData = null;
   }
 
-  getCachedTokenData(): TokenData | null {
+  getCachedTokenData(): TokenStorageData | null {
     return this.cachedTokenData;
   }
 
@@ -366,7 +361,7 @@ export class TokenManager {
   /**
    * 写入加密数据
    */
-  private async writeEncrypted(data: TokenData): Promise<void> {
+  private async writeEncrypted(data: TokenStorageData): Promise<void> {
     // 确保目录存在
     const dir = path.dirname(this.tokenPath);
     await fs.mkdir(dir, { recursive: true });
@@ -382,7 +377,7 @@ export class TokenManager {
   /**
    * 读取并解密数据
    */
-  private async readEncrypted(): Promise<TokenData | null> {
+  private async readEncrypted(): Promise<TokenStorageData | null> {
     try {
       // 检查文件是否存在
       await fs.access(this.tokenPath);
@@ -394,7 +389,7 @@ export class TokenManager {
       const json = safeStorage.decryptString(encrypted);
 
       // 解析
-      const data = JSON.parse(json) as TokenData;
+      const data = JSON.parse(json) as TokenStorageData;
 
       // 验证数据结构
       if (!this.isValidTokenData(data)) {
@@ -417,18 +412,18 @@ export class TokenManager {
   /**
    * 验证 Token 数据结构
    */
-  private isValidTokenData(data: unknown): data is TokenData {
+  private isValidTokenData(data: unknown): data is TokenStorageData {
     return (
       typeof data === 'object' &&
       data !== null &&
       'accessToken' in data &&
       'refreshToken' in data &&
-      typeof (data as TokenData).accessToken === 'string' &&
-      typeof (data as TokenData).refreshToken === 'string' &&
-      typeof (data as TokenData).accessTokenExpiresAt === 'number' &&
-      typeof (data as TokenData).refreshTokenExpiresAt === 'number' &&
-      typeof (data as TokenData).identityId === 'string' &&
-      typeof (data as TokenData).sessionId === 'string'
+      typeof (data as TokenStorageData).accessToken === 'string' &&
+      typeof (data as TokenStorageData).refreshToken === 'string' &&
+      typeof (data as TokenStorageData).accessTokenExpiresAt === 'number' &&
+      typeof (data as TokenStorageData).refreshTokenExpiresAt === 'number' &&
+      typeof (data as TokenStorageData).identityId === 'string' &&
+      typeof (data as TokenStorageData).sessionId === 'string'
     );
   }
 

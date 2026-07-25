@@ -2,23 +2,22 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   AccountChannels,
   AIChannels,
+  AIStreamChannels,
   AuthChannels,
   DashboardChannels,
   DataPortabilityChannels,
   DesktopFeatureChannels,
-  EditorChannels,
   GoalChannels,
-  GovernanceChannels,
   NotificationChannels,
   ReminderChannels,
-  RepositoryChannels,
   ScheduleChannels,
   SettingChannels,
   SystemChannels,
   TaskChannels,
   WindowChannels,
-} from '../../shared/types/ipc-channels';
-import { ALLOWED_CHANNELS } from '../allowed-channels';
+} from '@dailyuse/contracts/electron';
+import { GovernanceChannels } from '@dailyuse/contracts/governance';
+import { ALLOWED_CHANNELS, SUPPORTED_REPOSITORY_CHANNELS } from '../allowed-channels';
 import { createAccountIpcClient } from '@dailyuse/account/client';
 import { AuthIpcAdapter } from '@dailyuse/authentication/client';
 import { createDataPortabilityIpcClient } from '@dailyuse/data-portability/client';
@@ -32,10 +31,7 @@ import {
 import { createGovernanceIpcClient } from '@dailyuse/governance/client';
 import { NotificationIpcAdapter } from '@dailyuse/notification/client';
 import { TaskTemplateIpcAdapter } from '@dailyuse/task/client';
-import {
-  ScheduleEventIpcAdapter,
-  ScheduleTaskIpcAdapter,
-} from '@dailyuse/schedule/client';
+import { ScheduleEventIpcAdapter, ScheduleTaskIpcAdapter } from '@dailyuse/schedule/client';
 import { ReminderIpcAdapter } from '@dailyuse/reminder/client';
 import { RepositoryIpcAdapter } from '@dailyuse/repository/client';
 import { createSettingIpcClient } from '@dailyuse/setting/client';
@@ -49,12 +45,8 @@ function allowedByPrefix(prefix: string) {
 }
 
 function aiChannelSet() {
-  return new Set<string>([
-    ...Object.values(AIChannels),
-    'ai:chat:message:stream:chunk',
-    'ai:chat:message:stream:done',
-    'ai:chat:message:stream:error',
-  ]);
+  // Residual 1331: preload allowlist unions AIChannels + AIStreamChannels (product sole).
+  return new Set<string>([...Object.values(AIChannels), ...Object.values(AIStreamChannels)]);
 }
 
 function expectChannelsRegistered(channels: string[], registered: Set<string>) {
@@ -122,11 +114,11 @@ describe('desktop IPC contract alignment', () => {
   });
 
   it('keeps shared repository channels aligned with preload allowlist', () => {
-    expect(allowedByPrefix('repository:')).toEqual(channelSet(RepositoryChannels));
+    expect(allowedByPrefix('repository:')).toEqual(new Set(SUPPORTED_REPOSITORY_CHANNELS));
   });
 
-  it('keeps shared editor channels aligned with preload allowlist', () => {
-    expect(allowedByPrefix('editor:')).toEqual(channelSet(EditorChannels));
+  it('does not expose the retired editor IPC surface', () => {
+    expect(allowedByPrefix('editor:')).toEqual(new Set());
   });
 
   it('keeps shared governance channels aligned with preload allowlist', () => {
@@ -272,10 +264,7 @@ describe('desktop IPC contract alignment', () => {
     const adapter = new AuthIpcAdapter(recorder as never);
 
     await adapter.loginByEmail({} as never);
-    await adapter.loginByPhone({} as never);
     await adapter.registerByEmail({} as never);
-    await adapter.registerByPhone({} as never);
-    await adapter.sendSmsCode({} as never);
     await adapter.refreshToken({} as never);
     await adapter.logout();
     await adapter.getCurrentUser();
@@ -432,29 +421,25 @@ describe('desktop IPC contract alignment', () => {
     const recorder = createIpcRecorder();
     const adapter = new RepositoryIpcAdapter(recorder as never);
 
-    await adapter.getCurrentRepository();
-    await adapter.createFolder({} as never);
-    await adapter.getFolderContents('folder-1');
-    await adapter.renameFolder('folder-1', 'Renamed');
-    await adapter.moveFolder('folder-1', 'parent-1');
-    await adapter.deleteFolder('folder-1');
-    await adapter.getFileTree('repository-1');
-    await adapter.search({ query: 'abc', repositoryId: 'repository-1' } as never);
-    await adapter.listResources('repository-1');
-    await adapter.createResource('repository-1', {} as never);
-    await adapter.getResource('resource-1');
-    await adapter.updateResource('resource-1', {} as never);
-    await adapter.renameResource('resource-1', 'Renamed');
-    await adapter.moveResource('resource-1', 'folder-1');
-    await adapter.deleteResource('resource-1');
-    await adapter.uploadResources('repository-1', { files: [] } as never);
-    await adapter.listBookmarks('repository-1');
-    await adapter.createBookmark('repository-1', {} as never);
-    await adapter.updateBookmark('repository-1', 'bookmark-1', {} as never);
-    await adapter.reorderBookmarks('repository-1', {} as never);
-    await adapter.deleteBookmark('repository-1', 'bookmark-1');
+    await adapter.startKnowledgeRepositoryInstallation();
+    await adapter.completeKnowledgeRepositoryInstallation({} as never);
+    await adapter.listKnowledgeRepositoryConnections();
+    await adapter.connectKnowledgeRepository({} as never);
+    await adapter.disconnectKnowledgeRepository('connection-1');
+    await adapter.previewKnowledgeRepositoryReconciliation('connection-1');
+    await adapter.executeKnowledgeRepositoryReconciliation({} as never);
+    await adapter.syncKnowledgeRepository({} as never);
+    await adapter.issueDesktopKnowledgeRepositoryToken('connection-1');
+    await adapter.getLocalVaultBinding();
+    await adapter.selectLocalVault();
+    await adapter.detachLocalVault();
+    await adapter.scanLocalVault();
+    await adapter.readLocalVaultNote({ relativePath: 'note.md' });
+    await adapter.searchLocalVault({ query: 'note' });
+    await adapter.openLocalVaultInObsidian({ relativePath: 'note.md' });
+    await adapter.writeConfirmedLocalVaultNote({} as never);
 
-    expectChannelsRegistered(recorder.channels(), channelSet(RepositoryChannels));
+    expectChannelsRegistered(recorder.channels(), new Set(SUPPORTED_REPOSITORY_CHANNELS));
   });
 
   it('governance adapter only invokes registered desktop governance channels', async () => {
@@ -519,23 +504,26 @@ describe('desktop IPC contract alignment', () => {
     expectChannelsRegistered(recorder.channels(), channelSet(AIChannels));
   });
 
-  it('ai provider adapter accepts raw provider-list payloads from desktop IPC', async () => {
+  it('ai provider adapter accepts list envelope payloads from desktop IPC', async () => {
     const recorder = createIpcRecorder((channel) => {
       if (channel === AIChannels.PROVIDER_LIST) {
+        // Residual 86/1331: ListAIProviderConfigsRes is { data: ClientDTO[] }.
         return {
           ok: true,
-          data: [
-            {
-              id: 'provider-1',
-              name: 'OpenAI',
-              baseUrl: 'https://api.openai.com/v1',
-              apiKeyMasked: 'sk-****1234',
-              defaultModel: 'gpt-4o-mini',
-              availableModels: [{ id: 'gpt-4o-mini', name: 'gpt-4o-mini' }],
-              isActive: true,
-              isDefault: true,
-            },
-          ],
+          data: {
+            data: [
+              {
+                id: 'provider-1',
+                name: 'OpenAI',
+                baseUrl: 'https://api.openai.com/v1',
+                apiKeyMasked: 'sk-****1234',
+                defaultModel: 'gpt-4o-mini',
+                availableModels: [{ id: 'gpt-4o-mini', name: 'gpt-4o-mini' }],
+                isActive: true,
+                isDefault: true,
+              },
+            ],
+          },
         };
       }
       return { ok: true, data: null };
@@ -544,8 +532,12 @@ describe('desktop IPC contract alignment', () => {
 
     const providers = await adapter.getProviders();
 
-    expect(providers).toHaveLength(1);
-    expect(providers[0]?.id).toBe('provider-1');
-    expect(providers[0]?.defaultModel).toBe('gpt-4o-mini');
+    expect(providers.ok).toBe(true);
+    if (!providers.ok) {
+      throw new Error(providers.error.message);
+    }
+    expect(providers.data).toHaveLength(1);
+    expect(providers.data[0]?.id).toBe('provider-1');
+    expect(providers.data[0]?.defaultModel).toBe('gpt-4o-mini');
   });
 });

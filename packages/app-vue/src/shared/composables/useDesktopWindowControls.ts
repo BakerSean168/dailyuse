@@ -2,14 +2,19 @@
  * useDesktopWindowControls
  *
  * Composable for desktop window control operations (minimize, maximize, close).
- * Receives the desktop bridge via Vue inject, falling back to window.electronAPI.
+ * Receives the desktop bridge via Vue inject, falling back to a full ElectronBridge
+ * host surface when inject is unavailable (auth-screen titlebar).
  *
  * Moved from apps/desktop (UI redesign V2 S1): the shell's WindowHeader renders
  * the window controls on every desktop route, while the desktop host still uses
  * it for the auth-screen titlebar.
+ *
+ * Residual 929: ElectronBridge keep-boundary (invoke+on+off).
+ * DesktopAuthApi is invoke-only — window controls must not collapse onto it.
  */
 import { inject, reactive } from 'vue';
-import { DESKTOP_BRIDGE_KEY, type DesktopBridge } from '../../di/keys';
+import { isOk, type Result } from '@dailyuse/contracts/result';
+import { DESKTOP_BRIDGE_KEY, type ElectronBridge } from '../../di/keys';
 import { RendererEventChannels, WindowChannels } from '@dailyuse/contracts/electron';
 
 export interface WindowControlsState {
@@ -19,11 +24,39 @@ export interface WindowControlsState {
   isClosable: boolean;
 }
 
-function getBridge(): DesktopBridge | undefined {
+// Residual 929: narrow unknown host surface to full ElectronBridge (invoke+on+off).
+function isElectronBridge(value: unknown): value is ElectronBridge {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const candidate = value as Partial<ElectronBridge>;
   return (
-    inject(DESKTOP_BRIDGE_KEY, undefined) ??
-    ((window as { electronAPI?: DesktopBridge }).electronAPI as DesktopBridge | undefined)
+    typeof candidate.invoke === 'function' &&
+    typeof candidate.on === 'function' &&
+    typeof candidate.off === 'function'
   );
+}
+
+function getBridge(): ElectronBridge | undefined {
+  const injected = inject(DESKTOP_BRIDGE_KEY, undefined);
+  if (isElectronBridge(injected)) {
+    return injected;
+  }
+  // Keep-boundary: app-vue Window types electronAPI as DesktopAuthApi (invoke-only).
+  // Desktop preload still exposes full ElectronBridge; narrow only here.
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+  const hostApi = (window as { electronAPI?: unknown }).electronAPI;
+  return isElectronBridge(hostApi) ? hostApi : undefined;
+}
+
+function readResultData<T>(response: unknown): T | null {
+  if (!response || typeof response !== 'object' || !('ok' in response)) {
+    return null;
+  }
+  const result = response as Result<T>;
+  return isOk(result) ? (result.data ?? null) : null;
 }
 
 export function useDesktopWindowControls() {
@@ -45,11 +78,8 @@ export function useDesktopWindowControls() {
   }
 
   async function syncState() {
-    const state = (await bridge?.invoke(WindowChannels.GET_CONTROLS_STATE)) as
-      | Partial<WindowControlsState>
-      | null
-      | undefined;
-    applyState(state);
+    const response = await bridge?.invoke(WindowChannels.GET_CONTROLS_STATE);
+    applyState(readResultData<Partial<WindowControlsState>>(response));
   }
 
   async function minimizeWindow() {
@@ -57,11 +87,8 @@ export function useDesktopWindowControls() {
   }
 
   async function toggleMaximize() {
-    const state = (await bridge?.invoke(WindowChannels.TOGGLE_MAXIMIZE)) as
-      | Partial<WindowControlsState>
-      | null
-      | undefined;
-    applyState(state);
+    const response = await bridge?.invoke(WindowChannels.TOGGLE_MAXIMIZE);
+    applyState(readResultData<Partial<WindowControlsState>>(response));
   }
 
   async function closeWindow() {

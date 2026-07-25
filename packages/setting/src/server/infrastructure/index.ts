@@ -23,5 +23,4 @@ export {
 export { createSettingPowerSyncModule } from './powersync';
 export {
   createSettingRuntimeContribution,
-  type SettingRuntimeContribution,
 } from './runtime';

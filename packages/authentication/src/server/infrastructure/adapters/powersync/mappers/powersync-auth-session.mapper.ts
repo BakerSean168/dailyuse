@@ -1,3 +1,6 @@
+/**
+ * Residual 981: toIso sole import (./to-iso.ts).
+ */
 import type {
   AuthSessionId,
   DeviceInfo as IDeviceInfo,
@@ -7,6 +10,7 @@ import { AuthSession } from '../../../../domain';
 import type { AuthSessionState } from '../../../../domain';
 import { DeviceInfo, SessionStatus } from '../../../../domain';
 import type { IdentityId } from '@dailyuse/domain-shared/shared';
+import { toIso } from './to-iso';
 
 export interface PowerSyncAuthSessionRow {
   id: string;
@@ -46,10 +50,6 @@ export interface PowerSyncAuthSessionWriteData {
   deleted_at: string | null;
 }
 
-function toIso(value: number | null | undefined): string | null {
-  if (value === null || value === undefined) return null;
-  return new Date(value).toISOString();
-}
 
 export class PowerSyncAuthSessionMapper {
   static toDomain(row: PowerSyncAuthSessionRow): AuthSession {

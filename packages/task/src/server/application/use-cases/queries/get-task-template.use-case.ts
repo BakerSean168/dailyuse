@@ -20,10 +20,14 @@ export class GetTaskTemplateUseCase {
     private readonly instanceRepository: ITaskInstanceRepository,
   ) {}
 
-  async execute(id: string, includeChildren = false): Promise<Result<GetTaskTemplateRes>> {
+  async execute(
+    id: string,
+    identityId: string,
+    includeChildren = false,
+  ): Promise<Result<GetTaskTemplateRes>> {
     const template = includeChildren
-      ? await this.templateRepository.findByIdWithChildren(id)
-      : await this.templateRepository.findById(id);
+      ? await this.templateRepository.findByIdWithChildren(identityId, id)
+      : await this.templateRepository.findByIdForIdentity(identityId, id);
 
     if (!template) {
       return ok(null);
@@ -32,10 +36,10 @@ export class GetTaskTemplateUseCase {
     const dto = template.toClientDTO(includeChildren);
 
     if (!includeChildren) {
-      let stats = ((await this.instanceRepository.getTemplateStats([id])) ?? {})[id];
+      let stats = ((await this.instanceRepository.getTemplateStats([id], identityId)) ?? {})[id];
 
       if (!stats) {
-        const instances = (await this.instanceRepository.findByTemplateId(id)) ?? [];
+        const instances = (await this.instanceRepository.findByTemplateId(id, identityId)) ?? [];
         const completedInstanceCount = instances.filter(
           (instance) => instance.status === TaskInstanceStatus.Completed,
         ).length;

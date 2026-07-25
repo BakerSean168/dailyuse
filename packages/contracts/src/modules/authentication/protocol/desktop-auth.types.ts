@@ -91,6 +91,7 @@ export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof Connection
 
 /**
  * Encrypted token data stored on disk via Electron safeStorage.
+ * Residual 897: persisted absolute-expiry shape (≠ SaveTokenRequest duration inputs).
  */
 export interface TokenStorageData {
   accessToken: string;
@@ -103,6 +104,7 @@ export interface TokenStorageData {
 
 /**
  * Request to save tokens after login/register.
+ * Residual 897: duration-input write shape (≠ TokenStorageData absolute-expiry persistence).
  */
 export interface SaveTokenRequest {
   accessToken: string;
@@ -115,6 +117,7 @@ export interface SaveTokenRequest {
 
 /**
  * Result of a token refresh operation.
+ * Residual 895: token-manager callback sole shape (≠ RefreshSessionResponse / DesktopAuthFlowResult).
  */
 export interface TokenRefreshResult {
   ok: boolean;
@@ -141,10 +144,11 @@ export interface TokenStatus {
 
 /**
  * Result of attempting to restore a session on app startup.
+ * Residual 883: protocol DTO sole base shape (desktop infrastructure may extend intentionally).
+ * Residual 935 (soft): lifecycle uses LifecycleSessionRestoreResult (required hasValidSession), not this name.
  */
 export interface SessionRestoreResult {
-  ok?: boolean;
-  success?: boolean;
+  ok: boolean;
   hasValidSession?: boolean;
   runtimeState?: AuthRuntimeState;
   identityId?: IdentityId;
@@ -156,6 +160,7 @@ export interface SessionRestoreResult {
 
 /**
  * Result of automatic login attempt.
+ * Residual 887: protocol DTO sole base shape (desktop infrastructure may extend with domain session).
  */
 export interface AutoLoginResult {
   ok: boolean;
@@ -168,6 +173,7 @@ export interface AutoLoginResult {
 
 /**
  * Session status DTO for IPC transport.
+ * Residual 889: protocol sole base shape (desktop SessionStatus may extend with required device).
  */
 export interface SessionStatusDTO {
   hasActiveSession: boolean;
@@ -189,6 +195,7 @@ export interface RefreshSessionRequest {
 
 /**
  * Response from session refresh.
+ * Residual 895: infrastructure session/token-refresh sole shape (≠ TokenRefreshResult / DesktopAuthFlowResult).
  */
 export interface RefreshSessionResponse {
   ok: boolean;
@@ -200,6 +207,7 @@ export interface RefreshSessionResponse {
 
 /**
  * Login request from renderer to main process.
+ * Residual 899: offline/local identifier login shape (≠ EmailLoginCredentials email online shape).
  */
 export interface LoginRequest {
   identifier: string;
@@ -208,18 +216,18 @@ export interface LoginRequest {
   autoLogin?: boolean;
 }
 
-/**
- * Login response from main process to renderer.
- */
-export interface LoginResponse {
+// Residual 867: LoginResponse dual deleted (zero consumers).
+// Residual 873: sole offline login result shape.
+// Residual 925 (soft): OfflineLoginResponse name dual fully retired — desktop imports contracts sole body.
+// Online auth uses AuthResponseDTO.
+export interface OfflineLoginResponse {
   ok: boolean;
   sessionId?: string;
   accessToken?: string;
-  refreshToken?: string;
-  identityId?: IdentityId;
+  identityId?: string;
   expiresIn?: number;
-  authMode?: AuthMode;
   error?: string;
+  authMode?: AuthMode;
 }
 
 // ============================================================================
@@ -251,6 +259,7 @@ export interface SessionInfo {
 
 /**
  * Device info for the renderer.
+ * Residual 881: intentional slim client dual — not full DeviceInfo VO (no browser/ip/location required fields).
  */
 export interface DeviceInfoClientDTO {
   deviceId: string;
@@ -264,17 +273,6 @@ export interface DeviceInfoClientDTO {
   lastSeenAt?: number;
 }
 
-/**
- * Device info for the renderer (simplified UI-facing shape).
- * Note: distinct from the domain DeviceInfo value object.
- */
-export interface DeviceInfoUI {
-  id: string;
-  name: string;
-  type: string;
-  os?: string;
-  fingerprint?: string;
-}
 export interface AuthStatus {
   authenticated: boolean;
   mode: AuthMode;
@@ -296,24 +294,11 @@ export interface AuthBootstrapSnapshot {
   currentUser: CurrentUserDTO | null;
 }
 
-/**
- * Simplified auth status DTO.
- */
-export interface AuthStatusDTO {
-  authenticated: boolean;
-  mode: AuthMode;
-  connectionStatus: ConnectionStatus;
-  identityId: IdentityId | null;
-  canSync: boolean;
-}
-
-/**
- * Generic auth operation result.
- */
-export interface AuthOperationResult {
-  ok: boolean;
-  error?: string;
-}
+// Residual 865: AuthStatusDTO simplified dual deleted (zero consumers).
+// Sole desktop status shape is AuthStatus (used by getStatus / bootstrap snapshot).
+// Residual 901: app-vue recovery no longer reintroduces a local DesktopAuthStatus dual.
+// Residual 637: AuthOperationResult { ok, error? } generic dual envelope deleted.
+// Concrete desktop auth flows use typed *Result DTOs + Result/IpcResult envelopes.
 
 // ============================================================================
 // Login Credentials (from renderer)
@@ -321,12 +306,26 @@ export interface AuthOperationResult {
 
 /**
  * Email + password login credentials.
+ * Residual 869: sole desktop email-login request shape.
+ * Residual 921 (soft): DesktopLoginRequest name dual fully retired — consumers use EmailLoginCredentials.
+ * Residual 899: online email credentials keep-boundary (≠ LoginRequest identifier offline shape).
  */
 export interface EmailLoginCredentials {
   email: string;
   password: string;
   rememberPassword?: boolean;
   autoLogin?: boolean;
+}
+
+/**
+ * Email + password register credentials (desktop online).
+ * Residual 931: sole desktop email-register request shape (RegisterRequest name dual retired).
+ * Residual 931 keep-boundary: ≠ RegisterByEmailReq API DTO (no username; zod API boundary).
+ */
+export interface EmailRegisterCredentials {
+  email: string;
+  password: string;
+  username?: string;
 }
 
 export interface RememberedDesktopAccountDTO {
@@ -348,27 +347,3 @@ export interface RememberedDesktopAccountLoginReq {
   autoLogin?: boolean;
 }
 
-// ============================================================================
-// 2FA & API Keys (stubs for future use)
-// ============================================================================
-
-/**
- * Two-factor authentication status.
- */
-export interface TwoFactorStatus {
-  enabled: boolean;
-  method: string | null;
-}
-
-/**
- * API key info.
- */
-export interface ApiKeyInfo {
-  id: string;
-  name: string;
-  prefix: string;
-  scopes: string[];
-  createdAt: string;
-  lastUsedAt?: string;
-  expiresAt?: string;
-}

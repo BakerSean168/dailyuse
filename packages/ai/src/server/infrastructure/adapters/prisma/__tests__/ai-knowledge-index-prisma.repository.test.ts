@@ -3,11 +3,13 @@ import { describe, expect, it, vi } from 'vitest';
 import type { PrismaClient } from '@dailyuse/database';
 
 import { AIKnowledgeIndexPrismaRepository } from '../ai-knowledge-index-prisma.repository';
-import type { KnowledgeIndexedResource } from '../../../../application/ports';
+import type { KnowledgeIndexedNote } from '../../../../application/ports';
 
 const NOW = new Date('2026-03-27T00:00:00.000Z');
 
-function createIndexedResource(overrides: Partial<KnowledgeIndexedResource> = {}): KnowledgeIndexedResource {
+function createIndexedResource(
+  overrides: Partial<KnowledgeIndexedNote> = {},
+): KnowledgeIndexedNote {
   return {
     identityId: 'identity-1',
     repositoryId: 'repo-1',
@@ -50,7 +52,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
           mimeType: 'text/markdown',
           contentHash: 'hash-1',
           status: 'indexed',
-          summary: 'Grounded answers should cite repository resources.',
+          summary: 'Grounded answers should cite knowledge notes.',
           keywords: ['grounding', 'citation'],
           embedding: [0.1, 0.2],
           chunks: [],
@@ -71,7 +73,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const result = await repository.findRelevantResources(
+    const result = await repository.findRelevantNotes(
       'identity-1',
       'How does grounding citation work?',
       5,
@@ -82,7 +84,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
     expect(prisma.aiKnowledgeIndexEntry.findMany).not.toHaveBeenCalled();
   });
 
-  it('retrieves relevant indexed resources from the dedicated table before any legacy fallback', async () => {
+  it('retrieves relevant indexed resources only from the dedicated table', async () => {
     const prisma = {
       aiKnowledgeIndexEntry: {
         findMany: vi.fn(async () => [
@@ -96,7 +98,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
             mimeType: 'text/markdown',
             contentHash: 'hash-1',
             status: 'indexed',
-            summary: 'Grounded answers should cite repository resources.',
+            summary: 'Grounded answers should cite knowledge notes.',
             keywords: ['grounding', 'citation'],
             embedding: [0.1, 0.2],
             chunks: [],
@@ -133,7 +135,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const result = await repository.findRelevantResources(
+    const result = await repository.findRelevantNotes(
       'identity-1',
       'How does grounding citation work?',
       5,
@@ -160,7 +162,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
             mimeType: 'text/markdown',
             contentHash: 'hash-1',
             status: 'indexed',
-            summary: 'Grounded answers should cite repository resources.',
+            summary: 'Grounded answers should cite knowledge notes.',
             keywords: ['grounding', 'citation'],
             embedding: [0.1, 0.2],
             chunks: [],
@@ -178,12 +180,12 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const first = await repository.findRelevantResources(
+    const first = await repository.findRelevantNotes(
       'identity-1',
       'How does grounding citation work?',
       5,
     );
-    const second = await repository.findRelevantResources(
+    const second = await repository.findRelevantNotes(
       'identity-1',
       'How does grounding citation work?',
       5,
@@ -285,7 +287,7 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const result = await repository.findByResourceIds('identity-1', ['resource-1', 'resource-2']);
+    const result = await repository.findByNoteIds('identity-1', ['resource-1', 'resource-2']);
 
     expect(result).toEqual([
       expect.objectContaining({
@@ -296,58 +298,53 @@ describe('AIKnowledgeIndexPrismaRepository', () => {
     expect(prisma.resource.findMany).not.toHaveBeenCalled();
   });
 
-  it('falls back to legacy resource metadata when the dedicated table is unavailable', async () => {
+  it('surfaces dedicated-table failures without reading legacy resource metadata', async () => {
+    const tableError = new Error('relation "ai_knowledge_index_entries" does not exist');
     const prisma = {
       aiKnowledgeIndexEntry: {
         findMany: vi.fn(async () => {
-          throw new Error('relation "ai_knowledge_index_entries" does not exist');
+          throw tableError;
         }),
       },
       resource: {
-        findMany: vi.fn(async () => [
-          {
-            id: 'resource-1',
-            identityId: 'identity-1',
-            repositoryId: 'repo-1',
-            path: '/docs/alpha.md',
-            name: 'Alpha',
-            type: 'markdown',
-            metadata: {
-              mimeType: 'text/markdown',
-              aiKnowledgeIndex: {
-                status: 'indexed',
-                contentHash: 'legacy-hash-1',
-                summary: 'Legacy alpha summary',
-                keywords: ['alpha'],
-                embedding: [0.1, 0.2],
-                chunks: [],
-                indexedAt: NOW.getTime(),
-                lastRequestedAt: NOW.getTime(),
-              },
-            },
-          },
-        ]),
+        findMany: vi.fn(async () => []),
       },
     };
 
     const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
 
-    const result = await repository.findByResourceIds('identity-1', ['resource-1']);
+    await expect(repository.findByNoteIds('identity-1', ['resource-1'])).rejects.toThrow(
+      tableError.message,
+    );
 
-    expect(result).toEqual([
-      expect.objectContaining({
-        resourceId: 'resource-1',
-        summary: 'Legacy alpha summary',
-        contentHash: 'legacy-hash-1',
-      }),
-    ]);
-    expect(prisma.resource.findMany).toHaveBeenCalledOnce();
+    expect(prisma.resource.findMany).not.toHaveBeenCalled();
     await expect(repository.getDiagnostics()).resolves.toEqual(
       expect.objectContaining({
         persistenceBackend: 'prisma-index-table',
-        persistenceStatus: 'fallback',
+        persistenceStatus: 'enabled',
       }),
     );
+  });
+
+  it('surfaces dedicated-table write failures without mutating Resource metadata', async () => {
+    const tableError = new Error('dedicated knowledge index write failed');
+    const prisma = {
+      aiKnowledgeIndexEntry: {
+        upsert: vi.fn(async () => {
+          throw tableError;
+        }),
+      },
+      resource: {
+        findFirst: vi.fn(async () => ({ metadata: {} })),
+        update: vi.fn(async () => undefined),
+      },
+    };
+    const repository = new AIKnowledgeIndexPrismaRepository(prisma as unknown as PrismaClient);
+
+    await expect(repository.upsert(createIndexedResource())).rejects.toThrow(tableError.message);
+
+    expect(prisma.resource.findFirst).not.toHaveBeenCalled();
+    expect(prisma.resource.update).not.toHaveBeenCalled();
   });
 
   it('writes indexed resources into the dedicated table with JSON payloads', async () => {

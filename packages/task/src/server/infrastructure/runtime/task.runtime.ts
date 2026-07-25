@@ -33,8 +33,6 @@ const taskEvents = createTypedEventSubscriber<TaskRuntimeEventMap>(eventBus);
  * Runtime contribution contract used by module transports.
  * 模块传输层使用的运行时贡献契约。
  */
-export type TaskRuntimeContribution = TaskModuleRuntimeContribution;
-
 const taskEventHandlers = {
   'task:instance-generated': (event) => {
     logger.info(`[Task] Instances generated for template: ${event.templateId}`, {
@@ -64,7 +62,7 @@ const taskEventHandlers = {
  *
  * 替代旧的全局初始化方式，使用显式的 start/stop 生命周期。
  */
-export function createTaskRuntimeContribution(): TaskRuntimeContribution {
+export function createTaskRuntimeContribution(): TaskModuleRuntimeContribution {
   let started = false;
 
   return {

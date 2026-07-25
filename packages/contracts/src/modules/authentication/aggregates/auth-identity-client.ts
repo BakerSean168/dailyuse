@@ -16,6 +16,7 @@ import type { AuthIdentityStatus } from '../value-objects/auth-identity-status';
 /**
  * Client DTO (API Response)
  * 这就是返回给前端的数据结构
+ * Residual 879: intentional Client≠Server dual (has* flags; server has oauthBindings).
  */
 export interface AuthIdentityClientDTO {
   id: IdentityId;

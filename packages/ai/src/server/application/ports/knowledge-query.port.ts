@@ -2,7 +2,7 @@ import type {
   ChatExecutionProviderConfig,
   ChatExecutionUsage,
 } from './chat-execution.port';
-import type { KnowledgeIndexedResource } from './knowledge-ingestion.port';
+import type { KnowledgeIndexedNote } from './knowledge-ingestion.port';
 
 export interface KnowledgeQueryCitation {
   resourceId: string;
@@ -17,7 +17,7 @@ export interface KnowledgeQueryInput {
   identityId: string;
   providerConfig: ChatExecutionProviderConfig;
   question: string;
-  indexedResources: KnowledgeIndexedResource[];
+  indexedNotes: KnowledgeIndexedNote[];
   maxCitations?: number;
   requestId?: string;
 }
@@ -33,7 +33,7 @@ export interface KnowledgeExpansionInput {
   providerConfig: ChatExecutionProviderConfig;
   instruction: string;
   currentContent?: string;
-  indexedResources: KnowledgeIndexedResource[];
+  indexedNotes: KnowledgeIndexedNote[];
   maxCitations?: number;
   requestId?: string;
 }

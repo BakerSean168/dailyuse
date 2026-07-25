@@ -1,10 +1,8 @@
 import type { Result } from '@dailyuse/contracts/result';
+import type { DashboardData } from '@dailyuse/contracts/dashboard';
 import { DashboardChannels } from '@dailyuse/contracts/electron';
-import type { IDashboardApiClient, DashboardData } from '../types';
-
-interface IResultIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
-}
+import type { IResultIpcClient } from '@dailyuse/ipc-client';
+import type { IDashboardApiClient } from '../types';
 
 export class DashboardIpcAdapter implements IDashboardApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

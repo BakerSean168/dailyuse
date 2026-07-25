@@ -40,7 +40,9 @@ export class ActivateFocusModeUseCase {
     }
 
     const goals = await Promise.all(
-      input.focusedGoalIds.map((goalId) => this.goalRepository.findById(goalId)),
+      input.focusedGoalIds.map((goalId) =>
+        this.goalRepository.findByIdForIdentity(identityId, goalId),
+      ),
     );
     const validGoals: Goal[] = [];
 

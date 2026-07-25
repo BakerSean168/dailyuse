@@ -10,6 +10,8 @@ import { randomUUID } from 'node:crypto';
 
 /**
  * Generate a v4 UUID
+ * Residual 1131 keep-boundary: node:crypto randomUUID only (test helpers).
+ * Soft residual 1131: utils generateUUID has browser Math.random fallback (no force-merge).
  */
 export function generateUUID(): string {
   return randomUUID();

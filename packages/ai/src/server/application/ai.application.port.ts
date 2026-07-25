@@ -8,6 +8,8 @@ import type {
   AgentRunListParams,
   AgentRunResult,
   AgentStartRunRequest,
+  AssistantCommand,
+  AssistantEvent,
   AIConversationClientDTO,
   ConversationListRes,
   SendMessageRes,
@@ -48,9 +50,10 @@ export interface AIApplicationPort {
   updateProvider(
     id: string,
     req: UpdateAIProviderConfigReq,
+    cx: ExecutionContext,
   ): Promise<Result<UpdateAIProviderConfigRes>>;
-  deleteProvider(id: string): Promise<Result<void>>;
-  getProvider(id: string): Promise<Result<AIProviderConfigClientDTO>>;
+  deleteProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
+  getProvider(id: string, cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO>>;
   listProviders(cx: ExecutionContext): Promise<Result<AIProviderConfigClientDTO[]>>;
   testConnection(req: TestAIProviderReq, cx: ExecutionContext): Promise<Result<TestAIProviderRes>>;
   setDefaultProvider(id: string, cx: ExecutionContext): Promise<Result<void>>;
@@ -64,7 +67,11 @@ export interface AIApplicationPort {
     cx: ExecutionContext,
     name?: string,
   ): Promise<Result<AIConversationClientDTO>>;
-  updateConversation(id: string, req: UpdateConversationReq): Promise<Result<UpdateConversationRes>>;
+  updateConversation(
+    id: string,
+    req: UpdateConversationReq,
+    cx: ExecutionContext,
+  ): Promise<Result<UpdateConversationRes>>;
   listConversations(
     cx: ExecutionContext,
     page?: number,
@@ -72,9 +79,10 @@ export interface AIApplicationPort {
   ): Promise<Result<ConversationListRes>>;
   getConversation(
     id: string,
+    cx: ExecutionContext,
     includeMessages?: boolean,
   ): Promise<Result<AIConversationClientDTO | null>>;
-  deleteConversation(id: string): Promise<Result<void>>;
+  deleteConversation(id: string, cx: ExecutionContext): Promise<Result<void>>;
 
   // Chat
   sendMessage(
@@ -151,4 +159,14 @@ export interface AIApplicationPort {
     requestId?: string,
     signal?: AbortSignal,
   ): Promise<Result<AgentEvent[]>>;
+
+  /**
+   * AssistantFacade dispatch (residual 345). Streams Host-normalized AssistantEvent.
+   * Callers must set identityId from trusted ExecutionContext before invoking.
+   */
+  dispatchAssistant(
+    command: AssistantCommand,
+    onEvent: (event: AssistantEvent) => void,
+    signal?: AbortSignal,
+  ): Promise<Result<{ eventCount: number }>>;
 }

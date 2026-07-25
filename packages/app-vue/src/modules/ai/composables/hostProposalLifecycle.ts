@@ -1,0 +1,2137 @@
+/**
+ * Host proposal lifecycle helpers (residual 355–401/409/411/419/423/425/427/441/443/445/519/521/523/525/527/529/531/533/535/537).
+ *
+ * Routes approve/reject/revise through AssistantFacade before legacy AgentRun
+ * executors. Derives thin workbench panel items from waiting_approval AgentRun
+ * snapshots and post-execution Host receipt rows. Never calls
+ * ProposalKernel mutation execution from this module.
+ * Residual 519: task draft title/goalId read create_task_template only (no blind pending[0]).
+ * Residual 521: knowledge draft path/markdown read create_knowledge_note only (no blind pending[0]).
+ * Residual 523: goal draft title/description read create_goal only (no blind pending[0]).
+ * Residual 525: workbench summary rationale reads product-lane tool only (no blind pending[0]).
+ * Residual 527: workbench pendingActionCount counts product-lane tool only (no foreign tools).
+ * Residual 529: receipt primaryEntityId prefers product-lane executed tool only (no foreign entityIds[0]).
+ * Residual 531: knowledge draft title read create_knowledge_note only (path/markdown residual 521 symmetry).
+ * Residual 533: receipt summary excludes cross-lane foreign tools from counts/actionLines/entityIds.
+ * Residual 535: receipt summary error text from same-lane failed action only (no blind errors[0]).
+ * Residual 537: receipt ok requires product-lane executed tool on completed runs.
+ * Residual 549: product draft readers use sole product-lane draftAction after
+ * single-product-draft gate (client residual 547 productDrafts symmetry; no multi-find invent).
+ * Residual 551: applyHost*Patch only patches sole product-lane draftAction
+ * (no multi-index invent of identical Host fields across product tools).
+ * Residual 585: Host workbench focus/reopen/receipt routing uses isPrimaryTaskHostAgentRun
+ * (not bare isTaskShaped) so normal goal.create + companion task drafts keep goal.create
+ * proposalId; builders also exclusive-lane primary-task promotion.
+ * Residual 589: dual-mirror primary-task goal session into exclusive task lane after
+ * goal-session settle (prevents stale waiting_approval exclusive rows).
+ */
+import type {
+  AgentAction,
+  AgentRunHostProposalKind,
+  AgentRunResult,
+  AssistantEvent,
+  AssistantProposalPatch,
+} from '@dailyuse/contracts/ai';
+import {
+  AGENT_RUN_HOST_PROPOSAL_REVISION,
+  buildAgentRunHostProposalRef,
+} from '@dailyuse/contracts/ai';
+import type { AIChatService } from './types';
+
+export type HostProposalLifecycleService = Pick<AIChatService, 'dispatchAssistant'>;
+
+/** Tracks latest Host proposal revision after revise/approve for action-bar parity. */
+const hostProposalRevisionById = new Map<string, number>();
+
+export function rememberHostProposalRevision(proposalId: string, revision: number): void {
+  if (!proposalId || !Number.isFinite(revision) || revision < 1) return;
+  hostProposalRevisionById.set(proposalId, revision);
+}
+
+export function getRememberedHostProposalRevision(
+  proposalId: string,
+  fallback: number = AGENT_RUN_HOST_PROPOSAL_REVISION,
+): number {
+  return hostProposalRevisionById.get(proposalId) ?? fallback;
+}
+
+
+export type HostProposalPanelSource = 'goal' | 'knowledge' | 'task';
+
+/**
+ * Workbench-facing Host proposal row. Lifecycle only — mutation stays in executors.
+ */
+export type HostProposalPanelItem = {
+  runId: string;
+  proposalId: string;
+  revision: number;
+  kind: AgentRunHostProposalKind;
+  source: HostProposalPanelSource;
+  /** Agent run status that produced this pending Host proposal. */
+  runStatus: 'waiting_approval';
+  title: string;
+  summary: string;
+  pendingActionCount: number;
+  /** Residual 361: knowledge.write draft path (vault-relative). */
+  targetPath?: string;
+  /** Residual 361: knowledge.write draft markdown body. */
+  contentMarkdown?: string;
+  /** Residual 367: goal.create draft description. */
+  description?: string;
+  /** Residual 419: task.create optional linked goal id. */
+  goalId?: string | null;
+};
+
+function collectEvents(
+  service: HostProposalLifecycleService,
+  command: Parameters<HostProposalLifecycleService['dispatchAssistant']>[0],
+): Promise<AssistantEvent[]> {
+  const events: AssistantEvent[] = [];
+  return service
+    .dispatchAssistant(command, {
+      onEvent: (event) => {
+        events.push(event);
+      },
+    })
+    .then(() => {
+      const errorEvent = events.find((event) => event.type === 'error');
+      if (errorEvent && errorEvent.type === 'error') {
+        throw new Error(errorEvent.message || 'Host proposal lifecycle failed');
+      }
+      return events;
+    });
+}
+
+/**
+ * Residual 397: normalize freeform Host reject reason for ProposalKernel lifecycle.
+ * Empty/whitespace falls back to user_cancel; max 500 chars; strips control chars.
+ * Lifecycle-only — never executes business mutations.
+ */
+export function normalizeHostProposalRejectReason(
+  reason?: string | null,
+  fallback: string = 'user_cancel',
+): string {
+  const raw = typeof reason === 'string' ? reason : '';
+  const scrubbed = raw
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .trim();
+  if (!scrubbed) return fallback;
+  return scrubbed.length > 500 ? scrubbed.slice(0, 500) : scrubbed;
+}
+
+export async function dispatchHostProposalDecision(
+  service: HostProposalLifecycleService,
+  input: {
+    decision: 'approve' | 'reject';
+    runId: string;
+    kind: AgentRunHostProposalKind;
+    reason?: string;
+    /** Current Host proposal revision (defaults to bridge create revision). */
+    revision?: number;
+  },
+): Promise<AssistantEvent[]> {
+  const { proposalId } = buildAgentRunHostProposalRef(input.runId, input.kind);
+  const revision =
+    input.revision ??
+    getRememberedHostProposalRevision(proposalId, AGENT_RUN_HOST_PROPOSAL_REVISION);
+
+  const events = await collectEvents(
+    service,
+    input.decision === 'approve'
+      ? {
+          type: 'approve_proposal',
+          runId: input.runId,
+          proposalId,
+          revision,
+        }
+      : {
+          type: 'reject_proposal',
+          runId: input.runId,
+          proposalId,
+          revision,
+          reason: input.reason,
+        },
+  );
+
+  const expectedType =
+    input.decision === 'approve' ? 'proposal.approved' : 'proposal.rejected';
+  if (!events.some((event) => event.type === expectedType)) {
+    throw new Error(`Host proposal lifecycle missing ${expectedType}`);
+  }
+
+  const settled = events.find(
+    (event) => event.type === expectedType,
+  ) as Extract<AssistantEvent, { type: 'proposal.approved' | 'proposal.rejected' }> | undefined;
+  if (settled) {
+    rememberHostProposalRevision(settled.proposalId, settled.revision);
+  }
+
+  return events;
+}
+
+/**
+ * Residual 359: revise Host bridge proposal before approve (lifecycle only).
+ * Returns the new revision from proposal.revised.
+ */
+export async function dispatchHostProposalRevise(
+  service: HostProposalLifecycleService,
+  input: {
+    runId: string;
+    kind: AgentRunHostProposalKind;
+    revision: number;
+    patch: AssistantProposalPatch;
+  },
+): Promise<{ events: AssistantEvent[]; revision: number; proposalId: string }> {
+  const { proposalId } = buildAgentRunHostProposalRef(input.runId, input.kind);
+  const events = await collectEvents(service, {
+    type: 'revise_proposal',
+    runId: input.runId,
+    proposalId,
+    revision: input.revision,
+    patch: input.patch,
+  });
+
+  const revised = events.find((event) => event.type === 'proposal.revised');
+  if (!revised || revised.type !== 'proposal.revised') {
+    throw new Error('Host proposal lifecycle missing proposal.revised');
+  }
+
+  rememberHostProposalRevision(revised.proposalId, revised.revision);
+
+  return {
+    events,
+    revision: revised.revision,
+    proposalId: revised.proposalId,
+  };
+}
+
+/**
+ * Residual 549: sole product-lane draftAction after single-product-draft gate
+ * (client residual 547 productDrafts symmetry; no multi-find invent).
+ * Prefer process-local pending pool; fall back to approved when pending empty.
+ * Foreign tools in the pool are ignored when counting product drafts.
+ */
+function soleProductDraftAction(
+  run: AgentRunResult,
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+): AgentAction | undefined {
+  const draftPool =
+    run.state.pendingActions.length > 0
+      ? run.state.pendingActions
+      : run.state.approvedActions;
+  const productDrafts = draftPool.filter((action) => action.tool === productTool);
+  if (productDrafts.length !== 1) return undefined;
+  const draftAction = productDrafts[0];
+  if (!draftAction || draftAction.tool !== productTool) return undefined;
+  return draftAction;
+}
+
+/**
+ * Residual 561/563: Host panel approve for product-lane AgentRuns requires
+ * waiting_approval + sole product draftAction before Host lifecycle
+ * (goal residual 557/559 + knowledge residual 555/559 + task residual 547/489
+ * symmetry). Prevents approve-then-silent-noop when confirm product gates
+ * fail-closed. Foreign companions may remain; multi product drafts fail-closed.
+ * Residual 563: task.create session-owned path uses create_task_template.
+ */
+export function canHostApproveProductAgentRun(input: {
+  run: AgentRunResult | null | undefined;
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template';
+}): boolean {
+  const run = input.run;
+  if (!run || run.run.status !== 'waiting_approval') return false;
+  return soleProductDraftAction(run, input.productTool) !== undefined;
+}
+
+/**
+ * Residual 565: Host panel reject for product-lane AgentRuns requires
+ * waiting_approval before Host lifecycle (cancel residual 477/559 + knowledge
+ * cancel symmetry). Prevents reject-then-silent-noop when cancel gates
+ * fail-closed. Orphan task proposals without AgentRun owner stay ungated
+ * (client-settle residual 425).
+ */
+export function canHostRejectProductAgentRun(input: {
+  run: AgentRunResult | null | undefined;
+}): boolean {
+  const run = input.run;
+  return Boolean(run && run.run.status === 'waiting_approval');
+}
+
+/**
+ * Residual 567: Host panel revise for product-lane AgentRuns requires
+ * waiting_approval before Host lifecycle (edit residual 481 + residual 565
+ * reject symmetry). Named separately for Host panel action symmetry.
+ * Residual 573: also requires sole product draftAction (approve residual
+ * 561/563 symmetry). Prevents Host revise-then-process-local silent-noop
+ * when client revise/edit sole-product gates fail-closed (task 547/481).
+ */
+export function canHostReviseProductAgentRun(input: {
+  run: AgentRunResult | null | undefined;
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template';
+}): boolean {
+  // Residual 573: WA + sole product (same predicate family as canHostApprove).
+  return canHostApproveProductAgentRun(input);
+}
+
+/** Residual 569: Host panel product source for owned AgentRun resolution. */
+export type HostPanelProductSource = 'goal' | 'knowledge' | 'task';
+
+/** Residual 569: product tool bound to a Host panel product source. */
+export type HostPanelProductTool =
+  | 'create_goal'
+  | 'create_knowledge_note'
+  | 'create_task_template';
+
+/**
+ * Residual 569: resolve session-owned product AgentRun for Host panel lifecycle
+ * gates (approve/reject/revise). Single ownership map so panel actions cannot
+ * drift across dual resolution paths.
+ * Residual 571: post-lifecycle settlement (confirm/cancel/complete/revise
+ * process-local) must reuse the same ownership result — no second dual resolve.
+ * Residual 577: primary-task-shaped runs map to create_task_template (not create_goal),
+ * matching exclusive task Host lane + residual 575 sole-product confirm.
+ * Residual 579: Host panel settlement for primary-task-shaped must use goal-session
+ * confirm/cancel (process-local task store is AgentType task.create only).
+ * Residual 581: settlement classifiers isHostPanelProcessLocalTaskCreateOwned /
+ * isHostPanelGoalSessionProductOwned keep approve/reject/revise from dual drift.
+ * Residual 597: dual-mirror + exclusive-promote session inputs before ownership match
+ * so gates/settlement never use a stale exclusive dual-mirror over settled goal.
+ *
+ * - goal → create_goal when exclusive goal lane matches and run is not primary-task;
+ *   primary-task-shaped (goal source or exclusive task dual-mirror) → create_task_template
+ * - knowledge → create_knowledge_note when exclusive note lane matches
+ * - task → create_task_template when exclusive task lane owns runId as task.create OR
+ *   primary-task-shaped; otherwise create_goal when exclusive/normal goal owns runId
+ * - orphan task proposals (no AgentRun owner) → null (client-settle / domain fallback)
+ */
+export function resolveHostPanelOwnedProductRun(input: {
+  source: HostPanelProductSource;
+  runId: string;
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  taskAgentRun?: AgentRunResult | null;
+}): { run: AgentRunResult; productTool: HostPanelProductTool } | null {
+  const runId = typeof input.runId === 'string' ? input.runId : '';
+  if (!runId) return null;
+
+  // Residual 597: dual-mirror then exclusive-promote before ownership match
+  // (idempotent when caller already passes liveHostWorkbenchAgentRuns).
+  const exclusive = resolveLiveHostWorkbenchAgentRuns({
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+    taskAgentRun: input.taskAgentRun,
+  });
+
+  if (input.source === 'goal') {
+    // Prefer exclusive goal lane; primary-task exclusive lives on task lane after promote.
+    let run =
+      exclusive.goalAgentRun?.run.runId === runId ? exclusive.goalAgentRun : null;
+    if (
+      !run &&
+      exclusive.taskAgentRun?.run.runId === runId &&
+      isPrimaryTaskHostAgentRun(exclusive.taskAgentRun) &&
+      exclusive.taskAgentRun.run.agentType !== 'task.create'
+    ) {
+      // Residual 597/577: goal-source primary-task after exclusive promote.
+      run = exclusive.taskAgentRun;
+    }
+    if (!run) return null;
+    // Residual 577: primary-task-shaped goal session still owns task product tool.
+    if (isPrimaryTaskHostAgentRun(run)) {
+      return { run, productTool: 'create_task_template' };
+    }
+    return { run, productTool: 'create_goal' };
+  }
+  if (input.source === 'knowledge') {
+    const run =
+      exclusive.noteAgentRun?.run.runId === runId ? exclusive.noteAgentRun : null;
+    return run ? { run, productTool: 'create_knowledge_note' } : null;
+  }
+  if (input.source === 'task') {
+    const taskRun = exclusive.taskAgentRun;
+    if (taskRun?.run.runId === runId && isPrimaryTaskHostAgentRun(taskRun)) {
+      // Residual 577: task.create AgentType OR primary-task-shaped (exclusive lane).
+      return { run: taskRun, productTool: 'create_task_template' };
+    }
+    const goalRun = exclusive.goalAgentRun;
+    if (goalRun?.run.runId === runId) {
+      if (isPrimaryTaskHostAgentRun(goalRun)) {
+        return { run: goalRun, productTool: 'create_task_template' };
+      }
+      return { run: goalRun, productTool: 'create_goal' };
+    }
+    return null;
+  }
+  return null;
+}
+
+/**
+ * Residual 581: Host panel process-local task.create ownership.
+ * Requires productTool create_task_template AND AgentType task.create
+ * (process-local store / complete / cancel / revise only).
+ */
+export function isHostPanelProcessLocalTaskCreateOwned(
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined,
+): boolean {
+  return (
+    owned?.productTool === 'create_task_template' &&
+    owned.run.run.agentType === 'task.create'
+  );
+}
+
+/**
+ * Residual 581/607: Host panel goal-session product settlement ownership.
+ * Normal create_goal, or primary-task-shaped create_task_template
+ * (residual 577/579 — not process-local task.create store).
+ * Residual 607: Host revise also process-local edit-resumes via this classifier
+ * (task residual 439 / knowledge residual 605 symmetry) so getRun/reopen cannot
+ * rehydrate stale title/description/goalId.
+ */
+export function isHostPanelGoalSessionProductOwned(
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined,
+): boolean {
+  if (!owned) return false;
+  if (owned.productTool === 'create_goal') return true;
+  // Residual 579/581: primary-task-shaped maps create_task_template but settles via goal session.
+  return (
+    owned.productTool === 'create_task_template' &&
+    owned.run.run.agentType !== 'task.create'
+  );
+}
+
+/**
+ * Residual 603/605: Host panel knowledge-session product settlement ownership.
+ * create_knowledge_note product tool from shared resolveHostPanelOwnedProductRun —
+ * mirrors residual 581 process-local / goal-session classifiers so knowledge
+ * approve/reject/revise settlement cannot drift from ownership productTool.
+ * Residual 605: Host revise also process-local edit-resumes via this classifier
+ * (task residual 439 symmetry) so getRun/reopen cannot rehydrate stale path/body.
+ */
+export function isHostPanelKnowledgeSessionProductOwned(
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined,
+): boolean {
+  return owned?.productTool === 'create_knowledge_note';
+}
+
+/**
+ * Residual 527: workbench pending count from product-lane tool only
+ * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
+ * Foreign tools never inflate the Host proposal action count.
+ */
+function pendingActionCount(
+  run: AgentRunResult,
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+): number {
+  // Residual 527: only product-lane tool actions — not all pending/approved tools.
+  const pending = run.state.pendingActions.filter(
+    (candidate) => candidate.tool === productTool,
+  ).length;
+  if (pending > 0) return pending;
+  return run.state.approvedActions.filter((candidate) => candidate.tool === productTool).length;
+}
+
+/**
+ * Residual 525: workbench summary rationale from product-lane tool only
+ * (goal→create_goal, knowledge→create_knowledge_note, task→create_task_template).
+ * Never read foreign tool pending[0].
+ */
+function firstPendingRationale(
+  run: AgentRunResult,
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+): string {
+  // Residual 525/549: sole product-lane draftAction rationale — not multi-find invent.
+  const action = soleProductDraftAction(run, productTool);
+  if (!action) return '';
+  return typeof action.rationale === 'string' ? action.rationale.trim() : '';
+}
+
+/**
+ * Residual 361/531: knowledge draft title from artifact / create_knowledge_note payload.
+ * Residual 531: payload fallback is create_knowledge_note only (path/markdown residual 521 symmetry).
+ */
+function knowledgeDraftTitle(run: AgentRunResult): string {
+  const draft = knowledgeDraftArtifact(run);
+  if (draft) {
+    if (typeof draft.title === 'string' && draft.title.trim()) return draft.title.trim();
+    const dataTitle = draft.data?.['title'];
+    if (typeof dataTitle === 'string' && dataTitle.trim()) return dataTitle.trim();
+  }
+  // Residual 531: only create_knowledge_note draft payload — not blind pending[0].
+  const action = firstCreateKnowledgeNoteAction(run);
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['title']
+      : undefined;
+  if (typeof fromPayload === 'string' && fromPayload.trim()) return fromPayload.trim();
+  return '';
+}
+
+function knowledgeDraftArtifact(run: AgentRunResult) {
+  return run.state.artifacts.find((artifact) => artifact.kind === 'knowledge_note_draft') ?? null;
+}
+
+/**
+ * Residual 521: product knowledge draft action is create_knowledge_note only
+ * (task residual 519 symmetry). Never read foreign tool pending[0].
+ */
+function firstCreateKnowledgeNoteAction(run: AgentRunResult): AgentAction | undefined {
+  // Residual 521/549: sole create_knowledge_note draftAction (no multi-find invent).
+  return soleProductDraftAction(run, 'create_knowledge_note');
+}
+
+/**
+ * Residual 361/521: knowledge draft target path from artifact / create_knowledge_note payload.
+ */
+function knowledgeDraftTargetPath(run: AgentRunResult): string {
+  const draft = knowledgeDraftArtifact(run);
+  const fromData = draft?.data?.['targetSubpath'] ?? draft?.data?.['targetPath'];
+  if (typeof fromData === 'string' && fromData.trim()) {
+    return fromData.trim().split('\\').join('/');
+  }
+  // Residual 521: only create_knowledge_note draft payload — not blind pending[0].
+  const action = firstCreateKnowledgeNoteAction(run);
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['targetSubpath'] ??
+        (payload as Record<string, unknown>)['targetPath']
+      : undefined;
+  if (typeof fromPayload === 'string' && fromPayload.trim()) {
+    return fromPayload.trim().split('\\').join('/');
+  }
+  return '';
+}
+
+/**
+ * Residual 361/521: knowledge draft markdown from artifact / create_knowledge_note payload.
+ */
+function knowledgeDraftMarkdown(run: AgentRunResult): string {
+  const draft = knowledgeDraftArtifact(run);
+  const fromData = draft?.data?.['markdown'] ?? draft?.data?.['contentMarkdown'];
+  if (typeof fromData === 'string' && fromData.trim()) return fromData;
+  // Residual 521: only create_knowledge_note draft payload — not blind pending[0].
+  const action = firstCreateKnowledgeNoteAction(run);
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['contentMarkdown'] ??
+        (payload as Record<string, unknown>)['markdown']
+      : undefined;
+  return typeof fromPayload === 'string' ? fromPayload : '';
+}
+
+/**
+ * Build AssistantProposalPatch from panel draft fields (residual 359/361).
+ * Goal uses title/description; knowledge uses targetPath/contentMarkdown.
+ */
+export function buildHostProposalPatchFromDraft(input: {
+  kind: AgentRunHostProposalKind;
+  title?: string;
+  targetPath?: string;
+  contentMarkdown?: string;
+  description?: string | null;
+  /** Residual 419: task.create optional goal link. */
+  goalId?: string | null;
+}): AssistantProposalPatch {
+  if (input.kind === 'knowledge.write') {
+    const patch: AssistantProposalPatch = {};
+    if (typeof input.targetPath === 'string' && input.targetPath.trim()) {
+      patch.targetPath = input.targetPath.trim().split('\\').join('/');
+    }
+    if (typeof input.contentMarkdown === 'string' && input.contentMarkdown.trim()) {
+      patch.contentMarkdown = input.contentMarkdown;
+    }
+    return patch;
+  }
+
+  if (input.kind === 'goal.create') {
+    const patch: AssistantProposalPatch = {};
+    if (typeof input.title === 'string' && input.title.trim()) {
+      patch.title = input.title.trim();
+    }
+    if (input.description !== undefined) {
+      patch.description = input.description;
+    }
+    return patch;
+  }
+
+  // Residual 419: task.create (and unknown kinds fall through to title-only).
+  const patch: AssistantProposalPatch = {};
+  if (typeof input.title === 'string' && input.title.trim()) {
+    patch.title = input.title.trim();
+  }
+  if (input.kind === 'task.create' && input.goalId !== undefined) {
+    patch.goalId = input.goalId;
+  }
+  return patch;
+}
+
+export function isHostProposalDraftDirty(input: {
+  item: HostProposalPanelItem;
+  title?: string;
+  targetPath?: string;
+  contentMarkdown?: string;
+  description?: string | null;
+  goalId?: string | null;
+}): boolean {
+  if (input.item.kind === 'knowledge.write') {
+    const nextPath = (input.targetPath ?? '').trim().split('\\').join('/');
+    const basePath = (input.item.targetPath ?? '').trim().split('\\').join('/');
+    const nextBody = input.contentMarkdown ?? '';
+    const baseBody = input.item.contentMarkdown ?? '';
+    return nextPath !== basePath || nextBody !== baseBody;
+  }
+  if (input.item.kind === 'goal.create') {
+    const titleDirty = (input.title ?? '').trim() !== input.item.title.trim();
+    const nextDescription = input.description ?? '';
+    const baseDescription = input.item.description ?? '';
+    return titleDirty || nextDescription !== baseDescription;
+  }
+  if (input.item.kind === 'task.create') {
+    const titleDirty = (input.title ?? '').trim() !== input.item.title.trim();
+    const nextGoalId = (input.goalId ?? '').trim();
+    const baseGoalId = (input.item.goalId ?? '').trim();
+    return titleDirty || nextGoalId !== baseGoalId;
+  }
+  return (input.title ?? '').trim() !== input.item.title.trim();
+}
+
+/**
+ * Residual 523: product goal draft action is create_goal only
+ * (task residual 519 / knowledge residual 521 symmetry). Never read foreign tool pending[0].
+ */
+function firstCreateGoalAction(run: AgentRunResult): AgentAction | undefined {
+  // Residual 523/549: sole create_goal draftAction (no multi-find invent).
+  return soleProductDraftAction(run, 'create_goal');
+}
+
+/**
+ * Residual 367/523: goal draft title from artifact / create_goal payload.
+ */
+function goalDraftTitle(run: AgentRunResult): string {
+  const goalArtifact = run.state.artifacts.find(
+    (artifact) =>
+      artifact.kind === 'goal_draft' ||
+      artifact.kind === 'action_plan',
+  );
+  if (goalArtifact && typeof goalArtifact.title === 'string' && goalArtifact.title.trim()) {
+    return goalArtifact.title.trim();
+  }
+  // Residual 523: only create_goal draft payload — not blind pending[0].
+  const createGoal = firstCreateGoalAction(run)?.payload;
+  const title = createGoal && typeof createGoal['title'] === 'string' ? createGoal['title'] : '';
+  return title.trim();
+}
+
+/**
+ * Residual 367/523: goal draft description from artifact / create_goal payload.
+ */
+function goalDraftDescription(run: AgentRunResult): string {
+  const goalArtifact = run.state.artifacts.find(
+    (artifact) => artifact.kind === 'goal_draft',
+  );
+  const fromData = goalArtifact?.data?.['description'];
+  if (typeof fromData === 'string') return fromData;
+  // Residual 523: only create_goal draft payload — not blind pending[0].
+  const createGoal = firstCreateGoalAction(run)?.payload;
+  const description =
+    createGoal && typeof createGoal['description'] === 'string' ? createGoal['description'] : '';
+  return description;
+}
+
+/**
+ * Build Host proposal panel rows from live AgentRun waiting_approval snapshots.
+ * waiting_execution / completed runs are intentionally excluded so continue/retry
+ * never re-enter Host approve lifecycle.
+ */
+
+/**
+ * Residual 363/551: map Host-revised knowledge fields onto AgentRun executor actions.
+ * Residual 551: only patches when exactly one create_knowledge_note draftAction is present
+ * (no multi-index invent of identical Host path/body across product tools).
+ * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
+ */
+export function applyHostKnowledgePatchToAgentActions(
+  actions: AgentAction[],
+  patch: {
+    targetPath?: string;
+    contentMarkdown?: string;
+  },
+): AgentAction[] {
+  const targetPath =
+    typeof patch.targetPath === 'string' && patch.targetPath.trim()
+      ? patch.targetPath.trim().split('\\').join('/')
+      : undefined;
+  const contentMarkdown =
+    typeof patch.contentMarkdown === 'string' && patch.contentMarkdown.trim()
+      ? patch.contentMarkdown
+      : undefined;
+
+  if (!targetPath && contentMarkdown === undefined) {
+    return actions.map((action) => ({ ...action, payload: { ...(action.payload ?? {}) } }));
+  }
+
+  // Residual 551: sole create_knowledge_note draftAction only (residual 547/549 symmetry).
+  const productDraftCount = actions.filter(
+    (action) => action.tool === 'create_knowledge_note',
+  ).length;
+  if (productDraftCount !== 1) {
+    return actions.map((action) => ({
+      ...action,
+      payload: { ...(action.payload ?? {}) },
+    }));
+  }
+
+  return actions.map((action) => {
+    if (action.tool !== 'create_knowledge_note') {
+      return {
+        ...action,
+        payload: { ...(action.payload ?? {}) },
+      };
+    }
+    const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
+    if (targetPath) {
+      payload.targetSubpath = targetPath;
+      payload.targetPath = targetPath;
+    }
+    if (contentMarkdown !== undefined) {
+      payload.contentMarkdown = contentMarkdown;
+      payload.markdown = contentMarkdown;
+    }
+    return {
+      ...action,
+      payload,
+    };
+  });
+}
+
+
+/**
+ * Residual 365/551: map Host-revised goal title/description onto AgentRun executor actions.
+ * Residual 551: only patches when exactly one create_goal draftAction is present
+ * (no multi-index invent of identical Host title/description across product tools).
+ * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
+ */
+export function applyHostGoalPatchToAgentActions(
+  actions: AgentAction[],
+  patch: {
+    title?: string;
+    description?: string | null;
+  },
+): AgentAction[] {
+  const title =
+    typeof patch.title === 'string' && patch.title.trim() ? patch.title.trim() : undefined;
+  const hasDescription = patch.description !== undefined;
+  const description = hasDescription ? patch.description : undefined;
+
+  if (!title && !hasDescription) {
+    return actions.map((action) => ({ ...action, payload: { ...(action.payload ?? {}) } }));
+  }
+
+  // Residual 551: sole create_goal draftAction only (residual 547/549 symmetry).
+  const productDraftCount = actions.filter((action) => action.tool === 'create_goal').length;
+  if (productDraftCount !== 1) {
+    return actions.map((action) => ({
+      ...action,
+      payload: { ...(action.payload ?? {}) },
+    }));
+  }
+
+  return actions.map((action) => {
+    if (action.tool !== 'create_goal') {
+      return {
+        ...action,
+        payload: { ...(action.payload ?? {}) },
+      };
+    }
+    const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
+    if (title) {
+      payload.title = title;
+    }
+    if (hasDescription) {
+      payload.description = description;
+    }
+    return {
+      ...action,
+      payload,
+    };
+  });
+}
+
+
+/**
+ * Residual 379: Host execution receipt workbench row.
+ * Presentation of post-approve executor outcomes only — never Host kernel mutation execution.
+ */
+/** Residual 385: one executed-action line for Host receipt replay. */
+export type HostExecutionActionLine = {
+  tool: string;
+  status: 'executed' | 'skipped' | 'failed';
+  message: string;
+  entityId?: string;
+};
+
+export type HostExecutionReceiptItem = {
+  runId: string;
+  proposalId: string;
+  revision: number;
+  kind: AgentRunHostProposalKind;
+  source: HostProposalPanelSource;
+  runStatus: 'completed' | 'failed' | 'cancelled';
+  ok: boolean;
+  title: string;
+  summary: string;
+  executedCount: number;
+  failedCount: number;
+  skippedCount: number;
+  entityIds: string[];
+  /** Residual 385: goal description replay (when present). */
+  description?: string;
+  /** Residual 385: knowledge target path replay. */
+  targetPath?: string;
+  /** Residual 385: truncated knowledge body for read-only replay. */
+  contentPreview?: string;
+  /** Residual 385: ordered executed-action lines for audit replay. */
+  actionLines: HostExecutionActionLine[];
+  /** Residual 385: primary created entity for deep-link open. */
+  primaryEntityId?: string;
+  /** Stable UI key; not a Host mutation request id. */
+  receiptKey: string;
+};
+
+const HOST_RECEIPT_STATUSES = new Set(['completed', 'failed', 'cancelled']);
+
+function truncateHostContentPreview(text: string, max = 240): string {
+  const trimmed = text.trim();
+  if (!trimmed) return '';
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max).trimEnd()}…`;
+}
+
+/**
+ * Residual 533: tools belonging to other Host product lanes.
+ * Same-lane companions (e.g. create_key_result on goal.create) remain visible.
+ */
+function isCrossLaneForeignTool(
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+  tool: string,
+): boolean {
+  if (productTool === 'create_goal') {
+    return tool === 'create_task_template' || tool === 'create_knowledge_note';
+  }
+  if (productTool === 'create_knowledge_note') {
+    return tool === 'create_goal' || tool === 'create_task_template';
+  }
+  // task.create
+  return (
+    tool === 'create_goal' ||
+    tool === 'create_knowledge_note' ||
+    tool === 'create_key_result'
+  );
+}
+
+/**
+ * Residual 529/533/535/537: receipt summary for product lane.
+ * Residual 529: primaryEntityId from product-lane executed tool only.
+ * Residual 533: cross-lane foreign tools never inflate counts/actionLines/entityIds.
+ * Residual 535: summary error text from same-lane failed action only (no blind errors[0]).
+ * Residual 537: ok requires product-lane executed tool when run status is completed.
+ * Same-lane companions (e.g. create_key_result on goal) remain for audit replay.
+ */
+function summarizeExecutedActions(
+  run: AgentRunResult,
+  productTool: 'create_goal' | 'create_knowledge_note' | 'create_task_template',
+): {
+  executedCount: number;
+  failedCount: number;
+  skippedCount: number;
+  entityIds: string[];
+  actionLines: HostExecutionActionLine[];
+  primaryEntityId?: string;
+  ok: boolean;
+  summary: string;
+} {
+  const actions = run.state.executedActions ?? [];
+  let executedCount = 0;
+  let failedCount = 0;
+  let skippedCount = 0;
+  const entityIds: string[] = [];
+  const actionLines: HostExecutionActionLine[] = [];
+  let primaryEntityId: string | undefined;
+  for (const action of actions) {
+    // Residual 533: drop cross-lane foreign tools from Host receipt summary.
+    if (isCrossLaneForeignTool(productTool, action.tool)) continue;
+    if (action.status === 'executed') executedCount += 1;
+    else if (action.status === 'failed') failedCount += 1;
+    else if (action.status === 'skipped') skippedCount += 1;
+    const entityId =
+      typeof action.entityId === 'string' && action.entityId.trim()
+        ? action.entityId.trim()
+        : undefined;
+    if (entityId) {
+      entityIds.push(entityId);
+      // Residual 529: only product-lane executed tool entity — not foreign entityIds[0].
+      if (!primaryEntityId && action.tool === productTool && action.status === 'executed') {
+        primaryEntityId = entityId;
+      }
+    }
+    actionLines.push({
+      tool: action.tool,
+      status: action.status,
+      message: typeof action.message === 'string' ? action.message : '',
+      ...(entityId ? { entityId } : {}),
+    });
+  }
+  // Residual 529: leave primaryEntityId undefined when product-lane tool has no entityId
+  // (do not fall back to foreign entityIds[0]).
+  // Residual 537: completed receipts are ok only when product-lane tool executed
+  // (companions skipped/failed without product execution are not success).
+  const productLaneExecuted = actionLines.some(
+    (line) => line.tool === productTool && line.status === 'executed',
+  );
+  const ok = run.run.status === 'completed' && failedCount === 0 && productLaneExecuted;
+  const parts = [
+    `${executedCount} executed`,
+    `${skippedCount} skipped`,
+    `${failedCount} failed`,
+  ];
+  // Residual 535: same-lane failed action message only — never blind run.state.errors[0]
+  // (foreign-lane failures may still sit in errors[] after residual 533 filtering).
+  const firstFailedMessage =
+    actionLines
+      .find(
+        (line) =>
+          line.status === 'failed' &&
+          typeof line.message === 'string' &&
+          line.message.trim().length > 0,
+      )
+      ?.message.trim() ?? '';
+  const summary = firstFailedMessage
+    ? `${parts.join(', ')}; ${firstFailedMessage}`
+    : parts.join(', ');
+  return {
+    executedCount,
+    failedCount,
+    skippedCount,
+    entityIds,
+    actionLines,
+    primaryEntityId,
+    ok,
+    summary,
+  };
+}
+
+/**
+ * Residual 379: build Host execution receipt rows from completed/failed/cancelled
+ * Goal/Knowledge AgentRun snapshots after Host approve + domain executor.
+ * waiting_approval / waiting_execution never produce receipts (still pending).
+ * Does not call Host kernel mutation execution or any mutation port.
+ */
+
+/**
+ * Residual 519: product task draft action is create_task_template only
+ * (complete residual 501 / revise residual 507 symmetry). Never read foreign tool pending[0].
+ */
+function firstCreateTaskTemplateAction(run: AgentRunResult): AgentAction | undefined {
+  // Residual 519/549: sole create_task_template draftAction (no multi-find invent).
+  return soleProductDraftAction(run, 'create_task_template');
+}
+
+/**
+ * Residual 419/519: task.create draft title from artifact / create_task_template payload.
+ */
+function taskDraftTitle(run: AgentRunResult): string {
+  const draft = run.state.artifacts.find(
+    (artifact) => artifact.kind === 'task_draft',
+  );
+  if (draft && typeof draft.title === 'string' && draft.title.trim()) {
+    return draft.title.trim();
+  }
+  const dataTitle = draft?.data?.['title'];
+  if (typeof dataTitle === 'string' && dataTitle.trim()) return dataTitle.trim();
+  // Residual 519: only create_task_template draft payload — not blind pending[0].
+  const action = firstCreateTaskTemplateAction(run);
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['title'] ??
+        (payload as Record<string, unknown>)['name']
+      : undefined;
+  if (typeof fromPayload === 'string' && fromPayload.trim()) return fromPayload.trim();
+
+  // Residual 441: process-local terminal task.create (pending cleared) — recover title
+  // from executedActions.data / approval events / user message content.
+  // Residual 519: prefer create_task_template executed settlement when present.
+  for (const executed of run.state.executedActions ?? []) {
+    if (executed.tool && executed.tool !== 'create_task_template') continue;
+    const data = executed.data;
+    if (data && typeof data === 'object') {
+      const title =
+        (data as Record<string, unknown>)['title'] ??
+        (data as Record<string, unknown>)['name'];
+      if (typeof title === 'string' && title.trim()) return title.trim();
+    }
+  }
+  for (const event of [...(run.events ?? [])].reverse()) {
+    const data = event.data;
+    if (data && typeof data === 'object') {
+      const title = (data as Record<string, unknown>)['title'];
+      if (typeof title === 'string' && title.trim()) return title.trim();
+    }
+  }
+  for (const message of run.state.messages ?? []) {
+    if (message.role === 'user' && typeof message.content === 'string' && message.content.trim()) {
+      return message.content.trim();
+    }
+  }
+  return '';
+}
+
+/**
+ * Residual 419/519: task.create linked goalId from artifact / create_task_template payload.
+ */
+function taskDraftGoalId(run: AgentRunResult): string | null {
+  const draft = run.state.artifacts.find(
+    (artifact) => artifact.kind === 'task_draft',
+  );
+  const fromData = draft?.data?.['goalId'];
+  if (typeof fromData === 'string' && fromData.trim()) return fromData.trim();
+  if (fromData === null) return null;
+  // Residual 519: only create_task_template draft payload — not blind pending[0].
+  const action = firstCreateTaskTemplateAction(run);
+  const payload = action?.payload;
+  const fromPayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)['goalId']
+      : undefined;
+  if (typeof fromPayload === 'string' && fromPayload.trim()) return fromPayload.trim();
+  if (fromPayload === null) return null;
+  return null;
+}
+
+/**
+ * Residual 419/423: AgentRun looks task-shaped when it carries task draft artifacts.
+ */
+export function isTaskShapedHostAgentRun(
+  result: AgentRunResult | null | undefined,
+): boolean {
+  if (!result?.state?.artifacts?.length) return false;
+  return result.state.artifacts.some(
+    (artifact) => artifact.kind === 'task_draft',
+  );
+}
+
+/**
+ * Residual 423: exclusive Host task lane — task-shaped and not goal/knowledge primary.
+ * Avoids stealing normal goal.create runs that also plan create_task_template actions
+ * while still promoting residual 419 task_draft-only fixtures.
+ */
+export function isPrimaryTaskHostAgentRun(
+  result: AgentRunResult | null | undefined,
+): boolean {
+  if (!result?.run) return false;
+  // Residual 427: first-class AgentType task.create always owns the Host task lane.
+  if (result.run.agentType === 'task.create') return true;
+  if (!isTaskShapedHostAgentRun(result)) return false;
+  const hasGoalDraft = result.state.artifacts.some((artifact) => artifact.kind === 'goal_draft');
+  const hasNoteDraft = result.state.artifacts.some(
+    (artifact) => artifact.kind === 'knowledge_note_draft',
+  );
+  return !hasGoalDraft && !hasNoteDraft;
+}
+
+/**
+ * Residual 589: whether exclusive task lane should dual-mirror a goal session run.
+ * AgentType task.create owns process-local lane independently — never dual-mirror from goal.
+ * Primary-task-shaped goal.create (exclusive workbench) must stay mirrored after confirm/cancel
+ * so resolveLiveHostWorkbenchAgentRuns does not keep a stale waiting_approval task snapshot.
+ */
+export function shouldDualMirrorPrimaryTaskGoalSession(
+  result: AgentRunResult | null | undefined,
+): boolean {
+  if (!result?.run) return false;
+  if (result.run.agentType === 'task.create') return false;
+  return isPrimaryTaskHostAgentRun(result);
+}
+
+/**
+ * Residual 589/591/595/599/601: next exclusive taskAgentRun dual-mirror after goal session sync.
+ * Residual 591: process-local AgentType task.create owns exclusive lane first —
+ * never overwrite with a dual-mirrored primary-task goal session when both exist.
+ * - process-local task.create → preserve (even if goal is dual-mirrorable)
+ * - primary-task-shaped goal session → mirror that snapshot when lane empty / dual-mirrored
+ * - otherwise optionally drop dual-mirror primary-task when goal no longer owns it
+ *
+ * Residual 595: `dropStaleWhenGoalLeaves` defaults true for goalAgentRun watch / restore
+ * (goal cleared → clear dual-mirror). Builders/exclusive promote pass false so task-only
+ * exclusive snapshots are not dropped when goal is omitted from the call.
+ *
+ * Residual 599: even with dropStaleWhenGoalLeaves=false, drop dual-mirrored primary-task
+ * ghosts when a non-primary-task goal session is present so exclusive builders/ownership
+ * cannot show normal goal.create + stale dual-mirror task.create rows together.
+ * Residual 601: same ghost drop when a knowledge note session is present (noteAgentRun).
+ * Process-local task.create is never treated as a dual-mirror ghost.
+ */
+export function nextDualMirroredTaskAgentRun(input: {
+  goalAgentRun?: AgentRunResult | null;
+  taskAgentRun?: AgentRunResult | null;
+  /** Residual 601: knowledge note session — dual-mirror ghosts must not ride beside it. */
+  noteAgentRun?: AgentRunResult | null;
+  /**
+   * When true (default): drop dual-mirrored primary-task if goal is not dual-mirrorable
+   * (including goal null). When false: preserve task-only dual-mirror for builders, but
+   * still drop dual-mirror ghosts when a non-primary-task goal or knowledge session is
+   * present (residual 599/601).
+   */
+  dropStaleWhenGoalLeaves?: boolean;
+}): AgentRunResult | null {
+  const goal = input.goalAgentRun ?? null;
+  const task = input.taskAgentRun ?? null;
+  const note = input.noteAgentRun ?? null;
+  const dropStale = input.dropStaleWhenGoalLeaves !== false;
+  // Residual 591: process-local task.create exclusive lane is never dual-mirrored over.
+  if (task?.run?.agentType === 'task.create') {
+    return task;
+  }
+  if (shouldDualMirrorPrimaryTaskGoalSession(goal)) {
+    return goal;
+  }
+  if (!task?.run) return null;
+  const isDualMirroredPrimaryTask = isPrimaryTaskHostAgentRun(task);
+  // Residual 589/595/599/601: drop dual-mirror primary-task when:
+  // - session sync (dropStale): goal left primary-task or is absent
+  // - builders (dropStale false): when a non-primary-task goal or knowledge session is present
+  const otherProductSessionPresent = Boolean(goal?.run) || Boolean(note?.run);
+  if (
+    isDualMirroredPrimaryTask &&
+    !shouldDualMirrorPrimaryTaskGoalSession(goal) &&
+    (dropStale || otherProductSessionPresent)
+  ) {
+    return null;
+  }
+  return task;
+}
+
+/**
+ * Residual 423/595: derive exclusive Host workbench AgentRun inputs for live AIChatView.
+ * Primary task-shaped goal session runs promote into taskAgentRun and leave goal null.
+ *
+ * Residual 595: dual-mirror primary-task goal into exclusive task lane first
+ * (process-local task.create still wins via nextDualMirroredTaskAgentRun). Builders,
+ * ownership, and live workbench then exclusive-promote from a non-stale snapshot so
+ * settled goal sessions cannot keep a waiting_approval dual-mirror proposal row.
+ */
+export function resolveLiveHostWorkbenchAgentRuns(input: {
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  /** Optional dedicated task session field (future AgentType). */
+  taskAgentRun?: AgentRunResult | null;
+}): {
+  goalAgentRun: AgentRunResult | null;
+  noteAgentRun: AgentRunResult | null;
+  taskAgentRun: AgentRunResult | null;
+} {
+  // Residual 595/601: dual-mirror before exclusive promote (idempotent when already mirrored).
+  // dropStaleWhenGoalLeaves=false: task-only builder inputs must keep exclusive primary-task.
+  // Residual 601: pass noteAgentRun so knowledge session drops dual-mirror ghosts.
+  const dualMirroredTask = nextDualMirroredTaskAgentRun({
+    goalAgentRun: input.goalAgentRun,
+    taskAgentRun: input.taskAgentRun,
+    noteAgentRun: input.noteAgentRun,
+    dropStaleWhenGoalLeaves: false,
+  });
+  const explicitTask =
+    dualMirroredTask && isPrimaryTaskHostAgentRun(dualMirroredTask)
+      ? dualMirroredTask
+      : null;
+  const goal = input.goalAgentRun ?? null;
+  const note = input.noteAgentRun ?? null;
+
+  if (explicitTask) {
+    return {
+      goalAgentRun: goal && !isPrimaryTaskHostAgentRun(goal) ? goal : null,
+      noteAgentRun: note && !isPrimaryTaskHostAgentRun(note) ? note : null,
+      taskAgentRun: explicitTask,
+    };
+  }
+
+  if (goal && isPrimaryTaskHostAgentRun(goal)) {
+    return {
+      goalAgentRun: null,
+      noteAgentRun: note && !isPrimaryTaskHostAgentRun(note) ? note : null,
+      taskAgentRun: goal,
+    };
+  }
+
+  if (note && isPrimaryTaskHostAgentRun(note)) {
+    return {
+      goalAgentRun: goal,
+      noteAgentRun: null,
+      taskAgentRun: note,
+    };
+  }
+
+  return {
+    goalAgentRun: goal,
+    noteAgentRun: note,
+    taskAgentRun: null,
+  };
+}
+
+/**
+ * Residual 423/551: map Host-revised task title/goalId onto create_task_template executor actions.
+ * Residual 551: only patches when exactly one create_task_template draftAction is present
+ * (no multi-index invent of identical Host title/goalId across product tools).
+ * Host lifecycle stays separate; this only prepares AgentRun confirm approvedActions.
+ */
+export function applyHostTaskPatchToAgentActions(
+  actions: AgentAction[],
+  patch: {
+    title?: string;
+    goalId?: string | null;
+  },
+): AgentAction[] {
+  const title =
+    typeof patch.title === 'string' && patch.title.trim() ? patch.title.trim() : undefined;
+  const hasGoalId = patch.goalId !== undefined;
+  const goalId =
+    hasGoalId && typeof patch.goalId === 'string' && patch.goalId.trim()
+      ? patch.goalId.trim()
+      : hasGoalId
+        ? patch.goalId
+        : undefined;
+
+  if (!title && !hasGoalId) {
+    return actions.map((action) => ({ ...action, payload: { ...(action.payload ?? {}) } }));
+  }
+
+  // Residual 551: sole create_task_template draftAction only (residual 547/549 symmetry).
+  const productDraftCount = actions.filter(
+    (action) => action.tool === 'create_task_template',
+  ).length;
+  if (productDraftCount !== 1) {
+    return actions.map((action) => ({
+      ...action,
+      payload: { ...(action.payload ?? {}) },
+    }));
+  }
+
+  return actions.map((action) => {
+    if (action.tool !== 'create_task_template') {
+      return {
+        ...action,
+        payload: { ...(action.payload ?? {}) },
+      };
+    }
+    const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
+    if (title) {
+      payload.title = title;
+      payload.name = title;
+    }
+    if (hasGoalId) {
+      payload.goalId = goalId;
+    }
+    return {
+      ...action,
+      payload,
+    };
+  });
+}
+
+/**
+ * Residual 423: pure fallback CreateTaskTemplate transport body for Host task approve
+ * when no AgentRun confirm path owns the run. Prefer goal-session confirm for goal.create
+ * primary-task sessions; this is the domain createTemplate fallback only.
+ * Does not call any mutation port by itself.
+ */
+export function buildHostTaskCreateTemplateRequest(input: {
+  title: string;
+  goalId?: string | null;
+  description?: string | null;
+}): {
+  name: string;
+  description: string | null;
+  taskType: 'OneTime';
+  timeConfig: {
+    timeType: 'AllDay';
+    startDate: null;
+    timePoint: null;
+    timeRange: null;
+  };
+  importance: 'Moderate';
+  tags: string[];
+  goalBinding: null;
+  parentTaskId: null;
+  folderId: null;
+  color: null;
+  recurrenceRule: null;
+  reminderConfig: null;
+} | null {
+  const name = input.title.trim();
+  if (!name) return null;
+  const goalId = typeof input.goalId === 'string' ? input.goalId.trim() : '';
+  const descriptionRaw =
+    typeof input.description === 'string' && input.description.trim()
+      ? input.description.trim()
+      : goalId
+        ? `Linked goal ${goalId}`
+        : null;
+  return {
+    name,
+    description: descriptionRaw,
+    taskType: 'OneTime',
+    timeConfig: {
+      timeType: 'AllDay',
+      startDate: null,
+      timePoint: null,
+      timeRange: null,
+    },
+    importance: 'Moderate',
+    tags: goalId ? [`goal:${goalId}`] : [],
+    goalBinding: null,
+    parentTaskId: null,
+    folderId: null,
+    color: null,
+    recurrenceRule: null,
+    reminderConfig: null,
+  };
+}
+
+
+/**
+ * Residual 459: dirty Host approve for task.create must revise process-local draft
+ * before domain createTemplate so session restore cannot rehydrate a stale title.
+ * Presentation/decision helper only — never executes createTemplate or Host kernel.
+ */
+export function shouldReviseProcessLocalTaskDraftBeforeDomainSettle(input: {
+  dirty: boolean;
+  isTaskAgentType: boolean;
+  ownedByTaskSession: boolean;
+  agentType?: string | null;
+}): boolean {
+  if (!input.dirty) return false;
+  if (!input.isTaskAgentType || !input.ownedByTaskSession) return false;
+  return input.agentType === 'task.create';
+}
+
+/**
+ * Residual 609: dirty Host approve for knowledge session must process-local edit-revise
+ * before confirm so getRun/reopen cannot rehydrate stale path/body if confirm fails mid-flight
+ * (task residual 459 / knowledge residual 605 symmetry).
+ * Presentation/decision helper only — never executes confirm or Host kernel.
+ */
+export function shouldReviseKnowledgeSessionDraftBeforeConfirm(input: {
+  dirty: boolean;
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined;
+}): boolean {
+  if (!input.dirty) return false;
+  return isHostPanelKnowledgeSessionProductOwned(input.owned);
+}
+
+/**
+ * Residual 609: dirty Host approve for goal-session product must process-local edit-revise
+ * before confirm so getRun/reopen cannot rehydrate stale title/description/goalId mid-flight
+ * (task residual 459 / goal residual 607 symmetry; includes primary-task-shaped).
+ * Presentation/decision helper only — never executes confirm or Host kernel.
+ */
+export function shouldReviseGoalSessionDraftBeforeConfirm(input: {
+  dirty: boolean;
+  owned:
+    | {
+        run: AgentRunResult;
+        productTool: HostPanelProductTool;
+      }
+    | null
+    | undefined;
+}): boolean {
+  if (!input.dirty) return false;
+  return isHostPanelGoalSessionProductOwned(input.owned);
+}
+
+/**
+ * Residual 425: Host execution receipt for pure domain createTemplate fallback.
+ * Presentation only — caller owns persistence/reactivity of the receipt list.
+ * Never calls Host kernel mutation execution.
+ */
+export function buildHostTaskClientExecutionReceipt(input: {
+  runId: string;
+  proposalId: string;
+  revision: number;
+  title: string;
+  templateId: string;
+  goalId?: string | null;
+}): HostExecutionReceiptItem {
+  const title = input.title.trim() || `Task ${input.templateId}`;
+  const templateId = input.templateId.trim();
+  const goalId =
+    typeof input.goalId === 'string' && input.goalId.trim() ? input.goalId.trim() : null;
+  const summary = goalId
+    ? `Created task template · linked goal ${goalId}`
+    : 'Created task template';
+  return {
+    runId: input.runId,
+    proposalId: input.proposalId,
+    revision: input.revision,
+    kind: 'task.create',
+    source: 'task',
+    runStatus: 'completed',
+    ok: true,
+    title,
+    summary,
+    executedCount: 1,
+    failedCount: 0,
+    skippedCount: 0,
+    entityIds: templateId ? [templateId] : [],
+    actionLines: [
+      {
+        tool: 'create_task_template',
+        status: 'executed',
+        message: summary,
+        ...(templateId ? { entityId: templateId } : {}),
+      },
+    ],
+    ...(templateId ? { primaryEntityId: templateId } : {}),
+    receiptKey: `host-receipt:${input.proposalId}`,
+  };
+}
+
+/**
+ * Residual 425: filter pending Host proposals already settled by client domain executor.
+ */
+export function filterPendingHostProposalsByClientSettlement(
+  items: readonly HostProposalPanelItem[],
+  settledProposalIds?: ReadonlySet<string> | readonly string[] | null,
+): HostProposalPanelItem[] {
+  if (!settledProposalIds) return [...items];
+  const settled =
+    settledProposalIds instanceof Set
+      ? settledProposalIds
+      : new Set(settledProposalIds);
+  if (settled.size === 0) return [...items];
+  return items.filter((item) => !settled.has(item.proposalId));
+}
+
+/**
+ * Residual 425: merge AgentRun-derived receipts with client domain task receipts.
+ * Client rows win only when the same proposalId is absent from AgentRun receipts.
+ */
+export function mergeHostExecutionReceiptItems(
+  agentRunReceipts: readonly HostExecutionReceiptItem[],
+  clientTaskReceipts?: readonly HostExecutionReceiptItem[] | null,
+): HostExecutionReceiptItem[] {
+  const items = [...agentRunReceipts];
+  if (!clientTaskReceipts?.length) return items;
+  const seen = new Set(items.map((item) => item.proposalId));
+  for (const receipt of clientTaskReceipts) {
+    if (!receipt?.proposalId || seen.has(receipt.proposalId)) continue;
+    items.push(receipt);
+    seen.add(receipt.proposalId);
+  }
+  return items;
+}
+
+export function buildHostExecutionReceiptItems(input: {
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  /** Residual 419: optional task.create bridge run (fixture / future AgentType). */
+  taskAgentRun?: AgentRunResult | null;
+  /**
+   * Residual 425: client domain createTemplate receipts (no AgentRun status change).
+   * Merged after AgentRun-derived rows; never replaces an existing proposalId.
+   */
+  clientTaskReceipts?: readonly HostExecutionReceiptItem[] | null;
+}): HostExecutionReceiptItem[] {
+  const items: HostExecutionReceiptItem[] = [];
+
+  // Residual 585: exclusive primary-task lane before product-tool receipt routing
+  // (fail-closed against dual goal+task rows / create_goal mis-label for primary-task).
+  // Residual 613: emit receipts in exclusive session priority (task > goal > knowledge)
+  // matching residual 611 default focus / residual 603 selectAgentRun — not goal-first.
+  const exclusive = resolveLiveHostWorkbenchAgentRuns({
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+    taskAgentRun: input.taskAgentRun,
+  });
+  const taskRun = exclusive.taskAgentRun;
+  if (taskRun && HOST_RECEIPT_STATUSES.has(taskRun.run.status)) {
+    const status = taskRun.run.status as HostExecutionReceiptItem['runStatus'];
+    const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
+    const counts = summarizeExecutedActions(taskRun, 'create_task_template');
+    if (
+      counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
+      items.push({
+        runId: taskRun.run.runId,
+        proposalId: ref.proposalId,
+        revision: getRememberedHostProposalRevision(ref.proposalId, ref.revision),
+        kind: 'task.create',
+        source: 'task',
+        runStatus: status,
+        ok: counts.ok,
+        title: taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`,
+        summary: counts.summary,
+        executedCount: counts.executedCount,
+        failedCount: counts.failedCount,
+        skippedCount: counts.skippedCount,
+        entityIds: counts.entityIds,
+        actionLines: counts.actionLines,
+        primaryEntityId: counts.primaryEntityId,
+        receiptKey: `host-receipt:${ref.proposalId}`,
+      });
+    }
+  }
+
+  // Residual 425: merge client domain task receipts (createTemplate fallback).
+  const goalRun = exclusive.goalAgentRun;
+  if (goalRun && HOST_RECEIPT_STATUSES.has(goalRun.run.status)) {
+    const status = goalRun.run.status as HostExecutionReceiptItem['runStatus'];
+    const ref = buildAgentRunHostProposalRef(goalRun.run.runId, 'goal.create');
+    const counts = summarizeExecutedActions(goalRun, 'create_goal');
+    // Only surface when execution actually started (actions present) or terminal failed/cancelled.
+    if (
+      counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
+      const description = goalDraftDescription(goalRun);
+      items.push({
+        runId: goalRun.run.runId,
+        proposalId: ref.proposalId,
+        revision: getRememberedHostProposalRevision(ref.proposalId, ref.revision),
+        kind: 'goal.create',
+        source: 'goal',
+        runStatus: status,
+        ok: counts.ok,
+        title: goalDraftTitle(goalRun) || `Goal run ${goalRun.run.runId}`,
+        summary: counts.summary,
+        executedCount: counts.executedCount,
+        failedCount: counts.failedCount,
+        skippedCount: counts.skippedCount,
+        entityIds: counts.entityIds,
+        actionLines: counts.actionLines,
+        primaryEntityId: counts.primaryEntityId,
+        ...(description ? { description } : {}),
+        receiptKey: `host-receipt:${ref.proposalId}`,
+      });
+    }
+  }
+
+  const noteRun = exclusive.noteAgentRun;
+  if (noteRun && HOST_RECEIPT_STATUSES.has(noteRun.run.status)) {
+    const status = noteRun.run.status as HostExecutionReceiptItem['runStatus'];
+    const ref = buildAgentRunHostProposalRef(noteRun.run.runId, 'knowledge.write');
+    const counts = summarizeExecutedActions(noteRun, 'create_knowledge_note');
+    if (
+      counts.executedCount + counts.failedCount + counts.skippedCount > 0 ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
+      const targetPath = knowledgeDraftTargetPath(noteRun);
+      const contentPreview = truncateHostContentPreview(knowledgeDraftMarkdown(noteRun));
+      items.push({
+        runId: noteRun.run.runId,
+        proposalId: ref.proposalId,
+        revision: getRememberedHostProposalRevision(ref.proposalId, ref.revision),
+        kind: 'knowledge.write',
+        source: 'knowledge',
+        runStatus: status,
+        ok: counts.ok,
+        title: knowledgeDraftTitle(noteRun) || `Knowledge run ${noteRun.run.runId}`,
+        summary: counts.summary,
+        executedCount: counts.executedCount,
+        failedCount: counts.failedCount,
+        skippedCount: counts.skippedCount,
+        entityIds: counts.entityIds,
+        actionLines: counts.actionLines,
+        primaryEntityId: counts.primaryEntityId,
+        ...(targetPath ? { targetPath } : {}),
+        ...(contentPreview ? { contentPreview } : {}),
+        receiptKey: `host-receipt:${ref.proposalId}`,
+      });
+    }
+  }
+
+  return mergeHostExecutionReceiptItems(items, input.clientTaskReceipts);
+}
+
+export function buildPendingHostProposalItems(input: {
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  /** Residual 419: optional task.create bridge run (fixture / future AgentType). */
+  taskAgentRun?: AgentRunResult | null;
+  /**
+   * Residual 425: proposalIds already settled by client domain executor
+   * (createTemplate fallback) — suppress pending rows without AgentRun status change.
+   */
+  settledProposalIds?: ReadonlySet<string> | readonly string[] | null;
+}): HostProposalPanelItem[] {
+  const items: HostProposalPanelItem[] = [];
+
+  // Residual 585: exclusive primary-task lane before product-tool proposal rows
+  // (same promotion as live workbench; idempotent when caller already exclusive).
+  // Residual 613: emit rows in exclusive session priority (task > goal > knowledge)
+  // matching residual 611 default focus / residual 603 selectAgentRun — not goal-first.
+  const exclusive = resolveLiveHostWorkbenchAgentRuns({
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+    taskAgentRun: input.taskAgentRun,
+  });
+
+  // Residual 419/613: task.create Host proposal lane first (presentation + lifecycle only).
+  const taskRun = exclusive.taskAgentRun;
+  if (taskRun?.run.status === 'waiting_approval') {
+    const ref = buildAgentRunHostProposalRef(taskRun.run.runId, 'task.create');
+    const title = taskDraftTitle(taskRun) || `Task run ${taskRun.run.runId}`;
+    const goalId = taskDraftGoalId(taskRun);
+    items.push({
+      runId: taskRun.run.runId,
+      proposalId: ref.proposalId,
+      revision: ref.revision,
+      kind: 'task.create',
+      source: 'task',
+      runStatus: 'waiting_approval',
+      title,
+      summary: firstPendingRationale(taskRun, 'create_task_template'),
+      pendingActionCount: pendingActionCount(taskRun, 'create_task_template'),
+      ...(goalId !== null && goalId !== undefined ? { goalId } : {}),
+    });
+  }
+
+  const goalRun = exclusive.goalAgentRun;
+  if (goalRun?.run.status === 'waiting_approval') {
+    const ref = buildAgentRunHostProposalRef(goalRun.run.runId, 'goal.create');
+    const title = goalDraftTitle(goalRun) || `Goal run ${goalRun.run.runId}`;
+    items.push({
+      runId: goalRun.run.runId,
+      proposalId: ref.proposalId,
+      revision: ref.revision,
+      kind: 'goal.create',
+      source: 'goal',
+      runStatus: 'waiting_approval',
+      title,
+      description: goalDraftDescription(goalRun),
+      summary: firstPendingRationale(goalRun, 'create_goal'),
+      pendingActionCount: pendingActionCount(goalRun, 'create_goal'),
+    });
+  }
+
+  const noteRun = exclusive.noteAgentRun;
+  if (noteRun?.run.status === 'waiting_approval') {
+    const ref = buildAgentRunHostProposalRef(noteRun.run.runId, 'knowledge.write');
+    const title = knowledgeDraftTitle(noteRun) || `Knowledge run ${noteRun.run.runId}`;
+    items.push({
+      runId: noteRun.run.runId,
+      proposalId: ref.proposalId,
+      revision: ref.revision,
+      kind: 'knowledge.write',
+      source: 'knowledge',
+      runStatus: 'waiting_approval',
+      title,
+      summary: firstPendingRationale(noteRun, 'create_knowledge_note'),
+      pendingActionCount: pendingActionCount(noteRun, 'create_knowledge_note'),
+      targetPath: knowledgeDraftTargetPath(noteRun),
+      contentMarkdown: knowledgeDraftMarkdown(noteRun),
+    });
+  }
+
+  // Residual 425: hide client-settled task proposals (domain createTemplate fallback).
+  return filterPendingHostProposalsByClientSettlement(items, input.settledProposalIds);
+}
+
+/**
+ * Residual 381: Host workbench reopen kind when restoring an AgentRun from history.
+ * proposal = waiting_approval bridge rows; receipt = terminal Host execution report.
+ */
+export type HostWorkbenchReopenKind = 'proposal' | 'receipt' | 'none';
+
+/**
+ * Residual 381: decide whether Conversation AgentRun history should reopen the
+ * Host proposal or execution-report workbench. knowledge.qa never owns Host rows.
+ */
+export function resolveHostWorkbenchReopenFromAgentRun(
+  result: AgentRunResult | null | undefined,
+): HostWorkbenchReopenKind {
+  if (!result?.run) return 'none';
+  const agentType = result.run.agentType;
+  // Residual 419/423/427/585: exclusive Host task lane via isPrimaryTaskHostAgentRun
+  // (not bare isTaskShaped — normal goal.create may companion task drafts).
+  const primaryTask = isPrimaryTaskHostAgentRun(result);
+  if (
+    agentType !== 'goal.create'
+    && agentType !== 'knowledge.generate'
+    && !primaryTask
+  ) {
+    return 'none';
+  }
+  if (result.run.status === 'waiting_approval') {
+    return 'proposal';
+  }
+  if (
+    result.run.status === 'completed' ||
+    result.run.status === 'failed' ||
+    result.run.status === 'cancelled'
+  ) {
+    const items = buildHostExecutionReceiptItems({
+      goalAgentRun: agentType === 'goal.create' && !primaryTask ? result : null,
+      noteAgentRun: agentType === 'knowledge.generate' && !primaryTask ? result : null,
+      taskAgentRun: primaryTask ? result : null,
+    });
+    return items.length > 0 ? 'receipt' : 'none';
+  }
+  return 'none';
+}
+
+export function shouldOpenHostWorkbenchFromAgentRun(
+  result: AgentRunResult | null | undefined,
+): boolean {
+  return resolveHostWorkbenchReopenFromAgentRun(result) !== 'none';
+}
+
+/**
+ * Residual 441: map a restored AgentRun snapshot to a Host workbench focus target.
+ * Used when Conversation history reopens the right rail so the matching
+ * proposal/receipt row is highlighted (same contract as timeline focus).
+ */
+export function resolveHostWorkbenchFocusFromAgentRun(
+  result: AgentRunResult | null | undefined,
+): HostWorkbenchFocusTarget | null {
+  const reopen = resolveHostWorkbenchReopenFromAgentRun(result);
+  if (reopen === 'none' || !result?.run) return null;
+
+  // Residual 585: proposalId kind must match exclusive product row builders.
+  // Bare isTaskShaped would mis-label normal goal.create + companion task drafts as task.create.
+  let kind: AgentRunHostProposalKind | null = null;
+  if (isPrimaryTaskHostAgentRun(result)) {
+    kind = 'task.create';
+  } else if (result.run.agentType === 'goal.create') {
+    kind = 'goal.create';
+  } else if (result.run.agentType === 'knowledge.generate') {
+    kind = 'knowledge.write';
+  }
+  if (!kind) return null;
+
+  const ref = buildAgentRunHostProposalRef(result.run.runId, kind);
+  return {
+    proposalId: ref.proposalId,
+    surface: reopen === 'proposal' ? 'proposal' : 'receipt',
+  };
+}
+
+/**
+ * Residual 443/593/601/611: pick Host workbench focus from live session AgentRun snapshots
+ * after conversation restore (or start) and residual 611 default auto-focus.
+ * Prefer exclusive task.create lane, then goal, then knowledge. Returns null when no
+ * Host proposal/receipt should reopen.
+ *
+ * Residual 593/601: exclusive-promote via resolveLiveHostWorkbenchAgentRuns (which
+ * dual-mirrors with dropStaleWhenGoalLeaves=false + residual 599/601 ghost drops).
+ * Do not pre-dual-mirror with default dropStale=true — that wiped task-only dual-mirror
+ * exclusive snapshots before exclusive promote could preserve them.
+ */
+export function resolveHostWorkbenchFocusFromSessionRuns(input: {
+  taskAgentRun?: AgentRunResult | null;
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+}): HostWorkbenchFocusTarget | null {
+  // Residual 601: single exclusive path (dual-mirror + ghost drop + promote).
+  const exclusive = resolveLiveHostWorkbenchAgentRuns({
+    taskAgentRun: input.taskAgentRun,
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+  });
+  return (
+    resolveHostWorkbenchFocusFromAgentRun(exclusive.taskAgentRun) ??
+    resolveHostWorkbenchFocusFromAgentRun(exclusive.goalAgentRun) ??
+    resolveHostWorkbenchFocusFromAgentRun(exclusive.noteAgentRun)
+  );
+}
+
+/**
+ * Residual 611: default Host workbench focus when nothing is focused yet.
+ * Prefer exclusive session focus (task > goal > knowledge; dual-mirror + ghost rules
+ * via residual 601 resolveHostWorkbenchFocusFromSessionRuns) — same priority as
+ * residual 603 selectAgentRun / residual 443 selectConversation.
+ * Fall back to first exclusive builder row only when session focus is null
+ * (e.g. client-only receipt). Never invent focus from non-exclusive dual raw fields.
+ */
+export function resolveDefaultHostWorkbenchFocusProposalId(input: {
+  taskAgentRun?: AgentRunResult | null;
+  goalAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  proposalItems?: readonly { proposalId: string }[] | null;
+  receiptItems?: readonly { proposalId: string }[] | null;
+}): string | null {
+  const sessionFocus = resolveHostWorkbenchFocusFromSessionRuns({
+    taskAgentRun: input.taskAgentRun,
+    goalAgentRun: input.goalAgentRun,
+    noteAgentRun: input.noteAgentRun,
+  });
+  if (sessionFocus?.proposalId) return sessionFocus.proposalId;
+  const firstProposal = input.proposalItems?.[0]?.proposalId;
+  if (typeof firstProposal === 'string' && firstProposal.trim()) return firstProposal;
+  const firstReceipt = input.receiptItems?.[0]?.proposalId;
+  if (typeof firstReceipt === 'string' && firstReceipt.trim()) return firstReceipt;
+  return null;
+}
+
+/**
+ * Residual 445: recover optional linked goalId from task.create / task-shaped Host run.
+ * Reads pending/approved create_task_template payload and task draft artifacts.
+ * Used to re-align ActionBar linkedGoalId after conversation restore.
+ */
+export function resolveLinkedGoalIdFromTaskAgentRun(
+  result: AgentRunResult | null | undefined,
+): string | null {
+  if (!result?.run) return null;
+  if (result.run.agentType !== 'task.create' && !isPrimaryTaskHostAgentRun(result)) {
+    return null;
+  }
+  return taskDraftGoalId(result);
+}
+
+/**
+ * Residual 399: Host multi-engine lane label for timeline Artifact cards.
+ * Distinguishes open-chat Turn Engines from AgentRun proposal-kernel lanes.
+ * Presentation only — never selects or executes engines.
+ */
+export type HostTimelineEngineKey =
+  | 'engine.direct_turn'
+  | 'engine.pi_readonly'
+  | 'agent_run.goal_create'
+  | 'agent_run.knowledge_write'
+  | 'agent_run.task_create'
+  | 'unknown';
+
+/**
+ * Residual 399: resolve Host engine/profile badge key for timeline cards.
+ * Prefer explicit open-chat executionProfileId when present; otherwise map
+ * AgentRun Host proposal kinds to agent_run lanes. Fail closed to unknown.
+ */
+export function resolveHostTimelineEngineKey(input: {
+  kind?: string | null;
+  executionProfileId?: string | null;
+}): HostTimelineEngineKey {
+  // AgentRun Host proposal kinds own the engine lane (not open-chat profile).
+  const kind = typeof input.kind === 'string' ? input.kind.trim() : '';
+  if (kind === 'goal.create') return 'agent_run.goal_create';
+  if (kind === 'knowledge.write') return 'agent_run.knowledge_write';
+  if (kind === 'task.create') return 'agent_run.task_create';
+
+  // Open-chat Turn Engine profile only when no AgentRun kind is present.
+  const profile = typeof input.executionProfileId === 'string' ? input.executionProfileId.trim() : '';
+  if (profile === 'pi_readonly') return 'engine.pi_readonly';
+  if (profile === 'direct_turn') return 'engine.direct_turn';
+  return 'unknown';
+}
+
+/**
+ * Residual 383: compact Host Artifact card for the Conversation message timeline.
+ * Surfaces proposal (awaiting approval) or receipt (post-execution) without owning
+ * mutation lifecycle — click reopens the right workbench.
+ * Residual 399: engineKey badge for multi-engine isolation visibility.
+ */
+/** Residual 401: open_chat is a presentation lane for multi-engine open-chat turns. */
+export type HostTimelineArtifactSurface = 'proposal' | 'receipt' | 'open_chat';
+export type HostTimelineArtifactKind = AgentRunHostProposalKind | 'open_chat.turn';
+export type HostTimelineArtifactSource = HostProposalPanelSource | 'open_chat';
+
+export type HostTimelineArtifactItem = {
+  id: string;
+  surface: HostTimelineArtifactSurface;
+  runId: string;
+  proposalId: string;
+  kind: HostTimelineArtifactKind;
+  source: HostTimelineArtifactSource;
+  title: string;
+  summary: string;
+  statusLabelKey: 'pending' | 'ok' | 'partial' | 'failed' | 'cancelled';
+  /** Residual 399: Host engine/profile lane for multi-engine isolation badge. */
+  engineKey: HostTimelineEngineKey;
+};
+
+/**
+ * Residual 401: open-chat Host turn snapshot for timeline multi-engine badges.
+ * Presentation only — not a proposal/receipt lifecycle object.
+ */
+export type HostOpenChatTurnSnapshot = {
+  runId: string;
+  executionProfileId: 'direct_turn' | 'pi_readonly' | string;
+  status: 'generating' | 'completed' | 'aborted' | 'failed';
+  title: string;
+  summary?: string;
+  /** Optional engine id from run.started for diagnostics. */
+  engineId?: string;
+};
+
+/**
+ * Residual 383: derive timeline Artifact cards from current Host proposal + receipt rows.
+ * Residual 399: attach engineKey from AgentRun kind or optional open-chat profile.
+ */
+export function buildHostTimelineArtifactItems(input: {
+  proposals?: HostProposalPanelItem[];
+  receipts?: HostExecutionReceiptItem[];
+  /** Optional open-chat profile override for non-AgentRun Host cards. */
+  executionProfileId?: string | null;
+}): HostTimelineArtifactItem[] {
+  const items: HostTimelineArtifactItem[] = [];
+
+  for (const proposal of input.proposals ?? []) {
+    items.push({
+      id: `timeline-proposal:${proposal.proposalId}`,
+      surface: 'proposal',
+      runId: proposal.runId,
+      proposalId: proposal.proposalId,
+      kind: proposal.kind,
+      source: proposal.source,
+      title: proposal.title,
+      summary: proposal.summary || proposal.description || '',
+      statusLabelKey: 'pending',
+      engineKey: resolveHostTimelineEngineKey({
+        kind: proposal.kind,
+        executionProfileId: input.executionProfileId,
+      }),
+    });
+  }
+
+  for (const receipt of input.receipts ?? []) {
+    let statusLabelKey: HostTimelineArtifactItem['statusLabelKey'] = 'partial';
+    if (receipt.runStatus === 'cancelled') statusLabelKey = 'cancelled';
+    else if (receipt.runStatus === 'failed') statusLabelKey = 'failed';
+    else if (receipt.ok) statusLabelKey = 'ok';
+    items.push({
+      id: `timeline-receipt:${receipt.receiptKey}`,
+      surface: 'receipt',
+      runId: receipt.runId,
+      proposalId: receipt.proposalId,
+      kind: receipt.kind,
+      source: receipt.source,
+      title: receipt.title,
+      summary: receipt.summary,
+      statusLabelKey,
+      engineKey: resolveHostTimelineEngineKey({
+        kind: receipt.kind,
+        executionProfileId: input.executionProfileId,
+      }),
+    });
+  }
+
+  return items;
+}
+
+/**
+ * Residual 401: build timeline Artifact cards for open-chat Host turns.
+ * Uses live executionProfileId so engine badges distinguish DirectTurn vs
+ * ReadonlyAnalysis. Never creates proposal/receipt lifecycle rows.
+ */
+export function buildHostOpenChatTimelineArtifactItems(
+  turns: HostOpenChatTurnSnapshot[] | null | undefined,
+): HostTimelineArtifactItem[] {
+  const items: HostTimelineArtifactItem[] = [];
+  for (const turn of turns ?? []) {
+    const runId = typeof turn.runId === 'string' ? turn.runId.trim() : '';
+    if (!runId) continue;
+
+    let statusLabelKey: HostTimelineArtifactItem['statusLabelKey'] = 'partial';
+    if (turn.status === 'generating') statusLabelKey = 'pending';
+    else if (turn.status === 'completed') statusLabelKey = 'ok';
+    else if (turn.status === 'failed') statusLabelKey = 'failed';
+    else if (turn.status === 'aborted') statusLabelKey = 'cancelled';
+
+    const title =
+      typeof turn.title === 'string' && turn.title.trim()
+        ? turn.title.trim().slice(0, 120)
+        : 'Open chat';
+    const summary = typeof turn.summary === 'string' ? turn.summary.trim().slice(0, 240) : '';
+
+    items.push({
+      id: `timeline-open-chat:${runId}`,
+      surface: 'open_chat',
+      runId,
+      proposalId: `open-chat:${runId}`,
+      kind: 'open_chat.turn',
+      source: 'open_chat',
+      title,
+      summary,
+      statusLabelKey,
+      engineKey: resolveHostTimelineEngineKey({
+        executionProfileId: turn.executionProfileId,
+      }),
+    });
+  }
+  return items;
+}
+
+/**
+ * Residual 387: map a timeline Artifact card to a Host workbench focus target.
+ * Used when Conversation timeline reopens the right rail so the matching
+ * proposal/receipt row can be highlighted and scrolled into view.
+ * Residual 401: open_chat cards never focus proposal/receipt workbench rows.
+ */
+export type HostWorkbenchFocusTarget = {
+  proposalId: string;
+  surface: 'proposal' | 'receipt';
+};
+
+export function resolveHostWorkbenchFocusFromTimeline(
+  item: HostTimelineArtifactItem | null | undefined,
+): HostWorkbenchFocusTarget | null {
+  if (!item?.proposalId?.trim()) return null;
+  if (item.surface !== 'proposal' && item.surface !== 'receipt') return null;
+  return {
+    proposalId: item.proposalId.trim(),
+    surface: item.surface,
+  };
+}
+
+/**
+ * Residual 409: partition Host timeline Artifact cards into open_chat vs AgentRun
+ * (proposal/receipt) lanes. Presentation-only — never mutates Host kernel state.
+ */
+export function partitionHostTimelineArtifactsBySurface(
+  items: readonly HostTimelineArtifactItem[] | null | undefined,
+): {
+  openChat: HostTimelineArtifactItem[];
+  agentRun: HostTimelineArtifactItem[];
+} {
+  const openChat: HostTimelineArtifactItem[] = [];
+  const agentRun: HostTimelineArtifactItem[] = [];
+  for (const item of items ?? []) {
+    if (item.surface === 'open_chat') {
+      openChat.push(item);
+      continue;
+    }
+    if (item.surface === 'proposal' || item.surface === 'receipt') {
+      agentRun.push(item);
+    }
+  }
+  return { openChat, agentRun };
+}
+
+export type HostTimelineSurfaceIsolationViolation = {
+  itemId: string;
+  code:
+    | 'open_chat_kind_mismatch'
+    | 'open_chat_engine_agent_run'
+    | 'agent_run_kind_open_chat'
+    | 'agent_run_engine_turn';
+  detail: string;
+};
+
+/**
+ * Residual 409: fail-closed isolation audit for Host timeline surfaces.
+ * - open_chat cards: kind must be open_chat.turn; engineKey must not be agent_run.*
+ * - proposal/receipt cards: kind must not be open_chat.turn; engineKey must not be
+ *   engine.direct_turn / engine.pi_readonly (AgentRun lane owns those cards)
+ */
+export function collectHostTimelineSurfaceIsolationViolations(
+  items: readonly HostTimelineArtifactItem[] | null | undefined,
+): HostTimelineSurfaceIsolationViolation[] {
+  const violations: HostTimelineSurfaceIsolationViolation[] = [];
+  for (const item of items ?? []) {
+    if (item.surface === 'open_chat') {
+      if (item.kind !== 'open_chat.turn') {
+        violations.push({
+          itemId: item.id,
+          code: 'open_chat_kind_mismatch',
+          detail: `kind=${item.kind}`,
+        });
+      }
+      if (String(item.engineKey).startsWith('agent_run.')) {
+        violations.push({
+          itemId: item.id,
+          code: 'open_chat_engine_agent_run',
+          detail: `engineKey=${item.engineKey}`,
+        });
+      }
+      continue;
+    }
+
+    if (item.surface === 'proposal' || item.surface === 'receipt') {
+      if (item.kind === 'open_chat.turn') {
+        violations.push({
+          itemId: item.id,
+          code: 'agent_run_kind_open_chat',
+          detail: `surface=${item.surface}`,
+        });
+      }
+      if (
+        item.engineKey === 'engine.direct_turn'
+        || item.engineKey === 'engine.pi_readonly'
+      ) {
+        violations.push({
+          itemId: item.id,
+          code: 'agent_run_engine_turn',
+          detail: `engineKey=${item.engineKey}`,
+        });
+      }
+    }
+  }
+  return violations;
+}
+
+/**
+ * Residual 411: compose Host workbench timeline from open-chat turns + AgentRun
+ * proposal/receipt rows, then partition and fail-closed audit surface isolation.
+ * Presentation only — never executes Host kernel mutations or domain executors.
+ */
+export type HostWorkbenchTimelineComposition = {
+  items: HostTimelineArtifactItem[];
+  openChat: HostTimelineArtifactItem[];
+  agentRun: HostTimelineArtifactItem[];
+  isolationViolations: HostTimelineSurfaceIsolationViolation[];
+  /** True when open_chat and AgentRun lanes do not smuggle each other. */
+  isolationOk: boolean;
+};
+
+export function composeHostWorkbenchTimelineArtifacts(input: {
+  openChatTurns?: HostOpenChatTurnSnapshot[] | null;
+  proposals?: HostProposalPanelItem[] | null;
+  receipts?: HostExecutionReceiptItem[] | null;
+  /** Optional open-chat profile override for non-AgentRun Host cards only. */
+  executionProfileId?: string | null;
+}): HostWorkbenchTimelineComposition {
+  const items: HostTimelineArtifactItem[] = [
+    ...buildHostOpenChatTimelineArtifactItems(input.openChatTurns),
+    ...buildHostTimelineArtifactItems({
+      proposals: input.proposals ?? undefined,
+      receipts: input.receipts ?? undefined,
+      executionProfileId: input.executionProfileId,
+    }),
+  ];
+  const { openChat, agentRun } = partitionHostTimelineArtifactsBySurface(items);
+  const isolationViolations = collectHostTimelineSurfaceIsolationViolations(items);
+  return {
+    items,
+    openChat,
+    agentRun,
+    isolationViolations,
+    isolationOk: isolationViolations.length === 0,
+  };
+}

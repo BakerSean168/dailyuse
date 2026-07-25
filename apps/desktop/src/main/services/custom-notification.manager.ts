@@ -11,7 +11,8 @@ import { BrowserWindow, screen, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createLogger } from '@dailyuse/utils/logger';
-import { NotificationChannels } from '../../shared/types/ipc-channels';
+import { NotificationChannels, RendererEventChannels } from '@dailyuse/contracts/electron';
+import { ok } from '@dailyuse/contracts/result';
 import type { NotificationOptions } from './notification.service';
 import type { WindowManager } from '../lifecycle/window-manager';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
@@ -234,15 +235,17 @@ export class CustomNotificationManager {
           mainWin.focus();
 
           if (data) {
-            mainWin.webContents.send('notification:clicked', data);
+            mainWin.webContents.send(RendererEventChannels.NOTIFICATION_CLICKED, data);
           }
         }
+        return ok(null);
       },
     );
 
     // Handle notification close (manual dismiss)
     ipcMain.handle(NotificationChannels.CUSTOM_CLOSE, (_, id: string) => {
       logger.info('[Desktop][CustomNotification] Notification closed from renderer', { id });
+      return ok(null);
     });
 
     // Handle window resizing dynamically based on notification count/height
@@ -282,6 +285,7 @@ export class CustomNotificationManager {
           // We let the mouse-enter/leave events handle it to prevent dead-zones.
         }
       }
+      return ok(null);
     });
 
     // Handle precise mouse interaction to avoid dead-zones in transparent areas
@@ -291,6 +295,7 @@ export class CustomNotificationManager {
         // When mouse is explicitly over a card, stop ignoring mouse events so click works
         this.notificationWindow.setIgnoreMouseEvents(false);
       }
+      return ok(null);
     });
 
     ipcMain.handle(NotificationChannels.CUSTOM_MOUSE_LEAVE, () => {
@@ -299,6 +304,7 @@ export class CustomNotificationManager {
         // When mouse leaves a card, start ignoring again to let clicks pass through to apps below
         this.notificationWindow.setIgnoreMouseEvents(true, { forward: true });
       }
+      return ok(null);
     });
 
     ipcMain.handle(NotificationChannels.CUSTOM_RENDERER_READY, () => {
@@ -307,7 +313,7 @@ export class CustomNotificationManager {
         queueLength: this.notificationQueue.length,
       });
       this.flushQueuedNotifications('renderer-ready');
-      return true;
+      return ok(true);
     });
   }
 }

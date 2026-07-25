@@ -12,16 +12,16 @@ describe('ArchiveTaskTemplateUseCase', () => {
 
   beforeEach(() => {
     templateRepo = createMockRepo<ITaskTemplateRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new ArchiveTaskTemplateUseCase(templateRepo);
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {
-    vi.mocked(templateRepo.findById).mockResolvedValue(null);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(templateRepo.save).not.toHaveBeenCalled();
@@ -29,9 +29,9 @@ describe('ArchiveTaskTemplateUseCase', () => {
 
   it('should archive an active template', async () => {
     const template = aOneTimeTask({ title: 'Archive me' });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     expect(template.status).toBe(TaskTemplateStatus.Archived);
@@ -40,9 +40,9 @@ describe('ArchiveTaskTemplateUseCase', () => {
 
   it('should archive a paused template', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     expect(template.status).toBe(TaskTemplateStatus.Archived);
@@ -50,9 +50,9 @@ describe('ArchiveTaskTemplateUseCase', () => {
 
   it('should return the client DTO on success', async () => {
     const template = aOneTimeTask({ title: 'My Task' });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {

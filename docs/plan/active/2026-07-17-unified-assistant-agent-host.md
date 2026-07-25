@@ -10,7 +10,7 @@ tags:
   - cli
 description: 统一助手、右侧工作台与可插拔 Agent Host 的详细实施方案
 created: 2026-07-17T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 统一助手与可插拔 Agent Host 实施方案
@@ -19,9 +19,70 @@ updated: 2026-07-17T00:00:00
 
 本文执行 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)，承接 Open Design、`earendil-works/pi`、当前 TypeScript AI 模块、Python LangGraph runtime、checkpoint、tool executor 和 Obsidian/GitHub 知识仓库方案的专项调研。
 
-状态：**待实施**。
+状态：**实施中**（阶段 0/1/2/3/4 部分起步 + AssistantFacade residual 343 + 阶段 6 CustomModelGateway 部分；完成定义未宣称）。  
+夜间持续协议：[`2026-07-25-nightly-hygiene-and-agent-host.md`](./2026-07-25-nightly-hygiene-and-agent-host.md)（vault §13.2 已 15/15 后主推本 plan）。
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
+
+### 当前进展（2026-07-25 续；与 vault residual 1342 + nightly N1 对齐）
+
+- **Nightly residual N1（AH-1）**：`AssistantEvent` `run.started` 可选 `conversationId`；`AssistantFacade` 在 open-chat（direct_turn / pi_readonly）下发 trimmed conversationId；缺 conversation 时 omit 字段且 direct_turn 仍 `CONVERSATION_REQUIRED`。**不**宣称 Conversation↔AgentRun 持久多对一产品完成定义已勾。
+- **Nightly residual N2（AH-2）**：surface 锁住诚实边界——Host open-chat `assistant-run-*` 事件绑定 conversation，**不是** `listAgentRuns` 持久行；Workflow `AgentRun.conversationId` + list 过滤已在；产品侧「按会话恢复 Host open-chat 列表」仍 open。
+- **Nightly residual N3（AH-3）**：`ProposalKernel.approve` 对 `stale` fail-closed（`PROPOSAL_STALE`）；`revise` 默认将 stale 清为 `draft`（可显式 ready）；须新 revision 再 approve。revision conflict / 幂等 execute 仍保留。
+
+### 当前进展（2026-07-22，与 vault plan residual 305–387 对齐）
+
+- **阶段 0 部分已落地（契约冻结）**：
+  - `packages/contracts` agent-host：`ITurnEnginePort` / `ICapabilityResolverPort` /
+    `IWorkflowAdapterPort` / `IProposalKernelPort` / `IModelGatewayPort` / `IAssistantFacadePort`
+    + `resolveRunPlan` / capability kinds 已冻结。
+  - stage-0 surface：生产侧允许 `DirectTurnEngine` + `ReadonlyAnalysisTurnEngine` +
+    `LangGraphWorkflowAdapter` + `ProposalKernel` + `CapabilityResolver` + `CustomModelGateway` +
+    `AssistantFacade`。runtime `buildAgentRuntimeCapabilityOffers` 不静默 emit `engine.*`。
+  - ADR-035 journey（capability/turn isolation steps 1–16）+ multi-engine conformance harness
+    （`engine.direct_turn` + `engine.langgraph_workflow` 同 suite isolation；**in-suite doubles only**）
+    在 vault active plan residual 305/309/311 证据中通过。
+- **阶段 1 部分起步（residual 320）**：
+  - 生产 `ProposalKernel` 实现 `IProposalKernelPort`；revision 乐观并发 + `requestId` 幂等；
+    `executeApproved` 仅 lifecycle receipt，不执行业务 mutation。
+  - `module.proposalKernel` 在 direct/remote 均有值；`tool.proposal` providerId=`proposal-kernel`。
+  - Host Proposal UI 工作台已部分落地（vault residual 355–371 approve/revise/workbench；
+    仍非完整 Artifact 编辑器/全业务面切换）。
+- **阶段 2 部分起步（residual 322/324）**：
+  - 生产 `CapabilityResolver` 实现 `ICapabilityResolverPort`；fail-closed `resolveRunPlan`；
+    不静默 expand `engine.*`。
+  - `module.capabilityResolver` 由 runtime offers（+ remote workflow adapter offers）构造。
+  - residual 324：`createAgentRuntimeService`/`startRun` knowledge.generate 门禁使用共享 resolver。
+- **阶段 3 部分起步（residual 318）**：
+  - 生产 `LangGraphWorkflowAdapter` 包装 `IAgentRuntimePort`；`module.workflowAdapter` 在 remote 有值。
+  - workflow offers 永不含 `tool.mutation`/`tool.proposal`。
+- **阶段 4 部分起步（residual 314/316/341）**：
+  - 生产 `DirectTurnEngine`（`engine.direct_turn`）已实现 `ITurnEnginePort`，由 `createAIModule().turnEngine` 暴露。
+  - 第二生产 `ReadonlyAnalysisTurnEngine`（`engine.pi_readonly`）经 `CustomModelGateway`；
+    `module.readonlyTurnEngine` 接线；不接管 open chat 默认路径。
+  - 开放式 chat/analysis only；ownership fail-closed + abort；不自动 emit `engine.*` capability offers。
+  - `sendMessage`/`streamMessage` 已经同一 `DirectTurnEngine`（IOpenChatTurnPort）；统一助手 UI 未切换。
+- **AssistantFacade 部分起步（residual 343/345）**：
+  - 生产 `AssistantFacade` 实现 `IAssistantFacadePort`；`module.assistantFacade` 在 direct/remote 均有值。
+  - `message` 默认 DirectTurn open chat；`executionProfileId: pi_readonly` 走 ReadonlyAnalysis。
+  - `approve_proposal`/`reject_proposal` 仅 ProposalKernel 生命周期，永不 `executeApproved`。
+  - `cancel_run` 中止 primary + readonly + openChat。
+  - residual 345：`AIApplicationPort.dispatchAssistant` + `AIAssistantFacadeController` +
+    `POST /api/v1/ai/assistant/dispatch/sse`；identityId 仅 auth ExecutionContext。
+  - residual 347/353：`AIClientPort.dispatchAssistant` + Web HTTP/SSE + Desktop IPC stream
+    （`ASSISTANT_DISPATCH_*`）。
+  - residual 349：Vue `useAssistantDispatch` 薄入口。
+  - residual 351：open chat 默认发送经 `dispatchAssistant`（live delta + model selection）。
+  - residual 355–387：Host 右侧工作台部分落地——Proposal 面板、execution receipt 富回放、
+    时间线 Artifact 卡、focus/scroll；仍缺 Task 共用 Artifact、真实 Pi spawn、跨端 multi-engine E2E。
+- **阶段 6 部分起步（residual 337）**：
+  - 生产 `CustomModelGateway` 实现 `IModelGatewayPort`；结果只回 `modelBindingId`，凭据仅请求作用域。
+- **仍未实现 / 仍仅部分（不得勾完成定义）**：
+  - 真实 Pi SDK/CLI 进程 adapter 与 product spawn 路径；
+  - Host UI 完整 Artifact 富编辑与 Task 共用工作台（Goal/Knowledge Host 路径已部分落地）；
+  - 完整 multi-engine runtime E2E 与跨端 Playwright/Electron。
+- 更完整的 vault/知识仓库边界与 §13.2 证据见
+  [2026-07-16-obsidian-vault-repository-optimization.md](./2026-07-16-obsidian-vault-repository-optimization.md)。
 
 ## 2. 目标与非目标
 
@@ -726,17 +787,19 @@ packages/contracts/src/modules/ai/
 
 ### 阶段 0：契约与现状基线
 
-- 固化 ADR-035。
-- 为当前 AgentRun/Action/Event 建立 contract tests 和当前行为 fixture。
-- 明确 Conversation 与 AgentRun 的关联和恢复路径。
-- 记录当前 direct/remote capability 差异。
+- 固化 ADR-035。 **（已采纳）**
+- 为当前 AgentRun/Action/Event 建立 contract tests 和当前行为 fixture。 **（部分：journey + ownership surfaces）**
+- 明确 Conversation 与 AgentRun 的关联和恢复路径。 **（部分：现有 AgentRun 模型；统一助手关联未做）**
+- 记录当前 direct/remote capability 差异。 **（部分：`buildAgentRuntimeCapabilityOffers` + assert start gate）**
+- Agent Host Port 形状冻结（Turn/Workflow/Capability/Proposal）+ 生产侧允许 DirectTurn/LangGraph/ProposalKernel/CapabilityResolver。 **（已证明，residual 305/311/314/318/320/322）**
+- multi-engine isolation conformance harness（同 suite 双引擎标签；test doubles only）。 **（部分：residual 309；非生产 adapter）**
 
 ### 阶段 1：统一助手与 Proposal Kernel
 
-- 定义 AssistantCommand/Event、AgentProposal、ExecutionReceipt。
+- 定义 AssistantCommand/Event、AgentProposal、ExecutionReceipt。 **（类型已冻结）**
 - 将 AgentAction 逐步收紧为 discriminated union。
-- 建立 Proposal revision、stale、precondition 和幂等规则。
-- 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。
+- 建立 Proposal revision、stale、precondition 和幂等规则。 **（ProposalKernel residual 320 + nightly N3：lifecycle + 幂等 + stale 禁 approve / revise 清 stale；更丰富的业务 precondition 谓词仍待）**
+- 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。 **（部分：residual 355–387 Host Proposal/receipt/timeline；residual 419–435 task.create lane（live + domain + settle/receipt + AgentType + product toolMode + start + restore + process-local store）；完整 Task 工作流与富编辑未齐）**
 - 保留现有 LangGraph 和 Provider 实现。
 
 ### 阶段 2：Host Tool/Context/Capability
@@ -744,21 +807,22 @@ packages/contracts/src/modules/ai/
 - 建立 Tool Catalog、Scoped CapabilityHost 和 ToolPolicySnapshot。
 - 将 Query/Proposal 与 Mutation 结构性分离。
 - 建立 ContextItem/ContextSource/Assembler。
-- 引入 CapabilityOffer/Requirement 和 ResolvedRunPlan。
-- 将当前静态 `supportsXxx` 逐步映射到 capability projection。
+- 引入 CapabilityOffer/Requirement 和 ResolvedRunPlan。 **（类型 + CapabilityResolver residual 322 部分）**
+- 将当前静态 `supportsXxx` 逐步映射到 capability projection。 **（部分：buildAgentRuntimeCapabilityOffers）**
 
 ### 阶段 3：Workflow Adapter 收口
 
-- 用 LangGraphWorkflowAdapter 包装现有 `IAgentRuntimePort`。
-- Host 统一持久化标准 Run/Event projection。
-- LangGraph 原生 node/thread/interrupt 留在 adapter 私有状态。
-- 不改写 Python graph 的业务阶段。
+- 用 LangGraphWorkflowAdapter 包装现有 `IAgentRuntimePort`。 **（部分：residual 318 生产 class + remote 接线；offeredKinds isolation）**
+- Host 统一持久化标准 Run/Event projection。 **（未完成：仍用既有 AgentRun 路径）**
+- LangGraph 原生 node/thread/interrupt 留在 adapter 私有状态。 **（部分：adapter 仅委托；原生态未额外投影）**
+- 不改写 Python graph 的业务阶段。 **（保持）**
 
 ### 阶段 4：首个 TurnEngine
 
-- 使用现有直连 Provider/ChatExecution 实现 DirectTurnEngine。
-- 验证流式事件、Abort、Context、Tool 和结构化输出契约。
-- 新的开放式 Chat 经 TurnEngine，不影响业务 Workflow。
+- 使用现有直连 Provider/ChatExecution 实现 DirectTurnEngine。 **（部分：生产 class + module.turnEngine；residual 314）**
+- 第二生产 Turn Engine：`ReadonlyAnalysisTurnEngine`（`engine.pi_readonly`，经 Model Gateway；residual 341）。 **（部分：生产 class + module.readonlyTurnEngine；Pi SDK spike 仍开）**
+- 验证流式事件、Abort、Context、Tool 和结构化输出契约。 **（部分：abort/ownership/complete 单测；stream/tool schema 未齐）**
+- 新的开放式 Chat 经 TurnEngine，不影响业务 Workflow。 **（部分：send/stream 经 DirectTurnEngine/IOpenChatTurnPort；统一助手 UI 未切换）**
 
 ### 阶段 5：Pi 只读 Spike
 
@@ -770,7 +834,7 @@ packages/contracts/src/modules/ai/
 
 ### 阶段 6：Custom API 与本地 CLI
 
-- 将现有 OpenAI-compatible 配置收敛为 CustomModelGateway。
+- 将现有 OpenAI-compatible 配置收敛为 CustomModelGateway。 **（部分：residual 337 生产 `CustomModelGateway` + `IModelGatewayPort` + direct adapters；remote chat 仍可旁路）**
 - 实现一个 Codex 或 Claude Code CLI 只读 adapter。
 - probe 版本/登录、规范进程生命周期并显示执行限制。
 - 验证本地数据不发生未确认云 fallback。
@@ -831,11 +895,11 @@ packages/contracts/src/modules/ai/
 
 ## 20. 完成定义
 
-- [ ] 用户只面对统一助手和右侧工作台。
-- [ ] Conversation 与 AgentRun 有明确、多对一的关联。
-- [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。
-- [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。
-- [ ] 至少两个 Turn Engine 通过同一 conformance suite。
+- [ ] 用户只面对统一助手和右侧工作台。 **（部分：residual 343/351 AssistantFacade + open chat dispatch；residual 355–387 Host Proposal/receipt/timeline 工作台部分落地；仍非全业务 Artifact 面）**
+- [ ] Conversation 与 AgentRun 有明确、多对一的关联。 **（部分：AgentRun.conversationId + list 过滤 + Host open-chat `run.started.conversationId` nightly N1；统一助手恢复/UI 多对一仍未完成）**
+- [ ] Workflow、Turn Engine、Model Gateway 是独立 Port。 **（部分：Port 形状 + DirectTurnEngine + LangGraphWorkflowAdapter；Model Gateway 生产 adapter 未齐）**
+- [ ] LangGraph 通过 adapter 保留且不泄漏原生状态到 UI。 **（部分：LangGraphWorkflowAdapter 委托 IAgentRuntimePort；residual 413 Host allowlist + residual 415 Goal workflow 诊断展示脱敏；内部 filter 仍可读 node.*）**
+- [ ] 至少两个 Turn Engine 通过同一 conformance suite。 **（部分：harness 双标签 isolation + 生产 DirectTurnEngine + ReadonlyAnalysisTurnEngine；完整 multi-engine runtime E2E/Pi SDK 仍缺）**
 - [ ] 自定义模型 API 不需要实现完整 Agent runtime。
 - [ ] 本地 CLI 不需要伪装成 Model Provider。
 - [ ] Run 固定 ResolvedRunPlan 和 CapabilitySnapshot。

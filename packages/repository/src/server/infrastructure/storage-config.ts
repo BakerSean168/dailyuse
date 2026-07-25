@@ -5,6 +5,11 @@ export interface ResolveRepositoryStorageBaseDirOptions {
   readonly env?: Record<string, string | undefined>;
 }
 
+/**
+ * Residual 1174 keep-boundary: repository storage-config normalizePath — filesystem path trim.
+ * Accepts string|null|undefined; empty/whitespace → null (no URL prefix stripping).
+ * Soft residual 1174: auth email-verification normalizePath is URL route shape (no force-merge).
+ */
 function normalizePath(value: string | null | undefined): string | null {
   if (typeof value !== 'string') {
     return null;

@@ -16,6 +16,16 @@ const i18n = createI18n({
           exportJSON: 'Export JSON',
           exportCSV: 'Export CSV',
           importSettings: 'Import Settings',
+          exportPortableData: 'Export Importable Data',
+          exportingPortableData: 'Exporting...',
+          importPortableData: 'Import Data File',
+          importingPortableData: 'Importing...',
+          portableDataDescription:
+            'Importable JSON only; excludes Vault files, GitHub authorization, projections, cache, and RAG.',
+          exportServerDataDisclosure: 'Download Server-held Data Disclosure',
+          exportingServerDataDisclosure: 'Preparing disclosure...',
+          serverDataDisclosureDescription:
+            'Non-importable JSON with projections, cached bytes, history, and RAG; no Memoflow-managed replayable GitHub authorization.',
           createBackup: 'Create Backup',
           restoreBackup: 'Restore Backup',
           restoreBackupNoBackups: 'No Backups',
@@ -63,10 +73,12 @@ const ButtonStub = defineComponent({
   },
 });
 
-function mountActions(dataPortabilityAvailable: boolean) {
+function mountActions(dataPortabilityAvailable: boolean, serverDataDisclosureAvailable = false) {
   return mount(SettingAdvancedActions, {
     props: {
       dataPortabilityAvailable,
+      serverDataDisclosureAvailable,
+      exportingServerDataDisclosure: false,
       backups: [],
       syncStatus: null,
       syncing: false,
@@ -109,14 +121,28 @@ describe('SettingAdvancedActions', () => {
 
     expect(wrapper.text()).toContain('Export Settings');
     expect(wrapper.text()).toContain('Import Settings');
-    expect(wrapper.text()).not.toContain('Export All Data');
-    expect(wrapper.text()).not.toContain('Import All Data');
+    expect(wrapper.text()).not.toContain('Export Importable Data');
+    expect(wrapper.text()).not.toContain('Import Data File');
+    expect(wrapper.text()).not.toContain('Download Server-held Data Disclosure');
   });
 
   it('shows full data export/import actions when data portability is available', () => {
     const wrapper = mountActions(true);
 
-    expect(wrapper.text()).toContain('Export All Data');
-    expect(wrapper.text()).toContain('Import All Data');
+    expect(wrapper.text()).toContain('Export Importable Data');
+    expect(wrapper.text()).toContain('Import Data File');
+    expect(wrapper.get('[data-testid="portable-data-scope"]').text()).toContain(
+      'excludes Vault files, GitHub authorization, projections, cache, and RAG',
+    );
+  });
+
+  it('shows the distinct non-importable server-held data disclosure when available', () => {
+    const wrapper = mountActions(true, true);
+
+    expect(wrapper.text()).toContain('Download Server-held Data Disclosure');
+    expect(wrapper.get('[data-testid="server-data-scope"]').text()).toContain(
+      'no Memoflow-managed replayable GitHub authorization',
+    );
+    expect(wrapper.get('[data-testid="server-data-scope"]').text()).toContain('Non-importable');
   });
 });

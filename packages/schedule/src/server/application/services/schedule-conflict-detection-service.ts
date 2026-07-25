@@ -49,8 +49,14 @@ export class ScheduleConflictDetectionService {
     return schedule.detectConflicts(overlappingSchedules);
   }
 
-  async getScheduleConflicts(scheduleId: string): Promise<ConflictDetectionResult> {
-    const scheduleAggregate = await this.scheduleRepository.findById(scheduleId);
+  async getScheduleConflicts(
+    scheduleId: string,
+    identityId: string,
+  ): Promise<ConflictDetectionResult> {
+    const scheduleAggregate = await this.scheduleRepository.findByIdForIdentity(
+      identityId,
+      scheduleId,
+    );
 
     if (!scheduleAggregate) {
       throw toResultErrorException(

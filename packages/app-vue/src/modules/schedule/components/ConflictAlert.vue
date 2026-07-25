@@ -79,6 +79,10 @@ function handleDismiss() {
   emit('dismiss');
 }
 
+/**
+ * Soft residual 1243: ConflictAlert formatDuration — ms → floor minutes; hoursMinutes always when h>0 (no hours-only).
+ * Always passes m remainder; differs from ScheduleConflictAlert hours-only band (no force-merge).
+ */
 function formatDuration(ms: number): string {
   const minutes = Math.floor(ms / 60000);
   const hours = Math.floor(minutes / 60);
@@ -88,6 +92,10 @@ function formatDuration(ms: number): string {
   return t('schedule.duration.minutes', { n: minutes });
 }
 
+/**
+ * Soft residual 1246: ConflictAlert conflict summary — conflictsDetected only when hasConflict (no noConflict empty path).
+ * formatSuggestion uses advanceTo/delayTo/shortenTo; differs from ScheduleConflictAlert getSuggestionLabel moveEarlier family.
+ */
 function formatSuggestion(suggestion: ConflictSuggestion): string {
   const startTime = new Date(suggestion.newStartTime).toLocaleTimeString(locale.value, {
     hour: '2-digit',

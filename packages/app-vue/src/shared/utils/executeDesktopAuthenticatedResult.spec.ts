@@ -10,9 +10,15 @@ describe('executeDesktopAuthenticatedResult', () => {
   it('recovers desktop auth and retries the operation once', async () => {
     const invoke = vi
       .fn()
-      .mockResolvedValueOnce({ authenticated: false, runtimeState: 'RESTORING' })
-      .mockResolvedValueOnce(undefined)
-      .mockResolvedValueOnce({ authenticated: true });
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { authenticated: false, runtimeState: 'RESTORING' },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { ok: true, hasValidSession: false },
+      })
+      .mockResolvedValueOnce({ ok: true, data: { authenticated: true } });
 
     const operation = vi
       .fn()

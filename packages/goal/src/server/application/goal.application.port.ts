@@ -36,15 +36,15 @@ import type { ListGoalReviewsResult } from './use-cases/queries/list-goal-review
 /** Transport-neutral callable application surface. */
 export interface GoalApplicationPort {
   createGoal(input: CreateGoalReq, cx: ExecutionContext): Promise<Result<CreateGoalRes>>;
-  getGoal(id: string, includeChildren?: boolean): Promise<Result<GetGoalRes>>;
+  getGoal(id: string, identityId: string, includeChildren?: boolean): Promise<Result<GetGoalRes>>;
   listGoals(input: ListGoalsQuery): Promise<Result<QueryGoalsRes>>;
-  updateGoal(id: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
-  deleteGoal(id: string): Promise<Result<DeleteGoalRes>>;
-  permanentlyDeleteGoal(id: string): Promise<Result<{ id: string }>>;
-  archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
+  updateGoal(id: string, identityId: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
+  deleteGoal(id: string, identityId: string): Promise<Result<DeleteGoalRes>>;
+  permanentlyDeleteGoal(id: string, identityId: string): Promise<Result<{ id: string }>>;
+  archiveGoal(id: string, identityId: string): Promise<Result<GoalClientDTO>>;
   archiveExpiredGoals(identityId: string): Promise<Result<{ archivedCount: number }>>;
-  activateGoal(id: string): Promise<Result<GoalClientDTO>>;
-  completeGoal(id: string): Promise<Result<{ goal: GoalServerDTO }>>;
+  activateGoal(id: string, identityId: string): Promise<Result<GoalClientDTO>>;
+  completeGoal(id: string, identityId: string): Promise<Result<{ goal: GoalServerDTO }>>;
   searchGoals(
     identityId: string,
     query: string,
@@ -56,7 +56,7 @@ export interface GoalApplicationPort {
     identityId: IdentityId,
     input: CreateGoalFolderReq,
   ): Promise<Result<GoalFolderClientDTO>>;
-  getGoalFolder(id: string): Promise<Result<GoalFolderClientDTO>>;
+  getGoalFolder(id: string, identityId: string): Promise<Result<GoalFolderClientDTO>>;
   updateGoalFolder(
     id: string,
     identityId: string,
@@ -66,6 +66,7 @@ export interface GoalApplicationPort {
 
   addKeyResult(
     goalId: string,
+    identityId: string,
     keyResult: {
       title: string;
       valueType: string;
@@ -79,6 +80,7 @@ export interface GoalApplicationPort {
   ): Promise<Result<KeyResultClientDTO>>;
   updateKeyResult(
     goalId: string,
+    identityId: string,
     keyResultId: string,
     updates: {
       title?: string;
@@ -92,14 +94,16 @@ export interface GoalApplicationPort {
   ): Promise<Result<KeyResultClientDTO>>;
   updateKeyResultProgress(
     goalId: string,
+    identityId: string,
     keyResultId: string,
     currentValue: number,
     note?: string,
   ): Promise<Result<KeyResultClientDTO>>;
-  deleteKeyResult(goalId: string, keyResultId: string): Promise<Result<void>>;
+  deleteKeyResult(goalId: string, identityId: string, keyResultId: string): Promise<Result<void>>;
 
   addReview(
     goalId: string,
+    identityId: string,
     params: {
       title: string;
       content: string;
@@ -110,9 +114,10 @@ export interface GoalApplicationPort {
       nextActions?: string;
     },
   ): Promise<Result<GoalReviewClientDTO>>;
-  listReviews(goalId: string): Promise<Result<ListGoalReviewsResult>>;
+  listReviews(goalId: string, identityId: string): Promise<Result<ListGoalReviewsResult>>;
   updateReview(
     goalId: string,
+    identityId: string,
     reviewId: string,
     params: {
       title?: string;
@@ -123,7 +128,7 @@ export interface GoalApplicationPort {
       nextActions?: string | null;
     },
   ): Promise<Result<GoalReviewClientDTO>>;
-  deleteReview(goalId: string, reviewId: string): Promise<Result<void>>;
+  deleteReview(goalId: string, identityId: string, reviewId: string): Promise<Result<void>>;
 
   createRecord(
     goalId: string,
@@ -132,7 +137,7 @@ export interface GoalApplicationPort {
     identityId: string,
   ): Promise<Result<GoalRecordClientDTO>>;
   listRecords(params: ListGoalRecordsParams): Promise<Result<ListGoalRecordsResult>>;
-  deleteRecord(recordId: string): Promise<Result<void>>;
+  deleteRecord(recordId: string, identityId: string): Promise<Result<void>>;
 
   activateFocusMode(
     identityId: string,
@@ -142,8 +147,8 @@ export interface GoalApplicationPort {
   extendFocusMode(identityId: string, newEndTime: number): Promise<Result<FocusModeDTO>>;
   getCurrentFocusMode(identityId: string): Promise<Result<FocusModeDTO | null>>;
 
-  getGoalAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>>;
-  getGoalProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>>;
+  getGoalAggregate(goalId: string, identityId: string): Promise<Result<GetGoalAggregateRes>>;
+  getGoalProgressBreakdown(goalId: string, identityId: string): Promise<Result<ProgressBreakdown>>;
   cloneGoal(
     goalId: string,
     params: CloneGoalReq,
@@ -151,6 +156,7 @@ export interface GoalApplicationPort {
   ): Promise<Result<GoalClientDTO>>;
   batchUpdateKeyResultWeights(
     goalId: string,
+    identityId: string,
     updates: Array<{ keyResultId: string; weight: number }>,
   ): Promise<Result<GetGoalRes>>;
 }

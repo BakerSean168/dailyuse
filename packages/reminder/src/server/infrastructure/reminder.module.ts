@@ -136,13 +136,9 @@ async function getOwnedTemplateOrFail(
   reminderTemplateRepository: IReminderTemplateRepository,
   templateId: string,
   ctx: ExecutionContext,
-  options?: Parameters<IReminderTemplateRepository['findById']>[1],
+  options?: Parameters<IReminderTemplateRepository['findByIdForIdentity']>[2],
 ): Promise<ReminderTemplate | null> {
-  const template = await reminderTemplateRepository.findById(templateId, options);
-  if (!template || String(template.identityId) !== ctx.identityId) {
-    return null;
-  }
-  return template;
+  return reminderTemplateRepository.findByIdForIdentity(ctx.identityId, templateId, options);
 }
 
 export function createReminderModule(
@@ -252,7 +248,10 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      return useCases.recordReminderResponse.getResponsesByTemplate(templateId);
+      return useCases.recordReminderResponse.getResponsesByTemplate(
+        templateId,
+        ctx.identityId,
+      );
     },
 
     async getResponseStats(templateId, ctx) {
@@ -260,7 +259,7 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      return useCases.recordReminderResponse.getResponseStats(templateId);
+      return useCases.recordReminderResponse.getResponseStats(templateId, ctx.identityId);
     },
 
     async analyzeFrequency(templateId, ctx) {
@@ -268,7 +267,7 @@ export function createReminderModule(
       if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      return useCases.analyzeReminderFrequency.execute(templateId);
+      return useCases.analyzeReminderFrequency.execute(templateId, ctx.identityId);
     },
 
     async adjustFrequency(templateId, data, ctx) {

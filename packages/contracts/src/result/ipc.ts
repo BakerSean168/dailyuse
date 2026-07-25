@@ -10,7 +10,7 @@
 // Import ResultCode from codes.ts to avoid circular dependency issues
 import { ResultCode } from './codes';
 import type { Result, ResultError, ResultMeta } from './core';
-import { ok, fail, isOk, toResultErrorException } from './core';
+import { ok, fail, isOk } from './core';
 
 // ============================================================================
 // IPC Result Types
@@ -43,6 +43,27 @@ export interface IpcResult<T = unknown> {
     duration?: number;
     timestamp?: number;
   };
+}
+
+// ============================================================================
+// IPC Result Detection
+// ============================================================================
+
+/**
+ * Strict IpcResult / Result envelope detector.
+ *
+ * Requires boolean `ok` plus either `data` or `error` so domain DTOs that only
+ * carry a business `ok` flag (e.g. AutoLoginResult) are not misclassified.
+ */
+export function isIpcResultEnvelope(data: unknown): data is IpcResult {
+  if (data === null || typeof data !== 'object') {
+    return false;
+  }
+  const record = data as Record<string, unknown>;
+  if (typeof record.ok !== 'boolean') {
+    return false;
+  }
+  return 'data' in record || 'error' in record;
 }
 
 // ============================================================================
@@ -153,49 +174,4 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
   };
 
   return fail(error, meta);
-}
-
-// ============================================================================
-// IPC Handler Utilities
-// ============================================================================
-
-/**
- * 创建 IPC 客户端调用包装器
- * 自动将 IpcResult 转换为 Result
- *
- * @example
- * ```ts
- * // Renderer Process
- * const ipcClient = createIpcClient(window.electron.ipcRenderer);
- *
- * const result = await ipcClient.invoke<User>('user:get', userId);
- * if (isOk(result)) {
- *   setUser(result.data);
- * }
- * ```
- */
-export function createIpcClientWrapper(invoker: {
-  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
-}) {
-  return {
-    /**
-     * 调用 IPC 并返回 Result
-     */
-    async invoke<T>(channel: string, ...args: unknown[]): Promise<Result<T, ResultError>> {
-      const ipcResult = (await invoker.invoke(channel, ...args)) as IpcResult<T>;
-      return fromIpcResult<T>(ipcResult);
-    },
-
-    /**
-     * 调用 IPC 并直接返回数据（失败时抛出错误）
-     * 用于不需要处理错误的场景
-     */
-    async invokeUnsafe<T>(channel: string, ...args: unknown[]): Promise<T> {
-      const result = await this.invoke<T>(channel, ...args);
-      if (isOk(result)) {
-        return result.data;
-      }
-      throw toResultErrorException(result.error);
-    },
-  };
 }

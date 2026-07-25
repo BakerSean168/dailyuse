@@ -30,16 +30,33 @@ describe('profile-path-resolver', () => {
     expect(resolver.profileId).toBe('p_test123');
     expect(resolver.profileDir).toBe(path.join('/root', 'profiles', 'p_test123'));
     expect(resolver.authDir).toBe(path.join('/root', 'profiles', 'p_test123', 'auth'));
-    expect(resolver.tokensPath).toBe(path.join('/root', 'profiles', 'p_test123', 'auth', 'tokens.enc'));
+    expect(resolver.tokensPath).toBe(
+      path.join('/root', 'profiles', 'p_test123', 'auth', 'tokens.enc'),
+    );
     expect(resolver.dbDir).toBe(path.join('/root', 'profiles', 'p_test123', 'db'));
-    expect(resolver.dbPath).toBe(path.join('/root', 'profiles', 'p_test123', 'db', 'powersync.sqlite'));
-    expect(resolver.snapshotMetaPath).toBe(path.join('/root', 'profiles', 'p_test123', 'db', 'snapshot-meta.json'));
+    expect(resolver.dbPath).toBe(
+      path.join('/root', 'profiles', 'p_test123', 'db', 'powersync.sqlite'),
+    );
+    expect(resolver.snapshotMetaPath).toBe(
+      path.join('/root', 'profiles', 'p_test123', 'db', 'snapshot-meta.json'),
+    );
     expect(resolver.storageDir).toBe(path.join('/root', 'profiles', 'p_test123', 'storage'));
-    expect(resolver.repositoryStorageDir).toBe(path.join('/root', 'profiles', 'p_test123', 'storage', 'repository-storage'));
-    expect(resolver.knowledgeNotesDir).toBe(path.join('/root', 'profiles', 'p_test123', 'storage', 'knowledge-notes'));
-    expect(resolver.attachmentsDir).toBe(path.join('/root', 'profiles', 'p_test123', 'storage', 'attachments'));
+    expect(resolver.repositoryStorageDir).toBe(
+      path.join('/root', 'profiles', 'p_test123', 'storage', 'repository-storage'),
+    );
+    expect(resolver.knowledgeNotesDir).toBe(
+      path.join('/root', 'profiles', 'p_test123', 'storage', 'knowledge-notes'),
+    );
+    expect(resolver.attachmentsDir).toBe(
+      path.join('/root', 'profiles', 'p_test123', 'storage', 'attachments'),
+    );
+    expect(resolver.knowledgeRepositoryAutoSyncStatePath).toBe(
+      path.join('/root', 'profiles', 'p_test123', 'storage', 'knowledge-repository-auto-sync.json'),
+    );
     expect(resolver.uiDir).toBe(path.join('/root', 'profiles', 'p_test123', 'ui'));
-    expect(resolver.mainWindowStatePath).toBe(path.join('/root', 'profiles', 'p_test123', 'ui', 'main-window-state.json'));
+    expect(resolver.mainWindowStatePath).toBe(
+      path.join('/root', 'profiles', 'p_test123', 'ui', 'main-window-state.json'),
+    );
   });
 });
 

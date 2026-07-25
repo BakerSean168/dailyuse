@@ -17,6 +17,12 @@ export interface IAuthSessionRepository {
   findById(id: AuthSessionId): Promise<AuthSession | null>;
 
   /**
+   * Finds a session by ID scoped to an identity (authorization-sensitive loads).
+   * Returns null when the session does not exist or is not owned by identityId.
+   */
+  findByIdForIdentity(identityId: IdentityId, id: AuthSessionId): Promise<AuthSession | null>;
+
+  /**
    * Finds all sessions for a user (for "my devices" list).
    */
   findByIdentityId(identityId: IdentityId): Promise<AuthSession[]>;

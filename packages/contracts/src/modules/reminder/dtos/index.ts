@@ -1,20 +1,13 @@
-import type { ReminderTemplateClientDTO } from '../aggregates/reminder-template-client';
 import type { ReminderType } from '../value-objects/reminder-type';
 import type { TriggerType } from '../value-objects/trigger-type';
 import type { NotificationChannel } from '../value-objects/notification-channel';
 import type { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { ReminderTemplateId, ReminderGroupId } from '../../../primitives';
 
-export interface ReminderTemplateSummaryDTO {
-  id: string;
-  title: string;
-  nextReminderAt: number | null;
-}
-
-export interface ReminderDashboardDTO {
-  templates: ReminderTemplateClientDTO[];
-  totalTemplates: number;
-}
+/**
+ * Residual 647: ReminderTemplateSummaryDTO / ReminderDashboardDTO dead duals retired.
+ * List/upcoming surfaces use ReminderTemplateClientDTO / UpcomingReminderDTO only.
+ */
 
 /**
  * 即将到来的提醒 DTO（前端友好）

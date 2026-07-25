@@ -1,6 +1,8 @@
 /**
  * Schedule Module Exports
  * 调度模块 - 子文件夹显式导出
+ *
+ * Residual 661: empty dual dtos barrel re-export retired.
  */
 
 // ============ Aggregates ============
@@ -20,6 +22,3 @@ export * from './protocol';
 
 // ============ API ============
 export * from './api';
-
-// ============ DTOs ============
-export * from './dtos';

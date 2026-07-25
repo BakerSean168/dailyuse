@@ -7,6 +7,78 @@ import pluginVue from 'eslint-plugin-vue';
 // @ts-ignore
 import nxPlugin from '@nx/eslint-plugin';
 
+const sharedScopeTags = ['scope:shared', 'scope:patterns'] as const;
+
+/**
+ * Feature scopes that must not import each other by default (ADR-033 / M3).
+ * 默认拒绝跨 feature 依赖的 scope 列表。
+ *
+ * Exceptions are expressed as additional tags in onlyDependOnLibsWithTags.
+ * 例外通过 onlyDependOnLibsWithTags 显式追加。
+ */
+const featureScopeConstraints = [
+  {
+    sourceTag: 'scope:account',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:account'],
+  },
+  {
+    sourceTag: 'scope:ai',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:ai'],
+  },
+  {
+    sourceTag: 'scope:authentication',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:authentication'],
+  },
+  {
+    sourceTag: 'scope:goal',
+    // temporary: schedule shared-kernel until Schedule* contracts are extracted
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:goal', 'scope:schedule'],
+  },
+  {
+    sourceTag: 'scope:governance',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:governance'],
+  },
+  {
+    sourceTag: 'scope:notification',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:notification'],
+  },
+  {
+    sourceTag: 'scope:reminder',
+    // temporary: schedule shared-kernel until Schedule* contracts are extracted
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:reminder', 'scope:schedule'],
+  },
+  {
+    sourceTag: 'scope:repository',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:repository'],
+  },
+  {
+    sourceTag: 'scope:schedule',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:schedule'],
+  },
+  {
+    sourceTag: 'scope:setting',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:setting'],
+  },
+  {
+    sourceTag: 'scope:task',
+    // temporary: schedule shared-kernel until Schedule* contracts are extracted
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:task', 'scope:schedule'],
+  },
+  {
+    sourceTag: 'scope:data-portability',
+    // data-portability is an explicit multi-feature host composition root
+    onlyDependOnLibsWithTags: [
+      ...sharedScopeTags,
+      'scope:data-portability',
+      'scope:goal',
+      'scope:task',
+      'scope:reminder',
+      'scope:notification',
+      'scope:setting',
+    ],
+  },
+] as const;
+
 const moduleBoundaryDepConstraints = [
   {
     // shared: pure primitives, cannot depend on anything else
@@ -44,9 +116,10 @@ const moduleBoundaryDepConstraints = [
     ],
   },
   {
-    // testing: test support libraries, can consume shared layer
+    // testing: test support libraries may orchestrate shared contracts and
+    // infrastructure fixtures (for example database-backed integration setup).
     sourceTag: 'layer:testing',
-    onlyDependOnLibsWithTags: ['layer:shared', 'layer:testing'],
+    onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra', 'layer:testing'],
   },
   {
     // service: standalone deployable services (e.g. ai-service Python backend).
@@ -55,6 +128,178 @@ const moduleBoundaryDepConstraints = [
     // leaves layer:service source tags unconstrained (default allow-all).
     sourceTag: 'layer:service',
     onlyDependOnLibsWithTags: ['layer:shared'],
+  },
+  // ============ Scope-level feature isolation (ADR-033 M3) ============
+  ...featureScopeConstraints,
+  {
+    // UI feature shells may compose multiple domain features.
+    sourceTag: 'scope:app-vue',
+    onlyDependOnLibsWithTags: [
+      ...sharedScopeTags,
+      'scope:app-vue',
+      'scope:ui',
+      'scope:account',
+      'scope:ai',
+      'scope:authentication',
+      'scope:goal',
+      'scope:governance',
+      'scope:notification',
+      'scope:reminder',
+      'scope:repository',
+      'scope:schedule',
+      'scope:setting',
+      'scope:task',
+      'scope:data-portability',
+    ],
+  },
+  {
+    sourceTag: 'scope:app-react',
+    onlyDependOnLibsWithTags: [
+      ...sharedScopeTags,
+      'scope:app-react',
+      'scope:ui',
+      'scope:account',
+      'scope:ai',
+      'scope:authentication',
+      'scope:goal',
+      'scope:governance',
+      'scope:notification',
+      'scope:reminder',
+      'scope:repository',
+      'scope:schedule',
+      'scope:setting',
+      'scope:task',
+      'scope:data-portability',
+    ],
+  },
+  {
+    // App shells / deployables may compose any feature public surface.
+    sourceTag: 'scope:web',
+    onlyDependOnLibsWithTags: [
+      'scope:shared',
+      'scope:patterns',
+      'scope:ui',
+      'scope:account',
+      'scope:ai',
+      'scope:authentication',
+      'scope:goal',
+      'scope:governance',
+      'scope:notification',
+      'scope:reminder',
+      'scope:repository',
+      'scope:schedule',
+      'scope:setting',
+      'scope:task',
+      'scope:data-portability',
+      'scope:app-vue',
+      'scope:app-react',
+      'scope:web',
+      'scope:desktop',
+      'scope:mobile',
+      'scope:api',
+      'scope:test-utils',
+      'scope:tools',
+      'scope:meta',
+    ],
+  },
+  {
+    sourceTag: 'scope:desktop',
+    onlyDependOnLibsWithTags: [
+      'scope:shared',
+      'scope:patterns',
+      'scope:ui',
+      'scope:account',
+      'scope:ai',
+      'scope:authentication',
+      'scope:goal',
+      'scope:governance',
+      'scope:notification',
+      'scope:reminder',
+      'scope:repository',
+      'scope:schedule',
+      'scope:setting',
+      'scope:task',
+      'scope:data-portability',
+      'scope:app-vue',
+      'scope:app-react',
+      'scope:web',
+      'scope:desktop',
+      'scope:mobile',
+      'scope:api',
+      'scope:test-utils',
+      'scope:tools',
+      'scope:meta',
+    ],
+  },
+  {
+    sourceTag: 'scope:mobile',
+    onlyDependOnLibsWithTags: [
+      'scope:shared',
+      'scope:patterns',
+      'scope:ui',
+      'scope:account',
+      'scope:ai',
+      'scope:authentication',
+      'scope:goal',
+      'scope:governance',
+      'scope:notification',
+      'scope:reminder',
+      'scope:repository',
+      'scope:schedule',
+      'scope:setting',
+      'scope:task',
+      'scope:data-portability',
+      'scope:app-vue',
+      'scope:app-react',
+      'scope:web',
+      'scope:desktop',
+      'scope:mobile',
+      'scope:api',
+      'scope:test-utils',
+      'scope:tools',
+      'scope:meta',
+    ],
+  },
+  {
+    sourceTag: 'scope:api',
+    onlyDependOnLibsWithTags: [
+      'scope:shared',
+      'scope:patterns',
+      'scope:ui',
+      'scope:account',
+      'scope:ai',
+      'scope:authentication',
+      'scope:goal',
+      'scope:governance',
+      'scope:notification',
+      'scope:reminder',
+      'scope:repository',
+      'scope:schedule',
+      'scope:setting',
+      'scope:task',
+      'scope:data-portability',
+      'scope:app-vue',
+      'scope:app-react',
+      'scope:web',
+      'scope:desktop',
+      'scope:mobile',
+      'scope:api',
+      'scope:test-utils',
+      'scope:tools',
+      'scope:meta',
+    ],
+  },
+  {
+    sourceTag: 'scope:ui',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:ui'],
+  },
+  {
+    sourceTag: 'scope:test-utils',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:test-utils', 'scope:tools'],
+  },
+  {
+    sourceTag: 'scope:tools',
+    onlyDependOnLibsWithTags: [...sharedScopeTags, 'scope:tools', 'scope:test-utils'],
   },
 ] as const;
 
@@ -129,6 +374,7 @@ export default tseslint.config(
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/e2e/**',
         '**/src/test/**',
+        '**/src/testing/**',
         'packages/test-utils/**',
       ],
       rules: {
@@ -172,28 +418,6 @@ export default tseslint.config(
       plugins: { '@nx': nxPlugin },
       rules: {
         '@nx/enforce-module-boundaries': ['error', moduleBoundaryOptions],
-      },
-    },
-    {
-      files: ['packages/goal/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}'],
-      rules: {
-        'no-restricted-imports': [
-          'error',
-          {
-            patterns: ['@dailyuse/task', '@dailyuse/task/*'],
-          },
-        ],
-      },
-    },
-    {
-      files: ['packages/task/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}'],
-      rules: {
-        'no-restricted-imports': [
-          'error',
-          {
-            patterns: ['@dailyuse/goal', '@dailyuse/goal/*'],
-          },
-        ],
       },
     },
     {
@@ -342,17 +566,6 @@ export default tseslint.config(
     },
     {
       files: ['packages/account/src/**/*.ts'],
-      ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
-      rules: {
-        '@typescript-eslint/no-explicit-any': 'error',
-        '@typescript-eslint/no-unused-vars': [
-          'error',
-          { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
-        ],
-      },
-    },
-    {
-      files: ['packages/editor/src/**/*.ts'],
       ignores: ['**/__tests__/**', '**/test/**', '**/*.spec.ts', '**/*.test.ts'],
       rules: {
         '@typescript-eslint/no-explicit-any': 'error',

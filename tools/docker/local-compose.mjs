@@ -155,6 +155,23 @@ function createRuntimeEnv() {
     console.log('[docker:local] SERVICE_SECRET is not set in .env.production.local, using a local default for Docker validation.');
   }
 
+  // Local-only secret defaults so prod-like compose can start without copying
+  // production secrets into the working tree. Never treat these as real secrets.
+  const localSecretFallbacks = {
+    REDIS_PASSWORD: 'local-redis-password',
+    JWT_SECRET: 'local-jwt-secret-change-me-for-prod-like-only',
+    DB_PASSWORD: 'local-db-password',
+  };
+
+  for (const [key, fallback] of Object.entries(localSecretFallbacks)) {
+    if (!env[key] && !envKeys.has(key)) {
+      env[key] = fallback;
+      console.log(
+        `[docker:local] ${key} is not set in .env.production.local, using a local default for Docker validation.`,
+      );
+    }
+  }
+
   const powerSyncFallbacks = {
     POWERSYNC_URL: 'http://localhost:58081',
     POWERSYNC_KEY_ID: developmentEnv.get('POWERSYNC_KEY_ID') ?? 'powersync-dev-d90f228f',
@@ -175,12 +192,41 @@ function createRuntimeEnv() {
   return env;
 }
 
+function resolvePnpmInvocation() {
+  // Prefer Corepack when available so packageManager-pinned repos stay on the
+  // declared pnpm major/minor even if the host bare `pnpm` shim is broken.
+  if (process.platform !== 'win32') {
+    const probe = spawnSync('corepack', ['pnpm', '--version'], {
+      encoding: 'utf8',
+    });
+    if (typeof probe.status === 'number' && probe.status === 0) {
+      return { bin: 'corepack', prefixArgs: ['pnpm'] };
+    }
+  }
+
+  return {
+    bin: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
+    prefixArgs: [],
+  };
+}
+
 function runBuildPrep(env, { skipNxCache = false } = {}) {
-  const pnpm = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+  const { bin, prefixArgs } = resolvePnpmInvocation();
   const nxCacheArgs = skipNxCache ? ['--skipNxCache'] : [];
 
-  run(pnpm, ['nx', 'build', 'api', ...nxCacheArgs], env);
-  run(pnpm, ['nx', 'build', 'web', '--configuration=production', ...nxCacheArgs], env);
+  run(bin, [...prefixArgs, 'nx', 'build', 'api', ...nxCacheArgs], env);
+  run(
+    bin,
+    [
+      ...prefixArgs,
+      'nx',
+      'build',
+      'web',
+      '--configuration=production',
+      ...nxCacheArgs,
+    ],
+    env,
+  );
 }
 
 function runDockerCompose(extraArgs, env) {

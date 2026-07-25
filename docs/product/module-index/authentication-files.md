@@ -5,12 +5,12 @@ tags:
   - authentication
 description: 认证模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 认证模块文件索引
 
-本索引用于连接[认证模块说明](../modules/authentication.md)与当前代码。GitHub 登录目前只完成服务端 callback 骨架；授权发起、state/PKCE 校验、Web/Desktop UI、deep link 和账号合并仍未接线。
+本索引用于连接[认证模块说明](../modules/authentication.md)与当前代码。GitHub 登录（OAuth identity）主路径已贯通：authorize URL（state/PKCE + identity-only scopes `read:user` / `user:email`）、callback 会话签发、AuthApp UI、账户 bind/unbind。知识仓库 GitHub App installation/token 仍属 Repository 独立授权，不在本模块登录 OAuth 内。真实 GitHub fixture 跨端 E2E 与跨账号合并 UX 仍为后续/外部项。
 
 ## 前端页面、状态与组件
 
@@ -18,7 +18,7 @@ updated: 2026-07-17T00:00:00
 | --- | --- |
 | [`packages/app-vue/src/router/index.ts`](../../../packages/app-vue/src/router/index.ts) | 顶层路由与 `/auth` 入口 |
 | [`packages/app-vue/src/router/guards.ts`](../../../packages/app-vue/src/router/guards.ts) | requiresAuth 路由守卫 |
-| [`packages/app-vue/src/views/DesktopAuthView.vue`](../../../packages/app-vue/src/views/DesktopAuthView.vue) | Desktop 认证视图 |
+| [`packages/app-vue/src/views/DesktopAuthView.vue`](../../../packages/app-vue/src/views/DesktopAuthView.vue) | Desktop 认证视图（账密 + 访客；无 GitHub 登录按钮） |
 | [`packages/app-vue/src/modules/authentication/stores/authentication-store.ts`](../../../packages/app-vue/src/modules/authentication/stores/authentication-store.ts) | 认证 Pinia store |
 | [`packages/app-vue/src/modules/authentication/composables/useAuth.ts`](../../../packages/app-vue/src/modules/authentication/composables/useAuth.ts) | 认证状态与动作编排 |
 | [`packages/app-vue/src/modules/authentication/composables/useLogin.ts`](../../../packages/app-vue/src/modules/authentication/composables/useLogin.ts) | 登录组合函数 |
@@ -27,8 +27,9 @@ updated: 2026-07-17T00:00:00
 | [`packages/app-vue/src/modules/authentication/composables/useRememberedAccounts.ts`](../../../packages/app-vue/src/modules/authentication/composables/useRememberedAccounts.ts) | 记住账号能力 |
 | [`packages/app-vue/src/modules/authentication/composables/useSession.ts`](../../../packages/app-vue/src/modules/authentication/composables/useSession.ts) | 会话管理 |
 | [`packages/app-vue/src/modules/authentication/composables/usePassword.ts`](../../../packages/app-vue/src/modules/authentication/composables/usePassword.ts) | 密码管理 |
-| [`packages/app-vue/src/modules/authentication/components/LoginForm.vue`](../../../packages/app-vue/src/modules/authentication/components/LoginForm.vue) | 登录表单 |
-| [`packages/app-vue/src/modules/authentication/components/RegisterForm.vue`](../../../packages/app-vue/src/modules/authentication/components/RegisterForm.vue) | 注册表单 |
+| [`packages/app-vue/src/views/AuthPlatformEntry.vue`](../../../packages/app-vue/src/views/AuthPlatformEntry.vue) | Web 主壳 `/auth` full-page 硬跳转 AuthApp（无 GitHub/访客） |
+| [`apps/web/src/auth/WebAuthView.vue`](../../../apps/web/src/auth/WebAuthView.vue) | AuthApp：账密 + 条件 GitHub OAuth 登录/callback |
+| [`packages/app-vue/src/views/three-login-surface.matrix.spec.ts`](../../../packages/app-vue/src/views/three-login-surface.matrix.spec.ts) | 三入口矩阵 + step 10 identity≠knowledge-repo 锁 |
 
 ## 客户端服务与传输适配器
 
@@ -66,7 +67,21 @@ updated: 2026-07-17T00:00:00
 | [`apps/api/src/shared/infrastructure/config/env.ts`](../../../apps/api/src/shared/infrastructure/config/env.ts) | GitHub OAuth 可选配置读取 |
 | [`.env.example`](../../../.env.example) | GitHub 登录环境变量示例与权限边界说明 |
 
-## 可插拔认证服务端骨架
+
+## ADR-034 GitHub 登录 OAuth 生产路径（residual 307/333/335）
+
+| 文件 | 说明 |
+| --- | --- |
+| [`packages/authentication/src/server/application/use-cases/commands/get-oauth-url.use-case.ts`](../../../packages/authentication/src/server/application/use-cases/commands/get-oauth-url.use-case.ts) | authorize URL + state/PKCE；identity-only scopes `read:user` / `user:email`（永不 repo Contents） |
+| [`packages/authentication/src/server/application/use-cases/commands/list-oauth-providers.use-case.ts`](../../../packages/authentication/src/server/application/use-cases/commands/list-oauth-providers.use-case.ts) | 已配置 provider 列表门控 |
+| [`packages/authentication/src/server/application/use-cases/commands/bind-oauth.use-case.ts`](../../../packages/authentication/src/server/application/use-cases/commands/bind-oauth.use-case.ts) | 已登录账户 bind GitHub identity |
+| [`packages/authentication/src/server/domain/services/providers/github-authentication.provider.ts`](../../../packages/authentication/src/server/domain/services/providers/github-authentication.provider.ts) | GitHub subject find-or-create AuthIdentity（仅身份） |
+| [`packages/authentication/src/server/infrastructure/services/github-oauth-client.ts`](../../../packages/authentication/src/server/infrastructure/services/github-oauth-client.ts) | code→user token→`/user` numeric id；token 不写业务 session |
+| [`packages/authentication/src/api/routes.ts`](../../../packages/authentication/src/api/routes.ts) | `/oauth/providers` `/oauth/url` `/oauth/callback` `/oauth/bind` `/oauth/unbind` |
+| [`packages/repository/src/api/routes/knowledge-repository-connection.routes.ts`](../../../packages/repository/src/api/routes/knowledge-repository-connection.routes.ts) | 知识仓库 GitHub App install/token（与登录 OAuth 分离） |
+| [`docs/product/modules/authentication.md`](../modules/authentication.md) | 产品边界：identity-only scopes + 知识仓库 App 独立 |
+
+## 可插拔认证服务端
 
 | 文件 | 说明 |
 | --- | --- |
@@ -127,8 +142,8 @@ updated: 2026-07-17T00:00:00
 
 ## 需要重点关注的改动风险
 
-- OAuth callback 目前没有授权发起与 state/PKCE 存储校验，不能把服务端骨架视为完整登录流程。
+- GitHub 登录主路径已接线（authorize + state/PKCE + callback）；勿再写成“仅 callback 骨架”。真实 fixture 跨端 E2E 与账号合并 UX 仍可加强。
 - GitHub numeric user ID 才是稳定 subject；用户名和邮箱只能用于展示或显式账号合并。
-- GitHub 登录 binding 与知识仓库 installation/token 必须隔离，撤销流程也必须独立。
+- GitHub 登录 binding 与知识仓库 GitHub App installation/token 必须隔离（IPC `auth:oauth*` vs `repository:knowledge-connection*`；scopes 仅 `read:user` / `user:email`，永不 repo Contents）；撤销流程也必须独立。
 - 会话恢复、refresh token、Desktop 离线 profile 和访客升级不能因 GitHub 故障失效。
 - client secret、GitHub user token、Daily Use token 和一次性 callback code 不得进入浏览器日志、deep link 或仓库配置。

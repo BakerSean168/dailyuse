@@ -7,7 +7,7 @@ import type {
   AgentRunResult,
   AgentStartRunClientRequest,
 } from '@dailyuse/contracts/ai';
-import { unwrapResultOrThrow } from '../result-client-error';
+import type { Result } from '@dailyuse/contracts/result';
 
 function runListQuery(params: AgentRunListParams = {}): string {
   const search = new URLSearchParams();
@@ -29,43 +29,37 @@ function runListQuery(params: AgentRunListParams = {}): string {
   return search.size > 0 ? `?${search.toString()}` : '';
 }
 
+/** HTTP adapter — returns Result, never throws (residual 100). */
 export class AIAgentRuntimeHttpAdapter implements AIAgentRuntimeApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async listAgentRuns(params: AgentRunListParams = {}): Promise<AgentRun[]> {
-    const result = await this.httpClient.get<AgentRun[]>(
-      `/ai/agents/runs${runListQuery(params)}`,
-    );
-    return unwrapResultOrThrow(result);
+  async listAgentRuns(params: AgentRunListParams = {}): Promise<Result<AgentRun[]>> {
+    return this.httpClient.get<AgentRun[]>(`/ai/agents/runs${runListQuery(params)}`);
   }
 
-  async startAgentRun(request: AgentStartRunClientRequest): Promise<AgentRunResult> {
-    const result = await this.httpClient.post<AgentRunResult>('/ai/agents/runs', request);
-    return unwrapResultOrThrow(result);
+  async startAgentRun(request: AgentStartRunClientRequest): Promise<Result<AgentRunResult>> {
+    return this.httpClient.post<AgentRunResult>('/ai/agents/runs', request);
   }
 
   async resumeAgentRun(
     runId: string,
     payload: AgentResumePayload,
-  ): Promise<AgentRunResult> {
-    const result = await this.httpClient.post<AgentRunResult>(
+  ): Promise<Result<AgentRunResult>> {
+    return this.httpClient.post<AgentRunResult>(
       `/ai/agents/runs/${encodeURIComponent(runId)}/resume`,
       payload,
     );
-    return unwrapResultOrThrow(result);
   }
 
-  async getAgentRun(runId: string): Promise<AgentRunResult> {
-    const result = await this.httpClient.get<AgentRunResult>(
+  async getAgentRun(runId: string): Promise<Result<AgentRunResult>> {
+    return this.httpClient.get<AgentRunResult>(
       `/ai/agents/runs/${encodeURIComponent(runId)}`,
     );
-    return unwrapResultOrThrow(result);
   }
 
-  async getAgentEvents(runId: string): Promise<AgentEvent[]> {
-    const result = await this.httpClient.get<AgentEvent[]>(
+  async getAgentEvents(runId: string): Promise<Result<AgentEvent[]>> {
+    return this.httpClient.get<AgentEvent[]>(
       `/ai/agents/runs/${encodeURIComponent(runId)}/events`,
     );
-    return unwrapResultOrThrow(result);
   }
 }

@@ -11,8 +11,11 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class DeleteTaskDependencyUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}
 
-  async execute(id: string): Promise<Result<void>> {
-    const dependency = await this.dependencyRepository.findAggregateById(id);
+  async execute(id: string, identityId: string): Promise<Result<void>> {
+    const dependency = await this.dependencyRepository.findAggregateById(
+      identityId,
+      id,
+    );
     if (!dependency) {
       return error('NOT_FOUND', `TaskDependency ${id} not found`);
     }

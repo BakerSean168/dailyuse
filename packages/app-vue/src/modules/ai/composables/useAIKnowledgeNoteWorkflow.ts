@@ -1,3 +1,14 @@
+/**
+ * Residual 555: knowledge.write confirm requires sole create_knowledge_note
+ * draftAction after single-product-draft gate (task residual 547 / Host residual
+ * 553 symmetry; no multi product invent). Foreign companions may remain in the
+ * approvedActions payload for executor context; multi create_knowledge_note is fail-closed.
+ * Residual 559: knowledge.write confirm only from waiting_approval
+ * (task residual 489 + knowledge cancel residual 357 symmetry).
+ * Residual 605: process-local edit revise after Host proposal revise (task residual 439
+ * + knowledge classifier residual 603 symmetry). Patches sole create_knowledge_note so
+ * getRun/selectAgentRun reopen revised path/body; foreign companions may remain.
+ */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -5,6 +16,7 @@ import { toast } from 'vue-sonner';
 import type {
   AgentArtifact,
   AgentExecutedAction,
+  AgentRunResult,
   AgentStartRunClientRequest,
 } from '@dailyuse/contracts/ai';
 import type { Ref } from 'vue';
@@ -13,30 +25,35 @@ import type {
   ChatItem,
   ChatModelOption,
   KnowledgeAnswer,
-  KnowledgeNoteAgentRunResult,
   NoteSummary,
 } from './types';
 import { getAIErrorMessage } from './error';
+import { unwrap } from '@dailyuse/contracts/result';
+import {
+  applyHostKnowledgePatchToAgentActions,
+  dispatchHostProposalDecision,
+} from './hostProposalLifecycle';
+// Residual 951: isRecord dual retired — sole AI composable plain-object helper.
+import { isRecord } from './isRecord';
+// Residual 953: createAgentId dual retired — sole AI composable helper.
+import { createAgentId } from './createAgentId';
+// Residual 955: getRecordString dual retired — sole AI composable helper.
+import { getRecordString } from './getRecordString';
 
 export interface UseAIKnowledgeNoteWorkflowOptions {
-  service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun'>;
+  service: Pick<AIChatService, 'createKnowledgeNote' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
   selectedModel: Ref<ChatModelOption | null>;
   chatConversationId: Ref<string>;
   chatLoading: Ref<boolean>;
   chatTimeline: Ref<ChatItem[]>;
   conversationTitle: Ref<string>;
   hasWorkflowMessages: Ref<boolean>;
-  knowledgeNoteSubpath: Ref<string>;
   scrollMessagesToBottom: () => void;
   maybeRenameCurrentConversation: (name: string) => Promise<void>;
-  fetchResources: () => Promise<void>;
-  resources: Ref<Array<{ id: string; name: string; path?: string }>>;
-  requestOpenResource: (id: string) => Promise<unknown>;
+  refreshRecentNotes: () => Promise<void>;
+  recentNotes: Ref<Array<{ id: string; title: string; path: string }>>;
+  openKnowledgeNote: (id: string) => Promise<unknown>;
 }
-
-type CreateKnowledgeNoteRequest = Parameters<
-  UseAIKnowledgeNoteWorkflowOptions['service']['createKnowledgeNote']
->[0];
 
 export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOptions) {
   const { t, locale } = useI18n();
@@ -44,7 +61,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
   const noteCreating = ref(false);
   const noteSummary = ref<NoteSummary | null>(null);
-  const noteAgentRun = ref<Awaited<ReturnType<AIChatService['startAgentRun']>> | null>(null);
+  const noteAgentRun = ref<import('@dailyuse/contracts/ai').AgentRunResult | null>(null);
   const noteAgentLoading = ref(false);
 
   const noteAgentDraftArtifact = computed(
@@ -53,8 +70,12 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
         (artifact) => artifact.kind === 'knowledge_note_draft',
       ) ?? null,
   );
-  const noteAgentDraftTitle = computed(() => getArtifactString(noteAgentDraftArtifact.value, 'title'));
-  const noteAgentDraftTopic = computed(() => getArtifactString(noteAgentDraftArtifact.value, 'topic'));
+  const noteAgentDraftTitle = computed(() =>
+    getArtifactString(noteAgentDraftArtifact.value, 'title'),
+  );
+  const noteAgentDraftTopic = computed(() =>
+    getArtifactString(noteAgentDraftArtifact.value, 'topic'),
+  );
   const noteAgentDraftMarkdown = computed(() =>
     getArtifactString(noteAgentDraftArtifact.value, 'markdown'),
   );
@@ -62,9 +83,9 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     getArtifactString(noteAgentDraftArtifact.value, 'targetSubpath'),
   );
   const noteAgentExecutionRecovery = computed(() => {
-    const recovery = noteAgentRun.value?.state.artifacts
-      .find((artifact) => artifact.kind === 'execution_timeline')
-      ?.data['recovery'];
+    const recovery = noteAgentRun.value?.state.artifacts.find(
+      (artifact) => artifact.kind === 'execution_timeline',
+    )?.data['recovery'];
     return isRecord(recovery) ? recovery : null;
   });
   const canRetryKnowledgeNoteAgentExecution = computed(
@@ -83,27 +104,12 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       options.hasWorkflowMessages.value,
   );
 
-  function createAgentId(prefix: string): string {
-    const randomId =
-      globalThis.crypto?.randomUUID?.() ??
-      `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    return `${prefix}-${randomId}`;
-  }
 
   function getArtifactString(artifact: AgentArtifact | null, key: string): string {
     if (!artifact) return '';
-    const value = artifact.data[key];
-    return typeof value === 'string' ? value.trim() : '';
+    return getRecordString(artifact.data, key);
   }
 
-  function isRecord(value: unknown): value is Record<string, unknown> {
-    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-  }
-
-  function getRecordString(data: Record<string, unknown>, key: string): string {
-    const value = data[key];
-    return typeof value === 'string' ? value.trim() : '';
-  }
 
   function normalizeIndexStatus(value: string): NoteSummary['indexStatus'] | undefined {
     return value === 'pending' || value === 'indexed' || value === 'failed' ? value : undefined;
@@ -115,20 +121,20 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     const resolvedPath = getRecordString(data, 'resolvedPath');
     if (!resolvedPath) return null;
 
-    const resourceData = isRecord(data.resource) ? data.resource : null;
-    const content = resourceData
-      ? resourceData.content === null || typeof resourceData.content === 'string'
-        ? resourceData.content
+    const noteData = isRecord(data.note) ? data.note : null;
+    const content = noteData
+      ? noteData.content === null || typeof noteData.content === 'string'
+        ? noteData.content
         : undefined
       : undefined;
 
     return {
       resolvedPath,
       indexStatus: normalizeIndexStatus(getRecordString(data, 'indexStatus')),
-      resource: resourceData
+      note: noteData
         ? {
-            id: getRecordString(resourceData, 'id') || undefined,
-            name: getRecordString(resourceData, 'name') || undefined,
+            id: getRecordString(noteData, 'id') || undefined,
+            name: getRecordString(noteData, 'name') || undefined,
             content,
           }
         : action.entityId
@@ -137,7 +143,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     };
   }
 
-  function noteSummaryFromAgentRun(run: KnowledgeNoteAgentRunResult): NoteSummary | null {
+  function noteSummaryFromAgentRun(run: AgentRunResult): NoteSummary | null {
     for (const action of run.state.executedActions) {
       const summary = noteSummaryFromExecutedAction(action);
       if (summary) return summary;
@@ -145,12 +151,12 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     return null;
   }
 
-  function syncKnowledgeNoteAgentRun(run: KnowledgeNoteAgentRunResult) {
+  function syncKnowledgeNoteAgentRun(run: AgentRunResult) {
     noteAgentRun.value = run;
     noteSummary.value = noteSummaryFromAgentRun(run);
   }
 
-  function getKnowledgeNoteSaveFailure(run: KnowledgeNoteAgentRunResult): string {
+  function getKnowledgeNoteSaveFailure(run: AgentRunResult): string {
     return (
       run.state.executedActions.find(
         (action) => action.tool === 'create_knowledge_note' && action.status === 'failed',
@@ -240,66 +246,55 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       .slice(0, 4000);
   }
 
-  async function createKnowledgeNote(input: {
-    topic: string;
-    title?: string;
+  async function createKnowledgeNoteFromConversation(hostOptions?: {
+    skipHostLifecycle?: boolean;
+    revision?: number;
+    /** Residual 363: Host-revised vault path applied to executor actions. */
+    targetPath?: string;
+    /** Residual 363: Host-revised markdown applied to executor actions. */
     contentMarkdown?: string;
-    targetSubpath?: string;
   }) {
-    if (!options.selectedModel.value || !input.topic.trim()) return;
-
-    noteCreating.value = true;
-    try {
-      const targetSubpath = input.targetSubpath || options.knowledgeNoteSubpath.value;
-      const summary = await options.service.createKnowledgeNote({
-        topic: input.topic,
-        ...(input.contentMarkdown ? { contentMarkdown: input.contentMarkdown } : {}),
-        ...(input.title ? { title: input.title } : {}),
-        ...(targetSubpath ? { targetSubpath } : {}),
-        providerId:
-          options.selectedModel.value.providerId as CreateKnowledgeNoteRequest['providerId'],
-        model: options.selectedModel.value.modelId,
-      });
-
-      noteSummary.value = {
-        resolvedPath: summary.resolvedPath,
-        indexStatus: summary.indexStatus,
-        resource: summary.resource
-          ? {
-              id: summary.resource.id,
-              name: summary.resource.name,
-              content: summary.resource.content,
-            }
-          : undefined,
-      };
-      await options.fetchResources();
-      await options.maybeRenameCurrentConversation(
-        summary.resource?.name?.replace(/\.md$/i, '') || input.title || input.topic,
-      );
-      toast.success(t('aiAssistant.dialogs.note.created'));
-      options.scrollMessagesToBottom();
-    } catch (error) {
-      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.note.createFailed'));
-    } finally {
-      noteCreating.value = false;
-    }
-  }
-
-  async function createKnowledgeNoteFromConversation() {
     if (!options.hasWorkflowMessages.value && !noteAgentDraftMarkdown.value) return;
 
     if (noteAgentRun.value) {
-      const approvedActions = noteAgentRun.value.state.pendingActions.length
+      // Residual 559: knowledge.write confirm only from waiting_approval
+      // (task residual 489 + knowledge cancel residual 357 symmetry).
+      if (noteAgentRun.value.run.status !== 'waiting_approval') return;
+
+      const baseActions = noteAgentRun.value.state.pendingActions.length
         ? noteAgentRun.value.state.pendingActions
         : noteAgentRun.value.state.approvedActions;
-      if (!approvedActions.length) return;
+      if (!baseActions.length) return;
+
+      // Residual 555: sole create_knowledge_note draftAction after single-product-draft gate
+      // (task residual 547 / Host residual 553 symmetry; no multi product invent).
+      // Foreign companions (e.g. search_knowledge) may remain for executor context.
+      const productDraftCount = baseActions.filter(
+        (action) => action.tool === 'create_knowledge_note',
+      ).length;
+      if (productDraftCount !== 1) return;
+
+      // Residual 363/551: Host lifecycle may revise path/body; sole product patch only.
+      const approvedActions = applyHostKnowledgePatchToAgentActions(baseActions, {
+        targetPath: hostOptions?.targetPath,
+        contentMarkdown: hostOptions?.contentMarkdown,
+      });
 
       noteCreating.value = true;
       try {
-        const result = await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
+        // Residual 355/359: Host proposal lifecycle first; resume remains mutation executor.
+        if (!hostOptions?.skipHostLifecycle) {
+          await dispatchHostProposalDecision(options.service, {
+            decision: 'approve',
+            runId: noteAgentRun.value.run.runId,
+            kind: 'knowledge.write',
+            revision: hostOptions?.revision,
+          });
+        }
+        const result = unwrap(await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
           userDecision: 'confirm',
           approvedActions,
-        });
+        }));
         noteAgentRun.value = result;
         const summary = noteSummaryFromAgentRun(result);
         if (!summary) {
@@ -309,9 +304,11 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
         }
 
         noteSummary.value = summary;
-        await options.fetchResources();
+        await options.refreshRecentNotes();
         await options.maybeRenameCurrentConversation(
-          summary.resource?.name?.replace(/\.md$/i, '') || noteAgentDraftTitle.value || buildKnowledgeNoteTitle(),
+          summary.note?.name?.replace(/\.md$/i, '') ||
+            noteAgentDraftTitle.value ||
+            buildKnowledgeNoteTitle(),
         );
         toast.success(t('aiAssistant.dialogs.note.created'));
         options.scrollMessagesToBottom();
@@ -323,16 +320,12 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       return;
     }
 
-    const noteTitle = buildKnowledgeNoteTitle();
-    await createKnowledgeNote({
+    // A note is never written directly from the conversation. Start the
+    // proposal run first so the complete path/body is visible and approved.
+    await startKnowledgeNoteAgentRunWithInput({
       topic: buildKnowledgeNoteTopic(),
-      ...(noteAgentDraftMarkdown.value
-        ? { contentMarkdown: noteAgentDraftMarkdown.value.slice(0, 50000) }
-        : {}),
-      ...(noteTitle ? { title: noteTitle } : {}),
-      ...(noteAgentDraftTargetSubpath.value
-        ? { targetSubpath: noteAgentDraftTargetSubpath.value }
-        : {}),
+      title: buildKnowledgeNoteTitle(),
+      source: options.chatTimeline.value.map((item) => `${item.role}: ${item.content}`).join('\n'),
     });
   }
 
@@ -341,9 +334,9 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
     noteCreating.value = true;
     try {
-      const result = await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
+      const result = unwrap(await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
         userDecision: 'confirm',
-      });
+      }));
       noteAgentRun.value = result;
 
       const summary = noteSummaryFromAgentRun(result);
@@ -354,9 +347,11 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       }
 
       noteSummary.value = summary;
-      await options.fetchResources();
+      await options.refreshRecentNotes();
       await options.maybeRenameCurrentConversation(
-        summary.resource?.name?.replace(/\.md$/i, '') || noteAgentDraftTitle.value || buildKnowledgeNoteTitle(),
+        summary.note?.name?.replace(/\.md$/i, '') ||
+          noteAgentDraftTitle.value ||
+          buildKnowledgeNoteTitle(),
       );
       toast.success(t('aiAssistant.dialogs.note.created'));
       options.scrollMessagesToBottom();
@@ -394,12 +389,9 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
           topic: input.topic,
           ...(input.source ? { source: input.source } : {}),
           ...(input.title ? { title: input.title } : {}),
-          ...(options.knowledgeNoteSubpath.value
-            ? { targetSubpath: options.knowledgeNoteSubpath.value }
-            : {}),
           ...(selectedModel
             ? {
-                providerId: selectedModel.providerId,
+                provider_id: selectedModel.providerId,
                 model: selectedModel.modelId,
               }
             : {}),
@@ -407,7 +399,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
       };
 
       noteSummary.value = null;
-      noteAgentRun.value = await options.service.startAgentRun(request);
+      noteAgentRun.value = unwrap(await options.service.startAgentRun(request));
       toast.success(t('aiAssistant.dialogs.note.draftReady'));
       options.scrollMessagesToBottom();
     } catch (error) {
@@ -437,22 +429,116 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     });
   }
 
+  /**
+   * Residual 605: Host revise → process-local edit resume (stay waiting_approval).
+   * Patches sole create_knowledge_note so getRun/selectAgentRun reopen revised draft
+   * (task residual 439 / residual 507 sole product draft symmetry).
+   * Residual 559: product revise only from waiting_approval.
+   * Residual 555/551: sole create_knowledge_note draftAction only (foreign companions OK).
+   * Host lifecycle revise is dispatched by AIChatView first; this is the AgentRun edit path.
+   */
+  async function reviseKnowledgeNoteAgentRun(hostOptions?: {
+    targetPath?: string;
+    contentMarkdown?: string;
+  }) {
+    if (!noteAgentRun.value || noteCreating.value || noteAgentLoading.value) return;
+    // Residual 559/605: product revise only from waiting_approval.
+    if (noteAgentRun.value.run.status !== 'waiting_approval') return;
+    // knowledge.generate is the Host knowledge product AgentType (start residual).
+    if (noteAgentRun.value.run.agentType !== 'knowledge.generate') return;
+    // Refuse blank path revise (Host path fields are vault-relative non-empty when set).
+    if (typeof hostOptions?.targetPath === 'string' && !hostOptions.targetPath.trim()) return;
+
+    noteCreating.value = true;
+    try {
+      const source =
+        noteAgentRun.value.state.pendingActions.length > 0
+          ? noteAgentRun.value.state.pendingActions
+          : noteAgentRun.value.state.approvedActions;
+      // Residual 555/605: sole create_knowledge_note draftAction (no multi invent).
+      const productDraftCount = source.filter(
+        (action) => action.tool === 'create_knowledge_note',
+      ).length;
+      if (productDraftCount !== 1) return;
+
+      // Residual 363/551/605: Host-revised path/body; keep foreign companions for executor context.
+      const approvedActions = applyHostKnowledgePatchToAgentActions(source, {
+        targetPath: hostOptions?.targetPath,
+        contentMarkdown: hostOptions?.contentMarkdown,
+      });
+
+      const result = unwrap(
+        await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
+          userDecision: 'edit',
+          approvedActions,
+        }),
+      );
+      noteAgentRun.value = result;
+    } catch (error) {
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
+    } finally {
+      noteCreating.value = false;
+    }
+  }
+
+  /**
+   * Residual 357: Host reject lifecycle then cancel the AgentRun executor path.
+   * Does not run ProposalKernel mutation execution or write knowledge notes.
+   */
+  async function cancelKnowledgeNoteAgentRun(hostOptions?: {
+    skipHostLifecycle?: boolean;
+    revision?: number;
+  }) {
+    if (!noteAgentRun.value || noteCreating.value || noteAgentLoading.value) return;
+    if (noteAgentRun.value.run.status !== 'waiting_approval') return;
+
+    noteCreating.value = true;
+    try {
+      if (!hostOptions?.skipHostLifecycle) {
+        await dispatchHostProposalDecision(options.service, {
+          decision: 'reject',
+          runId: noteAgentRun.value.run.runId,
+          kind: 'knowledge.write',
+          reason: 'user_cancel',
+          revision: hostOptions?.revision,
+        });
+      }
+      const result = unwrap(
+        await options.service.resumeAgentRun(noteAgentRun.value.run.runId, {
+          userDecision: 'cancel',
+        }),
+      );
+      noteAgentRun.value = result;
+      toast.success(t('aiAssistant.dialogs.agent.cancelled'));
+      options.scrollMessagesToBottom();
+    } catch (error) {
+      toast.error(getAIErrorMessage(error, t, 'aiAssistant.dialogs.agent.resumeFailed'));
+    } finally {
+      noteCreating.value = false;
+    }
+  }
+
   async function openCreatedNote() {
     const resolvedPath = noteSummary.value?.resolvedPath;
     if (!resolvedPath) return;
 
-    if (!options.resources.value.length) {
-      await options.fetchResources();
+    if (!options.recentNotes.value.length) {
+      await options.refreshRecentNotes();
     }
 
-    const target = options.resources.value.find(
-      (item) => item.path === resolvedPath || item.name === noteSummary.value?.resource?.name,
+    const target = options.recentNotes.value.find(
+      (item) =>
+        item.path === resolvedPath ||
+        item.title === noteSummary.value?.note?.name ||
+        item.path.endsWith(`/${noteSummary.value?.note?.name ?? ''}`),
     );
 
     if (target) {
-      await options.requestOpenResource(target.id);
-      await router.push('/repository');
+      await options.openKnowledgeNote(target.id);
+      return;
     }
+
+    await router.push({ path: '/repository', query: { note: resolvedPath } });
   }
 
   return {
@@ -478,6 +564,8 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
     startKnowledgeNoteAgentRunFromKnowledgeAnswer,
     createKnowledgeNoteFromConversation,
     retryKnowledgeNoteAgentExecution,
+    reviseKnowledgeNoteAgentRun,
+    cancelKnowledgeNoteAgentRun,
     openCreatedNote,
   };
 }

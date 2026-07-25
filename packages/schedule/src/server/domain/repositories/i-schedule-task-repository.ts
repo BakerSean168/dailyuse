@@ -17,7 +17,7 @@ import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
  * ScheduleTask 鏌ヨ閫夐」
  */
 export interface IScheduleTaskQueryOptions {
-  identityId?: string;
+  identityId: string;
   sourceModule?: SourceModule;
   sourceEntityId?: string;
   status?: ScheduleTaskStatus;
@@ -44,10 +44,12 @@ export interface IScheduleTaskRepository {
    */
   findById(id: string): Promise<ScheduleTask | null>;
 
+  findByIdForIdentity(identityId: string, id: string): Promise<ScheduleTask | null>;
+
   /**
    * 鏍规嵁 UUID 鍒犻櫎 ScheduleTask
    */
-  deleteById(id: string): Promise<void>;
+  deleteById(identityId: string, id: string): Promise<void>;
 
   // ============ 鏌ヨ鏂规硶 ============
 
@@ -59,7 +61,7 @@ export interface IScheduleTaskRepository {
   /**
    * 鏌ヨ鎸囧畾鏉ユ簮妯″潡鐨勬墍鏈変换鍔?
    */
-  findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]>;
+  findBySourceModule(module: SourceModule, identityId: string): Promise<ScheduleTask[]>;
 
   /**
    * 鏌ヨ鎸囧畾鏉ユ簮瀹炰綋鐨勪换鍔?
@@ -67,13 +69,13 @@ export interface IScheduleTaskRepository {
   findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    identityId?: string,
+    identityId: string,
   ): Promise<ScheduleTask[]>;
 
   /**
    * 鏌ヨ鎸囧畾鐘舵€佺殑浠诲姟
    */
-  findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]>;
+  findByStatus(status: ScheduleTaskStatus, identityId: string): Promise<ScheduleTask[]>;
 
   /**
    * 鏌ヨ鍚敤鐨勪换鍔?
@@ -105,7 +107,7 @@ export interface IScheduleTaskRepository {
   /**
    * 鎵归噺鍒犻櫎
    */
-  deleteBatch(ids: string[]): Promise<void>;
+  deleteBatch(identityId: string, ids: string[]): Promise<void>;
 
   // ============ 浜嬪姟鏀寔 ============
 

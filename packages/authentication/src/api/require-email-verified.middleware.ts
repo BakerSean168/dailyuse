@@ -18,6 +18,11 @@ export interface EmailVerificationGateOptions {
   readonly enabled?: boolean;
 }
 
+/**
+ * Residual 1174 keep-boundary: auth email-verification normalizePath — URL route shape.
+ * Strips querystring and /api|/api/v1 prefixes for whitelist matching (always returns string).
+ * Soft residual 1174: repository storage-config normalizePath is filesystem path trim|null (no force-merge).
+ */
 function normalizePath(url: string): string {
   // strip querystring
   const pathOnly = url.split('?')[0] ?? url;

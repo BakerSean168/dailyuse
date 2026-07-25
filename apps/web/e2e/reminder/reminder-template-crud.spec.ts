@@ -19,7 +19,7 @@ test.describe('Reminder Template CRUD Operations', () => {
     });
 
     await expect(page.getByTestId('create-reminder-template-button')).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
   });
 

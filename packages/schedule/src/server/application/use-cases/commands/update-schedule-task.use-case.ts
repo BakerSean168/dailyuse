@@ -44,9 +44,9 @@ export class UpdateScheduleTaskUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(req: UpdateScheduleTaskReq): Promise<Result<ScheduleTaskClientDTO>> {
+  async execute(req: UpdateScheduleTaskReq, identityId: string): Promise<Result<ScheduleTaskClientDTO>> {
     // 1. 查询现有任务
-    const task = await this.scheduleTaskRepository.findById(req.id);
+    const task = await this.scheduleTaskRepository.findByIdForIdentity(identityId, req.id);
     if (!task) {
       return error('NOT_FOUND', `Schedule task ${req.id} not found`);
     }

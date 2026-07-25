@@ -7,8 +7,9 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId } from '../../../primitives';
-import type { GoalReviewServerDTO } from '../entities/goal-review-server';
 import { ReviewType } from '../value-objects/review-type';
+import { GoalIdParamsSchema } from './goal-crud.dto';
+import { GoalReviewListResSchema } from './response-schemas';
 
 // ============================================================================
 // CREATE Review
@@ -30,7 +31,6 @@ export const CreateGoalReviewSchema = z.object({
 });
 
 export type CreateGoalReviewReq = z.infer<typeof CreateGoalReviewSchema>;
-export type CreateGoalReviewRes = GoalReviewServerDTO;
 
 // ============================================================================
 // UPDATE Review
@@ -49,7 +49,6 @@ export const UpdateGoalReviewSchema = z.object({
 });
 
 export type UpdateGoalReviewReq = z.infer<typeof UpdateGoalReviewSchema>;
-export type UpdateGoalReviewRes = GoalReviewServerDTO;
 
 // ============================================================================
 // GET Review
@@ -59,13 +58,11 @@ export type UpdateGoalReviewRes = GoalReviewServerDTO;
  * 获取复盘详情
  */
 export type GetGoalReviewReq = void;
-export type GetGoalReviewRes = GoalReviewServerDTO;
 
 /**
  * 删除复盘
  */
 export type DeleteGoalReviewReq = void;
-export type DeleteGoalReviewRes = GoalReviewServerDTO;
 
 // ============================================================================
 // QUERY Reviews
@@ -74,13 +71,8 @@ export type DeleteGoalReviewRes = GoalReviewServerDTO;
 /**
  * 查询复盘列表
  */
-export const GetGoalReviewsSchema = z.object({
-  goalId: brandedId<GoalId>(),
-});
+// Residual 677: reuses shared GoalIdParamsSchema (no dual body).
+export type GetGoalReviewsReq = z.infer<typeof GoalIdParamsSchema>;
 
-export type GetGoalReviewsReq = z.infer<typeof GetGoalReviewsSchema>;
-
-export interface GetGoalReviewsRes {
-  data: GoalReviewServerDTO[];
-  total: number;
-}
+// Residual 689: list response dual body retired — OpenAPI + transport use GoalReviewListResSchema (ClientDTO).
+export type GetGoalReviewsRes = z.infer<typeof GoalReviewListResSchema>;

@@ -28,7 +28,7 @@
 /**
  * NoteSegmentBar — Note 面板顶部 [笔记 | 规范] 分区切换（UI 重构 V2 §3 / §6 Note）
  *
- * 笔记 = RepositoryWorkspaceView / /note/:id；规范 = /governance/**。
+ * 笔记 = /repository（Local Vault 或 knowledge projection）；规范 = /governance/**。
  * 路由 path 不变，仅在 Note 壳内切换分区导航。
  */
 import { computed } from 'vue';

@@ -2,7 +2,7 @@
  * Task Dependency HTTP Adapter
  *
  * HTTP implementation of ITaskDependencyApiClient.
- * Uses IHttpClient for making HTTP requests.
+ * Uses IResultHttpClient for making HTTP requests.
  */
 
 import type { Result } from '@dailyuse/contracts/result';

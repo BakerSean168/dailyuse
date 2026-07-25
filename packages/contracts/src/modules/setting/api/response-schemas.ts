@@ -11,6 +11,9 @@ import { UserPreferencesSchema } from '../preferences/schemas';
 
 /**
  * UserSetting Response Schema
+ *
+ * Residual 823: UserSettingClientDTO dual retired — sole UserSettingResponseSchema + z.infer
+ * (semantic type is z.infer alias in aggregates/user-setting-client.ts).
  */
 export const UserSettingResponseSchema = z.object({
   id: brandedId<SettingId>(),
@@ -23,6 +26,8 @@ export const UserSettingResponseSchema = z.object({
 
 /**
  * Export Settings Response Schema
+ *
+ * Residual 771: sole export settings response shape (ExportSettingsRes is z.infer alias).
  */
 export const ExportSettingsResponseSchema = z.object({
   data: z.string(),
@@ -31,6 +36,8 @@ export const ExportSettingsResponseSchema = z.object({
 
 /**
  * Import Settings Response Schema
+ *
+ * Residual 771: sole import settings response shape (ImportSettingsRes is z.infer alias).
  */
 export const ImportSettingsResponseSchema = z.object({
   imported: z.number(),

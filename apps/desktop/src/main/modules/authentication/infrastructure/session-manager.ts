@@ -32,10 +32,9 @@ import { OfflineAuthHelper } from './offline-auth-helper';
 import { SessionRestoreOrchestrator } from './session-restore';
 import { TokenRefreshOrchestrator } from './token-refresh';
 import { LoginOrchestrator } from './login-orchestrator';
-import type { SessionRestoreResult, AutoLoginResult, SessionStatus, OfflineLoginResponse } from './session-types';
-
-// Re-export types for backward compatibility
-export type { SessionRestoreResult, AutoLoginResult, SessionStatus, OfflineLoginResponse } from './session-types';
+import type { SessionRestoreResult, AutoLoginResult, SessionStatus } from './session-types';
+// Residual 925: OfflineLoginResponse from contracts sole body (no session-types alias).
+import type { OfflineLoginResponse } from '@dailyuse/contracts/authentication';
 
 // ============ SessionManager ============
 

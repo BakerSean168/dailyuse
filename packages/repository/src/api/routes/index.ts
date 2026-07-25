@@ -1,30 +1,21 @@
 /**
  * Repository Routes Index
  *
- * Aggregates all repository-related route registration functions.
- * Follows split-route pattern (like goal module).
- *
- * Routes:
- *   Repository CRUD + nested resources — repository.routes.ts
- *   Standalone resources               — resource.routes.ts
+ * Only GitHub-backed knowledge repository routes are mounted by the API host.
+ * Legacy database Repository/Folder/Resource CRUD builders are gone.
+ * Residual 539: stage-6 dual-track retirement — no Folder/Resource CRUD remount.
+ * Residual 885: portable boundary re-lock — knowledge-only routes; no editor API remount.
  */
 
 import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import { RepositoryController } from '../../server/transport/repository.controller';
 import type { RepositoryApplicationPort } from '../../server/application';
-import { registerRepositoryCrudRoutes } from './repository.routes';
-import { registerStandaloneResourceRoutes } from './resource.routes';
-import { registerNestedFolderRoutes, registerStandaloneFolderRoutes } from './folder.routes';
-
-// ============ Types ============
+import { registerKnowledgeRepositoryConnectionRoutes } from './knowledge-repository-connection.routes';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
-
-// ============ Route Registration ============
 
 /**
  * Register repository routes (mounted at /repositories).
@@ -34,37 +25,5 @@ export function registerRepositoryRoutes(
   middleware: PlatformMiddleware,
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
-  const controller = new RepositoryController(api);
-  const crudRouter = registerRepositoryCrudRoutes(controller, middleware, openApiRegistry);
-  const nestedFolderRouter = registerNestedFolderRoutes(controller, middleware, openApiRegistry);
-
-  // Merge repository CRUD + nested folder routes
-  const router = Router();
-  router.use(crudRouter);
-  router.use(nestedFolderRouter);
-  return router;
-}
-
-/**
- * Register standalone resource routes (mounted at /resources).
- */
-export function registerResourceRoutes(
-  api: RepositoryApplicationPort,
-  middleware: PlatformMiddleware,
-  openApiRegistry?: OpenApiRegistryLike | null,
-): Router {
-  const controller = new RepositoryController(api);
-  return registerStandaloneResourceRoutes(controller, middleware, openApiRegistry);
-}
-
-/**
- * Register standalone folder routes (mounted at /folders).
- */
-export function registerFolderRoutes(
-  api: RepositoryApplicationPort,
-  middleware: PlatformMiddleware,
-  openApiRegistry?: OpenApiRegistryLike | null,
-): Router {
-  const controller = new RepositoryController(api);
-  return registerStandaloneFolderRoutes(controller, middleware, openApiRegistry);
+  return registerKnowledgeRepositoryConnectionRoutes(api, middleware, openApiRegistry);
 }

@@ -1,20 +1,13 @@
 /**
  * EmailAddress Value Object
+ *
+ * Residual 855: EmailAddressDTO dual retired — sole EmailAddress interface + type alias.
  */
 
-// ============ 值对象接口 ============
-
+// Residual 855: sole EmailAddress body.
 export interface EmailAddress {
-    readonly value: string;
+  readonly value: string;
 }
 
-
-// ============ DTO 定义 ============
-
-/**
- * EmailAddress DTO
- */
-export interface EmailAddressDTO {
-    value: string;
-}
-
+// Residual 855: EmailAddressDTO dual retired — DTO is the EmailAddress shape.
+export type EmailAddressDTO = EmailAddress;

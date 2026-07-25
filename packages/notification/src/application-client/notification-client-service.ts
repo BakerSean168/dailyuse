@@ -8,8 +8,12 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
+import type {
+  BatchOperationResultDTO,
+  NotificationClientDTO,
+  NotificationPreferenceClientDTO,
+  UpdateNotificationPreferenceReq,
+} from '@dailyuse/contracts/notification';
 import type {
   INotificationApiClient,
   CreateNotificationRequest,
@@ -20,20 +24,14 @@ import type {
 
 // ─── Client Application Port ────────────────────────────────────────────────
 
-/** High-level client-side operations for the notification module. */
-export interface NotificationClientPort {
-  createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>>;
-  findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>>;
-  findNotificationById(id: string): Promise<Result<NotificationClientDTO>>;
-  markAsRead(id: string): Promise<Result<NotificationClientDTO>>;
-  markAllAsRead(): Promise<Result<CountResult>>;
-  deleteNotification(id: string): Promise<Result<ActionResult>>;
-  batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>>;
-  dismissAll(ids: string[]): Promise<Result<CountResult>>;
-  getUnreadCount(): Promise<Result<UnreadCountResponse>>;
-}
+/**
+ * Application-facing client port.
+ * Identical to INotificationApiClient for this module (pure Result pass-through;
+ * dismissAll dual removed — callers use batchDeleteNotifications).
+ */
+export type NotificationClientPort = INotificationApiClient;
 
-export class NotificationClientService implements NotificationClientPort {
+export class NotificationClientService implements INotificationApiClient {
   constructor(private readonly notificationApi: INotificationApiClient) {
     this.createNotification = this.createNotification.bind(this);
     this.findNotifications = this.findNotifications.bind(this);
@@ -42,8 +40,9 @@ export class NotificationClientService implements NotificationClientPort {
     this.markAllAsRead = this.markAllAsRead.bind(this);
     this.deleteNotification = this.deleteNotification.bind(this);
     this.batchDeleteNotifications = this.batchDeleteNotifications.bind(this);
-    this.dismissAll = this.dismissAll.bind(this);
     this.getUnreadCount = this.getUnreadCount.bind(this);
+    this.getPreferences = this.getPreferences.bind(this);
+    this.updatePreferences = this.updatePreferences.bind(this);
   }
 
   // ===== Notification Operations =====
@@ -68,24 +67,30 @@ export class NotificationClientService implements NotificationClientPort {
     return this.notificationApi.markAsRead(id);
   }
 
-  async markAllAsRead(): Promise<Result<CountResult>> {
+  async markAllAsRead(): Promise<Result<{ count: number }>> {
     return this.notificationApi.markAllAsRead();
   }
 
-  async deleteNotification(id: string): Promise<Result<ActionResult>> {
+  async deleteNotification(id: string): Promise<Result<null>> {
     return this.notificationApi.deleteNotification(id);
   }
 
-  async batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>> {
-    return this.notificationApi.batchDeleteNotifications(ids);
-  }
-
-  async dismissAll(ids: string[]): Promise<Result<CountResult>> {
+  async batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>> {
     return this.notificationApi.batchDeleteNotifications(ids);
   }
 
   async getUnreadCount(): Promise<Result<UnreadCountResponse>> {
     return this.notificationApi.getUnreadCount();
+  }
+
+  async getPreferences(): Promise<Result<NotificationPreferenceClientDTO>> {
+    return this.notificationApi.getPreferences();
+  }
+
+  async updatePreferences(
+    request: UpdateNotificationPreferenceReq,
+  ): Promise<Result<NotificationPreferenceClientDTO>> {
+    return this.notificationApi.updatePreferences(request);
   }
 }
 

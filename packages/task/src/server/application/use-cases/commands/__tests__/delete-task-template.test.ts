@@ -15,7 +15,7 @@ describe('DeleteTaskTemplateUseCase', () => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     templateRepo = createMockRepo<ITaskTemplateRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
     });
@@ -29,15 +29,12 @@ describe('DeleteTaskTemplateUseCase', () => {
     vi.restoreAllMocks();
   });
 
-  it('should return ok with success:true when template not found (idempotent)', async () => {
-    vi.mocked(templateRepo.findById).mockResolvedValue(null);
+  it('should return ok(void) when template not found (idempotent)', async () => {
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeOk();
-    if (result.ok) {
-      expect(result.data.success).toBe(true);
-    }
     expect(templateRepo.delete).not.toHaveBeenCalled();
     expect(templateRepo.save).not.toHaveBeenCalled();
     expect(instanceRepo.deleteByTemplateId).not.toHaveBeenCalled();
@@ -45,53 +42,53 @@ describe('DeleteTaskTemplateUseCase', () => {
 
   it('should hard-delete when soft=false (default)', async () => {
     const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     expect(templateRepo.save).toHaveBeenCalledWith(template);
-    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
-    expect(templateRepo.delete).toHaveBeenCalledWith(template.id);
+    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id, template.identityId);
+    expect(templateRepo.delete).toHaveBeenCalledWith(template.identityId, template.id);
   });
 
   it('should soft-delete when soft=true', async () => {
     const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id, true);
+    const result = await useCase.execute(template.id, template.identityId, true);
 
     expect(result).toBeOk();
     expect(templateRepo.save).toHaveBeenCalledWith(template);
-    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
+    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id, template.identityId);
     expect(templateRepo.delete).not.toHaveBeenCalled();
   });
 
-  it('should return success:true after delete', async () => {
+  it('should return ok(void) after delete', async () => {
     const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
-    expect(result).toBeOkWith({ success: true });
+    expect(result).toBeOk();
   });
 
   it('should return INTERNAL_ERROR when deleting generated instances fails', async () => {
     const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     vi.mocked(instanceRepo.deleteByTemplateId).mockRejectedValue(new Error('delete instances failed'));
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeErrorWithCode('INTERNAL_ERROR');
   });
 
   it('should return INTERNAL_ERROR when hard delete fails after soft-deleting the template', async () => {
     const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     vi.mocked(templateRepo.delete).mockRejectedValue(new Error('hard delete failed'));
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeErrorWithCode('INTERNAL_ERROR');
   });

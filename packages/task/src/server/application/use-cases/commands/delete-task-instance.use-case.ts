@@ -13,14 +13,13 @@ const taskEvents = createTypedEventPublisher<Pick<TaskEventMap, 'task:instance-d
 export class DeleteTaskInstanceUseCase {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(id: string): Promise<Result<void>> {
-    const instance = await this.instanceRepository.findById(id);
+  async execute(id: string, identityId: string): Promise<Result<void>> {
+    const instance = await this.instanceRepository.findByIdForIdentity(identityId, id);
 
     // Delete remains idempotent: callers do not need to care whether the
     // instance still exists when issuing the command.
-    await this.instanceRepository.delete(id);
-
     if (instance) {
+      await this.instanceRepository.delete(identityId, id);
       taskEvents.send('task:instance-deleted', {
         identityId: instance.identityId,
         taskInstanceId: instance.id,

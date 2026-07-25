@@ -5,18 +5,18 @@ import type {
 } from '../api/requests/schedule-requests';
 import type { ScheduleTaskQueryParamsDTO } from '../api/requests/schedule-task-requests';
 import type { ScheduleExecutionQueryParamsDTO } from '../api/requests/schedule-execution-requests';
-import type { ScheduleOperationSuccessResponseDTO } from '../api/requests/common-responses';
 import type { CalendarEntryClientDTO } from '../aggregates/calendar-entry-client';
 import type { ScheduleTaskClientDTO } from '../aggregates/schedule-task-client';
 import type { ScheduleExecutionClientDTO } from '../entities/schedule-execution-client';
 import type { ConflictDetectionResult } from '../value-objects/conflict-detection-result';
 
 // === Schedule Module RPC Map ===
+// Residual 631: delete success bodies are void (null); dual ScheduleOperation*ResponseDTO retired.
 export type ScheduleRpcMap = {
   // === Schedule (Calendar Events) Operations ===
   'schedule:create': [CreateScheduleRequest, CalendarEntryClientDTO];
   'schedule:update': [UpdateScheduleRequest, CalendarEntryClientDTO];
-  'schedule:delete': [{ scheduleId: ScheduleId }, ScheduleOperationSuccessResponseDTO];
+  'schedule:delete': [{ scheduleId: ScheduleId }, null];
   'schedule:get-by-range': [{ startTime: number; endTime: number }, CalendarEntryClientDTO[]];
   'schedule:detect-conflicts': [
     { startTime: number; endTime: number; excludeId?: ScheduleId },
@@ -30,7 +30,7 @@ export type ScheduleRpcMap = {
   // === Schedule Task Operations ===
   'schedule-task:create': [unknown, ScheduleTaskClientDTO];
   'schedule-task:update': [unknown, ScheduleTaskClientDTO];
-  'schedule-task:delete': [{ taskId: ScheduleTaskId }, ScheduleOperationSuccessResponseDTO];
+  'schedule-task:delete': [{ taskId: ScheduleTaskId }, null];
   'schedule-task:query': [ScheduleTaskQueryParamsDTO, unknown];
   'schedule-task:enable': [{ taskId: ScheduleTaskId }, ScheduleTaskClientDTO];
   'schedule-task:disable': [{ taskId: ScheduleTaskId }, ScheduleTaskClientDTO];

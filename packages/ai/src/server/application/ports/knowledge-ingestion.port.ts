@@ -1,6 +1,6 @@
 import type { ChatExecutionProviderConfig } from './chat-execution.port';
 
-export interface KnowledgeSourceResource {
+export interface KnowledgeSourceNote {
   identityId: string;
   repositoryId: string;
   resourceId: string;
@@ -22,7 +22,7 @@ export interface KnowledgeIndexedChunk {
   embedding: number[];
 }
 
-export interface KnowledgeIndexedResource {
+export interface KnowledgeIndexedNote {
   identityId: string;
   repositoryId: string;
   resourceId: string;
@@ -38,12 +38,12 @@ export interface KnowledgeIndexedResource {
 }
 
 export interface KnowledgeIngestionInput {
-  resource: KnowledgeSourceResource;
+  note: KnowledgeSourceNote;
   providerConfig?: ChatExecutionProviderConfig;
   maxChunkChars?: number;
   overlapChars?: number;
 }
 
 export interface IKnowledgeIngestionPort {
-  indexResource(input: KnowledgeIngestionInput): Promise<KnowledgeIndexedResource>;
+  indexNote(input: KnowledgeIngestionInput): Promise<KnowledgeIndexedNote>;
 }

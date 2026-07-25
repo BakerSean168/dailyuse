@@ -3,21 +3,20 @@ import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
 import type {
   AIProviderConfigClientDTO,
-  AIProviderConfigSummary,
 } from '../aggregates/ai-provider-config-client';
 import type { TestAIProviderResultDTO } from '../dtos/provider-test-result.dto';
+import { ListAIProviderConfigsResSchema } from './response-schemas';
 
 export const OpenAICompatibleProviderType = 'openai_compatible' as const;
 
-const ProviderBaseSchema = z.object({
+// Residual 683: create request owns the provider base body (no private base schema name dual).
+export const CreateAIProviderConfigSchema = z.object({
   name: z.string().trim().min(1).max(100),
   baseUrl: z.string().trim().url(),
   apiKey: z.string().trim().min(1),
   model: z.string().trim().min(1).max(120),
   isDefault: z.boolean().default(false).optional(),
 });
-
-export const CreateAIProviderConfigSchema = ProviderBaseSchema;
 export type CreateAIProviderConfigReq = z.infer<typeof CreateAIProviderConfigSchema>;
 export type CreateAIProviderConfigRes = AIProviderConfigClientDTO;
 
@@ -32,9 +31,9 @@ export const UpdateAIProviderConfigSchema = z.object({
 export type UpdateAIProviderConfigReq = z.infer<typeof UpdateAIProviderConfigSchema>;
 export type UpdateAIProviderConfigRes = AIProviderConfigClientDTO;
 
-export interface ListAIProviderConfigsRes {
-  data: AIProviderConfigSummary[];
-}
+// Residual 695: list response dual body retired — OpenAPI + transport use ListAIProviderConfigsResSchema.
+// Full client DTOs — list payload matches server listProviders (no Summary dual-track).
+export type ListAIProviderConfigsRes = z.infer<typeof ListAIProviderConfigsResSchema>;
 
 export type GetAIProviderConfigReq = void;
 export type GetAIProviderConfigRes = AIProviderConfigClientDTO;
@@ -42,7 +41,6 @@ export type GetAIProviderConfigRes = AIProviderConfigClientDTO;
 export type DeleteAIProviderConfigReq = void;
 export type DeleteAIProviderConfigRes = void;
 export type RefreshAIProviderModelsReq = void;
-export type RefreshAIProviderModelsRes = AIProviderConfigClientDTO;
 
 export const TestAIProviderSchema = z
   .object({

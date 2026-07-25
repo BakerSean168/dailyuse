@@ -1,3 +1,4 @@
+// Residual 893: domain/VO OAuthProvider catalog keep-boundary (≠ API transport provider enum members).
 export const OAuthProvider = {
   Google: 'Google',
   Facebook: 'Facebook',

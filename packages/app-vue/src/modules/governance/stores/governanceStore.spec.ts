@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { RuleClientDTO } from '../types';
+import type { RuleClientDTO } from '@dailyuse/contracts/governance';
 import { createTestPinia } from '@dailyuse/test-utils';
 import { useGovernanceStore } from './governance-store';
 

@@ -28,12 +28,9 @@ export interface IFocusSessionRepository {
   save(session: FocusSession): Promise<void>;
 
   /**
-   * 通过 ID 查找聚合根
-   *
-   * @param id - 会话 ID
-   * @returns 聚合根实例，不存在则返回 null
+   * 通过 ID + identity 查找聚合根（唯一读路径）
    */
-  findById(id: string): Promise<FocusSession | null>;
+  findByIdForIdentity(identityId: string, id: string): Promise<FocusSession | null>;
 
   /**
    * 查找用户的活跃会话
@@ -71,13 +68,15 @@ export interface IFocusSessionRepository {
   ): Promise<FocusSession[]>;
 
   /**
-   * 通过目标 ID 查找所有会话
+   * 通过目标 ID 查找所有会话（identity-scoped）
    *
+   * @param identityId - 用户身份 ID
    * @param goalId - 目标 ID
    * @param options - 查询选项
    * @returns 会话列表
    */
   findByGoalId(
+    identityId: string,
     goalId: string,
     options?: {
       status?: FocusSessionStatus[];
@@ -87,18 +86,20 @@ export interface IFocusSessionRepository {
   ): Promise<FocusSession[]>;
 
   /**
-   * 删除会话（物理删除）
+   * 删除会话（物理删除，必须同时匹配 identity）
    *
+   * @param identityId - 用户身份 ID
    * @param id - 会话 ID
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
-   * 检查会话是否存在
+   * 检查会话是否存在（identity-scoped）
    *
+   * @param identityId - 用户身份 ID
    * @param id - 会话 ID
    */
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 
   /**
    * 统计用户的会话数量

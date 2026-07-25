@@ -5,7 +5,7 @@ tags:
   - goal
 description: 目标模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 目标模块文件索引
@@ -64,8 +64,8 @@ updated: 2026-06-02T00:00:00
 | [`packages/goal/src/api/routes/goal-record.routes.ts`](../../../packages/goal/src/api/routes/goal-record.routes.ts) | 目标记录相关 HTTP routes |
 | [`packages/goal/src/api/routes/goal-folder.routes.ts`](../../../packages/goal/src/api/routes/goal-folder.routes.ts) | 目标文件夹相关 HTTP routes |
 | [`packages/goal/src/api/routes/focus-mode.routes.ts`](../../../packages/goal/src/api/routes/focus-mode.routes.ts) | 专注模式相关 HTTP routes |
-| [`packages/goal/src/controllers/goal.controller.ts`](../../../packages/goal/src/controllers/goal.controller.ts) | 目标控制器 |
-| [`packages/goal/src/controllers/goal-folder.controller.ts`](../../../packages/goal/src/controllers/goal-folder.controller.ts) | 目标文件夹控制器 |
+| [`packages/goal/src/server/transport/goal.controller.ts`](../../../packages/goal/src/server/transport/goal.controller.ts) | 目标控制器 |
+| [`packages/goal/src/server/transport/goal-folder.controller.ts`](../../../packages/goal/src/server/transport/goal-folder.controller.ts) | 目标文件夹控制器 |
 | [`packages/goal/src/infrastructure-client/adapters/http/goal-http.adapter.ts`](../../../packages/goal/src/infrastructure-client/adapters/http/goal-http.adapter.ts) | 客户端 HTTP 目标适配器 |
 | [`packages/goal/src/infrastructure-client/adapters/ipc/goal-ipc.adapter.ts`](../../../packages/goal/src/infrastructure-client/adapters/ipc/goal-ipc.adapter.ts) | 客户端 IPC 目标适配器 |
 
@@ -74,20 +74,20 @@ updated: 2026-06-02T00:00:00
 | 文件 | 说明 |
 | --- | --- |
 | [`packages/goal/src/index.ts`](../../../packages/goal/src/index.ts) | `@dailyuse/goal` public surface 和模块分层说明 |
-| [`packages/goal/src/infrastructure-server/goal.module.ts`](../../../packages/goal/src/infrastructure-server/goal.module.ts) | 服务端目标模块组合根 |
-| [`packages/goal/src/domain-server/aggregates/goal.ts`](../../../packages/goal/src/domain-server/aggregates/goal.ts) | Goal 聚合 |
-| [`packages/goal/src/domain-server/aggregates/goal-folder.ts`](../../../packages/goal/src/domain-server/aggregates/goal-folder.ts) | Goal Folder 聚合 |
-| [`packages/goal/src/domain-server/aggregates/goal-record.ts`](../../../packages/goal/src/domain-server/aggregates/goal-record.ts) | Goal Record 聚合 |
-| [`packages/goal/src/domain-server/aggregates/focus-session.ts`](../../../packages/goal/src/domain-server/aggregates/focus-session.ts) | Focus Session 聚合 |
-| [`packages/goal/src/domain-server/entities/key-result.ts`](../../../packages/goal/src/domain-server/entities/key-result.ts) | Key Result 领域实体 |
-| [`packages/goal/src/domain-server/entities/goal-review.ts`](../../../packages/goal/src/domain-server/entities/goal-review.ts) | Goal Review 领域实体 |
-| [`packages/goal/src/application-server/use-cases/commands/create-goal.use-case.ts`](../../../packages/goal/src/application-server/use-cases/commands/create-goal.use-case.ts) | 创建目标用例 |
-| [`packages/goal/src/application-server/use-cases/commands/add-goal-key-result.use-case.ts`](../../../packages/goal/src/application-server/use-cases/commands/add-goal-key-result.use-case.ts) | 添加关键结果用例 |
-| [`packages/goal/src/application-server/use-cases/commands/add-goal-review.use-case.ts`](../../../packages/goal/src/application-server/use-cases/commands/add-goal-review.use-case.ts) | 添加目标复盘用例 |
-| [`packages/goal/src/application-server/use-cases/queries/get-goal-aggregate.use-case.ts`](../../../packages/goal/src/application-server/use-cases/queries/get-goal-aggregate.use-case.ts) | 获取目标聚合查询 |
-| [`packages/goal/src/application-server/use-cases/queries/get-goal-progress-breakdown.use-case.ts`](../../../packages/goal/src/application-server/use-cases/queries/get-goal-progress-breakdown.use-case.ts) | 目标进度拆解查询 |
-| [`packages/goal/src/infrastructure-server/adapters/prisma/goal-prisma.repository.ts`](../../../packages/goal/src/infrastructure-server/adapters/prisma/goal-prisma.repository.ts) | Prisma 目标仓储 |
-| [`packages/goal/src/infrastructure-server/adapters/powersync/goal-powersync.repository.ts`](../../../packages/goal/src/infrastructure-server/adapters/powersync/goal-powersync.repository.ts) | PowerSync 目标仓储 |
+| [`packages/goal/src/server/infrastructure/goal.module.ts`](../../../packages/goal/src/server/infrastructure/goal.module.ts) | 服务端目标模块组合根 |
+| [`packages/goal/src/server/domain/aggregates/goal.ts`](../../../packages/goal/src/server/domain/aggregates/goal.ts) | Goal 聚合 |
+| [`packages/goal/src/server/domain/aggregates/goal-folder.ts`](../../../packages/goal/src/server/domain/aggregates/goal-folder.ts) | Goal Folder 聚合 |
+| [`packages/goal/src/server/domain/aggregates/goal-record.ts`](../../../packages/goal/src/server/domain/aggregates/goal-record.ts) | Goal Record 聚合 |
+| [`packages/goal/src/server/domain/aggregates/focus-session.ts`](../../../packages/goal/src/server/domain/aggregates/focus-session.ts) | Focus Session 聚合 |
+| [`packages/goal/src/server/domain/entities/key-result.ts`](../../../packages/goal/src/server/domain/entities/key-result.ts) | Key Result 领域实体 |
+| [`packages/goal/src/server/domain/entities/goal-review.ts`](../../../packages/goal/src/server/domain/entities/goal-review.ts) | Goal Review 领域实体 |
+| [`packages/goal/src/server/application/use-cases/commands/create-goal.use-case.ts`](../../../packages/goal/src/server/application/use-cases/commands/create-goal.use-case.ts) | 创建目标用例 |
+| [`packages/goal/src/server/application/use-cases/commands/add-goal-key-result.use-case.ts`](../../../packages/goal/src/server/application/use-cases/commands/add-goal-key-result.use-case.ts) | 添加关键结果用例 |
+| [`packages/goal/src/server/application/use-cases/commands/add-goal-review.use-case.ts`](../../../packages/goal/src/server/application/use-cases/commands/add-goal-review.use-case.ts) | 添加目标复盘用例 |
+| [`packages/goal/src/server/application/use-cases/queries/get-goal-aggregate.use-case.ts`](../../../packages/goal/src/server/application/use-cases/queries/get-goal-aggregate.use-case.ts) | 获取目标聚合查询 |
+| [`packages/goal/src/server/application/use-cases/queries/get-goal-progress-breakdown.use-case.ts`](../../../packages/goal/src/server/application/use-cases/queries/get-goal-progress-breakdown.use-case.ts) | 目标进度拆解查询 |
+| [`packages/goal/src/server/infrastructure/adapters/prisma/goal-prisma.repository.ts`](../../../packages/goal/src/server/infrastructure/adapters/prisma/goal-prisma.repository.ts) | Prisma 目标仓储 |
+| [`packages/goal/src/server/infrastructure/adapters/powersync/goal-powersync.repository.ts`](../../../packages/goal/src/server/infrastructure/adapters/powersync/goal-powersync.repository.ts) | PowerSync 目标仓储 |
 
 ## Contracts 与数据结构
 
@@ -113,7 +113,7 @@ updated: 2026-06-02T00:00:00
 | [`packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.ts`](../../../packages/app-vue/src/modules/ai/composables/useAIGoalWorkflow.ts) | AI Goal workflow 组合函数 |
 | [`packages/app-vue/src/modules/ai/composables/goalDraftHelpers.ts`](../../../packages/app-vue/src/modules/ai/composables/goalDraftHelpers.ts) | Goal draft 辅助逻辑 |
 | [`packages/app-vue/src/modules/ai/composables/goalAutomationHelpers.ts`](../../../packages/app-vue/src/modules/ai/composables/goalAutomationHelpers.ts) | Goal automation 辅助逻辑 |
-| [`packages/ai/src/application-server/use-cases/commands/generate-ai-goal.use-case.ts`](../../../packages/ai/src/application-server/use-cases/commands/generate-ai-goal.use-case.ts) | AI 目标生成与 automation 用例 |
+| [`packages/ai/src/server/application/use-cases/commands/generate-ai-goal.use-case.ts`](../../../packages/ai/src/server/application/use-cases/commands/generate-ai-goal.use-case.ts) | AI 目标生成与 automation 用例 |
 | [`apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts`](../../../apps/api/src/modules/ai/backend-automation-tool-executor.adapter.ts) | API 侧 automation tool executor |
 | [`apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts`](../../../apps/desktop/src/main/modules/ai/desktop-automation-tool-executor.adapter.ts) | Desktop 侧 automation tool executor |
 
@@ -121,11 +121,11 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/goal/src/application-server/use-cases/commands/__tests__/create-goal.test.ts`](../../../packages/goal/src/application-server/use-cases/commands/__tests__/create-goal.test.ts) | 创建目标用例测试 |
-| [`packages/goal/src/application-server/use-cases/commands/__tests__/add-goal-key-result.test.ts`](../../../packages/goal/src/application-server/use-cases/commands/__tests__/add-goal-key-result.test.ts) | 添加关键结果用例测试 |
-| [`packages/goal/src/application-server/use-cases/commands/__tests__/add-goal-review.test.ts`](../../../packages/goal/src/application-server/use-cases/commands/__tests__/add-goal-review.test.ts) | 添加复盘用例测试 |
-| [`packages/goal/src/application-server/use-cases/queries/__tests__/get-goal-aggregate.test.ts`](../../../packages/goal/src/application-server/use-cases/queries/__tests__/get-goal-aggregate.test.ts) | 目标聚合查询测试 |
-| [`packages/goal/src/application-server/use-cases/queries/__tests__/get-goal-progress-breakdown.test.ts`](../../../packages/goal/src/application-server/use-cases/queries/__tests__/get-goal-progress-breakdown.test.ts) | 目标进度拆解测试 |
+| [`packages/goal/src/server/application/use-cases/commands/__tests__/create-goal.test.ts`](../../../packages/goal/src/server/application/use-cases/commands/__tests__/create-goal.test.ts) | 创建目标用例测试 |
+| [`packages/goal/src/server/application/use-cases/commands/__tests__/add-goal-key-result.test.ts`](../../../packages/goal/src/server/application/use-cases/commands/__tests__/add-goal-key-result.test.ts) | 添加关键结果用例测试 |
+| [`packages/goal/src/server/application/use-cases/commands/__tests__/add-goal-review.test.ts`](../../../packages/goal/src/server/application/use-cases/commands/__tests__/add-goal-review.test.ts) | 添加复盘用例测试 |
+| [`packages/goal/src/server/application/use-cases/queries/__tests__/get-goal-aggregate.test.ts`](../../../packages/goal/src/server/application/use-cases/queries/__tests__/get-goal-aggregate.test.ts) | 目标聚合查询测试 |
+| [`packages/goal/src/server/application/use-cases/queries/__tests__/get-goal-progress-breakdown.test.ts`](../../../packages/goal/src/server/application/use-cases/queries/__tests__/get-goal-progress-breakdown.test.ts) | 目标进度拆解测试 |
 | [`packages/goal/src/api/routes/goal.routes.spec.ts`](../../../packages/goal/src/api/routes/goal.routes.spec.ts) | 目标 routes 测试 |
 | [`packages/app-vue/src/modules/goal/stores/goalStore.spec.ts`](../../../packages/app-vue/src/modules/goal/stores/goalStore.spec.ts) | 目标 store 测试 |
 | [`packages/app-vue/src/modules/goal/index.spec.ts`](../../../packages/app-vue/src/modules/goal/index.spec.ts) | 前端目标模块入口测试 |

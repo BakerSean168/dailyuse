@@ -87,6 +87,9 @@ export function safeParseJSON<T = unknown>(jsonString: string, fallback: T): T {
 
 /**
  * 格式化文件大小
+ * Residual 1145 keep-boundary: utils formatFileSize — zero → "0 Bytes"; unit ladder
+ * Bytes/KB/MB/GB/TB; toFixed(2). Soft residual 1145: app-react file-utils uses "0 B" +
+ * B/KB/MB/GB + toFixed(1) (no force-merge).
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
@@ -139,6 +142,9 @@ export function createQueryString(params: Record<string, unknown>): string {
 }
 
 /**
+ * Residual 1192: sole delay helper (setTimeout → Promise).
+ * Duals in desktop IPC test-helpers and web E2E runner retired onto this sole.
+ *
  * 延迟函数（用于重试机制）
  */
 export function delay(ms: number): Promise<void> {

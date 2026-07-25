@@ -4,21 +4,13 @@ import type {
   ReminderTrigger,
 } from '@dailyuse/contracts/goal';
 import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
-import { SourceModule, TaskPriority, Timezone } from '@dailyuse/contracts/schedule';
+import { SourceModule, Timezone, mapImportanceToTaskPriority } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/schedule';
 import type { IGoalRepository } from '../domain';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function mapPriority(goal: GoalServerDTO): (typeof TaskPriority)[keyof typeof TaskPriority] {
-  if (goal.importance === 'Vital') {
-    return TaskPriority.Urgent;
-  }
-  if (goal.importance === 'Important') {
-    return TaskPriority.High;
-  }
-  return TaskPriority.Normal;
-}
+/** Soft residual 1168: dual mapPriority retired onto contracts mapImportanceToTaskPriority sole. */
 
 function calculateTriggerAt(goal: GoalServerDTO, trigger: ReminderTrigger): number | null {
   if (trigger.type === ReminderTriggerType.RemainingDays) {
@@ -38,6 +30,11 @@ function calculateTriggerAt(goal: GoalServerDTO, trigger: ReminderTrigger): numb
   return null;
 }
 
+/**
+ * Residual 1177 keep-boundary: goal schedule-projection buildTaskName — Goal + ReminderTrigger domain.
+ * RemainingDays / TimeProgressPercentage wording; not task template Relative/Absolute naming.
+ * Soft residual 1177: task schedule-projection buildTaskName stays template+trigger domain-specific (no force-merge).
+ */
 function buildTaskName(goal: GoalServerDTO, trigger: ReminderTrigger): string {
   if (trigger.type === ReminderTriggerType.RemainingDays) {
     return `${goal.name} · 剩余 ${trigger.value} 天提醒`;
@@ -65,7 +62,7 @@ function shouldScheduleGoal(goal: GoalServerDTO): boolean {
 
 export interface GoalScheduleProjectionSelection {
   readonly sourceModule: SourceModule;
-  readonly identityId?: string;
+  readonly identityId: string;
   readonly sourceEntityId?: string;
   matches(task: ScheduleTask): boolean;
 }
@@ -76,13 +73,13 @@ export interface GoalScheduleProjectionPlan {
 }
 
 export interface GoalScheduleProjectionSource {
-  buildGoalPlan(goalId: string, identityId?: string): Promise<GoalScheduleProjectionPlan>;
-  buildGoalDeletionSelection(goalId: string, identityId?: string): GoalScheduleProjectionSelection;
+  buildGoalPlan(goalId: string, identityId: string): Promise<GoalScheduleProjectionPlan>;
+  buildGoalDeletionSelection(goalId: string, identityId: string): GoalScheduleProjectionSelection;
 }
 
 export interface GoalScheduleProjectionHandlers {
-  upsertGoal(goalId: string, identityId?: string): Promise<void>;
-  deleteGoal(goalId: string, identityId?: string): Promise<void>;
+  upsertGoal(goalId: string, identityId: string): Promise<void>;
+  deleteGoal(goalId: string, identityId: string): Promise<void>;
 }
 
 export type GoalScheduleProjectionEventMap = Pick<
@@ -98,7 +95,7 @@ export type GoalScheduleProjectionEventMap = Pick<
 
 function selectGoalProjection(
   goalId: string,
-  identityId?: string,
+  identityId: string,
 ): GoalScheduleProjectionSelection {
   return {
     sourceModule: SourceModule.Goal,
@@ -115,7 +112,9 @@ export function createGoalScheduleProjectionSource(deps: {
 }): GoalScheduleProjectionSource {
   return {
     async buildGoalPlan(goalId, identityId) {
-      const goal = await deps.goalRepository.findById(goalId, { includeChildren: true });
+      const goal = await deps.goalRepository.findByIdForIdentity(identityId, goalId, {
+        includeChildren: true,
+      });
       if (!goal) {
         return {
           selection: selectGoalProjection(goalId, identityId),
@@ -163,7 +162,7 @@ export function createGoalScheduleProjectionSource(deps: {
                 triggerAt,
               },
               tags: ['goal', 'goal-reminder', `trigger:${trigger.type}`],
-              priority: mapPriority(goalDTO),
+              priority: mapImportanceToTaskPriority(goalDTO.importance),
               timeout: null,
             },
           });

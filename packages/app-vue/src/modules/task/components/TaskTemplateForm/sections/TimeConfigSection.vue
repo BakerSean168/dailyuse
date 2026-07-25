@@ -55,7 +55,7 @@
             disabled
           >
             <CalendarIcon class="mr-2 h-4 w-4" />
-            {{ startDate ? formatDisplayDate(startDate) : t('task.timeConfig.startDate') }}
+            {{ startDate ? formatDisplayDate(startDate, locale) : t('task.timeConfig.startDate') }}
           </Button>
           <Popover v-else>
             <PopoverTrigger as-child>
@@ -65,13 +65,13 @@
                 :class="{ 'text-muted-foreground': !startDate }"
               >
                 <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ startDate ? formatDisplayDate(startDate) : t('task.timeConfig.startDate') }}
+                {{ startDate ? formatDisplayDate(startDate, locale) : t('task.timeConfig.startDate') }}
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                :selected="parseInputToDate(startDate)"
+                :selected="parseToDate(startDate)"
                 @update:model-value="
                   (d: Date | undefined) =>
                     handleCalendarSelect(d, (v) => {
@@ -239,8 +239,15 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
+import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
+import { parseToDate } from '../../../../../shared/utils/parse-to-date';
+import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';
+import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
+import { padTwoDigits } from '../../../../../shared/utils/pad-two-digits';
 
 const { t, locale } = useI18n();
+
+// Residual 1249 / Residual 1252: formatDisplayDate dual retired onto shared sole; formatDateToYMD dual retired onto shared sole (Residual 1252); parseInputToDate dual retired onto parseToDate sole (Residual 1255); handleCalendarSelect dual retired onto shared sole (Residual 1258).
 
 const props = withDefaults(
   defineProps<{
@@ -260,8 +267,9 @@ const emit = defineEmits<{
 }>();
 
 // ── Time picker options ────────────────────────────────────────────────
-const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+/** Residual 1312: hour/minute option pad dual retired onto padTwoDigits sole. */
+const hourOptions = Array.from({ length: 24 }, (_, i) => padTwoDigits(i));
+const minuteOptions = Array.from({ length: 60 }, (_, i) => padTwoDigits(i));
 
 // ── Form data ──────────────────────────────────────────────────────────
 const timeType = ref<TaskTimeType>(TaskTimeType.AllDay);
@@ -293,42 +301,12 @@ const timeRangeEndMinute = ref<string>('00');
 // ── Helpers ────────────────────────────────────────────────────────────
 
 /** Format a YYYY-MM-DD string for display */
-function formatDisplayDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 /** Convert a YYYY-MM-DD string to a Date for Calendar :selected */
-function parseInputToDate(dateStr: string): Date | undefined {
-  if (!dateStr) return undefined;
-  return new Date(dateStr + 'T00:00:00');
-}
-
 /** Handle Calendar selection — works with both Date and radix DateValue objects */
-function handleCalendarSelect(date: unknown, setter: (v: string) => void) {
-  if (date instanceof Date) {
-    setter(formatDateToYMD(date));
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    setter(formatDateToYMD((date as { toDate: () => Date }).toDate()));
-  } else {
-    setter('');
-  }
-}
-
-function formatDateToYMD(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
 /**
- * 格式化日期为 input[type=date] 格式
+ * Residual 1210 keep-boundary: app-vue task formatDateToInput — epoch ms → local YMD.
+ * Task time-config form helper; timestamp number input (not Date / not date-fns).
+ * Soft residual 1210: utils formatDateToInput is Date + date-fns (no force-merge).
  */
 const formatDateToInput = (timestamp: number): string => {
   const date = new Date(timestamp);
@@ -336,7 +314,9 @@ const formatDateToInput = (timestamp: number): string => {
 };
 
 /**
- * 解析日期字符串为时间戳
+ * Residual 1225 keep-boundary: app-vue task parseDateInput — YMD string → epoch ms (no trim/NaN guard).
+ * Task time-config form helper; falsy empty → null; Date(dateStr+'T00:00:00').getTime().
+ * Soft residual 1225: app-react GoalEditor trim + Date.parse + isNaN→null differ (no force-merge).
  */
 const parseDateInput = (dateStr: string): number | null => {
   if (!dateStr) return null;
@@ -363,13 +343,14 @@ function combineTimeParts(hour: string, minute: string): number {
 /**
  * Split minute-of-day into hour / minute parts
  */
+/** Residual 1312: minute-of-day split pad dual retired onto padTwoDigits sole. */
 function splitMinutes(minutes: number): { hour: string; minute: string } {
   const normalized = Number.isFinite(minutes) ? Math.max(0, Math.min(1439, minutes)) : 0;
   const h = Math.floor(normalized / 60);
   const m = normalized % 60;
   return {
-    hour: String(h).padStart(2, '0'),
-    minute: String(m).padStart(2, '0'),
+    hour: padTwoDigits(h),
+    minute: padTwoDigits(m),
   };
 }
 

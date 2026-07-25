@@ -11,7 +11,7 @@
  *
  * Follows the governance reference pattern:
  * 1. Composition Root via `createAIModule(deps)`
- * 2. Transport handlers via `createAITransportHandlers(api)`
+ * 2. Controllers wired to `aiModule.api` (ApplicationPort single track)
  * 3. Route registration
  * + `destroy()` for cleanup
  */
@@ -49,6 +49,7 @@ import {
   registerAIChatRoutes,
   registerAIKnowledgeQueryRoutes,
   registerAIKnowledgeNoteRoutes,
+  registerAIAssistantRoutes,
 } from './routes';
 import { AICapabilitiesController } from '../server/transport/ai-capabilities.controller';
 import { AIAgentCheckpointController } from '../server/transport/ai-agent-checkpoint.controller';
@@ -61,13 +62,14 @@ import { AIProviderConfigController } from '../server/transport/ai-provider-conf
 import { AIChatController } from '../server/transport/ai-chat.controller';
 import { AIKnowledgeQueryController } from '../server/transport/ai-knowledge-query.controller';
 import { AIKnowledgeNoteController } from '../server/transport/ai-knowledge-note.controller';
+import { AIAssistantFacadeController } from '../server/transport/ai-assistant-facade.controller';
 import type {
   IAnalyticsReadPort,
   IAIAutomationToolExecutorPort,
   IKnowledgeNotePersistencePort,
+  IKnowledgeIndexStatusPort,
   IKnowledgeSourcePort,
 } from '../ports';
-import { createAITransportHandlers } from '../server/transport';
 import { getAIServiceRuntimeConfig } from '../shared/config/env';
 
 /**
@@ -88,21 +90,21 @@ let activeAIModule: AIModuleInstance | null = null;
  * Factory that creates an AI API module definition.
  * 创建 AI API 模块定义的工厂函数。
  *
- * External collaborators (knowledge-note persistence, subpath resolver) are
+ * External collaborators (such as knowledge-note persistence) are
  * injected here because they come from the host application, not from the AI
  * module's own domain. This mirrors how the governance module receives its
  * runtime contributions.
  *
- * 外部协作者（知识笔记持久化、子路径解析器）在此注入，因为它们
+ * 外部协作者（如知识笔记持久化）在此注入，因为它们
  * 来自宿主应用，而非 AI 模块自身的领域。这与 governance 模块
  * 接收运行时贡献的方式一致。
  */
 export function createAIApiModule(options: {
   createKnowledgeNotePersistence(context: AIApiModuleContext): IKnowledgeNotePersistencePort;
   createKnowledgeSourcePort(context: AIApiModuleContext): IKnowledgeSourcePort;
+  createKnowledgeIndexStatusPort?(context: AIApiModuleContext): IKnowledgeIndexStatusPort;
   createAnalyticsReadPort(context: AIApiModuleContext): IAnalyticsReadPort;
   createAutomationToolExecutor(context: AIApiModuleContext): IAIAutomationToolExecutorPort;
-  getKnowledgeNoteSubpath(identityId: string, context: AIApiModuleContext): Promise<string>;
 }): AIApiModuleDef {
   return {
     name: 'AI',
@@ -150,13 +152,12 @@ export function createAIApiModule(options: {
         evaluationReportPort: new AIEvaluationReportFileAdapter(),
         knowledgeNotePersistence: options.createKnowledgeNotePersistence(context),
         knowledgeSourcePort: options.createKnowledgeSourcePort(context),
+        knowledgeIndexStatusPort: options.createKnowledgeIndexStatusPort?.(context),
         analyticsReadPort: options.createAnalyticsReadPort(context),
-        getKnowledgeNoteSubpath: (identityId: string) =>
-          options.getKnowledgeNoteSubpath(identityId, context),
       });
       activeAIModule = aiModule;
       aiModule.start();
-      const handlers = createAITransportHandlers(aiModule.api);
+      const handlers = aiModule.api;
 
       // ---------------------------------------------------------------
       // 2. Controllers — wired to the module's ApplicationPort (api)
@@ -206,6 +207,11 @@ export function createAIApiModule(options: {
         },
       );
 
+      // Residual 345: AssistantFacade Host dispatch (identity from auth only).
+      const assistantController = new AIAssistantFacadeController({
+        dispatchAssistant: handlers.dispatchAssistant,
+      });
+
       // Routes always register — unavailable capabilities return SERVICE_UNAVAILABLE
       // from the runtime service surface.
       // 路由始终注册 — 不可用的能力由运行时服务层返回 SERVICE_UNAVAILABLE。
@@ -253,6 +259,7 @@ export function createAIApiModule(options: {
         context.openApiRegistry,
       );
       const chatRoutes = registerAIChatRoutes(chatController, middleware, context.openApiRegistry);
+      const assistantRoutes = registerAIAssistantRoutes(assistantController, middleware);
       const knowledgeQueryRoutes = registerAIKnowledgeQueryRoutes(
         knowledgeQueryController,
         middleware,
@@ -289,6 +296,7 @@ export function createAIApiModule(options: {
       router.use('/ai', capabilityRoutes);
       router.use('/ai/agents', agentRuntimeRoutes);
       router.use('/ai/chat', chatRoutes);
+      router.use('/ai/assistant', assistantRoutes);
       router.use('/ai/knowledge', knowledgeQueryRoutes);
       router.use('/ai/knowledge-notes', knowledgeNoteRoutes);
       router.use('/ai/analytics', analyticsQueryRoutes);

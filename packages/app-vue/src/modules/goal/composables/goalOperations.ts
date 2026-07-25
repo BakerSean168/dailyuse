@@ -6,6 +6,11 @@
  *   2. On success → update store
  *   3. On failure → translate error + set store error
  *
+ * Residual 1065 keep-boundary: createGoalErrorHandler is intentionally not
+ * createComposableHandleError. Goal path needs rich structured console logging
+ * (scope + ResultError details/context) and executeGoalOperation orchestration
+ * with optional onError hook — shape mismatch vs shared handleError sole.
+ *
  * @module goal/composables/goalOperations
  */
 

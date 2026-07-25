@@ -11,7 +11,10 @@ import type { GoalClientDTO } from '../aggregates/goal-client';
 import { GoalStatus } from '../value-objects/goal-status';
 import { GoalSystemView } from '../value-objects/goal-system-view';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import { ReminderTriggerType } from '../value-objects/reminder-trigger-type';
+import {
+  GoalReminderConfigDTOSchema,
+  ReminderTriggerSchema,
+} from '../value-objects/goal-reminder-config';
 
 const GoalNameSchema = z
   .string()
@@ -19,16 +22,19 @@ const GoalNameSchema = z
   .min(1, '目标名称不能为空')
   .max(256, '目标名称不能超过 256 字符');
 
-const ReminderTriggerSchema = z.object({
-  type: z.enum(ReminderTriggerType),
-  value: z.number().min(0),
-  enabled: z.boolean(),
+// Residual 753: request reminder-config reuses residual 741 VO schemas.
+// Request-only refinements (value.min(0), triggers.max(10)) without dual bodies.
+const GoalReminderConfigRequestSchema = GoalReminderConfigDTOSchema.extend({
+  triggers: z
+    .array(ReminderTriggerSchema.extend({ value: z.number().min(0) }))
+    .max(10),
 });
 
-const GoalReminderConfigSchema = z.object({
-  enabled: z.boolean(),
-  triggers: z.array(ReminderTriggerSchema).max(10),
+/** Residual 677: shared goalId params for goal-scoped list queries. */
+export const GoalIdParamsSchema = z.object({
+  goalId: brandedId<GoalId>(),
 });
+
 
 // ============================================================================
 // CREATE Goal
@@ -54,7 +60,7 @@ export const CreateGoalSchema = z
     targetDate: z.number().int().optional(),
     folderId: brandedId<GoalFolderId>().optional(),
     parentGoalId: brandedId<GoalId>().optional(),
-    reminderConfig: GoalReminderConfigSchema.nullable().optional(),
+    reminderConfig: GoalReminderConfigRequestSchema.nullable().optional(),
   })
   .strict();
 
@@ -86,7 +92,7 @@ export const UpdateGoalSchema = z
     targetDate: z.number().int().nullable().optional(),
     folderId: brandedId<GoalFolderId>().nullable().optional(),
     parentGoalId: brandedId<GoalId>().nullable().optional(),
-    reminderConfig: GoalReminderConfigSchema.nullable().optional(),
+    reminderConfig: GoalReminderConfigRequestSchema.nullable().optional(),
   })
   .strict();
 
@@ -189,7 +195,6 @@ export const BatchUpdateGoalStatusSchema = z.object({
 });
 
 export type BatchUpdateGoalStatusReq = z.infer<typeof BatchUpdateGoalStatusSchema>;
-export type BatchUpdateGoalStatusRes = GoalClientDTO[];
 
 /**
  * 批量移动目标 Schema
@@ -200,7 +205,6 @@ export const BatchMoveGoalsSchema = z.object({
 });
 
 export type BatchMoveGoalsReq = z.infer<typeof BatchMoveGoalsSchema>;
-export type BatchMoveGoalsRes = GoalClientDTO[];
 
 /**
  * 批量删除目标 Schema
@@ -211,7 +215,6 @@ export const BatchDeleteGoalsSchema = z.object({
 });
 
 export type BatchDeleteGoalsReq = z.infer<typeof BatchDeleteGoalsSchema>;
-export type BatchDeleteGoalsRes = void;
 
 // ============================================================================
 // IMPORT/EXPORT Operations
@@ -238,11 +241,16 @@ export interface ExportGoalsQuery extends ExportGoalFilters {
   identityId: IdentityId;
 }
 
-export interface ExportGoalsRes {
-  data: string | Uint8Array;
-  filename: string;
-  mimeType: string;
-}
+// Residual 791: export goals Res dual retired — sole ResSchema + z.infer.
+export const ExportGoalsResSchema = z.object({
+  data: z.union([
+    z.string(),
+    z.custom<Uint8Array>((val) => val instanceof Uint8Array),
+  ]),
+  filename: z.string(),
+  mimeType: z.string(),
+});
+export type ExportGoalsRes = z.infer<typeof ExportGoalsResSchema>;
 
 /**
  * Public transport DTO for import goals - excludes identityId (current-user operation)
@@ -265,11 +273,17 @@ export interface ImportGoalsCommand extends ImportGoalPayload {
   identityId: IdentityId;
 }
 
-export interface ImportGoalsRes {
-  importedCount: number;
-  skippedCount: number;
-  errors?: Array<{
-    line: number;
-    error: string;
-  }>;
-}
+// Residual 791: import goals Res dual retired — sole ResSchema + z.infer.
+export const ImportGoalsResSchema = z.object({
+  importedCount: z.number(),
+  skippedCount: z.number(),
+  errors: z
+    .array(
+      z.object({
+        line: z.number(),
+        error: z.string(),
+      }),
+    )
+    .optional(),
+});
+export type ImportGoalsRes = z.infer<typeof ImportGoalsResSchema>;

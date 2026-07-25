@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
-import { login, TEST_USER } from '../helpers/testHelpers';
-import { WEB_CONFIG } from '../config';
+import { login } from '../helpers/testHelpers';
+import { WEB_CONFIG, TEST_USERS } from '../config';
 
 test('检查 localStorage 中的 goal-store 数据', async ({ page }) => {
   // 监听浏览器控制台
@@ -15,7 +15,7 @@ test('检查 localStorage 中的 goal-store 数据', async ({ page }) => {
   await page.goto(WEB_CONFIG.BASE_URL);
 
   // 登录
-  await login(page, TEST_USER.username, TEST_USER.password);
+  await login(page, TEST_USERS.MAIN.username, TEST_USERS.MAIN.password);
 
   // 导航到 Goals 页面
   await page.goto(`${WEB_CONFIG.BASE_URL}/goals`);

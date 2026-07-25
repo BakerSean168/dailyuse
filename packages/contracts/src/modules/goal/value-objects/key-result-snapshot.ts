@@ -5,6 +5,8 @@
  * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
  */
 
+import { z } from 'zod';
+import { brandedId } from '../../../primitives';
 import type { KeyResultId } from '../../../primitives';
 
 // ============ Domain Shape (领域层) ============
@@ -21,17 +23,15 @@ export interface KeyResultSnapshot {
   progressPercentage: number;
 }
 
-// ============ Transfer DTO (传输层) ============
+// Residual 737: KeyResultSnapshotDTO dual body retired — OpenAPI + transport use
+// KeyResultSnapshotDTOSchema (semantic type is a z.infer alias).
 
-/**
- * Key Result Snapshot DTO
- * API 传输用
- */
-export interface KeyResultSnapshotDTO {
-  keyResultId: KeyResultId;
-  title: string;
-  targetValue: number;
-  currentValue: number;
-  progressPercentage: number;
-}
+export const KeyResultSnapshotDTOSchema = z.object({
+  keyResultId: brandedId<KeyResultId>(),
+  title: z.string(),
+  targetValue: z.number(),
+  currentValue: z.number(),
+  progressPercentage: z.number(),
+});
 
+export type KeyResultSnapshotDTO = z.infer<typeof KeyResultSnapshotDTOSchema>;

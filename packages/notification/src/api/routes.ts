@@ -6,12 +6,14 @@
  * Routes:
  *   POST   /                — Create notification (CreateNotificationSchema)
  *   GET    /                — List/query notifications (NotificationQuerySchema)
+ *   GET    /preferences     — Get notification preferences (identity-scoped)
+ *   PUT    /preferences     — Update notification preferences (identity-scoped)
  *   GET    /:id             — Get notification by ID
  *   PUT    /:id             — Update notification (UpdateNotificationSchema)
  *   DELETE /:id             — Delete notification
  *   POST   /:id/read        — Mark single notification as read
- *   POST   /batch-read      — Batch mark as read (MarkAsReadBatchSchema)
- *   POST   /batch-delete    — Batch delete (DeleteNotificationsBatchSchema)
+ *   POST   /batch-read      — Batch mark as read (shared id-batch schema)
+ *   POST   /batch-delete    — Batch delete (shared id-batch schema)
  *   POST   /cleanup         — Cleanup old notifications (CleanupOldNotificationsSchema)
  */
 
@@ -24,17 +26,21 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
+// Residual 989: sole parseString/parseNumber (local dual retired).
+// Residual 1021: sole parseBoolean (local dual retired).
+import { parseBoolean, parseNumber, parseString } from '@dailyuse/utils/shared';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { NotificationId } from '@dailyuse/contracts/primitives';
 import {
   CreateNotificationSchema,
   NotificationQuerySchema,
-  MarkAsReadBatchSchema,
-  DeleteNotificationsBatchSchema,
+  NotificationIdsBatchSchema,
   CleanupOldNotificationsSchema,
+  UpdateNotificationPreferenceSchema,
   NotificationResponseSchema,
   NotificationBatchResultSchema,
   UnreadCountResponseSchema,
+  NotificationPreferenceResponseSchema,
 } from '@dailyuse/contracts/notification';
 import type { NotificationApplicationPort } from '../server/application';
 import { NotificationController } from '../server/transport/notification.controller';
@@ -44,32 +50,7 @@ interface PlatformMiddleware {
   requireRole(roles: string[]): RequestHandler;
 }
 
-// ============ Helpers ============
-
-function parseString(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? String(value[0]) : undefined;
-  }
-  if (value === undefined || value === null) {
-    return undefined;
-  }
-  return String(value);
-}
-
-function parseNumber(value: unknown): number | undefined {
-  const raw = parseString(value);
-  if (!raw) return undefined;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function parseBoolean(value: unknown): boolean | undefined {
-  const raw = parseString(value);
-  if (raw === undefined) return undefined;
-  if (raw === 'true' || raw === '1') return true;
-  if (raw === 'false' || raw === '0') return false;
-  return undefined;
-}
+// Residual 1021: parseBoolean elevated to @dailyuse/utils/shared.
 
 // ============ Route Registration ============
 
@@ -144,14 +125,14 @@ export function registerNotificationRoutes(
       method: 'post',
       path: '/batch-read',
       summary: '批量标记为已读',
-      request: { body: { content: { 'application/json': { schema: MarkAsReadBatchSchema } } } },
+      request: { body: { content: { 'application/json': { schema: NotificationIdsBatchSchema } } } },
       responses: {
         200: successResponse(NotificationBatchResultSchema, '操作成功'),
         400: errorResponse('参数错误'),
       },
     },
     [auth],
-    (req) => controller.batchMarkAsRead(req.body),
+    (req, ctx) => controller.batchMarkAsRead(req.body, ctx),
   );
 
   // POST /batch-delete — Batch delete (must be before /:id)
@@ -161,7 +142,7 @@ export function registerNotificationRoutes(
       path: '/batch-delete',
       summary: '批量删除通知',
       request: {
-        body: { content: { 'application/json': { schema: DeleteNotificationsBatchSchema } } },
+        body: { content: { 'application/json': { schema: NotificationIdsBatchSchema } } },
       },
       responses: {
         200: successResponse(NotificationBatchResultSchema, '删除成功'),
@@ -169,7 +150,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.batchDelete(req.body),
+    (req, ctx) => controller.batchDelete(req.body, ctx),
   );
 
   // POST /cleanup — Cleanup old notifications (must be before /:id)
@@ -218,6 +199,39 @@ export function registerNotificationRoutes(
     (_req, ctx) => controller.markAllAsRead(ctx.identityId),
   );
 
+
+  // GET /preferences — must register before /:id (residual 196)
+  r.route(
+    {
+      method: 'get',
+      path: '/preferences',
+      summary: '获取通知偏好',
+      responses: {
+        200: successResponse(NotificationPreferenceResponseSchema, '获取成功'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.getPreferences(ctx),
+  );
+
+  // PUT /preferences
+  r.route(
+    {
+      method: 'put',
+      path: '/preferences',
+      summary: '更新通知偏好',
+      request: {
+        body: { content: { 'application/json': { schema: UpdateNotificationPreferenceSchema } } },
+      },
+      responses: {
+        200: successResponse(NotificationPreferenceResponseSchema, '更新成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.updatePreferences(req.body, ctx),
+  );
+
   // GET /:id — Get notification by ID
   r.route(
     {
@@ -231,7 +245,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id),
+    (req, ctx) => controller.get(req.params!.id, ctx),
   );
 
   // DELETE /:id — Delete notification
@@ -247,7 +261,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.delete(req.params!.id),
+    (req, ctx) => controller.delete(req.params!.id, ctx),
   );
 
   // PATCH /:id/read — Mark single notification as read
@@ -263,7 +277,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.markAsRead(req.params!.id),
+    (req, ctx) => controller.markAsRead(req.params!.id, ctx),
   );
 
   return router;

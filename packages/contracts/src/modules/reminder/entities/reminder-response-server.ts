@@ -1,6 +1,9 @@
 /**
  * Reminder Response Entity - Server
  * 提醒响应实体 - 服务端
+ *
+ * Residual 861: ReminderResponseClientDTO dual body retired —
+ * Client is Omit<Server, 'identityId'> (server-only identity scope).
  */
 
 import type { ReminderResponseId, ReminderTemplateId, IdentityId } from '../../../primitives';
@@ -19,27 +22,15 @@ export const ReminderResponseAction = {
 export type ReminderResponseAction =
   (typeof ReminderResponseAction)[keyof typeof ReminderResponseAction];
 
-// ============ DTO 定义 ============
-
-/**
- * Reminder Response Server DTO
- */
+// Residual 861: sole ReminderResponseServerDTO body.
 export interface ReminderResponseServerDTO {
   id: ReminderResponseId;
   reminderTemplateId: ReminderTemplateId;
   identityId: IdentityId;
   action: ReminderResponseAction;
-  responseTime?: number | null; // 响应时间（从发送到响应的秒数，CLICKED/COMPLETED 时有值）
-  timestamp: number; // 响应时间戳 (epoch ms)
+  responseTime?: number | null; // seconds from send to response when CLICKED/COMPLETED
+  timestamp: number; // epoch ms
 }
 
-/**
- * Reminder Response Client DTO
- */
-export interface ReminderResponseClientDTO {
-  id: ReminderResponseId;
-  reminderTemplateId: ReminderTemplateId;
-  action: ReminderResponseAction;
-  responseTime?: number | null;
-  timestamp: number;
-}
+// Residual 861: Client dual retired — public shape without identityId.
+export type ReminderResponseClientDTO = Omit<ReminderResponseServerDTO, 'identityId'>;

@@ -86,6 +86,7 @@ describe('goal projection runtime', () => {
     const scheduleTaskRepository: IScheduleTaskRepository = {
       save: vi.fn(),
       findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       deleteById: vi.fn(),
       findByIdentityId: vi.fn(),
       findBySourceModule: vi.fn(),
@@ -131,7 +132,10 @@ describe('goal projection runtime', () => {
     } as never);
 
     expect(source.buildGoalPlan).toHaveBeenCalledWith('GoalId_goal-1', 'IdentityId_goal-owner');
-    expect(scheduleTaskRepository.deleteBatch).toHaveBeenCalledWith([existingMatchingTask.id]);
+    expect(scheduleTaskRepository.deleteBatch).toHaveBeenCalledWith(
+      existingMatchingTask.identityId,
+      [existingMatchingTask.id],
+    );
     expect(scheduleTaskRepository.saveBatch).toHaveBeenCalledWith([nextTask]);
     expect(scheduleEvents.sent).toEqual([
       {

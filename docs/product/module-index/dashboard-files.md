@@ -5,7 +5,7 @@ tags:
   - dashboard
 description: Dashboard 模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # Dashboard 模块文件索引
@@ -16,7 +16,7 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/app-vue/src/views/DashboardView.vue`](../../../packages/app-vue/src/views/DashboardView.vue) | Dashboard 主页面（统计卡片、趋势图、活动时间线、小组件） |
+| [`packages/app-vue/src/modules/dashboard/components/DashboardStatsStrip.vue`](../../../packages/app-vue/src/modules/dashboard/components/DashboardStatsStrip.vue) | Dashboard 主页面（统计卡片、趋势图、活动时间线、小组件） |
 
 ## 前端状态、组合函数与组件
 
@@ -68,8 +68,6 @@ updated: 2026-06-02T00:00:00
 | --- | --- |
 | [`packages/dashboard/src/__tests__/dashboard-projection.test.ts`](../../../packages/dashboard/src/__tests__/dashboard-projection.test.ts) | 投影函数单元测试 |
 | [`apps/web/e2e/dashboard/dashboard-overview.spec.ts`](../../../apps/web/e2e/dashboard/dashboard-overview.spec.ts) | Web Dashboard 概览 e2e |
-| [`apps/web/e2e/dashboard/dashboard-widgets.spec.ts`](../../../apps/web/e2e/dashboard/dashboard-widgets.spec.ts) | Web Dashboard 小组件 e2e |
-| [`apps/web/e2e/dashboard/dashboard-config-persistence.spec.ts`](../../../apps/web/e2e/dashboard/dashboard-config-persistence.spec.ts) | Web 配置持久化 e2e |
 | [`apps/web/e2e/performance/dashboard-performance.spec.ts`](../../../apps/web/e2e/performance/dashboard-performance.spec.ts) | Web Dashboard 性能 e2e |
 
 ## 需要重点关注的改动风险

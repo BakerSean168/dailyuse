@@ -1,1 +1,1 @@
-export { NotificationController, type NotificationUseCases } from './notification.controller';
+export { NotificationController } from './notification.controller';

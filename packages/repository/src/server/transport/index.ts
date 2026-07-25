@@ -1,1 +1,1 @@
-export { RepositoryController, type RepositoryUseCases } from './repository.controller';
+export { KnowledgeRepositoryConnectionController } from './knowledge-repository-connection.controller';

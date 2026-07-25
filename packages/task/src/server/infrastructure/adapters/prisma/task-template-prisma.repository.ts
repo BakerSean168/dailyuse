@@ -70,16 +70,16 @@ export class TaskTemplatePrismaRepository
     });
   }
 
-  async findById(id: string): Promise<TaskTemplate | null> {
-    const data = await this.db.taskTemplate.findUnique({
-      where: { id },
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskTemplate | null> {
+    const data = await this.db.taskTemplate.findFirst({
+      where: { id, identityId },
     });
     return data ? this.mapToEntity(data) : null;
   }
 
-  async findByIdWithChildren(id: string): Promise<TaskTemplate | null> {
-    const data = await this.db.taskTemplate.findUnique({
-      where: { id },
+  async findByIdWithChildren(identityId: string, id: string): Promise<TaskTemplate | null> {
+    const data = await this.db.taskTemplate.findFirst({
+      where: { id, identityId },
       include: { subtasks: true, instances: true },
     });
     return data ? this.mapToEntity(data) : null;
@@ -116,17 +116,18 @@ export class TaskTemplatePrismaRepository
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findByFolderId(folderId: string): Promise<TaskTemplate[]> {
+  async findByFolderId(identityId: string, folderId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
-      where: { folderId, deletedAt: null },
+      where: { identityId, folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findByGoalId(goalId: string): Promise<TaskTemplate[]> {
+  async findByGoalId(identityId: string, goalId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
       where: {
+        identityId,
         goalBinding: { not: null },
         deletedAt: null,
       },
@@ -173,22 +174,33 @@ export class TaskTemplatePrismaRepository
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.taskTemplate.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const deleted = await this.db.taskTemplate.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Task template not found for the current identity.');
+    }
   }
 
-  async softDelete(id: string): Promise<void> {
-    await this.db.taskTemplate.update({
-      where: { id },
+  async softDelete(identityId: string, id: string): Promise<void> {
+    const result = await this.db.taskTemplate.updateMany({
+      where: { id, identityId },
       data: { deletedAt: new Date() },
     });
+    if (result.count !== 1) {
+      throw new Error('Task template not found for the current identity.');
+    }
   }
 
-  async restore(id: string): Promise<void> {
-    await this.db.taskTemplate.update({
-      where: { id },
+  async restore(identityId: string, id: string): Promise<void> {
+    const result = await this.db.taskTemplate.updateMany({
+      where: { id, identityId },
       data: { deletedAt: null },
     });
+    if (result.count !== 1) {
+      throw new Error('Task template not found for the current identity.');
+    }
   }
 
   async findOneTimeTasks(identityId: string, filters?: TaskFilters): Promise<TaskTemplate[]> {
@@ -236,9 +248,10 @@ export class TaskTemplatePrismaRepository
       .filter((template) => template.isOverdue());
   }
 
-  async findByKeyResultId(keyResultId: string): Promise<TaskTemplate[]> {
+  async findByKeyResultId(identityId: string, keyResultId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
       where: {
+        identityId,
         goalBinding: { not: null },
         deletedAt: null,
       },
@@ -255,9 +268,9 @@ export class TaskTemplatePrismaRepository
       .map((record: PrismaTaskTemplate) => this.mapToEntity(record));
   }
 
-  async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
+  async findSubtasks(identityId: string, parentTaskId: string): Promise<TaskTemplate[]> {
     const data = await this.db.taskTemplate.findMany({
-      where: { parentTaskId, deletedAt: null },
+      where: { identityId, parentTaskId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
     });
     return data.map((record: PrismaTaskTemplate) => this.mapToEntity(record));
@@ -324,9 +337,10 @@ export class TaskTemplatePrismaRepository
     }
   }
 
-  async deleteBatch(ids: string[]): Promise<void> {
+  async deleteBatch(identityId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
     await this.db.taskTemplate.deleteMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
     });
   }
 }

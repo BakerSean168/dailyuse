@@ -43,6 +43,10 @@ async function tryParseJson(response: Response): Promise<unknown> {
   }
 }
 
+/**
+ * Residual 1171 keep-boundary: Result client error readString — dotted path + non-empty string only.
+ * Soft residual 1171: API response-builder readString is single-key and allows empty strings (no force-merge).
+ */
 function readString(value: unknown, path: string): string | undefined {
   const result = readPath(value, path);
   return typeof result === 'string' && result.length > 0 ? result : undefined;

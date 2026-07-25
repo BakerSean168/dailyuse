@@ -9,7 +9,7 @@
  * - 聚合根（Aggregates）：UserSetting
  * - 领域错误（Errors）：SettingValidationError 等
  * - 仓储接口（Repositories）：IUserSettingRepository
- * - 值对象（Value Objects）：SettingId / UIConfig / SyncConfig 等
+ * - 值对象（Value Objects）：SettingId（偏好字段枚举在 contracts Zod schemas）
  *
  * 【依赖规则】
  * ✅ 允许依赖：

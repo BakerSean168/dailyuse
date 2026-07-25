@@ -300,6 +300,7 @@ function formatAgentType(agentType: AgentRun['agentType']) {
     'goal.create': t('aiAssistant.dialogs.agent.typeLabels.goalCreate'),
     'knowledge.qa': t('aiAssistant.dialogs.agent.typeLabels.knowledgeQa'),
     'knowledge.generate': t('aiAssistant.dialogs.agent.typeLabels.knowledgeGenerate'),
+    'task.create': t('aiAssistant.dialogs.agent.typeLabels.taskCreate'),
   };
   return labels[agentType];
 }

@@ -38,12 +38,7 @@ export class ReminderGroupApplicationService {
     groupId: string,
     ctx: ExecutionContext,
   ): Promise<ReminderGroup | null> {
-    const group = await this.reminderGroupRepository.findById(groupId);
-    if (!group || String(group.identityId) !== ctx.identityId) {
-      return null;
-    }
-
-    return group;
+    return this.reminderGroupRepository.findByIdForIdentity(ctx.identityId, groupId);
   }
 
   async createGroup(
@@ -108,7 +103,7 @@ export class ReminderGroupApplicationService {
     });
 
     await this.reminderGroupRepository.save(updated);
-    await this.reminderDomainService.syncTemplatesEffectiveEnabledByGroup(id);
+    await this.reminderDomainService.syncTemplatesEffectiveEnabledByGroup(ctx.identityId, id);
 
     return ok(updated.toClientDTO());
   }
@@ -119,7 +114,7 @@ export class ReminderGroupApplicationService {
       return fail({ code: 'NOT_FOUND', message: 'Group not found' });
     }
 
-    await this.reminderDomainService.deleteGroup(id, false);
+    await this.reminderDomainService.deleteGroup(ctx.identityId, id, false);
     return ok(undefined);
   }
 
@@ -140,7 +135,7 @@ export class ReminderGroupApplicationService {
     }
 
     await this.reminderGroupRepository.save(existing);
-    await this.reminderDomainService.syncTemplatesEffectiveEnabledByGroup(id);
+    await this.reminderDomainService.syncTemplatesEffectiveEnabledByGroup(ctx.identityId, id);
 
     return ok(existing.toClientDTO());
   }
@@ -155,14 +150,13 @@ export class ReminderGroupApplicationService {
       return fail({ code: 'NOT_FOUND', message: 'Group not found' });
     }
 
-    const templates = await this.reminderTemplateRepository.findByGroupId(group.id);
+    const templates = await this.reminderTemplateRepository.findByGroupId(
+      group.id,
+      ctx.identityId,
+    );
     let successCount = 0;
 
     for (const template of templates) {
-      if (String(template.identityId) !== ctx.identityId) {
-        continue;
-      }
-
       if (data.action === 'ENABLE') {
         template.enable();
       } else {
@@ -174,7 +168,7 @@ export class ReminderGroupApplicationService {
       successCount++;
     }
 
-    await this.reminderDomainService.updateGroupStats(group.id);
+    await this.reminderDomainService.updateGroupStats(ctx.identityId, group.id);
 
     return ok({ successCount, failedCount: 0 });
   }
@@ -185,7 +179,7 @@ export class ReminderGroupApplicationService {
       return fail({ code: 'NOT_FOUND', message: 'Group not found' });
     }
 
-    const toggled = await this.reminderDomainService.toggleGroupAndTemplates(group.id);
+    const toggled = await this.reminderDomainService.toggleGroupAndTemplates(ctx.identityId, group.id);
     return ok(toggled.toClientDTO());
   }
 }

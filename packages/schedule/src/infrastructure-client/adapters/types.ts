@@ -7,8 +7,6 @@
  * Types imported from @dailyuse/contracts/schedule.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-
 // Re-export port interfaces from application-client ports
 export type { IScheduleEventApiClient } from '../../application-client/ports/schedule-event-api-client.port';
 export type { IScheduleTaskApiClient } from '../../application-client/ports/schedule-task-api-client.port';
@@ -20,8 +18,6 @@ export type { IScheduleTaskApiClient } from '../../application-client/ports/sche
 
 /**
  * IPC Client interface (Result-returning).
- * Satisfied by ResultIpcClient from @dailyuse/ipc-client at the App level.
+ * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
  */
-export interface IResultIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
-}
+export type { IResultIpcClient } from '@dailyuse/ipc-client';

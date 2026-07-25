@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import {
@@ -10,8 +9,8 @@ import {
 import {
   ExpandKnowledgeSchema,
   QueryKnowledgeSchema,
-  ReindexKnowledgeResultItemSchema,
   ReindexKnowledgeSchema,
+  ReindexKnowledgeResSchema,
   QueryKnowledgeResSchema,
   ExpandKnowledgeResSchema,
 } from '@dailyuse/contracts/ai';
@@ -73,15 +72,7 @@ export function registerAIKnowledgeQueryRoutes(
       summary: '重建知识索引',
       request: { body: { content: { 'application/json': { schema: ReindexKnowledgeSchema } } } },
       responses: {
-        200: successResponse(
-          z.object({
-            indexedCount: z.number().int().nonnegative(),
-            reusedCount: z.number().int().nonnegative(),
-            failedCount: z.number().int().nonnegative(),
-            results: z.array(ReindexKnowledgeResultItemSchema),
-          }),
-          '重建成功',
-        ),
+        200: successResponse(ReindexKnowledgeResSchema, '重建成功'),
         400: errorResponse('参数错误'),
       },
     },

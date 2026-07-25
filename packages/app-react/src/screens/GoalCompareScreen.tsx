@@ -54,6 +54,11 @@ export function GoalCompareScreen() {
     );
   }
 
+  /**
+   * Residual 1219 keep-boundary: app-react getImportanceLabel — English identity labels.
+   * Goal compare screen; Vital-scale keys map to themselves (no i18n t()).
+   * Soft residual 1219: app-vue goal i18n map + KR high/medium/low differ (no force-merge).
+   */
   function getImportanceLabel(importance: string): string {
     const labels: Record<string, string> = {
       Vital: 'Vital',
@@ -65,6 +70,11 @@ export function GoalCompareScreen() {
     return labels[importance] ?? importance;
   }
 
+  /**
+   * Residual 1222 keep-boundary: app-react getStatusLabel — English identity labels.
+   * Goal compare screen; Draft/Active/Completed/Archived map to themselves (no i18n t()).
+   * Soft residual 1222: app-vue goal i18n map + schedule taskStatus differ (no force-merge).
+   */
   function getStatusLabel(status: GoalStatus): string {
     const labels: Record<string, string> = {
       Draft: 'Draft',
@@ -75,6 +85,11 @@ export function GoalCompareScreen() {
     return labels[status] ?? status;
   }
 
+  /**
+   * Residual 1240 keep-boundary: app-react goal formatDate — toLocaleDateString + English '-'.
+   * Goal compare screen; falsy → '-'; no i18n t() / no locale argument.
+   * Soft residual 1240: vue goal i18n notSet + other empty labels differ (no force-merge).
+   */
   function formatDate(timestamp: number | null): string {
     if (!timestamp) return '-';
     return new Date(timestamp).toLocaleDateString();

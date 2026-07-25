@@ -22,6 +22,8 @@ import type { RegisterByEmailReq, AuthResponseDTO } from '@dailyuse/contracts/au
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import { UserAlreadyExistsError } from '../../../domain/services/registration';
 import { createLogger } from '@dailyuse/utils/logger';
+// Residual 949: maskEmail dual retired — sole server shared mask-email helper.
+import { maskEmail } from '../../../shared/mask-email';
 
 const logger = createLogger('Register');
 
@@ -61,6 +63,7 @@ export class RegisterUseCase {
         identityId: identity.id,
         deviceId,
         tokenProvider: this.tokenProvider,
+        device: cx.device,
       });
 
       // 3. Save session (repository dispatches domain events automatically)
@@ -77,7 +80,7 @@ export class RegisterUseCase {
           await this.emailSender.sendEmailVerificationCode(input.email, code);
         } catch (sendErr) {
           logger.warn('[Register] Failed to send email verification code after register', {
-            email: input.email,
+            email: maskEmail(input.email),
             error: sendErr instanceof Error ? sendErr.message : String(sendErr),
           });
         }

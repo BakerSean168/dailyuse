@@ -212,3 +212,155 @@ model RepositoryStatistic {
   @@index([identityId])
   @@map("repository_statistics")
 }
+
+/// GitHub App installation bound to one explicitly selected knowledge repository.
+/// This authorization is independent from AuthOAuthBinding login credentials.
+model KnowledgeRepositoryConnection {
+  id                       String    @id
+  identityId               String    @map("identity_id")
+  githubUserId             String    @map("github_user_id")
+  githubRepositoryId       String    @map("github_repository_id")
+  githubRepositoryFullName String    @map("github_repository_full_name")
+  installationId           String    @map("installation_id")
+  defaultBranch            String    @default("main") @map("default_branch")
+  isPrivate                Boolean   @default(true) @map("is_private")
+  status                   String    @default("PENDING_INSTALL")
+  lastSyncedCommitSha      String?   @map("last_synced_commit_sha")
+  lastProjectedCommitSha   String?   @map("last_projected_commit_sha")
+  lastErrorCode            String?   @map("last_error_code")
+  lastErrorMessage         String?   @map("last_error_message")
+  version                  Int       @default(1)
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  deletedAt                DateTime? @map("deleted_at")
+
+  account                 Account                           @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  webhookDeliveries       GithubWebhookDelivery[]
+  noteProjections         KnowledgeNoteProjection[]
+  attachmentProjections   KnowledgeAttachmentProjection[]
+  attachmentContentCaches KnowledgeAttachmentContentCache[]
+  writeRequests           KnowledgeWriteRequest[]
+
+  @@unique([identityId, githubRepositoryId])
+  @@unique([githubRepositoryId])
+  @@index([identityId, status])
+  @@index([installationId])
+  @@map("knowledge_repository_connections")
+}
+
+/// Deduplication and processing cursor for GitHub webhook deliveries.
+model GithubWebhookDelivery {
+  id           String    @id
+  connectionId String    @map("connection_id")
+  deliveryId   String    @unique @map("delivery_id")
+  eventName    String    @map("event_name")
+  beforeSha    String?   @map("before_sha")
+  afterSha     String?   @map("after_sha")
+  forced       Boolean   @default(false)
+  status       String    @default("RECEIVED")
+  errorMessage String?   @map("error_message")
+  receivedAt   DateTime  @default(now()) @map("received_at")
+  processedAt  DateTime? @map("processed_at")
+
+  connection KnowledgeRepositoryConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId, status])
+  @@map("github_webhook_deliveries")
+}
+
+/// Rebuildable read model derived only from the connected repository default branch.
+model KnowledgeNoteProjection {
+  id              String    @id
+  connectionId    String    @map("connection_id")
+  relativePath    String    @map("relative_path")
+  commitSha       String    @map("commit_sha")
+  blobSha         String    @map("blob_sha")
+  contentHash     String    @map("content_hash")
+  frontmatter     Json      @default("{}")
+  markdownContent String    @map("markdown_content") @db.Text
+  indexStatus     String    @default("PENDING") @map("index_status")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  connection KnowledgeRepositoryConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, relativePath])
+  @@index([connectionId, commitSha])
+  @@index([contentHash])
+  @@index([indexStatus])
+  @@map("knowledge_note_projections")
+}
+
+model KnowledgeAttachmentProjection {
+  id           String    @id
+  connectionId String    @map("connection_id")
+  relativePath String    @map("relative_path")
+  commitSha    String    @map("commit_sha")
+  blobSha      String    @map("blob_sha")
+  byteSize     Int?      @map("byte_size")
+  mediaType    String    @map("media_type")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  connection KnowledgeRepositoryConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, relativePath])
+  @@index([connectionId, commitSha])
+  @@index([blobSha])
+  @@map("knowledge_attachment_projections")
+}
+
+/// Short-lived shared cache for immutable GitHub attachment bytes.
+model KnowledgeAttachmentContentCache {
+  connectionId String   @map("connection_id")
+  blobSha      String   @map("blob_sha")
+  byteSize     Int      @map("byte_size")
+  contentBytes Bytes    @map("content_bytes")
+  cachedAt     DateTime @default(now()) @map("cached_at")
+  expiresAt    DateTime @map("expires_at")
+
+  connection KnowledgeRepositoryConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@id([connectionId, blobSha])
+  @@index([expiresAt])
+  @@map("knowledge_attachment_content_cache")
+}
+
+/// Idempotency ledger for confirmed Web note creation requests.
+model KnowledgeWriteRequest {
+  id           String    @id
+  identityId   String    @map("identity_id")
+  connectionId String    @map("connection_id")
+  requestId    String    @map("request_id")
+  requestHash  String    @map("request_hash")
+  relativePath String    @map("relative_path")
+  status       String    @default("PENDING")
+  commitSha    String?   @map("commit_sha")
+  errorCode    String?   @map("error_code")
+  errorMessage String?   @map("error_message")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  completedAt  DateTime? @map("completed_at")
+
+  account    Account                       @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  connection KnowledgeRepositoryConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([identityId, requestId])
+  @@index([connectionId, status])
+  @@map("knowledge_write_requests")
+}
+
+/// Short-lived distributed worker ownership for rebuildable repository work.
+model KnowledgeRepositoryLease {
+  id         String   @id
+  leaseKey   String   @unique @map("lease_key")
+  ownerToken String   @map("owner_token")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([expiresAt])
+  @@map("knowledge_repository_leases")
+}

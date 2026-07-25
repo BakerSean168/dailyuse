@@ -54,3 +54,7 @@ export {
   usesDesktopViteDevServer,
   isDesktopDevelopmentRuntime,
 } from './dev-runtime';
+
+// Residual 947: HTTP Result envelope type guards (auth + knowledge remote gateways).
+export { isRecord, hasDataKey } from './http-envelope-guards';
+

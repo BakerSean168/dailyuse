@@ -24,5 +24,4 @@ export {
   type GoalModuleRuntimeContribution,
   type GoalModuleUseCases,
   type GoalRuntimeContributionsInput,
-  type GoalRuntimeContribution,
 } from './server';

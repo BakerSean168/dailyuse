@@ -6,14 +6,11 @@
 import { z } from 'zod';
 import { brandedId } from '../../../../primitives';
 import type { ScheduleTaskId } from '../../../../primitives';
-import type { ScheduleTaskClientDTO } from '../../aggregates/schedule-task-client';
-import type { ScheduleConfigDTO } from '../../value-objects/schedule-config';
-import type { RetryPolicyDTO } from '../../value-objects/retry-policy';
-import type { TaskMetadataDTO } from '../../value-objects/task-metadata';
 import { SourceModule } from '../../value-objects/source-module';
 import { ScheduleTaskStatus } from '../../value-objects/schedule-task-status';
 import { TaskPriority } from '../../value-objects/task-priority';
 import { Timezone } from '../../value-objects/timezone';
+import { ScheduleBatchOperationResponseSchema } from '../response-schemas';
 
 export const ScheduleTaskSortBy = {
   CreatedAt: 'createdAt',
@@ -114,104 +111,33 @@ export const BatchScheduleTaskOperationRequestSchema = z.object({
 
 // ============ Request Types ============
 
-/**
- * 创建调度任务请求
- */
-export interface CreateScheduleTaskRequest {
-  readonly name: string;
-  readonly sourceModule: SourceModule;
-  readonly sourceEntityId: string;
-  readonly schedule: ScheduleConfigDTO;
-  readonly description?: string;
-  readonly metadata?: Partial<TaskMetadataDTO>;
-  readonly retryPolicy?: Partial<RetryPolicyDTO>;
-  readonly enabled?: boolean;
-}
+// Residual 709: schedule-task request dual bodies retired — OpenAPI + transport use *RequestSchema only.
+/** 创建调度任务请求 */
+export type CreateScheduleTaskRequest = z.infer<typeof CreateScheduleTaskRequestSchema>;
+/** 更新调度任务请求 */
+export type UpdateScheduleTaskRequest = z.infer<typeof UpdateScheduleTaskRequestSchema>;
+/** 更新任务调度配置请求 */
+export type UpdateScheduleConfigRequest = z.infer<typeof UpdateScheduleConfigRequestSchema>;
+/** 更新任务元数据请求 */
+export type UpdateTaskMetadataRequest = z.infer<typeof UpdateTaskMetadataRequestSchema>;
 
-/**
- * 更新调度任务请求
- */
-export interface UpdateScheduleTaskRequest {
-  readonly name?: string;
-  readonly description?: string;
-  readonly schedule?: Partial<ScheduleConfigDTO>;
-  readonly metadata?: Partial<TaskMetadataDTO>;
-  readonly retryPolicy?: Partial<RetryPolicyDTO>;
-  readonly enabled?: boolean;
-}
+// Residual 703: query params dual body retired — OpenAPI + transport use ScheduleTaskQueryParamsSchema.
+export type ScheduleTaskQueryParamsDTO = z.infer<typeof ScheduleTaskQueryParamsSchema>;
 
-/**
- * 更新任务调度配置请求
- */
-export interface UpdateScheduleConfigRequest {
-  readonly cronExpression?: string;
-  readonly timezone?: Timezone;
-  readonly startDate?: number | null;
-  readonly endDate?: number | null;
-  readonly maxExecutions?: number | null;
-}
-
-/**
- * 更新任务元数据请求
- */
-export interface UpdateTaskMetadataRequest {
-  readonly payload?: Record<string, unknown>;
-  readonly tags?: string[];
-  readonly priority?: TaskPriority;
-  readonly timeout?: number | null;
-}
-
-/**
- * 任务查询参数
- */
-export interface ScheduleTaskQueryParamsDTO {
-  readonly sourceModule?: SourceModule;
-  readonly sourceEntityId?: string;
-  readonly status?: ScheduleTaskStatus;
-  readonly enabled?: boolean;
-  readonly search?: string;
-  readonly page?: number;
-  readonly limit?: number;
-  readonly sortBy?: ScheduleTaskSortBy;
-  readonly sortOrder?: 'asc' | 'desc';
-}
-
-/**
- * 批量操作请求
- */
-export interface BatchScheduleTaskOperationRequest {
-  readonly taskIds: readonly ScheduleTaskId[];
-  readonly operation: BatchScheduleTaskOperation;
-  readonly reason?: string;
-}
+// Residual 709: batch operation request dual body retired.
+/** 批量操作请求 */
+export type BatchScheduleTaskOperationRequest = z.infer<
+  typeof BatchScheduleTaskOperationRequestSchema
+>;
 
 // ============ Response Types ============
-
-/**
- * 任务详情响应（单个）
- */
-export type ScheduleTaskDTO = ScheduleTaskClientDTO;
-
-/**
- * 任务列表响应
- */
-export interface ScheduleTaskListResponseDTO {
-  readonly items: readonly ScheduleTaskClientDTO[];
-  readonly total: number;
-  readonly page: number;
-  readonly limit: number;
-}
+// Residual 663: dead task-list response dual retired (query bodies use ClientDTO item arrays).
 
 /**
  * 批量操作响应
  */
-export interface BatchOperationResponseDTO {
-  readonly success: readonly string[];
-  readonly failed: readonly {
-    taskId: ScheduleTaskId;
-    error: string;
-  }[];
-  readonly total: number;
-  readonly successCount: number;
-  readonly failedCount: number;
-}
+// Residual 639: schedule-scoped batch result (not shared BatchOperationResponseDTO dual).
+// Residual 717: batch response dual body retired — OpenAPI + transport use ScheduleBatchOperationResponseSchema.
+export type ScheduleBatchOperationResponseDTO = z.infer<
+  typeof ScheduleBatchOperationResponseSchema
+>;

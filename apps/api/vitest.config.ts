@@ -8,7 +8,6 @@ const sharedConfig = createSharedConfig({
   aliases: {
     '@dailyuse/contracts/ai': '../../packages/contracts/src/modules/ai',
     '@dailyuse/contracts/goal': '../../packages/contracts/src/modules/goal',
-    '@dailyuse/contracts/response': '../../packages/contracts/src/response',
     '@dailyuse/powersync-schema': '../../packages/powersync-schema/src',
   },
 });

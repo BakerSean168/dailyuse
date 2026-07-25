@@ -79,16 +79,22 @@ describe('AuthIdentity', () => {
       const identity = AuthIdentity.createWithOAuth({
         provider: OAuthProvider.Google,
         sub: 'google-user-123',
+        verifiedEmail: 'oauth@example.com',
       });
 
       expect(identity.id).toBeDefined();
-      expect(identity.identifiers).toHaveLength(0);
+      expect(identity.identifiers).toHaveLength(1);
+      expect(identity.identifiers[0]?.isVerified).toBe(true);
       expect(identity.oauthBindings).toHaveLength(1);
       expect(identity.oauthBindings[0].provider).toBe('Google');
       expect(identity.oauthBindings[0].providerSubjectId).toBe('google-user-123');
       expect(identity.credentials).toHaveLength(0);
       expect(identity.hasOAuth()).toBe(true);
       expect(identity.hasPassword()).toBe(false);
+      const createdEvent = identity.domainEvents.find(
+        (event) => event.eventType === 'auth:identity-created',
+      );
+      expect((createdEvent?.payload as { email?: string }).email).toBe('oauth@example.com');
     });
   });
 
@@ -273,7 +279,7 @@ describe('AuthIdentity', () => {
     });
   });
 
-   describe('login failure tracking', () => {
+  describe('login failure tracking', () => {
     it('should track failed login attempts', async () => {
       const identity = await AuthIdentity.createWithEmailAndPassword({
         email: 'test@example.com',
@@ -450,4 +456,3 @@ describe('AuthIdentity', () => {
     });
   });
 });
-

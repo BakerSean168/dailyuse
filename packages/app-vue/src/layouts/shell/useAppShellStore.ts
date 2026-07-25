@@ -18,6 +18,8 @@
  */
 import { defineStore } from 'pinia';
 import { PANEL_MIN, computePanelGeometry } from './panel-geometry';
+// Residual 1001: sole clamp (local dual retired).
+import { clamp } from './clamp';
 
 /** 面板可容纳的最大 Tab 数（V2 §2.3 建议 8）。 */
 export const MAX_BUSINESS_TABS = 8;
@@ -97,9 +99,7 @@ function nextTabId(module: ShellModule): string {
   return `tab-${module}-${Date.now().toString(36)}-${tabSeq}`;
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
+// Residual 1001: clamp elevated to ./clamp.
 
 function isBusinessModule(value: unknown): value is ShellModule {
   return typeof value === 'string' && BUSINESS_MODULES.has(value as ShellModule);
@@ -229,7 +229,13 @@ export const useAppShellStore = defineStore('app-shell', {
      * Settings 已升级为独立场景，不再属于 BusinessTab。
      */
     sanitizeLegacyTabs(): void {
-      const next = this.tabs.filter((tab) => isBusinessModule(tab.module));
+      const next = this.tabs.filter(
+        (tab) =>
+          isBusinessModule(tab.module) &&
+          // Residual 539: retired existing-note editor routes (/note/:id) no longer exist
+          // Residual 885: portable boundary re-lock — strip /note tabs from persisted shell state.
+          !(tab.route === '/note' || tab.route.startsWith('/note/') || tab.route.startsWith('/note?')),
+      );
       if (next.length === this.tabs.length) return;
       this.tabs = next;
       if (this.activeTabId && !next.some((tab) => tab.id === this.activeTabId)) {
@@ -291,13 +297,6 @@ export const useAppShellStore = defineStore('app-shell', {
       }).panelWidth;
     },
 
-    /**
-     * @deprecated 使用 resolvePanelWidth；保留别名以免外部残留调用。
-     * 不再回写 panelWidth。
-     */
-    clampPanelWidthToViewport(viewportWidth: number, sidebarOccupiedWidth: number): number {
-      return this.resolvePanelWidth(viewportWidth, sidebarOccupiedWidth);
-    },
   },
 
   persist: {

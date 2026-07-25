@@ -1,9 +1,14 @@
+/**
+ * Residual 979: toPrismaJson sole import (./to-prisma-json.ts).
+ */
 import type { PrismaClient } from '@dailyuse/database';
 import type { AgentRun, AgentRunResult } from '@dailyuse/contracts/ai';
 import { AgentRunSchema, AgentRunResultSchema, AgentStateSchema } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils/logger';
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@dailyuse/database/prisma';
+import { toPrismaJson } from './to-prisma-json';
+import { ResultErrorException, toResultErrorException } from '@dailyuse/contracts/result';
 import type {
   AgentCheckpointDeleteInput,
   AgentCheckpointGetInput,
@@ -14,9 +19,6 @@ import type {
 
 const logger = createLogger('AgentCheckpointPrismaAdapter');
 
-function toPrismaJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-}
 
 function toNullablePrismaJson(
   value: unknown,
@@ -30,30 +32,68 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
   async upsert(input: AgentCheckpointUpsertInput): Promise<void> {
     const { identityId, run, state, threadId, events, interrupts } = input;
 
+    // Reject spoofed run.identityId and foreign-owned runId overwrite (residual 105).
+    if (run.identityId !== identityId) {
+      throw toResultErrorException(
+        {
+          code: 'FORBIDDEN',
+          message: 'Agent checkpoint run identity does not match the authenticated identity.',
+        },
+        403,
+      );
+    }
+
     try {
-      await this.prisma.agentRunCheckpoint.upsert({
-        where: { runId: run.runId },
-        create: {
-          id: randomUUID(),
-          runId: run.runId,
-          identityId,
-          conversationId: run.conversationId ?? null,
-          threadId: threadId ?? run.threadId,
-          agentType: run.agentType,
-          status: run.status,
-          runMetadata: toPrismaJson(run),
-          stateSnapshot: toNullablePrismaJson(state),
-          events: toPrismaJson(events ?? []),
-          interrupts: toPrismaJson(interrupts ?? []),
-        },
-        update: {
-          status: run.status,
-          runMetadata: toPrismaJson(run),
-          stateSnapshot: toNullablePrismaJson(state),
-          events: events ? toPrismaJson(events) : undefined,
-          interrupts: interrupts ? toPrismaJson(interrupts) : undefined,
-          updatedAt: new Date(),
-        },
+      await this.prisma.$transaction(async (tx) => {
+        const existing = await tx.agentRunCheckpoint.findUnique({
+          where: { runId: run.runId },
+          select: { identityId: true },
+        });
+
+        if (existing && existing.identityId !== identityId) {
+          throw toResultErrorException(
+            {
+              code: 'FORBIDDEN',
+              message: 'Agent checkpoint is not owned by the current identity.',
+            },
+            403,
+          );
+        }
+
+        if (existing) {
+          await tx.agentRunCheckpoint.update({
+            where: { runId: run.runId },
+            data: {
+              conversationId: run.conversationId ?? null,
+              threadId: threadId ?? run.threadId,
+              agentType: run.agentType,
+              status: run.status,
+              runMetadata: toPrismaJson(run),
+              stateSnapshot: toNullablePrismaJson(state),
+              events: events ? toPrismaJson(events) : undefined,
+              interrupts: interrupts ? toPrismaJson(interrupts) : undefined,
+              deletedAt: null,
+              updatedAt: new Date(),
+            },
+          });
+          return;
+        }
+
+        await tx.agentRunCheckpoint.create({
+          data: {
+            id: randomUUID(),
+            runId: run.runId,
+            identityId,
+            conversationId: run.conversationId ?? null,
+            threadId: threadId ?? run.threadId,
+            agentType: run.agentType,
+            status: run.status,
+            runMetadata: toPrismaJson(run),
+            stateSnapshot: toNullablePrismaJson(state),
+            events: toPrismaJson(events ?? []),
+            interrupts: toPrismaJson(interrupts ?? []),
+          },
+        });
       });
 
       logger.debug('Agent checkpoint upserted', {
@@ -62,6 +102,9 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
         status: run.status,
       });
     } catch (error) {
+      if (error instanceof ResultErrorException) {
+        throw error;
+      }
       logger.error('Failed to upsert agent checkpoint', error, {
         runId: run.runId,
         identityId,
@@ -87,6 +130,15 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
       }
 
       const run = AgentRunSchema.parse(checkpoint.runMetadata);
+      // Defense-in-depth: refuse metadata that spoofs another identity (residual 107).
+      if (run.identityId !== identityId) {
+        logger.warn('Agent checkpoint metadata identity mismatch; treating as not found', {
+          runId,
+          identityId,
+          metadataIdentityId: run.identityId,
+        });
+        return null;
+      }
       const state = checkpoint.stateSnapshot
         ? AgentStateSchema.parse(checkpoint.stateSnapshot)
         : undefined;
@@ -139,10 +191,10 @@ export class AgentCheckpointPrismaAdapter implements IAgentCheckpointPort {
         take: limit ?? undefined,
       });
 
-      return checkpoints.map((checkpoint) => {
-        const metadata = checkpoint.runMetadata as unknown as Record<string, unknown>;
-        return AgentRunSchema.parse(metadata);
-      });
+      // Defense-in-depth: drop rows whose run metadata spoofs another identity (residual 107).
+      return checkpoints
+        .map((checkpoint) => AgentRunSchema.parse(checkpoint.runMetadata))
+        .filter((run) => run.identityId === identityId);
     } catch (error) {
       logger.error('Failed to list agent checkpoints', error, {
         identityId,

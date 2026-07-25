@@ -8,7 +8,10 @@ import type { IReminderTemplateRepository } from '../domain/repositories/i-remin
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 
 export interface CreateReminderScheduleExecutionSourceDeps {
-  readonly reminderTemplateRepository: Pick<IReminderTemplateRepository, 'findById' | 'save'>;
+  readonly reminderTemplateRepository: Pick<
+    IReminderTemplateRepository,
+    'findByIdForIdentity' | 'save'
+  >;
 }
 
 function mapReminderChannels(channels: unknown): NotificationChannelType[] {
@@ -31,9 +34,13 @@ export function createReminderScheduleExecutionSource(
 ): ReminderScheduleExecutionSource {
   return {
     async executeReminder(task) {
-      const reminder = await deps.reminderTemplateRepository.findById(task.sourceEntityId, {
-        includeHistory: true,
-      });
+      const reminder = await deps.reminderTemplateRepository.findByIdForIdentity(
+        String(task.identityId),
+        task.sourceEntityId,
+        {
+          includeHistory: true,
+        },
+      );
 
       if (!reminder || !reminder.isEffectivelyEnabled() || reminder.deletedAt) {
         return { nextRunAt: null, result: { skipped: true } };

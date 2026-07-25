@@ -1,22 +1,16 @@
 /**
  * User Reminder Preferences Aggregate Root - Server
  * 用户提醒偏好聚合根 - 服务端
+ *
+ * Residual 829: UserReminderPreferencesClientDTO dual retired — sole UserReminderPreferencesResponseSchema + z.infer.
  */
 
+import type { z } from 'zod';
 import type { UserReminderPreferencesId, IdentityId } from '../../../primitives';
-
-// ============ 值对象：TimeSlot ============
-
-/**
- * Time Slot DTO
- * 时间段（用于记录最佳/最差响应时间段）
- */
-export interface TimeSlotDTO {
-  readonly hourStart: number; // 开始小时 (0-23)
-  readonly hourEnd: number; // 结束小时 (0-23)
-  readonly avgResponseRate: number; // 平均响应率 (0-100)
-  readonly sampleCount: number; // 样本数量
-}
+// Residual 751: TimeSlotDTO owned by value-objects/time-slot (z.infer of TimeSlotSchema).
+import type { TimeSlotDTO } from '../value-objects/time-slot';
+export type { TimeSlotDTO } from '../value-objects/time-slot';
+import { UserReminderPreferencesResponseSchema } from '../api/response-schemas';
 
 // ============ DTO 定义 ============
 
@@ -36,19 +30,7 @@ export interface UserReminderPreferencesServerDTO {
 
 /**
  * User Reminder Preferences Client DTO
+ *
+ * Residual 829: dual retired — OpenAPI + transport use UserReminderPreferencesResponseSchema.
  */
-export interface UserReminderPreferencesClientDTO {
-  id: UserReminderPreferencesId;
-  identityId: IdentityId;
-  bestTimeSlots: TimeSlotDTO[];
-  worstTimeSlots: TimeSlotDTO[];
-  globalReminderEnabled: boolean;
-  globalSmartFrequency: boolean;
-  createdAt: number;
-  updatedAt: number;
-  // UI 显示文本
-  bestTimeSlotsText: string; // "09:00-10:00, 18:00-19:00"
-  worstTimeSlotsText: string; // "12:00-13:00, 22:00-23:00"
-  summaryText?: string;
-}
-
+export type UserReminderPreferencesClientDTO = z.infer<typeof UserReminderPreferencesResponseSchema>;

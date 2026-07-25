@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import { KnowledgeCitationSchema } from './ai-knowledge-query.dto';
+import { ExpandKnowledgeResSchema } from './response-schemas';
 
 export const ExpandKnowledgeSchema = z.object({
   instruction: z.string().trim().min(3).max(2000),
@@ -13,15 +13,5 @@ export const ExpandKnowledgeSchema = z.object({
 
 export type ExpandKnowledgeReq = z.infer<typeof ExpandKnowledgeSchema>;
 
-export interface ExpandKnowledgeRes {
-  expandedContent: string;
-  citations: Array<z.infer<typeof KnowledgeCitationSchema>>;
-  providerId: AiProviderConfigId;
-  tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  processingTimeMs: number;
-  matchedResourceCount: number;
-}
+// Residual 695: response dual body retired — OpenAPI + transport use ExpandKnowledgeResSchema.
+export type ExpandKnowledgeRes = z.infer<typeof ExpandKnowledgeResSchema>;

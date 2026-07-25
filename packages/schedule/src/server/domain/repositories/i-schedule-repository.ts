@@ -15,9 +15,9 @@ export interface IScheduleRepository {
   save(schedule: CalendarEntry): Promise<void>;
 
   /**
-   * Find a schedule by its UUID
+   * Find a schedule by UUID owned by the given identity (only load path)
    */
-  findById(id: string): Promise<CalendarEntry | null>;
+  findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null>;
 
   /**
    * Find all schedules for an account
@@ -25,9 +25,9 @@ export interface IScheduleRepository {
   findByIdentityId(identityId: string): Promise<CalendarEntry[]>;
 
   /**
-   * Delete schedule by UUID
+   * Delete schedule by UUID for the owning identity
    */
-  deleteById(id: string): Promise<void>;
+  deleteById(identityId: string, id: string): Promise<void>;
 
   /**
    * Domain-command delete — deletes persistently then publishes aggregate domain events.

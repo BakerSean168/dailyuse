@@ -23,7 +23,6 @@
  * - @dailyuse/contracts/goal       - 目标模块
  * - @dailyuse/contracts/governance - 治理模块
  * - @dailyuse/contracts/reminder   - 提醒模块
- * - @dailyuse/contracts/editor     - 编辑器模块
  * - @dailyuse/contracts/repository - 仓库模块
  * - @dailyuse/contracts/account    - 账户模块
  * - @dailyuse/contracts/authentication - 认证模块
@@ -32,7 +31,6 @@
  * - @dailyuse/contracts/notification - 通知模块
  * - @dailyuse/contracts/ai         - AI模块
  * - @dailyuse/contracts/dashboard  - 仪表盘模块
- * - @dailyuse/contracts/response   - 响应系统（旧）
  * - @dailyuse/contracts/result     - Result Pattern (新，推荐)
  * - @dailyuse/contracts/shared     - 共享类型
  */
@@ -77,7 +75,6 @@ export {
   // IPC adapters
   toIpcResult,
   fromIpcResult,
-  createIpcClientWrapper,
   // HTTP adapters
   toHttpResponse,
   fromHttpResponse,

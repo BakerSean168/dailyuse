@@ -40,8 +40,8 @@ export class UpdateReminderTemplateUseCase {
     request: UpdateReminderTemplateReq,
     cx: ExecutionContext,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    const template = await this.templateRepository.findById(id);
-    if (!template || String(template.identityId) !== cx.identityId) {
+    const template = await this.templateRepository.findByIdForIdentity(cx.identityId, id);
+    if (!template) {
       return error('NOT_FOUND', `Reminder Template ${id} not found`);
     }
 
@@ -49,14 +49,10 @@ export class UpdateReminderTemplateUseCase {
     const previousGroupId = template.groupId;
     const group =
       request.groupId !== undefined && request.groupId !== null
-        ? await this.groupRepository.findById(request.groupId)
+        ? await this.groupRepository.findByIdForIdentity(cx.identityId, request.groupId)
         : null;
 
-    if (
-      request.groupId !== undefined &&
-      request.groupId !== null &&
-      (!group || String(group.identityId) !== cx.identityId)
-    ) {
+    if (request.groupId !== undefined && request.groupId !== null && !group) {
       return error('NOT_FOUND', `Invalid groupId: ${request.groupId}`);
     }
 
@@ -68,7 +64,8 @@ export class UpdateReminderTemplateUseCase {
     template.update({
       title: request.title,
       description: request.description,
-      activeTime: request.activeTime ? { activatedAt: request.activeTime.startDate } : undefined,
+      // Residual 835: request activeTime is already ActiveTimeConfigDTO (activatedAt).
+      activeTime: request.activeTime,
       notificationConfig: request.notificationConfig
         ? {
             ...request.notificationConfig,
@@ -93,10 +90,10 @@ export class UpdateReminderTemplateUseCase {
     await this.templateRepository.save(template);
 
     if (previousGroupId && previousGroupId !== template.groupId) {
-      await this.reminderDomainService.updateGroupStats(previousGroupId);
+      await this.reminderDomainService.updateGroupStats(cx.identityId, previousGroupId);
     }
     if (template.groupId) {
-      await this.reminderDomainService.updateGroupStats(template.groupId);
+      await this.reminderDomainService.updateGroupStats(cx.identityId, template.groupId);
     }
 
     return ok(await this.templateMapper.toDTO(template));

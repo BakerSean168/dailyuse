@@ -17,18 +17,15 @@ import {
   UpdateGoalFolderSchema,
   GoalFolderClientDTOSchema,
   ListGoalFolderFiltersSchema,
+  QueryGoalFoldersResSchema,
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalFolderId } from '@dailyuse/contracts/primitives';
 import type { GoalFolderController } from '../../server/transport/goal-folder.controller';
+// Residual 985: sole parseBoolean (local dual retired).
+import { parseBoolean } from './parse-boolean';
 
 // ============ Helpers ============
-
-function parseBoolean(value: unknown): boolean | undefined {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return undefined;
-}
 
 // ============ Types ============
 
@@ -82,10 +79,7 @@ export function registerGoalFolderRoutes(
         query: ListGoalFolderFiltersSchema,
       },
       responses: {
-        200: successResponse(
-          z.object({ data: z.array(GoalFolderClientDTOSchema), total: z.number() }),
-          '获取成功',
-        ),
+        200: successResponse(QueryGoalFoldersResSchema, '获取成功'),
       },
     },
     [auth],
@@ -115,7 +109,7 @@ export function registerGoalFolderRoutes(
       },
     },
     [auth],
-    (req) => controller.get(req.params!.id),
+    (req, ctx) => controller.get(req.params!.id, ctx),
   );
 
   // PUT /:id — 更新文件夹

@@ -1,5 +1,12 @@
+/**
+ * Goal progress percentage helpers.
+ * Residual 1083 keep-boundary: local clampPercentage is fixed 0–100 domain with
+ * non-finite → 0. Intentionally not shell clamp(value, min, max) geometry sole
+ * (variable range + max < min fail-safe).
+ */
 import type { GoalClientDTO, KeyResultClientDTO, KeyResultProgress } from '@dailyuse/contracts/goal';
 
+// Residual 1083 keep-boundary: fixed 0–100 percentage clamp (no geometry dual).
 function clampPercentage(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.min(100, Math.max(0, value));

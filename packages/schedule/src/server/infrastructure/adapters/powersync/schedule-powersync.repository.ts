@@ -81,10 +81,10 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
     }
   }
 
-  async findById(id: string): Promise<CalendarEntry | null> {
+  async findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null> {
     const row = await this.db.getOptional<PowerSyncScheduleRow>(
-      'SELECT * FROM schedules WHERE id = ? LIMIT 1',
-      [id],
+      'SELECT * FROM schedules WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
     );
     return row ? PowerSyncScheduleMapper.toDomain(row) : null;
   }
@@ -97,12 +97,22 @@ export class PowerSyncScheduleRepository implements IScheduleRepository {
     return rows.map((row) => PowerSyncScheduleMapper.toDomain(row));
   }
 
-  async deleteById(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM schedules WHERE id = ?', [id]);
+  async deleteById(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Schedule event not found for the current identity.');
+    }
+    await this.db.execute('DELETE FROM schedules WHERE id = ? AND identity_id = ?', [
+      id,
+      identityId,
+    ]);
   }
 
   async deleteAggregate(entry: CalendarEntry): Promise<void> {
-    await this.db.execute('DELETE FROM schedules WHERE id = ?', [entry.id]);
+    await this.db.execute('DELETE FROM schedules WHERE id = ? AND identity_id = ?', [
+      entry.id,
+      entry.identityId,
+    ]);
     await publishAggregateEvents(entry, eventBusAdapter);
   }
 

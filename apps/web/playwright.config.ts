@@ -18,12 +18,17 @@ export default defineConfig({
   // 默认入口进一步收口成 AI 可依赖的核心业务回归集合。
   testMatch: [
     '**/ai/goal-workflow.spec.ts',
+    '**/ai/multi-engine-host.spec.ts',
     '**/authentication/auth-flow.spec.ts',
+
     '**/authentication/auth-login.spec.ts',
+    '**/authentication/auth-password.spec.ts',
+    '**/authentication/auth-register.spec.ts',
+    '**/authentication/auth-oauth.spec.ts',
     '**/authentication/auth-page-contract.spec.ts',
     '**/dashboard/dashboard-overview.spec.ts',
     '**/goal/goal-crud.spec.ts',
-    '**/note/knowledge-index-query-loop.spec.ts',
+    '**/note/legacy-note-mutation-boundary.spec.ts',
     '**/note/note-workspace.spec.ts',
     '**/notification/notification-center.spec.ts',
     '**/notification/reminder-notification-loop.spec.ts',

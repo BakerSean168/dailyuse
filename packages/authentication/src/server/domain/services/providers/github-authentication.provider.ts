@@ -23,7 +23,11 @@ import type {
   AuthenticationProvider,
   AuthenticationResult,
 } from '../authentication-provider';
-import { AuthenticationMethod } from '../authentication-provider';
+import {
+  AccountLinkRequiredError,
+  AuthenticationMethod,
+  OAuthEmailRequiredError,
+} from '../authentication-provider';
 import type { IGithubOAuthClient } from './i-github-oauth-client';
 import type { IAuthIdentityRepository } from '../../repositories/i-auth-identity.repository';
 import { AuthIdentity } from '../../aggregates/auth-identity';
@@ -34,11 +38,10 @@ export interface GithubCredentials {
   readonly code: string;
   readonly state?: string;
   readonly redirectUri?: string;
+  readonly codeVerifier?: string;
 }
 
-export class GithubAuthenticationProvider
-  implements AuthenticationProvider<GithubCredentials>
-{
+export class GithubAuthenticationProvider implements AuthenticationProvider<GithubCredentials> {
   readonly method = AuthenticationMethod.Github;
 
   constructor(
@@ -55,6 +58,7 @@ export class GithubAuthenticationProvider
       code: credentials.code,
       state: credentials.state,
       redirectUri: credentials.redirectUri,
+      codeVerifier: credentials.codeVerifier,
     });
 
     // 2. Find the identity already bound to this GitHub subject.
@@ -66,11 +70,21 @@ export class GithubAuthenticationProvider
       return { identity: existing, isNewIdentity: false };
     }
 
+    const verifiedEmail = githubUser.email?.trim().toLowerCase();
+    if (!verifiedEmail) {
+      throw new OAuthEmailRequiredError(AuthenticationMethod.Github);
+    }
+    const identityWithEmail = await this.identityRepository.findByEmail(verifiedEmail);
+    if (identityWithEmail) {
+      throw new AccountLinkRequiredError(AuthenticationMethod.Github, verifiedEmail);
+    }
+
     // 3. First-time GitHub login provisions a new Daily Use identity.
     //    No repository access is requested or granted here.
     const identity = AuthIdentity.createWithOAuth({
       provider: OAuthProvider.Github,
       sub: githubUser.subjectId,
+      verifiedEmail,
     });
     identity.activate();
     await this.identityRepository.save(identity);

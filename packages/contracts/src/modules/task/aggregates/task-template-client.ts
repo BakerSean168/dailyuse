@@ -18,6 +18,7 @@ import type {
   TaskGoalBindingDTO,
 } from '../value-objects';
 
+// Residual 879: intentional Client≠Server dual (client extra projection fields vs server checklist).
 export interface TaskTemplateClientDTO {
   id: TaskTemplateId;
   identityId: IdentityId;

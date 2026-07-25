@@ -25,11 +25,10 @@ describe('UserSetting Aggregate Root', () => {
     it('should apply overrides when creating', () => {
       const setting = UserSetting.create({
         identityId: testIdentityId,
-        overrides: { editor: { theme: 'dark' } },
+        overrides: { appearance: { theme: 'dark' } },
       });
 
-      expect(setting.toPreferences().editor.theme).toBe('dark');
-      expect(setting.toPreferences().editor.fontSize).toBe(14); // default preserved
+      expect(setting.toPreferences().appearance.theme).toBe('dark');
     });
 
     it('should emit UserSettingCreatedEvent', () => {
@@ -101,7 +100,7 @@ describe('UserSetting Aggregate Root', () => {
     it('should reject invalid values via Zod validation', () => {
       const setting = UserSetting.create({ identityId: testIdentityId });
 
-      expect(() => setting.patchCategory('editor', { fontSize: 999 } as any)).toThrow();
+      expect(() => setting.patchCategory('appearance', { theme: 123 as any })).toThrow();
     });
   });
 
@@ -130,12 +129,12 @@ describe('UserSetting Aggregate Root', () => {
   describe('resetCategory()', () => {
     it('should reset a category to defaults', () => {
       const setting = UserSetting.create({ identityId: testIdentityId });
-      setting.patchCategory('editor', { theme: 'dark', fontSize: 20 });
+      setting.patchCategory('appearance', { theme: 'dark' });
 
-      setting.resetCategory('editor');
+      setting.resetCategory('appearance');
 
       const defaults = getDefaultPreferences();
-      expect(setting.toPreferences().editor).toEqual(defaults.editor);
+      expect(setting.toPreferences().appearance).toEqual(defaults.appearance);
     });
 
     it('should emit UserSettingResetEvent with category', () => {
@@ -193,13 +192,8 @@ describe('UserSetting Aggregate Root', () => {
       const setting = UserSetting.create({ identityId: testIdentityId });
 
       setting.importPreferences({
-        editor: {
+        appearance: {
           theme: 'dark',
-          fontSize: 16,
-          tabSize: 4,
-          wordWrap: false,
-          lineNumbers: true,
-          minimap: false,
         },
         locale: {
           language: 'en-US',
@@ -211,8 +205,7 @@ describe('UserSetting Aggregate Root', () => {
         },
       });
 
-      expect(setting.toPreferences().editor.theme).toBe('dark');
-      expect(setting.toPreferences().editor.fontSize).toBe(16);
+      expect(setting.toPreferences().appearance.theme).toBe('dark');
       expect(setting.toPreferences().locale.language).toBe('en-US');
       // Other categories remain default
       expect(setting.toPreferences().notification.email).toBe(true);

@@ -5,7 +5,7 @@ tags:
   - task
 description: 任务模块相关文件索引
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 任务模块文件索引
@@ -31,8 +31,8 @@ updated: 2026-06-02T00:00:00
 | [`packages/app-vue/src/modules/task/composables/useTaskDependencies.ts`](../../../packages/app-vue/src/modules/task/composables/useTaskDependencies.ts) | 任务依赖操作组合函数 |
 | [`packages/app-vue/src/modules/task/composables/useTaskTemplateForm.ts`](../../../packages/app-vue/src/modules/task/composables/useTaskTemplateForm.ts) | 模板表单验证聚合 |
 | [`packages/app-vue/src/modules/task/composables/useTaskGoalBindingOptions.ts`](../../../packages/app-vue/src/modules/task/composables/useTaskGoalBindingOptions.ts) | 目标绑定选项加载 |
-| [`packages/app-vue/src/modules/task/components/TaskTemplateManagement.vue`](../../../packages/app-vue/src/modules/task/components/TaskTemplateManagement.vue) | 模板列表管理组件 |
-| [`packages/app-vue/src/modules/task/components/TaskInstanceManagement.vue`](../../../packages/app-vue/src/modules/task/components/TaskInstanceManagement.vue) | 实例管理组件 |
+| [`packages/app-vue/src/modules/task/views/TaskManagementView.vue`](../../../packages/app-vue/src/modules/task/views/TaskManagementView.vue) | 模板列表管理组件 |
+| [`packages/app-vue/src/modules/task/components/TaskTemplateGrid.vue`](../../../packages/app-vue/src/modules/task/components/TaskTemplateGrid.vue) | 实例管理组件 |
 | [`packages/app-vue/src/modules/task/components/TaskTemplateForm/TaskTemplateForm.vue`](../../../packages/app-vue/src/modules/task/components/TaskTemplateForm/TaskTemplateForm.vue) | 多分区模板编辑表单 |
 | [`packages/app-vue/src/modules/task/components/TaskDependencyGraph.vue`](../../../packages/app-vue/src/modules/task/components/TaskDependencyGraph.vue) | 依赖图组件 |
 | [`packages/app-vue/src/modules/task/components/dag/TaskDAGVisualization.vue`](../../../packages/app-vue/src/modules/task/components/dag/TaskDAGVisualization.vue) | DAG 可视化组件 |
@@ -62,10 +62,10 @@ updated: 2026-06-02T00:00:00
 | [`packages/task/src/api/routes/task-template.routes.ts`](../../../packages/task/src/api/routes/task-template.routes.ts) | 任务模板 HTTP routes（14 个端点） |
 | [`packages/task/src/api/routes/task-instance.routes.ts`](../../../packages/task/src/api/routes/task-instance.routes.ts) | 任务实例 HTTP routes（7 个端点） |
 | [`packages/task/src/api/routes/task-dependency.routes.ts`](../../../packages/task/src/api/routes/task-dependency.routes.ts) | 任务依赖 HTTP routes（7 个端点） |
-| [`packages/task/src/api/transport-handlers.ts`](../../../packages/task/src/api/transport-handlers.ts) | 传输层处理器，映射模块 facade 到控制器 |
-| [`packages/task/src/controllers/task-template.controller.ts`](../../../packages/task/src/controllers/task-template.controller.ts) | 任务模板控制器 |
-| [`packages/task/src/controllers/task-instance.controller.ts`](../../../packages/task/src/controllers/task-instance.controller.ts) | 任务实例控制器 |
-| [`packages/task/src/controllers/task-dependency.controller.ts`](../../../packages/task/src/controllers/task-dependency.controller.ts) | 任务依赖控制器 |
+| [`packages/task/src/server/transport/task.transport-handlers.ts`](../../../packages/task/src/server/transport/task.transport-handlers.ts) | 传输层处理器，映射模块 facade 到控制器 |
+| [`packages/task/src/server/transport/task-template.controller.ts`](../../../packages/task/src/server/transport/task-template.controller.ts) | 任务模板控制器 |
+| [`packages/task/src/server/transport/task-instance.controller.ts`](../../../packages/task/src/server/transport/task-instance.controller.ts) | 任务实例控制器 |
+| [`packages/task/src/server/transport/task-dependency.controller.ts`](../../../packages/task/src/server/transport/task-dependency.controller.ts) | 任务依赖控制器 |
 | [`packages/task/src/infrastructure-client/adapters/http/task-template-http.adapter.ts`](../../../packages/task/src/infrastructure-client/adapters/http/task-template-http.adapter.ts) | 客户端 HTTP 模板适配器 |
 | [`packages/task/src/infrastructure-client/adapters/http/task-instance-http.adapter.ts`](../../../packages/task/src/infrastructure-client/adapters/http/task-instance-http.adapter.ts) | 客户端 HTTP 实例适配器 |
 | [`packages/task/src/infrastructure-client/adapters/http/task-dependency-http.adapter.ts`](../../../packages/task/src/infrastructure-client/adapters/http/task-dependency-http.adapter.ts) | 客户端 HTTP 依赖适配器 |
@@ -77,24 +77,24 @@ updated: 2026-06-02T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/task/src/domain-server/aggregates/task-template.ts`](../../../packages/task/src/domain-server/aggregates/task-template.ts) | TaskTemplate 聚合根 |
-| [`packages/task/src/domain-server/aggregates/task-instance.ts`](../../../packages/task/src/domain-server/aggregates/task-instance.ts) | TaskInstance 聚合根 |
-| [`packages/task/src/domain-server/aggregates/task-dependency.ts`](../../../packages/task/src/domain-server/aggregates/task-dependency.ts) | TaskDependency 聚合根 |
-| [`packages/task/src/domain-server/aggregates/task-template-lifecycle.policy.ts`](../../../packages/task/src/domain-server/aggregates/task-template-lifecycle.policy.ts) | 模板生命周期策略 |
-| [`packages/task/src/domain-server/aggregates/task-template-goal.policy.ts`](../../../packages/task/src/domain-server/aggregates/task-template-goal.policy.ts) | 目标绑定策略 |
-| [`packages/task/src/domain-server/aggregates/instance-generation.policy.ts`](../../../packages/task/src/domain-server/aggregates/instance-generation.policy.ts) | 实例生成策略 |
-| [`packages/task/src/domain-server/services/priority-calculator.service.ts`](../../../packages/task/src/domain-server/services/priority-calculator.service.ts) | 优先级计算服务 |
-| [`packages/task/src/domain-server/services/task-dependency-policy.ts`](../../../packages/task/src/domain-server/services/task-dependency-policy.ts) | 依赖策略（循环检测） |
-| [`packages/task/src/application-server/use-cases/commands/create-task-template.use-case.ts`](../../../packages/task/src/application-server/use-cases/commands/create-task-template.use-case.ts) | 创建模板用例 |
-| [`packages/task/src/application-server/use-cases/commands/complete-task-instance.use-case.ts`](../../../packages/task/src/application-server/use-cases/commands/complete-task-instance.use-case.ts) | 完成实例用例 |
-| [`packages/task/src/application-server/use-cases/commands/bind-task-to-goal.use-case.ts`](../../../packages/task/src/application-server/use-cases/commands/bind-task-to-goal.use-case.ts) | 绑定目标用例 |
-| [`packages/task/src/application-server/use-cases/commands/create-task-dependency.use-case.ts`](../../../packages/task/src/application-server/use-cases/commands/create-task-dependency.use-case.ts) | 创建依赖用例 |
-| [`packages/task/src/application-server/use-cases/queries/get-task-template-graph.use-case.ts`](../../../packages/task/src/application-server/use-cases/queries/get-task-template-graph.use-case.ts) | 任务图查询 |
-| [`packages/task/src/application-server/use-cases/queries/get-task-dashboard.use-case.ts`](../../../packages/task/src/application-server/use-cases/queries/get-task-dashboard.use-case.ts) | 任务 Dashboard 查询 |
-| [`packages/task/src/infrastructure-server/task.module.ts`](../../../packages/task/src/infrastructure-server/task.module.ts) | 服务端任务模块组合根 |
-| [`packages/task/src/infrastructure-server/adapters/prisma/task-template-prisma.repository.ts`](../../../packages/task/src/infrastructure-server/adapters/prisma/task-template-prisma.repository.ts) | Prisma 模板仓储 |
-| [`packages/task/src/infrastructure-server/adapters/prisma/task-instance-prisma.repository.ts`](../../../packages/task/src/infrastructure-server/adapters/prisma/task-instance-prisma.repository.ts) | Prisma 实例仓储 |
-| [`packages/task/src/infrastructure-server/adapters/prisma/task-dependency-prisma.repository.ts`](../../../packages/task/src/infrastructure-server/adapters/prisma/task-dependency-prisma.repository.ts) | Prisma 依赖仓储 |
+| [`packages/task/src/server/domain/aggregates/task-template.ts`](../../../packages/task/src/server/domain/aggregates/task-template.ts) | TaskTemplate 聚合根 |
+| [`packages/task/src/server/domain/aggregates/task-instance.ts`](../../../packages/task/src/server/domain/aggregates/task-instance.ts) | TaskInstance 聚合根 |
+| [`packages/task/src/server/domain/aggregates/task-dependency.ts`](../../../packages/task/src/server/domain/aggregates/task-dependency.ts) | TaskDependency 聚合根 |
+| [`packages/task/src/server/domain/aggregates/task-template-lifecycle.policy.ts`](../../../packages/task/src/server/domain/aggregates/task-template-lifecycle.policy.ts) | 模板生命周期策略 |
+| [`packages/task/src/server/domain/aggregates/task-template-goal.policy.ts`](../../../packages/task/src/server/domain/aggregates/task-template-goal.policy.ts) | 目标绑定策略 |
+| [`packages/task/src/server/domain/aggregates/instance-generation.policy.ts`](../../../packages/task/src/server/domain/aggregates/instance-generation.policy.ts) | 实例生成策略 |
+| [`packages/task/src/server/domain/services/priority-calculator.service.ts`](../../../packages/task/src/server/domain/services/priority-calculator.service.ts) | 优先级计算服务 |
+| [`packages/task/src/server/domain/services/task-dependency-policy.ts`](../../../packages/task/src/server/domain/services/task-dependency-policy.ts) | 依赖策略（循环检测） |
+| [`packages/task/src/server/application/use-cases/commands/create-task-template.use-case.ts`](../../../packages/task/src/server/application/use-cases/commands/create-task-template.use-case.ts) | 创建模板用例 |
+| [`packages/task/src/server/application/use-cases/commands/complete-task-instance.use-case.ts`](../../../packages/task/src/server/application/use-cases/commands/complete-task-instance.use-case.ts) | 完成实例用例 |
+| [`packages/task/src/server/application/use-cases/commands/bind-task-to-goal.use-case.ts`](../../../packages/task/src/server/application/use-cases/commands/bind-task-to-goal.use-case.ts) | 绑定目标用例 |
+| [`packages/task/src/server/application/use-cases/commands/create-task-dependency.use-case.ts`](../../../packages/task/src/server/application/use-cases/commands/create-task-dependency.use-case.ts) | 创建依赖用例 |
+| [`packages/task/src/server/application/use-cases/queries/get-task-template-graph.use-case.ts`](../../../packages/task/src/server/application/use-cases/queries/get-task-template-graph.use-case.ts) | 任务图查询 |
+| [`packages/task/src/server/application/use-cases/queries/get-task-dashboard.use-case.ts`](../../../packages/task/src/server/application/use-cases/queries/get-task-dashboard.use-case.ts) | 任务 Dashboard 查询 |
+| [`packages/task/src/server/infrastructure/task.module.ts`](../../../packages/task/src/server/infrastructure/task.module.ts) | 服务端任务模块组合根 |
+| [`packages/task/src/server/infrastructure/adapters/prisma/task-template-prisma.repository.ts`](../../../packages/task/src/server/infrastructure/adapters/prisma/task-template-prisma.repository.ts) | Prisma 模板仓储 |
+| [`packages/task/src/server/infrastructure/adapters/prisma/task-instance-prisma.repository.ts`](../../../packages/task/src/server/infrastructure/adapters/prisma/task-instance-prisma.repository.ts) | Prisma 实例仓储 |
+| [`packages/task/src/server/infrastructure/adapters/prisma/task-dependency-prisma.repository.ts`](../../../packages/task/src/server/infrastructure/adapters/prisma/task-dependency-prisma.repository.ts) | Prisma 依赖仓储 |
 
 ## Contracts 与数据结构
 
@@ -123,21 +123,21 @@ updated: 2026-06-02T00:00:00
 | 文件 | 说明 |
 | --- | --- |
 | [`packages/app-vue/src/modules/task/components/TaskAIGenerationDialog.vue`](../../../packages/app-vue/src/modules/task/components/TaskAIGenerationDialog.vue) | AI 任务生成对话框 |
-| [`packages/task/src/api/schedule-runtime.ts`](../../../packages/task/src/api/schedule-runtime.ts) | 任务 → 日程运行时贡献，监听任务事件创建 ScheduleTask |
+| [`packages/task/src/server/infrastructure/schedule-execution-source.ts`](../../../packages/task/src/server/infrastructure/schedule-execution-source.ts) | 任务 → 日程运行时贡献，监听任务事件创建 ScheduleTask |
 
 ## 测试入口
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/task/src/domain-server/aggregates/__tests__/TaskTemplate.test.ts`](../../../packages/task/src/domain-server/aggregates/__tests__/TaskTemplate.test.ts) | TaskTemplate 聚合测试 |
-| [`packages/task/src/domain-server/aggregates/__tests__/TaskInstance.test.ts`](../../../packages/task/src/domain-server/aggregates/__tests__/TaskInstance.test.ts) | TaskInstance 聚合测试 |
-| [`packages/task/src/domain-server/aggregates/__tests__/task-dependency.spec.ts`](../../../packages/task/src/domain-server/aggregates/__tests__/task-dependency.spec.ts) | TaskDependency 聚合测试 |
-| [`packages/task/src/domain-server/services/priority-calculator.service.spec.ts`](../../../packages/task/src/domain-server/services/priority-calculator.service.spec.ts) | 优先级计算测试 |
-| [`packages/task/src/domain-server/services/task-dependency-policy.spec.ts`](../../../packages/task/src/domain-server/services/task-dependency-policy.spec.ts) | 循环检测测试 |
-| [`packages/task/src/application-server/use-cases/commands/__tests__/create-task-template.test.ts`](../../../packages/task/src/application-server/use-cases/commands/__tests__/create-task-template.test.ts) | 创建模板用例测试 |
-| [`packages/task/src/application-server/use-cases/commands/__tests__/complete-task-instance.test.ts`](../../../packages/task/src/application-server/use-cases/commands/__tests__/complete-task-instance.test.ts) | 完成实例用例测试 |
-| [`packages/task/src/application-server/use-cases/commands/__tests__/task-dependency-and-goal-binding.test.ts`](../../../packages/task/src/application-server/use-cases/commands/__tests__/task-dependency-and-goal-binding.test.ts) | 依赖与目标绑定测试 |
-| [`packages/task/src/application-server/use-cases/queries/__tests__/get-task-dashboard.test.ts`](../../../packages/task/src/application-server/use-cases/queries/__tests__/get-task-dashboard.test.ts) | Dashboard 查询测试 |
+| [`packages/task/src/server/domain/aggregates/__tests__/TaskTemplate.test.ts`](../../../packages/task/src/server/domain/aggregates/__tests__/TaskTemplate.test.ts) | TaskTemplate 聚合测试 |
+| [`packages/task/src/server/domain/aggregates/__tests__/TaskInstance.test.ts`](../../../packages/task/src/server/domain/aggregates/__tests__/TaskInstance.test.ts) | TaskInstance 聚合测试 |
+| [`packages/task/src/server/domain/aggregates/__tests__/task-dependency.spec.ts`](../../../packages/task/src/server/domain/aggregates/__tests__/task-dependency.spec.ts) | TaskDependency 聚合测试 |
+| [`packages/task/src/server/domain/services/priority-calculator.service.spec.ts`](../../../packages/task/src/server/domain/services/priority-calculator.service.spec.ts) | 优先级计算测试 |
+| [`packages/task/src/server/domain/services/task-dependency-policy.spec.ts`](../../../packages/task/src/server/domain/services/task-dependency-policy.spec.ts) | 循环检测测试 |
+| [`packages/task/src/server/application/use-cases/commands/__tests__/create-task-template.test.ts`](../../../packages/task/src/server/application/use-cases/commands/__tests__/create-task-template.test.ts) | 创建模板用例测试 |
+| [`packages/task/src/server/application/use-cases/commands/__tests__/complete-task-instance.test.ts`](../../../packages/task/src/server/application/use-cases/commands/__tests__/complete-task-instance.test.ts) | 完成实例用例测试 |
+| [`packages/task/src/server/application/use-cases/commands/__tests__/task-dependency-and-goal-binding.test.ts`](../../../packages/task/src/server/application/use-cases/commands/__tests__/task-dependency-and-goal-binding.test.ts) | 依赖与目标绑定测试 |
+| [`packages/task/src/server/application/use-cases/queries/__tests__/get-task-dashboard.test.ts`](../../../packages/task/src/server/application/use-cases/queries/__tests__/get-task-dashboard.test.ts) | Dashboard 查询测试 |
 | [`packages/task/src/api/routes/task-template.routes.spec.ts`](../../../packages/task/src/api/routes/task-template.routes.spec.ts) | 模板 routes 测试 |
 | [`packages/task/src/api/routes/task-instance.routes.spec.ts`](../../../packages/task/src/api/routes/task-instance.routes.spec.ts) | 实例 routes 测试 |
 | [`packages/task/src/api/routes/task-dependency.routes.spec.ts`](../../../packages/task/src/api/routes/task-dependency.routes.spec.ts) | 依赖 routes 测试 |

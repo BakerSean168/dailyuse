@@ -113,11 +113,9 @@ export function createMockId(): string {
 }
 
 /**
- * 延迟函数
+ * Residual 1192: dual delay retired onto @dailyuse/utils/frontend sole.
  */
-export function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+export { delay } from '@dailyuse/utils/frontend';
 
 /**
  * 创建 spy 来验证函数调用顺序

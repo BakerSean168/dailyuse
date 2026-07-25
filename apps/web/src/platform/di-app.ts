@@ -12,7 +12,6 @@ import {
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
   GOAL_SERVICE_KEY,
-  EDITOR_SERVICE_KEY,
   NOTIFICATION_SERVICE_KEY,
   REMINDER_SERVICE_KEY,
   REPOSITORY_SERVICE_KEY,
@@ -28,7 +27,6 @@ import {
   defaultModuleCapsules,
   useAuthenticationStore,
 } from '@dailyuse/app-vue/web-core';
-import { setEditorRuntimeService } from '@dailyuse/app-vue';
 import { resultHttpClient } from './http';
 import { createLazyService } from './lazy-service';
 
@@ -67,11 +65,6 @@ const repositoryService = createLazyService(async () => {
   return createRepositoryHttpClient(resultHttpClient);
 });
 
-const editorService = createLazyService(async () => {
-  const { createEditorHttpClient } = await import('@dailyuse/editor/client');
-  return createEditorHttpClient(resultHttpClient);
-});
-
 const scheduleService = createLazyService(async () => {
   const { createScheduleHttpClient } = await import('@dailyuse/schedule/client');
   return createScheduleHttpClient(resultHttpClient);
@@ -83,9 +76,7 @@ const settingService = createLazyService(async () => {
 });
 
 const dataPortabilityService = createLazyService(async () => {
-  const { createDataPortabilityHttpClient } = await import(
-    '@dailyuse/data-portability/client'
-  );
+  const { createDataPortabilityHttpClient } = await import('@dailyuse/data-portability/client');
   return createDataPortabilityHttpClient(resultHttpClient);
 });
 
@@ -112,7 +103,6 @@ export function installAppServices(app: App): void {
   app.provide(NOTIFICATION_SERVICE_KEY, notificationService);
   app.provide(REMINDER_SERVICE_KEY, reminderService);
   app.provide(REPOSITORY_SERVICE_KEY, repositoryService);
-  app.provide(EDITOR_SERVICE_KEY, editorService);
   app.provide(SCHEDULE_SERVICE_KEY, scheduleService);
   app.provide(SETTING_SERVICE_KEY, settingService);
   app.provide(DATA_PORTABILITY_SERVICE_KEY, dataPortabilityService);
@@ -120,8 +110,6 @@ export function installAppServices(app: App): void {
   app.provide(TASK_SERVICE_KEY, taskService);
 
   app.provide(DASHBOARD_SERVICE_KEY, dashboardService);
-  setEditorRuntimeService(editorService);
-
   // V2 shell capsule navigation (UI_REDESIGN_V2_PLAN §2.2 / Brief §12-4)
   app.provide(MODULE_CAPSULES_KEY, defaultModuleCapsules);
   app.provide(LOGOUT_HANDLER_KEY, async () => {

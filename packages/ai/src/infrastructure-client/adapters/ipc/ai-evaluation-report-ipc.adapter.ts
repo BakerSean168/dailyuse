@@ -3,19 +3,19 @@ import type {
   GetAIEvaluationOverviewReq,
   GetAIEvaluationOverviewRes,
 } from '@dailyuse/contracts/ai';
+import type { Result } from '@dailyuse/contracts/result';
 import type { AIEvaluationReportApiClient, IResultIpcClient } from '../types';
-import { unwrapResultOrThrow } from '../result-client-error';
 
+/** IPC adapter — returns Result, never throws (residual 98). */
 export class AIEvaluationReportIpcAdapter implements AIEvaluationReportApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async getEvaluationOverview(
     request: GetAIEvaluationOverviewReq = {},
-  ): Promise<GetAIEvaluationOverviewRes> {
-    const result = await this.ipcClient.invoke<GetAIEvaluationOverviewRes>(
+  ): Promise<Result<GetAIEvaluationOverviewRes>> {
+    return this.ipcClient.invoke<GetAIEvaluationOverviewRes>(
       AIChannels.EVALUATION_OVERVIEW_GET,
       request,
     );
-    return unwrapResultOrThrow(result);
   }
 }

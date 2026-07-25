@@ -55,13 +55,14 @@ export class GoalRecordPrismaRepository
    * Find records by key result ID
    */
   async findByKeyResultId(
+    identityId: string,
     keyResultId: string,
     options?: GoalRecordQueryOptions,
   ): Promise<GoalRecord[]> {
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
     const data = await this.prisma.goalRecord.findMany({
-      where: { keyResultId, deletedAt: null, ...where },
+      where: { identityId, keyResultId, deletedAt: null, ...where },
       orderBy,
       ...(take ? { take } : {}),
     });
@@ -72,11 +73,16 @@ export class GoalRecordPrismaRepository
   /**
    * Find records by goal ID (via KeyResult relation)
    */
-  async findByGoalId(goalId: string, options?: GoalRecordQueryOptions): Promise<GoalRecord[]> {
+  async findByGoalId(
+    identityId: string,
+    goalId: string,
+    options?: GoalRecordQueryOptions,
+  ): Promise<GoalRecord[]> {
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
     const data = await this.prisma.goalRecord.findMany({
       where: {
+        identityId,
         keyResult: { goalId },
         deletedAt: null,
         ...where,
@@ -92,6 +98,7 @@ export class GoalRecordPrismaRepository
    * Find records by multiple key result IDs, grouped by key result
    */
   async findByKeyResultIds(
+    identityId: string,
     keyResultIds: string[],
     options?: GoalRecordQueryOptions,
   ): Promise<Map<string, GoalRecord[]>> {
@@ -99,6 +106,7 @@ export class GoalRecordPrismaRepository
 
     const data = await this.prisma.goalRecord.findMany({
       where: {
+        identityId,
         keyResultId: { in: keyResultIds },
         deletedAt: null,
         ...where,
@@ -123,9 +131,9 @@ export class GoalRecordPrismaRepository
   /**
    * Count records for a key result
    */
-  async countByKeyResultId(keyResultId: string): Promise<number> {
+  async countByKeyResultId(identityId: string, keyResultId: string): Promise<number> {
     return this.prisma.goalRecord.count({
-      where: { keyResultId, deletedAt: null },
+      where: { identityId, keyResultId, deletedAt: null },
     });
   }
 
@@ -161,20 +169,34 @@ export class GoalRecordPrismaRepository
   }
 
   /**
-   * Delete a record by ID
+   * Find a record by identity + ID
    */
-  async delete(recordId: string): Promise<void> {
-    await this.prisma.goalRecord.delete({
-      where: { id: recordId },
+  async findByIdForIdentity(identityId: string, recordId: string): Promise<GoalRecord | null> {
+    const row = await this.prisma.goalRecord.findFirst({
+      where: { id: recordId, identityId },
     });
+    return row ? PrismaGoalRecordMapper.toDomain(row) : null;
+  }
+
+  /**
+   * Delete a record by identity + ID
+   */
+  async delete(identityId: string, recordId: string): Promise<void> {
+    const deleted = await this.prisma.goalRecord.deleteMany({
+      where: { id: recordId, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Goal record not found for the current identity.');
+    }
   }
 
   /**
    * Delete multiple records by IDs
    */
-  async deleteMany(recordIds: string[]): Promise<void> {
+  async deleteMany(identityId: string, recordIds: string[]): Promise<void> {
+    if (recordIds.length === 0) return;
     await this.prisma.goalRecord.deleteMany({
-      where: { id: { in: recordIds } },
+      where: { id: { in: recordIds }, identityId },
     });
   }
 }

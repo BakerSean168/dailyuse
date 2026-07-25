@@ -47,6 +47,9 @@ export const IDENTITY_ID_TABLES = new Set([
   'notification_preferences',
   'notification_channels',
   'notification_history',
+  // Residual 539: editor_* tables stay for portable backup re-import / PowerSync
+  // Residual 885: portable boundary re-lock — editor_* is backup continuity only, not product editor runtime.
+  // continuity only — not a first-party @dailyuse/editor product runtime surface.
   'editor_workspaces',
   'editor_workspace_sessions',
   'editor_workspace_session_groups',

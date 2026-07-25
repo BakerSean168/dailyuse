@@ -9,8 +9,10 @@ import { brandedId } from '../../../primitives';
 import type { AuthSessionId } from '../value-objects/auth-session-id';
 import type { IdentityId } from '../value-objects/identity-id';
 import type { AuthResponseDTO } from '../dtos/auth-response';
-import type { AuthIdentityClientDTO } from '../aggregates/auth-identity-client';
-import type { AuthSessionClientDTO } from '../aggregates/auth-session-client';
+import {
+  CurrentUserResponseSchema,
+  SessionListResponseSchema,
+} from './response-schemas';
 
 // ============================================================================
 // Token Refresh
@@ -34,7 +36,6 @@ export type RefreshTokenRes = AuthResponseDTO;
  * 登出
  */
 export type LogoutReq = void;
-export type LogoutRes = void;
 
 // ============================================================================
 // Token Validation
@@ -45,11 +46,13 @@ export type LogoutRes = void;
  */
 export type ValidateTokenReq = void;
 
-export interface ValidateTokenRes {
-  valid: boolean;
-  identityId?: IdentityId;
-  expiresAt?: number;
-}
+// Residual 769: ValidateTokenRes dual retired — sole ResSchema + z.infer alias.
+export const ValidateTokenResSchema = z.object({
+  valid: z.boolean(),
+  identityId: brandedId<IdentityId>().optional(),
+  expiresAt: z.number().optional(),
+});
+export type ValidateTokenRes = z.infer<typeof ValidateTokenResSchema>;
 
 // ============================================================================
 // Get Current User
@@ -57,16 +60,8 @@ export interface ValidateTokenRes {
 
 export type GetCurrentUserReq = void;
 
-export interface CurrentUserDTO {
-  identity: AuthIdentityClientDTO;
-  session?: AuthSessionClientDTO | null;
-  /** Present when client should drive post-register / unverified email UX. */
-  emailVerification?: {
-    required: boolean;
-    emailMasked?: string;
-  };
-}
-
+// Residual 713: current-user dual body retired — OpenAPI + transport use CurrentUserResponseSchema.
+export type CurrentUserDTO = z.infer<typeof CurrentUserResponseSchema>;
 export type GetCurrentUserRes = CurrentUserDTO;
 
 // ============================================================================
@@ -75,9 +70,8 @@ export type GetCurrentUserRes = CurrentUserDTO;
 
 export type ListSessionsReq = void;
 
-export interface ListSessionsRes {
-  sessions: AuthSessionClientDTO[];
-}
+// Residual 713: session list dual body retired — OpenAPI + transport use SessionListResponseSchema.
+export type ListSessionsRes = z.infer<typeof SessionListResponseSchema>;
 
 export const RevokeSessionSchema = z.object({
   sessionId: brandedId<AuthSessionId>(),
@@ -90,8 +84,10 @@ export type RevokeSessionRes = void;
 // Guest Mode (Desktop)
 // ============================================================================
 
-export interface GuestModeRes {
-  identityId: IdentityId;
-  mode: string;
-  message: string;
-}
+// Residual 769: GuestModeRes dual retired — sole ResSchema + z.infer alias.
+export const GuestModeResSchema = z.object({
+  identityId: brandedId<IdentityId>(),
+  mode: z.string(),
+  message: z.string(),
+});
+export type GuestModeRes = z.infer<typeof GuestModeResSchema>;

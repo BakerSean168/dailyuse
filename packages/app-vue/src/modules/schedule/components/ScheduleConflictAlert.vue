@@ -93,6 +93,7 @@ import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, CheckCircle, Lightbulb, Loader2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import { formatScheduleDurationMinutes } from '../../../shared/utils/format-schedule-duration-minutes';
 import {
   ConflictSeverity,
   ConflictSuggestionType,
@@ -116,6 +117,12 @@ const emit = defineEmits<Emits>();
 
 const { t, locale } = useI18n();
 
+/**
+ * Residual 1246 keep-boundary: ScheduleConflictAlert conflict summary — i18n noConflict / conflictsDetected.
+ * Full loading/error/no-conflict/has-conflict states; not English describeConflict pill strings.
+ * Soft residual 1246: ConflictAlert hasConflict-only path + formatSuggestion advanceTo family (no force-merge).
+ */
+
 const getSeverityVariant = (severity?: ConflictSeverity): 'default' | 'destructive' | 'outline' => {
   if (severity === ConflictSeverity.Severe) return 'destructive';
   if (severity === ConflictSeverity.Moderate) return 'default';
@@ -131,16 +138,12 @@ const getSeverityLabel = (severity?: ConflictSeverity): string => {
   return severity ? labels[severity] || t('common.unknown') : t('common.unknown');
 };
 
-const formatDuration = (minutes: number): string => {
-  if (minutes < 60) {
-    return t('schedule.duration.minutes', { n: minutes });
-  }
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return mins > 0
-    ? t('schedule.duration.hoursMinutes', { h: hours, m: mins })
-    : t('schedule.duration.hours', { h: hours });
-};
+/**
+ * Residual 1243 keep-boundary / Residual 1324: schedule conflict minutes duration dual retired onto
+ * formatScheduleDurationMinutes sole (total minutes → schedule.duration.* i18n; hours-only band).
+ * Soft residual: ConflictAlert ms floor path + presentation durationMs/Sec + task graph differ (no force-merge).
+ */
+const formatDuration = (minutes: number): string => formatScheduleDurationMinutes(minutes, t);
 
 const getSuggestionLabel = (suggestion: ConflictSuggestion): string => {
   if (suggestion.type === ConflictSuggestionType.MoveEarlier) {

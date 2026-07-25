@@ -68,21 +68,23 @@ model Account {
   langGraphCheckpointWrites       LangGraphCheckpointWrite[]
 
   // PowerSync: denormalized identity relations
-  keyResults                      KeyResult[]                @relation("AccountKeyResults")
-  goalRecords                     GoalRecord[]               @relation("AccountGoalRecords")
-  goalReviews                     GoalReview[]               @relation("AccountGoalReviews")
-  keyResultWeightSnapshots        KeyResultWeightSnapshot[]  @relation("AccountKeyResultWeightSnapshots")
-  taskDependencies                TaskDependency[]           @relation("AccountTaskDependencies")
-  taskTemplateHistory             TaskTemplateHistory[]      @relation("AccountTaskTemplateHistory")
-  scheduleExecutions              ScheduleExecution[]        @relation("AccountScheduleExecutions")
-  reminderHistory                 ReminderHistory[]          @relation("AccountReminderHistory")
-  reminderResponses               ReminderResponse[]         @relation("AccountReminderResponses")
-  notificationChannels            NotificationChannel[]      @relation("AccountNotificationChannels")
-  notificationHistory             NotificationHistory[]      @relation("AccountNotificationHistory")
-  aiMessages                      AiMessage[]                @relation("AccountAiMessages")
-  folders                         Folder[]                   @relation("AccountFolders")
-  resources                       Resource[]                 @relation("AccountResources")
-  repositoryResources             RepositoryResource[]       @relation("AccountRepositoryResources")
+  keyResults                     KeyResult[]                     @relation("AccountKeyResults")
+  goalRecords                    GoalRecord[]                    @relation("AccountGoalRecords")
+  goalReviews                    GoalReview[]                    @relation("AccountGoalReviews")
+  keyResultWeightSnapshots       KeyResultWeightSnapshot[]       @relation("AccountKeyResultWeightSnapshots")
+  taskDependencies               TaskDependency[]                @relation("AccountTaskDependencies")
+  taskTemplateHistory            TaskTemplateHistory[]           @relation("AccountTaskTemplateHistory")
+  scheduleExecutions             ScheduleExecution[]             @relation("AccountScheduleExecutions")
+  reminderHistory                ReminderHistory[]               @relation("AccountReminderHistory")
+  reminderResponses              ReminderResponse[]              @relation("AccountReminderResponses")
+  notificationChannels           NotificationChannel[]           @relation("AccountNotificationChannels")
+  notificationHistory            NotificationHistory[]           @relation("AccountNotificationHistory")
+  aiMessages                     AiMessage[]                     @relation("AccountAiMessages")
+  folders                        Folder[]                        @relation("AccountFolders")
+  resources                      Resource[]                      @relation("AccountResources")
+  repositoryResources            RepositoryResource[]            @relation("AccountRepositoryResources")
+  knowledgeRepositoryConnections KnowledgeRepositoryConnection[]
+  knowledgeWriteRequests         KnowledgeWriteRequest[]
 
   @@index([emailAddress])
   @@index([phoneFullNumber])

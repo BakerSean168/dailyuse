@@ -2,6 +2,7 @@ import type { LoginByEmailReq } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
 import type { IPasswordHasher } from '..';
+import { AuthIdentityStatus } from '../value-objects/auth-identity-status';
 
 // Business exceptions
 export class UserNotFoundError extends Error {
@@ -15,6 +16,13 @@ export class InvalidPasswordError extends Error {
   constructor() {
     super('Invalid password provided.');
     this.name = 'InvalidPasswordError';
+  }
+}
+
+export class IdentityDisabledError extends Error {
+  constructor() {
+    super('Identity is disabled.');
+    this.name = 'IdentityDisabledError';
   }
 }
 
@@ -43,7 +51,13 @@ export class LoginService {
       throw new UserNotFoundError(email);
     }
 
-    // 2. Verify password match
+    // 2. Closed / disabled accounts cannot re-login even with a valid password.
+    // 已注销 / 禁用身份即使密码正确也不可再登录。
+    if (AuthIdentityStatus.isDisabled(identity.status)) {
+      throw new IdentityDisabledError();
+    }
+
+    // 3. Verify password match
     // This is a domain service responsibility: cross-aggregate business rule validation.
     // Password verification is typically encapsulated in HashedPassword value object's verify method.
     const passwordValid = await identity.verifyPassword(password, this.passwordHasher);

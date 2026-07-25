@@ -28,13 +28,11 @@ export interface IReminderTemplateRepository {
   save(template: ReminderTemplate): Promise<void>;
 
   /**
-   * 通过 ID 查找聚合根
-   *
-   * @param id 提醒模板 ID
-   * @param options.includeHistory 是否加载历史记录（默认 false，懒加载）
-   * @returns 聚合根实例，不存在则返回 null
+   * 通过 identity + ID 查找聚合根（身份隔离读路径）
+   * 不存在或不属于该 identity 时返回 null
    */
-  findById(
+  findByIdForIdentity(
+    identityId: string,
     id: string,
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate | null>;
@@ -62,17 +60,18 @@ export interface IReminderTemplateRepository {
    */
   findByGroupId(
     groupId: string | null,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]>;
 
   /**
    * 查找所有活跃的提醒模板
    *
-   * @param identityId 身份 ID（可选，不传则查找所有）
+   * @param identityId 身份 ID
    * @returns 活跃的提醒模板列表
    */
   findActive(
-    identityId?: string,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]>;
 
@@ -93,6 +92,7 @@ export interface IReminderTemplateRepository {
    * @returns 提醒模板列表
    */
   findByIds(
+    identityId: string,
     ids: string[],
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]>;
@@ -102,14 +102,14 @@ export interface IReminderTemplateRepository {
    *
    * @param id 提醒模板 ID
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * 检查提醒模板是否存在
    *
    * @param id 提醒模板 ID
    */
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 
   /**
    * 统计身份下的提醒模板数量

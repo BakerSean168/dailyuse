@@ -61,7 +61,7 @@ describe('NotificationQueryApplicationService', () => {
     notificationRepository = createMockRepo<INotificationRepository>({
       findByIdentityId: vi.fn().mockResolvedValue([]),
       findByRelatedEntity: vi.fn().mockResolvedValue([]),
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     service = new NotificationQueryApplicationService(notificationRepository);
   });
@@ -146,6 +146,7 @@ describe('NotificationQueryApplicationService', () => {
     });
 
     expect(notificationRepository.findByRelatedEntity).toHaveBeenCalledWith(
+      IDENTITY_ID,
       'Task',
       'TaskId_550e8400-e29b-41d4-a716-446655440001',
     );
@@ -156,7 +157,7 @@ describe('NotificationQueryApplicationService', () => {
   });
 
   it('returns NOT_FOUND for missing notification detail', async () => {
-    const result = await service.getNotification('missing');
+    const result = await service.getNotification('missing', IDENTITY_ID);
 
     expect(result).toEqual({
       ok: false,

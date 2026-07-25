@@ -125,6 +125,9 @@ import type {
   ConflictSuggestion,
   CreateScheduleRequest,
 } from '@dailyuse/contracts/schedule';
+import { formatDateToYMD } from '../../../shared/utils/format-date-to-ymd';
+import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
+import { formatScheduleDurationMinutes } from '../../../shared/utils/format-schedule-duration-minutes';
 
 interface Props {
   loading?: boolean;
@@ -151,14 +154,9 @@ const { t } = useI18n();
 const now = Date.now();
 const oneHourLater = now + 60 * 60 * 1000;
 
+/** Residual 1315: datetime-local pad dual retired onto formatDateToYMD + formatLocalHHmm soles. */
 function formatDateTimeToInput(timestamp: number): string {
-  const d = new Date(timestamp);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+  return `${formatDateToYMD(new Date(timestamp))}T${formatLocalHHmm(timestamp)}`;
 }
 
 const form = reactive({
@@ -178,13 +176,9 @@ const isFormValid = computed(() => {
   return form.title && form.startTime && form.endTime && form.endTime > form.startTime;
 });
 
+/** Residual 1324: formatDuration dual retired onto formatScheduleDurationMinutes sole. */
 function formatDuration(minutes: number): string {
-  if (minutes < 60) return t('schedule.duration.minutes', { n: minutes });
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return mins > 0
-    ? t('schedule.duration.hoursMinutes', { h: hours, m: mins })
-    : t('schedule.duration.hours', { h: hours });
+  return formatScheduleDurationMinutes(minutes, t);
 }
 
 function handleStartTimeChange(event: Event) {

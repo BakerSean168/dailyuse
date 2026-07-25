@@ -22,8 +22,8 @@ model EditorWorkspace {
   sessions EditorWorkspaceSession[]
   account  Account                  @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
-  @@index([isActive])
   @@unique([identityId, projectPath])
+  @@index([isActive])
   @@map("editor_workspaces")
 }
 

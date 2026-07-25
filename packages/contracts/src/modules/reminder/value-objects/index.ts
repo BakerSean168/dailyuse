@@ -12,6 +12,12 @@ export { NotificationChannel } from './notification-channel';
 export { NotificationAction } from './notification-action';
 export { TriggerResult } from './trigger-result';
 
+export {
+  SoundConfigSchema,
+  VibrationConfigSchema,
+  NotificationActionConfigSchema,
+  NotificationConfigSchema,
+} from './notification-config';
 export type {
   SoundConfig,
   VibrationConfig,
@@ -20,6 +26,11 @@ export type {
   NotificationConfigDTO,
 } from './notification-config';
 
+export {
+  FixedTimeTriggerSchema,
+  IntervalTriggerSchema,
+  TriggerConfigSchema,
+} from './trigger-config';
 export type {
   FixedTimeTrigger,
   IntervalTrigger,
@@ -27,16 +38,19 @@ export type {
   TriggerConfigDTO,
 } from './trigger-config';
 
+export { ActiveTimeConfigSchema } from './active-time-config';
 export type {
   IActiveTimeConfig,
   ActiveTimeConfigDTO,
 } from './active-time-config';
 
+export { ActiveHoursConfigSchema } from './active-hours-config';
 export type {
   IActiveHoursConfig,
   ActiveHoursConfigDTO,
 } from './active-hours-config';
 
+export { GroupStatsSchema } from './group-stats';
 export type {
   IGroupStats,
   GroupStatsDTO,
@@ -51,3 +65,6 @@ export type {
   FrequencyAdjustmentDTO,
   FrequencyAdjustment,
 } from './frequency-adjustment';
+
+export type { TimeSlotDTO } from './time-slot';
+export { TimeSlotSchema } from './time-slot';

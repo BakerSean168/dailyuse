@@ -1,13 +1,13 @@
 import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { AuthBootstrapSnapshot } from '@dailyuse/contracts/authentication';
+import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
+import type { DesktopAuthApi } from './desktop-auth-recovery';
 
-export type DesktopBootstrapApi = {
-  invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
-};
-
+// Residual 903: DesktopBootstrapApi dual retired — exact shape of DesktopAuthApi.
+// Residual 919: DesktopBootstrapApi name fully retired — hydrate accepts DesktopAuthApi sole body.
 export async function hydrateDesktopBootstrapAuthState(
-  api?: DesktopBootstrapApi,
+  api?: DesktopAuthApi,
 ): Promise<boolean> {
   if (!api?.invoke) {
     useAuthenticationStore().reset();
@@ -15,13 +15,16 @@ export async function hydrateDesktopBootstrapAuthState(
   }
 
   const store = useAuthenticationStore();
-  const snapshot = (await api.invoke(AuthChannels.GET_BOOTSTRAP_SNAPSHOT)) as AuthBootstrapSnapshot;
+  const response = (await api.invoke(
+    AuthChannels.GET_BOOTSTRAP_SNAPSHOT,
+  )) as IpcResult<AuthBootstrapSnapshot>;
+  const result = fromIpcResult(response);
 
-  if (!snapshot?.status) {
+  if (!isOk(result) || !result.data?.status) {
     store.reset();
     return false;
   }
 
-  store.hydrateDesktopBootstrapSnapshot(snapshot);
+  store.hydrateDesktopBootstrapSnapshot(result.data);
   return true;
 }

@@ -12,6 +12,7 @@
  */
 
 import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultIpcClient } from '@dailyuse/ipc-client';
 import { error, type Result } from '@dailyuse/contracts/result';
 import {
   GovernanceChannels,
@@ -23,9 +24,7 @@ import {
   type GetRuleRes,
   type GetRuleRevisionsQueryInput,
   type GetRuleRevisionsRes,
-  type GovernanceRpcChannel,
   type GovernanceRpcRequest,
-  type GovernanceRpcResponse,
   type ListRulesQueryInput,
   type ListRulesRes,
   type SearchRulesQueryInput,
@@ -49,17 +48,6 @@ export interface GovernanceClientPort {
   listRules(query?: ListRulesQueryInput): Promise<Result<ListRulesRes>>;
   searchRules(query: SearchRulesQueryInput): Promise<Result<SearchRulesRes>>;
   getRevisions(query: GetRuleRevisionsQueryInput): Promise<Result<GetRuleRevisionsRes>>;
-}
-
-/**
- * Minimal transport contract for Electron renderer clients.
- * Electron 渲染进程客户端使用的最小传输契约。
- */
-export interface GovernanceIpcTransport {
-  invoke<K extends GovernanceRpcChannel>(
-    channel: K,
-    payload: GovernanceRpcRequest<K>,
-  ): Promise<Result<GovernanceRpcResponse<K>>>;
 }
 
 class HttpGovernanceClient implements GovernanceClientPort {
@@ -110,7 +98,7 @@ class HttpGovernanceClient implements GovernanceClientPort {
 }
 
 class IpcGovernanceClient implements GovernanceClientPort {
-  constructor(private readonly ipcClient: GovernanceIpcTransport) {}
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
   createRule(req: CreateRuleReq): Promise<Result<CreateRuleRes>> {
     return this.ipcClient.invoke(GovernanceChannels.RULE_CREATE, req);
@@ -162,11 +150,11 @@ export function createGovernanceHttpClient(
  * Creates the governance IPC client seam.
  * 创建治理模块的 IPC client seam。
  *
- * @param ipcClient - Shared typed IPC transport supplied by the app layer.
+ * @param ipcClient - Shared IResultIpcClient (ResultIpcClient) supplied by the app layer.
  * @returns GovernanceClientPort backed by IPC transport.
  */
 export function createGovernanceIpcClient(
-  ipcClient: GovernanceIpcTransport,
+  ipcClient: IResultIpcClient,
 ): GovernanceClientPort {
   return new IpcGovernanceClient(ipcClient);
 }

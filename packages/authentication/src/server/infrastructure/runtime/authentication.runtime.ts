@@ -11,9 +11,15 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
+import type { AccountEventMap } from '@dailyuse/contracts/account';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
 import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
 import { createLogger } from '@dailyuse/utils/logger';
+import type {
+  IAuthIdentityRepository,
+  IAuthSessionRepository,
+} from '../../domain';
+import { DisableIdentityForAccountCloseUseCase } from '../../application/use-cases/commands/disable-identity-for-account-close.use-case';
 import type { AuthenticationModuleRuntimeContribution } from '..';
 
 const logger = createLogger('AuthenticationRuntime');
@@ -34,12 +40,7 @@ type AuthenticationObservedEventHandler<K extends AuthenticationObservedEventNam
 ) => void;
 
 const authenticationEvents = createTypedEventSubscriber<AuthenticationObservedEventMap>(eventBus);
-
-/**
- * Runtime contribution contract used by module transports.
- * 模块传输层使用的运行时贡献契约。
- */
-export type AuthenticationRuntimeContribution = AuthenticationModuleRuntimeContribution;
+const accountEvents = createTypedEventSubscriber<AccountEventMap>(eventBus);
 
 /**
  * Logging-only subscribers for authentication domain events.
@@ -58,7 +59,12 @@ const authenticationEventHandlers: {
     logger.info('[Authentication] User logged out');
   },
   'auth:registered': (payload) => {
-    logger.info(`[Authentication] User registered (email: ${payload.email})`);
+    const email = typeof payload.email === 'string' ? payload.email : '';
+    const masked =
+      email.includes('@')
+        ? `${email[0]}***@${email.split('@')[1] ?? ''}`
+        : '***';
+    logger.info(`[Authentication] User registered (email: ${masked})`);
   },
   'auth:password-changed': () => {
     logger.info('[Authentication] Password changed');
@@ -81,14 +87,45 @@ function unsubscribeAuthenticationEvent<K extends AuthenticationObservedEventNam
   authenticationEvents.off(eventName, authenticationEventHandlers[eventName]);
 }
 
+export interface CreateAuthenticationRuntimeContributionOptions {
+  readonly identityRepository?: IAuthIdentityRepository;
+  readonly sessionRepository?: IAuthSessionRepository;
+}
+
 /**
  * Creates an instance-owned runtime contribution.
  * 创建实例级 runtime 贡献对象。
  *
- * @returns Instance-owned authentication runtime contribution.
+ * When identity/session repositories are provided, also cascades account:closed
+ * into Auth disable + session revoke (Phase C).
+ * 提供仓储时，将 account:closed 级联为 Auth disable + 撤 session（Phase C）。
  */
-export function createAuthenticationRuntimeContribution(): AuthenticationRuntimeContribution {
+export function createAuthenticationRuntimeContribution(
+  options: CreateAuthenticationRuntimeContributionOptions = {},
+): AuthenticationModuleRuntimeContribution {
   let started = false;
+  const disableOnClose =
+    options.identityRepository && options.sessionRepository
+      ? new DisableIdentityForAccountCloseUseCase(
+          options.identityRepository,
+          options.sessionRepository,
+        )
+      : null;
+
+  const onAccountClosed = async (payload: AccountEventMap['account:closed']) => {
+    if (!disableOnClose) {
+      return;
+    }
+    const identityId = String(payload.identityId);
+    try {
+      await disableOnClose.execute(identityId);
+    } catch (error) {
+      logger.error('[AuthenticationRuntime] Failed to cascade account:closed', {
+        identityId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
 
   return {
     start(): void {
@@ -99,11 +136,12 @@ export function createAuthenticationRuntimeContribution(): AuthenticationRuntime
       for (const eventName of authenticationEventNames) {
         subscribeAuthenticationEvent(eventName);
       }
-
+      if (disableOnClose) {
+        accountEvents.on('account:closed', onAccountClosed);
+      }
       started = true;
-      logger.info('[Authentication] Runtime contribution started');
+      logger.info('[AuthenticationRuntime] Authentication runtime started');
     },
-
     stop(): void {
       if (!started) {
         return;
@@ -112,9 +150,11 @@ export function createAuthenticationRuntimeContribution(): AuthenticationRuntime
       for (const eventName of authenticationEventNames) {
         unsubscribeAuthenticationEvent(eventName);
       }
-
+      if (disableOnClose) {
+        accountEvents.off('account:closed', onAccountClosed);
+      }
       started = false;
-      logger.info('[Authentication] Runtime contribution stopped');
+      logger.info('[AuthenticationRuntime] Authentication runtime stopped');
     },
   };
 }

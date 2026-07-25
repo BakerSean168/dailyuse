@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TaskFolder 仓储接口
  * 任务文件夹聚合根仓储
  *
@@ -16,9 +16,9 @@ export interface ITaskFolderRepository {
   save(folder: TaskFolderServerDTO): Promise<void>;
 
   /**
-   * 根据 ID 查找任务文件夹
+   * 根据 ID + identity 查找任务文件夹（唯一授权敏感读路径）
    */
-  findById(id: string): Promise<TaskFolderServerDTO | null>;
+  findByIdForIdentity(identityId: string, id: string): Promise<TaskFolderServerDTO | null>;
 
   /**
    * 根据用户 ID 查找所有任务文件夹
@@ -26,12 +26,12 @@ export interface ITaskFolderRepository {
   findByIdentityId(identityId: string): Promise<TaskFolderServerDTO[]>;
 
   /**
-   * 删除任务文件夹
+   * 删除任务文件夹（必须同时匹配 identity）
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
-   * 检查文件夹是否存在
+   * 检查文件夹是否存在（identity-scoped）
    */
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 }

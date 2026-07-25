@@ -5,7 +5,7 @@
  * 集中管理请求拦截器（Token 注入）和基础配置。
  *
  * 设计原则：
- * - 实例与业务逻辑解耦：响应处理由 AxiosHttpClient / ResultHttpClient 各自负责
+ * - 实例与业务逻辑解耦：响应处理由 ResultHttpClient 负责
  * - 只在此处做「请求侧」公共操作（注入 Token、日志等）
  * - 响应拦截器留给上层 Client wrapper 按需注册
  *
@@ -16,13 +16,13 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
-import { DEFAULT_HTTP_CLIENT_CONFIG, type AxiosHttpClientConfig } from './types';
+import { DEFAULT_HTTP_CLIENT_CONFIG, type HttpClientConfig } from './types';
 
 /**
  * 创建一个预配置的 Axios 实例
  *
  * 只注册【请求拦截器】— 负责 Token 注入和请求日志。
- * 响应拦截器由 AxiosHttpClient / ResultHttpClient 分别注册。
+ * 响应拦截器由 ResultHttpClient 注册。
  *
  * @param config - 客户端配置
  * @returns 配置好的 Axios 实例
@@ -36,7 +36,7 @@ import { DEFAULT_HTTP_CLIENT_CONFIG, type AxiosHttpClientConfig } from './types'
  * });
  * ```
  */
-export function createAxiosInstance(config: AxiosHttpClientConfig = {}): AxiosInstance {
+export function createAxiosInstance(config: HttpClientConfig = {}): AxiosInstance {
   const {
     baseURL = DEFAULT_HTTP_CLIENT_CONFIG.baseURL,
     timeout = DEFAULT_HTTP_CLIENT_CONFIG.timeout,

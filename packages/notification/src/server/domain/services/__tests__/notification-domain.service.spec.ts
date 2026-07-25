@@ -28,7 +28,7 @@ describe('NotificationDomainService', () => {
     notificationRepo = createMockRepo<INotificationRepository>({
       save: vi.fn().mockResolvedValue(undefined),
       saveMany: vi.fn().mockResolvedValue(undefined),
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       findByIdentityId: vi.fn().mockResolvedValue([]),
       findUnread: vi.fn().mockResolvedValue([]),
       countUnread: vi.fn().mockResolvedValue(0),
@@ -40,6 +40,7 @@ describe('NotificationDomainService', () => {
     });
     templateRepo = createMockRepo<INotificationTemplateRepository>({
       findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
     });
     preferenceRepo = createMockRepo<INotificationPreferenceRepository>({
       findByIdentityId: vi.fn().mockResolvedValue(null),
@@ -137,18 +138,18 @@ describe('NotificationDomainService', () => {
       });
       await notification.send();
       notification.markAsDelivered();
-      vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
+      vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(notification);
 
-      await service.markAsRead(String(notification.id));
+      await service.markAsRead(testIdentityId, String(notification.id));
 
       expect(notification.isRead).toBe(true);
       expect(notificationRepo.save).toHaveBeenCalled();
     });
 
     it('should throw when notification is not found', async () => {
-      vi.mocked(notificationRepo.findById).mockResolvedValue(null);
+      vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(null);
 
-      await expect(service.markAsRead('non-existent')).rejects.toThrow('Notification not found');
+      await expect(service.markAsRead(testIdentityId, 'non-existent')).rejects.toThrow('Notification not found');
     });
   });
 
@@ -174,11 +175,11 @@ describe('NotificationDomainService', () => {
         await notification.send();
         notification.markAsDelivered();
       }
-      vi.mocked(notificationRepo.findById)
+      vi.mocked(notificationRepo.findByIdForIdentity)
         .mockResolvedValueOnce(notifications[0])
         .mockResolvedValueOnce(notifications[1]);
 
-      await service.markManyAsRead(['id-1', 'id-2']);
+      await service.markManyAsRead(testIdentityId, ['id-1', 'id-2']);
 
       expect(notificationRepo.saveMany).toHaveBeenCalledWith(notifications);
       expect(notifications.every((notification) => notification.isRead)).toBe(true);
@@ -218,18 +219,27 @@ describe('NotificationDomainService', () => {
         type: NotificationType.Info,
         category: NotificationCategory.System,
       });
-      vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
+      vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(notification);
 
-      await service.deleteNotification('id-1');
+      await service.deleteNotification(testIdentityId, 'id-1');
 
       expect(notification.deletedAt).toBeInstanceOf(Date);
       expect(notificationRepo.save).toHaveBeenCalledWith(notification);
     });
 
     it('should hard delete when soft=false', async () => {
-      await service.deleteNotification('id-1', false);
+      const notification = Notification.create({
+        identityId: testIdentityId,
+        title: 'Test',
+        content: 'Content',
+        type: NotificationType.Info,
+        category: NotificationCategory.System,
+      });
+      vi.mocked(notificationRepo.findByIdForIdentity).mockResolvedValue(notification);
 
-      expect(notificationRepo.delete).toHaveBeenCalledWith('id-1');
+      await service.deleteNotification(testIdentityId, String(notification.id), false);
+
+      expect(notificationRepo.delete).toHaveBeenCalledWith(testIdentityId, String(notification.id));
     });
   });
 });

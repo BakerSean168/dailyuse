@@ -11,7 +11,7 @@ from ai_service.agent_runtime.graphs.knowledge_generate import (
 )
 from ai_service.schemas import (
     IndexedKnowledgeChunk,
-    IndexedKnowledgeResource,
+    IndexedKnowledgeNote,
     KnowledgeCitation,
     ProviderConfig,
 )
@@ -37,7 +37,7 @@ def _mock_knowledge_note_generator(
 def _mock_knowledge_citation_selector(
     *,
     question: str,
-    indexed_resources: list[IndexedKnowledgeResource],
+    indexed_resources: list[IndexedKnowledgeNote],
     provider_config: ProviderConfig,
     max_citations: int = 10,
 ) -> list[KnowledgeCitation]:
@@ -126,7 +126,7 @@ def test_knowledge_generate_with_real_search_integration():
     )
 
     indexed_resources = [
-        IndexedKnowledgeResource(
+        IndexedKnowledgeNote(
             identity_id="test-identity",
             repository_id="test-repo",
             resource_id="resource-1",
@@ -151,7 +151,7 @@ def test_knowledge_generate_with_real_search_integration():
             ],
             metadata={},
         ),
-        IndexedKnowledgeResource(
+        IndexedKnowledgeNote(
             identity_id="test-identity",
             repository_id="test-repo",
             resource_id="resource-2",
@@ -236,7 +236,7 @@ def test_knowledge_generate_duplicate_risk_assessment():
     indexed_resources = []
     for i in range(6):
         indexed_resources.append(
-            IndexedKnowledgeResource(
+            IndexedKnowledgeNote(
                 identity_id="test-identity",
                 repository_id="test-repo",
                 resource_id=f"resource-{i}",
@@ -302,7 +302,7 @@ def test_knowledge_generate_duplicate_risk_none_when_no_matches():
 
     # Create resources with completely different keywords
     indexed_resources = [
-        IndexedKnowledgeResource(
+        IndexedKnowledgeNote(
             identity_id="test-identity",
             repository_id="test-repo",
             resource_id="resource-1",

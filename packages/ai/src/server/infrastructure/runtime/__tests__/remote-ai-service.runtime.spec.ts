@@ -16,12 +16,11 @@ import type {
   IKnowledgeNotePersistencePort,
   IKnowledgeQueryPort,
   IKnowledgeSourcePort,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
   KnowledgeQueryCitation,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
 } from '../../../application/ports';
 import { createRemoteAIServiceRuntime } from '../remote-ai-service.runtime';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 // ============================================================
 // Helpers
@@ -71,7 +70,7 @@ function createMockAutomationToolExecutorPort(): IAIAutomationToolExecutorPort {
 function createProviderConfigRepositoryWithProvider(): IAIProviderConfigRepository {
   return {
     save: vi.fn(),
-    findById: vi.fn().mockResolvedValue({
+    findByIdForIdentity: vi.fn().mockResolvedValue({
       id: 'provider-1',
       identityId: 'identity-1',
       name: 'Main provider',
@@ -90,9 +89,7 @@ function createProviderConfigRepositoryWithProvider(): IAIProviderConfigReposito
     }),
     findDefaultByIdentityId: vi.fn(),
     findByIdentityId: vi.fn(),
-    findByIdentityIdAndName: vi.fn(),
     delete: vi.fn(),
-    exists: vi.fn(),
     clearDefaultForIdentity: vi.fn(),
   } as unknown as IAIProviderConfigRepository;
 }
@@ -104,7 +101,7 @@ function createKnowledgeQueryBundleDeps(): {
   knowledgeQueryPort: IKnowledgeQueryPort;
   citation: KnowledgeQueryCitation;
 } {
-  const sourceResource: KnowledgeSourceResource = {
+  const sourceNote: KnowledgeSourceNote = {
     identityId: 'identity-1',
     repositoryId: 'repo-1',
     resourceId: 'resource-1',
@@ -114,8 +111,8 @@ function createKnowledgeQueryBundleDeps(): {
     content: 'Knowledge answers should cite repository excerpts.',
     metadata: {},
   };
-  const indexedResource: KnowledgeIndexedResource = {
-    ...sourceResource,
+  const indexedResource: KnowledgeIndexedNote = {
+    ...sourceNote,
     contentHash: 'hash-1',
     summary: 'Knowledge answers should cite repository excerpts.',
     keywords: ['knowledge', 'citations'],
@@ -123,10 +120,10 @@ function createKnowledgeQueryBundleDeps(): {
     chunks: [
       {
         chunkIndex: 0,
-        content: sourceResource.content,
+        content: sourceNote.content,
         contentHash: 'hash-1',
         startOffset: 0,
-        endOffset: sourceResource.content.length,
+        endOffset: sourceNote.content.length,
         headingPath: ['Grounded Answer'],
         keywords: ['knowledge', 'citations'],
         embedding: [],
@@ -144,20 +141,20 @@ function createKnowledgeQueryBundleDeps(): {
 
   return {
     knowledgeSourcePort: {
-      listRelevantResources: vi.fn().mockResolvedValue([sourceResource]),
-      listIndexableResources: vi.fn().mockResolvedValue([sourceResource]),
-      getResourceById: vi.fn().mockResolvedValue(sourceResource),
+      listRelevantNotes: vi.fn().mockResolvedValue([sourceNote]),
+      listIndexableNotes: vi.fn().mockResolvedValue([sourceNote]),
+      getNoteById: vi.fn().mockResolvedValue(sourceNote),
     },
     knowledgeIndexRepository: {
       getDiagnostics: vi.fn(),
-      findByResourceIds: vi.fn().mockResolvedValue([]),
-      findRelevantResources: vi.fn().mockResolvedValue([]),
+      findByNoteIds: vi.fn().mockResolvedValue([]),
+      findRelevantNotes: vi.fn().mockResolvedValue([]),
       upsert: vi.fn().mockResolvedValue(undefined),
       markRequested: vi.fn().mockResolvedValue(undefined),
       markFailed: vi.fn().mockResolvedValue(undefined),
     },
     knowledgeIngestionPort: {
-      indexResource: vi.fn().mockResolvedValue(indexedResource),
+      indexNote: vi.fn().mockResolvedValue(indexedResource),
     },
     knowledgeQueryPort: {
       query: vi.fn().mockResolvedValue({
@@ -176,33 +173,20 @@ function createKnowledgeQueryBundleDeps(): {
 }
 
 function createKnowledgeNotePersistencePort(): IKnowledgeNotePersistencePort {
-  const resource: ResourceClientDTO = {
-    id: 'resource-note-1' as ResourceClientDTO['id'],
-    repositoryId: 'repo-1' as ResourceClientDTO['repositoryId'],
-    folderId: null,
+  const note = {
+    id: 'resource-note-1',
+    repositoryScopeId: 'repo-1',
     name: 'Grounding-knowledge-answers.md',
-    type: 'document' as ResourceClientDTO['type'],
-    mimeType: 'text/markdown',
     path: '/notes/notes/ai/Grounding-knowledge-answers.md',
+    mimeType: 'text/markdown',
     size: 42,
     content: '# Grounding knowledge answers',
-    metadata: {} as ResourceClientDTO['metadata'],
-    stats: {} as ResourceClientDTO['stats'],
-    status: 'active' as ResourceClientDTO['status'],
-    createdAt: 1 as ResourceClientDTO['createdAt'],
-    updatedAt: 2 as ResourceClientDTO['updatedAt'],
-    deletedAt: null,
-    version: 1,
-    isDeleted: false,
-    isArchived: false,
-    isActive: true,
-    isDraft: false,
-    extension: '.md',
-    icon: 'file-document',
+    createdAt: 1,
+    updatedAt: 2,
   };
 
   return {
-    createKnowledgeNote: vi.fn().mockResolvedValue({ resource }),
+    createKnowledgeNote: vi.fn().mockResolvedValue({ note }),
   };
 }
 
@@ -372,9 +356,7 @@ describe('createRemoteAIServiceRuntime', () => {
 
   it('uses remote chat port when provided', () => {
     const remoteChat = createMockChatPort();
-    const runtime = createRemoteAIServiceRuntime(
-      createMockDeps({ chatExecutionPort: remoteChat }),
-    );
+    const runtime = createRemoteAIServiceRuntime(createMockDeps({ chatExecutionPort: remoteChat }));
     expect(runtime.services.chatServices).toBeDefined();
     // The chat send use case should be constructed with the remote port
     // (we verify via capability consistency instead of private fields)
@@ -391,9 +373,7 @@ describe('createRemoteAIServiceRuntime', () => {
 
   it('uses remote goal planning port when provided', () => {
     const remoteGoal = createMockGoalPort();
-    const runtime = createRemoteAIServiceRuntime(
-      createMockDeps({ goalPlanningPort: remoteGoal }),
-    );
+    const runtime = createRemoteAIServiceRuntime(createMockDeps({ goalPlanningPort: remoteGoal }));
     expect(runtime.services.goalGenerationService).toBeDefined();
     expect(runtime.capabilities.supportsGoalGeneration).toBe(true);
   });
@@ -403,7 +383,7 @@ describe('createRemoteAIServiceRuntime', () => {
   it('enables knowledge query when all 4 dependencies are present', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
@@ -419,7 +399,7 @@ describe('createRemoteAIServiceRuntime', () => {
     // Missing knowledgeQueryPort
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
       }),
@@ -747,7 +727,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'knowledge.qa',
         input: {
           question: 'How should knowledge answers be grounded?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
         },
       },
@@ -756,7 +736,10 @@ describe('createRemoteAIServiceRuntime', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(providerConfigRepository.findById).toHaveBeenCalledWith('provider-1');
+    expect(providerConfigRepository.findByIdForIdentity).toHaveBeenCalledWith(
+      'identity-1',
+      'provider-1',
+    );
     expect(knowledgeDeps.knowledgeQueryPort.query).toHaveBeenCalledWith(
       expect.objectContaining({
         identityId: 'identity-1',
@@ -776,17 +759,17 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'knowledge.qa',
         input: {
           question: 'How should knowledge answers be grounded?',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           maxResources: 8,
           answer: 'Use cited repository excerpts to answer the question.',
           citations: [knowledgeDeps.citation],
-          tokenUsage: {
+          token_usage: {
             promptTokens: 20,
             completionTokens: 10,
             totalTokens: 30,
           },
-          processingTimeMs: expect.any(Number),
-          matchedResourceCount: 1,
+          processing_time_ms: expect.any(Number),
+          matched_resource_count: 1,
         },
       },
       requestId: 'request-knowledge-query',
@@ -935,7 +918,7 @@ describe('createRemoteAIServiceRuntime', () => {
             data: {
               resolvedPath: '/notes/notes/ai/Grounding-knowledge-answers.md',
               indexStatus: 'pending',
-              resource: {
+              note: {
                 id: 'resource-note-1',
                 name: 'Grounding-knowledge-answers.md',
                 content: '# Grounding knowledge answers',
@@ -983,7 +966,6 @@ describe('createRemoteAIServiceRuntime', () => {
         executionLogPort,
         providerConfigRepository,
         knowledgeNotePersistence,
-        getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('notes'),
       }),
     );
 
@@ -1002,7 +984,10 @@ describe('createRemoteAIServiceRuntime', () => {
     expect(knowledgeNotePersistence.createKnowledgeNote).toHaveBeenCalledWith(
       expect.objectContaining({
         identityId: 'identity-1',
-        path: '/notes/notes/ai/Grounding-knowledge-answers.md',
+        path: 'notes/ai/Grounding-knowledge-answers.md',
+        proposalId: 'run-note-1:knowledge-note:run-note-1:knowledge-note-draft',
+        proposalRevision: 1,
+        requestId: 'request-note-save',
         fileName: 'Grounding-knowledge-answers.md',
         content: '# Grounding knowledge answers\n\nUse cited repository excerpts.',
       }),
@@ -1019,11 +1004,11 @@ describe('createRemoteAIServiceRuntime', () => {
             tool: 'create_knowledge_note',
             status: 'executed',
             entityId: 'resource-note-1',
-            message: 'Saved knowledge note to /notes/notes/ai/Grounding-knowledge-answers.md.',
+            message: 'Saved knowledge note to notes/ai/Grounding-knowledge-answers.md.',
             data: {
-              resolvedPath: '/notes/notes/ai/Grounding-knowledge-answers.md',
+              resolvedPath: 'notes/ai/Grounding-knowledge-answers.md',
               indexStatus: 'pending',
-              resource: {
+              note: {
                 id: 'resource-note-1',
                 name: 'Grounding-knowledge-answers.md',
                 content: '# Grounding knowledge answers',
@@ -1057,9 +1042,7 @@ describe('createRemoteAIServiceRuntime', () => {
           executedActionCount: 1,
           interruptCount: 0,
           nodeTimings: [{ node: 'draft_note', durationMs: 64 }],
-          toolTimings: [
-            { tool: 'create_knowledge_note', status: 'executed', durationMs: 180 },
-          ],
+          toolTimings: [{ tool: 'create_knowledge_note', status: 'executed', durationMs: 180 }],
         }),
         tokenUsage: {
           promptTokens: 14,
@@ -1069,6 +1052,709 @@ describe('createRemoteAIServiceRuntime', () => {
         processingMs: expect.any(Number),
       }),
     );
+  });
+
+  it('does not persist knowledge notes when the user cancels, even if execution.required remains', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    const pendingAction = {
+      tool: 'create_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Persist the approved knowledge note draft.',
+      payload: {
+        topic: 'Grounding knowledge answers',
+        title: 'Grounding knowledge answers',
+        contentMarkdown: '# Grounding knowledge answers\n\nUse cited repository excerpts.',
+        targetSubpath: 'notes/ai',
+        providerId: '550e8400-e29b-41d4-a716-446655440000',
+        model: 'gpt-4o-mini',
+      },
+    };
+    const noteDraftArtifact = {
+      artifactId: 'run-note-1:knowledge-note-draft',
+      kind: 'knowledge_note_draft' as const,
+      title: 'Grounding knowledge answers',
+      updatedAt: 2,
+      data: {
+        topic: 'Grounding knowledge answers',
+        title: 'Grounding knowledge answers',
+        markdown: '# Grounding knowledge answers\n\nUse cited repository excerpts.',
+        targetSubpath: 'notes/ai',
+      },
+    };
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      run: {
+        ...createAgentRunResult('waiting_execution').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-note-1',
+          threadId: 'thread-note-1',
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValueOnce(waitingExecution);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-note-1',
+      { userDecision: 'cancel' },
+      { identityId: 'identity-1' },
+      'request-note-cancel',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenCalledTimes(1);
+    expect(agentRuntimePort.resumeRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-note-1',
+      requestId: 'request-note-cancel',
+      signal: undefined,
+      payload: { userDecision: 'cancel' },
+    });
+  });
+
+  it('rejects vault-escaping knowledge note paths without persisting', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    const pendingAction = {
+      tool: 'create_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Attempt to write outside the vault.',
+      payload: {
+        topic: 'Escaped note',
+        title: 'Escaped note',
+        contentMarkdown: '# Escaped\n\nShould never land on disk.',
+        targetSubpath: '../secrets',
+        providerId: '550e8400-e29b-41d4-a716-446655440000',
+        model: 'gpt-4o-mini',
+      },
+    };
+    const noteDraftArtifact = {
+      artifactId: 'run-note-escape:knowledge-note-draft',
+      kind: 'knowledge_note_draft' as const,
+      title: 'Escaped note',
+      updatedAt: 2,
+      data: {
+        topic: 'Escaped note',
+        title: 'Escaped note',
+        markdown: '# Escaped\n\nShould never land on disk.',
+        targetSubpath: '../secrets',
+      },
+    };
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      run: {
+        ...createAgentRunResult('waiting_execution').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-note-escape',
+          threadId: 'thread-note-escape',
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+    const completed = createAgentRunResult('completed', {
+      run: {
+        ...createAgentRunResult('completed').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('completed').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        executedActions: [
+          {
+            tool: 'create_knowledge_note',
+            status: 'failed',
+            message: 'Knowledge note action payload is invalid: Knowledge note path cannot contain . or .. segments',
+          },
+        ],
+      },
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun)
+      .mockResolvedValueOnce(waitingExecution)
+      .mockResolvedValueOnce(completed);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-note-escape',
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingAction],
+      },
+      { identityId: 'identity-1' },
+      'request-note-escape',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            expect.objectContaining({
+              tool: 'create_knowledge_note',
+              status: 'failed',
+              message: expect.stringMatching(/vault-relative|\. or \.\.|invalid/i),
+            }),
+          ],
+        },
+      }),
+    );
+  });
+
+  it('does not execute cross-capability tools through the knowledge generation executor', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    // Schema-valid Agent tools that are not create_knowledge_note must fail closed.
+    const pendingAction = {
+      tool: 'create_goal' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Attempt to expand knowledge agent into goal mutation capability.',
+      payload: {
+        title: 'Should not create a goal from knowledge.generate',
+      },
+    };
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      run: {
+        ...createAgentRunResult('waiting_execution').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-note-cross-cap',
+          threadId: 'thread-note-cross-cap',
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingAction],
+          artifacts: [],
+        },
+      ],
+    });
+    const completed = createAgentRunResult('completed', {
+      run: {
+        ...createAgentRunResult('completed').run,
+        agentType: 'knowledge.generate',
+      },
+      state: {
+        ...createAgentRunResult('completed').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        executedActions: [
+          {
+            tool: 'create_goal',
+            status: 'failed',
+            message:
+              'Agent action "create_goal" is not supported by the Knowledge Generation executor yet.',
+          },
+        ],
+      },
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun)
+      .mockResolvedValueOnce(waitingExecution)
+      .mockResolvedValueOnce(completed);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-note-cross-cap',
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingAction],
+      },
+      { identityId: 'identity-1' },
+      'request-note-cross-cap',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_goal',
+              status: 'failed',
+              message:
+                'Agent action "create_goal" is not supported by the Knowledge Generation executor yet.',
+            },
+          ],
+        },
+      }),
+    );
+  });
+
+  it('does not execute knowledge writes through the goal automation executor', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const automationToolExecutorPort = createMockAutomationToolExecutorPort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    // Schema-valid knowledge tool must fail closed inside goal.create execution.
+    const pendingAction = {
+      tool: 'create_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Attempt to expand goal agent into knowledge write capability.',
+      payload: {
+        topic: 'Should not write a note from goal.create',
+        title: 'Cross-capability leak',
+        contentMarkdown: '# Should not persist',
+        targetSubpath: 'notes/leak',
+      },
+    };
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        artifacts: [goalDraftArtifact],
+        approvedActions: [pendingAction],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-goal-cross-cap',
+          threadId: 'thread-goal-cross-cap',
+          agentType: 'goal.create',
+          request: {
+            idea: 'Ship the AI Agent workspace',
+            category: 'work',
+            timeframe: 'Q3',
+          },
+          approvedActions: [pendingAction],
+          artifacts: [goalDraftArtifact],
+        },
+      ],
+    });
+    const completed = createAgentRunResult('completed', {
+      state: {
+        ...createAgentRunResult('completed').state,
+        approvedActions: [pendingAction],
+        executedActions: [
+          {
+            tool: 'create_knowledge_note',
+            status: 'failed',
+            message:
+              'Agent action "create_knowledge_note" is not supported by the TS goal automation executor yet.',
+          },
+        ],
+      },
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun)
+      .mockResolvedValueOnce(waitingExecution)
+      .mockResolvedValueOnce(completed);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        automationToolExecutorPort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-goal-cross-cap',
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingAction],
+      },
+      { identityId: 'identity-1' },
+      'request-goal-cross-cap',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(automationToolExecutorPort.executeGoalAutomation).not.toHaveBeenCalled();
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        payload: {
+          userDecision: 'confirm',
+          executedActions: [
+            {
+              tool: 'create_knowledge_note',
+              status: 'failed',
+              message:
+                'Agent action "create_knowledge_note" is not supported by the TS goal automation executor yet.',
+            },
+          ],
+        },
+      }),
+    );
+  });
+
+  it('fails closed when an Agent run payload is not owned by the authenticated identity', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const foreignRun = createAgentRunResult('waiting_approval', {
+      run: {
+        ...createAgentRunResult('waiting_approval').run,
+        identityId: 'identity-other',
+      },
+    });
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(foreignRun);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.getRun(
+      'run-1',
+      { identityId: 'identity-1' },
+      'request-identity-isolation',
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('FORBIDDEN');
+      expect(result.error.message).toMatch(/not owned by the current identity/i);
+    }
+    expect(agentRuntimePort.getRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+      requestId: 'request-identity-isolation',
+      signal: undefined,
+    });
+  });
+
+  it('resume refuses foreign-owned runs before host side-effects (residual 102)', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const knowledgeNotePersistence = createKnowledgeNotePersistencePort();
+    const pendingAction = {
+      tool: 'create_knowledge_note' as const,
+      index: 0,
+      dependsOn: [],
+      rationale: 'Persist the approved knowledge note draft.',
+      payload: {
+        topic: 'Foreign resume isolation',
+        title: 'Foreign resume isolation',
+        contentArtifactId: 'run-1:knowledge-note-draft',
+        contentMarkdown: '# Foreign resume isolation',
+        targetSubpath: 'notes/ai',
+        providerId: '550e8400-e29b-41d4-a716-446655440000',
+        model: 'gpt-4o-mini',
+      },
+    };
+    const noteDraftArtifact = {
+      artifactId: 'run-1:knowledge-note-draft',
+      kind: 'knowledge_note_draft' as const,
+      title: 'Foreign resume isolation',
+      updatedAt: 2,
+      data: {
+        topic: 'Foreign resume isolation',
+        title: 'Foreign resume isolation',
+        markdown: '# Foreign resume isolation',
+        targetSubpath: 'notes/ai',
+      },
+    };
+    const foreignWaiting = createAgentRunResult('waiting_execution', {
+      run: {
+        ...createAgentRunResult('waiting_execution').run,
+        agentType: 'knowledge.generate',
+        identityId: 'identity-other',
+      },
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        intent: 'knowledge-generate',
+        approvedActions: [pendingAction],
+        artifacts: [noteDraftArtifact],
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-1',
+          threadId: 'thread-1',
+          agentType: 'knowledge.generate',
+          approvedActions: [pendingAction],
+          artifacts: [noteDraftArtifact],
+        },
+      ],
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValueOnce(foreignWaiting);
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(foreignWaiting);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        knowledgeNotePersistence,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const withApprovals = await runtime.services.agentRuntimeService.resumeRun(
+      'run-1',
+      {
+        userDecision: 'confirm',
+        approvedActions: [pendingAction],
+      },
+      { identityId: 'identity-1' },
+      'request-foreign-resume-approve',
+    );
+    expect(withApprovals.ok).toBe(false);
+    if (!withApprovals.ok) {
+      expect(withApprovals.error.code).toBe('FORBIDDEN');
+    }
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+
+    const shortcut = await runtime.services.agentRuntimeService.resumeRun(
+      'run-1',
+      { userDecision: 'confirm' },
+      { identityId: 'identity-1' },
+      'request-foreign-resume-shortcut',
+    );
+    expect(shortcut.ok).toBe(false);
+    if (!shortcut.ok) {
+      expect(shortcut.error.code).toBe('FORBIDDEN');
+    }
+    expect(knowledgeNotePersistence.createKnowledgeNote).not.toHaveBeenCalled();
+  });
+
+  it('getEvents refuses foreign-owned runs before returning events (residual 103)', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const foreignRun = createAgentRunResult('completed', {
+      run: {
+        ...createAgentRunResult('completed').run,
+        identityId: 'identity-other',
+      },
+    });
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(foreignRun);
+    vi.mocked(agentRuntimePort.getEvents).mockResolvedValueOnce([
+      {
+        eventId: 'event-foreign-1',
+        runId: 'run-1',
+        sequence: 0,
+        type: 'node.completed',
+        createdAt: 1,
+        data: { node: 'secret', durationMs: 1 },
+      },
+    ]);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.getEvents(
+      'run-1',
+      { identityId: 'identity-1' },
+      'request-foreign-events',
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('FORBIDDEN');
+    }
+    expect(agentRuntimePort.getEvents).not.toHaveBeenCalled();
+  });
+
+  it('getEvents returns events for owned runs after ownership gate (residual 104)', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const ownedRun = createAgentRunResult('completed', {
+      run: {
+        ...createAgentRunResult('completed').run,
+        identityId: 'identity-1',
+      },
+    });
+    const events = [
+      {
+        eventId: 'event-own-1',
+        runId: 'run-1',
+        sequence: 0,
+        type: 'node.completed' as const,
+        createdAt: 1,
+        data: { node: 'plan', durationMs: 12 },
+      },
+    ];
+    vi.mocked(agentRuntimePort.getRun).mockResolvedValueOnce(ownedRun);
+    vi.mocked(agentRuntimePort.getEvents).mockResolvedValueOnce(events);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.getEvents(
+      'run-1',
+      { identityId: 'identity-1' },
+      'request-owned-events',
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual(events);
+    }
+    expect(agentRuntimePort.getRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+      requestId: 'request-owned-events',
+      signal: undefined,
+    });
+    expect(agentRuntimePort.getEvents).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+      requestId: 'request-owned-events',
+      signal: undefined,
+    });
+  });
+
+  it('filters foreign identity runs out of list results as defense-in-depth', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    vi.mocked(agentRuntimePort.listRuns).mockResolvedValueOnce([
+      {
+        runId: 'run-own',
+        threadId: 'thread-1',
+        conversationId: null,
+        identityId: 'identity-1',
+        agentType: 'goal.create',
+        status: 'completed',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+      {
+        runId: 'run-foreign',
+        threadId: 'thread-2',
+        conversationId: null,
+        identityId: 'identity-other',
+        agentType: 'goal.create',
+        status: 'completed',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+    ]);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        providerConfigRepository: createProviderConfigRepositoryWithProvider(),
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.listRuns(
+      {},
+      { identityId: 'identity-1' },
+      'request-list-isolation',
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual([
+        expect.objectContaining({ runId: 'run-own', identityId: 'identity-1' }),
+      ]);
+    }
+  });
+
+
+  it('does not execute goal automation when the user cancels, even if execution.required remains', async () => {
+    const agentRuntimePort = createMockAgentRuntimePort();
+    const automationToolExecutorPort = createMockAutomationToolExecutorPort();
+    const waitingExecution = createAgentRunResult('waiting_execution', {
+      state: {
+        ...createAgentRunResult('waiting_execution').state,
+        artifacts: [goalDraftArtifact],
+        approvedActions: goalAgentApprovedActions,
+      },
+      interrupts: [
+        {
+          type: 'execution.required',
+          runId: 'run-1',
+          threadId: 'thread-1',
+          agentType: 'goal.create',
+          request: {
+            idea: 'Ship the AI Agent workspace',
+            category: 'work',
+            timeframe: 'Q3',
+          },
+          approvedActions: goalAgentApprovedActions,
+          artifacts: [goalDraftArtifact],
+        },
+      ],
+    });
+
+    vi.mocked(agentRuntimePort.resumeRun).mockResolvedValueOnce(waitingExecution);
+
+    const runtime = createRemoteAIServiceRuntime(
+      createMockDeps({
+        agentRuntimePort,
+        automationToolExecutorPort,
+      }),
+    );
+
+    const result = await runtime.services.agentRuntimeService.resumeRun(
+      'run-1',
+      { userDecision: 'cancel' },
+      { identityId: 'identity-1' },
+      'request-goal-cancel',
+    );
+
+    expect(result.ok).toBe(true);
+    expect(automationToolExecutorPort.executeGoalAutomation).not.toHaveBeenCalled();
+    expect(agentRuntimePort.resumeRun).toHaveBeenCalledTimes(1);
+    expect(agentRuntimePort.resumeRun).toHaveBeenCalledWith({
+      identityId: 'identity-1',
+      runId: 'run-1',
+      requestId: 'request-goal-cancel',
+      signal: undefined,
+      payload: { userDecision: 'cancel' },
+    });
   });
 
   it('records Agent runtime resume execution logs', async () => {
@@ -1139,9 +1825,7 @@ describe('createRemoteAIServiceRuntime', () => {
           status: 'waiting_approval',
           stage: 'approval',
           nodeTimings: [{ node: 'clarify', durationMs: 45 }],
-          toolTimings: [
-            { tool: 'search_existing_goals', status: 'executed', durationMs: 120 },
-          ],
+          toolTimings: [{ tool: 'search_existing_goals', status: 'executed', durationMs: 120 }],
         }),
         tokenUsage: {
           promptTokens: 5,
@@ -1157,7 +1841,7 @@ describe('createRemoteAIServiceRuntime', () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     const providerConfigRepository = {
       save: vi.fn(),
-      findById: vi.fn().mockResolvedValue({
+      findByIdForIdentity: vi.fn().mockResolvedValue({
         id: 'provider-1',
         identityId: 'identity-1',
         name: 'Main provider',
@@ -1176,9 +1860,7 @@ describe('createRemoteAIServiceRuntime', () => {
       }),
       findDefaultByIdentityId: vi.fn(),
       findByIdentityId: vi.fn(),
-      findByIdentityIdAndName: vi.fn(),
-      delete: vi.fn(),
-      exists: vi.fn(),
+        delete: vi.fn(),
       clearDefaultForIdentity: vi.fn(),
     } as unknown as IAIProviderConfigRepository;
     vi.mocked(agentRuntimePort.startRun).mockResolvedValueOnce(
@@ -1201,7 +1883,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: {
           idea: 'Ship the AI Agent workspace',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o',
         },
       },
@@ -1210,7 +1892,10 @@ describe('createRemoteAIServiceRuntime', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(providerConfigRepository.findById).toHaveBeenCalledWith('provider-1');
+    expect(providerConfigRepository.findByIdForIdentity).toHaveBeenCalledWith(
+      'identity-1',
+      'provider-1',
+    );
     expect(agentRuntimePort.startRun).toHaveBeenCalledWith({
       request: {
         runId: 'run-1',
@@ -1220,7 +1905,7 @@ describe('createRemoteAIServiceRuntime', () => {
         agentType: 'goal.create',
         input: {
           idea: 'Ship the AI Agent workspace',
-          providerId: 'provider-1',
+          provider_id: 'provider-1',
           model: 'gpt-4o',
           provider_config: {
             provider: 'openai',
@@ -1240,7 +1925,7 @@ describe('createRemoteAIServiceRuntime', () => {
   it('loads read-only context before starting goal.create Agent runs', async () => {
     const agentRuntimePort = createMockAgentRuntimePort();
     const knowledgeSourcePort: IKnowledgeSourcePort = {
-      listRelevantResources: vi.fn().mockResolvedValue([
+      listRelevantNotes: vi.fn().mockResolvedValue([
         {
           identityId: 'identity-1',
           repositoryId: 'repo-1',
@@ -1252,17 +1937,15 @@ describe('createRemoteAIServiceRuntime', () => {
           metadata: { source: 'test' },
         },
       ]),
-      listIndexableResources: vi.fn(),
-      getResourceById: vi.fn(),
+      listIndexableNotes: vi.fn(),
+      getNoteById: vi.fn(),
     };
     const analyticsReadPort: IAnalyticsReadPort = {
       buildContext: vi.fn().mockResolvedValue({
         dashboard: { stats: { activeGoals: 2 } },
         taskDashboard: { summary: { totalTasks: 5 } },
         goals: [{ id: 'goal-1', title: 'Existing Agent work' }],
-        goalSearchResults: [
-          { id: 'goal-2', title: 'Similar workspace goal' },
-        ],
+        goalSearchResults: [{ id: 'goal-2', title: 'Similar workspace goal' }],
         extra: { source: 'test' },
       }),
     };
@@ -1292,7 +1975,7 @@ describe('createRemoteAIServiceRuntime', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(knowledgeSourcePort.listRelevantResources).toHaveBeenCalledWith(
+    expect(knowledgeSourcePort.listRelevantNotes).toHaveBeenCalledWith(
       'identity-1',
       'Ship the AI Agent workspace',
       6,
@@ -1326,9 +2009,7 @@ describe('createRemoteAIServiceRuntime', () => {
             dashboard: { stats: { activeGoals: 2 } },
             task_dashboard: { summary: { totalTasks: 5 } },
             goals: [{ id: 'goal-1', title: 'Existing Agent work' }],
-            goal_search_results: [
-              { id: 'goal-2', title: 'Similar workspace goal' },
-            ],
+            goal_search_results: [{ id: 'goal-2', title: 'Similar workspace goal' }],
             extra: { source: 'test' },
           },
         },
@@ -1948,7 +2629,6 @@ describe('createRemoteAIServiceRuntime', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
         knowledgeNotePersistence: { saveNote: vi.fn(), loadNote: vi.fn() } as any,
-        getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('/notes'),
       }),
     );
     expect(runtime.capabilities.supportsKnowledgeNotes).toBe(true);
@@ -1982,7 +2662,7 @@ describe('createRemoteAIServiceRuntime', () => {
   it('clears advancedFeaturesReason when all advanced features are available', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
@@ -2008,7 +2688,7 @@ describe('createRemoteAIServiceRuntime', () => {
   it('capability flags match actual service availability', () => {
     const runtime = createRemoteAIServiceRuntime(
       createMockDeps({
-        knowledgeSourcePort: { fetchAllResources: vi.fn() } as any,
+        knowledgeSourcePort: { listRelevantNotes: vi.fn(), listIndexableNotes: vi.fn(), getNoteById: vi.fn() } as any,
         knowledgeIndexRepository: createMockRepo(),
         knowledgeIngestionPort: { ingest: vi.fn() } as any,
         knowledgeQueryPort: { query: vi.fn() } as any,
@@ -2018,7 +2698,6 @@ describe('createRemoteAIServiceRuntime', () => {
         automationToolExecutorPort: { execute: vi.fn() } as any,
         agentRuntimePort: createMockAgentRuntimePort(),
         knowledgeNotePersistence: { saveNote: vi.fn(), loadNote: vi.fn() } as any,
-        getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('/notes'),
         evaluationReportPort: { getOverview: vi.fn() } as any,
       }),
     );

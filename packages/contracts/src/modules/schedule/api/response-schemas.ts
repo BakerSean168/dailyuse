@@ -10,58 +10,39 @@ import type { ScheduleTaskId, ScheduleId, ScheduleExecutionId, IdentityId } from
 import { ScheduleTaskStatus } from '../value-objects/schedule-task-status';
 import { SourceModule } from '../value-objects/source-module';
 import { ExecutionStatus } from '../value-objects/execution-status';
-import { TaskPriority } from '../value-objects/task-priority';
-import { Timezone } from '../value-objects/timezone';
-import { ConflictSeverity, ConflictSuggestionType } from '../value-objects/conflict-detection-result';
+import {
+  ConflictDetectionResultSchema,
+  ConflictDetailSchema,
+  ConflictSuggestionSchema,
+} from '../value-objects/conflict-detection-result';
 
-// ============ Inline Value Object Schemas ============
+// Residual 725: conflict detection schemas owned by conflict-detection-result.ts
+// (re-exported for OpenAPI route consumers).
+export {
+  ConflictDetectionResultSchema,
+  ConflictDetailSchema,
+  ConflictSuggestionSchema,
+};
 
-const ScheduleConfigSchema = z.object({
-  cronExpression: z.string().nullable(),
-  timezone: z.enum(Timezone),
-  startDate: z.string().nullable(),
-  endDate: z.string().nullable(),
-  maxExecutions: z.number().nullable(),
-});
+import { ScheduleConfigSchema } from '../value-objects/schedule-config';
+import { ExecutionInfoSchema } from '../value-objects/execution-info';
+import { RetryPolicySchema } from '../value-objects/retry-policy';
+import { TaskMetadataSchema } from '../value-objects/task-metadata';
 
-const ExecutionInfoSchema = z.object({
-  nextRunAt: z.string().nullable(),
-  lastRunAt: z.string().nullable(),
-  executionCount: z.number(),
-  lastExecutionStatus: z.enum(ExecutionStatus).nullable(),
-  lastExecutionDuration: z.number().nullable(),
-  consecutiveFailures: z.number(),
-});
+// Residual 749: schedule nested VO response schemas owned by value-objects
+// (semantic DTOs are z.infer aliases). Request modules keep local partial schemas
+// with different validation/shapes.
+export {
+  ScheduleConfigSchema,
+  ExecutionInfoSchema,
+  RetryPolicySchema,
+  TaskMetadataSchema,
+};
 
-const RetryPolicySchema = z.object({
-  enabled: z.boolean(),
-  maxRetries: z.number(),
-  retryDelay: z.number(),
-  backoffMultiplier: z.number(),
-  maxRetryDelay: z.number(),
-});
 
-const TaskMetadataSchema = z.object({
-  payload: z.record(z.string(), z.unknown()),
-  tags: z.array(z.string()),
-  priority: z.enum(TaskPriority),
-  timeout: z.number().nullable(),
-});
-
-const ScheduleExecutionResponseSchema: z.ZodType<{
-  id: ScheduleExecutionId;
-  scheduleTaskId: ScheduleTaskId;
-  executionTime: number;
-  status: ExecutionStatus;
-  duration: number | null;
-  result: Record<string, unknown> | null;
-  error: string | null;
-  retryCount: number;
-  version: number;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt: number | null;
-}> = z.object({
+// Residual 833: ScheduleExecutionClientDTO dual retired — sole ScheduleExecutionResponseSchema + z.infer
+// (semantic type is z.infer alias in entities/schedule-execution-client.ts).
+export const ScheduleExecutionResponseSchema = z.object({
   id: brandedId<ScheduleExecutionId>(),
   scheduleTaskId: brandedId<ScheduleTaskId>(),
   executionTime: z.number(),
@@ -81,6 +62,8 @@ const ScheduleExecutionResponseSchema: z.ZodType<{
 /**
  * ScheduleTask Response Schema
  */
+// Residual 831: ScheduleTaskClientDTO dual retired — sole ScheduleTaskResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/schedule-task-client.ts).
 export const ScheduleTaskResponseSchema = z.object({
   id: brandedId<ScheduleTaskId>(),
   identityId: brandedId<IdentityId>(),
@@ -104,6 +87,8 @@ export const ScheduleTaskResponseSchema = z.object({
 /**
  * CalendarEntry (Schedule Event) Response Schema
  */
+// Residual 829: CalendarEntryClientDTO dual retired — sole CalendarEntryResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/calendar-entry-client.ts).
 export const CalendarEntryResponseSchema = z.object({
   id: brandedId<ScheduleId>(),
   identityId: brandedId<IdentityId>(),
@@ -122,9 +107,12 @@ export const CalendarEntryResponseSchema = z.object({
 });
 
 /**
- * BatchOperation Response Schema
+ * Schedule BatchOperation Response Schema
  */
-export const BatchOperationResponseSchema = z.object({
+/** Residual 639: schedule batch result schema (renamed off shared dual name). */
+// Residual 717: ScheduleBatchOperationResponseSchema is the sole batch response shape
+// (ScheduleBatchOperationResponseDTO is a z.infer alias).
+export const ScheduleBatchOperationResponseSchema = z.object({
   success: z.array(z.string()),
   failed: z.array(z.object({ taskId: brandedId<ScheduleTaskId>(), error: z.string() })),
   total: z.number(),
@@ -133,45 +121,21 @@ export const BatchOperationResponseSchema = z.object({
 });
 
 // ============ Conflict Detection Response Schemas ============
-
-const ConflictDetailSchema = z.object({
-  scheduleId: brandedId<ScheduleId>(),
-  scheduleTitle: z.string(),
-  overlapStart: z.number(),
-  overlapEnd: z.number(),
-  overlapDuration: z.number(),
-  severity: z.enum(Object.values(ConflictSeverity) as [string, ...string[]]).optional(),
-});
-
-const ConflictSuggestionSchema = z.object({
-  type: z.enum(Object.values(ConflictSuggestionType) as [string, ...string[]]),
-  newStartTime: z.number(),
-  newEndTime: z.number(),
-  description: z.string().optional(),
-});
-
-export const ConflictDetectionResultSchema = z.object({
-  hasConflict: z.boolean(),
-  conflicts: z.array(ConflictDetailSchema),
-  suggestions: z.array(ConflictSuggestionSchema),
-});
-
-/**
- * DetectConflicts Response Schema
- */
-export const DetectConflictsResponseSchema = z.object({
-  result: ConflictDetectionResultSchema,
-});
+// Residual 663: detect-conflicts OpenAPI body is ConflictDetectionResult (no wrapper dual).
+// Residual 679: drop DetectConflictsResponseSchema name dual; routes use ConflictDetectionResultSchema only.
+// Residual 725: ConflictDetectionResultSchema owned by value-objects/conflict-detection-result.ts.
 
 /**
  * CreateSchedule (with conflict detection) Response Schema
  */
+// Residual 715: CreateSchedule / ResolveConflict OpenAPI schemas are the sole response shapes
+// (CreateScheduleResponseDTO / ResolveConflictResponseDTO / AppliedResolution are z.infer aliases).
 export const CreateScheduleResponseSchema = z.object({
   schedule: CalendarEntryResponseSchema,
   conflicts: ConflictDetectionResultSchema.optional(),
 });
 
-const AppliedResolutionSchema = z.object({
+export const AppliedResolutionSchema = z.object({
   strategy: z.string(),
   previousStartTime: z.number().optional(),
   previousEndTime: z.number().optional(),
@@ -187,13 +151,4 @@ export const ResolveConflictResponseSchema = z.object({
   applied: AppliedResolutionSchema,
 });
 
-/**
- * BatchDelete Response Schema
- */
-export const BatchDeleteResponseSchema = z.object({
-  success: z.array(z.string()),
-  failed: z.array(z.object({ taskId: brandedId<ScheduleTaskId>(), error: z.string() })),
-  total: z.number(),
-  successCount: z.number(),
-  failedCount: z.number(),
-});
+// Residual 665: batch-delete OpenAPI body reuses schedule batch operation schema (no dual).

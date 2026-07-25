@@ -36,44 +36,6 @@ export function createMockStore(initialState: Record<string, unknown> = {}) {
   };
 }
 
-/**
- * 创建 mock Editor Store
- */
-export function createMockEditorStore() {
-  return {
-    // 基础属性
-    files: [],
-    editorGroups: [],
-    ui: {
-      activePanel: null,
-      sidebarVisible: true,
-    },
-    settings: {
-      theme: 'light',
-      fontSize: 14,
-    },
-    isLoading: false,
-    error: null,
-
-    // Store 基础方法
-    $reset: vi.fn(),
-    $patch: vi.fn(),
-    $subscribe: vi.fn(),
-    $dispose: vi.fn(),
-
-    // Editor Store 特定方法
-    toggleSidebarVisibility: vi.fn(),
-    setActivePanel: vi.fn(),
-    updateSettings: vi.fn(),
-    setError: vi.fn(),
-
-    // 其他可能需要的方法
-    addFile: vi.fn(),
-    removeFile: vi.fn(),
-    createEditorGroup: vi.fn(),
-    removeEditorGroup: vi.fn(),
-  };
-}
 
 /**
  * 创建 mock 实体

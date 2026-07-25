@@ -22,7 +22,9 @@ test.describe('Web authentication page contract', () => {
     await expect(page.locator('html')).toHaveClass(/dark/);
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     expect(
-      await page.evaluate(() => JSON.parse(localStorage.getItem('presentation-preference') ?? '{}')),
+      await page.evaluate(() =>
+        JSON.parse(localStorage.getItem('presentation-preference') ?? '{}'),
+      ),
     ).toMatchObject({ theme: 'light' });
     await expect(page.locator('main')).toHaveCount(1);
     await expect(page.locator('h1')).toHaveCount(1);
@@ -33,8 +35,17 @@ test.describe('Web authentication page contract', () => {
       'Interface language',
     );
     await expect(page.getByTestId('guest-mode-button')).toHaveCount(0);
-    await expect(page.getByText(/forgot password|忘记密码/i)).toHaveCount(0);
-    await expect(page.getByText(/terms of service|服务条款|privacy policy|隐私政策/i)).toHaveCount(0);
+    // ADR-034 three-login: Web AuthApp has password (+ optional GitHub), never guest/phone/SMS.
+    await expect(page.getByTestId('login-password-input')).toBeVisible();
+    await expect(page.locator('[data-testid="login-phone-input"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="send-sms-code-button"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="login-phone-button"]')).toHaveCount(0);
+    await expect(page.getByTestId('login-forgot-link')).toBeVisible();
+    await expect(page.getByTestId('auth-legal-footer')).toBeVisible();
+    await expect(page.getByTestId('auth-terms-link')).toBeVisible();
+    await expect(page.getByTestId('auth-privacy-link')).toBeVisible();
+    await expect(page.getByTestId('auth-terms-link')).toHaveAttribute('target', '_blank');
+    await expect(page.getByTestId('auth-privacy-link')).toHaveAttribute('target', '_blank');
 
     await ensureRegisterScene(page);
     await expect(page.locator('h1')).toHaveCount(1);
@@ -61,9 +72,7 @@ test.describe('Web authentication page contract', () => {
     await page.locator('#reg-password').fill('short');
     await page.locator('#confirm-password').fill('different');
     await page.getByTestId('register-submit-button').click();
-    await expect(page.getByTestId('register-email-error')).toContainText(
-      /valid email|有效的邮箱/i,
-    );
+    await expect(page.getByTestId('register-email-error')).toContainText(/valid email|有效的邮箱/i);
     await expect(page.getByTestId('register-password-error')).toContainText(/8 characters|8 位/i);
     await expect(page.getByTestId('register-confirm-password-error')).toContainText(
       /do not match|不一致/i,
@@ -86,7 +95,7 @@ test.describe('Web authentication page contract', () => {
     await expect(page.getByTestId('register-confirm-password-error')).toHaveCount(0);
 
     await page.locator('#confirm-password').press('Enter');
-    await page.waitForURL((url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), {
+    await expect(page.getByTestId('verify-email-form')).toBeVisible({
       timeout: TIMEOUT_CONFIG.LOGIN,
     });
   });

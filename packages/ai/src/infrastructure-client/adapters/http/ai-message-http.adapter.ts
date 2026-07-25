@@ -1,11 +1,17 @@
+/**
+ * Residual 963: findSSEBoundary sole import (packages/ai/src/shared/find-sse-boundary.ts).
+ * Residual 977: parseSSE sole import (packages/ai/src/shared/parse-sse.ts).
+ * Residual 967: isAbortLikeError sole import (packages/ai/src/shared/is-abort-like-error.ts).
+ */
 import type { IAIMessageApiClient, IResultHttpClient } from '../types';
-import type { ResultErrorDetail } from '@dailyuse/contracts/result';
+import type { Result, ResultErrorDetail } from '@dailyuse/contracts/result';
 import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
 import {
   createResultClientError,
   createResultClientErrorFromResponse,
-  unwrapResultOrThrow,
 } from '../result-client-error';
+import { parseSSE } from '../../../shared/parse-sse';
+import { isAbortLikeError } from '../../../shared/is-abort-like-error';
 
 export class AIMessageHttpAdapter implements IAIMessageApiClient {
   private readonly baseUrl = '/ai/chat/messages';
@@ -13,9 +19,8 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async sendMessage(request: SendMessageReq): Promise<SendMessageRes> {
-    const result = await this.httpClient.post<SendMessageRes>(this.baseUrl, request);
-    return unwrapResultOrThrow(result);
+  async sendMessage(request: SendMessageReq): Promise<Result<SendMessageRes>> {
+    return this.httpClient.post<SendMessageRes>(this.baseUrl, request);
   }
 
   async streamMessage(
@@ -114,95 +119,11 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
   async getMessages(
     conversationId: string,
     params?: { page?: number; pageSize?: number },
-  ): Promise<MessageListRes> {
-    const result = await this.httpClient.get<MessageListRes>(this.baseUrl, {
+  ): Promise<Result<MessageListRes>> {
+    return this.httpClient.get<MessageListRes>(this.baseUrl, {
       params: { conversationId, ...params },
     });
-    return unwrapResultOrThrow(result);
   }
 }
 
-async function* parseSSE(
-  response: Response,
-): AsyncGenerator<{ event: string; data: string }, void, void> {
-  if (!response.body) {
-    return;
-  }
 
-  // Manual SSE parsing is used instead of EventSource because the request is a
-  // POST carrying JSON body data. That fits AI chat prompts better than the
-  // GET-only EventSource API.
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-    while (true) {
-      // An SSE event may span multiple network chunks. Keep buffering until a
-      // blank-line boundary is found, then emit exactly one parsed event.
-      const boundary = findSSEBoundary(buffer);
-      if (!boundary) {
-        break;
-      }
-
-      const rawEvent = buffer.slice(0, boundary.index);
-      buffer = buffer.slice(boundary.index + boundary.length);
-
-      let event = 'message';
-      const dataLines: string[] = [];
-      for (const line of rawEvent.split(/\r?\n/)) {
-        if (line.startsWith('event:')) {
-          event = line.slice(6).trim();
-          continue;
-        }
-        if (line.startsWith('data:')) {
-          dataLines.push(line.slice(5).trimStart());
-        }
-      }
-
-      yield {
-        event,
-        data: dataLines.join('\n'),
-      };
-    }
-  }
-}
-
-function findSSEBoundary(buffer: string): { index: number; length: number } | null {
-  // Support both CRLF and LF line endings because different servers / proxies
-  // may normalize SSE framing differently.
-  const crlfBoundaryIndex = buffer.indexOf('\r\n\r\n');
-  if (crlfBoundaryIndex >= 0) {
-    return { index: crlfBoundaryIndex, length: 4 };
-  }
-
-  const lfBoundaryIndex = buffer.indexOf('\n\n');
-  if (lfBoundaryIndex >= 0) {
-    return { index: lfBoundaryIndex, length: 2 };
-  }
-
-  return null;
-}
-
-function isAbortLikeError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') {
-    return false;
-  }
-
-  if ('name' in error && error.name === 'AbortError') {
-    return true;
-  }
-
-  if ('message' in error && typeof error.message === 'string') {
-    const message = error.message.toLowerCase();
-    return message.includes('abort') || message.includes('cancel');
-  }
-
-  return false;
-}

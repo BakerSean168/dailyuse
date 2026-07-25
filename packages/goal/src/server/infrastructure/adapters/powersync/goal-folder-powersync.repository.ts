@@ -19,16 +19,18 @@ export class GoalFolderPowerSyncRepository
   protected async persist(folder: GoalFolder): Promise<void> {
     const dto = PowerSyncGoalFolderMapper.toPersistence(folder);
 
-    const existing = await this.db.getOptional<{ id: string }>(
-      `SELECT id FROM goal_folders WHERE id = ? LIMIT 1`,
+    const existing = await this.db.getOptional<{ id: string; identity_id: string }>(
+      `SELECT id, identity_id FROM goal_folders WHERE id = ? LIMIT 1`,
       [dto.id],
     );
+    if (existing && String(existing.identity_id) !== String(dto.identityId)) {
+      throw new Error('Goal folder not found for the current identity.');
+    }
 
     if (existing) {
       await this.db.execute(
         `UPDATE goal_folders
-         SET identity_id = ?,
-             name = ?,
+         SET name = ?,
              description = ?,
              icon = ?,
              color = ?,
@@ -41,9 +43,8 @@ export class GoalFolderPowerSyncRepository
              version = ?,
              updated_at = ?,
              deleted_at = ?
-         WHERE id = ?`,
+         WHERE id = ? AND identity_id = ?`,
         [
-          dto.identityId,
           dto.name,
           dto.description,
           dto.icon,
@@ -58,6 +59,7 @@ export class GoalFolderPowerSyncRepository
           toDbDateTime(dto.updatedAt),
           toDbDateTime(dto.deletedAt),
           dto.id,
+          dto.identityId,
         ],
       );
     } else {
@@ -89,10 +91,10 @@ export class GoalFolderPowerSyncRepository
     }
   }
 
-  async findById(id: string): Promise<GoalFolder | null> {
+  async findByIdForIdentity(identityId: string, id: string): Promise<GoalFolder | null> {
     const row = await this.db.getOptional<Record<string, unknown>>(
-      `SELECT * FROM goal_folders WHERE id = ? LIMIT 1`,
-      [id],
+      `SELECT * FROM goal_folders WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [id, identityId],
     );
 
     return row ? PowerSyncGoalFolderMapper.toDomain(row) : null;
@@ -111,16 +113,18 @@ export class GoalFolderPowerSyncRepository
     return rows.map((row) => PowerSyncGoalFolderMapper.toDomain(row));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute(`DELETE FROM goal_folders WHERE id = ?`, [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Goal folder not found for the current identity.');
+    }
+    await this.db.execute(`DELETE FROM goal_folders WHERE id = ? AND identity_id = ?`, [
+      id,
+      identityId,
+    ]);
   }
 
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ value: number }>(
-      `SELECT 1 as value FROM goal_folders WHERE id = ? LIMIT 1`,
-      [id],
-    );
-
-    return row !== null;
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 }

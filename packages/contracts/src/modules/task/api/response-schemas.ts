@@ -7,7 +7,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { TaskTemplateId, TaskInstanceId, TaskDependencyId, IdentityId, TaskFolderId } from '../../../primitives';
+import type { TaskTemplateId, TaskInstanceId, TaskDependencyId, IdentityId, TaskFolderId, SubtaskId } from '../../../primitives';
 import {
   TaskGoalBindingSchema,
   TaskReminderConfigSchema,
@@ -70,7 +70,11 @@ export const TaskTemplateListResponseSchema = z.object({
 });
 
 // ============ TaskDependency Response Schema ============
+// Residual 797: TaskGraphDependencyDTO dual retired — this schema is the sole graph-edge shape
+// (semantic TaskGraphDependencyDTO is z.infer alias).
 
+// Residual 831: TaskDependencyClientDTO dual retired — sole TaskDependencyResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/task-dependency-client.ts).
 export const TaskDependencyResponseSchema = z.object({
   id: brandedId<TaskDependencyId>(),
   predecessorTaskId: brandedId<TaskTemplateId>(),
@@ -91,6 +95,8 @@ export const DependencyChainResponseSchema = z.object({
   isOnCriticalPath: z.boolean(),
 });
 
+// Residual 711: ValidateDependencyResponseSchema is the sole validate-dependency response shape
+// (ValidateDependencyResponse is a z.infer alias).
 export const ValidateDependencyResponseSchema = z.object({
   isValid: z.boolean(),
   errors: z.array(z.string()).optional(),
@@ -107,6 +113,8 @@ export const TaskTemplateGraphResponseSchema = z.object({
 
 // ============ TaskInstance Response Schema ============
 
+// Residual 831: TaskInstanceClientDTO dual retired — sole TaskInstanceResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/task-instance-client.ts).
 export const TaskInstanceResponseSchema = z.object({
   id: brandedId<TaskInstanceId>(),
   templateId: brandedId<TaskTemplateId>(),
@@ -125,7 +133,51 @@ export const TaskInstanceResponseSchema = z.object({
   deletedAt: z.number().nullable(),
 });
 
+// Residual 697: CheckExpiredTaskInstancesResponseSchema is the sole expired-list response shape
+// (CheckExpiredTaskInstancesRes is a z.infer alias).
 export const CheckExpiredTaskInstancesResponseSchema = z.object({
   count: z.number(),
   instances: z.array(TaskInstanceResponseSchema),
+});
+
+
+// Residual 837: TaskFolderClientDTO dual retired — sole TaskFolderResponseSchema + z.infer
+// (semantic type is z.infer alias in aggregates/task-folder-client.ts).
+// Residual 843: TaskFolderServerDTO also z.infer of this schema (client+server single-track).
+export const TaskFolderResponseSchema = z.object({
+  id: brandedId<TaskFolderId>(),
+  identityId: brandedId<IdentityId>(),
+  name: z.string(),
+  color: z.string().nullable(),
+  icon: z.string().nullable(),
+  order: z.number(),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+});
+
+// Residual 837: TaskTemplateHistoryClientDTO dual retired — sole TaskTemplateHistoryResponseSchema + z.infer
+// (semantic type is z.infer alias in entities/task-template-history-client.ts).
+// Residual 843: TaskTemplateHistoryServerDTO also z.infer of this schema (client+server single-track).
+export const TaskTemplateHistoryResponseSchema = z.object({
+  id: z.string(),
+  templateId: z.string(),
+  action: z.string(),
+  changes: z.unknown(),
+  createdAt: z.number(),
+});
+
+
+// Residual 841: SubtaskClientDTO dual retired — sole SubtaskResponseSchema + z.infer
+// (semantic type is z.infer alias in entities/subtask-client.ts).
+export const SubtaskResponseSchema = z.object({
+  id: brandedId<SubtaskId>(),
+  name: z.string(),
+  isCompleted: z.boolean(),
+  order: z.number(),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
 });

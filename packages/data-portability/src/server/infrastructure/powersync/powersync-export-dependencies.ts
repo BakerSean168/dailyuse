@@ -100,10 +100,10 @@ class PowerSyncGoalFolderAdapter implements GoalFolderRepoPort {
 
 class PowerSyncGoalRecordAdapter implements GoalRecordRepoPort {
   constructor(private readonly db: IElectronDatabase) {}
-  async findByGoalId(goalId: string): Promise<unknown[]> {
+  async findByGoalId(identityId: string, goalId: string): Promise<unknown[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
-      `SELECT * FROM goal_records WHERE key_result_id IN (SELECT id FROM key_results WHERE goal_id = ?) AND deleted_at IS NULL ORDER BY recorded_at DESC`,
-      [goalId],
+      `SELECT * FROM goal_records WHERE identity_id = ? AND key_result_id IN (SELECT id FROM key_results WHERE goal_id = ?) AND deleted_at IS NULL ORDER BY recorded_at DESC`,
+      [identityId, goalId],
     );
     return mapRows(rows);
   }
@@ -199,9 +199,13 @@ class PowerSyncReminderGroupAdapter implements ReminderGroupRepoPort {
 
 class PowerSyncReminderResponseAdapter implements ReminderResponseRepoPort {
   constructor(private readonly db: IElectronDatabase) {}
-  async findByTemplateId(templateId: string, limit?: number): Promise<unknown[]> {
-    const sql = `SELECT * FROM reminder_responses WHERE template_id = ? ORDER BY timestamp DESC${limit ? ` LIMIT ${limit}` : ''}`;
-    const rows = await this.db.getAll<Record<string, unknown>>(sql, [templateId]);
+  async findByTemplateId(
+    templateId: string,
+    identityId: string,
+    limit?: number,
+  ): Promise<unknown[]> {
+    const sql = `SELECT * FROM reminder_responses WHERE template_id = ? AND identity_id = ? ORDER BY timestamp DESC${limit ? ` LIMIT ${limit}` : ''}`;
+    const rows = await this.db.getAll<Record<string, unknown>>(sql, [templateId, identityId]);
     return mapRows(rows);
   }
 }

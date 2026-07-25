@@ -27,6 +27,8 @@ import { NoopScheduleMonitor } from '@dailyuse/patterns/scheduler';
 export interface ScheduledItem extends HeapItem {
   /** 任务名称（用于日志） */
   taskName: string;
+  /** 任务归属身份（reload / execute 时走 identity 读路径） */
+  identityId: string;
   /** cron 表达式（循环任务必需） */
   cronExpression: string | null;
   /** 时区 */

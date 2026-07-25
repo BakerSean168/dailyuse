@@ -6,6 +6,7 @@ import type {
 } from '@dailyuse/contracts/notification';
 
 export interface ReminderScheduleExecutionTask {
+  readonly identityId: string;
   readonly sourceEntityId: string;
 }
 

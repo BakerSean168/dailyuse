@@ -26,31 +26,35 @@ export interface IReminderResponseRepository {
   save(response: ReminderResponse): Promise<void>;
 
   /**
-   * 通过 ID 查找响应记录
-   *
-   * @param id 响应 ID
-   * @returns 响应实体，不存在则返回 null
+   * 通过 ID + identity 查找响应记录（唯一读路径）
    */
-  findById(id: string): Promise<ReminderResponse | null>;
+  findByIdForIdentity(identityId: string, id: string): Promise<ReminderResponse | null>;
 
   /**
-   * 通过模板 ID 获取响应记录列表
+   * 通过模板 ID + identity 获取响应记录列表
    *
    * @param templateId 提醒模板 ID
+   * @param identityId 身份 ID
    * @param limit 返回记录数限制
    * @returns 响应记录列表
    */
-  findByTemplateId(templateId: string, limit?: number): Promise<ReminderResponse[]>;
+  findByTemplateId(
+    templateId: string,
+    identityId: string,
+    limit?: number,
+  ): Promise<ReminderResponse[]>;
 
   /**
-   * 通过模板 ID 获取响应统计
+   * 通过模板 ID + identity 获取响应统计
    *
    * @param templateId 提醒模板 ID
+   * @param identityId 身份 ID
    * @param lookbackDays 回溯天数
    * @returns 响应统计信息
    */
   getResponseStats(
     templateId: string,
+    identityId: string,
     lookbackDays?: number,
   ): Promise<{
     total: number;
@@ -63,22 +67,25 @@ export interface IReminderResponseRepository {
   }>;
 
   /**
-   * 删除模板的所有响应记录
+   * 删除模板的所有响应记录（identity-scoped）
    *
    * @param templateId 提醒模板 ID
+   * @param identityId 身份 ID
    * @returns 删除的记录数量
    */
-  deleteByTemplateId(templateId: string): Promise<number>;
+  deleteByTemplateId(templateId: string, identityId: string): Promise<number>;
 
   /**
-   * 统计模板的响应分布
+   * 统计模板的响应分布（identity-scoped）
    *
    * @param templateId 提醒模板 ID
+   * @param identityId 身份 ID
    * @param lookbackDays 回溯天数
    * @returns 响应分布统计
    */
   getResponseDistribution(
     templateId: string,
+    identityId: string,
     lookbackDays?: number,
   ): Promise<Record<ReminderResponseAction, number>>;
 }

@@ -1,10 +1,8 @@
-import type { KnowledgeIndexedResource } from './knowledge-ingestion.port';
+import type { KnowledgeIndexedNote } from './knowledge-ingestion.port';
 
 export interface KnowledgeIndexDiagnostics {
   persistenceBackend:
-    | 'legacy-resource-metadata'
-    | 'powersync-resource-metadata'
-    | 'prisma-index-table';
+    'powersync-resource-metadata' | 'prisma-index-table';
   persistenceStatus: 'enabled' | 'fallback';
   persistenceReason?: string;
   vectorRecallBackend: 'none' | 'local-js-hybrid' | 'pgvector-ivfflat';
@@ -26,16 +24,14 @@ export interface KnowledgeIndexFailureRecord {
 
 export interface IKnowledgeIndexRepository {
   getDiagnostics(): Promise<KnowledgeIndexDiagnostics>;
-  findByResourceIds(
-    identityId: string,
-    resourceIds: string[],
-  ): Promise<KnowledgeIndexedResource[]>;
-  findRelevantResources(
+  findByNoteIds(identityId: string, resourceIds: string[]): Promise<KnowledgeIndexedNote[]>;
+  findRelevantNotes(
     identityId: string,
     query: string,
     limit: number,
-  ): Promise<KnowledgeIndexedResource[]>;
-  upsert(resource: KnowledgeIndexedResource): Promise<void>;
+  ): Promise<KnowledgeIndexedNote[]>;
+  upsert(resource: KnowledgeIndexedNote): Promise<void>;
   markRequested(identityId: string, resourceIds: string[], requestedAt: number): Promise<void>;
   markFailed(record: KnowledgeIndexFailureRecord): Promise<void>;
+  removeByNoteId(identityId: string, resourceId: string): Promise<void>;
 }

@@ -5,8 +5,9 @@
  * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
  */
 
-import type { KeyResultValueType } from './key-result-value-type';
-import type { KeyResultCalculationMethod } from './key-result-calculation-method';
+import { z } from 'zod';
+import { KeyResultValueType } from './key-result-value-type';
+import { KeyResultCalculationMethod } from './key-result-calculation-method';
 
 // ============ Domain Shape (领域层) ============
 
@@ -27,18 +28,16 @@ export interface KeyResultProgress {
   unit: string | null;
 }
 
-// ============ Transfer DTO (传输层) ============
+// Residual 737: KeyResultProgressDTO dual body retired — OpenAPI + transport use
+// KeyResultProgressDTOSchema (semantic type is a z.infer alias).
 
-/**
- * Key Result Progress DTO
- * API 传输用
- */
-export interface KeyResultProgressDTO {
-  valueType: KeyResultValueType;
-  aggregationMethod: KeyResultCalculationMethod;
-  initialValue: number;
-  targetValue: number;
-  currentValue: number;
-  unit: string | null;
-}
+export const KeyResultProgressDTOSchema = z.object({
+  valueType: z.enum(KeyResultValueType),
+  aggregationMethod: z.enum(KeyResultCalculationMethod),
+  initialValue: z.number(),
+  targetValue: z.number(),
+  currentValue: z.number(),
+  unit: z.string().nullable(),
+});
 
+export type KeyResultProgressDTO = z.infer<typeof KeyResultProgressDTOSchema>;

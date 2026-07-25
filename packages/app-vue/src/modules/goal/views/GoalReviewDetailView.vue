@@ -261,6 +261,7 @@ const recordTimelineOption = computed(() => ({
   series: recordTimelineSeries.value,
 }));
 
+/** Soft residual 1204: component-local formatDateTime (locale long month); ≠ app-react Intl zh-CN sole. */
 function formatDateTime(d: string | number | null | undefined): string {
   if (!d) return '-';
   return new Date(d).toLocaleString(locale.value, {

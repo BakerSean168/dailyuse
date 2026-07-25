@@ -29,6 +29,7 @@ export class CreateTaskDependencyUseCase {
     const existing = await this.dependencyRepository.findByPredecessorAndSuccessorId(
       request.predecessorTaskId,
       request.successorTaskId,
+      request.identityId,
     );
     if (existing) {
       return error('DUPLICATE', '依赖关系已存在');

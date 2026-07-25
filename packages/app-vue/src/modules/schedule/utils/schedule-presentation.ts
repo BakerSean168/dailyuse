@@ -4,7 +4,9 @@ import type { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/sched
 type Translate = ComposerTranslation;
 
 /**
- * Maps a ScheduleTaskStatus to its i18n label.
+ * Residual 1222 keep-boundary: app-vue schedule getStatusLabel — ScheduleTaskStatus typed i18n.
+ * Active/Paused/Completed/Failed/Cancelled → schedule.taskStatus.*; t injected as first arg.
+ * Soft residual 1222: goal domain Draft/Archived i18n + react English identity differ (no force-merge).
  */
 export function getStatusLabel(t: Translate, status: ScheduleTaskStatus): string {
   const keyMap: Record<ScheduleTaskStatus, string> = {
@@ -93,7 +95,9 @@ export function computeHealthStatus(consecutiveFailures: number): 'healthy' | 'w
 }
 
 /**
- * Formats a timestamp (TransferDate) as a locale-aware date string.
+ * Residual 1216 keep-boundary: app-vue schedule formatTimestamp — TransferDate → toLocaleString.
+ * Exported schedule presentation helper; null|undefined empty → '-'; invalid → '-'.
+ * Soft residual 1216: app-react ScheduleTaskCard local formatTimestamp is package-local (no force-merge).
  */
 export function formatTimestamp(timestamp: number | null | undefined): string {
   if (!timestamp) return '-';
@@ -104,6 +108,12 @@ export function formatTimestamp(timestamp: number | null | undefined): string {
 
 /**
  * Formats a duration in milliseconds to a human-readable string.
+ */
+/**
+ * Residual 1243 keep-boundary: app-vue schedule formatDuration — durationMs → i18n ms/sec.
+ * Exported presentation helper; null|undefined → '-'; <1000ms → durationMs; else durationSec fixed(2).
+ * Residual 1324: minutes-based schedule.duration.* dual-retired onto formatScheduleDurationMinutes sole.
+ * Soft residual 1243: task graph / Intl formatTaskDuration / ConflictAlert ms floor differ (no force-merge).
  */
 export function formatDuration(t: Translate, durationMs: number | null | undefined): string {
   if (durationMs === null || durationMs === undefined) return '-';

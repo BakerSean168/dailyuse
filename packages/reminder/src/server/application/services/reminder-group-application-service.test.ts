@@ -48,7 +48,7 @@ describe('ReminderGroupApplicationService', () => {
 
   beforeEach(() => {
     groupRepository = createMockRepo<IReminderGroupRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       findByIdentityId: vi.fn().mockResolvedValue([]),
       save: vi.fn().mockResolvedValue(undefined),
     });
@@ -98,7 +98,7 @@ describe('ReminderGroupApplicationService', () => {
 
   it('updates group state and syncs template effective flags', async () => {
     const existing = ReminderGroup.load(makeGroupState({ name: 'Original', description: 'old' }));
-    (groupRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(existing);
+    (groupRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(existing);
 
     const result = await service.updateGroup(
       existing.id,
@@ -107,7 +107,7 @@ describe('ReminderGroupApplicationService', () => {
     );
 
     expect(groupRepository.save).toHaveBeenCalledTimes(1);
-    expect(reminderDomainService.syncTemplatesEffectiveEnabledByGroup).toHaveBeenCalledWith(existing.id);
+    expect(reminderDomainService.syncTemplatesEffectiveEnabledByGroup).toHaveBeenCalledWith(IDENTITY_ID, existing.id);
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.name).toBe('Updated');
@@ -117,22 +117,15 @@ describe('ReminderGroupApplicationService', () => {
 
   it('batches template state changes through repositories and domain sync', async () => {
     const group = ReminderGroup.load(makeGroupState());
-    (groupRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(group);
+    (groupRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(group);
     const ownedTemplate = {
       id: 'template-1',
       identityId: IDENTITY_ID,
       enable: vi.fn(),
       pause: vi.fn(),
     };
-    const foreignTemplate = {
-      id: 'template-2',
-      identityId: 'IdentityId_foreign',
-      enable: vi.fn(),
-      pause: vi.fn(),
-    };
     (templateRepository.findByGroupId as ReturnType<typeof vi.fn>).mockResolvedValue([
       ownedTemplate,
-      foreignTemplate,
     ]);
 
     const result = await service.batchGroupTemplates(
@@ -141,11 +134,11 @@ describe('ReminderGroupApplicationService', () => {
       { identityId: IDENTITY_ID },
     );
 
+    expect(templateRepository.findByGroupId).toHaveBeenCalledWith(group.id, IDENTITY_ID);
     expect(ownedTemplate.enable).toHaveBeenCalledTimes(1);
-    expect(foreignTemplate.enable).not.toHaveBeenCalled();
     expect(reminderDomainService.syncTemplateEffectiveEnabled).toHaveBeenCalledTimes(1);
     expect(templateRepository.save).toHaveBeenCalledTimes(1);
-    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith(group.id);
+    expect(reminderDomainService.updateGroupStats).toHaveBeenCalledWith(IDENTITY_ID, group.id);
     expect(result).toEqual({ ok: true, data: { successCount: 1, failedCount: 0 } });
   });
 });

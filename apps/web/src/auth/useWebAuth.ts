@@ -1,6 +1,8 @@
 import type {
   AuthResponseDTO,
   ForgotPasswordReq,
+  GetOAuthUrlReq,
+  OAuthCallbackReq,
   LoginByEmailReq,
   RegisterByEmailReq,
   ResetPasswordReq,
@@ -42,6 +44,11 @@ export function useWebAuth() {
       : null,
   );
 
+  /**
+   * Residual 1201 keep-boundary: web auth handleAuthSuccess — localStorage token persistence.
+   * Writes access/refresh/auth-state into window.localStorage (no Pinia/store path).
+   * Soft residual 1201: app-vue useAuthContext handleAuthSuccess is store-only (no force-merge).
+   */
   function handleAuthSuccess(data: AuthResponseDTO) {
     error.value = null;
 
@@ -271,11 +278,78 @@ export function useWebAuth() {
     }
   }
 
+
+  async function startGithubLogin(redirectUri?: string): Promise<boolean> {
+    isLoading.value = true;
+    error.value = null;
+    successMessage.value = null;
+    try {
+      const req: GetOAuthUrlReq = { provider: 'Github', redirectUri };
+      const result = await service.getOAuthUrl(req);
+      if (!result.ok) {
+        error.value = result.error;
+        return false;
+      }
+      window.location.assign(result.data.authUrl);
+      return true;
+    } catch (errorLike) {
+      error.value = normalizeAuthError(errorLike);
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /**
+   * Probe whether GitHub OAuth is configured without issuing state/PKCE.
+   * 探测 GitHub OAuth 是否已配置，且不签发 state/PKCE。
+   */
+  async function probeGithubAvailability(): Promise<boolean> {
+    try {
+      if (!service.listOAuthProviders) return false;
+      const result = await service.listOAuthProviders();
+      if (!result.ok) return false;
+      return result.data.providers.some((p) => p.provider === 'Github' && p.enabled);
+    } catch {
+      return false;
+    }
+  }
+
+  async function completeGithubOAuth(code: string, state: string): Promise<AuthSuccessOutcome | null> {
+    isLoading.value = true;
+    error.value = null;
+    successMessage.value = null;
+    try {
+      const req: OAuthCallbackReq = { provider: 'Github', code, state };
+      const result = await service.oauthCallback(req);
+      if (!result.ok) {
+        error.value = result.error;
+        return null;
+      }
+      handleAuthSuccess(result.data);
+      if (isUnverifiedIdentity(result.data.identity)) {
+        pendingVerificationEmail.value = null;
+        return 'needs-email-verification';
+      }
+      redirectToApp();
+      return 'authenticated';
+    } catch (errorLike) {
+      error.value = normalizeAuthError(errorLike);
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+
   return {
     error,
     errorMessage,
     successMessage,
     pendingVerificationEmail,
+    startGithubLogin,
+    probeGithubAvailability,
+    completeGithubOAuth,
     isLoading,
     clearError,
     clearSuccessMessage,

@@ -37,7 +37,7 @@ describe('CloneGoalUseCase', () => {
   it('creates a new goal with default name "${original} (Copy)"', async () => {
     const goal = createOriginalGoalFixture();
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const createGoal = createMockCreateGoalUseCase();
 
@@ -54,7 +54,7 @@ describe('CloneGoalUseCase', () => {
   it('uses custom name when provided', async () => {
     const goal = createOriginalGoalFixture();
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const createGoal = createMockCreateGoalUseCase();
 
@@ -72,7 +72,7 @@ describe('CloneGoalUseCase', () => {
       tags: ['fitness', 'health'],
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const createGoal = createMockCreateGoalUseCase();
 
@@ -87,7 +87,7 @@ describe('CloneGoalUseCase', () => {
 
   it('returns NOT_FOUND when original goal does not exist', async () => {
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     const createGoal = createMockCreateGoalUseCase();
 
@@ -103,7 +103,7 @@ describe('CloneGoalUseCase', () => {
   it('passes execution context to CreateGoalUseCase', async () => {
     const goal = createOriginalGoalFixture();
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const createGoal = createMockCreateGoalUseCase();
     const cx = aContext();
@@ -117,7 +117,7 @@ describe('CloneGoalUseCase', () => {
   it('uses original description when clone params omit it', async () => {
     const goal = createOriginalGoalFixture({ description: 'Original desc' });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const createGoal = createMockCreateGoalUseCase();
 

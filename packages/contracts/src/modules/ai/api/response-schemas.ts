@@ -1,138 +1,53 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { AiProviderConfigId, AiConversationId, AiMessageId } from '../../../primitives';
-import { GoalCategory } from '../dtos/goal-generation-result.dto';
+import type { AiProviderConfigId, AiConversationId, AiMessageId, IdentityId } from '../../../primitives';
 import {
-  GoalAutomationActionSchema,
-  GoalAutomationExecutedActionSchema,
-  GoalAutomationReminderPreviewSchema,
-  GoalAutomationTaskTemplatePreviewSchema,
-} from './ai-goal-automation.dto';
-import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
-import { KeyResultValueType } from '../../goal/value-objects/key-result-value-type';
+  GenerateGoalResultDTOSchema,
+  GeneratedGoalDraftSchema,
+  KeyResultPreviewSchema,
+} from '../dtos/goal-generation-result.dto';
+import {
+  GoalWorkflowClarificationResultDTOSchema,
+  GoalWorkflowConfirmResultDTOSchema,
+  GoalWorkflowDraftResultDTOSchema,
+  GoalWorkflowExecutionResultDTOSchema,
+  GoalWorkflowResultDTOSchema,
+} from '../dtos/goal-workflow-result.dto';
+import { TestAIProviderResultDTOSchema } from '../dtos/provider-test-result.dto';
+import { TokenUsageSchema } from '../value-objects/token-usage';
 import { ConversationStatus } from '../value-objects/conversation-status';
 import { MessageRole } from '../value-objects/message-role';
-import { AIProviderType } from '../value-objects/ai-provider-type';
+import {
+  AIModelInfoSchema,
+  AIProviderConfigClientDTOSchema,
+} from '../aggregates/ai-provider-config-client';
 
-const TokenUsageSchema = z.object({
-  promptTokens: z.number(),
-  completionTokens: z.number(),
-  totalTokens: z.number(),
-});
+// Residual 751: AIModelInfoSchema owned by aggregates (AIModelInfo is z.infer alias).
+// Residual 811: AIProviderConfigClientDTOSchema owned by aggregates (ClientDTO is z.infer alias).
+export { AIModelInfoSchema, AIProviderConfigClientDTOSchema };
 
-const KeyResultPreviewSchema = z.object({
-  title: z.string(),
-  description: z.string().optional(),
-  valueType: z.enum(Object.values(KeyResultValueType)),
-  calculationMethod: z.enum(Object.values(KeyResultCalculationMethod)),
-  startValue: z.number(),
-  currentValue: z.number(),
-  targetValue: z.number(),
-  unit: z.string(),
-  weight: z.number().int().min(1).max(5),
-});
+// Residual 719: draft/preview/result schemas owned by goal-generation-result.dto.ts
+// (GenerateGoalResultDTOSchema re-exported for OpenAPI route consumers).
+export { GenerateGoalResultDTOSchema, GeneratedGoalDraftSchema, KeyResultPreviewSchema };
 
-const GeneratedGoalDraftSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  motivation: z.string().optional(),
-  category: z.nativeEnum(GoalCategory),
-  suggestedStartDate: z.number(),
-  suggestedEndDate: z.number(),
-  importance: z.nativeEnum(ImportanceLevel),
-  tags: z.array(z.string()),
-  feasibilityAnalysis: z.string().optional(),
-  aiInsights: z.string().optional(),
-});
+// Residual 727: TokenUsageSchema owned by value-objects/token-usage.ts
+// (re-exported for OpenAPI nested response consumers).
+export { TokenUsageSchema };
 
-export const GenerateGoalResultDTOSchema = z.object({
-  goal: GeneratedGoalDraftSchema,
-  keyResults: z.array(KeyResultPreviewSchema).optional(),
-  tokenUsage: TokenUsageSchema,
-  providerId: brandedId<AiProviderConfigId>(),
-  processingTimeMs: z.number(),
-  generatedAt: z.number(),
-  providerUsed: z.string().optional(),
-  modelUsed: z.string().optional(),
-});
-
-const GoalClarificationQuestionSchema = z.object({
-  question: z.string(),
-  context: z.string().nullable().optional(),
-});
-
-const GoalClarificationSchema = z.object({
-  needsClarification: z.literal(true),
-  questions: z.array(GoalClarificationQuestionSchema).min(2).max(4),
-  rationale: z.string().nullable().optional(),
-});
-
-export const GoalWorkflowDraftResultDTOSchema = GenerateGoalResultDTOSchema.extend({
-  state: z.literal('draft'),
-});
-
-export const GoalWorkflowClarificationResultDTOSchema = z.object({
-  state: z.literal('clarification'),
-  clarification: GoalClarificationSchema,
-  tokenUsage: TokenUsageSchema,
-  providerId: brandedId<AiProviderConfigId>(),
-  processingTimeMs: z.number(),
-  generatedAt: z.number(),
-  providerUsed: z.string().optional(),
-  modelUsed: z.string().optional(),
-});
-
-const GoalWorkflowPlanPayloadSchema = z.object({
-  summary: z.string(),
-  plan: z.object({
-    goal: GeneratedGoalDraftSchema,
-    keyResults: z.array(KeyResultPreviewSchema).optional(),
-    taskTemplates: z.array(GoalAutomationTaskTemplatePreviewSchema).optional(),
-    reminders: z.array(GoalAutomationReminderPreviewSchema).optional(),
-  }),
-  actions: z.array(GoalAutomationActionSchema),
-  tokenUsage: TokenUsageSchema,
-  providerId: brandedId<AiProviderConfigId>(),
-  processingTimeMs: z.number(),
-  generatedAt: z.number(),
-  providerUsed: z.string().optional(),
-  modelUsed: z.string().optional(),
-});
-
-const GoalWorkflowExecutionSummaryDTOSchema = z.object({
-  status: z.enum(['success', 'partial', 'failed']),
-  executedCount: z.number().int().nonnegative(),
-  skippedCount: z.number().int().nonnegative(),
-  failedCount: z.number().int().nonnegative(),
-});
-
-const GoalWorkflowRecoveryDTOSchema = z.object({
-  canRetry: z.boolean(),
-  failedActions: z.array(GoalAutomationExecutedActionSchema),
-  suggestions: z.array(z.string()),
-});
-
-export const GoalWorkflowConfirmResultDTOSchema = GoalWorkflowPlanPayloadSchema.extend({
-  state: z.literal('confirm'),
-});
-
-export const GoalWorkflowExecutionResultDTOSchema = GoalWorkflowPlanPayloadSchema.extend({
-  state: z.literal('result'),
-  executedActions: z.array(GoalAutomationExecutedActionSchema),
-  executionSummary: GoalWorkflowExecutionSummaryDTOSchema,
-  recovery: GoalWorkflowRecoveryDTOSchema,
-});
-
-export const GoalWorkflowResultDTOSchema = z.discriminatedUnion('state', [
+// Residual 729: goal workflow schemas owned by goal-workflow-result.dto.ts
+// (re-exported for OpenAPI route consumers).
+export {
   GoalWorkflowClarificationResultDTOSchema,
-  GoalWorkflowDraftResultDTOSchema,
   GoalWorkflowConfirmResultDTOSchema,
+  GoalWorkflowDraftResultDTOSchema,
   GoalWorkflowExecutionResultDTOSchema,
-]);
+  GoalWorkflowResultDTOSchema,
+};
 
 // ============ Route Response Schemas ============
 
+// Residual 807: MessageClientDTO dual retired — this schema is the sole message client shape
+// (semantic MessageClientDTO is z.infer alias in entities/message-client.ts).
 export const MessageClientDTOSchema = z.object({
   id: brandedId<AiMessageId>(),
   conversationId: brandedId<AiConversationId>(),
@@ -149,9 +64,11 @@ export const MessageClientDTOSchema = z.object({
   formattedTime: z.string(),
 });
 
+// Residual 809: AIConversationClientDTO dual retired — sole ClientDTOSchema + z.infer
+// (identityId tightened to brandedId to match prior ClientDTO).
 export const AIConversationClientDTOSchema = z.object({
   id: brandedId<AiConversationId>(),
-  identityId: z.string(),
+  identityId: brandedId<IdentityId>(),
   name: z.string(),
   status: z.enum(Object.values(ConversationStatus)),
   messageCount: z.number(),
@@ -163,42 +80,13 @@ export const AIConversationClientDTOSchema = z.object({
   messages: z.array(MessageClientDTOSchema).nullable(),
 });
 
-const AIModelInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  contextWindow: z.number().optional(),
-  inputCostPer1M: z.number().optional(),
-  outputCostPer1M: z.number().optional(),
-});
 
-export const AIProviderConfigClientDTOSchema = z.object({
-  id: brandedId<AiProviderConfigId>(),
-  identityId: z.string(),
-  name: z.string(),
-  providerType: z.enum(Object.values(AIProviderType)),
-  baseUrl: z.string(),
-  apiKeyMasked: z.string(),
-  defaultModel: z.string().nullable(),
-  availableModels: z.array(AIModelInfoSchema),
-  isActive: z.boolean(),
-  isDefault: z.boolean(),
-  priority: z.number(),
-  version: z.number(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
-});
+// Residual 647: AIProviderConfigSummarySchema dual-track retired.
+// Residual 811: ClientDTOSchema owned by aggregates; list/get envelopes use it only.
 
-export const AIProviderConfigSummarySchema = z.object({
-  id: brandedId<AiProviderConfigId>(),
-  name: z.string(),
-  providerType: z.enum(Object.values(AIProviderType)),
-  defaultModel: z.string().nullable(),
-  isActive: z.boolean(),
-  isDefault: z.boolean(),
-});
-
+// Residual 695: AI response OpenAPI schemas are the sole response shapes for
+// SendMessage / ListAIProviderConfigs / QueryAnalytics / QueryKnowledge /
+// ExpandKnowledge / CreateKnowledgeNote (semantic *Res types are z.infer aliases).
 export const SendMessageResSchema = z.object({
   userMessage: MessageClientDTOSchema,
   assistantMessage: MessageClientDTOSchema,
@@ -207,6 +95,8 @@ export const SendMessageResSchema = z.object({
   processingTimeMs: z.number(),
 });
 
+// Residual 691: AI chat list OpenAPI schemas are the sole list response shapes
+// (ConversationListRes / MessageListRes are z.infer aliases).
 export const ConversationListResSchema = z.object({
   data: z.array(AIConversationClientDTOSchema),
   total: z.number(),
@@ -221,26 +111,24 @@ export const MessageListResSchema = z.object({
   pageSize: z.number(),
 });
 
-export const TestAIProviderResultDTOSchema = z.object({
-  ok: z.boolean(),
-  response: z.string().optional(),
-  model: z.string().optional(),
-  error: z.string().optional(),
-  latencyMs: z.number(),
-});
+// Residual 721: TestAIProviderResultDTOSchema owned by provider-test-result.dto.ts
+// (re-exported for OpenAPI route consumers).
+export { TestAIProviderResultDTOSchema };
 
-const KnowledgeCitationResSchema = z.object({
-  resourceId: z.string(),
-  resourcePath: z.string(),
+// Residual 755: KnowledgeCitationSchema is the sole citation transport shape
+// (KnowledgeCitation is a z.infer alias on ai-knowledge-query.dto).
+export const KnowledgeCitationSchema = z.object({
+  resourceId: z.string().min(1),
+  resourcePath: z.string().min(1),
   title: z.string().optional(),
   chunkIndex: z.number().int().nonnegative(),
-  excerpt: z.string(),
+  excerpt: z.string().min(1),
   score: z.number().nonnegative(),
 });
 
 export const QueryKnowledgeResSchema = z.object({
   answer: z.string(),
-  citations: z.array(KnowledgeCitationResSchema),
+  citations: z.array(KnowledgeCitationSchema),
   providerId: brandedId<AiProviderConfigId>(),
   tokenUsage: TokenUsageSchema,
   processingTimeMs: z.number(),
@@ -249,32 +137,29 @@ export const QueryKnowledgeResSchema = z.object({
 
 export const ExpandKnowledgeResSchema = z.object({
   expandedContent: z.string(),
-  citations: z.array(KnowledgeCitationResSchema),
+  citations: z.array(KnowledgeCitationSchema),
   providerId: brandedId<AiProviderConfigId>(),
   tokenUsage: TokenUsageSchema,
   processingTimeMs: z.number(),
   matchedResourceCount: z.number(),
 });
 
-const ResourceClientResSchema = z.object({
+// Residual 723: KnowledgeNotePersistedRefSchema is the sole persisted-note shape
+// (KnowledgeNotePersistedRef is a z.infer alias).
+export const KnowledgeNotePersistedRefSchema = z.object({
   id: z.string(),
-  repositoryId: z.string(),
-  folderId: z.string().nullable(),
+  repositoryScopeId: z.string(),
   name: z.string(),
-  type: z.string(),
-  mimeType: z.string(),
   path: z.string(),
+  mimeType: z.string(),
   size: z.number(),
   content: z.string().nullable(),
-  status: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
-  version: z.number(),
 });
 
 export const CreateKnowledgeNoteResSchema = z.object({
-  resource: ResourceClientResSchema,
+  note: KnowledgeNotePersistedRefSchema,
   resolvedPath: z.string(),
   indexStatus: z.enum(['pending', 'indexed', 'failed']),
   tokenUsage: TokenUsageSchema,
@@ -292,9 +177,6 @@ export const QueryAnalyticsResSchema = z.object({
 });
 
 export const ListAIProviderConfigsResSchema = z.object({
-  data: z.array(AIProviderConfigSummarySchema),
+  data: z.array(AIProviderConfigClientDTOSchema),
 });
 
-export const ActionSuccessSchema = z.object({
-  success: z.boolean(),
-});

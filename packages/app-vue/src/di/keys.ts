@@ -7,6 +7,8 @@
  */
 
 import type { InjectionKey, Ref, ShallowRef } from 'vue';
+import type { ElectronBridge } from '@dailyuse/ipc-client';
+import type { DesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 import type {
   IAccountService,
   IAuthService,
@@ -15,7 +17,6 @@ import type {
   IScheduleService,
   IReminderService,
   IRepositoryService,
-  IEditorService,
   INotificationService,
   ISettingService,
   IDataPortabilityService,
@@ -33,7 +34,6 @@ export const TASK_SERVICE_KEY: InjectionKey<ITaskService> = Symbol('TaskService'
 export const SCHEDULE_SERVICE_KEY: InjectionKey<IScheduleService> = Symbol('ScheduleService');
 export const REMINDER_SERVICE_KEY: InjectionKey<IReminderService> = Symbol('ReminderService');
 export const REPOSITORY_SERVICE_KEY: InjectionKey<IRepositoryService> = Symbol('RepositoryService');
-export const EDITOR_SERVICE_KEY: InjectionKey<IEditorService> = Symbol('EditorService');
 export const NOTIFICATION_SERVICE_KEY: InjectionKey<INotificationService> =
   Symbol('NotificationService');
 export const SETTING_SERVICE_KEY: InjectionKey<ISettingService> = Symbol('SettingService');
@@ -54,17 +54,16 @@ export const USER_NAME_KEY: InjectionKey<string> = Symbol('UserName');
 export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandler');
 
 // ── Desktop Platform Keys ──
-export const DESKTOP_AUTH_API_KEY: InjectionKey<{
-  invoke?: (channel: string, ...args: unknown[]) => Promise<unknown>;
-}> = Symbol('DesktopAuthApi');
+// Residual 915: DESKTOP_AUTH_API_KEY dual retired — InjectionKey<DesktopAuthApi>
+// (no ElectronBridge Pick dual of the sole invoke-api body).
+export const DESKTOP_AUTH_API_KEY: InjectionKey<DesktopAuthApi> =
+  Symbol('DesktopAuthApi');
 
-export interface DesktopBridge {
-  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
-  on: (channel: string, callback: (...args: unknown[]) => void) => void;
-  off: (channel: string, callback: (...args: unknown[]) => void) => void;
-}
+/** Desktop preload bridge — canonical type from @dailyuse/ipc-client. */
+// Residual 929: ElectronBridge keep-boundary for window controls (invoke+on+off).
+export type { ElectronBridge };
 
-export const DESKTOP_BRIDGE_KEY: InjectionKey<DesktopBridge> = Symbol('DesktopBridge');
+export const DESKTOP_BRIDGE_KEY: InjectionKey<ElectronBridge> = Symbol('DesktopBridge');
 
 /** Shell-owned Global Composer teleport mount (HTMLElement). */
 export const SHELL_COMPOSER_MOUNT_KEY: InjectionKey<ShallowRef<HTMLElement | null>> =

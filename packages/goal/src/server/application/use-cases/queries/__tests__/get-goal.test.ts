@@ -35,11 +35,11 @@ describe('GetGoalUseCase', () => {
   it('should return a goal by ID', async () => {
     const goal = createGoalFixture();
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const useCase = new GetGoalUseCase(goalRepo);
 
-    const result = await useCase.execute('goal-id-1');
+    const result = await useCase.execute('goal-id-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -54,11 +54,11 @@ describe('GetGoalUseCase', () => {
 
   it('should return NOT_FOUND when goal does not exist', async () => {
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     const useCase = new GetGoalUseCase(goalRepo);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -68,28 +68,28 @@ describe('GetGoalUseCase', () => {
 
   it('should pass includeChildren option to repository', async () => {
     const goal = createGoalFixture();
-    const findById = vi.fn().mockResolvedValue(goal);
+    const findByIdForIdentity = vi.fn().mockResolvedValue(goal);
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById,
+      findByIdForIdentity,
     });
     const useCase = new GetGoalUseCase(goalRepo);
 
-    await useCase.execute('goal-id-1', true);
+    await useCase.execute('goal-id-1', 'identity-1', true);
 
-    expect(findById).toHaveBeenCalledWith('goal-id-1', { includeChildren: true });
+    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-id-1', { includeChildren: true });
   });
 
   it('should pass includeChildren as undefined when not provided', async () => {
     const goal = createGoalFixture();
-    const findById = vi.fn().mockResolvedValue(goal);
+    const findByIdForIdentity = vi.fn().mockResolvedValue(goal);
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById,
+      findByIdForIdentity,
     });
     const useCase = new GetGoalUseCase(goalRepo);
 
-    await useCase.execute('goal-id-1');
+    await useCase.execute('goal-id-1', 'identity-1');
 
-    expect(findById).toHaveBeenCalledWith('goal-id-1', { includeChildren: undefined });
+    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-id-1', { includeChildren: undefined });
   });
 
   it('should return the DTO produced by toClientDTO', async () => {
@@ -103,14 +103,30 @@ describe('GetGoalUseCase', () => {
       toClientDTO: vi.fn().mockReturnValue(customDTO),
     });
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
     });
     const useCase = new GetGoalUseCase(goalRepo);
 
-    const result = await useCase.execute('custom-id');
+    const result = await useCase.execute('custom-id', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.data).toEqual(customDTO);
+  });
+
+  it('should return NOT_FOUND for another identity', async () => {
+    const goalRepo = createMockRepo<IGoalRepository>({
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
+    });
+    const useCase = new GetGoalUseCase(goalRepo);
+
+    const result = await useCase.execute('goal-id-1', 'identity-other');
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe('NOT_FOUND');
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-other', 'goal-id-1', {
+      includeChildren: undefined,
+    });
   });
 });

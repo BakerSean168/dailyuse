@@ -26,6 +26,7 @@ export class BatchOperateScheduleTasksUseCase {
 
   async execute(
     request: BatchScheduleTaskOperationRequest,
+    identityId: string,
   ): Promise<Result<BatchScheduleTaskResult>> {
     const results: BatchScheduleTaskResult = {
       success: [],
@@ -36,7 +37,7 @@ export class BatchOperateScheduleTasksUseCase {
     };
 
     for (const taskId of request.taskIds) {
-      const result = await this.executeSingle(taskId, request);
+      const result = await this.executeSingle(taskId, request, identityId);
       if (isOk(result)) {
         results.success.push(taskId);
       } else {
@@ -56,18 +57,19 @@ export class BatchOperateScheduleTasksUseCase {
   private executeSingle(
     taskId: string,
     request: BatchScheduleTaskOperationRequest,
+    identityId: string,
   ): Promise<Result<ScheduleTaskClientDTO>> {
     switch (request.operation) {
       case 'pause':
-        return this.deps.pauseScheduleTask.execute(taskId);
+        return this.deps.pauseScheduleTask.execute(taskId, identityId);
       case 'resume':
-        return this.deps.resumeScheduleTask.execute(taskId);
+        return this.deps.resumeScheduleTask.execute(taskId, identityId);
       case 'cancel':
-        return this.deps.cancelScheduleTask.execute(taskId, request.reason ?? 'Batch cancelled');
+        return this.deps.cancelScheduleTask.execute(taskId, identityId, request.reason ?? 'Batch cancelled');
       case 'enable':
-        return this.deps.updateScheduleTask.execute({ id: taskId, enabled: true });
+        return this.deps.updateScheduleTask.execute({ id: taskId, enabled: true }, identityId);
       case 'disable':
-        return this.deps.updateScheduleTask.execute({ id: taskId, enabled: false });
+        return this.deps.updateScheduleTask.execute({ id: taskId, enabled: false }, identityId);
     }
   }
 }

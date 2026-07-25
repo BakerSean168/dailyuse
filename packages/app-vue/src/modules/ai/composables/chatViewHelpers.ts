@@ -4,7 +4,8 @@
  * Extracted from useAIChatView.ts to reduce composable size.
  */
 
-import type { WorkflowMode, GoalWorkflowStage } from './types';
+import type { AIChatService, WorkflowMode, GoalWorkflowStage } from './types';
+import { unwrap } from '@dailyuse/contracts/result';
 
 /** Parameters for workflowStatusText computation. */
 export interface WorkflowStatusParams {
@@ -20,6 +21,9 @@ export interface WorkflowStatusParams {
   noteAgentLoading: boolean;
   noteAgentDraftReady: boolean;
   noteSummary: { resolvedPath: string } | null;
+  /** Residual 431: task.create start in flight. */
+  taskAgentLoading?: boolean;
+  taskAgentRun?: { run: { status: string } } | null;
 }
 
 /** Computes the workflow status text for the chat view. */
@@ -58,6 +62,13 @@ export function getWorkflowStatusText(
       });
     if (params.noteAgentDraftReady) return t('aiAssistant.chatPage.workflow.noteDraftReadyHint');
     return t('aiAssistant.chatPage.workflow.noteCollectingHint');
+  }
+  if (params.toolMode === 'task-create') {
+    if (params.taskAgentLoading) return t('aiAssistant.dialogs.agent.starting');
+    if (params.taskAgentRun?.run.status === 'waiting_approval') {
+      return t('aiAssistant.chatPage.workflow.taskAwaitingApprovalHint');
+    }
+    return t('aiAssistant.chatPage.workflow.taskCollectingHint');
   }
   if (params.toolMode === 'knowledge-qa') {
     if (params.knowledgeQueryLoading) return t('aiAssistant.dialogs.knowledge.searching');
@@ -121,14 +132,14 @@ export async function maybeRenameConversation(
   name: string,
   currentTitle: string,
   conversationId: string | null,
-  service: { updateConversation: (id: string, data: { name: string }) => Promise<unknown> },
+  service: Pick<AIChatService, 'updateConversation'>,
   reload: () => Promise<void>,
 ): Promise<void> {
   const nextName = name.trim();
   if (!nextName || nextName === currentTitle) return;
   if (!conversationId) return;
   try {
-    await service.updateConversation(conversationId, { name: nextName });
+    unwrap(await service.updateConversation(conversationId, { name: nextName }));
     await reload();
   } catch (error) {
     console.warn('[AIChatView] failed to update conversation title', error);

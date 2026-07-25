@@ -6,7 +6,7 @@
 
 export * from './core';
 
-export { toIpcResult, fromIpcResult, createIpcClientWrapper, type IpcResult } from './ipc';
+export { toIpcResult, fromIpcResult, isIpcResultEnvelope, type IpcResult } from './ipc';
 
 export {
   toHttpResponse,
@@ -22,20 +22,4 @@ export {
   type HttpResponseOptions,
 } from './http';
 
-export {
-  type ActionResult,
-  type ActionResultWithData,
-  type CountResult,
-  type BatchActionResult,
-  type BatchFailure,
-  type DeleteResult,
-  type ValidationResult,
-  type SyncResult,
-  type ImportExportResult,
-  actionOk,
-  actionFail,
-  countResult,
-  batchActionResult,
-  isActionOk,
-  isActionFail,
-} from './action';
+// Residual 615: retired success-boolean action dual-track helpers (Result envelope only).

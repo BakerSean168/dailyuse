@@ -12,11 +12,10 @@ import { LocaleSchema } from './locale.schema';
 import { WorkflowSchema } from './workflow.schema';
 import { PrivacySchema } from './privacy.schema';
 import { NotificationSchema } from './notification.schema';
-import { EditorSchema } from './editor.schema';
 import { ShortcutsSchema } from './shortcuts.schema';
 import { ExperimentalSchema } from './experimental.schema';
 import { UISchema } from './ui.schema';
-import { AISchema, KnowledgeNoteSubpathSchema } from './ai.schema';
+import { AISchema } from './ai.schema';
 
 export const UserPreferencesSchema = z.object({
   appearance: AppearanceSchema.default(() => AppearanceSchema.parse({})),
@@ -24,7 +23,6 @@ export const UserPreferencesSchema = z.object({
   workflow: WorkflowSchema.default(() => WorkflowSchema.parse({})),
   privacy: PrivacySchema.default(() => PrivacySchema.parse({})),
   notification: NotificationSchema.default(() => NotificationSchema.parse({})),
-  editor: EditorSchema.default(() => EditorSchema.parse({})),
   shortcuts: ShortcutsSchema.default(() => ShortcutsSchema.parse({})),
   experimental: ExperimentalSchema.default(() => ExperimentalSchema.parse({})),
   ui: UISchema.default(() => UISchema.parse({})),
@@ -38,7 +36,6 @@ export const CATEGORY_SCHEMAS = {
   workflow: WorkflowSchema,
   privacy: PrivacySchema,
   notification: NotificationSchema,
-  editor: EditorSchema,
   shortcuts: ShortcutsSchema,
   experimental: ExperimentalSchema,
   ui: UISchema,
@@ -51,10 +48,8 @@ export {
   WorkflowSchema,
   PrivacySchema,
   NotificationSchema,
-  EditorSchema,
   ShortcutsSchema,
   ExperimentalSchema,
   UISchema,
   AISchema,
-  KnowledgeNoteSubpathSchema,
 };

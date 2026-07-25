@@ -1,6 +1,9 @@
 /**
  * NotificationChannel Entity - Client Interface
  * 通知渠道实体 - 客户端接口
+ *
+ * Residual 861: sole fuller NotificationChannelClientDTO body;
+ * Server is Omit of this type (see notification-channel-server.ts).
  */
 
 import type { NotificationChannelType } from '../value-objects/notification-channel-type';

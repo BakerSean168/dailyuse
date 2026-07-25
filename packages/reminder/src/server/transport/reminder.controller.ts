@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { ReminderApplicationPort } from '../application';
 import {
@@ -25,10 +25,6 @@ import type {
   GetReminderTodayScheduleRes,
 } from '@dailyuse/contracts/reminder';
 import { formatZodErrors } from '@dailyuse/utils/result';
-
-// ============ Use Case Port ============
-
-export type ReminderUseCases = ReminderApplicationPort;
 
 export class ReminderController {
   constructor(private readonly useCases: ReminderApplicationPort) {}
@@ -97,8 +93,11 @@ export class ReminderController {
     return this.useCases.updateTemplate(id, parsed.data, ctx);
   }
 
-  async deleteTemplate(id: string, ctx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.deleteTemplate(id, ctx);
+  async deleteTemplate(id: string, ctx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.useCases.deleteTemplate(id, ctx);
+    if (!result.ok) return result as Result<null>;
+    // Serialize as data:null (no Result.void / undefined dual-track).
+    return ok(null);
   }
 
   // ==================== Group Operations ====================
@@ -135,8 +134,11 @@ export class ReminderController {
     return this.useCases.updateGroup(id, parsed.data, ctx);
   }
 
-  async deleteGroup(id: string, ctx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.deleteGroup(id, ctx);
+  async deleteGroup(id: string, ctx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.useCases.deleteGroup(id, ctx);
+    if (!result.ok) return result as Result<null>;
+    // Serialize as data:null (no Result.void / undefined dual-track).
+    return ok(null);
   }
 
   async switchGroupControlMode(id: string, input: unknown, ctx: ExecutionContext): Promise<Result<unknown>> {
@@ -239,8 +241,11 @@ export class ReminderController {
     );
   }
 
-  async rejectFrequencyAdjustment(templateId: string, ctx: ExecutionContext): Promise<Result<unknown>> {
-    return this.useCases.rejectFrequencyAdjustment(templateId, ctx);
+  async rejectFrequencyAdjustment(templateId: string, ctx: ExecutionContext): Promise<Result<null>> {
+    const result = await this.useCases.rejectFrequencyAdjustment(templateId, ctx);
+    if (!result.ok) return result as Result<null>;
+    // Serialize as data:null (no Result.void / undefined dual-track).
+    return ok(null);
   }
 
   // ==================== Group Actions ====================

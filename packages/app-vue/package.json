@@ -74,10 +74,6 @@
       "types": "./dist/modules/dashboard/adapters/index.d.ts",
       "import": "./dist/modules/dashboard/adapters/index.js"
     },
-    "./modules/editor": {
-      "types": "./dist/modules/editor/index.d.ts",
-      "import": "./dist/modules/editor/index.js"
-    },
     "./modules/ai": {
       "types": "./dist/modules/ai/index.d.ts",
       "import": "./dist/modules/ai/index.js"
@@ -96,10 +92,10 @@
     "@dailyuse/assets": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/data-portability": "workspace:*",
-    "@dailyuse/editor": "workspace:*",
     "@dailyuse/goal": "workspace:*",
     "@dailyuse/governance": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/ipc-client": "workspace:*",
     "@dailyuse/notification": "workspace:*",
     "@dailyuse/reminder": "workspace:*",
     "@dailyuse/repository": "workspace:*",

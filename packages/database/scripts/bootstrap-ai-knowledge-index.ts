@@ -1,5 +1,7 @@
 import { Client } from 'pg';
 import { loadWorkspaceEnv } from '../src/load-workspace-env';
+// Residual 1019: sole errorMessage (local toErrorMessage dual retired).
+import { errorMessage as toErrorMessage } from '@dailyuse/utils/shared';
 
 const KNOWLEDGE_INDEX_TABLE = 'ai_knowledge_index_entries';
 const RETRIEVAL_VECTOR_INDEX = 'ai_knowledge_index_entries_retrieval_vector_ivfflat_idx';
@@ -14,13 +16,6 @@ type BootstrapReport = {
   warnings: string[];
 };
 
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return String(error);
-}
 
 function parseArgs(argv: string[]) {
   const flags = new Set(argv);

@@ -77,12 +77,6 @@
       "@dailyuse/repository/*": [
         "packages/repository/dist/*/index.d.ts"
       ],
-      "@dailyuse/editor": [
-        "packages/editor/dist/index.d.ts"
-      ],
-      "@dailyuse/editor/*": [
-        "packages/editor/dist/*/index.d.ts"
-      ],
       "@dailyuse/reminder": [
         "packages/reminder/dist/index.d.ts"
       ],

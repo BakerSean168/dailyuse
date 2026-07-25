@@ -6,6 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { ScheduleChannels } from '@dailyuse/contracts/electron';
 import type { IResultIpcClient, IScheduleEventApiClient } from '../types';
 import type {
   CalendarEntryClientDTO,
@@ -16,62 +17,44 @@ import type {
   ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
 
-/**
- * IPC channel definitions for Schedule Event operations
- */
-const SCHEDULE_EVENT_CHANNELS = {
-  // CRUD
-  CREATE_SCHEDULE: 'schedule:create',
-  GET_SCHEDULE: 'schedule:get',
-  GET_SCHEDULES_BY_ACCOUNT: 'schedule:list',
-  GET_SCHEDULES_BY_TIME_RANGE: 'schedule:list-by-date-range',
-  UPDATE_SCHEDULE: 'schedule:update',
-  DELETE_SCHEDULE: 'schedule:delete',
-  // Conflict Detection
-  GET_CONFLICTS: 'schedule:get-conflicts',
-  DETECT_CONFLICTS: 'schedule:detect-conflicts',
-  CREATE_WITH_CONFLICT_DETECTION: 'schedule:create-with-conflict-detection',
-  RESOLVE_CONFLICT: 'schedule:resolve-conflict',
-} as const;
-
 export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   // ===== Schedule Event CRUD =====
 
   async createSchedule(data: CreateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_SCHEDULE, data);
+    return this.ipcClient.invoke(ScheduleChannels.CREATE, data);
   }
 
   async getSchedule(id: string): Promise<Result<CalendarEntryClientDTO>> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULE, id);
+    return this.ipcClient.invoke(ScheduleChannels.GET, id);
   }
 
   async getSchedulesByAccount(): Promise<Result<CalendarEntryClientDTO[]>> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_ACCOUNT);
+    return this.ipcClient.invoke(ScheduleChannels.LIST);
   }
 
   async getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest,
   ): Promise<Result<CalendarEntryClientDTO[]>> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_TIME_RANGE, params);
+    return this.ipcClient.invoke(ScheduleChannels.LIST_BY_DATE_RANGE, params);
   }
 
   async updateSchedule(
     id: string,
     data: UpdateScheduleRequest,
   ): Promise<Result<CalendarEntryClientDTO>> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, id, data);
+    return this.ipcClient.invoke(ScheduleChannels.UPDATE, id, data);
   }
 
   async deleteSchedule(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DELETE_SCHEDULE, id);
+    return this.ipcClient.invoke(ScheduleChannels.DELETE, id);
   }
 
   // ===== Schedule Conflict Detection =====
 
   async getScheduleConflicts(id: string): Promise<Result<ConflictDetectionResult>> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_CONFLICTS, id);
+    return this.ipcClient.invoke(ScheduleChannels.GET_CONFLICTS, id);
   }
 
   async detectConflicts(params: {
@@ -79,7 +62,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
     endTime: number;
     excludeId?: string;
   }): Promise<Result<ConflictDetectionResult>> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DETECT_CONFLICTS, params);
+    return this.ipcClient.invoke(ScheduleChannels.DETECT_CONFLICTS, params);
   }
 
   async createScheduleWithConflictDetection(request: CreateScheduleRequest): Promise<
@@ -88,7 +71,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
       conflicts?: ConflictDetectionResult;
     }>
   > {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_WITH_CONFLICT_DETECTION, request);
+    return this.ipcClient.invoke(ScheduleChannels.CREATE_WITH_CONFLICT_DETECTION, request);
   }
 
   async resolveConflict(
@@ -106,7 +89,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
       };
     }>
   > {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.RESOLVE_CONFLICT, scheduleId, request);
+    return this.ipcClient.invoke(ScheduleChannels.RESOLVE_CONFLICT, scheduleId, request);
   }
 }
 

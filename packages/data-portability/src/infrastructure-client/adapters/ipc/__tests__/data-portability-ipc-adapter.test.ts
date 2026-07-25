@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { IResultIpcClient } from '../../types';
-import type { ExportUserDataReq, ExportUserDataRes, ImportUserDataReq, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
+import type {
+  ExportUserDataReq,
+  ExportUserDataRes,
+  ImportUserDataReq,
+  ImportUserDataRes,
+} from '@dailyuse/contracts/data-portability';
 import type { Result } from '@dailyuse/contracts/result';
 import { DataPortabilityIpcAdapter } from '../data-portability-ipc.adapter';
 
@@ -11,6 +16,21 @@ function createMockIpcClient(): IResultIpcClient & { invoke: ReturnType<typeof v
 }
 
 describe('DataPortabilityIpcAdapter', () => {
+  it('does not expose server-held disclosure through the local IPC export path', async () => {
+    const mockClient = createMockIpcClient();
+    const adapter = new DataPortabilityIpcAdapter(mockClient);
+
+    await expect(adapter.exportServerHeldDataDisclosure({})).resolves.toEqual({
+      ok: false,
+      error: {
+        code: 'NOT_SUPPORTED',
+        message: 'Server-held data disclosure is available from the authenticated Web runtime',
+      },
+      meta: undefined,
+    });
+    expect(mockClient.invoke).not.toHaveBeenCalled();
+  });
+
   describe('exportUserData', () => {
     it('invokes the correct IPC channel with the provided DTO', async () => {
       const mockClient = createMockIpcClient();

@@ -13,7 +13,6 @@
     "@dailyuse/database": "workspace:*",
     "@dailyuse/dashboard": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
-    "@dailyuse/editor": "workspace:*",
     "@dailyuse/goal": "workspace:*",
     "@dailyuse/governance": "workspace:*",
     "@dailyuse/http-client": "workspace:*",

@@ -4,11 +4,10 @@ import type {
 } from '@dailyuse/contracts/goal';
 import type { Ref } from 'vue';
 import type {
-  AgentAction,
-  AgentArtifact,
-  AgentExecutedAction,
   AgentRun,
   AgentRunResult,
+  ConversationListRes,
+  MessageListRes,
   GoalAutomationReminderPreview,
   GoalAutomationTaskTemplatePreview,
   GoalClarificationDTO,
@@ -22,7 +21,7 @@ import type { IAIService } from '../../../di/types';
 
 /** Options for useAIGoalWorkflow composable. */
 export interface UseAIGoalWorkflowOptions {
-  service: Pick<AIChatService, 'generateGoal' | 'startAgentRun' | 'resumeAgentRun'>;
+  service: Pick<AIChatService, 'generateGoal' | 'startAgentRun' | 'resumeAgentRun' | 'dispatchAssistant'>;
   selectedModel: Ref<ChatModelOption | null>;
   chatConversationId: Ref<string>;
   chatLoading: Ref<boolean>;
@@ -45,12 +44,10 @@ export interface UseAIKnowledgeQaWorkflowOptions {
   chatTimeline: Ref<ChatItem[]>;
   hasWorkflowUserMessages: Ref<boolean>;
   scrollMessagesToBottom: () => void;
-  requestOpenResource: (id: string) => Promise<unknown>;
+  requestOpenKnowledgeNote: (id: string) => Promise<unknown>;
 }
 
-export type WorkflowMode = 'chat' | 'goal-create' | 'knowledge-qa' | 'knowledge-generate';
-export type LegacyWorkflowMode = 'goal' | 'knowledge-note';
-export type PersistedWorkflowMode = WorkflowMode | LegacyWorkflowMode;
+export type WorkflowMode = 'chat' | 'goal-create' | 'task-create' | 'knowledge-qa' | 'knowledge-generate';
 
 export type MessageStatus = 'generating' | 'success' | 'error' | 'aborted';
 
@@ -62,10 +59,7 @@ export type ChatItem = {
   errorMessage?: string;
 };
 
-type ConversationListResponse = Awaited<ReturnType<IAIService['listConversations']>>;
-type MessageListResponse = Awaited<ReturnType<IAIService['listMessages']>>;
-
-export type ConversationSummary = ConversationListResponse['data'][number];
+export type ConversationSummary = ConversationListRes['data'][number];
 
 export type ProviderListItem = {
   id: string;
@@ -86,9 +80,8 @@ export type ChatModelOption = {
   modelName: string;
 };
 
-export type StreamDoneResult = Awaited<ReturnType<IAIService['sendMessage']>>;
 
-export type ConversationMessageSummary = MessageListResponse['data'][number];
+export type ConversationMessageSummary = MessageListRes['data'][number];
 
 export type AIChatService = Pick<
   IAIService,
@@ -97,7 +90,7 @@ export type AIChatService = Pick<
   | 'createConversation'
   | 'updateConversation'
   | 'deleteConversation'
-  | 'streamMessage'
+  | 'dispatchAssistant'
   | 'generateGoal'
   | 'queryKnowledge'
   | 'listAgentRuns'
@@ -108,12 +101,8 @@ export type AIChatService = Pick<
   | 'createKnowledgeNote'
 >;
 
-export type GoalDraft = GoalWorkflowDraftResultDTO;
-export type GoalClarification = GoalClarificationDTO;
 export type GoalAutomationResult = Extract<GenerateGoalsRes, { state: 'confirm' | 'result' }>;
 export type GoalExecutedAction = Extract<GenerateGoalsRes, { state: 'result' }>['executedActions'][number];
-export type GoalAgentRunResult = AgentRunResult;
-export type AgentRunSummary = AgentRun;
 export type AIWorkspaceRecentGoal = {
   id: string;
   title: string;
@@ -128,12 +117,6 @@ export type AIWorkspaceRecentKnowledgeNote = {
   path: string;
   updatedAt: number;
 };
-export type GoalAgentArtifact = AgentArtifact;
-export type GoalAgentAction = AgentAction;
-export type GoalAgentExecutedAction = AgentExecutedAction;
-export type KnowledgeQaAgentRunResult = AgentRunResult;
-export type KnowledgeNoteAgentRunResult = AgentRunResult;
-export type KnowledgeNoteAgentArtifact = AgentArtifact;
 export type KnowledgeRelatedNote = {
   resourceId: string;
   resourcePath: string;
@@ -158,7 +141,11 @@ export type GoalWorkflowStage =
 export type NoteSummary = {
   resolvedPath: string;
   indexStatus?: KnowledgeNoteIndexStatus;
-  resource?: { id?: string; name?: string; content?: string | null };
+  note?: {
+    id?: string;
+    name?: string;
+    content?: string | null;
+  };
 };
 
 export type EditableGoal = {
@@ -202,14 +189,17 @@ export type EditableGoalReminder = {
 };
 
 export type PersistedWorkflowEntry = {
-  mode: PersistedWorkflowMode;
+  /** Canonical WorkflowMode; unknown/legacy values are normalized on read. */
+  mode: string;
   goalWorkflowStage?: GoalWorkflowStage;
-  goalDraft: GoalDraft | null;
-  goalClarification: GoalClarification | null;
+  goalDraft: GoalWorkflowDraftResultDTO | null;
+  goalClarification: GoalClarificationDTO | null;
   goalAutomationResult: GoalAutomationResult | null;
-  goalAgentRun?: GoalAgentRunResult | null;
-  knowledgeQaAgentRun?: KnowledgeQaAgentRunResult | null;
-  noteAgentRun?: KnowledgeNoteAgentRunResult | null;
+  goalAgentRun?: AgentRunResult | null;
+  knowledgeQaAgentRun?: AgentRunResult | null;
+  noteAgentRun?: AgentRunResult | null;
+  /** Residual 427: dedicated Host task.create AgentRun session field. */
+  taskAgentRun?: AgentRunResult | null;
   knowledgeAnswer?: KnowledgeAnswer | null;
   clarificationAnswers: string[];
   editableGoal: EditableGoal;
@@ -260,15 +250,24 @@ export function getToolLocaleKey(mode: WorkflowMode): string {
   return {
     chat: 'chat',
     'goal-create': 'goalCreate',
+    'task-create': 'taskCreate',
     'knowledge-qa': 'knowledgeQa',
     'knowledge-generate': 'knowledgeGenerate',
   }[mode];
 }
 
-export function normalizeWorkflowMode(mode: PersistedWorkflowMode | string | null | undefined): WorkflowMode {
+export function normalizeWorkflowMode(mode: string | null | undefined): WorkflowMode {
+  // One-way map for previously persisted short mode ids; no dual-track type surface.
   if (mode === 'goal') return 'goal-create';
   if (mode === 'knowledge-note') return 'knowledge-generate';
-  if (mode === 'goal-create' || mode === 'knowledge-qa' || mode === 'knowledge-generate') {
+  // Residual 429: task.create product toolMode id (AgentType uses task.create).
+  if (mode === 'task' || mode === 'task.create') return 'task-create';
+  if (
+    mode === 'goal-create'
+    || mode === 'task-create'
+    || mode === 'knowledge-qa'
+    || mode === 'knowledge-generate'
+  ) {
     return mode;
   }
   return 'chat';

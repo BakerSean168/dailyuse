@@ -16,16 +16,16 @@ export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepo
     });
   }
 
-  async findById(id: string): Promise<ScheduleExecution | null> {
-    const data = await this.prisma.scheduleExecution.findUnique({
-      where: { id },
+  async findByIdForIdentity(identityId: string, id: string): Promise<ScheduleExecution | null> {
+    const data = await this.prisma.scheduleExecution.findFirst({
+      where: { id, identityId },
     });
     return data ? PrismaScheduleExecutionMapper.toDomain(data) : null;
   }
 
-  async findByTaskId(taskId: string): Promise<ScheduleExecution[]> {
+  async findByTaskId(identityId: string, taskId: string): Promise<ScheduleExecution[]> {
     const data = await this.prisma.scheduleExecution.findMany({
-      where: { taskId },
+      where: { identityId, taskId },
       orderBy: { executionTime: 'desc' },
     });
     return data.map((d) => PrismaScheduleExecutionMapper.toDomain(d));

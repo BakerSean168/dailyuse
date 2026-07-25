@@ -4,53 +4,88 @@
  * Owns desktop-main registration for the repository runtime.
  */
 import { ipcMain } from 'electron';
-import * as path from 'path';
-import { app } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import type { SearchResponse } from '@dailyuse/contracts/repository';
-import { createLogger } from '@dailyuse/utils/logger';
 import {
-  createFsStorageAdapter,
-  createRepositoryPowerSyncModule,
-  type RepositoryModuleInstance,
-} from '../server/infrastructure';
-import { createRepositoryRuntimeContribution } from '../server/infrastructure/runtime';
+  RepositoryChannels,
+  type IElectronModule,
+  type IElectronModuleContext,
+} from '@dailyuse/contracts/electron';
+import type {
+  ExecuteKnowledgeRepositoryReconciliationRes,
+  KnowledgeRepositoryContentState,
+  KnowledgeRepositoryReconciliationPreview,
+  SyncKnowledgeRepositoryRes,
+} from '@dailyuse/contracts/repository';
+import { fail, ok, type Result } from '@dailyuse/contracts/result';
+import { createLogger } from '@dailyuse/utils/logger';
 import { withAuthenticatedValue } from './authenticated-ipc';
+import { LocalVaultRuntimeError, type LocalVaultElectronPort } from './local-vault-runtime';
+import type { IRepositoryApiClient } from '../application-client/ports/repository-api-client.port';
 
 export {
-  createFsStorageAdapter,
-  createRepositoryPowerSyncModule,
-  type CreateRepositoryPowerSyncModuleOptions,
-  type RepositoryModuleInstance,
-} from '../server/infrastructure';
+  createLocalVaultRuntime,
+  LocalVaultRuntime,
+  LocalVaultRuntimeError,
+  type LocalVaultElectronPort,
+  type LocalVaultPlatform,
+  type LocalVaultRuntimeOptions,
+} from './local-vault-runtime';
+// Residual 957: sole vault FS guards (isMissing + isTemporaryFile) for Local Vault + Desktop knowledge repo.
+export { isMissing, isTemporaryFile } from './vault-fs-guards';
 
 const logger = createLogger('RepositoryElectron');
 
-const Ch = {
-  CURRENT: 'repository:current',
-  RESOURCE_LIST: 'repository:resource:list',
-  RESOURCE_GET: 'repository:resource:get',
-  RESOURCE_CREATE: 'repository:resource:create',
-  RESOURCE_UPLOAD: 'repository:resource:upload',
-  RESOURCE_UPDATE: 'repository:resource:update',
-  RESOURCE_DELETE: 'repository:resource:delete',
-  BOOKMARK_LIST: 'repository:bookmark:list',
-  BOOKMARK_CREATE: 'repository:bookmark:create',
-  BOOKMARK_UPDATE: 'repository:bookmark:update',
-  BOOKMARK_REORDER: 'repository:bookmark:reorder',
-  BOOKMARK_DELETE: 'repository:bookmark:delete',
-  FOLDER_LIST: 'repository:folder:list',
-  FOLDER_CREATE: 'repository:folder:create',
-  FOLDER_UPDATE: 'repository:folder:update',
-  FOLDER_DELETE: 'repository:folder:delete',
-  SEARCH: 'repository:search',
-} as const;
-
-const channels = Object.values(Ch);
-let activeRepositoryModule: RepositoryModuleInstance | null = null;
+const allChannels = Object.values(RepositoryChannels);
 
 export interface RepositoryElectronModuleOptions {
-  storageBaseDir?: string;
+  localVaultPort?: LocalVaultElectronPort;
+  knowledgeRepositoryConnectionPort?: KnowledgeRepositoryConnectionElectronPort;
+  knowledgeRepositoryReconciliationPort?: KnowledgeRepositoryReconciliationElectronPort;
+  knowledgeRepositorySyncPort?: KnowledgeRepositorySyncElectronPort;
+  knowledgeRepositoryAutoSyncScheduler?: KnowledgeRepositoryAutoSyncSchedulerElectronPort;
+}
+
+export type KnowledgeRepositoryConnectionElectronPort = Pick<
+  IRepositoryApiClient,
+  | 'startKnowledgeRepositoryInstallation'
+  | 'completeKnowledgeRepositoryInstallation'
+  | 'listKnowledgeRepositoryConnections'
+  | 'connectKnowledgeRepository'
+  | 'disconnectKnowledgeRepository'
+  | 'issueDesktopKnowledgeRepositoryToken'
+> & {
+  previewKnowledgeRepositoryReconciliation(
+    connectionId: string,
+    localState: KnowledgeRepositoryContentState,
+  ): Promise<Result<KnowledgeRepositoryReconciliationPreview>>;
+};
+
+export interface KnowledgeRepositoryReconciliationElectronPort {
+  execute(
+    identityId: string,
+    input: unknown,
+  ): Promise<Result<ExecuteKnowledgeRepositoryReconciliationRes>>;
+}
+
+export interface KnowledgeRepositorySyncElectronPort {
+  execute(identityId: string, input: unknown): Promise<Result<SyncKnowledgeRepositoryRes>>;
+}
+
+export interface KnowledgeRepositoryAutoSyncSchedulerElectronPort {
+  start(identityId: string): Promise<void>;
+  refresh(identityId: string): Promise<void>;
+  stop(options?: { commitPendingChanges?: boolean }): Promise<void>;
+}
+
+async function invokeLocalVault<T>(operation: () => Promise<T>): Promise<Result<T>> {
+  try {
+    return ok(await operation());
+  } catch (error) {
+    if (error instanceof LocalVaultRuntimeError) {
+      return fail({ code: error.code, message: error.message });
+    }
+    logger.error('Local Vault operation failed', { error });
+    return fail({ code: 'INTERNAL_ERROR', message: 'Local Vault operation failed' });
+  }
 }
 
 export function createRepositoryElectronModule(
@@ -59,266 +94,216 @@ export function createRepositoryElectronModule(
   return {
     name: 'Repository',
 
-    register(ctx: IElectronModuleContext): void {
-      const storageBaseDir =
-        options.storageBaseDir ?? path.join(app.getPath('userData'), 'repository-storage');
-      const storagePort = createFsStorageAdapter(storageBaseDir);
-      const repositoryModule = createRepositoryPowerSyncModule(ctx.db, {
-        storagePort,
-        runtimeContributions: createRepositoryRuntimeContribution(),
-      });
-      activeRepositoryModule = repositoryModule;
-      repositoryModule.start();
-
-      const { api } = repositoryModule;
-
-      ipcMain.handle(Ch.CURRENT, (_, _params) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await api.getCurrentRepository(requestContext);
-          return result.ok ? result.data : null;
-        }),
-      );
-
-      ipcMain.handle(Ch.RESOURCE_LIST, async (_, params) => {
-        const repositoryId = params?.repositoryId ?? params;
-        const result = await api.listResources(repositoryId);
-        return result.ok ? result.data : [];
-      });
-      ipcMain.handle(Ch.RESOURCE_GET, async (_, id) => {
-        const result = await api.getResource(id);
-        return result.ok ? result.data : null;
-      });
-      ipcMain.handle(Ch.RESOURCE_CREATE, (_, dto) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          return api.createResource(
-            {
-              repositoryId: dto.repositoryId,
-              folderId: dto.folderId,
-              name: dto.name,
-              type: dto.type,
-              content: dto.content,
-            },
-            requestContext,
-          );
-        }),
-      );
-      ipcMain.handle(Ch.RESOURCE_UPLOAD, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await api.uploadResources(
-            {
-              repositoryId: payload.repositoryId,
-              files: payload.files,
-              metadata: payload.metadata,
-            },
-            requestContext,
-          );
-          return result.ok ? result.data : null;
-        }),
-      );
-      ipcMain.handle(Ch.RESOURCE_UPDATE, async (_, dto) => {
-        if (dto.targetFolderId !== undefined) {
-          const result = await api.moveResource(dto.id, dto.targetFolderId);
-          return result.ok ? result.data : null;
+    async register(ctx: IElectronModuleContext): Promise<void> {
+      const knowledgeConnectionPort = options.knowledgeRepositoryConnectionPort;
+      const autoSyncScheduler = options.knowledgeRepositoryAutoSyncScheduler;
+      const refreshAutomaticSynchronization = async (identityId: string): Promise<void> => {
+        if (!autoSyncScheduler) return;
+        try {
+          await autoSyncScheduler.refresh(identityId);
+        } catch (error) {
+          logger.warn('Failed to refresh automatic knowledge repository synchronization', {
+            error,
+          });
         }
-        const result = await api.updateResource(dto.id, {
-          name: dto.name,
-          metadata: dto.metadata,
-          content: dto.content,
-        });
-        return result.ok ? result.data : null;
-      });
-      ipcMain.handle(Ch.RESOURCE_DELETE, async (_, id) => {
-        await api.deleteResource(id);
-        return undefined;
-      });
-
-      ipcMain.handle(Ch.BOOKMARK_LIST, (_, params) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await api.listResourceBookmarks(params.repositoryId, requestContext);
-          return result.ok ? result.data : [];
-        }),
-      );
-      ipcMain.handle(Ch.BOOKMARK_CREATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await api.createResourceBookmark(
-            payload.repositoryId,
-            {
-              resourceId: payload.request.resourceId,
-              aliasName: payload.request.aliasName,
-              icon: payload.request.icon,
-              color: payload.request.color,
-            },
-            requestContext,
+      };
+      const withKnowledgeConnection = <T>(
+        operation: (port: KnowledgeRepositoryConnectionElectronPort) => Promise<Result<T>>,
+      ): Promise<Result<T>> => {
+        if (!knowledgeConnectionPort) {
+          return Promise.resolve(
+            fail({
+              code: 'SERVICE_UNAVAILABLE',
+              message: 'GitHub knowledge repository connections require an online account',
+            }),
           );
-          return result.ok ? result.data : null;
-        }),
+        }
+        return operation(knowledgeConnectionPort);
+      };
+
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_START, (_, request) =>
+        withAuthenticatedValue(ctx, () =>
+          withKnowledgeConnection((port) =>
+            port.startKnowledgeRepositoryInstallation(request ?? {}),
+          ),
+        ),
       );
-      ipcMain.handle(Ch.BOOKMARK_UPDATE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await api.updateResourceBookmark(
-            payload.repositoryId,
-            payload.bookmarkId,
-            {
-              aliasName: payload.request.aliasName,
-              icon: payload.request.icon,
-              color: payload.request.color,
-            },
-            requestContext,
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_COMPLETE, (_, request) =>
+        withAuthenticatedValue(ctx, () =>
+          withKnowledgeConnection((port) => port.completeKnowledgeRepositoryInstallation(request)),
+        ),
+      );
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_LIST, (_) =>
+        withAuthenticatedValue(ctx, () =>
+          withKnowledgeConnection((port) => port.listKnowledgeRepositoryConnections()),
+        ),
+      );
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_CONNECT, (_, request) =>
+        withAuthenticatedValue(ctx, async ({ identityId }) => {
+          const result = await withKnowledgeConnection((port) =>
+            port.connectKnowledgeRepository(request),
           );
-          return result.ok ? result.data : null;
+          if (result.ok) await refreshAutomaticSynchronization(identityId);
+          return result;
         }),
       );
-      ipcMain.handle(Ch.BOOKMARK_REORDER, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await api.reorderResourceBookmarks(
-            payload.repositoryId,
-            { bookmarkIds: payload.request.bookmarkIds },
-            requestContext,
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_DISCONNECT, (_, request) =>
+        withAuthenticatedValue(ctx, async ({ identityId }) => {
+          const result = await withKnowledgeConnection((port) =>
+            port.disconnectKnowledgeRepository(request.connectionId, request.purgeCloudData),
           );
-          return result.ok ? result.data : [];
+          if (!result.ok) return result;
+          await refreshAutomaticSynchronization(identityId);
+          // Serialize as data:null (no { disconnected: true } dual-track).
+          return ok(null);
         }),
       );
-      ipcMain.handle(Ch.BOOKMARK_DELETE, (_, payload) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          await api.deleteResourceBookmark(payload.repositoryId, payload.bookmarkId, requestContext);
-          return undefined;
-        }),
-      );
-
-      ipcMain.handle(Ch.FOLDER_LIST, async (_, params) => {
-        if (params && typeof params === 'object' && 'folderId' in params) {
-          const folderId = String((params as { folderId: unknown }).folderId);
-          const folder = await repositoryModule.folderRepository.findById(folderId);
-          if (!folder) {
-            return { folders: [], resources: [] };
-          }
-
-          const [folders, resources] = await Promise.all([
-            repositoryModule.folderRepository.findByParentId(folderId),
-            repositoryModule.resourceRepository.findByFolderId(folderId),
-          ]);
-
-          return {
-            folders: folders.map((item) => item.toClientDTO()),
-            resources: resources.map((item) => item.toClientDTO()),
-          };
-        }
-
-        const repositoryId =
-          params && typeof params === 'object' && 'repositoryId' in params
-            ? String((params as { repositoryId: unknown }).repositoryId)
-            : String(params);
-        const result = await api.getFolderTree(repositoryId);
-        return result.ok ? result.data : [];
-      });
-      ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) =>
-        withAuthenticatedValue(ctx, async (requestContext) => {
-          const result = await api.createFolder(
-            {
-              repositoryId: dto.repositoryId,
-              name: dto.name,
-              parentId: dto.parentId,
-              order: dto.order,
-            },
-            requestContext,
-          );
-          return result.ok ? result.data : null;
-        }),
-      );
-      ipcMain.handle(Ch.FOLDER_UPDATE, async (_, dto) => {
-        if (dto.name !== undefined) {
-          const result = await api.renameFolder(dto.id, dto.name);
-          return result.ok ? result.data : null;
-        }
-        if (dto.parentId !== undefined) {
-          const result = await api.moveFolder(dto.id, dto.parentId);
-          return result.ok ? result.data : null;
-        }
-        const result = await api.getFolder(dto.id);
-        return result.ok ? result.data : null;
-      });
-      ipcMain.handle(Ch.FOLDER_DELETE, async (_, id) => {
-        await api.deleteFolder(id);
-        return undefined;
-      });
-
-      ipcMain.handle(Ch.SEARCH, async (_, request) => {
-        const startedAt = Date.now();
-        const query = typeof request?.query === 'string' ? request.query.trim() : '';
-        const repositoryId = typeof request?.repositoryId === 'string' ? request.repositoryId : '';
-
-        if (!query || !repositoryId) {
-          return {
-            results: [],
-            totalResults: 0,
-            totalMatches: 0,
-            searchTime: Date.now() - startedAt,
-            query,
-            mode: request?.mode ?? 'all',
-          } satisfies SearchResponse;
-        }
-
-        const resources = await repositoryModule.resourceRepository.findByRepositoryId(repositoryId);
-        const normalizedQuery = request?.caseSensitive ? query : query.toLowerCase();
-        const results = resources
-          .map((resource) => {
-            const dto = resource.toClientDTO();
-            const haystacks = [dto.name, dto.path, dto.content ?? ''];
-            const matches = haystacks.flatMap((value, index) => {
-              const source = request?.caseSensitive ? value : value.toLowerCase();
-              const matchIndex = source.indexOf(normalizedQuery);
-              if (matchIndex < 0) return [];
-
-              return [
-                {
-                  lineNumber: index + 1,
-                  lineContent: value,
-                  startIndex: matchIndex,
-                  endIndex: matchIndex + query.length,
-                },
-              ];
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_PREVIEW, (_, request) =>
+        withAuthenticatedValue(ctx, async ({ identityId }) => {
+          if (!options.localVaultPort) {
+            return fail({
+              code: 'SERVICE_UNAVAILABLE',
+              message: 'Local Vault is only available in the Desktop runtime',
             });
+          }
+          const localState = await invokeLocalVault(() =>
+            options.localVaultPort!.inspectSyncContent(identityId),
+          );
+          if (!localState.ok) return localState;
+          return withKnowledgeConnection((port) =>
+            port.previewKnowledgeRepositoryReconciliation(request.connectionId, localState.data),
+          );
+        }),
+      );
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_RECONCILIATION_EXECUTE, (_, request) =>
+        withAuthenticatedValue(ctx, async ({ identityId }) => {
+          if (!options.knowledgeRepositoryReconciliationPort) {
+            return fail({
+              code: 'SERVICE_UNAVAILABLE',
+              message: 'Knowledge repository Git runtime is unavailable',
+            });
+          }
+          const result = await options.knowledgeRepositoryReconciliationPort.execute(
+            identityId,
+            request,
+          );
+          if (result.ok) await refreshAutomaticSynchronization(identityId);
+          return result;
+        }),
+      );
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_SYNC, (_, request) =>
+        withAuthenticatedValue(ctx, async ({ identityId }) => {
+          if (!options.knowledgeRepositorySyncPort) {
+            return fail({
+              code: 'SERVICE_UNAVAILABLE',
+              message: 'Knowledge repository sync runtime is unavailable',
+            });
+          }
+          const result = await options.knowledgeRepositorySyncPort.execute(identityId, request);
+          if (result.ok) await refreshAutomaticSynchronization(identityId);
+          return result;
+        }),
+      );
+      ipcMain.handle(RepositoryChannels.KNOWLEDGE_CONNECTION_DESKTOP_TOKEN, (_, request) =>
+        withAuthenticatedValue(ctx, () =>
+          withKnowledgeConnection((port) =>
+            port.issueDesktopKnowledgeRepositoryToken(request.connectionId),
+          ),
+        ),
+      );
 
-            if (matches.length === 0) {
-              return null;
-            }
+      const localVault = options.localVaultPort;
+      const withLocalVault = async <T>(
+        identityId: string,
+        operation: (port: LocalVaultElectronPort, identityId: string) => Promise<T>,
+      ): Promise<Result<T>> => {
+        if (!localVault) {
+          return fail({
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Local Vault is only available in the Desktop runtime',
+          });
+        }
+        return invokeLocalVault(() => operation(localVault, identityId));
+      };
 
-            return {
-              resourceId: dto.id,
-              resourceName: dto.name,
-              resourcePath: dto.path,
-              resourceType: dto.type,
-              matchType: (dto.name.toLowerCase().includes(normalizedQuery.toLowerCase())
-                ? 'filename'
-                : 'content') as SearchResponse['results'][number]['matchType'],
-              matches,
-              matchCount: matches.length,
-              createdAt: new Date(dto.createdAt).toISOString(),
-              updatedAt: new Date(dto.updatedAt).toISOString(),
-              size: dto.size,
-            };
-          })
-          .filter((item): item is NonNullable<typeof item> => item !== null);
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_GET, (_) =>
+        withAuthenticatedValue(ctx, ({ identityId }) =>
+          withLocalVault(identityId, (port, ownerId) => port.getBinding(ownerId)),
+        ),
+      );
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_SELECT, (_, request) =>
+        withAuthenticatedValue(ctx, async ({ identityId }) => {
+          const result = await withLocalVault(identityId, (port, ownerId) =>
+            port.selectVault(ownerId, request),
+          );
+          if (result.ok) await refreshAutomaticSynchronization(identityId);
+          return result;
+        }),
+      );
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_DETACH, (_) =>
+        withAuthenticatedValue(ctx, async ({ identityId }) => {
+          const result = await withLocalVault(identityId, (port, ownerId) =>
+            port.detachVault(ownerId),
+          );
+          if (result.ok) await refreshAutomaticSynchronization(identityId);
+          return result;
+        }),
+      );
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_SCAN, (_) =>
+        withAuthenticatedValue(ctx, ({ identityId }) =>
+          withLocalVault(identityId, (port, ownerId) => port.scanVault(ownerId)),
+        ),
+      );
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_NOTE_READ, (_, request) =>
+        withAuthenticatedValue(ctx, ({ identityId }) =>
+          withLocalVault(identityId, (port, ownerId) => port.readNote(ownerId, request)),
+        ),
+      );
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_SEARCH, (_, request) =>
+        withAuthenticatedValue(ctx, ({ identityId }) =>
+          withLocalVault(identityId, (port, ownerId) => port.searchVault(ownerId, request)),
+        ),
+      );
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_OPEN_OBSIDIAN, (_, request) =>
+        withAuthenticatedValue(ctx, ({ identityId }) =>
+          withLocalVault(identityId, (port, ownerId) => port.openInObsidian(ownerId, request)),
+        ),
+      );
+      ipcMain.handle(RepositoryChannels.LOCAL_VAULT_NOTE_WRITE_CONFIRMED, (_, request) =>
+        withAuthenticatedValue(ctx, ({ identityId }) =>
+          withLocalVault(identityId, (port, ownerId) => port.writeConfirmedNote(ownerId, request)),
+        ),
+      );
 
-        return {
-          results,
-          totalResults: results.length,
-          totalMatches: results.reduce((sum, item) => sum + item.matchCount, 0),
-          searchTime: Date.now() - startedAt,
-          query,
-          mode: request?.mode ?? 'all',
-        } satisfies SearchResponse;
-      });
+      if (autoSyncScheduler) {
+        try {
+          const identityId = await ctx.auth.getIdentityId();
+          if (identityId) await autoSyncScheduler.start(identityId);
+        } catch (error) {
+          logger.warn('Failed to start automatic knowledge repository synchronization', {
+            error,
+          });
+        }
+      }
 
-      logger.info('Repository module registered', { storageBaseDir });
+      logger.info('Repository module registered');
     },
 
-    destroy(): void {
-      for (const ch of channels) {
+    async destroy(): Promise<void> {
+      if (options.knowledgeRepositoryAutoSyncScheduler) {
+        try {
+          await options.knowledgeRepositoryAutoSyncScheduler.stop({
+            commitPendingChanges: true,
+          });
+        } catch (error) {
+          logger.warn('Failed to stop automatic knowledge repository synchronization', {
+            error,
+          });
+        }
+      }
+      for (const ch of allChannels) {
         ipcMain.removeHandler(ch);
       }
-      activeRepositoryModule?.dispose();
-      activeRepositoryModule = null;
       logger.info('Repository module destroyed');
     },
   };

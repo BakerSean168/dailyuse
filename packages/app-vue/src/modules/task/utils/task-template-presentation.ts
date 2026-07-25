@@ -7,6 +7,7 @@ import type {
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskTemplateViewModel, TaskTimeConfigViewModel } from '../components/types';
 import { findNamedColor } from '../../../shared/constants/color-palette';
+import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';
 
 type Translate = ComposerTranslation<Record<string, never>, string>;
 
@@ -32,12 +33,13 @@ const importanceLabelKeys: Record<string, string> = {
   [ImportanceLevel.Trivial]: 'task.metadata.importanceMinimal',
 };
 
+/** Residual 1297: HH:mm pad dual retired onto formatHHmmParts; null/clamp stay local. */
 function formatMinuteOfDay(minutes?: number | null): string {
   if (minutes == null || !Number.isFinite(minutes)) return '-';
   const safe = Math.max(0, Math.min(1439, minutes));
   const hour = Math.floor(safe / 60);
   const minute = safe % 60;
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  return formatHHmmParts(hour, minute);
 }
 
 type TaskTimeDisplayInput = {

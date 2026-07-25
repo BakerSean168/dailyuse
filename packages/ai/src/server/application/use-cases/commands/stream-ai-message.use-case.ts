@@ -1,45 +1,33 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { IAIConversationRepository } from '../../../domain/repositories/i-ai-conversation-repository';
-import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type { MessageClientDTO, SendMessageRes } from '@dailyuse/contracts/ai';
-import { MessageRole } from '@dailyuse/contracts/ai';
 import type {
+  AIExecutionLogInput,
   ChatExecutionUsage,
   IAIExecutionLogPort,
-  IAIChatExecutionPort,
+  IOpenChatTurnPort,
 } from '../../ports';
 import { createLogger } from '@dailyuse/utils/logger';
-import {
-  resolveActiveProviderConfig,
-  toChatExecutionProviderConfig,
-} from './ai-provider-resolution';
 import {
   attachRequestIdToError,
   classifyAIExecutionError,
   createAIRequestId,
   withAICostEstimate,
 } from './ai-observability';
-import {
-  validateAndGetConversation,
-  saveMessage,
-  getConversationHistory,
-  toExecutionMessages,
-  isAbortLikeError,
-  createStreamAbortError,
-} from './ai-chat-helpers';
+import { createStreamAbortError, isAbortLikeError } from './ai-chat-helpers';
 
 const logger = createLogger('StreamAIMessageUseCase');
 
 /**
- * Send a message and stream the response
+ * Send a message and stream the response.
+ *
+ * Residual 316: open chat stream routes through the Turn Engine
+ * (IOpenChatTurnPort / DirectTurnEngine).
  */
 export class StreamAIMessageUseCase {
   constructor(
-    private readonly conversationRepository: IAIConversationRepository,
-    private readonly providerConfigRepository: IAIProviderConfigRepository,
-    private readonly chatExecutionPort: IAIChatExecutionPort,
+    private readonly openChatTurn: IOpenChatTurnPort,
     private readonly executionLogPort?: IAIExecutionLogPort,
   ) {}
 
@@ -51,13 +39,15 @@ export class StreamAIMessageUseCase {
     providerId?: string,
     model?: string,
     signal?: AbortSignal,
-  ): Promise<Result<{
-    userMessage: MessageClientDTO;
-    assistantMessage: MessageClientDTO;
-    tokenUsage: ChatExecutionUsage;
-    providerId: SendMessageRes['providerId'];
-    processingTimeMs: number;
-  }>> {
+  ): Promise<
+    Result<{
+      userMessage: MessageClientDTO;
+      assistantMessage: MessageClientDTO;
+      tokenUsage: ChatExecutionUsage;
+      providerId: SendMessageRes['providerId'];
+      processingTimeMs: number;
+    }>
+  > {
     const startedAt = Date.now();
     const requestId = createAIRequestId();
     let providerMetadata: {
@@ -65,109 +55,88 @@ export class StreamAIMessageUseCase {
       providerName?: string;
       model?: string;
     } = {};
-    let fullContent = '';
-    let finishReason = 'stop';
 
     try {
-      const conversation = await validateAndGetConversation(
-        this.conversationRepository,
-        cx.identityId,
-        conversationId,
+      const turn = await this.openChatTurn.streamConversationTurn(
+        {
+          runId: requestId,
+          identityId: cx.identityId,
+          conversationId,
+          message: content,
+          providerId,
+          model,
+          signal,
+        },
+        (chunk) => {
+          onChunk({ content: chunk.content, role: 'assistant' });
+        },
       );
-      const userMessage = await saveMessage(
-        this.conversationRepository,
-        conversation,
-        MessageRole.User,
-        content,
-      );
-      const history = await getConversationHistory(this.conversationRepository, conversationId);
-      const providerConfig = await resolveActiveProviderConfig(
-        this.providerConfigRepository,
-        cx.identityId,
-        providerId,
-      );
-      const messages = toExecutionMessages(history);
-      const executionProviderConfig = toChatExecutionProviderConfig(providerConfig, {
-        modelOverride: model,
-        temperature: 0.7,
-      });
+
       providerMetadata = {
-        providerId: providerConfig.id,
-        providerName: providerConfig.name,
-        model: executionProviderConfig.model,
+        providerId: turn.providerId,
+        providerName: turn.providerName,
+        model: turn.model,
       };
 
-      try {
-        for await (const chunk of this.chatExecutionPort.stream({
+      if (turn.status === 'aborted' || signal?.aborted) {
+        const abortedError = createStreamAbortError();
+        const enriched = attachRequestIdToError(abortedError, requestId);
+        await this.recordExecution({
           identityId: cx.identityId,
-          messages,
-          providerConfig: executionProviderConfig,
+          taskType: 'CHAT_STREAM',
+          status: 'FAILED',
           requestId,
-          signal,
-        })) {
-          if (signal?.aborted) {
-            throw createStreamAbortError();
-          }
-
-          fullContent += chunk.content;
-
-          if (chunk.finishReason) {
-            finishReason = chunk.finishReason;
-          }
-
-          if (chunk.content) {
-            onChunk({
-              content: chunk.content,
-              role: 'assistant',
-            });
-          }
-        }
-      } catch (streamError) {
-        if (signal?.aborted || isAbortLikeError(streamError)) {
-          logger.info('[StreamAIMessageUseCase] Stream aborted by client', {
-            contentReceived: fullContent.length,
-            requestId,
-          });
-          throw streamError;
-        }
-
-        logger.warn('[StreamAIMessageUseCase] Stream processing error', {
-          streamError: streamError instanceof Error ? streamError.message : String(streamError),
-          contentReceived: fullContent.length,
-          requestId,
+          ...providerMetadata,
+          errorCategory: classifyAIExecutionError(abortedError),
+          input: {
+            conversationId,
+            contentLength: content.length,
+            selectedProviderId: providerId,
+            modelOverride: model,
+            engineId: this.openChatTurn.engineId,
+          },
+          error: enriched.message,
+          processingMs: Date.now() - startedAt,
         });
-        if (fullContent.length === 0) {
-          throw streamError;
-        }
+        return error('INTERNAL_ERROR', enriched.message);
       }
 
-      if (finishReason === 'error' || (!finishReason && fullContent.length === 0)) {
-        const errorMsg = `AI stream failed to complete: finish_reason="${finishReason}", content_length=${fullContent.length}`;
-        logger.error('[StreamAIMessageUseCase] Stream validation failed', {
-          finishReason,
-          contentLength: fullContent.length,
+      if (turn.status === 'failed' || !turn.userMessage || !turn.assistantMessage || !turn.usage) {
+        const message = turn.error ?? 'Chat stream failed';
+        await this.recordExecution({
+          identityId: cx.identityId,
+          taskType: 'CHAT_STREAM',
+          status: 'FAILED',
           requestId,
+          ...providerMetadata,
+          errorCategory: 'EXECUTION',
+          input: {
+            conversationId,
+            contentLength: content.length,
+            selectedProviderId: providerId,
+            modelOverride: model,
+            engineId: this.openChatTurn.engineId,
+          },
+          error: message,
+          processingMs: Date.now() - startedAt,
         });
-        return error('INTERNAL_ERROR', errorMsg);
+        if (turn.error === 'CONVERSATION_NOT_FOUND') {
+          return error('NOT_FOUND', 'Conversation not found');
+        }
+        if (turn.error === 'PROVIDER_UNAVAILABLE') {
+          return error('SERVICE_UNAVAILABLE', 'No AI provider configured');
+        }
+        return error('INTERNAL_ERROR', message);
       }
 
-      const assistantMessage = await saveMessage(
-        this.conversationRepository,
-        conversation,
-        MessageRole.Assistant,
-        fullContent,
-      );
       const result = {
-        userMessage,
-        assistantMessage,
-        tokenUsage: {
-          promptTokens: 0,
-          completionTokens: 0,
-          totalTokens: 0,
-        },
-        providerId: providerConfig.id as SendMessageRes['providerId'],
+        userMessage: turn.userMessage,
+        assistantMessage: turn.assistantMessage,
+        tokenUsage: turn.usage,
+        providerId: turn.providerId as SendMessageRes['providerId'],
         processingTimeMs: Date.now() - startedAt,
       };
+
       await this.recordExecution({
         identityId: cx.identityId,
         taskType: 'CHAT_STREAM',
@@ -179,17 +148,23 @@ export class StreamAIMessageUseCase {
           contentLength: content.length,
           selectedProviderId: providerId,
           modelOverride: model,
+          engineId: this.openChatTurn.engineId,
         },
         result: {
-          assistantMessageId: String(assistantMessage.id),
-          streamedCharacters: fullContent.length,
-          finishReason,
+          assistantMessageId: String(turn.assistantMessage.id),
+          finishReason: turn.finishReason,
+          engineId: this.openChatTurn.engineId,
         },
-        tokenUsage: result.tokenUsage,
+        tokenUsage: turn.usage,
         processingMs: result.processingTimeMs,
       });
+
       return ok(result);
     } catch (err) {
+      if (signal?.aborted || isAbortLikeError(err)) {
+        const enriched = attachRequestIdToError(err, requestId);
+        return error('INTERNAL_ERROR', enriched instanceof Error ? enriched.message : String(enriched));
+      }
       await this.recordExecution({
         identityId: cx.identityId,
         taskType: 'CHAT_STREAM',
@@ -202,50 +177,29 @@ export class StreamAIMessageUseCase {
           contentLength: content.length,
           selectedProviderId: providerId,
           modelOverride: model,
-        },
-        result: {
-          finishReason,
-          streamedCharacters: fullContent.length,
+          engineId: this.openChatTurn.engineId,
         },
         error: err instanceof Error ? err.message : 'Chat stream failed',
         processingMs: Date.now() - startedAt,
       });
-      if (isAbortLikeError(err)) {
-        logger.info('AI Stream Aborted', {
-          finishReason,
-          identityId: cx.identityId,
-          conversationId,
-          requestId,
-        });
-      } else {
-        logger.error('AI Stream Failed', {
-          error: err,
-          finishReason,
-          identityId: cx.identityId,
-          conversationId,
-          requestId,
-        });
-      }
+      logger.error('[StreamAIMessageUseCase] failed', { err, requestId });
+      // attachRequestIdToError returns Error, not Result — keep Result envelope.
       const enriched = attachRequestIdToError(err, requestId);
-      return error('INTERNAL_ERROR', enriched.message);
+      return error(
+        'INTERNAL_ERROR',
+        enriched instanceof Error ? enriched.message : 'Chat stream failed',
+      );
     }
   }
 
-  private async recordExecution(
-    input: Parameters<NonNullable<IAIExecutionLogPort['record']>>[0],
-  ): Promise<void> {
+  private async recordExecution(input: AIExecutionLogInput): Promise<void> {
     if (!this.executionLogPort) {
       return;
     }
-
     try {
       await this.executionLogPort.record(withAICostEstimate(input));
-    } catch (err) {
-      logger.warn('Failed to record chat execution log', {
-        error: err,
-        identityId: input.identityId,
-        taskType: input.taskType,
-      });
+    } catch (logError) {
+      logger.warn('[StreamAIMessageUseCase] failed to record execution log', { logError });
     }
   }
 }

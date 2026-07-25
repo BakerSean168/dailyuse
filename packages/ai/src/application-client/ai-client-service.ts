@@ -5,6 +5,9 @@
  * This is the single entry point for UI layers to interact with the AI module.
  * All methods delegate directly to the underlying API client adapters.
  *
+ * AI client ports return Result envelopes (residual 96–100). streamMessage remains
+ * throw-based for SSE/IPC stream control flow.
+ *
  * 这是 UI 层与 AI 模块交互的唯一入口。
  * 所有方法直接委托给底层 API 客户端适配器。
  */
@@ -20,6 +23,7 @@ import type {
   IAIConversationApiClient,
   IAIMessageApiClient,
   IAIProviderConfigApiClient,
+  IAIAssistantApiClient,
 } from './ports/ai-api-client.port';
 import type {
   CreateAIProviderConfigReq,
@@ -39,6 +43,7 @@ import type {
   AgentResumePayload,
   AgentRunListParams,
   AgentStartRunClientRequest,
+  AssistantClientCommand,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -59,6 +64,7 @@ export class AIClientService implements AIClientPort {
     private readonly knowledgeNoteApi: AIKnowledgeNoteApiClient,
     private readonly analyticsQueryApi: AIAnalyticsQueryApiClient,
     private readonly agentRuntimeApi: AIAgentRuntimeApiClient,
+    private readonly assistantApi: IAIAssistantApiClient,
   ) {
     this.getCapabilities = this.getCapabilities.bind(this);
     this.getEvaluationOverview = this.getEvaluationOverview.bind(this);
@@ -89,6 +95,7 @@ export class AIClientService implements AIClientPort {
     this.resumeAgentRun = this.resumeAgentRun.bind(this);
     this.getAgentRun = this.getAgentRun.bind(this);
     this.getAgentEvents = this.getAgentEvents.bind(this);
+    this.dispatchAssistant = this.dispatchAssistant.bind(this);
   }
 
   getCapabilities() {
@@ -211,6 +218,14 @@ export class AIClientService implements AIClientPort {
   getAgentEvents(runId: string) {
     return this.agentRuntimeApi.getAgentEvents(runId);
   }
+
+  dispatchAssistant(
+    command: AssistantClientCommand,
+    handlers: Parameters<IAIAssistantApiClient['dispatchAssistant']>[1],
+    signal?: AbortSignal,
+  ) {
+    return this.assistantApi.dispatchAssistant(command, handlers, signal);
+  }
 }
 
 // ===== Factory =====
@@ -226,6 +241,7 @@ export function createAIClientService(
   knowledgeNoteApi: AIKnowledgeNoteApiClient,
   analyticsQueryApi: AIAnalyticsQueryApiClient,
   agentRuntimeApi: AIAgentRuntimeApiClient,
+  assistantApi: IAIAssistantApiClient,
 ): AIClientService {
   return new AIClientService(
     capabilitiesApi,
@@ -238,5 +254,6 @@ export function createAIClientService(
     knowledgeNoteApi,
     analyticsQueryApi,
     agentRuntimeApi,
+    assistantApi,
   );
 }

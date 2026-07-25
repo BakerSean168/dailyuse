@@ -1,21 +1,15 @@
 /**
  * Prisma AuthCredential Sub-Mapper
  *
- * Sub-table mapper: handles auth_credentials <-> AuthCredentialServerDTO conversion.
+ * Sub-table mapper: handles auth_credentials <-> PasswordCredentialServerDTO conversion.
  *
  * Responsibilities:
- * - DB Row -> AuthCredentialServerDTO (read path)
- * - AuthCredentialServerDTO -> Prisma CreateInput (write path)
+ * - DB Row -> PasswordCredentialServerDTO (read path)
+ * - PasswordCredentialServerDTO -> Prisma CreateInput (write path)
  */
 
 import type { Prisma } from '@dailyuse/database';
-import type {
-  AuthCredentialServerDTO,
-  PasswordCredentialServerDTO,
-  HashedPassword,
-  CredentialStatus,
-  AuthCredentialId,
-} from '@dailyuse/contracts/authentication';
+import type { PasswordCredentialServerDTO, HashedPassword, CredentialStatus, AuthCredentialId } from '@dailyuse/contracts/authentication';
 import {
   CredentialType,
   CredentialStatus as CredentialStatusVO,
@@ -31,7 +25,7 @@ export class PrismaAuthCredentialMapper {
    * - Maps the passwordHash DB column to the domain hashedPassword field
    * - Converts Date to number (timestamp)
    */
-  static toDomainDTO(row: PrismaAuthCredentialRow): AuthCredentialServerDTO {
+  static toDomainDTO(row: PrismaAuthCredentialRow): PasswordCredentialServerDTO {
     const base = {
       id: row.id as AuthCredentialId,
       status: CredentialStatusVO.of(row.status) as unknown as CredentialStatus,
@@ -73,7 +67,7 @@ export class PrismaAuthCredentialMapper {
    * - Converts timestamp (number) to Date
    */
   static toPrismaCreate(
-    cred: AuthCredentialServerDTO,
+    cred: PasswordCredentialServerDTO,
     identityId: string,
   ): Prisma.AuthCredentialUncheckedCreateInput {
     const row: Prisma.AuthCredentialUncheckedCreateInput = {

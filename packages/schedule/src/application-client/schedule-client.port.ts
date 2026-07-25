@@ -9,7 +9,7 @@ import type {
   SourceModule,
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
-  BatchOperationResponseDTO,
+  ScheduleBatchOperationResponseDTO,
 } from '@dailyuse/contracts/schedule';
 import type { ScheduleTask } from '../domain-client/aggregates/schedule-task';
 
@@ -46,6 +46,6 @@ export interface ScheduleClientPort {
   completeTask(taskId: string, reason?: string): Promise<Result<ScheduleTask>>;
   cancelTask(taskId: string, reason?: string): Promise<Result<ScheduleTask>>;
   deleteTask(taskId: string): Promise<Result<void>>;
-  deleteTasksBatch(taskIds: string[]): Promise<Result<BatchOperationResponseDTO>>;
+  deleteTasksBatch(taskIds: string[]): Promise<Result<ScheduleBatchOperationResponseDTO>>;
   updateTaskMetadata(taskId: string, metadata: UpdateTaskMetadataRequest): Promise<Result<ScheduleTask>>;
 }

@@ -44,6 +44,7 @@ export class NotificationQueryApplicationService {
 
     const notifications = query.relatedEntityType && query.relatedEntityId
       ? await this.notificationRepository.findByRelatedEntity(
+          query.identityId,
           query.relatedEntityType,
           query.relatedEntityId,
         )
@@ -76,8 +77,8 @@ export class NotificationQueryApplicationService {
     });
   }
 
-  async getNotification(id: string): Promise<Result<NotificationClientDTO>> {
-    const notification = await this.notificationRepository.findById(id);
+  async getNotification(id: string, identityId: string): Promise<Result<NotificationClientDTO>> {
+    const notification = await this.notificationRepository.findByIdForIdentity(identityId, id);
     if (!notification) {
       return fail({ code: 'NOT_FOUND', message: 'notification not found' });
     }

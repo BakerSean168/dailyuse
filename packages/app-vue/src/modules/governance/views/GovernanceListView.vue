@@ -207,7 +207,11 @@ import FilterBar from '../../../components/shared/FilterBar.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGovernance } from '../composables/useGovernance';
 import { usePerformanceMonitor } from '../composables/usePerformanceMonitor';
-import type { RuleClientDTO, RuleStatus, RuleSeverity } from '../types';
+import type {
+  RuleClientDTO,
+  RuleStatus,
+  RuleSeverity,
+} from '@dailyuse/contracts/governance';
 import { RuleCard, GovernanceSearchBar } from '../components';
 
 const router = useRouter();

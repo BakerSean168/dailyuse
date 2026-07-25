@@ -5,13 +5,6 @@
 
 import type { RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import {
-  GetRuleRevisionsResSchema,
-  ListRulesResSchema,
-  RuleClientDTOSchema,
-  RuleRevisionClientDTOSchema,
-  SearchRulesResSchema,
-} from '@dailyuse/contracts/governance';
 
 export interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -20,44 +13,21 @@ export interface PlatformMiddleware {
 
 export type GovernanceOpenApiRegistry = OpenApiRegistryLike | null | undefined;
 
-export const RuleResponseSchema = RuleClientDTOSchema;
-export const RuleRevisionResponseSchema = RuleRevisionClientDTOSchema;
-export const GovernanceListRulesResponseSchema = ListRulesResSchema;
-export const GovernanceSearchRulesResponseSchema = SearchRulesResSchema;
-export const GovernanceRuleRevisionsResponseSchema = GetRuleRevisionsResSchema;
+// Residual 681: OpenAPI routes use contracts response schemas directly
+// (RuleClientDTOSchema / ListRulesResSchema / SearchRulesResSchema / GetRuleRevisionsResSchema).
+// No local *ResponseSchema name dual aliases.
 
-/**
- * Parses an unknown query value into a single string.
- * 将未知 query 值解析为单个字符串。
- * @param value - Raw query value from the HTTP seam.
- * @returns Normalized string value, or undefined when absent.
- */
-export function parseString(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? String(value[0]) : undefined;
-  }
-  if (value === undefined || value === null) {
-    return undefined;
-  }
-  return String(value);
-}
-
-/**
- * Parses an unknown query value into a finite number.
- * 将未知 query 值解析为有限数字。
- * @param value - Raw query value from the HTTP seam.
- * @returns Parsed finite number, or undefined when invalid.
- */
-export function parseNumber(value: unknown): number | undefined {
-  const raw = parseString(value);
-  if (!raw) return undefined;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
+// Residual 1023: parseString/parseNumber dual retired onto @dailyuse/utils/shared (residual 989 sole).
+// Re-export so governance route imports from this shared module stay stable.
+export { parseNumber, parseString } from '@dailyuse/utils/shared';
 
 /**
  * Parses an unknown query value into a normalized string array.
  * 将未知 query 值解析为规范化字符串数组。
+ * Residual 1069 keep-boundary: package-local query array parser.
+ * Differs from goal.routes parseStringArray (empty → undefined here; array items
+ * trimmed) and from utils persistence parseStringArray (JSON string domain).
+ * Not merged into residual 989 query sole (no parseStringArray there).
  * @param value - Raw query value from the HTTP seam.
  * @returns Trimmed string array, or undefined when no values remain.
  */

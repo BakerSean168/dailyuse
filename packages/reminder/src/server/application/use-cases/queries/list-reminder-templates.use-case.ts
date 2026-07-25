@@ -44,11 +44,10 @@ export class ListReminderTemplatesUseCase {
     let templates;
 
     if (query?.groupId) {
-      const groupTemplates = await this.templateRepository.findByGroupId(query.groupId, {
+      templates = await this.templateRepository.findByGroupId(query.groupId, cx.identityId, {
         includeHistory: true,
         historyLimit: 1,
       });
-      templates = groupTemplates.filter((template) => String(template.identityId) === cx.identityId);
     } else if (query?.effectiveEnabled) {
       templates = await this.templateRepository.findActive(cx.identityId, {
         includeHistory: true,

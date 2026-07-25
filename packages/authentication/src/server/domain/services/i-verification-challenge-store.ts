@@ -21,6 +21,14 @@ export const AuthDomainCode = {
   EMAIL_VERIFICATION_REQUIRED: 'EMAIL_VERIFICATION_REQUIRED',
   CHALLENGE_COOLDOWN: 'CHALLENGE_COOLDOWN',
   CHALLENGE_RATE_LIMITED: 'CHALLENGE_RATE_LIMITED',
+  /** OAuth subject already bound to a different identity — no silent merge. */
+  OAUTH_ALREADY_LINKED: 'OAUTH_ALREADY_LINKED',
+  /** Provider email belongs to an existing identity and requires explicit linking. */
+  ACCOUNT_LINK_REQUIRED: 'ACCOUNT_LINK_REQUIRED',
+  /** Provider did not return a verified email required to provision Account. */
+  OAUTH_EMAIL_REQUIRED: 'OAUTH_EMAIL_REQUIRED',
+  /** Cannot remove the last login path (password or OAuth). */
+  LAST_LOGIN_PATH: 'LAST_LOGIN_PATH',
 } as const;
 
 export type AuthDomainCode = (typeof AuthDomainCode)[keyof typeof AuthDomainCode];

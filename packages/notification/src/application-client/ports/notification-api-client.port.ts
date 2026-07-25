@@ -8,8 +8,13 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
+import type {
+  BatchOperationResultDTO,
+  NotificationClientDTO,
+  NotificationPreferenceClientDTO,
+  UnreadCountResponse,
+  UpdateNotificationPreferenceReq,
+} from '@dailyuse/contracts/notification';
 
 // ============ Local Request/Response Types ============
 
@@ -38,9 +43,8 @@ export interface NotificationListResponse {
   hasMore: boolean;
 }
 
-export interface UnreadCountResponse {
-  count: number;
-}
+// Residual 801: UnreadCountResponse dual retired — contracts UnreadCountResponseSchema + z.infer.
+export type { UnreadCountResponse };
 
 // ============ Port Interface ============
 
@@ -54,8 +58,13 @@ export interface INotificationApiClient {
   findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>>;
   findNotificationById(id: string): Promise<Result<NotificationClientDTO>>;
   markAsRead(id: string): Promise<Result<NotificationClientDTO>>;
-  markAllAsRead(): Promise<Result<CountResult>>;
-  deleteNotification(id: string): Promise<Result<ActionResult>>;
-  batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>>;
+  markAllAsRead(): Promise<Result<{ count: number }>>;
+  deleteNotification(id: string): Promise<Result<null>>;
+  batchDeleteNotifications(ids: string[]): Promise<Result<BatchOperationResultDTO>>;
   getUnreadCount(): Promise<Result<UnreadCountResponse>>;
+  /** Residual 197: identity comes from transport auth, not client body dual-track. */
+  getPreferences(): Promise<Result<NotificationPreferenceClientDTO>>;
+  updatePreferences(
+    request: UpdateNotificationPreferenceReq,
+  ): Promise<Result<NotificationPreferenceClientDTO>>;
 }

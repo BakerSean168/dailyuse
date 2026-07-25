@@ -36,13 +36,14 @@ export interface INotificationRepository {
   saveMany(notifications: Notification[]): Promise<void>;
 
   /**
-   * 閫氳繃 UUID 鏌ユ壘鑱氬悎鏍?
-   *
-   * @param id 閫氱煡 UUID
-   * @param options.includeChildren 鏄惁鍔犺浇瀛愬疄浣擄紙榛樿 false锛屾噿鍔犺浇锛?
-   * @returns 鑱氬悎鏍瑰疄渚嬶紝涓嶅瓨鍦ㄥ垯杩斿洖 null
+   * Find notification by id + identity (ownership fence).
+   * Returns null when missing or not owned by identityId.
    */
-  findById(id: string, options?: { includeChildren?: boolean }): Promise<Notification | null>;
+  findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Notification | null>;
 
   /**
    * 閫氳繃璐︽埛 UUID 鏌ユ壘鎵€鏈夐€氱煡
@@ -109,6 +110,7 @@ export interface INotificationRepository {
    * @param relatedEntityId 鐩稿叧瀹炰綋 UUID
    */
   findByRelatedEntity(
+    identityId: string,
     relatedEntityType: string,
     relatedEntityId: string,
   ): Promise<Notification[]>;
@@ -122,24 +124,24 @@ export interface INotificationRepository {
    *
    * @param id 閫氱煡 UUID
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * 鎵归噺鍒犻櫎閫氱煡
    */
-  deleteMany(ids: string[]): Promise<void>;
+  deleteMany(identityId: string, ids: string[]): Promise<void>;
 
   /**
    * 杞垹闄ら€氱煡锛堟爣璁颁负宸插垹闄わ級
    */
-  softDelete(id: string): Promise<void>;
+  softDelete(identityId: string, id: string): Promise<void>;
 
   /**
    * 妫€鏌ラ€氱煡鏄惁瀛樺湪
    *
    * @param id 閫氱煡 UUID
    */
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 
   /**
    * 缁熻鏈閫氱煡鏁伴噺
@@ -160,7 +162,7 @@ export interface INotificationRepository {
    *
    * @param ids 閫氱煡 UUID 鍒楄〃
    */
-  markManyAsRead(ids: string[]): Promise<void>;
+  markManyAsRead(identityId: string, ids: string[]): Promise<void>;
 
   /**
    * 鏍囪鎵€鏈変负宸茶

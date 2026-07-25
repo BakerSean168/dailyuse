@@ -13,14 +13,15 @@ export async function validateAndGetConversation(
   identityId: string,
   conversationId: string,
 ): Promise<AIConversationServer> {
-  const conversation = await conversationRepository.findById(conversationId, {
-    includeChildren: true,
-  });
+  const conversation = await conversationRepository.findByIdForIdentity(
+    identityId,
+    conversationId,
+    {
+      includeChildren: true,
+    },
+  );
   if (!conversation) {
     throw new Error('Conversation not found');
-  }
-  if (conversation.identityId !== identityId) {
-    throw new Error('Not authorized');
   }
   return conversation;
 }
@@ -44,11 +45,16 @@ export async function saveMessage(
 
 export async function getConversationHistory(
   conversationRepository: IAIConversationRepository,
+  identityId: string,
   conversationId: string,
 ): Promise<MessageClientDTO[]> {
-  const conversation = await conversationRepository.findById(conversationId, {
-    includeChildren: true,
-  });
+  const conversation = await conversationRepository.findByIdForIdentity(
+    identityId,
+    conversationId,
+    {
+      includeChildren: true,
+    },
+  );
   if (!conversation) {
     return [];
   }

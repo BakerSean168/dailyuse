@@ -32,17 +32,17 @@ describe('useAppShellStore (V2 shell tabs)', () => {
 
   it('deeplink intent opens a new tab per route without preempting others', () => {
     const store = useAppShellStore();
-    store.openTab({ module: 'note', route: '/note/a', title: 'Notes', intent: 'deeplink' });
-    store.openTab({ module: 'note', route: '/note/b', title: 'Notes', intent: 'deeplink' });
+    store.openTab({ module: 'note', route: '/repository?note=a', title: 'Notes', intent: 'deeplink' });
+    store.openTab({ module: 'note', route: '/repository?note=b', title: 'Notes', intent: 'deeplink' });
 
     expect(store.tabs).toHaveLength(2);
-    expect(store.activeTab?.route).toBe('/note/b');
+    expect(store.activeTab?.route).toBe('/repository?note=b');
 
     // Same-route deeplink activates the existing tab instead of duplicating it.
-    const again = store.openTab({ module: 'note', route: '/note/a', title: 'Notes', intent: 'deeplink' });
+    const again = store.openTab({ module: 'note', route: '/repository?note=a', title: 'Notes', intent: 'deeplink' });
     expect(store.tabs).toHaveLength(2);
     expect(store.activeTabId).toBe(again.tabId);
-    expect(store.activeTab?.route).toBe('/note/a');
+    expect(store.activeTab?.route).toBe('/repository?note=a');
   });
 
   it('reports the LRU eviction candidate beyond the tab limit without auto-closing', () => {
@@ -51,7 +51,7 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     for (let i = 0; i < MAX_BUSINESS_TABS; i += 1) {
       const result = store.openTab({
         module: 'note',
-        route: `/note/${i}`,
+        route: `/repository?note=${i}`,
         title: `N${i}`,
         intent: 'deeplink',
       });
@@ -122,6 +122,33 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.activeTabId).toBe('tab-goal-1');
   });
 
+  it('sanitizeLegacyTabs drops retired /note editor routes from persisted tabs', () => {
+    const store = useAppShellStore();
+    store.tabs = [
+      {
+        id: 'tab-note-legacy',
+        module: 'note',
+        route: '/note/legacy-1',
+        title: 'Legacy note',
+        lastActiveAt: Date.now(),
+      },
+      {
+        id: 'tab-repo',
+        module: 'note',
+        route: '/repository?note=keep-me',
+        title: 'Repository',
+        lastActiveAt: Date.now(),
+      },
+    ];
+    store.activeTabId = 'tab-note-legacy';
+
+    store.sanitizeLegacyTabs();
+
+    expect(store.tabs).toHaveLength(1);
+    expect(store.tabs[0]!.route).toBe('/repository?note=keep-me');
+    expect(store.activeTabId).toBe('tab-repo');
+  });
+
   it('keepAliveInclude mirrors the open tab ids', () => {
     const store = useAppShellStore();
     const a = store.openTab({ module: 'goal', route: '/goals', title: 'G', intent: 'deeplink' });
@@ -138,11 +165,4 @@ describe('useAppShellStore (V2 shell tabs)', () => {
     expect(store.panelWidth).toBe(760);
   });
 
-  it('clampPanelWidthToViewport alias also preserves preferred width', () => {
-    const store = useAppShellStore();
-    store.setPanelWidth(700);
-    const effective = store.clampPanelWidthToViewport(1000, 260);
-    expect(effective).toBeLessThanOrEqual(700);
-    expect(store.panelWidth).toBe(700);
-  });
 });

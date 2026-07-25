@@ -28,32 +28,43 @@ function createScheduleTask(payload: Record<string, unknown> = {}) {
 
 describe('createTaskScheduleExecutionSource', () => {
   it('builds a notification draft for executable task reminders', async () => {
+    const findInstanceByIdForIdentity = vi.fn().mockResolvedValue({
+      id: 'TaskInstanceId_instance-1',
+      identityId: 'IdentityId_task-owner',
+      templateId: 'TaskTemplateId_template-1',
+      deletedAt: null,
+      status: 'Pending',
+    });
+    const findTemplateByIdForIdentity = vi.fn().mockResolvedValue({
+      id: 'TaskTemplateId_template-1',
+      title: 'Write Tests',
+    });
     const source = createTaskScheduleExecutionSource({
       taskInstanceRepository: {
-        findById: vi.fn().mockResolvedValue({
-          id: 'TaskInstanceId_instance-1',
-          identityId: 'IdentityId_task-owner',
-          templateId: 'TaskTemplateId_template-1',
-          deletedAt: null,
-          status: 'Pending',
-        }),
+        findById: vi.fn(),
+        findByIdForIdentity: findInstanceByIdForIdentity,
       },
       taskTemplateRepository: {
-        findById: vi.fn().mockResolvedValue({
-          id: 'TaskTemplateId_template-1',
-          title: 'Write Tests',
-        }),
+        findById: vi.fn(),
+        findByIdForIdentity: findTemplateByIdForIdentity,
       },
     });
 
-    const outcome = await source.executeTask(
-      createScheduleTask({
-        reminderType: 'Relative',
-        reminderValue: 15,
-        reminderUnit: '分钟',
-      }),
-    );
+    const task = createScheduleTask({
+      reminderType: 'Relative',
+      reminderValue: 15,
+      reminderUnit: '分钟',
+    });
+    const outcome = await source.executeTask(task);
 
+    expect(findInstanceByIdForIdentity).toHaveBeenCalledWith(
+      String(task.identityId),
+      'TaskInstanceId_instance-1',
+    );
+    expect(findTemplateByIdForIdentity).toHaveBeenCalledWith(
+      String(task.identityId),
+      'TaskTemplateId_template-1',
+    );
     expect(outcome).toEqual({
       nextRunAt: null,
       notification: {
@@ -75,5 +86,26 @@ describe('createTaskScheduleExecutionSource', () => {
         reminderUnit: '分钟',
       },
     });
+  });
+
+  it('skips when identity-scoped instance load returns null', async () => {
+    const findInstanceByIdForIdentity = vi.fn().mockResolvedValue(null);
+    const findTemplateByIdForIdentity = vi.fn();
+    const source = createTaskScheduleExecutionSource({
+      taskInstanceRepository: {
+        findById: vi.fn(),
+        findByIdForIdentity: findInstanceByIdForIdentity,
+      },
+      taskTemplateRepository: {
+        findById: vi.fn(),
+        findByIdForIdentity: findTemplateByIdForIdentity,
+      },
+    });
+
+    const outcome = await source.executeTask(createScheduleTask());
+
+    expect(findInstanceByIdForIdentity).toHaveBeenCalled();
+    expect(findTemplateByIdForIdentity).not.toHaveBeenCalled();
+    expect(outcome).toEqual({ nextRunAt: null, result: { skipped: true } });
   });
 });

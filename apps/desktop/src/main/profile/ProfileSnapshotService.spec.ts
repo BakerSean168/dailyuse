@@ -50,6 +50,13 @@ function createProfileResolver(rootDir: string, profileId: string): ProfilePathR
     repositoryStorageDir: path.join(profileDir, 'storage', 'repository-storage'),
     knowledgeNotesDir: path.join(profileDir, 'storage', 'knowledge-notes'),
     attachmentsDir: path.join(profileDir, 'storage', 'attachments'),
+    localVaultBindingPath: path.join(profileDir, 'storage', 'local-vault-binding.json'),
+    localVaultWriteLedgerPath: path.join(profileDir, 'storage', 'local-vault-write-ledger.json'),
+    knowledgeRepositoryAutoSyncStatePath: path.join(
+      profileDir,
+      'storage',
+      'knowledge-repository-auto-sync.json',
+    ),
     uiDir: path.join(profileDir, 'ui'),
     mainWindowStatePath: path.join(profileDir, 'ui', 'main-window-state.json'),
   };
@@ -127,7 +134,9 @@ describe('ProfileSnapshotService', () => {
     expect(result.metadata?.version).toBe('2026-05-18T00:00:00Z');
     expect(await fs.promises.readFile(profileResolver.dbPath)).toEqual(sqliteBuffer);
 
-    const meta = JSON.parse(await fs.promises.readFile(profileResolver.snapshotMetaPath, 'utf8')) as {
+    const meta = JSON.parse(
+      await fs.promises.readFile(profileResolver.snapshotMetaPath, 'utf8'),
+    ) as {
       version: string;
       sourceUrl: string;
     };
@@ -248,6 +257,31 @@ describe('ProfileSnapshotService', () => {
 
     expect(result.hydrated).toBe(false);
     expect(result.skippedReason).toBe('snapshot-unavailable');
+  });
+
+  it('fails closed when manifest omits the data envelope (no raw dual-track body)', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(
+        JSON.stringify({
+          available: true,
+          version: 'v1',
+          downloadUrl: '/snapshots/profile.sqlite',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    });
+
+    const service = new ProfileSnapshotService(fetchMock);
+    const result = await service.hydrateIfNeeded({
+      sharedResolver,
+      profileResolver,
+      descriptor,
+      accessToken: 'token-123',
+    });
+
+    expect(result.hydrated).toBe(false);
+    expect(result.skippedReason).toBe('snapshot-unavailable');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('falls back gracefully when download fetch throws a network error', async () => {

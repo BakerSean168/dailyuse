@@ -1,3 +1,7 @@
+/**
+ * Residual 963: findSSEBoundary sole import (packages/ai/src/shared/find-sse-boundary.ts).
+ * Residual 977: parseSSE sole import (packages/ai/src/shared/parse-sse.ts).
+ */
 import type {
   ChatExecutionCompleteInput,
   ChatExecutionCompleteResult,
@@ -7,6 +11,7 @@ import type {
 } from '../../application/ports';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
 import { AIServiceInternalClient } from './ai-service-internal-client';
+import { parseSSE } from '../../../shared/parse-sse';
 
 interface AIServiceChatCompleteResponse {
   content: string;
@@ -144,67 +149,10 @@ function normalizeUsage(usage: Record<string, unknown> | null | undefined): Chat
   };
 }
 
+// Residual 1105 keep-boundary: provider usage tokens are numeric only (no string Number()).
+// Soft residual 1105: goal-planning toNumber allows numeric strings from LLM JSON (no force-merge).
 function toNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
-async function* parseSSE(
-  response: Response,
-): AsyncGenerator<{ event: string; data: string }, void, void> {
-  if (!response.body) {
-    return;
-  }
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-    while (true) {
-      const boundary = findSSEBoundary(buffer);
-      if (!boundary) {
-        break;
-      }
-
-      const rawEvent = buffer.slice(0, boundary.index);
-      buffer = buffer.slice(boundary.index + boundary.length);
-
-      let event = 'message';
-      const dataLines: string[] = [];
-      for (const line of rawEvent.split(/\r?\n/)) {
-        if (line.startsWith('event:')) {
-          event = line.slice(6).trim();
-          continue;
-        }
-        if (line.startsWith('data:')) {
-          dataLines.push(line.slice(5).trimStart());
-        }
-      }
-
-      yield {
-        event,
-        data: dataLines.join('\n'),
-      };
-    }
-  }
-}
-
-function findSSEBoundary(buffer: string): { index: number; length: number } | null {
-  const crlfBoundaryIndex = buffer.indexOf('\r\n\r\n');
-  if (crlfBoundaryIndex >= 0) {
-    return { index: crlfBoundaryIndex, length: 4 };
-  }
-
-  const lfBoundaryIndex = buffer.indexOf('\n\n');
-  if (lfBoundaryIndex >= 0) {
-    return { index: lfBoundaryIndex, length: 2 };
-  }
-
-  return null;
-}

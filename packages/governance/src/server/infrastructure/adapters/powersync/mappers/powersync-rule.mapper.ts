@@ -24,7 +24,7 @@ import type { RuleStatus } from '@/server/domain/value-objects/rule-status';
 import type { RuleSeverity } from '@/server/domain/value-objects/rule-severity';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import type { CodeSnippetPersistenceDTO } from '@/server/domain/value-objects/code-snippet';
-import { toDate, parseJson } from '../../mapper-helpers';
+import { toDate, parseJson } from '@dailyuse/utils/shared';
 
 /**
  * Represents a row in the PowerSync `rules` table.

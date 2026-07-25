@@ -19,16 +19,22 @@ export type {
   KeyResultProgress,
   KeyResultProgressDTO,
 } from './key-result-progress';
+export { KeyResultProgressDTOSchema } from './key-result-progress';
 
 export type {
   KeyResultSnapshot,
   KeyResultSnapshotDTO,
 } from './key-result-snapshot';
+export { KeyResultSnapshotDTOSchema } from './key-result-snapshot';
 
 export type {
   ReminderTrigger,
   GoalReminderConfig,
   GoalReminderConfigDTO,
+} from './goal-reminder-config';
+export {
+  ReminderTriggerSchema,
+  GoalReminderConfigDTOSchema,
 } from './goal-reminder-config';
 
 export { SnapshotTrigger } from './key-result-weight-snapshot';
@@ -50,6 +56,7 @@ export type {
   DeactivateFocusModeReq,
 } from './focus-mode';
 export {
+  FocusModeClientDTOSchema,
   ActivateFocusModeSchema,
   DeactivateFocusModeSchema,
   ExtendFocusModeSchema,

@@ -10,8 +10,11 @@ import { ok } from '@dailyuse/contracts/result';
 export class GetTaskInstanceUseCase {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(id: string): Promise<Result<TaskInstanceClientDTO | null>> {
-    const instance = await this.instanceRepository.findById(id);
+  async execute(
+    id: string,
+    identityId: string,
+  ): Promise<Result<TaskInstanceClientDTO | null>> {
+    const instance = await this.instanceRepository.findByIdForIdentity(identityId, id);
     return ok(instance ? instance.toClientDTO() : null);
   }
 }

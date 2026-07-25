@@ -25,6 +25,10 @@ interface AccountDb {
   account: PrismaClient['account'];
 }
 
+/**
+ * Residual 1159 keep-boundary: account profile/settings DTO → Prisma.InputJsonObject cast only.
+ * Soft residual 1159: AI toPrismaJson deep-clones unknown → InputJsonValue (no force-merge).
+ */
 function toPrismaJson(value: AccountProfileDTO | AccountSettingsDTO): Prisma.InputJsonObject {
   return value as unknown as Prisma.InputJsonObject;
 }
@@ -118,11 +122,6 @@ export class PrismaAccountRepository
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async findByPhone(phoneNumber: string, tx?: AccountDb): Promise<Account | null> {
-    const row = await this.client(tx).account.findFirst({ where: { phoneNumber } });
-    if (!row) return null;
-    return AccountPrismaMapper.toDomain(row);
-  }
 
   async existsByNickname(nickname: string, tx?: AccountDb): Promise<boolean> {
     const account = await this.findByNickname(nickname, tx);

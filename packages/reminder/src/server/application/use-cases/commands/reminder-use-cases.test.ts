@@ -29,8 +29,11 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
     this.templates.set(template.id, template);
   }
 
-  async findById(id: string): Promise<any> {
-    return this.templates.get(id) ?? null;
+  async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
+    void options;
+    const found = this.templates.get(id) ?? null;
+    if (!found) return null;
+    return String(found.identityId) === String(identityId) ? found : null;
   }
 
   async findByIdentityId(identityId: string): Promise<any[]> {
@@ -39,13 +42,13 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
     );
   }
 
-  async findByGroupId(groupId: string | null): Promise<any[]> {
+  async findByGroupId(groupId: string | null, identityId: string): Promise<any[]> {
     return Array.from(this.templates.values()).filter(
-      (t) => t.groupId === groupId,
+      (t) => t.groupId === groupId && String(t.identityId) === String(identityId),
     );
   }
 
-  async findActive(identityId?: string): Promise<any[]> {
+  async findActive(identityId: string): Promise<any[]> {
     return Array.from(this.templates.values()).filter(
       (t) => (!identityId || t.identityId === identityId) && t.selfEnabled,
     );
@@ -55,18 +58,20 @@ class MockReminderTemplateRepository implements IReminderTemplateRepository {
     return [];
   }
 
-  async findByIds(ids: string[]): Promise<any[]> {
+  async findByIds(identityId: string, ids: string[]): Promise<any[]> {
     return ids
       .map((id) => this.templates.get(id))
-      .filter((t) => !!t);
+      .filter((t) => !!t && String(t.identityId) === String(identityId));
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) return;
     this.templates.delete(id);
   }
 
-  async exists(id: string): Promise<boolean> {
-    return this.templates.has(id);
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async count(identityId: string): Promise<number> {
@@ -83,20 +88,25 @@ class MockReminderGroupRepository implements IReminderGroupRepository {
     this.groups.set(group.id, group);
   }
 
-  async findById(id: string): Promise<any> {
-    return this.groups.get(id) ?? null;
+  async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
+    void options;
+    const found = this.groups.get(id) ?? null;
+    if (!found) return null;
+    return String(found.identityId) === String(identityId) ? found : null;
   }
 
   async findByIdentityId(): Promise<any[]> {
     return [];
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) return;
     this.groups.delete(id);
   }
 
-  async exists(id: string): Promise<boolean> {
-    return this.groups.has(id);
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async count(): Promise<number> {
@@ -111,8 +121,11 @@ class MockReminderResponseRepository implements IReminderResponseRepository {
     this.responses.set(response.id, response);
   }
 
-  async findById(id: string): Promise<any> {
-    return this.responses.get(id) ?? null;
+  async findByIdForIdentity(identityId: string, id: string, options?: any): Promise<any> {
+    void options;
+    const found = this.responses.get(id) ?? null;
+    if (!found) return null;
+    return String(found.identityId) === String(identityId) ? found : null;
   }
 
   async findByTemplateId(templateId: string): Promise<any[]> {
@@ -172,8 +185,7 @@ const createValidCreateRequest = () => ({
     offsetMinutes: 0,
   },
   activeTime: {
-    startDate: new Date().toISOString(),
-    endDate: null,
+    activatedAt: Date.now(),
     timezone: 'UTC',
   },
   notificationConfig: {
@@ -223,7 +235,7 @@ describe('Reminder Use Cases', () => {
       const result = await useCase.execute(request, { identityId: TEST_IDENTITY });
       expect(result.ok).toBe(true);
       if (result.ok) {
-        const persisted = await templateRepository.findById(result.data.id);
+        const persisted = await templateRepository.findByIdForIdentity(TEST_IDENTITY, result.data.id);
         expect(persisted).toBeDefined();
         expect(persisted.title).toBe(request.title);
       }
@@ -276,7 +288,7 @@ describe('Reminder Use Cases', () => {
 
         expect(result.ok).toBe(true);
 
-        const deleted = await templateRepository.findById(created.data.id);
+        const deleted = await templateRepository.findByIdForIdentity(TEST_IDENTITY, created.data.id);
         // Note: soft delete, so entity still exists but marked as deleted
         expect(deleted).toBeDefined();
       }
@@ -308,7 +320,7 @@ describe('Reminder Use Cases', () => {
       expect(template1.ok).toBe(true);
       expect(template2.ok).toBe(true);
       if (template1.ok && template2.ok) {
-        const found = await templateRepository.findByIds([
+        const found = await templateRepository.findByIds(TEST_IDENTITY, [
           template1.data.id,
           template2.data.id,
         ]);

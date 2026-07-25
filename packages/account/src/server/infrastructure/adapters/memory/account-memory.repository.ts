@@ -26,14 +26,6 @@ export class MemoryAccountRepository implements IAccountRepository {
     );
   }
 
-  async findByPhone(phoneNumber: string): Promise<Account | null> {
-    return (
-      Array.from(this.accounts.values()).find((account) => {
-        const phone = account.phone;
-        return phone?.number === phoneNumber || phone?.fullNumber === phoneNumber;
-      }) ?? null
-    );
-  }
 
   async existsByNickname(nickname: string): Promise<boolean> {
     return (await this.findByNickname(nickname)) !== null;

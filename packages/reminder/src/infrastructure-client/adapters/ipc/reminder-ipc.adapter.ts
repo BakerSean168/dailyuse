@@ -5,6 +5,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { ReminderChannels } from '@dailyuse/contracts/electron';
 import type { IResultIpcClient, IReminderApiClient } from '../types';
 import type {
   ReminderTemplateClientDTO,
@@ -21,37 +22,6 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import type { ControlMode } from '@dailyuse/contracts/reminder';
 
-/**
- * IPC channel definitions for Reminder operations.
- *
- * Channels listed here MUST have a matching `ipcMain.handle()` in
- * `electron/index.ts` AND an entry in the preload ALLOWED_CHANNELS.
- */
-const REMINDER_CHANNELS = {
-  // Template CRUD
-  CREATE_TEMPLATE: 'reminder:template:create',
-  GET_TEMPLATE: 'reminder:template:get',
-  GET_TEMPLATES: 'reminder:template:list',
-  GET_USER_TEMPLATES: 'reminder:template:get-by-user',
-  UPDATE_TEMPLATE: 'reminder:template:update',
-  DELETE_TEMPLATE: 'reminder:template:delete',
-  TOGGLE_TEMPLATE: 'reminder:template:toggle-enabled',
-  MOVE_TEMPLATE: 'reminder:template:move-to-group',
-  GET_UPCOMING: 'reminder:upcoming:get',
-  GET_TODAY_SCHEDULE: 'reminder:today-schedule:get',
-  // Group CRUD
-  CREATE_GROUP: 'reminder:group:create',
-  GET_GROUP: 'reminder:group:get',
-  GET_GROUPS: 'reminder:group:list',
-  GET_USER_GROUPS: 'reminder:group:get-by-user',
-  UPDATE_GROUP: 'reminder:group:update',
-  DELETE_GROUP: 'reminder:group:delete',
-  TOGGLE_GROUP_STATUS: 'reminder:group:toggle-status',
-  SWITCH_GROUP_CONTROL_MODE: 'reminder:group:switch-control-mode',
-  GET_PREFERENCES: 'reminder:preferences:get',
-  UPDATE_PREFERENCES: 'reminder:preferences:update',
-} as const;
-
 export class ReminderIpcAdapter implements IReminderApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
@@ -60,11 +30,11 @@ export class ReminderIpcAdapter implements IReminderApiClient {
   async createReminderTemplate(
     request: CreateReminderTemplateReq,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.CREATE_TEMPLATE, request);
+    return this.ipcClient.invoke(ReminderChannels.TEMPLATE_CREATE, request);
   }
 
   async getReminderTemplate(id: string): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_TEMPLATE, id);
+    return this.ipcClient.invoke(ReminderChannels.TEMPLATE_GET, id);
   }
 
   /**
@@ -73,7 +43,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
    * support pagination yet — params are forwarded but may be ignored server-side.
    */
   async getReminderTemplates(): Promise<Result<ReminderTemplateListRes>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_TEMPLATES);
+    return this.ipcClient.invoke(ReminderChannels.TEMPLATE_LIST);
   }
 
   /**
@@ -82,29 +52,29 @@ export class ReminderIpcAdapter implements IReminderApiClient {
    * kept for HTTP adapter parity but unused by the IPC handler.
    */
   async getUserTemplates(): Promise<Result<ReminderTemplateClientDTO[]>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_USER_TEMPLATES);
+    return this.ipcClient.invoke(ReminderChannels.TEMPLATE_GET_BY_USER);
   }
 
   async updateReminderTemplate(
     id: string,
     request: UpdateReminderTemplateReq,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_TEMPLATE, id, request);
+    return this.ipcClient.invoke(ReminderChannels.TEMPLATE_UPDATE, id, request);
   }
 
   async deleteReminderTemplate(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.DELETE_TEMPLATE, id);
+    return this.ipcClient.invoke(ReminderChannels.TEMPLATE_DELETE, id);
   }
 
   async toggleTemplateEnabled(id: string): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_TEMPLATE, id);
+    return this.ipcClient.invoke(ReminderChannels.TEMPLATE_TOGGLE_ENABLED, id);
   }
 
   async moveTemplateToGroup(
     templateId: string,
     targetGroupId: string | null,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.MOVE_TEMPLATE, templateId, {
+    return this.ipcClient.invoke(ReminderChannels.TEMPLATE_MOVE_TO_GROUP, templateId, {
       groupId: targetGroupId,
     });
   }
@@ -115,14 +85,14 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     importanceLevel?: string;
     type?: string;
   }): Promise<Result<GetUpcomingRemindersRes>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_UPCOMING, params);
+    return this.ipcClient.invoke(ReminderChannels.UPCOMING_GET, params);
   }
 
   async getTodaySchedule(params?: {
     limit?: number;
     includeExpired?: boolean;
   }): Promise<Result<GetReminderTodayScheduleRes>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_TODAY_SCHEDULE, params);
+    return this.ipcClient.invoke(ReminderChannels.TODAY_SCHEDULE_GET, params);
   }
 
   // ===== 分组 CRUD =====
@@ -130,11 +100,11 @@ export class ReminderIpcAdapter implements IReminderApiClient {
   async createReminderGroup(
     request: CreateReminderGroupReq,
   ): Promise<Result<ReminderGroupClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.CREATE_GROUP, request);
+    return this.ipcClient.invoke(ReminderChannels.GROUP_CREATE, request);
   }
 
   async getReminderGroup(id: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_GROUP, id);
+    return this.ipcClient.invoke(ReminderChannels.GROUP_GET, id);
   }
 
   /**
@@ -143,7 +113,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
    * pagination yet.
    */
   async getReminderGroups(): Promise<Result<ReminderGroupListRes>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_GROUPS);
+    return this.ipcClient.invoke(ReminderChannels.GROUP_LIST);
   }
 
   /**
@@ -151,22 +121,22 @@ export class ReminderIpcAdapter implements IReminderApiClient {
    * Desktop handler resolves identity from auth context.
    */
   async getUserReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_USER_GROUPS);
+    return this.ipcClient.invoke(ReminderChannels.GROUP_GET_BY_USER);
   }
 
   async updateReminderGroup(
     id: string,
     request: UpdateReminderGroupReq,
   ): Promise<Result<ReminderGroupClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_GROUP, id, request);
+    return this.ipcClient.invoke(ReminderChannels.GROUP_UPDATE, id, request);
   }
 
   async deleteReminderGroup(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.DELETE_GROUP, id);
+    return this.ipcClient.invoke(ReminderChannels.GROUP_DELETE, id);
   }
 
   async toggleReminderGroupStatus(id: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_GROUP_STATUS, id);
+    return this.ipcClient.invoke(ReminderChannels.GROUP_TOGGLE_STATUS, id);
   }
 
   /**
@@ -177,15 +147,15 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     id: string,
     mode: ControlMode,
   ): Promise<Result<ReminderGroupClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.SWITCH_GROUP_CONTROL_MODE, id, { mode });
+    return this.ipcClient.invoke(ReminderChannels.GROUP_SWITCH_CONTROL_MODE, id, { mode });
   }
 
   async getPreferences(): Promise<Result<UserReminderPreferencesClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_PREFERENCES);
+    return this.ipcClient.invoke(ReminderChannels.PREFERENCES_GET);
   }
 
   async updatePreferences(data: Record<string, unknown>): Promise<Result<UserReminderPreferencesClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_PREFERENCES, data);
+    return this.ipcClient.invoke(ReminderChannels.PREFERENCES_UPDATE, data);
   }
 }
 

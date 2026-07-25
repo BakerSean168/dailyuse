@@ -1,7 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DesktopFeatureChannels, SystemChannels } from '../../../shared/types/ipc-channels';
+import { DesktopFeatureChannels, SystemChannels } from '@dailyuse/contracts/electron';
 
 const mocks = vi.hoisted(() => ({
   ipcHandle: vi.fn(),
@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   dialogShowOpenDialog: vi.fn(),
   dialogShowSaveDialog: vi.fn(),
   shellOpenPath: vi.fn(),
-  getLazyModuleStats: vi.fn(() => ({ loaded: 1 })),
+  shellOpenExternal: vi.fn(),
   getIpcCache: vi.fn(() => ({
     getStats: () => ({ size: 0, hits: 0, misses: 0, hitRate: 0 }),
   })),
@@ -31,11 +31,8 @@ vi.mock('electron', () => ({
   },
   shell: {
     openPath: mocks.shellOpenPath,
+    openExternal: mocks.shellOpenExternal,
   },
-}));
-
-vi.mock('../../di', () => ({
-  getLazyModuleStats: mocks.getLazyModuleStats,
 }));
 
 vi.mock('../../utils', () => ({
@@ -71,7 +68,9 @@ function buildSharedResolver() {
 type RegisteredHandler = (event: unknown, payload?: unknown) => Promise<unknown>;
 
 function getRegisteredHandler(channel: string): RegisteredHandler {
-  const entry = mocks.ipcHandle.mock.calls.find(([registeredChannel]) => registeredChannel === channel);
+  const entry = mocks.ipcHandle.mock.calls.find(
+    ([registeredChannel]) => registeredChannel === channel,
+  );
   expect(entry, `Expected handler for channel ${channel} to be registered`).toBeTruthy();
   return entry![1] as RegisteredHandler;
 }
@@ -82,7 +81,9 @@ describe('registerSystemIpcHandlers', () => {
     vi.clearAllMocks();
 
     mocks.getSharedPathResolver.mockReturnValue(createSharedResolver());
-    mocks.resolveDesktopUserFilesPath.mockReturnValue(path.join(os.tmpdir(), 'Memoflow Files Default'));
+    mocks.resolveDesktopUserFilesPath.mockReturnValue(
+      path.join(os.tmpdir(), 'Memoflow Files Default'),
+    );
     mocks.dialogShowOpenDialog.mockResolvedValue({
       canceled: true,
       filePaths: [],
@@ -92,6 +93,7 @@ describe('registerSystemIpcHandlers', () => {
       filePath: null,
     });
     mocks.shellOpenPath.mockResolvedValue('');
+    mocks.shellOpenExternal.mockResolvedValue(undefined);
   });
 
   it('registers all shared system and desktop feature handlers', async () => {
@@ -120,7 +122,9 @@ describe('registerSystemIpcHandlers', () => {
   it('returns the current user-files path, default path, and custom flag', async () => {
     const currentPath = path.join(os.tmpdir(), 'Memoflow Files Custom');
     const defaultPath = path.join(os.tmpdir(), 'Memoflow Files Default');
-    mocks.getSharedPathResolver.mockReturnValue(createSharedResolver({ userFilesRootDir: currentPath }));
+    mocks.getSharedPathResolver.mockReturnValue(
+      createSharedResolver({ userFilesRootDir: currentPath }),
+    );
     mocks.resolveDesktopUserFilesPath.mockReturnValue(defaultPath);
 
     const { registerSystemIpcHandlers } = await import('../system-handlers');
@@ -130,9 +134,12 @@ describe('registerSystemIpcHandlers', () => {
     const result = await handler({});
 
     expect(result).toEqual({
-      currentPath,
-      defaultPath,
-      isCustom: true,
+      ok: true,
+      data: {
+        currentPath,
+        defaultPath,
+        isCustom: true,
+      },
     });
   });
 
@@ -151,8 +158,11 @@ describe('registerSystemIpcHandlers', () => {
 
     expect(mocks.updateUserFilesRootPath).toHaveBeenCalledWith(selectedPath);
     expect(result).toEqual({
-      canceled: false,
-      path: selectedPath,
+      ok: true,
+      data: {
+        canceled: false,
+        path: selectedPath,
+      },
     });
   });
 
@@ -170,8 +180,11 @@ describe('registerSystemIpcHandlers', () => {
 
     expect(mocks.updateUserFilesRootPath).not.toHaveBeenCalled();
     expect(result).toEqual({
-      canceled: true,
-      path: null,
+      ok: true,
+      data: {
+        canceled: true,
+        path: null,
+      },
     });
   });
 
@@ -186,19 +199,53 @@ describe('registerSystemIpcHandlers', () => {
     const result = await handler({});
 
     expect(mocks.updateUserFilesRootPath).toHaveBeenCalledWith(null);
-    expect(result).toEqual({ path: defaultPath });
+    expect(result).toEqual({
+      ok: true,
+      data: { path: defaultPath },
+    });
   });
 
   it('opens the active user-files root directory in the shell', async () => {
     const currentPath = path.join(os.tmpdir(), 'Memoflow Files Current');
-    mocks.getSharedPathResolver.mockReturnValue(createSharedResolver({ userFilesRootDir: currentPath }));
+    mocks.getSharedPathResolver.mockReturnValue(
+      createSharedResolver({ userFilesRootDir: currentPath }),
+    );
 
     const { registerSystemIpcHandlers } = await import('../system-handlers');
     registerSystemIpcHandlers(null, null, null);
 
     const handler = getRegisteredHandler(SystemChannels.USER_FILES_OPEN_DIRECTORY);
-    await handler({});
+    const result = await handler({});
 
     expect(mocks.shellOpenPath).toHaveBeenCalledWith(currentPath);
+    expect(result).toEqual({ ok: true, data: null });
+  });
+
+  it('opens only HTTP(S) URLs in the external browser', async () => {
+    const { registerSystemIpcHandlers } = await import('../system-handlers');
+    registerSystemIpcHandlers(null, null, null);
+
+    const handler = getRegisteredHandler(SystemChannels.OPEN_EXTERNAL_URL);
+    await expect(
+      handler({}, { url: 'https://github.com/apps/memoflow/installations/new' }),
+    ).resolves.toEqual({ ok: true, data: { opened: true } });
+    expect(mocks.shellOpenExternal).toHaveBeenCalledWith(
+      'https://github.com/apps/memoflow/installations/new',
+    );
+
+    await expect(handler({}, { url: 'file:///tmp/secret' })).resolves.toEqual({
+      ok: false,
+      error: expect.objectContaining({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('HTTP(S)'),
+      }),
+    });
+    await expect(handler({}, { url: 'javascript:alert(1)' })).resolves.toEqual({
+      ok: false,
+      error: expect.objectContaining({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('HTTP(S)'),
+      }),
+    });
   });
 });

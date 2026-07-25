@@ -59,4 +59,6 @@ export { installCommonBrowserMocks, createMatchMediaMock } from './setup/browser
 export { createTestPinia, installVuePiniaTestHarness, mountWithPinia } from './setup/vue.js';
 export type {} from './setup/database.js';
 
+// Test-only package shims
+export { ScheduleTask } from './shims/schedule-package-shim.js';
 

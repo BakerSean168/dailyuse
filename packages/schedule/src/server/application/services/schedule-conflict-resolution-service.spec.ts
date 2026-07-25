@@ -13,16 +13,29 @@ class InMemoryScheduleRepository implements IScheduleRepository {
     this.schedules.set(schedule.id, schedule);
   }
 
-  async findById(id: string): Promise<CalendarEntry | null> {
-    return this.schedules.get(id) ?? null;
+
+  async findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null> {
+    const schedule = this.schedules.get(id) ?? null;
+    if (!schedule || schedule.identityId !== identityId) {
+      return null;
+    }
+    return schedule;
   }
 
   async findByIdentityId(identityId: string): Promise<CalendarEntry[]> {
     return Array.from(this.schedules.values()).filter((schedule) => schedule.identityId === identityId);
   }
 
-  async deleteById(id: string): Promise<void> {
+  async deleteById(identityId: string, id: string): Promise<void> {
+    const schedule = await this.findByIdForIdentity(identityId, id);
+    if (!schedule) {
+      throw new Error('Schedule event not found for the current identity.');
+    }
     this.schedules.delete(id);
+  }
+
+  async deleteAggregate(entry: CalendarEntry): Promise<void> {
+    this.schedules.delete(entry.id);
   }
 
   async findByTimeRange(
@@ -103,7 +116,7 @@ describe('ScheduleConflictResolutionService', () => {
       new ScheduleConflictDetectionService(repository),
     );
 
-    const result = await service.resolveConflict(second.id, { resolution: 'AUTO' });
+    const result = await service.resolveConflict(second.id, { resolution: 'AUTO' }, identityId);
 
     expect(result.schedule.id).toBe(second.id);
     expect(result.applied.strategy).toBe('AUTO');

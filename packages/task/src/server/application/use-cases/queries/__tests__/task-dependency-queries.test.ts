@@ -35,7 +35,7 @@ describe('Task dependency query use-cases', () => {
       vi.mocked(dependencyRepo.findAllSuccessorIds).mockResolvedValue(['s1']);
       const useCase = new GetDependencyChainUseCase(dependencyRepo);
 
-      const result = await useCase.execute('task-1');
+      const result = await useCase.execute('task-1', 'identity-1');
 
       expect(result).toBeOkWith({
         taskId: 'task-1',
@@ -52,20 +52,20 @@ describe('Task dependency query use-cases', () => {
       vi.mocked(dependencyRepo.findBySuccessorId).mockResolvedValue([{ id: 'dep-1' } as any]);
       const useCase = new ListTaskDependenciesUseCase(dependencyRepo);
 
-      const result = await useCase.executeDependencies('task-1');
+      const result = await useCase.executeDependencies('task-1', 'identity-1');
 
       expect(result).toBeOkWith([{ id: 'dep-1' }] as any);
-      expect(dependencyRepo.findBySuccessorId).toHaveBeenCalledWith('task-1');
+      expect(dependencyRepo.findBySuccessorId).toHaveBeenCalledWith('task-1', 'identity-1');
     });
 
     it('lists dependents by predecessor id', async () => {
       vi.mocked(dependencyRepo.findByPredecessorId).mockResolvedValue([{ id: 'dep-2' } as any]);
       const useCase = new ListTaskDependenciesUseCase(dependencyRepo);
 
-      const result = await useCase.executeDependents('task-1');
+      const result = await useCase.executeDependents('task-1', 'identity-1');
 
       expect(result).toBeOkWith([{ id: 'dep-2' }] as any);
-      expect(dependencyRepo.findByPredecessorId).toHaveBeenCalledWith('task-1');
+      expect(dependencyRepo.findByPredecessorId).toHaveBeenCalledWith('task-1', 'identity-1');
     });
   });
 
@@ -87,7 +87,7 @@ describe('Task dependency query use-cases', () => {
     it('rejects self dependency', async () => {
       const useCase = new ValidateTaskDependencyUseCase(dependencyRepo);
 
-      const result = await useCase.execute('task-1', 'task-1');
+      const result = await useCase.execute('task-1', 'task-1', 'identity-1');
 
       expect(result).toBeOkWith({
         isValid: false,
@@ -102,7 +102,7 @@ describe('Task dependency query use-cases', () => {
       } as any);
       const useCase = new ValidateTaskDependencyUseCase(dependencyRepo);
 
-      const result = await useCase.execute('task-1', 'task-2');
+      const result = await useCase.execute('task-1', 'task-2', 'identity-1');
 
       expect(result).toBeOkWith({
         isValid: false,
@@ -116,7 +116,7 @@ describe('Task dependency query use-cases', () => {
       vi.mocked(dependencyRepo.findAllSuccessorIds).mockResolvedValue(['task-1', 'task-9']);
       const useCase = new ValidateTaskDependencyUseCase(dependencyRepo);
 
-      const result = await useCase.execute('task-1', 'task-2');
+      const result = await useCase.execute('task-1', 'task-2', 'identity-1');
 
       expect(result).toBeOkWith({
         isValid: false,
@@ -132,7 +132,7 @@ describe('Task dependency query use-cases', () => {
       vi.mocked(dependencyRepo.findAllSuccessorIds).mockResolvedValue(['task-5']);
       const useCase = new ValidateTaskDependencyUseCase(dependencyRepo);
 
-      const result = await useCase.execute('task-1', 'task-2');
+      const result = await useCase.execute('task-1', 'task-2', 'identity-1');
 
       expect(result).toBeOkWith({
         isValid: true,

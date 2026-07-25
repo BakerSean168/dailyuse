@@ -9,5 +9,4 @@ export { AIChatController } from './ai-chat.controller';
 export { AIKnowledgeQueryController } from './ai-knowledge-query.controller';
 export { AIKnowledgeNoteController } from './ai-knowledge-note.controller';
 export { toAIControllerFailure } from './ai-controller-errors';
-export { createAITransportHandlers } from './ai.transport-handlers';
-export type { AITransportHandlers } from './ai.transport-handlers';
+export { AIAssistantFacadeController } from './ai-assistant-facade.controller';

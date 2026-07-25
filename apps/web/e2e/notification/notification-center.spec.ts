@@ -19,7 +19,7 @@ test.describe('Notification Center', () => {
     });
 
     await expect(page.getByTestId('notification-center')).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
   });
 

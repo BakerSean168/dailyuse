@@ -7,23 +7,21 @@ import type {
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
 } from '@dailyuse/contracts/ai';
-import { unwrapResultOrThrow } from '../result-client-error';
+import type { Result } from '@dailyuse/contracts/result';
 
+/** HTTP adapter — returns Result, never throws (residual 98). */
 export class AIKnowledgeQueryHttpAdapter implements AIKnowledgeQueryApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async expandKnowledge(request: ExpandKnowledgeReq): Promise<ExpandKnowledgeRes> {
-    const result = await this.httpClient.post<ExpandKnowledgeRes>('/ai/knowledge/expand', request);
-    return unwrapResultOrThrow(result);
+  async expandKnowledge(request: ExpandKnowledgeReq): Promise<Result<ExpandKnowledgeRes>> {
+    return this.httpClient.post<ExpandKnowledgeRes>('/ai/knowledge/expand', request);
   }
 
-  async queryKnowledge(request: QueryKnowledgeReq): Promise<QueryKnowledgeRes> {
-    const result = await this.httpClient.post<QueryKnowledgeRes>('/ai/knowledge/query', request);
-    return unwrapResultOrThrow(result);
+  async queryKnowledge(request: QueryKnowledgeReq): Promise<Result<QueryKnowledgeRes>> {
+    return this.httpClient.post<QueryKnowledgeRes>('/ai/knowledge/query', request);
   }
 
-  async reindexKnowledge(request: ReindexKnowledgeReq): Promise<ReindexKnowledgeRes> {
-    const result = await this.httpClient.post<ReindexKnowledgeRes>('/ai/knowledge/reindex', request);
-    return unwrapResultOrThrow(result);
+  async reindexKnowledge(request: ReindexKnowledgeReq): Promise<Result<ReindexKnowledgeRes>> {
+    return this.httpClient.post<ReindexKnowledgeRes>('/ai/knowledge/reindex', request);
   }
 }

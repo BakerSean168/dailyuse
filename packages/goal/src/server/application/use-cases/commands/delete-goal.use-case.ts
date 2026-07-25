@@ -24,7 +24,10 @@ export class DeleteGoalUseCase {
   /**
    * 检查目标依赖项
    */
-  async checkDependencies(id: string): Promise<
+  async checkDependencies(
+    id: string,
+    identityId: string,
+  ): Promise<
     Result<{
       hasKeyResults: boolean;
       keyResultCount: number;
@@ -35,7 +38,9 @@ export class DeleteGoalUseCase {
       warnings: string[];
     }>
   > {
-    const goal = await this.goalRepository.findById(id, { includeChildren: true });
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, id, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }
@@ -69,8 +74,10 @@ export class DeleteGoalUseCase {
   /**
    * 执行软删除
    */
-  async execute(id: string): Promise<Result<DeleteGoalRes>> {
-    const goal = await this.goalRepository.findById(id, { includeChildren: true });
+  async execute(id: string, identityId: string): Promise<Result<DeleteGoalRes>> {
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, id, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }

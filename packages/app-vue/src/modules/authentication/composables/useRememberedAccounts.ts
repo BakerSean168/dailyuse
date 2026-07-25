@@ -4,26 +4,21 @@ import type {
   RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
-import { isDesktopEnvironment } from './useAuthContext';
+import { completeAuthSuccess } from './completeAuthSuccess';
+import {
+  reportAuthCatchFailure,
+  reportAuthResultFailure,
+} from './reportAuthOperationFailure';
+
+// Residual 923: isDesktopEnvironment name dual retired — use hasDesktopAuthApi detect.
+// Residual 1045: completeAuthSuccess dual retired onto completeAuthSuccess sole.
+// Residual 1049: auth result/catch failure duals retired onto reportAuthOperationFailure sole.
+// Residual 1079 keep-boundary: removeRememberedAccount is toast-only (no store.setError;
+// not reportAuthOperationFailure dual body — intentional soft-delete UX).
 
 export function useRememberedAccounts(ctx: AuthContext) {
   const { store, service, t, lastResultError, redirectWithReload, handleAuthSuccess, getLocalizedAuthError } = ctx;
-
-  async function completeAuthSuccess(
-    data: Parameters<typeof handleAuthSuccess>[0],
-    title: string,
-    description: string,
-  ): Promise<boolean> {
-    if (isDesktopEnvironment()) {
-      store.reset();
-    } else {
-      handleAuthSuccess(data);
-    }
-    toast.success(title, { description });
-    if (isDesktopEnvironment()) return true;
-    redirectWithReload('/');
-    return true;
-  }
+  const failureDeps = { store, t, lastResultError, getLocalizedAuthError };
 
   async function listRememberedAccounts(): Promise<RememberedDesktopAccountDTO[]> {
     const result = await service.listRememberedAccounts();
@@ -45,33 +40,31 @@ export function useRememberedAccounts(ctx: AuthContext) {
       if (result.ok) {
         lastResultError.value = null;
         return await completeAuthSuccess(
+          {
+            resetStore: () => store.reset(),
+            handleAuthSuccess,
+            redirectWithReload,
+          },
           result.data,
           t('auth.toast.loginSuccess'),
           t('auth.toast.welcomeBack'),
         );
       }
-      lastResultError.value = result.error;
-      const message = getLocalizedAuthError(result.error, 'auth.errors.UNKNOWN');
-      store.setError(message);
-      toast.error(t('auth.toast.loginFailed'), { description: message });
-      return false;
+      return reportAuthResultFailure(failureDeps, result.error, 'auth.toast.loginFailed');
     } catch (e) {
-      store.setLoading(false);
-      console.error('[auth] loginRememberedDesktopAccount failed', e);
-      lastResultError.value = {
-        code: 'UNKNOWN',
-        message: e instanceof Error ? e.message : 'Unknown error',
-      };
-      const description = getLocalizedAuthError(e, 'auth.errors.UNKNOWN');
-      store.setError(description);
-      toast.error(t('auth.toast.loginFailed'), { description });
-      return false;
+      return reportAuthCatchFailure(
+        failureDeps,
+        e,
+        'loginRememberedDesktopAccount',
+        'auth.toast.loginFailed',
+      );
     } finally {
       store.setLoading(false);
     }
   }
 
   async function removeRememberedAccount(identityId: string): Promise<boolean> {
+    // Residual 1079 keep-boundary: toast-only failure path (no store.setError dual).
     const result = await service.removeRememberedAccount(identityId);
     if (result.ok) {
       lastResultError.value = null;

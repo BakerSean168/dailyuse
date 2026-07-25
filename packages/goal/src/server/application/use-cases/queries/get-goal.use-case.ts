@@ -16,8 +16,12 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class GetGoalUseCase {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
-  async execute(id: string, includeChildren?: boolean): Promise<Result<GetGoalRes>> {
-    const goal = await this.goalRepository.findById(id, {
+  async execute(
+    id: string,
+    identityId: string,
+    includeChildren?: boolean,
+  ): Promise<Result<GetGoalRes>> {
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, id, {
       includeChildren,
     });
 

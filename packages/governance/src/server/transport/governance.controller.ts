@@ -14,7 +14,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { error } from '@dailyuse/contracts/result';
+import { error, ok } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import {
@@ -29,7 +29,6 @@ import {
 import type {
   CreateRuleRes,
   DeleteRuleReq,
-  DeleteRuleRes,
   GetRuleReq,
   GetRuleRevisionsQueryInput,
   GetRuleRevisionsRes,
@@ -86,15 +85,18 @@ export class GovernanceController {
     return this.updateRule({ ruleId, body: input } as GovernanceUpdateRuleRpcRequest, ctx);
   }
 
-  async deleteRule(input: DeleteRuleReq, ctx: Context): Promise<Result<DeleteRuleRes>> {
+  async deleteRule(input: DeleteRuleReq, ctx: Context): Promise<Result<null>> {
     const parsed = DeleteRuleSchema.safeParse(input);
     if (!parsed.success) {
       return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
-    return this.useCases.deleteRule(parsed.data, this.toExecutionContext(ctx));
+    const result = await this.useCases.deleteRule(parsed.data, this.toExecutionContext(ctx));
+    if (!result.ok) return result;
+    // Serialize as data:null (no { success: boolean } dual-track body).
+    return ok(null);
   }
 
-  async deleteRuleById(id: string, ctx: Context): Promise<Result<DeleteRuleRes>> {
+  async deleteRuleById(id: string, ctx: Context): Promise<Result<null>> {
     return this.deleteRule({ id } as DeleteRuleReq, ctx);
   }
 

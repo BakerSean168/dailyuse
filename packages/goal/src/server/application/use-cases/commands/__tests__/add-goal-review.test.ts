@@ -55,13 +55,13 @@ describe('AddGoalReviewUseCase', () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
     const params = aReviewInput();
 
-    const result = await useCase.execute('goal-id-1', params);
+    const result = await useCase.execute('goal-id-1', 'identity-1', params);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -75,12 +75,12 @@ describe('AddGoalReviewUseCase', () => {
   it('should return NOT_FOUND when goal does not exist', async () => {
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
 
-    const result = await useCase.execute('non-existent', aReviewInput());
+    const result = await useCase.execute('non-existent', 'identity-1', aReviewInput());
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -97,12 +97,12 @@ describe('AddGoalReviewUseCase', () => {
       }),
     } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
 
-    await expect(useCase.execute('goal-id-1', aReviewInput())).rejects.toThrow(
+    await expect(useCase.execute('goal-id-1', 'identity-1', aReviewInput())).rejects.toThrow(
       'Goal cannot be modified',
     );
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -113,7 +113,7 @@ describe('AddGoalReviewUseCase', () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
@@ -124,7 +124,7 @@ describe('AddGoalReviewUseCase', () => {
       nextActions: 'Hire more staff',
     });
 
-    await useCase.execute('goal-id-1', params);
+    await useCase.execute('goal-id-1', 'identity-1', params);
 
     expect(goal.createAndAddReview).toHaveBeenCalledWith(params);
   });
@@ -133,27 +133,27 @@ describe('AddGoalReviewUseCase', () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
 
-    await useCase.execute('goal-id-1', aReviewInput());
+    await useCase.execute('goal-id-1', 'identity-1', aReviewInput());
 
     expect(goal._createdReview.toClientDTO).toHaveBeenCalledWith();
   });
 
-  it('should call findById with includeChildren option', async () => {
+  it('should call findByIdForIdentity with includeChildren option', async () => {
     const goal = createGoalFixture();
     const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
     const goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn().mockResolvedValue(goal),
+      findByIdForIdentity: vi.fn().mockResolvedValue(goal),
       save: vi.fn().mockResolvedValue(undefined),
     });
     const useCase = new AddGoalReviewUseCase(goalRepo, goalPolicy);
 
-    await useCase.execute('goal-id-1', aReviewInput());
+    await useCase.execute('goal-id-1', 'identity-1', aReviewInput());
 
-    expect(goalRepo.findById).toHaveBeenCalledWith('goal-id-1', { includeChildren: true });
+    expect(goalRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'goal-id-1', { includeChildren: true });
   });
 });

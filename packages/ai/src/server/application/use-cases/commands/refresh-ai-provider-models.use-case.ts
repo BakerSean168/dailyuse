@@ -20,8 +20,11 @@ export class RefreshAIProviderModelsUseCase {
     providerId: string,
     cx: ExecutionContext,
   ): Promise<Result<AIProviderConfigClientDTO>> {
-    const provider = await this.providerConfigRepository.findById(providerId);
-    if (!provider || String(provider.identityId) !== cx.identityId) {
+    const provider = await this.providerConfigRepository.findByIdForIdentity(
+      cx.identityId,
+      providerId,
+    );
+    if (!provider) {
       return error('NOT_FOUND', 'Provider not found');
     }
 

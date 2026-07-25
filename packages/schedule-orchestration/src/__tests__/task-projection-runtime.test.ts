@@ -89,6 +89,7 @@ describe('task projection runtime', () => {
     const scheduleTaskRepository: IScheduleTaskRepository = {
       save: vi.fn(),
       findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       deleteById: vi.fn(),
       findByIdentityId: vi.fn(),
       findBySourceModule: vi.fn().mockResolvedValue([existingMatchingTask, existingUnrelatedTask]),
@@ -137,7 +138,10 @@ describe('task projection runtime', () => {
       'TaskTemplateId_template',
       'IdentityId_schedule-owner',
     );
-    expect(scheduleTaskRepository.deleteBatch).toHaveBeenCalledWith([existingMatchingTask.id]);
+    expect(scheduleTaskRepository.deleteBatch).toHaveBeenCalledWith(
+      existingMatchingTask.identityId,
+      [existingMatchingTask.id],
+    );
     expect(scheduleTaskRepository.saveBatch).toHaveBeenCalledWith([nextTask]);
     expect(scheduleEvents.sent).toEqual([
       {
@@ -155,6 +159,7 @@ describe('task projection runtime', () => {
     const scheduleTaskRepository: IScheduleTaskRepository = {
       save: vi.fn(),
       findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       deleteById: vi.fn(),
       findByIdentityId: vi.fn(),
       findBySourceModule: vi.fn(),

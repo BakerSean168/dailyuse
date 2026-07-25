@@ -491,6 +491,10 @@ function handleOpenTaskDetail(id: string) {
   router.push({ name: 'task-detail', params: { id } });
 }
 
+/**
+ * Soft residual 1240: app-vue task formatDate — locale toLocaleDateString + '-'.
+ * Same empty glyph as react GoalCompare but with locale; not goal-detail i18n empty path (no force-merge).
+ */
 function formatDate(ts?: number | null): string {
   if (!ts) return '-';
   return new Date(ts).toLocaleDateString(locale.value);

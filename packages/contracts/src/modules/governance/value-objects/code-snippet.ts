@@ -3,19 +3,23 @@
  * 代码片段值对象
  */
 
+import { z } from 'zod';
+import { brandedId } from '../../../primitives';
 import type { CodeSnippetId } from '../primitives/ids';
-import type { Language } from './language';
-import type { SnippetType } from './snippet-type';
+import { Language } from './language';
+import { SnippetType } from './snippet-type';
 
-// ============ Transfer DTO (传输层) ============
+// Residual 731: code snippet dual body retired — OpenAPI + transport use
+// CodeSnippetDTOSchema (semantic CodeSnippetDTO is a z.infer alias).
+export const CodeSnippetDTOSchema = z.object({
+  id: brandedId<CodeSnippetId>(),
+  language: z.enum(Language),
+  content: z.string(),
+  type: z.enum(SnippetType),
+  caption: z.string().nullable(),
+});
 
-export interface CodeSnippetDTO {
-  id: CodeSnippetId;
-  language: Language;
-  content: string;
-  type: SnippetType;
-  caption: string | null;
-}
+export type CodeSnippetDTO = z.infer<typeof CodeSnippetDTOSchema>;
 
 // ============ Persistence DTO (持久化层) ============
 

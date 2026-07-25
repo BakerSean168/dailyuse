@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TaskFolderPrismaRepository - Prisma Implementation of ITaskFolderRepository
  * 任务文件夹仓储 - Prisma 实现
  *
@@ -42,9 +42,9 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
     });
   }
 
-  async findById(id: string): Promise<TaskFolderServerDTO | null> {
-    const data = await this.prisma.taskFolder.findUnique({
-      where: { id },
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskFolderServerDTO | null> {
+    const data = await this.prisma.taskFolder.findFirst({
+      where: { id, identityId },
     });
     return data ? this.mapToDTO(data) : null;
   }
@@ -57,13 +57,18 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
     return data.map((item: PrismaTaskFolder) => this.mapToDTO(item));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.taskFolder.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const result = await this.prisma.taskFolder.deleteMany({
+      where: { id, identityId },
+    });
+    if (result.count === 0) {
+      throw new Error('Task folder not found for the current identity.');
+    }
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(identityId: string, id: string): Promise<boolean> {
     const count = await this.prisma.taskFolder.count({
-      where: { id },
+      where: { id, identityId },
     });
     return count > 0;
   }

@@ -72,7 +72,7 @@ export class AIServiceKnowledgeQueryAdapter implements IKnowledgeQueryPort {
       body: {
         instruction: input.instruction,
         current_content: input.currentContent,
-        related_resources: input.indexedResources.map((resource) => ({
+        related_resources: input.indexedNotes.map((resource) => ({
           identity_id: resource.identityId,
           repository_id: resource.repositoryId,
           resource_id: resource.resourceId,
@@ -161,7 +161,7 @@ export class AIServiceKnowledgeQueryAdapter implements IKnowledgeQueryPort {
       requestId: input.requestId,
       body: {
         question: input.question,
-        indexed_resources: input.indexedResources.map((resource) => ({
+        indexed_resources: input.indexedNotes.map((resource) => ({
           identity_id: resource.identityId,
           repository_id: resource.repositoryId,
           resource_id: resource.resourceId,

@@ -64,8 +64,9 @@ export { NotificationActionType } from './notification-action-type';
 export { ContentType } from './content-type';
 
 
-export type { NotificationTemplateDTO } from './notification-template';
-export type { SnoozeSessionDTO } from './snooze-session';
+// Residual 659: dead template/snooze VO duals retired.
+// Live template shape is template-config VO + aggregate Client/Server DTOs.
+
 export type {
   TemplateContent,
   EmailTemplateContent,

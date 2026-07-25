@@ -6,7 +6,10 @@
  */
 
 import { z } from 'zod';
-import type { TaskInstanceClientDTO } from '../aggregates/task-instance-client';
+import {
+  CheckExpiredTaskInstancesResponseSchema,
+  TaskInstanceResponseSchema,
+} from './response-schemas';
 
 // ============================================================================
 // GET Task Operations
@@ -21,15 +24,17 @@ export const GetTaskInstancesByRangeSchema = z.object({
 });
 
 export type GetTaskInstancesByRangeReq = z.infer<typeof GetTaskInstancesByRangeSchema>;
-export interface GetTaskInstancesByRangeRes {
-  data: TaskInstanceClientDTO[];
-  total: number;
-}
 
-export interface CheckExpiredTaskInstancesRes {
-  count: number;
-  instances: TaskInstanceClientDTO[];
-}
+// Residual 789: by-range list Res dual retired — sole ResSchema + z.infer
+// (nests TaskInstanceResponseSchema; matches TaskInstanceClientDTO fields).
+export const GetTaskInstancesByRangeResSchema = z.object({
+  data: z.array(TaskInstanceResponseSchema),
+  total: z.number(),
+});
+export type GetTaskInstancesByRangeRes = z.infer<typeof GetTaskInstancesByRangeResSchema>;
+
+// Residual 697: list response dual body retired — OpenAPI + transport use CheckExpiredTaskInstancesResponseSchema.
+export type CheckExpiredTaskInstancesRes = z.infer<typeof CheckExpiredTaskInstancesResponseSchema>;
 
 export const CompleteTaskInstanceSchema = z.object({
   duration: z.number().optional(),
@@ -45,9 +50,9 @@ export const SkipTaskInstanceSchema = z.object({
 
 export type SkipTaskInstanceReq = z.infer<typeof SkipTaskInstanceSchema>;
 
-export interface TaskInstanceOperationRes {
-  instance: TaskInstanceClientDTO;
-}
+// Residual 789: complete/skip operation Res dual retired — sole ResSchema + z.infer.
+export const TaskInstanceOperationResSchema = z.object({
+  instance: TaskInstanceResponseSchema,
+});
+export type TaskInstanceOperationRes = z.infer<typeof TaskInstanceOperationResSchema>;
 
-export type CompleteTaskInstanceRes = TaskInstanceOperationRes;
-export type SkipTaskInstanceRes = TaskInstanceOperationRes;

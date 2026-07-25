@@ -40,11 +40,12 @@ export const PowerSyncApiModule: IApiModule = {
       const responseBuilder = createApiResponseBuilder(authenticatedReq);
 
       try {
-        if (!authenticatedReq.identityId) {
+        const identityId = authenticatedReq.user?.identityId;
+        if (!identityId) {
           return res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
         }
 
-        const result = issuePowerSyncToken(authenticatedReq.identityId, config);
+        const result = issuePowerSyncToken(identityId, config);
         if (!result) {
           return res
             .status(503)
@@ -55,7 +56,7 @@ export const PowerSyncApiModule: IApiModule = {
       } catch (error) {
         logger.error('Failed to issue PowerSync token', {
           error,
-          identityId: authenticatedReq.identityId,
+          identityId: authenticatedReq.user?.identityId,
         });
         return res
           .status(500)
@@ -69,13 +70,14 @@ export const PowerSyncApiModule: IApiModule = {
       const responseBuilder = createApiResponseBuilder(authenticatedReq);
 
       try {
-        if (!authenticatedReq.identityId) {
+        const identityId = authenticatedReq.user?.identityId;
+        if (!identityId) {
           return res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
         }
 
         const snapshot = await readStoredProfileSnapshotManifest(
           config.snapshotDir,
-          authenticatedReq.identityId,
+          identityId,
         );
 
         if (!snapshot) {
@@ -102,7 +104,7 @@ export const PowerSyncApiModule: IApiModule = {
       } catch (error) {
         logger.error('Failed to resolve PowerSync profile snapshot manifest', {
           error,
-          identityId: authenticatedReq.identityId,
+          identityId: authenticatedReq.user?.identityId,
         });
         return res
           .status(500)
@@ -119,13 +121,14 @@ export const PowerSyncApiModule: IApiModule = {
         const responseBuilder = createApiResponseBuilder(authenticatedReq);
 
         try {
-          if (!authenticatedReq.identityId) {
+          const identityId = authenticatedReq.user?.identityId;
+          if (!identityId) {
             return res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
           }
 
           const snapshot = await readStoredProfileSnapshotManifest(
             config.snapshotDir,
-            authenticatedReq.identityId,
+            identityId,
           );
 
           if (!snapshot) {
@@ -150,7 +153,7 @@ export const PowerSyncApiModule: IApiModule = {
         } catch (error) {
           logger.error('Failed to stream PowerSync profile snapshot', {
             error,
-            identityId: authenticatedReq.identityId,
+            identityId: authenticatedReq.user?.identityId,
           });
           return res
             .status(500)
@@ -165,7 +168,8 @@ export const PowerSyncApiModule: IApiModule = {
       const responseBuilder = createApiResponseBuilder(authenticatedReq);
 
       try {
-        if (!authenticatedReq.identityId) {
+        const identityId = authenticatedReq.user?.identityId;
+        if (!identityId) {
           return res.status(401).json(responseBuilder.unauthorized('未授权，请登录'));
         }
 
@@ -175,26 +179,27 @@ export const PowerSyncApiModule: IApiModule = {
           return res.status(400).json(responseBuilder.badRequest('Missing or invalid transactions array'));
         }
 
-        const result = await executeCrudBatch(db, authenticatedReq.identityId, transactions);
+        const result = await executeCrudBatch(db, identityId, transactions);
         return res.json(responseBuilder.success(result));
       } catch (error) {
         logger.error('PowerSync CRUD processing failed', {
           error,
-          identityId: authenticatedReq.identityId,
+          identityId: authenticatedReq.user?.identityId,
         });
         return res.status(500).json(responseBuilder.internalError('Failed to process sync operations'));
       }
     });
 
     // ── GET /powersync/schema ──
-    psRouter.get('/schema', (_req, res) => {
-      return res.json({
-        ok: true,
-        data: {
-          powersync_url: config.url,
-          configured: !!config.privateKey,
-        },
-      });
+    // Residual 629: Result/HttpResponse envelope only (no partial { ok, data } dual-track).
+    psRouter.get('/schema', (req, res) => {
+      const responseBuilder = createApiResponseBuilder(req);
+      return res.status(200).json(
+        responseBuilder.success({
+          powersync_url: config.url ?? '',
+          configured: Boolean(config.privateKey),
+        }),
+      );
     });
 
     router.use('/powersync', psRouter);

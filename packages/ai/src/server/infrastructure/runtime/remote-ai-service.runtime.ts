@@ -30,6 +30,7 @@ import {
   createEvaluationRuntimeService,
   createKnowledgeNoteRuntimeService,
   createKnowledgeQueryRuntimeServices,
+  buildAgentRuntimeCapabilityOffers,
 } from './ai-runtime';
 import {
   CreateAIProviderUseCase,
@@ -39,24 +40,21 @@ import {
   ListAIProvidersUseCase,
   TestAIProviderConnectionUseCase,
   SetDefaultAIProviderUseCase,
-  GetDefaultAIProviderUseCase,
   RefreshAIProviderModelsUseCase,
   SendAIMessageUseCase,
   StreamAIMessageUseCase,
-  CreateConversationV2UseCase,
-  GetConversationV2UseCase,
-  ListConversationsV2UseCase,
-  DeleteConversationV2UseCase,
+  CreateConversationUseCase,
+  GetConversationUseCase,
+  ListConversationsUseCase,
+  DeleteConversationUseCase,
   UpdateConversationUseCase,
-  AddConversationMessageUseCase,
-  GetConversationsByStatusUseCase,
-  UpdateConversationStatusUseCase,
   GenerateAIGoalUseCase,
   ManageAIKnowledgeNoteUseCase,
-  SyncKnowledgeResourcesUseCase,
+  SyncKnowledgeNotesUseCase,
   ReindexAllKnowledgeUseCase,
   SyncRelevantKnowledgeUseCase,
-  SyncResourceByIdUseCase,
+  SyncNoteByIdUseCase,
+  RemoveKnowledgeIndexNoteUseCase,
   QueryKnowledgeUseCase,
   ExpandKnowledgeUseCase,
   ReindexKnowledgeUseCase,
@@ -68,8 +66,14 @@ import {
   DirectProviderGoalPlanningAdapter,
   DirectProviderKnowledgeNoteGenerationAdapter,
 } from '../chat-execution';
+import { DirectTurnEngine, ReadonlyAnalysisTurnEngine } from '../turn-engine';
+import { AssistantFacade } from '../assistant-facade';
+import { ProposalKernel } from '../proposal-kernel';
+import { CapabilityResolver } from '../capability-resolver';
+import { LangGraphWorkflowAdapter } from '../workflow';
 import { AIKnowledgeNotePathResolver } from '../../application/services/ai-knowledge-note-path-resolver';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
+import { CustomModelGateway } from '../model-gateway';
 
 const ADVANCED_AI_REASON =
   'Advanced AI features require a remote ai-service runtime. Configure AI_SERVICE_BASE_URL and AI_SERVICE_SECRET to enable goal automation, knowledge retrieval, analytics, and reindexing.';
@@ -83,11 +87,14 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
 
   // --- Bundle resolution: remote if provided, direct-provider fallback ---
 
+  // Residual 337: Host Model Gateway always present; direct fallbacks share it.
+  const modelGateway = new CustomModelGateway();
   const chatExecutionPort =
-    dependencies.chatExecutionPort ?? new DirectProviderChatExecutionAdapter();
-  const goalPlanningPort = dependencies.goalPlanningPort ?? new DirectProviderGoalPlanningAdapter();
+    dependencies.chatExecutionPort ?? new DirectProviderChatExecutionAdapter(modelGateway);
+  const goalPlanningPort =
+    dependencies.goalPlanningPort ?? new DirectProviderGoalPlanningAdapter(modelGateway);
   const knowledgeNoteGenerationPort =
-    dependencies.knowledgeNoteGenerationPort ?? new DirectProviderKnowledgeNoteGenerationAdapter();
+    dependencies.knowledgeNoteGenerationPort ?? new DirectProviderKnowledgeNoteGenerationAdapter(modelGateway);
   const modelCatalogPort = new OpenAICompatibleModelCatalogGateway();
 
   // --- Provider services (always present) ---
@@ -103,38 +110,51 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
       chatExecutionPort,
     ),
     setDefault: new SetDefaultAIProviderUseCase(providerConfigRepository),
-    getDefault: new GetDefaultAIProviderUseCase(providerConfigRepository),
     refreshModels: new RefreshAIProviderModelsUseCase(providerConfigRepository, modelCatalogPort),
   };
 
   // --- Conversation services (always present) ---
 
   const conversationServices: AIConversationServices = {
-    createConversationV2: new CreateConversationV2UseCase(conversationRepository),
-    getConversationV2: new GetConversationV2UseCase(conversationRepository),
-    listConversationsV2: new ListConversationsV2UseCase(conversationRepository),
-    deleteConversationV2: new DeleteConversationV2UseCase(conversationRepository),
+    createConversation: new CreateConversationUseCase(conversationRepository),
+    getConversation: new GetConversationUseCase(conversationRepository),
+    listConversations: new ListConversationsUseCase(conversationRepository),
+    deleteConversation: new DeleteConversationUseCase(conversationRepository),
     updateConversation: new UpdateConversationUseCase(conversationRepository),
-    addMessage: new AddConversationMessageUseCase(conversationRepository),
-    getByStatus: new GetConversationsByStatusUseCase(conversationRepository),
-    updateStatus: new UpdateConversationStatusUseCase(conversationRepository),
   };
 
-  // --- Chat bundle (always present — falls back to direct) ---
+  // --- Chat bundle via DirectTurnEngine (residual 316) ---
+
+  const turnEngine = new DirectTurnEngine(
+    conversationRepository,
+    providerConfigRepository,
+    chatExecutionPort,
+  );
+  // Residual 341: second production Turn Engine (readonly analysis via Model Gateway).
+  const readonlyTurnEngine = new ReadonlyAnalysisTurnEngine(
+    providerConfigRepository,
+    modelGateway,
+  );
+
+  // Residual 320: Host proposal lifecycle (no mutation execution).
+  const proposalKernel = new ProposalKernel();
+  // Residual 343: unified Host dispatch (open chat default stays DirectTurnEngine).
+  const assistantFacade = new AssistantFacade(
+    turnEngine,
+    readonlyTurnEngine,
+    proposalKernel,
+    turnEngine,
+  );
+
+  // Residual 318: wrap remote agent runtime with LangGraphWorkflowAdapter when present.
+  const workflowAdapter = dependencies.agentRuntimePort
+    ? new LangGraphWorkflowAdapter(dependencies.agentRuntimePort)
+    : null;
+  const agentRuntimePort = workflowAdapter ?? dependencies.agentRuntimePort;
 
   const chatServices: AIChatServices = {
-    send: new SendAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
-    stream: new StreamAIMessageUseCase(
-      conversationRepository,
-      providerConfigRepository,
-      chatExecutionPort,
-      dependencies.executionLogPort,
-    ),
+    send: new SendAIMessageUseCase(turnEngine, dependencies.executionLogPort),
+    stream: new StreamAIMessageUseCase(turnEngine, dependencies.executionLogPort),
   };
 
   // --- Goal generation bundle (always present — falls back to direct) ---
@@ -151,17 +171,15 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
 
   // --- Knowledge note generation bundle ---
 
-  const knowledgeNoteUseCase =
-    dependencies.knowledgeNotePersistence && dependencies.getKnowledgeNoteSubpath
-      ? new ManageAIKnowledgeNoteUseCase(
-          providerConfigRepository,
-          knowledgeNoteGenerationPort,
-          dependencies.knowledgeNotePersistence,
-          dependencies.getKnowledgeNoteSubpath,
-          new AIKnowledgeNotePathResolver(),
-          dependencies.executionLogPort,
-        )
-      : null;
+  const knowledgeNoteUseCase = dependencies.knowledgeNotePersistence
+    ? new ManageAIKnowledgeNoteUseCase(
+        providerConfigRepository,
+        knowledgeNoteGenerationPort,
+        dependencies.knowledgeNotePersistence,
+        new AIKnowledgeNotePathResolver(),
+        dependencies.executionLogPort,
+      )
+    : null;
 
   // --- Knowledge query bundle (requires all 4 dependencies) ---
 
@@ -173,28 +191,35 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     dependencies.knowledgeQueryPort
       ? (() => {
           knowledgeIndexServices = {
-            syncResources: new SyncKnowledgeResourcesUseCase(
+            syncResources: new SyncKnowledgeNotesUseCase(
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
+              dependencies.knowledgeIndexStatusPort,
             ),
             reindexAll: new ReindexAllKnowledgeUseCase(
               dependencies.knowledgeSourcePort!,
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
+              dependencies.knowledgeIndexStatusPort,
             ),
             syncRelevant: new SyncRelevantKnowledgeUseCase(
               dependencies.knowledgeSourcePort!,
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
+              dependencies.knowledgeIndexStatusPort,
             ),
-            syncById: new SyncResourceByIdUseCase(
+            syncById: new SyncNoteByIdUseCase(
               dependencies.knowledgeSourcePort!,
               dependencies.knowledgeIndexRepository,
               dependencies.knowledgeIngestionPort,
               dependencies.executionLogPort,
+              dependencies.knowledgeIndexStatusPort,
+            ),
+            removeById: new RemoveKnowledgeIndexNoteUseCase(
+              dependencies.knowledgeIndexRepository,
             ),
           };
 
@@ -267,6 +292,17 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
         : ADVANCED_AI_REASON,
   };
 
+  // Residual 322/324: fail-closed capability projection shared with agent start gate.
+  // Workflow adapter offers are explicit (not silent engine.*) when remote agent runtime is present.
+  const capabilityOffers = [
+    ...buildAgentRuntimeCapabilityOffers({
+      knowledgeNoteUseCase,
+      automationToolExecutorPort: dependencies.automationToolExecutorPort,
+    }),
+    ...(workflowAdapter ? workflowAdapter.toCapabilityOffers('any') : []),
+  ];
+  const capabilityResolver = new CapabilityResolver(capabilityOffers);
+
   // --- Assemble services ---
 
   const services: AIModuleServices = {
@@ -283,7 +319,7 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
     analyticsQueryService: createAnalyticsRuntimeService(analyticsQueryUseCase, capabilities),
     evaluationReportService: createEvaluationRuntimeService(evaluationReportUseCase),
     agentRuntimeService: createAgentRuntimeService(
-      dependencies.agentRuntimePort,
+      agentRuntimePort,
       dependencies.automationToolExecutorPort,
       dependencies.providerConfigRepository,
       dependencies.knowledgeSourcePort,
@@ -291,8 +327,8 @@ export function createRemoteAIServiceRuntime(dependencies: AIModuleDependencies)
       knowledgeQueryUseCases?.query,
       knowledgeNoteUseCase,
       dependencies.executionLogPort,
+      capabilityResolver,
     ),
   };
-
-  return { services, capabilities, runtimeContributions: [] };
+  return { services, capabilities, runtimeContributions: [], turnEngine, readonlyTurnEngine, workflowAdapter, proposalKernel, capabilityResolver, modelGateway, assistantFacade };
 }

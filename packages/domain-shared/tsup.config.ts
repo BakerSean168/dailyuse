@@ -17,20 +17,8 @@ export default createTsupConfig({
   entry: [
     // 根入口
     'src/index.ts',
-    // 模块子路径入口
-    'src/account/index.ts',
-    'src/ai/index.ts',
-    'src/authentication/index.ts',
-    'src/editor/index.ts',
-    'src/goal/index.ts',
-    'src/notification/index.ts',
-    'src/reminder/index.ts',
-    'src/repository/index.ts',
-    'src/schedule/index.ts',
-    'src/setting/index.ts',
+    // 当前仅保留 shared 子路径（其余模块入口已收缩）
     'src/shared/index.ts',
-    'src/sync/index.ts',
-    'src/task/index.ts'
   ],
   external: ['@dailyuse/contracts', '@dailyuse/utils'],
   extraOptions: {

@@ -37,20 +37,65 @@
         </Button>
       </div>
 
-      <!-- Export/Import All User Data -->
-      <div v-if="dataPortabilityAvailable" class="grid grid-cols-1 gap-3 @2xl/panel:grid-cols-2">
-        <Button variant="outline" class="w-full" :disabled="exportingData" @click="emit('exportAllData')">
-          <Download class="h-4 w-4 mr-2" />
-          {{ exportingData ? 'Exporting...' : 'Export All Data' }}
-        </Button>
+      <!-- Importable business-data backup. This is not a server-data disclosure export. -->
+      <div v-if="dataPortabilityAvailable" class="space-y-2">
+        <p class="text-xs leading-5 text-muted-foreground" data-testid="portable-data-scope">
+          {{ t('setting.advanced.portableDataDescription') }}
+        </p>
+        <div class="grid grid-cols-1 gap-3 @2xl/panel:grid-cols-2">
+          <Button
+            variant="outline"
+            class="w-full"
+            :disabled="exportingData"
+            @click="emit('exportAllData')"
+          >
+            <Download class="h-4 w-4 mr-2" />
+            {{
+              exportingData
+                ? t('setting.advanced.exportingPortableData')
+                : t('setting.advanced.exportPortableData')
+            }}
+          </Button>
 
-        <Button variant="outline" class="w-full" :disabled="importingData" @click="emit('importAllData')">
-          <Upload class="h-4 w-4 mr-2" />
-          {{ importingData ? 'Importing...' : 'Import All Data' }}
+          <Button
+            variant="outline"
+            class="w-full"
+            :disabled="importingData"
+            @click="emit('importAllData')"
+          >
+            <Upload class="h-4 w-4 mr-2" />
+            {{
+              importingData
+                ? t('setting.advanced.importingPortableData')
+                : t('setting.advanced.importPortableData')
+            }}
+          </Button>
+        </div>
+      </div>
+
+      <!-- Server-only, read-only disclosure. It has no import route. -->
+      <div v-if="serverDataDisclosureAvailable" class="space-y-2">
+        <p class="text-xs leading-5 text-muted-foreground" data-testid="server-data-scope">
+          {{ t('setting.advanced.serverDataDisclosureDescription') }}
+        </p>
+        <Button
+          variant="outline"
+          class="w-full"
+          :disabled="exportingServerDataDisclosure"
+          @click="emit('exportServerDataDisclosure')"
+        >
+          <Download class="h-4 w-4 mr-2" />
+          {{
+            exportingServerDataDisclosure
+              ? t('setting.advanced.exportingServerDataDisclosure')
+              : t('setting.advanced.exportServerDataDisclosure')
+          }}
         </Button>
       </div>
 
-      <p v-if="dataPortabilityResult" class="text-xs text-muted-foreground">{{ dataPortabilityResult }}</p>
+      <p v-if="dataPortabilityResult" class="text-xs text-muted-foreground">
+        {{ dataPortabilityResult }}
+      </p>
 
       <!-- Backup & Restore -->
       <div class="grid grid-cols-1 gap-3 @2xl/panel:grid-cols-2">
@@ -172,6 +217,8 @@ interface Props {
   exportingData?: boolean;
   importingData?: boolean;
   dataPortabilityAvailable?: boolean;
+  serverDataDisclosureAvailable?: boolean;
+  exportingServerDataDisclosure?: boolean;
   dataPortabilityResult?: string | null;
 }
 
@@ -182,6 +229,7 @@ const emit = defineEmits<{
   exportCSV: [];
   import: [];
   exportAllData: [];
+  exportServerDataDisclosure: [];
   importAllData: [];
   createBackup: [];
   restoreBackup: [key: string];
@@ -189,6 +237,10 @@ const emit = defineEmits<{
   showVersionHistory: [];
 }>();
 
+/**
+ * Soft residual 1237: setting formatTime — relative i18n (+days) + toLocaleString fallback.
+ * setting.time.* keys; includes daysAgo band; not dashboard.time.* short m/d path (no force-merge).
+ */
 function formatTime(timestamp: number): string {
   const date = new Date(timestamp);
   const now = new Date();

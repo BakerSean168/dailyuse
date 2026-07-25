@@ -2,25 +2,31 @@
  * Trigger Config Value Object
  */
 
-import type { TriggerType } from './trigger-type';
+import { z } from 'zod';
+import { TriggerType } from './trigger-type';
 
-// ============ Sub-config Interfaces ============
+// Residual 735: trigger config dual bodies retired — OpenAPI + transport use
+// TriggerConfigSchema (semantic types are z.infer aliases).
 
-/** Fixed-time trigger configuration. */
-export interface FixedTimeTrigger {
-  /** Time in "HH:mm" format (e.g. "09:00") */
-  time: string;
-  /** Timezone (optional, defaults to user timezone) */
-  timezone: string | null;
-}
+export const FixedTimeTriggerSchema = z.object({
+  time: z.string(),
+  timezone: z.string().nullable(),
+});
 
-/** Interval trigger configuration. */
-export interface IntervalTrigger {
-  /** Every N minutes */
-  minutes: number;
-  /** Start time (epoch ms, optional) */
-  startTime: number | null;
-}
+export const IntervalTriggerSchema = z.object({
+  minutes: z.number(),
+  startTime: z.number().nullable(),
+});
+
+export const TriggerConfigSchema = z.object({
+  type: z.enum(TriggerType),
+  fixedTime: FixedTimeTriggerSchema.nullable(),
+  interval: IntervalTriggerSchema.nullable(),
+});
+
+export type FixedTimeTrigger = z.infer<typeof FixedTimeTriggerSchema>;
+export type IntervalTrigger = z.infer<typeof IntervalTriggerSchema>;
+export type TriggerConfigDTO = z.infer<typeof TriggerConfigSchema>;
 
 // ============ Interface Definitions ============
 
@@ -38,15 +44,4 @@ export interface ITriggerConfig {
   ): ITriggerConfig;
 
   // DTO conversion methods
-}
-
-// ============ DTO Definitions ============
-
-/**
- * Trigger Config DTO
- */
-export interface TriggerConfigDTO {
-  type: TriggerType;
-  fixedTime: FixedTimeTrigger | null;
-  interval: IntervalTrigger | null;
 }

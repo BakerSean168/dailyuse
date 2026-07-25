@@ -11,10 +11,10 @@ from collections import Counter
 from ai_service.schemas import (
     ChatMessage,
     IndexedKnowledgeChunk,
-    IndexedKnowledgeResource,
+    IndexedKnowledgeNote,
     KnowledgeCitation,
+    KnowledgeNoteDocument,
     KnowledgeQueryResponse,
-    KnowledgeResourceDocument,
     ProviderConfig,
 )
 from ai_service.services.chat_service import ChatService
@@ -105,18 +105,18 @@ def _matching_query_embedding(
 
 
 class KnowledgeIndexingService:
-    """Chunk repository resources into a stable retrieval representation."""
+    """Chunk knowledge notes into a stable retrieval representation."""
 
     def __init__(self, chat_service: ChatService | None = None) -> None:
         self._chat_service = chat_service
 
-    def index_resource(
+    def index_note(
         self,
-        resource: KnowledgeResourceDocument,
+        resource: KnowledgeNoteDocument,
         *,
         max_chunk_chars: int = 1200,
         overlap_chars: int = 150,
-    ) -> IndexedKnowledgeResource:
+    ) -> IndexedKnowledgeNote:
         normalized_content = resource.content.strip()
         content_hash = hashlib.sha256(normalized_content.encode("utf-8")).hexdigest()
         keywords = self.extract_keywords(normalized_content)
@@ -127,7 +127,7 @@ class KnowledgeIndexingService:
             overlap_chars=overlap_chars,
         )
 
-        return IndexedKnowledgeResource(
+        return IndexedKnowledgeNote(
             identity_id=resource.identity_id,
             repository_id=resource.repository_id,
             resource_id=resource.resource_id,
@@ -154,15 +154,15 @@ class KnowledgeIndexingService:
             metadata=resource.metadata,
         )
 
-    async def index_resource_async(
+    async def index_note_async(
         self,
-        resource: KnowledgeResourceDocument,
+        resource: KnowledgeNoteDocument,
         *,
         provider_config: ProviderConfig | None = None,
         max_chunk_chars: int = 1200,
         overlap_chars: int = 150,
-    ) -> IndexedKnowledgeResource:
-        indexed_resource = self.index_resource(
+    ) -> IndexedKnowledgeNote:
+        indexed_resource = self.index_note(
             resource,
             max_chunk_chars=max_chunk_chars,
             overlap_chars=overlap_chars,
@@ -311,10 +311,10 @@ class KnowledgeIndexingService:
 
     async def _apply_provider_embeddings(
         self,
-        indexed_resource: IndexedKnowledgeResource,
+        indexed_resource: IndexedKnowledgeNote,
         provider_config: ProviderConfig,
         source_content: str,
-    ) -> IndexedKnowledgeResource:
+    ) -> IndexedKnowledgeNote:
         assert self._chat_service is not None
 
         embedding_inputs = [
@@ -385,7 +385,7 @@ class KnowledgeIndexingService:
 
     def _build_resource_embedding_text(
         self,
-        resource: IndexedKnowledgeResource,
+        resource: IndexedKnowledgeNote,
         source_content: str,
     ) -> str:
         return " ".join(
@@ -442,7 +442,7 @@ class KnowledgeQueryService:
         self,
         *,
         question: str,
-        indexed_resources: list[IndexedKnowledgeResource],
+        indexed_resources: list[IndexedKnowledgeNote],
         provider_config: ProviderConfig,
         max_citations: int = 3,
     ) -> KnowledgeQueryResponse:
@@ -456,7 +456,7 @@ class KnowledgeQueryService:
             return KnowledgeQueryResponse(
                 answer=(
                     "I could not find enough relevant knowledge in the "
-                    "provided repository resources."
+                    "provided knowledge notes."
                 ),
                 citations=[],
                 usage=None,
@@ -510,7 +510,7 @@ class KnowledgeQueryService:
         self,
         *,
         question: str,
-        indexed_resources: list[IndexedKnowledgeResource],
+        indexed_resources: list[IndexedKnowledgeNote],
         provider_config: ProviderConfig,
         max_citations: int = 3,
     ) -> list[KnowledgeCitation]:
@@ -526,7 +526,7 @@ class KnowledgeQueryService:
     async def _select_citations(
         self,
         question: str,
-        indexed_resources: list[IndexedKnowledgeResource],
+        indexed_resources: list[IndexedKnowledgeNote],
         *,
         provider_config: ProviderConfig,
         max_citations: int,

@@ -79,8 +79,8 @@ describe('AIAgentRuntimeHttpAdapter', () => {
       approvedActions: [{ tool: 'create_goal', index: 0 }],
     };
 
-    await expect(adapter.startAgentRun(request)).resolves.toEqual(runResult);
-    await expect(adapter.resumeAgentRun('run 1/2', payload)).resolves.toEqual(runResult);
+    await expect(adapter.startAgentRun(request)).resolves.toEqual(ok(runResult));
+    await expect(adapter.resumeAgentRun('run 1/2', payload)).resolves.toEqual(ok(runResult));
     await expect(
       adapter.listAgentRuns({
         conversationId: 'conversation-1',
@@ -88,9 +88,9 @@ describe('AIAgentRuntimeHttpAdapter', () => {
         activeOnly: true,
         limit: 5,
       }),
-    ).resolves.toEqual(runs);
-    await expect(adapter.getAgentRun('run 1/2')).resolves.toEqual(runResult);
-    await expect(adapter.getAgentEvents('run 1/2')).resolves.toEqual(events);
+    ).resolves.toEqual(ok(runs));
+    await expect(adapter.getAgentRun('run 1/2')).resolves.toEqual(ok(runResult));
+    await expect(adapter.getAgentEvents('run 1/2')).resolves.toEqual(ok(events));
 
     expect(post).toHaveBeenNthCalledWith(1, '/ai/agents/runs', request);
     expect(post).toHaveBeenNthCalledWith(

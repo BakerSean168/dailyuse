@@ -200,7 +200,6 @@ import TaskDAGVisualization from '../components/dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
 import type {
-  TaskForDAGViewModel,
   TaskRelationFilter,
   TaskStatusFilter,
   TaskTemplateViewModel,
@@ -215,7 +214,7 @@ import {
 import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { buildTaskGraphData } from '../types/task-dag.types';
+import { buildTaskGraphData, type TaskForDAG } from '../types/task-dag.types';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -562,7 +561,7 @@ function handleLocateGraph(templateId: string) {
   viewMode.value = 'graph';
 }
 
-async function handleGraphNodeClick(task: TaskForDAGViewModel) {
+async function handleGraphNodeClick(task: TaskForDAG) {
   currentStatus.value = (task.status as TaskStatusFilter) || 'ACTIVE';
   currentRelation.value = 'all';
   highlightedTemplateId.value = task.id;

@@ -8,10 +8,6 @@ import { error, ok } from '@dailyuse/contracts/result';
 import type { INotificationPreferenceRepository } from '../../../domain/repositories';
 import { toNotificationPreferenceClientDTO } from './notification-dto-converters';
 
-type UpdateNotificationPreferenceInput = UpdateNotificationPreferenceReq & {
-  identityId?: string;
-};
-
 const CHANNEL_MAP = {
   inApp: NotificationChannelType.InApp,
   email: NotificationChannelType.Email,
@@ -42,14 +38,18 @@ function asChannelFlags(value: unknown): Record<string, unknown> | undefined {
 export class UpdateNotificationPreferenceUseCase {
   constructor(private readonly preferenceRepository: INotificationPreferenceRepository) {}
 
+  /**
+   * identityId is required at the call boundary (residual 194) — never optional dual-track.
+   */
   async execute(
-    input: UpdateNotificationPreferenceInput,
+    identityId: string,
+    input: UpdateNotificationPreferenceReq,
   ): Promise<Result<NotificationPreferenceClientDTO>> {
-    if (!input.identityId) {
+    if (!identityId) {
       return error('BAD_REQUEST', 'identityId is required');
     }
 
-    const preference = await this.preferenceRepository.getOrCreate(input.identityId);
+    const preference = await this.preferenceRepository.getOrCreate(identityId);
     const disabled = input.enabled === false;
     const categories = input.categories ?? {};
     const categoryEntries = Object.entries(categories);

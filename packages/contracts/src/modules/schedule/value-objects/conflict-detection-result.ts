@@ -8,19 +8,14 @@
  * @since Story 9.1 (EPIC-SCHEDULE-001)
  */
 
+import { z } from 'zod';
+import { brandedId } from '../../../primitives';
 import type { ScheduleId } from '../../../primitives';
+import { ConflictSeverity } from './conflict-severity';
 
 /**
  * Result of conflict detection analysis
  */
-export const ConflictSeverity = {
-  Minor: 'Minor',
-  Moderate: 'Moderate',
-  Severe: 'Severe',
-} as const;
-
-export type ConflictSeverity = (typeof ConflictSeverity)[keyof typeof ConflictSeverity];
-
 export const ConflictSuggestionType = {
   MoveEarlier: 'MoveEarlier',
   MoveLater: 'MoveLater',
@@ -30,84 +25,41 @@ export const ConflictSuggestionType = {
 export type ConflictSuggestionType =
   (typeof ConflictSuggestionType)[keyof typeof ConflictSuggestionType];
 
-export interface ConflictDetectionResult {
-  /**
-   * Whether any conflicts were detected
-   */
-  readonly hasConflict: boolean;
+// Residual 725: conflict detection dual bodies retired — OpenAPI + transport use
+// ConflictDetectionResultSchema / ConflictDetailSchema / ConflictSuggestionSchema
+// (semantic types are z.infer aliases).
+export const ConflictDetailSchema = z.object({
+  scheduleId: brandedId<ScheduleId>(),
+  scheduleTitle: z.string(),
+  overlapStart: z.number(),
+  overlapEnd: z.number(),
+  overlapDuration: z.number(),
+  severity: z
+    .enum([
+      ConflictSeverity.Minor,
+      ConflictSeverity.Moderate,
+      ConflictSeverity.Severe,
+    ])
+    .optional(),
+});
 
-  /**
-   * Array of detected conflicts with details
-   */
-  readonly conflicts: readonly ConflictDetail[];
+export const ConflictSuggestionSchema = z.object({
+  type: z.enum([
+    ConflictSuggestionType.MoveEarlier,
+    ConflictSuggestionType.MoveLater,
+    ConflictSuggestionType.Shorten,
+  ]),
+  newStartTime: z.number(),
+  newEndTime: z.number(),
+  description: z.string().optional(),
+});
 
-  /**
-   * Array of suggested resolutions to avoid conflicts
-   */
-  readonly suggestions: readonly ConflictSuggestion[];
-}
+export const ConflictDetectionResultSchema = z.object({
+  hasConflict: z.boolean(),
+  conflicts: z.array(ConflictDetailSchema),
+  suggestions: z.array(ConflictSuggestionSchema),
+});
 
-/**
- * Details of a single conflict between two schedules
- */
-export interface ConflictDetail {
-  /**
-   * UUID of the conflicting schedule
-   */
-  readonly scheduleId: ScheduleId;
-
-  /**
-   * Title of the conflicting schedule
-   */
-  readonly scheduleTitle: string;
-
-  /**
-   * Start time of the overlap period (Unix timestamp in milliseconds)
-   */
-  readonly overlapStart: number;
-
-  /**
-   * End time of the overlap period (Unix timestamp in milliseconds)
-   */
-  readonly overlapEnd: number;
-
-  /**
-   * Duration of the overlap in minutes
-   */
-  readonly overlapDuration: number;
-
-  /**
-   * Severity of the conflict based on overlap duration
-   * @future Story TBD - Will integrate with ConflictSeverity enum
-   */
-  readonly severity?: ConflictSeverity;
-}
-
-/**
- * Suggested resolution to avoid schedule conflicts
- */
-export interface ConflictSuggestion {
-  /**
-   * Type of suggested resolution
-   * - move_earlier: Move schedule to before conflicting schedules
-   * - move_later: Move schedule to after conflicting schedules
-   * - shorten: Reduce duration to fit in available gaps
-   */
-  readonly type: ConflictSuggestionType;
-
-  /**
-   * Suggested new start time (Unix timestamp in milliseconds)
-   */
-  readonly newStartTime: number;
-
-  /**
-   * Suggested new end time (Unix timestamp in milliseconds)
-   */
-  readonly newEndTime: number;
-
-  /**
-   * Human-readable description of the suggestion
-   * @example "Move to 2:00 PM - 3:00 PM"
-   */
-  readonly description?: string;
-}
+export type ConflictDetail = z.infer<typeof ConflictDetailSchema>;
+export type ConflictSuggestion = z.infer<typeof ConflictSuggestionSchema>;
+export type ConflictDetectionResult = z.infer<typeof ConflictDetectionResultSchema>;

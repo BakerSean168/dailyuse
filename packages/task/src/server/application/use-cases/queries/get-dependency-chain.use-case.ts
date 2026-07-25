@@ -13,9 +13,12 @@ import { ok } from '@dailyuse/contracts/result';
 export class GetDependencyChainUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}
 
-  async execute(taskId: string): Promise<Result<DependencyChainClientDTO>> {
-    const allPredecessors = await this.dependencyRepository.findAllPredecessorIds(taskId);
-    const allSuccessors = await this.dependencyRepository.findAllSuccessorIds(taskId);
+  async execute(taskId: string, identityId: string): Promise<Result<DependencyChainClientDTO>> {
+    const allPredecessors = await this.dependencyRepository.findAllPredecessorIds(
+      taskId,
+      identityId,
+    );
+    const allSuccessors = await this.dependencyRepository.findAllSuccessorIds(taskId, identityId);
 
     const chain: DependencyChainClientDTO = {
       taskId: taskId as TaskTemplateId,

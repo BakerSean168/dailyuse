@@ -7,8 +7,8 @@ import type { Publisher } from '@dailyuse/utils/domain';
 import { deleteSelection, replaceSelection } from './shared-projection';
 
 export interface GoalProjector {
-  upsertGoal(goalId: string, identityId?: string): Promise<void>;
-  deleteGoal(goalId: string, identityId?: string): Promise<void>;
+  upsertGoal(goalId: string, identityId: string): Promise<void>;
+  deleteGoal(goalId: string, identityId: string): Promise<void>;
 }
 
 export interface CreateGoalProjectorDeps {

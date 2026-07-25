@@ -5,6 +5,9 @@ import type { AuthIdentity } from '../aggregates/auth-identity';
 /**
  * Repository interface for the AuthIdentity aggregate root.
  * Handles persistence and querying of AuthIdentity.
+ *
+ * Phone login is not a first-party surface; PhoneIdentifier may still exist on
+ * portable identity data, but phone lookup methods are not part of the runtime port.
  */
 export interface IAuthIdentityRepository {
   /**
@@ -27,11 +30,6 @@ export interface IAuthIdentityRepository {
   findByEmail(email: string): Promise<AuthIdentity | null>;
 
   /**
-   * Finds an identity by phone number (for phone login / registration uniqueness check).
-   */
-  findByPhone(phoneNumber: string): Promise<AuthIdentity | null>;
-
-  /**
    * Finds an identity by OAuth info (for third-party login).
    * Matches on provider and openId (sub).
    */
@@ -41,11 +39,6 @@ export interface IAuthIdentityRepository {
    * Checks whether an email already exists (optimized, returns boolean only).
    */
   existsByEmail(email: string): Promise<boolean>;
-
-  /**
-   * Checks whether a phone number already exists.
-   */
-  existsByPhone(phoneNumber: string): Promise<boolean>;
 
   /**
    * Deletes an identity (account deactivation).

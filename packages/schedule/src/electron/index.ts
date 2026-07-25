@@ -5,7 +5,12 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import { ok } from '@dailyuse/contracts/result';
+import {
+  ScheduleChannels,
+  type IElectronModule,
+  type IElectronModuleContext,
+} from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { ScheduleTaskSourceExecutor } from '../server/application';
 import {
@@ -22,39 +27,7 @@ export { PowerSyncScheduleTaskRepository } from '../server/infrastructure';
 
 const logger = createLogger('ScheduleElectron');
 
-const EventCh = {
-  LIST: 'schedule:list',
-  LIST_BY_DATE_RANGE: 'schedule:list-by-date-range',
-  GET: 'schedule:get',
-  CREATE: 'schedule:create',
-  UPDATE: 'schedule:update',
-  DELETE: 'schedule:delete',
-  COMPLETE: 'schedule:complete',
-  CANCEL: 'schedule:cancel',
-  RESCHEDULE: 'schedule:reschedule',
-  GET_CONFLICTS: 'schedule:get-conflicts',
-  DETECT_CONFLICTS: 'schedule:detect-conflicts',
-  CREATE_WITH_CONFLICT_DETECTION: 'schedule:create-with-conflict-detection',
-  RESOLVE_CONFLICT: 'schedule:resolve-conflict',
-} as const;
-
-const TaskCh = {
-  CREATE: 'schedule:task:create',
-  CREATE_BATCH: 'schedule:task:create-batch',
-  LIST: 'schedule:task:list',
-  GET_BY_ID: 'schedule:task:get-by-id',
-  GET_DUE: 'schedule:task:get-due',
-  GET_BY_SOURCE: 'schedule:task:get-by-source',
-  PAUSE: 'schedule:task:pause',
-  RESUME: 'schedule:task:resume',
-  COMPLETE: 'schedule:task:complete',
-  CANCEL: 'schedule:task:cancel',
-  DELETE: 'schedule:task:delete',
-  DELETE_BATCH: 'schedule:task:delete-batch',
-  UPDATE_METADATA: 'schedule:task:update-metadata',
-} as const;
-
-const allChannels = [...Object.values(EventCh), ...Object.values(TaskCh)];
+const allChannels = Object.values(ScheduleChannels);
 let activeScheduleModule: ScheduleModuleInstance | null = null;
 let runtimeStarted = false;
 
@@ -127,7 +100,7 @@ export function createScheduleElectronModule(
       const eventController = new ScheduleEventController(scheduleModule.eventApi);
       const taskController = new ScheduleController(scheduleModule.api);
 
-      ipcMain.handle(EventCh.LIST, async () =>
+      ipcMain.handle(ScheduleChannels.LIST, async () =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           eventController.getByTimeRange(
             { startTime: 0, endTime: Number.MAX_SAFE_INTEGER },
@@ -135,57 +108,60 @@ export function createScheduleElectronModule(
           ),
         ),
       );
-      ipcMain.handle(EventCh.LIST_BY_DATE_RANGE, async (_event, params) =>
+      ipcMain.handle(ScheduleChannels.LIST_BY_DATE_RANGE, async (_event, params) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           eventController.getByTimeRange(params ?? {}, requestContext),
         ),
       );
-      ipcMain.handle(EventCh.GET, (_event, id) => eventController.get(id));
-      ipcMain.handle(EventCh.CREATE, async (_event, dto) =>
+      ipcMain.handle(ScheduleChannels.GET, async (_event, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          eventController.get(id, requestContext),
+        ),
+      );
+      ipcMain.handle(ScheduleChannels.CREATE, async (_event, dto) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           eventController.create(dto, requestContext),
         ),
       );
-      ipcMain.handle(EventCh.UPDATE, async (_event, id, dto) =>
-        withAuthenticatedValue(ctx, async () => eventController.update(id, dto)),
+      ipcMain.handle(ScheduleChannels.UPDATE, async (_event, id, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          eventController.update(id, dto, requestContext),
+        ),
       );
-      ipcMain.handle(EventCh.DELETE, async (_event, id) =>
-        withAuthenticatedValue(ctx, async () => eventController.delete(id)),
+      ipcMain.handle(ScheduleChannels.DELETE, async (_event, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await eventController.delete(id, requestContext);
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
-      ipcMain.handle(EventCh.COMPLETE, () => {
-        throw new Error('schedule:complete is not supported for schedule events');
-      });
-      ipcMain.handle(EventCh.CANCEL, () => {
-        throw new Error('schedule:cancel is not supported for schedule events');
-      });
-      ipcMain.handle(EventCh.RESCHEDULE, () => {
-        throw new Error('schedule:reschedule is not supported for schedule events');
-      });
-      ipcMain.handle(EventCh.GET_CONFLICTS, async (_event, id) =>
-        withAuthenticatedValue(ctx, async () => eventController.getConflicts(id)),
+      ipcMain.handle(ScheduleChannels.GET_CONFLICTS, async (_event, id) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          eventController.getConflicts(id, requestContext),
+        ),
       );
-      ipcMain.handle(EventCh.DETECT_CONFLICTS, async (_event, params) =>
+      ipcMain.handle(ScheduleChannels.DETECT_CONFLICTS, async (_event, params) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           eventController.detectConflicts(params, requestContext),
         ),
       );
-      ipcMain.handle(EventCh.CREATE_WITH_CONFLICT_DETECTION, async (_event, request) =>
+      ipcMain.handle(ScheduleChannels.CREATE_WITH_CONFLICT_DETECTION, async (_event, request) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           eventController.createWithConflictDetection(request, requestContext),
         ),
       );
-      ipcMain.handle(EventCh.RESOLVE_CONFLICT, async (_event, scheduleId, request) =>
-        withAuthenticatedValue(ctx, async () =>
-          eventController.resolveConflict(scheduleId, request),
+      ipcMain.handle(ScheduleChannels.RESOLVE_CONFLICT, async (_event, scheduleId, request) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          eventController.resolveConflict(scheduleId, request, requestContext),
         ),
       );
 
-      ipcMain.handle(TaskCh.CREATE, async (_event, request) =>
+      ipcMain.handle(ScheduleChannels.TASK_CREATE, async (_event, request) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           taskController.createTask(request, requestContext),
         ),
       );
-      ipcMain.handle(TaskCh.CREATE_BATCH, async (_event, tasks) =>
+      ipcMain.handle(ScheduleChannels.TASK_CREATE_BATCH, async (_event, tasks) =>
         withAuthenticatedValue(ctx, async (requestContext) => {
           const createdTasks: unknown[] = [];
           for (const task of tasks) {
@@ -198,45 +174,61 @@ export function createScheduleElectronModule(
           return createdTasks;
         }),
       );
-      ipcMain.handle(TaskCh.LIST, async () =>
+      ipcMain.handle(ScheduleChannels.TASK_LIST, async () =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           taskController.listTasks({}, requestContext),
         ),
       );
-      ipcMain.handle(TaskCh.GET_BY_ID, async (_event, taskId) =>
-        withAuthenticatedValue(ctx, async () => taskController.getTask(taskId)),
+      ipcMain.handle(ScheduleChannels.TASK_GET_BY_ID, async (_event, taskId) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          taskController.getTask(taskId, requestContext),
+        ),
       );
-      ipcMain.handle(TaskCh.GET_DUE, async () =>
+      ipcMain.handle(ScheduleChannels.TASK_GET_DUE, async () =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           taskController.getDueTasks(requestContext),
         ),
       );
-      ipcMain.handle(TaskCh.GET_BY_SOURCE, async (_event, sourceModule, sourceEntityId) =>
+      ipcMain.handle(ScheduleChannels.TASK_GET_BY_SOURCE, async (_event, sourceModule, sourceEntityId) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           taskController.listTasks({ sourceModule, sourceEntityId }, requestContext),
         ),
       );
-      ipcMain.handle(TaskCh.PAUSE, async (_event, taskId) =>
-        withAuthenticatedValue(ctx, async () => taskController.pauseTask(taskId)),
+      ipcMain.handle(ScheduleChannels.TASK_PAUSE, async (_event, taskId) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          taskController.pauseTask(taskId, requestContext),
+        ),
       );
-      ipcMain.handle(TaskCh.RESUME, async (_event, taskId) =>
-        withAuthenticatedValue(ctx, async () => taskController.resumeTask(taskId)),
+      ipcMain.handle(ScheduleChannels.TASK_RESUME, async (_event, taskId) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          taskController.resumeTask(taskId, requestContext),
+        ),
       );
-      ipcMain.handle(TaskCh.COMPLETE, async (_event, taskId) =>
-        withAuthenticatedValue(ctx, async () => taskController.completeTask(taskId)),
+      ipcMain.handle(ScheduleChannels.TASK_COMPLETE, async (_event, taskId) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          taskController.completeTask(taskId, requestContext),
+        ),
       );
-      ipcMain.handle(TaskCh.CANCEL, async (_event, taskId, reason) =>
-        withAuthenticatedValue(ctx, async () => taskController.cancelTask(taskId, { reason })),
+      ipcMain.handle(ScheduleChannels.TASK_CANCEL, async (_event, taskId, reason) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          taskController.cancelTask(taskId, { reason }, requestContext),
+        ),
       );
-      ipcMain.handle(TaskCh.DELETE, async (_event, taskId) =>
-        withAuthenticatedValue(ctx, async () => taskController.deleteTask(taskId)),
+      ipcMain.handle(ScheduleChannels.TASK_DELETE, async (_event, taskId) =>
+        withAuthenticatedValue(ctx, async (requestContext) => {
+          const result = await taskController.deleteTask(taskId, requestContext);
+          if (!result.ok) return result;
+          return ok(null);
+        }),
       );
-      ipcMain.handle(TaskCh.DELETE_BATCH, async (_event, taskIds) =>
-        withAuthenticatedValue(ctx, async () => taskController.batchDeleteTasks({ taskIds })),
+      ipcMain.handle(ScheduleChannels.TASK_DELETE_BATCH, async (_event, taskIds) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          taskController.batchDeleteTasks({ taskIds }, requestContext),
+        ),
       );
-      ipcMain.handle(TaskCh.UPDATE_METADATA, async (_event, taskId, metadata) =>
-        withAuthenticatedValue(ctx, async () =>
-          taskController.updateTaskMetadata(taskId, metadata),
+      ipcMain.handle(ScheduleChannels.TASK_UPDATE_METADATA, async (_event, taskId, metadata) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          taskController.updateTaskMetadata(taskId, metadata, requestContext),
         ),
       );
 

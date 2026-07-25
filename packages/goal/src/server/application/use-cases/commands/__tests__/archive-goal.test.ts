@@ -41,16 +41,16 @@ describe('ArchiveGoalUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     goalRepo = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new ArchiveGoalUseCase(goalRepo, new GoalPolicy());
   });
 
   it('should return NOT_FOUND when goal does not exist', async () => {
-    vi.mocked(goalRepo.findById).mockResolvedValue(null);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeErrorWithCode('NOT_FOUND');
     expect(goalRepo.save).not.toHaveBeenCalled();
@@ -58,16 +58,16 @@ describe('ArchiveGoalUseCase', () => {
 
   it('should reject archiving a completed goal again', async () => {
     const goal = createCompletedGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id)).rejects.toThrow();
+    await expect(useCase.execute(goal.id, 'identity-1')).rejects.toThrow();
   });
 
   it('should archive an active goal', async () => {
     const goal = createTestGoal();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result).toBeOk();
     expect(goal.archivedAt).not.toBeNull();
@@ -77,16 +77,16 @@ describe('ArchiveGoalUseCase', () => {
   it('should throw when goal is already archived', async () => {
     const goal = createCompletedGoal();
     goal.archive();
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id)).rejects.toThrow();
+    await expect(useCase.execute(goal.id, 'identity-1')).rejects.toThrow();
   });
 
   it('should return the goal DTO on success', async () => {
     const goal = createTestGoal('Archive Me');
-    vi.mocked(goalRepo.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepo.findByIdForIdentity).mockResolvedValue(goal);
 
-    const result = await useCase.execute(goal.id);
+    const result = await useCase.execute(goal.id, 'identity-1');
 
     expect(result).toBeOk();
     if (result.ok) {

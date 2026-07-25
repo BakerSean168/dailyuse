@@ -1,24 +1,38 @@
 import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { IAIConversationRepository } from '../../../domain/repositories/i-ai-conversation-repository';
-import { AIConversation } from '../../../domain/aggregates/ai-conversation';
-import type { CreateConversationReq, CreateConversationRes } from '@dailyuse/contracts/ai';
+import { AIConversation as AIConversationServer } from '../../../domain/aggregates/ai-conversation';
+import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
+import { createLogger } from '@dailyuse/utils/logger';
+
+const logger = createLogger('CreateConversationUseCase');
 
 /**
- * Create Conversation Use Case
+ * 创建新对话
  */
 export class CreateConversationUseCase {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(input: CreateConversationReq, cx: ExecutionContext): Promise<Result<CreateConversationRes>> {
-    const conversation = AIConversation.create({
-      identityId: cx.identityId,
-      name: input.name || 'New Conversation',
-    });
+  async execute(cx: ExecutionContext, title?: string): Promise<Result<AIConversationClientDTO>> {
+    try {
+      const conversation = AIConversationServer.create({
+        identityId: cx.identityId,
+        name: title ?? 'New Chat',
+      });
 
-    await this.conversationRepository.save(conversation);
+      await this.conversationRepository.save(conversation);
 
-    return ok(conversation.toClientDTO());
+      logger.info('Conversation created', {
+        id: conversation.id,
+        identityId: cx.identityId,
+        name: conversation.name,
+      });
+
+      return ok(conversation.toClientDTO());
+    } catch (err) {
+      logger.error('Failed to create conversation', { error: err, identityId: cx.identityId, title });
+      return error('INTERNAL_ERROR', err instanceof Error ? err.message : 'Failed to create conversation');
+    }
   }
 }

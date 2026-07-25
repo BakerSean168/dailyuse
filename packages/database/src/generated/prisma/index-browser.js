@@ -963,6 +963,102 @@ exports.Prisma.RepositoryStatisticScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.KnowledgeRepositoryConnectionScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  githubUserId: 'githubUserId',
+  githubRepositoryId: 'githubRepositoryId',
+  githubRepositoryFullName: 'githubRepositoryFullName',
+  installationId: 'installationId',
+  defaultBranch: 'defaultBranch',
+  isPrivate: 'isPrivate',
+  status: 'status',
+  lastSyncedCommitSha: 'lastSyncedCommitSha',
+  lastProjectedCommitSha: 'lastProjectedCommitSha',
+  lastErrorCode: 'lastErrorCode',
+  lastErrorMessage: 'lastErrorMessage',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.GithubWebhookDeliveryScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  deliveryId: 'deliveryId',
+  eventName: 'eventName',
+  beforeSha: 'beforeSha',
+  afterSha: 'afterSha',
+  forced: 'forced',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  receivedAt: 'receivedAt',
+  processedAt: 'processedAt'
+};
+
+exports.Prisma.KnowledgeNoteProjectionScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  relativePath: 'relativePath',
+  commitSha: 'commitSha',
+  blobSha: 'blobSha',
+  contentHash: 'contentHash',
+  frontmatter: 'frontmatter',
+  markdownContent: 'markdownContent',
+  indexStatus: 'indexStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.KnowledgeAttachmentProjectionScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  relativePath: 'relativePath',
+  commitSha: 'commitSha',
+  blobSha: 'blobSha',
+  byteSize: 'byteSize',
+  mediaType: 'mediaType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.KnowledgeAttachmentContentCacheScalarFieldEnum = {
+  connectionId: 'connectionId',
+  blobSha: 'blobSha',
+  byteSize: 'byteSize',
+  contentBytes: 'contentBytes',
+  cachedAt: 'cachedAt',
+  expiresAt: 'expiresAt'
+};
+
+exports.Prisma.KnowledgeWriteRequestScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  connectionId: 'connectionId',
+  requestId: 'requestId',
+  requestHash: 'requestHash',
+  relativePath: 'relativePath',
+  status: 'status',
+  commitSha: 'commitSha',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt'
+};
+
+exports.Prisma.KnowledgeRepositoryLeaseScalarFieldEnum = {
+  id: 'id',
+  leaseKey: 'leaseKey',
+  ownerToken: 'ownerToken',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ScheduleScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1288,6 +1384,13 @@ exports.Prisma.ModelName = {
   ResourceReference: 'ResourceReference',
   RepositoryExplorer: 'RepositoryExplorer',
   RepositoryStatistic: 'RepositoryStatistic',
+  KnowledgeRepositoryConnection: 'KnowledgeRepositoryConnection',
+  GithubWebhookDelivery: 'GithubWebhookDelivery',
+  KnowledgeNoteProjection: 'KnowledgeNoteProjection',
+  KnowledgeAttachmentProjection: 'KnowledgeAttachmentProjection',
+  KnowledgeAttachmentContentCache: 'KnowledgeAttachmentContentCache',
+  KnowledgeWriteRequest: 'KnowledgeWriteRequest',
+  KnowledgeRepositoryLease: 'KnowledgeRepositoryLease',
   Schedule: 'Schedule',
   ScheduleJob: 'ScheduleJob',
   ScheduleTask: 'ScheduleTask',

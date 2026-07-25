@@ -22,9 +22,15 @@ export class UpdateGoalUseCase {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(id: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>> {
-    // 1. 查询目标
-    const goal = await this.goalRepository.findById(id, { includeChildren: true });
+  async execute(
+    id: string,
+    identityId: string,
+    input: UpdateGoalReq,
+  ): Promise<Result<UpdateGoalRes>> {
+    // 1. 查询目标（身份隔离）
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, id, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }

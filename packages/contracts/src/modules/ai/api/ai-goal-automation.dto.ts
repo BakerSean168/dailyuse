@@ -2,35 +2,16 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import { GoalCategory } from '../dtos/goal-generation-result.dto';
-import type { GeneratedGoalDraft, KeyResultPreview } from '../dtos/goal-generation-result.dto';
-import { KeyResultValueType } from '../../goal/value-objects/key-result-value-type';
-import { KeyResultCalculationMethod } from '../../goal/value-objects/key-result-calculation-method';
+import {
+  GeneratedGoalDraftSchema,
+  KeyResultPreviewSchema,
+} from '../dtos/goal-generation-result.dto';
+import { TokenUsageSchema } from '../value-objects/token-usage';
 
-export const GeneratedGoalDraftSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  motivation: z.string().optional(),
-  category: z.nativeEnum(GoalCategory),
-  suggestedStartDate: z.number(),
-  suggestedEndDate: z.number(),
-  importance: z.nativeEnum(ImportanceLevel),
-  tags: z.array(z.string()),
-  feasibilityAnalysis: z.string().optional(),
-  aiInsights: z.string().optional(),
-});
-
-export const KeyResultPreviewSchema = z.object({
-  title: z.string(),
-  description: z.string().optional(),
-  valueType: z.enum(Object.values(KeyResultValueType)),
-  calculationMethod: z.enum(Object.values(KeyResultCalculationMethod)),
-  startValue: z.number(),
-  currentValue: z.number(),
-  targetValue: z.number(),
-  unit: z.string(),
-  weight: z.number().int().min(1).max(5),
-});
+// Residual 719: GeneratedGoalDraftSchema / KeyResultPreviewSchema live in
+// goal-generation-result.dto.ts (sole nested draft shapes); re-exported here
+// for automation OpenAPI consumers.
+export { GeneratedGoalDraftSchema, KeyResultPreviewSchema };
 
 export const GoalAutomationTaskTemplatePreviewSchema = z.object({
   name: z.string(),
@@ -38,6 +19,11 @@ export const GoalAutomationTaskTemplatePreviewSchema = z.object({
   importance: z.nativeEnum(ImportanceLevel),
   cadence: z.enum(['daily', 'weekly', 'once']),
 });
+
+// Residual 705: preview dual body retired — schema owns the shape.
+export type GoalAutomationTaskTemplatePreview = z.infer<
+  typeof GoalAutomationTaskTemplatePreviewSchema
+>;
 
 export const GoalAutomationReminderPreviewSchema = z.object({
   title: z.string(),
@@ -47,12 +33,20 @@ export const GoalAutomationReminderPreviewSchema = z.object({
   timeOfDay: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
 });
 
+// Residual 705: preview dual body retired — schema owns the shape.
+export type GoalAutomationReminderPreview = z.infer<
+  typeof GoalAutomationReminderPreviewSchema
+>;
+
 export const GoalAutomationPlanSchema = z.object({
   goal: GeneratedGoalDraftSchema,
   keyResults: z.array(KeyResultPreviewSchema).optional(),
   taskTemplates: z.array(GoalAutomationTaskTemplatePreviewSchema).optional(),
   reminders: z.array(GoalAutomationReminderPreviewSchema).optional(),
 });
+
+// Residual 705: plan dual body retired — OpenAPI + transport use GoalAutomationPlanSchema.
+export type GoalAutomationPlanDTO = z.infer<typeof GoalAutomationPlanSchema>;
 
 export const GenerateGoalAutomationSchema = z.object({
   idea: z.string().trim().min(10, '描述至少需要 10 个字符'),
@@ -68,21 +62,6 @@ export const GenerateGoalAutomationSchema = z.object({
 });
 
 export type GenerateGoalAutomationReq = z.infer<typeof GenerateGoalAutomationSchema>;
-
-export interface GoalAutomationTaskTemplatePreview {
-  name: string;
-  description?: string;
-  importance: ImportanceLevel;
-  cadence: 'daily' | 'weekly' | 'once';
-}
-
-export interface GoalAutomationReminderPreview {
-  title: string;
-  description?: string;
-  importance: ImportanceLevel;
-  cadence: 'daily' | 'weekly' | 'once';
-  timeOfDay?: string;
-}
 
 export const GoalAutomationActionToolSchema = z.enum([
   'create_goal',
@@ -112,24 +91,16 @@ export const GoalAutomationExecutedActionSchema = z.object({
 
 export type GoalAutomationExecutedAction = z.infer<typeof GoalAutomationExecutedActionSchema>;
 
-export interface GoalAutomationPlanDTO {
-  goal: GeneratedGoalDraft;
-  keyResults?: KeyResultPreview[];
-  taskTemplates?: GoalAutomationTaskTemplatePreview[];
-  reminders?: GoalAutomationReminderPreview[];
-}
 
-export interface GenerateGoalAutomationRes {
-  summary: string;
-  requiresConfirmation: boolean;
-  plan: GoalAutomationPlanDTO;
-  actions: GoalAutomationAction[];
-  executedActions?: GoalAutomationExecutedAction[];
-  providerId: AiProviderConfigId;
-  tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  processingTimeMs: number;
-}
+// Residual 787: GenerateGoalAutomationRes dual retired — sole ResSchema + z.infer.
+export const GenerateGoalAutomationResSchema = z.object({
+  summary: z.string(),
+  requiresConfirmation: z.boolean(),
+  plan: GoalAutomationPlanSchema,
+  actions: z.array(GoalAutomationActionSchema),
+  executedActions: z.array(GoalAutomationExecutedActionSchema).optional(),
+  providerId: brandedId<AiProviderConfigId>(),
+  tokenUsage: TokenUsageSchema,
+  processingTimeMs: z.number(),
+});
+export type GenerateGoalAutomationRes = z.infer<typeof GenerateGoalAutomationResSchema>;

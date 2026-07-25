@@ -1,13 +1,14 @@
 /**
  * CategoryPreference Value Object
  * 分类偏好值对象
+ *
+ * Residual 851: CategoryPreferenceDTO dual retired — sole CategoryPreference interface + type alias.
  */
 import type { ImportanceLevel } from '../../../shared/index';
 
-// ============ 共享类型定义 ============
-
 /**
  * 渠道偏好配置
+ * Residual 877: sole channel boolean-flags shape (ChannelConfig is type alias).
  */
 export interface ChannelPreference {
   inApp: boolean;
@@ -16,25 +17,12 @@ export interface ChannelPreference {
   sms: boolean;
 }
 
-// ============ 接口定义 ============
-
-/**
- * CategoryPreference 接口
- */
+// Residual 851: sole CategoryPreference body.
 export interface CategoryPreference {
-  enabled: boolean;
-  channels: ChannelPreference;
-  importance: ImportanceLevel[]; // 高、中、低优先级
-}
-
-// ============ DTO 定义 ============
-
-/**
- * CategoryPreference DTO (传输层)
- */
-export interface CategoryPreferenceDTO {
   enabled: boolean;
   channels: ChannelPreference;
   importance: ImportanceLevel[];
 }
 
+// Residual 851: CategoryPreferenceDTO dual retired — DTO is the CategoryPreference shape.
+export type CategoryPreferenceDTO = CategoryPreference;

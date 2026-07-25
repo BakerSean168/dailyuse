@@ -230,13 +230,14 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     }
   }
 
-  async findById(
+  async findByIdForIdentity(
+    identityId: string,
     id: string,
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate | null> {
     const row = await this.db.getOptional<PowerSyncReminderTemplateRow>(
-      'SELECT * FROM reminder_templates WHERE id = ? LIMIT 1',
-      [id],
+      'SELECT * FROM reminder_templates WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
     );
     if (!row) return null;
     const history = options?.includeHistory
@@ -261,27 +262,28 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
 
   async findByGroupId(
     groupId: string | null,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
-    const sql = `SELECT * FROM reminder_templates WHERE ${
-      groupId === null ? 'reminder_group_id IS NULL' : 'reminder_group_id = ?'
-    }${options?.includeDeleted ? '' : ' AND deleted_at IS NULL'} ORDER BY created_at ASC`;
+    const groupClause = groupId === null ? 'reminder_group_id IS NULL' : 'reminder_group_id = ?'
+    const sql = `SELECT * FROM reminder_templates WHERE ${groupClause} AND identity_id = ?${
+      options?.includeDeleted ? '' : ' AND deleted_at IS NULL'
+    } ORDER BY created_at ASC`;
+    const params = groupId === null ? [identityId] : [groupId, identityId]
     return this.mapRows(
-      await this.db.getAll(sql, groupId === null ? [] : [groupId]),
+      await this.db.getAll(sql, params),
       options?.includeHistory,
       options?.historyLimit,
     );
   }
 
   async findActive(
-    identityId?: string,
+    identityId: string,
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]> {
-    const sql = `SELECT * FROM reminder_templates WHERE self_enabled = 1 AND status = 'Active' AND deleted_at IS NULL${
-      identityId ? ' AND identity_id = ?' : ''
-    } ORDER BY created_at ASC`;
+    const sql = `SELECT * FROM reminder_templates WHERE identity_id = ? AND self_enabled = 1 AND status = 'Active' AND deleted_at IS NULL ORDER BY created_at ASC`;
     return this.mapRows(
-      await this.db.getAll(sql, identityId ? [identityId] : []),
+      await this.db.getAll(sql, [identityId]),
       options?.includeHistory,
       options?.historyLimit,
     );
@@ -301,14 +303,15 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
   }
 
   async findByIds(
+    identityId: string,
     ids: string[],
     options?: { includeHistory?: boolean; historyLimit?: number },
   ): Promise<ReminderTemplate[]> {
     if (ids.length === 0) return [];
     const placeholders = ids.map(() => '?').join(', ');
     const rows = await this.db.getAll<PowerSyncReminderTemplateRow>(
-      `SELECT * FROM reminder_templates WHERE id IN (${placeholders})`,
-      ids,
+      `SELECT * FROM reminder_templates WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
     );
     const templates = await this.mapRows(
       rows,
@@ -319,16 +322,19 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
     return ids.map((id) => map.get(id)).filter((item): item is ReminderTemplate => !!item);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM reminder_templates WHERE id = ?', [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Reminder template not found for the current identity.');
+    }
+    await this.db.execute(
+      'DELETE FROM reminder_templates WHERE id = ? AND identity_id = ?',
+      [id, identityId],
+    );
   }
 
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ id: string }>(
-      'SELECT id FROM reminder_templates WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return !!row;
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async count(

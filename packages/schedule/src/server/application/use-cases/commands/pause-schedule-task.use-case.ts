@@ -27,9 +27,9 @@ export class PauseScheduleTaskUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(id: string): Promise<Result<ScheduleTaskClientDTO>> {
+  async execute(id: string, identityId: string): Promise<Result<ScheduleTaskClientDTO>> {
     // 1. 查询任务
-    const task = await this.scheduleTaskRepository.findById(id);
+    const task = await this.scheduleTaskRepository.findByIdForIdentity(identityId, id);
     if (!task) {
       return error('NOT_FOUND', `Schedule task ${id} not found`);
     }

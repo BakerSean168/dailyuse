@@ -175,6 +175,8 @@ export interface TaskModuleInstance {
 //    组装函数和工厂。
 // ---------------------------------------------------------------------------
 
+// Residual 987 keep-boundary: composition-root local normalize (TaskRuntimeContributionsInput host).
+// Sole API/Electron helper lives in normalize-runtime-contributions.ts (avoids circular import).
 function normalizeRuntimeContributions(
   runtimeContributions?: TaskRuntimeContributionsInput,
 ): readonly TaskModuleRuntimeContribution[] {
@@ -253,7 +255,10 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     // Instance queries
     getTaskInstance: new GetTaskInstanceUseCase(taskInstanceRepository),
     listTaskInstancesByAccount: new ListTaskInstancesByAccountUseCase(taskInstanceRepository),
-    listTaskInstancesByTemplate: new ListTaskInstancesByTemplateUseCase(taskInstanceRepository),
+    listTaskInstancesByTemplate: new ListTaskInstancesByTemplateUseCase(
+      taskInstanceRepository,
+      taskTemplateRepository,
+    ),
     listTaskInstancesByStatus: new ListTaskInstancesByStatusUseCase(taskInstanceRepository),
     getTaskInstancesByDateRange: new GetTaskInstancesByDateRangeUseCase(taskInstanceRepository),
 
@@ -297,41 +302,55 @@ export function createTaskModule(dependencies: TaskModuleDependencies): TaskModu
   // API 门面只是直接暴露已组装好的 use case。
   const api: TaskApplicationPort = {
     createTaskTemplate: (input) => useCases.createTaskTemplate.execute(input),
-    updateTaskTemplate: (id, input) => useCases.updateTaskTemplate.execute(id, input),
-    activateTaskTemplate: (id) => useCases.activateTaskTemplate.execute(id),
-    pauseTaskTemplate: (id) => useCases.pauseTaskTemplate.execute(id),
-    archiveTaskTemplate: (id) => useCases.archiveTaskTemplate.execute(id),
-    deleteTaskTemplate: (id) => useCases.deleteTaskTemplate.execute(id),
-    generateTaskInstances: (id, input) => useCases.generateTaskInstances.execute(id, input),
-    bindTaskToGoal: (id, input) => useCases.bindTaskToGoal.execute(id, input),
-    unbindTaskFromGoal: (id) => useCases.unbindTaskFromGoal.execute(id),
-    getTaskTemplate: (id, includeChildren) => useCases.getTaskTemplate.execute(id, includeChildren),
+    updateTaskTemplate: (id, identityId, input) =>
+      useCases.updateTaskTemplate.execute(id, identityId, input),
+    activateTaskTemplate: (id, identityId) =>
+      useCases.activateTaskTemplate.execute(id, identityId),
+    pauseTaskTemplate: (id, identityId) => useCases.pauseTaskTemplate.execute(id, identityId),
+    archiveTaskTemplate: (id, identityId) =>
+      useCases.archiveTaskTemplate.execute(id, identityId),
+    deleteTaskTemplate: (id, identityId) => useCases.deleteTaskTemplate.execute(id, identityId),
+    generateTaskInstances: (id, identityId, input) =>
+      useCases.generateTaskInstances.execute(id, identityId, input),
+    bindTaskToGoal: (id, identityId, input) =>
+      useCases.bindTaskToGoal.execute(id, identityId, input),
+    unbindTaskFromGoal: (id, identityId) =>
+      useCases.unbindTaskFromGoal.execute(id, identityId),
+    getTaskTemplate: (id, identityId, includeChildren) =>
+      useCases.getTaskTemplate.execute(id, identityId, includeChildren),
     listTaskTemplates: (query) => useCases.listTaskTemplates.execute(query),
     getTaskTemplateGraph: (query) => useCases.getTaskTemplateGraph.execute(query),
     listTaskTemplatesByPriority: (identityId, limit) =>
       useCases.listTaskTemplatesByPriority.execute(identityId, limit),
-    completeTaskInstance: (id, input) => useCases.completeTaskInstance.execute(id, input),
-    skipTaskInstance: (id, input) => useCases.skipTaskInstance.execute(id, input),
-    startTaskInstance: (id) => useCases.startTaskInstance.execute(id),
-    deleteTaskInstance: (id) => useCases.deleteTaskInstance.execute(id),
+    completeTaskInstance: (id, identityId, input) =>
+      useCases.completeTaskInstance.execute(id, identityId, input),
+    skipTaskInstance: (id, identityId, input) =>
+      useCases.skipTaskInstance.execute(id, identityId, input),
+    startTaskInstance: (id, identityId) => useCases.startTaskInstance.execute(id, identityId),
+    deleteTaskInstance: (id, identityId) => useCases.deleteTaskInstance.execute(id, identityId),
     checkExpiredInstances: (identityId) => useCases.checkExpiredInstances.execute(identityId),
-    getTaskInstance: (id) => useCases.getTaskInstance.execute(id),
+    getTaskInstance: (id, identityId) => useCases.getTaskInstance.execute(id, identityId),
     listTaskInstancesByAccount: (identityId) =>
       useCases.listTaskInstancesByAccount.execute(identityId),
-    listTaskInstancesByTemplate: (templateId) =>
-      useCases.listTaskInstancesByTemplate.execute(templateId),
+    listTaskInstancesByTemplate: (templateId, identityId) =>
+      useCases.listTaskInstancesByTemplate.execute(templateId, identityId),
     listTaskInstancesByStatus: (identityId, status) =>
       useCases.listTaskInstancesByStatus.execute(identityId, status),
     getTaskInstancesByDateRange: (identityId, startDate, endDate) =>
       useCases.getTaskInstancesByDateRange.execute(identityId, startDate, endDate),
     createTaskDependency: (input) => useCases.createTaskDependency.execute(input),
-    deleteTaskDependency: (id) => useCases.deleteTaskDependency.execute(id),
-    updateTaskDependency: (id, input) => useCases.updateTaskDependency.execute(id, input),
-    listTaskDependencies: (taskId) => useCases.listTaskDependencies.executeDependencies(taskId),
-    listTaskDependents: (taskId) => useCases.listTaskDependencies.executeDependents(taskId),
-    getDependencyChain: (taskId) => useCases.getDependencyChain.execute(taskId),
-    validateTaskDependency: (predecessorTaskId, successorTaskId) =>
-      useCases.validateTaskDependency.execute(predecessorTaskId, successorTaskId),
+    deleteTaskDependency: (id, identityId) =>
+      useCases.deleteTaskDependency.execute(id, identityId),
+    updateTaskDependency: (id, identityId, input) =>
+      useCases.updateTaskDependency.execute(id, identityId, input),
+    listTaskDependencies: (taskId, identityId) =>
+      useCases.listTaskDependencies.executeDependencies(taskId, identityId),
+    listTaskDependents: (taskId, identityId) =>
+      useCases.listTaskDependencies.executeDependents(taskId, identityId),
+    getDependencyChain: (taskId, identityId) =>
+      useCases.getDependencyChain.execute(taskId, identityId),
+    validateTaskDependency: (predecessorTaskId, successorTaskId, identityId) =>
+      useCases.validateTaskDependency.execute(predecessorTaskId, successorTaskId, identityId),
   };
 
   return {

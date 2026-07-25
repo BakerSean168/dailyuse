@@ -6,8 +6,11 @@
  */
 
 import { z } from 'zod';
-import type { ReminderTemplateId } from '../../../primitives';
 import type { ReminderGroupClientDTO } from '../aggregates/reminder-group-client';
+import {
+  ReminderGroupListResponseSchema,
+  ReminderBatchResultSchema,
+} from './response-schemas';
 import { ControlMode } from '../value-objects/control-mode';
 
 // ============================================================================
@@ -63,44 +66,14 @@ export const BatchGroupTemplatesSchema = z.object({
 
 export type BatchGroupTemplatesReq = z.infer<typeof BatchGroupTemplatesSchema>;
 
-export interface BatchGroupTemplatesRes {
-  successCount: number;
-  failedCount: number;
-  errors?: Array<{
-    id: string;
-    error: string;
-  }>;
-}
+// Residual 781: batch group templates Res dual retired — reuses ReminderBatchResultSchema
+// (runtime returns successCount/failedCount only; unused errors dual field dropped).
+export const BatchGroupTemplatesResSchema = ReminderBatchResultSchema;
+export type BatchGroupTemplatesRes = z.infer<typeof BatchGroupTemplatesResSchema>;
 
-export interface ReminderGroupListRes {
-  groups: ReminderGroupClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
+// Residual 693: list response dual body retired — OpenAPI + transport use ReminderGroupListResponseSchema.
+export type ReminderGroupListRes = z.infer<typeof ReminderGroupListResponseSchema>;
 
-// ============================================================================
-// REMINDER OPERATION Types
-// ============================================================================
-
-export interface ReminderOperationRes {
-  ok: boolean;
-  message?: string;
-  affectedCount?: number;
-}
-
-export interface ReminderTriggerRes {
-  ok: boolean;
-  triggeredAt: number;
-  nextTriggerAt?: number | null;
-  message?: string;
-}
-
-export interface TemplateScheduleStatusRes {
-  templateId: ReminderTemplateId;
-  hasSchedule: boolean;
-  nextExecutionTime?: number | null;
-  lastExecutionTime?: number | null;
-  status: string;
-}
+// Residual 635: ReminderOperationRes / ReminderTriggerRes { ok } dual envelopes
+// and unused TemplateScheduleStatusRes dead surface deleted.
+// Reminder control success bodies use DTO / void / Result envelopes only.

@@ -21,5 +21,3 @@ export type { TaskDependencyCreatedEvent } from './task-dependency-created.event
 export type { TaskDependencyUpdatedEvent } from './task-dependency-updated.event';
 export type { TaskDependencyDeletedEvent } from './task-dependency-deleted.event';
 
-// Re-export union type
-export type { TaskCreatedEvent as TaskDomainEvent } from './task-created.event';

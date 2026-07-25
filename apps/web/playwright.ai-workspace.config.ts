@@ -1,8 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
-import { createWebServer, getE2EWebOrigin } from './playwright.server';
+import { createApiServer, createWebServer, getE2EWebOrigin } from './playwright.server';
 
 // `web:e2e:ai-workspace` starts Vite outside Playwright on Windows to avoid
 // flaky webServer teardown; keep the opt-in switch for direct config usage.
+// Residual 1337: when the external runner owns servers it sets
+// PLAYWRIGHT_DISABLE_WEBSERVER=true and also starts the e2e API.
 const shouldManageWebServer = process.env.PLAYWRIGHT_DISABLE_WEBSERVER !== 'true';
 
 export default defineConfig({
@@ -41,6 +43,9 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // AI workspace flows are HTTP-mocked inside the spec, so they only need the Vite app.
-  webServer: shouldManageWebServer ? [createWebServer(`${getE2EWebOrigin()}/`)] : undefined,
+  // Residual 1337: AI SSE is mocked in-spec, but bootstrap still uses real register/login.
+  // When Playwright owns servers, start API + Web. The external runner owns both when disabled.
+  webServer: shouldManageWebServer
+    ? [createApiServer(), createWebServer(`${getE2EWebOrigin()}/`)]
+    : undefined,
 });

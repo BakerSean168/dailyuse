@@ -21,7 +21,7 @@ import {
   TaskTemplateResponseSchema,
   TaskTemplateListResponseSchema,
   GenerateInstancesSchema,
-  BindToGoalSchema,
+  TaskGoalBindingSchema,
   TaskInstanceResponseSchema,
   ListTaskTemplateFiltersSchema,
   TaskTemplateInstancesQuerySchema,
@@ -30,20 +30,14 @@ import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
 import type { TaskTemplateController } from '../../server/transport/task-template.controller';
+// Residual 983: sole getFirstQueryValue (local dual retired).
+import { getFirstQueryValue } from './get-first-query-value';
 
 // ============ Types ============
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
-}
-
-function getFirstQueryValue(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    return typeof value[0] === 'string' ? value[0] : undefined;
-  }
-
-  return typeof value === 'string' ? value : undefined;
 }
 
 function parseTemplateFilters(query: Record<string, unknown> | undefined): ListTaskTemplateFilters {
@@ -178,7 +172,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.getTemplate(req.params!.id, req.query?.includeChildren === 'true'),
+    (req, ctx) => controller.getTemplate(req.params!.id, ctx, req.query?.includeChildren === 'true'),
   );
 
   // PUT /:id — Update template (backwards compatibility)
@@ -197,7 +191,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTemplate(req.params!.id, req.body),
+    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
   );
 
   // PATCH /:id — Update template (preferred method for partial updates)
@@ -216,7 +210,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTemplate(req.params!.id, req.body),
+    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
   );
 
   // DELETE /:id — Delete template
@@ -232,7 +226,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteTemplate(req.params!.id),
+    (req, ctx) => controller.deleteTemplate(req.params!.id, ctx),
   );
 
   // POST /:id/activate — Activate template
@@ -248,7 +242,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.activateTemplate(req.params!.id),
+    (req, ctx) => controller.activateTemplate(req.params!.id, ctx),
   );
 
   // POST /:id/pause — Pause template
@@ -264,7 +258,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.pauseTemplate(req.params!.id),
+    (req, ctx) => controller.pauseTemplate(req.params!.id, ctx),
   );
 
   // POST /:id/archive — Archive template
@@ -280,7 +274,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.archiveTemplate(req.params!.id),
+    (req, ctx) => controller.archiveTemplate(req.params!.id, ctx),
   );
 
   // POST /:id/generate-instances — Generate instances for template
@@ -299,7 +293,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.generateInstances(req.params!.id, req.body),
+    (req, ctx) => controller.generateInstances(req.params!.id, req.body, ctx),
   );
 
   // GET /:id/instances — Get instances by template ID
@@ -318,9 +312,10 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) =>
+    (req, ctx) =>
       controller.getInstancesByTemplate(
         req.params!.id,
+        ctx,
         parseTemplateInstancesRange(req.query as Record<string, unknown>),
       ),
   );
@@ -333,7 +328,7 @@ export function registerTaskTemplateRoutes(
       summary: '绑定任务模板到目标',
       request: {
         params: z.object({ id: brandedId<TaskTemplateId>() }),
-        body: { content: { 'application/json': { schema: BindToGoalSchema } } },
+        body: { content: { 'application/json': { schema: TaskGoalBindingSchema } } },
       },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '绑定成功'),
@@ -341,7 +336,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.bindToGoal(req.params!.id, req.body),
+    (req, ctx) => controller.bindToGoal(req.params!.id, req.body, ctx),
   );
 
   // POST /:id/unbind-goal — Unbind template from goal
@@ -357,7 +352,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.unbindFromGoal(req.params!.id),
+    (req, ctx) => controller.unbindFromGoal(req.params!.id, ctx),
   );
 
   return router;

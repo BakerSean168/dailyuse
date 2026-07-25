@@ -10,12 +10,9 @@ export function createAIConversationRepositoryStub(
 ): IAIConversationRepository {
   return {
     save: async () => {},
-    findById: async () => null,
+    findByIdForIdentity: async () => null,
     findByIdentityId: async () => [],
-    findByStatus: async () => [],
-    findRecent: async () => [],
     delete: async () => {},
-    exists: async () => false,
     ...overrides,
   };
 }
@@ -25,12 +22,10 @@ export function createAIProviderConfigRepositoryStub(
 ): IAIProviderConfigRepository {
   return {
     save: async () => {},
-    findById: async () => null,
+    findByIdForIdentity: async () => null,
     findByIdentityId: async () => [],
     findDefaultByIdentityId: async () => null,
-    findByIdentityIdAndName: async () => null,
     delete: async () => {},
-    exists: async () => false,
     clearDefaultForIdentity: async () => {},
     ...overrides,
   };

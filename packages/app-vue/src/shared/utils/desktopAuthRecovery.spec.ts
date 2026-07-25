@@ -16,9 +16,15 @@ describe('desktopAuthRecovery', () => {
   it('initializes desktop auth when runtime is restoring', async () => {
     const invoke = vi
       .fn()
-      .mockResolvedValueOnce({ authenticated: false, runtimeState: 'RESTORING' })
-      .mockResolvedValueOnce(undefined)
-      .mockResolvedValueOnce({ authenticated: true });
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { authenticated: false, runtimeState: 'RESTORING' },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { ok: true, hasValidSession: false },
+      })
+      .mockResolvedValueOnce({ ok: true, data: { authenticated: true } });
 
     await expect(
       ensureDesktopAuthReadyWithApi({ invoke }, 'DesktopAuthRecoveryTest'),

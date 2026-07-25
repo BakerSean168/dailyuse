@@ -1,15 +1,11 @@
-import type { TaskFolderId, IdentityId } from '../../../primitives/ids';
-import type { TransferDate } from '../../../primitives';
+/**
+ * TaskFolder Aggregate Root - Client Interface
+ *
+ * Residual 837: TaskFolderClientDTO dual retired — sole TaskFolderResponseSchema + z.infer.
+ */
 
-export interface TaskFolderClientDTO {
-  id: TaskFolderId;
-  identityId: IdentityId;
-  name: string;
-  color: string | null;
-  icon: string | null;
-  order: number;
-  version: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-  deletedAt: TransferDate | null;
-}
+import type { z } from 'zod';
+import { TaskFolderResponseSchema } from '../api/response-schemas';
+
+// Residual 837: TaskFolderClientDTO dual retired — OpenAPI + transport use TaskFolderResponseSchema.
+export type TaskFolderClientDTO = z.infer<typeof TaskFolderResponseSchema>;

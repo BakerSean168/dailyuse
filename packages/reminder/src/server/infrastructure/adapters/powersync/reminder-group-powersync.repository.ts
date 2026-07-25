@@ -91,10 +91,10 @@ export class ReminderGroupPowerSyncRepository
     }
   }
 
-  async findById(id: string): Promise<ReminderGroup | null> {
+  async findByIdForIdentity(identityId: string, id: string): Promise<ReminderGroup | null> {
     const row = await this.db.getOptional<PowerSyncReminderGroupRow>(
-      'SELECT * FROM reminder_groups WHERE id = ? LIMIT 1',
-      [id],
+      'SELECT * FROM reminder_groups WHERE id = ? AND identity_id = ? LIMIT 1',
+      [id, identityId],
     );
     return row ? PowerSyncReminderGroupMapper.toDomain(row) : null;
   }
@@ -126,22 +126,20 @@ export class ReminderGroupPowerSyncRepository
     return rows.map((row) => PowerSyncReminderGroupMapper.toDomain(row));
   }
 
-  async findActive(identityId?: string): Promise<ReminderGroup[]> {
+  async findActive(identityId: string): Promise<ReminderGroup[]> {
     const rows = await this.db.getAll<PowerSyncReminderGroupRow>(
-      `SELECT * FROM reminder_groups WHERE enabled = 1 AND status = 'Active' AND deleted_at IS NULL${
-        identityId ? ' AND identity_id = ?' : ''
-      } ORDER BY "order" ASC`,
-      identityId ? [identityId] : [],
+      `SELECT * FROM reminder_groups WHERE identity_id = ? AND enabled = 1 AND status = 'Active' AND deleted_at IS NULL ORDER BY "order" ASC`,
+      [identityId],
     );
     return rows.map((row) => PowerSyncReminderGroupMapper.toDomain(row));
   }
 
-  async findByIds(ids: string[]): Promise<ReminderGroup[]> {
+  async findByIds(identityId: string, ids: string[]): Promise<ReminderGroup[]> {
     if (ids.length === 0) return [];
     const placeholders = ids.map(() => '?').join(', ');
     const rows = await this.db.getAll<PowerSyncReminderGroupRow>(
-      `SELECT * FROM reminder_groups WHERE id IN (${placeholders}) ORDER BY "order" ASC`,
-      ids,
+      `SELECT * FROM reminder_groups WHERE identity_id = ? AND id IN (${placeholders}) ORDER BY "order" ASC`,
+      [identityId, ...ids],
     );
     const map = new Map(rows.map((row) => [row.id, PowerSyncReminderGroupMapper.toDomain(row)]));
     return ids.map((id) => map.get(id)).filter((item): item is ReminderGroup => !!item);
@@ -161,16 +159,19 @@ export class ReminderGroupPowerSyncRepository
     return row ? PowerSyncReminderGroupMapper.toDomain(row) : null;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM reminder_groups WHERE id = ?', [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Reminder group not found for the current identity.');
+    }
+    await this.db.execute(
+      'DELETE FROM reminder_groups WHERE id = ? AND identity_id = ?',
+      [id, identityId],
+    );
   }
 
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ id: string }>(
-      'SELECT id FROM reminder_groups WHERE id = ? LIMIT 1',
-      [id],
-    );
-    return !!row;
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async count(

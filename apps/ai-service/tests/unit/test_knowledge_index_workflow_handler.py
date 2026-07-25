@@ -6,7 +6,7 @@ from ai_service.orchestrator.handlers.knowledge_index_handler import (
     KnowledgeIndexWorkflowHandler,
 )
 from ai_service.orchestrator.models import WorkflowContext
-from ai_service.schemas import IndexedKnowledgeResource
+from ai_service.schemas import IndexedKnowledgeNote
 
 
 @pytest.fixture
@@ -22,8 +22,8 @@ def test_can_handle(handler):
 
 @pytest.mark.asyncio
 async def test_knowledge_index_handler_executes_index(handler):
-    handler.knowledge_indexing_service.index_resource_async.return_value = (
-        IndexedKnowledgeResource.model_validate(
+    handler.knowledge_indexing_service.index_note_async.return_value = (
+        IndexedKnowledgeNote.model_validate(
             {
                 "identity_id": "identity-1",
                 "repository_id": "repo-1",
@@ -61,4 +61,4 @@ async def test_knowledge_index_handler_executes_index(handler):
     result = await handler.handle(context)
 
     assert result.indexed_resource.resource_id == "resource-1"
-    handler.knowledge_indexing_service.index_resource_async.assert_awaited_once()
+    handler.knowledge_indexing_service.index_note_async.assert_awaited_once()

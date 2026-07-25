@@ -1,4 +1,7 @@
 import { computed, nextTick, ref } from 'vue';
+import type {
+  AssistantEvent,
+} from '@dailyuse/contracts/ai';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type {
@@ -7,13 +10,25 @@ import type {
   ChatModelOption,
   ConversationMessageSummary,
   ConversationSummary,
-  StreamDoneResult,
 } from './types';
+import { unwrap } from '@dailyuse/contracts/result';
 import { getAIErrorMessage } from './error';
+import {
+  buildHostOpenChatStopCancelCommand,
+  createHostOpenChatRunId,
+  isHostOpenChatCancelledEvent,
+} from './hostOpenChatCancel';
+import type { HostOpenChatTurnSnapshot } from './hostProposalLifecycle';
+import type { OpenChatHostTurnMemory } from './hostOpenChatTurnMemory';
+import {
+  forgetOpenChatHostTurnsForConversation,
+  rememberOpenChatHostTurnsForConversation,
+  restoreOpenChatHostTurnsForConversation,
+  upsertOpenChatHostTurnList,
+} from './hostOpenChatTurnMemory';
 
 const LAST_CONVERSATION_STORAGE_KEY = 'ai:last-conversation-id';
 type DeleteConversationId = Parameters<AIChatService['deleteConversation']>[0];
-type StreamMessageRequest = Parameters<AIChatService['streamMessage']>[0];
 
 export interface UseAIChatSessionOptions {
   service: AIChatService;
@@ -36,6 +51,48 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   const messagesViewport = ref<HTMLElement | null>(null);
   const composerTextarea = ref<HTMLTextAreaElement | null>(null);
   const activeStreamAbortController = ref<AbortController | null>(null);
+  /** Residual 393: client-owned Host run id for open-chat cancel_run on stop. */
+  const activeHostRunId = ref<string | null>(null);
+  /** Residual 401: recent open-chat Host turns for timeline multi-engine badges. */
+  const openChatHostTurns = ref<HostOpenChatTurnSnapshot[]>([]);
+  /** Residual 403: per-conversation session memory for open-chat Host turn badges. */
+  let openChatHostTurnMemory: OpenChatHostTurnMemory = {};
+  /** Residual 369: Host open-chat engine profile (Facade routes DirectTurn vs ReadonlyAnalysis). */
+  const executionProfileId = ref<'direct_turn' | 'pi_readonly'>('direct_turn');
+
+  function selectExecutionProfile(profile: 'direct_turn' | 'pi_readonly') {
+    executionProfileId.value = profile === 'pi_readonly' ? 'pi_readonly' : 'direct_turn';
+  }
+
+  /** Residual 401/403: keep a short ring of open-chat Host turns + remember by conversation. */
+  function upsertOpenChatHostTurn(next: HostOpenChatTurnSnapshot) {
+    openChatHostTurns.value = upsertOpenChatHostTurnList(openChatHostTurns.value, next);
+    if (chatConversationId.value) {
+      openChatHostTurnMemory = rememberOpenChatHostTurnsForConversation(
+        openChatHostTurnMemory,
+        chatConversationId.value,
+        openChatHostTurns.value,
+      );
+    }
+  }
+
+  /** Residual 403: stash current conversation turns before switching away. */
+  function stashOpenChatHostTurnsForCurrentConversation() {
+    if (!chatConversationId.value) return;
+    openChatHostTurnMemory = rememberOpenChatHostTurnsForConversation(
+      openChatHostTurnMemory,
+      chatConversationId.value,
+      openChatHostTurns.value,
+    );
+  }
+
+  /** Residual 403: restore remembered turns for a conversation (empty when unknown). */
+  function restoreOpenChatHostTurns(conversationId: string) {
+    openChatHostTurns.value = restoreOpenChatHostTurnsForConversation(
+      openChatHostTurnMemory,
+      conversationId,
+    );
+  }
 
   const hasWorkflowMessages = computed(() =>
     chatTimeline.value.some((item) => item.content.trim().length > 0),
@@ -79,9 +136,30 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     activeStreamAbortController.value = null;
   }
 
+  /**
+   * Residual 393: stop open chat — abort client stream AND Host cancel_run so
+   * DirectTurn/ReadonlyAnalysis engines abort (client abort alone is insufficient).
+   */
   function stopGenerating() {
     if (!chatLoading.value) return;
+    const cancelCommand = buildHostOpenChatStopCancelCommand(activeHostRunId.value);
     abortActiveStream();
+    if (!cancelCommand) return;
+    void options.service
+      .dispatchAssistant(cancelCommand, {
+        onEvent: (event: AssistantEvent) => {
+          if (!isHostOpenChatCancelledEvent(event)) return;
+          for (const item of chatTimeline.value) {
+            if (item.status === 'generating') {
+              item.status = 'aborted';
+              item.errorMessage = undefined;
+            }
+          }
+        },
+      })
+      .catch(() => {
+        // Best-effort Host cancel; local abort already applied.
+      });
   }
 
   function updateLastActiveConversation(id: string) {
@@ -107,7 +185,7 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   ) {
     conversationListLoading.value = true;
     try {
-      const result = await loadService.listConversations({ page: 1, pageSize: 24 });
+      const result = unwrap(await loadService.listConversations({ page: 1, pageSize: 24 }));
       conversationList.value = result.data ?? [];
 
       if (listOptions?.preserveSelection !== false && chatConversationId.value) {
@@ -132,14 +210,17 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     getConversationModelKey: (id?: string) => string,
   ) {
     abortActiveStream();
+    // Residual 403: keep open-chat multi-engine badges across conversation switches.
+    stashOpenChatHostTurnsForCurrentConversation();
     chatConversationId.value = item.id;
     conversationTitle.value =
       item.name || t('aiAssistant.dialogs.chat.defaultConversationName');
     updateLastActiveConversation(String(item.id));
     syncModel(getConversationModelKey(String(item.id)));
+    restoreOpenChatHostTurns(String(item.id));
 
     try {
-      const result = await loadService.listMessages(item.id, { page: 1, pageSize: 80 });
+      const result = unwrap(await loadService.listMessages(item.id, { page: 1, pageSize: 80 }));
       chatTimeline.value = (result.data ?? []).map((message, index) =>
         normalizeChatItem(message, index),
       );
@@ -156,9 +237,14 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     onClearModel: (id: string) => void,
   ) {
     try {
-      await loadService.deleteConversation(id as DeleteConversationId);
+      unwrap(await loadService.deleteConversation(id as DeleteConversationId));
       onClearWorkflow(id);
       onClearModel(id);
+      // Residual 403: drop session open-chat turn memory for deleted conversation.
+      openChatHostTurnMemory = forgetOpenChatHostTurnsForConversation(
+        openChatHostTurnMemory,
+        id,
+      );
       if (chatConversationId.value === id) {
         startNewConversation();
       }
@@ -177,9 +263,11 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
     conversationName: string,
   ) {
     if (chatConversationId.value) return chatConversationId.value;
-    const conversation = (await loadService.createConversation({
-      name: conversationName,
-    }));
+    const conversation = unwrap(
+      await loadService.createConversation({
+        name: conversationName,
+      }),
+    );
     chatConversationId.value = String(conversation.id);
     updateLastActiveConversation(String(conversation.id));
     options.onConversationCreated?.(String(conversation.id));
@@ -187,10 +275,14 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   }
 
   function resetChatSession(mode: string = 'chat', getDefaultName: (m: string) => string) {
+    // Residual 403: stash current conversation badges before leaving the thread.
+    stashOpenChatHostTurnsForCurrentConversation();
     chatConversationId.value = '';
     chatTimeline.value = [];
     chatMessage.value = '';
     conversationTitle.value = getDefaultName(mode);
+    openChatHostTurns.value = [];
+    activeHostRunId.value = null;
   }
 
   function startNewConversation(mode: string = 'chat') {
@@ -219,6 +311,18 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       const conversationId = await ensureConversationCreated(loadService, conversationName);
       streamController = new AbortController();
       activeStreamAbortController.value = streamController;
+      // Residual 393: client-owned runId so stop can cancel_run before/without run.started.
+      const hostRunId = createHostOpenChatRunId();
+      activeHostRunId.value = hostRunId;
+      const profileForTurn =
+        executionProfileId.value === 'pi_readonly' ? 'pi_readonly' : 'direct_turn';
+      upsertOpenChatHostTurn({
+        runId: hostRunId,
+        executionProfileId: profileForTurn,
+        status: 'generating',
+        title: pendingUserMessage,
+        summary: '',
+      });
 
       userDraftId = `user-draft-${Date.now()}`;
       assistantDraftId = `assistant-draft-${Date.now()}`;
@@ -230,49 +334,132 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       await nextTick();
       adjustComposerHeight();
 
-      await loadService.streamMessage(
+      // Residual 351: open chat default path via AssistantFacade Host dispatch.
+      let sawCompleted = false;
+      await loadService.dispatchAssistant(
         {
-          conversationId: conversationId as StreamMessageRequest['conversationId'],
+          type: 'message',
+          conversationId,
           content: pendingUserMessage,
-          providerId: selectedModel.providerId as StreamMessageRequest['providerId'],
+          surface: 'web',
+          runId: hostRunId,
+          // Residual 369: multi-engine Host profile selection for open chat.
+          executionProfileId: executionProfileId.value,
+          providerId: selectedModel.providerId,
           model: selectedModel.modelId,
         },
         {
-          onChunk: (chunk: { role: 'assistant'; content: string }) => {
-            const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
-            if (target) {
-              target.content += chunk.content;
-              target.status = 'generating';
-              target.errorMessage = undefined;
+          onEvent: (event: AssistantEvent) => {
+            if (event.type === 'run.started' && event.runId) {
+              activeHostRunId.value = event.runId;
+              const existing = openChatHostTurns.value.find((turn) => turn.runId === hostRunId);
+              upsertOpenChatHostTurn({
+                runId: event.runId,
+                executionProfileId:
+                  event.profile === 'pi_readonly'
+                    ? 'pi_readonly'
+                    : existing?.executionProfileId ?? profileForTurn,
+                status: 'generating',
+                title: existing?.title ?? pendingUserMessage,
+                summary: existing?.summary ?? '',
+                engineId: event.engineId,
+              });
+              // If server rewrote runId, drop the pre-start client id row.
+              if (event.runId !== hostRunId) {
+                openChatHostTurns.value = openChatHostTurns.value.filter(
+                  (turn) => turn.runId !== hostRunId,
+                );
+              }
             }
-          },
-          onDone: async (result: unknown) => {
-            const resolved = (result ?? {}) as StreamDoneResult;
-            const assistantIndex = chatTimeline.value.findIndex(
-              (item) => item.id === assistantDraftId,
-            );
-            if (assistantIndex >= 0 && resolved.assistantMessage) {
-              chatTimeline.value[assistantIndex] = {
-                id: String(resolved.assistantMessage.id),
-                role: 'assistant',
-                content: resolved.assistantMessage.content,
-                status: 'success',
-              };
+            if (isHostOpenChatCancelledEvent(event)) {
+              const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
+              if (target && target.status === 'generating') {
+                target.status = 'aborted';
+                target.errorMessage = undefined;
+              }
+              const runKey = activeHostRunId.value ?? hostRunId;
+              const existing = openChatHostTurns.value.find((turn) => turn.runId === runKey);
+              if (existing) {
+                upsertOpenChatHostTurn({ ...existing, status: 'aborted' });
+              }
             }
-            const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
-            if (userIndex >= 0 && resolved.userMessage) {
-              chatTimeline.value[userIndex] = {
-                id: String(resolved.userMessage.id),
-                role: 'user',
-                content: resolved.userMessage.content,
-                status: 'success',
-              };
+            if (event.type === 'message.delta') {
+              const target = chatTimeline.value.find((item) => item.id === assistantDraftId);
+              if (target) {
+                target.content += event.content;
+                target.status = 'generating';
+                target.errorMessage = undefined;
+              }
+              return;
             }
-            await loadConversationList(loadService);
+
+            if (event.type === 'message.completed') {
+              sawCompleted = true;
+              const completedRunId = event.runId || activeHostRunId.value || hostRunId;
+              const existingTurn = openChatHostTurns.value.find(
+                (turn) => turn.runId === completedRunId || turn.runId === hostRunId,
+              );
+              if (existingTurn || completedRunId) {
+                const nextStatus =
+                  event.status === 'aborted'
+                    ? 'aborted'
+                    : event.status === 'failed'
+                      ? 'failed'
+                      : 'completed';
+                upsertOpenChatHostTurn({
+                  runId: completedRunId,
+                  executionProfileId: existingTurn?.executionProfileId ?? profileForTurn,
+                  status: nextStatus,
+                  title: existingTurn?.title ?? pendingUserMessage,
+                  summary:
+                    (event.content ?? '').trim().slice(0, 240) || existingTurn?.summary || '',
+                  engineId: existingTurn?.engineId,
+                });
+              }
+              const assistantIndex = chatTimeline.value.findIndex(
+                (item) => item.id === assistantDraftId,
+              );
+              if (assistantIndex >= 0) {
+                chatTimeline.value[assistantIndex] = {
+                  id: event.assistantMessage?.id
+                    ? String(event.assistantMessage.id)
+                    : assistantDraftId,
+                  role: 'assistant',
+                  content:
+                    event.assistantMessage?.content ??
+                    event.content ??
+                    chatTimeline.value[assistantIndex]?.content ??
+                    '',
+                  status: event.status === 'aborted' ? 'aborted' : event.status === 'failed' ? 'error' : 'success',
+                  errorMessage: event.error,
+                };
+              }
+              const userIndex = chatTimeline.value.findIndex((item) => item.id === userDraftId);
+              if (userIndex >= 0 && event.userMessage) {
+                chatTimeline.value[userIndex] = {
+                  id: String(event.userMessage.id),
+                  role: 'user',
+                  content: event.userMessage.content,
+                  status: 'success',
+                };
+              }
+              return;
+            }
+
+            if (event.type === 'error') {
+              const assistantDraft = chatTimeline.value.find((item) => item.id === assistantDraftId);
+              if (assistantDraft) {
+                assistantDraft.status = 'error';
+                assistantDraft.errorMessage = event.message;
+              }
+            }
           },
         },
         streamController.signal,
       );
+      if (sawCompleted) {
+        await loadConversationList(loadService);
+      }
     } catch (error) {
       const assistantDraft = chatTimeline.value.find((item) => item.id === assistantDraftId);
       const userDraft = chatTimeline.value.find((item) => item.id === userDraftId);
@@ -295,6 +482,8 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
       if (activeStreamAbortController.value === streamController) {
         activeStreamAbortController.value = null;
       }
+      // Residual 393: clear Host run tracking after open-chat turn ends.
+      activeHostRunId.value = null;
       chatLoading.value = false;
     }
   }
@@ -310,6 +499,9 @@ export function useAIChatSession(options: UseAIChatSessionOptions) {
   return {
     chatMessage,
     chatLoading,
+    executionProfileId,
+    selectExecutionProfile,
+    openChatHostTurns,
     chatConversationId,
     chatTimeline,
     conversationTitle,

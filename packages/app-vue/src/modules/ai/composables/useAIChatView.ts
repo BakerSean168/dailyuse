@@ -1,23 +1,37 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import type {
+  AgentRun,
+  AgentRunResult,
+} from '@dailyuse/contracts/ai';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { useAI } from './useAI';
 import { useGoal } from '../../goal/composables/useGoal';
-import { useRepository } from '../../repository/composables/useRepository';
-import { useUserSetting } from '../../setting/composables/useUserSetting';
-import { useEditorWorkspaceActions } from '../../editor/composables';
+import { useRecentKnowledgeNotes } from '../../repository/composables/useRecentKnowledgeNotes';
 import { useAIChatSession } from './useAIChatSession';
 import { useAIModelSelection } from './useAIModelSelection';
 import { useAIGoalWorkflow } from './useAIGoalWorkflow';
 import { useAIKnowledgeNoteWorkflow } from './useAIKnowledgeNoteWorkflow';
+import { useAITaskWorkflow } from './useAITaskWorkflow';
 import { useAIKnowledgeQaWorkflow } from './useAIKnowledgeQaWorkflow';
 import { useAIWorkflowPersistence } from './useAIWorkflowPersistence';
 import { useAIFormatters } from './useAIFormatters';
+import {
+  isPrimaryTaskHostAgentRun,
+  nextDualMirroredTaskAgentRun,
+  shouldDualMirrorPrimaryTaskGoalSession,
+} from './hostProposalLifecycle';
 import { getToolLocaleKey, normalizeWorkflowMode } from './types';
-import { adjustComposerHeight as createAdjustComposerHeight, bindChatViewLifecycle, getWorkflowStatusText, initializeChatView, maybeRenameConversation } from './chatViewHelpers';
+import {
+  adjustComposerHeight as createAdjustComposerHeight,
+  bindChatViewLifecycle,
+  getWorkflowStatusText,
+  initializeChatView,
+  maybeRenameConversation,
+} from './chatViewHelpers';
+import { unwrap } from '@dailyuse/contracts/result';
 import type {
-  AgentRunSummary,
   AIWorkspaceRecentGoal,
   AIWorkspaceRecentKnowledgeNote,
   ConversationSummary,
@@ -34,10 +48,25 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   const router = useRouter();
   const { service, providers, loadProviders } = useAI();
   const { goals, fetchGoals, createGoal, addKeyResult } = useGoal();
-  const { getCategory } = useUserSetting();
-  const { initRepository, fetchResources, resources } = useRepository();
-  const { requestOpenResource } = useEditorWorkspaceActions();
+  const recentKnowledgeNotes = useRecentKnowledgeNotes();
   const formatters = useAIFormatters();
+
+  async function openKnowledgeNoteInRepository(noteId: string): Promise<void> {
+    if (!noteId) return;
+    await router.push({ path: '/repository', query: { note: noteId } });
+  }
+
+  async function requestOpenKnowledgeNote(resourceId: string): Promise<void> {
+    await openKnowledgeNoteInRepository(resourceId);
+  }
+
+  async function loadRecentKnowledgeNotes(): Promise<void> {
+    await recentKnowledgeNotes.load(20);
+  }
+
+  async function initRepository(): Promise<void> {
+    await recentKnowledgeNotes.load(20);
+  }
 
   // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -45,6 +74,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const normalizedMode = normalizeWorkflowMode(mode);
     if (normalizedMode === 'goal-create')
       return t('aiAssistant.chatPage.workflow.defaultConversationNames.goalCreate');
+    if (normalizedMode === 'task-create')
+      return t('aiAssistant.chatPage.workflow.defaultConversationNames.taskCreate');
     if (normalizedMode === 'knowledge-generate')
       return t('aiAssistant.chatPage.workflow.defaultConversationNames.knowledgeGenerate');
     if (normalizedMode === 'knowledge-qa')
@@ -53,8 +84,10 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   }
 
   const toolMode = ref<WorkflowMode>('chat');
-  const agentRunList = ref<AgentRunSummary[]>([]);
+  const agentRunList = ref<AgentRun[]>([]);
   const agentRunListLoading = ref(false);
+  /** Residual 427: dedicated Host task.create AgentRun session field. */
+  const taskAgentRun = ref<AgentRunResult | null>(null);
   const adjustComposerHeight = () => createAdjustComposerHeight(options.getComposerTextarea);
 
   const recentGoalList = computed<AIWorkspaceRecentGoal[]>(() =>
@@ -73,29 +106,20 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   );
 
   const recentKnowledgeNoteList = computed<AIWorkspaceRecentKnowledgeNote[]>(() =>
-    [...resources.value]
-      .filter((resource) => {
-        if (resource.deletedAt || resource.isDeleted || resource.isArchived) return false;
-        const extension = resource.extension?.toLowerCase?.() ?? '';
-        const mimeType = resource.mimeType?.toLowerCase?.() ?? '';
-        return extension === '.md' || mimeType === 'text/markdown';
-      })
-      .sort((left, right) => Number(right.updatedAt ?? 0) - Number(left.updatedAt ?? 0))
+    [...recentKnowledgeNotes.notes.value]
+      .sort((left, right) => Number(right.updatedAt) - Number(left.updatedAt))
       .slice(0, 5)
-      .map((resource) => ({
-        id: String(resource.id),
-        title: resource.name,
-        path: resource.path,
-        updatedAt: Number(resource.updatedAt ?? 0),
+      .map((note) => ({
+        id: note.id,
+        title: note.title,
+        path: note.path,
+        updatedAt: note.updatedAt,
       })),
   );
 
   // ─── Composables ───────────────────────────────────────────────────
 
   const providerList = computed<ProviderListItem[]>(() => providers.value);
-
-  const aiSettings = computed(() => getCategory('ai'));
-  const knowledgeNoteSubpath = computed(() => aiSettings.value?.knowledgeNoteSubpath ?? '');
 
   // Late-binding closure for cross-composable coordination.
   // eslint-disable-next-line prefer-const -- reassigned after options object is constructed
@@ -139,12 +163,11 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     chatTimeline: chatSession.chatTimeline,
     conversationTitle: chatSession.conversationTitle,
     hasWorkflowMessages: chatSession.hasWorkflowMessages,
-    knowledgeNoteSubpath,
     scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
     maybeRenameCurrentConversation,
-    fetchResources,
-    resources,
-    requestOpenResource,
+    refreshRecentNotes: loadRecentKnowledgeNotes,
+    recentNotes: recentKnowledgeNotes.notes,
+    openKnowledgeNote: requestOpenKnowledgeNote,
   });
 
   // 5. Knowledge Q&A workflow
@@ -156,7 +179,27 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     chatTimeline: chatSession.chatTimeline,
     hasWorkflowUserMessages: chatSession.hasWorkflowUserMessages,
     scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
-    requestOpenResource,
+    requestOpenKnowledgeNote,
+  });
+
+  // Residual 431: Task create product start (AgentType task.create Host foundation).
+  // Late-bound sync: syncSelectedAgentRun is declared below.
+  // eslint-disable-next-line prefer-const -- reassigned after helper is constructed
+  let syncTaskAgentRunFromStart: ((result: import('@dailyuse/contracts/ai').AgentRunResult) => void) | undefined;
+  const taskWorkflow = useAITaskWorkflow({
+    service,
+    selectedModel: modelSelection.selectedModel,
+    chatConversationId: chatSession.chatConversationId,
+    chatLoading: chatSession.chatLoading,
+    chatTimeline: chatSession.chatTimeline,
+    conversationTitle: chatSession.conversationTitle,
+    hasWorkflowUserMessages: chatSession.hasWorkflowUserMessages,
+    buildConversationTranscript: chatSession.buildConversationTranscript,
+    scrollMessagesToBottom: chatSession.scrollMessagesToBottom,
+    taskAgentRun,
+    syncTaskAgentRun: (result) => {
+      syncTaskAgentRunFromStart?.(result);
+    },
   });
 
   // 6. Persistence
@@ -164,6 +207,10 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     goalWorkflow.resetGoalArtifacts();
     noteWorkflow.resetNoteArtifacts();
     knowledgeQaWorkflow.resetKnowledgeAnswer();
+    // Residual 427: clear dedicated task.create session field.
+    taskAgentRun.value = null;
+    // Residual 433: clear task start local state (linked goal).
+    taskWorkflow.resetTaskWorkflowLocalState();
   }
 
   const persistence = useAIWorkflowPersistence({
@@ -175,6 +222,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     goalAgentRun: goalWorkflow.goalAgentRun,
     knowledgeQaAgentRun: knowledgeQaWorkflow.knowledgeQaAgentRun,
     noteAgentRun: noteWorkflow.noteAgentRun,
+    taskAgentRun,
     knowledgeAnswer: knowledgeQaWorkflow.knowledgeAnswer,
     clarificationAnswers: goalWorkflow.clarificationAnswers,
     editableGoal: goalWorkflow.editableGoal,
@@ -190,7 +238,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const goalRunId = goalWorkflow.goalAgentRun.value?.run.runId;
     if (goalRunId) {
       try {
-        const result = await service.getAgentRun(goalRunId);
+        const result = unwrap(await service.getAgentRun(goalRunId));
         if (result?.run) {
           goalWorkflow.syncGoalAgentRun(result);
         }
@@ -203,7 +251,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const noteRunId = noteWorkflow.noteAgentRun.value?.run.runId;
     if (noteRunId) {
       try {
-        const result = await service.getAgentRun(noteRunId);
+        const result = unwrap(await service.getAgentRun(noteRunId));
         if (result?.run) {
           noteWorkflow.syncKnowledgeNoteAgentRun(result);
         }
@@ -218,7 +266,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const knowledgeQaRunId = knowledgeQaWorkflow.knowledgeQaAgentRun.value?.run.runId;
     if (knowledgeQaRunId) {
       try {
-        const result = await service.getAgentRun(knowledgeQaRunId);
+        const result = unwrap(await service.getAgentRun(knowledgeQaRunId));
         if (result?.run) {
           knowledgeQaWorkflow.syncKnowledgeQaAgentRun(result);
         }
@@ -227,18 +275,80 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       }
     }
 
+    // Residual 433: restore dedicated task.create session field.
+    // TS Host start is session-local (no Python checkpointer); keep snapshot on miss.
+    const taskRunId = taskAgentRun.value?.run.runId;
+    if (taskRunId) {
+      try {
+        const result = unwrap(await service.getAgentRun(taskRunId));
+        if (result?.run) {
+          syncSelectedAgentRun(result);
+        }
+      } catch {
+        if (taskAgentRun.value?.run.agentType === 'task.create') {
+          toolMode.value = 'task-create';
+        } else if (taskAgentRun.value && isPrimaryTaskHostAgentRun(taskAgentRun.value)) {
+          toolMode.value = 'task-create';
+        }
+      }
+    }
+
     persistence.persistWorkflowState(conversationId);
   }
 
   async function restoreWorkflowState(conversationId: string) {
     persistence.restoreWorkflowState(conversationId);
+    // Residual 433: re-align toolMode when a persisted task.create run owns the session.
+    if (taskAgentRun.value?.run.agentType === 'task.create') {
+      toolMode.value = 'task-create';
+    }
+    // Residual 445: re-align linked goal before/after process-local refresh.
+    taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
     await refreshRestoredAgentRun(conversationId);
+    // Residual 593: persistence assigns goal then task — task assignment overwrites
+    // the goalAgentRun dual-mirror watch with a possibly stale exclusive snapshot.
+    // Re-apply nextDualMirroredTaskAgentRun after storage + optional server refresh
+    // (process-local task.create preserved; primary-task goal settle wins dual-mirror).
+    const dualMirroredTask = nextDualMirroredTaskAgentRun({
+      goalAgentRun: goalWorkflow.goalAgentRun.value,
+      taskAgentRun: taskAgentRun.value,
+      // Residual 601: knowledge note session drops dual-mirror ghosts on restore.
+      noteAgentRun: noteWorkflow.noteAgentRun.value,
+    });
+    if (dualMirroredTask !== taskAgentRun.value) {
+      taskAgentRun.value = dualMirroredTask;
+    }
+    taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
   }
 
-  function syncSelectedAgentRun(result: Awaited<ReturnType<typeof service.getAgentRun>>) {
+  function syncSelectedAgentRun(result: import("@dailyuse/contracts/ai").AgentRunResult) {
+    // Residual 427: first-class AgentType task.create owns dedicated session field.
+    if (result.run.agentType === 'task.create' || isPrimaryTaskHostAgentRun(result)) {
+      noteWorkflow.resetNoteArtifacts();
+      knowledgeQaWorkflow.resetKnowledgeAnswer();
+      // Keep goal artifacts only when this is a goal.create run dual-carrying task drafts.
+      if (result.run.agentType === 'task.create') {
+        goalWorkflow.resetGoalArtifacts();
+        // Residual 429: product toolMode for AgentType task.create.
+        toolMode.value = 'task-create';
+        taskAgentRun.value = result;
+        // Residual 445: keep ActionBar linked goal aligned with process-local run.
+        taskWorkflow.syncLinkedGoalFromTaskAgentRun(result);
+        return;
+      }
+      // Primary task-shaped goal.create: still lives in goal session for confirm resume,
+      // but also mirror into taskAgentRun for exclusive Host task lane wiring.
+      // Residual 589: subsequent goal-session settle re-mirrors via goalAgentRun watch.
+      toolMode.value = 'goal-create';
+      goalWorkflow.syncGoalAgentRun(result);
+      taskAgentRun.value = result;
+      return;
+    }
+
     if (result.run.agentType === 'goal.create') {
       noteWorkflow.resetNoteArtifacts();
       knowledgeQaWorkflow.resetKnowledgeAnswer();
+      taskAgentRun.value = null;
       toolMode.value = 'goal-create';
       goalWorkflow.syncGoalAgentRun(result);
       return;
@@ -247,6 +357,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     if (result.run.agentType === 'knowledge.generate') {
       goalWorkflow.resetGoalArtifacts();
       knowledgeQaWorkflow.resetKnowledgeAnswer();
+      taskAgentRun.value = null;
       toolMode.value = 'knowledge-generate';
       noteWorkflow.syncKnowledgeNoteAgentRun(result);
       return;
@@ -255,12 +366,38 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     if (result.run.agentType === 'knowledge.qa') {
       goalWorkflow.resetGoalArtifacts();
       noteWorkflow.resetNoteArtifacts();
+      taskAgentRun.value = null;
       toolMode.value = 'knowledge-qa';
       knowledgeQaWorkflow.syncKnowledgeQaAgentRun(result);
     }
   }
 
-  function syncAgentRunListItem(run: AgentRunSummary | null | undefined) {
+  // Residual 589: goal-session primary-task confirm/cancel only updates goalAgentRun.
+  // Keep exclusive task lane dual-mirror fresh so Host workbench does not keep a
+  // stale waiting_approval proposal after settle (ActionBar + Host panel paths).
+  // Residual 603: pass note session so knowledge ghost drop (residual 601) applies on watch.
+  watch(
+    () => goalWorkflow.goalAgentRun.value,
+    (run) => {
+      const next = nextDualMirroredTaskAgentRun({
+        goalAgentRun: run,
+        taskAgentRun: taskAgentRun.value,
+        noteAgentRun: noteWorkflow.noteAgentRun.value,
+      });
+      if (next === taskAgentRun.value) return;
+      taskAgentRun.value = next;
+      if (next && shouldDualMirrorPrimaryTaskGoalSession(next)) {
+        taskWorkflow.syncLinkedGoalFromTaskAgentRun(next);
+      }
+    },
+  );
+
+  syncTaskAgentRunFromStart = (result) => {
+    syncSelectedAgentRun(result);
+    syncAgentRunListItem(result.run);
+  };
+
+  function syncAgentRunListItem(run: AgentRun | null | undefined) {
     if (!run) return;
     agentRunList.value = agentRunList.value.filter((item) => item.runId !== run.runId);
     agentRunList.value = [run, ...agentRunList.value]
@@ -271,7 +408,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   async function loadAgentRunList() {
     agentRunListLoading.value = true;
     try {
-      const runs = await service.listAgentRuns({ limit: 5 });
+      const runs = unwrap(await service.listAgentRuns({ limit: 5 }));
       agentRunList.value = Array.isArray(runs) ? runs : [];
     } catch {
       agentRunList.value = [];
@@ -279,6 +416,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       syncAgentRunListItem(goalWorkflow.goalAgentRun.value?.run);
       syncAgentRunListItem(noteWorkflow.noteAgentRun.value?.run);
       syncAgentRunListItem(knowledgeQaWorkflow.knowledgeQaAgentRun.value?.run);
+      syncAgentRunListItem(taskAgentRun.value?.run);
       agentRunListLoading.value = false;
     }
   }
@@ -293,7 +431,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
 
   async function loadKnowledgeNoteList() {
     try {
-      await fetchResources();
+      await loadRecentKnowledgeNotes();
     } catch {
       // The AI workspace still works when the repository list is unavailable.
     }
@@ -356,7 +494,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   );
 
   const notePreview = computed(() => {
-    const content = noteWorkflow.noteSummary.value?.resource?.content;
+    const content = noteWorkflow.noteSummary.value?.note?.content;
     if (!content) return t('aiAssistant.dialogs.note.previewUnavailable');
     return content.slice(0, 280);
   });
@@ -376,6 +514,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
         noteAgentLoading: noteWorkflow.noteAgentLoading.value,
         noteAgentDraftReady: Boolean(noteWorkflow.noteAgentDraftArtifact.value),
         noteSummary: noteWorkflow.noteSummary.value,
+        taskAgentLoading: taskWorkflow.taskAgentLoading.value,
+        taskAgentRun: taskAgentRun.value,
       },
       t,
       formatters.formatExecutionOutcome,
@@ -396,6 +536,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       !knowledgeQaWorkflow.knowledgeQueryLoading.value &&
       !noteWorkflow.noteCreating.value &&
       !noteWorkflow.noteAgentLoading.value &&
+      !taskWorkflow.taskAgentLoading.value &&
       (toolMode.value !== 'knowledge-generate' || chatSession.hasWorkflowMessages.value) &&
       (toolMode.value !== 'knowledge-qa' || chatSession.hasWorkflowUserMessages.value),
   );
@@ -417,31 +558,32 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     }
   }
 
-  async function selectAgentRun(run: AgentRunSummary) {
+  async function selectAgentRun(run: AgentRun): Promise<import('@dailyuse/contracts/ai').AgentRunResult | null> {
     const conversationId = run.conversationId;
-    if (!conversationId) return;
+    if (!conversationId) return null;
 
     let conversation = chatSession.conversationList.value.find(
       (item) => item.id === conversationId,
     );
     if (!conversation) {
       await chatSession.loadConversationList(service, { preserveSelection: true });
-      conversation = chatSession.conversationList.value.find(
-        (item) => item.id === conversationId,
-      );
+      conversation = chatSession.conversationList.value.find((item) => item.id === conversationId);
     }
     if (conversation) {
       await selectConversation(conversation);
     }
     try {
-      const result = await service.getAgentRun(run.runId);
+      const result = unwrap(await service.getAgentRun(run.runId));
       if (result?.run) {
         syncSelectedAgentRun(result);
         persistence.persistWorkflowState(conversationId);
+        // Residual 381: return restored snapshot so Host workbench can reopen.
+        return result;
       }
     } catch {
       // Keep the conversation selection even when the runtime snapshot is gone.
     }
+    return null;
   }
 
   async function openRecentGoal(goalId: string) {
@@ -450,9 +592,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   }
 
   async function openRecentKnowledgeNote(resourceId: string) {
-    if (!resourceId) return;
-    await requestOpenResource(resourceId);
-    await router.push('/repository');
+    await openKnowledgeNoteInRepository(resourceId);
   }
 
   async function maybeRenameCurrentConversation(name: string) {
@@ -460,12 +600,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     const currentTitle = chatSession.conversationTitle.value;
     if (!nextName || nextName === currentTitle) return;
     chatSession.conversationTitle.value = nextName;
-    await maybeRenameConversation(
-      nextName,
-      currentTitle,
-      chatConversationId.value,
-      service,
-      () => chatSession.loadConversationList(service),
+    await maybeRenameConversation(nextName, currentTitle, chatConversationId.value, service, () =>
+      chatSession.loadConversationList(service),
     );
   }
 
@@ -534,19 +670,34 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       conversationListLoading: chatSession.conversationListLoading,
       agentRunList,
       agentRunListLoading,
+      /** Residual 427: dedicated Host task.create AgentRun session field. */
+      taskAgentRun,
       recentGoalList,
       recentKnowledgeNoteList,
       messagesViewport: chatSession.messagesViewport,
       selectConversation,
       deleteConversation: (id: string) =>
-        chatSession.deleteConversation(id, service, persistence.clearWorkflowState, modelSelection.clearConversationModelSelection),
+        chatSession.deleteConversation(
+          id,
+          service,
+          persistence.clearWorkflowState,
+          modelSelection.clearConversationModelSelection,
+        ),
       loadConversationList: loadWorkspaceLists,
       selectAgentRun,
       openRecentGoal,
       openRecentKnowledgeNote,
       startNewConversation,
+      executionProfileId: chatSession.executionProfileId,
+      selectExecutionProfile: chatSession.selectExecutionProfile,
+      openChatHostTurns: chatSession.openChatHostTurns,
       handleSendChat: () =>
-        chatSession.handleSendChat(service, modelSelection.selectedModel.value, currentConversationLabel.value, adjustComposerHeight),
+        chatSession.handleSendChat(
+          service,
+          modelSelection.selectedModel.value,
+          currentConversationLabel.value,
+          adjustComposerHeight,
+        ),
       stopGenerating: () => chatSession.stopGenerating(),
     },
     model: {
@@ -561,6 +712,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       askKnowledgeFromConversation,
     },
     noteWorkflow,
+    taskWorkflow,
     formatters,
     common: {
       toolMode,
@@ -575,4 +727,3 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     },
   };
 }
-

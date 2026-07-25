@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
  * NoteCapsulePreview — 笔记胶囊摘要（§10）
- * 懒加载当前仓库资源；按更新时间取最近若干条。
+ * Web 使用 GitHub projection；Desktop 使用 Local Vault 扫描。
+ * 不再读取已退役的数据库 Repository/Resource CRUD。
  */
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRepository } from '../../../modules/repository/composables/useRepository';
+import { useRecentKnowledgeNotes } from '../../../modules/repository/composables/useRecentKnowledgeNotes';
 
 const RECENT_LIMIT = 4;
 const CACHE_MS = 45_000;
@@ -16,40 +17,23 @@ defineEmits<{
 }>();
 
 const { t } = useI18n();
-const repo = useRepository();
+const recentNotes = useRecentKnowledgeNotes();
 
 const loadedAt = ref(0);
-const localError = ref<string | null>(null);
-const isLoading = ref(false);
 
-const recent = computed(() => {
-  const list = [...(repo.resources.value ?? [])];
-  list.sort((a, b) => Number(b.updatedAt ?? b.createdAt ?? 0) - Number(a.updatedAt ?? a.createdAt ?? 0));
-  return list.slice(0, RECENT_LIMIT);
-});
+const recent = computed(() => recentNotes.notes.value.slice(0, RECENT_LIMIT));
+const totalCount = computed(() => recentNotes.notes.value.length);
+const isLoading = computed(() => recentNotes.isLoading.value);
+const localError = computed(() => recentNotes.error.value);
 
-const totalCount = computed(() => (repo.resources.value ?? []).length);
-
-function titleOf(item: { name?: string; title?: string; id: string }) {
-  return item.name || item.title || item.id;
+function titleOf(item: { title: string; path: string; id: string }) {
+  return item.title || item.path || item.id;
 }
 
 async function load(force = false) {
   if (!force && loadedAt.value && Date.now() - loadedAt.value < CACHE_MS) return;
-  isLoading.value = true;
-  localError.value = null;
-  try {
-    if (typeof (repo as { initRepository?: () => Promise<void> }).initRepository === 'function') {
-      await (repo as { initRepository: () => Promise<void> }).initRepository();
-    }
-    await repo.fetchResources();
-    if (repo.error?.value) localError.value = String(repo.error.value);
-    loadedAt.value = Date.now();
-  } catch (e) {
-    localError.value = e instanceof Error ? e.message : t('common.operationFailed');
-  } finally {
-    isLoading.value = false;
-  }
+  await recentNotes.load(Math.max(RECENT_LIMIT, 20));
+  loadedAt.value = Date.now();
 }
 
 onMounted(() => {
@@ -95,7 +79,7 @@ onMounted(() => {
         >
           <p class="truncate text-[11px] font-semibold leading-4">{{ titleOf(item) }}</p>
           <p class="mt-0.5 truncate text-[10px] text-muted-foreground">
-            {{ item.type || t('shell.preview.noteResource') }}
+            {{ item.path || t('shell.preview.noteResource') }}
           </p>
         </button>
       </li>

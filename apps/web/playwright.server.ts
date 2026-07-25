@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from 'dotenv';
 import { expand } from 'dotenv-expand';
+import { normalizeOrigin } from './e2e/helpers/normalize-origin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -60,9 +61,7 @@ process.env.AI_SERVICE_BASE_URL ??= DEFAULT_AI_SERVICE_ORIGIN;
 process.env.AI_SERVICE_SECRET ??= DEFAULT_AI_SERVICE_SECRET;
 process.env.AI_PROVIDER_ENCRYPTION_KEY ??= DEFAULT_AI_PROVIDER_ENCRYPTION_KEY;
 
-function normalizeOrigin(origin: string): string {
-  return origin.replace(/\/+$/, '');
-}
+/** Residual 1027: normalizeOrigin sole imported from e2e/helpers. */
 
 function getApiOrigin(): string {
   const apiOrigin = normalizeOrigin(process.env.E2E_API_BASE_URL ?? DEFAULT_API_ORIGIN);
@@ -88,6 +87,11 @@ function getWebServerRuntimeConfig() {
   };
 }
 
+/**
+ * Residual 1189 keep-boundary: Playwright getCorsOrigins — E2E joined CORS string.
+ * Unions E2E web origin + legacy localhost + env CORS_ORIGIN; returns comma-joined string.
+ * Soft residual 1189: API getCorsOrigins is env-only string[] (no force-merge).
+ */
 function getCorsOrigins(): string {
   const configuredOrigins = (process.env.CORS_ORIGIN ?? '')
     .split(',')
@@ -144,6 +148,60 @@ export function createApiServer() {
     },
     ...apiServerOptions,
   };
+}
+
+/**
+ * Residual 1339: real interactive GitHub OAuth Playwright path.
+ * Loads gitignored `.env.development.local` for GITHUB_OAUTH_* and forces
+ * RUNTIME_LANE=host-dev so getGithubOAuthConfig does NOT replace credentials
+ * with e2e-mock (residual 1333 keep-boundary).
+ */
+function loadGithubOAuthCredentialsFromLocalEnv(): {
+  clientId: string;
+  clientSecret: string;
+} {
+  // Explicit process.env wins (tests / CI inject). Files only fill gaps.
+  const presetId = process.env.GITHUB_OAUTH_CLIENT_ID?.trim() ?? '';
+  const presetSecret = process.env.GITHUB_OAUTH_CLIENT_SECRET?.trim() ?? '';
+  if (!presetId || !presetSecret) {
+    loadEnvFile(resolve(WORKSPACE_ROOT, '.env.development.local'));
+    loadEnvFile(resolve(WORKSPACE_ROOT, '.env.test.local'));
+  }
+  if (presetId) process.env.GITHUB_OAUTH_CLIENT_ID = presetId;
+  if (presetSecret) process.env.GITHUB_OAUTH_CLIENT_SECRET = presetSecret;
+  return {
+    clientId: process.env.GITHUB_OAUTH_CLIENT_ID?.trim() ?? '',
+    clientSecret: process.env.GITHUB_OAUTH_CLIENT_SECRET?.trim() ?? '',
+  };
+}
+
+export function createRealOAuthApiServer() {
+  const apiOrigin = getApiOrigin();
+  const { clientId, clientSecret } = loadGithubOAuthCredentialsFromLocalEnv();
+
+  return {
+    command: 'pnpm exec tsx ./e2e/helpers/start-api-server.ts',
+    cwd: '.',
+    url: `${apiOrigin}/healthz`,
+    env: {
+      ...process.env,
+      NODE_ENV: 'test',
+      // host-dev: real provider when both secrets present (not e2e-mock).
+      RUNTIME_LANE: 'host-dev',
+      E2E_REAL_GITHUB_OAUTH: '1',
+      GITHUB_OAUTH_CLIENT_ID: clientId,
+      GITHUB_OAUTH_CLIENT_SECRET: clientSecret,
+      CORS_ORIGIN: getCorsOrigins(),
+    },
+    ...apiServerOptions,
+  };
+}
+
+export function hasRealGithubOAuthCredentials(): boolean {
+  const { clientId, clientSecret } = loadGithubOAuthCredentialsFromLocalEnv();
+  if (!clientId || !clientSecret) return false;
+  if (clientId === 'e2e-mock' || clientId === 'mock') return false;
+  return true;
 }
 
 export function createPowerSyncTestServer() {

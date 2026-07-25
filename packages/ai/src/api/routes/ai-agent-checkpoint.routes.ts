@@ -1,3 +1,6 @@
+/**
+ * Residual 965: getRequestId sole import (packages/ai/src/shared/get-request-id.ts).
+ */
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
 import {
@@ -10,14 +13,11 @@ import {
 } from '@dailyuse/utils/result';
 import { AgentRunSchema, AgentStateSchema, AgentRunResultSchema, AgentEventSchema } from '@dailyuse/contracts/ai';
 import type { AIAgentCheckpointController } from '../../server/transport/ai-agent-checkpoint.controller';
+import { getRequestId } from '../../shared/get-request-id';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
-}
-
-function getRequestId(req: { traceId?: string; id?: string }): string | undefined {
-  return req.traceId ?? req.id;
 }
 
 export function registerAIAgentCheckpointRoutes(
@@ -61,6 +61,7 @@ export function registerAIAgentCheckpointRoutes(
       responses: {
         204: { description: 'Checkpoint upserted successfully' },
         400: errorResponse('参数错误'),
+        403: errorResponse('无权限覆盖其他身份的 Agent checkpoint'),
       },
     },
     [auth],
@@ -75,7 +76,7 @@ export function registerAIAgentCheckpointRoutes(
         interrupts: body.interrupts,
         requestId: getRequestId(req),
       });
-      return ok(undefined);
+      return ok(null);
     },
     { successStatus: 204 },
   );
@@ -165,7 +166,7 @@ export function registerAIAgentCheckpointRoutes(
         runId: params.runId,
         requestId: getRequestId(req),
       });
-      return ok(undefined);
+      return ok(null);
     },
     { successStatus: 204 },
   );

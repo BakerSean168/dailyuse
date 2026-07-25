@@ -6,12 +6,12 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { GoalChannels } from '@dailyuse/contracts/electron';
 import type { IGoalFocusApiClient, IResultIpcClient } from '../types';
 import type { FocusModeDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils/logger';
 
 export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
-  private readonly channel = 'goal:focus-mode';
   private readonly logger = createLogger('goal:focus-ipc');
 
   constructor(private readonly ipcClient: IResultIpcClient) {}
@@ -27,7 +27,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   // ===== Session Management =====
 
   async getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>> {
-    const channel = `${this.channel}:get`;
+    const channel = GoalChannels.FOCUS_MODE_GET;
     this.logger.info('获取当前专注模式开始', { channel });
     const result = await this.ipcClient.invoke<FocusModeDTO | null>(channel);
     this.logger.info(`获取当前专注模式结果 ${this.stringify({ ok: result.ok })}`);
@@ -35,7 +35,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   }
 
   async activateFocusMode(request: ActivateFocusModeRequest): Promise<Result<FocusModeDTO>> {
-    const channel = `${this.channel}:activate`;
+    const channel = GoalChannels.FOCUS_MODE_ACTIVATE;
     this.logger.info(`启用专注模式开始 ${this.stringify({ channel, request })}`);
     const result = await this.ipcClient.invoke<FocusModeDTO>(channel, request);
     this.logger.info(`启用专注模式结果 ${this.stringify({ ok: result.ok })}`);
@@ -43,7 +43,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   }
 
   async deactivateFocusMode(): Promise<Result<FocusModeDTO | null>> {
-    const channel = `${this.channel}:deactivate`;
+    const channel = GoalChannels.FOCUS_MODE_DEACTIVATE;
     this.logger.info('停用专注模式开始', { channel });
     const result = await this.ipcClient.invoke<FocusModeDTO | null>(channel);
     this.logger.info(`停用专注模式结果 ${this.stringify({ ok: result.ok })}`);
@@ -51,7 +51,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   }
 
   async extendFocusMode(request: { newEndTime: number }): Promise<Result<FocusModeDTO>> {
-    const channel = `${this.channel}:extend`;
+    const channel = GoalChannels.FOCUS_MODE_EXTEND;
     this.logger.info(`延长专注模式开始 ${this.stringify({ channel, request })}`);
     const result = await this.ipcClient.invoke<FocusModeDTO>(channel, request);
     this.logger.info(`延长专注模式结果 ${this.stringify({ ok: result.ok })}`);

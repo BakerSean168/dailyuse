@@ -2,7 +2,6 @@ import type { ILogger } from '@dailyuse/utils/logger';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-  AuthSession,
 } from '@dailyuse/authentication/electron';
 import {
   type IpcResult,
@@ -15,9 +14,6 @@ import {
   AuthRuntimeState,
   ConnectionStatus,
   type AuthResponseDTO,
-  type TokenStatus,
-  type AutoLoginResult as ContractAutoLoginResult,
-  type SessionRestoreResult as ContractSessionRestoreResult,
   type UserInfo,
   type SessionInfo,
   type AuthStatus,
@@ -27,9 +23,12 @@ import {
 import {
   TokenManager,
   SessionManager,
-  type SessionStatus,
   NetworkStateManager,
 } from '../infrastructure';
+import type {
+  AutoLoginResult,
+  SessionRestoreResult as InfrastructureSessionRestoreResult,
+} from '../infrastructure/session-types';
 import { AuthRemoteGateway } from './auth-remote-gateway';
 import { refreshDesktopSession } from './refresh-desktop-session';
 import { DesktopAuthAccountProjectionService } from './desktop-auth-account-projection-service';
@@ -45,14 +44,17 @@ import {
 } from './auth-coordinator-helpers';
 
 // ===== Extended Types =====
+// Reuse infrastructure AutoLoginResult; lifecycle adds hasValidSession for initialize/bootstrap.
+// Residual 883: intentional layered extension keep-boundary
+//   (contracts SessionRestoreResult → infrastructure SessionRestoreResult → lifecycle).
+// Residual 935: lifecycle name dual retired — LifecycleSessionRestoreResult sole lifecycle name
+//   (≠ contracts/infrastructure SessionRestoreResult; required hasValidSession keep-boundary).
 
-export interface AutoLoginResult extends ContractAutoLoginResult {
-  session?: AuthSession;
-}
+// Residual 887: AutoLoginResult re-export only (sole extension body in session-types).
+export type { AutoLoginResult } from '../infrastructure/session-types';
 
-export interface SessionRestoreResult extends ContractSessionRestoreResult {
+export interface LifecycleSessionRestoreResult extends InfrastructureSessionRestoreResult {
   hasValidSession: boolean;
-  session?: AuthSession;
 }
 
 /**
@@ -73,11 +75,11 @@ export class DesktopAuthLifecycleCoordinator {
     private isInitializedRef: { value: boolean },
   ) {}
 
-  async initialize(): Promise<SessionRestoreResult> {
+  async initialize(): Promise<LifecycleSessionRestoreResult> {
     if (this.isInitializedRef.value) {
       this.logger.warn('AuthDesktopApplicationService already initialized');
       return {
-        success: true,
+        ok: true,
         hasValidSession: this.sessionManager?.getCurrentSession()?.isValid() ?? false,
         runtimeState: this.authState.runtimeState,
       };
@@ -121,7 +123,7 @@ export class DesktopAuthLifecycleCoordinator {
 
       return {
         ok: true,
-        hasValidSession: result.ok ?? false,
+        hasValidSession: result.ok,
         runtimeState: this.authState.runtimeState,
         identityId: result.identityId,
         sessionId: result.session?.id,
@@ -358,38 +360,6 @@ export class DesktopAuthLifecycleCoordinator {
       : null;
 
     return { status, currentUser };
-  }
-
-  async verifyToken(token: string): Promise<{ valid: boolean; error?: string }> {
-    this.logger.debug('Verify token');
-
-    try {
-      const currentToken = await this.tokenManager.getAccessToken();
-      if (!currentToken) {
-        return { valid: false, error: 'No token available' };
-      }
-      return { valid: token === currentToken };
-    } catch (error) {
-      return { valid: false, error: String(error) };
-    }
-  }
-
-  async getTokenStatus(): Promise<TokenStatus> {
-    return await this.tokenManager.getStatus();
-  }
-
-  async getSessionStatus(): Promise<SessionStatus | null> {
-    if (!this.sessionManager) {
-      return null;
-    }
-    return await this.sessionManager.getStatus();
-  }
-
-  async cleanupExpiredSessions(): Promise<number> {
-    if (!this.sessionManager) {
-      return 0;
-    }
-    return await this.sessionManager.cleanupExpiredSessions();
   }
 
   cleanup(): void {

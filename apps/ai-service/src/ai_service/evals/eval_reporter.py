@@ -29,7 +29,7 @@ from ai_service.evals.eval_models import (
 from ai_service.schemas import (
     AgentArtifact,
     AgentRunResult,
-    IndexedKnowledgeResource,
+    IndexedKnowledgeNote,
     KnowledgeQueryResponse,
     ProviderConfig,
 )
@@ -129,7 +129,7 @@ def build_knowledge_grounding_eval_result(
     *,
     case: KnowledgeGroundingEvalCase,
     response: KnowledgeQueryResponse,
-    indexed_resources: list[IndexedKnowledgeResource],
+    indexed_resources: list[IndexedKnowledgeNote],
 ) -> EvalResult:
     """Convert a knowledge-grounding response into standardized checks."""
 
@@ -152,7 +152,7 @@ def build_knowledge_grounding_eval_result(
             name="citations_reference_indexed_resources",
             passed=all(path in indexed_paths for path in cited_paths),
             detail=(
-                "All citations reference indexed repository resources."
+                "All citations reference indexed knowledge notes."
                 if all(path in indexed_paths for path in cited_paths)
                 else "Found citations that were not part of the indexed resource set."
             ),

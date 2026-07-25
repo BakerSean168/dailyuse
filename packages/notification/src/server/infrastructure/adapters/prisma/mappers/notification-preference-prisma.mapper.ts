@@ -1,3 +1,5 @@
+// Residual 1025: sole parseJsonSafe (local dual retired).
+import { parseJsonSafe } from '@dailyuse/utils/shared';
 /**
  * NotificationPreferencePrismaMapper — Bidirectional mapping between Prisma rows and domain NotificationPreference.
  * NotificationPreferencePrismaMapper —— Prisma 行数据与领域 NotificationPreference 之间的双向映射。
@@ -33,14 +35,6 @@ export type PrismaNotificationPreferenceRow = {
  * Safely parses a JSON string, returning null on failure.
  * 安全解析 JSON 字符串，失败时返回 null。
  */
-function parseJsonSafe<T>(value: string | null | undefined): T | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
-  }
-}
 
 export class NotificationPreferencePrismaMapper {
   /**

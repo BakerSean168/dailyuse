@@ -8,6 +8,11 @@ function sendJson(response: ServerResponse, status: number, body: unknown): void
   response.end(JSON.stringify(body));
 }
 
+/**
+ * Residual 1198 keep-boundary: e2e OpenAI mock readJson — IncomingMessage stream → Record.
+ * Accumulates request body chunks then JSON.parse as Record (throws on bad JSON).
+ * Soft residual 1198: auth-web Response→unknown|null and desktop fs path readJson differ (no force-merge).
+ */
 async function readJson(request: IncomingMessage): Promise<Record<string, unknown>> {
   const chunks: Buffer[] = [];
   for await (const chunk of request) {

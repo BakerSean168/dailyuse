@@ -53,7 +53,6 @@ export {
 } from './prisma';
 export {
   createScheduleRuntimeContribution,
-  type ScheduleRuntimeContribution,
   type ScheduleTaskExecutionResult,
   type ScheduleTaskSourceExecutor,
 } from './runtime';

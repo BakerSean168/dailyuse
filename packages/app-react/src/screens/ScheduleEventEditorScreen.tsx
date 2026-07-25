@@ -17,6 +17,10 @@ import {
   ThemedText,
 } from '@dailyuse/ui-react-native';
 
+/**
+ * Soft residual 1228: app-react schedule toDateInput — null|undefined → ''; UTC ISO YMD.
+ * Accepts undefined (broader than GoalEditor number|null); same empty+UTC body (no force-extract).
+ */
 function toDateInput(timestamp: number | null | undefined) {
   if (!timestamp) {
     return '';
@@ -24,6 +28,11 @@ function toDateInput(timestamp: number | null | undefined) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
+/**
+ * Residual 1231 keep-boundary: app-react schedule toTimeInput — epoch → UTC HH:mm ISO slice.
+ * Schedule event editor; falsy → ''; toISOString().slice(11, 16) (UTC clock, not local getHours).
+ * Soft residual 1231: task local padStart + '09:00' default differs (no force-merge).
+ */
 function toTimeInput(timestamp: number | null | undefined) {
   if (!timestamp) {
     return '';
@@ -31,6 +40,11 @@ function toTimeInput(timestamp: number | null | undefined) {
   return new Date(timestamp).toISOString().slice(11, 16);
 }
 
+/**
+ * Residual 1234 keep-boundary: app-react schedule parseTimestamp — YMD+HH:mm → epoch|null.
+ * trim; empty either → null; Date.parse(`${date}T${time}:00`); isNaN → null (not local Date ctor).
+ * Soft residual 1234: task combineDateAndTime always-number local path differs (no force-merge).
+ */
 function parseTimestamp(dateValue: string, timeValue: string) {
   const date = dateValue.trim();
   const time = timeValue.trim();
@@ -41,10 +55,19 @@ function parseTimestamp(dateValue: string, timeValue: string) {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
+/**
+ * Soft residual 1243: app-react buildDuration — start/end epoch → minutes (compute only, no display i18n).
+ * Not a formatDuration presentation helper; min 1 minute (no force-merge).
+ */
 function buildDuration(startTime: number, endTime: number) {
   return Math.max(1, Math.round((endTime - startTime) / 60000));
 }
 
+/**
+ * Residual 1246 keep-boundary: app-react describeConflict — English status pill strings.
+ * No conflict / N conflicts detected; not vue-i18n schedule.conflictAlert.* keys.
+ * Soft residual 1246: vue ConflictAlert hasConflict-only + formatSuggestion key duals (no force-merge).
+ */
 function describeConflict(conflicts: ConflictDetectionResult | null) {
   if (!conflicts?.hasConflict) {
     return 'No conflict detected';

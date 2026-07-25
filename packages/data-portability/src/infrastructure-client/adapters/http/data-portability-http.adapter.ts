@@ -4,7 +4,14 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient, IDataPortabilityApiClient } from '../types';
-import type { ExportUserDataReq, ExportUserDataRes, ImportUserDataReq, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
+import type {
+  ExportServerHeldDataDisclosureReq,
+  ExportServerHeldDataDisclosureRes,
+  ExportUserDataReq,
+  ExportUserDataRes,
+  ImportUserDataReq,
+  ImportUserDataRes,
+} from '@dailyuse/contracts/data-portability';
 
 export class DataPortabilityHttpAdapter implements IDataPortabilityApiClient {
   private readonly baseUrl = '/data-portability';
@@ -15,11 +22,19 @@ export class DataPortabilityHttpAdapter implements IDataPortabilityApiClient {
     return this.httpClient.post(`${this.baseUrl}/export`, data);
   }
 
+  async exportServerHeldDataDisclosure(
+    data: ExportServerHeldDataDisclosureReq,
+  ): Promise<Result<ExportServerHeldDataDisclosureRes>> {
+    return this.httpClient.post(`${this.baseUrl}/server-held-data-disclosure`, data);
+  }
+
   async importUserData(data: ImportUserDataReq): Promise<Result<ImportUserDataRes>> {
     return this.httpClient.post(`${this.baseUrl}/import`, data);
   }
 }
 
-export function createDataPortabilityHttpAdapter(httpClient: IResultHttpClient): DataPortabilityHttpAdapter {
+export function createDataPortabilityHttpAdapter(
+  httpClient: IResultHttpClient,
+): DataPortabilityHttpAdapter {
   return new DataPortabilityHttpAdapter(httpClient);
 }

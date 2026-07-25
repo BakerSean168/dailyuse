@@ -1,21 +1,21 @@
 import { createHash } from 'node:crypto';
 import type {
   IAIExecutionLogPort,
-  KnowledgeSourceResource,
-  KnowledgeIndexedResource,
+  KnowledgeSourceNote,
+  KnowledgeIndexedNote,
 } from '../../ports';
 import { createLogger } from '@dailyuse/utils/logger';
 
 const logger = createLogger('AIKnowledgeIndexHelpers');
 
-export interface SyncKnowledgeResourcesOptions {
+export interface SyncKnowledgeNotesOptions {
   force?: boolean;
   requestId?: string;
   providerConfig?: import('../../ports').ChatExecutionProviderConfig;
 }
 
-export interface SyncKnowledgeResourcesResult {
-  indexedResources: KnowledgeIndexedResource[];
+export interface SyncKnowledgeNotesResult {
+  indexedNotes: KnowledgeIndexedNote[];
   indexedCount: number;
   reusedCount: number;
   failedCount: number;
@@ -27,16 +27,16 @@ export interface SyncKnowledgeResourcesResult {
   }>;
 }
 
-export interface SyncKnowledgeResourceByIdResult {
-  resource: KnowledgeSourceResource | null;
-  sync: SyncKnowledgeResourcesResult | null;
+export interface SyncKnowledgeNoteByIdResult {
+  note: KnowledgeSourceNote | null;
+  sync: SyncKnowledgeNotesResult | null;
 }
 
-export function mergeUniqueResources(
-  resources: KnowledgeSourceResource[],
-): KnowledgeSourceResource[] {
+export function mergeUniqueNotes(
+  resources: KnowledgeSourceNote[],
+): KnowledgeSourceNote[] {
   const seen = new Set<string>();
-  const merged: KnowledgeSourceResource[] = [];
+  const merged: KnowledgeSourceNote[] = [];
 
   for (const resource of resources) {
     if (seen.has(resource.resourceId)) {
@@ -49,7 +49,7 @@ export function mergeUniqueResources(
   return merged;
 }
 
-export function resolveSourceContentHash(resource: KnowledgeSourceResource): string {
+export function resolveSourceContentHash(resource: KnowledgeSourceNote): string {
   const metadataHash = resource.metadata?.['contentDigest'];
   if (typeof metadataHash === 'string' && metadataHash.length > 0) {
     return metadataHash;

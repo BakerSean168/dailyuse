@@ -1,5 +1,12 @@
+import type {
+  AgentAction,
+} from '@dailyuse/contracts/ai';
 import { useI18n } from 'vue-i18n';
-import type { GoalAgentAction, GoalAutomationResult, GoalExecutedAction, ChatItem } from './types';
+import type {
+  GoalAutomationResult,
+  GoalExecutedAction,
+  ChatItem,
+} from './types';
 
 export function useAIFormatters() {
   const { t } = useI18n();
@@ -26,15 +33,13 @@ export function useAIFormatters() {
     return labels[tool];
   }
 
-  function formatAgentTool(tool: GoalAgentAction['tool'] | string): string {
+  function formatAgentTool(tool: AgentAction['tool'] | string): string {
     const labels: Record<string, string> = {
       create_goal: t('aiAssistant.dialogs.automation.toolLabels.createGoal'),
       create_key_result: t('aiAssistant.dialogs.automation.toolLabels.createKeyResult'),
       create_task_template: t('aiAssistant.dialogs.automation.toolLabels.createTaskTemplate'),
       create_reminder: t('aiAssistant.dialogs.agent.toolLabels.createReminder'),
       create_knowledge_note: t('aiAssistant.dialogs.agent.toolLabels.createKnowledgeNote'),
-      update_knowledge_note: t('aiAssistant.dialogs.agent.toolLabels.updateKnowledgeNote'),
-      reindex_resource: t('aiAssistant.dialogs.agent.toolLabels.reindexResource'),
       search_existing_goals: t('aiAssistant.dialogs.agent.toolLabels.searchExistingGoals'),
       search_knowledge: t('aiAssistant.dialogs.agent.toolLabels.searchKnowledge'),
       fetch_goal_stats: t('aiAssistant.dialogs.agent.toolLabels.fetchGoalStats'),

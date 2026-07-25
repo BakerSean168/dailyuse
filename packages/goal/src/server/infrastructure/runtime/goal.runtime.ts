@@ -23,8 +23,6 @@ const logger = createLogger('GoalRuntime');
  * Runtime contribution contract used by module transports.
  * 模块传输层使用的运行时贡献契约。
  */
-export type GoalRuntimeContribution = GoalModuleRuntimeContribution;
-
 /**
  * Creates an instance-owned runtime contribution.
  * 创建实例级 runtime 贡献对象。
@@ -37,7 +35,7 @@ export type GoalRuntimeContribution = GoalModuleRuntimeContribution;
  * 未来的事件处理器（如任务完成 → 目标进度）可以按照 governance 模式
  * 在这里使用 eventBus.on/off 添加。
  */
-export function createGoalRuntimeContribution(): GoalRuntimeContribution {
+export function createGoalRuntimeContribution(): GoalModuleRuntimeContribution {
   let started = false;
 
   return {

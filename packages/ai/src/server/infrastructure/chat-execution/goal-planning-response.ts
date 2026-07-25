@@ -129,12 +129,17 @@ function safeParseJson(content: string): Record<string, unknown> | null {
   }
 }
 
+// Residual 1099 keep-boundary: plain-object or null (never empty {}).
+// Intentionally not data-portability schedule.importer asRecord ({} fallback) or toRecord (undefined).
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
 }
 
+// Residual 1117 keep-boundary: only non-empty trimmed strings → undefined otherwise (no String() coerce).
+// Soft residual 1117: data-portability schedule optionalString null + String() coerce (no force-merge).
+// Soft residual 1121: Host/runtime asNonEmptyString dual retired sole (same trim shape; chat-parse co-located).
 function toNonEmptyString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
@@ -149,6 +154,8 @@ function toPositiveInteger(value: unknown): number | undefined {
     : undefined;
 }
 
+// Residual 1105 keep-boundary: LLM JSON may stringify numbers → Number(string) allowed.
+// Soft residual 1105: chat-execution adapter toNumber is number-only for provider usage tokens.
 function toNumber(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
@@ -164,6 +171,8 @@ function toNumber(value: unknown): number | undefined {
   return undefined;
 }
 
+// Residual 1101 keep-boundary: positive finite number or Date.parse string → number|undefined.
+// Soft residual 1101: data-portability projection toTimestamp (any number/Date) + notification null (no force-merge).
 function toTimestamp(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
     return Math.round(value);
@@ -182,6 +191,8 @@ function toTimestamp(value: unknown): number | undefined {
   return undefined;
 }
 
+// Residual 1109 keep-boundary: LLM arrays → trim + drop empty (not knowledge-index keep-empty).
+// Soft residual 1109: knowledge-index sole + portable projection parseJsonField toStringArray (no force-merge).
 function toStringArray(value: unknown): string[] {
   return Array.isArray(value)
     ? value

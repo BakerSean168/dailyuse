@@ -20,8 +20,8 @@ export class ScheduleConflictResolutionService {
     private readonly conflictDetectionService: ScheduleConflictDetectionService,
   ) {}
 
-  async getConflicts(scheduleId: string): Promise<ConflictDetectionResult> {
-    return this.conflictDetectionService.getScheduleConflicts(scheduleId);
+  async getConflicts(scheduleId: string, identityId: string): Promise<ConflictDetectionResult> {
+    return this.conflictDetectionService.getScheduleConflicts(scheduleId, identityId);
   }
 
   async detectConflicts(
@@ -49,7 +49,10 @@ export class ScheduleConflictResolutionService {
       priority: request.priority,
       attendees: request.attendees,
     });
-    const conflicts = await this.conflictDetectionService.getScheduleConflicts(schedule.id);
+    const conflicts = await this.conflictDetectionService.getScheduleConflicts(
+      schedule.id,
+      identityId,
+    );
 
     return { schedule, conflicts };
   }
@@ -57,8 +60,9 @@ export class ScheduleConflictResolutionService {
   async resolveConflict(
     scheduleId: string,
     request: ResolveConflictRequest,
+    identityId: string,
   ): Promise<ResolveConflictResponseDTO> {
-    const currentEvent = await this.scheduleEventService.getSchedule(scheduleId);
+    const currentEvent = await this.scheduleEventService.getSchedule(scheduleId, identityId);
     if (!currentEvent) {
       throw toResultErrorException({ code: 'NOT_FOUND', message: '日程不存在' }, 404);
     }
@@ -74,30 +78,34 @@ export class ScheduleConflictResolutionService {
         );
 
       case 'AUTO':
-        return this.resolveAutomatically(scheduleId, currentEvent);
+        return this.resolveAutomatically(scheduleId, currentEvent, identityId);
 
       case 'ADJUST_START_TIME':
-        return this.adjustStartTime(scheduleId, currentEvent, request.newStartTime);
+        return this.adjustStartTime(scheduleId, currentEvent, identityId, request.newStartTime);
 
       case 'ADJUST_END_TIME':
-        return this.adjustEndTime(scheduleId, currentEvent, request.newEndTime);
+        return this.adjustEndTime(scheduleId, currentEvent, identityId, request.newEndTime);
 
       case 'ADJUST_DURATION':
-        return this.adjustDuration(scheduleId, currentEvent, request.newDuration);
+        return this.adjustDuration(scheduleId, currentEvent, identityId, request.newDuration);
     }
   }
 
   private async resolveAutomatically(
     scheduleId: string,
     currentEvent: ResolveConflictResponseDTO['schedule'],
+    identityId: string,
   ): Promise<ResolveConflictResponseDTO> {
-    const conflicts = await this.conflictDetectionService.getScheduleConflicts(scheduleId);
+    const conflicts = await this.conflictDetectionService.getScheduleConflicts(
+      scheduleId,
+      identityId,
+    );
     if (!conflicts.hasConflict || conflicts.suggestions.length === 0) {
       return this.noConflictResponse(currentEvent, conflicts, 'AUTO');
     }
 
     const suggestion = conflicts.suggestions[0];
-    const schedule = await this.scheduleEventService.updateSchedule(scheduleId, {
+    const schedule = await this.scheduleEventService.updateSchedule(scheduleId, identityId, {
       startTime: suggestion.newStartTime,
       endTime: suggestion.newEndTime,
     });
@@ -119,9 +127,13 @@ export class ScheduleConflictResolutionService {
   private async adjustStartTime(
     scheduleId: string,
     currentEvent: ResolveConflictResponseDTO['schedule'],
+    identityId: string,
     newStartTime?: number,
   ): Promise<ResolveConflictResponseDTO> {
-    const conflicts = await this.conflictDetectionService.getScheduleConflicts(scheduleId);
+    const conflicts = await this.conflictDetectionService.getScheduleConflicts(
+      scheduleId,
+      identityId,
+    );
     if (!conflicts.hasConflict) {
       return this.noConflictResponse(currentEvent, conflicts, 'ADJUST_START_TIME');
     }
@@ -130,7 +142,7 @@ export class ScheduleConflictResolutionService {
     const duration = currentEvent.endTime - currentEvent.startTime;
     const adjustedStartTime = newStartTime ?? latestOverlapEnd;
     const adjustedEndTime = adjustedStartTime + duration;
-    const schedule = await this.scheduleEventService.updateSchedule(scheduleId, {
+    const schedule = await this.scheduleEventService.updateSchedule(scheduleId, identityId, {
       startTime: adjustedStartTime,
       endTime: adjustedEndTime,
     });
@@ -150,9 +162,13 @@ export class ScheduleConflictResolutionService {
   private async adjustEndTime(
     scheduleId: string,
     currentEvent: ResolveConflictResponseDTO['schedule'],
+    identityId: string,
     newEndTime?: number,
   ): Promise<ResolveConflictResponseDTO> {
-    const conflicts = await this.conflictDetectionService.getScheduleConflicts(scheduleId);
+    const conflicts = await this.conflictDetectionService.getScheduleConflicts(
+      scheduleId,
+      identityId,
+    );
     if (!conflicts.hasConflict) {
       return this.noConflictResponse(currentEvent, conflicts, 'ADJUST_END_TIME');
     }
@@ -171,7 +187,7 @@ export class ScheduleConflictResolutionService {
       );
     }
 
-    const schedule = await this.scheduleEventService.updateSchedule(scheduleId, {
+    const schedule = await this.scheduleEventService.updateSchedule(scheduleId, identityId, {
       endTime: adjustedEndTime,
     });
 
@@ -190,9 +206,13 @@ export class ScheduleConflictResolutionService {
   private async adjustDuration(
     scheduleId: string,
     currentEvent: ResolveConflictResponseDTO['schedule'],
+    identityId: string,
     newDuration?: number,
   ): Promise<ResolveConflictResponseDTO> {
-    const conflicts = await this.conflictDetectionService.getScheduleConflicts(scheduleId);
+    const conflicts = await this.conflictDetectionService.getScheduleConflicts(
+      scheduleId,
+      identityId,
+    );
     if (!conflicts.hasConflict) {
       return this.noConflictResponse(currentEvent, conflicts, 'ADJUST_DURATION');
     }
@@ -213,7 +233,7 @@ export class ScheduleConflictResolutionService {
       );
     }
 
-    const schedule = await this.scheduleEventService.updateSchedule(scheduleId, {
+    const schedule = await this.scheduleEventService.updateSchedule(scheduleId, identityId, {
       endTime: adjustedEndTime,
     });
 

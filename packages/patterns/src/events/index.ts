@@ -1,4 +1,5 @@
 // Event patterns - base event handler and dispatcher
+// Residual 1031: sole createEventBusAdapter + event interfaces (goal dual re-exports).
 
 import type { IDomainEvent } from '@dailyuse/contracts/shared';
 
@@ -82,6 +83,7 @@ export interface IEventSender {
 }
 
 /**
+ * Residual 1031: sole IEventBus adapter factory.
  * 创建 IEventBus 适配器
  * 
  * 将应用层的事件总线（如 GlobalEventBus）适配为 IEventBus 接口，

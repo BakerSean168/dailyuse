@@ -6,6 +6,11 @@ Accepted
 ## Date
 2026-01-15
 
+## Implementation note (Residual 617 / 2026-07-22)
+Shared operation outcomes live under `@dailyuse/contracts/result` as `Result<T>`
+(and IPC/HTTP envelopes). The retired `ActionResult` / `CountResult` dual-track
+helpers must not be reintroduced.
+
 ## Context
 Code duplication of types (e.g., `User`, `TaskDTO`) across Frontend, Backend, and Desktop processes leads to synchronization bugs. If the API changes but the frontend type isn't updated, the app crashes at runtime. Ad-hoc/inline type definitions make refactoring dangerous.
 
@@ -19,7 +24,7 @@ All shared types must be defined in the unique source of truth: `packages/contra
 ### 2. What goes into Contracts?
 *   **Entities:** Core business objects (`Task`, `User`).
 *   **DTOs:** API Request/Response shapes (`CreateTaskRequest`, `TaskResponse`).
-*   **Results:** Operation result wrappers (`ActionResult`, `CountResult`).
+*   **Results:** Operation result wrappers (`Result<T>`, `IpcResult<T>`, `HttpResponse<T>`).
 *   **Enums:** Shared state indicators (`TaskStatus`, `Priority`).
 *   **Interfaces:** Service contracts (`IRepository`, `ILogger`).
 *   **Constants:** Shared business rules/magic numbers.

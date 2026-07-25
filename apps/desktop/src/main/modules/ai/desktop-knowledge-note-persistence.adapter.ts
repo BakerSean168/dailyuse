@@ -1,60 +1,59 @@
-import { ResourceType } from '@dailyuse/contracts/repository';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import { createHash } from 'node:crypto';
+import type { KnowledgeNotePersistedRef } from '@dailyuse/contracts/ai';
+import type { LocalVaultNoteDTO } from '@dailyuse/contracts/repository';
 import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
 } from '@dailyuse/ai/ports';
-import {
-  createRepositoryPowerSyncModule,
-  createFsStorageAdapter,
-  type RepositoryModuleInstance,
-} from '@dailyuse/repository/electron';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
 
 /**
- * Adapter that persists AI knowledge notes via the repository module's
- * application port — never bypassing it with raw repository access.
- *
- * 通过仓库模块的应用层门面持久化 AI 知识笔记的适配器 ——
- * 绝不绕过门面直接访问原始仓储。
+ * Desktop AI notes are committed to the selected local Vault only after the
+ * Agent approval contract has supplied proposal metadata.
  */
 export class DesktopKnowledgeNotePersistenceAdapter implements IKnowledgeNotePersistencePort {
-  private readonly repositoryModule: RepositoryModuleInstance;
-
-  constructor(db: IElectronDatabase, storageBaseDir: string) {
-    const storagePort = createFsStorageAdapter(storageBaseDir);
-
-    this.repositoryModule = createRepositoryPowerSyncModule(db, { storagePort });
-  }
+  constructor(private readonly localVault: LocalVaultElectronPort) {}
 
   async createKnowledgeNote(
     input: CreateKnowledgeNotePersistenceInput,
   ): Promise<CreateKnowledgeNotePersistenceResult> {
-    // Resolve the active repository through the application port.
-    // 通过应用层门面解析活跃仓库。
-    const repoResult = await this.repositoryModule.api.findActiveRepository(input.identityId);
-    if (!repoResult.ok) {
-      throw new Error('No repository available for current user');
-    }
-    const repository = repoResult.data as { id: string };
-
-    // Create the resource through the application port.
-    // 通过应用层门面创建资源。
-    const createResult = await this.repositoryModule.api.createResource(
-      {
-        repositoryId: String(repository.id),
-        name: input.fileName,
-        type: ResourceType.File,
-        content: input.content,
-      },
-      { identityId: input.identityId, deviceId: 'local-device' },
-    );
-
-    if (!createResult.ok) {
-      throw new Error('Failed to create knowledge note resource');
+    if (!input.proposalId || !input.proposalRevision || !input.requestId) {
+      throw new Error('A confirmed knowledge-note proposal is required for local Vault writes');
     }
 
-    return { resource: createResult.data as ResourceClientDTO };
+    const result = await this.localVault.writeConfirmedNote(input.identityId, {
+      relativePath: input.path,
+      contentMarkdown: input.content,
+      proposalId: input.proposalId,
+      proposalRevision: input.proposalRevision,
+      requestId: input.requestId,
+    });
+
+    return {
+      note: toKnowledgeNoteRef(input.identityId, result.note),
+    };
   }
+}
+
+/**
+ * Residual 1149 keep-boundary: Desktop local-Vault persisted-ref mapping.
+ * id = local-vault-<sha256(path)[:24]>; scope = local-vault-<identityId>;
+ * timestamps from note.updatedAt; size from vault DTO.
+ * Soft residual 1149: API GitHub connection mapping stays separate (no force-merge).
+ */
+function toKnowledgeNoteRef(identityId: string, note: LocalVaultNoteDTO): KnowledgeNotePersistedRef {
+  const id = `local-vault-${createHash('sha256').update(note.relativePath).digest('hex').slice(0, 24)}`;
+  const timestamp = Number(note.updatedAt);
+  return {
+    id,
+    repositoryScopeId: `local-vault-${identityId}`,
+    name: note.relativePath.split('/').pop() ?? note.title,
+    path: note.relativePath,
+    mimeType: 'text/markdown',
+    size: note.size,
+    content: note.contentMarkdown,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
 }

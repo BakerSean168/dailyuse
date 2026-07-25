@@ -4,6 +4,7 @@
  * 初始化测试环境，配置全局 mock
  */
 
+import { delay } from '@dailyuse/utils/frontend';
 import { vi, beforeEach, afterEach } from 'vitest';
 
 // Mock Electron once here so handler tests can focus on registration and
@@ -43,5 +44,5 @@ declare global {
 
 globalThis.testHelpers = {
   createMockAccountId: () => `account-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-  delay: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
+  delay, // Residual 1192: dual retired onto utils frontend sole
 };

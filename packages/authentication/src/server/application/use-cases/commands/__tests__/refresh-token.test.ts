@@ -38,10 +38,8 @@ const createMockIdentityRepo = (
   save: vi.fn().mockResolvedValue(undefined),
   findById: vi.fn().mockResolvedValue(null),
   findByEmail: vi.fn().mockResolvedValue(null),
-  findByPhone: vi.fn().mockResolvedValue(null),
   findByOAuth: vi.fn().mockResolvedValue(null),
   existsByEmail: vi.fn().mockResolvedValue(false),
-  existsByPhone: vi.fn().mockResolvedValue(false),
   delete: vi.fn().mockResolvedValue(undefined),
   ...overrides,
 });
@@ -51,6 +49,7 @@ const createMockSessionRepo = (
 ): IAuthSessionRepository => ({
   save: vi.fn().mockResolvedValue(undefined),
   findById: vi.fn().mockResolvedValue(null),
+  findByIdForIdentity: vi.fn().mockResolvedValue(null),
   findByIdentityId: vi.fn().mockResolvedValue([]),
   remove: vi.fn().mockResolvedValue(undefined),
   removeAllByIdentityId: vi.fn().mockResolvedValue(undefined),
@@ -184,9 +183,9 @@ describe('RefreshToken (Application Command)', () => {
       expect(result.error.message).toBe('Invalid refresh token or session expired');
     });
 
-    it('should return UNAUTHORIZED error when refresh token hash does not match', async () => {
+    it('should treat hash mismatch on an active session as refresh-token reuse', async () => {
       const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
-      // Session has a different hash
+      // Session has a different hash while remaining valid → reuse / theft signal.
       const session = buildActiveSession(identityId, 'different-hash');
 
       setTokenPayload(tokenProvider, identityId, session.id);
@@ -200,7 +199,8 @@ describe('RefreshToken (Application Command)', () => {
       expect(result.ok).toBe(false);
       if (result.ok) throw new Error('Expected failure result');
       expect(result.error.code).toBe('UNAUTHORIZED');
-      expect(result.error.message).toBe('Invalid refresh token or session expired');
+      expect(result.error.message).toContain('reuse');
+      expect(sessionRepo.removeAllByIdentityId).toHaveBeenCalledWith(session.identityId);
     });
 
     it('should return UNAUTHORIZED error when session is expired', async () => {
@@ -312,6 +312,29 @@ describe('RefreshToken (Application Command)', () => {
       expect(result.ok).toBe(true);
       if (!result.ok) throw new Error('Expected ok result');
       expect(result.data.session.isCurrentSession).toBe(true);
+    });
+
+    it('should revoke all sessions when a rotated refresh token is reused', async () => {
+      const identityId = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
+      // Session already rotated to a new hash; replay presents the old hash.
+      const session = buildActiveSession(identityId, 'current-rotated-hash');
+
+      setTokenPayload(tokenProvider, identityId, session.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
+      // hash() for presented token returns the stale value
+      (tokenProvider.hash as ReturnType<typeof vi.fn>).mockReturnValue('stale-previous-hash');
+
+      const result = await useCase.execute(
+        { refreshToken: 'stale-refresh-token' },
+        createContext(String(identityId)),
+      );
+
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected failure result');
+      expect(result.error.code).toBe('UNAUTHORIZED');
+      expect(result.error.message).toContain('reuse');
+      expect(sessionRepo.removeAllByIdentityId).toHaveBeenCalledWith(session.identityId);
+      expect(sessionRepo.save).not.toHaveBeenCalled();
     });
   });
 });

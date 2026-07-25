@@ -1,8 +1,10 @@
 import { z } from 'zod';
+import { KnowledgeCitationSchema } from './response-schemas';
 
 export const AgentIntentSchema = z.enum([
   'chat',
   'goal-create',
+  'task-create',
   'knowledge-qa',
   'knowledge-generate',
 ]);
@@ -12,6 +14,8 @@ export const AgentTypeSchema = z.enum([
   'goal.create',
   'knowledge.qa',
   'knowledge.generate',
+  /** Residual 427: Host task.create AgentType foundation (session + Host lane). */
+  'task.create',
 ]);
 export type AgentType = z.infer<typeof AgentTypeSchema>;
 
@@ -60,6 +64,7 @@ export type AgentMessage = z.infer<typeof AgentMessageSchema>;
 
 export const AgentArtifactKindSchema = z.enum([
   'goal_draft',
+  'task_draft',
   'knowledge_answer',
   'knowledge_note_draft',
   'action_plan',
@@ -76,14 +81,8 @@ export const AgentArtifactSchema = z.object({
 });
 export type AgentArtifact = z.infer<typeof AgentArtifactSchema>;
 
-export const AgentCitationSchema = z.object({
-  resourceId: z.string().min(1),
-  resourcePath: z.string().min(1),
-  title: z.string().nullish(),
-  chunkIndex: z.number().int().nonnegative(),
-  excerpt: z.string().min(1),
-  score: z.number().nonnegative(),
-});
+// Residual 757: AgentCitation dual body retired — reuses residual 755 KnowledgeCitationSchema.
+export const AgentCitationSchema = KnowledgeCitationSchema;
 export type AgentCitation = z.infer<typeof AgentCitationSchema>;
 
 export const AgentToolNameSchema = z.enum([
@@ -96,9 +95,9 @@ export const AgentToolNameSchema = z.enum([
   'create_key_result',
   'create_task_template',
   'create_reminder',
+  // First-phase knowledge writes are create-only; existing-note edit / reindex
+  // remain closed and must not appear as agent action tools.
   'create_knowledge_note',
-  'update_knowledge_note',
-  'reindex_resource',
 ]);
 export type AgentToolName = z.infer<typeof AgentToolNameSchema>;
 

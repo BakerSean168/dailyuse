@@ -2,8 +2,8 @@
  * AI Module — Infrastructure Server exports.
  * AI 模块 — 基础设施服务端导出。
  *
- * Re-exports the composition root, adapters, and legacy classes.
- * 重新导出组合根、适配器和遗留类。
+ * Re-exports the composition root, adapters, and runtime composition roots.
+ * 重新导出组合根、适配器与运行时组合根。
  */
 
 // ---------------------------------------------------------------------------
@@ -12,10 +12,8 @@
 // ---------------------------------------------------------------------------
 export {
   createAIModule,
-  createAIUseCases,
   type AIModuleDependencies,
   type AIModuleInstance,
-  type AIModuleUseCases,
   type AIModuleServices,
   type AIModuleRuntimeContribution,
   type AIRuntimeContributionsInput,
@@ -87,3 +85,60 @@ export {
   computeContentSha256,
   signInternalRequest,
 } from './chat-execution';
+
+// ---------------------------------------------------------------------------
+// Turn Engine (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  DirectTurnEngine,
+  DIRECT_TURN_ENGINE_ID,
+  ReadonlyAnalysisTurnEngine,
+  PI_READONLY_TURN_ENGINE_ID,
+  PiReadonlyProcessAdapter,
+  PI_READONLY_PROCESS_ADAPTER_ID,
+  PI_SPIKE_PINNED_LABEL,
+  PI_SPIKE_BINARY_ENV,
+  PI_SPIKE_ENABLED_ENV,
+} from './turn-engine';
+export type {
+  PiReadonlyProcessAdapterOptions,
+  PiReadonlyProcessDryRunSpawnPlan,
+} from './turn-engine';
+
+// ---------------------------------------------------------------------------
+// Workflow Adapter (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  LangGraphWorkflowAdapter,
+  LANGGRAPH_WORKFLOW_ADAPTER_ID,
+} from './workflow';
+
+// ---------------------------------------------------------------------------
+// Proposal Kernel (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  ProposalKernel,
+  PROPOSAL_KERNEL_PROVIDER_ID,
+} from './proposal-kernel';
+
+// ---------------------------------------------------------------------------
+// Capability Resolver (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  CapabilityResolver,
+  CAPABILITY_RESOLVER_ENGINE_ID,
+} from './capability-resolver';
+
+// ---------------------------------------------------------------------------
+// Model Gateway (ADR-035)
+// ---------------------------------------------------------------------------
+export {
+  CustomModelGateway,
+  CUSTOM_MODEL_GATEWAY_ID,
+} from './model-gateway';
+
+// ---------------------------------------------------------------------------
+// Assistant Facade (ADR-035)
+// ---------------------------------------------------------------------------
+export { AssistantFacade, ASSISTANT_FACADE_ID } from './assistant-facade';
+

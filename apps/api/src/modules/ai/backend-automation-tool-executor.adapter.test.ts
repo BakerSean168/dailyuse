@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   addKeyResult: vi.fn(),
   createTaskTemplate: vi.fn(),
   createReminderTemplate: vi.fn(),
-  listRelevantResources: vi.fn(),
+  listRelevantNotes: vi.fn(),
   buildContext: vi.fn(),
 }));
 
@@ -41,7 +41,7 @@ vi.mock('@dailyuse/reminder', () => ({
 vi.mock('./repository-knowledge-source.adapter', () => ({
   RepositoryKnowledgeSourceAdapter: vi.fn(function RepositoryKnowledgeSourceAdapter() {
     return {
-      listRelevantResources: mocks.listRelevantResources,
+      listRelevantNotes: mocks.listRelevantNotes,
     };
   }),
 }));
@@ -158,16 +158,20 @@ describe('BackendAutomationToolExecutorAdapter', () => {
         'create_reminder',
       ]);
       expect(result.every((action) => action.status === 'executed')).toBe(true);
-      expect(mocks.addKeyResult).toHaveBeenCalledWith('goal-1', {
-        title: 'Complete verified executor path',
-        valueType: 'Absolute',
-        aggregationMethod: 'Max',
-        startValue: 2,
-        currentValue: 4,
-        targetValue: 10,
-        unit: 'checks',
-        weight: 5,
-      });
+      expect(mocks.addKeyResult).toHaveBeenCalledWith(
+        'goal-1',
+        'identity-1',
+        {
+          title: 'Complete verified executor path',
+          valueType: 'Absolute',
+          aggregationMethod: 'Max',
+          startValue: 2,
+          currentValue: 4,
+          targetValue: 10,
+          unit: 'checks',
+          weight: 5,
+        },
+      );
       expect(mocks.createTaskTemplate).toHaveBeenCalledWith(
         expect.objectContaining({
           identityId: 'identity-1',
@@ -192,7 +196,8 @@ describe('BackendAutomationToolExecutorAdapter', () => {
             }),
           }),
           activeTime: expect.objectContaining({
-            startDate: expectedReminderStart.getTime(),
+            // Residual 835/1331: ActiveTime uses activatedAt sole (startDate dual retired).
+            activatedAt: expectedReminderStart.getTime(),
           }),
           notificationConfig: expect.objectContaining({
             channels: ['InApp'],

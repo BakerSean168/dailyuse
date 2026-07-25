@@ -16,12 +16,8 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class GetGoalFolderUseCase {
   constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-
-  async execute(id: string): Promise<Result<GoalFolderClientDTO>> {
-    const folder = await this.goalFolderRepository.findById(id);
+  async execute(id: string, identityId: string): Promise<Result<GoalFolderClientDTO>> {
+    const folder = await this.goalFolderRepository.findByIdForIdentity(identityId, id);
 
     if (!folder) {
       return error('NOT_FOUND', `Goal folder not found: ${id}`);

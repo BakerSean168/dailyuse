@@ -2,7 +2,7 @@ from ai_service.orchestrator.handlers.input_parsing import parse_provider_config
 from ai_service.orchestrator.models import WorkflowContext
 from ai_service.orchestrator.orchestrator import WorkflowHandler
 from ai_service.schemas import (
-    IndexedKnowledgeResource,
+    IndexedKnowledgeNote,
     KnowledgeQueryResponse,
 )
 from ai_service.services.knowledge_query_service import KnowledgeQueryService
@@ -23,7 +23,7 @@ class KnowledgeWorkflowHandler(WorkflowHandler):
 
         provider_config = parse_provider_config(provider_config_data)
         indexed_resources = [
-            IndexedKnowledgeResource(**item) if isinstance(item, dict) else item
+            IndexedKnowledgeNote(**item) if isinstance(item, dict) else item
             for item in indexed_resources_data
         ]
 

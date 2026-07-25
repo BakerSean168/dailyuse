@@ -27,12 +27,9 @@ export interface IReminderGroupRepository {
   save(group: ReminderGroup): Promise<void>;
 
   /**
-   * 通过 ID 查找聚合根
-   *
-   * @param id 提醒分组 ID
-   * @returns 聚合根实例，不存在则返回 null
+   * 通过 identity + ID 查找分组（唯一读路径）
    */
-  findById(id: string): Promise<ReminderGroup | null>;
+  findByIdForIdentity(identityId: string, id: string): Promise<ReminderGroup | null>;
 
   /**
    * 通过身份 ID 查找所有提醒分组
@@ -63,18 +60,19 @@ export interface IReminderGroupRepository {
   /**
    * 查找所有活跃的提醒分组
    *
-   * @param identityId 身份 ID（可选，不传则查找所有）
+   * @param identityId 身份 ID
    * @returns 活跃的提醒分组列表
    */
-  findActive(identityId?: string): Promise<ReminderGroup[]>;
+  findActive(identityId: string): Promise<ReminderGroup[]>;
 
   /**
-   * 批量查找提醒分组
+   * 批量查找提醒分组（identity-scoped）
    *
+   * @param identityId 身份 ID
    * @param ids ID 列表
    * @returns 提醒分组列表
    */
-  findByIds(ids: string[]): Promise<ReminderGroup[]>;
+  findByIds(identityId: string, ids: string[]): Promise<ReminderGroup[]>;
 
   /**
    * 通过名称查找分组（用于防重复检查）
@@ -95,14 +93,14 @@ export interface IReminderGroupRepository {
    *
    * @param id 提醒分组 ID
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * 检查提醒分组是否存在
    *
    * @param id 提醒分组 ID
    */
-  exists(id: string): Promise<boolean>;
+  exists(identityId: string, id: string): Promise<boolean>;
 
   /**
    * 统计身份下的提醒分组数量

@@ -15,7 +15,6 @@ import type { AccountClientPort } from '@dailyuse/account/client';
 import type { AIClientPort } from '@dailyuse/ai/client';
 import type { AuthenticationClientPort } from '@dailyuse/authentication/client';
 import type { GovernanceClientPort } from '@dailyuse/governance/client';
-import type { EditorClientPort } from '@dailyuse/editor/client';
 import type { GoalClientPort } from '@dailyuse/goal/client';
 import type { NotificationClientPort } from '@dailyuse/notification/client';
 import type { ReminderClientPort } from '@dailyuse/reminder/client';
@@ -27,6 +26,8 @@ import type { DataPortabilityClientPort } from '@dailyuse/data-portability/clien
 import type { Component } from 'vue';
 
 // ── Service Interfaces (structural, no private members) ──
+// Residual 927: I*Service = *ClientPort intentional DI facade keep-boundary
+// (InjectionKey naming surface; not a second interface body dual to force-merge).
 
 export type IAccountService = AccountClientPort;
 export type IAuthService = AuthenticationClientPort;
@@ -35,7 +36,6 @@ export type ITaskService = TaskClientPort;
 export type IScheduleService = ScheduleClientPort;
 export type IReminderService = ReminderClientPort;
 export type IRepositoryService = RepositoryClientPort;
-export type IEditorService = EditorClientPort;
 export type INotificationService = NotificationClientPort;
 export type ISettingService = SettingClientPort;
 export type IDataPortabilityService = DataPortabilityClientPort;

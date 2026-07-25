@@ -21,7 +21,6 @@ import {
 import {
   GoalRecordClientDTOSchema,
   GoalRecordListResSchema,
-  DeleteSuccessResSchema,
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId, KeyResultId, GoalRecordId } from '@dailyuse/contracts/primitives';
@@ -104,11 +103,12 @@ export function registerRecordRoutes(
       },
     },
     [auth],
-    (req) =>
+    (req, ctx) =>
       controller.listRecordsByKeyResult(
         req.params!.id,
         req.params!.krId,
         req.query as { limit?: number; offset?: number },
+        ctx,
       ),
   );
 
@@ -130,10 +130,11 @@ export function registerRecordRoutes(
       },
     },
     [auth],
-    (req) =>
+    (req, ctx) =>
       controller.listRecordsByGoal(
         req.params!.id,
         req.query as { limit?: number; offset?: number },
+        ctx,
       ),
   );
 
@@ -151,12 +152,12 @@ export function registerRecordRoutes(
         }),
       },
       responses: {
-        200: successResponse(DeleteSuccessResSchema, '删除成功'),
+        200: successResponse(z.null(), '删除成功'),
         404: errorResponse('记录不存在'),
       },
     },
     [auth],
-    (req) => controller.deleteRecord(req.params!.recordId),
+    (req, ctx) => controller.deleteRecord(req.params!.recordId, ctx),
   );
 
   return router;

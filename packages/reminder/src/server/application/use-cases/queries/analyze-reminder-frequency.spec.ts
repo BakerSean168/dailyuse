@@ -26,7 +26,7 @@ function stats(overrides: Partial<Stats> = {}): Stats {
 
 describe('AnalyzeReminderFrequencyUseCase', () => {
   const templateRepository = {
-    findById: vi.fn(),
+    findByIdForIdentity: vi.fn(),
     findByIdentityId: vi.fn(),
   } as any;
 
@@ -39,10 +39,10 @@ describe('AnalyzeReminderFrequencyUseCase', () => {
   });
 
   it('returns NOT_FOUND when template is not found', async () => {
-    templateRepository.findById.mockResolvedValue(null);
+    templateRepository.findByIdForIdentity.mockResolvedValue(null);
     const useCase = new AnalyzeReminderFrequencyUseCase(templateRepository, responseRepository);
 
-    const result = await useCase.execute('tpl-1');
+    const result = await useCase.execute('tpl-1', 'identity-1');
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -51,21 +51,21 @@ describe('AnalyzeReminderFrequencyUseCase', () => {
   });
 
   it('queries the response repository with the requested lookback window', async () => {
-    templateRepository.findById.mockResolvedValue({ id: 'tpl-1' });
+    templateRepository.findByIdForIdentity.mockResolvedValue({ id: 'tpl-1', identityId: 'identity-1' });
     responseRepository.getResponseStats.mockResolvedValue(stats());
     const useCase = new AnalyzeReminderFrequencyUseCase(templateRepository, responseRepository);
 
-    await useCase.execute('tpl-1', 7);
+    await useCase.execute('tpl-1', 'identity-1', 7);
 
-    expect(responseRepository.getResponseStats).toHaveBeenCalledWith('tpl-1', 7);
+    expect(responseRepository.getResponseStats).toHaveBeenCalledWith('tpl-1', 'identity-1', 7);
   });
 
   it('returns null when the template has no recorded responses', async () => {
-    templateRepository.findById.mockResolvedValue({ id: 'tpl-1' });
+    templateRepository.findByIdForIdentity.mockResolvedValue({ id: 'tpl-1', identityId: 'identity-1' });
     responseRepository.getResponseStats.mockResolvedValue(stats());
     const useCase = new AnalyzeReminderFrequencyUseCase(templateRepository, responseRepository);
 
-    const result = await useCase.execute('tpl-1', 7);
+    const result = await useCase.execute('tpl-1', 'identity-1', 7);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -74,7 +74,7 @@ describe('AnalyzeReminderFrequencyUseCase', () => {
   });
 
   it('computes metrics from the aggregated response stats', async () => {
-    templateRepository.findById.mockResolvedValue({ id: 'tpl-1' });
+    templateRepository.findByIdForIdentity.mockResolvedValue({ id: 'tpl-1', identityId: 'identity-1' });
     responseRepository.getResponseStats.mockResolvedValue(
       stats({
         total: 10,
@@ -88,7 +88,7 @@ describe('AnalyzeReminderFrequencyUseCase', () => {
     );
     const useCase = new AnalyzeReminderFrequencyUseCase(templateRepository, responseRepository);
 
-    const result = await useCase.execute('tpl-1', 30);
+    const result = await useCase.execute('tpl-1', 'identity-1', 30);
 
     expect(result.ok).toBe(true);
     if (result.ok && result.data) {
@@ -103,7 +103,7 @@ describe('AnalyzeReminderFrequencyUseCase', () => {
   });
 
   it('builds a global report by analyzing every template of an identity', async () => {
-    const templates = [{ id: 't1' }, { id: 't2' }, { id: 't3' }];
+    const templates = [{ id: 't1', identityId: 'identity-1' }, { id: 't2', identityId: 'identity-1' }, { id: 't3', identityId: 'identity-1' }];
     templateRepository.findByIdentityId.mockResolvedValue(templates);
     responseRepository.getResponseStats
       // t1: highly effective

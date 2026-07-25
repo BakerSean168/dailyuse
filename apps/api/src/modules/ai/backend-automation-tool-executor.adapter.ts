@@ -3,123 +3,36 @@ import {
   type IAIAutomationToolExecutorPort,
 } from '@dailyuse/ai/ports';
 import type { IdentityId } from '@dailyuse/contracts';
-import type {
-  GoalAutomationExecutedAction,
-  GoalAutomationReminderPreview,
-} from '@dailyuse/contracts/ai';
+import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
 import type { PrismaClient } from '@dailyuse/database';
 import { createGoalPrismaModule } from '@dailyuse/goal';
 import { createReminderPrismaModule } from '@dailyuse/reminder';
 import { createTaskPrismaModule } from '@dailyuse/task';
 import {
-  NotificationChannel,
-  ReminderType,
-  TriggerType,
-} from '@dailyuse/contracts/reminder';
-import {
-  DayOfWeek,
-  RecurrenceFrequency,
   TaskGoalBindingTrigger,
   TaskType,
 } from '@dailyuse/contracts/task';
 import { unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
+// Residual 1007: sole reminder time helpers (local dual retired).
+// Residual 1009: sole readNestedNumber (local dual retired).
+// Residual 1011: sole previewText (local dual retired; call sites keep maxLength 200).
+// Residual 1013: sole buildReminderTemplateInput (local dual retired).
+// Residual 1015: sole buildRecurrenceRule (local dual retired).
+import {
+  buildRecurrenceRule,
+  buildReminderTemplateInput,
+  previewText,
+  readNestedNumber,
+} from '@dailyuse/utils/shared';
 
 import { ControlledAnalyticsReadAdapter } from './controlled-analytics-read.adapter';
 import { RepositoryKnowledgeSourceAdapter } from './repository-knowledge-source.adapter';
 
 const logger = createLogger('BackendAutomationToolExecutor');
-const DAILY_REVIEW_INTERVAL_MINUTES = 24 * 60;
-const WEEKLY_REVIEW_INTERVAL_MINUTES = 7 * DAILY_REVIEW_INTERVAL_MINUTES;
-const DEFAULT_REMINDER_TIME_OF_DAY = '09:00';
-const REMINDER_TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-function previewText(value: string | null | undefined, maxLength = 200): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength - 3)}...`;
-}
-
-function readNestedNumber(source: unknown, path: readonly string[]): number {
-  let current = source;
-
-  for (const segment of path) {
-    if (!current || typeof current !== 'object' || !(segment in current)) {
-      return 0;
-    }
-    current = (current as Record<string, unknown>)[segment];
-  }
-
-  return typeof current === 'number' ? current : 0;
-}
-
-function normalizeReminderTimeOfDay(value: string | undefined): string {
-  return value && REMINDER_TIME_OF_DAY_PATTERN.test(value)
-    ? value
-    : DEFAULT_REMINDER_TIME_OF_DAY;
-}
-
-function buildReminderStartTimestamp(timeOfDay: string, now = Date.now()): number {
-  const [hours = 9, minutes = 0] = timeOfDay.split(':').map((item) => Number(item));
-  const start = new Date(now);
-  start.setHours(hours, minutes, 0, 0);
-  if (start.getTime() < now) {
-    start.setDate(start.getDate() + 1);
-  }
-  return start.getTime();
-}
-
-function buildReminderTemplateInput(reminder: GoalAutomationReminderPreview, now = Date.now()) {
-  const isOneTime = reminder.cadence === 'once';
-  const timeOfDay = normalizeReminderTimeOfDay(reminder.timeOfDay);
-  const startTime = buildReminderStartTimestamp(timeOfDay, now);
-  return {
-    title: reminder.title,
-    description: reminder.description,
-    type: isOneTime ? ReminderType.OneTime : ReminderType.Recurring,
-    trigger: isOneTime
-      ? {
-          type: TriggerType.FixedTime,
-          fixedTime: {
-            time: timeOfDay,
-            timezone: null,
-          },
-          interval: null,
-        }
-      : {
-          type: TriggerType.Interval,
-          fixedTime: null,
-          interval: {
-            minutes:
-              reminder.cadence === 'daily'
-                ? DAILY_REVIEW_INTERVAL_MINUTES
-                : WEEKLY_REVIEW_INTERVAL_MINUTES,
-            startTime,
-          },
-        },
-    activeTime: {
-      startDate: startTime,
-      endDate: null,
-    },
-    notificationConfig: {
-      channels: [NotificationChannel.InApp],
-      title: reminder.title,
-      body: reminder.description ?? null,
-      sound: null,
-      vibration: null,
-      actions: null,
-    },
-    importanceLevel: reminder.importance,
-    tags: ['goal-agent'],
-  };
-}
+// Residual 1015: buildRecurrenceRule elevated to @dailyuse/utils/shared.
+// Residual 1013/1011/1009/1007: related helpers elevated to @dailyuse/utils/shared.
 
 export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolExecutorPort {
   private readonly goalModule;
@@ -172,7 +85,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
       keyResultCount: input.plan.keyResults?.length ?? 0,
       taskTemplateCount: input.plan.taskTemplates?.length ?? 0,
       reminderCount: input.plan.reminders?.length ?? 0,
-      requestIdeaPreview: previewText(input.request.idea),
+      requestIdeaPreview: previewText(input.request.idea, 200),
     });
 
     for (const action of input.actions) {
@@ -181,7 +94,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
           identityId: input.identityId,
           tool: action.tool,
           index: action.index ?? null,
-          rationale: previewText(action.rationale),
+          rationale: previewText(action.rationale, 200),
           hasCreatedGoal: Boolean(createdGoalId),
         });
         if (action.tool === 'create_goal') {
@@ -232,16 +145,20 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
             throw new Error(`Missing key result draft for index ${action.index ?? -1}`);
           }
 
-          const result = await this.goalModule.api.addKeyResult(createdGoalId, {
-            title: keyResult.title,
-            valueType: keyResult.valueType,
-            aggregationMethod: keyResult.calculationMethod,
-            startValue: keyResult.startValue,
-            currentValue: keyResult.currentValue,
-            targetValue: keyResult.targetValue,
-            unit: keyResult.unit,
-            weight: keyResult.weight,
-          });
+          const result = await this.goalModule.api.addKeyResult(
+            createdGoalId,
+            input.identityId,
+            {
+              title: keyResult.title,
+              valueType: keyResult.valueType,
+              aggregationMethod: keyResult.calculationMethod,
+              startValue: keyResult.startValue,
+              currentValue: keyResult.currentValue,
+              targetValue: keyResult.targetValue,
+              unit: keyResult.unit,
+              weight: keyResult.weight,
+            },
+          );
 
           const createdKeyResult = unwrapOrThrowError(result);
           createdKeyResultIds.set(action.index ?? 0, createdKeyResult.id as KeyResultId);
@@ -293,7 +210,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
               timePoint: null,
               timeRange: null,
             },
-            recurrenceRule: this.buildRecurrenceRule(taskTemplate.cadence),
+            recurrenceRule: buildRecurrenceRule(taskTemplate.cadence),
             reminderConfig: null,
             importance: taskTemplate.importance,
             folderId: null,
@@ -364,7 +281,7 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
         }
 
         if (action.tool === 'search_notes') {
-          const resources = await this.knowledgeSource.listRelevantResources(
+          const resources = await this.knowledgeSource.listRelevantNotes(
             input.identityId,
             input.request.idea,
             5,
@@ -441,27 +358,4 @@ export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolEx
     return actions;
   }
 
-  private buildRecurrenceRule(cadence: 'daily' | 'weekly' | 'once') {
-    if (cadence === 'once') {
-      return null;
-    }
-
-    if (cadence === 'weekly') {
-      return {
-        frequency: RecurrenceFrequency.Weekly,
-        interval: 1,
-        daysOfWeek: [new Date().getDay() as (typeof DayOfWeek)[keyof typeof DayOfWeek]],
-        endDate: null,
-        occurrences: null,
-      };
-    }
-
-    return {
-      frequency: RecurrenceFrequency.Daily,
-      interval: 1,
-      daysOfWeek: [],
-      endDate: null,
-      occurrences: null,
-    };
-  }
 }

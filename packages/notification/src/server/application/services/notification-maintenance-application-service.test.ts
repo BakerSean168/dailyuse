@@ -47,7 +47,7 @@ describe('NotificationMaintenanceApplicationService', () => {
 
   beforeEach(() => {
     notificationRepository = createMockRepo<INotificationRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
       findByIdentityId: vi.fn().mockResolvedValue([]),
       save: vi.fn().mockResolvedValue(undefined),
       saveMany: vi.fn().mockResolvedValue(undefined),
@@ -58,24 +58,25 @@ describe('NotificationMaintenanceApplicationService', () => {
 
   it('soft deletes a single notification through the application service', async () => {
     const notification = createNotificationRecord();
-    (notificationRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(notification);
+    (notificationRepository.findByIdForIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(notification);
 
-    const result = await service.deleteNotification(notification.id);
+    const result = await service.deleteNotification(notification.id, IDENTITY_ID);
 
     expect(notification.softDelete).toHaveBeenCalledTimes(1);
     expect(notificationRepository.save).toHaveBeenCalledWith(notification);
     expect(result).toEqual({ ok: true, data: undefined });
   });
 
-  it('soft deletes found notifications in a batch and preserves the existing response surface', async () => {
+  it('soft deletes found notifications in a batch and returns deletedCount', async () => {
     const first = createNotificationRecord({ id: 'INotificationId_550e8400-e29b-41d4-a716-446655440001' });
     const second = createNotificationRecord({ id: 'INotificationId_550e8400-e29b-41d4-a716-446655440002' });
-    (notificationRepository.findById as ReturnType<typeof vi.fn>)
+    (notificationRepository.findByIdForIdentity as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(first)
       .mockResolvedValueOnce(second);
 
     const result = await service.batchDelete({
       notificationIds: [first.id, second.id],
+      identityId: IDENTITY_ID,
     });
 
     expect(first.softDelete).toHaveBeenCalledTimes(1);
@@ -83,7 +84,7 @@ describe('NotificationMaintenanceApplicationService', () => {
     expect(notificationRepository.saveMany).toHaveBeenCalledWith([first, second]);
     expect(result).toEqual({
       ok: true,
-      data: { success: true, affected: 2 },
+      data: { deletedCount: 2 },
     });
   });
 
@@ -122,12 +123,15 @@ describe('NotificationMaintenanceApplicationService', () => {
       includeDeleted: false,
       includeRead: true,
     });
-    expect(notificationRepository.deleteMany).toHaveBeenCalledWith([
-      'INotificationId_550e8400-e29b-41d4-a716-446655440010',
-    ]);
+    expect(notificationRepository.deleteMany).toHaveBeenCalledWith(
+      IDENTITY_ID,
+      [
+        'INotificationId_550e8400-e29b-41d4-a716-446655440010',
+      ],
+    );
     expect(result).toEqual({
       ok: true,
-      data: { success: true, affected: 1 },
+      data: { deletedCount: 1 },
     });
     vi.useRealTimers();
   });

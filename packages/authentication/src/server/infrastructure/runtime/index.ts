@@ -1,4 +1,4 @@
 export {
   createAuthenticationRuntimeContribution,
-  type AuthenticationRuntimeContribution,
 } from './authentication.runtime';
+export type { CreateAuthenticationRuntimeContributionOptions } from './authentication.runtime';

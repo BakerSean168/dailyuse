@@ -237,26 +237,3 @@ class FileBackedInMemorySaver(InMemorySaver):
             pickle.dump(payload, handle, protocol=pickle.HIGHEST_PROTOCOL)
         os.replace(tmp_path, self.path)
 
-
-def build_file_backed_saver(
-    *,
-    checkpoint_dir: str | Path | None,
-    name: str,
-) -> InMemorySaver:
-    """Create the configured Agent runtime checkpointer."""
-
-    if checkpoint_dir is None:
-        return InMemorySaver()
-    return FileBackedInMemorySaver(Path(checkpoint_dir) / f"{name}.pkl")
-
-
-def build_file_backed_run_history_store(
-    *,
-    checkpoint_dir: str | Path | None,
-    name: str,
-) -> AgentRunHistoryStore:
-    """Create the configured Agent run history store."""
-
-    if checkpoint_dir is None:
-        return AgentRunHistoryStore()
-    return AgentRunHistoryStore(Path(checkpoint_dir) / f"{name}-runs.json")

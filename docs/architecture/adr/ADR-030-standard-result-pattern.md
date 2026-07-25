@@ -6,6 +6,12 @@ Accepted
 ## Date
 2026-01-16
 
+## Implementation note (Residual 615 / Residual 617 / 2026-07-22)
+- `@dailyuse/contracts/response` is removed (stage-6).
+- Zero-consumer `ActionResult` / `actionOk` dual-track helpers are removed from
+  `@dailyuse/contracts/result` (Residual 615).
+- Canonical surface: `Result<T>` + `IpcResult<T>` + `HttpResponse<T>` only.
+
 ## Context
 Currently, the codebase suffers from "Type Schizophrenia":
 - `contracts/src/result`: A modern, Rust-inspired `Result<T, E>` pattern (`ok: boolean`).
@@ -22,7 +28,7 @@ We will **unify all operation results** using the **Result Pattern** defined in 
 
 ### 1. The Single Source of Truth
 - **Module**: `@dailyuse/contracts/result` is the **ONLY** legal way to return outcomes from Application-facing boundaries and external APIs.
-- **Legacy**: `@dailyuse/contracts/response` is **DEPRECATED** and will be removed.
+- **Legacy**: `@dailyuse/contracts/response` is **removed** (stage-6); do not reintroduce.
 
 ### 2. Standard Schema
 All internal operations (Functions, Services) and External APIs (HTTP REST) must conform to:
@@ -65,5 +71,5 @@ interface Failure {
 ## Migration Strategy
 1. Update transport adapters to consume `Result<T>` instead of legacy types.
 2. Keep persistence interfaces free to throw structured errors where that keeps use cases simpler.
-3. Mark `contracts/src/response` as `@deprecated`.
+3. ~~Mark `contracts/src/response` as `@deprecated`.~~ **Done — package removed.**
 4. Bulk refactor Controllers/module APIs to use shared Result helpers.

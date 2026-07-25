@@ -34,7 +34,7 @@ describe('ListReminderTemplatesUseCase', () => {
 
     const result = await useCase.execute({ groupId: 'group-1' }, { identityId: 'identity-1' });
 
-    expect(repository.findByGroupId).toHaveBeenCalledWith('group-1', {
+    expect(repository.findByGroupId).toHaveBeenCalledWith('group-1', 'identity-1', {
       includeHistory: true,
       historyLimit: 1,
     });

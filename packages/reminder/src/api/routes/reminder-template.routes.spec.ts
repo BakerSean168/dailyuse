@@ -161,7 +161,7 @@ describe('reminder template route contracts', () => {
           fixedTime: { time: '09:00', timezone: 'UTC' },
           interval: null,
         },
-        activeTime: { startDate: Date.now(), endDate: null },
+        activeTime: { activatedAt: Date.now() },
         notificationConfig: {
           channels: ['InApp'],
           title: null,

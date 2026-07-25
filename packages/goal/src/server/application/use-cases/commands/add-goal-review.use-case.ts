@@ -16,6 +16,7 @@ export class AddGoalReviewUseCase {
 
   async execute(
     goalId: string,
+    identityId: string,
     params: {
       title: string;
       content: string;
@@ -26,7 +27,9 @@ export class AddGoalReviewUseCase {
       nextActions?: string;
     },
   ): Promise<Result<GoalReviewClientDTO>> {
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }

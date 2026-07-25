@@ -145,7 +145,7 @@ export const governanceHandlers = [
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: { success: true },
+      data: null, // void delete: DeleteRuleRes = null (no { success: true } dual-track)
       timestamp: Date.now(),
     });
   }),

@@ -29,7 +29,5 @@ export const PatchUserSettingSchema = z.object({
 export type PatchUserSettingReq = z.infer<typeof PatchUserSettingSchema>;
 export type PatchUserSettingRes = UserSettingClientDTO;
 
-export interface SettingOperationRes {
-  readonly ok: boolean;
-  readonly message?: string;
-}
+// Residual 633: SettingOperationRes { ok, message? } dual envelope deleted.
+// Setting mutations return UserSettingClientDTO / Result envelopes only.

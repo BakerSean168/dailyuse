@@ -1,7 +1,11 @@
+/**
+ * Residual 1041 soft keep-boundary: shell e2e may skip rebuild via SHELL_E2E_SKIP_BUILD.
+ * Desktop build body is sole in e2e/helpers/desktop-build-global-setup.ts.
+ */
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildDesktopApp } from '../helpers/build-desktop';
+import { runDesktopBuildGlobalSetup } from '../helpers/desktop-build-global-setup';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, '..', '..', '..', '..');
@@ -19,5 +23,5 @@ export default async function globalSetup(): Promise<void> {
   if (process.env.SHELL_E2E_SKIP_BUILD === '1' && existsSync(desktopMainEntrypoint)) {
     return;
   }
-  buildDesktopApp(workspaceRoot);
+  await runDesktopBuildGlobalSetup();
 }

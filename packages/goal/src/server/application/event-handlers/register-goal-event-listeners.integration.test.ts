@@ -113,14 +113,14 @@ describe('registerGoalEventListeners integration', () => {
     // The listener reacts asynchronously and writes the record before advancing KR
     // progress, so poll on the KR progress to ensure the whole use-case has committed.
     const reloaded = await waitFor(async () => {
-      const goalNow = await goalRepository.findById(goal.id, { includeChildren: true });
+      const goalNow = await goalRepository.findByIdForIdentity(String(goal.identityId), goal.id, { includeChildren: true });
       const progress = goalNow?.getKeyResult(String(keyResult.id))?.progress.currentValue;
       return progress === 3 ? goalNow : null;
     });
 
     expect(reloaded?.getKeyResult(String(keyResult.id))?.progress.currentValue).toBe(3);
 
-    const records = await goalRecordRepository.findByKeyResultId(String(keyResult.id));
+    const records = await goalRecordRepository.findByKeyResultId(String(goal.identityId), String(keyResult.id));
     expect(records).toHaveLength(1);
     expect(records[0].value).toBe(3);
   });

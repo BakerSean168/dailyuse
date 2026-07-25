@@ -1,11 +1,11 @@
-import type { KnowledgeSourceResource } from './knowledge-ingestion.port';
+import type { KnowledgeSourceNote } from './knowledge-ingestion.port';
 
 export interface IKnowledgeSourcePort {
-  listRelevantResources(
+  listRelevantNotes(
     identityId: string,
     query: string,
     limit: number,
-  ): Promise<KnowledgeSourceResource[]>;
-  listIndexableResources(identityId: string, limit: number): Promise<KnowledgeSourceResource[]>;
-  getResourceById(identityId: string, resourceId: string): Promise<KnowledgeSourceResource | null>;
+  ): Promise<KnowledgeSourceNote[]>;
+  listIndexableNotes(identityId: string, limit: number): Promise<KnowledgeSourceNote[]>;
+  getNoteById(identityId: string, resourceId: string): Promise<KnowledgeSourceNote | null>;
 }

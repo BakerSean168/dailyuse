@@ -25,7 +25,9 @@ export class CloneGoalUseCase {
     params: CloneGoalReq,
     cx: ExecutionContext,
   ): Promise<Result<GoalClientDTO>> {
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+    const goal = await this.goalRepository.findByIdForIdentity(cx.identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }

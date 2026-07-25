@@ -14,9 +14,6 @@ export * from './value-objects/priority';
 export * from './shared';
 // 重新导出共享的DTOs
 
-// 重新导出 UI 组件类型
-export * from './ui-components';
-
 export type { Equatable } from './equatable';
 export type {
   AppEventRegistry,

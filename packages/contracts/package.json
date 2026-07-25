@@ -26,10 +26,6 @@
       "types": "./dist/modules/reminder/index.d.ts",
       "import": "./dist/modules/reminder/index.js"
     },
-    "./editor": {
-      "types": "./dist/modules/editor/index.d.ts",
-      "import": "./dist/modules/editor/index.js"
-    },
     "./repository": {
       "types": "./dist/modules/repository/index.d.ts",
       "import": "./dist/modules/repository/index.js"
@@ -65,10 +61,6 @@
     "./data-portability": {
       "types": "./dist/modules/data-portability/index.d.ts",
       "import": "./dist/modules/data-portability/index.js"
-    },
-    "./response": {
-      "types": "./dist/response/index.d.ts",
-      "import": "./dist/response/index.js"
     },
     "./result": {
       "types": "./dist/result/index.d.ts",

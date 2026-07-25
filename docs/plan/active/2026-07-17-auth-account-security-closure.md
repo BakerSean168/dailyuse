@@ -9,14 +9,14 @@ tags:
   - desktop
 description: Auth 与 Account 收敛、邮箱验证、会话安全与注销级联的统一实施方案
 created: 2026-07-17T00:00:00
-updated: 2026-07-17T23:59:00
+updated: 2026-07-18T06:50:00
 ---
 
 # Auth + Account 收敛与安全闭环实施方案
 
 ## 1. 文档地位
 
-状态：**实施中**（ADR-036 已采纳；Phase A/B 后端 + Web 前端 B1/B2 + Unverified 门禁源码与包 dist 已闭环；单元测试已绿；e2e / Phase C+ / Desktop 待做）。
+状态：**实施中**（ADR-036 已采纳；A–D + Phase C 会话增强 + Phase E 访客升级 ownership 重绑已源码闭环；auth e2e 规格含 OAuth；待本机/CI 真跑 e2e 与生产发信）。
 
 本文汇总并固化以下讨论结论：
 
@@ -66,7 +66,7 @@ updated: 2026-07-17T23:59:00
 | OAuth 产品流 | callback 骨架有；授权发起、state/PKCE、UI、绑定页未齐 |
 | 账号链接 | 同邮箱多 identity 风险未产品化处理 |
 | 访客升级 | Desktop 有访客；升级在线账号未闭环 |
-| 会话安全增强 | 有 refresh 轮换，缺 reuse detection 与设备元数据丰富化 |
+| 会话安全增强 | ~~缺 reuse detection 与设备元数据~~ **已补齐**（reuse 全撤 + device 元数据 + 会话 UI） |
 | AccountSettings vs Setting | 偏好双源风险 |
 
 ### 2.3 明确不做（本计划范围外）
@@ -281,7 +281,7 @@ Account `GET /api/v1/accounts/me` 继续只返回资料；前端「账户安全�
 
 **验收**
 
-- [~] 忘记密码完整链路 e2e 通过后再打开入口（Web 入口已接 API 并常显；e2e 未跑，产品可按部署开关再收敛）
+- [~] 忘记密码完整链路 e2e 规格已写并纳入默认 playwright match；待 CI/本地跑通后再视为验收完成
 - [x] 注册 → 发码 → 验码 → Active 且 Account.email verified（后端 use case + Account handler + Web 验证场景；`email-verification.test.ts` 绿）
 - [x] 错误码可翻译；防枚举；authentication 聚焦单测绿（gate/forgot-reset/email-verification/routes）；Web validation + auth-web-service 绿；account 投影 handler 待扩展覆盖
 
@@ -289,45 +289,47 @@ Account `GET /api/v1/accounts/me` 继续只返回资料；前端「账户安全�
 
 **目标**：安全闭环与一致性。
 
-1. Close account 编排（Auth disable + sessions + Account）
-2. 禁止客户端直接改「登录邮箱」绕过 Auth（Account update 接口收紧）
-3. Refresh token reuse detection（可选但推荐：检测旧 hash 重放则 revoke 该 identity 全部 session）
-4. 登录写入更完整 deviceInfo（UA/平台，能取则取）
-5. 账户安全 UI：会话列表/踢下线（API 已有则接前端）
+1. ~~Close account 编排（Auth disable + sessions + Account）~~ **已完成**
+2. ~~禁止客户端直接改「登录邮箱」绕过 Auth（Account update 接口收紧）~~ **已完成**（`UpdateAccountSchema` 仅 profile 字段）
+3. ~~Refresh token reuse detection~~ **已完成**（active session hash 不匹配 → `removeAllByIdentityId`）
+4. ~~登录写入更完整 deviceInfo（UA/平台，能取则取）~~ **已完成**（`Context.device` + `AuthSession.start` 合并元数据）
+5. ~~账户安全 UI：会话列表/踢下线~~ **已完成**（`AccountProfileSection` 会话卡片 + `useSession`）
 
 **验收**
 
-- [ ] 注销后无法 login/refresh
-- [ ] Account 与 Auth 邮箱在验证/换绑路径保持一致
-- [ ] 会话撤销可测
+- [x] 注销后无法 login/refresh（`account:closed` → disable + `removeAllSessions`；login 拒绝 Disabled；refresh reuse 会 revoke 全部 session）
+- [x] Account 与 Auth 邮箱在验证/换绑路径保持一致（Account `UpdateAccountSchema` 不含登录邮箱；`auth:email-verified` 投影）
+- [x] 会话撤销可测（API + 账户设置「设备与会话」UI + `useSession`）
 
 ### Phase D — OAuth 完整流与账号链接
 
 **目标**：三入口中的 GitHub 登录产品化（不含仓库 Contents 授权）。
 
-1. authorize URL + state/PKCE store
-2. Web/Desktop 回调与 deep link（Desktop 只收 code）
-3. 已登录 bind/unbind GitHub
-4. 冲突处理 UI（同邮箱已有账密）
-5. 与 Repository 的 GitHub App 授权入口文案隔离
+1. ~~authorize URL + state/PKCE store~~ **已完成**
+2. ~~Web/Desktop 回调与 deep link（Desktop 只收 code）~~ **Web 回调已接；Desktop IPC/gateway 已接 OAuth URL/callback/bind/unbind**
+3. ~~已登录 bind/unbind GitHub~~ **API + client + 账户设置 UI 已接**
+4. ~~冲突处理 UI（subject 已绑定其他身份）~~ **`OAUTH_ALREADY_LINKED` + 设置页冲突文案**；同邮箱账密静默合并仍禁止（登录侧不自动合并）
+5. ~~与 Repository 的 GitHub App 授权入口文案隔离~~ **设置页 repoScopeHint + authorize scopes 仅 read:user/user:email**
 
 **验收**
 
-- [ ] 未配置 client 时仍 `SERVICE_UNAVAILABLE`，UI 隐藏入口
-- [ ] 配置齐全时 GitHub 登录可拿 Daily Use session
-- [ ] 绑定不申请仓库权限；与 ADR-034 一致
+- [x] 未配置 client 时仍 `SERVICE_UNAVAILABLE`；`GET /oauth/providers` + Web 按钮 `v-if` 隐藏入口
+- [~] 配置齐全时 GitHub 登录可拿 Daily Use session（e2e-mock 提供者 + auth-oauth 规格已写；本机/CI 真跑待做）
+- [x] 绑定不申请仓库权限；与 ADR-034 一致（scopes 与文案双重约束）
 
 ### Phase E — 访客升级（Desktop）
 
 **目标**：本地 profile 升级在线账号，Vault 不搬家。
 
-1. 升级 API/桌面流程：访客 → 注册或 GitHub 登录
-2. ownership 重绑策略固化
-3. 失败不破坏本地 profile
+1. ~~升级 API/桌面流程：访客 → 注册或 GitHub 登录~~ **已完成**（login/register/OAuth callback 走 `prepareProfileForOnlineIdentity`）
+2. ~~ownership 重绑策略固化~~ **已完成**（`ProfileRegistry.rebindIdentityOwnership` 保留 profileId；冲突拒绝静默合并）
+3. ~~失败不破坏本地 profile~~ **已完成**（无 guest 则抛错；目标 identity 已有其他 profile 拒绝；升级前 discard/deactivate 访客 runtime）
 
 **验收**
 
-- [ ] 产品文档路径可手测；失败可恢复
+- [x] 访客升级保持 profileId/目录不变（`DesktopProfileRuntimeManager` + `ProfileRegistry` 单测）
+- [x] 登录/注册在访客态走 rebind 而非新目录（`desktop-auth-shell` 单测）
+- [~] 产品文档路径可手测；端到端桌面手测仍待
 
 ---
 
@@ -344,13 +346,13 @@ Account `GET /api/v1/accounts/me` 继续只返回资料；前端「账户安全�
 
 ## 7. 安全清单（实施时逐项打勾）
 
-- [ ] 验证码/重置令牌只存 hash
+- [x] 验证码/重置令牌只存 hash（InMemoryVerificationChallengeStore SHA-256）
 - [~] 发送与校验限流（subject challenge store + IP middleware 已有；多实例 Redis 待替换）
-- [ ] 防邮箱枚举（统一响应）
-- [ ] 日志仅掩码邮箱，不打明文码
-- [ ] OAuth state/PKCE；provider token 不进入 Daily Use session
-- [ ] 身份登录场景评估：OAuthBinding 表中 access/refresh **默认不落库**或加密短存（与「仅换 user id」目标一致）
-- [ ] 改密/重置/注销后撤 session
+- [x] 防邮箱枚举（统一响应：forgot/send-code 未知邮箱仍 ok）
+- [x] 日志仅掩码邮箱，不打明文码（ConsoleEmailSender + register/runtime 掩码）
+- [~] OAuth state/PKCE；provider token 不进入 Daily Use session（state/PKCE 已存 hash challenge 并校验；provider token 仅临时换身份，不入 Daily Use session）
+- [x] 身份登录场景评估：OAuthBinding 表中 access/refresh **默认不落库**（bind/createWithOAuth 均不写 provider token）
+- [x] 改密/重置/注销后撤 session（change revoke-all valid；reset removeAll；close cascade disable+removeAll）
 - [ ] 生产发信域名 SPF/DKIM/DMARC
 
 ---
@@ -395,11 +397,11 @@ E 访客升级
 ## 11. 完成定义（整体）
 
 - [x] ADR-036 已采纳，边界无歧义
-- [~] 邮箱验证全链路可用（含 Account 投影；源码 + 单元测已绿，e2e 未做）
+- [~] 邮箱验证全链路可用（含 Account 投影；源码 + 单元测已绿；e2e 规格已写，待跑）
 - [x] 密码找回与邮箱验证共享发信/challenge/限流（契约：现网 `/password/forgot|reset` + email verify；IP 限流已挂）
-- [ ] 注销后无法继续持有有效 session
+- [x] 注销后无法继续持有有效 session（account:closed → disable + removeAllSessions；refresh reuse 全撤；e2e 仍待真跑）
 - [x] Unverified 策略可配置且有测试（`require-email-verified.middleware.spec.ts`）
-- [ ] OAuth 登录在配置开启时产品可用；与仓库授权分离
+- [~] OAuth 登录在配置开启时产品可用；与仓库授权分离（authorize URL + state/PKCE + callback + bind/unbind + 冲突 UI 已接线；e2e mock 待跑）
 - [ ] 不引入第二套用户身份源
 - [~] 相关聚焦单测通过（contracts/auth 重建 + authentication/web 聚焦 vitest）；全量 typecheck/e2e 未跑
 
@@ -422,7 +424,12 @@ E 访客升级
 4. ~~**B2** 邮箱验证后端~~ **已完成**（契约/use case/路由/client/Account 投影）
 5. ~~**B1** 密码找回前端~~ / ~~**B2** 门禁 + Web 验证场景~~ **已完成（Web）**
 6. ~~**包 dist 闭环**~~ contracts + authentication 重建；@dailyuse/authentication/api 导出 gate；聚焦单测 25+11 绿
-7. 下一步：e2e 验收 → Phase C 注销级联 → Desktop 同契约 → 生产发信（SPF/DKIM）
+7. ~~e2e 规格 + Phase C 注销级联 + Desktop 同契约 + Unverified banner~~ **源码已接入**
+8. ~~Phase D OAuth bind/unbind + 冲突处理 + 设置页入口~~ **源码已接入**
+9. ~~e2e mock OAuth + providers 门控 + 掩码日志~~ **源码已接入**
+10. ~~Phase C 会话增强~~ **已完成**（reuse detection + device 元数据 + 会话 UI）
+11. ~~Phase E 访客升级 ownership 重绑~~ **源码 + 单测已完成**
+12. 下一步：本机/CI 真跑 auth e2e（register/password/oauth）→ 生产发信（SPF/DKIM）→ 桌面访客升级手测
 
 ## 实施进度（滚动）
 
@@ -435,3 +442,22 @@ E 访客升级
 | 2026-07-17 | **B2 门禁** `require-email-verified` + API/Account 挂载 |
 | 2026-07-17 | **验收加固** 重建 contracts/authentication dist；gate import 与 `Result.data` 断言修复；auth 聚焦 25 测 + web 11 测绿 |
 | 2026-07-17 | **仍待** e2e；主应用 Unverified banner；Desktop 真实现；Phase C 注销级联；Phase D OAuth 产品流；生产发信 |
+
+| 2026-07-18 | **e2e 规格** register/password 用例 + `/auth/test/last-email-code`（仅 test/e2e lane）|
+| 2026-07-18 | **Desktop** FORGOT/RESET/CHANGE/SEND/VERIFY_EMAIL_CODE 走 AuthRemoteGateway 现网契约 |
+| 2026-07-18 | **Phase C** `account:closed` → disable identity + removeAll sessions；登录拒绝 Disabled |
+| 2026-07-18 | **主应用** AppShell Unverified banner + `/auth?scene=verify-email` |
+
+| 2026-07-18 | **Phase D 起步** `POST /oauth/url` + InMemoryOAuthStateStore(PKCE) + callback state 校验；Web GitHub 按钮/回调 |
+
+| 2026-07-18 | **安全清单** challenge 只存 hash；ConsoleEmailSender 掩码邮箱且不打印明文码；forgot/send-code 防枚举复核 |
+| 2026-07-18 | **OAuth mock** `e2e-mock` client + `MockGithubOAuthClient`；e2e lane 默认注入；`GET /oauth/providers` UI 门控 |
+| 2026-07-18 | **e2e 规格** `auth-oauth.spec.ts` 纳入 playwright testMatch；authentication 339 测绿；governance-check 绿 |
+
+| 2026-07-18 | **Phase C 补齐** refresh reuse detection（旧 hash 重放撤全会话）+ `Context.device`/`AuthSession.start` 设备元数据 + 账户设置会话列表/踢下线 UI |
+| 2026-07-18 | **聚焦验证** authentication refresh/login/oauth/session 相关 vitest 绿；app-vue AccountProfileSection 绿；utils express-adapter 绿 |
+
+| 2026-07-18 | **Phase E** 访客 profile ownership 重绑：`rebindIdentityOwnership` + `upgradeGuestProfileToOnlineIdentity`；login/register/OAuth callback 接入；profile/shell 单测 38 绿 |
+| 2026-07-18 | **归档** App Vue UI 深度重构计划（PR #187 已合入 main） |
+
+| 2026-07-18 | **治理复验** `daily-use:governance-check` 绿；cross-feature boundary plan 归档 |

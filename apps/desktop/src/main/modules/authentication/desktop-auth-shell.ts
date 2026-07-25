@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { AuthMode, AuthRuntimeState } from '@dailyuse/contracts/authentication';
+import { AuthChannels } from '@dailyuse/contracts/electron';
 import { ok, fail, toIpcResult, type IpcResult } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils/logger';
 import type { WindowManager } from '../../lifecycle/window-manager';
@@ -8,60 +9,15 @@ import type { DesktopProfileRuntimeManager } from '../../profile';
 import type { RememberedAccountsService, NetworkStateManager } from './infrastructure';
 import type { AuthDesktopApplicationService } from './application/auth-desktop-application-service';
 import { loginDesktopAccount } from './application/login-desktop-account';
-import {
-  registerDesktopAccount,
-  type RegisterRequest,
-} from './application/register-desktop-account';
+import { registerDesktopAccount } from './application/register-desktop-account';
+import type { EmailRegisterCredentials } from '@dailyuse/contracts/authentication';
+// Residual 931: RegisterRequest name dual fully retired — EmailRegisterCredentials sole body.
 import { AuthRemoteGateway } from './application/auth-remote-gateway';
 
 const logger = createLogger('DesktopAuthShell');
 const remoteGateway = new AuthRemoteGateway();
 
-const Ch = {
-  LOGIN: 'auth:login',
-  REGISTER: 'auth:register',
-  LOGOUT: 'auth:logout',
-  REFRESH_TOKEN: 'auth:refresh-token',
-  ENTER_GUEST_MODE: 'auth:enter-guest-mode',
-  GET_CURRENT_USER: 'auth:get-current-user',
-  GET_STATUS: 'auth:get-status',
-  GET_BOOTSTRAP_SNAPSHOT: 'auth:get-bootstrap-snapshot',
-  INITIALIZE: 'auth:initialize',
-  AUTO_LOGIN: 'auth:auto-login',
-  REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
-  REMEMBERED_ACCOUNTS_LOGIN: 'auth:remembered-accounts:login',
-  REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
-  VERIFY_TOKEN: 'auth:verify-token',
-  TOKEN_STATUS: 'auth:token-status',
-  SESSION_STATUS: 'auth:session-status',
-  CLEANUP_SESSIONS: 'auth:cleanup-sessions',
-  TFA_ENABLE: 'auth:2fa:enable',
-  TFA_DISABLE: 'auth:2fa:disable',
-  TFA_VERIFY: 'auth:2fa:verify',
-  TFA_GET_STATUS: 'auth:2fa:get-status',
-  TFA_BACKUP_CODES: 'auth:2fa:generate-backup-codes',
-  API_KEY_CREATE: 'auth:api-key:create',
-  API_KEY_LIST: 'auth:api-key:list',
-  API_KEY_REVOKE: 'auth:api-key:revoke',
-  API_KEY_ROTATE: 'auth:api-key:rotate',
-  SESSION_LIST: 'auth:session:list',
-  SESSION_GET_CURRENT: 'auth:session:get-current',
-  SESSION_REVOKE: 'auth:session:revoke',
-  SESSION_REVOKE_ALL: 'auth:session:revoke-all',
-  DEVICE_LIST: 'auth:device:list',
-  DEVICE_GET_CURRENT: 'auth:device:get-current',
-  DEVICE_TRUST: 'auth:device:trust',
-  DEVICE_REVOKE: 'auth:device:revoke',
-  DEVICE_RENAME: 'auth:device:rename',
-  FORGOT_PASSWORD: 'auth:forgot-password',
-  RESET_PASSWORD: 'auth:reset-password',
-  CHANGE_PASSWORD: 'auth:change-password',
-  SEND_SMS_CODE: 'auth:send-sms-code',
-  SEND_EMAIL_CODE: 'auth:send-email-code',
-  VERIFY_EMAIL_CODE: 'auth:verify-email-code',
-} as const;
-
-const allChannels = Object.values(Ch);
+const allChannels = Object.values(AuthChannels);
 
 function unauthenticatedStatus() {
   return {
@@ -125,6 +81,40 @@ async function activatePreparedProfileForCurrentMode(
   await windowManager.transitionToMainWindow(profileId, profileResolver.mainWindowStatePath);
 }
 
+
+async function prepareProfileForOnlineIdentity(
+  runtimeManager: DesktopProfileRuntimeManager,
+  onlineIdentityId: string,
+  options: {
+    displayName?: string;
+    identifier?: string | null;
+    snapshotAccessToken?: string | null;
+  },
+  callback: (service: AuthDesktopApplicationService) => Promise<void>,
+): Promise<void> {
+  const currentIdentity = runtimeManager.getActiveOrPreparedIdentityId();
+  const guestActive =
+    runtimeManager.isGuestProfileIdentity(currentIdentity) ||
+    (await runtimeManager.getActiveProfileDescriptor().then((d) =>
+      runtimeManager.isGuestProfileIdentity(d?.identityId),
+    ));
+
+  if (guestActive) {
+    // Guest upgrade path: rebind ownership, keep Vault directory, then run success hook.
+    // 访客升级：重绑 ownership、保留 Vault 目录，再跑成功钩子。
+    const prepared = await runtimeManager.upgradeGuestProfileToOnlineIdentity({
+      onlineIdentityId,
+      displayName: options.displayName,
+      identifier: options.identifier,
+      snapshotAccessToken: options.snapshotAccessToken,
+    });
+    await callback(prepared.authService);
+    return;
+  }
+
+  await withPreparedProfile(runtimeManager, onlineIdentityId, options, callback);
+}
+
 function mapRememberedAccounts(
   records: Awaited<ReturnType<RememberedAccountsService['list']>>,
 ) {
@@ -156,7 +146,7 @@ export function registerDesktopAuthShellHandlers(
 
   const currentAuthService = () => runtimeManager.getCurrentAuthService();
 
-  ipcMain.handle(Ch.LOGIN, async (_event, data) => {
+  ipcMain.handle(AuthChannels.LOGIN, async (_event, data) => {
     const existingProfile = await runtimeManager.findRegisteredProfileByIdentifier(String(data.email));
 
     try {
@@ -195,7 +185,7 @@ export function registerDesktopAuthShellHandlers(
         );
       }
 
-      await withPreparedProfile(
+      await prepareProfileForOnlineIdentity(
         runtimeManager,
         String(remoteResult.response.identity.id),
         {
@@ -227,7 +217,7 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.REGISTER, async (_event, request: RegisterRequest) => {
+  ipcMain.handle(AuthChannels.REGISTER, async (_event, request: EmailRegisterCredentials) => {
     try {
       const result = await registerDesktopAccount(request, {
         isOnline: () => networkStateManager.isOnline(),
@@ -239,7 +229,7 @@ export function registerDesktopAuthShellHandlers(
         return toIpcResult(fail(result.error));
       }
 
-      await withPreparedProfile(
+      await prepareProfileForOnlineIdentity(
         runtimeManager,
         String(result.response.identity.id),
         {
@@ -274,7 +264,7 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.LOGOUT, async () => {
+  ipcMain.handle(AuthChannels.LOGOUT, async () => {
     const service = runtimeManager.getActiveAuthService();
     const result: IpcResult<void> = service ? await service.logout() : toIpcResult(ok(undefined));
 
@@ -284,7 +274,7 @@ export function registerDesktopAuthShellHandlers(
     return result;
   });
 
-  ipcMain.handle(Ch.REFRESH_TOKEN, async () => {
+  ipcMain.handle(AuthChannels.REFRESH_TOKEN, async () => {
     const service = currentAuthService();
     if (!service) {
       return toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
@@ -292,7 +282,7 @@ export function registerDesktopAuthShellHandlers(
     return await service.refreshToken();
   });
 
-  ipcMain.handle(Ch.ENTER_GUEST_MODE, async () => {
+  ipcMain.handle(AuthChannels.ENTER_GUEST_MODE, async () => {
     try {
       await runtimeManager.prepareGuestProfile();
       const service = runtimeManager.getPreparedAuthService();
@@ -326,37 +316,41 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.GET_STATUS, async () => {
+  ipcMain.handle(AuthChannels.GET_STATUS, async () => {
     const service = currentAuthService();
-    return service ? await service.getStatus() : unauthenticatedStatus();
+    const status = service ? await service.getStatus() : unauthenticatedStatus();
+    return toIpcResult(ok(status));
   });
 
-  ipcMain.handle(Ch.GET_BOOTSTRAP_SNAPSHOT, async () => {
+  ipcMain.handle(AuthChannels.GET_BOOTSTRAP_SNAPSHOT, async () => {
     const service = currentAuthService();
-    return service
+    const snapshot = service
       ? await service.buildBootstrapSnapshot()
       : {
           status: unauthenticatedStatus(),
           currentUser: null,
         };
+    return toIpcResult(ok(snapshot));
   });
 
-  ipcMain.handle(Ch.INITIALIZE, async () => {
+  ipcMain.handle(AuthChannels.INITIALIZE, async () => {
     const service = currentAuthService();
     if (!service) {
-      return {
-        ok: true,
-        hasValidSession: false,
-        runtimeState: AuthRuntimeState.UNAUTHENTICATED,
-      };
+      return toIpcResult(
+        ok({
+          ok: true,
+          hasValidSession: false,
+          runtimeState: AuthRuntimeState.UNAUTHENTICATED,
+        }),
+      );
     }
-    return await service.initialize();
+    return toIpcResult(ok(await service.initialize()));
   });
 
-  ipcMain.handle(Ch.AUTO_LOGIN, async () => {
+  ipcMain.handle(AuthChannels.AUTO_LOGIN, async () => {
     const remembered = await rememberedAccountsService.getAutoLoginAccount();
     if (!remembered) {
-      return { ok: true, authenticated: false };
+      return toIpcResult(ok({ ok: true, authenticated: false }));
     }
 
     try {
@@ -373,24 +367,29 @@ export function registerDesktopAuthShellHandlers(
       const result = await service.autoLogin();
       if (!result.ok || !result.authenticated) {
         await runtimeManager.discardPreparedProfile();
-        return result;
+        return toIpcResult(ok(result));
       }
 
       await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
-      return result;
+      return toIpcResult(ok(result));
     } catch (error) {
       await runtimeManager.discardPreparedProfile().catch(() => undefined);
       logger.error('Auto login failed in shell auth', { error });
-      return { ok: false, authenticated: false, error: String(error) };
+      return toIpcResult(
+        fail({
+          code: 'AUTO_LOGIN_ERROR',
+          message: error instanceof Error ? error.message : String(error),
+        }),
+      );
     }
   });
 
-  ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LIST, async () => {
+  ipcMain.handle(AuthChannels.REMEMBERED_ACCOUNTS_LIST, async () => {
     const accounts = await rememberedAccountsService.list();
-    return mapRememberedAccounts(accounts);
+    return toIpcResult(ok(mapRememberedAccounts(accounts)));
   });
 
-  ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LOGIN, async (_event, request) => {
+  ipcMain.handle(AuthChannels.REMEMBERED_ACCOUNTS_LOGIN, async (_event, request) => {
     try {
       await runtimeManager.prepareProfile(String(request.identityId), {
         displayName: request.identifier,
@@ -422,7 +421,7 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_REMOVE, async (_event, identityId: string) => {
+  ipcMain.handle(AuthChannels.REMEMBERED_ACCOUNTS_REMOVE, async (_event, identityId: string) => {
     try {
       await rememberedAccountsService.remove(IdentityId.of(identityId));
       await runtimeManager.removeProfile(identityId);
@@ -438,146 +437,112 @@ export function registerDesktopAuthShellHandlers(
     }
   });
 
-  ipcMain.handle(Ch.GET_CURRENT_USER, async () => {
+  ipcMain.handle(AuthChannels.GET_CURRENT_USER, async () => {
     const service = currentAuthService();
-    return service ? await service.getCurrentUser() : null;
+    return toIpcResult(ok(service ? await service.getCurrentUser() : null));
   });
 
-  ipcMain.handle(Ch.VERIFY_TOKEN, async (_event, token: string) => {
+  ipcMain.handle(AuthChannels.SESSION_LIST, async () => {
     const service = currentAuthService();
-    return service ? await service.verifyToken(token) : { valid: false, error: 'AUTH_REQUIRED' };
+    return toIpcResult(ok(service ? await service.listSessions() : { sessions: [] }));
   });
-
-  ipcMain.handle(Ch.TOKEN_STATUS, async () => {
-    const service = currentAuthService();
-    return service
-      ? await service.getTokenStatus()
-      : unauthenticatedStatus().tokenStatus;
-  });
-
-  ipcMain.handle(Ch.SESSION_STATUS, async () => {
-    const service = currentAuthService();
-    return service ? await service.getSessionStatus() : null;
-  });
-
-  ipcMain.handle(Ch.CLEANUP_SESSIONS, async () => {
-    const service = currentAuthService();
-    return service ? await service.cleanupExpiredSessions() : 0;
-  });
-
-  ipcMain.handle(Ch.TFA_ENABLE, async (_event, method: string) => {
-    const service = currentAuthService();
-    return service
-      ? await service.enable2FA(method || 'totp')
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.TFA_DISABLE, async () => {
-    const service = currentAuthService();
-    return service
-      ? await service.disable2FA()
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.TFA_VERIFY, async (_event, code: string) => {
-    const service = currentAuthService();
-    return service
-      ? await service.verify2FA(code)
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.TFA_GET_STATUS, async () => {
-    const service = currentAuthService();
-    return service ? await service.get2FAStatus() : { enabled: false, method: null };
-  });
-  ipcMain.handle(Ch.TFA_BACKUP_CODES, async () => {
-    const service = currentAuthService();
-    return service ? await service.generateBackupCodes() : { codes: [] };
-  });
-
-  ipcMain.handle(Ch.API_KEY_CREATE, async (_event, req) => {
-    const service = currentAuthService();
-    return service ? await service.createApiKey(req) : null;
-  });
-  ipcMain.handle(Ch.API_KEY_LIST, async () => {
-    const service = currentAuthService();
-    return service ? await service.listApiKeys() : { apiKeys: [], total: 0 };
-  });
-  ipcMain.handle(Ch.API_KEY_REVOKE, async (_event, keyId: string) => {
-    const service = currentAuthService();
-    return service
-      ? await service.revokeApiKey(keyId)
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.API_KEY_ROTATE, async (_event, keyId: string) => {
-    const service = currentAuthService();
-    return service ? await service.rotateApiKey(keyId) : { newKey: null };
-  });
-
-  ipcMain.handle(Ch.SESSION_LIST, async () => {
-    const service = currentAuthService();
-    return service ? await service.listSessions() : { sessions: [] };
-  });
-  ipcMain.handle(Ch.SESSION_GET_CURRENT, async () => {
-    const service = currentAuthService();
-    return service ? await service.getCurrentSession() : null;
-  });
-  ipcMain.handle(Ch.SESSION_REVOKE, async (_event, payload: string | { sessionId: string }) => {
+  ipcMain.handle(AuthChannels.SESSION_REVOKE, async (_event, payload: string | { sessionId: string }) => {
     const service = currentAuthService();
     return service
       ? await service.revokeSession(typeof payload === 'string' ? payload : payload?.sessionId)
       : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
   });
-  ipcMain.handle(Ch.SESSION_REVOKE_ALL, async () => {
+  ipcMain.handle(AuthChannels.FORGOT_PASSWORD, async (_event, data) =>
+    toIpcResult(await remoteGateway.forgotPassword(data)),
+  );
+  ipcMain.handle(AuthChannels.RESET_PASSWORD, async (_event, data) =>
+    toIpcResult(await remoteGateway.resetPassword(data)),
+  );
+  ipcMain.handle(AuthChannels.CHANGE_PASSWORD, async (_event, data) => {
     const service = currentAuthService();
-    return service ? await service.revokeAllSessions() : { ok: false, count: 0 };
+    const accessToken = service?.getAccessToken?.() ?? null;
+    if (!accessToken) {
+      return toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
+    }
+    return toIpcResult(await remoteGateway.changePassword(data, accessToken));
   });
+  ipcMain.handle(AuthChannels.SEND_EMAIL_CODE, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? undefined;
+    return toIpcResult(await remoteGateway.sendEmailCode(data, accessToken));
+  });
+  ipcMain.handle(AuthChannels.VERIFY_EMAIL_CODE, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? undefined;
+    return toIpcResult(await remoteGateway.verifyEmailCode(data, accessToken));
+  });
+  ipcMain.handle(AuthChannels.GET_OAUTH_URL, async (_event, data) =>
+    toIpcResult(await remoteGateway.getOAuthUrl(data)),
+  );
+  ipcMain.handle(AuthChannels.OAUTH_PROVIDERS, async () =>
+    toIpcResult(await remoteGateway.listOAuthProviders()),
+  );
+  ipcMain.handle(AuthChannels.OAUTH_CALLBACK, async (_event, data) => {
+    try {
+      const remoteResult = await remoteGateway.oauthCallback(data);
+      if (!remoteResult.ok) {
+        return toIpcResult(remoteResult);
+      }
 
-  ipcMain.handle(Ch.DEVICE_LIST, async () => {
-    const service = currentAuthService();
-    return service ? await service.listDevices() : { devices: [], total: 0 };
-  });
-  ipcMain.handle(Ch.DEVICE_GET_CURRENT, async () => {
-    const service = currentAuthService();
-    return service
-      ? await service.getCurrentDevice()
-      : {
-          id: 'unknown',
-          name: 'Desktop App',
-          type: 'DESKTOP',
-        };
-  });
-  ipcMain.handle(Ch.DEVICE_TRUST, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Device trust not implemented' })),
-  );
-  ipcMain.handle(Ch.DEVICE_REVOKE, async (_event, deviceId: string) => {
-    const service = currentAuthService();
-    return service
-      ? await service.revokeDevice(deviceId)
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
-  ipcMain.handle(Ch.DEVICE_RENAME, async (_event, data: { deviceId: string; name: string }) => {
-    const service = currentAuthService();
-    return service
-      ? await service.renameDevice(data.deviceId, data.name)
-      : toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
-  });
+      const identity = remoteResult.data.identity;
+      const emailIdentifier = identity.identifiers?.find((item) => item.type === 'Email');
+      const email = emailIdentifier && 'value' in emailIdentifier ? emailIdentifier.value : null;
+      const displayName = email ?? String(identity.id);
 
-  ipcMain.handle(Ch.FORGOT_PASSWORD, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Forgot password not implemented' })),
-  );
-  ipcMain.handle(Ch.RESET_PASSWORD, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Reset password not implemented' })),
-  );
-  ipcMain.handle(Ch.CHANGE_PASSWORD, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Change password not implemented' })),
-  );
-  ipcMain.handle(Ch.SEND_SMS_CODE, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'SMS not implemented' })),
-  );
-  ipcMain.handle(Ch.SEND_EMAIL_CODE, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Send email code not implemented on desktop shell' })),
-  );
-  ipcMain.handle(Ch.VERIFY_EMAIL_CODE, async () =>
-    toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'Verify email code not implemented on desktop shell' })),
-  );
+      await prepareProfileForOnlineIdentity(
+        runtimeManager,
+        String(identity.id),
+        {
+          displayName,
+          identifier: email,
+          snapshotAccessToken: remoteResult.data.accessToken,
+        },
+        async (service) => {
+          // Reuse remote-login success path without password remember flags.
+          // 复用远程登录成功路径（无记住密码标志）。
+          await service.completeRemoteLoginSuccess(remoteResult.data, {
+            email: email ?? displayName,
+            password: '',
+            rememberPassword: false,
+            autoLogin: false,
+          });
+        },
+      );
+
+      await activatePreparedProfileForCurrentMode(runtimeManager, windowManager);
+      return toIpcResult(remoteResult);
+    } catch (error) {
+      await runtimeManager.discardPreparedProfile().catch(() => undefined);
+      logger.error('Shell OAuth callback failed', { error });
+      return toIpcResult(
+        fail({
+          code: 'OAUTH_ERROR',
+          message: error instanceof Error ? error.message : 'OAuth 登录失败',
+        }),
+      );
+    }
+  });
+  ipcMain.handle(AuthChannels.OAUTH_BIND, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? null;
+    if (!accessToken) {
+      return toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
+    }
+    return toIpcResult(await remoteGateway.bindOAuth(data, accessToken));
+  });
+  ipcMain.handle(AuthChannels.OAUTH_UNBIND, async (_event, data) => {
+    const service = currentAuthService();
+    const accessToken = service?.getAccessToken?.() ?? null;
+    if (!accessToken) {
+      return toIpcResult(fail({ code: 'AUTH_REQUIRED', message: '当前没有活跃账号' }));
+    }
+    return toIpcResult(await remoteGateway.unbindOAuth(data, accessToken));
+  });
 
   logger.info(`Desktop shell auth handlers registered (${allChannels.length} channels)`);
 }

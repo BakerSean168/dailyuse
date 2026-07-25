@@ -19,8 +19,8 @@ from ai_service.schemas import (
     GoalPlanningResponse,
     KnowledgeExpansionRequest,
     KnowledgeExpansionResponse,
-    KnowledgeIndexResourceRequest,
-    KnowledgeIndexResourceResponse,
+    KnowledgeIndexNoteRequest,
+    KnowledgeIndexNoteResponse,
     KnowledgeNoteRequest,
     KnowledgeNoteResponse,
     KnowledgeQueryRequest,
@@ -167,11 +167,11 @@ async def run_knowledge_note_workflow(
     )
 
 
-@router.post("/knowledge-index", response_model=KnowledgeIndexResourceResponse)
+@router.post("/knowledge-index", response_model=KnowledgeIndexNoteResponse)
 async def run_knowledge_index_workflow(
-    request: KnowledgeIndexResourceRequest,
+    request: KnowledgeIndexNoteRequest,
     orchestrator: AIWorkflowOrchestrator = Depends(get_workflow_orchestrator),
-) -> KnowledgeIndexResourceResponse:
+) -> KnowledgeIndexNoteResponse:
     """Run the knowledge indexing workflow through the unified orchestrator."""
 
     return await orchestrator.execute(

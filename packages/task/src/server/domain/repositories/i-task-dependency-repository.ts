@@ -28,23 +28,23 @@ export interface ITaskDependencyRepository {
   }): Promise<TaskDependencyServerDTO>;
 
   /**
-   * 根据 ID 查找依赖关系
+   * 根据 ID + identity 查找依赖关系（唯一授权敏感读路径）
    */
-  findById(id: string): Promise<TaskDependencyServerDTO | null>;
+  findByIdForIdentity(identityId: string, id: string): Promise<TaskDependencyServerDTO | null>;
 
   /**
    * 查找任务的所有前置依赖
    * @param taskId 后续任务 ID
    * @returns 此任务依赖的所有任务（前置任务列表）
    */
-  findBySuccessorId(taskId: string): Promise<TaskDependencyServerDTO[]>;
+  findBySuccessorId(taskId: string, identityId: string): Promise<TaskDependencyServerDTO[]>;
 
   /**
    * 查找任务的所有后续依赖
    * @param taskId 前置任务 ID
    * @returns 依赖此任务的所有任务（后续任务列表）
    */
-  findByPredecessorId(taskId: string): Promise<TaskDependencyServerDTO[]>;
+  findByPredecessorId(taskId: string, identityId: string): Promise<TaskDependencyServerDTO[]>;
 
   /**
    * 查找特定的依赖关系
@@ -52,6 +52,7 @@ export interface ITaskDependencyRepository {
   findByPredecessorAndSuccessorId(
     predecessorId: string,
     successorId: string,
+    identityId: string,
   ): Promise<TaskDependencyServerDTO | null>;
 
   /**
@@ -59,19 +60,19 @@ export interface ITaskDependencyRepository {
    * @param taskId 任务 ID
    * @returns 所有前置任务 ID
    */
-  findAllPredecessorIds(taskId: string): Promise<string[]>;
+  findAllPredecessorIds(taskId: string, identityId: string): Promise<string[]>;
 
   /**
    * 获取任务的完整后续链（递归所有后续任务）
    * @param taskId 任务 ID
    * @returns 所有后续任务 ID
    */
-  findAllSuccessorIds(taskId: string): Promise<string[]>;
+  findAllSuccessorIds(taskId: string, identityId: string): Promise<string[]>;
 
   /**
-   * 删除依赖关系
+   * 删除依赖关系（identity-scoped）
    */
-  delete(id: string): Promise<void>;
+  delete(identityId: string, id: string): Promise<void>;
 
   /**
    * Domain-command delete — deletes persistently then publishes aggregate domain events.
@@ -79,19 +80,20 @@ export interface ITaskDependencyRepository {
   deleteAggregate(dependency: TaskDependency): Promise<void>;
 
   /**
-   * 查找依赖关系聚合（命令侧删除路径使用）
+   * 查找依赖关系聚合（identity-scoped；命令侧删除路径使用）
    */
-  findAggregateById(id: string): Promise<TaskDependency | null>;
+  findAggregateById(identityId: string, id: string): Promise<TaskDependency | null>;
 
   /**
    * 批量删除任务的所有依赖关系
    */
-  deleteByTaskId(taskId: string): Promise<void>;
+  deleteByTaskId(identityId: string, taskId: string): Promise<void>;
 
   /**
-   * 更新依赖关系
+   * 更新依赖关系（identity-scoped）
    */
   update(
+    identityId: string,
     id: string,
     data: { dependencyType?: DependencyType; lagDays?: number },
   ): Promise<TaskDependencyServerDTO>;

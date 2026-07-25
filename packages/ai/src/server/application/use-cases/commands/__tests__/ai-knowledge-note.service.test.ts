@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { AIProviderType } from '@dailyuse/contracts/ai';
-import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 import type {
   AIExecutionLogInput,
@@ -32,8 +31,11 @@ class StubProviderConfigRepository {
     },
   ) {}
 
-  async findById(id: string) {
-    return id === this.provider.id ? this.provider : null;
+  async findByIdForIdentity(identityId: string, id: string) {
+    if (this.provider.id !== id || this.provider.identityId !== identityId) {
+      return null;
+    }
+    return this.provider;
   }
 
   async findDefaultByIdentityId() {
@@ -62,7 +64,7 @@ class StubKnowledgeNotePersistencePort implements IKnowledgeNotePersistencePort 
   public readonly createKnowledgeNote = vi.fn<
     (input: CreateKnowledgeNotePersistenceInput) => Promise<CreateKnowledgeNotePersistenceResult>
   >(async (input) => ({
-    resource: createResource(input),
+    note: createPersistedNote(input),
   }));
 }
 
@@ -70,36 +72,17 @@ class StubExecutionLogPort implements IAIExecutionLogPort {
   public readonly record = vi.fn<(input: AIExecutionLogInput) => Promise<void>>(async () => {});
 }
 
-function createResource(input: CreateKnowledgeNotePersistenceInput): ResourceClientDTO {
+function createPersistedNote(input: CreateKnowledgeNotePersistenceInput) {
   return {
-    id: 'resource-1' as ResourceClientDTO['id'],
-    repositoryId: 'repository-1' as ResourceClientDTO['repositoryId'],
-    folderId: null,
+    id: 'note-1',
+    repositoryScopeId: 'repository-1',
     name: input.fileName,
-    type: 'note' as ResourceClientDTO['type'],
-    mimeType: 'text/markdown',
     path: input.path,
+    mimeType: 'text/markdown',
     size: input.content.length,
     content: input.content,
-    metadata: {} as ResourceClientDTO['metadata'],
-    stats: {} as ResourceClientDTO['stats'],
-    status: 'active' as ResourceClientDTO['status'],
-    createdAt: Date.now() as ResourceClientDTO['createdAt'],
-    updatedAt: Date.now() as ResourceClientDTO['updatedAt'],
-    deletedAt: null,
-    version: 1,
-    isDeleted: false,
-    isArchived: false,
-    isActive: true,
-    isDraft: false,
-    statusText: 'active',
-    typeText: 'note',
-    displayName: input.fileName,
-    formattedSize: '1 KB',
-    createdAtText: 'now',
-    updatedAtText: 'now',
-    extension: '.md',
-    icon: 'description',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   };
 }
 
@@ -122,7 +105,6 @@ describe('AIKnowledgeNoteService', () => {
       }) as unknown as IAIProviderConfigRepository,
       dependencies.executionPort,
       dependencies.persistencePort,
-      async () => 'python',
       new AIKnowledgeNotePathResolver(),
       dependencies.executionLogPort,
     );
@@ -138,10 +120,19 @@ describe('AIKnowledgeNoteService', () => {
       executionLogPort,
     });
 
-    const result = await service.createKnowledgeNote({
-      topic: 'Python tooling',
-      title: 'Python Tooling',
-    }, { identityId: 'identity-1' });
+    const result = await service.createKnowledgeNote(
+      {
+        topic: 'Python tooling',
+        title: 'Python Tooling',
+        targetSubpath: 'python',
+        confirmation: {
+          proposalId: 'proposal-generated',
+          revision: 1,
+          requestId: 'request-generated',
+        },
+      },
+      { identityId: 'identity-1' },
+    );
 
     expect(executionPort.generate).toHaveBeenCalledWith({
       identityId: 'identity-1',
@@ -160,17 +151,27 @@ describe('AIKnowledgeNoteService', () => {
 
     expect(persistencePort.createKnowledgeNote).toHaveBeenCalledWith({
       identityId: 'identity-1',
-      path: '/notes/python/Python-Tooling.md',
+      path: 'python/Python-Tooling.md',
       fileName: 'Python-Tooling.md',
       content: '# Python Tooling\n\nA concise note.',
+      proposalId: 'proposal-generated',
+      proposalRevision: 1,
+      requestId: 'request-generated',
     });
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected ok');
     expect(result.data.providerId).toBe('provider-1');
     expect(result.data.tokenUsage.totalTokens).toBe(30);
-    expect(result.data.resolvedPath).toBe('/notes/python/Python-Tooling.md');
+    expect(result.data.resolvedPath).toBe('python/Python-Tooling.md');
     expect(result.data.indexStatus).toBe('pending');
+    expect(result.data.note).toMatchObject({
+      id: 'note-1',
+      repositoryScopeId: 'repository-1',
+      name: 'Python-Tooling.md',
+      path: 'python/Python-Tooling.md',
+      content: '# Python Tooling\n\nA concise note.',
+    });
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({
         taskType: 'KNOWLEDGE_NOTE_GENERATION',
@@ -193,18 +194,30 @@ describe('AIKnowledgeNoteService', () => {
       executionLogPort,
     });
 
-    const result = await service.createKnowledgeNote({
-      topic: 'Agent note draft',
-      title: 'Agent Note Draft',
-      contentMarkdown: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',
-    }, { identityId: 'identity-1' });
+    const result = await service.createKnowledgeNote(
+      {
+        topic: 'Agent note draft',
+        title: 'Agent Note Draft',
+        targetSubpath: 'python',
+        contentMarkdown: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',
+        confirmation: {
+          proposalId: 'proposal-reviewed',
+          revision: 3,
+          requestId: 'request-reviewed',
+        },
+      },
+      { identityId: 'identity-1' },
+    );
 
     expect(executionPort.generate).not.toHaveBeenCalled();
     expect(persistencePort.createKnowledgeNote).toHaveBeenCalledWith({
       identityId: 'identity-1',
-      path: '/notes/python/Agent-Note-Draft.md',
+      path: 'python/Agent-Note-Draft.md',
       fileName: 'Agent-Note-Draft.md',
       content: '# Agent Note Draft\n\nReviewed markdown from the Agent runtime.',
+      proposalId: 'proposal-reviewed',
+      proposalRevision: 3,
+      requestId: 'request-reviewed',
     });
 
     expect(result.ok).toBe(true);
@@ -214,7 +227,7 @@ describe('AIKnowledgeNoteService', () => {
       completionTokens: 0,
       totalTokens: 0,
     });
-    expect(result.data.resolvedPath).toBe('/notes/python/Agent-Note-Draft.md');
+    expect(result.data.resolvedPath).toBe('python/Agent-Note-Draft.md');
     expect(result.data.indexStatus).toBe('pending');
     expect(executionLogPort.record).toHaveBeenCalledWith(
       expect.objectContaining({

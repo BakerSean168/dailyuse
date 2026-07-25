@@ -8,6 +8,8 @@ import type { Ref } from 'vue';
 import type {
   GenerateGoalsReq,
   GenerateGoalsRes,
+  GoalClarificationDTO,
+  GoalWorkflowDraftResultDTO,
 } from '@dailyuse/contracts/ai';
 import type {
   AIChatService,
@@ -15,9 +17,9 @@ import type {
   EditableGoal,
   EditableKeyResult,
   GoalAutomationResult,
-  GoalDraft,
   GoalWorkflowStage,
 } from './types';
+import { unwrap } from '@dailyuse/contracts/result';
 
 /** Context for automation operations. */
 export interface AutomationContext {
@@ -35,7 +37,7 @@ export interface GenerateDraftContext {
   buildConversationTranscript: () => string;
   conversationTitle: Ref<string>;
   hasWorkflowUserMessages: Ref<boolean>;
-  goalClarification: Ref<import('./types').GoalClarification | null>;
+  goalClarification: Ref<GoalClarificationDTO | null>;
   canSubmitGoalClarification: Ref<boolean>;
   clarificationAnswers: Ref<string[]>;
 }
@@ -48,22 +50,24 @@ export async function generateGoalDraft(
   if (!ctx.goalClarification.value && !ctx.hasWorkflowUserMessages.value) return null;
   if (ctx.goalClarification.value && !ctx.canSubmitGoalClarification.value) return null;
 
-  return (await ctx.service.generateGoal({
-    idea: ctx.buildConversationTranscript(),
-    includeKeyResults: true,
-    providerId: ctx.selectedModel.value.providerId as GenerateGoalsReq['providerId'],
-    model: ctx.selectedModel.value.modelId,
-    clarificationAnswers: ctx.goalClarification.value
-      ? ctx.clarificationAnswers.value.map((item) => item.trim())
-      : undefined,
-  })) as GenerateGoalsRes;
+  return unwrap(
+    await ctx.service.generateGoal({
+      idea: ctx.buildConversationTranscript(),
+      includeKeyResults: true,
+      providerId: ctx.selectedModel.value.providerId as GenerateGoalsReq['providerId'],
+      model: ctx.selectedModel.value.modelId,
+      clarificationAnswers: ctx.goalClarification.value
+        ? ctx.clarificationAnswers.value.map((item) => item.trim())
+        : undefined,
+    }),
+  );
 }
 
 /** Builds the draft context for automation requests. */
 export function buildDraftContext(
   editableGoal: EditableGoal,
   editableKeyResults: EditableKeyResult[],
-  goalDraft: GoalDraft | null,
+  goalDraft: GoalWorkflowDraftResultDTO | null,
   conversationTitle: string,
 ): GenerateGoalsReq['draftContext'] {
   return {
@@ -99,15 +103,17 @@ export async function planGoalAutomation(
   ctx: AutomationContext,
   draftContext: GenerateGoalsReq['draftContext'],
 ): Promise<{ result: GoalAutomationResult; stage: 'confirm' | 'result' }> {
-  const response = (await ctx.service.generateGoal({
-    idea: ctx.buildConversationTranscript(),
-    command: 'prepare',
-    includeKeyResults: true,
-    includeTaskTemplates: true,
-    draftContext,
-    providerId: ctx.selectedModel.value?.providerId as GenerateGoalsReq['providerId'],
-    model: ctx.selectedModel.value?.modelId,
-  })) as GenerateGoalsRes;
+  const response = unwrap(
+    await ctx.service.generateGoal({
+      idea: ctx.buildConversationTranscript(),
+      command: 'prepare',
+      includeKeyResults: true,
+      includeTaskTemplates: true,
+      draftContext,
+      providerId: ctx.selectedModel.value?.providerId as GenerateGoalsReq['providerId'],
+      model: ctx.selectedModel.value?.modelId,
+    }),
+  );
 
   if (response.state !== 'confirm' && response.state !== 'result') {
     throw new Error('Goal automation planning returned an unexpected workflow state.');
@@ -127,18 +133,20 @@ export async function executeGoalAutomation(
   approvedPlan: NonNullable<GoalAutomationResult['plan']>,
   approvedActions: NonNullable<GoalAutomationResult['actions']>,
 ): Promise<GoalAutomationResult> {
-  const response = (await ctx.service.generateGoal({
-    idea: ctx.buildConversationTranscript(),
-    command: 'execute',
-    includeKeyResults: true,
-    includeTaskTemplates: true,
-    draftContext,
-    approvedSummary,
-    approvedPlan,
-    approvedActions,
-    providerId: ctx.selectedModel.value?.providerId as GenerateGoalsReq['providerId'],
-    model: ctx.selectedModel.value?.modelId,
-  })) as GenerateGoalsRes;
+  const response = unwrap(
+    await ctx.service.generateGoal({
+      idea: ctx.buildConversationTranscript(),
+      command: 'execute',
+      includeKeyResults: true,
+      includeTaskTemplates: true,
+      draftContext,
+      approvedSummary,
+      approvedPlan,
+      approvedActions,
+      providerId: ctx.selectedModel.value?.providerId as GenerateGoalsReq['providerId'],
+      model: ctx.selectedModel.value?.modelId,
+    }),
+  );
 
   if (response.state !== 'result') {
     throw new Error('Goal automation execution returned an unexpected workflow state.');
@@ -150,7 +158,7 @@ export async function executeGoalAutomation(
 /** Context for automation handler operations. */
 export interface AutomationHandlerContext {
   selectedModel: Ref<ChatModelOption | null>;
-  goalDraft: Ref<GoalDraft | null>;
+  goalDraft: Ref<GoalWorkflowDraftResultDTO | null>;
   goalAutomationResult: Ref<GoalAutomationResult | null>;
   goalWorkflowStage: { value: GoalWorkflowStage };
   automationLoading: Ref<boolean>;

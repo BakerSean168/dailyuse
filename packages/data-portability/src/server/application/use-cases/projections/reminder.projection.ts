@@ -4,7 +4,8 @@
 
 import type { ExportContext } from '../../portable-runtime';
 import type { PortableReminderGroup, PortableReminderTemplate, PortableReminderResponse, PortableUserReminderPreference } from '@dailyuse/contracts/data-portability';
-import { parseJsonField, toBoolean, toDateString, toStringArray } from './projection-helpers';
+// Residual 1003: sole resolveExportRef/OrThrow (local dual retired).
+import { parseJsonField, toBoolean, toDateString, toStringArray, resolveExportRef, resolveExportRefOrThrow } from './projection-helpers';
 
 function responseTimeToPortable(value: unknown): string | null | undefined {
   if (typeof value === 'number') return new Date(value * 1000).toISOString();
@@ -48,10 +49,7 @@ export function projectReminderTemplates(templates: unknown[], ctx: ExportContex
       notificationConfig: parseJsonField(entity.notificationConfig, {}),
       selfEnabled: toBoolean(entity.selfEnabled, true),
       status: entity.status as string,
-      groupRef: resolveRef(
-        ((entity.groupId as string | null | undefined) ?? (entity.reminderGroupId as string | null | undefined)) ?? null,
-        ctx,
-      ),
+      groupRef: resolveExportRef(((entity.groupId as string | null | undefined) ?? (entity.reminderGroupId as string | null | undefined)) ?? null, ctx, 'reminder'),
       importanceLevel: entity.importanceLevel as string,
       tags: toStringArray(entity.tags),
       color: entity.color as string | null | undefined,
@@ -70,10 +68,7 @@ export function projectReminderResponses(responses: unknown[], ctx: ExportContex
     ctx.refToIdMap.set(entity.id as string, ref);
     return {
       _ref: ref,
-      templateRef: resolveRefOrThrow(
-        ((entity.templateId as string | undefined) ?? (entity.reminderTemplateId as string | undefined)) as string,
-        ctx,
-      ),
+      templateRef: resolveExportRefOrThrow(((entity.templateId as string | undefined) ?? (entity.reminderTemplateId as string | undefined)) as string, ctx, 'reminder'),
       action: entity.action as string,
       responseTime: responseTimeToPortable(entity.responseTime),
       timestamp: toDateString(entity.timestamp) ?? new Date().toISOString(),
@@ -91,16 +86,4 @@ export function projectUserReminderPreference(pref: unknown): PortableUserRemind
   };
 }
 
-function resolveRef(id: string | null | undefined, ctx: ExportContext): string | null {
-  if (!id) return null;
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  ctx.warnings.push(`Unresolved reminder reference to ${id}`);
-  return null;
-}
-
-function resolveRefOrThrow(id: string, ctx: ExportContext): string {
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  throw new Error(`EXPORT_VALIDATION_ERROR: Unresolved reminder reference to ${id}`);
-}
+// Residual 1003: resolveExportRef/OrThrow elevated to projection-helpers.

@@ -1,13 +1,11 @@
 /**
  * NotificationMetadata Value Object
  * 通知元数据值对象
+ *
+ * Residual 851: NotificationMetadataDTO dual retired — sole NotificationMetadata interface + type alias.
  */
 
-// ============ 接口定义 ============
-
-/**
- * NotificationMetadata Server Interface
- */
+// Residual 851: sole NotificationMetadata body.
 export interface NotificationMetadata {
   icon: string | null;
   image: string | null;
@@ -15,21 +13,7 @@ export interface NotificationMetadata {
   sound: string | null;
   badge: number | null;
   data?: unknown;
-
 }
 
-
-// ============ DTO 定义 ============
-
-/**
- * NotificationMetadata DTO (Server)
- */
-export interface NotificationMetadataDTO {
-  icon: string | null;
-  image: string | null;
-  color: string | null;
-  sound: string | null;
-  badge: number | null;
-  data?: unknown;
-}
-
+// Residual 851: NotificationMetadataDTO dual retired — DTO is the NotificationMetadata shape.
+export type NotificationMetadataDTO = NotificationMetadata;

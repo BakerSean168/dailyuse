@@ -1,1 +1,1 @@
-export { ReminderController, type ReminderUseCases } from './reminder.controller';
+export { ReminderController } from './reminder.controller';

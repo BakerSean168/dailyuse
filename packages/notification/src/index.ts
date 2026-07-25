@@ -20,5 +20,4 @@ export {
   type NotificationModuleInstance,
   type NotificationModuleRuntimeContribution,
   type NotificationModuleUseCases,
-  type NotificationRuntimeContribution,
 } from './server';

@@ -22,13 +22,8 @@ import { fail } from '@dailyuse/contracts/result';
 import type {
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -42,6 +37,12 @@ import type {
   RevokeSessionReq,
   OAuthCallbackReq,
   OAuthCallbackRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
 } from '@dailyuse/contracts/authentication';
 import {
   AuthenticateUseCase,
@@ -50,6 +51,10 @@ import {
   ResetPasswordUseCase,
   SendEmailVerificationCodeUseCase,
   VerifyEmailCodeUseCase,
+  GetOAuthUrlUseCase,
+  ListOAuthProvidersUseCase,
+  BindOAuthUseCase,
+  UnbindOAuthUseCase,
   GetCurrentUserUseCase,
   LoginUseCase,
   ListSessionsUseCase,
@@ -66,6 +71,7 @@ import {
 } from '../domain';
 import { InMemoryVerificationChallengeStore } from './services/in-memory-verification-challenge-store';
 import { ConsoleEmailSender } from './services/console-email-sender';
+import { InMemoryOAuthStateStore } from './services/in-memory-oauth-state-store';
 
 // ---------------------------------------------------------------------------
 // Dependencies — 依赖接口
@@ -101,6 +107,20 @@ export interface AuthenticationModuleDependencies {
    */
   readonly authenticationProviders?: readonly AuthenticationProvider[];
   readonly runtimeContributions?: AuthenticationRuntimeContributionsInput;
+  /**
+   * Optional GitHub OAuth client id for authorize-url issuance (identity-only scopes).
+   * 可选 GitHub OAuth client id，用于签发授权 URL（仅身份 scopes）。
+   */
+  readonly githubOAuth?: {
+    readonly clientId: string;
+    readonly authorizeUrl?: string;
+  };
+  /**
+   * Optional GitHub OAuth client used for bind (code exchange). Login providers
+   * still come from authenticationProviders.
+   * 可选 GitHub OAuth 客户端，用于绑定（code 换主体）。登录提供者仍来自 authenticationProviders。
+   */
+  readonly githubOAuthClient?: import('../domain/services/providers/i-github-oauth-client').IGithubOAuthClient;
 }
 
 // ---------------------------------------------------------------------------
@@ -148,6 +168,11 @@ export interface AuthenticationModuleUseCases {
   readonly resetPassword: ResetPasswordUseCase;
   readonly sendEmailVerificationCode: SendEmailVerificationCodeUseCase;
   readonly verifyEmailCode: VerifyEmailCodeUseCase;
+  readonly getOAuthUrl: GetOAuthUrlUseCase;
+  readonly listOAuthProviders: ListOAuthProvidersUseCase;
+  readonly bindOAuth: BindOAuthUseCase;
+  readonly unbindOAuth: UnbindOAuthUseCase;
+  readonly oauthStateStore: InMemoryOAuthStateStore;
 }
 
 // ---------------------------------------------------------------------------
@@ -163,10 +188,7 @@ export interface AuthenticationModuleUseCases {
  */
 export interface AuthenticationApplicationPort {
   register(data: RegisterByEmailReq, cx: ExecutionContext, deviceId: string): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(data: RegisterByPhoneReq, cx: ExecutionContext): Promise<Result<RegisterByPhoneRes>>;
   login(data: LoginByEmailReq, cx: ExecutionContext, deviceId: string): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(data: LoginByPhoneReq, cx: ExecutionContext): Promise<Result<LoginByPhoneRes>>;
-  sendSmsCode(data: SendSmsCodeReq): Promise<Result<void>>;
   logout(cx: ExecutionContext): Promise<Result<void>>;
   refreshToken(data: RefreshTokenReq, cx: ExecutionContext): Promise<Result<RefreshTokenRes>>;
   getCurrentUser(cx: ExecutionContext, sessionId?: string): Promise<Result<GetCurrentUserRes>>;
@@ -190,6 +212,10 @@ export interface AuthenticationApplicationPort {
     cx: ExecutionContext,
     deviceId: string,
   ): Promise<Result<OAuthCallbackRes>>;
+  getOAuthUrl(data: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
+  bindOAuth(data: BindOAuthReq, cx: ExecutionContext): Promise<Result<BindOAuthRes>>;
+  unbindOAuth(data: UnbindOAuthReq, cx: ExecutionContext): Promise<Result<void>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -228,6 +254,7 @@ export function createAuthenticationUseCases(
 
   const challengeStore = new InMemoryVerificationChallengeStore();
   const emailSender = new ConsoleEmailSender();
+  const oauthStateStore = new InMemoryOAuthStateStore();
 
   // Build the pluggable provider registry.
   // The password provider is always available; extra providers (GitHub, guest,
@@ -262,6 +289,15 @@ export function createAuthenticationUseCases(
       emailSender,
     ),
     verifyEmailCode: new VerifyEmailCodeUseCase(identityRepository, challengeStore),
+    getOAuthUrl: new GetOAuthUrlUseCase(oauthStateStore, dependencies.githubOAuth),
+    listOAuthProviders: new ListOAuthProvidersUseCase(dependencies.githubOAuth),
+    bindOAuth: new BindOAuthUseCase(
+      identityRepository,
+      oauthStateStore,
+      dependencies.githubOAuthClient,
+    ),
+    unbindOAuth: new UnbindOAuthUseCase(identityRepository),
+    oauthStateStore,
   };
 }
 
@@ -331,25 +367,10 @@ export function createAuthenticationModule(
   const api: AuthenticationApplicationPort = {
     register: (data, cx, deviceId) => useCases.register.execute(data, cx, deviceId),
 
-    registerByPhone: async (_data, _cx) =>
-      fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'Phone registration is not implemented on the server yet',
-      }),
 
     login: (data, cx, deviceId) => useCases.login.execute(data, cx, deviceId),
 
-    loginByPhone: async (_data, _cx) =>
-      fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'Phone login is not implemented on the server yet',
-      }),
 
-    sendSmsCode: async (_data) =>
-      fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'SMS verification is not implemented on the server yet',
-      }),
 
     logout: (cx) => useCases.logout.execute(undefined as void, cx),
 
@@ -373,16 +394,37 @@ export function createAuthenticationModule(
 
     verifyEmailCode: (data, cx) => useCases.verifyEmailCode.execute(data, cx),
 
+    getOAuthUrl: (data) => useCases.getOAuthUrl.execute(data),
+
+    listOAuthProviders: () => useCases.listOAuthProviders.execute(),
+
+    bindOAuth: (data, cx) => useCases.bindOAuth.execute(data, cx),
+
+    unbindOAuth: (data, cx) => useCases.unbindOAuth.execute(data, cx),
+
     // Pluggable OAuth login — dispatches to the provider registered under the
     // method id derived from the provider name (e.g. 'Github' -> 'github').
     // 可插拔 OAuth 登录 —— 分发到按 provider 名派生的方式 id 所注册的提供者。
-    oauthCallback: (data, cx, deviceId) =>
-      useCases.authenticate.execute(
+    oauthCallback: async (data, cx, deviceId) => {
+      const consumed = useCases.oauthStateStore.consume(data.state, data.provider);
+      if (!consumed) {
+        return fail({
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid or expired OAuth state',
+        });
+      }
+      return useCases.authenticate.execute(
         oauthProviderToMethod(data.provider),
-        { code: data.code, state: data.state },
+        {
+          code: data.code,
+          state: data.state,
+          codeVerifier: consumed.codeVerifier,
+          redirectUri: consumed.redirectUri,
+        },
         cx,
         deviceId,
-      ),
+      );
+    },
   };
 
   return {

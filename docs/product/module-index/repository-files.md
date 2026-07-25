@@ -3,103 +3,112 @@ tags:
   - product
   - module-index
   - repository
-description: 资源库模块相关文件索引
+description: 资源库模块相关文件索引（knowledge + Local Vault 真值）
 created: 2026-06-02T00:00:00
-updated: 2026-06-02T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 资源库模块文件索引
 
-本索引用于连接资源库模块的业务说明和真实代码。它不是代码注释替代品；做优化前仍需以当前代码、配置和测试为准。
+本索引连接资源库模块业务说明与当前代码。优化前仍以代码、配置和测试为准。
+
+> 旧数据库 Repository/Folder/Resource CRUD 与 Editor 运行时入口已退役。索引只列 knowledge
+> connection、投影、Web confirmed create、Desktop Local Vault / Git 同步，以及可重新导入备份边界。
 
 ## 前端页面与路由
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/app-vue/src/modules/repository/router/index.ts`](../../../packages/app-vue/src/modules/repository/router/index.ts) | Vue 资源库路由，定义工作区和笔记编辑入口 |
-| [`packages/app-vue/src/modules/repository/views/RepositoryWorkspaceView.vue`](../../../packages/app-vue/src/modules/repository/views/RepositoryWorkspaceView.vue) | 资源库工作区主视图（Obsidian 风格） |
+| [`packages/app-vue/src/modules/repository/router/index.ts`](../../../packages/app-vue/src/modules/repository/router/index.ts) | `/repository` 入口；无 `/note/:id` 编辑路由 |
+| [`packages/app-vue/src/modules/repository/views/RepositoryEntryView.vue`](../../../packages/app-vue/src/modules/repository/views/RepositoryEntryView.vue) | 按平台选择 Web 投影或 Desktop Vault 工作区 |
+| [`packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.vue`](../../../packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.vue) | Web：GitHub default-branch 只读投影、搜索、安全预览、关系、confirmed create |
+| [`packages/app-vue/src/modules/repository/views/LocalVaultWorkspaceView.vue`](../../../packages/app-vue/src/modules/repository/views/LocalVaultWorkspaceView.vue) | Desktop：本地 Vault 浏览、预览、Obsidian 打开、确认写入 |
+| [`packages/app-vue/src/modules/repository/views/NoteModuleLayout.vue`](../../../packages/app-vue/src/modules/repository/views/NoteModuleLayout.vue) | 工作区布局壳 |
+| [`packages/app-vue/src/modules/repository/components/KnowledgeProjectionRelationsView.vue`](../../../packages/app-vue/src/modules/repository/components/KnowledgeProjectionRelationsView.vue) | 投影 Link Graph / 关系视图 |
+| [`packages/app-vue/src/modules/repository/components/NoteSegmentBar.vue`](../../../packages/app-vue/src/modules/repository/components/NoteSegmentBar.vue) | 笔记分段导航 |
 
-## 前端状态、组合函数与组件
-
-| 文件 | 说明 |
-| --- | --- |
-| [`packages/app-vue/src/modules/repository/stores/repository-store.ts`](../../../packages/app-vue/src/modules/repository/stores/repository-store.ts) | 资源库 Pinia store |
-| [`packages/app-vue/src/modules/repository/composables/useRepository.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepository.ts) | 资源库编排组合函数 |
-| [`packages/app-vue/src/modules/repository/composables/useRepositoryResources.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepositoryResources.ts) | 资源 CRUD 组合函数 |
-| [`packages/app-vue/src/modules/repository/composables/useRepositoryTree.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepositoryTree.ts) | 文件树组合函数 |
-| [`packages/app-vue/src/modules/repository/composables/useRepositorySearch.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepositorySearch.ts) | 搜索组合函数 |
-| [`packages/app-vue/src/modules/repository/composables/useRepositoryUpload.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepositoryUpload.ts) | 上传组合函数 |
-| [`packages/app-vue/src/modules/repository/composables/useRepositoryBookmarks.ts`](../../../packages/app-vue/src/modules/repository/composables/useRepositoryBookmarks.ts) | 书签组合函数 |
-| [`packages/app-vue/src/modules/repository/services/repository-resource-gateway.ts`](../../../packages/app-vue/src/modules/repository/services/repository-resource-gateway.ts) | 资源网关服务（桥接编辑器） |
-| [`packages/app-vue/src/modules/repository/components/TypedFileTree.vue`](../../../packages/app-vue/src/modules/repository/components/TypedFileTree.vue) | 类型化文件树组件 |
-| [`packages/app-vue/src/modules/repository/components/SearchPanel.vue`](../../../packages/app-vue/src/modules/repository/components/SearchPanel.vue) | 搜索面板组件 |
-| [`packages/app-vue/src/modules/repository/components/BookmarksPanel.vue`](../../../packages/app-vue/src/modules/repository/components/BookmarksPanel.vue) | 书签面板组件 |
-| [`packages/app-vue/src/modules/repository/components/TabManager.vue`](../../../packages/app-vue/src/modules/repository/components/TabManager.vue) | 标签页管理组件 |
-| [`packages/app-vue/src/modules/repository/components/BatchImportDialog.vue`](../../../packages/app-vue/src/modules/repository/components/BatchImportDialog.vue) | 批量导入弹窗 |
-| [`packages/app-vue/src/modules/repository/components/AIKnowledgeGeneratorDialog.vue`](../../../packages/app-vue/src/modules/repository/components/AIKnowledgeGeneratorDialog.vue) | AI 知识生成弹窗 |
-
-## Desktop 特定代码
+## 前端组合函数与设置
 
 | 文件 | 说明 |
 | --- | --- |
-| [`apps/desktop/src/main/modules/repository/desktop-repository-search.adapter.ts`](../../../apps/desktop/src/main/modules/repository/desktop-repository-search.adapter.ts) | Desktop 侧搜索适配器（内存搜索） |
+| [`packages/app-vue/src/modules/repository/composables/useLocalVault.ts`](../../../packages/app-vue/src/modules/repository/composables/useLocalVault.ts) | Desktop Local Vault 编排 |
+| [`packages/app-vue/src/modules/repository/composables/useRecentKnowledgeNotes.ts`](../../../packages/app-vue/src/modules/repository/composables/useRecentKnowledgeNotes.ts) | 壳层/AI 最近笔记（projection / Local Vault） |
+| [`packages/app-vue/src/shared/utils/safe-markdown.ts`](../../../packages/app-vue/src/shared/utils/safe-markdown.ts) | 关闭原始 HTML 的安全 Markdown 渲染 |
+| [`packages/app-vue/src/modules/setting/components/KnowledgeRepositorySettings.vue`](../../../packages/app-vue/src/modules/setting/components/KnowledgeRepositorySettings.vue) | GitHub App 连接、对账、断开/清理与披露入口 |
 
-## API、控制器与适配器
-
-| 文件 | 说明 |
-| --- | --- |
-| [`packages/repository/src/api/routes/repository.routes.ts`](../../../packages/repository/src/api/routes/repository.routes.ts) | 资源库 HTTP routes |
-| [`packages/repository/src/api/routes/resource.routes.ts`](../../../packages/repository/src/api/routes/resource.routes.ts) | 资源 HTTP routes |
-| [`packages/repository/src/api/routes/folder.routes.ts`](../../../packages/repository/src/api/routes/folder.routes.ts) | 文件夹 HTTP routes |
-| [`packages/repository/src/api/module.ts`](../../../packages/repository/src/api/module.ts) | 资源库 API 模块定义 |
-| [`packages/repository/src/controllers/repository.controller.ts`](../../../packages/repository/src/controllers/repository.controller.ts) | 资源库控制器 |
-| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts) | 客户端 HTTP 适配器 |
-| [`packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.ts) | 客户端 IPC 适配器 |
-
-## 领域、用例与仓储
+## Desktop 主进程
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/repository/src/domain-server/aggregates/repository.ts`](../../../packages/repository/src/domain-server/aggregates/repository.ts) | Repository 聚合根 |
-| [`packages/repository/src/domain-server/entities/resource.ts`](../../../packages/repository/src/domain-server/entities/resource.ts) | Resource 实体 |
-| [`packages/repository/src/domain-server/entities/folder.ts`](../../../packages/repository/src/domain-server/entities/folder.ts) | Folder 实体 |
-| [`packages/repository/src/domain-server/services/folder-hierarchy-service.ts`](../../../packages/repository/src/domain-server/services/folder-hierarchy-service.ts) | 文件夹层级服务（循环检测） |
-| [`packages/repository/src/domain-server/services/storage-policy.ts`](../../../packages/repository/src/domain-server/services/storage-policy.ts) | 存储策略服务 |
-| [`packages/repository/src/application-server/services/repository-resolution.service.ts`](../../../packages/repository/src/application-server/services/repository-resolution.service.ts) | 资源库解析服务 |
-| [`packages/repository/src/application-server/services/resource-mutation.service.ts`](../../../packages/repository/src/application-server/services/resource-mutation.service.ts) | 资源变更服务 |
-| [`packages/repository/src/application-server/use-cases/commands/create-resource.use-case.ts`](../../../packages/repository/src/application-server/use-cases/commands/create-resource.use-case.ts) | 创建资源用例 |
-| [`packages/repository/src/application-server/use-cases/commands/upload-resources.use-case.ts`](../../../packages/repository/src/application-server/use-cases/commands/upload-resources.use-case.ts) | 上传资源用例 |
-| [`packages/repository/src/application-server/use-cases/queries/get-folder-tree.use-case.ts`](../../../packages/repository/src/application-server/use-cases/queries/get-folder-tree.use-case.ts) | 文件夹树查询 |
-| [`packages/repository/src/infrastructure-server/repository.module.ts`](../../../packages/repository/src/infrastructure-server/repository.module.ts) | 服务端资源库模块组合根 |
-| [`packages/repository/src/infrastructure-server/adapters/fs/fs-storage.adapter.ts`](../../../packages/repository/src/infrastructure-server/adapters/fs/fs-storage.adapter.ts) | 文件系统存储适配器 |
-| [`packages/repository/src/infrastructure-server/adapters/prisma/resource-prisma.repository.ts`](../../../packages/repository/src/infrastructure-server/adapters/prisma/resource-prisma.repository.ts) | Prisma 资源仓储 |
+| [`packages/repository/src/electron/local-vault-runtime.ts`](../../../packages/repository/src/electron/local-vault-runtime.ts) | Local Vault Electron runtime |
+| [`packages/repository/src/electron/index.ts`](../../../packages/repository/src/electron/index.ts) | Desktop repository Electron 模块装配 |
+| [`apps/desktop/src/main/modules/repository/desktop-knowledge-repository-sync.service.ts`](../../../apps/desktop/src/main/modules/repository/desktop-knowledge-repository-sync.service.ts) | Git 同步（commit/fetch/rebase/push、冲突、离线队列） |
+| [`apps/desktop/src/main/modules/repository/desktop-knowledge-repository-reconciliation.service.ts`](../../../apps/desktop/src/main/modules/repository/desktop-knowledge-repository-reconciliation.service.ts) | 首次/持续对账 |
+| [`apps/desktop/src/main/modules/repository/desktop-knowledge-repository-git.runtime.ts`](../../../apps/desktop/src/main/modules/repository/desktop-knowledge-repository-git.runtime.ts) | Git runtime 边界 |
+| [`apps/desktop/src/main/modules/repository/desktop-knowledge-repository-auto-sync.scheduler.ts`](../../../apps/desktop/src/main/modules/repository/desktop-knowledge-repository-auto-sync.scheduler.ts) | profile-scoped 自动同步 |
+| [`apps/desktop/src/main/modules/repository/knowledge-repository-remote.gateway.ts`](../../../apps/desktop/src/main/modules/repository/knowledge-repository-remote.gateway.ts) | 远端 GitHub App gateway |
 
-## Contracts 与数据结构
+## API、应用面与客户端适配
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/contracts/src/modules/repository/aggregates/repository-server.ts`](../../../packages/contracts/src/modules/repository/aggregates/repository-server.ts) | Repository 服务端 DTO |
-| [`packages/contracts/src/modules/repository/aggregates/resource-server.ts`](../../../packages/contracts/src/modules/repository/aggregates/resource-server.ts) | Resource 服务端 DTO |
-| [`packages/contracts/src/modules/repository/aggregates/resource-client.ts`](../../../packages/contracts/src/modules/repository/aggregates/resource-client.ts) | Resource 客户端 DTO |
-| [`packages/contracts/src/modules/repository/dtos/search-contracts.ts`](../../../packages/contracts/src/modules/repository/dtos/search-contracts.ts) | 搜索请求/响应 contracts |
-| [`packages/contracts/src/modules/repository/protocol/repository-event-map.ts`](../../../packages/contracts/src/modules/repository/protocol/repository-event-map.ts) | 资源库事件 map |
-| [`packages/contracts/src/modules/repository/protocol/repository-rpc-map.ts`](../../../packages/contracts/src/modules/repository/protocol/repository-rpc-map.ts) | 资源库 RPC map |
-| [`packages/database/prisma/schema/repository.prisma`](../../../packages/database/prisma/schema/repository.prisma) | 资源库 Prisma schema |
+| [`packages/repository/src/api/module.ts`](../../../packages/repository/src/api/module.ts) | API 模块；只挂 knowledge routes |
+| [`packages/repository/src/api/routes/knowledge-repository-connection.routes.ts`](../../../packages/repository/src/api/routes/knowledge-repository-connection.routes.ts) | connection / projection / attachment / confirmed create |
+| [`packages/repository/src/server/transport/knowledge-repository-connection.controller.ts`](../../../packages/repository/src/server/transport/knowledge-repository-connection.controller.ts) | transport 控制器 |
+| [`packages/repository/src/server/application/repository.application.port.ts`](../../../packages/repository/src/server/application/repository.application.port.ts) | knowledge-only application port |
+| [`packages/repository/src/server/application/services/knowledge-repository-connection.service.ts`](../../../packages/repository/src/server/application/services/knowledge-repository-connection.service.ts) | GitHub App 安装与连接 |
+| [`packages/repository/src/server/application/services/knowledge-repository-projection.service.ts`](../../../packages/repository/src/server/application/services/knowledge-repository-projection.service.ts) | webhook 投影、附件、索引状态 |
+| [`packages/repository/src/server/application/services/knowledge-note-commit.service.ts`](../../../packages/repository/src/server/application/services/knowledge-note-commit.service.ts) | Web 确认后幂等 commit |
+| [`packages/repository/src/server/application/services/knowledge-note-link-graph.ts`](../../../packages/repository/src/server/application/services/knowledge-note-link-graph.ts) | Markdown Link Graph 派生 |
+| [`packages/repository/src/server/infrastructure/repository.module.ts`](../../../packages/repository/src/server/infrastructure/repository.module.ts) | knowledge-only 组合根 |
+| [`packages/repository/src/application-client/repository-client.port.ts`](../../../packages/repository/src/application-client/repository-client.port.ts) | 客户端 port（knowledge + Local Vault） |
+| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.ts) | HTTP 适配器；knowledge + Local Vault only（无 legacy CRUD 方法） |
+| [`packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.ts`](../../../packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.ts) | IPC 适配器；仅 knowledge + vault channels |
+| [`packages/repository/src/client/index.ts`](../../../packages/repository/src/client/index.ts) | 公共 client 缝 |
+
+## 契约与事件
+
+| 文件 | 说明 |
+| --- | --- |
+| [`packages/contracts/src/modules/repository/`](../../../packages/contracts/src/modules/repository/) | knowledge / Local Vault / projection / confirmed create 契约 |
+| [`packages/contracts/src/modules/repository/protocol/repository-event-map.ts`](../../../packages/contracts/src/modules/repository/protocol/repository-event-map.ts) | 仅 `repository:note:mutated` |
+| [`packages/contracts/src/electron/ipc-channels.ts`](../../../packages/contracts/src/electron/ipc-channels.ts) | `RepositoryChannels`：knowledge connection + Local Vault |
+
+## 可重新导入业务备份（非运行时编辑）
+
+旧 Repository/Resource/Folder 与 Editor workspace 表只服务 portable 备份再导入，
+不构成运行时 Markdown 编辑通道。独立服务端持有数据披露见
+`memoflow.server-held-data-disclosure`。
+
+| 文件 | 说明 |
+| --- | --- |
+| [`packages/database/prisma/schema/editor.prisma`](../../../packages/database/prisma/schema/editor.prisma) | `editor_*` Prisma 模型 |
+| [`packages/powersync-schema/src/index.ts`](../../../packages/powersync-schema/src/index.ts) | PowerSync `editor_*` / resource 相关表 |
+| [`packages/data-portability/src/server/application/use-cases/projections/repository.projection.ts`](../../../packages/data-portability/src/server/application/use-cases/projections/repository.projection.ts) | portable repository/resource 导出 |
+| [`packages/data-portability/src/server/application/use-cases/projections/editor.projection.ts`](../../../packages/data-portability/src/server/application/use-cases/projections/editor.projection.ts) | portable editor workspace 导出 |
+| [`packages/data-portability/src/server/application/use-cases/importers/`](../../../packages/data-portability/src/server/application/use-cases/importers/) | portable 导入（含 repository/editor） |
+| [`packages/contracts/src/modules/data-portability/`](../../../packages/contracts/src/modules/data-portability/) | portable 契约（含 server-held-data-disclosure） |
 
 ## 测试入口
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/repository/src/domain-server/services/__tests__/FolderHierarchyService.test.ts`](../../../packages/repository/src/domain-server/services/__tests__/FolderHierarchyService.test.ts) | 文件夹层级服务测试 |
-| [`packages/repository/src/application-server/__tests__/resource-mutations.test.ts`](../../../packages/repository/src/application-server/__tests__/resource-mutations.test.ts) | 资源变更测试 |
-| [`packages/repository/src/application-server/__tests__/upload-resources.test.ts`](../../../packages/repository/src/application-server/__tests__/upload-resources.test.ts) | 上传测试 |
-| [`packages/repository/src/api/routes/repository.routes.spec.ts`](../../../packages/repository/src/api/routes/repository.routes.spec.ts) | 资源库 routes 测试 |
-| [`packages/app-vue/src/modules/repository/stores/repositoryStore.spec.ts`](../../../packages/app-vue/src/modules/repository/stores/repositoryStore.spec.ts) | 资源库 store 测试 |
+| [`packages/app-vue/src/modules/repository/router/index.spec.ts`](../../../packages/app-vue/src/modules/repository/router/index.spec.ts) | 无 `/note/:id` 路由契约 |
+| [`packages/app-vue/src/modules/repository/views/notePanelAdaptation.spec.ts`](../../../packages/app-vue/src/modules/repository/views/notePanelAdaptation.spec.ts) | confirmed create 与深链 |
+| [`packages/repository/src/server/infrastructure/adapters/prisma/__tests__/confirmed-create-only-note-boundary.surface.spec.ts`](../../../packages/repository/src/server/infrastructure/adapters/prisma/__tests__/confirmed-create-only-note-boundary.surface.spec.ts) | residual 201：confirmed-create-only 边界 |
+| [`packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts`](../../../packages/app-vue/src/modules/repository/views/KnowledgeProjectionWorkspaceView.spec.ts) | Web 投影工作区 |
+| [`packages/app-vue/src/shared/utils/safe-markdown.spec.ts`](../../../packages/app-vue/src/shared/utils/safe-markdown.spec.ts) | Markdown 安全边界 |
+| [`packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter.spec.ts) | projection/confirmed-create；断言无 legacy CRUD 方法 |
+| [`packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.spec.ts`](../../../packages/repository/src/infrastructure-client/adapters/ipc/repository-ipc.adapter.spec.ts) | knowledge + vault IPC |
+| [`packages/repository/src/server/application/services/knowledge-note-commit.service.spec.ts`](../../../packages/repository/src/server/application/services/knowledge-note-commit.service.spec.ts) | 幂等 confirmed create |
+| [`packages/repository/src/server/application/services/knowledge-repository-projection.service.spec.ts`](../../../packages/repository/src/server/application/services/knowledge-repository-projection.service.spec.ts) | webhook / 投影 |
+| [`apps/web/e2e/note/legacy-note-mutation-boundary.spec.ts`](../../../apps/web/e2e/note/legacy-note-mutation-boundary.spec.ts) | 旧 CRUD 路径 404 边界 |
+| [`apps/web/src/mocks/handlers/repository.handlers.ts`](../../../apps/web/src/mocks/handlers/repository.handlers.ts) | MSW knowledge-only（无 legacy Resource/Folder 404 stub） |
 
 ## 需要重点关注的改动风险
 
-- 文件系统、数据库和前端树状态的一致性。
-- 资源引用失效（编辑器 wiki-link、AI 知识引用）。
-- 存储配额和路径安全。
-- 编辑器双向耦合。
-- HTTP、IPC、Prisma、PowerSync 多运行时适配器的一致性。
+- 不要恢复 `/note/:id`、Editor API/Electron、或 Repository/Folder/Resource CRUD 运行时入口。
+- 不要把 portable `editor_*`/`resources` 备份与 `memoflow.server-held-data-disclosure` 混为同一导出通道。
+- Web Markdown 必须继续走 sanitizer；禁止重新启用原始 HTML。
+- Desktop Git 同步禁止 force push；双非空仓库首次对账必须人工确认。
+- AI 写入路径必须用户确认；确认创建返回 `KnowledgeNotePersistedRef`，不要恢复 Resource CRUD DTO。

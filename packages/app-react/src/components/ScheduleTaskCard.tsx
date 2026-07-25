@@ -38,6 +38,11 @@ function healthTone(health: 'healthy' | 'warning' | 'critical') {
   return 'textSecondary' as const;
 }
 
+/**
+ * Residual 1216 keep-boundary: app-react formatTimestamp — schedule card local toLocaleString.
+ * number|null only (not undefined); empty/invalid → '-'; stays package-local (no utils dep).
+ * Soft residual 1216: app-vue schedule-presentation formatTimestamp is exported schedule util (no force-merge).
+ */
 function formatTimestamp(timestamp: number | null): string {
   if (!timestamp) return '-';
   const date = new Date(timestamp);

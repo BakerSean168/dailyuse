@@ -19,7 +19,7 @@ from ai_service.schemas import (
     AgentArtifact,
     AgentMessage,
     AgentResumePayload,
-    IndexedKnowledgeResource,
+    IndexedKnowledgeNote,
     ProviderConfig,
 )
 
@@ -220,7 +220,7 @@ def create_knowledge_generate_initial_state(
     provider_id: str | None = None,
     model: str | None = None,
     provider_config: ProviderConfig | None = None,
-    indexed_resources: list[IndexedKnowledgeResource] | None = None,
+    indexed_resources: list[IndexedKnowledgeNote] | None = None,
     clock: Clock = _default_clock_ms,
 ) -> KnowledgeGenerateGraphState:
     """Build the initial state for one knowledge.generate Agent run."""
@@ -328,7 +328,7 @@ def build_knowledge_generate_graph(
         ):
             try:
                 indexed_resources = [
-                    IndexedKnowledgeResource.model_validate(resource)
+                    IndexedKnowledgeNote.model_validate(resource)
                     for resource in indexed_resources_data
                 ]
                 provider_config = ProviderConfig.model_validate(

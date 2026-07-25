@@ -7,14 +7,12 @@
  * Types imported from @dailyuse/contracts/ai.
  */
 
-export type { IHttpClient } from '@dailyuse/http-client';
 export type { IResultHttpClient } from '@dailyuse/http-client';
 
 // Re-export port interfaces from application-client ports
 export type {
   IAIConversationApiClient,
   IAIMessageApiClient,
-  IAIStreamMessageApiClient,
   IAIGoalApiClient,
   IAICapabilitiesApiClient,
   AIEvaluationReportApiClient,
@@ -23,25 +21,13 @@ export type {
   AIAnalyticsQueryApiClient,
   AIAgentRuntimeApiClient,
   IAIProviderConfigApiClient,
+  IAIAssistantApiClient,
 } from '../../application-client/ports/ai-api-client.port';
 
 // ============ Transport Client Interfaces ============
 
-// IHttpClient imported from @dailyuse/http-client
-
-export interface IIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
-}
-
-export interface IResultIpcClient {
-  invoke<T = unknown>(
-    channel: string,
-    ...args: unknown[]
-  ): Promise<import('@dailyuse/contracts/result').Result<T>>;
-  getBridge?: () =>
-    | {
-        on(channel: string, callback: (...args: unknown[]) => void): void;
-        off(channel: string, callback: (...args: unknown[]) => void): void;
-      }
-    | undefined;
-}
+/**
+ * IPC Client interface (Result-returning).
+ * Canonical definition in @dailyuse/ipc-client (ResultIpcClient), including optional getBridge.
+ */
+export type { IResultIpcClient } from '@dailyuse/ipc-client';

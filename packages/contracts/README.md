@@ -116,7 +116,6 @@ import { AccountDTO } from '@dailyuse/contracts/account';
 | `@dailyuse/contracts/task`           | 任务模块契约   |
 | `@dailyuse/contracts/goal`           | 目标模块契约   |
 | `@dailyuse/contracts/reminder`       | 提醒模块契约   |
-| `@dailyuse/contracts/editor`         | 编辑器模块契约 |
 | `@dailyuse/contracts/repository`     | 仓库模块契约   |
 | `@dailyuse/contracts/account`        | 账户模块契约   |
 | `@dailyuse/contracts/authentication` | 认证模块契约   |
@@ -126,25 +125,24 @@ import { AccountDTO } from '@dailyuse/contracts/account';
 | `@dailyuse/contracts/ai`             | AI 模块契约    |
 | `@dailyuse/contracts/dashboard`      | 仪表盘模块契约 |
 | `@dailyuse/contracts/data-portability` | 数据可移植性契约 |
-| `@dailyuse/contracts/response`       | API 响应类型   |
 | `@dailyuse/contracts/shared`         | 共享基础类型   |
 
 ## 根入口导出内容
 
 根入口 (`@dailyuse/contracts`) 导出以下内容：
 
-### 响应系统
+### 响应系统（Result Pattern）
 
 ```typescript
 import {
-  ResponseCode,
-  ResponseStatus,
-  ResponseBuilder,
-  createResponseBuilder,
-  type ApiResponse,
-  type SuccessResponse,
-  type ErrorResponse,
+  ResultCode,
+  HttpResponseBuilder,
+  createHttpResponseBuilder,
+  type HttpResponse,
+  type Result,
 } from '@dailyuse/contracts';
+// 或更细粒度：
+// import { ResultCode, type HttpResponse } from '@dailyuse/contracts/result';
 ```
 
 ### 常用枚举

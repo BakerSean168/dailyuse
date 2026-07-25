@@ -2,7 +2,7 @@
  * Task Instance HTTP Adapter
  *
  * HTTP implementation of ITaskInstanceApiClient.
- * Uses IHttpClient for making HTTP requests.
+ * Uses IResultHttpClient for making HTTP requests.
  */
 
 import type { Result } from '@dailyuse/contracts/result';

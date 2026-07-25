@@ -9,6 +9,10 @@
 
 ## 背景
 
+## Implementation note (Residual 619 / 2026-07-22)
+Historical route samples used the removed `@dailyuse/contracts/response` package. Use `@dailyuse/contracts/result` `createHttpResponseBuilder` / `Result` + `expressAdapter` / `RouteRegistrar` instead.
+
+
 在 API 项目的早期阶段，我们采用了**单文件路由**的架构模式：每个模块的所有路由都放在一个单一的文件中。
 
 **存在的问题**:
@@ -93,11 +97,11 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { SomeApplicationService } from '@dailyuse/application-server';
-import { createResponseBuilder } from '@dailyuse/contracts/response';
+import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('[Module][Feature]Routes');
-const responseBuilder = createResponseBuilder();
+const responseBuilder = createHttpResponseBuilder();
 
 export function register[Feature]Routes(): Router {
   const router: Router = ExpressRouter();

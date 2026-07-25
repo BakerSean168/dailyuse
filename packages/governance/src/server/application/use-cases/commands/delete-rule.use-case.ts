@@ -41,20 +41,20 @@ export class DeleteRuleUseCase {
 
       if (rule.status === RuleStatus.Draft) {
         await this.ruleRepository.delete(rule.id);
-        return { success: true };
+        return null;
       }
 
       const reason = `Deleted by user ${cx.identityId}`;
       const deprecateResult = rule.deprecate(reason);
       if (!deprecateResult.ok) {
         if (rule.status === RuleStatus.Deprecated) {
-          return { success: true };
+          return null;
         }
         unwrapOrThrowError(deprecateResult);
       }
 
       await this.ruleRepository.save(rule);
-      return { success: true };
+      return null;
     }, 'Failed to delete rule');
   }
 }

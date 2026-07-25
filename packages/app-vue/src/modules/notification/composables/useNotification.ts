@@ -1,4 +1,5 @@
 /**
+ * Residual 973: createComposableHandleError sole factory.
  * useNotification - 通知模块主 composable
  *
  * 通过 inject 获取 NotificationClientService，所有方法返回 Result<T>。
@@ -12,6 +13,7 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 
 export function useNotification() {
   const service = useStrictInject(NOTIFICATION_SERVICE_KEY, 'NotificationService');
@@ -25,11 +27,10 @@ export function useNotification() {
   const pagination = computed(() => store.pagination);
   const hasUnread = computed(() => store.unreadCount > 0);
 
-  function handleError(error: unknown, fallbackKey: string): void {
-    const message = translateResultError(error, t, { fallbackKey });
-    store.setError(message);
-    console.error(message);
-  }
+  const handleError = createComposableHandleError({
+    t,
+    setError: (message) => store.setError(message),
+  });
 
   async function fetchNotifications(query?: Record<string, unknown>) {
     store.setLoading(true);
@@ -94,7 +95,7 @@ export function useNotification() {
       return;
     }
 
-    const result = await service.dismissAll(ids);
+    const result = await service.batchDeleteNotifications(ids);
     if (result.ok) {
       store.setNotifications([], 0);
       store.setUnreadCount(0);

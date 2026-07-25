@@ -52,9 +52,13 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
 
   // ================= Read Operations =================
 
-  async findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
-    const row = await this.prisma.goal.findUnique({
-      where: { id },
+  async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Goal | null> {
+    const row = await this.prisma.goal.findFirst({
+      where: { id, identityId },
       include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
     });
     if (!row) return null;
@@ -156,9 +160,9 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     });
   }
 
-  async findByFolderId(folderId: string): Promise<Goal[]> {
+  async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
     const rows = await this.prisma.goal.findMany({
-      where: { folderId, deletedAt: null, archivedAt: null },
+      where: { identityId, folderId, deletedAt: null, archivedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return rows.map((row: PrismaGoalWithRelations) =>
@@ -351,34 +355,45 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
 
   // ================= Delete Operations =================
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.goal.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const deleted = await this.prisma.goal.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Goal not found for the current identity.');
+    }
   }
 
   // ================= Utility Operations =================
 
-  async exists(id: string): Promise<boolean> {
-    const count = await this.prisma.goal.count({ where: { id } });
+  async exists(identityId: string, id: string): Promise<boolean> {
+    const count = await this.prisma.goal.count({ where: { id, identityId } });
     return count > 0;
   }
 
-  async batchUpdateStatus(ids: string[], status: string): Promise<void> {
+  async batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void> {
+    if (ids.length === 0) return;
     await this.prisma.goal.updateMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
       data: { status, updatedAt: new Date() },
     });
   }
 
-  async batchMoveToFolder(ids: string[], folderId: string | null): Promise<void> {
+  async batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void> {
+    if (ids.length === 0) return;
     await this.prisma.goal.updateMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
       data: { folderId, updatedAt: new Date() },
     });
   }
 
   // ================= Hierarchy Operations =================
 
-  async isAncestor(potentialAncestorId: string, potentialDescendantId: string): Promise<boolean> {
+  async isAncestor(
+    identityId: string,
+    potentialAncestorId: string,
+    potentialDescendantId: string,
+  ): Promise<boolean> {
     let currentId: string | null = potentialDescendantId;
     const visited = new Set<string>();
 
@@ -387,8 +402,8 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       if (visited.has(currentId)) break; // Circular reference guard
       visited.add(currentId);
 
-      const parent: { parentGoalId: string | null } | null = await this.prisma.goal.findUnique({
-        where: { id: currentId },
+      const parent: { parentGoalId: string | null } | null = await this.prisma.goal.findFirst({
+        where: { id: currentId, identityId },
         select: { parentGoalId: true },
       });
       currentId = parent?.parentGoalId ?? null;
@@ -396,9 +411,9 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
     return false;
   }
 
-  async findChildren(parentId: string): Promise<Goal[]> {
+  async findChildren(identityId: string, parentId: string): Promise<Goal[]> {
     const rows = await this.prisma.goal.findMany({
-      where: { parentGoalId: parentId, deletedAt: null },
+      where: { parentGoalId: parentId, identityId, deletedAt: null },
       include: GOAL_INCLUDE_ALL,
       orderBy: { sortOrder: 'asc' },
     });

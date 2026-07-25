@@ -110,7 +110,7 @@ interface MockQueueInstance {
   readonly stop: ReturnType<typeof vi.fn>;
   readonly config: {
     readonly taskLoader?: { loadActiveTasks(): Promise<unknown[]> };
-    readonly onExecuteTask: (taskId: string) => Promise<void>;
+    readonly onExecuteTask: (taskId: string, item: { identityId: string }) => Promise<void>;
     readonly onExecuteError?: (taskId: string, error: Error) => void;
   };
   loadedItems: unknown[];
@@ -121,6 +121,7 @@ interface MockQueueInstance {
 type ScheduleTaskRepositoryMock = IScheduleTaskRepository & {
   save: ReturnType<typeof vi.fn>;
   findById: ReturnType<typeof vi.fn>;
+  findByIdForIdentity: ReturnType<typeof vi.fn>;
   deleteById: ReturnType<typeof vi.fn>;
   findByIdentityId: ReturnType<typeof vi.fn>;
   findBySourceModule: ReturnType<typeof vi.fn>;
@@ -139,6 +140,7 @@ function createRepositoryMock(): ScheduleTaskRepositoryMock {
   const repository = {
     save: vi.fn(async () => undefined),
     findById: vi.fn(async () => null),
+    findByIdForIdentity: vi.fn(async () => null),
     deleteById: vi.fn(async () => undefined),
     findByIdentityId: vi.fn(async () => []),
     findBySourceModule: vi.fn(async () => []),
@@ -233,10 +235,10 @@ function createLoadedTask(
 }
 
 async function flushAsyncWork(): Promise<void> {
-  await Promise.resolve();
-  await Promise.resolve();
-  await Promise.resolve();
-  await Promise.resolve();
+  // Runtime sync now may await findById + findByIdForIdentity before mutating the queue.
+  for (let i = 0; i < 12; i += 1) {
+    await Promise.resolve();
+  }
 }
 
 function getLastQueue(): MockQueueInstance {
@@ -273,6 +275,7 @@ describe('createScheduleRuntimeContribution', () => {
       expect.objectContaining({
         taskId: 'task-allowed',
         taskName: allowedTask.name,
+        identityId: 'identity-1',
         nextRunAt: allowedTask.execution.nextRunAt,
       }),
     ]);
@@ -310,6 +313,7 @@ describe('createScheduleRuntimeContribution', () => {
     const task = createLoadedTask({ id: 'task-sync', nextRunAt: Date.now() + 120_000 });
     const repository = createRepositoryMock();
     repository.findById.mockResolvedValue(task);
+    repository.findByIdForIdentity.mockResolvedValue(task);
 
     const runtime = createScheduleRuntimeContribution({
       scheduleTaskRepository: repository,
@@ -330,12 +334,15 @@ describe('createScheduleRuntimeContribution', () => {
     await flushAsyncWork();
 
     expect(repository.findById).toHaveBeenCalledTimes(4);
+    expect(repository.findByIdForIdentity).toHaveBeenCalledTimes(4);
+    expect(repository.findByIdForIdentity).toHaveBeenCalledWith('identity-1', task.id);
     expect(queue.addTask).toHaveBeenCalledTimes(4);
     expect(queue.addTask).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
         taskId: task.id,
         taskName: task.name,
+        identityId: 'identity-1',
         metadata: task.metadata.toDTO().payload,
       }),
     );
@@ -373,6 +380,7 @@ describe('createScheduleRuntimeContribution', () => {
     const task = createLoadedTask({ id: 'task-blocked' });
     const repository = createRepositoryMock();
     repository.findById.mockResolvedValue(task);
+    repository.findByIdForIdentity.mockResolvedValue(task);
 
     const runtime = createScheduleRuntimeContribution({
       scheduleTaskRepository: repository,
@@ -417,7 +425,7 @@ describe('createScheduleRuntimeContribution', () => {
   it('executes due tasks through the source executor and persists the updated aggregate', async () => {
     const task = createLoadedTask({ id: 'task-execute', nextRunAt: Date.now() - 60_000 });
     const repository = createRepositoryMock();
-    repository.findById.mockResolvedValue(task);
+    repository.findByIdForIdentity.mockResolvedValue(task);
     const sourceExecutor = {
       execute: vi.fn(async () => ({ nextRunAt: Date.now() + 300_000, result: { ok: true } })),
     };
@@ -428,8 +436,10 @@ describe('createScheduleRuntimeContribution', () => {
     });
     const queue = getLastQueue();
 
-    await queue.config.onExecuteTask(task.id);
+    await queue.config.onExecuteTask(task.id, { identityId: String(task.identityId) });
 
+    expect(repository.findByIdForIdentity).toHaveBeenCalledWith('identity-1', task.id);
+    expect(repository.findById).not.toHaveBeenCalled();
     expect(sourceExecutor.execute).toHaveBeenCalledWith(task);
     expect(repository.save).toHaveBeenCalledWith(task);
     expect(task.execution.executionCount).toBe(1);
@@ -446,7 +456,7 @@ describe('createScheduleRuntimeContribution', () => {
       schedule: oneShotPastSchedule(startTime),
     });
     const repository = createRepositoryMock();
-    repository.findById.mockResolvedValue(task);
+    repository.findByIdForIdentity.mockResolvedValue(task);
     const sourceExecutor = {
       execute: vi.fn(async () => {
         throw new Error('boom');
@@ -459,8 +469,9 @@ describe('createScheduleRuntimeContribution', () => {
     });
     const queue = getLastQueue();
 
-    await queue.config.onExecuteTask(task.id);
+    await queue.config.onExecuteTask(task.id, { identityId: String(task.identityId) });
 
+    expect(repository.findByIdForIdentity).toHaveBeenCalledWith('identity-1', task.id);
     expect(repository.save).toHaveBeenCalledWith(task);
     expect(task.execution.executionCount).toBe(1);
     expect(task.execution.lastExecutionStatus).toBe(ExecutionStatus.Failed);
@@ -469,6 +480,53 @@ describe('createScheduleRuntimeContribution', () => {
       '[Schedule] Source executor failed',
       expect.objectContaining({ taskId: task.id, error: 'boom', retryScheduledAt: null }),
     );
+  });
+
+  it('prefers findByIdForIdentity when sync events carry identityId', async () => {
+    const task = createLoadedTask({ id: 'task-owned-sync', identityId: 'identity-owned' });
+    const repository = createRepositoryMock();
+    repository.findByIdForIdentity.mockResolvedValue(task);
+
+    const runtime = createScheduleRuntimeContribution({
+      scheduleTaskRepository: repository,
+      sourceExecutor: { execute: vi.fn(async () => undefined) },
+    });
+
+    await runtime.start();
+    const queue = getLastQueue();
+
+    mocked.emit('schedule:task-executed', {
+      taskId: task.id,
+      identityId: 'identity-owned',
+    });
+    await flushAsyncWork();
+
+    expect(repository.findByIdForIdentity).toHaveBeenCalledWith('identity-owned', task.id);
+    expect(repository.findById).not.toHaveBeenCalled();
+    expect(queue.addTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskId: task.id,
+        identityId: 'identity-owned',
+      }),
+    );
+  });
+
+  it('skips execution when identity-scoped load returns null', async () => {
+    const repository = createRepositoryMock();
+    repository.findByIdForIdentity.mockResolvedValue(null);
+    const sourceExecutor = { execute: vi.fn(async () => undefined) };
+
+    createScheduleRuntimeContribution({
+      scheduleTaskRepository: repository,
+      sourceExecutor,
+    });
+    const queue = getLastQueue();
+
+    await queue.config.onExecuteTask('missing-task', { identityId: 'identity-1' });
+
+    expect(repository.findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'missing-task');
+    expect(sourceExecutor.execute).not.toHaveBeenCalled();
+    expect(repository.save).not.toHaveBeenCalled();
   });
 
   it('logs queue execution failures through onExecuteError', () => {

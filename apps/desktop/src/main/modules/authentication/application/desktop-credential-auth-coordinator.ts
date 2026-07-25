@@ -14,8 +14,12 @@ import {
   AuthRuntimeState,
   type AuthResponseDTO,
   type EmailLoginCredentials,
+  type EmailRegisterCredentials,
   type RememberedDesktopAccountLoginReq,
 } from '@dailyuse/contracts/authentication';
+// Residual 871: RegisterRequest dual retired.
+// Residual 931: RegisterRequest name fully retired — EmailRegisterCredentials sole body.
+export type { EmailRegisterCredentials };
 import {
   TokenManager,
   SessionManager,
@@ -35,13 +39,6 @@ import {
   safeTransition,
 } from './auth-coordinator-helpers';
 
-export type LoginCredentials = EmailLoginCredentials;
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  username?: string;
-}
 
 /** Mutable auth state shared between coordinator and facade. */
 export interface AuthState {
@@ -71,7 +68,7 @@ export interface CredentialAuthCoordinatorDeps {
 export class DesktopCredentialAuthCoordinator {
   constructor(private readonly deps: CredentialAuthCoordinatorDeps) {}
 
-  async login(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
+  async login(credentials: EmailLoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     this.deps.logger.info('Login attempt', { email: credentials.email });
     return this.executeLogin(credentials);
   }
@@ -106,7 +103,7 @@ export class DesktopCredentialAuthCoordinator {
     });
   }
 
-  private async executeLogin(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
+  private async executeLogin(credentials: EmailLoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     try {
       const mainWindow = this.deps.windowManager.getMainWindow();
       if (mainWindow && !mainWindow.isDestroyed()) {
@@ -215,7 +212,7 @@ export class DesktopCredentialAuthCoordinator {
     }
   }
 
-  async register(request: RegisterRequest): Promise<IpcResult<AuthResponseDTO>> {
+  async register(request: EmailRegisterCredentials): Promise<IpcResult<AuthResponseDTO>> {
     const result = await registerDesktopAccount(request, {
       isOnline: () => this.deps.networkStateManager.isOnline(),
       remoteGateway: this.deps.remoteGateway,
@@ -233,7 +230,7 @@ export class DesktopCredentialAuthCoordinator {
 
   async completeRegisterSuccess(
     data: RegisterApiResponse | AuthResponseDTO,
-    request: RegisterRequest,
+    request: EmailRegisterCredentials,
   ): Promise<void> {
     const registerLike = data as RegisterApiResponse & {
       user?: { id?: string };

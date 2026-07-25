@@ -32,13 +32,13 @@
 
 import type { Result, ResultError } from '@dailyuse/contracts/result';
 import {
-  ok,
   fail,
   ResultCode,
   fromIpcResult,
   type IpcResult,
+  isIpcResultEnvelope,
 } from '@dailyuse/contracts/result';
-import type { ElectronBridge, IpcClientConfig } from './types';
+import type { ElectronBridge, IpcClientConfig, IResultIpcClient } from './types';
 import { DEFAULT_IPC_CLIENT_CONFIG } from './types';
 
 // ============================================================================
@@ -67,7 +67,7 @@ import { DEFAULT_IPC_CLIENT_CONFIG } from './types';
  * }
  * ```
  */
-export class ResultIpcClient {
+export class ResultIpcClient implements IResultIpcClient {
   private bridge: ElectronBridge | undefined;
   private readonly enableLogging: boolean;
   private readonly timeout: number;
@@ -159,22 +159,22 @@ export class ResultIpcClient {
    * 处理成功的 IPC 响应
    */
   private handleResponse<T>(channel: string, response: unknown): Result<T> {
-    // 检测 IpcResult 信封格式
-    if (this.isIpcResultEnvelope(response)) {
+    if (isIpcResultEnvelope(response)) {
       if (this.enableLogging) {
         const ipc = response as IpcResult<T>;
         console.debug(`[IPC] ← ${channel} ${ipc.ok ? '✓' : '✗'}`);
       }
 
-      // 使用 contracts 提供的标准转换
       return fromIpcResult<T>(response as IpcResult<T>);
     }
 
-    // 非标准格式 → 直接包装为 Result.ok
     if (this.enableLogging) {
-      console.debug(`[IPC] ← ${channel} (raw)`);
+      console.debug(`[IPC] ← ${channel} ✗ (non-envelope)`);
     }
-    return ok(response as T);
+    return fail<ResultError>({
+      code: ResultCode.INTERNAL_ERROR,
+      message: `IPC response for ${channel} is not an IpcResult envelope`,
+    }) as Result<T>;
   }
 
   /**
@@ -214,13 +214,4 @@ export class ResultIpcClient {
   // Helpers
   // ────────────────────────────────────────
 
-  /** 判断是否为 IpcResult 信封格式 */
-  private isIpcResultEnvelope(data: unknown): boolean {
-    return (
-      data !== null &&
-      typeof data === 'object' &&
-      'ok' in (data as Record<string, unknown>) &&
-      typeof (data as Record<string, unknown>).ok === 'boolean'
-    );
-  }
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  REPOSITORY_RESOURCE_MUTATED_EVENT,
-  RepositoryResourceMutationType,
+  REPOSITORY_NOTE_MUTATED_EVENT,
+  RepositoryNoteMutationType,
 } from '@dailyuse/contracts/repository';
 import { eventBus } from '@dailyuse/utils/domain';
 
@@ -22,6 +22,7 @@ import type {
   IAnalyticsQueryPort,
   IAnalyticsReadPort,
   IKnowledgeIndexRepository,
+  IKnowledgeIndexStatusPort,
   IKnowledgeIngestionPort,
   IKnowledgeQueryPort,
   IKnowledgeSourcePort,
@@ -29,19 +30,19 @@ import type {
   KnowledgeExpansionInput,
   KnowledgeExpansionResult,
   KnowledgeIngestionInput,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
   KnowledgeQueryInput,
   KnowledgeQueryResult,
-  KnowledgeSourceResource,
+  KnowledgeSourceNote,
 } from '../../../ports';
 import { QueryAIAnalyticsUseCase } from '../query-ai-analytics.use-case';
 import { SyncRelevantKnowledgeUseCase } from '../sync-relevant-knowledge.use-case';
-import { SyncKnowledgeResourcesUseCase } from '../sync-knowledge-resources.use-case';
+import { SyncKnowledgeNotesUseCase } from '../sync-knowledge-notes.use-case';
 import { ReindexAllKnowledgeUseCase } from '../reindex-all-knowledge.use-case';
 import { QueryKnowledgeUseCase } from '../query-knowledge.use-case';
 import { ExpandKnowledgeUseCase } from '../expand-knowledge.use-case';
 import { ReindexKnowledgeUseCase } from '../reindex-knowledge.use-case';
-import { SyncResourceByIdUseCase } from '../sync-resource-by-id.use-case';
+import { SyncNoteByIdUseCase } from '../sync-note-by-id.use-case';
 import {
   createAIModuleForTests,
   createAIProviderConfigRepositoryStub,
@@ -63,8 +64,12 @@ class StubProviderConfigRepository {
     }>,
   ) {}
 
-  async findById(id: string) {
-    return this.providers.find((provider) => provider.id === id) ?? null;
+  async findByIdForIdentity(identityId: string, id: string) {
+    const provider = this.providers.find((item) => item.id === id) ?? null;
+    if (!provider || provider.identityId !== identityId) {
+      return null;
+    }
+    return provider;
   }
 
   async findDefaultByIdentityId(identityId: string) {
@@ -80,8 +85,8 @@ class StubProviderConfigRepository {
 }
 
 class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
-  public readonly getResourceById = vi.fn<
-    (identityId: string, resourceId: string) => Promise<KnowledgeSourceResource | null>
+  public readonly getNoteById = vi.fn<
+    (identityId: string, resourceId: string) => Promise<KnowledgeSourceNote | null>
   >(async (identityId, resourceId) => ({
     identityId,
     repositoryId: 'repo-1',
@@ -93,8 +98,8 @@ class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
     metadata: {},
   }));
 
-  public readonly listRelevantResources = vi.fn<
-    (identityId: string, query: string, limit: number) => Promise<KnowledgeSourceResource[]>
+  public readonly listRelevantNotes = vi.fn<
+    (identityId: string, query: string, limit: number) => Promise<KnowledgeSourceNote[]>
   >(async () => [
     {
       identityId: 'identity-1',
@@ -108,21 +113,21 @@ class StubKnowledgeSourcePort implements IKnowledgeSourcePort {
     },
   ]);
 
-  public readonly listIndexableResources = vi.fn<
-    (identityId: string, limit: number) => Promise<KnowledgeSourceResource[]>
-  >(async (identityId, limit) => this.listRelevantResources(identityId, '', limit));
+  public readonly listIndexableNotes = vi.fn<
+    (identityId: string, limit: number) => Promise<KnowledgeSourceNote[]>
+  >(async (identityId, limit) => this.listRelevantNotes(identityId, '', limit));
 }
 
 class StubKnowledgeIngestionPort implements IKnowledgeIngestionPort {
-  public readonly indexResource = vi.fn<
-    (input: KnowledgeIngestionInput) => Promise<KnowledgeIndexedResource>
+  public readonly indexNote = vi.fn<
+    (input: KnowledgeIngestionInput) => Promise<KnowledgeIndexedNote>
   >(async (input) => ({
-    identityId: input.resource.identityId,
-    repositoryId: input.resource.repositoryId,
-    resourceId: input.resource.resourceId,
-    resourcePath: input.resource.resourcePath,
-    title: input.resource.title,
-    mimeType: input.resource.mimeType,
+    identityId: input.note.identityId,
+    repositoryId: input.note.repositoryId,
+    resourceId: input.note.resourceId,
+    resourcePath: input.note.resourcePath,
+    title: input.note.title,
+    mimeType: input.note.mimeType,
     contentHash: 'hash-1',
     summary: 'Repository-backed answers are enabled.',
     keywords: ['repository', 'answers'],
@@ -130,16 +135,16 @@ class StubKnowledgeIngestionPort implements IKnowledgeIngestionPort {
     chunks: [
       {
         chunkIndex: 0,
-        content: input.resource.content,
+        content: input.note.content,
         contentHash: 'hash-1',
         startOffset: 0,
-        endOffset: input.resource.content.length,
+        endOffset: input.note.content.length,
         headingPath: ['Python AI'],
         keywords: ['repository', 'answers'],
         embedding: [0.2, 0.8],
       },
     ],
-    metadata: input.resource.metadata ?? {},
+    metadata: input.note.metadata ?? {},
   }));
 }
 
@@ -147,7 +152,7 @@ class StubKnowledgeQueryPort implements IKnowledgeQueryPort {
   public readonly expand = vi.fn<
     (input: KnowledgeExpansionInput) => Promise<KnowledgeExpansionResult>
   >(async () => ({
-    expandedContent: '# Expanded Note\n\nGrounded answers should cite repository resources.',
+    expandedContent: '# Expanded Note\n\nGrounded answers should cite knowledge notes.',
     citations: [
       {
         resourceId: 'resource-1',
@@ -196,15 +201,15 @@ class StubKnowledgeIndexRepository implements IKnowledgeIndexRepository {
     vectorRecallReason: 'Vector availability has not been probed in this test stub.',
   }));
 
-  public readonly findByResourceIds = vi.fn<
-    (identityId: string, resourceIds: string[]) => Promise<KnowledgeIndexedResource[]>
+  public readonly findByNoteIds = vi.fn<
+    (identityId: string, resourceIds: string[]) => Promise<KnowledgeIndexedNote[]>
   >(async () => []);
 
-  public readonly findRelevantResources = vi.fn<
-    (identityId: string, query: string, limit: number) => Promise<KnowledgeIndexedResource[]>
+  public readonly findRelevantNotes = vi.fn<
+    (identityId: string, query: string, limit: number) => Promise<KnowledgeIndexedNote[]>
   >(async () => []);
 
-  public readonly upsert = vi.fn<(resource: KnowledgeIndexedResource) => Promise<void>>(
+  public readonly upsert = vi.fn<(resource: KnowledgeIndexedNote) => Promise<void>>(
     async () => {},
   );
 
@@ -213,6 +218,11 @@ class StubKnowledgeIndexRepository implements IKnowledgeIndexRepository {
   >(async () => {});
 
   public readonly markFailed = vi.fn(async () => {});
+  public readonly removeByNoteId = vi.fn(async () => {});
+}
+
+class StubKnowledgeIndexStatusPort implements IKnowledgeIndexStatusPort {
+  public readonly updateIndexStatus = vi.fn(async () => {});
 }
 
 class StubExecutionLogPort implements IAIExecutionLogPort {
@@ -245,18 +255,20 @@ class StubAnalyticsQueryPort implements IAnalyticsQueryPort {
   );
 }
 
-describe('SyncKnowledgeResourcesUseCase', () => {
+describe('SyncKnowledgeNotesUseCase', () => {
   it('records an indexing failure without conflating it with the persisted source note', async () => {
     const resource = (
-      await new StubKnowledgeSourcePort().listIndexableResources('identity-1', 1)
+      await new StubKnowledgeSourcePort().listIndexableNotes('identity-1', 1)
     )[0]!;
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
-    ingestionPort.indexResource.mockRejectedValueOnce(new Error('embedding provider unavailable'));
-    const service = new SyncKnowledgeResourcesUseCase(
+    ingestionPort.indexNote.mockRejectedValueOnce(new Error('embedding provider unavailable'));
+    const indexStatusPort = new StubKnowledgeIndexStatusPort();
+    const service = new SyncKnowledgeNotesUseCase(
       knowledgeIndexRepository,
       ingestionPort,
       new StubExecutionLogPort(),
+      indexStatusPort,
     );
 
     const result = await service.execute([resource], { identityId: 'identity-1' });
@@ -279,6 +291,42 @@ describe('SyncKnowledgeResourcesUseCase', () => {
       expect.objectContaining({
         resourceId: resource.resourceId,
         error: 'embedding provider unavailable',
+      }),
+    );
+    expect(indexStatusPort.updateIndexStatus).toHaveBeenCalledWith(
+      'identity-1',
+      expect.objectContaining({
+        resourceId: resource.resourceId,
+        contentHash: expect.any(String),
+        status: 'failed',
+      }),
+    );
+  });
+
+  it('reports a successful index without making status projection failures fatal', async () => {
+    const resource = (
+      await new StubKnowledgeSourcePort().listIndexableNotes('identity-1', 1)
+    )[0]!;
+    const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
+    const indexStatusPort = new StubKnowledgeIndexStatusPort();
+    indexStatusPort.updateIndexStatus.mockRejectedValueOnce(new Error('projection unavailable'));
+    const service = new SyncKnowledgeNotesUseCase(
+      knowledgeIndexRepository,
+      new StubKnowledgeIngestionPort(),
+      new StubExecutionLogPort(),
+      indexStatusPort,
+    );
+
+    const result = await service.execute([resource], { identityId: 'identity-1' });
+
+    expect(result).toMatchObject({ indexedCount: 1, failedCount: 0 });
+    expect(knowledgeIndexRepository.upsert).toHaveBeenCalledOnce();
+    expect(indexStatusPort.updateIndexStatus).toHaveBeenCalledWith(
+      'identity-1',
+      expect.objectContaining({
+        resourceId: resource.resourceId,
+        contentHash: expect.any(String),
+        status: 'indexed',
       }),
     );
   });
@@ -323,13 +371,13 @@ describe('AIKnowledgeQueryService', () => {
       { identityId: 'identity-1' },
     );
 
-    expect(sourcePort.listRelevantResources).toHaveBeenCalledWith(
+    expect(sourcePort.listRelevantNotes).toHaveBeenCalledWith(
       'identity-1',
       'How does knowledge grounding work?',
       32,
     );
-    expect(ingestionPort.indexResource).toHaveBeenCalledTimes(1);
-    expect(ingestionPort.indexResource).toHaveBeenCalledWith(
+    expect(ingestionPort.indexNote).toHaveBeenCalledTimes(1);
+    expect(ingestionPort.indexNote).toHaveBeenCalledWith(
       expect.objectContaining({
         providerConfig: expect.objectContaining({
           model: 'gpt-4o-mini',
@@ -372,8 +420,8 @@ describe('AIKnowledgeQueryService', () => {
 
   it('backs off to broader indexable resources when lexical prefilter recall is too narrow', async () => {
     const sourcePort = new StubKnowledgeSourcePort();
-    sourcePort.listRelevantResources.mockResolvedValueOnce([]);
-    sourcePort.listIndexableResources.mockResolvedValueOnce([
+    sourcePort.listRelevantNotes.mockResolvedValueOnce([]);
+    sourcePort.listIndexableNotes.mockResolvedValueOnce([
       {
         identityId: 'identity-1',
         repositoryId: 'repo-1',
@@ -381,7 +429,7 @@ describe('AIKnowledgeQueryService', () => {
         resourcePath: 'notes/repository-grounding.md',
         title: 'Repository Grounding',
         mimeType: 'text/markdown',
-        content: 'Grounded answers cite repository resources after retrieval.',
+        content: 'Grounded answers cite knowledge notes after retrieval.',
         metadata: {},
       },
     ]);
@@ -421,12 +469,12 @@ describe('AIKnowledgeQueryService', () => {
       { identityId: 'identity-1' },
     );
 
-    expect(sourcePort.listRelevantResources).toHaveBeenCalledWith(
+    expect(sourcePort.listRelevantNotes).toHaveBeenCalledWith(
       'identity-1',
       'How does grounding from repos cite sources?',
       32,
     );
-    expect(sourcePort.listIndexableResources).toHaveBeenCalledWith('identity-1', 32);
+    expect(sourcePort.listIndexableNotes).toHaveBeenCalledWith('identity-1', 32);
     expect(queryPort.query).toHaveBeenCalledTimes(1);
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected ok');
@@ -436,7 +484,7 @@ describe('AIKnowledgeQueryService', () => {
   it('prefers indexed retrieval-layer candidates before falling back to raw repository lexical search', async () => {
     const sourcePort = new StubKnowledgeSourcePort();
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
-    knowledgeIndexRepository.findRelevantResources.mockResolvedValueOnce(
+    knowledgeIndexRepository.findRelevantNotes.mockResolvedValueOnce(
       Array.from({ length: 6 }, (_, index) => ({
         identityId: 'identity-1',
         repositoryId: 'repo-1',
@@ -487,14 +535,14 @@ describe('AIKnowledgeQueryService', () => {
       { identityId: 'identity-1' },
     );
 
-    expect(knowledgeIndexRepository.findRelevantResources).toHaveBeenCalledWith(
+    expect(knowledgeIndexRepository.findRelevantNotes).toHaveBeenCalledWith(
       'identity-1',
       'How does repository grounding work?',
       32,
     );
-    expect(sourcePort.getResourceById).toHaveBeenCalledTimes(6);
-    expect(sourcePort.listRelevantResources).not.toHaveBeenCalled();
-    expect(sourcePort.listIndexableResources).not.toHaveBeenCalled();
+    expect(sourcePort.getNoteById).toHaveBeenCalledTimes(6);
+    expect(sourcePort.listRelevantNotes).not.toHaveBeenCalled();
+    expect(sourcePort.listIndexableNotes).not.toHaveBeenCalled();
   });
 
   it('expands knowledge drafts through the shared retrieval execution port', async () => {
@@ -546,7 +594,7 @@ describe('AIKnowledgeQueryService', () => {
         }),
       }),
     );
-    expect(ingestionPort.indexResource).toHaveBeenCalledWith(
+    expect(ingestionPort.indexNote).toHaveBeenCalledWith(
       expect.objectContaining({
         providerConfig: expect.objectContaining({
           model: 'gpt-4o-mini',
@@ -587,7 +635,7 @@ describe('AIKnowledgeQueryService', () => {
         },
       ]) as unknown as IAIProviderConfigRepository,
       reindexAll,
-      new SyncResourceByIdUseCase(
+      new SyncNoteByIdUseCase(
         sourcePort,
         knowledgeIndexRepository,
         ingestionPort,
@@ -603,7 +651,7 @@ describe('AIKnowledgeQueryService', () => {
       { identityId: 'identity-1' },
     );
 
-    expect(ingestionPort.indexResource).toHaveBeenCalledWith(
+    expect(ingestionPort.indexNote).toHaveBeenCalledWith(
       expect.objectContaining({
         providerConfig: expect.objectContaining({
           model: 'gpt-4o-mini',
@@ -623,7 +671,7 @@ describe('AIKnowledgeQueryService', () => {
       ingestionPort,
       executionLogPort,
     );
-    const syncById = new SyncResourceByIdUseCase(
+    const syncById = new SyncNoteByIdUseCase(
       sourcePort,
       knowledgeIndexRepository,
       ingestionPort,
@@ -652,8 +700,8 @@ describe('AIKnowledgeQueryService', () => {
       { identityId: 'identity-1' },
     );
 
-    expect(sourcePort.getResourceById).toHaveBeenCalledWith('identity-1', 'resource-42');
-    expect(sourcePort.listIndexableResources).not.toHaveBeenCalled();
+    expect(sourcePort.getNoteById).toHaveBeenCalledWith('identity-1', 'resource-42');
+    expect(sourcePort.listIndexableNotes).not.toHaveBeenCalled();
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected ok');
     expect(result.data.results).toEqual([
@@ -674,7 +722,7 @@ describe('AIKnowledgeQueryService', () => {
         ingestionPort,
         executionLogPort,
       ),
-      new SyncResourceByIdUseCase(
+      new SyncNoteByIdUseCase(
         sourcePort,
         knowledgeIndexRepository,
         ingestionPort,
@@ -688,7 +736,7 @@ describe('AIKnowledgeQueryService', () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(ingestionPort.indexResource).toHaveBeenCalledWith(
+    expect(ingestionPort.indexNote).toHaveBeenCalledWith(
       expect.objectContaining({ providerConfig: undefined }),
     );
   });
@@ -795,6 +843,7 @@ describe('AI knowledge auto-index runtime', () => {
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
     const queryPort = new StubKnowledgeQueryPort();
+    const indexStatusPort = new StubKnowledgeIndexStatusPort();
 
     const aiModule = createAIModuleForTests({
       providerConfigRepository: createAIProviderConfigRepositoryStub({
@@ -807,24 +856,25 @@ describe('AI knowledge auto-index runtime', () => {
       knowledgeIndexRepository,
       knowledgeIngestionPort: ingestionPort,
       knowledgeQueryPort: queryPort,
+      knowledgeIndexStatusPort: indexStatusPort,
     });
 
     aiModule.start();
 
     try {
-      eventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
+      eventBus.send(REPOSITORY_NOTE_MUTATED_EVENT, {
         identityId: 'identity-1',
         repositoryId: 'repo-1',
         resourceId: 'resource-1',
         resourcePath: 'notes/python-ai.md',
-        mutation: RepositoryResourceMutationType.ContentUpdated,
+        mutation: RepositoryNoteMutationType.ContentUpdated,
         timestamp: Date.now(),
       });
 
       await vi.waitFor(() => {
-        expect(sourcePort.getResourceById).toHaveBeenCalledWith('identity-1', 'resource-1');
-        expect(ingestionPort.indexResource).toHaveBeenCalledTimes(1);
-        expect(ingestionPort.indexResource).toHaveBeenCalledWith(
+        expect(sourcePort.getNoteById).toHaveBeenCalledWith('identity-1', 'resource-1');
+        expect(ingestionPort.indexNote).toHaveBeenCalledTimes(1);
+        expect(ingestionPort.indexNote).toHaveBeenCalledWith(
           expect.objectContaining({
             providerConfig: expect.objectContaining({
               model: 'gpt-4o-mini',
@@ -832,13 +882,17 @@ describe('AI knowledge auto-index runtime', () => {
           }),
         );
         expect(knowledgeIndexRepository.upsert).toHaveBeenCalledTimes(1);
+        expect(indexStatusPort.updateIndexStatus).toHaveBeenCalledWith(
+          'identity-1',
+          expect.objectContaining({ resourceId: 'resource-1', status: 'indexed' }),
+        );
       });
     } finally {
       aiModule.dispose();
     }
   });
 
-  it('ignores deleted repository resource mutation events', async () => {
+  it('removes deleted knowledge notes from the derived index', async () => {
     const sourcePort = new StubKnowledgeSourcePort();
     const knowledgeIndexRepository = new StubKnowledgeIndexRepository();
     const ingestionPort = new StubKnowledgeIngestionPort();
@@ -860,19 +914,24 @@ describe('AI knowledge auto-index runtime', () => {
     aiModule.start();
 
     try {
-      eventBus.send(REPOSITORY_RESOURCE_MUTATED_EVENT, {
+      eventBus.send(REPOSITORY_NOTE_MUTATED_EVENT, {
         identityId: 'identity-1',
         repositoryId: 'repo-1',
         resourceId: 'resource-1',
         resourcePath: 'notes/python-ai.md',
-        mutation: RepositoryResourceMutationType.Deleted,
+        mutation: RepositoryNoteMutationType.Deleted,
         timestamp: Date.now(),
       });
 
-      await Promise.resolve();
+      await vi.waitFor(() => {
+        expect(knowledgeIndexRepository.removeByNoteId).toHaveBeenCalledWith(
+          'identity-1',
+          'resource-1',
+        );
+      });
 
-      expect(sourcePort.getResourceById).not.toHaveBeenCalled();
-      expect(ingestionPort.indexResource).not.toHaveBeenCalled();
+      expect(sourcePort.getNoteById).not.toHaveBeenCalled();
+      expect(ingestionPort.indexNote).not.toHaveBeenCalled();
       expect(knowledgeIndexRepository.upsert).not.toHaveBeenCalled();
     } finally {
       aiModule.dispose();

@@ -137,23 +137,24 @@ export function createNotificationModule(
       );
     },
 
-    getNotification: async (id) => {
-      return notificationQueryApplicationService.getNotification(id);
+    getNotification: async (id, identityId) => {
+      return notificationQueryApplicationService.getNotification(id, identityId);
     },
 
-    updateNotification: async (id, data) => {
+    updateNotification: async (id, identityId, data) => {
       return useCases.updateNotification.execute(
         id,
-        data as Parameters<UpdateNotificationUseCase['execute']>[1],
+        identityId,
+        data as Parameters<UpdateNotificationUseCase['execute']>[2],
       );
     },
 
-    deleteNotification: async (id) => {
-      return notificationMaintenanceApplicationService.deleteNotification(id);
+    deleteNotification: async (id, identityId) => {
+      return notificationMaintenanceApplicationService.deleteNotification(id, identityId);
     },
 
-    markAsRead: async (id) => {
-      return useCases.markAsRead.execute(id);
+    markAsRead: async (id, identityId) => {
+      return useCases.markAsRead.execute(id, identityId);
     },
 
     markAllAsRead: async (identityId) => {
@@ -164,20 +165,21 @@ export function createNotificationModule(
       return useCases.getUnreadNotifications.getCount(identityId);
     },
 
-    batchMarkAsRead: async (data) => {
+    batchMarkAsRead: async (data, identityId) => {
       if (data.notificationIds?.length) {
-        return useCases.markAsRead.executeMany(data.notificationIds);
+        return useCases.markAsRead.executeMany(data.notificationIds, identityId);
       }
       return ok(0);
     },
 
-    batchDelete: async (data) => {
+    batchDelete: async (data, identityId) => {
       if (data.notificationIds?.length) {
-        return notificationMaintenanceApplicationService.batchDelete(
-          data as Parameters<NotificationMaintenanceApplicationService['batchDelete']>[0],
-        );
+        return notificationMaintenanceApplicationService.batchDelete({
+          notificationIds: data.notificationIds,
+          identityId,
+        });
       }
-      return ok({ success: true, affected: 0 });
+      return ok({ deletedCount: 0 });
     },
 
     cleanupOldNotifications: async (data) => {
@@ -191,12 +193,14 @@ export function createNotificationModule(
     },
 
     getPreferences: async (identityId) => {
-      return useCases.getNotificationPreference.execute(identityId);
+      // Always materialize a preference row for the identity (residual 196).
+      return useCases.getNotificationPreference.executeOrCreate(identityId);
     },
 
-    updatePreferences: async (dto) => {
+    updatePreferences: async (dto, identityId) => {
       return useCases.updateNotificationPreference.execute(
-        dto as Parameters<UpdateNotificationPreferenceUseCase['execute']>[0],
+        identityId,
+        dto as Parameters<UpdateNotificationPreferenceUseCase['execute']>[1],
       );
     },
   };

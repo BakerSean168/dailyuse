@@ -33,7 +33,7 @@ describe('CreateGoalRecordUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     goalRepository = createMockRepo<IGoalRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
     goalRecordRepository = createMockRepo<IGoalRecordRepository>({
@@ -61,7 +61,7 @@ describe('CreateGoalRecordUseCase', () => {
       unit: 'points',
     });
 
-    vi.mocked(goalRepository.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepository.findByIdForIdentity).mockResolvedValue(goal);
     vi.mocked(goalRecordRepository.findByKeyResultId).mockResolvedValue([]);
 
     const result = await useCase.execute(
@@ -101,7 +101,7 @@ describe('CreateGoalRecordUseCase', () => {
       value: 41,
     });
 
-    vi.mocked(goalRepository.findById).mockResolvedValue(goal);
+    vi.mocked(goalRepository.findByIdForIdentity).mockResolvedValue(goal);
     vi.mocked(goalRecordRepository.findByKeyResultId).mockResolvedValue([existingRecord]);
 
     const result = await useCase.execute(goal.id, keyResult.id, { value: 44 }, 'identity-1');

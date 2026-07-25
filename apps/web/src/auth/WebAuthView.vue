@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { APP_DISPLAY_NAME, logo128 } from '@dailyuse/assets';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn/components/ui/card';
@@ -49,6 +49,9 @@ const {
   resetPassword,
   sendEmailCode,
   verifyEmailCode,
+  startGithubLogin,
+  probeGithubAvailability,
+  completeGithubOAuth,
   isLoading,
   errorMessage,
   successMessage,
@@ -75,7 +78,9 @@ const resetPasswordValue = ref('');
 const resetConfirmPassword = ref('');
 const verifyEmail = ref('');
 const verifyCode = ref('');
-const authAction = ref<'login' | 'register' | 'forgot' | 'reset' | 'verify' | 'resend' | null>(null);
+const authAction = ref<'login' | 'register' | 'forgot' | 'reset' | 'verify' | 'resend' | null>(
+  null,
+);
 const resendSecondsLeft = ref(0);
 let resendTimer: ReturnType<typeof setInterval> | null = null;
 const loginErrors = reactive<LoginValidationErrors>({});
@@ -89,6 +94,13 @@ const localeOptions = computed(() => [
   { value: 'zh-CN' as const, label: t('auth.page.locales.zhCN') },
   { value: 'en-US' as const, label: t('auth.page.locales.enUS') },
 ]);
+
+const legalTermsHref = computed(() =>
+  currentLocale.value === 'zh-CN' ? '/legal/terms.zh-CN.html' : '/legal/terms.en-US.html',
+);
+const legalPrivacyHref = computed(() =>
+  currentLocale.value === 'zh-CN' ? '/legal/privacy.zh-CN.html' : '/legal/privacy.en-US.html',
+);
 const sceneTitle = computed(() => {
   switch (scene.value) {
     case 'register':
@@ -174,6 +186,30 @@ function enterVerifyScene(nextEmail: string) {
   startResendCooldown();
 }
 
+onMounted(async () => {
+  const query = new URLSearchParams(window.location.search);
+  const sceneQuery = query.get('scene');
+  const code = query.get('code') ?? '';
+  const state = query.get('state') ?? '';
+  if (code && state) {
+    authAction.value = 'login';
+    await completeGithubOAuth(code, state);
+    authAction.value = null;
+    return;
+  }
+  // Gate GitHub entry on server configuration (SERVICE_UNAVAILABLE => hidden).
+  // 未配置时服务端返回 SERVICE_UNAVAILABLE，前端隐藏入口。
+  githubAvailable.value = await probeGithubAvailability();
+  if (sceneQuery === 'verify-email') {
+    const emailQuery = query.get('email') ?? '';
+    enterVerifyScene(emailQuery || pendingVerificationEmail.value || '');
+  } else if (sceneQuery === 'forgot') {
+    switchScene('forgot');
+  } else if (sceneQuery === 'reset') {
+    switchScene('reset');
+  }
+});
+
 function replaceErrors<T extends Record<string, string | undefined>>(target: T, next: Partial<T>) {
   for (const key of Object.keys(target)) {
     delete target[key];
@@ -242,6 +278,18 @@ async function handleRegister() {
   if (!outcome) authAction.value = null;
 }
 
+const githubAvailable = ref(false);
+
+async function handleGithubLogin() {
+  if (!githubAvailable.value) return;
+  authAction.value = 'login';
+  // Exact match with OAuth App registered callback (no query string).
+  // Callback completion keys off code+state on /auth (see onMounted).
+  const redirectUri = `${window.location.origin}/auth`;
+  await startGithubLogin(redirectUri);
+  authAction.value = null;
+}
+
 async function handleForgot() {
   if (isLoading.value) return;
   const nextErrors = validateForgotPassword({ email: forgotEmail.value });
@@ -253,10 +301,10 @@ async function handleForgot() {
   }
 
   authAction.value = 'forgot';
+  resetEmail.value = forgotEmail.value.trim();
   const success = await forgotPassword({ email: forgotEmail.value.trim() });
   authAction.value = null;
   if (success) {
-    resetEmail.value = forgotEmail.value.trim();
     startResendCooldown();
   }
 }
@@ -408,7 +456,7 @@ onUnmounted(() => {
 
 <template>
   <main
-    class="relative flex min-h-screen items-center justify-center overflow-x-hidden overflow-y-auto bg-[radial-gradient(circle_at_top,#4c1d9530,transparent_42%),linear-gradient(180deg,#2d1834_0%,#25152f_45%,#1f162e_100%)] px-4 py-16 text-white selection:bg-primary/30"
+    class="relative flex min-h-screen flex-col items-center justify-center overflow-x-hidden overflow-y-auto bg-[radial-gradient(circle_at_top,#4c1d9530,transparent_42%),linear-gradient(180deg,#2d1834_0%,#25152f_45%,#1f162e_100%)] px-4 py-16 text-white selection:bg-primary/30"
     data-testid="web-auth-page"
   >
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -456,7 +504,11 @@ onUnmounted(() => {
           <div
             class="relative mb-4 flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-full border border-white/[0.7] bg-white/[0.08] shadow-[0_20px_45px_rgba(0,0,0,0.35)]"
           >
-            <img :src="logo128" :alt="APP_DISPLAY_NAME" class="h-11 w-11 rounded-full object-cover" />
+            <img
+              :src="logo128"
+              :alt="APP_DISPLAY_NAME"
+              class="h-11 w-11 rounded-full object-cover"
+            />
             <div
               class="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),transparent_60%)]"
               aria-hidden="true"
@@ -572,6 +624,18 @@ onUnmounted(() => {
               </template>
               <template v-else>{{ t('auth.login.submit') }}</template>
             </Button>
+
+            <Button
+              v-if="githubAvailable"
+              type="button"
+              variant="outline"
+              class="mt-3 h-[40px] w-full rounded-[10px] border-white/15 bg-white/[0.04] text-[14px] text-white/80 hover:bg-white/[0.08]"
+              :disabled="isLoading"
+              data-testid="login-github-button"
+              @click="handleGithubLogin"
+            >
+              {{ t('auth.login.github', 'Continue with GitHub') }}
+            </Button>
           </form>
 
           <form
@@ -673,7 +737,6 @@ onUnmounted(() => {
             </Button>
           </form>
 
-
           <form
             v-else-if="scene === 'forgot'"
             class="w-full"
@@ -730,7 +793,10 @@ onUnmounted(() => {
               variant="secondary"
               class="mt-3 h-[40px] w-full rounded-[10px]"
               data-testid="forgot-next-button"
-              @click="resetEmail = forgotEmail.trim(); switchScene('reset')"
+              @click="
+                resetEmail = forgotEmail.trim();
+                switchScene('reset');
+              "
             >
               {{ t('auth.forgot.next') }}
             </Button>
@@ -818,7 +884,10 @@ onUnmounted(() => {
                 </p>
               </div>
               <div data-testid="reset-confirm-password-input">
-                <Label for="reset-confirm-password" class="mb-1 block text-[12px] text-white/[0.55]">
+                <Label
+                  for="reset-confirm-password"
+                  class="mb-1 block text-[12px] text-white/[0.55]"
+                >
                   {{ t('auth.field.confirmPassword') }}
                 </Label>
                 <Input
@@ -1001,5 +1070,32 @@ onUnmounted(() => {
         </CardContent>
       </Card>
     </section>
+
+    <footer
+      class="relative z-10 mt-6 max-w-[380px] px-2 text-center text-[11px] leading-5 text-white/[0.38]"
+      data-testid="auth-legal-footer"
+    >
+      <span>{{ t('auth.page.legalNoticePrefix') }}</span>
+      <a
+        :href="legalTermsHref"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="underline decoration-white/25 underline-offset-2 hover:text-white/70"
+        data-testid="auth-terms-link"
+      >
+        {{ t('auth.page.termsOfService') }}
+      </a>
+      <span>{{ t('auth.page.legalNoticeMid') }}</span>
+      <a
+        :href="legalPrivacyHref"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="underline decoration-white/25 underline-offset-2 hover:text-white/70"
+        data-testid="auth-privacy-link"
+      >
+        {{ t('auth.page.privacyPolicy') }}
+      </a>
+      <span>{{ t('auth.page.legalNoticeSuffix') }}</span>
+    </footer>
   </main>
 </template>

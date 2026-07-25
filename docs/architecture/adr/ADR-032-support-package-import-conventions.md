@@ -52,17 +52,18 @@ An ESLint `no-restricted-imports` warning enforces this for new code.
 Client-side services follow a consistent factory convention across all packages:
 
 ```typescript
-// Factory function pattern (used by 9 packages)
-export function createXxxServiceFromHttpClient(httpClient: IHttpClient): IXxxService {
+// Factory function pattern — Result-only transport ports
+export function createXxxServiceFromHttpClient(httpClient: IResultHttpClient): IXxxService {
   return new XxxHttpClientService(httpClient);
 }
 ```
 
-This convention applies to both Web (HTTP) and Desktop (IPC) transport:
+This convention applies to both Web (HTTP) and Desktop (IPC) transport. First-party
+clients use `IResultHttpClient` / `IResultIpcClient` only (no throw-style dual client).
 
 | Package | Factory |
 |---|---|
-| `authentication` | `createAuthServiceFromHttpClient` |
+| `authentication` | `createAuthenticationServiceFromHttpClient` |
 | `account` | `createAccountServiceFromHttpClient` |
 | `task` | `createTaskServiceFromHttpClient` |
 | `goal` | `createGoalServiceFromHttpClient` |
@@ -70,9 +71,11 @@ This convention applies to both Web (HTTP) and Desktop (IPC) transport:
 | `reminder` | `createReminderServiceFromHttpClient` |
 | `notification` | `createNotificationServiceFromHttpClient` |
 | `repository` | `createRepositoryServiceFromHttpClient` |
-| `editor` | `createEditorServiceFromHttpClient` |
+| `setting` | `createSettingServiceFromHttpClient` |
+| `ai` | `createAIServiceFromHttpClient` |
+| `data-portability` | `createDataPortabilityServiceFromHttpClient` |
 
-Desktop uses `createXxxServiceFromIpcBridge(bridge)` with the same shape.
+Desktop uses Result IPC factories such as `createXxxIpcClient(resultIpcClient)` with the same port shape.
 
 **Why not force a shared factory across React and Vue?** Web uses `createLazyService()` for
 code-splitting (dynamic import), while React's `AppProvider` eagerly creates services at startup.
@@ -90,7 +93,7 @@ should be constrained to:
 - **Shared layout components**
 
 Feature-module code should be imported directly from the feature subpath
-(e.g., `@dailyuse/app-vue/modules/editor`), not from the root barrel.
+(e.g., `@dailyuse/app-vue/modules/repository`), not from the root barrel.
 
 ## Consequences
 

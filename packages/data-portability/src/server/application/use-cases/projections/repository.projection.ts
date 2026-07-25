@@ -4,7 +4,8 @@
 
 import type { ExportContext } from '../../portable-runtime';
 import type { PortableRepository, PortableResourceFolder, PortableResource } from '@dailyuse/contracts/data-portability';
-import { parseJsonField, toBoolean, toDateString } from './projection-helpers';
+// Residual 1003: sole resolveExportRef/OrThrow (local dual retired).
+import { parseJsonField, toBoolean, toDateString, resolveExportRef, resolveExportRefOrThrow } from './projection-helpers';
 
 const SENSITIVE_CONFIG_KEYS = ['token', 'password', 'secret', 'apiKey', 'sshKey', 'privateKey', 'credential', 'auth'];
 
@@ -46,8 +47,8 @@ export function projectResourceFolders(folders: unknown[], ctx: ExportContext): 
     ctx.refToIdMap.set(entity.id as string, ref);
     return {
       _ref: ref,
-      repositoryRef: resolveRefOrThrow(entity.repositoryId as string, ctx),
-      parentRef: resolveRef(entity.parentId as string | null, ctx),
+      repositoryRef: resolveExportRefOrThrow(entity.repositoryId as string, ctx, 'repository'),
+      parentRef: resolveExportRef(entity.parentId as string | null, ctx, 'repository'),
       name: entity.name as string,
       path: entity.path as string,
       order: (entity.order as number) ?? 0,
@@ -76,8 +77,8 @@ export function projectResources(resources: unknown[], ctx: ExportContext): Port
 
     return {
       _ref: ref,
-      repositoryRef: resolveRefOrThrow(entity.repositoryId as string, ctx),
-      folderRef: resolveRef(entity.folderId as string | null, ctx) ?? undefined,
+      repositoryRef: resolveExportRefOrThrow(entity.repositoryId as string, ctx, 'repository'),
+      folderRef: resolveExportRef(entity.folderId as string | null, ctx, 'repository') ?? undefined,
       type,
       name: entity.name as string,
       path: entity.path as string,
@@ -92,16 +93,4 @@ export function projectResources(resources: unknown[], ctx: ExportContext): Port
   return mapped.filter((r): r is PortableResource => r !== null);
 }
 
-function resolveRef(id: string | null | undefined, ctx: ExportContext): string | null {
-  if (!id) return null;
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  ctx.warnings.push(`Unresolved repository reference to ${id}`);
-  return null;
-}
-
-function resolveRefOrThrow(id: string, ctx: ExportContext): string {
-  const ref = ctx.refToIdMap.get(id);
-  if (ref) return ref;
-  throw new Error(`EXPORT_VALIDATION_ERROR: Unresolved repository reference to ${id}`);
-}
+// Residual 1003: resolveExportRef/OrThrow elevated to projection-helpers.

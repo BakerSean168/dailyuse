@@ -194,7 +194,7 @@ describe('ai chat route contracts', () => {
       getRegisteredRoute(registry, 'post', `${BASE}/conversations`),
     );
 
-    // CreateConversationSchema requires name (non-empty string)
+    // ConversationNameSchema requires name (non-empty string)
     expect(createSchema.safeParse({ name: 'My chat' }).success).toBe(true);
     expect(createSchema.safeParse({}).success).toBe(false);
     expect(createSchema.safeParse({ name: '' }).success).toBe(false);
@@ -219,7 +219,7 @@ describe('ai chat route contracts', () => {
     expect(sendSchema.safeParse({ conversationId: 'any-id', content: '' }).success).toBe(false);
   });
 
-  it('delete conversation response schema is not z.any()', () => {
+  it('delete conversation response uses z.null() (no ActionSuccess dual-track)', () => {
     const registry = new TestOpenApiRegistry();
 
     registerAIChatRoutes(
@@ -231,9 +231,17 @@ describe('ai chat route contracts', () => {
     const deleteRoute = getRegisteredRoute(registry, 'delete', `${BASE}/conversations/{id}`);
     const responseSchema = getResponseSchema(deleteRoute, 200);
 
-    // Schema should be defined and accept a valid success envelope
     expect(responseSchema).toBeDefined();
     expect(responseSchema._def?.typeName).not.toBe('ZodAny');
+    expect(
+      responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: null,
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(true);
     expect(
       responseSchema.safeParse({
         ok: true,
@@ -242,6 +250,6 @@ describe('ai chat route contracts', () => {
         data: { success: true },
         timestamp: Date.now(),
       }).success,
-    ).toBe(true);
+    ).toBe(false);
   });
 });

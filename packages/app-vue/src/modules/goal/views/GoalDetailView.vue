@@ -366,12 +366,18 @@ const ringDashOffset = computed(
   () => ringCircumference * (1 - Math.min(100, Math.max(0, goalProgress.value)) / 100),
 );
 
+/**
+ * Residual 1240 keep-boundary: app-vue goal formatDate — locale toLocaleDateString + i18n notSet.
+ * Goal detail display; falsy → t('goal.detail.notSet'); not English '-' / 'Not set'.
+ * Soft residual 1240: react English empty labels + schedule N/A + reminder date-fns differ (no force-merge).
+ */
 function formatDate(value: number | null | undefined): string {
   return value
     ? new Date(value).toLocaleDateString(locale.value)
     : t('goal.detail.notSet');
 }
 
+/** Soft residual 1204: component-local formatDateTime (locale default); ≠ app-react Intl zh-CN sole. */
 function formatDateTime(value: number): string {
   return new Date(value).toLocaleString(locale.value);
 }
@@ -461,6 +467,11 @@ function calculateKRProgress(kr: KeyResultClientDTO): number {
   return Math.min(100, Math.round(((current - initial) / (target - initial)) * 100));
 }
 
+/**
+ * Residual 1222 keep-boundary: app-vue goal getStatusLabel — Draft/Active/… goalStatus i18n.
+ * Goal domain status enum → t('goal.cards.goalStatus.*'); not schedule taskStatus keys.
+ * Soft residual 1222: schedule typed i18n + app-react English identity differ (no force-merge).
+ */
 function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     Active: t('goal.cards.goalStatus.active'),
@@ -471,6 +482,11 @@ function getStatusLabel(status: string): string {
   return labels[status] ?? status;
 }
 
+/**
+ * Residual 1219 keep-boundary: app-vue goal getImportanceLabel — Vital-scale i18n map.
+ * Goal domain importance enum → t('goal.dialog.importance*'); not English identity.
+ * Soft residual 1219: app-react English literals + KRPreviewList high/medium/low differ (no force-merge).
+ */
 function getImportanceLabel(importance: string): string {
   const labels: Record<string, string> = {
     Vital: t('goal.dialog.importanceVital'),

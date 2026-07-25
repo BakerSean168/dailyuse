@@ -1,11 +1,21 @@
+/**
+ * Residual 969: knowledge-index value helpers sole import
+ * (../knowledge-index-value-helpers.ts).
+ */
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type {
   IKnowledgeIndexRepository,
   KnowledgeIndexDiagnostics,
   KnowledgeIndexFailureRecord,
   KnowledgeIndexedChunk,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
 } from '../../../application/ports';
+import {
+  toChunkArray,
+  toNumberArray,
+  toStringArray,
+  scoreIndexedResource,
+} from '../knowledge-index-value-helpers';
 
 const KNOWLEDGE_INDEX_KEY = 'aiKnowledgeIndex';
 
@@ -47,43 +57,6 @@ function parseJsonRecord(value: string | null): Record<string, unknown> {
   }
 }
 
-function toStringArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
-}
-
-function toNumberArray(value: unknown): number[] {
-  return Array.isArray(value) ? value.filter((item): item is number => typeof item === 'number') : [];
-}
-
-function tokenize(text: string): string[] {
-  return (text.toLowerCase().match(/[a-z0-9_]+/g) ?? []).filter((token) => token.length > 1);
-}
-
-function toChunkArray(value: unknown): KnowledgeIndexedChunk[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((item) => {
-      if (!item || typeof item !== 'object' || Array.isArray(item)) {
-        return null;
-      }
-
-      const row = item as Record<string, unknown>;
-      return {
-        chunkIndex: typeof row.chunkIndex === 'number' ? row.chunkIndex : 0,
-        content: typeof row.content === 'string' ? row.content : '',
-        contentHash: typeof row.contentHash === 'string' ? row.contentHash : '',
-        startOffset: typeof row.startOffset === 'number' ? row.startOffset : 0,
-        endOffset: typeof row.endOffset === 'number' ? row.endOffset : 0,
-        headingPath: toStringArray(row.headingPath),
-        keywords: toStringArray(row.keywords),
-        embedding: toNumberArray(row.embedding),
-      } satisfies KnowledgeIndexedChunk;
-    })
-    .filter((item): item is KnowledgeIndexedChunk => item !== null && item.content.length > 0);
-}
 
 function parseStoredIndex(metadata: Record<string, unknown>): StoredKnowledgeIndexRecord | null {
   const candidate = metadata[KNOWLEDGE_INDEX_KEY];
@@ -130,39 +103,7 @@ function resolveMimeType(metadata: Record<string, unknown>, fallbackType: string
   return 'text/plain';
 }
 
-function scoreIndexedResource(resource: KnowledgeIndexedResource, query: string): number {
-  const trimmedQuery = query.trim().toLowerCase();
-  if (trimmedQuery.length === 0) {
-    return 1;
-  }
-
-  const tokens = new Set(tokenize(trimmedQuery));
-  const keywordSet = new Set(resource.keywords.map((keyword) => keyword.toLowerCase()));
-  const haystack = `${resource.title ?? ''} ${resource.resourcePath} ${resource.summary} ${resource.keywords.join(' ')}`.toLowerCase();
-  let score = 0;
-
-  for (const token of tokens) {
-    if (keywordSet.has(token)) {
-      score += 3;
-      continue;
-    }
-    if (haystack.includes(token)) {
-      score += 1;
-    }
-  }
-
-  if ((resource.title ?? '').toLowerCase().includes(trimmedQuery)) {
-    score += 3;
-  }
-  if (resource.resourcePath.toLowerCase().includes(trimmedQuery)) {
-    score += 2;
-  }
-  if (resource.summary.toLowerCase().includes(trimmedQuery)) {
-    score += 2;
-  }
-
-  return score;
-}
+/** Soft residual 1195: scoreIndexedResource dual retired onto knowledge-index-value-helpers sole. */
 
 export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepository {
   constructor(private readonly db: IElectronDatabase) {}
@@ -178,11 +119,11 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
     };
   }
 
-  async findRelevantResources(
+  async findRelevantNotes(
     identityId: string,
     query: string,
     limit: number,
-  ): Promise<KnowledgeIndexedResource[]> {
+  ): Promise<KnowledgeIndexedNote[]> {
     if (limit <= 0) {
       return [];
     }
@@ -194,8 +135,8 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
       [identityId],
     );
 
-    const indexedResources = rows
-      .map((row): KnowledgeIndexedResource | null => {
+    const indexedNotes = rows
+      .map((row): KnowledgeIndexedNote | null => {
         const metadata = parseJsonRecord(row.metadata);
         const stored = parseStoredIndex(metadata);
         if (!stored || stored.status !== 'indexed') {
@@ -215,15 +156,15 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
           embedding: stored.embedding ?? [],
           chunks: stored.chunks ?? [],
           metadata,
-        } satisfies KnowledgeIndexedResource;
+        } satisfies KnowledgeIndexedNote;
       })
-      .filter((item): item is KnowledgeIndexedResource => item !== null);
+      .filter((item): item is KnowledgeIndexedNote => item !== null);
 
     if (query.trim().length === 0) {
-      return indexedResources.slice(0, limit);
+      return indexedNotes.slice(0, limit);
     }
 
-    return indexedResources
+    return indexedNotes
       .map((resource) => ({
         resource,
         score: scoreIndexedResource(resource, query),
@@ -234,10 +175,10 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
       .map(({ resource }) => resource);
   }
 
-  async findByResourceIds(
+  async findByNoteIds(
     identityId: string,
     resourceIds: string[],
-  ): Promise<KnowledgeIndexedResource[]> {
+  ): Promise<KnowledgeIndexedNote[]> {
     if (resourceIds.length === 0) {
       return [];
     }
@@ -250,8 +191,8 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
       [identityId, ...resourceIds],
     );
 
-    const indexedResources = rows
-      .map((row): KnowledgeIndexedResource | null => {
+    const indexedNotes = rows
+      .map((row): KnowledgeIndexedNote | null => {
         const metadata = parseJsonRecord(row.metadata);
         const stored = parseStoredIndex(metadata);
         if (!stored || stored.status !== 'indexed') {
@@ -271,14 +212,14 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
           embedding: stored.embedding ?? [],
           chunks: stored.chunks ?? [],
           metadata,
-        } satisfies KnowledgeIndexedResource;
+        } satisfies KnowledgeIndexedNote;
       })
-      .filter((item): item is KnowledgeIndexedResource => item !== null);
+      .filter((item): item is KnowledgeIndexedNote => item !== null);
 
-    return indexedResources;
+    return indexedNotes;
   }
 
-  async upsert(resource: KnowledgeIndexedResource): Promise<void> {
+  async upsert(resource: KnowledgeIndexedNote): Promise<void> {
     const row = await this.db.getOptional<{ metadata: string | null }>(
       `SELECT metadata FROM resources WHERE id = ? AND identity_id = ? AND deleted_at IS NULL LIMIT 1`,
       [resource.resourceId, resource.identityId],
@@ -306,7 +247,11 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
     ]);
   }
 
-  async markRequested(identityId: string, resourceIds: string[], requestedAt: number): Promise<void> {
+  async markRequested(
+    identityId: string,
+    resourceIds: string[],
+    requestedAt: number,
+  ): Promise<void> {
     if (resourceIds.length === 0) {
       return;
     }
@@ -362,6 +307,22 @@ export class AIKnowledgeIndexPowerSyncRepository implements IKnowledgeIndexRepos
     await this.db.execute(`UPDATE resources SET metadata = ? WHERE id = ?`, [
       JSON.stringify(metadata),
       record.resourceId,
+    ]);
+  }
+
+  async removeByNoteId(identityId: string, resourceId: string): Promise<void> {
+    const row = await this.db.getOptional<{ metadata: string | null }>(
+      `SELECT metadata FROM resources WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [resourceId, identityId],
+    );
+    if (!row) return;
+
+    const metadata = parseJsonRecord(row.metadata);
+    if (!(KNOWLEDGE_INDEX_KEY in metadata)) return;
+    delete metadata[KNOWLEDGE_INDEX_KEY];
+    await this.db.execute(`UPDATE resources SET metadata = ? WHERE id = ?`, [
+      JSON.stringify(metadata),
+      resourceId,
     ]);
   }
 }

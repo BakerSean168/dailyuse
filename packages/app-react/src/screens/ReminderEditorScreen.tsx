@@ -125,8 +125,7 @@ export function ReminderEditorScreen() {
             : null,
       },
       activeTime: {
-        startDate: Date.now(),
-        endDate: null,
+        activatedAt: Date.now(),
       },
       notificationConfig: {
         channels: selectedChannels.length > 0 ? selectedChannels : ['InApp'],

@@ -1,1 +1,5 @@
-export type { ExportAccountDataDTO, ImportAccountDataResultDTO } from './account-data-transfer.dto';
+/**
+ * Account-module DTO barrel.
+ * Cross-module portable import/export lives in @dailyuse/contracts/data-portability.
+ */
+export {};

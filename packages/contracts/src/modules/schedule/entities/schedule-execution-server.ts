@@ -23,24 +23,4 @@ export interface ScheduleExecutionServerDTO {
   createdAt: number; // epoch ms
 }
 
-/**
- * ScheduleExecution 静态工厂方法接口
- */
-export interface ScheduleExecutionServerStatic {
-  /**
-   * 创建新的 ScheduleExecution 实体（静态工厂方法）
-   */
-  create(params: {
-    taskId: ScheduleTaskId;
-    executionTime: number;
-    status?: ExecutionStatus;
-  }): ScheduleExecutionServerDTO;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-}
+// Residual 653: ScheduleExecutionServerStatic factory dual retired.

@@ -6,6 +6,9 @@
  * @module patterns/scheduler
  */
 
+// Residual 1039: sole schedule monitor lives in patterns; schedule dual file deleted.
+
+
 /**
  * 执行统计数据
  */

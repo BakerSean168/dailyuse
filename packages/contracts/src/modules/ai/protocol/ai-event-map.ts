@@ -6,7 +6,7 @@ import type { AIMessageAddedEvent } from '../domain/events/ai-message-added.even
 import type { AIProviderConfigCreatedEvent } from '../domain/events/ai-provider-config-created.event';
 import type { AIProviderConfigModelsUpdatedEvent } from '../domain/events/ai-provider-config-models-updated.event';
 import type { AIProviderConfigSetDefaultEvent } from '../domain/events/ai-provider-config-set-default.event';
-import type { StreamMessageChunk, StreamMessageDonePayload } from '../api/ai-chat.dto';
+import type { SendMessageRes, StreamMessageChunk } from '../api/ai-chat.dto';
 
 /**
  * AI Module - Event Map
@@ -24,7 +24,7 @@ export type AIEventMap = {
   'ai:provider-config-models-updated': AIProviderConfigModelsUpdatedEvent;
   'ai:provider-config-set-default': AIProviderConfigSetDefaultEvent;
   'ai:chat:message:stream:chunk': { streamId: string; chunk: StreamMessageChunk };
-  'ai:chat:message:stream:done': { streamId: string; result: StreamMessageDonePayload };
+  'ai:chat:message:stream:done': { streamId: string; result: SendMessageRes };
   'ai:chat:message:stream:error': {
     streamId: string;
     code: string;

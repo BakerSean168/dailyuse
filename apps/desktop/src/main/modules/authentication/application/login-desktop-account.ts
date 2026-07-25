@@ -1,4 +1,7 @@
-import { type AuthResponseDTO } from '@dailyuse/contracts/authentication';
+import {
+  type AuthResponseDTO,
+  type EmailLoginCredentials,
+} from '@dailyuse/contracts/authentication';
 
 import type { AuthRemoteGateway } from './auth-remote-gateway';
 import {
@@ -8,48 +11,26 @@ import {
   createRemoteUnreachableError,
   createTerminalAuthError,
   type AuthFlowLogger,
-  type AuthFlowResult,
+  type DesktopAuthFlowResult,
 } from './auth-flow-types';
+// Residual 939: toErrorLog dual retired — session-types sole helper.
+import { toErrorLog } from '../infrastructure/session-types';
 
-export interface DesktopLoginRequest {
-  email: string;
-  password: string;
-  rememberPassword?: boolean;
-  autoLogin?: boolean;
-}
-
-export type DesktopLoginResult = AuthFlowResult<AuthResponseDTO>;
-
-function toErrorLog(error: unknown): unknown {
-  if (error instanceof Error) {
-    const details: Record<string, unknown> = {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    };
-
-    const withCause = error as Error & { cause?: unknown };
-    if (withCause.cause !== undefined) {
-      details.cause = toErrorLog(withCause.cause);
-    }
-
-    return details;
-  }
-
-  return error;
-}
+// Residual 869: DesktopLoginRequest dual retired — EmailLoginCredentials is the sole shape.
+// Residual 921: DesktopLoginRequest name fully retired — login uses EmailLoginCredentials sole body.
+// Residual 917: DesktopLoginResult dual retired — DesktopAuthFlowResult sole application name.
 
 interface LoginDesktopAccountDependencies {
   isOnline: () => boolean;
   remoteGateway: Pick<AuthRemoteGateway, 'createLoginUrl' | 'login'>;
   logger: AuthFlowLogger;
-  onSuccess?: (response: AuthResponseDTO, request: DesktopLoginRequest) => Promise<void>;
+  onSuccess?: (response: AuthResponseDTO, request: EmailLoginCredentials) => Promise<void>;
 }
 
 export async function loginDesktopAccount(
-  request: DesktopLoginRequest,
+  request: EmailLoginCredentials,
   dependencies: LoginDesktopAccountDependencies,
-): Promise<DesktopLoginResult> {
+): Promise<DesktopAuthFlowResult> {
   const { isOnline, remoteGateway, logger, onSuccess } = dependencies;
 
   logger.info('Desktop login attempt', { email: request.email });

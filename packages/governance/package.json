@@ -28,6 +28,7 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/ipc-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.2.1",
     "tslib": "^2.3.0",

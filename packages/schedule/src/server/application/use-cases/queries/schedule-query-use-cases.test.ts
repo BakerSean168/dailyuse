@@ -8,13 +8,13 @@ import { ListScheduleTasksByStatusUseCase } from './list-schedule-tasks-by-statu
 describe('Schedule query use-cases', () => {
   it('get by id returns ok(null) when task not found', async () => {
     const repository = {
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     } as any;
     const useCase = new GetScheduleTaskUseCase(repository);
 
-    const result = await useCase.execute('task-1');
+    const result = await useCase.execute('task-1', 'identity-1');
 
-    expect(repository.findById).toHaveBeenCalledWith('task-1');
+    expect(repository.findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'task-1');
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data).toBeNull();
@@ -23,13 +23,13 @@ describe('Schedule query use-cases', () => {
 
   it('get by id returns ok(client dto) when task exists', async () => {
     const repository = {
-      findById: vi.fn().mockResolvedValue({
+      findByIdForIdentity: vi.fn().mockResolvedValue({
         toClientDTO: vi.fn().mockReturnValue({ id: 'task-1' }),
       }),
     } as any;
     const useCase = new GetScheduleTaskUseCase(repository);
 
-    const result = await useCase.execute('task-1');
+    const result = await useCase.execute('task-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -63,9 +63,9 @@ describe('Schedule query use-cases', () => {
     } as any;
     const useCase = new ListScheduleTasksBySourceUseCase(repository);
 
-    const result = await useCase.execute('notification' as any, 'src-1');
+    const result = await useCase.execute('notification' as any, 'src-1', 'identity-1');
 
-    expect(repository.findBySourceEntity).toHaveBeenCalledWith('notification', 'src-1');
+    expect(repository.findBySourceEntity).toHaveBeenCalledWith('notification', 'src-1', 'identity-1');
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data).toEqual([{ id: 't1' }]);
@@ -80,9 +80,9 @@ describe('Schedule query use-cases', () => {
     } as any;
     const useCase = new ListScheduleTasksByStatusUseCase(repository);
 
-    const result = await useCase.execute('Active' as any);
+    const result = await useCase.execute('Active' as any, 'identity-1');
 
-    expect(repository.findByStatus).toHaveBeenCalledWith('Active');
+    expect(repository.findByStatus).toHaveBeenCalledWith('Active', 'identity-1');
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data).toEqual([{ id: 't1' }]);

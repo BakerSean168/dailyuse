@@ -175,6 +175,10 @@ function getProgressBgClass(progress: number): string {
   return 'bg-destructive/15 text-destructive dark:bg-destructive/30 dark:text-destructive';
 }
 
+/**
+ * Soft residual 1237: goal ProgressBreakdown formatTime — date-fns absolute yyyy-MM-dd HH:mm.
+ * No relative bands; not locale-aware WeightSnapshotList path (no force-merge).
+ */
 function formatTime(timestamp: number): string {
   return format(new Date(timestamp), 'yyyy-MM-dd HH:mm');
 }

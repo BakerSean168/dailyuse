@@ -11,6 +11,8 @@ import type { INotificationRepository } from '../../../domain/repositories/i-not
 import { Notification } from '../../../domain/aggregates/notification';
 import { NotificationId, NotificationAction, NotificationMetadata } from '../../../domain/value-objects';
 import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
+// Residual 1025: sole parseJsonSafe (local dual retired).
+import { parseJsonSafe } from '@dailyuse/utils/shared';
 
 const notificationEventPublisher = createTypedEventPublisher<NotificationEventMap>(eventBus);
 
@@ -34,20 +36,15 @@ interface NotificationRow {
   deleted_at: string | null;
 }
 
+// Residual 1101 keep-boundary: PowerSync row ISO string → number|null (empty/invalid → null).
+// Soft residual 1101: projection unknown→undefined and AI positive-only keep-boundaries (no force-merge).
+// Soft residual 1141: auth PowerSync toMillis (same string→null shape; co-located; no force-merge).
 function toTimestamp(value: string | null | undefined): number | null {
   if (!value) return null;
   const timestamp = new Date(value).getTime();
   return Number.isNaN(timestamp) ? null : timestamp;
 }
 
-function parseJson<T>(value: string | null): T | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
-  }
-}
 
 function toServerDTO(row: NotificationRow): NotificationServerDTO {
   return {
@@ -61,8 +58,8 @@ function toServerDTO(row: NotificationRow): NotificationServerDTO {
     status: row.status as NotificationStatus,
     isRead: Boolean(row.is_read ?? 0),
     readAt: toTimestamp(row.read_at),
-    actions: parseJson<NotificationServerDTO['actions']>(row.actions),
-    metadata: parseJson<NotificationServerDTO['metadata']>(row.metadata),
+    actions: parseJsonSafe<NotificationServerDTO['actions']>(row.actions),
+    metadata: parseJsonSafe<NotificationServerDTO['metadata']>(row.metadata),
     expiresAt: toTimestamp(row.expires_at),
     version: row.version ?? 1,
     createdAt: toTimestamp(row.created_at) ?? Date.now(),
@@ -209,13 +206,14 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     }
   }
 
-  async findById(
+  async findByIdForIdentity(
+    identityId: string,
     id: string,
     _options?: { includeChildren?: boolean },
   ): Promise<Notification | null> {
     const row = await this.db.getOptional<NotificationRow>(
-      `SELECT * FROM notifications WHERE id = ? LIMIT 1`,
-      [id],
+      `SELECT * FROM notifications WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [id, identityId],
     );
     return row ? hydrateNotification(row) : null;
   }
@@ -285,35 +283,55 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
   }
 
   async findByRelatedEntity(
-    _relatedEntityType: string,
-    _relatedEntityId: string,
+    identityId: string,
+    relatedEntityType: string,
+    relatedEntityId: string,
   ): Promise<Notification[]> {
-    return [];
+    const rows = await this.db.getAll<NotificationRow>(
+      `SELECT * FROM notifications
+        WHERE identity_id = ?
+          AND related_entity_type = ?
+          AND related_entity_id = ?
+          AND deleted_at IS NULL
+        ORDER BY created_at DESC`,
+      [identityId, relatedEntityType, relatedEntityId],
+    );
+    return rows.map((row) => hydrateNotification(row));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute(`DELETE FROM notifications WHERE id = ?`, [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Notification not found for the current identity.');
+    }
+    await this.db.execute(
+      `DELETE FROM notifications WHERE id = ? AND identity_id = ?`,
+      [id, identityId],
+    );
   }
 
-  async deleteMany(ids: string[]): Promise<void> {
+  async deleteMany(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
-    await this.db.execute(`DELETE FROM notifications WHERE id IN (${placeholders})`, ids);
-  }
-
-  async softDelete(id: string): Promise<void> {
-    await this.db.execute(`UPDATE notifications SET deleted_at = ? WHERE id = ?`, [
-      new Date().toISOString(),
-      id,
-    ]);
-  }
-
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ id: string }>(
-      `SELECT id FROM notifications WHERE id = ? LIMIT 1`,
-      [id],
+    await this.db.execute(
+      `DELETE FROM notifications WHERE identity_id = ? AND id IN (${placeholders})`,
+      [identityId, ...ids],
     );
-    return row !== null;
+  }
+
+  async softDelete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Notification not found for the current identity.');
+    }
+    await this.db.execute(
+      `UPDATE notifications SET deleted_at = ? WHERE id = ? AND identity_id = ?`,
+      [new Date().toISOString(), id, identityId],
+    );
+  }
+
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async countUnread(identityId: string): Promise<number> {
@@ -355,7 +373,7 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
     return counts;
   }
 
-  async markManyAsRead(ids: string[]): Promise<void> {
+  async markManyAsRead(identityId: string, ids: string[]): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
     await this.db.execute(
@@ -364,8 +382,9 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
               status = ?,
               read_at = ?,
               updated_at = ?
-        WHERE id IN (${placeholders})`,
-      ['Read', new Date().toISOString(), new Date().toISOString(), ...ids],
+        WHERE identity_id = ?
+          AND id IN (${placeholders})`,
+      ['Read', new Date().toISOString(), new Date().toISOString(), identityId, ...ids],
     );
   }
 

@@ -30,11 +30,8 @@ export function useAuth() {
     resultError: computed(() => ctx.lastResultError.value),
     // Login
     loginByEmail: loginOps.loginByEmail,
-    loginByPhone: loginOps.loginByPhone,
     // Register
     registerByEmail: registerOps.registerByEmail,
-    registerByPhone: registerOps.registerByPhone,
-    sendSmsCode: registerOps.sendSmsCode,
     // Remembered accounts
     listRememberedAccounts: rememberedOps.listRememberedAccounts,
     loginRememberedDesktopAccount: rememberedOps.loginRememberedDesktopAccount,

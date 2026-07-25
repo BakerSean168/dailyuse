@@ -233,6 +233,7 @@ function setSpeed(newSpeed: 0.5 | 1 | 2) {
   emit('update:speed', newSpeed);
 }
 
+/** Soft residual 1216: timeline formatTimestamp delegates formatTimelineTimestamp (empty ''); ≠ schedule/react toLocaleString. */
 function formatTimestamp(timestamp: number | undefined): string {
   if (!timestamp) return '';
   return formatTimelineTimestamp(timestamp);

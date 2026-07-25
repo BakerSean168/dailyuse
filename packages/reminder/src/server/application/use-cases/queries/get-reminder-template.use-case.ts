@@ -33,8 +33,10 @@ export class GetReminderTemplateUseCase {
   }
 
   async execute(id: string, cx: ExecutionContext): Promise<Result<ReminderTemplateClientDTO>> {
-    const template = await this.templateRepository.findById(id, { includeHistory: true });
-    if (!template || String(template.identityId) !== cx.identityId) {
+    const template = await this.templateRepository.findByIdForIdentity(cx.identityId, id, {
+      includeHistory: true,
+    });
+    if (!template) {
       return error('NOT_FOUND', `Template ${id} not found`);
     }
     return ok(await this.templateMapper.toDTO(template));

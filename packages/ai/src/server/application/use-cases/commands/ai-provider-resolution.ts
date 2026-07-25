@@ -21,8 +21,11 @@ export async function resolveActiveProviderConfig(
   providerId?: string,
 ): Promise<AIProviderConfigServerDTO> {
   if (providerId) {
-    const selectedProvider = await providerConfigRepository.findById(providerId);
-    if (selectedProvider?.isActive && String(selectedProvider.identityId) === identityId) {
+    const selectedProvider = await providerConfigRepository.findByIdForIdentity(
+      identityId,
+      providerId,
+    );
+    if (selectedProvider?.isActive) {
       return selectedProvider;
     }
   }

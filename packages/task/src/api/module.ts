@@ -28,6 +28,8 @@ import { TaskInstanceController } from '../server/transport/task-instance.contro
 import { TaskDependencyController } from '../server/transport/task-dependency.controller';
 import { registerTaskRoutes } from './routes';
 import { createTaskTransportHandlers } from '../server/transport';
+// Residual 987: sole runtime-contribution normalize helpers (local dual retired).
+import { normalizeRuntimeContributions } from '../server/infrastructure/normalize-runtime-contributions';
 
 /**
  * Typed module context for task registration.
@@ -50,30 +52,6 @@ export interface TaskApiModuleDef {
 }
 
 let activeTaskModule: TaskModuleInstance | null = null;
-
-function isRuntimeContributionArray(
-  runtimeContributions:
-    | TaskModuleRuntimeContribution
-    | readonly TaskModuleRuntimeContribution[],
-): runtimeContributions is readonly TaskModuleRuntimeContribution[] {
-  return Array.isArray(runtimeContributions);
-}
-
-function normalizeRuntimeContributions(
-  runtimeContributions?:
-    | TaskModuleRuntimeContribution
-    | readonly TaskModuleRuntimeContribution[],
-): readonly TaskModuleRuntimeContribution[] {
-  if (!runtimeContributions) {
-    return [];
-  }
-
-  if (isRuntimeContributionArray(runtimeContributions)) {
-    return Array.from(runtimeContributions);
-  }
-
-  return [runtimeContributions];
-}
 
 export function createTaskApiModule(
   options: TaskApiModuleOptions = {},

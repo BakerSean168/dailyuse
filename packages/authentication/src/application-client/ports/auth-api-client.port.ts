@@ -13,13 +13,8 @@ import type {
   AutoLoginResult,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -28,6 +23,14 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  OAuthCallbackReq,
+  OAuthCallbackRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
@@ -42,14 +45,11 @@ import type {
 export interface IAuthApiClient {
   // ========== Login ==========
   loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>>;
 
   // ========== Register ==========
   registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>>;
 
   // ========== SMS ==========
-  sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>>;
 
   // ========== Token ==========
   refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>>;
@@ -68,6 +68,11 @@ export interface IAuthApiClient {
   // ========== Email verification ==========
   sendEmailCode(req: SendEmailCodeReq): Promise<Result<void>>;
   verifyEmailCode(req: VerifyEmailCodeReq): Promise<Result<VerifyEmailCodeRes>>;
+  getOAuthUrl(req: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
+  oauthCallback(req: OAuthCallbackReq): Promise<Result<OAuthCallbackRes>>;
+  bindOAuth(req: BindOAuthReq): Promise<Result<BindOAuthRes>>;
+  unbindOAuth(req: UnbindOAuthReq): Promise<Result<void>>;
 
   // ========== Guest Mode (Desktop) ==========
   enterGuestMode(): Promise<Result<GuestModeRes>>;

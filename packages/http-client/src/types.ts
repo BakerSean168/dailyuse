@@ -11,49 +11,6 @@
 import type { AxiosRequestConfig } from 'axios';
 
 // ============================================================================
-// Abstract HTTP Client Interface
-// ============================================================================
-
-/**
- * HTTP Client 配置
- */
-export interface HttpClientConfig {
-  baseUrl: string;
-  timeout?: number;
-  headers?: Record<string, string>;
-}
-
-/**
- * HTTP 请求选项
- */
-export interface HttpRequestOptions {
-  params?: Record<string, unknown>;
-  headers?: Record<string, string>;
-}
-
-/**
- * 抽象 HTTP Client 接口
- *
- * 所有 HTTP 适配器（GoalHttpAdapter 等）依赖此接口。
- * 具体实现：
- * - AxiosHttpClient: 使用 Axios（Web 环境）
- * - FetchHttpClient: 使用原生 Fetch
- * - IpcHttpClient: 使用 Electron IPC（Desktop 环境）
- */
-export interface HttpClient {
-  get<T>(url: string, options?: HttpRequestOptions): Promise<T>;
-  post<T>(url: string, data?: unknown, options?: HttpRequestOptions): Promise<T>;
-  put<T>(url: string, data?: unknown, options?: HttpRequestOptions): Promise<T>;
-  patch<T>(url: string, data?: unknown, options?: HttpRequestOptions): Promise<T>;
-  delete<T>(url: string, options?: HttpRequestOptions): Promise<T>;
-}
-
-/**
- * HttpClient 类型别名（更明确的命名）
- */
-export type IHttpClient = HttpClient;
-
-// ============================================================================
 // Result HTTP Client Interface
 // ============================================================================
 
@@ -61,7 +18,8 @@ export type IHttpClient = HttpClient;
  * Result HTTP Client 接口
  *
  * 所有方法返回 `Promise<Result<T>>`，永不抛出异常。
- * 适配器可以依赖此接口而不依赖具体实现。
+ * 模块 HTTP adapters 依赖此接口；实现为 ResultHttpClient。
+ * Throw 风格 IHttpClient / AxiosHttpClient 双轨已删除。
  */
 export interface IResultHttpClient {
   get<T = unknown>(url: string, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
@@ -105,9 +63,9 @@ export interface TokenProvider {
 export type TokenRefreshHandler = () => Promise<string | null>;
 
 /**
- * Axios HTTP Client 配置
+ * ResultHttpClient / createAxiosInstance 配置
  */
-export interface AxiosHttpClientConfig {
+export interface HttpClientConfig {
   /** API 基础 URL（默认: '/api/v1'） */
   baseURL?: string;
   /** 请求超时时间（毫秒，默认: 10000） */
@@ -128,7 +86,7 @@ export interface AxiosHttpClientConfig {
  * 默认配置
  */
 export const DEFAULT_HTTP_CLIENT_CONFIG: Required<
-  Pick<AxiosHttpClientConfig, 'baseURL' | 'timeout' | 'enableLogging'>
+  Pick<HttpClientConfig, 'baseURL' | 'timeout' | 'enableLogging'>
 > = {
   baseURL: '/api/v1',
   timeout: 10000,

@@ -25,14 +25,17 @@ export class BatchUpdateKeyResultWeightsUseCase {
 
   async execute(
     goalId: string,
+    identityId: string,
     updates: KeyResultWeightUpdate[],
   ): Promise<Result<GetGoalRes>> {
     for (const { keyResultId, weight } of updates) {
-      const result = await this.updateKeyResult.execute(goalId, keyResultId, { weight });
+      const result = await this.updateKeyResult.execute(goalId, identityId, keyResultId, { weight });
       if (!result.ok) return result;
     }
 
-    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
+    const goal = await this.goalRepository.findByIdForIdentity(identityId, goalId, {
+      includeChildren: true,
+    });
     if (!goal) {
       return { ok: false, error: { code: 'NOT_FOUND', message: `Goal not found: ${goalId}` } };
     }

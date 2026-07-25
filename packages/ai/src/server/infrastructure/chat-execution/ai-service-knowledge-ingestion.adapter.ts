@@ -1,6 +1,6 @@
 import type {
   IKnowledgeIngestionPort,
-  KnowledgeIndexedResource,
+  KnowledgeIndexedNote,
   KnowledgeIngestionInput,
 } from '../../application/ports';
 import type { AIServiceInternalClientOptions } from './ai-service-internal-client';
@@ -17,7 +17,7 @@ interface AIServiceIndexedKnowledgeChunkResponse {
   embedding?: number[];
 }
 
-interface AIServiceIndexedKnowledgeResourceResponse {
+interface AIServiceIndexedKnowledgeNoteResponse {
   identity_id: string;
   repository_id: string;
   resource_id: string;
@@ -33,7 +33,7 @@ interface AIServiceIndexedKnowledgeResourceResponse {
 }
 
 interface AIServiceKnowledgeIngestionResponse {
-  indexed_resource: AIServiceIndexedKnowledgeResourceResponse;
+  indexed_resource: AIServiceIndexedKnowledgeNoteResponse;
 }
 
 export class AIServiceKnowledgeIngestionAdapter implements IKnowledgeIngestionPort {
@@ -43,7 +43,7 @@ export class AIServiceKnowledgeIngestionAdapter implements IKnowledgeIngestionPo
     this.client = new AIServiceInternalClient(options);
   }
 
-  async indexResource(input: KnowledgeIngestionInput): Promise<KnowledgeIndexedResource> {
+  async indexNote(input: KnowledgeIngestionInput): Promise<KnowledgeIndexedNote> {
     const payload = await this.client.postJson<
       AIServiceKnowledgeIngestionResponse,
       {
@@ -71,17 +71,17 @@ export class AIServiceKnowledgeIngestionAdapter implements IKnowledgeIngestionPo
       }
     >({
       path: '/internal/workflows/knowledge-index',
-      identityId: input.resource.identityId,
+      identityId: input.note.identityId,
       body: {
         resource: {
-          identity_id: input.resource.identityId,
-          repository_id: input.resource.repositoryId,
-          resource_id: input.resource.resourceId,
-          resource_path: input.resource.resourcePath,
-          title: input.resource.title,
-          mime_type: input.resource.mimeType,
-          content: input.resource.content,
-          metadata: input.resource.metadata,
+          identity_id: input.note.identityId,
+          repository_id: input.note.repositoryId,
+          resource_id: input.note.resourceId,
+          resource_path: input.note.resourcePath,
+          title: input.note.title,
+          mime_type: input.note.mimeType,
+          content: input.note.content,
+          metadata: input.note.metadata,
         },
         provider_config: input.providerConfig
           ? {

@@ -1,27 +1,16 @@
 /**
  * ChannelError Value Object
  * 渠道错误值对象
+ *
+ * Residual 849: ChannelErrorDTO dual retired — sole ChannelError interface + type alias.
  */
 
-// ============ 接口定义 ============
-
-/**
- * ChannelError 接口
- */
+// Residual 849: sole ChannelError body.
 export interface ChannelError {
   code: string;
   message: string;
   details?: unknown;
 }
 
-// ============ DTO 定义 ============
-
-/**
- * ChannelError DTO (传输层)
- */
-export interface ChannelErrorDTO {
-  code: string;
-  message: string;
-  details?: unknown;
-}
-
+// Residual 849: ChannelErrorDTO dual retired — DTO is the ChannelError shape.
+export type ChannelErrorDTO = ChannelError;

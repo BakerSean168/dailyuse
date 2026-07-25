@@ -14,7 +14,7 @@ describe('GetTaskTemplateUseCase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     templateRepo = createMockRepo<ITaskTemplateRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       findByIdWithChildren: vi.fn(),
     });
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
@@ -25,9 +25,9 @@ describe('GetTaskTemplateUseCase', () => {
   });
 
   it('should return null when template does not exist', async () => {
-    vi.mocked(templateRepo.findById).mockResolvedValue(null);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -37,9 +37,9 @@ describe('GetTaskTemplateUseCase', () => {
 
   it('should return the template client DTO when found', async () => {
     const template = aOneTimeTask({ title: 'My Task' });
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok) {
@@ -55,13 +55,13 @@ describe('GetTaskTemplateUseCase', () => {
     const completedInstance = await aTaskInstance({ templateId: template.id as any });
     completedInstance.complete();
 
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
     vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([
       pendingInstance,
       completedInstance,
     ]);
 
-    const result = await useCase.execute(template.id);
+    const result = await useCase.execute(template.id, template.identityId);
 
     expect(result).toBeOk();
     if (result.ok && result.data) {
@@ -71,13 +71,13 @@ describe('GetTaskTemplateUseCase', () => {
     }
   });
 
-  it('should use findById when includeChildren is false (default)', async () => {
+  it('should use findByIdForIdentity when includeChildren is false (default)', async () => {
     const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    await useCase.execute(template.id);
+    await useCase.execute(template.id, template.identityId);
 
-    expect(templateRepo.findById).toHaveBeenCalledWith(template.id);
+    expect(templateRepo.findByIdForIdentity).toHaveBeenCalledWith(template.identityId, template.id);
     expect(templateRepo.findByIdWithChildren).not.toHaveBeenCalled();
   });
 
@@ -85,10 +85,10 @@ describe('GetTaskTemplateUseCase', () => {
     const template = aOneTimeTask();
     vi.mocked(templateRepo.findByIdWithChildren).mockResolvedValue(template);
 
-    await useCase.execute(template.id, true);
+    await useCase.execute(template.id, template.identityId, true);
 
-    expect(templateRepo.findByIdWithChildren).toHaveBeenCalledWith(template.id);
-    expect(templateRepo.findById).not.toHaveBeenCalled();
+    expect(templateRepo.findByIdWithChildren).toHaveBeenCalledWith(template.identityId, template.id);
+    expect(templateRepo.findByIdForIdentity).not.toHaveBeenCalled();
     expect(instanceRepo.findByTemplateId).not.toHaveBeenCalled();
   });
 
@@ -97,7 +97,7 @@ describe('GetTaskTemplateUseCase', () => {
     const spy = vi.spyOn(template, 'toClientDTO');
     vi.mocked(templateRepo.findByIdWithChildren).mockResolvedValue(template);
 
-    await useCase.execute(template.id, true);
+    await useCase.execute(template.id, template.identityId, true);
 
     expect(spy).toHaveBeenCalledWith(true);
   });
@@ -105,9 +105,9 @@ describe('GetTaskTemplateUseCase', () => {
   it('should call toClientDTO with false for default', async () => {
     const template = aOneTimeTask();
     const spy = vi.spyOn(template, 'toClientDTO');
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template);
 
-    await useCase.execute(template.id);
+    await useCase.execute(template.id, template.identityId);
 
     expect(spy).toHaveBeenCalledWith(false);
   });

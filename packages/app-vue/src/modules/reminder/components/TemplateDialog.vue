@@ -510,9 +510,9 @@ function buildPayload(): CreateReminderTemplateReq {
           fixedTime: null,
         };
 
+    // Residual 835: request activeTime uses activatedAt (ActiveTimeConfigSchema).
   const activeTime: CreateReminderTemplateReq['activeTime'] = {
-    startDate: Date.now(),
-    endDate: null,
+    activatedAt: Date.now(),
   };
 
   const notificationConfig: CreateReminderTemplateReq['notificationConfig'] = {

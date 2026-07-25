@@ -116,10 +116,10 @@ export class PowerSyncNotificationPreferenceRepository implements INotificationP
     );
   }
 
-  async findById(id: string): Promise<NotificationPreference | null> {
+  async findByIdForIdentity(identityId: string, id: string): Promise<NotificationPreference | null> {
     const row = await this.db.getOptional<NotificationPreferenceRow>(
-      `SELECT * FROM notification_preferences WHERE id = ? LIMIT 1`,
-      [id],
+      `SELECT * FROM notification_preferences WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [id, identityId],
     );
     return row ? hydratePreference(row) : null;
   }
@@ -132,12 +132,19 @@ export class PowerSyncNotificationPreferenceRepository implements INotificationP
     return row ? hydratePreference(row) : null;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.execute(`DELETE FROM notification_preferences WHERE id = ?`, [id]);
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Notification preference not found for the current identity.');
+    }
+    await this.db.execute(
+      `DELETE FROM notification_preferences WHERE id = ? AND identity_id = ?`,
+      [id, identityId],
+    );
   }
 
-  async exists(id: string): Promise<boolean> {
-    return (await this.findById(id)) !== null;
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
   async existsForIdentity(identityId: string): Promise<boolean> {

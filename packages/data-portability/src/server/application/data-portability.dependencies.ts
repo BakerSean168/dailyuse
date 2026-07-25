@@ -14,7 +14,7 @@ export interface GoalFolderRepoPort {
   findByIdentityId(identityId: string): Promise<unknown[]>;
 }
 export interface GoalRecordRepoPort {
-  findByGoalId(goalId: string): Promise<unknown[]>;
+  findByGoalId(identityId: string, goalId: string): Promise<unknown[]>;
 }
 export interface FocusSessionRepoPort {
   findByIdentityId(identityId: string): Promise<unknown[]>;
@@ -47,7 +47,7 @@ export interface ReminderGroupRepoPort {
   findByIdentityId(identityId: string): Promise<unknown[]>;
 }
 export interface ReminderResponseRepoPort {
-  findByTemplateId(templateId: string, limit?: number): Promise<unknown[]>;
+  findByTemplateId(templateId: string, identityId: string, limit?: number): Promise<unknown[]>;
 }
 export interface UserReminderPreferenceRepoPort {
   findByIdentityId(identityId: string): Promise<unknown | null>;

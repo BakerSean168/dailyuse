@@ -1,8 +1,6 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import {
   createMockGoal,
-  createMockRepository,
-  createMockResource,
   createMockUserSetting,
 } from '@dailyuse/contracts/mocks';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
@@ -18,7 +16,6 @@ type GoalWorkflowSessionOptions = {
   conversationId?: string | null;
   modelKey?: string | null;
   workflowEntry?: Record<string, unknown> | null;
-  legacyGoalWorkflow?: boolean;
   seedConversation?: boolean;
   landingPath?: string;
 };
@@ -33,13 +30,11 @@ async function seedAiLocalState(
     conversationId?: string | null;
     modelKey?: string | null;
     workflowEntry?: Record<string, unknown> | null;
-    legacyGoalWorkflow?: boolean;
   } = {},
 ): Promise<void> {
   const conversationId = options.conversationId ?? null;
   const modelKey = options.modelKey ?? null;
   const workflowEntry = options.workflowEntry ?? null;
-  const legacyGoalWorkflow = options.legacyGoalWorkflow ?? false;
 
   await page.evaluate(
     ({
@@ -51,14 +46,10 @@ async function seedAiLocalState(
       seededConversationId,
       seededModelKey,
       seededWorkflowEntry,
-      seededLegacyGoalWorkflow,
     }) => {
       window.localStorage.removeItem(lastModelStorageKey);
-      if (seededLegacyGoalWorkflow) {
-        window.localStorage.setItem(legacyGoalWorkflowStorageKey, 'true');
-      } else {
-        window.localStorage.removeItem(legacyGoalWorkflowStorageKey);
-      }
+      // Residual 211: legacy goal-workflow debug dual-track is retired; clear any stale key.
+      window.localStorage.removeItem(legacyGoalWorkflowStorageKey);
 
       if (seededConversationId) {
         window.localStorage.setItem(lastConversationStorageKey, seededConversationId);
@@ -94,7 +85,6 @@ async function seedAiLocalState(
       seededConversationId: conversationId,
       seededModelKey: modelKey,
       seededWorkflowEntry: workflowEntry,
-      seededLegacyGoalWorkflow: legacyGoalWorkflow,
     },
   );
 }
@@ -103,6 +93,51 @@ async function seedAiLocalState(
  * Real JWT via register/login, then AI route mocks, then optional AI local state, then navigate.
  * Mocks are installed after auth so register/login/settings are not blocked incorrectly.
  */
+
+/**
+ * Residual 1333: Vue-controlled composer uses :value + @input.
+ * Wait for model readiness, drive input via fill+input event, and assert SSE completes
+ * so hasWorkflowUserMessages/chatLoading unlock Start Agent / knowledge actions.
+ */
+async function sendComposerMessage(page: Page, message: string): Promise<void> {
+  const composer = page.getByTestId('ai-chat-composer');
+  await expect(composer).toBeEnabled({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  // Model select populated → canSendMessage can become true once text is non-empty.
+  await expect(page.getByTestId('ai-chat-empty-models')).toHaveCount(0, {
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+
+  await composer.click();
+  await composer.fill(message);
+  await expect(composer).toHaveValue(message);
+
+  const sendButton = page.getByTestId('ai-chat-send-message');
+  await expect(sendButton).toBeEnabled({
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+
+  const sseResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes('/ai/assistant/dispatch/sse') &&
+      response.request().method() === 'POST' &&
+      response.status() === 200,
+    { timeout: TIMEOUT_CONFIG.NAVIGATION },
+  );
+  await sendButton.click();
+  await sseResponse;
+
+  // Composer clears after a successful Host open-chat turn starts.
+  await expect(composer).toHaveValue('', {
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+  // Stop button disappears once chatLoading clears (stream closed + finally).
+  await expect(page.getByTestId('ai-chat-stop-generating')).toHaveCount(0, {
+    timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+  });
+}
+
 async function bootstrapGoalWorkflowSession(
   page: Page,
   options: GoalWorkflowSessionOptions = {},
@@ -123,11 +158,22 @@ async function bootstrapGoalWorkflowSession(
     conversationId: options.conversationId,
     modelKey: options.modelKey,
     workflowEntry: options.workflowEntry,
-    legacyGoalWorkflow: options.legacyGoalWorkflow,
   });
 
   await page.goto(WEB_CONFIG.getFullUrl(landingPath), {
     waitUntil: 'domcontentloaded',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+
+  // Cold Vite main-app graph often exceeds ELEMENT_WAIT (10s); wait for shell mount
+  // before tests assert AI controls (see residual goal-workflow splash flake).
+  // Residual 1335: app-shell replaces #startup-splash first; ai-chat-view is nested.
+  await page.getByTestId('app-shell').waitFor({
+    state: 'visible',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+  await page.getByTestId('ai-chat-view').waitFor({
+    state: 'visible',
     timeout: TIMEOUT_CONFIG.NAVIGATION,
   });
 
@@ -168,19 +214,17 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await expect(composer).toBeVisible();
-    await composer.fill('How should knowledge answers stay grounded in citations?');
-    await page.getByTestId('ai-chat-send-message').click();
+    await sendComposerMessage(
+      page,
+      'How should knowledge answers stay grounded in citations?',
+    );
 
     await expect(page.getByTestId('knowledge-qa-ask')).toBeEnabled({
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
   });
 
-  test('[P0] restores a pending Goal Agent approval run after refresh', async ({
-    page,
-  }) => {
+  test('[P0] restores a pending Goal Agent approval run after refresh', async ({ page }) => {
     await bootstrapGoalWorkflowSession(page, {
       conversationId: e2eConversationId,
       modelKey: 'provider-e2e-openai::gpt-4.1-mini',
@@ -199,9 +243,13 @@ test.describe('AI Goal Workflow', () => {
     await expect(page.getByTestId('goal-agent-cancel-run')).toBeVisible();
 
     await page.reload({ waitUntil: 'domcontentloaded' });
+    // Full main-app remount after reload needs NAVIGATION budget (same as bootstrap).
+    await expect(page.getByTestId('ai-chat-view')).toBeVisible({
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
+    });
 
     await expect(agentPanel).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
     await expect(agentPanel).toContainText(/waiting_approval/i);
     await expect(agentPanel).toContainText(/Runtime restored Agent workspace/i);
@@ -217,11 +265,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-goal-create').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill(
+    await sendComposerMessage(
+      page,
       'Create a structured AI workflow goal through the Agent runtime and execute the approved plan.',
     );
-    await page.getByTestId('ai-chat-send-message').click();
 
     const startButton = page.getByTestId('goal-agent-start-run');
     await expect(startButton).toBeEnabled({
@@ -290,9 +337,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill('How should knowledge answers stay grounded in citations?');
-    await page.getByTestId('ai-chat-send-message').click();
+    await sendComposerMessage(
+      page,
+      'How should knowledge answers stay grounded in citations?',
+    );
 
     const askButton = page.getByTestId('knowledge-qa-ask');
     await expect(askButton).toBeEnabled({
@@ -337,11 +385,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-generate').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill(
+    await sendComposerMessage(
+      page,
       'Turn this planning conversation into a reusable knowledge note about agent checkpoints.',
     );
-    await page.getByTestId('ai-chat-send-message').click();
 
     const draftButton = page.getByTestId('knowledge-note-agent-start-run');
     await expect(draftButton).toBeEnabled({
@@ -362,9 +409,7 @@ test.describe('AI Goal Workflow', () => {
       timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
     });
     await expect(noteSummaryPanel).toContainText(/Conversation Agent Checkpoints\.md/i);
-    await expect(noteSummaryPanel).toContainText(
-      /notes\/ai\/Conversation Agent Checkpoints\.md/i,
-    );
+    await expect(noteSummaryPanel).toContainText(/notes\/ai\/Conversation Agent Checkpoints\.md/i);
     await expect(noteSummaryPanel).toContainText(/indexed/i);
   });
 
@@ -376,9 +421,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-knowledge-qa').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill('What does my repository say about the unindexed archive migration plan?');
-    await page.getByTestId('ai-chat-send-message').click();
+    await sendComposerMessage(
+      page,
+      'What does my repository say about the unindexed archive migration plan?',
+    );
 
     const askButton = page.getByTestId('knowledge-qa-ask');
     await expect(askButton).toBeEnabled({
@@ -398,9 +444,7 @@ test.describe('AI Goal Workflow', () => {
     await expect(page.getByTestId('knowledge-qa-draft-note')).toBeDisabled();
   });
 
-  test('[P0] starts Goal Agent from goal-create tool and cancels at approval', async ({
-    page,
-  }) => {
+  test('[P0] starts Goal Agent from goal-create tool and cancels at approval', async ({ page }) => {
     const telemetry = await bootstrapGoalWorkflowSession(page);
 
     await expect(page.getByTestId('ai-chat-view')).toBeVisible({
@@ -416,11 +460,10 @@ test.describe('AI Goal Workflow', () => {
     await page.getByTestId('ai-chat-tool-menu-trigger').click();
     await page.getByTestId('ai-chat-tool-goal-create').click();
 
-    const composer = page.getByTestId('ai-chat-composer');
-    await composer.fill(
+    await sendComposerMessage(
+      page,
       'Create a structured AI workflow goal through the Agent runtime and cancel before approving execution.',
     );
-    await page.getByTestId('ai-chat-send-message').click();
 
     const startButton = page.getByTestId('goal-agent-start-run');
     await expect(startButton).toBeEnabled({
@@ -764,8 +807,7 @@ function createGoalAgentMockRun(request: {
     createdAt: now,
     goalDraft,
     actionPlan: {
-      summary:
-        'Create the Agent goal, measurable key result, review task template, and reminder.',
+      summary: 'Create the Agent goal, measurable key result, review task template, and reminder.',
       actions: pendingActions,
       warnings: [],
     },
@@ -835,10 +877,7 @@ function expectGoalAgentApprovalPayload(
   expect(editedGoalData.reminders).toEqual(goalAgentRun.goalDraft.reminders);
 }
 
-function executeGoalAgentMockRun(
-  mockRun: GoalAgentMockRun,
-  telemetry: GoalWorkflowMockTelemetry,
-) {
+function executeGoalAgentMockRun(mockRun: GoalAgentMockRun, telemetry: GoalWorkflowMockTelemetry) {
   telemetry.goalAgentExecuteRequestCount += 1;
   const retrySucceeded = telemetry.goalAgentExecuteRequestCount > 1;
 
@@ -895,21 +934,14 @@ function executeGoalAgentMockRun(
       ];
 }
 
-function createGoalAgentRunResult(
-  mockRun: GoalAgentMockRun,
-  status: GoalAgentMockStatus,
-) {
+function createGoalAgentRunResult(mockRun: GoalAgentMockRun, status: GoalAgentMockStatus) {
   const now = Date.now();
   const hasExecution = status === 'completed';
   const executedCount = mockRun.executedActions.filter(
     (action) => action.status === 'executed',
   ).length;
-  const skippedActions = mockRun.executedActions.filter(
-    (action) => action.status === 'skipped',
-  );
-  const failedActions = mockRun.executedActions.filter(
-    (action) => action.status === 'failed',
-  );
+  const skippedActions = mockRun.executedActions.filter((action) => action.status === 'skipped');
+  const failedActions = mockRun.executedActions.filter((action) => action.status === 'failed');
   const executionOutcome =
     failedActions.length === 0
       ? 'success'
@@ -992,9 +1024,7 @@ function createGoalAgentRunResult(
       retrievedContext: [],
       pendingActions: status === 'waiting_approval' ? mockRun.pendingActions : [],
       approvedActions:
-        status === 'waiting_approval' || status === 'cancelled'
-          ? []
-          : mockRun.approvedActions,
+        status === 'waiting_approval' || status === 'cancelled' ? [] : mockRun.approvedActions,
       executedActions: hasExecution ? mockRun.executedActions : [],
       usage: {
         promptTokens: 90,
@@ -1040,10 +1070,7 @@ function createGoalAgentRunResult(
               eventId: `${mockRun.runId}:1`,
               runId: mockRun.runId,
               sequence: 1,
-              type:
-                status === 'waiting_approval'
-                  ? 'approval.required'
-                  : 'execution.required',
+              type: status === 'waiting_approval' ? 'approval.required' : 'execution.required',
               createdAt: now,
               data: { status },
             },
@@ -1097,66 +1124,6 @@ async function installGoalWorkflowMocks(
       pendingAction: Record<string, unknown>;
     }
   >();
-  const repository = createMockRepository({
-    id: 'repository-e2e-1',
-    name: 'E2E Agent Workspace Repository',
-    status: 'Active',
-    isActive: true,
-    isArchived: false,
-    isDeleted: false,
-  });
-  const workspaceResources = new Map(
-    [
-      createMockResource({
-        id: 'resource-grounding-1',
-        repositoryId: repository.id,
-        name: 'grounding-policy.md',
-        path: 'notes/ai/grounding-policy.md',
-        type: 'File',
-        mimeType: 'text/markdown',
-        extension: '.md',
-        status: 'Active',
-        isActive: true,
-        isArchived: false,
-        isDeleted: false,
-        content:
-          '# Memoflow grounding policy\n\nKnowledge answers must cite repository evidence before sounding certain.',
-      }),
-    ].map((resource) => [resource.id, resource] as const),
-  );
-  const editorWorkspace = {
-    id: repository.id,
-    name: repository.name,
-    projectPath: repository.id,
-  };
-  let editorSessionCreated = false;
-  const editorTabs: Array<Record<string, unknown>> = [];
-
-  function buildEditorSession() {
-    return {
-      id: 'editor-session-e2e-1',
-      name: 'Main',
-      isActive: true,
-      activeGroupIndex: 0,
-      groups: [
-        {
-          id: 'editor-group-e2e-1',
-          sessionId: 'editor-session-e2e-1',
-          workspaceId: repository.id,
-          identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-          groupIndex: 0,
-          name: 'Group 1',
-          activeTabIndex: Math.max(editorTabs.length - 1, 0),
-          tabs: [...editorTabs],
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          formattedCreatedAt: '2026-06-10 00:00:00',
-          formattedUpdatedAt: '2026-06-10 00:00:00',
-        },
-      ],
-    };
-  }
-
   await page.route('**/api/v1/settings', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.continue();
@@ -1198,14 +1165,7 @@ async function installGoalWorkflowMocks(
             sound: false,
             useCustomNotification: false,
           },
-          editor: {
-            theme: 'default',
-            fontSize: 14,
-            tabSize: 2,
-            wordWrap: true,
-            lineNumbers: true,
-            minimap: false,
-          },
+
           shortcuts: {
             enabled: true,
             custom: {},
@@ -1218,287 +1178,10 @@ async function installGoalWorkflowMocks(
             startPage: 'dashboard',
             sidebarCollapsed: false,
           },
-          ai: {
-            knowledgeNoteSubpath: 'notes/ai',
-          },
+          ai: {},
         },
       }),
     );
-  });
-
-  await page.route('**/api/v1/repositories/current', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
-      return;
-    }
-
-    await fulfillJson(route, repository);
-  });
-
-  await page.route('**/api/v1/repositories/*/folders', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
-      return;
-    }
-
-    await fulfillJson(route, {
-      repositoryId: repository.id,
-      tree: [],
-    });
-  });
-
-  await page.route('**/api/v1/repositories/*/resources', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
-      return;
-    }
-
-    await fulfillJson(route, [...workspaceResources.values()]);
-  });
-
-  await page.route('**/api/v1/resources/*', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
-      return;
-    }
-
-    const resourceId = route.request().url().split('/').at(-1) ?? '';
-    await fulfillJson(
-      route,
-      workspaceResources.get(resourceId) ??
-        createMockResource({
-          id: resourceId,
-          repositoryId: repository.id,
-          name: 'opened-resource.md',
-          path: `notes/ai/${resourceId}.md`,
-          type: 'File',
-          mimeType: 'text/markdown',
-          extension: '.md',
-          status: 'Active',
-          isActive: true,
-          isArchived: false,
-          isDeleted: false,
-        }),
-    );
-  });
-
-  await page.route('**/api/v1/goals/archive-expired', async (route) => {
-    if (route.request().method() !== 'POST') {
-      await route.continue();
-      return;
-    }
-
-    await fulfillJson(route, { archivedCount: 0 });
-  });
-
-  await page.route('**/api/v1/goals?*', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
-      return;
-    }
-
-    const goal = createMockGoal({
-      id: 'IGoalId_e2e-recent-goal-1',
-      name: 'Recent AI workflow goal',
-      status: 'Active',
-      updatedAt: Date.now(),
-      deletedAt: null,
-    });
-    await fulfillJson(route, {
-      goals: [goal],
-      data: [goal],
-      pagination: {
-        page: 1,
-        pageSize: 20,
-        total: 1,
-        hasMore: false,
-        totalPages: 1,
-      },
-    });
-  });
-
-  await page.route('**/api/v1/repositories/*/bookmarks', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
-      return;
-    }
-
-    await fulfillJson(route, []);
-  });
-
-  await page.route('**/api/v1/editor/workspaces', async (route) => {
-    if (route.request().method() === 'GET') {
-      await fulfillJson(route, [editorWorkspace]);
-      return;
-    }
-
-    if (route.request().method() === 'POST') {
-      await fulfillJson(route, editorWorkspace);
-      return;
-    }
-
-    await route.continue();
-  });
-
-  await page.route('**/api/v1/editor/workspaces/*', async (route) => {
-    const url = new URL(route.request().url());
-    const path = url.pathname;
-
-    if (route.request().method() === 'GET' && path.endsWith(`/editor/workspaces/${repository.id}`)) {
-      await fulfillJson(route, editorWorkspace);
-      return;
-    }
-
-    if (
-      route.request().method() === 'GET' &&
-      path.endsWith(`/editor/workspaces/${repository.id}/sessions`)
-    ) {
-      await fulfillJson(route, editorSessionCreated ? [buildEditorSession()] : []);
-      return;
-    }
-
-    await route.continue();
-  });
-
-  await page.route('**/api/v1/editor/sessions', async (route) => {
-    if (route.request().method() !== 'POST') {
-      await route.continue();
-      return;
-    }
-
-    editorSessionCreated = true;
-    await fulfillJson(route, buildEditorSession());
-  });
-
-  await page.route('**/api/v1/editor/tabs', async (route) => {
-    if (route.request().method() !== 'POST') {
-      await route.continue();
-      return;
-    }
-
-    const request = route.request().postDataJSON() as {
-      resourceId?: string;
-      title?: string;
-    };
-    const tab = {
-      id: `editor-tab-${editorTabs.length + 1}`,
-      sessionId: 'editor-session-e2e-1',
-      groupId: 'editor-group-e2e-1',
-      workspaceId: repository.id,
-      identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-      resourceId: request.resourceId ?? 'resource-grounding-1',
-      tabIndex: editorTabs.length,
-      tabType: 'Resource',
-      name: request.title ?? 'grounding-policy.md',
-      viewState: {},
-      isPinned: false,
-      isActive: true,
-      isDirty: false,
-      lastAccessedAt: null,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      formattedLastAccessed: null,
-      formattedCreatedAt: '2026-06-10 00:00:00',
-      formattedUpdatedAt: '2026-06-10 00:00:00',
-    };
-    editorSessionCreated = true;
-    editorTabs.push(tab);
-    await fulfillJson(route, tab);
-  });
-
-  await page.route('**/api/v1/editor/**', async (route) => {
-    const url = new URL(route.request().url());
-    const path = url.pathname;
-    const method = route.request().method();
-
-    if (method === 'GET' && path.endsWith('/editor/workspaces')) {
-      await fulfillJson(route, [editorWorkspace]);
-      return;
-    }
-
-    if (method === 'POST' && path.endsWith('/editor/workspaces')) {
-      await fulfillJson(route, editorWorkspace);
-      return;
-    }
-
-    if (method === 'GET' && path.endsWith(`/editor/workspaces/${repository.id}`)) {
-      await fulfillJson(route, editorWorkspace);
-      return;
-    }
-
-    if (method === 'GET' && path.endsWith(`/editor/workspaces/${repository.id}/sessions`)) {
-      await fulfillJson(route, editorSessionCreated ? [buildEditorSession()] : []);
-      return;
-    }
-
-    if (method === 'POST' && path.endsWith('/editor/sessions')) {
-      editorSessionCreated = true;
-      await fulfillJson(route, buildEditorSession());
-      return;
-    }
-
-    if (method === 'POST' && path.endsWith('/editor/tabs')) {
-      const request = route.request().postDataJSON() as {
-        resourceId?: string;
-        title?: string;
-      };
-      const tab = {
-        id: `editor-tab-${editorTabs.length + 1}`,
-        sessionId: 'editor-session-e2e-1',
-        groupId: 'editor-group-e2e-1',
-        workspaceId: repository.id,
-        identityId: 'IdentityId_550e8400-e29b-41d4-a716-446655440000',
-        resourceId: request.resourceId ?? 'resource-grounding-1',
-        tabIndex: editorTabs.length,
-        tabType: 'Resource',
-        name: request.title ?? 'grounding-policy.md',
-        viewState: {},
-        isPinned: false,
-        isActive: true,
-        isDirty: false,
-        lastAccessedAt: null,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        formattedLastAccessed: null,
-        formattedCreatedAt: '2026-06-10 00:00:00',
-        formattedUpdatedAt: '2026-06-10 00:00:00',
-      };
-      editorSessionCreated = true;
-      editorTabs.push(tab);
-      await fulfillJson(route, tab);
-      return;
-    }
-
-    if (method === 'GET' && path.includes('/editor/content/')) {
-      const resourceId = path.split('/').at(-1) ?? '';
-      const resource = workspaceResources.get(resourceId) ?? null;
-      await fulfillJson(route, {
-        resourceId,
-        name: resource?.name ?? 'opened-resource.md',
-        content: resource?.content ?? null,
-      });
-      return;
-    }
-
-    if (
-      method === 'POST' &&
-      (path.includes('/activate') || path.includes('/auto-save'))
-    ) {
-      await fulfillJson(route, null);
-      return;
-    }
-
-    if (method === 'PUT' && (path.includes('/editor/tabs/') || path.includes('/editor/content/'))) {
-      await fulfillJson(route, null);
-      return;
-    }
-
-    if (method === 'DELETE' && path.includes('/editor/workspaces/')) {
-      await fulfillJson(route, null);
-      return;
-    }
-
-    await route.continue();
   });
 
   await page.route('**/api/v1/ai/providers', async (route) => {
@@ -1546,6 +1229,10 @@ async function installGoalWorkflowMocks(
 
     const body = route.request().postDataJSON() as { name?: string };
     conversationName = body.name || conversationName;
+    // Residual 1333: after create, listConversations must return this id.
+    // Otherwise loadConversationList after open-chat completion calls
+    // startNewConversation() and wipes hasWorkflowUserMessages.
+    generateGoalStep = Math.max(generateGoalStep, 1);
 
     await fulfillJson(route, {
       id: conversationId,
@@ -1603,58 +1290,176 @@ async function installGoalWorkflowMocks(
     await route.continue();
   });
 
-  await page.route('**/api/v1/ai/chat/messages?conversationId=*&page=*&pageSize=*', async (route) => {
-    await fulfillJson(route, {
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 80,
-    });
-  });
+  // Residual 1333: seed open-chat timeline messages so post-send listConversations
+  // / selectConversation reloads do not erase hasWorkflowUserMessages.
+  const openChatMessages: Array<{
+    id: string;
+    conversationId: string;
+    role: string;
+    content: string;
+    createdAt: number;
+  }> = [];
 
-  await page.route('**/api/v1/ai/chat/messages/sse', async (route) => {
-    const request = route.request().postDataJSON() as { content?: string };
+  await page.route(
+    '**/api/v1/ai/chat/messages?conversationId=*&page=*&pageSize=*',
+    async (route) => {
+      await fulfillJson(route, {
+        data: openChatMessages,
+        total: openChatMessages.length,
+        page: 1,
+        pageSize: 80,
+      });
+    },
+  );
+
+  // Residual 1333: open chat + Host proposal lifecycle use AssistantFacade SSE
+  // (`/ai/assistant/dispatch/sse`), not legacy chat/messages/sse. Missing mocks leave
+  // chatLoading stuck and block confirm/cancel (dispatchHostProposalDecision fails closed).
+  await page.route('**/api/v1/ai/assistant/dispatch/sse', async (route) => {
+    const request = (route.request().postDataJSON() ?? {}) as {
+
+      type?: string;
+      content?: string;
+      runId?: string;
+      conversationId?: string;
+      proposalId?: string;
+      revision?: number;
+      reason?: string;
+    };
+    const fulfillSse = async (assistantEvents: Record<string, unknown>[]) => {
+      // Match AIAssistantHttpAdapter unit fixtures: event/data pairs terminated by \n\n.
+      // Explicit content-length so Chromium closes the fetch body (chunked/keep-alive
+      // without a length can leave parseSSE waiting and stick chatLoading).
+      const frames: string[] = [];
+      for (const event of assistantEvents) {
+        frames.push(
+          `event: assistant\ndata: ${JSON.stringify(event)}\n\n`,
+        );
+      }
+      frames.push(
+        `event: done\ndata: ${JSON.stringify({ eventCount: assistantEvents.length })}\n\n`,
+      );
+      const body = frames.join('');
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream; charset=utf-8',
+        body,
+        headers: {
+          'cache-control': 'no-cache',
+          'content-length': String(Buffer.byteLength(body, 'utf8')),
+          connection: 'close',
+        },
+      });
+    };
+
+    if (request.type === 'cancel_run') {
+      await fulfillSse([
+        {
+          type: 'run.cancelled',
+          runId: request.runId ?? 'run-e2e-open-chat',
+        },
+      ]);
+      return;
+    }
+
+    if (request.type === 'approve_proposal') {
+      const revision = (request.revision ?? 1) + 0;
+      await fulfillSse([
+        {
+          type: 'proposal.approved',
+          runId: request.runId ?? 'run-e2e',
+          proposalId: request.proposalId ?? 'proposal-e2e',
+          revision,
+        },
+      ]);
+      return;
+    }
+
+    if (request.type === 'reject_proposal') {
+      const revision = request.revision ?? 1;
+      await fulfillSse([
+        {
+          type: 'proposal.rejected',
+          runId: request.runId ?? 'run-e2e',
+          proposalId: request.proposalId ?? 'proposal-e2e',
+          revision,
+          reason: request.reason ?? 'user_cancel',
+        },
+      ]);
+      return;
+    }
+
+    if (request.type === 'revise_proposal') {
+      const revision = (request.revision ?? 1) + 1;
+      await fulfillSse([
+        {
+          type: 'proposal.revised',
+          runId: request.runId ?? 'run-e2e',
+          proposalId: request.proposalId ?? 'proposal-e2e',
+          revision,
+        },
+      ]);
+      return;
+    }
+
     const userContent = request.content ?? '';
-    const payload = [
-      'event: message',
-      'data: {"role":"assistant","content":"先把目标拆清楚，我会帮你补全 workflow。"}',
-      '',
-      'event: done',
-      `data: ${JSON.stringify({
+    const runId = request.runId ?? 'run-e2e-open-chat';
+    const assistantContent = '先把目标拆清楚，我会帮你补全 workflow。';
+    const now = Date.now();
+    const convId = request.conversationId ?? conversationId;
+    const userMsgId = `msg-user-${openChatMessages.length + 1}`;
+    const assistantMsgId = `msg-assistant-${openChatMessages.length + 1}`;
+    if (userContent.trim()) {
+      openChatMessages.push({
+        id: userMsgId,
+        conversationId: convId,
+        role: 'user',
+        content: userContent,
+        createdAt: now,
+      });
+      openChatMessages.push({
+        id: assistantMsgId,
+        conversationId: convId,
+        role: 'assistant',
+        content: assistantContent,
+        createdAt: now + 1,
+      });
+    }
+    // Ensure conversation appears in list after first open-chat turn.
+    generateGoalStep = Math.max(generateGoalStep, 1);
+    await fulfillSse([
+      {
+        type: 'run.started',
+        runId,
+        engineId: 'engine.direct_turn',
+        profile: 'direct_turn',
+      },
+      {
+        type: 'message.delta',
+        runId,
+        content: assistantContent,
+      },
+      {
+        type: 'message.completed',
+        runId,
+        status: 'completed',
+        content: assistantContent,
         userMessage: {
-          id: 'msg-user-1',
-          conversationId,
+          id: userMsgId,
+          conversationId: convId,
           role: 'user',
           content: userContent,
-          createdAt: Date.now(),
+          createdAt: now,
         },
         assistantMessage: {
-          id: 'msg-assistant-1',
-          conversationId,
+          id: assistantMsgId,
+          conversationId: convId,
           role: 'assistant',
-          content: '先把目标拆清楚，我会帮你补全 workflow。',
-          createdAt: Date.now(),
+          content: assistantContent,
+          createdAt: now + 1,
         },
-        tokenUsage: {
-          promptTokens: 120,
-          completionTokens: 36,
-          totalTokens: 156,
-        },
-        providerId: 'provider-e2e-openai',
-        processingTimeMs: 120,
-      })}`,
-      '',
-    ].join('\n');
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'text/event-stream',
-      body: payload,
-      headers: {
-        'cache-control': 'no-cache',
-        connection: 'keep-alive',
       },
-    });
+    ]);
   });
 
   await page.route('**/api/v1/ai/knowledge/query', async (route) => {
@@ -1711,17 +1516,14 @@ async function installGoalWorkflowMocks(
     });
   });
 
-  await page.route(
-    '**/api/v1/ai/agents/runs/run-e2e-restored-approval',
-    async (route) => {
-      if (route.request().method() !== 'GET') {
-        await route.continue();
-        return;
-      }
+  await page.route('**/api/v1/ai/agents/runs/run-e2e-restored-approval', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.continue();
+      return;
+    }
 
-      await fulfillJson(route, createRuntimeRestoredApprovalRunResult());
-    },
-  );
+    await fulfillJson(route, createRuntimeRestoredApprovalRunResult());
+  });
 
   await page.route('**/api/v1/ai/agents/runs?*', async (route) => {
     if (route.request().method() !== 'GET') {
@@ -1750,17 +1552,21 @@ async function installGoalWorkflowMocks(
         topic?: string;
         title?: string;
         source?: string;
+        // Residual 1333: client AgentStartRun uses snake_case provider_id (Host contract).
+        provider_id?: string;
         providerId?: string;
         model?: string;
       };
     };
+    const requestProviderId = request.input?.provider_id ?? request.input?.providerId;
+    const requestModel = request.input?.model;
 
     if (request.agentType === 'goal.create') {
       telemetry.goalAgentStartCount += 1;
       telemetry.lastGoalAgentStart = {
         idea: request.input?.idea,
-        providerId: request.input?.providerId,
-        model: request.input?.model,
+        providerId: requestProviderId,
+        model: requestModel,
       };
 
       const mockRun = createGoalAgentMockRun(request);
@@ -1770,7 +1576,7 @@ async function installGoalWorkflowMocks(
     }
 
     if (request.agentType === 'knowledge.qa') {
-      expect(request.input?.providerId).toBe('provider-e2e-openai');
+      expect(requestProviderId).toBe('provider-e2e-openai');
       expect(request.input?.question).toBeTruthy();
 
       const question = request.input?.question ?? '';
@@ -1783,8 +1589,7 @@ async function installGoalWorkflowMocks(
               resourcePath: 'notes/ai/grounding-policy.md',
               title: 'Memoflow grounding policy',
               chunkIndex: 0,
-              excerpt:
-                'Knowledge answers must cite repository evidence before sounding certain.',
+              excerpt: 'Knowledge answers must cite repository evidence before sounding certain.',
               score: 0.94,
             },
           ];
@@ -1861,13 +1666,11 @@ async function installGoalWorkflowMocks(
       return;
     }
 
-    expect(request.input?.providerId).toBe('provider-e2e-openai');
-    expect(request.input?.model).toBe('gpt-4.1-mini');
+    expect(requestProviderId).toBe('provider-e2e-openai');
+    expect(requestModel).toBe('gpt-4.1-mini');
 
     const source = request.input?.source ?? '';
-    const isConversationDraft = source.includes(
-      'reusable knowledge note about agent checkpoints',
-    );
+    const isConversationDraft = source.includes('reusable knowledge note about agent checkpoints');
     if (!isConversationDraft) {
       expect(request.input?.title).toContain(
         'How should knowledge answers stay grounded in citations?',
@@ -1989,14 +1792,18 @@ async function installGoalWorkflowMocks(
     });
   });
 
-  await page.route('**/api/v1/ai/agents/runs/*/resume', async (route) => {
+  // Match absolute and relative resume URLs (Vite proxy + direct API).
+  await page.route(/\/api\/v1\/ai\/agents\/runs\/[^/]+\/resume(?:\?|$)/, async (route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
       return;
     }
 
     const url = new URL(route.request().url());
-    const runId = decodeURIComponent(url.pathname.split('/').at(-2) ?? '');
+    const segments = url.pathname.split('/').filter(Boolean);
+    // .../ai/agents/runs/:runId/resume
+    const runIdIndex = segments.lastIndexOf('runs') + 1;
+    const runId = decodeURIComponent(segments[runIdIndex] ?? '');
     const goalAgentRun = goalAgentRunsByRunId.get(runId);
     if (goalAgentRun) {
       const request = route.request().postDataJSON() as {
@@ -2064,30 +1871,13 @@ async function installGoalWorkflowMocks(
     const resourceName = `${draft.title}.md`;
     const resolvedPath = `${draft.targetSubpath}/${resourceName}`;
     const now = Date.now();
-    workspaceResources.set(
-      'resource-note-e2e-1',
-      createMockResource({
-        id: 'resource-note-e2e-1',
-        repositoryId: repository.id,
-        name: resourceName,
-        path: resolvedPath,
-        type: 'File',
-        mimeType: 'text/markdown',
-        extension: '.md',
-        status: 'Active',
-        isActive: true,
-        isArchived: false,
-        isDeleted: false,
-        content: draft.markdown,
-      }),
-    );
     const executedAction = {
       tool: 'create_knowledge_note',
       status: 'executed',
       entityId: 'resource-note-e2e-1',
       message: `Saved knowledge note to ${resolvedPath}.`,
       data: {
-        resource: {
+        note: {
           id: 'resource-note-e2e-1',
           name: resourceName,
           content: draft.markdown,
@@ -2208,21 +1998,16 @@ async function installGoalWorkflowMocks(
 
     const now = Date.now();
     await fulfillJson(route, {
-      resource: {
+      note: {
         id: 'resource-note-e2e-1',
-        repositoryId: 'repository-e2e-1',
-        folderId: null,
+        repositoryScopeId: 'connection-e2e-1',
         name: resourceName,
-        type: 'Markdown',
-        mimeType: 'text/markdown',
         path: resolvedPath,
+        mimeType: 'text/markdown',
         size: 124,
-        content: request.contentMarkdown,
-        status: 'Active',
+        content: request.contentMarkdown ?? null,
         createdAt: now,
         updatedAt: now,
-        deletedAt: null,
-        version: 1,
       },
       resolvedPath,
       indexStatus: 'indexed',
@@ -2450,9 +2235,7 @@ async function installGoalWorkflowMocks(
 
       await fulfillJson(route, {
         state: 'result',
-        summary: retrySucceeded
-          ? '目标和关键结果已创建。'
-          : '目标已创建，关键结果暂未完全写入。',
+        summary: retrySucceeded ? '目标和关键结果已创建。' : '目标已创建，关键结果暂未完全写入。',
         plan: {
           goal: {
             title: request.approvedPlan?.goal?.title ?? '建立稳定的 AI agent 工作流',
@@ -2461,16 +2244,13 @@ async function installGoalWorkflowMocks(
               '围绕澄清、规划、执行和复盘，建立可重复的 AI goal workflow。',
             category: request.approvedPlan?.goal?.category ?? 'learning',
             importance: request.approvedPlan?.goal?.importance ?? 'Important',
-            motivation:
-              request.approvedPlan?.goal?.motivation ??
-              '把 AI 想法稳定转成可执行目标。',
+            motivation: request.approvedPlan?.goal?.motivation ?? '把 AI 想法稳定转成可执行目标。',
             feasibilityAnalysis:
               request.approvedPlan?.goal?.feasibilityAnalysis ??
               '聚焦日常执行和每周复盘，范围可控。',
             suggestedStartDate: request.approvedPlan?.goal?.suggestedStartDate ?? Date.now(),
             suggestedEndDate:
-              request.approvedPlan?.goal?.suggestedEndDate ??
-              Date.now() + 1000 * 60 * 60 * 24 * 60,
+              request.approvedPlan?.goal?.suggestedEndDate ?? Date.now() + 1000 * 60 * 60 * 24 * 60,
             tags: request.approvedPlan?.goal?.tags ?? ['ai', 'workflow'],
           },
           keyResults: request.approvedPlan?.keyResults ?? [

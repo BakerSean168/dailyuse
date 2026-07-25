@@ -5,18 +5,14 @@
  * Port interfaces moved to application-client/ports/.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-
 // ============ Transport Client Interfaces ============
 // Module only defines what it needs - concrete implementations injected from App layer.
 
 /**
  * IPC Client interface (Result-returning).
- * Satisfied by ResultIpcClient from @dailyuse/ipc-client at the App level.
+ * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
  */
-export interface IResultIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
-}
+export type { IResultIpcClient } from '@dailyuse/ipc-client';
 
 // ============ Port Interface Re-exports ============
 export type { ITaskTemplateApiClient, TaskTemplateListParams } from '../../application-client/ports/task-template-api-client.port';

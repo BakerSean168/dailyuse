@@ -58,7 +58,6 @@ export {
 } from './prisma';
 export {
   createTaskRuntimeContribution,
-  type TaskRuntimeContribution,
 } from './runtime';
 export {
   createTaskScheduleExecutionSource,

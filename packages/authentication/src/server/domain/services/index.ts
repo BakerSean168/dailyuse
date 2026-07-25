@@ -3,8 +3,6 @@ export { LoginService } from './login';
 export { LogoutService } from './logout';
 export type { IEmailSender } from './i-email-sender';
 export type { IPasswordHasher } from './i-password-hasher.service';
-/** @deprecated Prefer IVerificationChallengeStore */
-export type { IPasswordResetCodeStore } from './i-password-reset-code-store';
 export type {
   IVerificationChallengeStore,
   IssueVerificationChallengeParams,
@@ -28,6 +26,8 @@ export {
   AuthenticationMethod,
   UnsupportedAuthenticationMethodError,
   DuplicateAuthenticationProviderError,
+  AccountLinkRequiredError,
+  OAuthEmailRequiredError,
 } from './authentication-provider';
 export type {
   AuthenticationProvider,
@@ -43,7 +43,5 @@ export {
   GithubAuthenticationProvider,
   type GithubCredentials,
 } from './providers/github-authentication.provider';
-export type {
-  IGithubOAuthClient,
-  GithubUserIdentity,
-} from './providers/i-github-oauth-client';
+export type { IGithubOAuthClient, GithubUserIdentity } from './providers/i-github-oauth-client';
+export * from './i-oauth-state-store';

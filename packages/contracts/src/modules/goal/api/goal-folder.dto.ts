@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalFolderId, IdentityId } from '../../../primitives';
 import type { GoalFolderClientDTO } from '../aggregates/goal-folder-client';
+import { GoalFolderClientDTOSchema } from './response-schemas';
 
 // ============================================================================
 // CREATE Folder
@@ -60,13 +61,11 @@ export type UpdateGoalFolderRes = GoalFolderClientDTO;
  * 获取文件夹详情
  */
 export type GetGoalFolderReq = void;
-export type GetGoalFolderRes = GoalFolderClientDTO;
 
 /**
  * 删除文件夹
  */
 export type DeleteGoalFolderReq = void;
-export type DeleteGoalFolderRes = GoalFolderClientDTO;
 
 // ============================================================================
 // QUERY Folders
@@ -93,7 +92,9 @@ export interface ListGoalFoldersQuery extends ListGoalFolderFilters {
   identityId: IdentityId;
 }
 
-export interface QueryGoalFoldersRes {
-  data: GoalFolderClientDTO[];
-  total: number;
-}
+// Residual 779: QueryGoalFoldersRes dual retired — OpenAPI + transport use ResSchema.
+export const QueryGoalFoldersResSchema = z.object({
+  data: z.array(GoalFolderClientDTOSchema),
+  total: z.number(),
+});
+export type QueryGoalFoldersRes = z.infer<typeof QueryGoalFoldersResSchema>;

@@ -1,6 +1,12 @@
 /**
  * Shared DTO shape for notification template configuration.
  */
+
+import type { ChannelPreference } from './category-preference';
+
+// Residual 877: ChannelConfig dual retired — exact shape of ChannelPreference.
+export type ChannelConfig = ChannelPreference;
+
 export interface TemplateContent {
   title: string;
   content: string;
@@ -18,13 +24,6 @@ export interface PushTemplateContent {
   body: string;
   icon?: string | null;
   sound?: string | null;
-}
-
-export interface ChannelConfig {
-  inApp: boolean;
-  email: boolean;
-  push: boolean;
-  sms: boolean;
 }
 
 export interface NotificationTemplateConfigServerDTO {

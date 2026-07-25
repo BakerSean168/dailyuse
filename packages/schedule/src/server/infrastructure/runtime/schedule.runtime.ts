@@ -13,10 +13,6 @@ import type { ScheduleModuleRuntimeContribution } from '../schedule.module';
 
 const logger = createLogger('ScheduleRuntime');
 
-export type ScheduleRuntimeContribution = ScheduleModuleRuntimeContribution;
-export type ScheduleRuntimeContributionsInput =
-  | ScheduleRuntimeContribution
-  | readonly ScheduleRuntimeContribution[];
 export type { ScheduleTaskExecutionResult, ScheduleTaskSourceExecutor };
 
 type SyncTaskEventName =
@@ -51,6 +47,7 @@ function toScheduledItem(task: ScheduleTask): ScheduledItem | null {
   return {
     taskId: task.id,
     taskName: task.name,
+    identityId: String(task.identityId),
     cronExpression: task.schedule.cronExpression,
     timezone: task.schedule.timezone,
     nextRunAt,
@@ -69,13 +66,32 @@ async function isTaskAllowed(
   return await predicate(task);
 }
 
+async function loadTaskForRuntime(
+  repository: IScheduleTaskRepository,
+  taskId: string,
+  identityId?: string | null,
+): Promise<ScheduleTask | null> {
+  if (identityId) {
+    return repository.findByIdForIdentity(String(identityId), taskId);
+  }
+
+  const task = await repository.findById(taskId);
+  if (!task) {
+    return null;
+  }
+
+  // Defense in depth: once identity is known from the aggregate, re-load owned.
+  return repository.findByIdForIdentity(String(task.identityId), taskId);
+}
+
 async function syncTask(
   repository: IScheduleTaskRepository,
   queue: ScheduleTaskQueue,
   taskId: string,
   shouldScheduleTask?: (task: ScheduleTask) => boolean | Promise<boolean>,
+  identityId?: string | null,
 ): Promise<void> {
-  const task = await repository.findById(taskId);
+  const task = await loadTaskForRuntime(repository, taskId, identityId);
   if (!task) {
     queue.removeTask(taskId);
     return;
@@ -119,8 +135,9 @@ async function executeScheduledTask(
   sourceExecutor: ScheduleTaskSourceExecutor,
   taskId: string,
   shouldScheduleTask?: (task: ScheduleTask) => boolean | Promise<boolean>,
+  identityId?: string | null,
 ): Promise<void> {
-  const task = await repository.findById(taskId);
+  const task = await loadTaskForRuntime(repository, taskId, identityId);
   if (!task) {
     logger.warn('[Schedule] Scheduled execution skipped because task no longer exists', { taskId });
     return;
@@ -199,7 +216,7 @@ async function executeScheduledTask(
 
 export function createScheduleRuntimeContribution(
   deps: ScheduleRuntimeDependencies,
-): ScheduleRuntimeContribution {
+): ScheduleModuleRuntimeContribution {
   const queue = new ScheduleTaskQueue({
     taskLoader: {
       async loadActiveTasks() {
@@ -219,12 +236,13 @@ export function createScheduleRuntimeContribution(
           .filter((item): item is ScheduledItem => item !== null);
       },
     },
-    onExecuteTask: async (taskId) => {
+    onExecuteTask: async (taskId, item) => {
       await executeScheduledTask(
         deps.scheduleTaskRepository,
         deps.sourceExecutor,
         taskId,
         deps.shouldScheduleTask,
+        item.identityId,
       );
     },
     onExecuteError: (taskId, error) => {
@@ -232,14 +250,20 @@ export function createScheduleRuntimeContribution(
     },
   });
 
-  const syncTaskHandler = async (event: { taskId?: string }) => {
+  const syncTaskHandler = async (event: { taskId?: string; identityId?: string }) => {
     const taskId = event.taskId;
     if (!taskId) {
       return;
     }
 
-    logger.info('[Schedule] Received task sync event', { taskId });
-    await syncTask(deps.scheduleTaskRepository, queue, taskId, deps.shouldScheduleTask);
+    logger.info('[Schedule] Received task sync event', { taskId, identityId: event.identityId });
+    await syncTask(
+      deps.scheduleTaskRepository,
+      queue,
+      taskId,
+      deps.shouldScheduleTask,
+      event.identityId,
+    );
   };
 
   const removeTaskHandler = (event: { taskId?: string }) => {

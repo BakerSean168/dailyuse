@@ -26,9 +26,9 @@ export class TriggerScheduleTaskUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(id: string): Promise<Result<void>> {
+  async execute(id: string, identityId: string): Promise<Result<void>> {
     // 1. 查询任务
-    const task = await this.scheduleTaskRepository.findById(id);
+    const task = await this.scheduleTaskRepository.findByIdForIdentity(identityId, id);
     if (!task) {
       return error('NOT_FOUND', `Schedule task ${id} not found`);
     }

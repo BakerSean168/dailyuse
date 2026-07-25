@@ -56,7 +56,6 @@ describe('createDirectProviderAIRuntime', () => {
     const runtime = createDirectProviderAIRuntime(
       createMockDeps({
         knowledgeNotePersistence: { saveNote: vi.fn(), loadNote: vi.fn() } as any,
-        getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('/notes'),
       }),
     );
     expect(runtime.capabilities.supportsKnowledgeNotes).toBe(true);
@@ -70,11 +69,7 @@ describe('createDirectProviderAIRuntime', () => {
   });
 
   it('does not support knowledge notes when only subpath is provided', () => {
-    const runtime = createDirectProviderAIRuntime(
-      createMockDeps({
-        getKnowledgeNoteSubpath: vi.fn().mockResolvedValue('/notes'),
-      }),
-    );
+    const runtime = createDirectProviderAIRuntime(createMockDeps({}));
     expect(runtime.capabilities.supportsKnowledgeNotes).toBe(false);
   });
 

@@ -16,11 +16,12 @@ import {
   AuthMode,
   type LoginRequest,
   type DeviceInfoClientDTO,
+  type OfflineLoginResponse,
 } from '@dailyuse/contracts/authentication';
 import { TokenManager } from './token-manager';
 import type { OfflineAuthHelper } from './offline-auth-helper';
+// Residual 925: OfflineLoginResponse from contracts sole body (no session-types alias).
 import { toIdentityId, toDeviceInfoDTO, toErrorLog, LOCAL_ACCESS_TOKEN } from './session-types';
-import type { OfflineLoginResponse } from './session-types';
 
 // ============ Dependencies ============
 

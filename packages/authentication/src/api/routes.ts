@@ -23,23 +23,28 @@ import {
   ChangePasswordSchema,
   ForgotPasswordSchema,
   RegisterByEmailSchema,
-  RegisterByPhoneSchema,
   LoginByEmailSchema,
-  LoginByPhoneSchema,
   RefreshTokenSchema,
   AuthResponseSchema,
   RevokeSessionSchema,
   ResetPasswordSchema,
   SendEmailCodeSchema,
   VerifyEmailCodeSchema,
-  SendSmsCodeSchema,
   OAuthCallbackSchema,
+  GetOAuthUrlSchema,
+  GetOAuthUrlResSchema,
+  OAuthProvidersResSchema,
+  BindOAuthSchema,
+  BindOAuthResSchema,
+  UnbindOAuthSchema,
   CurrentUserResponseSchema,
   SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
 import { AuthenticationController } from '../server/transport';
 import type { AuthenticationApplicationPort } from '../server/application';
+import { ok } from '@dailyuse/contracts/result';
 import { createDefaultAuthChallengeIpRateLimit } from './challenge-ip-rate-limit';
+import { ConsoleEmailSender } from '../server/infrastructure/services/console-email-sender';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -88,22 +93,6 @@ export function registerAuthenticationRoutes(
     { requireAuth: false, successStatus: 201 },
   );
 
-  r.route(
-    {
-      method: 'post',
-      path: '/register/phone',
-      summary: '手机号注册',
-      request: { body: { content: { 'application/json': { schema: RegisterByPhoneSchema } } } },
-      responses: {
-        201: successResponse(AuthResponseSchema, '注册成功'),
-        400: errorResponse('参数错误'),
-        503: errorResponse('服务暂不可用'),
-      },
-    },
-    [],
-    (req, ctx) => controller.registerByPhone(req.body, ctx),
-    { requireAuth: false, successStatus: 201 },
-  );
 
   r.route(
     {
@@ -122,20 +111,34 @@ export function registerAuthenticationRoutes(
     { requireAuth: false },
   );
 
+
   r.route(
     {
-      method: 'post',
-      path: '/login/phone',
-      summary: '手机号登录',
-      request: { body: { content: { 'application/json': { schema: LoginByPhoneSchema } } } },
+      method: 'get',
+      path: '/oauth/providers',
+      summary: '列出已启用的 OAuth 提供者（不签发 state）',
       responses: {
-        200: successResponse(AuthResponseSchema, '登录成功'),
-        400: errorResponse('参数错误'),
-        503: errorResponse('服务暂不可用'),
+        200: successResponse(OAuthProvidersResSchema, '提供者列表'),
       },
     },
     [],
-    (req, ctx) => controller.loginByPhone(req.body, ctx),
+    () => controller.listOAuthProviders(),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/oauth/url',
+      summary: '获取 OAuth 授权 URL（含 state/PKCE）',
+      request: { body: { content: { 'application/json': { schema: GetOAuthUrlSchema } } } },
+      responses: {
+        200: successResponse(GetOAuthUrlResSchema, '授权 URL'),
+        503: errorResponse('该 OAuth 提供者未启用'),
+      },
+    },
+    [],
+    (req) => controller.getOAuthUrl(req.body),
     { requireAuth: false },
   );
 
@@ -160,19 +163,37 @@ export function registerAuthenticationRoutes(
   r.route(
     {
       method: 'post',
-      path: '/sms/send',
-      summary: '发送短信验证码',
-      request: { body: { content: { 'application/json': { schema: SendSmsCodeSchema } } } },
+      path: '/oauth/bind',
+      summary: '绑定 OAuth 提供者到当前账号（已登录）',
+      request: { body: { content: { 'application/json': { schema: BindOAuthSchema } } } },
       responses: {
-        200: successResponse(z.null(), '发送成功'),
-        400: errorResponse('参数错误'),
-        503: errorResponse('服务暂不可用'),
+        200: successResponse(BindOAuthResSchema, '绑定成功'),
+        401: errorResponse('未认证'),
+        409: errorResponse('该 OAuth 账号已绑定其他身份'),
+        503: errorResponse('该 OAuth 提供者未启用'),
       },
     },
-    [],
-    (req) => controller.sendSmsCode(req.body),
-    { requireAuth: false },
+    guardedAuth,
+    (req, ctx) => controller.bindOAuth(req.body, ctx),
   );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/oauth/unbind',
+      summary: '解绑 OAuth 提供者（已登录）',
+      request: { body: { content: { 'application/json': { schema: UnbindOAuthSchema } } } },
+      responses: {
+        200: successResponse(z.null(), '解绑成功'),
+        401: errorResponse('未认证'),
+        404: errorResponse('未找到绑定'),
+        409: errorResponse('不能移除最后一条登录路径'),
+      },
+    },
+    guardedAuth,
+    (req, ctx) => controller.unbindOAuth(req.body, ctx),
+  );
+
 
   r.route(
     {
@@ -335,5 +356,34 @@ export function registerAuthenticationRoutes(
   );
 
 
+
+  // Test/e2e only: expose last console-captured email code so Playwright can complete verify/reset flows.
+  // 仅测试/e2e：暴露控制台捕获的最近验证码，供 Playwright 完成验证/重置流程。
+  // Never enable this outside test lanes.
+  if (process.env.NODE_ENV === 'test' || process.env.RUNTIME_LANE === 'e2e') {
+    r.route(
+      {
+        method: 'get',
+        path: '/test/last-email-code',
+        summary: 'Test-only: last captured email verification/reset code',
+        responses: {
+          200: successResponse(z.object({ code: z.string().nullable(), kind: z.string().nullable() }), 'ok'),
+        },
+      },
+      [],
+      async (req) => {
+        const query = req.query ?? {};
+        const email = typeof query.email === 'string' ? query.email : '';
+        const kindRaw = typeof query.kind === 'string' ? query.kind : undefined;
+        const kind =
+          kindRaw === 'password-reset' || kindRaw === 'email-verify' ? kindRaw : undefined;
+        const code = email ? ConsoleEmailSender.getLatestCode(email, kind) : null;
+        return ok({ code, kind: kind ?? null });
+      },
+      { requireAuth: false },
+    );
+  }
+
   return router;
 }
+

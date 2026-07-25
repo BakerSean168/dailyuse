@@ -1,6 +1,9 @@
 /**
  * Notification Aggregate Root - Server Interface
  * 通知聚合根 - 服务端接口
+ *
+ * Residual 863: sole NotificationServerDTO body;
+ * Client is Omit of this type with client channel DTOs (see notification-client.ts).
  */
 
 import type { NotificationType } from '../value-objects/notification-type';
@@ -24,6 +27,7 @@ import type {
 
 /**
  * Notification Server DTO
+ * Residual 863: sole body for Client/Server nested-channel dual retirement.
  */
 export interface NotificationServerDTO {
   id: NotificationId;

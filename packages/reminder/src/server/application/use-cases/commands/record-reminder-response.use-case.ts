@@ -120,8 +120,16 @@ export class RecordReminderResponseUseCase {
    * @param limit - 返回记录数限制
    * @returns 响应记录列表
    */
-  async getResponsesByTemplate(templateId: string, limit: number = 100): Promise<Result<unknown[]>> {
-    const responses = await this.responseRepository.findByTemplateId(templateId, limit);
+  async getResponsesByTemplate(
+    templateId: string,
+    identityId: string,
+    limit: number = 100,
+  ): Promise<Result<unknown[]>> {
+    const responses = await this.responseRepository.findByTemplateId(
+      templateId,
+      identityId,
+      limit,
+    );
     return ok(responses);
   }
 
@@ -131,10 +139,13 @@ export class RecordReminderResponseUseCase {
    * @param templateId - 模板UUID
    * @returns 删除的记录数量
    */
-  async deleteResponsesByTemplate(templateId: string): Promise<Result<number>> {
-    logger.info('Deleting responses for template', { templateId });
+  async deleteResponsesByTemplate(
+    templateId: string,
+    identityId: string,
+  ): Promise<Result<number>> {
+    logger.info('Deleting responses for template', { templateId, identityId });
 
-    const count = await this.responseRepository.deleteByTemplateId(templateId);
+    const count = await this.responseRepository.deleteByTemplateId(templateId, identityId);
 
     logger.info('Responses deleted', {
       templateId,
@@ -153,9 +164,14 @@ export class RecordReminderResponseUseCase {
    */
   async getResponseStats(
     templateId: string,
+    identityId: string,
     lookbackDays: number = 30,
   ): Promise<Result<ResponseStatsResult>> {
-    const stats = await this.responseRepository.getResponseStats(templateId, lookbackDays);
+    const stats = await this.responseRepository.getResponseStats(
+      templateId,
+      identityId,
+      lookbackDays,
+    );
     return ok(stats as ResponseStatsResult);
   }
 }

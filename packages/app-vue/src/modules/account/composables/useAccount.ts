@@ -5,6 +5,11 @@
  * Service 负责 API 调用，Composable 负责 Store 更新 + UI 状态。
  *
  * @module account/presentation/composables
+ *
+ * Residual 1055: createComposableHandleError toast report path
+ * (profile/settings/close setError+toast duals retired).
+ * Soft residual / Residual 1075 keep-boundary: checkAvailability toast-only
+ * (no setError; not createComposableHandleError dual body).
  */
 
 import { computed } from 'vue';
@@ -22,6 +27,7 @@ import { useAuthenticationStore } from '../../authentication/stores/authenticati
 import { ACCOUNT_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { AuthMode } from '@dailyuse/contracts/authentication';
+import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 export function useAccount() {
@@ -39,9 +45,16 @@ export function useAccount() {
   const email = computed(() => accountStore.getEmail);
   const isGuest = computed(() => authStore.authMode === AuthMode.GUEST);
 
-  function getAccountErrorMessage(error: unknown, fallbackKey: string) {
-    return translateResultError(error, t, { fallbackKey });
+  function makeAccountHandleError(toastKey: string) {
+    return createComposableHandleError({
+      t,
+      setError: (message) => accountStore.setError(message),
+      report: (message) => toast.error(t(toastKey), { description: message }),
+    });
   }
+  const handleLoadError = makeAccountHandleError('account.toast.loadFailed');
+  const handleUpdateError = makeAccountHandleError('account.toast.updateFailed');
+  const handleCloseError = makeAccountHandleError('account.toast.closeFailed');
 
   // ========== 资料管理 ==========
 
@@ -77,9 +90,7 @@ export function useAccount() {
       accountStore.setCurrentAccount(result.data.toDTO());
       return true;
     } else {
-      const message = getAccountErrorMessage(result.error, 'account.toast.loadProfileFailed');
-      accountStore.setError(message);
-      toast.error(t('account.toast.loadFailed'), { description: message });
+      handleLoadError(result.error, 'account.toast.loadProfileFailed');
       return false;
     }
   }
@@ -99,9 +110,7 @@ export function useAccount() {
       toast.success(t('account.toast.profileUpdated'));
       return true;
     } else {
-      const message = getAccountErrorMessage(result.error, 'account.toast.updateProfileFailed');
-      accountStore.setError(message);
-      toast.error(t('account.toast.updateFailed'), { description: message });
+      handleUpdateError(result.error, 'account.toast.updateProfileFailed');
       return false;
     }
   }
@@ -114,7 +123,10 @@ export function useAccount() {
     if (result.ok) {
       return result.data.available;
     } else {
-      const message = getAccountErrorMessage(result.error, 'account.toast.checkAvailabilityFailed');
+      // Residual 1075 keep-boundary: toast-only (no store.setError) vs handleError sole.
+      const message = translateResultError(result.error, t, {
+        fallbackKey: 'account.toast.checkAvailabilityFailed',
+      });
       toast.error(t('account.toast.checkFailed'), { description: message });
       return false;
     }
@@ -141,9 +153,7 @@ export function useAccount() {
       return true;
     }
 
-    const message = getAccountErrorMessage(result.error, 'account.toast.updateFailed');
-    accountStore.setError(message);
-    toast.error(t('account.toast.updateFailed'), { description: message });
+    handleUpdateError(result.error, 'account.toast.updateFailed');
     return false;
   }
 
@@ -160,9 +170,7 @@ export function useAccount() {
       toast.success(t('account.toast.accountClosed'));
       return true;
     } else {
-      const message = getAccountErrorMessage(result.error, 'account.toast.closeAccountFailed');
-      accountStore.setError(message);
-      toast.error(t('account.toast.closeFailed'), { description: message });
+      handleCloseError(result.error, 'account.toast.closeAccountFailed');
       return false;
     }
   }

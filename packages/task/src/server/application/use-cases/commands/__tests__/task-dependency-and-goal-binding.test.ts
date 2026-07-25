@@ -20,14 +20,14 @@ describe('Task dependency and goal binding use-cases', () => {
     dependencyRepo = createMockRepo<ITaskDependencyRepository>({
       findByPredecessorAndSuccessorId: vi.fn(),
       create: vi.fn(),
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       findAggregateById: vi.fn(),
       delete: vi.fn().mockResolvedValue(undefined),
       deleteAggregate: vi.fn().mockResolvedValue(undefined),
       update: vi.fn(),
     });
     templateRepo = createMockRepo<ITaskTemplateRepository>({
-      findById: vi.fn(),
+      findByIdForIdentity: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
     });
   });
@@ -100,7 +100,7 @@ describe('Task dependency and goal binding use-cases', () => {
       vi.mocked(dependencyRepo.findAggregateById).mockResolvedValue(null);
       const useCase = new DeleteTaskDependencyUseCase(dependencyRepo);
 
-      const result = await useCase.execute('dep-404');
+      const result = await useCase.execute('dep-404', 'identity-1');
 
       expect(result).toBeErrorWithCode('NOT_FOUND');
       expect(dependencyRepo.deleteAggregate).not.toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe('Task dependency and goal binding use-cases', () => {
       vi.mocked(dependencyRepo.findAggregateById).mockResolvedValue(dependency);
       const useCase = new DeleteTaskDependencyUseCase(dependencyRepo);
 
-      const result = await useCase.execute('dep-1');
+      const result = await useCase.execute('dep-1', 'identity-1');
 
       expect(result).toBeOk();
       expect(dependencyRepo.deleteAggregate).toHaveBeenCalledWith(dependency);
@@ -127,17 +127,17 @@ describe('Task dependency and goal binding use-cases', () => {
 
   describe('UpdateTaskDependencyUseCase', () => {
     it('returns NOT_FOUND when dependency is missing', async () => {
-      vi.mocked(dependencyRepo.findById).mockResolvedValue(null);
+      vi.mocked(dependencyRepo.findByIdForIdentity).mockResolvedValue(null);
       const useCase = new UpdateTaskDependencyUseCase(dependencyRepo);
 
-      const result = await useCase.execute('dep-404', { dependencyType: 'FS' as any });
+      const result = await useCase.execute('dep-404', 'identity-1', { dependencyType: 'FS' as any });
 
       expect(result).toBeErrorWithCode('NOT_FOUND');
       expect(dependencyRepo.update).not.toHaveBeenCalled();
     });
 
     it('updates dependency and returns DTO', async () => {
-      vi.mocked(dependencyRepo.findById).mockResolvedValue({ id: 'dep-1' } as any);
+      vi.mocked(dependencyRepo.findByIdForIdentity).mockResolvedValue({ id: 'dep-1' } as any);
       vi.mocked(dependencyRepo.update).mockResolvedValue({
         id: 'dep-1',
         predecessorTaskId: 'task-1',
@@ -147,14 +147,14 @@ describe('Task dependency and goal binding use-cases', () => {
       } as any);
       const useCase = new UpdateTaskDependencyUseCase(dependencyRepo);
 
-      const result = await useCase.execute('dep-1', { dependencyType: 'SS' as any, lagDays: 2 });
+      const result = await useCase.execute('dep-1', 'identity-1', { dependencyType: 'SS' as any, lagDays: 2 });
 
       expect(result).toBeOkWith({
         id: 'dep-1',
         dependencyType: 'SS',
         lagDays: 2,
       });
-      expect(dependencyRepo.update).toHaveBeenCalledWith('dep-1', {
+      expect(dependencyRepo.update).toHaveBeenCalledWith('identity-1', 'dep-1', {
         dependencyType: 'SS',
         lagDays: 2,
       });
@@ -163,10 +163,10 @@ describe('Task dependency and goal binding use-cases', () => {
 
   describe('BindTaskToGoalUseCase', () => {
     it('returns NOT_FOUND when template is missing', async () => {
-      vi.mocked(templateRepo.findById).mockResolvedValue(null);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
       const useCase = new BindTaskToGoalUseCase(templateRepo);
 
-      const result = await useCase.execute('tpl-404', {
+      const result = await useCase.execute('tpl-404', 'identity-1', {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
         goalRecordValue: 5,
@@ -181,10 +181,10 @@ describe('Task dependency and goal binding use-cases', () => {
         bindToGoal: vi.fn(),
         toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }),
       };
-      vi.mocked(templateRepo.findById).mockResolvedValue(template as any);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template as any);
       const useCase = new BindTaskToGoalUseCase(templateRepo);
 
-      const result = await useCase.execute('tpl-1', {
+      const result = await useCase.execute('tpl-1', 'identity-1', {
         goalId: 'goal-1',
         keyResultId: 'kr-1',
         goalRecordValue: 9,
@@ -198,10 +198,10 @@ describe('Task dependency and goal binding use-cases', () => {
 
   describe('UnbindTaskFromGoalUseCase', () => {
     it('returns NOT_FOUND when template is missing', async () => {
-      vi.mocked(templateRepo.findById).mockResolvedValue(null);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(null);
       const useCase = new UnbindTaskFromGoalUseCase(templateRepo);
 
-      const result = await useCase.execute('tpl-404');
+      const result = await useCase.execute('tpl-404', 'identity-1');
 
       expect(result).toBeErrorWithCode('NOT_FOUND');
       expect(templateRepo.save).not.toHaveBeenCalled();
@@ -212,10 +212,10 @@ describe('Task dependency and goal binding use-cases', () => {
         unlinkFromGoal: vi.fn(),
         toClientDTO: vi.fn().mockReturnValue({ id: 'tpl-1' }),
       };
-      vi.mocked(templateRepo.findById).mockResolvedValue(template as any);
+      vi.mocked(templateRepo.findByIdForIdentity).mockResolvedValue(template as any);
       const useCase = new UnbindTaskFromGoalUseCase(templateRepo);
 
-      const result = await useCase.execute('tpl-1');
+      const result = await useCase.execute('tpl-1', 'identity-1');
 
       expect(result).toBeOkWith({ id: 'tpl-1' });
       expect(template.unlinkFromGoal).toHaveBeenCalledTimes(1);

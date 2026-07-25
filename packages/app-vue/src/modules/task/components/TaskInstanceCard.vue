@@ -45,6 +45,7 @@ import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { CheckCircle2, Circle, Clock, Check } from '@lucide/vue';
 import type { TaskInstanceViewModel } from './types';
+import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';
 
 // Props
 const props = withDefaults(
@@ -80,6 +81,7 @@ const formatCompletionTime = computed(() => {
   return props.task.actualEndTime ? format(new Date(props.task.actualEndTime), 'HH:mm') : '';
 });
 
+/** Residual 1297: minutes-of-day HH:mm dual retired onto formatHHmmParts sole. */
 const timeLabel = computed(() => {
   const timeConfig = props.task.timeConfig;
 
@@ -90,7 +92,7 @@ const timeLabel = computed(() => {
   if (timeConfig?.timeType === 'TimePoint' && timeConfig.timePoint !== null) {
     const hours = Math.floor(timeConfig.timePoint / 60);
     const minutes = timeConfig.timePoint % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    return formatHHmmParts(hours, minutes);
   }
 
   if (timeConfig?.timeType === 'TimeRange' && timeConfig.timeRange) {
@@ -99,7 +101,7 @@ const timeLabel = computed(() => {
     const endHours = Math.floor(timeConfig.timeRange.end / 60);
     const endMinutes = timeConfig.timeRange.end % 60;
 
-    return `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')} - ${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+    return `${formatHHmmParts(startHours, startMinutes)} - ${formatHHmmParts(endHours, endMinutes)}`;
   }
 
   return t('task.templateCard.allDay');

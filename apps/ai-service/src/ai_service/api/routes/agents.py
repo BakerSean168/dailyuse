@@ -27,7 +27,7 @@ from ai_service.schemas import (
     AgentStartRunRequest,
     AgentUsage,
     AnalyticsQueryContext,
-    KnowledgeResourceDocument,
+    KnowledgeNoteDocument,
     ProviderConfig,
 )
 
@@ -77,13 +77,13 @@ def _citation_input(data: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _token_usage_input(data: dict[str, Any]) -> dict[str, Any] | None:
-    raw = data.get("tokenUsage") or data.get("token_usage")
+    raw = data.get("token_usage")
     if raw is None:
         return None
     if not isinstance(raw, dict):
         raise HTTPException(
             status_code=422,
-            detail='"tokenUsage" must be an object when provided.',
+            detail='"token_usage" must be an object when provided.',
         )
 
     try:
@@ -94,12 +94,12 @@ def _token_usage_input(data: dict[str, Any]) -> dict[str, Any] | None:
     except ValidationError as exc:
         raise HTTPException(
             status_code=422,
-            detail=f"Invalid tokenUsage: {exc}",
+            detail=f"Invalid token_usage: {exc}",
         ) from exc
 
 
 def _provider_config_input(data: dict[str, Any]) -> ProviderConfig | None:
-    raw = data.get("provider_config") or data.get("providerConfig")
+    raw = data.get("provider_config")
     if raw is None:
         return None
     if not isinstance(raw, dict):
@@ -108,20 +108,8 @@ def _provider_config_input(data: dict[str, Any]) -> ProviderConfig | None:
             detail='"provider_config" must be an object when provided.',
         )
 
-    normalized = dict(raw)
-    alias_pairs = {
-        "apiKey": "api_key",
-        "baseUrl": "base_url",
-        "maxTokens": "max_tokens",
-        "embeddingModel": "embedding_model",
-    }
-    for source_key, target_key in alias_pairs.items():
-        if source_key in normalized:
-            normalized.setdefault(target_key, normalized[source_key])
-            normalized.pop(source_key, None)
-
     try:
-        return ProviderConfig.model_validate(normalized)
+        return ProviderConfig.model_validate(raw)
     except ValidationError as exc:
         raise HTTPException(
             status_code=422,
@@ -130,7 +118,7 @@ def _provider_config_input(data: dict[str, Any]) -> ProviderConfig | None:
 
 
 def _related_resources_input(data: dict[str, Any]) -> list[dict[str, Any]]:
-    raw = data.get("related_resources") or data.get("relatedResources")
+    raw = data.get("related_resources")
     if raw is None:
         return []
     if not isinstance(raw, list):
@@ -141,7 +129,7 @@ def _related_resources_input(data: dict[str, Any]) -> list[dict[str, Any]]:
 
     try:
         return [
-            KnowledgeResourceDocument.model_validate(item).model_dump(mode="json")
+            KnowledgeNoteDocument.model_validate(item).model_dump(mode="json")
             for item in raw
             if isinstance(item, dict)
         ]
@@ -153,7 +141,7 @@ def _related_resources_input(data: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _indexed_resources_input(data: dict[str, Any]) -> list[Any]:
-    raw = data.get("indexed_resources") or data.get("indexedResources")
+    raw = data.get("indexed_resources")
     if raw is None:
         return []
     if not isinstance(raw, list):
@@ -163,10 +151,10 @@ def _indexed_resources_input(data: dict[str, Any]) -> list[Any]:
         )
 
     try:
-        from ai_service.schemas import IndexedKnowledgeResource
+        from ai_service.schemas import IndexedKnowledgeNote
 
         return [
-            IndexedKnowledgeResource.model_validate(item)
+            IndexedKnowledgeNote.model_validate(item)
             for item in raw
             if isinstance(item, dict)
         ]
@@ -178,7 +166,7 @@ def _indexed_resources_input(data: dict[str, Any]) -> list[Any]:
 
 
 def _analytics_context_input(data: dict[str, Any]) -> dict[str, Any] | None:
-    raw = data.get("analytics_context") or data.get("analyticsContext")
+    raw = data.get("analytics_context")
     if raw is None:
         return None
     if not isinstance(raw, dict):
@@ -187,16 +175,8 @@ def _analytics_context_input(data: dict[str, Any]) -> dict[str, Any] | None:
             detail='"analytics_context" must be an object when provided.',
         )
 
-    normalized = dict(raw)
-    if "taskDashboard" in normalized:
-        normalized.setdefault("task_dashboard", normalized["taskDashboard"])
-        normalized.pop("taskDashboard", None)
-    if "goalSearchResults" in normalized:
-        normalized.setdefault("goal_search_results", normalized["goalSearchResults"])
-        normalized.pop("goalSearchResults", None)
-
     try:
-        return AnalyticsQueryContext.model_validate(normalized).model_dump(mode="json")
+        return AnalyticsQueryContext.model_validate(raw).model_dump(mode="json")
     except ValidationError as exc:
         raise HTTPException(
             status_code=422,
@@ -205,7 +185,7 @@ def _analytics_context_input(data: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _context_errors_input(data: dict[str, Any]) -> list[dict[str, str]]:
-    raw = data.get("context_errors") or data.get("contextErrors")
+    raw = data.get("context_errors")
     if not isinstance(raw, list):
         return []
     errors: list[dict[str, str]] = []
@@ -253,17 +233,14 @@ async def start_agent_run(
             question=question,
             answer=_string_input(request.input, "answer"),
             citations=_citation_input(request.input),
-            provider_id=_string_input(request.input, "providerId")
-            or _string_input(request.input, "provider_id"),
+            provider_id=_string_input(request.input, "provider_id"),
             token_usage=_token_usage_input(request.input),
             processing_time_ms=_nonnegative_int_input(
                 request.input,
-                "processingTimeMs",
                 "processing_time_ms",
             ),
             matched_resource_count=_nonnegative_int_input(
                 request.input,
-                "matchedResourceCount",
                 "matched_resource_count",
             ),
         )
@@ -290,8 +267,7 @@ async def start_agent_run(
             title=_string_input(request.input, "title"),
             source=_string_input(request.input, "source"),
             target_subpath=_string_input(request.input, "targetSubpath"),
-            provider_id=_string_input(request.input, "providerId")
-            or _string_input(request.input, "provider_id"),
+            provider_id=_string_input(request.input, "provider_id"),
             model=_string_input(request.input, "model"),
             provider_config=_provider_config_input(request.input),
             indexed_resources=_indexed_resources_input(request.input),

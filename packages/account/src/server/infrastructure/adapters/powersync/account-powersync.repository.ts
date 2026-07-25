@@ -155,14 +155,6 @@ export class PowerSyncAccountRepository
     return row ? AccountPowerSyncMapper.toDomain(row) : null;
   }
 
-  async findByPhone(phoneNumber: string, tx?: unknown): Promise<Account | null> {
-    const executor = this.asQueryable(tx) ?? this.db;
-    const row = await executor.getOptional<PowerSyncAccountRow>(
-      `SELECT * FROM accounts WHERE phone_number = ? LIMIT 1`,
-      [phoneNumber],
-    );
-    return row ? AccountPowerSyncMapper.toDomain(row) : null;
-  }
 
   async existsByNickname(nickname: string, tx?: unknown): Promise<boolean> {
     const executor = this.asQueryable(tx) ?? this.db;

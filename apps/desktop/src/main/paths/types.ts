@@ -41,6 +41,9 @@ export interface ProfilePathResolver {
   readonly repositoryStorageDir: string;
   readonly knowledgeNotesDir: string;
   readonly attachmentsDir: string;
+  readonly localVaultBindingPath: string;
+  readonly localVaultWriteLedgerPath: string;
+  readonly knowledgeRepositoryAutoSyncStatePath: string;
   readonly uiDir: string;
   readonly mainWindowStatePath: string;
 }

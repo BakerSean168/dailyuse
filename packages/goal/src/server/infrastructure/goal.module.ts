@@ -287,46 +287,56 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
   const api: GoalApplicationPort = {
     // Goal CRUD / 目标增删改查
     createGoal: (input, cx) => useCases.createGoal.execute(input, cx),
-    getGoal: (id, includeChildren) => useCases.getGoal.execute(id, includeChildren),
+    getGoal: (id, identityId, includeChildren) =>
+      useCases.getGoal.execute(id, identityId, includeChildren),
     listGoals: (input) => useCases.listGoals.execute(input),
-    updateGoal: (id, input) => useCases.updateGoal.execute(id, input),
-    deleteGoal: (id) => useCases.deleteGoal.execute(id),
-    permanentlyDeleteGoal: (id) => useCases.permanentlyDeleteGoal.execute(id),
-    archiveGoal: (id) => useCases.archiveGoal.execute(id),
+    updateGoal: (id, identityId, input) => useCases.updateGoal.execute(id, identityId, input),
+    deleteGoal: (id, identityId) => useCases.deleteGoal.execute(id, identityId),
+    permanentlyDeleteGoal: (id, identityId) => useCases.permanentlyDeleteGoal.execute(id, identityId),
+    archiveGoal: (id, identityId) => useCases.archiveGoal.execute(id, identityId),
     archiveExpiredGoals: (identityId) => useCases.archiveExpiredGoals.execute(identityId),
-    activateGoal: (id) => useCases.activateGoal.execute(id),
-    completeGoal: (id) => useCases.completeGoal.execute(id),
+    activateGoal: (id, identityId) => useCases.activateGoal.execute(id, identityId),
+    completeGoal: (id, identityId) => useCases.completeGoal.execute(id, identityId),
     searchGoals: (identityId, query, systemView) =>
       useCases.searchGoals.execute(identityId, query, systemView as GoalSystemView),
 
     // Folder CRUD / 文件夹增删改查
     listGoalFolders: (input) => useCases.listGoalFolders.execute(input),
     createGoalFolder: (identityId, input) => useCases.createGoalFolder.execute(identityId, input),
-    getGoalFolder: (id) => useCases.getGoalFolder.execute(id),
+    getGoalFolder: (id, identityId) => useCases.getGoalFolder.execute(id, identityId),
     updateGoalFolder: (id, identityId, input) =>
       useCases.updateGoalFolder.execute(id, identityId, input),
     deleteGoalFolder: (id, identityId) => useCases.deleteGoalFolder.execute(id, identityId),
 
     // Key Result / 关键结果
-    addKeyResult: (goalId, keyResult) => useCases.addKeyResult.execute(goalId, keyResult),
-    updateKeyResult: (goalId, keyResultId, updates) =>
-      useCases.updateKeyResult.execute(goalId, keyResultId, updates),
-    updateKeyResultProgress: (goalId, keyResultId, currentValue, note) =>
-      useCases.updateKeyResultProgress.execute(goalId, keyResultId, currentValue, note),
-    deleteKeyResult: (goalId, keyResultId) => useCases.deleteKeyResult.execute(goalId, keyResultId),
+    addKeyResult: (goalId, identityId, keyResult) =>
+      useCases.addKeyResult.execute(goalId, identityId, keyResult),
+    updateKeyResult: (goalId, identityId, keyResultId, updates) =>
+      useCases.updateKeyResult.execute(goalId, identityId, keyResultId, updates),
+    updateKeyResultProgress: (goalId, identityId, keyResultId, currentValue, note) =>
+      useCases.updateKeyResultProgress.execute(
+        goalId,
+        identityId,
+        keyResultId,
+        currentValue,
+        note,
+      ),
+    deleteKeyResult: (goalId, identityId, keyResultId) =>
+      useCases.deleteKeyResult.execute(goalId, identityId, keyResultId),
 
     // Review / 复盘
-    addReview: (goalId, params) => useCases.addReview.execute(goalId, params),
-    listReviews: (goalId) => useCases.listReviews.execute(goalId),
-    updateReview: (goalId, reviewId, params) =>
-      useCases.updateReview.execute(goalId, reviewId, params),
-    deleteReview: (goalId, reviewId) => useCases.deleteReview.execute(goalId, reviewId),
+    addReview: (goalId, identityId, params) => useCases.addReview.execute(goalId, identityId, params),
+    listReviews: (goalId, identityId) => useCases.listReviews.execute(goalId, identityId),
+    updateReview: (goalId, identityId, reviewId, params) =>
+      useCases.updateReview.execute(goalId, identityId, reviewId, params),
+    deleteReview: (goalId, identityId, reviewId) =>
+      useCases.deleteReview.execute(goalId, identityId, reviewId),
 
     // Record / 进度记录
     createRecord: (goalId, keyResultId, params, identityId) =>
       useCases.createRecord.execute(goalId, keyResultId, params, identityId),
     listRecords: (params) => useCases.listRecords.execute(params),
-    deleteRecord: (recordId) => useCases.deleteRecord.execute(recordId),
+    deleteRecord: (recordId, identityId) => useCases.deleteRecord.execute(recordId, identityId),
 
     // Focus Mode / 专注模式
     getCurrentFocusMode: (identityId) => useCases.getCurrentFocusMode.execute(identityId),
@@ -336,11 +346,12 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
       useCases.extendFocusMode.execute(identityId, newEndTime),
 
     // Workflow / 工作流
-    getGoalAggregate: (goalId) => useCases.getGoalAggregate.execute(goalId),
-    getGoalProgressBreakdown: (goalId) => useCases.getGoalProgressBreakdown.execute(goalId),
+    getGoalAggregate: (goalId, identityId) => useCases.getGoalAggregate.execute(goalId, identityId),
+    getGoalProgressBreakdown: (goalId, identityId) =>
+      useCases.getGoalProgressBreakdown.execute(goalId, identityId),
     cloneGoal: (goalId, params, cx) => useCases.cloneGoal.execute(goalId, params, cx),
-    batchUpdateKeyResultWeights: (goalId, updates) =>
-      useCases.batchUpdateKeyResultWeights.execute(goalId, updates),
+    batchUpdateKeyResultWeights: (goalId, identityId, updates) =>
+      useCases.batchUpdateKeyResultWeights.execute(goalId, identityId, updates),
   };
 
   return {

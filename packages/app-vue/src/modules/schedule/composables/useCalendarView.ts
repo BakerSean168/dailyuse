@@ -6,6 +6,8 @@
  */
 
 import { computed, ref } from 'vue';
+import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
+import { padTwoDigits } from '../../../shared/utils/pad-two-digits';
 import { startOfDay, endOfDay } from 'date-fns';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
@@ -26,20 +28,78 @@ export interface CalendarEventItem {
   instanceStatus?: string;
 }
 
+/**
+ * Residual 1282: sole toLocalDateKey — Date | number → YYYY-MM-DD local calendar key.
+ * Dual-retired from Day/Week/Month calendar local toDateStr copies.
+ * Residual 1321: padStart dual retired onto padTwoDigits sole (Date|number key contract stays local).
+ * Soft residual 1252: formatDateToYMD Date-only form sole remains separate (storage encoding).
+ * Soft residual 1285: getWeekStart dual retired onto schedule sole in residual 1285.
+ */
 export function toLocalDateKey(value: Date | number): string {
   const date = typeof value === 'number' ? new Date(value) : value;
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = padTwoDigits(date.getMonth() + 1);
+  const day = padTwoDigits(date.getDate());
   return `${year}-${month}-${day}`;
 }
 
-/** HH:mm in local time for shell schedule capsule. */
+/**
+ * Residual 1285: sole getWeekStart — Monday-start local week (hours zeroed).
+ * Dual-retired from WeekViewCalendar + ScheduleCalendarView local copies.
+ * Soft residual 1282: toLocalDateKey dual-retired sole remains separate.
+ */
+export function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // Monday as week start
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/**
+ * Residual 1288: sole calendarEventBgClass — conflict/source solid bg for Day/Week timed cells.
+ * Dual-retired from DayViewCalendar + WeekViewCalendar local eventBgClass copies.
+ * Soft residual 1288: Month eventClass uses translucent /text variants (keep-boundary).
+ * Soft residual 1288: getEventStyle Day px vs Week % layout keep-boundary (no force-merge).
+ */
+export function calendarEventBgClass(event: Pick<CalendarEventItem, 'source' | 'hasConflict'>): string {
+  if (event.hasConflict) return 'bg-warning';
+  const map: Record<CalendarEventItem['source'], string> = {
+    schedule: 'bg-primary',
+    goal: 'bg-success',
+    task: 'bg-info',
+  };
+  return map[event.source];
+}
+
+/**
+ * Residual 1291: sole calendarEventSourceLabel — schedule/goal/task source → i18n label.
+ * Dual-retired from DayDetailSheet + EventDetailSheet local sourceLabel copies.
+ * Soft residual 1294: formatLocalHHmm dual-retired sole (formatCapsuleTime alias) remains separate.
+ * Soft residual 1288: Month eventClass translucent + getEventStyle Day/Week layout keep-boundaries remain separate.
+ */
+export function calendarEventSourceLabel(
+  source: CalendarEventItem['source'],
+  translate: (key: string) => string,
+): string {
+  const keys: Record<CalendarEventItem['source'], string> = {
+    schedule: 'schedule.source.schedule',
+    goal: 'schedule.source.goal',
+    task: 'schedule.source.task',
+  };
+  return translate(keys[source]);
+}
+
+
+
+
+/**
+ * Residual 1294: formatCapsuleTime dual body retired onto formatLocalHHmm sole.
+ * Thin schedule alias for shell capsule consumers (same HH:mm local padStart contract).
+ */
 export function formatCapsuleTime(ms: number): string {
-  const date = new Date(ms);
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
+  return formatLocalHHmm(ms);
 }
 
 export type ScheduleCapsuleSnapshot = {

@@ -2,14 +2,19 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
-import type { AgentStartRunClientRequest } from '@dailyuse/contracts/ai';
+import type {
+  AgentRunResult,
+  AgentStartRunClientRequest,
+} from '@dailyuse/contracts/ai';
 import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
 import type {
   KnowledgeAnswer,
-  KnowledgeQaAgentRunResult,
   UseAIKnowledgeQaWorkflowOptions,
 } from './types';
 import { getAIErrorMessage } from './error';
+// Residual 953: createAgentId dual retired — sole AI composable helper.
+import { createAgentId } from './createAgentId';
+import { unwrap } from '@dailyuse/contracts/result';
 
 type KnowledgeRelatedNote = NonNullable<KnowledgeAnswer['relatedNotes']>[number];
 
@@ -19,7 +24,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
 
   const knowledgeQueryLoading = ref(false);
   const knowledgeAnswer = ref<KnowledgeAnswer | null>(null);
-  const knowledgeQaAgentRun = ref<KnowledgeQaAgentRunResult | null>(null);
+  const knowledgeQaAgentRun = ref<AgentRunResult | null>(null);
 
   const canAskKnowledge = computed(
     () =>
@@ -41,12 +46,6 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
     knowledgeQaAgentRun.value = null;
   }
 
-  function createAgentId(prefix: string): string {
-    const randomId =
-      globalThis.crypto?.randomUUID?.() ??
-      `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    return `${prefix}-${randomId}`;
-  }
 
   function buildRelatedNotesFromCitations(
     citations: KnowledgeAnswer['citations'],
@@ -65,7 +64,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
     return [...notesByResourceId.values()];
   }
 
-  function syncKnowledgeQaAgentRun(result: KnowledgeQaAgentRunResult) {
+  function syncKnowledgeQaAgentRun(result: AgentRunResult) {
     resetKnowledgeAnswer();
     knowledgeQaAgentRun.value = result;
 
@@ -127,12 +126,12 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
         locale: locale.value === 'en-US' ? 'en-US' : 'zh-CN',
         input: {
           question,
-          providerId: selectedModel.providerId,
+          provider_id: selectedModel.providerId,
           maxResources: 8,
         },
       };
 
-      syncKnowledgeQaAgentRun(await options.service.startAgentRun(request));
+      syncKnowledgeQaAgentRun(unwrap(await options.service.startAgentRun(request)));
       if (!knowledgeAnswer.value) {
         throw new Error('Knowledge Q&A Agent did not return an answer artifact.');
       }
@@ -147,7 +146,7 @@ export function useAIKnowledgeQaWorkflow(options: UseAIKnowledgeQaWorkflowOption
 
   async function openKnowledgeCitation(resourceId: string) {
     if (!resourceId) return;
-    await options.requestOpenResource(resourceId);
+    await options.requestOpenKnowledgeNote(resourceId);
     await router.push('/repository');
   }
 

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import type {
+  AgentAction,
+  AgentRunResult,
+  GoalClarificationDTO,
+} from '@dailyuse/contracts/ai';
 /**
  * AIWorkflowActionBar — 工作流生命周期操作条（V2 §6.0）
  *
@@ -13,19 +18,17 @@ import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { AlertTriangle } from '@lucide/vue';
 import type {
-  GoalClarification,
   KnowledgeAnswer,
-  KnowledgeNoteAgentRunResult,
   NoteSummary,
   WorkflowMode,
-} from '../composables/types';
+} from '../composables';
 
-defineProps<{
+const props = defineProps<{
   toolMode: WorkflowMode;
   workflowStatusText: string;
 
   // ── goal-create 状态 ──
-  goalClarification: GoalClarification | null;
+  goalClarification: GoalClarificationDTO | null;
   automatedGoalId: string | null;
   goalAgentLoading: boolean;
   goalAgentResuming: boolean;
@@ -39,7 +42,7 @@ defineProps<{
   goalAgentWaitingForExecution: boolean;
 
   // ── knowledge note / qa 状态 ──
-  noteAgentRun: KnowledgeNoteAgentRunResult | null;
+  noteAgentRun: AgentRunResult | null;
   noteSummary: NoteSummary | null;
   noteAgentLoading: boolean;
   noteCreating: boolean;
@@ -51,8 +54,17 @@ defineProps<{
   canRunWorkflowActions: boolean;
   canSendMessage: boolean;
 
+  // ── task-create 状态（residual 431/433） ──
+  taskAgentLoading: boolean;
+  canRunTaskAgent: boolean;
+  /** Residual 433: optional linked goal for task.create start. */
+  linkedGoalId: string | null;
+  recentGoals: Array<{ id: string; title: string }>;
+
   // ── 动作（函数 props：状态机处理器原样透传） ──
   startGoalAgentRun: () => void;
+  startTaskAgentRun: () => void;
+  setLinkedGoalId: (goalId: string | null) => void;
   submitGoalAgentClarification: () => void;
   confirmGoalAgentRun: () => void;
   cancelGoalAgentRun: () => void;
@@ -70,6 +82,13 @@ defineProps<{
 }>();
 
 const { t } = useI18n();
+
+/** Residual 433: optional linked goal select for task.create start. */
+function onTaskLinkedGoalChange(event: Event) {
+  const target = event.target;
+  const value = target instanceof HTMLSelectElement ? target.value : '';
+  props.setLinkedGoalId(value || null);
+}
 </script>
 
 <template>
@@ -151,6 +170,37 @@ const { t } = useI18n();
         </Button>
       </template>
 
+      <template v-else-if="toolMode === 'task-create'">
+        <!-- Residual 431/433: product start + optional linked goal for task.create. -->
+        <label class="flex min-w-[12rem] flex-col gap-1 text-xs text-muted-foreground">
+          <span>{{ t('aiAssistant.chatPage.workflow.taskLinkedGoalLabel') }}</span>
+          <select
+            class="h-9 rounded-md border bg-background px-2 text-sm text-foreground"
+            data-testid="task-agent-linked-goal"
+            :value="linkedGoalId ?? ''"
+            @change="onTaskLinkedGoalChange"
+          >
+            <option value="">
+              {{ t('aiAssistant.chatPage.workflow.taskLinkedGoalNone') }}
+            </option>
+            <option v-for="goal in recentGoals" :key="goal.id" :value="goal.id">
+              {{ goal.title }}
+            </option>
+          </select>
+        </label>
+        <Button
+          variant="outline"
+          :disabled="!canRunTaskAgent"
+          data-testid="task-agent-start-run"
+          @click="startTaskAgentRun"
+        >
+          {{
+            taskAgentLoading
+              ? t('aiAssistant.dialogs.agent.starting')
+              : t('aiAssistant.dialogs.agent.startRun')
+          }}
+        </Button>
+      </template>
       <template v-else-if="toolMode === 'knowledge-generate'">
         <Button
           v-if="canRetryKnowledgeNoteAgentExecution"

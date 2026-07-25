@@ -30,8 +30,7 @@ import {
   ScheduleTaskQueryParamsSchema,
   BatchScheduleTaskOperationRequestSchema,
   ScheduleTaskResponseSchema,
-  BatchOperationResponseSchema,
-  BatchDeleteResponseSchema,
+  ScheduleBatchOperationResponseSchema,
   UpdateTaskMetadataRequestSchema,
 } from '@dailyuse/contracts/schedule';
 import { brandedId } from '@dailyuse/contracts/primitives';
@@ -45,6 +44,11 @@ interface PlatformMiddleware {
 }
 
 // ============ Helpers ============
+// Residual 1073 keep-boundary: schedule route-local query parsers.
+// Empty string → undefined; parseBoolean accepts boolean literals.
+// Not force-merged into utils parse-query-value sole (residual 989/1021):
+// utils uses parseString-first (array-first entry) and string "1"/"0" booleans
+// without empty-string short-circuit or boolean literal acceptance.
 
 function parseNumber(value: unknown): number | undefined {
   if (value === undefined || value === null || value === '') return undefined;
@@ -93,12 +97,12 @@ export function registerScheduleRoutes(
         },
       },
       responses: {
-        200: successResponse(BatchOperationResponseSchema, '操作成功'),
+        200: successResponse(ScheduleBatchOperationResponseSchema, '操作成功'),
         400: errorResponse('参数错误'),
       },
     },
     [auth],
-    (req) => controller.batchOperation(req.body),
+    (req, ctx) => controller.batchOperation(req.body, ctx),
   );
 
   // POST /tasks/batch/delete — Batch delete tasks (must be before /tasks/:id)
@@ -113,12 +117,12 @@ export function registerScheduleRoutes(
         },
       },
       responses: {
-        200: successResponse(BatchDeleteResponseSchema, '删除成功'),
+        200: successResponse(ScheduleBatchOperationResponseSchema, '删除成功'),
         400: errorResponse('参数错误'),
       },
     },
     [auth],
-    (req) => controller.batchDeleteTasks(req.body),
+    (req, ctx) => controller.batchDeleteTasks(req.body, ctx),
   );
 
   // GET /tasks/due — Get due tasks (must be before /tasks/:id)
@@ -196,7 +200,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.getTask(req.params!.id),
+    (req, ctx) => controller.getTask(req.params!.id, ctx),
   );
 
   // PUT /tasks/:id — Update task
@@ -215,7 +219,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTask(req.params!.id, req.body),
+    (req, ctx) => controller.updateTask(req.params!.id, req.body, ctx),
   );
 
   // DELETE /tasks/:id — Delete task
@@ -231,7 +235,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteTask(req.params!.id),
+    (req, ctx) => controller.deleteTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/pause — Pause task
@@ -247,7 +251,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.pauseTask(req.params!.id),
+    (req, ctx) => controller.pauseTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/resume — Resume task
@@ -263,7 +267,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.resumeTask(req.params!.id),
+    (req, ctx) => controller.resumeTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/trigger — Trigger task
@@ -279,7 +283,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.triggerTask(req.params!.id),
+    (req, ctx) => controller.triggerTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/complete — Complete task
@@ -295,7 +299,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.completeTask(req.params!.id),
+    (req, ctx) => controller.completeTask(req.params!.id, ctx),
   );
 
   // POST /tasks/:id/cancel — Cancel task
@@ -314,7 +318,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.cancelTask(req.params!.id, req.body),
+    (req, ctx) => controller.cancelTask(req.params!.id, req.body, ctx),
   );
 
   // PATCH /tasks/:id/metadata — Update task metadata
@@ -333,7 +337,7 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTaskMetadata(req.params!.id, req.body),
+    (req, ctx) => controller.updateTaskMetadata(req.params!.id, req.body, ctx),
   );
 
   return router;

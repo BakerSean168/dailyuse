@@ -10,8 +10,9 @@ import type { AuthSession, IAuthSessionRepository } from '@dailyuse/authenticati
 import type {
   RefreshSessionRequest,
   RefreshSessionResponse,
+  TokenStorageData,
 } from '@dailyuse/contracts/authentication';
-import { TokenManager, type TokenData } from './token-manager';
+import { TokenManager } from './token-manager';
 import type { GuestIdentityHelper } from './guest-identity-helper';
 import { LOCAL_ACCESS_TOKEN } from './session-types';
 
@@ -96,7 +97,7 @@ export class TokenRefreshOrchestrator {
    *
    * In offline mode, simply extends the local session's validity.
    */
-  private async localRefresh(tokenData: TokenData): Promise<RefreshSessionResponse> {
+  private async localRefresh(tokenData: TokenStorageData): Promise<RefreshSessionResponse> {
     this.logger.info('Performing local refresh (offline mode)');
     const tokenManager = this.deps.getTokenManager();
 

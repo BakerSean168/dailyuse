@@ -3,13 +3,8 @@ import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type {
   RegisterByEmailReq,
   RegisterByEmailRes,
-  RegisterByPhoneReq,
-  RegisterByPhoneRes,
   LoginByEmailReq,
   LoginByEmailRes,
-  LoginByPhoneReq,
-  LoginByPhoneRes,
-  SendSmsCodeReq,
   RefreshTokenReq,
   RefreshTokenRes,
   ChangePasswordReq,
@@ -23,6 +18,12 @@ import type {
   RevokeSessionReq,
   OAuthCallbackReq,
   OAuthCallbackRes,
+  GetOAuthUrlReq,
+  GetOAuthUrlRes,
+  OAuthProvidersRes,
+  BindOAuthReq,
+  BindOAuthRes,
+  UnbindOAuthReq,
 } from '@dailyuse/contracts/authentication';
 
 export interface AuthenticationApplicationPort {
@@ -39,19 +40,20 @@ export interface AuthenticationApplicationPort {
     cx: ExecutionContext,
     deviceId: string,
   ): Promise<Result<OAuthCallbackRes>>;
+  getOAuthUrl(data: GetOAuthUrlReq): Promise<Result<GetOAuthUrlRes>>;
+  listOAuthProviders(): Promise<Result<OAuthProvidersRes>>;
+  bindOAuth(data: BindOAuthReq, cx: ExecutionContext): Promise<Result<BindOAuthRes>>;
+  unbindOAuth(data: UnbindOAuthReq, cx: ExecutionContext): Promise<Result<void>>;
   register(
     data: RegisterByEmailReq,
     cx: ExecutionContext,
     deviceId: string,
   ): Promise<Result<RegisterByEmailRes>>;
-  registerByPhone(data: RegisterByPhoneReq, cx: ExecutionContext): Promise<Result<RegisterByPhoneRes>>;
   login(
     data: LoginByEmailReq,
     cx: ExecutionContext,
     deviceId: string,
   ): Promise<Result<LoginByEmailRes>>;
-  loginByPhone(data: LoginByPhoneReq, cx: ExecutionContext): Promise<Result<LoginByPhoneRes>>;
-  sendSmsCode(data: SendSmsCodeReq): Promise<Result<void>>;
   logout(cx: ExecutionContext): Promise<Result<void>>;
   refreshToken(data: RefreshTokenReq, cx: ExecutionContext): Promise<Result<RefreshTokenRes>>;
   getCurrentUser(cx: ExecutionContext, sessionId?: string): Promise<Result<GetCurrentUserRes>>;

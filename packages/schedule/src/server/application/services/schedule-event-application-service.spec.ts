@@ -14,15 +14,24 @@ class InMemoryScheduleRepository implements IScheduleRepository {
     this.schedules.set(schedule.id, schedule);
   }
 
-  async findById(id: string): Promise<CalendarEntry | null> {
-    return this.schedules.get(id) ?? null;
+
+  async findByIdForIdentity(identityId: string, id: string): Promise<CalendarEntry | null> {
+    const schedule = this.schedules.get(id) ?? null;
+    if (!schedule || schedule.identityId !== identityId) {
+      return null;
+    }
+    return schedule;
   }
 
   async findByIdentityId(identityId: string): Promise<CalendarEntry[]> {
     return Array.from(this.schedules.values()).filter((schedule) => schedule.identityId === identityId);
   }
 
-  async deleteById(id: string): Promise<void> {
+  async deleteById(identityId: string, id: string): Promise<void> {
+    const schedule = await this.findByIdForIdentity(identityId, id);
+    if (!schedule) {
+      throw new Error('Schedule event not found for the current identity.');
+    }
     this.schedules.delete(id);
   }
 
@@ -97,7 +106,7 @@ describe('Schedule services', () => {
       endTime: hour(10.5),
     });
 
-    const refreshedExisting = await repository.findById(existing.id);
+    const refreshedExisting = await repository.findByIdForIdentity(identityId, existing.id);
 
     expect(created.hasConflict).toBe(true);
     expect(created.conflictingEntries).toContain(existing.id);
@@ -123,7 +132,7 @@ describe('Schedule services', () => {
       endTime: hour(10.5),
     });
 
-    const updated = await service.updateSchedule(first.id, {
+    const updated = await service.updateSchedule(first.id, identityId, {
       startTime: hour(12),
       endTime: hour(13),
       description: 'Updated notes',
@@ -132,7 +141,7 @@ describe('Schedule services', () => {
       attendees: ['a@example.com', 'b@example.com'],
     });
 
-    const refreshedSecond = await repository.findById(second.id);
+    const refreshedSecond = await repository.findByIdForIdentity(identityId, second.id);
 
     expect(updated.hasConflict).toBe(false);
     expect(updated.description).toBe('Updated notes');
@@ -161,13 +170,39 @@ describe('Schedule services', () => {
       endTime: hour(10.5),
     });
 
-    await service.deleteSchedule(first.id);
+    await service.deleteSchedule(first.id, identityId);
 
-    const deleted = await repository.findById(first.id);
-    const refreshedSecond = await repository.findById(second.id);
+    const deleted = await repository.findByIdForIdentity(identityId, first.id);
+    const refreshedSecond = await repository.findByIdForIdentity(identityId, second.id);
 
     expect(deleted).toBeNull();
     expect(refreshedSecond?.hasConflict).toBe(false);
     expect(refreshedSecond?.conflictingEntries).toBeNull();
+  });
+
+  it('rejects cross-identity update/get/delete with NOT_FOUND', async () => {
+    const repository = new InMemoryScheduleRepository();
+    const service = new ScheduleEventApplicationService(repository);
+    const ownerId = IdentityId.generate();
+    const otherId = IdentityId.generate();
+
+    const created = await service.createSchedule({
+      identityId: ownerId,
+      title: 'Owned',
+      startTime: hour(9),
+      endTime: hour(10),
+    });
+
+    await expect(service.getSchedule(created.id, otherId)).resolves.toBeNull();
+    await expect(
+      service.updateSchedule(created.id, otherId, { title: 'Hijacked' }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(service.deleteSchedule(created.id, otherId)).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
+
+    const stillThere = await repository.findByIdForIdentity(ownerId, created.id);
+    expect(stillThere).not.toBeNull();
+    expect(stillThere?.title).toBe('Owned');
   });
 });

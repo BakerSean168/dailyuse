@@ -38,8 +38,14 @@ const i18n = createI18n({
             promptTokens: '{count} prompt',
             completionTokens: '{count} completion',
             totalTokens: '{count} total',
-            nodeTiming: 'Node Timing',
+            diagnosticWorkflowStepTiming: 'Workflow step timing',
             toolTiming: 'Tool Timing',
+            diagnosticWorkflowStepStarted: 'Workflow step started',
+            diagnosticWorkflowStepCompleted: 'Workflow step completed',
+            diagnosticToolCompleted: 'Tool completed',
+            diagnosticCheckpoint: 'Checkpoint',
+            diagnosticVendor: 'Vendor diagnostic',
+            diagnosticRuntimeEvent: 'Runtime event',
             durationMs: '{ms} ms',
             durationSec: '{sec} sec',
             pendingActions: 'Pending Actions',
@@ -65,7 +71,7 @@ const i18n = createI18n({
             grounded: 'Grounded in repository citations',
             insufficientEvidence: 'Current knowledge base evidence is insufficient',
             question: 'Question',
-            matchedResources: '{count} resource(s) matched in {ms} ms.',
+            matchedResources: '{count} note(s) matched in {ms} ms.',
             citations: 'Citations',
             relatedNotes: 'Related Notes',
             openCitation: 'Open Source',
@@ -318,10 +324,11 @@ describe('AIGoalWorkflowPanel', () => {
     expect(wrapper.text()).toContain('Observability');
     expect(wrapper.text()).toContain('Token Usage');
     expect(wrapper.text()).toContain('12 prompt · 8 completion · 20 total');
-    expect(wrapper.text()).toContain('Node Timing');
+    expect(wrapper.text()).toContain('Workflow step timing');
     expect(wrapper.text()).toContain('31 ms');
     expect(wrapper.text()).toContain('Runtime Events');
-    expect(wrapper.text()).toContain('node.completed · search_knowledge');
+    expect(wrapper.text()).toContain('Workflow step completed · search_knowledge');
+    expect(wrapper.text()).not.toContain('node.completed');
   });
 
   it('renders knowledge note draft duplicate and index metadata', () => {
@@ -408,18 +415,22 @@ describe('AIGoalWorkflowPanel', () => {
     });
 
     expect(wrapper.text()).toContain('Runtime Events');
-    expect(wrapper.text()).toContain('node.started · draft_note');
-    expect(wrapper.text()).toContain('node.completed · draft_note');
-    expect(wrapper.text()).toContain('artifact.updated · knowledge_note_draft');
+    expect(wrapper.text()).toContain('Workflow step started · draft_note');
+    expect(wrapper.text()).toContain('Workflow step completed · draft_note');
+    expect(wrapper.text()).not.toContain('node.started');
+    expect(wrapper.text()).not.toContain('node.completed');
+    expect(wrapper.text()).toContain('Runtime event · knowledge_note_draft');
+    expect(wrapper.text()).not.toContain('artifact.updated');
     expect(wrapper.find('[data-testid="note-agent-observability"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('Observability');
     expect(wrapper.text()).toContain('Token Usage');
     expect(wrapper.text()).toContain('12 prompt · 8 completion · 20 total');
-    expect(wrapper.text()).toContain('Node Timing');
+    expect(wrapper.text()).toContain('Workflow step timing');
     expect(wrapper.text()).toContain('24 ms');
     expect(wrapper.text()).toContain('Tool Timing');
     expect(wrapper.text()).toContain('1.3 sec');
-    expect(wrapper.text()).toContain('tool.completed · create_knowledge_note');
+    expect(wrapper.text()).toContain('Tool completed · create_knowledge_note');
+    expect(wrapper.text()).not.toContain('tool.completed ·');
   });
 
   it('renders Goal Agent action plan warnings before approval', () => {
@@ -843,11 +854,12 @@ describe('AIGoalWorkflowPanel', () => {
     expect(wrapper.find('[data-testid="goal-agent-observability"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('Token Usage');
     expect(wrapper.text()).toContain('30 prompt · 14 completion · 44 total');
-    expect(wrapper.text()).toContain('Node Timing');
+    expect(wrapper.text()).toContain('Workflow step timing');
     expect(wrapper.text()).toContain('80 ms');
     expect(wrapper.text()).toContain('Tool Timing');
     expect(wrapper.text()).toContain('1.4 sec');
-    expect(wrapper.text()).toContain('tool.completed · create_goal');
+    expect(wrapper.text()).toContain('Tool completed · create_goal');
+    expect(wrapper.text()).not.toContain('tool.completed ·');
     expect(wrapper.find('[data-testid="goal-agent-execution-summary"]').text()).toBe(
       'Partial success: 1 executed, 0 skipped, 1 failed.',
     );
@@ -865,7 +877,7 @@ describe('AIGoalWorkflowPanel', () => {
         noteSummary: {
           resolvedPath: 'notes/ai/Grounded Q&A Note.md',
           indexStatus: 'pending',
-          resource: {
+          note: {
             name: 'Grounded Q&A Note.md',
             content: '# Grounded Q&A Note\n\nSaved from the knowledge answer.',
           },

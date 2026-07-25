@@ -89,6 +89,14 @@ export class PrismaAuthSessionRepository
     return PrismaAuthSessionMapper.toDomain(row as PrismaAuthSessionRow);
   }
 
+  async findByIdForIdentity(identityId: string, id: string): Promise<AuthSession | null> {
+    const row = await this.prisma.authSession.findFirst({
+      where: { id, identityId },
+    });
+    if (!row) return null;
+    return PrismaAuthSessionMapper.toDomain(row as PrismaAuthSessionRow);
+  }
+
   async findByIdentityId(identityId: string): Promise<AuthSession[]> {
     const rows = await this.prisma.authSession.findMany({
       where: { identityId, deletedAt: null },

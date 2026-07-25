@@ -241,7 +241,7 @@ describe('goal route contracts', () => {
     );
   });
 
-  it('documents review delete with the shared delete success contract', () => {
+  it('documents review delete with z.null() void success (no DeleteSuccess dual-track)', () => {
     const registry = new TestOpenApiRegistry();
 
     registerGoalRoutes(
@@ -258,9 +258,18 @@ describe('goal route contracts', () => {
         ok: true,
         code: 200,
         message: 'ok',
-        data: { success: true },
+        data: null,
         timestamp: Date.now(),
       }).success,
     ).toBe(true);
+    expect(
+      responseSchema.safeParse({
+        ok: true,
+        code: 200,
+        message: 'ok',
+        data: { success: true },
+        timestamp: Date.now(),
+      }).success,
+    ).toBe(false);
   });
 });

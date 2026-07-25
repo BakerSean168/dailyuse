@@ -1,27 +1,16 @@
 /**
  * RateLimit Value Object
  * 速率限制值对象
+ *
+ * Residual 849: RateLimitDTO dual retired — sole RateLimit interface + type alias.
  */
 
-// ============ 接口定义 ============
-
-/**
- * RateLimit 接口
- */
+// Residual 849: sole RateLimit body.
 export interface RateLimit {
   enabled: boolean;
   maxPerHour: number;
   maxPerDay: number;
 }
 
-// ============ DTO 定义 ============
-
-/**
- * RateLimit DTO (传输层)
- */
-export interface RateLimitDTO {
-  enabled: boolean;
-  maxPerHour: number;
-  maxPerDay: number;
-}
-
+// Residual 849: RateLimitDTO dual retired — DTO is the RateLimit shape.
+export type RateLimitDTO = RateLimit;

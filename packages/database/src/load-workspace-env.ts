@@ -1,3 +1,7 @@
+/**
+ * Residual 1047 keep-boundary: preserve process.env + normalize postgres localhost loopback.
+ * Distinct from apps/api/scripts plain loadWorkspaceEnv (no force-merge).
+ */
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

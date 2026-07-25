@@ -153,7 +153,8 @@ import DayDetailSheet from '../components/DayDetailSheet.vue';
 import TaskEventActionPanel from '../components/TaskEventActionPanel.vue';
 import EventDetailSheet from '../components/EventDetailSheet.vue';
 import DevScheduleDebugPanel from '../components/DevScheduleDebugPanel.vue';
-import { toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
+import { getWeekStart, toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
+// Residual 1285: getWeekStart dual retired onto schedule sole.
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import type { CalendarEventItem } from '../composables/useCalendarView';
@@ -212,15 +213,6 @@ const currentPeriodTitle = computed(() => {
     date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
   return t('schedule.calendar.weekRange', { start: format(start), end: format(end) });
 });
-
-function getWeekStart(date: Date): Date {
-  const start = new Date(date);
-  const day = start.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  start.setDate(start.getDate() + diff);
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
 
 function resolveCalendarWindow(view: CalendarView, date: Date) {
   if (view === 'day') {

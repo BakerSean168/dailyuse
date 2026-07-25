@@ -27,6 +27,10 @@ export type ScheduleAgendaOptions = {
   daysAfter?: number;
 };
 
+/**
+ * Residual 1165 keep-boundary: schedule agenda startOfDay — Date in/out (local calendar day).
+ * Soft residual 1165: dashboard projection startOfDay uses timestamp ms in/out (no force-merge).
+ */
 function startOfDay(date: Date) {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);
@@ -55,6 +59,11 @@ function formatDayLabel(timestamp: number) {
   }).format(new Date(timestamp));
 }
 
+/**
+ * Residual 1213 keep-boundary: app-react formatTimeRange — fixed Intl zh-CN start/end pair.
+ * Agenda summary clock range (two epoch numbers); separator " - "; no all-day branch.
+ * Soft residual 1213: app-vue schedule formatTimeRange is event+all-day+padStart (no force-merge).
+ */
 function formatTimeRange(startTime: number, endTime: number) {
   const formatter = new Intl.DateTimeFormat('zh-CN', {
     hour: '2-digit',

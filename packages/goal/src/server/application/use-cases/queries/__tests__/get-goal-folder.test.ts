@@ -29,11 +29,11 @@ describe('GetGoalFolderUseCase', () => {
   it('should return ok with folder DTO by ID', async () => {
     const folder = createFolderFixture();
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById: vi.fn().mockResolvedValue(folder),
+      findByIdForIdentity: vi.fn().mockResolvedValue(folder),
     });
     const useCase = new GetGoalFolderUseCase(folderRepo);
 
-    const result = await useCase.execute('folder-id-1');
+    const result = await useCase.execute('folder-id-1', 'identity-1');
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -49,11 +49,11 @@ describe('GetGoalFolderUseCase', () => {
 
   it('should return NOT_FOUND error when folder does not exist', async () => {
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById: vi.fn().mockResolvedValue(null),
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
     });
     const useCase = new GetGoalFolderUseCase(folderRepo);
 
-    const result = await useCase.execute('non-existent');
+    const result = await useCase.execute('non-existent', 'identity-1');
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -62,17 +62,17 @@ describe('GetGoalFolderUseCase', () => {
     }
   });
 
-  it('should call findById with the correct ID', async () => {
+  it('should call findByIdForIdentity with identity and id', async () => {
     const folder = createFolderFixture({ id: 'specific-id' });
-    const findById = vi.fn().mockResolvedValue(folder);
+    const findByIdForIdentity = vi.fn().mockResolvedValue(folder);
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById,
+      findByIdForIdentity,
     });
     const useCase = new GetGoalFolderUseCase(folderRepo);
 
-    await useCase.execute('specific-id');
+    await useCase.execute('specific-id', 'identity-1');
 
-    expect(findById).toHaveBeenCalledWith('specific-id');
+    expect(findByIdForIdentity).toHaveBeenCalledWith('identity-1', 'specific-id');
   });
 
   it('should return the DTO produced by toClientDTO', async () => {
@@ -86,15 +86,30 @@ describe('GetGoalFolderUseCase', () => {
       toClientDTO: vi.fn().mockReturnValue(customDTO),
     });
     const folderRepo = createMockRepo<IGoalFolderRepository>({
-      findById: vi.fn().mockResolvedValue(folder),
+      findByIdForIdentity: vi.fn().mockResolvedValue(folder),
     });
     const useCase = new GetGoalFolderUseCase(folderRepo);
 
-    const result = await useCase.execute('custom-folder');
+    const result = await useCase.execute('custom-folder', 'identity-2');
 
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data).toEqual(customDTO);
     }
+  });
+
+  it('should return NOT_FOUND for foreign identity without exposing the folder', async () => {
+    const folderRepo = createMockRepo<IGoalFolderRepository>({
+      findByIdForIdentity: vi.fn().mockResolvedValue(null),
+    });
+    const useCase = new GetGoalFolderUseCase(folderRepo);
+
+    const result = await useCase.execute('folder-id-1', 'identity-other');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('NOT_FOUND');
+    }
+    expect(folderRepo.findByIdForIdentity).toHaveBeenCalledWith('identity-other', 'folder-id-1');
   });
 });

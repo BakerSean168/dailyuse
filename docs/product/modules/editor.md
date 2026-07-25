@@ -3,26 +3,28 @@ tags:
   - product
   - module
   - editor
-description: 编辑器模块当前实现及 Obsidian 外部编辑、Web 快捷创建目标态
+description: 编辑器模块退役后的安全预览、Obsidian 外部编辑与 Web 快捷创建边界
 created: 2026-06-02T00:00:00
-updated: 2026-07-16T00:00:00
+updated: 2026-07-22T00:00:00
 ---
 
 # 编辑器模块说明
 
 ## 1. 功能定位
 
-编辑器模块当前提供 CodeMirror Markdown 编辑、预览、自动保存、链接和引用能力。根据 [ADR-034](../../architecture/adr/ADR-034-obsidian-vault-repository.md)，长期职责收缩为安全预览、知识关系、Web 新笔记确认和 Obsidian 外部编辑。
+根据 [ADR-034](../../architecture/adr/ADR-034-obsidian-vault-repository.md)，编辑器职责已经收缩为安全预览、知识关系、Web 新笔记确认和 Obsidian 外部编辑。数据库 Resource 不再作为跨端 Markdown 编辑真值源。
 
-## 2. 当前实现（迁移前）
+## 2. 当前实现
 
-- Markdown 编辑器与实时预览。
-- 自保存与未保存变更保护。
-- Wiki-link 建议、反链、链接图和失效引用处理。
-- Web 与 Desktop 共用编辑组件，内容写入数据库 Repository。
-- `EditorPreview.vue` 使用 `v-html` 且允许原始 HTML。
-
-当前能力继续作为迁移期事实存在，但跨端完整自建编辑器不再是长期方向。
+- Web `/repository` 只挂载 GitHub default-branch 投影工作区；不存在 `/note/:id` 已有笔记编辑路由。
+- Desktop `/repository` 只挂载本地 Vault 浏览、安全预览和 Obsidian 打开入口；主进程不再注册 Editor Electron runtime。
+- API host 不再注册 Editor API module，也不挂载旧 Repository/Folder/Resource CRUD；Desktop Repository IPC 只保留本地 Vault 与 GitHub knowledge connection/sync 能力。
+- Mobile 已移除数据库 Repository、文件夹和 note editor 路由，等待后续基于服务端投影实现只读能力。
+- 旧 Repository/Folder/Resource 与 Editor workspace 数据仅为可重新导入业务数据备份保留，不再构成运行时编辑通道。
+- 服务端持有数据披露（`memoflow.server-held-data-disclosure`）与业务备份分离：Web 可下、Desktop 明确不支持、不可导入；`editor_*` portable 备份只走 `memoflow.user-data-export` 导入通道。
+- `@dailyuse/editor` 包与 `packages/app-vue/src/modules/editor` 已删除；知识呈现入口在 repository 工作区与 `safe-markdown` 工具。
+- app-vue 顶层 `editor` locale 与设置页退役 Editor 分组文案已删除；用户 preferences 中的 `editor` schema 仅保留 portable 兼容。
+- Web 与 Desktop 预览统一使用关闭原始 HTML 并经过 sanitizer 的安全 Markdown 渲染边界。
 
 ## 3. 已采纳目标态
 
@@ -59,11 +61,9 @@ Web 不直接修改 read model。用户确认新笔记后，Repository 服务通
 
 ## 5. 当前差距
 
-- Web/desktop 仍共享完整可编辑 `MarkdownEditor`。
-- Web 新建/保存写数据库，而不是 Git commit。
-- Desktop 尚未提供 Obsidian deep link 与 Git 同步状态。
-- 缺少统一 Agent 写入提案和用户确认模型。
-- 当前原始 HTML 渲染是接入真实 GitHub/Vault 内容前的安全阻断项。
+- Mobile 尚未实现基于服务端 GitHub 投影的浏览、搜索和预览。
+- 统一 Agent Host 的完整 Capability、Context、Tool Policy 与 Proposal contract 由 ADR-035 及对应 active plan 继续收口。
+- 真实 GitHub fixture E2E 与完整 Web/Desktop prod-like 验收仍受外部凭据和当前 Docker 存储容量限制。
 
 ## 6. 风险点
 

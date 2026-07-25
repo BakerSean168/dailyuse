@@ -83,16 +83,16 @@ export class TaskInstancePrismaRepository
     }
   }
 
-  async findById(id: string): Promise<TaskInstance | null> {
-    const data = await this.db.taskInstance.findUnique({
-      where: { id },
+  async findByIdForIdentity(identityId: string, id: string): Promise<TaskInstance | null> {
+    const data = await this.db.taskInstance.findFirst({
+      where: { id, identityId },
     });
     return data ? this.mapToEntity(data) : null;
   }
 
-  async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
+  async findByTemplateId(templateId: string, identityId: string): Promise<TaskInstance[]> {
     const data = await this.db.taskInstance.findMany({
-      where: { templateId, deletedAt: null },
+      where: { templateId, identityId, deletedAt: null },
       orderBy: { instanceDate: 'desc' },
     });
     return data.map((record: PrismaTaskInstance) => this.mapToEntity(record));
@@ -147,26 +147,37 @@ export class TaskInstancePrismaRepository
     return data.map((record: PrismaTaskInstance) => this.mapToEntity(record));
   }
 
-  async delete(id: string): Promise<void> {
-    await this.db.taskInstance.delete({ where: { id } });
+  async delete(identityId: string, id: string): Promise<void> {
+    const deleted = await this.db.taskInstance.deleteMany({
+      where: { id, identityId },
+    });
+    if (deleted.count !== 1) {
+      throw new Error('Task instance not found for the current identity.');
+    }
   }
 
-  async deleteMany(ids: string[]): Promise<void> {
+  async deleteMany(identityId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
     await this.db.taskInstance.deleteMany({
-      where: { id: { in: ids } },
+      where: { id: { in: ids }, identityId },
     });
   }
 
-  async deleteByTemplateId(templateId: string): Promise<void> {
+  async deleteByTemplateId(templateId: string, identityId: string): Promise<void> {
     await this.db.taskInstance.deleteMany({
-      where: { templateId },
+      where: { templateId, identityId },
     });
   }
 
-  async countFutureInstances(templateId: string, fromDate: number = Date.now()): Promise<number> {
+  async countFutureInstances(
+    templateId: string,
+    identityId: string,
+    fromDate: number = Date.now(),
+  ): Promise<number> {
     return this.db.taskInstance.count({
       where: {
         templateId,
+        identityId,
         instanceDate: { gte: new Date(fromDate) },
       },
     });
@@ -174,12 +185,14 @@ export class TaskInstancePrismaRepository
 
   async findByTemplateIdAndDateRange(
     templateId: string,
+    identityId: string,
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]> {
     const data = await this.db.taskInstance.findMany({
       where: {
         templateId,
+        identityId,
         instanceDate: {
           gte: new Date(startDate),
           lte: new Date(endDate),
@@ -191,7 +204,10 @@ export class TaskInstancePrismaRepository
     return data.map((record: PrismaTaskInstance) => this.mapToEntity(record));
   }
 
-  async getTemplateStats(templateIds: string[]): Promise<Record<string, TaskTemplateInstanceStats>> {
+  async getTemplateStats(
+    templateIds: string[],
+    identityId: string,
+  ): Promise<Record<string, TaskTemplateInstanceStats>> {
     if (templateIds.length === 0) {
       return {};
     }
@@ -200,6 +216,7 @@ export class TaskInstancePrismaRepository
       by: ['templateId', 'status'],
       where: {
         templateId: { in: templateIds },
+        identityId,
         deletedAt: null,
       },
       _count: {
@@ -247,10 +264,15 @@ export class TaskInstancePrismaRepository
     return stats;
   }
 
-  async deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number> {
+  async deleteIncompleteInstancesFrom(
+    templateId: string,
+    identityId: string,
+    fromDate: number,
+  ): Promise<number> {
     const result = await this.db.taskInstance.deleteMany({
       where: {
         templateId,
+        identityId,
         instanceDate: { gte: new Date(fromDate) },
         status: { in: ['Pending', 'InProgress'] },
       },

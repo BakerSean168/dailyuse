@@ -152,14 +152,6 @@ export class PowerSyncAuthIdentityRepository
     return this.findById(idRow.identity_id);
   }
 
-  async findByPhone(phoneNumber: string): Promise<AuthIdentity | null> {
-    const idRow = await this.db.getOptional<{ identity_id: string }>(
-      `SELECT identity_id FROM auth_identifiers WHERE type = 'Phone' AND value = ? LIMIT 1`,
-      [phoneNumber.trim().replace(/[\s()-]/g, '')],
-    );
-    if (!idRow) return null;
-    return this.findById(idRow.identity_id);
-  }
 
   async findByOAuth(provider: OAuthProvider, subjectId: string): Promise<AuthIdentity | null> {
     const row = await this.db.getOptional<{ identity_id: string }>(
@@ -178,13 +170,6 @@ export class PowerSyncAuthIdentityRepository
     return Number(row?.cnt ?? 0) > 0;
   }
 
-  async existsByPhone(phoneNumber: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ cnt: number }>(
-      `SELECT COUNT(*) as cnt FROM auth_identifiers WHERE type = 'Phone' AND value = ?`,
-      [phoneNumber.trim().replace(/[\s()-]/g, '')],
-    );
-    return Number(row?.cnt ?? 0) > 0;
-  }
 
   async delete(identity: AuthIdentity): Promise<void> {
     const id = String(identity.id);

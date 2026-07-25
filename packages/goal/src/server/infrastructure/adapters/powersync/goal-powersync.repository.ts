@@ -18,10 +18,14 @@ export class GoalPowerSyncRepository
     super(eventBusAdapter);
   }
 
-  async findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
+    async findByIdForIdentity(
+    identityId: string,
+    id: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Goal | null> {
     const row = await this.db.getOptional<Record<string, unknown>>(
-      `SELECT * FROM goals WHERE id = ? LIMIT 1`,
-      [id],
+      `SELECT * FROM goals WHERE id = ? AND identity_id = ? LIMIT 1`,
+      [id, identityId],
     );
 
     if (!row) return null;
@@ -95,15 +99,16 @@ export class GoalPowerSyncRepository
     return Promise.all(rows.map((row) => this.toGoal(row, includeChildren)));
   }
 
-  async findByFolderId(folderId: string): Promise<Goal[]> {
+  async findByFolderId(identityId: string, folderId: string): Promise<Goal[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
         FROM goals
-        WHERE folder_id = ?
+        WHERE identity_id = ?
+          AND folder_id = ?
           AND deleted_at IS NULL
           AND archived_at IS NULL
         ORDER BY sort_order ASC, created_at DESC`,
-      [folderId],
+      [identityId, folderId],
     );
 
     return Promise.all(rows.map((row) => this.toGoal(row, false)));
@@ -229,7 +234,11 @@ export class GoalPowerSyncRepository
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(identityId: string, id: string): Promise<void> {
+    const existing = await this.findByIdForIdentity(identityId, id);
+    if (!existing) {
+      throw new Error('Goal not found for the current identity.');
+    }
     await this.db.writeTransaction(async (tx) => {
       await tx.execute(`DELETE FROM goal_reviews WHERE goal_id = ?`, [id]);
       await tx.execute(
@@ -239,37 +248,37 @@ export class GoalPowerSyncRepository
       );
       await tx.execute(`DELETE FROM key_results WHERE goal_id = ?`, [id]);
       await tx.execute(`DELETE FROM key_result_weight_snapshots WHERE goal_id = ?`, [id]);
-      await tx.execute(`DELETE FROM goals WHERE id = ?`, [id]);
+      await tx.execute(`DELETE FROM goals WHERE id = ? AND identity_id = ?`, [id, identityId]);
     });
   }
 
-  async exists(id: string): Promise<boolean> {
-    const row = await this.db.getOptional<{ value: number }>(
-      `SELECT 1 as value FROM goals WHERE id = ? LIMIT 1`,
-      [id],
-    );
-    return row !== null;
+  async exists(identityId: string, id: string): Promise<boolean> {
+    return (await this.findByIdForIdentity(identityId, id)) !== null;
   }
 
-  async batchUpdateStatus(ids: string[], status: string): Promise<void> {
+  async batchUpdateStatus(identityId: string, ids: string[], status: string): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
     await this.db.execute(
-      `UPDATE goals SET status = ?, updated_at = ? WHERE id IN (${placeholders})`,
-      [status, toDbDateTime(new Date()), ...ids],
+      `UPDATE goals SET status = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})`,
+      [status, toDbDateTime(new Date()), identityId, ...ids],
     );
   }
 
-  async batchMoveToFolder(ids: string[], folderId: string | null): Promise<void> {
+  async batchMoveToFolder(identityId: string, ids: string[], folderId: string | null): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(', ');
     await this.db.execute(
-      `UPDATE goals SET folder_id = ?, updated_at = ? WHERE id IN (${placeholders})`,
-      [folderId, toDbDateTime(new Date()), ...ids],
+      `UPDATE goals SET folder_id = ?, updated_at = ? WHERE identity_id = ? AND id IN (${placeholders})`,
+      [folderId, toDbDateTime(new Date()), identityId, ...ids],
     );
   }
 
-  async isAncestor(potentialAncestorId: string, potentialDescendantId: string): Promise<boolean> {
+  async isAncestor(
+    identityId: string,
+    potentialAncestorId: string,
+    potentialDescendantId: string,
+  ): Promise<boolean> {
     let currentId: string | null = potentialDescendantId;
     const visited = new Set<string>();
 
@@ -279,8 +288,8 @@ export class GoalPowerSyncRepository
       visited.add(currentId);
 
       const parentRow: { parent_goal_id: string | null } | null = await this.db.getOptional(
-        `SELECT parent_goal_id FROM goals WHERE id = ? LIMIT 1`,
-        [currentId],
+        `SELECT parent_goal_id FROM goals WHERE id = ? AND identity_id = ? LIMIT 1`,
+        [currentId, identityId],
       );
       currentId = parentRow?.parent_goal_id ?? null;
     }
@@ -288,14 +297,15 @@ export class GoalPowerSyncRepository
     return false;
   }
 
-  async findChildren(parentId: string): Promise<Goal[]> {
+  async findChildren(identityId: string, parentId: string): Promise<Goal[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
        FROM goals
        WHERE parent_goal_id = ?
+         AND identity_id = ?
          AND deleted_at IS NULL
        ORDER BY sort_order ASC`,
-      [parentId],
+      [parentId, identityId],
     );
 
     return Promise.all(rows.map((row) => this.toGoal(row, false)));

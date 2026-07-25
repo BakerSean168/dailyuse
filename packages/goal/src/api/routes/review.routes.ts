@@ -12,7 +12,7 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
-import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema, GoalReviewListResSchema, DeleteSuccessResSchema } from '@dailyuse/contracts/goal';
+import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema, GoalReviewListResSchema } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId, GoalReviewId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
@@ -56,7 +56,7 @@ export function registerReviewRoutes(
       },
     },
     [auth],
-    (req) => controller.addReview(req.params!.id, req.body),
+    (req, ctx) => controller.addReview(req.params!.id, req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -75,7 +75,7 @@ export function registerReviewRoutes(
       },
     },
     [auth],
-    (req) => controller.listReviews(req.params!.id),
+    (req, ctx) => controller.listReviews(req.params!.id, ctx),
   );
 
   // PUT /:id/reviews/:reviewId — 更新复盘
@@ -97,7 +97,7 @@ export function registerReviewRoutes(
       },
     },
     [auth],
-    (req) => controller.updateReview(req.params!.id, req.params!.reviewId, req.body),
+    (req, ctx) => controller.updateReview(req.params!.id, req.params!.reviewId, req.body, ctx),
   );
 
   // DELETE /:id/reviews/:reviewId — 删除复盘
@@ -113,12 +113,12 @@ export function registerReviewRoutes(
         }),
       },
       responses: {
-        200: successResponse(DeleteSuccessResSchema, '删除成功'),
+        200: successResponse(z.null(), '删除成功'),
         404: errorResponse('目标或复盘不存在'),
       },
     },
     [auth],
-    (req) => controller.deleteReview(req.params!.id, req.params!.reviewId),
+    (req, ctx) => controller.deleteReview(req.params!.id, req.params!.reviewId, ctx),
   );
 
   return router;
