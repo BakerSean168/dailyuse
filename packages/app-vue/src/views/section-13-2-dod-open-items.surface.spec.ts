@@ -27,6 +27,9 @@ import { describe, expect, it } from 'vitest';
  * Residual 1332: full workspace standard test 30/30 EXIT:0 (powersync goal_records bind,
  * desktop GIT_CONFIG_GLOBAL=NUL, app-vue TaskService/useRoute/LangGraph stub/icon a11y);
  * Residual 1333: VPS prod-like docker:local:up EXIT:0 + six services healthy + probes OK
+ * Residual 1334: tip re-verify workspace lint 36/36 + typecheck 34/34 + standard test 30/30 EXIT:0,
+ * governance GOV_EXIT:0, Web auth e2e 14/14, Desktop guest xvfb 1/1, ADR-035 multi-engine 45,
+ * live-github 1/1; still no checkbox flips (interactive OAuth / durable multi-engine / full E2E+prod-like);
  * (tip 140ce022a); Web auth mainline 2×9/9 + note-boundary 1/1; workspace lint 36/36 +
  * typecheck 34/34 + standard test 30/30 re-verified; governance-check GOV_EXIT:0;
  * historical plan note still records goal-workflow 8/8 red; follow-up green is goal-workflow
@@ -71,7 +74,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(plan).toContain('Residual 1331');
     expect(plan).toContain('Residual 1332');
     expect(plan).toContain('Residual 1333');
+    expect(plan).toContain('Residual 1334');
     expect(plan).toContain('残留一千三百三十三轮');
+    expect(plan).toContain('残留一千三百三十四轮');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
@@ -109,6 +114,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Residual 1331');
     expect(sec).toContain('Residual 1332');
     expect(sec).toContain('Residual 1333');
+    expect(sec).toContain('Residual 1334');
     expect(sec).toContain('Web 账密两轮 3/3');
     expect(sec).toContain('Desktop production Electron guest 两轮 1/1');
     expect(sec).toContain('Agent/Vault/Pi fixture 7/114');
@@ -150,6 +156,13 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('148867606');
     expect(sec).toContain('desktop:test:live-github');
     expect(sec).toContain('残留 1333 收口 handoff（仍不打勾）');
+    expect(sec).toContain('残留 1334 handoff（仍不打勾）');
+    expect(sec).toContain('残留一千三百三十四轮');
+    expect(sec).toContain('Web auth **14/14**');
+    expect(sec).toContain('Desktop guest xvfb **1/1**');
+    expect(sec).toContain('ADR-035 multi-engine');
+    expect(sec).toContain('**5 文件 / 45 测试**');
+    expect(sec).toContain('标准 test **30/30 EXIT:0**');
     expect(sec).toContain('PR readiness **no**');
     expect(sec).toContain('createGoalErrorHandler');
     expect(sec).toContain('schedule route parsers keep-boundary');

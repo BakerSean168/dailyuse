@@ -9586,6 +9586,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续收口：`installations_count=1` installation **148867606** on `BakerSean168/memoflow-github-app-e2e-fixture`；
 > `desktop:test:live-github` **1/1 绿**（App installation-token write→read→Vault pull，非 PAT）；
 > 交互式浏览器 GitHub **OAuth 用户登录同意**仍可能外部；全量 Web/Desktop E2E 一揽子未宣称；**不改 checkbox**。
+> Residual 1334：tip 起全仓 lint/typecheck/标准 test **36/36 + 34/34 + 30/30 EXIT:0**；governance **GOV_EXIT:0**；
+> Web auth **14/14** + Desktop guest xvfb **1/1** + ADR-035 multi-engine **45** + live-github **1/1**；
+> §13.2 仍 **12 [x] / 3 [ ]**（交互式 OAuth / durable multi-engine 跨端 / 全量业务 E2E+本 tip prod-like）；**不改 checkbox**；PR readiness **no**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
@@ -9610,6 +9613,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   **残留 1333 收口 handoff（仍不打勾）**：App install + `desktop:test:live-github` 已证明 **仓库授权/同步** 路径；
   账密/e2e-mock GitHub/Desktop 访客 e2e 与 three-login matrix 已绿；**仍缺**同一用户会话下交互式浏览器
   **GitHub OAuth 登录**端到端（用户同意）与「三入口产品故事」跨端 Playwright 串联，故入口 DoD 仍为部分。
+  **残留 1334 handoff（仍不打勾）**：round2 复验 Web auth **14/14** + Desktop guest **1/1** + live-github **1/1** +
+  three-login matrix **15/15**；仍无交互式 OAuth 登录同意与跨端三入口串联 → **部分实现**。
   残留二十三轮补 surface contract 单测：`packages/app-vue/src/views/DesktopAuthView.spec.ts`
   （账密 + guest-mode-button，无 login-github-button）；`apps/web/src/auth/WebAuthView.spec.ts`
   （账密 + 条件 login-github-button，无 guest-mode-button；OAuth 不可用时隐藏 GitHub）。
@@ -9668,6 +9673,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   conformance 与 Pi readonly process fixture；仍缺跨进程 durable / 完整 Task LangGraph /
   跨端 Playwright-Electron multi-engine E2E，故不打勾。
   **残留 1333 收口 handoff（仍不打勾）**：ADR-035 capability/turn isolation journey 本轮 **14/14** 绿；提案确认/path 边界在位。完整 multi-engine durable Turn Engine / 跨端 Agent E2E 属 ADR-035 active plan，本 vault-repo plan **不强制翻勾**。
+  **残留 1334 handoff（仍不打勾）**：ADR-035 multi-engine 套件 **5 文件 / 45 测试**（isolation journey + multi-engine harness +
+  production multi-engine host + direct/readonly engines）+ local-vault **8/8**；仍缺 durable/跨端 Agent E2E → **部分实现**。
   证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
   `.`/`..`（contracts dto specs）；`AIKnowledgeNotePathResolver` 应用层同样拒绝 vault-escaping
   路径；runtime 仅在 `userDecision=confirm` 时解析 `execution.required` 并执行 side-effect
@@ -11976,6 +11983,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   12 个涉及项目 lint 集合有 8 个失败，`web:typecheck` 真实复跑失败，且 OAuth/App fixture
   无凭据为外部阻塞；不构成全量 PR 门禁。
   **残留 1333 收口 handoff（仍不打勾）**：App fixture 与 `desktop:test:live-github` 已不再是本项外部阻塞；governance-check GOV_EXIT:0、open-items 3/3、repository App gates 47、oauth e2e-mock 2/2 本轮复验。全量 workspace lint/typecheck/test 曾绿（1332/1333 历史），但 **Web+Desktop 完整 E2E 一揽子** 与 「全量 PR 门禁」仍未在本 tip 宣称通过 → **部分验证**；PR readiness **no**。
+  **残留 1334 handoff（仍不打勾）**：本 tip 再验 lint **36/36** + typecheck **34/34** + 标准 test **30/30** +
+  governance **GOV_EXIT:0** + Web auth E2E **14/14** + Desktop guest **1/1** + live-github **1/1**；
+  仍缺全量 Web 业务 E2E 一揽子与本 tip prod-like 复跑 → **部分验证**；PR readiness **no**。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
   额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
@@ -13186,6 +13196,18 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
     three-login matrix **15/15**；ADR-035 isolation journey **14/14**；open-items **3/3**；governance-check **GOV_EXIT:0**。
   - §13.2 仍 **12 [x] / 3 [ ]**：三项均写明 residual handoff（OAuth 浏览器登录 / Agent multi-engine / 全量 PR 门禁）；
     **PR readiness = no**；计划状态保持 **实施中**（本 plan 功能主线 + residual 1333 可实现路径已收口，DoD 未满 15/15）。
+
+  残留一千三百三十四轮（§13.2 三项再审计 + 全量门禁复验；**不改 checkbox**）：
+  - tip `ba069cabd` 起：全仓 lint **36/36 EXIT:0**；typecheck **34/34 EXIT:0**；标准 test **30/30 EXIT:0**；
+    governance-check **GOV_EXIT:0**；open-items + three-login matrix **2 文件 / 18 测试**。
+  - 三入口证据再增强：Web authentication 全套 **14/14**（账密 + e2e-mock GitHub OAuth + page-contract + password/register）；
+    Desktop production Electron guest xvfb **1/1**；live-github **1/1**（installation **148867606**，App 路径非 PAT）。
+    **仍缺**交互式浏览器 GitHub **OAuth 用户登录同意**与跨端 Playwright 三入口串联 → 入口项仍 **部分实现**。
+  - Agent 隔离：ADR-035 multi-engine + capability isolation + direct/readonly engines **5 文件 / 45 测试**；
+    local-vault runtime **8/8**。完整 durable multi-engine / 跨端 Agent E2E 仍属 ADR-035 → **部分实现**。
+  - 门禁项：本 tip 复验 lint+typecheck+标准 test+governance+Web 认证 E2E+Desktop guest E2E+live-github；
+    **仍缺**全量 Web 业务 E2E 一揽子与本 tip 的 prod-like `docker:local:up` 复跑 → **部分验证**；
+    **PR readiness = no**；§13.2 **12 [x] / 3 [ ]**，**不改 checkbox**。
 
 
 ## 14. 相关资料
