@@ -35,11 +35,11 @@ updated: 2026-07-22T00:00:00
   已接通。
 - Web 已支持只读投影列表、搜索、安全预览和 repository-backed 新建笔记；确认快照、request ledger 与 Git
   commit 幂等已接通；单 runtime 与多实例 repository-scoped 串行写协调均已实现。Desktop pull 已通过真实 Git
-  的服务边界验收，真实 GitHub E2E 仍待补齐。
+  的服务边界验收；`desktop:test:live-github` 已在 App installation fixture 上绿（仓库同步路径）。
 - Web Markdown 已关闭原始 HTML 并建立 sanitizer/危险 URL 测试边界；共享安全渲染器已补齐 comments、highlights、
   inert embeds、callouts、task lists 以及 heading/block navigation metadata；附件读取只允许安全媒体类型并限制为
   10 MiB；附件 blob 已按 `connectionId + blobSha` 建立短期共享 PostgreSQL cache，并保留每次读取的授权、投影
-  版本和完整性校验；真实 GitHub E2E 仍需继续补齐。
+  版本和完整性校验；App installation live path 已验收；完整 Web/Desktop 产品 E2E 一揽子仍未宣称。
 - 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 方法已删除（无 hard-fail stub 双轨）；MSW/E2E knowledge-only（无 legacy 404 stub）；
   app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
   path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
@@ -57,7 +57,7 @@ updated: 2026-07-22T00:00:00
   Web 未认证硬跳转 AuthApp；主壳 `/auth` 为 AuthPlatformEntry；死 LoginForm/RegisterForm/AuthView/useSmsCodeCountdown 已删；Agent identity 归属 fail-closed + resolveRunPlan surface 隔离；
   过时 UI redesign 知识 DTO 声明已 supersede；knowledge event 保留。
   Prisma/PowerSync `editor_*`/`resources` 表 schema 与 data-portability 可再导入备份仍保留。
-  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；残留三十三至五十四轮删除 Desktop DI/PowerSync/lazy-module/contracts、AI conversation/provider 双轨命名与无传输层 conversation add/status/getDefault 用例、conversation/provider-config/auth-identity/account phone 仓储死方法与 DEVICE_TRUST/2FA/API-Key/device 管理/诊断会话 IPC 空 stub、Desktop auth shell 本地 Ch 与 contracts AuthChannels 双轨、governance mapper-helpers 兼容 re-export、generateStrongPassword/updateCurrentValueByAggregation/E2E TEST_USER 兼容别名、utils 根 uuid 与 shared/uuid 双文件、ipc-client ElectronAPI 兼容别名与 API `/health` 双轨探针、API AuthenticatedRequest.identityId 双轨、Desktop auth stub/TokenData/LoginCredentials/AutoLoginResult 双轨别名与 app-vue LegacyWorkflowMode 双轨类型残留，并增强三入口/ADR-035 multi-turn journey 证据；真实 GitHub fixture E2E 仍为外部阻塞，全量 PR 门禁套件仍未宣称通过。
+  完成定义审计见 §13.2；prod-like `docker:local:up` 已在残留二十七轮通过（六服务 healthy）；残留三十二轮补三入口/Agent journey 证据；残留三十三至五十四轮删除 Desktop DI/PowerSync/lazy-module/contracts、AI conversation/provider 双轨命名与无传输层 conversation add/status/getDefault 用例、conversation/provider-config/auth-identity/account phone 仓储死方法与 DEVICE_TRUST/2FA/API-Key/device 管理/诊断会话 IPC 空 stub、Desktop auth shell 本地 Ch 与 contracts AuthChannels 双轨、governance mapper-helpers 兼容 re-export、generateStrongPassword/updateCurrentValueByAggregation/E2E TEST_USER 兼容别名、utils 根 uuid 与 shared/uuid 双文件、ipc-client ElectronAPI 兼容别名与 API `/health` 双轨探针、API AuthenticatedRequest.identityId 双轨、Desktop auth stub/TokenData/LoginCredentials/AutoLoginResult 双轨别名与 app-vue LegacyWorkflowMode 双轨类型残留，并增强三入口/ADR-035 multi-turn journey 证据；App installation + live-github 已通；交互式 OAuth 与全量 PR 门禁套件仍未宣称通过。
 
 ## 2. 已确认产品边界
 
@@ -9368,6 +9368,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > installation **148867606** on `BakerSean168/memoflow-github-app-e2e-fixture`；二次 install 页 Not Found 为已装后重进
 > `/installations/new` 的预期噪声。产品门禁从错误的 `permissions.admin` 改为 `contents:write`/`push`；
 > `desktop:test:live-github` **1/1 绿**；repository focused unit **58/58**。
+> 续进展 2026-07-25（阶段 6 残留一千三百三十三轮续 — residual 1333 closure re-verify）：
+> live-github 再验 EXIT:0；open-items 3/3；governance GOV_EXIT:0；§13.2 仍 **12 [x]/3 [ ]** 含 handoff；PR readiness **no**。
 
 
 
@@ -9580,7 +9582,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > （Web/API/AI/PowerSync；revision label 对齐 tip）；Web 认证主线两轮 **9/9**、note-boundary **1/1**；
 > 全仓 lint **36/36** + typecheck **34/34** + 标准 test **30/30** 复验 EXIT:0；governance-check GOV_EXIT:0；
 > goal-workflow 8/8 红（AI workspace 按钮/视图未就绪）；续：goal-workflow 8/8 绿（Host `/ai/assistant/dispatch/sse` mock + conversation list/message 持久化 + parseSSE final-chunk flush）；Desktop Linux guest 续：xvfb + safeStorage basic_text **1/1 绿**；
-> GitHub App Manifest 凭据已就绪（`memoflow-dev-test` / fixture private repo），installations_count=0 需浏览器安装；OAuth/App 完整 fixture 路径仍为外部阻塞；**不改 checkbox**。
+> GitHub App Manifest 凭据已就绪（`memoflow-dev-test` / fixture private repo）；历史曾 `installations_count=0` 需浏览器安装；
+> 续收口：`installations_count=1` installation **148867606** on `BakerSean168/memoflow-github-app-e2e-fixture`；
+> `desktop:test:live-github` **1/1 绿**（App installation-token write→read→Vault pull，非 PAT）；
+> 交互式浏览器 GitHub **OAuth 用户登录同意**仍可能外部；全量 Web/Desktop E2E 一揽子未宣称；**不改 checkbox**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
@@ -9601,7 +9606,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 - [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**
   证据：Web/Desktop 认证路由与 E2E auth-flow 覆盖账密/GitHub 登录；Desktop 访客 profile 代码存在；
   残留一千三百二十七轮：Web 账密 `auth-flow.spec.ts` 两轮均 3/3；Desktop production Electron
-  guest E2E 两轮均 1/1。真实 GitHub OAuth/App fixture 无凭据（外部阻塞），故三入口整体仍为部分。
+  guest E2E 两轮均 1/1。历史：真实 GitHub OAuth/App fixture 无凭据（外部阻塞）。
+  **残留 1333 收口 handoff（仍不打勾）**：App install + `desktop:test:live-github` 已证明 **仓库授权/同步** 路径；
+  账密/e2e-mock GitHub/Desktop 访客 e2e 与 three-login matrix 已绿；**仍缺**同一用户会话下交互式浏览器
+  **GitHub OAuth 登录**端到端（用户同意）与「三入口产品故事」跨端 Playwright 串联，故入口 DoD 仍为部分。
   残留二十三轮补 surface contract 单测：`packages/app-vue/src/views/DesktopAuthView.spec.ts`
   （账密 + guest-mode-button，无 login-github-button）；`apps/web/src/auth/WebAuthView.spec.ts`
   （账密 + 条件 login-github-button，无 guest-mode-button；OAuth 不可用时隐藏 GitHub）。
@@ -9659,6 +9667,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   traversal/符号链接逃逸拒绝、cancel 无持久化、confirm 写入、identity 隔离、multi-engine
   conformance 与 Pi readonly process fixture；仍缺跨进程 durable / 完整 Task LangGraph /
   跨端 Playwright-Electron multi-engine E2E，故不打勾。
+  **残留 1333 收口 handoff（仍不打勾）**：ADR-035 capability/turn isolation journey 本轮 **14/14** 绿；提案确认/path 边界在位。完整 multi-engine durable Turn Engine / 跨端 Agent E2E 属 ADR-035 active plan，本 vault-repo plan **不强制翻勾**。
   证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
   `.`/`..`（contracts dto specs）；`AIKnowledgeNotePathResolver` 应用层同样拒绝 vault-escaping
   路径；runtime 仅在 `userDecision=confirm` 时解析 `execution.required` 并执行 side-effect
@@ -11966,6 +11975,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   governance-check 及其依赖测试 4/23 通过（GOV_EXIT:0）。
   12 个涉及项目 lint 集合有 8 个失败，`web:typecheck` 真实复跑失败，且 OAuth/App fixture
   无凭据为外部阻塞；不构成全量 PR 门禁。
+  **残留 1333 收口 handoff（仍不打勾）**：App fixture 与 `desktop:test:live-github` 已不再是本项外部阻塞；governance-check GOV_EXIT:0、open-items 3/3、repository App gates 47、oauth e2e-mock 2/2 本轮复验。全量 workspace lint/typecheck/test 曾绿（1332/1333 历史），但 **Web+Desktop 完整 E2E 一揽子** 与 「全量 PR 门禁」仍未在本 tip 宣称通过 → **部分验证**；PR readiness **no**。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
   额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
@@ -13169,6 +13179,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - 根因：GitHub `/installation/repositories` 对仅 `contents`+`metadata` 的 App 常返回 `permissions.admin/push/pull` 全 false，但 token 实际可写（PUT contents **201** 已证）。产品门禁误要求 `admin` → 改为要求 `push`；inventory 从 installation `contents:write` 推导 `push/pull`。
   - 验证：repository focused unit **58/58**；`desktop:test:live-github` **1/1 绿**（commit via App → read back → Desktop Vault pull）。
   - 三入口真实 GitHub fixture 证据增强；§13.2 未完成项是否勾选仍以计划表正式审计为准，本轮**不擅自翻 checkbox**；PR readiness 仍为 no（全量门禁未宣称）。
+
+  残留一千三百三十三轮续（closure re-verify + 诚实 handoff；**不改 checkbox**）：
+  - 再轮询 install count **1** / installation **148867606** / fixture present；gitignored env 接线；secrets 未入库。
+  - `desktop:test:live-github` **EXIT:0**（closure 复验）；repository App gates **47**；oauth e2e-mock **2/2**；
+    three-login matrix **15/15**；ADR-035 isolation journey **14/14**；open-items **3/3**；governance-check **GOV_EXIT:0**。
+  - §13.2 仍 **12 [x] / 3 [ ]**：三项均写明 residual handoff（OAuth 浏览器登录 / Agent multi-engine / 全量 PR 门禁）；
+    **PR readiness = no**；计划状态保持 **实施中**（本 plan 功能主线 + residual 1333 可实现路径已收口，DoD 未满 15/15）。
 
 
 ## 14. 相关资料

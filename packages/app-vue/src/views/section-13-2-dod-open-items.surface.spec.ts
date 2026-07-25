@@ -32,8 +32,9 @@ import { describe, expect, it } from 'vitest';
  * historical plan note still records goal-workflow 8/8 red; follow-up green is goal-workflow
  * 8/8 after Host SSE mock + conversation list persistence (not a full PR gate);
  * Desktop Linux guest e2e fixed via safeStorage basic_text on Linux E2E (1/1 under xvfb);
- * GitHub App JWT wired but installations_count=0 (browser install consent external);
- * Web/Desktop full E2E/OAuth remain incomplete/external;
+ * GitHub App JWT wired; historical installations_count=0 then browser install → installation
+ * 148867606 + desktop:test:live-github 1/1 green (App installation-token path, not PAT);
+ * interactive browser OAuth login consent + full Web/Desktop E2E bundle remain incomplete/external;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
@@ -144,6 +145,12 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('三入口完整 E2E');
     expect(sec).toContain('Agent multi-engine');
     expect(sec).toContain('全量 PR 门禁');
+    // Residual 1333 closure: App install + live-github proven; three open items keep handoffs.
+    expect(sec).toContain('installations_count=1');
+    expect(sec).toContain('148867606');
+    expect(sec).toContain('desktop:test:live-github');
+    expect(sec).toContain('残留 1333 收口 handoff（仍不打勾）');
+    expect(sec).toContain('PR readiness **no**');
     expect(sec).toContain('createGoalErrorHandler');
     expect(sec).toContain('schedule route parsers keep-boundary');
     expect(sec).toContain('parseJsonLikeString');
