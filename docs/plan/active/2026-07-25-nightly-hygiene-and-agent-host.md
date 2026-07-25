@@ -89,8 +89,8 @@ Vault plan **只**在 PR 描述、归档、或修回归时改动；**不要**再
 | ID | 切片 | 验收线索 | 状态 |
 |----|------|----------|------|
 | AH-1 | `run.started` 携带 `conversationId`，固化 Conversation↔Host open-chat run 关联 | contracts + AssistantFacade + focused tests + surface | **本文件 residual N1 落地** |
-| AH-2 | Host `list`/恢复：按 conversationId 枚举 open-chat / AgentRun 边界文档与 fail-closed | listAgentRuns + Host UI 只读路径 | pending |
-| AH-3 | Proposal precondition 产品规则（stale/conflict）最小闭环 | ProposalKernel + surface | pending |
+| AH-2 | Host `list`/恢复：按 conversationId 枚举 open-chat / AgentRun 边界文档与 fail-closed | listAgentRuns + Host UI 只读路径 | **N2 surface 诚实边界已锁**；产品恢复 UI 仍 pending |
+| AH-3 | Proposal precondition 产品规则（stale/conflict）最小闭环 | ProposalKernel + surface | **N3：stale 禁 approve；revise 清 stale** |
 | AH-4 | Task 共用 Artifact 工作台一小步（非全量富编辑） | Host UI + journey | pending |
 | AH-5 | Electron multi-engine 产品 E2E（或诚实 external + driver 一步） | scaffold `e2e.electron_desktop_full` | pending / 可 external |
 | AH-6 | real Pi spawn：要么 fail-closed 产品路径，要么永久 research keep-boundary | scaffold `e2e.real_pi_spawn` | pending / 默认不假绿 |
@@ -122,6 +122,8 @@ Vault plan **只**在 PR 描述、归档、或修回归时改动；**不要**再
 | N0 | 2026-07-25 | 创建本协议；基线 vault 15/15 @ `2444ec922` | docs | 文件入库 |
 | N1 | 2026-07-25 | AH-1：`AssistantEvent` `run.started.conversationId?` + facade 下发 + association surface；e2e multi-engine mock 对齐 | agent-host | focused ai 14 + contracts stage0 5 绿 |
 | N1b | 2026-07-25 | dual 扫描：`formatFileSize` 等仍为 L keep-boundary（1145），**不 merge** | hygiene L | 跳过微 dual |
+| N2 | 2026-07-25 | AH-2：Conversation↔Host association surface（open-chat ≠ listAgentRuns；§20 不勾） | agent-host | surface 绿 |
+| N3 | 2026-07-25 | AH-3：ProposalKernel stale 禁 approve；revise 清 stale→draft；STALE_REVISION 仍在 | agent-host | kernel tests |
 
 ## 10. 完成 / 归档
 

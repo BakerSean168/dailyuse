@@ -96,21 +96,51 @@ describe('ProposalKernel', () => {
     const stale = await kernel.markStale('prop-1', 'context changed');
     expect(stale.status).toBe('stale');
 
-    const reapproved = await kernel.approve('prop-1', 1);
+    // Nightly N3: stale is not directly re-approvable (precondition fail-closed).
+    await expect(kernel.approve('prop-1', 1)).rejects.toThrow('PROPOSAL_STALE');
+
+    // User must revise (clears stale → draft) then approve the new revision.
+    const revised = await kernel.revise('prop-1', {
+      ...knowledgeDraft({ status: 'ready' }),
+      revision: 1,
+      contentMarkdown: '# revised after stale',
+    });
+    expect(revised.status).toBe('ready');
+    expect(revised.revision).toBe(2);
+
+    const reapproved = await kernel.approve('prop-1', 2);
     expect(reapproved.status).toBe('approved');
 
-    const receipt = await kernel.executeApproved('prop-1', 1, 'req-1');
+    const receipt = await kernel.executeApproved('prop-1', 2, 'req-1');
     expect(receipt.ok).toBe(true);
     expect(receipt.code).toBe('EXECUTED');
     expect(receipt.requestId).toBe('req-1');
     expect(kernel.get('prop-1')?.status).toBe('executed');
 
-    const again = await kernel.executeApproved('prop-1', 1, 'req-1');
+    const again = await kernel.executeApproved('prop-1', 2, 'req-1');
     expect(again).toEqual(receipt);
 
-    const otherReq = await kernel.executeApproved('prop-1', 1, 'req-2');
+    const otherReq = await kernel.executeApproved('prop-1', 2, 'req-2');
     expect(otherReq.ok).toBe(false);
     expect(otherReq.code).toBe('ALREADY_EXECUTED');
+  });
+
+  it('N3: approve rejects stale without revise; revise clears stale to draft by default', async () => {
+    await kernel.create(knowledgeDraft({ status: 'ready' }));
+    await kernel.markStale('prop-1', 'vault moved');
+    await expect(kernel.approve('prop-1', 1)).rejects.toThrow('PROPOSAL_STALE');
+
+    const revised = await kernel.revise('prop-1', {
+      ...knowledgeDraft(),
+      revision: 1,
+      // no status in patch → stale clears to draft
+      contentMarkdown: '# after precondition change',
+    });
+    expect(revised.status).toBe('draft');
+    expect(revised.revision).toBe(2);
+
+    const approved = await kernel.approve('prop-1', 2);
+    expect(approved.status).toBe('approved');
   });
 
   it('fails closed on not-approved execute and reject path', async () => {

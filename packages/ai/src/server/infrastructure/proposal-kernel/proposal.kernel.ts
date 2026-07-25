@@ -8,6 +8,9 @@
  * ports (knowledge note / automation) remain separate and still require
  * explicit user confirmation.
  *
+ * Nightly N3 (AH-3): product precondition — `stale` cannot `approve` until
+ * `revise` clears the precondition (status → draft/ready).
+ *
  * Offers tool.proposal only — never tool.mutation or engine.* labels.
  */
 import type {
@@ -125,12 +128,17 @@ export class ProposalKernel implements IProposalKernelPort {
 
     // User edit produces a new revision; approval is invalidated.
     // Residual 359: merge patch onto current so unspecified fields are preserved.
+    // Nightly N3 (AH-3): revising a stale proposal clears precondition failure —
+    // default back to draft unless the patch explicitly sets ready/draft/stale.
+    // Leaving status=stale after an edit would re-block approve forever.
     const status: AgentProposal['status'] =
       next.status === 'ready' || next.status === 'draft' || next.status === 'stale'
         ? next.status
-        : current.status === 'approved' || current.status === 'rejected'
+        : current.status === 'approved' ||
+            current.status === 'rejected' ||
+            current.status === 'stale'
           ? 'draft'
-          : current.status === 'ready' || current.status === 'draft' || current.status === 'stale'
+          : current.status === 'ready' || current.status === 'draft'
             ? current.status
             : 'draft';
 
@@ -189,7 +197,13 @@ export class ProposalKernel implements IProposalKernelPort {
     if (isTerminal(current.status) || current.status === 'rejected') {
       throw new Error('PROPOSAL_NOT_APPROVABLE');
     }
-    // draft/ready/stale/approved (re-approve same revision is idempotent)
+    // Nightly N3 (AH-3): product precondition — stale proposals are not approvable
+    // until the user revises (clears stale → draft/ready). Prevents approving after
+    // context/precondition drift without re-edit.
+    if (current.status === 'stale') {
+      throw new Error('PROPOSAL_STALE');
+    }
+    // draft/ready/approved (re-approve same revision is idempotent)
     if (current.status === 'approved' && current.revision === revision) {
       return cloneProposal(current);
     }

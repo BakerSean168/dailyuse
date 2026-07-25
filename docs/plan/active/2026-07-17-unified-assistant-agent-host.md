@@ -27,6 +27,8 @@ updated: 2026-07-22T00:00:00
 ### 当前进展（2026-07-25 续；与 vault residual 1342 + nightly N1 对齐）
 
 - **Nightly residual N1（AH-1）**：`AssistantEvent` `run.started` 可选 `conversationId`；`AssistantFacade` 在 open-chat（direct_turn / pi_readonly）下发 trimmed conversationId；缺 conversation 时 omit 字段且 direct_turn 仍 `CONVERSATION_REQUIRED`。**不**宣称 Conversation↔AgentRun 持久多对一产品完成定义已勾。
+- **Nightly residual N2（AH-2）**：surface 锁住诚实边界——Host open-chat `assistant-run-*` 事件绑定 conversation，**不是** `listAgentRuns` 持久行；Workflow `AgentRun.conversationId` + list 过滤已在；产品侧「按会话恢复 Host open-chat 列表」仍 open。
+- **Nightly residual N3（AH-3）**：`ProposalKernel.approve` 对 `stale` fail-closed（`PROPOSAL_STALE`）；`revise` 默认将 stale 清为 `draft`（可显式 ready）；须新 revision 再 approve。revision conflict / 幂等 execute 仍保留。
 
 ### 当前进展（2026-07-22，与 vault plan residual 305–387 对齐）
 
@@ -796,7 +798,7 @@ packages/contracts/src/modules/ai/
 
 - 定义 AssistantCommand/Event、AgentProposal、ExecutionReceipt。 **（类型已冻结）**
 - 将 AgentAction 逐步收紧为 discriminated union。
-- 建立 Proposal revision、stale、precondition 和幂等规则。 **（ProposalKernel residual 320 部分：lifecycle + 幂等；precondition 产品规则仍待）**
+- 建立 Proposal revision、stale、precondition 和幂等规则。 **（ProposalKernel residual 320 + nightly N3：lifecycle + 幂等 + stale 禁 approve / revise 清 stale；更丰富的业务 precondition 谓词仍待）**
 - 右侧工作台统一承载 Goal/Knowledge Artifact 与审批。 **（部分：residual 355–387 Host Proposal/receipt/timeline；residual 419–435 task.create lane（live + domain + settle/receipt + AgentType + product toolMode + start + restore + process-local store）；完整 Task 工作流与富编辑未齐）**
 - 保留现有 LangGraph 和 Provider 实现。
 
