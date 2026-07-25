@@ -9592,7 +9592,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1335：跳过交互式 OAuth；业务 E2E 子集 **24/24** + goal-workflow+note **10/10** + prod-like 六服务 healthy。
 > Residual 1336：默认 Playwright `testMatch` **`web:e2e` 71/71 EXIT:0**；仍缺 Desktop 完整 E2E / 交互式 OAuth / durable multi-engine；**不改 checkbox**；PR readiness **no**。
 > Residual 1337：远程可跑外围 E2E 收口——`web:e2e:shell` **8/8**、`desktop:e2e` **1/1**、`web:e2e:ai-workspace` **8/8**（runner 补 API+CORS）、`web:e2e:sync` **3/3**（ensureE2EAccount send+verify）；仍缺交互式 OAuth / ADR-035 durable multi-engine 产品 E2E；**不改 checkbox**；PR readiness **no**。
+> Residual 1338：Windows 本机收尾——`desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）；governance-check GOV_EXIT:0；open-items 3/3；ADR-035 multi-engine focused **4 文件 / 33 测试**（不翻 Agent 勾）；交互式真实 GitHub OAuth **外部阻塞**（`GITHUB_OAUTH_CLIENT_SECRET` 本机缺席，仅 CLIENT_ID；e2e-mock 不计入）；prod-like 本机 Docker Desktop 不可用，沿用远程 1333/1335；**不改 checkbox**；PR readiness **no**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
+
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
 > Soft residual：goal createGoalErrorHandler rich-log keep-boundary（scope/details ≠ createComposableHandleError）不强制合并。
@@ -9619,7 +9621,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   **残留 1334 handoff（仍不打勾）**：round2 复验 Web auth **14/14** + Desktop guest **1/1** + live-github **1/1** +
   three-login matrix **15/15**；仍无交互式 OAuth 登录同意与跨端三入口串联 → **部分实现**。
   **残留 1335 handoff（仍不打勾）**：**明确延后**交互式 OAuth 同意；继续用 e2e-mock + 账密 + guest + App install 证据。
+  **残留 1338 handoff（仍不打勾）**：Windows 探测真实 OAuth——`.env.development.local` 有 `GITHUB_OAUTH_CLIENT_ID`（Ov23…）无 `GITHUB_OAUTH_CLIENT_SECRET`；User/Machine/process 亦无 secret；`getGithubOAuthConfig` host-dev 仅 id → null（surface 锁 residual 1338）；**不能**启动真人浏览器同意；e2e-mock 明确不计入本项；Desktop Windows guest/password E2E 已绿但不补齐交互式 GitHub 登录 → **部分实现**。
   残留二十三轮补 surface contract 单测：`packages/app-vue/src/views/DesktopAuthView.spec.ts`
+
   （账密 + guest-mode-button，无 login-github-button）；`apps/web/src/auth/WebAuthView.spec.ts`
   （账密 + 条件 login-github-button，无 guest-mode-button；OAuth 不可用时隐藏 GitHub）。
   残留二十四轮：Web auth guard 硬跳转 AuthApp（`createAuthGuard` + hard redirect specs）。
@@ -9679,7 +9683,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   **残留 1333 收口 handoff（仍不打勾）**：ADR-035 capability/turn isolation journey 本轮 **14/14** 绿；提案确认/path 边界在位。完整 multi-engine durable Turn Engine / 跨端 Agent E2E 属 ADR-035 active plan，本 vault-repo plan **不强制翻勾**。
   **残留 1334 handoff（仍不打勾）**：ADR-035 multi-engine 套件 **5 文件 / 45 测试**（isolation journey + multi-engine harness +
   production multi-engine host + direct/readonly engines）+ local-vault **8/8**；仍缺 durable/跨端 Agent E2E → **部分实现**。
+  **残留 1338 handoff（仍不打勾）**：Windows 复跑 ADR-035 multi-engine focused **4 文件 / 33 测试 EXIT:0**；仍无跨端/durable multi-engine 产品 E2E；完整路径交叉引用 `2026-07-17-unified-assistant-agent-host.md`；**不翻勾**。
   证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
+
   `.`/`..`（contracts dto specs）；`AIKnowledgeNotePathResolver` 应用层同样拒绝 vault-escaping
   路径；runtime 仅在 `userDecision=confirm` 时解析 `execution.required` 并执行 side-effect
   （knowledge cancel 与 goal cancel 即使 interrupt 残留也不落盘/不跑 automation）；
@@ -11998,7 +12004,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   仍缺 Desktop 完整 E2E 一揽子与交互式 OAuth；**部分验证**；PR readiness **no**。
   **残留 1337 handoff（仍不打勾）**：`web:e2e:shell` **8/8** + `desktop:e2e` **1/1** + `web:e2e:ai-workspace` **8/8** + `web:e2e:sync` **3/3**；
   远程 Linux 可跑 E2E 主路径已收口；仍缺交互式 OAuth / durable multi-engine 产品 E2E；**部分验证**；PR readiness **no**。
+  **残留 1338 handoff（仍不打勾）**：Windows `desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）；governance-check GOV_EXIT:0；open-items 3/3；交互式真实 OAuth 本机 **外部阻塞**（缺 CLIENT_SECRET）；Docker Desktop 不可用，prod-like 沿用远程 1333/1335；**部分验证**；PR readiness **no**（可开 PR 但 DoD 未满——三入口真人 OAuth + Agent durable + 全量门禁一揽子仍 open）。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
+
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
   额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
   依赖 build 的 declaration 诊断、全仓 test/E2E/prod-like 与 OAuth/App fixture 仍未闭环，
@@ -13258,6 +13266,17 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
     复验 **3/3 EXIT:0**（AI service 未起有 unhandled log，不挡 goal sync）。
   - §13.2 仍 **12 [x] / 3 [ ]**：交互式 OAuth 延后；Agent durable multi-engine 产品 E2E 仍部分；
     全量门禁证据再增强但**不宣称** PR ready；**PR readiness = no**。
+
+  残留一千三百三十八轮（Windows 本机收尾；**不改 checkbox**；诚实 handoff B）：
+  - **tip 基线**：`08b572192`（含 handoff 文档）→ residual 1338 提交后 tip 更新；ancestor of residual-1337 `2db22956d`。
+  - **smoke**：`pnpm nx run daily-use:governance-check` **GOV_EXIT:0**；`pnpm nx run app-vue:test -- section-13-2-dod-open-items` **3/3 EXIT:0**。
+  - **Desktop Windows**：`pnpm nx run desktop:e2e` **1/1 EXIT:0**（production Electron password + guest isolated profile；~11.7s）。
+  - **交互式真实 GitHub OAuth**：**外部阻塞**。本机 `.env.development.local` 仅 `GITHUB_OAUTH_CLIENT_ID`（Ov23…）+ `CALLBACK_URL`，**无** `GITHUB_OAUTH_CLIENT_SECRET`；User/Machine/process/AppData 均无 secret。
+    命令/证据：env probe + `getGithubOAuthConfig` surface（含 residual 1338 host-dev id-only → null）；origin 意图为 host-dev（非 `RUNTIME_LANE=e2e`）；headed n/a；人工同意 n/a；session `hasOAuth` 未建立。
+    **明确不宣称**：e2e-mock `Authentication - GitHub OAuth (mock provider)` 不等于真人交互式 OAuth。
+  - **Agent**：`pnpm nx run ai:test -- multi-engine` **4 文件 / 33 测试 EXIT:0**；无跨端/durable 产品 E2E → **不翻勾**；交叉引用 agent-host plan。
+  - **prod-like**：Docker Desktop 本机 daemon 不可用（npipe dockerDesktopLinuxEngine missing）；沿用远程 1333/1335 六服务 healthy。
+  - §13.2 仍 **12 [x] / 3 [ ]**；**PR readiness = no**（可开 PR 但 DoD 未满：真人 OAuth + Agent durable + 全量门禁一揽子）。
 
 
 ## 14. 相关资料

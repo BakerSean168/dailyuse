@@ -43,11 +43,16 @@ import { describe, expect, it } from 'vitest';
  * GitHub App JWT wired; historical installations_count=0 then browser install → installation
  * 148867606 + desktop:test:live-github 1/1 green (App installation-token path, not PAT);
  * interactive browser OAuth login consent + full Web/Desktop E2E bundle remain incomplete/external;
+ * Residual 1338: Windows residual handoff — desktop:e2e 1/1 EXIT:0 (password+guest);
+ * interactive real GitHub OAuth blocked (GITHUB_OAUTH_CLIENT_SECRET absent; e2e-mock not counted);
+ * ADR-035 multi-engine focused 4 files / 33 tests (no Agent checkbox flip); Docker Desktop
+ * unavailable → reuse remote 1333/1335 prod-like; still 12/15; PR readiness no;
  * without checkbox flips; reaffirms loadWorkspaceEnv + toast-only + parseJson family +
  * asRecord/toRecord + toTimestamp + toNumber + toStringArray + toBoolean + optionalString/toNonEmptyString +
  * asNonEmptyString dual-retired + toDate/toDateString + extractErrorMessage dual-retired + generateUUID + newId +
  * isPlainObject + toMillis + formatFileSize + toKnowledgeNoteRef + tokenize + toDashboardTaskInstanceRecord + toPrismaJson + contracts-isRecord + startOfDay + mapImportanceToTaskPriority + readString + normalizePath + buildTaskName + comparePriority + defaultExtractContext + getTemplateById + getCorsOrigins + delay dual-retired + scoreIndexedResource dual-retired + readJson + handleAuthSuccess + formatDateTime + formatMessageTime + formatDateToInput + formatTimeRange + formatTimestamp + clampPercentage + isRecord keep-boundaries (no force-merge).
  * Residual 893 (soft): OAuthProvider transport≠domain keep-boundary is separate contracts surface.
+
  * Residual 1047 (soft): loadWorkspaceEnv keep-boundary surface remains locked in api package.
  * Residual 1254 (soft): prior tip refresh 379/1646 still in history notes only.
  * Does not flip any §13.2 checkbox; focused suite tip remains evidence, not full PR gate.
@@ -88,12 +93,15 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(plan).toContain('残留一千三百三十六轮');
     expect(plan).toContain('Residual 1337');
     expect(plan).toContain('残留一千三百三十七轮');
+    expect(plan).toContain('Residual 1338');
+    expect(plan).toContain('残留一千三百三十八轮');
     expect(plan).toContain('残留一千二百一十八轮');
     const sec = section132();
     const unchecked = sec.match(/- \[ \]/g) ?? [];
     const checked = sec.match(/- \[x\]/g) ?? [];
     expect(unchecked).toHaveLength(3);
     expect(checked.length).toBeGreaterThanOrEqual(12);
+
 
     expect(sec).toContain('- [ ] 账密、GitHub 和访客入口均可用。 **（部分实现）**');
     expect(sec).toContain(
@@ -129,6 +137,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('Residual 1335');
     expect(sec).toContain('Residual 1336');
     expect(sec).toContain('Residual 1337');
+    expect(sec).toContain('Residual 1338');
     expect(sec).toContain('Web 账密两轮 3/3');
     expect(sec).toContain('Desktop production Electron guest 两轮 1/1');
     expect(sec).toContain('Agent/Vault/Pi fixture 7/114');
@@ -184,6 +193,11 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('web:e2e:shell');
     expect(sec).toContain('web:e2e:sync');
     expect(sec).toContain('残留一千三百三十七轮');
+    expect(sec).toContain('残留 1338 handoff（仍不打勾）');
+    expect(sec).toContain('残留一千三百三十八轮');
+    expect(sec).toContain('GITHUB_OAUTH_CLIENT_SECRET');
+    expect(sec).toContain('Windows `desktop:e2e` **1/1 EXIT:0**');
+    expect(sec).toContain('Docker Desktop');
     expect(sec).toContain('ensureE2EAccount');
     expect(sec).toContain('残留一千三百三十四轮');
     expect(sec).toContain('Web auth **14/14**');
@@ -192,6 +206,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('**5 文件 / 45 测试**');
     expect(sec).toContain('标准 test **30/30 EXIT:0**');
     expect(sec).toContain('PR readiness **no**');
+
     expect(sec).toContain('createGoalErrorHandler');
     expect(sec).toContain('schedule route parsers keep-boundary');
     expect(sec).toContain('parseJsonLikeString');
