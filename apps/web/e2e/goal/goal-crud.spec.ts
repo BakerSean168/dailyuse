@@ -15,7 +15,7 @@ test.describe('Goal CRUD', () => {
     });
 
     await expect(page.getByTestId('goal-list-view')).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
   });
 

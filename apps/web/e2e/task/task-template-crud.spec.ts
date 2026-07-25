@@ -19,7 +19,7 @@ test.describe('Task Template CRUD Operations', () => {
     });
 
     await expect(page.locator('#task-template-management')).toBeVisible({
-      timeout: TIMEOUT_CONFIG.ELEMENT_WAIT,
+      timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
   });
 

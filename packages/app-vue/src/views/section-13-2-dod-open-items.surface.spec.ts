@@ -30,8 +30,8 @@ import { describe, expect, it } from 'vitest';
  * Residual 1334: tip re-verify workspace lint 36/36 + typecheck 34/34 + standard test 30/30 EXIT:0,
  * governance GOV_EXIT:0, Web auth e2e 14/14, Desktop guest xvfb 1/1, ADR-035 multi-engine 45,
  * live-github 1/1; still no checkbox flips (interactive OAuth / durable multi-engine / full E2E+prod-like);
- * Residual 1335: skip interactive OAuth by decision; e2e LOG_DIR fix; business E2E partial;
- * Dockerfile.api builds package dist graph for prod-like API; still 12/15;
+ * Residual 1335: skip interactive OAuth by decision; e2e LOG_DIR fix; business E2E 24/24 +
+ * goal-workflow+note 10/10 after app-shell wait; Dockerfile.api contracts dist; still 12/15;
  * (tip 140ce022a); Web auth mainline 2×9/9 + note-boundary 1/1; workspace lint 36/36 +
  * typecheck 34/34 + standard test 30/30 re-verified; governance-check GOV_EXIT:0;
  * historical plan note still records goal-workflow 8/8 red; follow-up green is goal-workflow
@@ -164,6 +164,9 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('残留 1334 handoff（仍不打勾）');
     expect(sec).toContain('残留 1335 handoff（仍不打勾）');
     expect(sec).toContain('明确延后');
+    expect(sec).toContain('业务 E2E 子集 **24/24**');
+    expect(sec).toContain('goal-workflow+note **10/10**');
+    expect(sec).toContain('waitForAuthenticatedShell');
     expect(sec).toContain('残留一千三百三十四轮');
     expect(sec).toContain('Web auth **14/14**');
     expect(sec).toContain('Desktop guest xvfb **1/1**');

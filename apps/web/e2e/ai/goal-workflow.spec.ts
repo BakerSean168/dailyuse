@@ -167,6 +167,11 @@ async function bootstrapGoalWorkflowSession(
 
   // Cold Vite main-app graph often exceeds ELEMENT_WAIT (10s); wait for shell mount
   // before tests assert AI controls (see residual goal-workflow splash flake).
+  // Residual 1335: app-shell replaces #startup-splash first; ai-chat-view is nested.
+  await page.getByTestId('app-shell').waitFor({
+    state: 'visible',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
   await page.getByTestId('ai-chat-view').waitFor({
     state: 'visible',
     timeout: TIMEOUT_CONFIG.NAVIGATION,

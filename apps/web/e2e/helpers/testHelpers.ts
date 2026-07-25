@@ -86,12 +86,13 @@ async function prepareAuthPage(page: Page): Promise<void> {
   console.log('[Auth] 已清理旧的认证状态');
   // Avoid networkidle: Vite HMR / long-polling can keep the network busy forever.
   await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT_CONFIG.NAVIGATION });
+  // Residual 1335: auth bundle cold load can exceed ELEMENT_WAIT under serial e2e pressure.
   await page
     .locator(
       '#email, #reg-email, [data-testid="register-submit-button"], button:has-text("Sign In")',
     )
     .first()
-    .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    .waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.NAVIGATION });
   await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
 }
 
@@ -151,9 +152,22 @@ export async function ensureLoginScene(page: Page): Promise<void> {
   });
 }
 
+/**
+ * Residual 1335: after leaving `/auth`, the main Vite graph mounts into `#app`
+ * and replaces `#startup-splash`. Cold first paint often exceeds ELEMENT_WAIT (10s).
+ * Wait for the authenticated shell before callers assert route-specific testids.
+ */
+async function waitForAuthenticatedShell(page: Page): Promise<void> {
+  await page.getByTestId('app-shell').waitFor({
+    state: 'visible',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
+}
+
 async function navigateAfterAuth(page: Page, landingPath?: string): Promise<void> {
   if (!landingPath) {
     await page.waitForLoadState('domcontentloaded');
+    await waitForAuthenticatedShell(page);
     return;
   }
 
@@ -165,6 +179,8 @@ async function navigateAfterAuth(page: Page, landingPath?: string): Promise<void
   } else {
     await page.waitForLoadState('domcontentloaded');
   }
+
+  await waitForAuthenticatedShell(page);
 }
 
 async function registerViaAuth(page: Page, email: string, password: string): Promise<void> {
@@ -325,6 +341,8 @@ export async function login(
   // 等待页面稳定
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(TIMEOUT_CONFIG.MEDIUM_WAIT);
+  // Residual 1335: main shell cold mount after login (same as registerAndLogin).
+  await waitForAuthenticatedShell(page);
 
   console.log('[Auth] 登录成功');
 }
