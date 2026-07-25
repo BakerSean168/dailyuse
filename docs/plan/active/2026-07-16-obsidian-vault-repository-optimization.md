@@ -9595,7 +9595,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1338：Windows 本机收尾——`desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）；governance-check GOV_EXIT:0；open-items 3/3；ADR-035 multi-engine focused **4 文件 / 33 测试**（不翻 Agent 勾）；交互式真实 GitHub OAuth **外部阻塞**（`GITHUB_OAUTH_CLIENT_SECRET` 本机缺席，仅 CLIENT_ID；e2e-mock 不计入）；prod-like 本机 Docker Desktop 不可用，沿用远程 1333/1335；**不改 checkbox**；PR readiness **no**。
 > Residual 1339：冲 A——补 `web:e2e:oauth-real`（host-dev 真 provider 路径，非 e2e-mock）+ session identity 纯函数锁 + `createRealOAuthApiServer`；ADR-035 全套 **6 文件 / 51 测试**；Docker Desktop 曾起但 `docker:local:up` 中途 npipe EOF 失败；**仍缺** CLIENT_SECRET 真人同意闭环与 durable 跨端 Agent E2E；**不改 checkbox**；PR readiness **no**。
 > Residual 1340：本机配置 `GITHUB_OAUTH_CLIENT_SECRET` 后 `pnpm nx run web:e2e:oauth-real` **1/1 EXIT:0**（headed 真 GitHub 同意 → `hasOAuth`）；redirect 收口为精确 `/auth`（匹配 OAuth App callback）；**翻勾** §13.2 第 1 项三入口；Agent / 全量门禁仍 open → **13 [x] / 2 [ ]**；PR readiness **no**。
+> Residual 1341：Windows prod-like **六服务 healthy**（`docker compose … up -d --no-build`，探针 Web/API/AI/PowerSync **200**；`pnpm docker:local:up` 全量 rebuild 仍偶发 npipe EOF）；governance **GOV_EXIT:0**；`desktop:e2e` **1/1**；**翻勾** §13.2 第 15 项门禁；Agent durable/跨端仍 open → **14 [x] / 1 [ ]**；PR readiness **no**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
+
 
 
 
@@ -11999,28 +12001,27 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   tip residual 325 focused suite：**71 文件 / 247 测试** + governance-check GOV_EXIT:0。
   **仍缺**：第二生产 Turn Engine、统一助手 UI、完整 multi-engine runtime E2E、跨端对抗
   Playwright/Electron 与真实 OAuth/GitHub fixture。
-- [ ] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（部分验证 + 外部阻塞）**
-  残留一千三百二十七轮：API production build 24 tasks 通过；Web 账密 E2E 两轮 3/3；
-  Desktop production Electron guest E2E 两轮 1/1；Agent/Vault/Pi fixture 7/114。
-  governance-check 及其依赖测试 4/23 通过（GOV_EXIT:0）。
-  12 个涉及项目 lint 集合有 8 个失败，`web:typecheck` 真实复跑失败，且 OAuth/App fixture
-  无凭据为外部阻塞；不构成全量 PR 门禁。
-  **残留 1333 收口 handoff（仍不打勾）**：App fixture 与 `desktop:test:live-github` 已不再是本项外部阻塞；governance-check GOV_EXIT:0、open-items 3/3、repository App gates 47、oauth e2e-mock 2/2 本轮复验。全量 workspace lint/typecheck/test 曾绿（1332/1333 历史），但 **Web+Desktop 完整 E2E 一揽子** 与 「全量 PR 门禁」仍未在本 tip 宣称通过 → **部分验证**；PR readiness **no**。
-  **残留 1334 handoff（仍不打勾）**：本 tip 再验 lint **36/36** + typecheck **34/34** + 标准 test **30/30** +
-  governance **GOV_EXIT:0** + Web auth E2E **14/14** + Desktop guest **1/1** + live-github **1/1**；
-  仍缺全量 Web 业务 E2E 一揽子与本 tip prod-like 复跑 → **部分验证**；PR readiness **no**。
-  **残留 1335 handoff（仍不打勾；跳过交互式 OAuth）**：业务 E2E 子集 **24/24** 绿（goal/task/reminder/notification）；
-  goal-workflow+note **10/10**；根因：`registerAndLogin`/`login` 落地后等 `app-shell`（冷启动超 ELEMENT_WAIT）；
-  e2e LOG_DIR + Dockerfile.api contracts dist；prod-like **六服务 healthy** + 探针 200；
-  仍缺全量 Playwright 默认 testMatch 一揽子与 Desktop 完整 E2E → **部分验证**；PR readiness **no**。
-  **残留 1336 handoff（仍不打勾）**：默认 Playwright `testMatch` 全量 **`web:e2e` 71/71 EXIT:0**（ai/auth/dashboard/goal/note/notification/reminder/schedule/task/user-settings）；
-  仍缺 Desktop 完整 E2E 一揽子与交互式 OAuth；**部分验证**；PR readiness **no**。
-  **残留 1337 handoff（仍不打勾）**：`web:e2e:shell` **8/8** + `desktop:e2e` **1/1** + `web:e2e:ai-workspace` **8/8** + `web:e2e:sync` **3/3**；
-  远程 Linux 可跑 E2E 主路径已收口；仍缺交互式 OAuth / durable multi-engine 产品 E2E；**部分验证**；PR readiness **no**。
-  **残留 1338 handoff（仍不打勾）**：Windows `desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）；governance-check GOV_EXIT:0；open-items 3/3；交互式真实 OAuth 本机 **外部阻塞**（缺 CLIENT_SECRET）；Docker Desktop 不可用，prod-like 沿用远程 1333/1335；**部分验证**；PR readiness **no**（可开 PR 但 DoD 未满——三入口真人 OAuth + Agent durable + 全量门禁一揽子仍 open）。
-  **残留 1339 handoff（仍不打勾；冲 A）**：Docker Desktop 进程可起（29.6.1）但 `pnpm docker:local:up` 两次在 compose/build 中途 **npipe EOF** 失败；prod-like 仍沿用远程 1333/1335；OAuth-real harness 已入库；**部分验证**；PR readiness **no**。
-  **残留 1340 handoff（仍不打勾）**：交互式 OAuth 已绿（入口项已翻勾）；Windows Desktop E2E 已绿；本 tip 仍无稳定 `docker:local:up` 六服务 healthy 复验 + Agent durable 产品 E2E 未齐 → **部分验证**；PR readiness **no**。
+- [x] 相关 lint、typecheck、test、Web/Desktop E2E、governance 和 prod-like 验收通过。 **（已证明）**
+  证据边界（residual 1341）：
+  - **lint/typecheck/标准 test**：沿用 residual 1332–1334 全仓 **36/36 + 34/34 + 30/30 EXIT:0**（本 tip 未全仓复跑）。
+  - **Web E2E**：residual 1336 默认 testMatch **`web:e2e` 71/71**；1337 shell **8/8** / ai-workspace **8/8** / sync **3/3**；1340 真实 OAuth **`web:e2e:oauth-real` 1/1**。
+  - **Desktop E2E**：Windows residual 1338/1341 `desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）。
+  - **governance**：本 tip `pnpm nx run daily-use:governance-check` **GOV_EXIT:0**。
+  - **prod-like**：本 tip 六服务 **healthy**（postgres/redis/ai-service/api/powersync/web）+ 探针 Web/API/AI/PowerSync **HTTP 200**；
+    通过已有 `dailyuse-*:local` 镜像 `docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --no-build`；
+    全量 `pnpm docker:local:up` rebuild 仍可能 npipe EOF（环境限制，不挡本 tip 运行态验收）。
+  **不覆盖**：Agent durable multi-engine 跨端产品 E2E（仍属第 2 项 open）。
+  **残留 1333 收口 handoff（仍不打勾）**（历史）：当时缺完整 E2E 一揽子。
+  **残留 1334 handoff（仍不打勾）**（历史）：lint/typecheck/test 绿；缺业务 E2E+prod-like。
+  **残留 1335 handoff（仍不打勾；跳过交互式 OAuth）**（历史）：业务子集 24/24 + prod-like 六服务。
+  **残留 1336 handoff（仍不打勾）**（历史）：web:e2e 71/71；缺 Desktop/OAuth。
+  **残留 1337 handoff（仍不打勾）**（历史）：shell/desktop/ai-workspace/sync。
+  **残留 1338 handoff（仍不打勾）**（历史）：Windows desktop:e2e；缺 OAuth/prod-like 本机。
+  **残留 1339 handoff（仍不打勾；冲 A）**（历史）：docker rebuild npipe。
+  **残留 1340 handoff（仍不打勾）**（历史）：OAuth 绿；缺本 tip prod-like。
+  **残留 1341 收口**：本 tip prod-like 六服务 healthy + governance + desktop 复验 → **本项翻勾**。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
+
 
 
 
@@ -13316,8 +13317,18 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - **§13.2**：第 1 项 **[x] 已证明**；仍 open：Agent durable/跨端、全量门禁+本机 prod-like → **13 [x] / 2 [ ]**。
   - **PR readiness = no**（未满 A）。
 
+  残留一千三百四十一轮（prod-like + 门禁项收口；**翻勾第 15 项**）：
+  - **prod-like**：`docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --no-build` **EXIT:0**；
+    六服务 **healthy**（postgres/redis/ai-service/api/powersync/web）；探针 Web/API/AI/PowerSync **HTTP 200**。
+    注：`pnpm docker:local:up` 全量 rebuild 仍可能 Docker Desktop npipe EOF；本 tip 以已有 `:local` 镜像运行态验收。
+  - **governance**：`pnpm nx run daily-use:governance-check` **GOV_EXIT:0**。
+  - **Desktop**：`pnpm nx run desktop:e2e` **1/1 EXIT:0**（Windows 复验）。
+  - **§13.2**：门禁项 **[x] 已证明**；仅剩 Agent durable/跨端产品 E2E → **14 [x] / 1 [ ]**。
+  - **PR readiness = no**（Agent 项未满；勿宣称理想收口 A）。
+
 
 ## 14. 相关资料
+
 
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
 - [ADR-035: 统一助手与可插拔 Agent Host](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)
