@@ -6,6 +6,7 @@ import {
   loadSyncCredentials,
   type SyncCredentials,
 } from '../helpers/credentials';
+import { completeEmailVerification } from '../../helpers/auth-email-code';
 import { deleteGoalIfPresent, openGoalList } from '../helpers/goal';
 
 type CleanupTracker = (goalName: string) => string;
@@ -25,11 +26,29 @@ async function submitWebLogin(page: Page, credentials: SyncCredentials): Promise
     await loginTab.click();
   }
 
-  await page.getByTestId('login-username-input').locator('input').fill(credentials.email);
-  await page.getByTestId('login-password-input').locator('input').fill(credentials.password);
+  // Residual 1337: prefer #email/#password (stable); fall back to legacy testids.
+  const emailField = page.locator('#email').or(
+    page.getByTestId('login-username-input').locator('input'),
+  );
+  const passwordField = page.locator('#password').or(
+    page.getByTestId('login-password-input').locator('input'),
+  );
+  await emailField.fill(credentials.email);
+  await passwordField.fill(credentials.password);
   await page.getByTestId('login-submit-button').click();
 
-  await page.waitForURL((url) => !url.pathname.startsWith('/auth'), { timeout: 30_000 });
+  // Unverified accounts stay on /auth with verify-email form after login.
+  const verifyForm = page.getByTestId('verify-email-form');
+  const leftAuth = page
+    .waitForURL((url) => !url.pathname.startsWith('/auth'), { timeout: 30_000 })
+    .then(() => 'shell' as const);
+  const needsVerify = verifyForm
+    .waitFor({ state: 'visible', timeout: 30_000 })
+    .then(() => 'verify' as const);
+  const outcome = await Promise.race([leftAuth, needsVerify]);
+  if (outcome === 'verify') {
+    await completeEmailVerification(page, credentials.email);
+  }
 }
 
 export const test = base.extend<SyncFixtures>({

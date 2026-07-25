@@ -9591,6 +9591,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > §13.2 仍 **12 [x] / 3 [ ]**（交互式 OAuth / durable multi-engine 跨端 / 全量业务 E2E+本 tip prod-like）；**不改 checkbox**；PR readiness **no**。
 > Residual 1335：跳过交互式 OAuth；业务 E2E 子集 **24/24** + goal-workflow+note **10/10** + prod-like 六服务 healthy。
 > Residual 1336：默认 Playwright `testMatch` **`web:e2e` 71/71 EXIT:0**；仍缺 Desktop 完整 E2E / 交互式 OAuth / durable multi-engine；**不改 checkbox**；PR readiness **no**。
+> Residual 1337：远程可跑外围 E2E 收口——`web:e2e:shell` **8/8**、`desktop:e2e` **1/1**、`web:e2e:ai-workspace` **8/8**（runner 补 API+CORS）、`web:e2e:sync` **3/3**（ensureE2EAccount send+verify）；仍缺交互式 OAuth / ADR-035 durable multi-engine 产品 E2E；**不改 checkbox**；PR readiness **no**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
@@ -11995,6 +11996,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   仍缺全量 Playwright 默认 testMatch 一揽子与 Desktop 完整 E2E → **部分验证**；PR readiness **no**。
   **残留 1336 handoff（仍不打勾）**：默认 Playwright `testMatch` 全量 **`web:e2e` 71/71 EXIT:0**（ai/auth/dashboard/goal/note/notification/reminder/schedule/task/user-settings）；
   仍缺 Desktop 完整 E2E 一揽子与交互式 OAuth；**部分验证**；PR readiness **no**。
+  **残留 1337 handoff（仍不打勾）**：`web:e2e:shell` **8/8** + `desktop:e2e` **1/1** + `web:e2e:ai-workspace` **8/8** + `web:e2e:sync` **3/3**；
+  远程 Linux 可跑 E2E 主路径已收口；仍缺交互式 OAuth / durable multi-engine 产品 E2E；**部分验证**；PR readiness **no**。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
   额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
@@ -13242,6 +13245,19 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - §13.2 第 15 项证据增强（Web 默认核心业务 E2E 已绿）；**仍缺** Desktop 完整 E2E 与「全量 PR 门禁」
     一揽子宣称；三入口真人 OAuth / Agent durable multi-engine 仍部分 → **12 [x] / 3 [ ]**，**不改 checkbox**；
     **PR readiness = no**。
+
+  残留一千三百三十七轮（远程 Linux 外围 E2E 收口；**不改 checkbox**）：
+  - **决策**：不再把可自动化外围套件推到 Windows；在本 tip 直接跑完 shell / desktop / ai-workspace / sync。
+  - `web:e2e:shell`（xvfb + Electron guest 几何）**8/8 EXIT:0**。
+  - `desktop:e2e`（production Electron 账密+guest）**1/1 EXIT:0**。
+  - `web:e2e:ai-workspace`：根因 runner 只起 Vite 不起 API → `ECONNREFUSED :3000`；再修 CORS 未含 `127.0.0.1:4174`。
+    修复：`run-ai-workspace-playwright.ts` 启动 e2e API + `CORS_ORIGIN` 含 4174；config 直连路径补 `createApiServer`。
+    复验 **8/8 EXIT:0**。
+  - `web:e2e:sync`：根因共享 `e2e@test.com` 账号 Unverified，登录后卡 verify-email 且无新码。
+    修复：`ensureE2EAccount` send-code + verify；`submitWebLogin` 兼容 verify 场景。
+    复验 **3/3 EXIT:0**（AI service 未起有 unhandled log，不挡 goal sync）。
+  - §13.2 仍 **12 [x] / 3 [ ]**：交互式 OAuth 延后；Agent durable multi-engine 产品 E2E 仍部分；
+    全量门禁证据再增强但**不宣称** PR ready；**PR readiness = no**。
 
 
 ## 14. 相关资料

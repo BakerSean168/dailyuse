@@ -121,12 +121,100 @@ export function loadSyncCredentials(): SyncCredentials {
   };
 }
 
+/**
+ * Residual 1337: register leaves identity Unverified; web login then lands on
+ * verify-email scene. Complete the test-lane code path so sync can enter shell.
+ */
+async function waitForCapturedEmailCode(
+  request: APIRequestContext,
+  credentials: SyncCredentials,
+  kind: 'email-verify' | 'password-reset' = 'email-verify',
+  timeoutMs = 30_000,
+): Promise<string> {
+  const deadline = Date.now() + timeoutMs;
+  const url = new URL(`${credentials.apiBaseUrl}/auth/test/last-email-code`);
+  url.searchParams.set('email', credentials.email);
+  url.searchParams.set('kind', kind);
+
+  let lastError: unknown;
+  while (Date.now() < deadline) {
+    try {
+      const response = await request.get(url.toString());
+      if (response.ok()) {
+        const body = (await response.json()) as {
+          data?: { code?: string | null };
+          code?: string | null;
+        };
+        const code = body.data?.code ?? body.code ?? null;
+        if (typeof code === 'string' && /^\d{6}$/.test(code)) {
+          return code;
+        }
+      } else {
+        lastError = new Error(`HTTP ${response.status()}`);
+      }
+    } catch (error) {
+      lastError = error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  throw new Error(
+    `Timed out waiting for ${kind} code for ${credentials.email}: ${
+      lastError instanceof Error ? lastError.message : String(lastError ?? 'no code')
+    }`,
+  );
+}
+
+async function sendAndVerifyEmail(
+  request: APIRequestContext,
+  credentials: SyncCredentials,
+): Promise<void> {
+  // Residual 1337: Unverified accounts can login at API level but web UI stays on
+  // verify-email. Always send a fresh test-lane code then verify via API.
+  const sendUrl = `${credentials.apiBaseUrl}/auth/email/send-code`;
+  const sendAttempt = await postAuthEnvelope<unknown>(request, sendUrl, {
+    email: credentials.email,
+    purpose: 'EmailVerify',
+  });
+  if (!sendAttempt.ok) {
+    // Already Active / rate-limit / missing identity — leave to caller.
+    throw new Error(
+      `Send email code failed for ${credentials.email}: ${
+        sendAttempt.error?.message ?? 'unknown send error'
+      }`,
+    );
+  }
+
+  // Anti-enumeration: already-Active emails return ok without issuing a code.
+  // Short poll avoids a 30s hang when no challenge was created.
+  let code: string;
+  try {
+    code = await waitForCapturedEmailCode(request, credentials, 'email-verify', 4_000);
+  } catch {
+    return;
+  }
+  const verifyUrl = `${credentials.apiBaseUrl}/auth/email/verify`;
+  const verifyAttempt = await postAuthEnvelope<unknown>(request, verifyUrl, {
+    email: credentials.email,
+    code,
+    purpose: 'EmailVerify',
+  });
+  if (!verifyAttempt.ok) {
+    throw new Error(
+      `Email verify failed for ${credentials.email}: ${
+        verifyAttempt.error?.message ?? 'unknown verify error'
+      }`,
+    );
+  }
+}
+
 export async function ensureE2EAccount(
   request: APIRequestContext,
   credentials: SyncCredentials,
 ): Promise<void> {
   // The suite tolerates either an existing seeded account or first-run account
   // creation. This keeps local sync regression setup lightweight.
+  // Residual 1337: force Active email so web login leaves /auth (not verify scene).
   const loginUrl = `${credentials.apiBaseUrl}/auth/login`;
   const registerUrl = `${credentials.apiBaseUrl}/auth/register`;
   const loginPayload = {
@@ -136,16 +224,53 @@ export async function ensureE2EAccount(
 
   const firstLoginAttempt = await postAuthEnvelope<unknown>(request, loginUrl, loginPayload);
   if (firstLoginAttempt.ok) {
+    try {
+      await sendAndVerifyEmail(request, credentials);
+    } catch {
+      // Likely already Active or send not needed for this identity.
+    }
     return;
   }
 
   const registerAttempt = await postAuthEnvelope<unknown>(request, registerUrl, loginPayload);
   if (registerAttempt.ok) {
-    return;
+    // Register already sends a code; verify with captured code (or resend if stale).
+    try {
+      await sendAndVerifyEmail(request, credentials);
+    } catch {
+      // If send failed, try verify with code already emitted by register.
+      const code = await waitForCapturedEmailCode(request, credentials, 'email-verify');
+      const verifyAttempt = await postAuthEnvelope<unknown>(
+        request,
+        `${credentials.apiBaseUrl}/auth/email/verify`,
+        { email: credentials.email, code, purpose: 'EmailVerify' },
+      );
+      if (!verifyAttempt.ok) {
+        throw new Error(
+          `Email verify failed for ${credentials.email}: ${
+            verifyAttempt.error?.message ?? 'unknown verify error'
+          }`,
+        );
+      }
+    }
+    const afterRegisterLogin = await postAuthEnvelope<unknown>(request, loginUrl, loginPayload);
+    if (afterRegisterLogin.ok) {
+      return;
+    }
+    throw new Error(
+      `Registered ${credentials.email} and verified email, but login still failed: ${
+        afterRegisterLogin.error?.message ?? 'unknown login error'
+      }`,
+    );
   }
 
   const secondLoginAttempt = await postAuthEnvelope<unknown>(request, loginUrl, loginPayload);
   if (secondLoginAttempt.ok) {
+    try {
+      await sendAndVerifyEmail(request, credentials);
+    } catch {
+      // ignore if already Active
+    }
     return;
   }
 
