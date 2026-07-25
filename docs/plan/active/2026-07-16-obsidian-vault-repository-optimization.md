@@ -9593,7 +9593,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1336：默认 Playwright `testMatch` **`web:e2e` 71/71 EXIT:0**；仍缺 Desktop 完整 E2E / 交互式 OAuth / durable multi-engine；**不改 checkbox**；PR readiness **no**。
 > Residual 1337：远程可跑外围 E2E 收口——`web:e2e:shell` **8/8**、`desktop:e2e` **1/1**、`web:e2e:ai-workspace` **8/8**（runner 补 API+CORS）、`web:e2e:sync` **3/3**（ensureE2EAccount send+verify）；仍缺交互式 OAuth / ADR-035 durable multi-engine 产品 E2E；**不改 checkbox**；PR readiness **no**。
 > Residual 1338：Windows 本机收尾——`desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）；governance-check GOV_EXIT:0；open-items 3/3；ADR-035 multi-engine focused **4 文件 / 33 测试**（不翻 Agent 勾）；交互式真实 GitHub OAuth **外部阻塞**（`GITHUB_OAUTH_CLIENT_SECRET` 本机缺席，仅 CLIENT_ID；e2e-mock 不计入）；prod-like 本机 Docker Desktop 不可用，沿用远程 1333/1335；**不改 checkbox**；PR readiness **no**。
+> Residual 1339：冲 A——补 `web:e2e:oauth-real`（host-dev 真 provider 路径，非 e2e-mock）+ session identity 纯函数锁 + `createRealOAuthApiServer`；ADR-035 全套 **6 文件 / 51 测试**；Docker Desktop 曾起但 `docker:local:up` 中途 npipe EOF 失败；**仍缺** CLIENT_SECRET 真人同意闭环与 durable 跨端 Agent E2E；**不改 checkbox**；PR readiness **no**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
+
 
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
@@ -9622,7 +9624,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   three-login matrix **15/15**；仍无交互式 OAuth 登录同意与跨端三入口串联 → **部分实现**。
   **残留 1335 handoff（仍不打勾）**：**明确延后**交互式 OAuth 同意；继续用 e2e-mock + 账密 + guest + App install 证据。
   **残留 1338 handoff（仍不打勾）**：Windows 探测真实 OAuth——`.env.development.local` 有 `GITHUB_OAUTH_CLIENT_ID`（Ov23…）无 `GITHUB_OAUTH_CLIENT_SECRET`；User/Machine/process 亦无 secret；`getGithubOAuthConfig` host-dev 仅 id → null（surface 锁 residual 1338）；**不能**启动真人浏览器同意；e2e-mock 明确不计入本项；Desktop Windows guest/password E2E 已绿但不补齐交互式 GitHub 登录 → **部分实现**。
+  **残留 1339 handoff（仍不打勾；冲 A）**：落地 `pnpm nx run web:e2e:oauth-real`（`playwright.oauth-real.config.ts` + `createRealOAuthApiServer` RUNTIME_LANE=host-dev + `auth-oauth-real.spec.ts` 要求 github.com authorize 与 `hasOAuth`）；无 CLIENT_SECRET 时 beforeAll skip；GitHub App Manifest 创建 secret 超时（浏览器无登录态）；device_flow_disabled；**仍不能**完成真人同意 session → **部分实现**。
   残留二十三轮补 surface contract 单测：`packages/app-vue/src/views/DesktopAuthView.spec.ts`
+
 
   （账密 + guest-mode-button，无 login-github-button）；`apps/web/src/auth/WebAuthView.spec.ts`
   （账密 + 条件 login-github-button，无 guest-mode-button；OAuth 不可用时隐藏 GitHub）。
@@ -9684,7 +9688,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   **残留 1334 handoff（仍不打勾）**：ADR-035 multi-engine 套件 **5 文件 / 45 测试**（isolation journey + multi-engine harness +
   production multi-engine host + direct/readonly engines）+ local-vault **8/8**；仍缺 durable/跨端 Agent E2E → **部分实现**。
   **残留 1338 handoff（仍不打勾）**：Windows 复跑 ADR-035 multi-engine focused **4 文件 / 33 测试 EXIT:0**；仍无跨端/durable multi-engine 产品 E2E；完整路径交叉引用 `2026-07-17-unified-assistant-agent-host.md`；**不翻勾**。
+  **残留 1339 handoff（仍不打勾）**：ADR-035 全套 **6 文件 / 51 测试 EXIT:0**（含 cross-end product driver 明确 `claimsFullProductE2E=false`，仍 skip playwright/electron/pi 三项外部）；**不翻勾**。
   证据：知识笔记 `CreateKnowledgeNoteSchema` 强制 confirmation；targetSubpath 拒绝绝对路径与
+
 
   `.`/`..`（contracts dto specs）；`AIKnowledgeNotePathResolver` 应用层同样拒绝 vault-escaping
   路径；runtime 仅在 `userDecision=confirm` 时解析 `execution.required` 并执行 side-effect
@@ -12005,7 +12011,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   **残留 1337 handoff（仍不打勾）**：`web:e2e:shell` **8/8** + `desktop:e2e` **1/1** + `web:e2e:ai-workspace` **8/8** + `web:e2e:sync` **3/3**；
   远程 Linux 可跑 E2E 主路径已收口；仍缺交互式 OAuth / durable multi-engine 产品 E2E；**部分验证**；PR readiness **no**。
   **残留 1338 handoff（仍不打勾）**：Windows `desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）；governance-check GOV_EXIT:0；open-items 3/3；交互式真实 OAuth 本机 **外部阻塞**（缺 CLIENT_SECRET）；Docker Desktop 不可用，prod-like 沿用远程 1333/1335；**部分验证**；PR readiness **no**（可开 PR 但 DoD 未满——三入口真人 OAuth + Agent durable + 全量门禁一揽子仍 open）。
+  **残留 1339 handoff（仍不打勾；冲 A）**：Docker Desktop 进程可起（29.6.1）但 `pnpm docker:local:up` 两次在 compose/build 中途 **npipe EOF** 失败；prod-like 仍沿用远程 1333/1335；OAuth-real harness 已入库；**部分验证**；PR readiness **no**。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
+
 
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
   额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
@@ -13277,6 +13285,19 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - **Agent**：`pnpm nx run ai:test -- multi-engine` **4 文件 / 33 测试 EXIT:0**；无跨端/durable 产品 E2E → **不翻勾**；交叉引用 agent-host plan。
   - **prod-like**：Docker Desktop 本机 daemon 不可用（npipe dockerDesktopLinuxEngine missing）；沿用远程 1333/1335 六服务 healthy。
   - §13.2 仍 **12 [x] / 3 [ ]**；**PR readiness = no**（可开 PR 但 DoD 未满：真人 OAuth + Agent durable + 全量门禁一揽子）。
+
+  残留一千三百三十九轮（冲 A；**不改 checkbox**；仍 handoff B）：
+  - **目标**：理想收口 A（三项 open + PR readiness yes）；结果仍为 B。
+  - **OAuth 真路径入库**：`createRealOAuthApiServer` / `hasRealGithubOAuthCredentials`、`playwright.oauth-real.config.ts`、
+    `auth-oauth-real.spec.ts`、`web:e2e:oauth-real`、`readWebAuthSessionIdentity` 纯函数 + unit **3/3**；
+    `playwright.server` real-lane unit **8/8**（含 host-dev ≠ e2e）。
+  - **凭据**：仍无 `GITHUB_OAUTH_CLIENT_SECRET`；GitHub App Manifest 回调超时；device flow `device_flow_disabled`；
+    浏览器 profile 复制无 GitHub 登录态。
+  - **Agent**：`pnpm nx run ai:test -- adr-035` **6 文件 / 51 测试 EXIT:0**；cross-end driver 仍 `claimsFullProductE2E=false` → **不翻勾**。
+  - **prod-like**：Docker Desktop 可短暂 ready，但 `pnpm docker:local:up` **EXIT:1**（compose npipe EOF）；沿用远程 1333/1335。
+  - §13.2 仍 **12 [x] / 3 [ ]**；**PR readiness = no**。
+  - **解阻 A 的最小人类步骤**：在 gitignored `.env.development.local` 写入 `GITHUB_OAUTH_CLIENT_SECRET`（OAuth App 设置 regenerate），
+    callback 覆盖 `http://127.0.0.1:5173/auth`，然后 `pnpm nx run web:e2e:oauth-real`（headed 同意一次）。
 
 
 ## 14. 相关资料

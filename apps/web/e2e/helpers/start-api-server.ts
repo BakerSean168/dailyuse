@@ -80,11 +80,18 @@ async function main(): Promise<void> {
 
   fs.mkdirSync(apiLogDir, { recursive: true });
 
+  // Residual 1339: real interactive OAuth uses host-dev so getGithubOAuthConfig
+  // does not force e2e-mock (residual 1333). Default Playwright stays on e2e.
+  const runtimeLane =
+    process.env.E2E_REAL_GITHUB_OAUTH === '1' || process.env.RUNTIME_LANE === 'host-dev'
+      ? 'host-dev'
+      : 'e2e';
+
   const apiProcess = spawn(process.execPath, ['main.js'], {
     cwd: apiDistDir,
     env: {
       ...process.env,
-      RUNTIME_LANE: 'e2e',
+      RUNTIME_LANE: runtimeLane,
       NODE_ENV: process.env.NODE_ENV ?? 'test',
       LOG_DIR: process.env.LOG_DIR || apiLogDir,
     },

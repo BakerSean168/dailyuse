@@ -150,6 +150,60 @@ export function createApiServer() {
   };
 }
 
+/**
+ * Residual 1339: real interactive GitHub OAuth Playwright path.
+ * Loads gitignored `.env.development.local` for GITHUB_OAUTH_* and forces
+ * RUNTIME_LANE=host-dev so getGithubOAuthConfig does NOT replace credentials
+ * with e2e-mock (residual 1333 keep-boundary).
+ */
+function loadGithubOAuthCredentialsFromLocalEnv(): {
+  clientId: string;
+  clientSecret: string;
+} {
+  // Explicit process.env wins (tests / CI inject). Files only fill gaps.
+  const presetId = process.env.GITHUB_OAUTH_CLIENT_ID?.trim() ?? '';
+  const presetSecret = process.env.GITHUB_OAUTH_CLIENT_SECRET?.trim() ?? '';
+  if (!presetId || !presetSecret) {
+    loadEnvFile(resolve(WORKSPACE_ROOT, '.env.development.local'));
+    loadEnvFile(resolve(WORKSPACE_ROOT, '.env.test.local'));
+  }
+  if (presetId) process.env.GITHUB_OAUTH_CLIENT_ID = presetId;
+  if (presetSecret) process.env.GITHUB_OAUTH_CLIENT_SECRET = presetSecret;
+  return {
+    clientId: process.env.GITHUB_OAUTH_CLIENT_ID?.trim() ?? '',
+    clientSecret: process.env.GITHUB_OAUTH_CLIENT_SECRET?.trim() ?? '',
+  };
+}
+
+export function createRealOAuthApiServer() {
+  const apiOrigin = getApiOrigin();
+  const { clientId, clientSecret } = loadGithubOAuthCredentialsFromLocalEnv();
+
+  return {
+    command: 'pnpm exec tsx ./e2e/helpers/start-api-server.ts',
+    cwd: '.',
+    url: `${apiOrigin}/healthz`,
+    env: {
+      ...process.env,
+      NODE_ENV: 'test',
+      // host-dev: real provider when both secrets present (not e2e-mock).
+      RUNTIME_LANE: 'host-dev',
+      E2E_REAL_GITHUB_OAUTH: '1',
+      GITHUB_OAUTH_CLIENT_ID: clientId,
+      GITHUB_OAUTH_CLIENT_SECRET: clientSecret,
+      CORS_ORIGIN: getCorsOrigins(),
+    },
+    ...apiServerOptions,
+  };
+}
+
+export function hasRealGithubOAuthCredentials(): boolean {
+  const { clientId, clientSecret } = loadGithubOAuthCredentialsFromLocalEnv();
+  if (!clientId || !clientSecret) return false;
+  if (clientId === 'e2e-mock' || clientId === 'mock') return false;
+  return true;
+}
+
 export function createPowerSyncTestServer() {
   const port = process.env.TEST_POWERSYNC_PORT ?? '58082';
 

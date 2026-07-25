@@ -134,4 +134,20 @@ describe('playwright.server', () => {
     expect(createApiServer().reuseExistingServer).toBe(false);
     expect(createWebServer().reuseExistingServer).toBe(false);
   });
+
+  it('real OAuth API server uses host-dev lane (residual 1339, not e2e-mock)', async () => {
+    process.env.GITHUB_OAUTH_CLIENT_ID = 'Ov23test-real-client';
+    process.env.GITHUB_OAUTH_CLIENT_SECRET = 'real-secret-for-test-only';
+
+    const { createApiServer, createRealOAuthApiServer } = await import('../playwright.server');
+
+    const mockLane = createApiServer();
+    expect(mockLane.env?.RUNTIME_LANE).toBe('e2e');
+
+    const realLane = createRealOAuthApiServer();
+    expect(realLane.env?.RUNTIME_LANE).toBe('host-dev');
+    expect(realLane.env?.E2E_REAL_GITHUB_OAUTH).toBe('1');
+    expect(realLane.env?.GITHUB_OAUTH_CLIENT_ID).toBe('Ov23test-real-client');
+    expect(realLane.env?.GITHUB_OAUTH_CLIENT_SECRET).toBe('real-secret-for-test-only');
+  });
 });
