@@ -315,8 +315,10 @@ describe('live GitHub knowledge repository acceptance', () => {
     expect(repository.private).toBe(true);
     expect(repository.archived).toBe(false);
     expect(repository.disabled).toBe(false);
-    expect(repository.permissions.admin).toBe(true);
+    // GitHub App inventory derives push from installation contents:write;
+    // admin is often false on /installation/repositories and is not required.
     expect(repository.permissions.push).toBe(true);
+    expect(repository.permissions.pull).toBe(true);
     expect(repository.defaultBranch).toBeTruthy();
 
     const preview = await appClient.getRepositorySnapshot(

@@ -370,7 +370,7 @@ describe('KnowledgeRepositoryConnectionService', () => {
   it.each([
     ['public', { private: false }, 'FORBIDDEN'],
     ['archived', { archived: true }, 'FORBIDDEN'],
-    ['non-admin', { permissions: { admin: false, push: true, pull: true } }, 'FORBIDDEN'],
+    ['non-push', { permissions: { admin: false, push: false, pull: true } }, 'FORBIDDEN'],
   ])('rejects %s repositories', async (_label, repositoryPatch, expectedCode) => {
     const github = createGithubClient();
     vi.mocked(github.getInstallationInventory).mockImplementation(async () => ({

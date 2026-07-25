@@ -9364,6 +9364,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-24（阶段 6 残留一千三百三十三轮续 — core business e2e）：manifest code 再提交仍 404；
 > install count 仍 0；goal/reminder/task/notification e2e 原 7 红已收口（testid + activatedAt + locales）；
 > §13.2 **12 [x] / 3 [ ]** 不改 checkbox；PR readiness no。
+> 续进展 2026-07-25（阶段 6 残留一千三百三十三轮续 — App install 成功 + live-github 绿）：
+> installation **148867606** on `BakerSean168/memoflow-github-app-e2e-fixture`；二次 install 页 Not Found 为已装后重进
+> `/installations/new` 的预期噪声。产品门禁从错误的 `permissions.admin` 改为 `contents:write`/`push`；
+> `desktop:test:live-github` **1/1 绿**；repository focused unit **58/58**。
 
 
 
@@ -13157,6 +13161,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
     - reminder-notification-loop：`activeTime.activatedAt`（Residual 835；弃用 startDate/endDate）。
     - app-vue locales 补 `goal.dialog`、`task.templateCard|metadata|timeConfig|recurrence|error`、`reminder.schedule|templateDetail`、`notification.filter`（en-US + zh-CN），消除 raw key 渲染。
   - 验证：`web:e2e` goal+reminder+task+notification 相关 **18/18 绿**（中间轮 16/18 后补 toast/badge 键再 **2/2 绿**）；install 仍 0；§13.2 **不改 checkbox**；PR readiness 仍为 no。
+
+  残留一千三百三十三轮续（浏览器 install 成功 + live-github 真实路径 + push 门禁修正）：
+  - 用户确认已装；API 轮询：`installations_count=1`，installation **148867606**，仓 `BakerSean168/memoflow-github-app-e2e-fixture`（private，contents write）。
+  - 二次安装弹窗 / **Not Found**：第一次已成功；再打开 `/apps/memoflow-dev-test/installations/new` 或过期回调会 404/重提示——**可忽略**；管理入口：`https://github.com/settings/installations/148867606`。
+  - 本地接线（gitignored）：`.env.test.local` / `.env.development.local` 写入 `GITHUB_TEST_INSTALLATION_ID=148867606`。
+  - 根因：GitHub `/installation/repositories` 对仅 `contents`+`metadata` 的 App 常返回 `permissions.admin/push/pull` 全 false，但 token 实际可写（PUT contents **201** 已证）。产品门禁误要求 `admin` → 改为要求 `push`；inventory 从 installation `contents:write` 推导 `push/pull`。
+  - 验证：repository focused unit **58/58**；`desktop:test:live-github` **1/1 绿**（commit via App → read back → Desktop Vault pull）。
+  - 三入口真实 GitHub fixture 证据增强；§13.2 未完成项是否勾选仍以计划表正式审计为准，本轮**不擅自翻 checkbox**；PR readiness 仍为 no（全量门禁未宣称）。
 
 
 ## 14. 相关资料

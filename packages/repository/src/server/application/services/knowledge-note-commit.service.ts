@@ -320,12 +320,13 @@ export class KnowledgeNoteCommitService {
     contentsPermission: 'read' | 'write' | 'none',
     repository: GitHubInstallationRepositoryDTO,
   ): boolean {
+    // App installations grant write via contents:write / push, not org admin.
     return (
       contentsPermission === 'write' &&
       repository.private &&
       !repository.archived &&
       !repository.disabled &&
-      repository.permissions.admin
+      repository.permissions.push
     );
   }
 

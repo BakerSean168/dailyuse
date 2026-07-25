@@ -159,7 +159,7 @@ export class GitHubAppClient implements IGitHubAppClient {
         { authorization: `Bearer ${accessToken.token}` },
       );
       const batch = (response.repositories ?? []).map((repository) =>
-        this.toRepository(repository),
+        this.toRepository(repository, contentsPermission),
       );
       repositories.push(...batch);
       if (batch.length < 100) break;
@@ -646,10 +646,27 @@ export class GitHubAppClient implements IGitHubAppClient {
     return relativePath.toLowerCase().endsWith('.md');
   }
 
-  private toRepository(repository: GitHubRepositoryResponse): GitHubInstallationRepositoryDTO {
+  /**
+   * Map installation-scoped repository payloads.
+   *
+   * GitHub often returns `permissions.{admin,push,pull}` as all `false` on
+   * `/installation/repositories` for Apps that only request `contents` +
+   * `metadata`. Actual write access is carried by the installation token
+   * (`contents: write`), which we already verified before listing repos.
+   * Derive push/pull from that installation grant so product gates match reality.
+   */
+  private toRepository(
+    repository: GitHubRepositoryResponse,
+    contentsPermission: 'read' | 'write' | 'none' = 'none',
+  ): GitHubInstallationRepositoryDTO {
     if (!repository.id || !repository.full_name || !repository.owner?.id) {
       throw new Error('GitHub returned an invalid repository payload');
     }
+    const reportedPush = repository.permissions?.push === true;
+    const reportedPull = repository.permissions?.pull === true;
+    const reportedAdmin = repository.permissions?.admin === true;
+    const push = reportedPush || contentsPermission === 'write';
+    const pull = reportedPull || contentsPermission === 'write' || contentsPermission === 'read';
     return {
       id: String(repository.id),
       nodeId: repository.node_id ?? '',
@@ -660,9 +677,10 @@ export class GitHubAppClient implements IGitHubAppClient {
       disabled: repository.disabled === true,
       defaultBranch: repository.default_branch || 'main',
       permissions: {
-        admin: repository.permissions?.admin === true,
-        push: repository.permissions?.push === true,
-        pull: repository.permissions?.pull === true,
+        // Keep admin as GitHub reports it (Apps rarely get admin:true).
+        admin: reportedAdmin,
+        push,
+        pull,
       },
     };
   }

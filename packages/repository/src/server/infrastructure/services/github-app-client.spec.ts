@@ -138,6 +138,59 @@ describe('GitHubAppClient', () => {
     expect(getAuthorization(fetchImpl.mock.calls[2]?.[1])).toBe('Bearer inventory-token');
   });
 
+  it('derives push/pull from installation contents:write when GitHub reports all-false repo permissions', async () => {
+    // Real App installs often return admin/push/pull all false on
+    // /installation/repositories while the token still has contents:write.
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          id: 7,
+          account: { id: 42 },
+          permissions: { contents: 'write' },
+          suspended_at: null,
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ token: 'inventory-token', expires_at: TOKEN_EXPIRY }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          repositories: [
+            {
+              id: 987654321,
+              node_id: 'R_knowledge',
+              full_name: 'owner/knowledge',
+              private: true,
+              archived: false,
+              disabled: false,
+              default_branch: 'main',
+              owner: { id: 42 },
+              permissions: {
+                admin: false,
+                maintain: false,
+                push: false,
+                triage: false,
+                pull: false,
+              },
+            },
+          ],
+        }),
+      );
+    const client = new GitHubAppClient({
+      appId: 'github-app-123',
+      privateKey,
+      fetchImpl,
+      now: () => NOW,
+    });
+
+    const inventory = await client.getInstallationInventory('7');
+    expect(inventory.contentsPermission).toBe('write');
+    expect(inventory.repositories[0]?.permissions).toEqual({
+      admin: false,
+      push: true,
+      pull: true,
+    });
+  });
+
   it.each([
     ['suspended', 'write', '2026-07-18T08:00:00.000Z'],
     ['read-only', 'read', null],

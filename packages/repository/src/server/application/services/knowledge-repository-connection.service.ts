@@ -140,10 +140,10 @@ export class KnowledgeRepositoryConnectionService {
           message: 'Archived or disabled repositories cannot connect',
         });
       }
-      if (!repository.permissions.admin) {
+      if (!repository.permissions.push) {
         return fail({
           code: 'FORBIDDEN',
-          message: 'Repository administrator permission is required',
+          message: 'Repository push (contents write) permission is required',
         });
       }
       if (inventory.contentsPermission !== 'write') {
@@ -334,7 +334,7 @@ export class KnowledgeRepositoryConnectionService {
         !repository.private ||
         repository.archived ||
         repository.disabled ||
-        !repository.permissions.admin
+        !repository.permissions.push
       ) {
         return fail({
           code: 'FORBIDDEN',
@@ -398,7 +398,7 @@ export class KnowledgeRepositoryConnectionService {
         !repository.private ||
         repository.archived ||
         repository.disabled ||
-        !repository.permissions.admin
+        !repository.permissions.push
       ) {
         return fail({
           code: 'FORBIDDEN',
@@ -527,11 +527,11 @@ export class KnowledgeRepositoryConnectionService {
         lastErrorMessage: 'Knowledge repository is disabled',
       });
     }
-    if (!repository.permissions.admin) {
+    if (!repository.permissions.push) {
       return this.persistLifecycle(connection, {
         status: 'Suspended',
         lastErrorCode: KnowledgeRepositoryLifecycleErrorCodes.RepositoryAdminRequired,
-        lastErrorMessage: 'Repository administrator permission is required',
+        lastErrorMessage: 'Repository push (contents write) permission is required',
       });
     }
     if (connection.lastSyncedCommitSha && repository.defaultBranch !== connection.defaultBranch) {
