@@ -9589,6 +9589,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > Residual 1334：tip 起全仓 lint/typecheck/标准 test **36/36 + 34/34 + 30/30 EXIT:0**；governance **GOV_EXIT:0**；
 > Web auth **14/14** + Desktop guest xvfb **1/1** + ADR-035 multi-engine **45** + live-github **1/1**；
 > §13.2 仍 **12 [x] / 3 [ ]**（交互式 OAuth / durable multi-engine 跨端 / 全量业务 E2E+本 tip prod-like）；**不改 checkbox**；PR readiness **no**。
+> Residual 1335：跳过交互式 OAuth；业务 E2E 子集 **24/24** + goal-workflow+note **10/10** + prod-like 六服务 healthy。
+> Residual 1336：默认 Playwright `testMatch` **`web:e2e` 71/71 EXIT:0**；仍缺 Desktop 完整 E2E / 交互式 OAuth / durable multi-engine；**不改 checkbox**；PR readiness **no**。
 > Residual 891 指针仍有效（open-items surface）；本轮刷新 tip suite 数字（含 residual 1321–1324 toLocalDateKey→padTwoDigits / formatScheduleDurationMinutes dual-retired 锁）。
 > Residual 1047 loadWorkspaceEnv keep-boundary 锁仍有效；schedule route parsers keep-boundary 仍不强制并入 utils。
 > Soft residual：usePassword / account checkAvailability / removeRememberedAccount toast-only keep-boundary 仍不并入 reportAuth/handleError sole。
@@ -11991,6 +11993,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   goal-workflow+note **10/10**；根因：`registerAndLogin`/`login` 落地后等 `app-shell`（冷启动超 ELEMENT_WAIT）；
   e2e LOG_DIR + Dockerfile.api contracts dist；prod-like **六服务 healthy** + 探针 200；
   仍缺全量 Playwright 默认 testMatch 一揽子与 Desktop 完整 E2E → **部分验证**；PR readiness **no**。
+  **残留 1336 handoff（仍不打勾）**：默认 Playwright `testMatch` 全量 **`web:e2e` 71/71 EXIT:0**（ai/auth/dashboard/goal/note/notification/reminder/schedule/task/user-settings）；
+  仍缺 Desktop 完整 E2E 一揽子与交互式 OAuth；**部分验证**；PR readiness **no**。
   残留一千三百二十八轮：正式 `web:typecheck` 及 24 个依赖任务通过；同一 12-project lint
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
   额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
@@ -13228,6 +13232,16 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
     复验：`docker:local:up` 六服务 **healthy**；探针 web **58080**/api **53080**/ai **58100** **200**。
   - §13.2 仍 **12 [x] / 3 [ ]**；三入口 OAuth 真人同意仍延后；Agent 仍部分（ADR-035 durable multi-engine）；
     全量门禁仍部分（默认 Playwright testMatch 一揽子与 Desktop 完整 E2E 未宣称）；**PR readiness = no**。
+
+  残留一千三百三十六轮（默认 Playwright 全量 Web E2E；**不改 checkbox**）：
+  - **决策**：继续延后交互式 OAuth；推进默认 `web:e2e` testMatch 一揽子。
+  - 验证：`pnpm nx run web:e2e`（默认 testMatch 20 文件）**71 passed / 0 failed（EXIT:0，~28.5m）**，覆盖：
+    goal-workflow、auth（flow/login/oauth/page-contract/password/register）、dashboard retirement、
+    goal-crud、note boundary/workspace、notification center + reminder loop、reminder CRUD、
+    schedule calendar、task completion + template CRUD、user-settings（data-portability/notifications/persistence）。
+  - §13.2 第 15 项证据增强（Web 默认核心业务 E2E 已绿）；**仍缺** Desktop 完整 E2E 与「全量 PR 门禁」
+    一揽子宣称；三入口真人 OAuth / Agent durable multi-engine 仍部分 → **12 [x] / 3 [ ]**，**不改 checkbox**；
+    **PR readiness = no**。
 
 
 ## 14. 相关资料
