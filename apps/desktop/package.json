@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/BakerSean168/dailyuse.git"
   },
-  "version": "0.9.0",
+  "version": "0.10.0",
   "type": "commonjs",
   "dependencies": {
     "@dailyuse/account": "workspace:*",

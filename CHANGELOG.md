@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.10.0](https://github.com/BakerSean168/dailyuse/compare/v0.9.0...v0.10.0) (2026-07-26)
+
+
+### Features
+
+* **ai:** nightly N1 — run.started conversationId + hygiene plan ([105d66c](https://github.com/BakerSean168/dailyuse/commit/105d66c739fc30d8dc71cfaf6b333de88dac124b))
+* **ai:** nightly N2–N3 — association surface + stale approve gate ([1fd61cc](https://github.com/BakerSean168/dailyuse/commit/1fd61cc27cfc245f9e9f3b04b66b9bfb4c949fd7))
+* **ai:** residual 1342 — multi-engine Host web e2e; vault DoD 15/15 ([2444ec9](https://github.com/BakerSean168/dailyuse/commit/2444ec9222e41a477b8d9b63b18af0d6ba2dbbbb))
+* Obsidian vault repository optimization — DoD 15/15 ([39e73d2](https://github.com/BakerSean168/dailyuse/commit/39e73d2cd1f3227d453dd3fe95d4c1068f0465b0))
+* **web:** residual 1339 — real OAuth e2e harness; still 12/15 ([bef3125](https://github.com/BakerSean168/dailyuse/commit/bef31255d4cae3aab310dc54b7d4241498fe403b))
+* **web:** residual 1340 — real GitHub OAuth e2e green; flip entry DoD ([fc42622](https://github.com/BakerSean168/dailyuse/commit/fc426224d52b7e75551a1a929cf44f7ec7a1af37))
+
+
+### Bug Fixes
+
+* **api:** E5b replace bootstrap LegacyAccountModule docs with AccountApiModule ([#190](https://github.com/BakerSean168/dailyuse/issues/190)) ([024d5dc](https://github.com/BakerSean168/dailyuse/commit/024d5dc995820a3d49e160e372358c3461f0f51f))
+* **api:** force e2e-mock OAuth on RUNTIME_LANE=e2e ([feb94a8](https://github.com/BakerSean168/dailyuse/commit/feb94a8065d47417cfa7f9bf0feb4348cb3ff599))
+* **app-vue:** residual 1045 align residual 923 desktop detect surface ([a50c417](https://github.com/BakerSean168/dailyuse/commit/a50c4170728b20c7a72872dde03934f1f84097bf))
+* **app-vue:** residual 1045 rename completeAuthSuccess to camelCase ([b934ff8](https://github.com/BakerSean168/dailyuse/commit/b934ff803fbe948514e0950b25d26d1e92326077))
+* **desktop-e2e:** residual 1333 Linux guest safeStorage for headless CI ([53b17e5](https://github.com/BakerSean168/dailyuse/commit/53b17e5fff197e802e1a6d56d709019be27f542b))
+* **docker:** copy tools/mcp into API image for root postinstall ([140ce02](https://github.com/BakerSean168/dailyuse/commit/140ce022a11e6eba25e0313d526036fc3dc79ce7))
+* **e2e:** residual 1333 goal-workflow Host SSE and App wire notes ([cddbd74](https://github.com/BakerSean168/dailyuse/commit/cddbd746c3dec353a425830bfbe5131791cc6f9d))
+* **gates:** residual 1328 lint/typecheck blocker reduction ([45a8105](https://github.com/BakerSean168/dailyuse/commit/45a81050a59847724cea10b3b501ff8f331704e9))
+* **gates:** residual 1329 workspace lint closure ([fdcb1d6](https://github.com/BakerSean168/dailyuse/commit/fdcb1d636a6f7cb2a8c84afadf9341e896e929f4))
+* **gates:** residual 1330 workspace typecheck blocker reduction ([32f575f](https://github.com/BakerSean168/dailyuse/commit/32f575f2094175da672755aadf068c16001ad62a))
+* **gates:** residual 1331 desktop harness low-risk closure ([fe17474](https://github.com/BakerSean168/dailyuse/commit/fe1747412e9c8b2d213ad1daf16ebd281d7335a5))
+* **gates:** residual 1331 workspace test blocker reduction ([bbb269f](https://github.com/BakerSean168/dailyuse/commit/bbb269f8e83adff7ba7ffeefa8a2d5bca57650e8))
+* **gates:** residual 1332 full workspace standard test green ([3393ba3](https://github.com/BakerSean168/dailyuse/commit/3393ba356ce7c35bb67dad4a1c1a0c1d038db8ee))
+* **mcp:** stabilize CodeGraph and nx-mcp for agent tooling ([19b94e9](https://github.com/BakerSean168/dailyuse/commit/19b94e9e4c3caf4063cbe26882129f2ae334594c))
+* **repository:** derive App push from contents:write; live-github green ([7d0cd3f](https://github.com/BakerSean168/dailyuse/commit/7d0cd3ffd7dba5938ed22b5214d4202e611ef934))
+* **web:** close core business e2e residuals; keep App install external ([edf1c69](https://github.com/BakerSean168/dailyuse/commit/edf1c695927ab0f6bcce6fa3037514b1b2ab6904))
+* **web:** residual 1335 — skip interactive OAuth; e2e LOG_DIR + prod-like API ([78822a4](https://github.com/BakerSean168/dailyuse/commit/78822a4afce7358a617e2213d1b42840d75b3e50))
+* **web:** residual 1335 — wait for app-shell after auth in e2e ([e38a338](https://github.com/BakerSean168/dailyuse/commit/e38a3386ea49e732a706b67e762599a13340d697))
+* **web:** residual 1337 — remote shell/desktop/ai-workspace/sync e2e green ([2db2295](https://github.com/BakerSean168/dailyuse/commit/2db22956da7a3eae0c38708cbb82b75e506e7e39))
+
 ## [0.9.0](https://github.com/BakerSean168/dailyuse/compare/v0.8.0...v0.9.0) (2026-06-08)
 
 
