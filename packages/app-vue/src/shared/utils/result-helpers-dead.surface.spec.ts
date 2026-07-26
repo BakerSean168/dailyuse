@@ -28,7 +28,7 @@ describe('result-helpers dead dual removed (residual 1063)', () => {
 
   it('shared utils barrel / nearby files do not reintroduce useResultHandler', () => {
     const handleErrorSurface = readFileSync(
-      resolve(utilsDir, 'create-composable-handle-error-dual.surface.spec.ts'),
+      resolve(utilsDir, 'dual-registry.surface.spec.ts'),
       'utf8',
     );
     expect(handleErrorSurface).not.toContain('useResultHandler');

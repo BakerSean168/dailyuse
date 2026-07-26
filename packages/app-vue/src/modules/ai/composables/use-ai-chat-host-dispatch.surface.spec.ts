@@ -56,4 +56,19 @@ describe('useAIChatSession open chat Host dispatch surface', () => {
     expect(composer).toContain('ai-chat-stop-generating');
     expect(chatView).toContain('@stop="stopGenerating"');
   });
+
+  it('documents AI runtime path map and keeps open-chat off streamMessage (elegance E4)', () => {
+    const pathMap = readFileSync(
+      resolve(__dirname, '../../../../../../docs/architecture/ai-runtime-path-map.md'),
+      'utf8',
+    );
+    expect(pathMap).toContain('dispatchAssistant');
+    expect(pathMap).toContain('Host open-chat');
+    expect(pathMap).toContain('listAgentRuns');
+    expect(pathMap).toContain('产品 open-chat');
+    expect(pathMap).toMatch(/不得.*streamMessage|禁止.*streamMessage|不得回退/);
+    // session still must not call streamMessage on default send
+    expect(session).not.toMatch(/loadService\.streamMessage\s*\(/);
+  });
+
 });

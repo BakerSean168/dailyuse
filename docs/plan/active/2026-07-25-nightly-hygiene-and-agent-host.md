@@ -17,8 +17,8 @@ updated: 2026-07-25T00:00:00
 
 - **优雅化主目标 plan**：[`2026-07-26-codebase-elegance-foundation.md`](./2026-07-26-codebase-elegance-foundation.md)（What / Done；阶段 A–E）
 - **主产品 plan**（完成定义未宣称）：[`2026-07-17-unified-assistant-agent-host.md`](./2026-07-17-unified-assistant-agent-host.md)
-- **Vault-repo plan**（§13.2 **15/15**，已合 main #188）：[`2026-07-16-obsidian-vault-repository-optimization.md`](./2026-07-16-obsidian-vault-repository-optimization.md) → elegance 阶段 A 归档
-- **Windows handoff**（历史）：[`2026-07-25-windows-vault-repo-residual-handoff.md`](./2026-07-25-windows-vault-repo-residual-handoff.md) → 随 vault 归档
+- **Vault-repo plan**（§13.2 **15/15**，已合 main #188）：[`2026-07-16-obsidian-vault-repository-optimization.md`](../archive/2026-07-16-obsidian-vault-repository-optimization.md) → elegance 阶段 A 归档
+- **Windows handoff**（历史）：[`2026-07-25-windows-vault-repo-residual-handoff.md`](../archive/2026-07-25-windows-vault-repo-residual-handoff.md) → 随 vault 归档
 - **本文件**：给远程/Windows agent 的**夜间持续优化协议**与 residual 日志（How）。
 
 规范入口：`AGENT.md`。真值：代码/配置/测试 > 根配置 > `docs/`。
@@ -127,6 +127,7 @@ residual 记本文件 §9 与 elegance plan §9。
 | N1 | 2026-07-25 | AH-1：`AssistantEvent` `run.started.conversationId?` + facade 下发 + association surface；e2e multi-engine mock 对齐 | agent-host | focused ai 14 + contracts stage0 5 绿 |
 | N1b | 2026-07-25 | dual 扫描：`formatFileSize` 等仍为 L keep-boundary（1145），**不 merge** | hygiene L | 跳过微 dual |
 | N2 | 2026-07-25 | AH-2：Conversation↔Host association surface（open-chat ≠ listAgentRuns；§20 不勾） | agent-host | surface 绿 |
+| E-PR189 | 2026-07-26 | elegance A+B+C：archive vault；Dual Registry；dual 237→84；AI path map；AH-2 书面不做 | elegance | merge 门槛 |
 | N3 | 2026-07-25 | AH-3：ProposalKernel stale 禁 approve；revise 清 stale→draft；STALE_REVISION 仍在 | agent-host | kernel tests |
 
 ## 10. 完成 / 归档

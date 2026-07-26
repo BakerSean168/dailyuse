@@ -61,3 +61,8 @@ updated: 2026-07-05T00:15:00+08:00
 - 配置治理：[`./configuration-governance.md`](./configuration-governance.md)
 - 计划目录：[`../plan/README.md`](../plan/README.md)
 - governance 示例模块资料：[`../../packages/governance/README.md`](../../packages/governance/README.md)、[`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)、[`CHANGE_PLAYBOOK.md`](./CHANGE_PLAYBOOK.md)、[`DECISIONS.md`](./DECISIONS.md)
+
+## Dual Registry
+
+- [Dual Registry（人读）](./dual-registry.md)
+- 机器账本：`tools/governance/dual-registry.json`

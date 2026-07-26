@@ -15,15 +15,20 @@ updated: 2026-07-26T00:00:00
 
 | 计划                                                                                                | 当前状态                                                                                                                                                           |
 | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [代码优雅化与后续实施地基](./2026-07-26-codebase-elegance-foundation.md) | **主目标**：Dual Registry + **dual 清理** / 归档 / 路径地图；**PR #189 执行完再合**（A+B 必达，宜 C）；§3.1 + §10 提示词 |
+| [代码优雅化与后续实施地基](./2026-07-26-codebase-elegance-foundation.md) | **主目标**：Dual Registry + dual 清理 / 路径地图；**PR #189 执行完再合**（A+B 必达，宜 C）；§3.1 + §10 提示词 |
 | [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 对齐 #189 merge 门槛；服务 elegance dual 清理 |
 | [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)                         | **实施中**（完成定义未宣称）：统一助手、右侧工作台、Workflow/Turn/Model；产品主能力线                                                                                                       |
 | [Auth + Account 收敛与安全闭环](./2026-07-17-auth-account-security-closure.md)                      | **实施中**：A–E 源码闭环；待 e2e 真跑与生产发信                                                                                                                    |
 | [Web 登录与注册页面后续优化](./2026-07-15-web-auth-page-optimization.md)                            | **大部分已落地**：访客/主题/校验/找回验证已接；法律文案与远程验收仍待                                                                                         |
 | [Web 登录后主要功能内部产品审查](./2026-07-15-web-core-product-review.md)                           | 审查材料：待抽 P0 backlog，不阻塞 elegance                                                                                                                       |
 | [Web 登录后工作区产品与设计复审](./2026-07-16-web-product-design-review.md)                         | 第二轮审查：待转化为实施任务                                                                                                                                       |
-| [Obsidian Vault 与 GitHub 知识仓库后续优化](./2026-07-16-obsidian-vault-repository-optimization.md) | **DoD 15/15 / PR readiness yes / 已合 main (#188)** — 待迁 `archive`（elegance 阶段 A） |
-| [Windows vault-repo residual handoff](./2026-07-25-windows-vault-repo-residual-handoff.md) | **历史 handoff 完成** — 待随 vault plan 迁 `archive` |
+
+## 已归档（本轮）
+
+| 计划 | 结果 |
+| ---- | ---- |
+| [Obsidian Vault 与 GitHub 知识仓库](../archive/2026-07-16-obsidian-vault-repository-optimization.md) | §13.2 **15/15**；PR readiness yes；合 main **#188** |
+| [Windows vault-repo residual handoff](../archive/2026-07-25-windows-vault-repo-residual-handoff.md) | Windows 收尾完成；历史 handoff |
 
 ## 规则
 

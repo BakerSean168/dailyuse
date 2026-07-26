@@ -83,7 +83,7 @@ updated: 2026-07-22T00:00:00
   - Host UI 完整 Artifact 富编辑与 Task 共用工作台（Goal/Knowledge Host 路径已部分落地）；
   - 完整 multi-engine runtime E2E 与跨端 Playwright/Electron。
 - 更完整的 vault/知识仓库边界与 §13.2 证据见
-  [2026-07-16-obsidian-vault-repository-optimization.md](./2026-07-16-obsidian-vault-repository-optimization.md)。
+  [2026-07-16-obsidian-vault-repository-optimization.md](../archive/2026-07-16-obsidian-vault-repository-optimization.md)。
 
 ## 2. 目标与非目标
 
@@ -926,9 +926,20 @@ packages/contracts/src/modules/ai/
 
 - [ADR-035: 统一助手与可插拔 Agent Host](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)
 - [AI 模块说明](../../product/modules/ai.md)
-- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](./2026-07-16-obsidian-vault-repository-optimization.md)
+- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../archive/2026-07-16-obsidian-vault-repository-optimization.md)
 - [AI Agent checkpoint persistence](../../architecture/ai-agent-checkpoint-persistence.md)
 - [AI Agent 框架选型方案（历史）](../archive/2026-06-04-ai-agent-framework-options.md)
 - [AI Agent runtime 架构方案（历史）](../archive/2026-06-04-ai-agent-runtime-architecture-options.md)
 - [earendil-works/pi](https://github.com/earendil-works/pi)
 - [nexu-io/open-design](https://github.com/nexu-io/open-design)
+
+
+<!-- elegance-E6-AH-2 -->
+## Elegance E6 决策摘录（2026-07-26，PR #189）
+
+| 项 | 决策 | 说明 |
+|----|------|------|
+| **AH-2 产品恢复 UI** | **本轮不做**（external / follow-up） | N2 已锁：Host open-chat `assistant-run-*` ≠ `listAgentRuns`。产品「按会话恢复 Host 只读列表」**延期**到 agent-host 产品切片，不在 elegance #189 做假绿 UI。落点：既有 association surface + [`docs/architecture/ai-runtime-path-map.md`](../../architecture/ai-runtime-path-map.md)。 |
+| **AH-4 Task/Goal 共用 Artifact** | **follow-up** | elegance #189 residual 记未做；不宣称 §20。 |
+| **AH-5/6 Electron multi-engine / Pi** | **external** | 不在本 PR；禁止宣称完成。 |
+

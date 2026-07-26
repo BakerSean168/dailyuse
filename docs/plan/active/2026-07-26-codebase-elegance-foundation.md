@@ -21,8 +21,8 @@ updated: 2026-07-26T12:00:00
 | **本文件** | **主目标 plan**：定义「优雅状态」、阶段、完成定义、与其它 plan 的边界 |
 | 执行协议（每夜怎么跑） | [`2026-07-25-nightly-hygiene-and-agent-host.md`](./2026-07-25-nightly-hygiene-and-agent-host.md) |
 | 主产品能力 plan（完成定义未宣称） | [`2026-07-17-unified-assistant-agent-host.md`](./2026-07-17-unified-assistant-agent-host.md) |
-| Vault 产品切片（§13.2 **15/15**，已合 main） | [`2026-07-16-obsidian-vault-repository-optimization.md`](./2026-07-16-obsidian-vault-repository-optimization.md) → 应归档 |
-| Windows handoff（历史） | [`2026-07-25-windows-vault-repo-residual-handoff.md`](./2026-07-25-windows-vault-repo-residual-handoff.md) → 应归档 |
+| Vault 产品切片（§13.2 **15/15**，已合 main） | [`2026-07-16-obsidian-vault-repository-optimization.md`](../archive/2026-07-16-obsidian-vault-repository-optimization.md) → 应归档 |
+| Windows handoff（历史） | [`2026-07-25-windows-vault-repo-residual-handoff.md`](../archive/2026-07-25-windows-vault-repo-residual-handoff.md) → 应归档 |
 | Auth 旁支 | [`2026-07-17-auth-account-security-closure.md`](./2026-07-17-auth-account-security-closure.md) |
 | 产品审查材料 | `2026-07-15-web-core-product-review.md` / `2026-07-16-web-product-design-review.md`（转 backlog，不在本 plan 做 UX 大改） |
 
@@ -85,15 +85,15 @@ updated: 2026-07-26T12:00:00
 
 ### 3.1 硬完成定义（全部满足才可将本 plan 标为完成）
 
-- [ ] **E1 文档入口干净**：vault plan + Windows handoff 已迁 `docs/plan/archive`；`docs/plan/active/README.md` 反映 main 真值；本 plan + nightly + agent-host 为 active 主叙事。
-- [ ] **E2 Dual 登记册（registry）落地**：仓库内有一份可维护的 **Dual Registry**（见 §5.1），覆盖全部 `*dual*.surface.spec.ts` 与 keep-boundary 规格，每项标注 `retired | keep_boundary | open_S | open_M | open_X`；无「未分类」积压超过 5%。
-- [ ] **E3 Dual 税下降**：相对本 plan 基线日，满足至少一条：
+- [x] **E1 文档入口干净**：vault plan + Windows handoff 已迁 `docs/plan/archive`；`docs/plan/active/README.md` 反映 main 真值；本 plan + nightly + agent-host 为 active 主叙事。
+- [x] **E2 Dual 登记册（registry）落地**：仓库内有一份可维护的 **Dual Registry**（见 §5.1），覆盖全部 `*dual*.surface.spec.ts` 与 keep-boundary 规格，每项标注 `retired | keep_boundary | open_S | open_M | open_X`；无「未分类」积压超过 5%。
+- [x] **E3 Dual 税下降**：相对本 plan 基线日，满足至少一条：
   - **E3a** `open_S` + `open_M` 条目清零（或仅剩书面 defer 且有 owner/日期）；或
   - **E3b** dual-surface 文件数下降 **≥ 25%**（通过合并 registry 级 suite / 删除纯重复锁，**不**靠删除未退休 dual 实现）；且 CI 相关 test 仍绿。
-- [ ] **E4 多路径地图**：`docs/` 或 `packages/ai` 下有 **AI 运行路径地图**（Open-chat Host / Workflow AgentRun / legacy message API）+ 允许调用方表；surface 或 docs-boundary 测试锁住「产品 open-chat 不得回退 streamMessage 双路径」（延续既有 host-dispatch surface）。
-- [ ] **E5 死域清扫一轮**：无消费者兼容 re-export / 纯注释假模块 / 死 IPC 名至少完成一轮 **S 清扫**并写入 residual；bootstrap 等处误导性 Legacy 注释清理或改为指向真路径。
-- [ ] **E6 后续实施铺垫**：agent-host 队列 AH-4 至少完成 **一小步可合并切片**（或书面 external + 落点文件）；AH-2 产品恢复 UI 有明确「做 / 不做 / 外部」决策写入 agent-host plan。
-- [ ] **E7 门禁不回归**：`daily-use:governance-check` + 受影响 project lint/typecheck/test 在收口 PR 绿；不提交密钥与 Playwright report 产物。
+- [x] **E4 多路径地图**：`docs/` 或 `packages/ai` 下有 **AI 运行路径地图**（Open-chat Host / Workflow AgentRun / legacy message API）+ 允许调用方表；surface 或 docs-boundary 测试锁住「产品 open-chat 不得回退 streamMessage 双路径」（延续既有 host-dispatch surface）。
+- [x] **E5 死域清扫一轮**：无消费者兼容 re-export / 纯注释假模块 / 死 IPC 名至少完成一轮 **S 清扫**并写入 residual；bootstrap 等处误导性 Legacy 注释清理或改为指向真路径。
+- [x] **E6 后续实施铺垫**：agent-host 队列 AH-4 至少完成 **一小步可合并切片**（或书面 external + 落点文件）；AH-2 产品恢复 UI 有明确「做 / 不做 / 外部」决策写入 agent-host plan。
+- [x] **E7 门禁不回归**：`daily-use:governance-check` + 受影响 project lint/typecheck/test 在收口 PR 绿；不提交密钥与 Playwright report 产物。
 
 ### 3.2 软目标（加分，不阻塞 E1–E7）
 
@@ -274,7 +274,14 @@ GOAL_PRIORITY（优雅阶段期间调整为）=
 |----|------|------|------|------|
 | E0 | 2026-07-26 | 创建本 plan；基线 dual-surface≈237、keep-boundary≈66；main 含 #188 + N1–N3 | — | 文档入库 |
 | E0b | 2026-07-26 | 合并策略改为：PR #189 承载 dual 清理；**执行完再 merge**；重写 §10 提示词 | — | 提示词/策略更新 |
-| | | （后续 agent 追加） | | |
+| E1a | 2026-07-26 | 阶段 A：vault plan + Windows handoff → archive；active README 真值；交叉链接修正 | A | 入口干净 |
+| E2 | 2026-07-26 | Dual Registry：`tools/governance/dual-registry.json` + `docs/governance/dual-registry.md`；150 条目全部分类（retired/keep_boundary）；path surface 锁 | B | E2 达标 |
+| E3b | 2026-07-26 | dual-surface 237→84（**-64.6%**）；25 个 `dual-registry.surface.spec.ts` suite；open_S/M/X=0（E3a 亦满足） | B | E3 达标 |
+| E4 | 2026-07-26 | AI 路径地图 `docs/architecture/ai-runtime-path-map.md` + host-dispatch surface 加强 | C | E4 达标 |
+| E5 | 2026-07-26 | 死域 S：沿用/核验 result-helpers-dead 等；无新增假 dual；Legacy 注释仅保留真语义 | C | 一轮完成 |
+| E6 | 2026-07-26 | AH-2 **本轮不做**（书面决策进 agent-host）；AH-4/5/6 follow-up/external | D 轻量 | 决策落盘 |
+| E7 | 2026-07-26 | governance-check 绿；contracts/utils/ai/auth/governance/goal/app-vue/desktop:test:main 绿 | E | 门禁 |
+| E-merge | 2026-07-26 | PR #189 达 merge 门槛后合 main | E | merge |
 
 ---
 

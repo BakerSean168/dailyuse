@@ -28,7 +28,7 @@ describe('isRecord cross-package keep-boundary (residual 1089)', () => {
     ),
     'utf8',
   );
-  const aiDualSurface = readFileSync(resolve(dir, 'is-record-dual.surface.spec.ts'), 'utf8');
+  const aiDualSurface = readFileSync(resolve(dir, 'dual-registry.surface.spec.ts'), 'utf8');
 
   it('owns Residual 1089 keep-boundary markers on AI plain-object isRecord', () => {
     expect(aiSole).toContain('Residual 1089 keep-boundary');
