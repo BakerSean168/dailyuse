@@ -15,10 +15,11 @@ updated: 2026-07-25T00:00:00
 
 ## 1. 文档地位
 
+- **优雅化主目标 plan**：[`2026-07-26-codebase-elegance-foundation.md`](./2026-07-26-codebase-elegance-foundation.md)（What / Done；阶段 A–E）
 - **主产品 plan**（完成定义未宣称）：[`2026-07-17-unified-assistant-agent-host.md`](./2026-07-17-unified-assistant-agent-host.md)
-- **Vault-repo plan**（§13.2 **15/15**、PR readiness **yes**，tip ≥ `2444ec922`）：[`2026-07-16-obsidian-vault-repository-optimization.md`](./2026-07-16-obsidian-vault-repository-optimization.md)
-- **Windows handoff**（历史）：[`2026-07-25-windows-vault-repo-residual-handoff.md`](./2026-07-25-windows-vault-repo-residual-handoff.md)
-- **本文件**：vault DoD 收口之后，给远程/Windows agent 的**夜间持续优化协议**与 residual 日志。
+- **Vault-repo plan**（§13.2 **15/15**，已合 main #188）：[`2026-07-16-obsidian-vault-repository-optimization.md`](./2026-07-16-obsidian-vault-repository-optimization.md) → elegance 阶段 A 归档
+- **Windows handoff**（历史）：[`2026-07-25-windows-vault-repo-residual-handoff.md`](./2026-07-25-windows-vault-repo-residual-handoff.md) → 随 vault 归档
+- **本文件**：给远程/Windows agent 的**夜间持续优化协议**与 residual 日志（How）。
 
 规范入口：`AGENT.md`。真值：代码/配置/测试 > 根配置 > `docs/`。
 
@@ -26,34 +27,36 @@ updated: 2026-07-25T00:00:00
 
 | 项 | 状态 |
 |----|------|
-| 分支 | `feat/obsidian-vault-repository-optimization` |
-| Vault §13.2 | **15 [x] / 0 [ ]**，PR readiness **yes** |
+| `main` | 含 vault DoD 15/15 + nightly N1–N3（merge #188） |
+| Vault §13.2 | **15 [x] / 0 [ ]**，PR readiness **yes**（已合，勿倒退） |
 | 诚实边界 | 不宣称 Electron multi-engine 产品 E2E；不宣称 real Pi spawn；不宣称跨进程 durable LangGraph Turn Engine |
 | Agent-host 完成定义 | **未宣称**（阶段 0–6 部分；Pi/CLI/完整 Host UI 仍 open） |
 | 旧 do-while（helper dual 微扫） | **近饱和**；禁止为刷 residual 数字再灭已 dual-retired 的 format/pad 级 dual |
+| 优雅化 | 见 elegance plan §3.1；基线 dual-surface≈237、keep-boundary≈66 |
 
-**PR 策略**：本协议跑完一轮或数轮有意义交付并 push 后，再开/合 vault-repo PR；**不要**在仅有 plan 文档时抢合。
+**PR 策略**：按主题开小 PR 合 `main`；elegance 阶段 A 可为 docs-only。
 
 ## 3. 目标
 
-1. 推进 ADR-035 **有契约/用户收益** 的 vertical slice。
-2. 用**第二代** dual/hygiene 消真双轨与死层，代码更清晰。
-3. 保持门禁可绿；不假绿翻 agent-host 完成定义。
-4. 每轮可提交、可复核、可停。
+1. 推进 elegance plan 当前阶段（归档 → Dual Registry → 多路径 → 铺垫切片）。
+2. 推进 ADR-035 **有契约/用户收益** 的 vertical slice（与 elegance D 对齐）。
+3. 用**第二代** dual/hygiene 消 **open_S / open_M**；L 只登记。
+4. 保持门禁可绿；不假绿翻 agent-host 完成定义。
+5. 每轮可提交、可复核、可停。
 
 ## 4. 优先级（严格）
 
 ```text
 GOAL_PRIORITY =
-  1) agent-host 下一 vertical slice（契约/Host 路径/可测产品边界）
-  2) auth-account-security 未闭合 e2e / 发信边界（小步）
-  3) 第二代 dual/hygiene（仅 S 删 / M 并；有 blast radius）
-  4) 产品审查 P0 bug + 回归锁
-  5) 门禁 smoke 修红
+  1) elegance plan 当前阶段未完成步骤（A → B → C → D → E）
+  2) agent-host AH-4+（与 elegance D 重叠时优先可合并小切片）
+  3) dual registry 驱动的 open_S / open_M（禁止微 dual 刷数）
+  4) auth-account-security 未闭合 e2e / 发信边界（小步）
+  5) 产品审查 P0（最多穿插）+ 门禁 smoke 修红
 ```
 
-Vault plan **只**在 PR 描述、归档、或修回归时改动；**不要**再无限膨胀 vault §13.2 小说当主 residual 容器。  
-本文件与 agent-host plan 记 nightly residual。
+Vault plan **只**在归档或修回归时改动；**不要**再无限膨胀 vault §13.2 小说。  
+residual 记本文件 §9 与 elegance plan §9。
 
 ## 5. 第二代 do-while 规则
 

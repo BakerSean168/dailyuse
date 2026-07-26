@@ -20,7 +20,8 @@ updated: 2026-07-22T00:00:00
 本文执行 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)，承接 Open Design、`earendil-works/pi`、当前 TypeScript AI 模块、Python LangGraph runtime、checkpoint、tool executor 和 Obsidian/GitHub 知识仓库方案的专项调研。
 
 状态：**实施中**（阶段 0/1/2/3/4 部分起步 + AssistantFacade residual 343 + 阶段 6 CustomModelGateway 部分；完成定义未宣称）。  
-夜间持续协议：[`2026-07-25-nightly-hygiene-and-agent-host.md`](./2026-07-25-nightly-hygiene-and-agent-host.md)（vault §13.2 已 15/15 后主推本 plan）。
+夜间持续协议：[`2026-07-25-nightly-hygiene-and-agent-host.md`](./2026-07-25-nightly-hygiene-and-agent-host.md)。  
+代码优雅化地基（dual 税 / 多路径 / 归档，为后续 Host 切片铺垫）：[`2026-07-26-codebase-elegance-foundation.md`](./2026-07-26-codebase-elegance-foundation.md)。
 
 本文描述目标架构和渐进迁移顺序，不把尚未实现的 Capability Resolver、Turn Engine、CLI adapter 或 AgentActivity 描述成当前能力。
 
