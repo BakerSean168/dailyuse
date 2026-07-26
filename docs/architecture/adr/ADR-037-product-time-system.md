@@ -55,8 +55,7 @@ updated: 2026-07-26T00:00:00
 1. **采纳产品时间体系（Product Time System）** 为全仓时间横切的唯一宪法。  
 2. **规范瞬时类型为品牌化 `Instant`（epoch 毫秒）**；**`TransferDate` 与 `Instant` 同构对齐**（wire 主型）。  
 3. **引入一等日历日 `Ymd` 与钟面 `Hm`**，禁止用「某时区午夜 Date」长期冒充日历日。  
-4. **`DomainDate = Date` 别名已退役（T10）**；领域主型为 `Instant` 和/或 `Ymd`（及必要的不可变日历/区间值对象），禁止 reintroduce 可变 `Date` 别名。  
-5. **新建一等包 `@dailyuse/time`**（产品时间门面 + Style + Codec + Calendar + 可替换 Engine）；业务与 UI **禁止**直连 date-fns / 散落产品级 `toLocale*`（白名单仅引擎与登记 exemption）。  
+4. **`DomainDate = Date` 别名已退役（T10）**；领域主型为 `Instant` 和/或 `Ymd`（及必要的不可变日历/区间值对象），禁止 reintroduce 可变 `Date` 别名。  5. **新建一等包 `@dailyuse/time`**（产品时间门面 + Style + Codec + Calendar + 可替换 Engine）；业务与 UI **禁止**直连 date-fns / 散落产品级 `toLocale*`（白名单仅引擎与登记 exemption）。  
 6. **所有 Domain↔Transfer↔展示 转换只允许经 Codec（及经其生成的 mapper）**；展示只经 Format + `TimeStyle`。  
 7. **保留「domain shape ≠ transfer shape」原则**，但升级为**语义化类型差**（例如日 vs 瞬时），而非永远 `Date` vs `number` 别名差。  
 8. **Persistence 时间类型不重回 contracts**；infra 只经 Codec 与本地列类型。  
@@ -92,7 +91,6 @@ L1 Platform             → Date / Intl / 可注入 Clock
 | **`IsoUtc`** | UTC ISO 字符串 | 日志、需互操作的外部文本 |
 | **`DurationMs` / `DurationMin`** | 时长 | 算法与展示分流 |
 | **`DomainDate`** | 已删除 | **禁止 reintroduce** |
-
 **禁止**无品牌 `number` 同时表示秒、毫秒、时长、日期键。  
 **禁止**新代码用 `string` 无 brand 表示「可能是 ISO 也可能是 YMD」。
 
@@ -106,7 +104,6 @@ L1 Platform             → Date / Intl / 可注入 Clock
 | 日志 | `IsoUtc` |
 
 ### 3.3 `TransferDate` 与 DomainDate（已退役）
-
 #### TransferDate（保留名、升级语义）
 
 - **决策：** `TransferDate` **正式等于** 品牌化 `Instant`（epoch ms）。  
@@ -116,8 +113,7 @@ L1 Platform             → Date / Intl / 可注入 Clock
 
 #### DomainDate（已退役 · T10）
 
-- **决策：不保留 `type DomainDate = Date`。** 符号、导出与 Codec `fromDomainDate`/`toDomainDate` 已删除。  
-- **理由（质量优先）：**  
+- **决策：不保留 `type DomainDate = Date`。** 符号、导出与 Codec `fromDomainDate`/`toDomainDate` 已删除。  - **理由（质量优先）：**  
   - `Date` 可变，破坏值对象不变量；  
   - getter `new Date(ms)` 制造分配与相等陷阱；  
   - 与 wire 双栈，迫使每层手写 `getTime`；  
@@ -133,7 +129,6 @@ L1 Platform             → Date / Intl / 可注入 Clock
 - **保留原则：** 领域视图与传输 DTO **可以**字段集合或语义不同（residual 859）。  
 - **判据：** 差异必须是 **语义**（例：领域 `startDay: Ymd` vs 传输 `startInstant: TransferDate`），**不是**同一瞬时的 `Date` vs `number` 换皮。  
 - 两侧皆 Instant/Ymd 且同构时，允许 type alias；当前 859 仍以双 interface 名锁住 Instant 域 vs TransferDate 线。
-
 #### Persistence
 
 - **不**恢复 contracts 级 `PersistenceDate`。  
@@ -229,8 +224,7 @@ L1 Platform             → Date / Intl / 可注入 Clock
 新代码审查至少问：
 
 1. 是否绕过 `@dailyuse/time` 做了产品格式化或日期算术？  
-2. 新字段是 `Instant`/`Ymd` 还是又引入了裸 `Date` / 已删的 `DomainDate`？  
-3. DTO 与 Domain 若分形，差异是否语义诚实？  
+2. 新字段是 `Instant`/`Ymd` 还是又引入了裸 `Date` / 已删的 `DomainDate`？  3. DTO 与 Domain 若分形，差异是否语义诚实？  
 4. 空值/locale 是否来自 Style 而非魔数？  
 5. mapper 是否只经 Codec？
 
@@ -245,7 +239,6 @@ L1 Platform             → Date / Intl / 可注入 Clock
 - primitives：`packages/contracts/src/primitives/{instant,transfer-date,ymd,hm}.ts`  
 - VO 模式：`packages/goal/src/server/domain/value-objects/goal-time-range.ts`  
 - 历史：PersistenceDate 移除 plan archive；residual 859 Instant/TransferDate dual keep-boundary  
-
 ---
 
 ## 7. 修订

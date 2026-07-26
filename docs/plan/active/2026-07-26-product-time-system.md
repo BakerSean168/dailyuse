@@ -7,8 +7,7 @@ tags:
   - contracts
 description: 产品时间体系实施计划（ADR-037）——@dailyuse/time、Transfer≡Instant、DomainDate 退役
 created: 2026-07-26T00:00:00
-updated: 2026-07-26T20:00:00
----
+updated: 2026-07-26T20:00:00---
 
 # 产品时间体系实施计划
 
@@ -19,8 +18,7 @@ updated: 2026-07-26T20:00:00
 | **宪法（已采纳）** | [`../../architecture/adr/ADR-037-product-time-system.md`](../../architecture/adr/ADR-037-product-time-system.md) |
 | **详设** | [`../../architecture/product-time-system.md`](../../architecture/product-time-system.md) |
 | **本文件** | 实施波次、完成定义、与 elegance 边界 |
-| **Goal 提示词** | [`./2026-07-26-product-time-system-goal-prompt.md`](./2026-07-26-product-time-system-goal-prompt.md) |
-| 并行 | elegance foundation（dual 税）；**不**用 dual 刷数代替本 plan |
+| **Goal 提示词** | [`./2026-07-26-product-time-system-goal-prompt.md`](./2026-07-26-product-time-system-goal-prompt.md) || 并行 | elegance foundation（dual 税）；**不**用 dual 刷数代替本 plan |
 
 真值：代码/配置/测试 > ADR-037 > 本 plan。
 
@@ -58,7 +56,6 @@ updated: 2026-07-26T20:00:00
 | W7 | 删 legacy / utils date 旧 API | **完成**：utils/shared/date 删除；time free helpers 正式化（非 legacy）；registry 无 date-fns/utils legacy 条目 |
 | W8 | Style ↔ presentation preference | **完成**（timeStyleFromPresentationLocale + session product-time） |
 | T10 | 删 DomainDate 类型 + Codec 桥；empty 经 Style | **完成**（primitives 无 DomainDate；Codec 仅 fromJsDate/toJsDate；registry 仅 canonical） |
-
 ## 5. 质量门禁（每波）
 
 - 最近 `pnpm nx` test（time + 触及包）  
@@ -70,8 +67,7 @@ updated: 2026-07-26T20:00:00
 ## 6. 决策摘要（不可在实施中弱化）
 
 1. 质量优先于「少改几行」  
-2. Transfer ≡ Instant；DomainDate 已删除（T10）  
-3. 日历日用 Ymd，不用午夜 Date  
+2. Transfer ≡ Instant；DomainDate 已删除（T10）  3. 日历日用 Ymd，不用午夜 Date  
 4. 真门面 + Style，禁止假 re-export  
 5. 双 shape 仅语义差，不换皮  
 

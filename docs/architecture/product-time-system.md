@@ -46,8 +46,7 @@ updated: 2026-07-26T00:00:00
 └──────────────────────────────────────────────────────────────────────────┘
 
 横向：
-  contracts/primitives  →  Instant ≡ TransferDate · Ymd · Hm
-  Domain VO/Entity      →  props 存 TransferDate/Ymd；行为经 Calendar/Clock
+  contracts/primitives  →  Instant ≡ TransferDate · Ymd · Hm  Domain VO/Entity      →  props 存 TransferDate/Ymd；行为经 Calendar/Clock
   Infra mappers         →  只调用 Codec
 ```
 
@@ -74,13 +73,11 @@ updated: 2026-07-26T00:00:00
 | 类型 | 状态 |
 |------|------|
 | ~~`DomainDate`~~ | **已删除（T10）**；曾 `= Date`；产品字段与 Codec 桥均已退役 |
-
 ### 3.3 已删除 / 禁止回潮
 
 | 类型 | 状态 |
 |------|------|
-| `DomainDate` | 不进 contracts；禁止 reintroduce |
-| `PersistenceDate` | 不进 contracts；infra 本地 |
+| `DomainDate` | 不进 contracts；禁止 reintroduce || `PersistenceDate` | 不进 contracts；infra 本地 |
 | `TransportDate` | 非官方名；文档一律 TransferDate |
 
 ### 3.4 类型放置与依赖
@@ -114,13 +111,11 @@ contracts      : GoalTimeRange vs GoalTimeRangeDTO 双 interface 名（859 keep-
 ```
 
 ### 4.2 字段选型
-
 **瞬时字段：**
 
 ```text
 DTO / VO props : TransferDate (= Instant)
-getter         : Instant
-setter         : Instant
+getter         : Instantsetter         : Instant
 UI             : format.*(instant) / input.*(instant)
 ```
 
@@ -141,7 +136,6 @@ UI             : format.ymdDisplay / input.dateValue 基于 Ymd
 | 两侧同语义同类型 | 允许 type alias，消灭假 dual |
 | 领域要日历日、传输要瞬时 | **保持双 shape**，字段名也应反映（`startDay` vs `startAt`） |
 | 仅 Date vs number 换皮 | **禁止**（DomainDate 已删） |
-
 ### 4.4 Codec 接缝（必须）
 
 ```text
@@ -154,8 +148,7 @@ startOfYmd(ymd) → Instant                     // 该本地日 00:00
 
 // Prisma / infra only
 fromJsDate(d: Date): Instant
-toJsDate(i: Instant): Date
-```
+toJsDate(i: Instant): Date```
 
 **非法输入：** `onInvalid: 'null' | 'throw'`，**禁止**默认 now。
 
@@ -306,14 +299,12 @@ packages/time/                          @dailyuse/time
     index.ts
     free/format-helpers.ts              公开 free helpers（非 legacy）
   README.md
-
 packages/contracts/src/primitives/
   instant.ts / transfer-date.ts         brand ≡
   ymd.ts / hm.ts
 
 packages/app-vue/src/shared/utils/format-*  → re-export @dailyuse/time（dual 路径稳定）
-packages/app-vue/src/shared/utils/product-time.ts  session facade + empty-label override
-```
+packages/app-vue/src/shared/utils/product-time.ts  session facade + empty-label override```
 
 Nx：`time` project；依赖 `contracts`、`date-fns`；被 app-*、domain packages 依赖。
 
@@ -376,13 +367,11 @@ format 类 keep-boundary 迁移期双写，长期以 Time Registry + canonical A
 | **T9–T10** | DomainDate 类型与 Codec 桥删除；registry 仅 canonical；empty 经 Style | 类型谱无 DomainDate |
 | **T11** | 收尾体检 + 冗余度量 | plan §9 |
 | **P1–P10** | **第二阶段**（调用层/领域扫尾）：见实施 plan §10 | 组件无私有 format*；session 对称；相对/时长/input；Domain Date 清；lint 终态 |
-
 **每一波：** 最近 nx test + 相关 surface +（触及治理时）governance-check。  
 **禁止：** 为减 dual 文件数删除仍保护真旁路的断言。
 
 第二阶段刀序与 DoD 的**可执行详设**以  
 [`../plan/active/2026-07-26-product-time-system.md`](../plan/active/2026-07-26-product-time-system.md) **§10** 为准（P1 Empty Catalog → … → P10 dual 降维；P11 TZ 远期）。
-
 ---
 
 ## 10. 调用拓扑（目标态）
