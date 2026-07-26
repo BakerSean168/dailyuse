@@ -73,7 +73,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
   const plan = readFileSync(
     resolve(
       __dirname,
-      '../../../../docs/plan/active/2026-07-16-obsidian-vault-repository-optimization.md',
+      '../../../../docs/plan/archive/2026-07-16-obsidian-vault-repository-optimization.md',
     ),
     'utf8',
   );

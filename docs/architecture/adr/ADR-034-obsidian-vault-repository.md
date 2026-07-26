@@ -274,7 +274,7 @@ UI 不得把第一类文件称为“全部数据导出”，也不得暗示它�
 
 ## 6. 相关资料
 
-- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)
+- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/archive/2026-07-16-obsidian-vault-repository-optimization.md)
 - [ADR-035: 统一助手与可插拔 Agent Host](./ADR-035-unified-assistant-agent-host.md)
 - [资源库模块说明](../../product/modules/repository.md)
 - [编辑器模块说明](../../product/modules/editor.md)

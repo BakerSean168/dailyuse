@@ -102,7 +102,7 @@ updated: 2026-07-22T00:00:00
 ## 9. 相关资料
 
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
-- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)
+- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/archive/2026-07-16-obsidian-vault-repository-optimization.md)
 - [账户模块说明](./account.md)
 - [ADR-036: Auth / Account 边界与验证安全模型](../../architecture/adr/ADR-036-auth-account-boundary-and-verification.md)
 - [Auth + Account 安全闭环计划](../../plan/active/2026-07-17-auth-account-security-closure.md)

@@ -20,7 +20,7 @@ describe('account PowerSync parseJson keep-boundary (residual 1081)', () => {
     'utf8',
   );
   const parseJsonSafeSurface = readFileSync(
-    resolve(dir, '../../../../../../../utils/src/shared/parse-json-safe-dual.surface.spec.ts'),
+    resolve(dir, '../../../../../../../utils/src/shared/dual-registry.surface.spec.ts'),
     'utf8',
   );
 

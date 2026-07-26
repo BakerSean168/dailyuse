@@ -75,6 +75,6 @@ Web 不直接修改 read model。用户确认新笔记后，Repository 服务通
 ## 7. 相关资料
 
 - [ADR-034: 本地 Obsidian Vault 与可选 GitHub 知识仓库](../../architecture/adr/ADR-034-obsidian-vault-repository.md)
-- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/active/2026-07-16-obsidian-vault-repository-optimization.md)
+- [Obsidian Vault 与 GitHub 知识仓库后续优化方案](../../plan/archive/2026-07-16-obsidian-vault-repository-optimization.md)
 - [资源库模块说明](./repository.md)
 - [编辑器模块文件索引](../module-index/editor-files.md)
