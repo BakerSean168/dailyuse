@@ -110,14 +110,14 @@ export class PowerSyncReminderTemplateMapper {
         id: ReminderHistoryId.of(row.id),
         templateId: row.template_id,
         identityId: row.identity_id,
-        triggeredAt: new Date(row.triggered_at),
+        triggeredAt: new Date(row.triggered_at).getTime(),
         result: row.result as TriggerResult,
         error: row.error ?? null,
         notificationSent: row.notification_sent === true || row.notification_sent === 1,
         notificationChannels: row.notification_channel
           ? (JSON.parse(row.notification_channel) as NotificationChannel[])
           : null,
-        createdAt: new Date(row.created_at),
+        createdAt: new Date(row.created_at).getTime(),
       }),
     );
 
@@ -142,9 +142,9 @@ export class PowerSyncReminderTemplateMapper {
       color: data.color ?? null,
       icon: data.icon ?? null,
       nextTriggerAt: data.next_trigger_at ? new Date(data.next_trigger_at).getTime() : null,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
-      deletedAt: data.deleted_at ? new Date(data.deleted_at) : null,
+      createdAt: new Date(data.created_at).getTime(),
+      updatedAt: new Date(data.updated_at).getTime(),
+      deletedAt: data.deleted_at ? new Date(data.deleted_at).getTime() : null,
       version: data.version ?? 1,
       responseMetrics,
       frequencyAdjustment,

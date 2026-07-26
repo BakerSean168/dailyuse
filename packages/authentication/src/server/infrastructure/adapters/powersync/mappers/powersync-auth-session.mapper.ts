@@ -107,9 +107,9 @@ export class PowerSyncAuthSessionMapper {
       refreshTokenHash: row.refresh_token_hash ?? undefined,
       status,
       version: row.version,
-      createdAt: new Date(row.created_at),
-      expiresAt: new Date(row.expires_at),
-      lastActiveAt: new Date(row.last_active_at),
+      createdAt: new Date(row.created_at).getTime(),
+      expiresAt: new Date(row.expires_at).getTime(),
+      lastActiveAt: new Date(row.last_active_at).getTime(),
       isRevoked,
     };
   }

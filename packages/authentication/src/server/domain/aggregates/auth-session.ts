@@ -19,6 +19,7 @@ import { SessionStatus, DeviceInfo, DeviceType, AuthSessionId } from '..';
 
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { ITokenProvider } from '../services/token-provider.interface';
+import type { Instant } from '@dailyuse/contracts/primitives';
 
 // ================= Constants =================
 
@@ -39,9 +40,9 @@ export interface AuthSessionState {
   refreshTokenHash: string | undefined;
   status: typeof SessionStatus.Active;
   version: number;
-  createdAt: Date;
-  expiresAt: Date;
-  lastActiveAt: Date;
+  createdAt: Instant;
+  expiresAt: Instant;
+  lastActiveAt: Instant;
   isRevoked: boolean;
 }
 
@@ -93,15 +94,15 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     return this._props.version;
   }
 
-  get createdAt(): Date {
+  get createdAt(): Instant {
     return this._props.createdAt;
   }
 
-  get expiresAt(): Date {
+  get expiresAt(): Instant {
     return this._props.expiresAt;
   }
 
-  get lastActiveAt(): Date {
+  get lastActiveAt(): Instant {
     return this._props.lastActiveAt;
   }
 
@@ -121,7 +122,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     refreshTokenHash: string;
     expiresAt: number;
   }): AuthSession {
-    const now = new Date();
+    const now = Date.now();
 
     const state: AuthSessionState = {
       id: params.id,
@@ -131,7 +132,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       status: SessionStatus.Active,
       version: 1,
       createdAt: now,
-      expiresAt: new Date(params.expiresAt),
+      expiresAt: params.expiresAt,
       lastActiveAt: now,
       isRevoked: false,
     };
@@ -236,7 +237,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
    * Checks whether the session has expired.
    */
   public isExpired(): boolean {
-    return this._props.expiresAt.getTime() < Date.now();
+    return this._props.expiresAt < Date.now();
   }
 
   /**
@@ -249,7 +250,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     }
 
     const now = Date.now();
-    const timeSinceLastActive = now - this._props.lastActiveAt.getTime();
+    const timeSinceLastActive = now - this._props.lastActiveAt;
 
     // Only refresh if threshold exceeded, to avoid frequent updates
     if (timeSinceLastActive < SLIDING_WINDOW_THRESHOLD_MS) {
@@ -271,7 +272,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     const duration = durationMs ?? DEFAULT_SESSION_DURATION_MS;
     const now = Date.now();
 
-    this._props.expiresAt = new Date(now + duration);
+    this._props.expiresAt = now + duration;
     this._props.lastActiveAt = now;
   }
 
@@ -311,7 +312,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     }
 
     this._props.refreshTokenHash = hash;
-    this._props.lastActiveAt = new Date();
+    this._props.lastActiveAt = Date.now();
   }
 
   /**
@@ -322,7 +323,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       return 0;
     }
 
-    const remaining = this._props.expiresAt.getTime() - Date.now();
+    const remaining = this._props.expiresAt - Date.now();
     return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   }
 
@@ -339,9 +340,9 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       refreshTokenHash: this._props.refreshTokenHash,
       status: this._props.status,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      expiresAt: this._props.expiresAt.getTime(),
-      lastActiveAt: this._props.lastActiveAt.getTime(),
+      createdAt: this._props.createdAt,
+      expiresAt: this._props.expiresAt,
+      lastActiveAt: this._props.lastActiveAt,
       isRevoked: this._props.isRevoked,
     };
   }
@@ -356,10 +357,10 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       deviceInfo: this._props.deviceInfo.toDTO(),
       isCurrentSession,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.lastActiveAt.getTime(), // Use lastActiveAt as updatedAt
-      expiresAt: this._props.expiresAt.getTime(),
-      lastActiveAt: this._props.lastActiveAt.getTime(),
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.lastActiveAt, // Use lastActiveAt as updatedAt
+      expiresAt: this._props.expiresAt,
+      lastActiveAt: this._props.lastActiveAt,
       deletedAt: this._props.isRevoked ? Date.now() : null,
     };
   }

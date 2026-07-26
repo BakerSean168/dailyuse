@@ -117,9 +117,9 @@ export class PrismaReminderTemplateMapper {
       responseMetrics,
       frequencyAdjustment,
       smartFrequencyEnabled: data.smartFrequencyEnabled ?? true,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
+      createdAt: data.createdAt instanceof Date ? data.createdAt.getTime() : Number(data.createdAt),
+      updatedAt: data.updatedAt instanceof Date ? data.updatedAt.getTime() : Number(data.updatedAt),
+      deletedAt: data.deletedAt == null ? null : data.deletedAt instanceof Date ? data.deletedAt.getTime() : Number(data.deletedAt),
       version: data.version ?? 1,
       history,
     });
@@ -137,12 +137,12 @@ export class PrismaReminderTemplateMapper {
       id: ReminderHistoryId.of(h.id),
       templateId: h.templateId,
       identityId: h.identityId,
-      triggeredAt: h.triggeredAt,
+      triggeredAt: h.triggeredAt instanceof Date ? h.triggeredAt.getTime() : Number(h.triggeredAt),
       result: h.result as TriggerResult,
       error: h.error ?? null,
       notificationSent: h.notificationSent,
       notificationChannels,
-      createdAt: h.createdAt,
+      createdAt: h.createdAt instanceof Date ? h.createdAt.getTime() : Number(h.createdAt),
     });
   }
 
