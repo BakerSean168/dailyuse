@@ -139,8 +139,8 @@ export class KeyResult extends Entity<KeyResultId> {
       weight: params.weight ?? 1,
       sortOrder: params.sortOrder ?? 0,
       version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt: now,
+      updatedAt: now,
       deletedAt: null,
     });
   }

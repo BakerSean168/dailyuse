@@ -18,15 +18,6 @@ function requiredInstant(value: Date | string | number | null | undefined): numb
   return Number.isFinite(n) ? n : Date.now();
 }
 
-/** Prisma Date/DateTime → Instant | null. */
-function optionalInstant(value: Date | string | number | null | undefined): number | null {
-  if (value == null) return null;
-  if (value instanceof Date) return value.getTime();
-  const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-
 export class PrismaTaskDependencyMapper {
   /**
    * Prisma record → TaskDependencyServerDTO
@@ -39,8 +30,8 @@ export class PrismaTaskDependencyMapper {
       successorTaskId: data.successorTaskId as TaskTemplateId,
       dependencyType: data.dependencyType as DependencyType,
       lagDays: data.lagDays ?? undefined,
-      createdAt: data.createdAt.getTime(),
-      updatedAt: data.updatedAt.getTime(),
+      createdAt: requiredInstant(data.createdAt),
+      updatedAt: requiredInstant(data.updatedAt),
     };
   }
 
