@@ -78,8 +78,8 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
+import { formatProductRelative } from '@/shared/utils/product-time';
 import {
-import { formatProductRelative, setProductTimeStyle } from '@/shared/utils/product-time';
   Info,
   CheckCircle2,
   Target,
@@ -100,7 +100,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 
 const emit = defineEmits<{

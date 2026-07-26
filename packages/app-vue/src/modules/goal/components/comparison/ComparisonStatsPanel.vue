@@ -388,8 +388,8 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import { formatProductDateTime } from '@/shared/utils/product-time';
 import {
-import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   Card,
   CardHeader,
   CardTitle,
@@ -424,7 +424,7 @@ const props = defineProps<{
 }>();
 
 // State
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const viewMode = ref<'table' | 'chart'>('table');
 
 // Helper Methods

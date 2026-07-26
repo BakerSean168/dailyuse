@@ -119,8 +119,8 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
+import { startOfDayMs, endOfDayMs, isTodayMs } from '@/shared/utils/product-time';
 import {
-import { startOfDayMs, endOfDayMs, isSameDayMs, isTodayMs } from '@/shared/utils/product-time';
   Card,
   CardContent,
   CardHeader,

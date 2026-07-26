@@ -204,7 +204,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-xs text-muted-foreground">{{
-                    formatProductDate(record.createdAt, emptyNotSet(t))
+                    formatProductDate(record.createdAt)
                   }}</span>
                   <component
                     :is="expandedRecordId === record.id ? ChevronUp : ChevronDown"
@@ -267,7 +267,7 @@
                   </p>
                 </div>
                 <span class="text-xs text-muted-foreground">{{
-                  formatProductDate(review.reviewedAt, emptyNotSet(t))
+                  formatProductDate(review.reviewedAt)
                 }}</span>
               </CardContent>
             </Card>
@@ -291,6 +291,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import {
   ChevronDown,
   ChevronUp,
   MoreHorizontal,
@@ -333,7 +334,7 @@ import { emptyNotSet, formatProductDate, formatProductDateTime } from '@/shared/
 
 const route = useRoute();
 const router = useRouter();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const goalId = route.params.id as string;
 
 const {
@@ -365,6 +366,7 @@ const goalAccentColor = computed(() => goal.value?.color || 'hsl(var(--primary))
 const ringDashOffset = computed(
   () => ringCircumference * (1 - Math.min(100, Math.max(0, goalProgress.value)) / 100),
 );
+
 
 function openRecordDialog(keyResultId: string) {
   recordDialogRef.value?.openDialog(goalId, keyResultId);

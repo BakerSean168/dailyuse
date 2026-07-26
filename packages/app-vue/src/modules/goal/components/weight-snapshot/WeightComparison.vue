@@ -130,8 +130,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { BarChart, RadarChart } from 'echarts/charts';
-import {
 import { formatProductPattern } from '@/shared/utils/product-time';
+import {
   TitleComponent,
   TooltipComponent,
   GridComponent,
@@ -184,7 +184,7 @@ const {
   fetchWeightComparison,
 } = useWeightSnapshot();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 
 // 时间点选择

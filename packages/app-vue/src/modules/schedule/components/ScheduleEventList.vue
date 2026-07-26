@@ -135,7 +135,7 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 function getScheduleActions(schedule: CalendarEntryClientDTO): MenuAction[] {
   return [

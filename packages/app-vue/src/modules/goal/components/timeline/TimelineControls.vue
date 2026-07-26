@@ -139,7 +139,6 @@
 import { computed, watch, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TimelineSnapshot } from '../../utils/goal-timeline';
-import { formatTimelineTimestamp } from '../../utils/goal-timeline';
 import { formatProductDateTime } from '@/shared/utils/product-time';
 
 const { t } = useI18n();
@@ -147,7 +146,95 @@ const { t } = useI18n();
 // ==================== Props ====================
 
 const props = defineProps<{
-  // ==================== Watchers ====================
+  /** 快照列表 */
+  snapshots: TimelineSnapshot[];
+  /** 当前快照索引 */
+  currentIndex: number;
+  /** 播放状态 */
+  isPlaying: boolean;
+  /** 播放速度 */
+  speed: 0.5 | 1 | 2;
+  /** 循环播放 */
+  loop: boolean;
+}>();
+
+// ==================== Emits ====================
+
+const emit = defineEmits<{
+  (e: 'update:currentIndex', value: number): void;
+  (e: 'update:isPlaying', value: boolean): void;
+  (e: 'update:speed', value: 0.5 | 1 | 2): void;
+  (e: 'update:loop', value: boolean): void;
+  (e: 'snapshotChange', snapshot: TimelineSnapshot): void;
+}>();
+
+// ==================== State ====================
+
+const speedOptions = [0.5, 1, 2] as const;
+let playInterval: ReturnType<typeof setInterval> | null = null;
+
+// ==================== Computed ====================
+
+const currentIndexModel = computed({
+  get: () => props.currentIndex,
+  set: (value) => emit('update:currentIndex', Number(value)),
+});
+
+const maxIndex = computed(() => Math.max(0, props.snapshots.length - 1));
+
+const progressPercent = computed(() => {
+  if (maxIndex.value === 0) return 0;
+  return (props.currentIndex / maxIndex.value) * 100;
+});
+
+const currentSnapshot = computed(() => props.snapshots[props.currentIndex]);
+
+// ==================== Methods ====================
+
+function handleSliderChange(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const newIndex = Number(target.value);
+
+  if (newIndex !== props.currentIndex) {
+    emit('update:currentIndex', newIndex);
+    emit('snapshotChange', props.snapshots[newIndex]);
+  }
+}
+
+function togglePlay() {
+  emit('update:isPlaying', !props.isPlaying);
+}
+
+function previousSnapshot() {
+  if (props.currentIndex > 0) {
+    const newIndex = props.currentIndex - 1;
+    emit('update:currentIndex', newIndex);
+    emit('snapshotChange', props.snapshots[newIndex]);
+  }
+}
+
+function nextSnapshot() {
+  if (props.currentIndex < maxIndex.value) {
+    const newIndex = props.currentIndex + 1;
+    emit('update:currentIndex', newIndex);
+    emit('snapshotChange', props.snapshots[newIndex]);
+  } else if (props.loop) {
+    // 如果启用循环，回到开始
+    emit('update:currentIndex', 0);
+    emit('snapshotChange', props.snapshots[0]);
+  }
+}
+
+function toggleLoop() {
+  emit('update:loop', !props.loop);
+}
+
+function setSpeed(newSpeed: 0.5 | 1 | 2) {
+  emit('update:speed', newSpeed);
+}
+
+
+// ==================== Watchers ====================
 
 // 播放逻辑
 watch(

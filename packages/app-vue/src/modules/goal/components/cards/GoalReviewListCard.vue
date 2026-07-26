@@ -80,8 +80,8 @@ import type { GoalClientDTO, GoalReviewClientDTO } from '@dailyuse/contracts/goa
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
-import {
 import { formatProductPattern } from '@/shared/utils/product-time';
+import {
   Dialog,
   DialogContent,
   DialogDescription,

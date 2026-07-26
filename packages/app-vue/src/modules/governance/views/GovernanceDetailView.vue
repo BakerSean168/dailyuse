@@ -255,8 +255,8 @@
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { formatProductDateTime } from '@/shared/utils/product-time';
 import {
-import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   ChevronRight,
   Pencil,
   Trash2,
@@ -275,7 +275,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const { currentRuleView, revisions, isLoading, isSaving, error, fetchRule, fetchRevisions, deleteRule } =
   useGovernance();
 const { trackDetail } = usePerformanceMonitor();

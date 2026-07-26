@@ -67,19 +67,19 @@
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.createTime') }}
               </p>
-              <p class="text-sm">{{ formatProductDate(currentTemplate?.createdAt, emptyKind('dash')) }}</p>
+              <p class="text-sm">{{ formatTaskDate(currentTemplate?.createdAt) }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.updateTime') }}
               </p>
-              <p class="text-sm">{{ formatProductDate(currentTemplate?.updatedAt, emptyKind('dash')) }}</p>
+              <p class="text-sm">{{ formatTaskDate(currentTemplate?.updatedAt) }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.templateStartDate') }}
               </p>
-              <p class="text-sm">{{ formatProductDate(currentTemplate?.timeConfig?.startDate, emptyKind('dash')) }}</p>
+              <p class="text-sm">{{ formatTaskDate(currentTemplate?.timeConfig?.startDate) }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-muted-foreground">
@@ -272,6 +272,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, FileQuestion, Pencil } from '@lucide/vue';
+import {
   Button,
   Badge,
   Separator,
@@ -299,7 +300,7 @@ import { emptyKind, formatProductDate } from '@/shared/utils/product-time';
 
 const route = useRoute();
 const router = useRouter();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const {
   templates,
   dependencies,
@@ -364,6 +365,136 @@ const statusVariant = computed(() => {
       return 'destructive' as const;
   }
 });
+
+/** 将 store 中的 DTO 转换为 Dialog 所需的 ViewModel */
+const editViewModel = computed<TaskTemplateViewModel | null>(() => {
+  if (!detailViewModel.value) return null;
+  return {
+    ...detailViewModel.value,
+    tags: [...(detailViewModel.value.tags ?? [])],
+    timeConfig: { ...detailViewModel.value.timeConfig },
+    goalBinding: detailViewModel.value.goalBinding
+      ? { ...detailViewModel.value.goalBinding }
+      : null,
+  };
+});
+
+function openEditDialog() {
+  showEditDialog.value = true;
+}
+
+function toGoalBindingPayload(goalBinding: TaskTemplateViewModel['goalBinding']) {
+  if (!goalBinding?.goalId || !goalBinding?.keyResultId) {
+    return goalBinding === null ? null : undefined;
+  }
+
+  return {
+    goalId: goalBinding.goalId as GoalId,
+    keyResultId: goalBinding.keyResultId as KeyResultId,
+    goalRecordValue: goalBinding.incrementValue ?? 1,
+    progressTrigger: goalBinding.progressTrigger ?? TaskGoalBindingTrigger.PerInstance,
+  };
+}
+
+async function handleSaveEdit(vm: TaskTemplateViewModel) {
+  const id = route.params.id as string;
+  const result = await updateTemplate(id, {
+    name: vm.title,
+    description: vm.description ?? null,
+    timeConfig: toTaskTimeConfigPayload(vm.timeConfig),
+    recurrenceRule: (vm.recurrenceRule as unknown as RecurrenceRuleDTO) ?? null,
+    importance: (vm.importance as ImportanceLevel) ?? 'Moderate',
+    parentTaskId: (vm.parentTaskId as TaskTemplateId) ?? null,
+    tags: vm.tags ?? [],
+    color: vm.color ?? null,
+    goalBinding: toGoalBindingPayload(vm.goalBinding),
+  });
+  if (result) {
+    showEditDialog.value = false;
+    await Promise.all([fetchTemplate(id), fetchTaskGraph({ page: 1, limit: 1000 })]);
+  }
+}
+
+async function handleCreateDependency(dependency: {
+  predecessorTaskId: string;
+  successorTaskId: string;
+  dependencyType: DependencyType;
+}): Promise<boolean> {
+  const result = await createDependency(dependency);
+  if (!result) {
+    return false;
+  }
+
+  await fetchTaskGraph({ page: 1, limit: 1000 });
+  return true;
+}
+
+async function handleDeleteDependency(dependencyId: string): Promise<boolean> {
+  const deleted = await deleteDependency(dependencyId);
+  if (!deleted) {
+    return false;
+  }
+
+  await fetchTaskGraph({ page: 1, limit: 1000 });
+  return true;
+}
+
+function buildDependencyRelations(
+  taskKey: 'predecessorTaskId' | 'successorTaskId',
+  currentKey: 'predecessorTaskId' | 'successorTaskId',
+) {
+  const currentId = detailViewModel.value?.id;
+  if (!currentId) {
+    return [] as Array<{ dependency: TaskGraphDependencyDTO; task: TaskTemplateViewModel }>;
+  }
+
+  return dependencies.value
+    .filter((dependency) => dependency[currentKey] === currentId)
+    .map((dependency) => {
+      const relatedTask = templateViewModels.value.find(
+        (template) => template.id === dependency[taskKey],
+      );
+      return relatedTask ? { dependency, task: relatedTask } : null;
+    })
+    .filter((relation): relation is { dependency: TaskGraphDependencyDTO; task: TaskTemplateViewModel } => !!relation)
+    .sort((a, b) => a.task.title.localeCompare(b.task.title));
+}
+
+function getDependencyTypeLabel(type: string): string {
+  if (type === DependencyType.FinishToStart) return t('task.dependency.fsLabel');
+  if (type === DependencyType.StartToStart) return t('task.dependency.ssLabel');
+  if (type === DependencyType.FinishToFinish) return t('task.dependency.ffLabel');
+  if (type === DependencyType.StartToFinish) return t('task.dependency.sfLabel');
+  return type;
+}
+
+function getDependencyStatusText(status?: string): string {
+  if (!status) {
+    return t('common.none');
+  }
+
+  if (status === 'Blocked') {
+    return t('task.detail.blockedState');
+  }
+
+  if (status === 'Ready') {
+    return t('task.detail.readyState');
+  }
+
+  return status;
+}
+
+function handleOpenTaskDetail(id: string) {
+  if (id === detailViewModel.value?.id) {
+    return;
+  }
+
+  router.push({ name: 'task-detail', params: { id } });
+}
+
+function formatTaskDate(ts?: number | null): string {
+  return formatProductDate(ts, emptyKind('dash'));
+}
 
 function getTimeTypeLabel(type?: string | null): string {
   return getTaskTimeTypeLabel(t, type);

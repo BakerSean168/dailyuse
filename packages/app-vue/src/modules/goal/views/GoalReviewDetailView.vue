@@ -171,7 +171,7 @@ import { useGoal } from '../composables/useGoal';
 use([LineChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer]);
 
 const route = useRoute();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const goalId = (route.params.goalId as string) || (route.params.id as string);
 const reviewId = route.params.reviewId as string;
 

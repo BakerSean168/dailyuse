@@ -418,8 +418,8 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { formatProductDateTime } from '@/shared/utils/product-time';
 import {
-import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   Dialog,
   DialogContent,
   DialogHeader,
@@ -514,7 +514,7 @@ const {
   keyResults,
 } = useGoal();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 // ── Constants ──────────────────────────────────────────────────────────
 

@@ -61,8 +61,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
-import {
 import { formatProductPattern } from '@/shared/utils/product-time';
+import {
   TitleComponent,
   TooltipComponent,
   GridComponent,
@@ -100,7 +100,7 @@ const {
   fetchWeightTrend,
 } = useWeightSnapshot();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 
 const selectedRange = ref<'7d' | '30d' | '90d' | '180d'>('30d');

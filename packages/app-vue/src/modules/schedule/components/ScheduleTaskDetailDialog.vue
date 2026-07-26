@@ -100,13 +100,13 @@
                 <p class="text-sm text-muted-foreground">
                   {{ t('schedule.detailDialog.nextExecution') }}
                 </p>
-                <p>{{ formatProductDateTime(task.execution.nextRunAt, emptyKind('na')) }}</p>
+                <p>{{ formatScheduleDateTime(task.execution.nextRunAt) }}</p>
               </div>
               <div v-if="task.execution.lastRunAt">
                 <p class="text-sm text-muted-foreground">
                   {{ t('schedule.detailDialog.lastExecution') }}
                 </p>
-                <p>{{ formatProductDateTime(task.execution.lastRunAt, emptyKind('na')) }}</p>
+                <p>{{ formatScheduleDateTime(task.execution.lastRunAt) }}</p>
               </div>
               <div v-if="task.execution.consecutiveFailures > 0">
                 <p class="text-sm text-muted-foreground">
@@ -148,13 +148,13 @@
                 <p class="text-sm text-muted-foreground mb-1">
                   {{ t('schedule.detailDialog.startDate') }}
                 </p>
-                <p>{{ formatProductDate(task.schedule.startDate, emptyKind('na')) }}</p>
+                <p>{{ formatScheduleDate(task.schedule.startDate) }}</p>
               </div>
               <div v-if="task.schedule.endDate">
                 <p class="text-sm text-muted-foreground mb-1">
                   {{ t('schedule.detailDialog.endDate') }}
                 </p>
-                <p>{{ formatProductDate(task.schedule.endDate, emptyKind('na')) }}</p>
+                <p>{{ formatScheduleDate(task.schedule.endDate) }}</p>
               </div>
             </div>
           </CardContent>
@@ -204,7 +204,7 @@
                     }"
                   />
                   <div>
-                    <p class="text-sm font-medium">{{ formatProductDateTime(execution.executionTime, emptyKind('na')) }}</p>
+                    <p class="text-sm font-medium">{{ formatScheduleDateTime(execution.executionTime) }}</p>
                     <p v-if="execution.duration" class="text-xs text-muted-foreground">
                       {{ t('schedule.detailDialog.executionDuration', { n: execution.duration }) }}
                     </p>
@@ -232,6 +232,7 @@
 </template>
 
 <script setup lang="ts">
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -311,6 +312,13 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<Emits>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
+function formatScheduleDateTime(timestamp: number | string | null | undefined): string {
+  return formatProductDateTime(timestamp, emptyKind('na'));
+}
+
+function formatScheduleDate(timestamp: number | string | null | undefined): string {
+  return formatProductDate(timestamp, emptyKind('na'));
+}
 </script>

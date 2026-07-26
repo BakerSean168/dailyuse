@@ -46,7 +46,7 @@ import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Plus, Clock, FileText } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
-import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '@/shared/utils/product-time';
 
 const { t } = useI18n();
 

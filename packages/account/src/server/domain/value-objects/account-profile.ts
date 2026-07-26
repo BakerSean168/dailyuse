@@ -4,7 +4,7 @@ import type {
   AccountProfile as IAccountProfile,
 } from '@dailyuse/contracts/account';
 import type { Instant, Ymd } from '@dailyuse/contracts/primitives';
-import { createTimeFacade, asYmd } from '@dailyuse/time';
+import { createTimeFacade } from '@dailyuse/time';
 import { GenderType } from './gender-type';
 
 const time = createTimeFacade();
@@ -106,11 +106,9 @@ export class AccountProfile extends ValueObject<AccountProfileDTO> implements IA
 
   public getAge(): number | null {
     if (!this.props.birthday || typeof this.props.birthday !== 'string') return null;
-    const birth = ymdToSortableInstant(asYmd(this.props.birthday));
-    const today = time.now();
-    // Approximate whole years via calendar days / 365.25 is wrong; use Ymd parts.
+    // Whole years from Ymd parts (not Instant math).
     const [by, bm, bd] = this.props.birthday.split('-').map(Number);
-    const nowYmd = time.codec.toYmd(today);
+    const nowYmd = time.codec.toYmd(time.now());
     const [ty, tm, td] = nowYmd.split('-').map(Number);
     let age = ty - by;
     if (tm < bm || (tm === bm && td < bd)) age--;

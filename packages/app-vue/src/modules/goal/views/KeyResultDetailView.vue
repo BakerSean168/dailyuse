@@ -147,8 +147,8 @@ import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus, History, TrendingUp } from '@lucide/vue';
 import type { KeyResultId } from '@dailyuse/contracts/primitives';
+import { formatProductDateTime } from '@/shared/utils/product-time';
 import {
-import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   Button,
   Badge,
   Card,
@@ -172,7 +172,7 @@ import { formatProductDate, formatProductDateTime } from '@/shared/utils/product
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const goalId = (route.params.goalId as string) || (route.params.id as string);
 const krId = ((route.params.krId as string) || (route.params.keyResultId as string)) as KeyResultId;
 

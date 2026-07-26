@@ -91,7 +91,7 @@
                   </Badge>
                 </div>
                 <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                  <span>{{ formatProductDateTime(snapshot.snapshotTime) }}</span>
+                  <span>{{ formatSnapshotTime(snapshot.snapshotTime) }}</span>
                   <Separator orientation="vertical" class="h-3" />
                   <span class="inline-flex items-center gap-1">
                     {{ snapshot.oldWeight }}%
@@ -184,14 +184,14 @@
 </template>
 
 <script setup lang="ts">
-/** Soft residual 1237: absolute product dateTime (not dashboard relative). */
 import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
 import type { GoalSnapshotItem } from '../../composables/useWeightSnapshot';
 import { useGoal } from '../../composables/useGoal';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import { formatProductDateTime, formatProductPattern, formatProductHm } from '@/shared/utils/product-time';
+import { formatProductPattern } from '@/shared/utils/product-time';
+import {
   Card,
   CardHeader,
   CardTitle,
@@ -224,8 +224,7 @@ const props = defineProps<{
 const { goalSnapshots, pagination, isLoading, hasGoalSnapshots, fetchGoalSnapshots } =
   useWeightSnapshot();
 const { goals } = useGoal();
-const { t, locale } = useI18n();
-
+const { t } = useI18n();
 
 // 筛选状态
 const selectedKRId = ref<string | undefined>(undefined);
@@ -297,6 +296,10 @@ const getKRTitle = (krId: string) => {
 };
 
 // 格式化时间
+const formatSnapshotTime = (timestamp: number) => {
+  return formatProductPattern(timestamp, 'yyyy-MM-dd HH:mm');
+};
+
 // 获取权重变化 avatar 的 Tailwind 类
 const getWeightChangeAvatarClass = (delta: number) => {
   if (delta > 0) return 'bg-success/15 text-success dark:bg-green-900 dark:text-success';

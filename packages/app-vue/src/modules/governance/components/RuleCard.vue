@@ -68,7 +68,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from '@lucide/vue';
 import RuleStatusBadge from './RuleStatusBadge.vue';
 import type { RuleClientDTO } from '@dailyuse/contracts/governance';
@@ -82,7 +81,6 @@ defineEmits<{
   click: [rule: RuleClientDTO];
 }>();
 
-const { locale } = useI18n();
 
 const truncatedDescription = computed(() => {
   const desc = props.rule.description;

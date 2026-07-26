@@ -78,8 +78,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { GitCompare } from '@lucide/vue';
+import { formatProductDateTime } from '@/shared/utils/product-time';
 import {
-import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   Button,
   Badge,
   Card,
@@ -95,7 +95,7 @@ import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 const { goals, fetchGoals } = useGoal();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const selectedIds = ref<string[]>([]);
 const showSelector = ref(false);
 

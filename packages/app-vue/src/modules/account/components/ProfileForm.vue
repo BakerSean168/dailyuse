@@ -8,8 +8,8 @@ import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn';
 import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
+import { formatProductDateTime } from '@/shared/utils/product-time';
 import {
-import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   Select,
   SelectContent,
   SelectItem,

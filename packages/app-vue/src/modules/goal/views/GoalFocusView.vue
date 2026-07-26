@@ -92,8 +92,8 @@ import { useRouter } from 'vue-router';
 import type { FocusModeDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { formatProductDateTime } from '@/shared/utils/product-time';
 import {
-import { formatProductHm, formatProductDateTime } from '@/shared/utils/product-time';
   Button,
   Card,
   CardContent,
@@ -106,7 +106,7 @@ import { formatProductHm, formatProductDateTime } from '@/shared/utils/product-t
 import { GoalCard } from '../components';
 import { useGoal } from '../composables/useGoal';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const router = useRouter();
 const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
 const { currentFocusMode, getCurrentFocusMode, deactivateFocusMode } = useGoal();

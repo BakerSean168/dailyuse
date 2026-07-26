@@ -16,10 +16,10 @@ function toTimestamp(value: number | string | null | undefined): number {
 }
 
 /**
- * Residual 1204: app-react formatDateTime — session product-time + empty catalog dash.
+ * Residual 1204: app-react formatEntityDateTime — session product-time + empty catalog dash.
  * Uses toTimestamp 0-fallback; empty → '-'.
  */
-export function formatDateTime(value: number | string | null | undefined): string {
+export function formatEntityDateTime(value: number | string | null | undefined): string {
   const timestamp = toTimestamp(value);
   if (!timestamp) {
     return emptyKind('dash');
@@ -60,5 +60,5 @@ export function getReminderImportanceText(
 export function getReminderNextTriggerText(
   template: Pick<ReminderTemplateClientDTO, 'nextTriggerAt'>,
 ): string {
-  return template.nextTriggerAt ? formatDateTime(template.nextTriggerAt) : 'Not scheduled';
+  return template.nextTriggerAt ? formatEntityDateTime(template.nextTriggerAt) : 'Not scheduled';
 }

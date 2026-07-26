@@ -137,7 +137,7 @@ import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { PieChart, X, Loader2, AlertCircle, BarChart3, Calculator } from '@lucide/vue';
 import type { ProgressBreakdown } from '@dailyuse/contracts/goal';
-import { formatProductDateTime, formatProductHm, formatProductPattern } from '@/shared/utils/product-time';
+import { formatProductPattern } from '@/shared/utils/product-time';
 
 const props = defineProps<{
   breakdown: ProgressBreakdown | null;
