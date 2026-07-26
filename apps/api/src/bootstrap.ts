@@ -8,11 +8,14 @@
  * ```typescript
  * const app = await new ApiBootstrapper()
  *   .register(GovernanceApiModule)
- *   .register(LegacyAccountModule)
+ *   .register(AccountApiModule)
  *   .init();
  *
  * app.listen(3000);
  * ```
+ *
+ * Residual E5b (elegance): example must name real modules registered from
+ * `main.ts` (e.g. `AccountApiModule`). Do not document retired account module aliases.
  */
 
 import express, { type Express, Router } from 'express';
