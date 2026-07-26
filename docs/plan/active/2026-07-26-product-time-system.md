@@ -7,7 +7,7 @@ tags:
   - contracts
 description: 产品时间体系实施计划（ADR-037）——@dailyuse/time、Transfer≡Instant、DomainDate 退役
 created: 2026-07-26T00:00:00
-updated: 2026-07-26T00:00:00
+updated: 2026-07-26T12:00:00
 ---
 
 # 产品时间体系实施计划
@@ -19,6 +19,7 @@ updated: 2026-07-26T00:00:00
 | **宪法（已采纳）** | [`../../architecture/adr/ADR-037-product-time-system.md`](../../architecture/adr/ADR-037-product-time-system.md) |
 | **详设** | [`../../architecture/product-time-system.md`](../../architecture/product-time-system.md) |
 | **本文件** | 实施波次、完成定义、与 elegance 边界 |
+| **Goal 提示词** | [`./2026-07-26-product-time-system-goal-prompt.md`](./2026-07-26-product-time-system-goal-prompt.md) |
 | 并行 | elegance foundation（dual 税）；**不**用 dual 刷数代替本 plan |
 
 真值：代码/配置/测试 > ADR-037 > 本 plan。
@@ -78,12 +79,13 @@ updated: 2026-07-26T00:00:00
 | ID | 日期 | 说明 | 结果 |
 |----|------|------|------|
 | T0 | 2026-07-26 | ADR-037 + 详设 + 本 plan 入库 | 文档 |
+| T0b | 2026-07-26 | Goal 完整/简易提示词入库（新会话实施入口） | 文档 |
 
-## 8. 开跑提示（实施 agent）
+## 8. 开跑提示
+
+- **完整 Goal（新会话整段）：** [`2026-07-26-product-time-system-goal-prompt.md`](./2026-07-26-product-time-system-goal-prompt.md) § 完整 Goal 提示词  
+- **简易：** 同文件 § 简易提示词 A/B/C  
 
 ```text
-读 AGENT.md、ADR-037、docs/architecture/product-time-system.md、本 plan。
-按 W0→W8 推进；禁止削弱 DomainDate 退役与断供决策。
-每波小而可回滚的 commit；验证最近 nx target。
-不要把 dual 文件数当本 plan KPI。
+按 docs/plan/active/2026-07-26-product-time-system-goal-prompt.md 实施 ADR-037；从 W0 起写代码。
 ```
