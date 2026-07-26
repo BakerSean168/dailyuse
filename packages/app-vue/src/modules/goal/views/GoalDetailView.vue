@@ -93,7 +93,7 @@
       <template v-if="goal" #meta>
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           <span>
-            {{ formatDate(goal.startDate) }} ~ {{ formatDate(goal.targetDate) }}
+            {{ formatProductDate(goal.startDate, emptyNotSet(t)) }} ~ {{ formatProductDate(goal.targetDate, emptyNotSet(t)) }}
           </span>
           <span>·</span>
           <span>{{ goal.category || t('goal.detail.uncategorized') }}</span>
@@ -204,7 +204,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-xs text-muted-foreground">{{
-                    formatDate(record.createdAt)
+                    formatProductDate(record.createdAt, emptyNotSet(t))
                   }}</span>
                   <component
                     :is="expandedRecordId === record.id ? ChevronUp : ChevronDown"
@@ -230,7 +230,7 @@
                 </div>
                 <div>
                   <span class="text-muted-foreground">{{ t('goal.detail.recordTime') }}</span>
-                  <p class="font-medium">{{ formatDateTime(record.createdAt) }}</p>
+                  <p class="font-medium">{{ formatProductDateTime(record.createdAt) }}</p>
                 </div>
               </div>
             </div>
@@ -267,7 +267,7 @@
                   </p>
                 </div>
                 <span class="text-xs text-muted-foreground">{{
-                  formatDate(review.reviewedAt)
+                  formatProductDate(review.reviewedAt, emptyNotSet(t))
                 }}</span>
               </CardContent>
             </Card>
@@ -291,7 +291,6 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import {
   ChevronDown,
   ChevronUp,
   MoreHorizontal,
@@ -330,6 +329,7 @@ import KeyResultDialog from '../components/dialogs/KeyResultDialog.vue';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
 import { getCompletedKeyResultCount, getGoalOverallProgress } from '../utils/progress';
 import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import { emptyNotSet, formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
 
 const route = useRoute();
 const router = useRouter();
@@ -365,22 +365,6 @@ const goalAccentColor = computed(() => goal.value?.color || 'hsl(var(--primary))
 const ringDashOffset = computed(
   () => ringCircumference * (1 - Math.min(100, Math.max(0, goalProgress.value)) / 100),
 );
-
-/**
- * Residual 1240 keep-boundary: app-vue goal formatDate — locale toLocaleDateString + i18n notSet.
- * Goal detail display; falsy → t('goal.detail.notSet'); not English '-' / 'Not set'.
- * Soft residual 1240: react English empty labels + schedule N/A + reminder date-fns differ (no force-merge).
- */
-function formatDate(value: number | null | undefined): string {
-  return value
-    ? new Date(value).toLocaleDateString(locale.value)
-    : t('goal.detail.notSet');
-}
-
-/** Soft residual 1204: component-local formatDateTime (locale default); ≠ app-react Intl zh-CN sole. */
-function formatDateTime(value: number): string {
-  return new Date(value).toLocaleString(locale.value);
-}
 
 function openRecordDialog(keyResultId: string) {
   recordDialogRef.value?.openDialog(goalId, keyResultId);

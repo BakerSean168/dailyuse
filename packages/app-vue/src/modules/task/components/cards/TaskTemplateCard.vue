@@ -85,7 +85,7 @@
             <Calendar class="h-4 w-4 shrink-0 text-primary" />
             <span class="text-sm text-muted-foreground">
               {{ t('task.templateCard.startsAt') }}
-              {{ format(template.timeConfig.startDate || Date.now(), 'yyyy-MM-dd') }}
+              {{ formatProductPattern(template.timeConfig.startDate || Date.now(), 'yyyy-MM-dd') }}
             </span>
           </div>
 
@@ -282,13 +282,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { format } from 'date-fns';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
 import { useI18n } from 'vue-i18n';
 import { getTaskTimeValueDisplay } from '../../utils/task-template-presentation';
+import { formatProductPattern } from '@/shared/utils/product-time';
 
 const { t } = useI18n();
 import {

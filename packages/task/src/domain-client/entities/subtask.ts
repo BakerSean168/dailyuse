@@ -12,7 +12,7 @@
 import type {
   SubtaskClientDTO,
 } from '@dailyuse/contracts/task';
-import type { SubtaskId as ISubtaskId } from '@dailyuse/contracts/primitives';
+import type {SubtaskId as ISubtaskId, Instant} from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils/domain';
 import { SubtaskId } from '../../server/domain/value-objects/subtask-id';
 
@@ -54,16 +54,20 @@ export class Subtask extends Entity<ISubtaskId> {
     return this._props.version;
   }
 
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   // UI 计算属性

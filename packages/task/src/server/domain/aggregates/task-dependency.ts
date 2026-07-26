@@ -6,7 +6,7 @@
 import { AggregateRoot } from '@dailyuse/utils/domain';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { TaskDependencyServerDTO, TaskDependencyClientDTO, TaskEventMap } from '@dailyuse/contracts/task';
-import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
+import type {TaskTemplateId, Instant} from '@dailyuse/contracts/primitives';
 import { TaskDependencyId } from '../../domain/value-objects/task-dependency-id';
 import { DependencyType } from '../value-objects';
 
@@ -58,12 +58,14 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
     return this._props.lagDays;
   }
 
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   // ============ Factory Methods ============

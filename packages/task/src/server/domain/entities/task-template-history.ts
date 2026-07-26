@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * TaskTemplateHistory 实体实现 (Server)
  * 任务模板历史记录 - 实体
@@ -58,8 +59,9 @@ export class TaskTemplateHistory extends Entity<string> {
     return this._changes;
   }
 
-  public get createdAt(): Date {
-    return this._createdAt;
+  public get createdAt(): Instant {
+    const v = this._createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   /**

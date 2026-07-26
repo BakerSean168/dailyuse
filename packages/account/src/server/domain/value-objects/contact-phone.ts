@@ -1,6 +1,6 @@
 import { ValueObject } from '@dailyuse/utils/domain';
 import type { ContactPhoneDTO, ContactPhone as IContactPhone } from '@dailyuse/contracts/account';
-import type { DomainDate } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@dailyuse/contracts/primitives';
 
 export class ContactPhone extends ValueObject<ContactPhoneDTO> implements IContactPhone {
 
@@ -52,8 +52,9 @@ export class ContactPhone extends ValueObject<ContactPhoneDTO> implements IConta
     return `${countryCode} ${masked}`;
   }
 
-  get verifiedAt(): DomainDate | null {
-    return this.props.verifiedAt ? new Date(this.props.verifiedAt) : null;
+  /** ADR-037: Instant epoch ms (no mutable Date leakage). */
+  get verifiedAt(): Instant | null {
+    return this.props.verifiedAt;
   }
 
   get countryCode(): string { return this.props.countryCode; }

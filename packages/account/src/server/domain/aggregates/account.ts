@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /** Account Aggregate Root - Server-side implementation. */
 
 import type { AccountClientDTO, AccountServerDTO } from '@dailyuse/contracts/account';
@@ -58,14 +59,18 @@ export class Account extends AggregateRoot<IdentityId> {
   get version(): number {
     return this._props.version;
   }
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   // ================= Factory Methods =================
@@ -172,7 +177,7 @@ export class Account extends AggregateRoot<IdentityId> {
       accountId: this.id,
       account: this.toServerDTO(),
       reason: 'User initiated closure',
-      closedAt: this.updatedAt.getTime(),
+      closedAt: this.updatedAt,
     });
   }
 

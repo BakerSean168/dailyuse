@@ -170,10 +170,14 @@ import { parseToDate } from './parse-to-date';
       expect(sole).toContain('Residual 1294');
       const hhmm = readFileSync(resolve(dir, 'format-local-hhmm.ts'), 'utf8');
       expect(hhmm).toContain('Residual 1294');
-      expect(hhmm).toMatch(/export function formatLocalHHmm\b/);
-      const hhmmBody = hhmm.match(/export function formatLocalHHmm\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(hhmmBody).toContain('padTwoDigits');
-      expect(hhmmBody).not.toContain('padStart');
+      expect(hhmm).toContain('@dailyuse/time');
+      expect(hhmm).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function formatLocalHHmm\b/);
+      expect(timeSole).toContain('localHHmm');
     });
 
     it('runtime: sole maps source keys through translate', () => {
@@ -861,7 +865,8 @@ import { parseToDate } from './parse-to-date';
       expect(body).toContain('formatLocalHHmm');
       expect(body).not.toContain('padStart');
       expect(body).not.toContain('getHours');
-      expect(local).toMatch(/export function formatLocalHHmm\b/);
+      expect(local).toContain('@dailyuse/time');
+      expect(local).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
     });
 
     it('keeps Residual 1273 en-dash sole contract + DayDetail/Panel consumers', () => {
@@ -935,13 +940,13 @@ import { parseToDate } from './parse-to-date';
 {
   /**
    * Residual 1261: formatDateNotSet dual retired onto app-react shared sole.
-   * - sole: packages/app-react/src/utils/format-date-not-set.ts
-   * - consumers: AccountScreen + GoalDetailScreen (was local formatDate date-only + 'Not set')
+   * - sole: packages/app-react/src/utils/format-date-not-set.ts (@dailyuse/time date + English 'Not set')
+   * - consumers: AccountScreen + GoalDetailScreen
    * Soft residual 1261 / 1240:
-   * - TaskDetailScreen: toLocaleString + 'Not set'
-   * - GoalCompareScreen: toLocaleDateString + '-' (Residual 1240 keep-boundary)
+   * - TaskDetailScreen: time.format.dateTime + empty.display 'Not set'
+   * - GoalCompareScreen: time.format.date + empty.display '-' (Residual 1240 keep-boundary)
    * - formatDateUnknown dual-retired sole (Residual 1264) remains separate
-   * Soft residual 1240: vue goal i18n notSet / schedule N/A / reminder date-fns remain separate.
+   * Soft residual 1240: vue goal i18n notSet / schedule N/A remain separate.
    * Soft residual 1258: handleCalendarSelect dual-retired sole remains separate.
    * Does not flip §13.2 checkboxes.
    */
@@ -958,10 +963,13 @@ import { parseToDate } from './parse-to-date';
     it('owns sole formatDateNotSet body (Residual 1261)', () => {
       expect(sole).toContain('Residual 1261');
       expect(sole).toMatch(/export function formatDateNotSet\b/);
-      expect(sole).toContain("'Not set'");
-      expect(sole).toContain('toLocaleDateString()');
+      expect(sole).toContain("emptyKind('notSet')");
+      expect(sole).toContain('formatProductDate');
+      expect(sole).toContain('product-time');
       const body = sole.match(/export function formatDateNotSet\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('timestamp: number | null');
+      expect(body).toContain('formatProductDate');
+      expect(body).not.toContain('createTimeFacade');
       expect(body).not.toContain('toLocaleString()');
       expect(body).not.toContain("return '-'");
       expect(body).not.toContain("'Unknown'");
@@ -982,19 +990,17 @@ import { parseToDate } from './parse-to-date';
       }
     });
 
-    it('soft residual 1261 task datetime Not set + goal compare "-" stay separate', () => {
-      expect(taskDetail).toContain('Soft residual 1261');
-      const taskBody = taskDetail.match(/function formatDate\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(taskBody).toContain("'Not set'");
-      expect(taskBody).toContain('toLocaleString()');
-      expect(taskBody).not.toContain('toLocaleDateString()');
+    it('soft residual 1261 task datetime Not set + goal compare dash stay separate', () => {
+      expect(taskDetail).toContain("emptyKind('notSet')");
+      expect(taskDetail).toContain('formatProductDateTime');
+      expect(taskDetail).not.toMatch(/function formatDate\b/);
+      expect(taskDetail).not.toContain('createTimeFacade');
       expect(taskDetail).not.toContain('format-date-not-set');
 
-      expect(goalCompare).toContain('Residual 1240 keep-boundary');
-      const compareBody = goalCompare.match(/function formatDate\([\s\S]*?\n  \}/)?.[0] ?? '';
-      expect(compareBody).toContain("'-'");
-      expect(compareBody).toContain('toLocaleDateString()');
-      expect(compareBody).not.toContain("'Not set'");
+      expect(goalCompare).toContain("emptyKind('dash')");
+      expect(goalCompare).toContain('formatProductDate');
+      expect(goalCompare).not.toMatch(/function formatDate\b/);
+      expect(goalCompare).not.toContain('createTimeFacade');
       expect(goalCompare).not.toContain('format-date-not-set');
     });
 
@@ -1040,17 +1046,16 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatDateToYMD body (Residual 1252)', () => {
+    it('owns sole formatDateToYMD body (Residual 1252 / ADR-037 W2 → @dailyuse/time)', () => {
       expect(sole).toContain('Residual 1252');
-      expect(sole).toMatch(/export function formatDateToYMD\b/);
-      expect(sole).toContain('getFullYear');
-      const body = sole.match(/export function formatDateToYMD\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(body).toContain('date: Date');
-      expect(body).toContain('getMonth()');
-      expect(body).toContain('getDate()');
-      expect(body).toContain('padTwoDigits');
-      expect(body).not.toContain('padStart');
-      expect(body).toContain('`${y}-${m}-${d}`');
+      expect(sole).toContain("@dailyuse/time");
+      expect(sole).toMatch(/export\s*\{\s*formatDateToYMD\s*\}/);
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function formatDateToYMD\b/);
+      expect(timeSole).toContain('dateToYmd');
     });
 
     it('retires schedule/task dual bodies onto shared sole', () => {
@@ -1104,12 +1109,12 @@ import { parseToDate } from './parse-to-date';
 {
   /**
    * Residual 1264: formatDateUnknown dual retired onto app-react shared sole.
-   * - sole: packages/app-react/src/utils/format-date-unknown.ts
-   * - consumers: NotificationDetailScreen + NotificationCard (was local formatDate datetime + 'Unknown')
+   * - sole: packages/app-react/src/utils/format-date-unknown.ts (@dailyuse/time dateTime + English 'Unknown')
+   * - consumers: NotificationDetailScreen + NotificationCard
    * Soft residual 1264 / 1261 / 1240:
    * - formatDateNotSet dual-retired sole remains separate (date-only + 'Not set')
-   * - TaskDetailScreen: toLocaleString + 'Not set'
-   * - GoalCompareScreen: toLocaleDateString + '-' (Residual 1240 keep-boundary)
+   * - TaskDetailScreen: time.format.dateTime + empty.display 'Not set'
+   * - GoalCompareScreen: time.format.date + empty.display '-' (Residual 1240 keep-boundary)
    * Does not flip §13.2 checkboxes.
    */
   describe('formatDateUnknown dual retired (residual 1264)', () => {
@@ -1126,17 +1131,18 @@ import { parseToDate } from './parse-to-date';
     it('owns sole formatDateUnknown body (Residual 1264)', () => {
       expect(sole).toContain('Residual 1264');
       expect(sole).toMatch(/export function formatDateUnknown\b/);
-      expect(sole).toContain("'Unknown'");
-      expect(sole).toContain('toLocaleString()');
+      expect(sole).toContain("emptyKind('unknown')");
+      expect(sole).toContain('formatProductDateTime');
+      expect(sole).toContain('product-time');
       const body = sole.match(/export function formatDateUnknown\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('number | null | undefined');
-      expect(body).not.toContain('toLocaleDateString()');
+      expect(body).toContain('formatProductDateTime');
+      expect(body).not.toContain('createTimeFacade');
       expect(body).not.toContain("'Not set'");
       expect(body).not.toContain("return '-'");
     });
 
-    it('retires Notification dual bodies onto shared sole', () => {
-      for (const [label, source] of [
+    it('retires Notification dual bodies onto shared sole', () => {      for (const [label, source] of [
         ['detail', detail],
         ['card', card],
       ] as const) {
@@ -1153,21 +1159,20 @@ import { parseToDate } from './parse-to-date';
     it('soft residual 1264 formatDateNotSet sole + task Not set stay separate', () => {
       expect(notSetSole).toContain('Residual 1261');
       expect(notSetSole).toMatch(/export function formatDateNotSet\b/);
-      expect(notSetSole).toContain("'Not set'");
-      expect(notSetSole).toContain('toLocaleDateString()');
+      expect(notSetSole).toContain("emptyKind('notSet')");
+      expect(notSetSole).toContain('formatProductDate');
+      expect(notSetSole).not.toContain("'Unknown'");
       const notSetBody = notSetSole.match(/export function formatDateNotSet\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(notSetBody).toContain("'Not set'");
+      expect(notSetBody).toContain('formatProductDate');
       expect(notSetBody).not.toContain("'Unknown'");
 
-      expect(taskDetail).toContain('Soft residual 1261');
-      const taskBody = taskDetail.match(/function formatDate\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(taskBody).toContain("'Not set'");
-      expect(taskBody).toContain('toLocaleString()');
+      expect(taskDetail).toContain("emptyKind('notSet')");
+      expect(taskDetail).toContain('formatProductDateTime');
+      expect(taskDetail).not.toMatch(/function formatDate\b/);
       expect(taskDetail).not.toContain('format-date-unknown');
     });
 
-    it('documents residual 1264 lock intent without claiming §13.2 complete', () => {
-      const self = readFileSync(resolve(dir, 'dual-registry.surface.spec.ts'), 'utf8');
+    it('documents residual 1264 lock intent without claiming §13.2 complete', () => {      const self = readFileSync(resolve(dir, 'dual-registry.surface.spec.ts'), 'utf8');
       expect(self).toContain('Residual 1264');
       expect(self).toContain('Does not flip §13.2 checkboxes');
       expect(self).toContain('dual retired');
@@ -1206,15 +1211,16 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatDisplayDate body (Residual 1249)', () => {
+    it('owns sole formatDisplayDate body (Residual 1249 / ADR-037 W2 → @dailyuse/time)', () => {
       expect(sole).toContain('Residual 1249');
-      expect(sole).toMatch(/export function formatDisplayDate\b/);
-      expect(sole).toContain("dateStr + 'T00:00:00'");
-      expect(sole).toContain("month: 'short'");
-      const body = sole.match(/export function formatDisplayDate\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(body).toContain('locale: string');
-      expect(body).toContain("return ''");
-      expect(body).toContain('toLocaleDateString(locale');
+      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toMatch(/export\s*\{\s*formatDisplayDate\s*\}/);
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function formatDisplayDate\b/);
+      expect(timeSole).toContain('ymdDisplay');
     });
 
     it('retires schedule/task dual bodies onto shared sole', () => {
@@ -1292,7 +1298,8 @@ import { parseToDate } from './parse-to-date';
       expect(week).toContain('Residual 1300');
       expect(day).toContain('formatLocalHHmm');
       expect(week).toContain('formatLocalHHmm');
-      expect(sole).toMatch(/export function formatLocalHHmm\b/);
+      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
     });
 
     it('retires Day/Week padStart dual bodies while keeping separator keep-boundary', () => {
@@ -1384,14 +1391,16 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatHHmmParts body (Residual 1297)', () => {
+    it('owns sole formatHHmmParts body (Residual 1297 / ADR-037 W2 → @dailyuse/time)', () => {
       expect(sole).toContain('Residual 1297');
-      expect(sole).toMatch(/export function formatHHmmParts\b/);
-      const body = sole.match(/export function formatHHmmParts\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(body).toContain('hour: number');
-      expect(body).toContain('minute: number');
-      expect(body).toContain('padTwoDigits');
-      expect(body).not.toContain('padStart');
+      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toMatch(/export\s*\{\s*formatHHmmParts\s*\}/);
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function formatHHmmParts\b/);
+      expect(timeSole).toContain('hhmmParts');
     });
 
     it('retires TaskCapsule / DailyTodo / presentation / TaskInstanceCard dual bodies onto sole', () => {
@@ -1427,7 +1436,8 @@ import { parseToDate } from './parse-to-date';
       const hour = readFileSync(resolve(dir, 'format-hour.ts'), 'utf8');
       expect(local).toContain('formatLocalHHmm');
       expect(local).not.toContain('formatHHmmParts');
-      expect(hour).toMatch(/export function formatHour\b/);
+      expect(hour).toContain('@dailyuse/time');
+      expect(hour).toMatch(/export\s*\{\s*formatHour\s*\}/);
       expect(hour).toContain(':00');
       expect(hour).not.toContain('formatHHmmParts');
     });
@@ -1474,16 +1484,17 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatHour body (Residual 1276)', () => {
+    it('owns sole formatHour body (Residual 1276 / ADR-037 W2 → @dailyuse/time)', () => {
       expect(sole).toContain('Residual 1276');
-      expect(sole).toMatch(/export function formatHour\b/);
+      expect(sole).toContain('@dailyuse/time');
       expect(sole).toContain(':00');
-      const body = sole.match(/export function formatHour\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(body).toContain('hour: number');
-      expect(body).toContain('padTwoDigits');
-      expect(body).not.toContain('padStart');
-      expect(body).not.toContain('CalendarEventItem');
-      expect(body).not.toContain('all-day');
+      expect(sole).toMatch(/export\s*\{\s*formatHour\s*\}/);
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function formatHour\b/);
+      expect(timeSole).toContain('hourLabel');
     });
 
     it('retires Day/Week dual bodies onto shared sole', () => {
@@ -1559,15 +1570,16 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatLocalHHmm body (Residual 1294)', () => {
+    it('owns sole formatLocalHHmm body (Residual 1294 / ADR-037 W2 → @dailyuse/time)', () => {
       expect(sole).toContain('Residual 1294');
-      expect(sole).toMatch(/export function formatLocalHHmm\b/);
-      const body = sole.match(/export function formatLocalHHmm\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(body).toContain('ms: number');
-      expect(body).toContain('padTwoDigits');
-      expect(body).not.toContain('padStart');
-      expect(body).toContain('getHours');
-      expect(body).toContain('getMinutes');
+      expect(sole).toContain("@dailyuse/time");
+      expect(sole).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function formatLocalHHmm\b/);
+      expect(timeSole).toContain('localHHmm');
     });
 
     it('retires formatCapsuleTime / ReminderCapsule / UpcomingReminders dual bodies onto sole', () => {
@@ -1578,10 +1590,9 @@ import { parseToDate } from './parse-to-date';
       expect(capBody).not.toContain('padStart');
 
       expect(capsule).toContain('Residual 1294');
-      expect(capsule).toContain('formatLocalHHmm');
-      const cBody = capsule.match(/function formatTime\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(cBody).toContain('formatLocalHHmm');
-      expect(cBody).not.toContain('padStart');
+      expect(capsule).toContain('formatProductHm');
+      expect(capsule).not.toMatch(/function formatTime\b/);
+      expect(capsule).not.toContain('padStart');
 
       expect(upcoming).toContain('Residual 1294');
       expect(upcoming).toContain('formatLocalHHmm');
@@ -1591,16 +1602,16 @@ import { parseToDate } from './parse-to-date';
       expect(uBody).not.toContain('padStart');
     });
 
-    it('soft residual 1237 dashboard relative formatTime keep-boundary stays separate', () => {
+    it('soft residual 1237 dashboard relative formatActivityTime keep-boundary stays separate', () => {
       const dashboard = readFileSync(
         resolve(dir, '../../modules/dashboard/components/DashboardActivityTimeline.vue'),
         'utf8',
       );
-      expect(dashboard).toMatch(/function formatTime\b/);
+      expect(dashboard).toMatch(/function formatActivityTime\b/);
       expect(dashboard).toContain('dashboard.time');
       expect(dashboard).toContain("t('dashboard.time.justNow')");
-      // Residual 1309: absolute branch may compose formatLocalHHmm; relative i18n stays local.
-      const body = dashboard.match(/function formatTime\([\s\S]*?\n\}/)?.[0] ?? '';
+      expect(dashboard).toContain('getProductTime');
+      const body = dashboard.match(/function formatActivityTime\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('dashboard.time');
       expect(body).not.toContain('date-fns');
     });
@@ -1651,7 +1662,7 @@ import { parseToDate } from './parse-to-date';
       expect(body).toContain("schedule.duration.minutes");
       expect(body).toContain("schedule.duration.hoursMinutes");
       expect(body).toContain("schedule.duration.hours");
-      expect(body).toContain('minutes < 60');
+      expect(body).toContain('splitDurationMinutes');
     });
 
     it('retires ScheduleConflictAlert + ScheduleFormDemo dual bodies onto sole', () => {
@@ -1684,7 +1695,7 @@ import { parseToDate } from './parse-to-date';
       );
       expect(conflictMs).toContain('Soft residual 1243');
       const msBody = conflictMs.match(/function formatDuration\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(msBody).toContain('ms / 60000');
+      expect(msBody).toContain('splitDurationMs');
       expect(msBody).not.toContain('formatScheduleDurationMinutes');
       expect(presentation).toContain('Residual 1243 keep-boundary');
       expect(presentation).toMatch(/export function formatDuration\b/);
@@ -1723,7 +1734,7 @@ import { parseToDate } from './parse-to-date';
   /**
    * Residual 1309: dashboard formatTime absolute HH:mm dual retired onto formatLocalHHmm sole.
    * Residual 1237 relative i18n keep-boundary remains (justNow/minutesAgo/hoursAgo via dashboard.time.*).
-   * Soft residual: setting relative+toLocaleString, goal date-fns/toLocaleString stay separate;
+   * Soft residual: setting product datetime + goal product pattern stay separate;
    * form hour/minute padStart option lists (TimeConfig/Reminder/CreateSchedule) not force-merged.
    * Does not flip §13.2 checkboxes.
    */
@@ -1737,24 +1748,24 @@ import { parseToDate } from './parse-to-date';
 
     it('owns Residual 1309 composition on dashboard absolute branch', () => {
       expect(dashboard).toContain('Residual 1309');
-      expect(dashboard).toContain('formatLocalHHmm');
-      expect(dashboard).toContain('Residual 1237 keep-boundary');
-      expect(sole).toMatch(/export function formatLocalHHmm\b/);
-      const body = dashboard.match(/function formatTime\([\s\S]*?\n\}/)?.[0] ?? '';
+      expect(dashboard).toContain('formatProductPattern');
+      expect(dashboard).toContain('Residual 1237');
+      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
+      const body = dashboard.match(/function formatActivityTime\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('dashboard.time');
-      expect(body).toContain('formatLocalHHmm');
+      expect(body).toContain('formatProductPattern');
       expect(body).not.toContain('padStart');
       expect(body).not.toContain('getHours');
       expect(body).not.toContain('getMinutes');
     });
 
     it('keeps Residual 1237 relative i18n keep-boundary (no force-merge to HH:mm-only)', () => {
-      const body = dashboard.match(/function formatTime\([\s\S]*?\n\}/)?.[0] ?? '';
+      const body = dashboard.match(/function formatActivityTime\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain("t('dashboard.time.justNow')");
       expect(body).toContain("t('dashboard.time.minutesAgo'");
       expect(body).toContain("t('dashboard.time.hoursAgo'");
-      expect(body).toContain('getMonth');
-      expect(body).toContain('getDate');
+      expect(body).toContain('getProductTime');
     });
 
     it('soft residual: setting/goal formatTime keep-boundaries stay separate', () => {
@@ -1767,10 +1778,9 @@ import { parseToDate } from './parse-to-date';
         'utf8',
       );
       expect(setting).toContain('Soft residual 1237');
-      expect(setting).toContain('toLocaleString()');
+      expect(setting).toContain('formatProductDateTime');
       expect(setting).not.toContain('formatLocalHHmm');
       expect(progress).toContain('Soft residual 1237');
-      expect(progress).toContain("format(new Date(timestamp), 'yyyy-MM-dd HH:mm')");
       expect(progress).not.toContain('formatLocalHHmm');
     });
 
@@ -2160,9 +2170,15 @@ import { parseToDate } from './parse-to-date';
     const hour = readFileSync(resolve(dir, 'format-hour.ts'), 'utf8');
     const ymd = readFileSync(resolve(dir, 'format-date-to-ymd.ts'), 'utf8');
 
-    it('owns Residual 1318 composition on four soles onto padTwoDigits', () => {
+    it('owns Residual 1318 composition on four soles onto padTwoDigits (ADR-037 → @dailyuse/time)', () => {
       expect(pad).toContain('Residual 1318');
-      expect(pad).toMatch(/export function padTwoDigits\b/);
+      expect(pad).toContain('@dailyuse/time');
+      expect(pad).toMatch(/export\s*\{\s*padTwoDigits\s*\}/);
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function padTwoDigits\b/);
       for (const [label, source] of [
         ['parts', parts],
         ['local', local],
@@ -2170,26 +2186,27 @@ import { parseToDate } from './parse-to-date';
         ['ymd', ymd],
       ] as const) {
         expect(source, label).toContain('Residual 1318');
-        expect(source, label).toContain('padTwoDigits');
-        expect(source, label).toContain("from './pad-two-digits'");
-        const body =
-          source.match(
-            /export function (?:formatHHmmParts|formatLocalHHmm|formatHour|formatDateToYMD)\([\s\S]*?\n\}/,
-          )?.[0] ?? '';
-        expect(body, label).toContain('padTwoDigits');
-        expect(body, label).not.toContain('padStart');
+        expect(source, label).toContain('@dailyuse/time');
       }
+      // Implementation composition (padTwoDigits) is owned by @dailyuse/time format/engine.
+      expect(timeSole).toContain('padTwoDigits');
+      expect(timeSole).not.toMatch(/\.padStart\(/);
     });
 
-    it('keeps Residual 1297/1294/1276/1252 join contracts on respective soles', () => {
+    it('keeps Residual 1297/1294/1276/1252 join contracts on respective soles (via @dailyuse/time)', () => {
       expect(parts).toContain('Residual 1297');
-      expect(parts).toMatch(/export function formatHHmmParts\b/);
+      expect(parts).toContain('formatHHmmParts');
       expect(local).toContain('Residual 1294');
-      expect(local).toMatch(/export function formatLocalHHmm\b/);
+      expect(local).toContain('formatLocalHHmm');
       expect(hour).toContain('Residual 1276');
       expect(hour).toContain(':00');
       expect(ymd).toContain('Residual 1252');
-      expect(ymd).toContain('`${y}-${m}-${d}`');
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function formatDateToYMD\b/);
+      expect(timeSole).toContain('dateToYmd');
     });
 
     it('Residual 1321: toLocalDateKey composes padTwoDigits; setting/goal formatTime keep-boundary', () => {
@@ -2265,12 +2282,16 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole padTwoDigits body (Residual 1312)', () => {
+    it('owns sole padTwoDigits body (Residual 1312 / ADR-037 → @dailyuse/time)', () => {
       expect(sole).toContain('Residual 1312');
-      expect(sole).toMatch(/export function padTwoDigits\b/);
-      const body = sole.match(/export function padTwoDigits\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(body).toContain('n: number');
-      expect(body).toContain("padStart(2, '0')");
+      expect(sole).toContain('Residual 1318');
+      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toMatch(/export\s*\{\s*padTwoDigits\s*\}/);
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toMatch(/export function padTwoDigits\b/);
     });
 
     it('retires TimeConfig / Reminder / CreateSchedule dual bodies onto sole', () => {
@@ -2392,7 +2413,7 @@ import { parseToDate } from './parse-to-date';
       expect(recurrence).toContain("endDate.value + 'T00:00:00'");
       expect(recurrence).not.toContain('parse-to-date');
 
-      expect(timeConfig).toContain("dateStr + 'T00:00:00').getTime()");
+      expect(timeConfig).toContain("codec.startOfYmd");
     });
 
     it('runtime: sole parses empty and local calendar day', () => {
@@ -2435,8 +2456,10 @@ import { parseToDate } from './parse-to-date';
       expect(demo).toContain('Residual 1315');
       expect(demo).toContain('formatDateToYMD');
       expect(demo).toContain('formatLocalHHmm');
-      expect(ymd).toMatch(/export function formatDateToYMD\b/);
-      expect(hhmm).toMatch(/export function formatLocalHHmm\b/);
+      expect(ymd).toContain('@dailyuse/time');
+      expect(ymd).toMatch(/export\s*\{\s*formatDateToYMD\s*\}/);
+      expect(hhmm).toContain('@dailyuse/time');
+      expect(hhmm).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
       const body = demo.match(/function formatDateTimeToInput\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('formatDateToYMD');
       expect(body).toContain('formatLocalHHmm');
@@ -2453,19 +2476,24 @@ import { parseToDate } from './parse-to-date';
       expect(hhmm).not.toContain('formatDateToYMD');
     });
 
-    it('Residual 1318: YMD/HH:mm soles compose padTwoDigits; setting/goal formatTime keep-boundary', () => {
+    it('Residual 1318: YMD/HH:mm soles compose padTwoDigits via @dailyuse/time; setting/goal formatTime keep-boundary', () => {
       const parts = readFileSync(resolve(dir, 'format-hhmm-parts.ts'), 'utf8');
       const hour = readFileSync(resolve(dir, 'format-hour.ts'), 'utf8');
-      for (const [label, source, re] of [
-        ['parts', parts, /export function formatHHmmParts\([\s\S]*?\n\}/],
-        ['hour', hour, /export function formatHour\([\s\S]*?\n\}/],
-        ['ymd', ymd, /export function formatDateToYMD\([\s\S]*?\n\}/],
-        ['hhmm', hhmm, /export function formatLocalHHmm\([\s\S]*?\n\}/],
+      for (const [label, source] of [
+        ['parts', parts],
+        ['hour', hour],
+        ['ymd', ymd],
+        ['hhmm', hhmm],
       ] as const) {
-        const body = source.match(re)?.[0] ?? '';
-        expect(body, label).toContain('padTwoDigits');
-        expect(body, label).not.toContain('padStart');
+        expect(source, label).toContain('@dailyuse/time');
+        expect(source, label).toContain('Residual 1318');
       }
+      const timeSole = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeSole).toContain('padTwoDigits');
+      expect(timeSole).not.toMatch(/\.padStart\(/);
       const setting = readFileSync(
         resolve(dir, '../../modules/setting/components/SettingAdvancedActions.vue'),
         'utf8',
@@ -2560,10 +2588,14 @@ import { parseToDate } from './parse-to-date';
 
     it('soft residual 1252 formatDateToYMD Date-only sole stays separate; getWeekStart dual retired 1285', () => {
       expect(formatYmd).toContain('Residual 1252');
-      expect(formatYmd).toMatch(/export function formatDateToYMD\b/);
-      const ymdBody = formatYmd.match(/export function formatDateToYMD\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(ymdBody).toContain('date: Date');
-      expect(ymdBody).not.toContain('number');
+      expect(formatYmd).toContain('@dailyuse/time');
+      expect(formatYmd).toMatch(/export\s*\{\s*formatDateToYMD\s*\}/);
+      const timeYmd = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeYmd).toMatch(/export function formatDateToYMD\b/);
+      expect(timeYmd).toContain('date: Date');
 
       // Date branch parity without force-merging form sole into calendar key sole
       expect(formatDateToYMD(new Date(2026, 6, 24))).toBe(toLocalDateKey(new Date(2026, 6, 24)));
@@ -2612,8 +2644,9 @@ import { parseToDate } from './parse-to-date';
     it('owns Residual 1321 composition on toLocalDateKey onto padTwoDigits', () => {
       expect(calendar).toContain('Residual 1321');
       expect(calendar).toContain('Residual 1282');
-      expect(pad).toContain('Residual 1321');
-      expect(pad).toMatch(/export function padTwoDigits\b/);
+      expect(pad).toContain('Residual 1318');
+      expect(pad).toContain('@dailyuse/time');
+      expect(pad).toMatch(/export\s*\{\s*padTwoDigits\s*\}/);
       const body = calendar.match(/export function toLocalDateKey\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('padTwoDigits');
       expect(body).not.toContain('padStart');
@@ -2625,9 +2658,13 @@ import { parseToDate } from './parse-to-date';
     it('keeps Residual 1282 Date|number key contract separate from formatDateToYMD Date-only sole', () => {
       const ymd = readFileSync(resolve(dir, 'format-date-to-ymd.ts'), 'utf8');
       expect(ymd).toContain('Residual 1252');
-      const ymdBody = ymd.match(/export function formatDateToYMD\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(ymdBody).toContain('date: Date');
-      expect(ymdBody).not.toContain('number');
+      expect(ymd).toContain('@dailyuse/time');
+      expect(ymd).toMatch(/export\s*\{\s*formatDateToYMD\s*\}/);
+      const timeYmd = readFileSync(
+        resolve(dir, '../../../../time/src/free/format-helpers.ts'),
+        'utf8',
+      );
+      expect(timeYmd).toContain('date: Date');
       // Date branch parity
       expect(formatDateToYMD(new Date(2026, 6, 24))).toBe(toLocalDateKey(new Date(2026, 6, 24)));
     });

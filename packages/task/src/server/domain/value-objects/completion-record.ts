@@ -12,7 +12,7 @@ import type {
   CompletionRecord as ICompletionRecord,
   CompletionRecordDTO,
 } from '@dailyuse/contracts/task';
-import type { DomainDate } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@dailyuse/contracts/primitives';
 
 /**
  * CompletionRecord 值对象实现
@@ -42,9 +42,9 @@ export class CompletionRecord extends ValueObject<CompletionRecordDTO> implement
   /**
    * 快速创建完成记录（仅记录时间）
    */
-  public static complete(completedAt: DomainDate = new Date()): CompletionRecord {
+  public static complete(completedAt: Instant = Date.now()): CompletionRecord {
     return new CompletionRecord({
-      completedAt: completedAt.getTime(),
+      completedAt,
       actualDuration: null,
       note: null,
       rating: null,
@@ -57,10 +57,10 @@ export class CompletionRecord extends ValueObject<CompletionRecordDTO> implement
    */
   public static completeWithDuration(
     actualDuration: number,
-    completedAt: DomainDate = new Date(),
+    completedAt: Instant = Date.now(),
   ): CompletionRecord {
     return new CompletionRecord({
-      completedAt: completedAt.getTime(),
+      completedAt,
       actualDuration,
       note: null,
       rating: null,
@@ -103,8 +103,9 @@ export class CompletionRecord extends ValueObject<CompletionRecordDTO> implement
 
   // ================= Getters（只读暴露）=================
 
-  public get completedAt(): DomainDate {
-    return new Date(this.props.completedAt);
+  /** ADR-037: Instant epoch ms (no mutable Date leakage). */
+  public get completedAt(): Instant {
+    return this.props.completedAt;
   }
 
   public get actualDuration(): number | null {

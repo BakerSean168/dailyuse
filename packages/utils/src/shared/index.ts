@@ -4,7 +4,6 @@
  */
 
 export * from './uuid';
-export * from './date';
 export * from './time';
 export * from './env-config';
 export * from './persistence';

@@ -80,7 +80,7 @@
                   <div class="flex items-center justify-between">
                     <span class="text-sm font-medium">+{{ record.value }}</span>
                     <span class="text-xs text-muted-foreground">{{
-                      formatDate(record.createdAt)
+                      formatProductDateTime(record.createdAt)
                     }}</span>
                   </div>
                   <p v-if="record.comment" class="text-xs text-muted-foreground">
@@ -148,6 +148,7 @@ import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus, History, TrendingUp } from '@lucide/vue';
 import type { KeyResultId } from '@dailyuse/contracts/primitives';
 import {
+import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   Button,
   Badge,
   Card,
@@ -210,15 +211,6 @@ const sortedRecords = computed(() =>
 
 const showAddRecord = ref(false);
 const newRecord = reactive({ value: 0, comment: '' });
-
-function formatDate(d: string | number | null | undefined): string {
-  if (!d) return '-';
-  return new Date(d).toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 async function handleAddRecord() {
   if (!newRecord.value) {

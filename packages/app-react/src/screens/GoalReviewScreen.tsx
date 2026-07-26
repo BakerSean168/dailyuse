@@ -8,6 +8,7 @@ import { ReviewType, type CreateGoalReviewReq } from '@dailyuse/contracts/goal';
 import { useGoalDetail } from '../hooks/useGoalDetail';
 import { useGoalReviews } from '../hooks/useGoalReviews';
 import { useGoalService } from '../hooks/useGoalService';
+import { formatProductDate, emptyKind } from '../utils/product-time';
 
 import {
   PageShell,
@@ -21,10 +22,6 @@ import {
 } from '@dailyuse/ui-react-native';
 
 const REVIEW_TYPES = Object.values(ReviewType);
-
-function formatDate(timestamp: number) {
-  return new Date(timestamp).toLocaleDateString();
-}
 
 export function GoalReviewScreen() {
   const router = useRouter();
@@ -144,7 +141,7 @@ export function GoalReviewScreen() {
                   <StatusPill label={`${review.rating}/5`} tone="tint" />
                 </View>
                 <ThemedText type="small">{review.summary}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">Reviewed on {formatDate(review.reviewedAt)}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">Reviewed on {formatProductDate(review.reviewedAt, emptyKind('dash'))}</ThemedText>
                 {review.achievements ? <ThemedText type="small">Achievements: {review.achievements}</ThemedText> : null}
                 {review.challenges ? <ThemedText type="small">Challenges: {review.challenges}</ThemedText> : null}
                 {review.improvements ? <ThemedText type="small">Next: {review.improvements}</ThemedText> : null}

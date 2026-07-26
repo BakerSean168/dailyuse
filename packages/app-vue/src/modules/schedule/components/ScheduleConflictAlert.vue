@@ -94,6 +94,7 @@ import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, CheckCircle, Lightbulb, Loader2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { formatScheduleDurationMinutes } from '../../../shared/utils/format-schedule-duration-minutes';
+import { formatProductHm } from '../../../shared/utils/product-time';
 import {
   ConflictSeverity,
   ConflictSuggestionType,
@@ -115,7 +116,7 @@ interface Emits {
 defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 /**
  * Residual 1246 keep-boundary: ScheduleConflictAlert conflict summary — i18n noConflict / conflictsDetected.
@@ -147,20 +148,12 @@ const formatDuration = (minutes: number): string => formatScheduleDurationMinute
 
 const getSuggestionLabel = (suggestion: ConflictSuggestion): string => {
   if (suggestion.type === ConflictSuggestionType.MoveEarlier) {
-    const startTime = new Date(suggestion.newStartTime);
-    const timeStr = startTime.toLocaleTimeString(locale.value, {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const timeStr = formatProductHm(suggestion.newStartTime);
     return t('schedule.conflictAlert.moveEarlier', { time: timeStr });
   }
 
   if (suggestion.type === ConflictSuggestionType.MoveLater) {
-    const startTime = new Date(suggestion.newStartTime);
-    const timeStr = startTime.toLocaleTimeString(locale.value, {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const timeStr = formatProductHm(suggestion.newStartTime);
     return t('schedule.conflictAlert.moveLater', { time: timeStr });
   }
 

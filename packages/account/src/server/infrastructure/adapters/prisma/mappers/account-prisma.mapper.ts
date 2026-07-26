@@ -25,7 +25,7 @@ export class AccountPrismaMapper {
         avatarUrl: profile.avatarUrl,
         bio: profile.bio,
         gender: profile.gender,
-        birthday: profile.birthday ? new Date(profile.birthday).getTime() : null,
+        birthday: profile.birthday ?? null,
       }),
       settings: AccountSettings.create({
         theme: settings.theme,

@@ -76,12 +76,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { format } from 'date-fns';
 import type { GoalClientDTO, GoalReviewClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import {
+import { formatProductPattern } from '@/shared/utils/product-time';
   Dialog,
   DialogContent,
   DialogDescription,
@@ -161,7 +161,7 @@ const getReviewTypeText = (type: GoalReviewClientDTO['type']) => {
 const formatReviewedAt = (value: GoalReviewClientDTO['reviewedAt']) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  return format(date, 'yyyy/MM/dd HH:mm');
+  return formatProductPattern(date, 'yyyy/MM/dd HH:mm');
 };
 
 defineExpose({

@@ -82,7 +82,7 @@
 
         <p class="text-xs text-muted-foreground">
           {{ t('governance.detail.codePrefix') }}: {{ displayRule.code }} ·
-          {{ t('governance.detail.updatedAt') }} {{ formatDate(displayRule.updatedAt) }}
+          {{ t('governance.detail.updatedAt') }} {{ formatProductDateTime(displayRule.updatedAt) }}
         </p>
       </div>
 
@@ -206,7 +206,7 @@
                     {{ revisionLabel(rev.changeType) }}
                   </span>
                   <span class="text-xs text-muted-foreground">
-                    {{ formatDate(rev.createdAt) }}
+                    {{ formatProductDateTime(rev.createdAt) }}
                   </span>
                 </div>
                 <p class="text-xs text-muted-foreground">
@@ -256,6 +256,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
+import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   ChevronRight,
   Pencil,
   Trash2,
@@ -303,16 +304,6 @@ async function handleDelete() {
     showDeleteDialog.value = false;
     router.push({ name: 'governance-list' });
   }
-}
-
-function formatDate(dateValue: Date | string | number): string {
-  return new Date(dateValue).toLocaleString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 function revisionDotColor(changeType: string): string {

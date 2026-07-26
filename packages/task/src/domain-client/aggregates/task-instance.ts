@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * TaskInstance Aggregate Root - Domain Client
  * 任务实例聚合根 - 领域客户端
@@ -58,8 +59,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.identityId;
   }
 
-  get instanceDate(): Date {
-    return this._props.instanceDate;
+  get instanceDate(): Instant {
+    const v = this._props.instanceDate;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   get timeConfig(): TaskTimeConfig {
@@ -78,12 +80,16 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.status;
   }
 
-  get actualStartTime(): Date | null {
-    return this._props.actualStartTime;
+  get actualStartTime(): Instant | null {
+    const v = this._props.actualStartTime;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get actualEndTime(): Date | null {
-    return this._props.actualEndTime;
+  get actualEndTime(): Instant | null {
+    const v = this._props.actualEndTime;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   get comment(): string | null {
@@ -94,16 +100,20 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.version;
   }
 
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   // UI 计算属性

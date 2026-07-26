@@ -1,14 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { resolveEmptyLabel } from '@dailyuse/time';
 
 /**
- * Residual 1204: formatDateTime keep-boundary (app-react Intl zh-CN vs app-vue locale local).
- * - app-react entity-presentation: fixed Intl.DateTimeFormat('zh-CN') + '-' empty
- * - app-vue ScheduleTaskDetailDialog: toLocaleString(locale) + 'N/A' empty
- * Soft residual 1204: other vue component-local formatDateTime variants stay separate.
- * Soft residual 1201: handleAuthSuccess keep-boundary remains separate.
- * Does not flip §13.2 checkboxes.
+ * Residual 1204 (P1/P2): formatDateTime empty catalog keep-boundary.
+ * - app-react entity-presentation: session formatProductDateTime + emptyKind('dash')
+ * - app-vue ScheduleTaskDetailDialog: formatProductDateTime + emptyKind('na')
+ * Soft residual 1204: other vue sites use formatProductDateTime without local wrappers.
  */
 describe('formatDateTime keep-boundary (residual 1204)', () => {
   const dir = __dirname;
@@ -33,91 +32,35 @@ describe('formatDateTime keep-boundary (residual 1204)', () => {
     'utf8',
   );
 
-  it('owns Residual 1204 keep-boundary markers on app-react Intl zh-CN formatDateTime', () => {
-    expect(react).toContain('Residual 1204 keep-boundary');
+  it('app-react formatDateTime uses session product-time + dash empty', () => {
+    expect(react).toContain('Residual 1204');
     expect(react).toMatch(/export function formatDateTime\b/);
-    expect(react).toContain("Intl.DateTimeFormat('zh-CN'");
-    expect(react).toContain("return '-'");
-    const body = react.match(/export function formatDateTime\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(body).toContain('toTimestamp');
-    expect(body).toContain('year');
-    expect(body).toContain('month');
-    expect(body).not.toContain('toLocaleString');
-    expect(body).not.toContain('locale.value');
-    expect(body).not.toContain("'N/A'");
+    expect(react).toContain("emptyKind('dash')");
+    expect(react).toContain('formatProductDateTime');
+    expect(react).not.toContain('createTimeFacade');
+    expect(react).not.toContain('toLocaleString');
   });
 
-  it('differs from app-vue schedule component-local formatDateTime (no force-merge)', () => {
-    expect(vue).toContain('Residual 1204 keep-boundary');
-    expect(vue).toMatch(/function formatDateTime\b/);
-    expect(vue).toContain('Soft residual 1204');
-    expect(vue).toContain('toLocaleString(locale.value)');
-    expect(vue).toContain("'N/A'");
-    const body = vue.match(/function formatDateTime\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(body).toContain('toLocaleString');
-    expect(body).toContain('locale.value');
-    expect(body).not.toContain('Intl.DateTimeFormat');
-    expect(body).not.toContain("return '-'");
-    expect(body).not.toContain('toTimestamp');
+  it('app-vue schedule uses emptyKind na + formatProductDateTime (no local formatDateTime)', () => {
+    expect(vue).not.toMatch(/function formatDateTime\b/);
+    expect(vue).toContain('formatProductDateTime');
+    expect(vue).toContain("emptyKind('na')");
   });
 
-  it('soft residual 1204 component-local variants remain separate (no force-merge)', () => {
+  it('soft residual 1204 sites call formatProductDateTime without local wrappers', () => {
     for (const [label, source] of [
       ['goalReview', goalReview],
       ['goalDetail', goalDetail],
       ['eventList', eventList],
     ] as const) {
-      expect(source, label).toContain('Soft residual 1204');
-      expect(source, label).toMatch(/function formatDateTime\b/);
-      expect(source, label).toContain('toLocaleString');
-      expect(source, label).not.toContain('Intl.DateTimeFormat');
+      expect(source, label).toContain('formatProductDateTime');
+      expect(source, label).not.toMatch(/function formatDateTime\b/);
     }
   });
 
-  it('runtime: documents Intl zh-CN vs locale toLocaleString contracts via body shape', () => {
-    function reactFormatDateTime(value: number | string | null | undefined): string {
-      const timestamp =
-        value === null || value === undefined
-          ? 0
-          : typeof value === 'number'
-            ? Number.isFinite(value)
-              ? value
-              : 0
-            : (() => {
-                const t = new Date(value).getTime();
-                return Number.isFinite(t) ? t : 0;
-              })();
-      if (!timestamp) return '-';
-      return new Intl.DateTimeFormat('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(new Date(timestamp));
-    }
-    function vueFormatDateTime(
-      timestamp: number | string | null | undefined,
-      locale: string,
-    ): string {
-      if (!timestamp) return 'N/A';
-      const time = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;
-      return new Date(time).toLocaleString(locale);
-    }
-    expect(reactFormatDateTime(null)).toBe('-');
-    expect(reactFormatDateTime(0)).toBe('-');
-    expect(vueFormatDateTime(null, 'en-US')).toBe('N/A');
-    const fixed = Date.UTC(2024, 0, 2, 3, 4, 0);
-    const reactOut = reactFormatDateTime(fixed);
-    expect(reactOut).toMatch(/2024/);
-    expect(typeof vueFormatDateTime(fixed, 'en-US')).toBe('string');
-    expect(vueFormatDateTime(fixed, 'en-US').length).toBeGreaterThan(0);
-  });
-
-  it('documents residual 1204 lock intent without claiming §13.2 complete', () => {
-    const self = readFileSync(resolve(dir, 'format-datetime-keep-boundary.surface.spec.ts'), 'utf8');
-    expect(self).toContain('Residual 1204');
-    expect(self).toContain('Does not flip §13.2 checkboxes');
-    expect(self).toContain('keep-boundary');
+  it('empty catalog dash vs na remain distinct', () => {
+    expect(resolveEmptyLabel('dash')).toBe('-');
+    expect(resolveEmptyLabel('na')).toBe('N/A');
+    expect(resolveEmptyLabel('dash')).not.toBe(resolveEmptyLabel('na'));
   });
 });

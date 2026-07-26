@@ -19,7 +19,7 @@
  */
 
 import { Entity } from '@dailyuse/utils/domain';
-import type { GoalReviewId as IGoalReviewId, GoalId as IGoalId, DomainDate, TransferDate } from '@dailyuse/contracts/primitives';
+import type { GoalReviewId as IGoalReviewId, GoalId as IGoalId, Instant, TransferDate } from '@dailyuse/contracts/primitives';
 import type {
   GoalReviewServerDTO,
   KeyResultSnapshotDTO,
@@ -38,11 +38,12 @@ export interface GoalReviewState {
   challenges: string | null;
   improvements: string | null;
   keyResultSnapshots: KeyResultSnapshotDTO[];
-  reviewedAt: Date;
+  /** ADR-037 Instant epoch ms */
+  reviewedAt: Instant;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
 }
 
 /**
@@ -90,7 +91,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
     return [...this._props.keyResultSnapshots];
   }
 
-  get reviewedAt(): DomainDate {
+  get reviewedAt(): Instant {
     return this._props.reviewedAt;
   }
 
@@ -98,15 +99,15 @@ export class GoalReview extends Entity<IGoalReviewId> {
     return this._props.version;
   }
 
-  get createdAt(): DomainDate {
+  get createdAt(): Instant {
     return this._props.createdAt;
   }
 
-  get updatedAt(): DomainDate {
+  get updatedAt(): Instant {
     return this._props.updatedAt;
   }
 
-  get deletedAt(): DomainDate | null {
+  get deletedAt(): Instant | null {
     return this._props.deletedAt;
   }
 
@@ -127,7 +128,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
     challenges?: string;
     improvements?: string;
     keyResultSnapshots?: KeyResultSnapshotDTO[];
-    reviewedAt?: Date;
+    reviewedAt?: Instant;
   }): GoalReview {
     if (params.rating < 1 || params.rating > 5) {
       throw new Error('Rating must be between 1 and 5');
@@ -137,7 +138,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
     }
 
     const id = params.id ?? GoalReviewId.of(GoalReviewId.generate());
-    const now = new Date();
+    const now = Date.now();
 
     return new GoalReview({
       id,
@@ -174,7 +175,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
       throw new Error('Rating must be between 1 and 5');
     }
     this._props.rating = rating;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -186,7 +187,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
       throw new Error('Summary cannot be empty');
     }
     this._props.summary = trimmed;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -201,7 +202,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
     } else {
       this._props.achievements = trimmed;
     }
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -216,7 +217,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
     } else {
       this._props.challenges = trimmed;
     }
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -231,7 +232,7 @@ export class GoalReview extends Entity<IGoalReviewId> {
     } else {
       this._props.improvements = trimmed;
     }
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -241,8 +242,8 @@ export class GoalReview extends Entity<IGoalReviewId> {
     if (this._props.deletedAt) {
       return; // 已经删除
     }
-    this._props.deletedAt = new Date();
-    this._props.updatedAt = new Date();
+    this._props.deletedAt = Date.now();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -268,11 +269,11 @@ export class GoalReview extends Entity<IGoalReviewId> {
       challenges: this._props.challenges,
       improvements: this._props.improvements,
       keyResultSnapshots: this._props.keyResultSnapshots,
-      reviewedAt: this._props.reviewedAt.getTime() as TransferDate,
+      reviewedAt: this._props.reviewedAt as TransferDate,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime() as TransferDate,
-      updatedAt: this._props.updatedAt.getTime() as TransferDate,
-      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() as TransferDate : null,
+      createdAt: this._props.createdAt as TransferDate,
+      updatedAt: this._props.updatedAt as TransferDate,
+      deletedAt: this._props.deletedAt != null ? (this._props.deletedAt as TransferDate) : null,
     };
   }
 
@@ -291,10 +292,10 @@ export class GoalReview extends Entity<IGoalReviewId> {
       improvements: this._props.improvements,
       keyResultSnapshots: this._props.keyResultSnapshots,
       version: this._props.version,
-      reviewedAt: this._props.reviewedAt.getTime(),
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      reviewedAt: this._props.reviewedAt,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

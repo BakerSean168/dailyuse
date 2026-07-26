@@ -19,8 +19,10 @@ import { TaskTemplateStatus } from '../../domain/value-objects/task-template-sta
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import { TaskFolderId } from '../../domain/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
-import { startOfDay } from 'date-fns';
+import type {GoalId, KeyResultId, Instant} from '@dailyuse/contracts/primitives';
+import { createTimeFacade } from '@dailyuse/time';
+
+const taskTime = createTimeFacade();
 
 import { AggregateRoot } from '@dailyuse/utils/domain';
 import {
@@ -192,8 +194,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.status;
   }
 
-  public get lastGeneratedDate(): Date | null {
-    return this._props.lastGeneratedDate;
+  public get lastGeneratedDate(): Instant | null {
+    const v = this._props.lastGeneratedDate;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   public get generateAheadDays(): number | null {
@@ -218,16 +222,22 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.parentTaskId;
   }
 
-  public get startDate(): Date | null {
-    return this._props.startDate;
+  public get startDate(): Instant | null {
+    const v = this._props.startDate;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  public get dueDate(): Date | null {
-    return this._props.dueDate;
+  public get dueDate(): Instant | null {
+    const v = this._props.dueDate;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  public get completedAt(): Date | null {
-    return this._props.completedAt;
+  public get completedAt(): Instant | null {
+    const v = this._props.completedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   public get estimatedMinutes(): number | null {
@@ -254,16 +264,20 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.blockingReason;
   }
 
-  public get createdAt(): Date {
-    return this._props.createdAt;
+  public get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  public get updatedAt(): Date {
-    return this._props.updatedAt;
+  public get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  public get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  public get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   public get version(): number {
@@ -1054,6 +1068,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   static startOfLocalDay(value: number): number {
-    return startOfDay(new Date(value)).getTime();
+    return taskTime.calendar.startOfDay(value);
   }
 }

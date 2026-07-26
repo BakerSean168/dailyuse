@@ -1,12 +1,6 @@
-import { padTwoDigits } from './pad-two-digits';
-
 /**
- * Residual 1276: sole formatHour — hour number → local "HH:00".
- * Dual-retired from DayViewCalendar + WeekViewCalendar.
- * Residual 1318: padStart dual retired onto padTwoDigits sole (:00 join stays local).
- * Soft residual 1276 / Residual 1279: formatEventTime keep-boundary (Day " - " vs Week "-") remains separate.
- * Soft residual 1273: formatCalendarEventTimeRange dual-retired sole remains separate (en-dash event ranges).
+ * Residual 1276: sole formatHour — re-exported from @dailyuse/time (ADR-037 W2).
+ * Residual 1318: padTwoDigits composition lives in @dailyuse/time engine/format.
+ * Soft residual: :00 join contract is implemented in @dailyuse/time format.hourLabel.
  */
-export function formatHour(hour: number): string {
-  return `${padTwoDigits(hour)}:00`;
-}
+export { formatHour } from '@dailyuse/time';

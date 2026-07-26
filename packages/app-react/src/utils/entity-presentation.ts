@@ -1,4 +1,5 @@
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import { formatProductDateTime, emptyKind } from './product-time';
 
 // Soft residual 1101: presentation 0-fallback toTimestamp keep-boundary (≠ projection/AI/notification).
 function toTimestamp(value: number | string | null | undefined): number {
@@ -15,23 +16,15 @@ function toTimestamp(value: number | string | null | undefined): number {
 }
 
 /**
- * Residual 1204 keep-boundary: app-react formatDateTime — fixed Intl zh-CN presentation.
- * Uses toTimestamp 0-fallback; empty → '-'; not i18n locale-driven.
- * Soft residual 1204: app-vue component-local toLocaleString(locale) variants (no force-merge).
+ * Residual 1204: app-react formatDateTime — session product-time + empty catalog dash.
+ * Uses toTimestamp 0-fallback; empty → '-'.
  */
 export function formatDateTime(value: number | string | null | undefined): string {
   const timestamp = toTimestamp(value);
   if (!timestamp) {
-    return '-';
+    return emptyKind('dash');
   }
-
-  return new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(timestamp));
+  return formatProductDateTime(timestamp, emptyKind('dash'));
 }
 
 export function getReminderDisplayTitle(template: Pick<ReminderTemplateClientDTO, 'name'>): string {

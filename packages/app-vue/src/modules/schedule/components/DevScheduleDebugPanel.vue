@@ -90,6 +90,7 @@ import {
   getHealthStatusLabel,
   computeHealthStatus,
 } from '../utils/schedule-presentation';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 
 interface Props {
   tasks: ScheduleTaskClientDTO[];
@@ -103,10 +104,7 @@ const isDev = import.meta.env.DEV;
 const open = ref(false);
 
 function formatNextRun(nextRunAt: string | null): string {
-  if (!nextRunAt) return '-';
-  const date = new Date(nextRunAt);
-  if (isNaN(date.getTime())) return '-';
-  return date.toLocaleString();
+  return formatProductDateTime(nextRunAt, '-');
 }
 
 function statusClass(color: string): string {

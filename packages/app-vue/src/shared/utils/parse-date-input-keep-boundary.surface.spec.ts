@@ -79,10 +79,11 @@ describe('parseDateInput keep-boundary (residual 1225)', () => {
     expect(Number.isNaN(vueParseDateInput('not-a-date') as number)).toBe(true);
   });
 
-  it('soft residual 1210 formatDateToInput keep-boundary remains separate on same vue surface', () => {
-    expect(vue).toContain('Residual 1210 keep-boundary');
+  it('soft residual 1210 formatDateToInput dual-retired onto product-time on same vue surface', () => {
+    expect(vue).toContain('Residual 1210');
     expect(vue).toMatch(/const formatDateToInput\b/);
-    expect(vue).toContain('formatDateToYMD');
+    expect(vue).toContain('getProductTime');
+    expect(vue).toContain('dateToYmd');
   });
 
   it('documents residual 1225 lock intent without claiming §13.2 complete', () => {

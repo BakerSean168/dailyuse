@@ -77,10 +77,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { formatDistanceToNow, type Locale } from 'date-fns';
-import { zhCN, enUS, ja, ko, zhTW } from 'date-fns/locale';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import {
+import { formatProductRelative, setProductTimeStyle } from '@/shared/utils/product-time';
   Info,
   CheckCircle2,
   Target,
@@ -103,13 +102,6 @@ const props = defineProps<Props>();
 
 const { t, locale } = useI18n();
 
-const dateFnsLocaleMap: Record<string, Locale> = {
-  'zh-CN': zhCN,
-  'en-US': enUS,
-  'ja-JP': ja,
-  'ko-KR': ko,
-  'zh-TW': zhTW,
-};
 
 const emit = defineEmits<{
   click: [notification: NotificationClientDTO];
@@ -185,10 +177,7 @@ const priorityText = computed(() => {
 
 const timeDisplay = computed(() => {
   try {
-    return formatDistanceToNow(new Date(props.notification.createdAt), {
-      addSuffix: true,
-      locale: dateFnsLocaleMap[locale.value] || zhCN,
-    });
+    return formatProductRelative(props.notification.createdAt);
   } catch {
     return props.notification.createdAt;
   }

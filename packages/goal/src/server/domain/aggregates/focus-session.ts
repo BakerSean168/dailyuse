@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * FocusSession 聚合根实现
  * 实现 FocusSessionServer 接口
@@ -107,20 +108,30 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
   public get description(): string | null {
     return this._props.description;
   }
-  public get startedAt(): Date | null {
-    return this._props.startedAt;
+  public get startedAt(): Instant | null {
+    const v = this._props.startedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
-  public get pausedAt(): Date | null {
-    return this._props.pausedAt;
+  public get pausedAt(): Instant | null {
+    const v = this._props.pausedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
-  public get resumedAt(): Date | null {
-    return this._props.resumedAt;
+  public get resumedAt(): Instant | null {
+    const v = this._props.resumedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
-  public get completedAt(): Date | null {
-    return this._props.completedAt;
+  public get completedAt(): Instant | null {
+    const v = this._props.completedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
-  public get cancelledAt(): Date | null {
-    return this._props.cancelledAt;
+  public get cancelledAt(): Instant | null {
+    const v = this._props.cancelledAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
   public get pauseCount(): number {
     return this._props.pauseCount;
@@ -128,17 +139,21 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
   public get pausedDurationMinutes(): number {
     return this._props.pausedDurationMinutes;
   }
-  public get createdAt(): Date {
-    return this._props.createdAt;
+  public get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
-  public get updatedAt(): Date {
-    return this._props.updatedAt;
+  public get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
   public get version(): number {
     return this._props.version;
   }
-  public get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  public get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   // ================= 4. 工厂方法 (Factories) =================

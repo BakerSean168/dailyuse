@@ -134,11 +134,15 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       challenges: r.challenges ?? null,
       improvements: r.improvements ?? null,
       keyResultSnapshots: r.keyResultSnapshots as KeyResultSnapshotDTO[],
-      reviewedAt: new Date(r.reviewedAt),
+      reviewedAt: r.reviewedAt instanceof Date ? r.reviewedAt.getTime() : Number(r.reviewedAt),
       version: r.version ?? 1,
-      createdAt: new Date(r.createdAt),
-      updatedAt: new Date(r.updatedAt),
-      deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
+      createdAt: r.createdAt instanceof Date ? r.createdAt.getTime() : Number(r.createdAt),
+      updatedAt: r.updatedAt instanceof Date ? r.updatedAt.getTime() : Number(r.updatedAt),
+      deletedAt: r.deletedAt
+        ? r.deletedAt instanceof Date
+          ? r.deletedAt.getTime()
+          : Number(r.deletedAt)
+        : null,
     }),
   );
 

@@ -1,6 +1,6 @@
 import { ValueObject } from '@dailyuse/utils/domain';
 import type { ContactEmailDTO, ContactEmail as IContactEmail } from '@dailyuse/contracts/account';
-import type { DomainDate } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@dailyuse/contracts/primitives';
 
 export class ContactEmail extends ValueObject<ContactEmailDTO> implements IContactEmail {
 
@@ -62,8 +62,9 @@ export class ContactEmail extends ValueObject<ContactEmailDTO> implements IConta
     return this.props.address.split('@')[1];
   }
 
-  get verifiedAt(): DomainDate | null {
-    return this.props.verifiedAt ? new Date(this.props.verifiedAt) : null;
+  /** ADR-037: Instant epoch ms (no mutable Date leakage). */
+  get verifiedAt(): Instant | null {
+    return this.props.verifiedAt;
   }
 
   get isVerified(): boolean { return this.props.isVerified; }

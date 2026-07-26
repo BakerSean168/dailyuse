@@ -35,7 +35,8 @@
     "@dailyuse/utils": "workspace:*",
     "express": "^5.2.1",
     "tslib": "^2.3.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@dailyuse/time": "workspace:*"
   },
   "devDependencies": {
     "@types/express": "^5.0.0"

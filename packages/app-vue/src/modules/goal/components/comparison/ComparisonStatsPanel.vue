@@ -154,7 +154,7 @@
                 </span>
               </td>
               <td v-for="goal in goals" :key="`created-${goal.id}`" class="p-4 text-sm">
-                {{ formatDate(goal.createdAt) }}
+                {{ formatProductDateTime(goal.createdAt) }}
               </td>
             </tr>
 
@@ -167,7 +167,7 @@
                 </span>
               </td>
               <td v-for="goal in goals" :key="`updated-${goal.id}`" class="p-4 text-sm">
-                {{ formatDate(goal.updatedAt) }}
+                {{ formatProductDateTime(goal.updatedAt) }}
               </td>
             </tr>
 
@@ -389,6 +389,7 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import {
+import { formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
   Card,
   CardHeader,
   CardTitle,
@@ -498,16 +499,6 @@ const getProgressTextClass = (progress: number): string => {
   if (progress >= 50) return 'text-primary';
   if (progress >= 20) return 'text-warning';
   return 'text-destructive';
-};
-
-const formatDate = (timestamp: number | null | undefined): string => {
-  if (!timestamp) return '-';
-  const date = new Date(timestamp);
-  return date.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
 };
 
 // Insights

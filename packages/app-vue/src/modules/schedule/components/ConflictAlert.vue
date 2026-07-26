@@ -50,7 +50,9 @@ import { ref } from 'vue';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, X } from '@lucide/vue';
+import { splitDurationMs } from '@dailyuse/time';
 import { useI18n } from 'vue-i18n';
+import { formatProductHm } from '@/shared/utils/product-time';
 import {
   ConflictSuggestionType,
   type ConflictDetectionResult,
@@ -72,7 +74,7 @@ const emit = defineEmits<{
 
 const dismissed = ref(false);
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 function handleDismiss() {
   dismissed.value = true;
@@ -84,12 +86,12 @@ function handleDismiss() {
  * Always passes m remainder; differs from ScheduleConflictAlert hours-only band (no force-merge).
  */
 function formatDuration(ms: number): string {
-  const minutes = Math.floor(ms / 60000);
-  const hours = Math.floor(minutes / 60);
+  // Soft residual 1243: ms → minutes via time split; hoursMinutes always when h>0 (no hours-only).
+  const { hours, totalMinutes } = splitDurationMs(ms);
   if (hours > 0) {
-    return t('schedule.duration.hoursMinutes', { h: hours, m: minutes % 60 });
+    return t('schedule.duration.hoursMinutes', { h: hours, m: totalMinutes % 60 });
   }
-  return t('schedule.duration.minutes', { n: minutes });
+  return t('schedule.duration.minutes', { n: totalMinutes });
 }
 
 /**
@@ -97,14 +99,8 @@ function formatDuration(ms: number): string {
  * formatSuggestion uses advanceTo/delayTo/shortenTo; differs from ScheduleConflictAlert getSuggestionLabel moveEarlier family.
  */
 function formatSuggestion(suggestion: ConflictSuggestion): string {
-  const startTime = new Date(suggestion.newStartTime).toLocaleTimeString(locale.value, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  const endTime = new Date(suggestion.newEndTime).toLocaleTimeString(locale.value, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const startTime = formatProductHm(suggestion.newStartTime);
+  const endTime = formatProductHm(suggestion.newEndTime);
 
   switch (suggestion.type) {
     case ConflictSuggestionType.MoveEarlier:

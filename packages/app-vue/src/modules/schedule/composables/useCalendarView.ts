@@ -8,10 +8,10 @@
 import { computed, ref } from 'vue';
 import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
 import { padTwoDigits } from '../../../shared/utils/pad-two-digits';
-import { startOfDay, endOfDay } from 'date-fns';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { startOfDayMs, endOfDayMs } from '@/shared/utils/product-time';
 
 // ============ 统一内部事件类型 ============
 
@@ -179,7 +179,7 @@ export function taskInstancesToEvents(
   for (const inst of instances) {
     const baseTs = Number(inst.instanceDate);
     if (!isFinite(baseTs)) continue;
-    const dayBaseTs = startOfDay(new Date(baseTs)).getTime();
+    const dayBaseTs = startOfDayMs(baseTs);
 
     const timeRange = inst.timeConfig?.timeRange;
     const isAllDay = inst.timeConfig?.timeType === 'AllDay';
@@ -197,7 +197,7 @@ export function taskInstancesToEvents(
       displayMode = 'timed';
     } else {
       startTime = dayBaseTs;
-      endTime = endOfDay(new Date(dayBaseTs)).getTime();
+      endTime = endOfDayMs(dayBaseTs);
       displayMode = isAllDay ? 'all-day' : 'timed';
     }
 
@@ -272,8 +272,8 @@ export function useCalendarView() {
 
   /** Ensure today's events are loaded (shell capsule). */
   async function ensureTodayLoaded(nowMs: number = Date.now()) {
-    const start = startOfDay(new Date(nowMs)).getTime();
-    const end = endOfDay(new Date(nowMs)).getTime();
+    const start = startOfDayMs(nowMs);
+    const end = endOfDayMs(nowMs);
     // Avoid refetch thrash if window already covers today.
     if (windowStart.value <= start && windowEnd.value >= end && windowEnd.value > 0) {
       return;

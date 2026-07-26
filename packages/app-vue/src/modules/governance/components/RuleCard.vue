@@ -51,7 +51,7 @@
           <XCircle :size="12" class="text-destructive" />
           {{ rule.badExamples.length }}
         </span>
-        <span>{{ formatDate(rule.updatedAt) }}</span>
+        <span>{{ formatProductMonthDay(rule.updatedAt) }}</span>
       </div>
     </div>
 
@@ -72,6 +72,7 @@ import { useI18n } from 'vue-i18n';
 import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from '@lucide/vue';
 import RuleStatusBadge from './RuleStatusBadge.vue';
 import type { RuleClientDTO } from '@dailyuse/contracts/governance';
+import { formatProductMonthDay } from '@/shared/utils/product-time';
 
 const props = defineProps<{
   rule: RuleClientDTO;
@@ -90,12 +91,4 @@ const truncatedDescription = computed(() => {
 
 const severityIcon = computed(() => (props.rule.severity === 'Mandatory' ? AlertCircle : Info));
 
-/**
- * Soft residual 1240: governance RuleCard formatDate — locale month short + day only.
- * Compact card display; no empty path; not full date goal detail (no force-merge).
- */
-function formatDate(timestamp: number): string {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
-}
 </script>

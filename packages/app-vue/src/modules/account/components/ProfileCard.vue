@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { GenderType, type AccountProfileDTO } from '@dailyuse/contracts/account';
+import { formatProductDate, getProductTime } from '@/shared/utils/product-time';
 
 interface ProfileCardProps {
   profile: AccountProfileDTO;
@@ -48,14 +49,13 @@ const genderText = computed(() => {
   }
 });
 
-const formatBirthday = (birthday: number | null) => {
-  if (!birthday) return t('account.gender.notSet');
-  try {
-    const date = new Date(birthday);
-    return date.toLocaleDateString();
-  } catch {
-    return t('account.gender.notSet');
+/** ADR-037: birthday is Ymd (or legacy epoch); display via product-time. */
+const formatBirthday = (birthday: string | number | null) => {
+  if (birthday == null || birthday === '') return t('account.gender.notSet');
+  if (typeof birthday === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
+    return getProductTime().format.ymdDisplay(birthday);
   }
+  return formatProductDate(birthday, t('account.gender.notSet'));
 };
 
 const handleEdit = () => {

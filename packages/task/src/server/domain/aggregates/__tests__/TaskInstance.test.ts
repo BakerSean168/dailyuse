@@ -286,8 +286,8 @@ describe('TaskInstance Aggregate', () => {
 
         expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(instance.completionRecord).not.toBeNull();
-        expect(instance.completionRecord!.completedAt.getTime()).toBeGreaterThanOrEqual(before);
-        expect(instance.completionRecord!.completedAt.getTime()).toBeLessThanOrEqual(after);
+        expect(instance.completionRecord!.completedAt).toBeGreaterThanOrEqual(before);
+        expect(instance.completionRecord!.completedAt).toBeLessThanOrEqual(after);
         expect(instance.actualEndTime).not.toBeNull();
         expect(instance.actualEndTime!).toBeGreaterThanOrEqual(before);
         expect(instance.actualEndTime!).toBeLessThanOrEqual(after);

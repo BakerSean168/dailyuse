@@ -190,13 +190,13 @@ export function aRelativeReminder(value = 15, unit = 'Minutes' as const): TaskRe
   return TaskReminderConfig.createRelativeReminder(value, unit);
 }
 
-export function aCompletionRecord(completedAt?: Date): CompletionRecord {
+export function aCompletionRecord(completedAt?: number): CompletionRecord {
   return CompletionRecord.complete(completedAt);
 }
 
 export function aCompletionWithDuration(
   durationMinutes = 30,
-  completedAt?: Date,
+  completedAt?: number,
 ): CompletionRecord {
   return CompletionRecord.completeWithDuration(durationMinutes, completedAt);
 }

@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * GoalFolder Aggregate Root - Domain Client
  * 目标文件夹聚合根 - 领域客户端
@@ -92,16 +93,20 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     return this._props.version;
   }
 
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   // UI 计算属性

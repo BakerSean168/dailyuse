@@ -6,7 +6,9 @@
  */
 
 import { DayOfWeek, RecurrenceFrequency } from '@dailyuse/contracts/task';
-import { differenceInCalendarDays, differenceInCalendarWeeks, startOfDay, addDays } from 'date-fns';
+import { createTimeFacade } from '@dailyuse/time';
+
+const taskTime = createTimeFacade();
 import { TaskType } from '../value-objects';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import {
@@ -44,7 +46,7 @@ export interface CreateInstanceParams {
 }
 
 export function startOfLocalDay(value: number): number {
-  return startOfDay(new Date(value)).getTime();
+  return taskTime.calendar.startOfDay(value);
 }
 
 /**
@@ -114,7 +116,7 @@ export function generateInstances(
 
   if (ctx.taskType === TaskType.OneTime) {
     if (ctx.timeConfig?.startDate) {
-      const targetDay = startOfLocalDay(ctx.timeConfig.startDate.getTime());
+      const targetDay = startOfLocalDay(ctx.timeConfig.startDate);
       const alreadyGenerated = ctx.existingInstances.some(
         (inst) => startOfLocalDay(inst.instanceDate) === targetDay,
       );
@@ -164,7 +166,7 @@ export function generateInstances(
           }),
         );
       }
-      currentDate = addDays(new Date(currentDate), 1).getTime();
+      currentDate = taskTime.calendar.addDays(currentDate, 1);
     }
   }
 
@@ -192,7 +194,7 @@ export function shouldGenerateInstance(
   const candidateDay = startOfLocalDay(date);
 
   if (ctx.timeConfig?.startDate) {
-    const templateStartDay = startOfLocalDay(ctx.timeConfig.startDate.getTime());
+    const templateStartDay = startOfLocalDay(ctx.timeConfig.startDate);
     if (candidateDay < templateStartDay) {
       return false;
     }
@@ -200,7 +202,7 @@ export function shouldGenerateInstance(
 
   if (
     ctx.recurrenceRule.endDate &&
-    candidateDay > startOfLocalDay(ctx.recurrenceRule.endDate.getTime())
+    candidateDay > startOfLocalDay(ctx.recurrenceRule.endDate)
   ) {
     return false;
   }
@@ -222,7 +224,7 @@ export function shouldGenerateInstance(
         return true;
       }
       return (
-        differenceInCalendarDays(dateObj, new Date(ctx.timeConfig.startDate.getTime())) %
+        taskTime.calendar.diffCalendarDays(dateObj.getTime(), ctx.timeConfig.startDate) %
           rule.interval ===
         0
       );
@@ -232,9 +234,10 @@ export function shouldGenerateInstance(
         return false;
       }
       if (
-        differenceInCalendarWeeks(dateObj, new Date(ctx.timeConfig.startDate.getTime()), {
-          weekStartsOn: 1,
-        }) %
+        taskTime.calendar.diffCalendarWeeks(
+          dateObj.getTime(),
+          ctx.timeConfig.startDate,
+        ) %
           rule.interval !==
         0
       ) {
@@ -264,12 +267,12 @@ export function isActiveOnDate(
     return false;
   }
   if (ctx.taskType === TaskType.OneTime) {
-    return ctx.timeConfig?.startDate?.getTime() === date;
+    return ctx.timeConfig?.startDate === date;
   }
   if (!ctx.recurrenceRule) {
     return false;
   }
-  if (ctx.recurrenceRule.endDate && date > ctx.recurrenceRule.endDate.getTime()) {
+  if (ctx.recurrenceRule.endDate && date > ctx.recurrenceRule.endDate) {
     return false;
   }
   return true;
@@ -286,8 +289,8 @@ export function getNextOccurrence(
     return null;
   }
   if (ctx.taskType === TaskType.OneTime) {
-    if (ctx.timeConfig?.startDate && ctx.timeConfig.startDate.getTime() > afterDate) {
-      return ctx.timeConfig.startDate.getTime();
+    if (ctx.timeConfig?.startDate && ctx.timeConfig.startDate > afterDate) {
+      return ctx.timeConfig.startDate;
     }
     return null;
   }

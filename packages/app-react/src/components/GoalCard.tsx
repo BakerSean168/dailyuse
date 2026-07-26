@@ -4,6 +4,8 @@ import type { GoalSummary } from '../hooks/useGoals';
 
 import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText, ThemedView } from '@dailyuse/ui-react-native';
 
+import { formatProductDate, emptyKind } from '../utils/product-time';
+
 function statusTone(status: GoalSummary['status']) {
   if (status === 'Active') {
     return 'success' as const;
@@ -41,8 +43,8 @@ export function GoalCard({ goal, onOpen }: { goal: GoalSummary; onOpen?: () => v
       </ThemedView>
 
       <View style={styles.metaRow}>
-        <Meta label="Start" value={goal.startDate ? new Date(goal.startDate).toLocaleDateString() : 'Not set'} />
-        <Meta label="Target" value={goal.targetDate ? new Date(goal.targetDate).toLocaleDateString() : 'Not set'} />
+        <Meta label="Start" value={formatProductDate(goal.startDate, emptyKind('notSet'))} />
+        <Meta label="Target" value={formatProductDate(goal.targetDate, emptyKind('notSet'))} />
         <Meta label="Priority" value={String(goal.priority)} />
       </View>
 

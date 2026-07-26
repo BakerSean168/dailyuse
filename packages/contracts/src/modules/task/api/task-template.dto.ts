@@ -35,7 +35,7 @@ export type { RecurrenceConfigReq } from '../value-objects/recurrence-rule';
 
 // Residual 747: TaskTimeConfigSchema owned by value-objects
 // (semantic TaskTimeConfigDTO / TaskTimeConfigReq are z.infer aliases).
-// Domain TaskTimeConfig keeps DomainDate startDate (intentional shape split).
+// Domain TaskTimeConfig startDate is Instant (ADR-037; intentional dual interface names).
 export { TaskTimeConfigSchema };
 export type { TaskTimeConfigReq } from '../value-objects/task-time-config';
 

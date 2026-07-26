@@ -1,5 +1,6 @@
 import type { ComposerTranslation } from 'vue-i18n';
 import type { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
+import { getProductTime } from '../../../shared/utils/product-time';
 
 type Translate = ComposerTranslation;
 
@@ -95,16 +96,16 @@ export function computeHealthStatus(consecutiveFailures: number): 'healthy' | 'w
 }
 
 /**
- * Residual 1216 keep-boundary: app-vue schedule formatTimestamp — TransferDate → toLocaleString.
- * Exported schedule presentation helper; null|undefined empty → '-'; invalid → '-'.
- * Soft residual 1216: app-react ScheduleTaskCard local formatTimestamp is package-local (no force-merge).
+ * Residual 1216 keep-boundary: L4 schedule presentation TransferDate → session dateTime (P1 catalog empty via Style).
+ * Not an L5 formatDate* wrapper — module presentation sole for schedule lists.
  */
-export function formatTimestamp(timestamp: number | null | undefined): string {
-  if (!timestamp) return '-';
-  const date = new Date(timestamp);
-  if (isNaN(date.getTime())) return '-';
-  return date.toLocaleString();
+export function formatScheduleTimestamp(timestamp: number | null | undefined): string {
+  if (!timestamp) return getProductTime().style.empty.display;
+  return getProductTime().format.dateTime(timestamp);
 }
+
+/** @deprecated use formatScheduleTimestamp */
+export const formatTimestamp = formatScheduleTimestamp;
 
 /**
  * Formats a duration in milliseconds to a human-readable string.

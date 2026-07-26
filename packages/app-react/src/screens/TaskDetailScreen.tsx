@@ -3,6 +3,8 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { getProductTime, formatProductDateTime, emptyKind } from '../utils/product-time';
+
 import { useTaskInstances } from '../hooks/useTaskInstances';
 import { useTaskTemplateDetail } from '../hooks/useTaskTemplateDetail';
 import { useTaskDependencies } from '../hooks/useTaskDependencies';
@@ -19,19 +21,6 @@ import {
   ThemedView,
 } from '@dailyuse/ui-react-native';
 
-/**
- * Soft residual 1240 / Soft residual 1261: app-react task formatDate — toLocaleString + English 'Not set'.
- * Package-local empty label + datetime locale string; differs from GoalCompare date-only '-' and
- * Residual 1261 formatDateNotSet dual-retired sole (date-only + 'Not set') (no force-merge).
- */
-function formatDate(timestamp: number | null) {
-  if (!timestamp) {
-    return 'Not set';
-  }
-
-  return new Date(timestamp).toLocaleString();
-}
-
 function formatTimeConfig(input: {
   timeType: string;
   timePoint: number | null;
@@ -42,19 +31,12 @@ function formatTimeConfig(input: {
   }
 
   if (input.timeType === 'TimePoint' && input.timePoint !== null) {
-    const date = new Date(input.timePoint);
-    return `At ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    return `At ${getProductTime().format.hm(input.timePoint)}`;
   }
 
   if (input.timeType === 'TimeRange' && input.timeRange) {
-    const start = new Date(input.timeRange.start).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const end = new Date(input.timeRange.end).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const start = getProductTime().format.hm(input.timeRange.start);
+    const end = getProductTime().format.hm(input.timeRange.end);
     return `${start} - ${end}`;
   }
 
@@ -294,11 +276,11 @@ export function TaskDetailScreen() {
             <MetricRow label="Time mode" value={formatTimeConfig(template.timeConfig)} />
             <MetricRow
               label="Start date"
-              value={formatDate(template.startDate ?? template.timeConfig.startDate)}
+              value={formatProductDateTime(template.startDate ?? template.timeConfig.startDate, emptyKind('notSet'))}
             />
-            <MetricRow label="Due date" value={formatDate(template.dueDate)} />
-            <MetricRow label="Created" value={formatDate(template.createdAt)} />
-            <MetricRow label="Updated" value={formatDate(template.updatedAt)} />
+            <MetricRow label="Due date" value={formatProductDateTime(template.dueDate, emptyKind('notSet'))} />
+            <MetricRow label="Created" value={formatProductDateTime(template.createdAt, emptyKind('notSet'))} />
+            <MetricRow label="Updated" value={formatProductDateTime(template.updatedAt, emptyKind('notSet'))} />
           </SectionCard>
 
           <SectionCard
@@ -414,7 +396,7 @@ export function TaskDetailScreen() {
                     style={styles.instanceCard}
                   >
                     <View style={styles.instanceHeader}>
-                      <ThemedText type="smallBold">{formatDate(instance.instanceDate)}</ThemedText>
+                      <ThemedText type="smallBold">{formatProductDateTime(instance.instanceDate, emptyKind('notSet'))}</ThemedText>
                       <StatusPill
                         label={instance.status}
                         tone={

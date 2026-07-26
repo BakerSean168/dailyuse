@@ -24,10 +24,11 @@ export interface GoalReviewState {
   improvements: string | null;
   keyResultSnapshots: KeyResultSnapshot[];
   version: number;
-  reviewedAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  /** ADR-037 Instant epoch ms */
+  reviewedAt: number;
+  createdAt: number;
+  updatedAt: number;
+  deletedAt: number | null;
 }
 
 export class GoalReview extends Entity<GoalReviewId> {
@@ -77,19 +78,19 @@ export class GoalReview extends Entity<GoalReviewId> {
     return this._props.version;
   }
 
-  get reviewedAt(): Date {
+  get reviewedAt(): number {
     return this._props.reviewedAt;
   }
 
-  get createdAt(): Date {
+  get createdAt(): number {
     return this._props.createdAt;
   }
 
-  get updatedAt(): Date {
+  get updatedAt(): number {
     return this._props.updatedAt;
   }
 
-  get deletedAt(): Date | null {
+  get deletedAt(): number | null {
     return this._props.deletedAt;
   }
 
@@ -116,10 +117,10 @@ export class GoalReview extends Entity<GoalReviewId> {
       improvements: this._props.improvements,
       keyResultSnapshots: [...this._props.keyResultSnapshots],
       version: this._props.version,
-      reviewedAt: this._props.reviewedAt.getTime(),
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      reviewedAt: this._props.reviewedAt,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

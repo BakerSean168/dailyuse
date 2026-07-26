@@ -24,8 +24,8 @@ export class PrismaUserSettingMapper {
       identityId: IdentityId.of(data.identityId),
       preferences,
       version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
+      createdAt: data.createdAt instanceof Date ? data.createdAt.getTime() : Number(data.createdAt),
+      updatedAt: data.updatedAt instanceof Date ? data.updatedAt.getTime() : Number(data.updatedAt),
     };
 
     return UserSetting.load(state);
@@ -38,8 +38,8 @@ export class PrismaUserSettingMapper {
       identityId: setting.identityId,
       preferences: setting.toPreferences(),
       version: setting.version,
-      createdAt: setting.createdAt,
-      updatedAt: setting.updatedAt,
+      createdAt: new Date(setting.createdAt),
+      updatedAt: new Date(setting.updatedAt),
     };
   }
 }

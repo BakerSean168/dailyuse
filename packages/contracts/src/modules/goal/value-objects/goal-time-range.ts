@@ -1,35 +1,34 @@
 /**
  * Goal Time Range Value Object Contracts
- * 目标时间范围值对象契约
  *
- * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
+ * ADR-037 P8: Instant ≡ TransferDate — domain/DTO are isomorphic type aliases.
  */
 
-import type { DomainDate, TransferDate } from '../../../primitives';
+import type { Instant, TransferDate } from '../../../primitives';
 
-// ============ Domain Shape (领域层) ============
+// ============ Domain Shape ============
 
 /**
- * 目标时间范围 - Domain Shape
- * 给 domain-shared 中的 Class 实现用
+ * Goal time range — Instant fields; no Date leakage.
  */
 export interface GoalTimeRange {
-  startDate: DomainDate | null;
-  targetDate: DomainDate | null;
-  completedAt: DomainDate | null;
-  archivedAt: DomainDate | null;
+  startDate: Instant | null;
+  targetDate: Instant | null;
+  completedAt: Instant | null;
+  archivedAt: Instant | null;
 }
 
-// ============ Transfer DTO (传输层) ============
+// ============ Transfer DTO ============
 
 /**
- * Goal Time Range DTO
- * API 传输用
+ * P8: truly isomorphic with domain (TransferDate ≡ Instant).
  */
-export interface GoalTimeRangeDTO {
-  startDate: TransferDate | null; 
-  targetDate: TransferDate | null; 
-  completedAt: TransferDate | null; 
-  archivedAt: TransferDate | null; 
-}
+export type GoalTimeRangeDTO = GoalTimeRange;
 
+// Retain TransferDate documentation alias for wire readers.
+export type GoalTimeRangeTransfer = {
+  startDate: TransferDate | null;
+  targetDate: TransferDate | null;
+  completedAt: TransferDate | null;
+  archivedAt: TransferDate | null;
+};

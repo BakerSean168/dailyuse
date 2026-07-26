@@ -85,7 +85,7 @@ describe('ContactPhone', () => {
       const original = ContactPhone.create(aPhoneDTO());
       const verified = original.verify();
       expect(verified.isVerified).toBe(true);
-      expect(verified.verifiedAt).toBeInstanceOf(Date);
+      expect(verified.verifiedAt).toEqual(expect.any(Number));
       expect(original.isVerified).toBe(false);
     });
 
@@ -94,7 +94,7 @@ describe('ContactPhone', () => {
         aPhoneDTO({ isVerified: true, verifiedAt: 1000 }),
       );
       const reverified = alreadyVerified.verify();
-      expect(reverified.verifiedAt).toEqual(new Date(1000));
+      expect(reverified.verifiedAt).toBe(1000);
     });
   });
 

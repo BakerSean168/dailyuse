@@ -119,7 +119,7 @@ export class ListGoalRecordsUseCase {
       const history: number[] = [];
       const sorted = [...group].sort(
         (a, b) =>
-          a.createdAt.getTime() - b.createdAt.getTime() ||
+          Number(a.createdAt) - Number(b.createdAt) ||
           String(a.id).localeCompare(String(b.id)),
       );
       const fullHistory = sorted.map((record) => record.value);

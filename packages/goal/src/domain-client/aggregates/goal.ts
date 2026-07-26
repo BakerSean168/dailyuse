@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * Goal Aggregate Root - Domain Client
  * 目标聚合根 - 领域客户端
@@ -102,20 +103,28 @@ export class Goal extends AggregateRoot<GoalId> {
     return [...this._props.tags];
   }
 
-  get startDate(): Date | null {
-    return this._props.startDate;
+  get startDate(): Instant | null {
+    const v = this._props.startDate;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get targetDate(): Date | null {
-    return this._props.targetDate;
+  get targetDate(): Instant | null {
+    const v = this._props.targetDate;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get completedAt(): Date | null {
-    return this._props.completedAt;
+  get completedAt(): Instant | null {
+    const v = this._props.completedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get archivedAt(): Date | null {
-    return this._props.archivedAt;
+  get archivedAt(): Instant | null {
+    const v = this._props.archivedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   get folderId(): GoalFolderId | null {
@@ -138,16 +147,20 @@ export class Goal extends AggregateRoot<GoalId> {
     return this._props.version;
   }
 
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   get keyResults(): KeyResult[] | null {

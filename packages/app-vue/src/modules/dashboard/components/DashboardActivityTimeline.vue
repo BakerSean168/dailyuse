@@ -26,7 +26,7 @@ import {
   TrendingUp,
 } from '@lucide/vue';
 import type { ActivityItem } from '@dailyuse/contracts/dashboard';
-import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
+import { formatProductPattern, getProductTime } from '../../../shared/utils/product-time';
 
 withDefaults(
   defineProps<{
@@ -41,14 +41,13 @@ const { t } = useI18n();
 const open = ref(false);
 
 /**
- * Residual 1237 keep-boundary: dashboard formatTime — relative i18n + short m/d HH:mm.
- * justNow/minutesAgo/hoursAgo via t('dashboard.time.*'); older → local m/d + HH:mm.
- * Residual 1309: absolute HH:mm dual retired onto formatLocalHHmm sole (relative i18n keep-boundary remains).
- * Soft residual 1237: setting relative+toLocaleString, goal date-fns/toLocaleString, capsule HH:mm differ (no force-merge).
+ * Residual 1237 (P3): dashboard relative product time.
+ * Residual 1309: absolute branch via formatProductPattern (HH:mm dual retired).
+ * Near band keeps dashboard.time.* i18n (L4 copy); clock/now via session facade FixedClock-friendly.
+ * Beyond Style.relative.maxAgeMs → formatProductRelative absolute fallback (or short m/d pattern).
  */
-function formatTime(ts: number): string {
-  const date = new Date(ts);
-  const now = Date.now();
+function formatActivityTime(ts: number): string {
+  const now = getProductTime().now();
   const diff = now - ts;
   if (diff < 60_000) return t('dashboard.time.justNow');
   if (diff < 3_600_000) {
@@ -57,7 +56,8 @@ function formatTime(ts: number): string {
   if (diff < 86_400_000) {
     return t('dashboard.time.hoursAgo', { count: Math.floor(diff / 3_600_000) });
   }
-  return `${date.getMonth() + 1}/${date.getDate()} ${formatLocalHHmm(ts)}`;
+  // Absolute short chrome: Style-backed pattern (not component-local pad).
+  return formatProductPattern(ts, 'M/d HH:mm');
 }
 
 function activityIcon(type: string) {
@@ -131,7 +131,7 @@ function activityColor(type: string): string {
                       {{ item.description }}
                     </p>
                     <p class="text-[11px] text-muted-foreground">
-                      {{ formatTime(item.timestamp) }}
+                      {{ formatActivityTime(item.timestamp) }}
                     </p>
                   </div>
                 </div>

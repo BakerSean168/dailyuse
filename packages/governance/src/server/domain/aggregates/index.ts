@@ -15,7 +15,7 @@
  * - 内部状态封装（private backing fields）
  * - 只读 getter 暴露状态
  * - 业务方法修改状态 + 发布事件
- * - 时间类型转换（DomainDate ↔ TransferDate ↔ PersistenceDate）
+ * - 时间类型转换（Instant ≡ TransferDate；infra Date 仅 Codec fromJsDate/toJsDate）
  */
 
 export { Rule } from './rule';

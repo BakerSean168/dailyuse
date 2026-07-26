@@ -29,7 +29,7 @@
 import { AggregateRoot } from '@dailyuse/utils/domain';
 import { GoalRecordId, KeyResultId } from '../../domain';
 import type { GoalRecordServerDTO, GoalEventMap } from '@dailyuse/contracts/goal';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type {IdentityId, Instant} from '@dailyuse/contracts/primitives';
 
 // 内部状态接口
 export interface GoalRecordState {
@@ -86,24 +86,29 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     return this._props.note;
   }
 
-  get recordedAt(): Date {
-    return this._props.recordedAt;
+  get recordedAt(): Instant {
+    const v = this._props.recordedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   get version(): number {
     return this._props.version;
   }
 
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   // ================= 4. 工厂方法 (Factories) =================

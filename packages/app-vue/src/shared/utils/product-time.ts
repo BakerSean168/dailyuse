@@ -1,0 +1,154 @@
+/**
+ * App-vue session product time facade (ADR-037).
+ * Change DEFAULT empty.display / locale via withStyle or bootstrap preference (W8).
+ * P1: empty kinds via resolveEmptyLabel / emptyKind — no L5 formatDate wrappers.
+ */
+import {
+  createTimeFacade,
+  timeStyleFromPresentationLocale,
+  resolveEmptyLabel,
+  type TimeFacade,
+  type PartialTimeStyle,
+  type TimeEmptyKind,
+  type ResolveEmptyLabelOptions,
+} from '@dailyuse/time';
+import { detectBrowserLocale } from '@dailyuse/utils/shared';
+
+let sessionTime: TimeFacade = createTimeFacade({
+  style: timeStyleFromPresentationLocale(detectBrowserLocale()),
+});
+
+export function getProductTime(): TimeFacade {
+  return sessionTime;
+}
+
+export function setProductTimeStyle(partial: PartialTimeStyle): TimeFacade {
+  sessionTime = sessionTime.withStyle(partial);
+  return sessionTime;
+}
+
+/** Product empty label override (i18n / copy). Falls back to TimeStyle.empty. */
+export type EmptyLabel = string | { display?: string; unknown?: string };
+
+/** Resolve catalog kind → EmptyLabel string (optional i18n via options.translate). */
+export function emptyKind(
+  kind: TimeEmptyKind,
+  options?: ResolveEmptyLabelOptions,
+): string {
+  return resolveEmptyLabel(kind, options);
+}
+
+/** Common: i18n notSet key for goal/task detail empty. */
+export function emptyNotSet(t: (key: string) => string, key = 'goal.detail.notSet'): string {
+  return resolveEmptyLabel('notSet', { translate: () => t(key) });
+}
+
+/** Common: i18n unknown. */
+export function emptyUnknown(t: (key: string) => string, key = 'common.unknown'): string {
+  return resolveEmptyLabel('unknown', { translate: () => t(key) });
+}
+
+function emptyLabels(override?: EmptyLabel): { display: string; unknown: string } {
+  const base = sessionTime.style.empty;
+  if (override == null) {
+    return { display: base.display, unknown: base.unknown };
+  }
+  if (typeof override === 'string') {
+    return { display: override, unknown: override };
+  }
+  return {
+    display: override.display ?? base.display,
+    unknown: override.unknown ?? base.unknown,
+  };
+}
+
+function toMs(value: number | string | Date | null | undefined): number | null {
+  if (value == null || value === '') return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (value instanceof Date) {
+    const t = value.getTime();
+    return Number.isFinite(t) ? t : null;
+  }
+  const parsed = Date.parse(String(value));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** List/cell empty-safe dateTime */
+export function formatProductDateTime(
+  value: number | string | Date | null | undefined,
+  empty?: EmptyLabel,
+): string {
+  const labels = emptyLabels(empty);
+  if (value == null || value === '') return labels.display;
+  const ms = toMs(value);
+  if (ms == null) return labels.unknown;
+  return sessionTime.format.dateTime(ms);
+}
+
+export function formatProductDate(
+  value: number | string | Date | null | undefined,
+  empty?: EmptyLabel,
+): string {
+  const labels = emptyLabels(empty);
+  if (value == null || value === '') return labels.display;
+  const ms = toMs(value);
+  if (ms == null) return labels.unknown;
+  return sessionTime.format.date(ms);
+}
+
+export function formatProductHm(value: number | null | undefined, empty?: EmptyLabel): string {
+  if (value == null || !Number.isFinite(value)) {
+    return emptyLabels(empty).display;
+  }
+  return sessionTime.format.hm(value);
+}
+
+export function formatProductPattern(
+  value: number | string | Date | null | undefined,
+  pattern: string,
+  empty?: EmptyLabel,
+): string {
+  const labels = emptyLabels(empty);
+  if (value == null || value === '') return labels.display;
+  const ms = toMs(value);
+  if (ms == null) return labels.unknown;
+  return sessionTime.format.pattern(ms, pattern);
+}
+
+export function formatProductDateTimeSeconds(
+  value: number | string | Date | null | undefined,
+  empty?: EmptyLabel,
+): string {
+  const labels = emptyLabels(empty);
+  if (value == null || value === '') return labels.display;
+  const ms = toMs(value);
+  if (ms == null) return labels.unknown;
+  return sessionTime.format.dateTimeSeconds(ms);
+}
+
+export function formatProductRelative(value: number | null | undefined, empty?: EmptyLabel): string {
+  if (value == null || !Number.isFinite(value)) {
+    return emptyLabels(empty).display;
+  }
+  return sessionTime.format.relative(value);
+}
+
+/** Month short + day (governance cards, compact lists). */
+export function formatProductMonthDay(
+  value: number | string | Date | null | undefined,
+  empty?: EmptyLabel,
+): string {
+  const labels = emptyLabels(empty);
+  if (value == null || value === '') return labels.display;
+  const ms = toMs(value);
+  if (ms == null) return labels.unknown;
+  return sessionTime.format.pattern(ms, 'MMM d');
+}
+
+export { sessionTime as productCalendar, resolveEmptyLabel };
+export type { TimeEmptyKind };
+// Re-export calendar helpers bound to session
+export const startOfDayMs = (ms: number) => sessionTime.calendar.startOfDay(ms);
+export const endOfDayMs = (ms: number) => sessionTime.calendar.endOfDay(ms);
+export const isSameDayMs = (a: number, b: number) => sessionTime.calendar.isSameDay(a, b);
+export const isTodayMs = (ms: number) => sessionTime.calendar.isToday(ms);

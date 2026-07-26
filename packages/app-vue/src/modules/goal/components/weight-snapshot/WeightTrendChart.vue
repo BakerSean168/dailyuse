@@ -62,6 +62,7 @@ import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import {
+import { formatProductPattern } from '@/shared/utils/product-time';
   TitleComponent,
   TooltipComponent,
   GridComponent,
@@ -72,8 +73,6 @@ import { CanvasRenderer } from 'echarts/renderers';
 import VChart from 'vue-echarts';
 import type { ECElementEvent } from 'echarts';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
-import { format, type Locale } from 'date-fns';
-import { zhCN, enUS } from 'date-fns/locale';
 import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
@@ -103,10 +102,6 @@ const {
 
 const { t, locale } = useI18n();
 
-const dateFnsLocaleMap: Record<string, Locale> = {
-  'zh-CN': zhCN,
-  'en-US': enUS,
-};
 
 const selectedRange = ref<'7d' | '30d' | '90d' | '180d'>('30d');
 
@@ -179,9 +174,7 @@ const chartOption = computed(() => {
       },
       formatter: (params: ECElementEvent[]) => {
         const firstValue = params[0].value as unknown[];
-        const time = format(new Date(firstValue[0] as number), 'yyyy-MM-dd HH:mm', {
-          locale: dateFnsLocaleMap[locale.value] || zhCN,
-        });
+        const time = formatProductPattern(firstValue[0] as number, 'yyyy-MM-dd HH:mm');
         let html = `<div style="padding: 8px;">
           <div style="font-weight: bold; margin-bottom: 8px;">${time}</div>`;
 
@@ -215,7 +208,7 @@ const chartOption = computed(() => {
       boundaryGap: false,
       axisLabel: {
         formatter: (value: number) =>
-          format(new Date(value), 'MM-dd', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
+          formatProductPattern(value, 'MM-dd'),
       },
     },
     yAxis: {

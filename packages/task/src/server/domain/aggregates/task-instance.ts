@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * TaskInstance Aggregate Root (Server)
  *
@@ -119,20 +120,24 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.note;
   }
 
-  public get createdAt(): Date {
-    return this._props.createdAt;
+  public get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  public get updatedAt(): Date {
-    return this._props.updatedAt;
+  public get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   public get version(): number {
     return this._props.version;
   }
 
-  public get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  public get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   // ===== Business Methods =====

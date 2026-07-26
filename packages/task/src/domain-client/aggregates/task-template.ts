@@ -22,7 +22,7 @@ import type {
   TaskTemplateStatus,
 } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { TaskFolderId, GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import type {TaskFolderId, GoalId, KeyResultId, Instant} from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils/domain';
 import { TaskTemplateId } from '../../server/domain/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
@@ -129,8 +129,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.status;
   }
 
-  get lastGeneratedDate(): Date | null {
-    return this._props.lastGeneratedDate;
+  get lastGeneratedDate(): Instant | null {
+    const v = this._props.lastGeneratedDate;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   get generateAheadDays(): number | null {
@@ -141,32 +143,42 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.version;
   }
 
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   get parentTaskId(): TaskTemplateId | null {
     return this._props.parentTaskId;
   }
 
-  get startDate(): Date | null {
-    return this._props.startDate;
+  get startDate(): Instant | null {
+    const v = this._props.startDate;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get dueDate(): Date | null {
-    return this._props.dueDate;
+  get dueDate(): Instant | null {
+    const v = this._props.dueDate;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
-  get completedAt(): Date | null {
-    return this._props.completedAt;
+  get completedAt(): Instant | null {
+    const v = this._props.completedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
 
   get estimatedMinutes(): number | null {
@@ -296,7 +308,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       frequency: rule.frequency,
       interval: rule.interval,
       daysOfWeek: rule.daysOfWeek,
-      endDate: rule.endDate ? (rule.endDate as Date).getTime() : null,
+      endDate: rule.endDate ?? null,
       occurrences: rule.occurrences,
     };
   }

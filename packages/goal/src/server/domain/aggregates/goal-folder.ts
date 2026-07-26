@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * GoalFolder 聚合根实现
  * 
@@ -130,16 +131,20 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     return this._props.completedGoalCount;
   }
   
-  public get createdAt(): Date {
-    return this._props.createdAt;
+  public get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
   
-  public get updatedAt(): Date {
-    return this._props.updatedAt;
+  public get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
   
-  public get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  public get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
   }
   
   public get version(): number {

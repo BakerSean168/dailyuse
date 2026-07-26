@@ -1,25 +1,30 @@
 /**
  * TaskTimeConfig Value Object - Server Interface
+ *
+ * ADR-037: startDate is Instant (epoch ms of the calendar anchor), not DomainDate.
+ * All-day calendar day is exposed as startDay: Ymd on the domain VO.
  */
 
 // Ensure Zod.openapi() is available before schema construction (residual 1331).
 import '../../../primitives/zod-extensions';
 import { z } from 'zod';
-import type { DomainDate } from '../../../primitives';
+import type { Instant, Ymd } from '../../../primitives';
 import { TaskTimeType } from './task-time-type';
 
 // ============ Interface Definitions ============
 
 export interface TaskTimeConfig {
   timeType: TaskTimeType;
-  startDate: DomainDate | null;
+  /** Instantaneous anchor for the task day (local midnight Instant of start day). */
+  startDate: Instant | null;
+  /** Calendar day for all-day / day-anchored tasks (derived or stored). */
+  startDay?: Ymd | null;
   timePoint: number | null;
   timeRange?: { start: number; end: number } | null;
 }
 
 // Residual 747: TaskTimeConfigDTO dual body retired — OpenAPI + transport use
-// TaskTimeConfigSchema (semantic type is a z.infer alias). Domain TaskTimeConfig
-// keeps DomainDate startDate (shape intentionally differs from transfer DTO).
+// TaskTimeConfigSchema. Domain startDate is Instant (no DomainDate Date dual).
 
 export const TaskTimeConfigSchema = z
   .object({
