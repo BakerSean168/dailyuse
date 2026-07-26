@@ -128,6 +128,7 @@ residual 记本文件 §9 与 elegance plan §9。
 | N1b | 2026-07-25 | dual 扫描：`formatFileSize` 等仍为 L keep-boundary（1145），**不 merge** | hygiene L | 跳过微 dual |
 | N2 | 2026-07-25 | AH-2：Conversation↔Host association surface（open-chat ≠ listAgentRuns；§20 不勾） | agent-host | surface 绿 |
 | E-PR189 | 2026-07-26 | elegance A+B+C：archive vault；Dual Registry；dual 237→84；AI path map；AH-2 书面不做 | elegance | merge 门槛 |
+| E5b | 2026-07-26 | bootstrap LegacyAccountModule → AccountApiModule + surface（#189 后真 E5 S） | elegance | 死域 S |
 | N3 | 2026-07-25 | AH-3：ProposalKernel stale 禁 approve；revise 清 stale→draft；STALE_REVISION 仍在 | agent-host | kernel tests |
 
 ## 10. 完成 / 归档

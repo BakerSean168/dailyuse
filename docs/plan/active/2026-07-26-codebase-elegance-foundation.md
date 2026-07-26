@@ -278,7 +278,8 @@ GOAL_PRIORITY（优雅阶段期间调整为）=
 | E2 | 2026-07-26 | Dual Registry：`tools/governance/dual-registry.json` + `docs/governance/dual-registry.md`；150 条目全部分类（retired/keep_boundary）；path surface 锁 | B | E2 达标 |
 | E3b | 2026-07-26 | dual-surface 237→84（**-64.6%**）；25 个 `dual-registry.surface.spec.ts` suite；open_S/M/X=0（E3a 亦满足） | B | E3 达标 |
 | E4 | 2026-07-26 | AI 路径地图 `docs/architecture/ai-runtime-path-map.md` + host-dispatch surface 加强 | C | E4 达标 |
-| E5 | 2026-07-26 | 死域 S：沿用/核验 result-helpers-dead 等；无新增假 dual；Legacy 注释仅保留真语义 | C | 一轮完成 |
+| E5 | 2026-07-26 | 死域 S 初核：result-helpers-dead 等既有锁；**未**改 bootstrap（E5 当时过宽宣称） | C | 部分 |
+| E5b | 2026-07-26 | **真 E5 S**：`apps/api/src/bootstrap.ts` 示例 `LegacyAccountModule` → `AccountApiModule`；surface 锁与 main 一致 | C | 死域 S 落地 |
 | E6 | 2026-07-26 | AH-2 **本轮不做**（书面决策进 agent-host）；AH-4/5/6 follow-up/external | D 轻量 | 决策落盘 |
 | E7 | 2026-07-26 | governance-check 绿；contracts/utils/ai/auth/governance/goal/app-vue/desktop:test:main 绿 | E | 门禁 |
 | E-merge | 2026-07-26 | PR #189 达 merge 门槛后合 main | E | merge |
