@@ -15,8 +15,8 @@ updated: 2026-07-26T00:00:00
 
 | 计划                                                                                                | 当前状态                                                                                                                                                           |
 | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [代码优雅化与后续实施地基](./2026-07-26-codebase-elegance-foundation.md) | **主目标（新）**：Dual Registry / 税减负、多路径地图、死域清扫、文档归档、为 Host 后续切片铺垫；完成定义见该 plan §3.1 |
-| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：每夜 GOAL_PRIORITY 与 residual；服务 elegance plan + agent-host；vault PR 已合 main |
+| [代码优雅化与后续实施地基](./2026-07-26-codebase-elegance-foundation.md) | **主目标**：Dual Registry + **dual 清理** / 归档 / 路径地图；**PR #189 执行完再合**（A+B 必达，宜 C）；§3.1 + §10 提示词 |
+| [夜间 hygiene + Agent Host 持续执行](./2026-07-25-nightly-hygiene-and-agent-host.md) | **执行协议**：GOAL_PRIORITY 对齐 #189 merge 门槛；服务 elegance dual 清理 |
 | [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)                         | **实施中**（完成定义未宣称）：统一助手、右侧工作台、Workflow/Turn/Model；产品主能力线                                                                                                       |
 | [Auth + Account 收敛与安全闭环](./2026-07-17-auth-account-security-closure.md)                      | **实施中**：A–E 源码闭环；待 e2e 真跑与生产发信                                                                                                                    |
 | [Web 登录与注册页面后续优化](./2026-07-15-web-auth-page-optimization.md)                            | **大部分已落地**：访客/主题/校验/找回验证已接；法律文案与远程验收仍待                                                                                         |

@@ -33,26 +33,27 @@ updated: 2026-07-25T00:00:00
 | Agent-host 完成定义 | **未宣称**（阶段 0–6 部分；Pi/CLI/完整 Host UI 仍 open） |
 | 旧 do-while（helper dual 微扫） | **近饱和**；禁止为刷 residual 数字再灭已 dual-retired 的 format/pad 级 dual |
 | 优雅化 | 见 elegance plan §3.1；基线 dual-surface≈237、keep-boundary≈66 |
+| 交付 PR | **#189** `docs/codebase-elegance-foundation`：**先执行 dual 清理与地基，达 E2+E3 后再 merge** |
 
-**PR 策略**：按主题开小 PR 合 `main`；elegance 阶段 A 可为 docs-only。
+**PR 策略**：elegance 本轮 **单 PR #189** 承载阶段 A + B（dual 清理必进）+ 宜含 C1–C2/E5；多次 commit，**禁止 plan-only 提前合 main**。D/完整 E 可 follow-up。
 
 ## 3. 目标
 
-1. 推进 elegance plan 当前阶段（归档 → Dual Registry → 多路径 → 铺垫切片）。
-2. 推进 ADR-035 **有契约/用户收益** 的 vertical slice（与 elegance D 对齐）。
-3. 用**第二代** dual/hygiene 消 **open_S / open_M**；L 只登记。
+1. 在 PR #189 内推进 elegance 达 **merge 门槛**（A + B/E2+E3，宜 C1–C2/E5）。
+2. 用**第二代** dual/hygiene 消 **open_S / open_M** 并减 dual 税；L 只登记。
+3. 推进 ADR-035 切片仅在 #189 范围外或 follow-up（与 elegance D 对齐）。
 4. 保持门禁可绿；不假绿翻 agent-host 完成定义。
-5. 每轮可提交、可复核、可停。
+5. 每轮可提交、可复核、可停；**未达门槛不 merge #189**。
 
 ## 4. 优先级（严格）
 
 ```text
 GOAL_PRIORITY =
-  1) elegance plan 当前阶段未完成步骤（A → B → C → D → E）
-  2) agent-host AH-4+（与 elegance D 重叠时优先可合并小切片）
-  3) dual registry 驱动的 open_S / open_M（禁止微 dual 刷数）
-  4) auth-account-security 未闭合 e2e / 发信边界（小步）
-  5) 产品审查 P0（最多穿插）+ 门禁 smoke 修红
+  1) PR #189 merge 门槛：elegance A → B Registry → B dual 清理（E3）
+  2) #189 宜做：C1–C2 路径地图、E5 死域 S
+  3) dual registry 驱动的 open_S / open_M 清扫（禁止微 dual 刷数）
+  4) 绿测 + residual + 更新 PR 描述 → 再 merge #189
+  5) follow-up：agent-host AH-4+ / auth 小步 / 产品 P0 / smoke
 ```
 
 Vault plan **只**在归档或修回归时改动；**不要**再无限膨胀 vault §13.2 小说。  

@@ -9,7 +9,7 @@ tags:
   - agent-host
 description: 代码优雅化与后续实施铺垫——dual 税减负、多路径收敛、文档归档、Agent Host 地基（非产品功能大爆炸）
 created: 2026-07-26T00:00:00
-updated: 2026-07-26T00:00:00
+updated: 2026-07-26T12:00:00
 ---
 
 # 代码优雅化与后续实施地基计划
@@ -30,6 +30,20 @@ updated: 2026-07-26T00:00:00
 
 **本 plan 不替代** agent-host 产品完成定义；它解决的是：  
 **在下一波产品实施前，让代码与文档进入可持续、可导航、少假 dual、少死域的「优雅地基」。**
+
+### 1.1 交付载体与合并策略（重要）
+
+| 项 | 约定 |
+|----|------|
+| **工作分支** | `docs/codebase-elegance-foundation`（可随实施改名，但默认此支） |
+| **PR** | https://github.com/BakerSean168/dailyuse/pull/189 → `main` |
+| **合并时机** | **执行完本 plan 本轮交付范围后再 merge**；禁止「仅 plan 文档」提前合 main |
+| **本 PR 必须包含** | 阶段 **A**（归档）+ 阶段 **B**（Dual Registry + **dual 清理/税减负**，满足 E2 + E3） |
+| **本 PR 宜包含** | 阶段 **C** 中 C1–C2（AI 路径地图 + 调用方审计）与 **E5 死域 S 清扫**（若时间允许） |
+| **本 PR 可延后** | 阶段 **D**（AH-4/5/6 产品切片）、完整阶段 **E** 勾选可在 follow-up；但 residual 须写清「未做项」 |
+| **提交方式** | 在 **同一 PR 分支** 上多次 commit push（A → B → C…），**最后一次**再 merge；不要为 dual 另开平行 PR 拆散审查上下文 |
+
+**一句话：先干完 dual 清理与优雅地基，再合 #189。**
 
 ---
 
@@ -223,17 +237,19 @@ GOAL_PRIORITY（优雅阶段期间调整为）=
 
 ---
 
-## 7. 执行节奏建议
+## 7. 执行节奏建议（相对 PR #189）
 
-| 节奏 | 内容 |
-|------|------|
-| Day 0 | 阶段 A 归档 + README（可纯 docs PR） |
-| Day 1–3 | 阶段 B registry 初版 + 自动/半自动分类 |
-| Day 4–8 | 阶段 B E3b 合并锁 或 E3a 清 open_S/M；阶段 C1–C2 路径地图 |
-| Day 9–14 | 阶段 C3–C5 + 阶段 D 最小切片 |
-| Day 15 | 阶段 E 收口 |
+| 节奏 | 内容 | 是否进 #189 |
+|------|------|-------------|
+| 段 0 | 更新本 plan / 提示词 / PR 描述（本提交） | 是 |
+| 段 1 | 阶段 A 归档 vault + Windows handoff + README | 是 |
+| 段 2 | 阶段 B Dual Registry 初版 + 分类 | 是（**核心**） |
+| 段 3 | 阶段 B dual 清理：E3a 和/或 E3b 税减负 | 是（**核心，必达 merge 门槛**） |
+| 段 4 | 阶段 C1–C2 路径地图 + 调用方审计；E5 死域 S | 宜进 #189 |
+| 段 5 | 相关 nx test / governance 绿；更新 residual；**再 merge #189** | 是 |
+| 段 6+ | 阶段 D AH-4/5/6、完整 E 勾选 | 默认可 follow-up PR |
 
-允许更慢；**禁止**为赶 E3b 破坏锁语义。
+允许更慢；**禁止**为赶 E3b 破坏锁语义；**禁止**未达 E2+E3 就 merge #189。
 
 ---
 
@@ -245,9 +261,10 @@ GOAL_PRIORITY（优雅阶段期间调整为）=
 | 误 merge keep_boundary | registry class=L 禁止 M 动作；code review 看 class |
 | 范围膨胀进 UX 大改 | 产品审查只抽 3 条 backlog，本 plan 不实施 |
 | agent-host 假绿 | §3 明确不勾 §20；D 阶段 external 合法 |
-| 大 PR 难审 | 阶段 A/B/C/D 分 PR；每 PR 单一主题 |
+| 大 PR 难审 | **本轮刻意单 PR（#189）** 承载 A+B（+可选 C）；用多次小 commit 分段，PR 描述按阶段列文件；审查按 commit 看 |
+| 过早 merge | **禁止** plan-only 合 main；merge 门槛 = E2+E3 落地 + 相关 test 绿 |
 
-回滚：git revert 单 PR；registry 文件可单独回滚。
+回滚：git revert 单 commit 或整支 PR；registry 文件可单独回滚。
 
 ---
 
@@ -256,6 +273,7 @@ GOAL_PRIORITY（优雅阶段期间调整为）=
 | ID | 日期 | 说明 | 阶段 | 结果 |
 |----|------|------|------|------|
 | E0 | 2026-07-26 | 创建本 plan；基线 dual-surface≈237、keep-boundary≈66；main 含 #188 + N1–N3 | — | 文档入库 |
+| E0b | 2026-07-26 | 合并策略改为：PR #189 承载 dual 清理；**执行完再 merge**；重写 §10 提示词 | — | 提示词/策略更新 |
 | | | （后续 agent 追加） | | |
 
 ---
@@ -264,17 +282,53 @@ GOAL_PRIORITY（优雅阶段期间调整为）=
 
 ```text
 你是本仓库协作 agent。读 AGENT.md 与：
-- docs/plan/active/2026-07-26-codebase-elegance-foundation.md（主目标）
-- docs/plan/active/2026-07-25-nightly-hygiene-and-agent-host.md（执行协议）
-- docs/plan/active/2026-07-17-unified-assistant-agent-host.md（产品能力，勿假绿勾完成定义）
+- docs/plan/active/2026-07-26-codebase-elegance-foundation.md（主目标 + §1.1 合并策略 + §3.1 Done）
+- docs/plan/active/2026-07-25-nightly-hygiene-and-agent-host.md（执行协议 / residual 格式）
+- docs/plan/active/2026-07-17-unified-assistant-agent-host.md（产品能力；勿假绿勾 §20 完成定义）
 
-目标：把代码与文档推进到该 elegance plan §3.1「优雅状态」，为后续 Host/产品实施铺垫。
-禁止：微 dual 刷数；假绿 agent-host §20；提交密钥/report；重开 vault DoD。
+## 交付与合并（硬约束）
+- 工作分支：docs/codebase-elegance-foundation（或 PR #189 当前 head）
+- PR：https://github.com/BakerSean168/dailyuse/pull/189 → main
+- **先执行、后合并**：在本 PR 内完成 dual 清理与优雅地基后再 merge；禁止仅提交 plan 文档就合 main
+- **本 PR 必达范围**（merge 门槛）：
+  1) 阶段 A：vault plan + Windows handoff → docs/plan/archive；active README 真值
+  2) 阶段 B：**Dual Registry**（E2）+ **dual 清理/税减负**（E3a 和/或 E3b）
+  3) 相关 nx test / 触及则 governance-check 绿；本 plan §9 + nightly residual 写清
+- **本 PR 宜做**：阶段 C1–C2（AI 路径地图 + 调用方表）、E5 死域 S 一轮
+- **默认可 follow-up（可不进本 PR）**：阶段 D（AH-4/5/6 产品切片）、完整勾选 E1–E7 中仅依赖 D 的项
+- 全程在同一 PR 分支多次 commit + push；最后再 `gh pr merge`（或请人合）；不要为 dual 另开平行 PR 拆散上下文
 
-顺序：阶段 A 归档 → B Dual Registry + 税减负 → C 多路径地图与死域 S → D AH-4/5/6 最小铺垫 → E 收口。
-每轮：一项、最近 nx 验证、写 residual、commit push。
-从阶段 A1 开始（若 A 已完成则从 B 的第一个 open 项）。
-开跑。
+## 目标
+把代码与文档推进到 elegance plan 本轮 merge 门槛以上，为后续 Host/产品实施铺垫。
+优雅 ≠ dual 文件数为 0；锁（retired）与债（open_S/M）必须分清。
+
+## 禁止
+- 微 dual 刷数（format/pad/date helper 级狂欢）
+- 强制 merge keep_boundary（L）
+- 假绿 agent-host §20；宣称 Electron multi-engine / real Pi / durable LangGraph 已完成
+- 提交密钥、.env*.local、Playwright report/trace/webm/png
+- 重开 vault §13.2 DoD；force-push main
+- **未达 E2+E3 就 merge #189**
+
+## Dual 清理怎么做（阶段 B，本 PR 核心）
+1. 建立 Dual Registry（docs/governance/dual-registry.md 或 tools/governance/dual-registry.json，二选一写死路径并用 surface/文档锁）
+2. 扫描全部 *dual*.surface.spec.ts 与 *keep-boundary*.spec.ts，分类：
+   retired | keep_boundary | open_S | open_M | open_X
+3. 清理：
+   - open_S：删死 re-export / 无消费者 / 假 dual
+   - open_M：sole + 改调用方 + 删旧实现 + 必要锁
+   - retired 税减负（E3b）：同 package 表驱动合并重复 surface，或删纯重复锁；**禁止**删掉对仍存在双实现的断言
+   - keep_boundary / open_X：只登记；X 记到 agent-host 或 auth plan
+4. 验收 E3：open_S+open_M 清零（或书面 defer+日期），**或** dual-surface 文件数相对基线（≈237）下降 ≥25%，且相关 test 绿
+
+## 推荐顺序（同一 PR 内）
+A 归档 → B Registry → B dual 清理（E3）→（宜）C1–C2 路径地图与调用方审计 + E5 死域 S → 绿测 → 更新 residual/PR 描述 → **再 merge #189**
+D 与完整 E 勾选可 follow-up，但须在 residual 写明未做项。
+
+## 每轮
+一项、最近 `pnpm nx` 验证、写 elegance §9 与 nightly residual、commit、push 到 PR 分支。
+从阶段 A1 开始（A 已完成则从 B）。
+开跑；**跑完 dual 清理达 merge 门槛之前不要合并 PR。**
 ```
 
 ---
