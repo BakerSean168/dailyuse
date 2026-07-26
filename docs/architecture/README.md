@@ -28,3 +28,8 @@ updated: 2026-04-26T00:00:00
 - 分阶段迁移计划
 - 与代码重复的一次性实现说明
 - 模块级的长篇操作手册
+
+## 产品时间
+
+- [ADR-037 产品时间体系](./adr/ADR-037-product-time-system.md)
+- [产品时间体系详设](./product-time-system.md)

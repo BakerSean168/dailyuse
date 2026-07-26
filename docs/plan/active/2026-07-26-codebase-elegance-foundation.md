@@ -355,6 +355,10 @@ D 与完整 E 勾选可 follow-up，但须在 residual 写明未做项。
 
 ## 12. 相关资料
 
+- [ADR-037 产品时间体系](../../architecture/adr/ADR-037-product-time-system.md)（后续时间横切主宪法；与 dual 税减负分工）
+- [产品时间体系实施](./2026-07-26-product-time-system.md)
+
+
 - [夜间 hygiene + Agent Host](./2026-07-25-nightly-hygiene-and-agent-host.md)
 - [统一助手与可插拔 Agent Host](./2026-07-17-unified-assistant-agent-host.md)
 - [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md)
