@@ -4,7 +4,7 @@ tags:
   - index
 description: 架构决策记录索引
 created: 2025-11-23T15:00:00
-updated: 2026-07-17T00:00:00
+updated: 2026-07-26T00:00:00
 ---
 
 # ADR 索引
@@ -51,6 +51,7 @@ updated: 2026-07-17T00:00:00
 | [ADR-034](./ADR-034-obsidian-vault-repository.md)                   | 本地 Obsidian Vault 与可选 GitHub 知识仓库               | 已采纳 | 2026-07-16 |
 | [ADR-035](./ADR-035-unified-assistant-agent-host.md)                | 统一助手与可插拔 Agent Host                              | 已采纳 | 2026-07-17 |
 | [ADR-036](./ADR-036-auth-account-boundary-and-verification.md)                | Auth / Account 边界与验证安全模型                          | 已采纳 | 2026-07-17 |
+| [ADR-037](./ADR-037-product-time-system.md)                       | 产品时间体系（Instant/Ymd、TransferDate、门面与风格） | 已采纳 | 2026-07-26 |
 
 ## 维护规则
 
