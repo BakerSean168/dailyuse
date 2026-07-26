@@ -29,9 +29,9 @@ export interface GoalFolderState {
   goalCount: number;
   completedGoalCount: number;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
 }
 
 export class GoalFolder extends AggregateRoot<GoalFolderId> {
@@ -95,18 +95,18 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
 
   get createdAt(): Instant {
     const v = this._props.createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get deletedAt(): Instant | null {
     const v = this._props.deletedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   // UI 计算属性
@@ -154,9 +154,9 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
       goalCount: this._props.goalCount,
       completedGoalCount: this._props.completedGoalCount,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
       displayName: this.displayName,
       displayIcon: this.displayIcon,
       completionRate: this.completionRate,

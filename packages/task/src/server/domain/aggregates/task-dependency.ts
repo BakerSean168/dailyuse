@@ -20,8 +20,8 @@ export interface TaskDependencyState {
   successorTaskId: string;
   dependencyType: DependencyType;
   lagDays: number | undefined;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Instant;
+  updatedAt: Instant;
 }
 
 /**
@@ -60,12 +60,12 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
 
   get createdAt(): Instant {
     const v = this._props.createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   // ============ Factory Methods ============
@@ -88,7 +88,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
       throw new Error('Task cannot depend on itself');
     }
     const id = props.id ? TaskDependencyId.of(props.id) : TaskDependencyId.generate();
-    const now = new Date();
+    const now = Date.now();
 
     const dependency = new TaskDependency({
       id,
@@ -128,7 +128,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
    */
   public updateDependencyType(dependencyType: DependencyType): void {
     this._props.dependencyType = dependencyType;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
 
     this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
       'task:dependency-updated',
@@ -141,7 +141,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
    */
   public updateLagDays(lagDays: number | undefined): void {
     this._props.lagDays = lagDays;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
 
     this.addDomainEvent<TaskEventMap['task:dependency-updated']>(
       'task:dependency-updated',
@@ -150,7 +150,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
   }
 
   public delete(): void {
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
 
     this.addDomainEvent<TaskEventMap['task:dependency-deleted']>(
       'task:dependency-deleted',
@@ -182,8 +182,8 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
       successorTaskId: this._props.successorTaskId as TaskTemplateId,
       dependencyType: this._props.dependencyType,
       lagDays: this._props.lagDays,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
     };
   }
 
@@ -197,8 +197,8 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
       successorTaskId: this._props.successorTaskId as TaskTemplateId,
       dependencyType: this._props.dependencyType,
       lagDays: this._props.lagDays,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
     };
   }
 }

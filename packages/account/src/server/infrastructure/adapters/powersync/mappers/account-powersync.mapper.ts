@@ -77,9 +77,9 @@ export class AccountPowerSyncMapper {
             })
           : null,
       version: Number(row.version),
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
+      createdAt: new Date(row.created_at).getTime(),
+      updatedAt: new Date(row.updated_at).getTime(),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at).getTime() : null,
     };
 
     return Account.load(state);

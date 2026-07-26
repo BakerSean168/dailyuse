@@ -36,10 +36,10 @@ export interface RawGoalData {
   priority: number;
   category: string | null;
   tags: string[];
-  startDate: Date | null;
-  targetDate: Date | null;
-  completedAt: Date | null;
-  archivedAt: Date | null;
+  startDate: number | null;
+  targetDate: number | null;
+  completedAt: number | null;
+  archivedAt: number | null;
   folderId: string | null;
   parentGoalId: string | null;
   sortOrder: number;
@@ -49,9 +49,9 @@ export interface RawGoalData {
   weightSnapshots: KeyResultWeightSnapshotDTO[] | null;
   totalKeyResults?: number;
   completedKeyResults?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: number;
+  updatedAt: number;
+  deletedAt: number | null;
   version: number;
 }
 
@@ -71,9 +71,9 @@ export interface RawKeyResultData {
   weight: number;
   sortOrder: number;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: number;
+  updatedAt: number;
+  deletedAt: number | null;
 }
 
 export interface RawGoalReviewData {
@@ -86,11 +86,11 @@ export interface RawGoalReviewData {
   challenges: string | null;
   improvements: string | null;
   keyResultSnapshots: unknown[];
-  reviewedAt: Date;
+  reviewedAt: number;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: number;
+  updatedAt: number;
+  deletedAt: number | null;
 }
 
 /**
@@ -117,9 +117,9 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       weight: kr.weight,
       sortOrder: kr.sortOrder,
       version: kr.version ?? 1,
-      createdAt: new Date(kr.createdAt),
-      updatedAt: new Date(kr.updatedAt),
-      deletedAt: kr.deletedAt ? new Date(kr.deletedAt) : null,
+      createdAt: Number(kr.createdAt),
+      updatedAt: Number(kr.updatedAt),
+      deletedAt: kr.deletedAt ? Number(kr.deletedAt) : null,
     }),
   );
 
@@ -134,15 +134,11 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
       challenges: r.challenges ?? null,
       improvements: r.improvements ?? null,
       keyResultSnapshots: r.keyResultSnapshots as KeyResultSnapshotDTO[],
-      reviewedAt: r.reviewedAt instanceof Date ? r.reviewedAt.getTime() : Number(r.reviewedAt),
+      reviewedAt: Number(r.reviewedAt),
       version: r.version ?? 1,
-      createdAt: r.createdAt instanceof Date ? r.createdAt.getTime() : Number(r.createdAt),
-      updatedAt: r.updatedAt instanceof Date ? r.updatedAt.getTime() : Number(r.updatedAt),
-      deletedAt: r.deletedAt
-        ? r.deletedAt instanceof Date
-          ? r.deletedAt.getTime()
-          : Number(r.deletedAt)
-        : null,
+      createdAt: Number(r.createdAt),
+      updatedAt: Number(r.updatedAt),
+      deletedAt: r.deletedAt != null ? Number(r.deletedAt) : null,
     }),
   );
 
@@ -163,18 +159,18 @@ export function rawDataToGoalState(raw: RawGoalData): GoalState {
     priority: raw.priority ?? 0,
     category: raw.category ?? null,
     tags: Array.isArray(raw.tags) ? raw.tags : [],
-    startDate: raw.startDate ? new Date(raw.startDate) : null,
-    targetDate: raw.targetDate ? new Date(raw.targetDate) : null,
-    completedAt: raw.completedAt ? new Date(raw.completedAt) : null,
-    archivedAt: raw.archivedAt ? new Date(raw.archivedAt) : null,
+    startDate: raw.startDate ? Number(raw.startDate) : null,
+    targetDate: raw.targetDate ? Number(raw.targetDate) : null,
+    completedAt: raw.completedAt ? Number(raw.completedAt) : null,
+    archivedAt: raw.archivedAt ? Number(raw.archivedAt) : null,
     folderId: raw.folderId ? GoalFolderId.of(raw.folderId) : null,
     parentGoalId: raw.parentGoalId ? GoalId.of(raw.parentGoalId) : null,
     sortOrder: raw.sortOrder,
     reminderConfig,
     version: raw.version ?? 1,
-    createdAt: new Date(raw.createdAt),
-    updatedAt: new Date(raw.updatedAt),
-    deletedAt: raw.deletedAt ? new Date(raw.deletedAt) : null,
+    createdAt: Number(raw.createdAt),
+    updatedAt: Number(raw.updatedAt),
+    deletedAt: raw.deletedAt ? Number(raw.deletedAt) : null,
     keyResults,
     goalReviews,
     weightSnapshots,

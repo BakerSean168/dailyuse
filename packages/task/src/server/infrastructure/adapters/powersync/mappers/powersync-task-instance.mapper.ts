@@ -41,9 +41,9 @@ export class PowerSyncTaskInstanceMapper {
       actualEndTime: data.actual_end_time ? new Date(data.actual_end_time).getTime() : null,
       note: data.comment ?? null,
       version: data.version ?? 1,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
-      deletedAt: data.deleted_at ? new Date(data.deleted_at) : null,
+      createdAt: new Date(data.created_at).getTime(),
+      updatedAt: new Date(data.updated_at).getTime(),
+      deletedAt: data.deleted_at ? new Date(data.deleted_at).getTime() : null,
     });
   }
 

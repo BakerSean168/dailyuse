@@ -26,18 +26,18 @@ export interface TaskInstanceState {
   id: TaskInstanceId;
   templateId: TaskTemplateId;
   identityId: IdentityId;
-  instanceDate: Date;
+  instanceDate: Instant;
   timeConfig: TaskTimeConfig;
   importance: ImportanceLevel | undefined;
   priority: number | undefined;
   status: TaskInstanceStatus;
-  actualStartTime: Date | null;
-  actualEndTime: Date | null;
+  actualStartTime: Instant | null;
+  actualEndTime: Instant | null;
   comment: string | null;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
 }
 
 export class TaskInstance extends AggregateRoot<TaskInstanceId> {
@@ -61,7 +61,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
   get instanceDate(): Instant {
     const v = this._props.instanceDate;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get timeConfig(): TaskTimeConfig {
@@ -83,13 +83,13 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   get actualStartTime(): Instant | null {
     const v = this._props.actualStartTime;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get actualEndTime(): Instant | null {
     const v = this._props.actualEndTime;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get comment(): string | null {
@@ -102,18 +102,18 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
   get createdAt(): Instant {
     const v = this._props.createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get deletedAt(): Instant | null {
     const v = this._props.deletedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   // UI 计算属性
@@ -140,25 +140,25 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       id: String(this.id) as TaskInstanceClientDTO['id'],
       templateId: String(this._props.templateId) as TaskInstanceClientDTO['templateId'],
       identityId: String(this._props.identityId) as TaskInstanceClientDTO['identityId'],
-      instanceDate: this._props.instanceDate.getTime(),
+      instanceDate: this._props.instanceDate,
       timeConfig: this.serializeTimeConfig(this._props.timeConfig),
       importance: this._props.importance,
       priority: this._props.priority,
       status: this._props.status,
-      actualStartTime: this._props.actualStartTime?.getTime() ?? null,
-      actualEndTime: this._props.actualEndTime?.getTime() ?? null,
+      actualStartTime: this._props.actualStartTime ?? null,
+      actualEndTime: this._props.actualEndTime ?? null,
       comment: this._props.comment,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
     };
   }
 
   private serializeTimeConfig(config: TaskTimeConfig): TaskTimeConfigDTO {
     return {
       timeType: config.timeType,
-      startDate: config.startDate ? (config.startDate as Date).getTime() : null,
+      startDate: config.startDate ? Number(config.startDate) : null,
       timePoint: config.timePoint,
       timeRange: config.timeRange,
     };

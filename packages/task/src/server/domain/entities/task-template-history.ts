@@ -19,7 +19,7 @@ export interface TaskTemplateHistoryState {
   templateId: string;
   action: string;
   changes: unknown;
-  createdAt: Date;
+  createdAt: Instant;
 }
 
 /**
@@ -34,7 +34,7 @@ export class TaskTemplateHistory extends Entity<string> {
   private _templateId: string;
   private _action: string;
   private _changes: unknown;
-  private _createdAt: Date;
+  private _createdAt: Instant;
 
   private constructor(state: TaskTemplateHistoryState) {
     super(state.id);
@@ -60,8 +60,7 @@ export class TaskTemplateHistory extends Entity<string> {
   }
 
   public get createdAt(): Instant {
-    const v = this._createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return this._createdAt;
   }
 
   /**
@@ -73,7 +72,7 @@ export class TaskTemplateHistory extends Entity<string> {
       templateId: this._templateId,
       action: this._action,
       changes: this._changes,
-      createdAt: this._createdAt.getTime(),
+      createdAt: this._createdAt,
     };
   }
 
@@ -83,7 +82,7 @@ export class TaskTemplateHistory extends Entity<string> {
       templateId: this._templateId,
       action: this._action,
       changes: this._changes,
-      createdAt: this._createdAt.getTime(),
+      createdAt: this._createdAt,
     };
   }
 
@@ -107,7 +106,7 @@ export class TaskTemplateHistory extends Entity<string> {
       templateId: params.templateId,
       action: params.action,
       changes: params.changes ?? null,
-      createdAt: new Date(),
+      createdAt: Date.now(),
     });
   }
 }

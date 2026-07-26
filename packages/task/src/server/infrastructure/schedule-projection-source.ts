@@ -122,7 +122,7 @@ function shouldScheduleTemplate(template: TaskTemplateServerDTO): boolean {
 
 function isSchedulableInstance(instance: {
   status: string;
-  deletedAt: Date | null;
+  deletedAt: number | null;
 }): boolean {
   return (
     instance.deletedAt === null &&

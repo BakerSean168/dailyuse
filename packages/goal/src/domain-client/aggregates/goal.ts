@@ -31,18 +31,18 @@ export interface GoalState {
   priority: number;
   category: string | null;
   tags: string[];
-  startDate: Date | null;
-  targetDate: Date | null;
-  completedAt: Date | null;
-  archivedAt: Date | null;
+  startDate: Instant | null;
+  targetDate: Instant | null;
+  completedAt: Instant | null;
+  archivedAt: Instant | null;
   folderId: GoalFolderId | null;
   parentGoalId: GoalId | null;
   sortOrder: number;
   reminderConfig: GoalReminderConfig | null;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
   keyResults: KeyResult[] | null;
   reviews: GoalReview[] | null;
   totalKeyResults?: number;
@@ -106,25 +106,25 @@ export class Goal extends AggregateRoot<GoalId> {
   get startDate(): Instant | null {
     const v = this._props.startDate;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get targetDate(): Instant | null {
     const v = this._props.targetDate;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get completedAt(): Instant | null {
     const v = this._props.completedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get archivedAt(): Instant | null {
     const v = this._props.archivedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get folderId(): GoalFolderId | null {
@@ -149,18 +149,18 @@ export class Goal extends AggregateRoot<GoalId> {
 
   get createdAt(): Instant {
     const v = this._props.createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get deletedAt(): Instant | null {
     const v = this._props.deletedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get keyResults(): KeyResult[] | null {
@@ -195,10 +195,10 @@ export class Goal extends AggregateRoot<GoalId> {
       priority: this._props.priority,
       category: this._props.category,
       tags: [...this._props.tags],
-      startDate: this._props.startDate?.getTime() ?? null,
-      targetDate: this._props.targetDate?.getTime() ?? null,
-      completedAt: this._props.completedAt?.getTime() ?? null,
-      archivedAt: this._props.archivedAt?.getTime() ?? null,
+      startDate: this._props.startDate ?? null,
+      targetDate: this._props.targetDate ?? null,
+      completedAt: this._props.completedAt ?? null,
+      archivedAt: this._props.archivedAt ?? null,
       folderId: this._props.folderId
         ? (String(this._props.folderId) as GoalClientDTO['folderId'])
         : null,
@@ -208,9 +208,9 @@ export class Goal extends AggregateRoot<GoalId> {
       sortOrder: this._props.sortOrder,
       reminderConfig: this._props.reminderConfig ?? null,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
       keyResults: this._props.keyResults?.map((kr) => (kr as KeyResult).toDTO()) ?? null,
       reviews: this._props.reviews?.map((r) => (r as GoalReview).toDTO()) ?? null,
     };

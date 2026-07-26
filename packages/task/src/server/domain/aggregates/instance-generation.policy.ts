@@ -31,13 +31,13 @@ export interface InstanceGenerationContext {
   timeConfig: TaskTimeConfig | null;
   recurrenceRule: RecurrenceRule | null;
   importance: ImportanceLevel;
-  existingInstances: { instanceDate: number; deletedAt: Date | null }[];
+  existingInstances: { instanceDate: number; deletedAt: number | null }[];
 }
 
 /** Result of instance generation. */
 export interface InstanceGenerationResult {
   instances: TaskInstance[];
-  lastGeneratedDate: Date | null;
+  lastGeneratedDate: number | null;
 }
 
 /** Parameters for createInstance. */
@@ -170,7 +170,7 @@ export function generateInstances(
     }
   }
 
-  const lastGeneratedDate = instances.length > 0 ? new Date(toDate) : null;
+  const lastGeneratedDate = instances.length > 0 ? toDate : null;
   return { instances, lastGeneratedDate };
 }
 

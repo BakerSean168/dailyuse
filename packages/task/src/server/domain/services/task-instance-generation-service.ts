@@ -34,7 +34,7 @@ export class TaskInstanceGenerationService {
 
     // 1. 计算起始日期：从上次生成日期的下一天，或从今天开始
     // 注意：如果是强制生成，调用方应该负责清理旧实例，这里只负责生成新的
-    const lastGeneratedTime = template.lastGeneratedDate?.getTime();
+    const lastGeneratedTime = template.lastGeneratedDate;
     const fromDate =
       !forceGenerate && lastGeneratedTime ? lastGeneratedTime + 86400000 : now;
 
@@ -66,7 +66,7 @@ export class TaskInstanceGenerationService {
     const now = Date.now();
 
     // 检查最远实例的日期
-    const lastGenerated = template.lastGeneratedDate?.getTime() || 0;
+    const lastGenerated = template.lastGeneratedDate || 0;
     const daysRemaining = Math.floor((lastGenerated - now) / 86400000);
 
     // 如果剩余天数少于阈值，需要补充

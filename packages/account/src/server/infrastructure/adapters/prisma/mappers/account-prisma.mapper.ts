@@ -11,6 +11,24 @@ import {
 } from '../../../../domain/value-objects';
 import type { AccountProfileDTO, AccountSettingsDTO } from '@dailyuse/contracts/account';
 
+
+/** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
+function requiredInstant(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) return value.getTime();
+  if (value == null) return Date.now();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : Date.now();
+}
+
+/** Prisma Date/DateTime → Instant | null. */
+function optionalInstant(value: Date | string | number | null | undefined): number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.getTime();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+
 export class AccountPrismaMapper {
   static toDomain(row: PrismaAccount): Account {
     const profile = row.profile as unknown as AccountProfileDTO;
@@ -49,9 +67,9 @@ export class AccountPrismaMapper {
           })
         : null,
       version: row.version,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      deletedAt: row.deletedAt,
+      createdAt: requiredInstant(row.createdAt),
+      updatedAt: requiredInstant(row.updatedAt),
+      deletedAt: optionalInstant(row.deletedAt),
     };
     return Account.load(state);
   }

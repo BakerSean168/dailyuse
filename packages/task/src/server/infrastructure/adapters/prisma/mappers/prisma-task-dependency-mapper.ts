@@ -10,6 +10,23 @@ import type { TaskDependencyServerDTO, DependencyType } from '@dailyuse/contract
 import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@dailyuse/contracts/primitives';
 import { TaskDependency } from '../../../../domain/aggregates/task-dependency';
 
+/** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
+function requiredInstant(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) return value.getTime();
+  if (value == null) return Date.now();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : Date.now();
+}
+
+/** Prisma Date/DateTime → Instant | null. */
+function optionalInstant(value: Date | string | number | null | undefined): number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.getTime();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+
 export class PrismaTaskDependencyMapper {
   /**
    * Prisma record → TaskDependencyServerDTO
@@ -45,8 +62,8 @@ export class PrismaTaskDependencyMapper {
       successorTaskId: data.successorTaskId,
       dependencyType: data.dependencyType as DependencyType,
       lagDays: data.lagDays ?? undefined,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
+      createdAt: requiredInstant(data.createdAt),
+      updatedAt: requiredInstant(data.updatedAt),
     });
   }
 }

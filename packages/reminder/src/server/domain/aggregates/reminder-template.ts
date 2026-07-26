@@ -358,7 +358,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 重新计算下次触发时间
     this._props.nextTriggerAt = this.calculateNextTrigger();
-    this._props.updatedAt = new Date(now);
+    this._props.updatedAt = now;
 
     // 发布更新事件
     const changes = Object.keys(updates);
@@ -382,7 +382,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     // 更新 activatedAt 为当前时间
     this._props.activeTime = this._props.activeTime.with({ activatedAt: now });
 
-    this._props.updatedAt = new Date(now);
+    this._props.updatedAt = now;
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
     // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
@@ -544,7 +544,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 计算下次触发时间
     this._props.nextTriggerAt = this.calculateNextTrigger();
-    this._props.updatedAt = new Date(now);
+    this._props.updatedAt = now;
 
     // 发布触发事件
     this.addDomainEvent<ReminderEventMap['reminder:triggered']>('reminder:triggered', {

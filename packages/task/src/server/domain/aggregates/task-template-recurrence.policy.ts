@@ -33,7 +33,7 @@ export function updateRecurrenceRule(ctx: RecurrenceContext, newRule: Recurrence
   }
   const oldRuleDTO = ctx.props.recurrenceRule?.toDTO() ?? null;
   ctx.props.recurrenceRule = newRule;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('recurrence_rule_updated', {
     oldRule: oldRuleDTO,
     newRule: newRule.toDTO(),
@@ -96,7 +96,7 @@ export function updateRecurrenceEndCondition(
 
   const oldRuleDTO = ctx.props.recurrenceRule.toDTO();
   ctx.props.recurrenceRule = updatedRule;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('recurrence_end_condition_updated', {
     oldRule: oldRuleDTO,
     newRule: updatedRule.toDTO(),

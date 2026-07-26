@@ -40,10 +40,10 @@ export interface TaskInstanceState {
   actualStartTime: number | null;
   actualEndTime: number | null;
   note: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Instant;
+  updatedAt: Instant;
   version: number;
-  deletedAt: Date | null;
+  deletedAt: Instant | null;
 }
 
 /** TaskInstance aggregate root. */
@@ -122,12 +122,12 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
   public get createdAt(): Instant {
     const v = this._props.createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   public get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   public get version(): number {
@@ -137,7 +137,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   public get deletedAt(): Instant | null {
     const v = this._props.deletedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   // ===== Business Methods =====
@@ -150,7 +150,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
     this._props.status = TaskInstanceStatus.InProgress;
     this._props.actualStartTime = Date.now();
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -191,7 +191,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       this._props.note = note;
     }
 
-    this._props.updatedAt = new Date(now);
+    this._props.updatedAt = now;
 
     // Trigger domain event（payload 自包含，供 Goal 等跨模块订阅方直接消费）
     this.addDomainEvent<TaskEventMap['task:instance-completed']>('task:instance-completed', {
@@ -224,7 +224,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       this._props.note = reason;
     }
 
-    this._props.updatedAt = new Date(now);
+    this._props.updatedAt = now;
 
     this.addDomainEvent<TaskEventMap['task:instance-skipped']>('task:instance-skipped', {
       identityId: this._props.identityId,
@@ -242,7 +242,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       this._props.status === TaskInstanceStatus.InProgress
     ) {
       this._props.status = TaskInstanceStatus.Expired;
-      this._props.updatedAt = new Date();
+      this._props.updatedAt = Date.now();
     }
   }
 
@@ -293,10 +293,10 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       actualStartTime: this._props.actualStartTime,
       actualEndTime: this._props.actualEndTime,
       comment: this._props.note,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
       version: this._props.version,
-      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt : null,
     };
   }
 
@@ -314,9 +314,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       actualEndTime: this._props.actualEndTime,
       comment: this._props.note,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
     };
   }
 
@@ -349,7 +349,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
-    const nowDate = new Date(now);
     const instance = new TaskInstance({
       id: TaskInstanceId.generate(),
       templateId: params.templateId,
@@ -363,8 +362,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       actualStartTime: null,
       actualEndTime: null,
       note: null,
-      createdAt: nowDate,
-      updatedAt: nowDate,
+      createdAt: now,
+      updatedAt: now,
       version: 1,
       deletedAt: null,
     });

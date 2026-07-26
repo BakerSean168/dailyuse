@@ -25,6 +25,22 @@ import {
   ChecklistItemDefinition,
 } from '../../../../domain/value-objects';
 
+/** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
+function requiredInstant(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) return value.getTime();
+  if (value == null) return Date.now();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : Date.now();
+}
+
+/** Prisma Date/DateTime → Instant | null. */
+function optionalInstant(value: Date | string | number | null | undefined): number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.getTime();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 export class PrismaTaskTemplateMapper {
   /**
    * Prisma record → TaskTemplate aggregate root
@@ -103,7 +119,7 @@ export class PrismaTaskTemplateMapper {
       tags,
       color: data.color,
       status: data.status as TaskTemplateStatus,
-      lastGeneratedDate: data.lastGeneratedDate ?? null,
+      lastGeneratedDate: optionalInstant(data.lastGeneratedDate),
       generateAheadDays: data.generateAheadDays,
       parentTaskId: data.parentTaskId ? TaskTemplateId.of(data.parentTaskId) : null,
       dependencyStatus: (data.dependencyStatus ?? 'NONE') as unknown as DependencyStatus,
@@ -116,9 +132,9 @@ export class PrismaTaskTemplateMapper {
       actualMinutes: null,
       note: null,
       version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
+      createdAt: requiredInstant(data.createdAt),
+      updatedAt: requiredInstant(data.updatedAt),
+      deletedAt: optionalInstant(data.deletedAt),
     });
   }
 

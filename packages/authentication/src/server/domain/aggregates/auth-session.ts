@@ -256,7 +256,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       return false;
     }
 
-    this._props.lastActiveAt = new Date(now);
+    this._props.lastActiveAt = now;
     return true;
   }
 
@@ -272,7 +272,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     const now = Date.now();
 
     this._props.expiresAt = new Date(now + duration);
-    this._props.lastActiveAt = new Date(now);
+    this._props.lastActiveAt = now;
   }
 
   /**

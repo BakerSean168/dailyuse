@@ -53,7 +53,7 @@ export function bindToGoal(
     goalRecordValue: goalRecordValue ?? 1,
     progressTrigger,
   });
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('goal_bound', { goalId, keyResultId, goalRecordValue, progressTrigger });
 }
 
@@ -71,7 +71,7 @@ export function unbindFromGoal(ctx: GoalOperationContext): void {
   ctx.props.goalBinding = null;
   ctx.props.goalId = null;
   ctx.props.keyResultId = null;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('goal_unbound', { oldGoalId, oldKeyResultId });
 }
 
@@ -108,7 +108,7 @@ export function linkToGoal(ctx: GoalOperationContext, goalId: string, keyResultI
     }
     ctx.props.goalId = goalId as GoalId;
     ctx.props.keyResultId = null;
-    ctx.props.updatedAt = new Date();
+    ctx.props.updatedAt = Date.now();
     ctx.addHistory('linked_to_goal', { goalId, keyResultId });
   }
 }

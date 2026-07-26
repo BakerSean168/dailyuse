@@ -38,11 +38,11 @@ export interface GoalRecordState {
   identityId: IdentityId;
   value: number;
   note: string | null;
-  recordedAt: Date;
+  recordedAt: Instant;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
 }
 
 /**
@@ -88,7 +88,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
 
   get recordedAt(): Instant {
     const v = this._props.recordedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get version(): number {
@@ -97,18 +97,18 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
 
   get createdAt(): Instant {
     const v = this._props.createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get deletedAt(): Instant | null {
     const v = this._props.deletedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   // ================= 4. 工厂方法 (Factories) =================
@@ -123,7 +123,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     identityId: IdentityId;
     value: number;
     note?: string;
-    recordedAt?: Date;
+    recordedAt?: Instant;
   }): GoalRecord {
     // 验证
     if (!params.keyResultId) {
@@ -142,10 +142,10 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       identityId: params.identityId,
       value: params.value,
       note: params.note?.trim() || null,
-      recordedAt: params.recordedAt ?? new Date(now),
+      recordedAt: params.recordedAt != null ? Number(params.recordedAt) : now,
       version: 1,
-      createdAt: new Date(now),
-      updatedAt: new Date(now),
+      createdAt: now,
+      updatedAt: now,
       deletedAt: null,
     });
 
@@ -174,7 +174,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
    */
   public updateNote(note: string): void {
     this._props.note = note.trim() || null;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this._props.version++;
   }
 
@@ -185,8 +185,8 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     if (this._props.deletedAt) {
       return; // 已删除，幂等操作
     }
-    this._props.deletedAt = new Date();
-    this._props.updatedAt = new Date();
+    this._props.deletedAt = Date.now();
+    this._props.updatedAt = Date.now();
     this._props.version++;
   }
 
@@ -198,7 +198,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       return; // 未删除，幂等操作
     }
     this._props.deletedAt = null;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this._props.version++;
   }
 
@@ -214,11 +214,11 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       identityId: this._props.identityId,
       value: this._props.value,
       note: this._props.note,
-      recordedAt: this._props.recordedAt.getTime(),
+      recordedAt: this._props.recordedAt,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
     };
   }
 
@@ -237,9 +237,9 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       valueAfter,
       comment: this._props.note,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

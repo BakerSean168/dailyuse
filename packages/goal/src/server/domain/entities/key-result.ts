@@ -42,9 +42,9 @@ export interface KeyResultState {
   weight: number;
   sortOrder: number;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
 }
 
 /**
@@ -87,18 +87,18 @@ export class KeyResult extends Entity<KeyResultId> {
 
   get createdAt(): Instant {
     const v = this._props.createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get deletedAt(): Instant | null {
     const v = this._props.deletedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   // ================= 4. 工厂方法 (Factory Methods) =================
@@ -139,8 +139,8 @@ export class KeyResult extends Entity<KeyResultId> {
       weight: params.weight ?? 1,
       sortOrder: params.sortOrder ?? 0,
       version: 1,
-      createdAt: new Date(now),
-      updatedAt: new Date(now),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
       deletedAt: null,
     });
   }
@@ -156,7 +156,7 @@ export class KeyResult extends Entity<KeyResultId> {
       throw new Error('Title cannot be empty');
     }
     this._props.title = trimmed;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -164,7 +164,7 @@ export class KeyResult extends Entity<KeyResultId> {
    */
   public updateDescription(description: string): void {
     this._props.description = description.trim() || null;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -178,7 +178,7 @@ export class KeyResult extends Entity<KeyResultId> {
       throw new Error('Weight must be an integer between 1 and 5');
     }
     this._props.weight = weight;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -192,7 +192,7 @@ export class KeyResult extends Entity<KeyResultId> {
       ...this._props.progress,
       initialValue,
     };
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -206,7 +206,7 @@ export class KeyResult extends Entity<KeyResultId> {
       ...this._props.progress,
       targetValue,
     };
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -217,14 +217,14 @@ export class KeyResult extends Entity<KeyResultId> {
       ...this._props.progress,
       unit: unit?.trim() || null,
     };
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
    * ✅ 添加进度记录并重新计算进度
    */
   public addRecord(recordData: { value: number }): void {
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.recalculateProgress(recordData.value);
   }
 
@@ -236,7 +236,7 @@ export class KeyResult extends Entity<KeyResultId> {
       ...this._props.progress,
       currentValue: value,
     };
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -273,7 +273,7 @@ export class KeyResult extends Entity<KeyResultId> {
    */
   public updateSortOrder(sortOrder: number): void {
     this._props.sortOrder = sortOrder;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -283,8 +283,8 @@ export class KeyResult extends Entity<KeyResultId> {
     if (this._props.deletedAt) {
       return; // 已经删除
     }
-    this._props.deletedAt = new Date();
-    this._props.updatedAt = new Date();
+    this._props.deletedAt = Date.now();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -308,9 +308,9 @@ export class KeyResult extends Entity<KeyResultId> {
       weight: this._props.weight,
       sortOrder: this._props.sortOrder,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt : null,
     };
   }
 
@@ -326,9 +326,9 @@ export class KeyResult extends Entity<KeyResultId> {
       weight: this._props.weight,
       order: this._props.sortOrder,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

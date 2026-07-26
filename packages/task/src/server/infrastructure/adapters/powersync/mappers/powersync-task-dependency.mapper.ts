@@ -39,8 +39,8 @@ export class PowerSyncTaskDependencyMapper {
       successorTaskId: data.successor_task_id,
       dependencyType: data.dependency_type as DependencyType,
       lagDays: data.lag_days ?? undefined,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
+      createdAt: new Date(data.created_at).getTime(),
+      updatedAt: new Date(data.updated_at).getTime(),
     });
   }
 }

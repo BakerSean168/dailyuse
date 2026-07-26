@@ -87,9 +87,9 @@ export class DailyPriorityCalculator {
    * @returns 优先级分数
    */
   public static calculate(
-    targetDate: Date | null,
+    targetDate: number | null,
     importance: ImportanceLevel,
-    referenceDate: Date = new Date(),
+    referenceDate: number = Date.now(),
   ): number {
     const timeScore = this.calculateTimeScore(targetDate, referenceDate);
     const importanceScore = this.getImportanceScore(importance);
@@ -105,9 +105,9 @@ export class DailyPriorityCalculator {
    * @returns 完整的优先级计算结果
    */
   public static calculateDetailed(
-    targetDate: Date | null,
+    targetDate: number | null,
     importance: ImportanceLevel,
-    referenceDate: Date = new Date(),
+    referenceDate: number = Date.now(),
   ): PriorityCalculationResult {
     const score = this.calculate(targetDate, importance, referenceDate);
     const daysRemaining = targetDate ? this.getDaysRemaining(targetDate, referenceDate) : null;
@@ -129,7 +129,7 @@ export class DailyPriorityCalculator {
    * @param referenceDate - 参考日期
    * @returns 时间分数
    */
-  private static calculateTimeScore(targetDate: Date | null, referenceDate: Date): number {
+  private static calculateTimeScore(targetDate: number | null, referenceDate: number): number {
     // 无期限目标
     if (!targetDate) {
       return 0;
@@ -175,19 +175,16 @@ export class DailyPriorityCalculator {
    * @param referenceDate - 参考日期
    * @returns 日历天数差（正数表示未来，负数表示过去）
    */
-  private static getDaysRemaining(targetDate: Date, referenceDate: Date): number {
-    // 将日期标准化到当天 00:00:00（使用本地时区）
-    const normalizeToDay = (date: Date): Date => {
-      const normalized = new Date(date);
-      normalized.setHours(0, 0, 0, 0);
-      return normalized;
+  private static getDaysRemaining(targetDate: number, referenceDate: number): number {
+    // Normalize to local calendar day (00:00:00), then diff in whole days.
+    const normalizeToDayMs = (ms: number): number => {
+      const d = new Date(ms);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime();
     };
 
-    const targetDay = normalizeToDay(targetDate);
-    const referenceDay = normalizeToDay(referenceDate);
-
     const millisecondsPerDay = 24 * 60 * 60 * 1000;
-    return Math.round((targetDay.getTime() - referenceDay.getTime()) / millisecondsPerDay);
+    return Math.round((normalizeToDayMs(targetDate) - normalizeToDayMs(referenceDate)) / millisecondsPerDay);
   }
 
   /**

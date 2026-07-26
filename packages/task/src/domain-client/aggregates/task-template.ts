@@ -42,16 +42,16 @@ export interface TaskTemplateState {
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
-  lastGeneratedDate: Date | null;
+  lastGeneratedDate: Instant | null;
   generateAheadDays: number | null;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
   parentTaskId: TaskTemplateId | null;
-  startDate: Date | null;
-  dueDate: Date | null;
-  completedAt: Date | null;
+  startDate: Instant | null;
+  dueDate: Instant | null;
+  completedAt: Instant | null;
   estimatedMinutes: number | null;
   actualMinutes: number | null;
   comment: string | null;
@@ -132,7 +132,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   get lastGeneratedDate(): Instant | null {
     const v = this._props.lastGeneratedDate;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get generateAheadDays(): number | null {
@@ -145,18 +145,18 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   get createdAt(): Instant {
     const v = this._props.createdAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get updatedAt(): Instant {
     const v = this._props.updatedAt;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get deletedAt(): Instant | null {
     const v = this._props.deletedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get parentTaskId(): TaskTemplateId | null {
@@ -166,19 +166,19 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   get startDate(): Instant | null {
     const v = this._props.startDate;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get dueDate(): Instant | null {
     const v = this._props.dueDate;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get completedAt(): Instant | null {
     const v = this._props.completedAt;
     if (v == null) return null;
-    return (v instanceof Date ? v.getTime() : Number(v)) as Instant;
+    return v as Instant;
   }
 
   get estimatedMinutes(): number | null {
@@ -240,7 +240,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   get isOverdue(): boolean {
     if (!this._props.dueDate) return false;
-    return this._props.dueDate.getTime() < Date.now() && !this.isCompleted;
+    return this._props.dueDate < Date.now() && !this.isCompleted;
   }
 
   // ================= 4. Factory Methods =================
@@ -269,16 +269,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
-      lastGeneratedDate: this._props.lastGeneratedDate?.getTime() ?? null,
+      lastGeneratedDate: this._props.lastGeneratedDate ?? null,
       generateAheadDays: this._props.generateAheadDays,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
       parentTaskId: this._props.parentTaskId,
-      startDate: this._props.startDate?.getTime() ?? null,
-      dueDate: this._props.dueDate?.getTime() ?? null,
-      completedAt: this._props.completedAt?.getTime() ?? null,
+      startDate: this._props.startDate ?? null,
+      dueDate: this._props.dueDate ?? null,
+      completedAt: this._props.completedAt ?? null,
       estimatedMinutes: this._props.estimatedMinutes,
       actualMinutes: this._props.actualMinutes,
       comment: this._props.comment,
@@ -297,7 +297,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   private serializeTimeConfig(config: TaskTimeConfig): TaskTimeConfigDTO {
     return {
       timeType: config.timeType,
-      startDate: config.startDate ? (config.startDate as Date).getTime() : null,
+      startDate: config.startDate ? Number(config.startDate) : null,
       timePoint: config.timePoint,
       timeRange: config.timeRange,
     };

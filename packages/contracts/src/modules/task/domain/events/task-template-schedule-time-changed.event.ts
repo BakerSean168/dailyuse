@@ -1,14 +1,14 @@
 import type { TaskTemplateServerDTO } from '../../aggregates/task-template-server';
 import type { TaskTimeConfigDTO } from '../../value-objects/task-time-config';
-import type { IdentityId } from '../../../../primitives';
+import type { IdentityId, Instant } from '../../../../primitives';
 
 export interface TaskTemplateScheduleTimeChangedEvent {
   identityId: IdentityId;
   taskTemplate: TaskTemplateServerDTO;
-  oldStartDate: Date | null;
-  oldDueDate: Date | null;
-  newStartDate: Date | null;
-  newDueDate: Date | null;
+  oldStartDate: Instant | null;
+  oldDueDate: Instant | null;
+  newStartDate: Instant | null;
+  newDueDate: Instant | null;
   oldTimeConfig?: TaskTimeConfigDTO | null;
   newTimeConfig?: TaskTimeConfigDTO | null;
 }

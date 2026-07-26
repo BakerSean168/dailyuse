@@ -140,8 +140,8 @@ describe('Account', () => {
         status: AccountStatus.Suspended,
         phone: null,
         version: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
         deletedAt: null,
       });
       expect(() => account.close()).toThrow(

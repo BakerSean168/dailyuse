@@ -1,5 +1,5 @@
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import type { GoalId, Instant, KeyResultId } from '@dailyuse/contracts/primitives';
 import type { IdentityId } from '@dailyuse/domain-shared';
 import type { DependencyStatus, TaskType } from '../value-objects';
 import type { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
@@ -32,20 +32,20 @@ export interface TaskTemplateState {
   timeConfig: TaskTimeConfig | null;
   recurrenceRule: RecurrenceRule | null;
   reminderConfig: TaskReminderConfig | null;
-  lastGeneratedDate: Date | null;
+  lastGeneratedDate: Instant | null;
   generateAheadDays: number | null;
-  startDate: Date | null;
-  dueDate: Date | null;
-  completedAt: Date | null;
+  startDate: Instant | null;
+  dueDate: Instant | null;
+  completedAt: Instant | null;
   estimatedMinutes: number | null;
   actualMinutes: number | null;
   note: string | null;
   dependencyStatus: DependencyStatus;
   isBlocked: boolean;
   blockingReason: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
   version: number;
 }
 

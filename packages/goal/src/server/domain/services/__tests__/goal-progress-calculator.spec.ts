@@ -59,7 +59,7 @@ function addKeyResult(
 }
 
 function createMockRecord(value: number) {
-  return { value, identityId: 'test-identity-id', recordedAt: new Date() } as any;
+  return { value, identityId: 'test-identity-id', recordedAt: Date.now() } as any;
 }
 
 function createMockRecordRepo(

@@ -10,6 +10,23 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalFolderId } from '../../../../domain';
 import type { FolderType } from '@dailyuse/contracts/goal';
 
+/** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
+function requiredInstant(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) return value.getTime();
+  if (value == null) return Date.now();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : Date.now();
+}
+
+/** Prisma Date/DateTime → Instant | null. */
+function optionalInstant(value: Date | string | number | null | undefined): number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.getTime();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+
 export class PrismaGoalFolderMapper {
   /** Maps a Prisma row to a Domain GoalFolder aggregate. */
   static toDomain(data: PrismaGoalFolder): GoalFolder {
@@ -26,9 +43,9 @@ export class PrismaGoalFolderMapper {
       isSystemFolder: false,
       goalCount: data.goalCount ?? 0,
       completedGoalCount: data.completedGoalCount ?? 0,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
+      createdAt: requiredInstant(data.createdAt),
+      updatedAt: requiredInstant(data.updatedAt),
+      deletedAt: optionalInstant(data.deletedAt),
       version: data.version ?? 1,
     });
   }
