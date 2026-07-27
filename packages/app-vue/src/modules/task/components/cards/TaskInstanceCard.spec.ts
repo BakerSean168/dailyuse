@@ -89,11 +89,13 @@ describe('TaskInstanceCard', () => {
   });
 
   it('shows completed state text and falls back to all-day for missing time details', () => {
+    // ADR-037: actualEndTime is Instant (epoch ms)
+    const completedAt = new Date(2026, 3, 27, 18, 45, 0).getTime();
     const wrapper = mountCard(
       createTask({
         templateTitle: undefined,
         isCompleted: true,
-        actualEndTime: '2026-04-27T18:45:00',
+        actualEndTime: completedAt,
         timeConfig: {
           timeType: undefined,
         },

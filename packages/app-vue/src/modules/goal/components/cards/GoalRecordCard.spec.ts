@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n';
 import { describe, expect, it } from 'vitest';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import GoalRecordCard from './GoalRecordCard.vue';
+import { formatProductDateTime } from '../../../../shared/utils/product-time';
 
 const i18n = createI18n({
   legacy: false,
@@ -41,11 +42,12 @@ describe('GoalRecordCard', () => {
     });
 
     expect(wrapper.text()).toContain('Record value: 12');
-    expect(wrapper.text()).toContain(new Date(record.createdAt).toLocaleString());
+    // ADR-037: product-time dateTime (session locale), not Date.toLocaleString
+    expect(wrapper.text()).toContain(formatProductDateTime(record.createdAt));
     expect(wrapper.text()).toContain('Closed the remaining branch coverage gap.');
   });
 
-  it('falls back to the raw timestamp and hides the comment block when absent', () => {
+  it('falls back to product empty unknown and hides the comment block when absent', () => {
     const wrapper = mount(GoalRecordCard, {
       props: {
         record: createRecord({
@@ -56,7 +58,8 @@ describe('GoalRecordCard', () => {
       global: { plugins: [i18n] },
     });
 
-    expect(wrapper.text()).toContain('invalid-date');
+    // Invalid Instant → product-time empty/unknown catalog (session style, often '—')
+    expect(wrapper.text()).toContain(formatProductDateTime('invalid-date'));
     expect(wrapper.text()).not.toContain('Closed the remaining branch coverage gap.');
   });
 });
