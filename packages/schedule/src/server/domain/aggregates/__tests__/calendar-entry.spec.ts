@@ -7,7 +7,7 @@
 
 import { CalendarEntry } from '../calendar-entry';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { ScheduleId } from '@/server/domain/value-objects/schedule-id';
+import { ScheduleId } from '../../value-objects/schedule-id';
 
 describe('CalendarEntry Aggregate', () => {
   // ===== Test Data Fixtures =====

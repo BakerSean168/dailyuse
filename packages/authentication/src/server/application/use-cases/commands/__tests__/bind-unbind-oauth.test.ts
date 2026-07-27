@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import { AuthIdentity, AuthDomainCode, OAuthProvider } from '@/server/domain';
-import type { IAuthIdentityRepository } from '@/server/domain';
-import { InMemoryOAuthStateStore } from '@/server/infrastructure/services/in-memory-oauth-state-store';
+import { AuthIdentity, AuthDomainCode, OAuthProvider } from '../../../../domain';
+import type { IAuthIdentityRepository } from '../../../../domain';
+import { InMemoryOAuthStateStore } from '../../../../infrastructure/services/in-memory-oauth-state-store';
 import { BindOAuthUseCase } from '../bind-oauth.use-case';
 import { UnbindOAuthUseCase } from '../unbind-oauth.use-case';
-import type { IGithubOAuthClient } from '@/server/domain/services/providers/i-github-oauth-client';
+import type { IGithubOAuthClient } from '../../../../domain/services/providers/i-github-oauth-client';
 
 const cx = { identityId: 'will-set' } as ExecutionContext;
 
@@ -107,7 +107,7 @@ describe('BindOAuthUseCase / UnbindOAuthUseCase', () => {
       } as any,
     });
     // attach oauth
-    const { OAuthBinding, AuthCredentialId } = await import('@/server/domain');
+    const { OAuthBinding, AuthCredentialId } = await import('../../../../domain');
     identity.addOAuthBinding(
       OAuthBinding.create({
         id: AuthCredentialId.generate(),

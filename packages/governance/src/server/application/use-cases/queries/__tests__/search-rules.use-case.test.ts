@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { SearchRulesUseCase } from '../search-rules.use-case';
-import type { IRuleRepository } from '@/server/domain/repositories/i-rule-repository';
+import type { IRuleRepository } from '../../../../domain/repositories/i-rule-repository';
 import { RuleStatus } from '@dailyuse/contracts/governance';
 import { RuleSeverity } from '@dailyuse/contracts/governance';
 

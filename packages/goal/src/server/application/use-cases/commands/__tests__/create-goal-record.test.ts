@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { Goal, GoalRecord } from '@/server/domain';
-import type { IGoalRepository } from '@/server/domain/repositories/i-goal-repository';
-import type { IGoalRecordRepository } from '@/server/domain/repositories/i-goal-record-repository';
+import { Goal, GoalRecord } from '../../../../domain';
+import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
+import type { IGoalRecordRepository } from '../../../../domain/repositories/i-goal-record-repository';
 import { CreateGoalRecordUseCase } from '../create-goal-record.use-case';
 
 function createTestGoal() {

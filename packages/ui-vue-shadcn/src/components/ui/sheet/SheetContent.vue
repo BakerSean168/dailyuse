@@ -2,7 +2,7 @@
 import type { DialogContentEmits, DialogContentProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
 import type { SheetVariants } from '.'
-import { cn } from '@/lib/utils'
+import { cn } from '../../../lib/utils'
 import { Cross2Icon } from '@radix-icons/vue'
 import {
   DialogClose,

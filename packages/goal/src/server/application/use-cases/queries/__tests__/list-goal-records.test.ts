@@ -1,6 +1,6 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
-import type { IGoalRecordRepository, IGoalRepository } from '@/server/domain';
+import type { IGoalRecordRepository, IGoalRepository } from '../../../../domain';
 import { ListGoalRecordsUseCase } from '../list-goal-records.use-case';
 
 function createRecordFixture(overrides?: Record<string, any>) {

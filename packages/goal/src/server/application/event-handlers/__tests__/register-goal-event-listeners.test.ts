@@ -4,8 +4,8 @@ import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
 import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
 import type { TaskEventMap, TaskGoalBindingDTO } from '@dailyuse/contracts/task';
 import { ok } from '@dailyuse/contracts/result';
-import type { IGoalRepository } from '@/server/domain/repositories/i-goal-repository';
-import type { IGoalRecordRepository } from '@/server/domain/repositories/i-goal-record-repository';
+import type { IGoalRepository } from '../../../domain/repositories/i-goal-repository';
+import type { IGoalRecordRepository } from '../../../domain/repositories/i-goal-record-repository';
 import { CreateGoalRecordUseCase } from '../../use-cases/commands/create-goal-record.use-case';
 import { registerGoalEventListeners } from '../index';
 

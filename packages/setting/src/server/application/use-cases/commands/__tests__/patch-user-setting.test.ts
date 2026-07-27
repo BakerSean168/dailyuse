@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
-import type { IUserSettingRepository } from '@/server/domain/repositories/i-user-setting-repository';
-import { UserSetting } from '@/server/domain/aggregates/user-setting';
+import type { IUserSettingRepository } from '../../../../domain/repositories/i-user-setting-repository';
+import { UserSetting } from '../../../../domain/aggregates/user-setting';
 import { PatchUserSetting } from '../patch-user-setting';
 
 // Mock eventBus to prevent real event publishing

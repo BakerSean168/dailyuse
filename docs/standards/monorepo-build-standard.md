@@ -17,6 +17,7 @@ updated: 2026-05-16T00:00:00
 - 开发态允许通过 tsconfig / Vite / Vitest alias 解析到 workspace `src`
 - 构建态必须通过 package `exports` 或 `dist` 声明消费上游包
 - 不允许在业务代码中直接导入其他包的 `src` 真实路径
+- 包内路径写法（相对 vs `@/`）见 [import-path-policy.md](./import-path-policy.md)
 
 ## 配置分层
 

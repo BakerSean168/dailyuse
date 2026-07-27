@@ -7,7 +7,7 @@
 
 import { CronSchedulerManager } from './cron-scheduler-manager';
 import { createLogger } from '@dailyuse/utils/logger';
-import { env } from '@/shared/infrastructure/config/env.js';
+import { env } from '../config/env';
 import { rebuildAllProfileSnapshots } from './jobs/snapshot-rebuild.job.js';
 
 const logger = createLogger('CronJobRegistration');

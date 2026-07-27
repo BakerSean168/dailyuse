@@ -16,14 +16,14 @@
  *
  * @internal Concrete PowerSync mapper — consumers should use domain entities directly.
  */
-import { Rule } from '@/server/domain/aggregates/rule';
-import { RuleId } from '@/server/domain/value-objects/rule-id';
-import { RuleTag } from '@/server/domain/value-objects/rule-tag';
-import { CodeSnippet } from '@/server/domain/value-objects/code-snippet';
-import type { RuleStatus } from '@/server/domain/value-objects/rule-status';
-import type { RuleSeverity } from '@/server/domain/value-objects/rule-severity';
+import { Rule } from '../../../../domain/aggregates/rule';
+import { RuleId } from '../../../../domain/value-objects/rule-id';
+import { RuleTag } from '../../../../domain/value-objects/rule-tag';
+import { CodeSnippet } from '../../../../domain/value-objects/code-snippet';
+import type { RuleStatus } from '../../../../domain/value-objects/rule-status';
+import type { RuleSeverity } from '../../../../domain/value-objects/rule-severity';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-import type { CodeSnippetPersistenceDTO } from '@/server/domain/value-objects/code-snippet';
+import type { CodeSnippetPersistenceDTO } from '../../../../domain/value-objects/code-snippet';
 import { toDate, parseJson } from '@dailyuse/utils/shared';
 
 /**

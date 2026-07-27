@@ -6,8 +6,8 @@ import {
   NotificationStatus,
   NotificationType,
 } from '@dailyuse/contracts/notification';
-import type { INotificationRepository } from '@/server/domain/repositories';
-import { Notification } from '@/server/domain/aggregates/notification';
+import type { INotificationRepository } from '../../../../domain/repositories';
+import { Notification } from '../../../../domain/aggregates/notification';
 import { UpdateNotificationUseCase } from '../update-notification.use-case';
 
 describe('UpdateNotificationUseCase', () => {

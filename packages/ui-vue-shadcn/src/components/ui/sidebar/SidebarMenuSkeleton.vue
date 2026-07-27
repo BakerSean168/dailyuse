@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
-import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
+import { Skeleton } from '../skeleton'
+import { cn } from '../../../lib/utils'
 import { computed } from 'vue'
 
 const props = defineProps<{

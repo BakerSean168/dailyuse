@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ForgotPasswordUseCase } from '../forgot-password.use-case';
 import { ResetPasswordUseCase } from '../reset-password.use-case';
-import { AuthIdentity } from '@/server/domain/aggregates/auth-identity';
-import type { IAuthIdentityRepository } from '@/server/domain/repositories/i-auth-identity.repository';
-import type { IAuthSessionRepository } from '@/server/domain/repositories/i-auth-session.repository';
-import type { IEmailSender, IPasswordHasher } from '@/server/domain';
-import { AuthDomainCode } from '@/server/domain';
-import { InMemoryVerificationChallengeStore } from '@/server/infrastructure/services/in-memory-verification-challenge-store';
+import { AuthIdentity } from '../../../../domain/aggregates/auth-identity';
+import type { IAuthIdentityRepository } from '../../../../domain/repositories/i-auth-identity.repository';
+import type { IAuthSessionRepository } from '../../../../domain/repositories/i-auth-session.repository';
+import type { IEmailSender, IPasswordHasher } from '../../../../domain';
+import { AuthDomainCode } from '../../../../domain';
+import { InMemoryVerificationChallengeStore } from '../../../../infrastructure/services/in-memory-verification-challenge-store';
 
 const MOCK_HASH = '$argon2id$v=19$m=65536,t=3,p=4$bW9ja3NhbHQ$bW9ja2hhc2h2YWx1ZQ';
 

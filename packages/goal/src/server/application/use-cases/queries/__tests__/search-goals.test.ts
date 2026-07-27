@@ -1,6 +1,6 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
-import type { IGoalRepository } from '@/server/domain';
+import type { IGoalRepository } from '../../../../domain';
 import { SearchGoalsUseCase } from '../search-goals.use-case';
 
 // ============================================================

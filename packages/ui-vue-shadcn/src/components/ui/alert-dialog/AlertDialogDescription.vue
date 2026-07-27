@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AlertDialogDescriptionProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
+import { cn } from '../../../lib/utils'
 import {
   AlertDialogDescription,
 

@@ -12,8 +12,8 @@ import {
   RetryPolicy,
   ScheduleConfig,
   ScheduleTaskMetadata,
-} from '@/server/domain/value-objects';
-import { ScheduleTaskId } from '@/server/domain/value-objects/schedule-task-id';
+} from '../../value-objects';
+import { ScheduleTaskId } from '../../value-objects/schedule-task-id';
 import {
   ExecutionStatus,
   ScheduleTaskStatus,

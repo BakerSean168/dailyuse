@@ -11,8 +11,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LogoutService, UserNotFoundForLogoutError, NotLoggedInError } from '../logout';
 import { AuthIdentity } from '../../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../../repositories/i-auth-identity.repository';
-import type { IPasswordHasher } from '@/server/domain';
-import { AuthIdentityStatus } from '@/server/domain';
+import type { IPasswordHasher } from '../..';
+import { AuthIdentityStatus } from '../..';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { Context } from '@dailyuse/contracts/shared';
 

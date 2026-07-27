@@ -3,14 +3,14 @@
  * 创建规则用例
  */
 
-import type { IRuleRepository } from '@/server/domain/repositories/i-rule-repository';
-import type { IRuleRevisionRepository } from '@/server/domain/repositories/i-rule-revision-repository';
-import { Rule } from '@/server/domain/aggregates/rule';
-import { RuleRevision } from '@/server/domain/entities/rule-revision';
-import { ChangeType } from '@/server/domain/value-objects/change-type';
-import { RuleSeverity } from '@/server/domain/value-objects/rule-severity';
-import { Language } from '@/server/domain/value-objects/language';
-import type { Language as RuleLanguage } from '@/server/domain/value-objects/language';
+import type { IRuleRepository } from '../../../domain/repositories/i-rule-repository';
+import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
+import { Rule } from '../../../domain/aggregates/rule';
+import { RuleRevision } from '../../../domain/entities/rule-revision';
+import { ChangeType } from '../../../domain/value-objects/change-type';
+import { RuleSeverity } from '../../../domain/value-objects/rule-severity';
+import { Language } from '../../../domain/value-objects/language';
+import type { Language as RuleLanguage } from '../../../domain/value-objects/language';
 import type { Result } from '@dailyuse/contracts/result';
 import { toResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { resultify } from '@dailyuse/utils/result';

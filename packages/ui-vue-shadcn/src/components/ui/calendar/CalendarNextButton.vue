@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import type { CalendarNextProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { buttonVariants } from '../button'
+import { cn } from '../../../lib/utils'
 import { ChevronRightIcon } from '@radix-icons/vue'
 import { CalendarNext, useForwardProps } from 'radix-vue'
 import { computed } from 'vue'

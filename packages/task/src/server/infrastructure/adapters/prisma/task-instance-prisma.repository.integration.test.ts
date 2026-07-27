@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { TaskTemplate } from '@/server/domain/aggregates/task-template';
-import { TaskTimeConfig } from '@/server/domain/value-objects';
-import { TaskInstance } from '@/server/domain/aggregates/task-instance';
+import { TaskTemplate } from '../../../domain/aggregates/task-template';
+import { TaskTimeConfig } from '../../../domain/value-objects';
+import { TaskInstance } from '../../../domain/aggregates/task-instance';
 import { TaskTemplatePrismaRepository } from './task-template-prisma.repository';
 import { TaskInstancePrismaRepository } from './task-instance-prisma.repository';
 import {

@@ -24,13 +24,13 @@
 
 import type { Rule as PrismaRule } from '@dailyuse/database';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { Rule } from '@/server/domain/aggregates/rule';
-import { RuleId } from '@/server/domain/value-objects/rule-id';
-import { RuleTag } from '@/server/domain/value-objects/rule-tag';
-import { CodeSnippet } from '@/server/domain/value-objects/code-snippet';
-import type { RuleStatus } from '@/server/domain/value-objects/rule-status';
-import type { RuleSeverity } from '@/server/domain/value-objects/rule-severity';
-import type { CodeSnippetPersistenceDTO } from '@/server/domain/value-objects/code-snippet';
+import { Rule } from '../../../../domain/aggregates/rule';
+import { RuleId } from '../../../../domain/value-objects/rule-id';
+import { RuleTag } from '../../../../domain/value-objects/rule-tag';
+import { CodeSnippet } from '../../../../domain/value-objects/code-snippet';
+import type { RuleStatus } from '../../../../domain/value-objects/rule-status';
+import type { RuleSeverity } from '../../../../domain/value-objects/rule-severity';
+import type { CodeSnippetPersistenceDTO } from '../../../../domain/value-objects/code-snippet';
 import { fromDbDate, parseJson } from '@dailyuse/utils/shared';
 
 // ---------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import type { IGoalRepository } from '@/server/domain/repositories/i-goal-repository';
-import { Goal, GoalPolicy } from '@/server/domain';
+import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
+import { Goal, GoalPolicy } from '../../../../domain';
 import { UpdateGoalUseCase } from '../update-goal.use-case';
 
 // ============================================================

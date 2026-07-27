@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import type { IApiModule } from '@/shared/contracts/api-module';
+ * import type { IApiModule } from './api-module';
  *
  * export const MyModule: IApiModule = {
  *   name: 'MyModule',

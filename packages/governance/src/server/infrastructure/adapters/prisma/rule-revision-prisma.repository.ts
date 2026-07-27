@@ -19,9 +19,9 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type { IRuleRevisionRepository } from '@/server/domain/repositories/i-rule-revision-repository';
-import { RuleRevision } from '@/server/domain/entities/rule-revision';
-import { RuleId } from '@/server/domain/value-objects';
+import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
+import { RuleRevision } from '../../../domain/entities/rule-revision';
+import { RuleId } from '../../../domain/value-objects';
 import { toResultErrorException } from '@dailyuse/contracts/result';
 import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';

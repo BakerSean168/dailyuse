@@ -3,10 +3,10 @@
  * 更新规则用例
  */
 
-import type { IRuleRepository } from '@/server/domain/repositories/i-rule-repository';
-import type { IRuleRevisionRepository } from '@/server/domain/repositories/i-rule-revision-repository';
-import { RuleRevision } from '@/server/domain/entities/rule-revision';
-import { ChangeType } from '@/server/domain/value-objects/change-type';
+import type { IRuleRepository } from '../../../domain/repositories/i-rule-repository';
+import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
+import { RuleRevision } from '../../../domain/entities/rule-revision';
+import { ChangeType } from '../../../domain/value-objects/change-type';
 import type { Result } from '@dailyuse/contracts/result';
 import { toResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { resultify } from '@dailyuse/utils/result';

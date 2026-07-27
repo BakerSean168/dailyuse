@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
 import { PrismaTaskTemplateMapper } from './prisma-task-template-mapper';
 import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
-import { TaskTemplate } from '@/server/domain/aggregates/task-template';
+import { TaskTemplate } from '../../../../domain/aggregates/task-template';
 
 describe('PrismaTaskTemplateMapper', () => {
   const TEMPLATE_ID_1 = aPrefixedUuid('ITaskTemplateId', 'task-template-1');

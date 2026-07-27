@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PrismaWeightSnapshotMapper } from './prisma-weight-snapshot-mapper';
-import { KeyResultWeightSnapshot } from '@/server/domain';
+import { KeyResultWeightSnapshot } from '../../../../domain';
 import type { SnapshotTrigger } from '@dailyuse/contracts/goal';
 
 describe('PrismaWeightSnapshotMapper', () => {

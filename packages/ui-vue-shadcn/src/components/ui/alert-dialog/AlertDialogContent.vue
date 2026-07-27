@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AlertDialogContentEmits, AlertDialogContentProps } from 'radix-vue'
 import type { Component, HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
+import { cn } from '../../../lib/utils'
 import {
   AlertDialogContent as AlertDialogContentPrimitive,
 

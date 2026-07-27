@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { RuleRevision } from '../rule-revision';
 import type { RuleRevisionState } from '../rule-revision';
-import { RuleRevisionId } from '@/server/domain/value-objects/rule-revision-id';
-import { RuleId } from '@/server/domain/value-objects/rule-id';
+import { RuleRevisionId } from '../../value-objects/rule-revision-id';
+import { RuleId } from '../../value-objects/rule-id';
 
 // ============ Helpers ============
 

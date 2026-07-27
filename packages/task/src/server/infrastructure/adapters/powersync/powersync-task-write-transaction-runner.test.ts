@@ -8,9 +8,9 @@ import type {
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskType } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils/domain';
-import { TaskTemplate } from '@/server/domain/aggregates/task-template';
-import { RecurrenceRule, TaskTimeConfig } from '@/server/domain/value-objects';
-import { anIdentityId } from '@/testing';
+import { TaskTemplate } from '../../../domain/aggregates/task-template';
+import { RecurrenceRule, TaskTimeConfig } from '../../../domain/value-objects';
+import { anIdentityId } from '../../../../testing';
 import { createTaskPowerSyncModule } from '../../powersync';
 import { PowerSyncTaskInstanceRepository } from './task-instance-powersync.repository';
 import { PowerSyncTaskWriteTransactionRunner } from './powersync-task-write-transaction-runner';

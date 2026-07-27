@@ -2,8 +2,8 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
-import type { INotificationPreferenceRepository } from '@/server/domain/repositories';
-import { NotificationPreference } from '@/server/domain/aggregates/notification-preference';
+import type { INotificationPreferenceRepository } from '../../../../domain/repositories';
+import { NotificationPreference } from '../../../../domain/aggregates/notification-preference';
 import { UpdateNotificationPreferenceUseCase } from '../update-notification-preference.use-case';
 
 describe('UpdateNotificationPreferenceUseCase', () => {

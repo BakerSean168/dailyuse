@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PaginationEllipsisProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
+import { cn } from '../../../lib/utils'
 import { DotsHorizontalIcon } from '@radix-icons/vue'
 import { PaginationEllipsis } from 'radix-vue'
 import { computed } from 'vue'

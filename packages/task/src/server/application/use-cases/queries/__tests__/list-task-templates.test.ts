@@ -6,9 +6,9 @@ import {
   aLoadedTaskTemplate,
   aRecurringTask,
   anIdentityId,
-} from '@/testing';
-import type { ITaskTemplateRepository } from '@/server/domain/repositories/i-task-template-repository';
-import type { ITaskInstanceRepository } from '@/server/domain/repositories/i-task-instance-repository';
+} from '../../../../../testing';
+import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { ListTaskTemplatesUseCase } from '../list-task-templates.use-case';
 
@@ -24,7 +24,7 @@ vi.mock('@dailyuse/utils', async () => {
 // Mock TaskInstanceGenerationService
 const mockShouldRefill = vi.fn().mockReturnValue(false);
 const mockGenerateInstances = vi.fn().mockReturnValue([]);
-vi.mock('@/server/domain/services/index', () => {
+vi.mock('../../../../domain/services', () => {
   return {
     TaskInstanceGenerationService: class {
       shouldRefillInstances = mockShouldRefill;

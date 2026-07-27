@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
-import type { ScheduleApplicationPort } from '@/server/application';
+import type { ScheduleApplicationPort } from '../server/application';
 import { registerScheduleRoutes } from './routes';
 
 type RegisteredRoute = {

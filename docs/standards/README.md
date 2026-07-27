@@ -23,6 +23,7 @@ updated: 2026-05-16T00:00:00
 | [domain-server-spec.md](./domain-server-spec.md) | server 领域层约束 |
 | [domain-shared-class-value-object-spec.md](./domain-shared-class-value-object-spec.md) | class 值对象约束 |
 | [domain-shared-type-value-object-spec.md](./domain-shared-type-value-object-spec.md) | type 值对象约束 |
+| [import-path-policy.md](./import-path-policy.md) | import 路径：`@dailyuse/*` 公开入口、包内相对路径、可选 `@/` |
 | [monorepo-build-standard.md](./monorepo-build-standard.md) | workspace 开发态源码引用与构建态产物引用规范 |
 | [types-undefined-or-null-spec.md](./types-undefined-or-null-spec.md) | `undefined` / `null` 约定 |
 | [configs-vs-constants规范.md](./configs-vs-constants规范.md) | config 与 constant 边界 |

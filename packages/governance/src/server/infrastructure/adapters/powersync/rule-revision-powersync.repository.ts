@@ -11,9 +11,9 @@
  * @internal Concrete PowerSync implementation — consumers should use IRuleRevisionRepository interface.
  */
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { IRuleRevisionRepository } from '@/server/domain/repositories/i-rule-revision-repository';
-import type { RuleRevision } from '@/server/domain/entities/rule-revision';
-import type { RuleId } from '@/server/domain/value-objects/rule-id';
+import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
+import type { RuleRevision } from '../../../domain/entities/rule-revision';
+import type { RuleId } from '../../../domain/value-objects/rule-id';
 import { toResultErrorException } from '@dailyuse/contracts/result';
 import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
 import {
