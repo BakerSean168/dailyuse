@@ -23,8 +23,8 @@ import { AggregateRoot } from '@dailyuse/utils/domain';
 import type {
   SettingId as ISettingId,
   IdentityId,
+  Instant,
   TransferDate,
-  DomainDate,
 } from '@dailyuse/contracts/primitives';
 import type {
   UserSettingServerDTO,
@@ -56,8 +56,9 @@ export interface UserSettingState {
   identityId: IdentityId;
   preferences: UserSettingPreferences;
   version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
+  /** ADR-037 Instant epoch ms */
+  createdAt: Instant;
+  updatedAt: Instant;
 }
 
 // ═══════════════════ Aggregate Root ═══════════════════
@@ -78,10 +79,10 @@ export class UserSetting extends AggregateRoot<ISettingId> {
   get version(): number {
     return this._props.version;
   }
-  get createdAt(): DomainDate {
+  get createdAt(): Instant {
     return this._props.createdAt;
   }
-  get updatedAt(): DomainDate {
+  get updatedAt(): Instant {
     return this._props.updatedAt;
   }
 
@@ -215,8 +216,8 @@ export class UserSetting extends AggregateRoot<ISettingId> {
       identityId: this._props.identityId,
       preferences: this.toPreferences(),
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime() as TransferDate,
-      updatedAt: this._props.updatedAt.getTime() as TransferDate,
+      createdAt: this._props.createdAt as TransferDate,
+      updatedAt: this._props.updatedAt as TransferDate,
     };
   }
 
@@ -226,8 +227,8 @@ export class UserSetting extends AggregateRoot<ISettingId> {
       identityId: this._props.identityId,
       preferences: this.toPreferences(),
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime() as TransferDate,
-      updatedAt: this._props.updatedAt.getTime() as TransferDate,
+      createdAt: this._props.createdAt as TransferDate,
+      updatedAt: this._props.updatedAt as TransferDate,
     };
   }
 
@@ -246,7 +247,7 @@ export class UserSetting extends AggregateRoot<ISettingId> {
         ? IdentityIdVO.of(params.identityId)
         : params.identityId;
     const defaults = getDefaultPreferences();
-    const now = new Date();
+    const now = Date.now();
 
     // Merge overrides into defaults per category
     const preferences: UserSettingPreferences = { ...defaults };
@@ -288,7 +289,7 @@ export class UserSetting extends AggregateRoot<ISettingId> {
   // ═══════════════════ Internal Helpers ═══════════════════
 
   private touch(): void {
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   private parseKey(key: string): [string, string] {

@@ -49,7 +49,7 @@
             <span>{{ t('goal.progressBreakdown.calcMode') }}</span>
             <span
               >{{ t('goal.progressBreakdown.lastUpdate')
-              }}{{ formatTime(breakdown.lastUpdateTime) }}</span
+              }}{{ formatProductPattern(breakdown.lastUpdateTime, 'yyyy-MM-dd HH:mm') }}</span
             >
           </div>
         </CardContent>
@@ -126,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+/** Soft residual 1237: absolute product pattern (not dashboard relative). */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@dailyuse/ui-vue-shadcn';
@@ -135,8 +136,8 @@ import { Progress } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { PieChart, X, Loader2, AlertCircle, BarChart3, Calculator } from '@lucide/vue';
-import { format } from 'date-fns';
 import type { ProgressBreakdown } from '@dailyuse/contracts/goal';
+import { formatProductPattern } from '../../../shared/utils/product-time';
 
 const props = defineProps<{
   breakdown: ProgressBreakdown | null;
@@ -173,14 +174,6 @@ function getProgressBgClass(progress: number): string {
   if (progress >= 30)
     return 'bg-warning/15 text-warning dark:bg-warning/30 dark:text-warning';
   return 'bg-destructive/15 text-destructive dark:bg-destructive/30 dark:text-destructive';
-}
-
-/**
- * Soft residual 1237: goal ProgressBreakdown formatTime — date-fns absolute yyyy-MM-dd HH:mm.
- * No relative bands; not locale-aware WeightSnapshotList path (no force-merge).
- */
-function formatTime(timestamp: number): string {
-  return format(new Date(timestamp), 'yyyy-MM-dd HH:mm');
 }
 
 const getFormulaText = computed((): string => {

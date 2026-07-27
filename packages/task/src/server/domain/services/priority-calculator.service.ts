@@ -29,6 +29,13 @@ const IMPORTANCE_WEIGHTS: Record<ImportanceLevel, number> = {
   Trivial: 1,
 };
 
+/** Accept Instant (epoch ms) or Date; normalize to epoch ms. */
+function toEpochMs(value: Date | number): number {
+  if (value instanceof Date) return value.getTime();
+  return value;
+}
+
+
 /**
  * 计算任务优先级分数
  *
@@ -65,8 +72,8 @@ const IMPORTANCE_WEIGHTS: Record<ImportanceLevel, number> = {
  */
 export function calculateTaskPriority(
   importance: ImportanceLevel | string,
-  dueDate: Date | null,
-  currentTime: Date,
+  dueDate: Date | number | null,
+  currentTime: Date | number,
 ): number {
   // Input validation
   validateInputs(importance, dueDate, currentTime);
@@ -75,12 +82,12 @@ export function calculateTaskPriority(
   const importanceWeight = IMPORTANCE_WEIGHTS[importance as ImportanceLevel];
 
   // Handle backlog tasks (null dueDate)
-  if (!dueDate) {
+  if (dueDate == null) {
     return calculateBacklogPriority(importanceWeight);
   }
 
   // Calculate time factor
-  const { daysRemaining, isOverdue } = computeTimeFactor(dueDate, currentTime);
+  const { daysRemaining, isOverdue } = computeTimeFactor(toEpochMs(dueDate), toEpochMs(currentTime));
 
   // Calculate priority using weighted formula
   return calculateWeightedPriority(importanceWeight, daysRemaining, isOverdue);
@@ -93,8 +100,8 @@ export function calculateTaskPriority(
  */
 function validateInputs(
   importance: ImportanceLevel | string,
-  dueDate: Date | null,
-  currentTime: Date,
+  dueDate: Date | number | null,
+  currentTime: Date | number,
 ): void {
   // Validate importance
   const validImportances = ['Vital', 'Important', 'Moderate', 'Minor', 'Trivial'];
@@ -104,13 +111,18 @@ function validateInputs(
     );
   }
 
-  // Validate dates
-  if (!(currentTime instanceof Date) || isNaN(currentTime.getTime())) {
-    throw new PriorityCalculationError('Invalid currentTime: must be a valid Date object');
+  // Validate currentTime
+  const currentMs =
+    currentTime instanceof Date ? currentTime.getTime() : Number(currentTime);
+  if (!Number.isFinite(currentMs)) {
+    throw new PriorityCalculationError('Invalid currentTime: must be a valid Date or Instant');
   }
 
-  if (dueDate && (!(dueDate instanceof Date) || isNaN(dueDate.getTime()))) {
-    throw new PriorityCalculationError('Invalid dueDate: must be a valid Date object or null');
+  if (dueDate != null) {
+    const dueMs = dueDate instanceof Date ? dueDate.getTime() : Number(dueDate);
+    if (!Number.isFinite(dueMs)) {
+      throw new PriorityCalculationError('Invalid dueDate: must be a valid Date, Instant, or null');
+    }
   }
 }
 
@@ -123,10 +135,10 @@ function validateInputs(
  *   - isOverdue: 是否逾期
  */
 function computeTimeFactor(
-  dueDate: Date,
-  currentTime: Date,
+  dueDate: number,
+  currentTime: number,
 ): { daysRemaining: number; isOverdue: boolean } {
-  const millisecondsDiff = dueDate.getTime() - currentTime.getTime();
+  const millisecondsDiff = dueDate - currentTime;
   const daysRemaining = millisecondsDiff / (24 * 60 * 60 * 1000);
 
   return {

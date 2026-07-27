@@ -15,6 +15,23 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { TaskTimeConfig } from '../../../../domain/value-objects';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 
+/** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
+function requiredInstant(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) return value.getTime();
+  if (value == null) return Date.now();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : Date.now();
+}
+
+/** Prisma Date/DateTime → Instant | null. */
+function optionalInstant(value: Date | string | number | null | undefined): number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.getTime();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+
 export class PrismaTaskInstanceMapper {
   /**
    * Prisma record → TaskInstance aggregate root
@@ -35,9 +52,9 @@ export class PrismaTaskInstanceMapper {
       actualEndTime: data.actualEndTime?.getTime() ?? null,
       note: data.comment ?? null,
       version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
+      createdAt: requiredInstant(data.createdAt),
+      updatedAt: requiredInstant(data.updatedAt),
+      deletedAt: optionalInstant(data.deletedAt),
     });
   }
 

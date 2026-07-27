@@ -31,7 +31,7 @@
           <h3 class="text-lg font-semibold mb-1">{{ taskTitle }}</h3>
           <p class="text-xs text-muted-foreground flex items-center gap-1">
             <Calendar class="h-3 w-3" />
-            {{ formatDate(instanceDate) }}
+            {{ formatProductDateTime(instanceDate) }}
           </p>
         </div>
 
@@ -244,9 +244,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { format } from 'date-fns';
-import { enUS, zhCN } from 'date-fns/locale';
 import { useI18n } from 'vue-i18n';
+import { formatProductDateTime } from '../../../../shared/utils/product-time';
 import {
   AggregationMethod,
 } from '@dailyuse/contracts/goal';
@@ -554,13 +553,6 @@ const getRemainingClass = (current: number, target: number) => {
 };
 
 // 格式化日期
-const formatDate = (date: number | Date) => {
-  const dateObj = typeof date === 'number' ? new Date(date) : date;
-  return format(dateObj, 'yyyy-MM-dd EEEE', {
-    locale: locale.value.startsWith('zh') ? zhCN : enUS,
-  });
-};
-
 // ===================== 事件处理 =====================
 
 const confirm = () => {

@@ -8,12 +8,12 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LogoutUseCase } from '../logout.use-case';
-import { AuthSession } from '@/server/domain/aggregates/auth-session';
-import type { IAuthSessionRepository } from '@/server/domain/repositories/i-auth-session.repository';
+import { AuthSession } from '../../../../domain/aggregates/auth-session';
+import type { IAuthSessionRepository } from '../../../../domain/repositories/i-auth-session.repository';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import { AuthSessionId, SessionStatus, DeviceInfo } from '@/server/domain';
+import { AuthSessionId, SessionStatus, DeviceInfo } from '../../../../domain';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { REFRESH_TOKEN_DURATION_MS } from '@/server/domain/aggregates/auth-session';
+import { REFRESH_TOKEN_DURATION_MS } from '../../../../domain/aggregates/auth-session';
 
 // ---------------------------------------------------------------------------
 // Shared mock helpers

@@ -3,6 +3,8 @@
  * API Prisma + Desktop Electron dashboard-read-service duals retired onto this helper.
  * Soft residual 1156: host service wiring (Prisma create* vs Electron get* + logger) remains
  * separate — only the TaskInstance → DashboardTaskInstanceRecord mapping is sole.
+ *
+ * ADR-037: source timestamps are Instant (epoch ms).
  */
 
 import type { DashboardTaskInstanceRecord } from './types';
@@ -14,8 +16,8 @@ export interface DashboardTaskInstanceSource {
   status: string;
   instanceDate: number;
   actualEndTime: number | null;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  updatedAt: number;
+  deletedAt: number | null;
   isOverdue(): boolean;
 }
 
@@ -28,7 +30,7 @@ export function toDashboardTaskInstanceRecord(
     status: instance.status,
     instanceDate: instance.instanceDate,
     actualEndTime: instance.actualEndTime,
-    updatedAt: instance.updatedAt.getTime(),
+    updatedAt: instance.updatedAt,
     deletedAt: instance.deletedAt,
     isOverdue: () => instance.isOverdue(),
   };

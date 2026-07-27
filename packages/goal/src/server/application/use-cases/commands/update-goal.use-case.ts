@@ -57,12 +57,8 @@ export class UpdateGoalUseCase {
     // 5. 更新时间范围
     if (input.startDate !== undefined || input.targetDate !== undefined) {
       goal.updateTimeRange({
-        startDate: input.startDate !== undefined
-          ? (input.startDate ? new Date(input.startDate) : null)
-          : undefined,
-        targetDate: input.targetDate !== undefined
-          ? (input.targetDate ? new Date(input.targetDate) : null)
-          : undefined,
+        startDate: input.startDate !== undefined ? (input.startDate ?? null) : undefined,
+        targetDate: input.targetDate !== undefined ? (input.targetDate ?? null) : undefined,
       });
     }
 

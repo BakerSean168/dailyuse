@@ -13,7 +13,10 @@ import type {
   TaskTimeConfigDTO,
   TaskTimeType,
 } from '@dailyuse/contracts/task';
-import type { DomainDate } from '@dailyuse/contracts/primitives';
+import type { Instant, Ymd } from '@dailyuse/contracts/primitives';
+import { createTimeFacade } from '@dailyuse/time';
+
+const time = createTimeFacade();
 
 /**
  * TaskTimeConfig 值对象实现
@@ -43,10 +46,11 @@ export class TaskTimeConfig extends ValueObject<TaskTimeConfigDTO> implements IT
   /**
    * 创建全天任务
    */
-  public static createAllDay(startDate: DomainDate): TaskTimeConfig {
+  public static createAllDay(startDate: Instant | Date): TaskTimeConfig {
+    const instant = startDate instanceof Date ? startDate.getTime() : startDate;
     return new TaskTimeConfig({
       timeType: 'AllDay',
-      startDate: startDate.getTime(),
+      startDate: instant,
       timePoint: null,
       timeRange: null,
     });
@@ -58,10 +62,11 @@ export class TaskTimeConfig extends ValueObject<TaskTimeConfigDTO> implements IT
    * @param startDate 日期
    * @param timePoint 时间点（分钟数，如 540 表示 9:00）
    */
-  public static createTimePoint(startDate: DomainDate, timePoint: number): TaskTimeConfig {
+  public static createTimePoint(startDate: Instant | Date, timePoint: number): TaskTimeConfig {
+    const instant = startDate instanceof Date ? startDate.getTime() : startDate;
     return new TaskTimeConfig({
       timeType: 'TimePoint',
-      startDate: startDate.getTime(),
+      startDate: instant,
       timePoint,
       timeRange: null,
     });
@@ -75,13 +80,14 @@ export class TaskTimeConfig extends ValueObject<TaskTimeConfigDTO> implements IT
    * @param end 结束时间（分钟数）
    */
   public static createTimeRange(
-    startDate: DomainDate,
+    startDate: Instant | Date,
     start: number,
     end: number,
   ): TaskTimeConfig {
+    const instant = startDate instanceof Date ? startDate.getTime() : startDate;
     return new TaskTimeConfig({
       timeType: 'TimeRange',
-      startDate: startDate.getTime(),
+      startDate: instant,
       timePoint: null,
       timeRange: { start, end },
     });
@@ -135,8 +141,14 @@ export class TaskTimeConfig extends ValueObject<TaskTimeConfigDTO> implements IT
     return this.props.timeType;
   }
 
-  public get startDate(): DomainDate | null {
-    return this.props.startDate !== null ? new Date(this.props.startDate) : null;
+  public get startDate(): Instant | null {
+    return this.props.startDate;
+  }
+
+  /** ADR-037 W5: calendar day for all-day / day-anchored tasks. */
+  public get startDay(): Ymd | null {
+    if (this.props.startDate === null) return null;
+    return time.codec.toYmd(this.props.startDate);
   }
 
   public get timePoint(): number | null {
@@ -152,10 +164,16 @@ export class TaskTimeConfig extends ValueObject<TaskTimeConfigDTO> implements IT
   /**
    * 设置开始日期
    */
-  public setStartDate(startDate: DomainDate | null): TaskTimeConfig {
+  public setStartDate(startDate: Instant | Date | null): TaskTimeConfig {
+    const instant =
+      startDate == null
+        ? null
+        : startDate instanceof Date
+          ? startDate.getTime()
+          : startDate;
     const newProps = {
       ...this.props,
-      startDate: startDate ? startDate.getTime() : null,
+      startDate: instant,
     };
     TaskTimeConfig.validate(newProps);
     return new TaskTimeConfig(newProps);

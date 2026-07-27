@@ -14,6 +14,13 @@
       "@dailyuse/patterns": [
         "packages/patterns/src/index.ts"
       ],
+      "@dailyuse/time": [
+        "packages/time/src/index.ts"
+      ],
+      "@dailyuse/time/*": [
+        "packages/time/src/*/index.ts",
+        "packages/time/src/*.ts"
+      ],
       "@dailyuse/utils": [
         "packages/utils/src/index.ts"
       ],

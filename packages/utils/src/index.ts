@@ -2,7 +2,7 @@
  * @dailyuse/utils - 通用工具库
  *
  * 根入口只导出最常用的跨层工具。深层访问请使用子路径导入：
- * - `@dailyuse/utils/shared`      共享工具（id, date, time, recurrence, priority）
+ * - `@dailyuse/utils/shared`      共享工具（id, time, recurrence, priority；产品日期请用 @dailyuse/time）
  * - `@dailyuse/utils/domain`      DDD 基础类（Entity, AggregateRoot, ValueObject, EventBus）
  * - `@dailyuse/utils/errors`      错误处理
  * - `@dailyuse/utils/validation`  验证工具
@@ -15,7 +15,7 @@
 
 // ── shared ──
 export { newId, generateUUID, isValidUUID, generateShortId } from './shared/uuid';
-export { ensureDate, toDayStart, toDayEnd, formatDateToInput, formatTimeToInput, updateDateKeepTime, updateTimeKeepDate } from './shared/date';
+/** ADR-037 T9: utils product date bridges retired — use @dailyuse/time. */
 export { nowIso, toIso } from './shared/time';
 export { EnvConfig, envConfig, type IEnvConfig } from './shared/env-config';
 

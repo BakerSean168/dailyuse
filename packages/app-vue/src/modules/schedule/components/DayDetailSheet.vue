@@ -80,6 +80,7 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { calendarEventSourceLabel, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatCalendarEventTimeRange } from '../../../shared/utils/format-calendar-event-time-range';
+import { getProductTime } from '../../../shared/utils/product-time';
 
 interface Props {
   open: boolean;
@@ -95,16 +96,11 @@ const emit = defineEmits<{
   (e: 'complete-task', originalId: string): void;
 }>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 const dateTitle = computed(() => {
   if (!props.date) return '';
-  return props.date.toLocaleDateString(locale.value, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  return getProductTime().format.slot('periodDay', props.date.getTime());
 });
 
 /**

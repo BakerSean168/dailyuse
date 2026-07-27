@@ -3,7 +3,7 @@ import { GoalRecord } from './goal-record';
 
 describe('GoalRecord aggregate', () => {
   it('creates records and validates required fields', () => {
-    const recordedAt = new Date('2026-04-26T09:00:00.000Z');
+    const recordedAt = new Date('2026-04-26T09:00:00.000Z').getTime();
     const record = GoalRecord.create({
       id: 'GoalRecordId_1' as never,
       keyResultId: 'KeyResultId_1' as never,
@@ -76,7 +76,7 @@ describe('GoalRecord aggregate', () => {
       identityId: 'IdentityId_2' as never,
       value: 99,
       note: null,
-      recordedAt: new Date('2026-04-26T10:00:00.000Z'),
+      recordedAt: new Date('2026-04-26T10:00:00.000Z').getTime(),
       version: 7,
       createdAt: new Date('2026-04-26T10:00:00.000Z'),
       updatedAt: new Date('2026-04-26T10:05:00.000Z'),

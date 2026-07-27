@@ -228,9 +228,9 @@ export class SessionManager {
       identityId: this.currentSession?.identityId,
       tokenStatus,
       device: deviceInfo,
-      lastActivityAt: this.currentSession?.lastActiveAt?.getTime(),
-      sessionCreatedAt: this.currentSession?.createdAt?.getTime(),
-      sessionExpiresAt: this.currentSession?.expiresAt?.getTime(),
+      lastActivityAt: this.currentSession?.lastActiveAt,
+      sessionCreatedAt: this.currentSession?.createdAt,
+      sessionExpiresAt: this.currentSession?.expiresAt,
     };
   }
 

@@ -13,13 +13,13 @@ import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/compone
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ECElementEvent } from 'echarts';
 import VChart from 'vue-echarts';
+import { formatProductPattern } from '../../../../shared/utils/product-time';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { format } from 'date-fns';
 import { getGoalOverallProgress } from '../../utils/progress';
 
 const { t } = useI18n();
@@ -137,7 +137,7 @@ const remainingDays = computed(() => {
 
 const formatDateLabel = (timestamp: number | null) => {
   if (!timestamp) return t('goal.progressChart.notSet');
-  return format(new Date(timestamp), 'yyyy-MM-dd');
+  return formatProductPattern(timestamp, 'yyyy-MM-dd');
 };
 
 const chartData = computed(() => ({

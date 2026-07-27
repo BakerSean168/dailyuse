@@ -317,6 +317,17 @@ const utilsRootImportRestriction = {
       message:
         'Import from a specific subpath instead: @dailyuse/utils/logger, @dailyuse/utils/domain, @dailyuse/utils/errors, @dailyuse/utils/shared, @dailyuse/utils/result, @dailyuse/utils/frontend, @dailyuse/utils/validation, @dailyuse/utils/lifecycle.',
     },
+    {
+      name: 'date-fns',
+      message:
+        'ADR-037: import time from @dailyuse/time. date-fns is confined to packages/time/src/engine/** (+ time-registry legacy with retire_by).',
+    },
+  ],
+  patterns: [
+    {
+      group: ['date-fns/*', 'date-fns/fp', 'date-fns/locale', 'date-fns/locale/*'],
+      message: 'ADR-037: date-fns subpaths are engine-only. Use @dailyuse/time.',
+    },
   ],
 } as const;
 
@@ -353,12 +364,32 @@ export default tseslint.config(
         'vue/multi-word-component-names': 'off',
       },
     },
-    // ============ Subpath Import Preference ============
+    // ============ Subpath Import Preference + ADR-037 date-fns ban ============
     {
       files: [
         'apps/**/src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
         'packages/**/src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
         'tools/**/src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}',
+      ],
+      ignores: [
+        // Engine + time-registry legacy (retire_by) may import date-fns
+        'packages/time/src/engine/**',
+        'packages/utils/src/shared/date.ts',
+        'packages/task/src/server/domain/aggregates/task-template.ts',
+        'packages/task/src/server/domain/aggregates/instance-generation.policy.ts',
+        'packages/app-vue/src/modules/task/components/dialogs/TaskCompleteDialog.vue',
+        'packages/app-vue/src/modules/task/components/widgets/DailyTodoWidget.vue',
+        'packages/app-vue/src/modules/task/components/cards/TaskTemplateCard.vue',
+        'packages/app-vue/src/modules/task/components/TaskInstanceCard.vue',
+        'packages/app-vue/src/modules/reminder/components/ReminderTemplateCard.vue',
+        'packages/app-vue/src/modules/notification/components/NotificationItem.vue',
+        'packages/app-vue/src/modules/schedule/composables/useCalendarView.ts',
+        'packages/app-vue/src/modules/goal/components/ProgressBreakdownPanel.vue',
+        'packages/app-vue/src/modules/goal/components/cards/GoalReviewListCard.vue',
+        'packages/app-vue/src/modules/goal/components/weight-snapshot/**',
+        'packages/app-vue/src/modules/goal/components/GoalRecordCard.vue',
+        'packages/app-vue/src/modules/goal/components/echarts/GoalProgressChart.vue',
+        'packages/app-vue/src/layouts/shell/previews/TaskCapsulePreview.vue',
       ],
       rules: {
         'no-restricted-imports': ['error', utilsRootImportRestriction],
@@ -376,15 +407,40 @@ export default tseslint.config(
         '**/src/test/**',
         '**/src/testing/**',
         'packages/test-utils/**',
+        'packages/time/src/engine/**',
+        'packages/utils/src/shared/date.ts',
+        'packages/task/src/server/domain/aggregates/task-template.ts',
+        'packages/task/src/server/domain/aggregates/instance-generation.policy.ts',
+        'packages/app-vue/src/modules/task/components/dialogs/TaskCompleteDialog.vue',
+        'packages/app-vue/src/modules/task/components/widgets/DailyTodoWidget.vue',
+        'packages/app-vue/src/modules/task/components/cards/TaskTemplateCard.vue',
+        'packages/app-vue/src/modules/task/components/TaskInstanceCard.vue',
+        'packages/app-vue/src/modules/reminder/components/ReminderTemplateCard.vue',
+        'packages/app-vue/src/modules/notification/components/NotificationItem.vue',
+        'packages/app-vue/src/modules/schedule/composables/useCalendarView.ts',
+        'packages/app-vue/src/modules/goal/components/**',
+        'packages/app-vue/src/layouts/shell/previews/TaskCapsulePreview.vue',
       ],
       rules: {
+        // Must re-include date-fns ban: flat config replaces no-restricted-imports wholesale.
         'no-restricted-imports': [
           'error',
           {
+            paths: [
+              {
+                name: 'date-fns',
+                message:
+                  'ADR-037: import time from @dailyuse/time. date-fns is confined to packages/time/src/engine/** (+ time-registry legacy with retire_by).',
+              },
+            ],
             patterns: [
               {
                 group: ['@dailyuse/test-utils', '@dailyuse/test-utils/*'],
                 message: 'Production code must not import test-only utilities.',
+              },
+              {
+                group: ['date-fns/*', 'date-fns/fp', 'date-fns/locale', 'date-fns/locale/*'],
+                message: 'ADR-037: date-fns subpaths are engine-only. Use @dailyuse/time.',
               },
             ],
           },
@@ -410,6 +466,61 @@ export default tseslint.config(
         'vue/no-v-text-v-html-on-component': 'warn',
         'vue/no-use-v-if-with-v-for': 'warn',
         'vue/no-unused-vars': ['warn', { ignorePattern: '^_' }],
+      },
+    },
+
+    // ============ ADR-037 P9: ban L5 private formatDate* + product toLocale* ============
+    {
+      files: [
+        'packages/app-vue/src/modules/**/*.{ts,tsx,vue}',
+        'packages/app-vue/src/layouts/**/*.{ts,tsx,vue}',
+        'packages/app-react/src/**/*.{ts,tsx}',
+      ],
+      ignores: [
+        '**/__tests__/**',
+        '**/*.{test,spec}.{ts,tsx}',
+        '**/*.stories.*',
+        '**/surface.spec.ts',
+        // L4 presentation allowlist (business sentences / duration dictionaries)
+        'packages/app-vue/src/modules/schedule/utils/schedule-presentation.ts',
+        'packages/app-vue/src/modules/task/utils/task-template-presentation.ts',
+        'packages/app-vue/src/modules/task/utils/format-task-duration.ts',
+        'packages/app-vue/src/shared/utils/format-schedule-duration-minutes.ts',
+        'packages/app-vue/src/modules/goal/utils/goal-timeline.ts',
+        // P3 residual 1207 durable boundary
+        'packages/app-vue/src/modules/notification/views/SSEMonitorPage.vue',
+        // Session bootstrap may createTimeFacade
+        'packages/app-vue/src/shared/utils/product-time.ts',
+        'packages/app-react/src/utils/product-time.ts',
+      ],
+      rules: {
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector:
+              "FunctionDeclaration[id.name=/^(formatDate|formatTime|formatDateTime|formatTimestamp)$/]",
+            message:
+              'ADR-037 P9: no L5 formatDate|formatTime|formatDateTime|formatTimestamp — use getProductTime()/product-time helpers.',
+          },
+          {
+            selector:
+              "VariableDeclarator[id.name=/^(formatDate|formatTime|formatDateTime|formatTimestamp)$/]",
+            message:
+              'ADR-037 P9: no L5 formatDate* bindings — use product-time / @dailyuse/time.',
+          },
+          {
+            selector: "CallExpression[callee.property.name='toLocaleDateString']",
+            message: 'ADR-037 P9: product toLocaleDateString banned — use @dailyuse/time format.*',
+          },
+          {
+            selector: "CallExpression[callee.property.name='toLocaleTimeString']",
+            message: 'ADR-037 P9: product toLocaleTimeString banned — use @dailyuse/time format.*',
+          },
+          {
+            selector: "CallExpression[callee.property.name='toLocaleString']",
+            message: 'ADR-037 P9: product toLocaleString banned — use @dailyuse/time format.*',
+          },
+        ],
       },
     },
     // ============ Module Boundary Enforcement ============

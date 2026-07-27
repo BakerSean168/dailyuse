@@ -38,7 +38,7 @@ export function getPriority(
   if (props.taskType !== TaskType.OneTime) {
     return { level: PriorityLevel.Low as PriorityLevel, score: 0 };
   }
-  const score = calculateTaskPriority(props.importance, props.dueDate, new Date());
+  const score = calculateTaskPriority(props.importance, props.dueDate, Date.now());
   return { level: scoreToPriorityLevel(score), score };
 }
 
@@ -53,7 +53,7 @@ export function addSubtask(ctx: OneTimeOperationContext, subtaskId: string): voi
       attemptedAction: 'addSubtask',
     });
   }
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('subtask_added', { subtaskId });
 }
 
@@ -66,7 +66,7 @@ export function removeSubtask(ctx: OneTimeOperationContext, subtaskId: string): 
       attemptedAction: 'removeSubtask',
     });
   }
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('subtask_removed', { subtaskId });
 }
 
@@ -88,7 +88,7 @@ export function updateParentTaskId(
     });
   }
   ctx.props.parentTaskId = parentTaskId;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('parent_task_updated', {
     parentTaskId: parentTaskId ? String(parentTaskId) : null,
   });
@@ -112,7 +112,7 @@ export function markAsBlocked(
   ctx.props.isBlocked = true;
   ctx.props.blockingReason = reason;
   ctx.props.dependencyStatus = DependencyStatus.Blocked;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('marked_as_blocked', { reason, dependencyTaskId });
 }
 
@@ -128,7 +128,7 @@ export function markAsReady(ctx: OneTimeOperationContext): void {
   ctx.props.isBlocked = false;
   ctx.props.blockingReason = null;
   ctx.props.dependencyStatus = DependencyStatus.Ready;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('marked_as_ready');
 }
 
@@ -146,6 +146,6 @@ export function updateDependencyStatus(
   }
   const oldStatus = ctx.props.dependencyStatus;
   ctx.props.dependencyStatus = status;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('dependency_status_updated', { oldStatus, newStatus: status });
 }

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { anIdentityId } from '@/testing';
-import type { ITaskTemplateRepository } from '@/server/domain/repositories/i-task-template-repository';
-import type { ITaskInstanceRepository } from '@/server/domain/repositories/i-task-instance-repository';
+import { anIdentityId } from '../../../../../testing';
+import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
+import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import type { CreateTaskTemplateUseCaseReq } from '@dailyuse/contracts/task';
 import { TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -26,7 +26,7 @@ vi.mock('@dailyuse/utils', async () => {
 });
 
 const mockGenerateInstances = vi.fn().mockReturnValue([]);
-vi.mock('@/server/domain/services/index', () => {
+vi.mock('../../../../domain/services', () => {
   return {
     TaskInstanceGenerationService: class {
       generateInstances = mockGenerateInstances;

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import type { ITaskInstanceRepository } from '@/server/domain/repositories/i-task-instance-repository';
-import { aTaskInstance } from '@/testing/task.fixture';
+import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
+import { aTaskInstance } from '../../../../../testing/task.fixture';
 
 const { taskEventSend } = vi.hoisted(() => ({
   taskEventSend: vi.fn(),

@@ -2,8 +2,8 @@ import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import { CreateRuleUseCase } from '../create-rule.use-case';
 import type { ExecutionContext } from '../../execution-context';
-import type { IRuleRepository } from '@/server/domain/repositories/i-rule-repository';
-import type { IRuleRevisionRepository } from '@/server/domain/repositories/i-rule-revision-repository';
+import type { IRuleRepository } from '../../../../domain/repositories/i-rule-repository';
+import type { IRuleRevisionRepository } from '../../../../domain/repositories/i-rule-revision-repository';
 import type { CreateRuleReq } from '@dailyuse/contracts/governance';
 
 // ============ Helpers ============

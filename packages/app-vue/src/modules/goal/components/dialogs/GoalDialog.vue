@@ -112,7 +112,7 @@
                       :class="{ 'text-muted-foreground': !form.startDate }"
                     >
                       <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{ form.startDate ? formatDate(form.startDate) : t('goal.dialog.startDate') }}
+                      {{ form.startDate ? formatProductDateTime(form.startDate) : t('goal.dialog.startDate') }}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent class="w-auto p-0" align="start">
@@ -134,7 +134,7 @@
                     >
                       <CalendarIcon class="mr-2 h-4 w-4" />
                       {{
-                        form.targetDate ? formatDate(form.targetDate) : t('goal.dialog.targetDate')
+                        form.targetDate ? formatProductDateTime(form.targetDate) : t('goal.dialog.targetDate')
                       }}
                     </Button>
                   </PopoverTrigger>
@@ -418,6 +418,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { formatProductDateTime } from '../../../../shared/utils/product-time';
 import {
   Dialog,
   DialogContent,
@@ -513,7 +514,7 @@ const {
   keyResults,
 } = useGoal();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 // ── Constants ──────────────────────────────────────────────────────────
 
@@ -722,14 +723,6 @@ const startDateValue = computed(() => (form.startDate ? new Date(form.startDate)
 const targetDateValue = computed(() => (form.targetDate ? new Date(form.targetDate) : undefined));
 
 // ── Helpers ────────────────────────────────────────────────────────────
-
-function formatDate(ts: number): string {
-  return new Date(ts).toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 function handleStartDateSelect(date: unknown) {
   if (date instanceof Date) {

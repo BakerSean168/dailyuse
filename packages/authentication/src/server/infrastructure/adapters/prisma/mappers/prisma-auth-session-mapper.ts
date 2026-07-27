@@ -117,9 +117,9 @@ export class PrismaAuthSessionMapper {
       refreshTokenHash: row.refreshTokenHash ?? undefined,
       status,
       version: row.version,
-      createdAt: row.createdAt,
-      expiresAt: row.expiresAt,
-      lastActiveAt: row.lastActiveAt,
+      createdAt: row.createdAt instanceof Date ? row.createdAt.getTime() : Number(row.createdAt),
+      expiresAt: row.expiresAt instanceof Date ? row.expiresAt.getTime() : Number(row.expiresAt),
+      lastActiveAt: row.lastActiveAt instanceof Date ? row.lastActiveAt.getTime() : Number(row.lastActiveAt),
       isRevoked,
     };
   }

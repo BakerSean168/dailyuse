@@ -153,11 +153,11 @@ describe('AccountProfile', () => {
   });
 
   describe('setBirthday', () => {
-    it('should return a new profile with birthday set', () => {
+    it('should return a new profile with birthday set as Ymd', () => {
       const profile = AccountProfile.create(aProfileDTO());
-      const pastDate = new Date('2000-01-01').getTime();
+      const pastDate = new Date(2000, 0, 1).getTime();
       const updated = profile.setBirthday(pastDate);
-      expect(updated.birthday).toEqual(new Date(pastDate));
+      expect(updated.birthday).toBe('2000-01-01');
     });
 
     it('should reject future birthday', () => {

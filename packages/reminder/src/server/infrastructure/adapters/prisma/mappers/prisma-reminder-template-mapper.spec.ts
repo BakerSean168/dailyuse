@@ -318,8 +318,8 @@ describe('PrismaReminderTemplateMapper', () => {
       const row = createFullRow();
       const domain = PrismaReminderTemplateMapper.toDomain(row);
 
-      expect(domain.createdAt).toEqual(row.createdAt);
-      expect(domain.updatedAt).toEqual(row.updatedAt);
+      expect(domain.createdAt).toBe(row.createdAt.getTime());
+      expect(domain.updatedAt).toBe(row.updatedAt.getTime());
     });
 
     it('converts nextTriggerAt timestamp correctly', () => {
@@ -341,8 +341,7 @@ describe('PrismaReminderTemplateMapper', () => {
       const row = { ...createMinimalRow(), deletedAt: deletedDate };
       const domain = PrismaReminderTemplateMapper.toDomain(row);
 
-      // domain.deletedAt returns a Date via getter, but internally it's stored as number
-      expect(domain.deletedAt).toEqual(deletedDate);
+      expect(domain.deletedAt).toBe(deletedDate.getTime());
     });
 
     it('handles history child entities if provided', () => {

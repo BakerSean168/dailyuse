@@ -22,8 +22,8 @@ export class PowerSyncUserSettingMapper {
       identityId: IdentityId.of(data.identity_id),
       preferences: UserPreferencesSchema.parse(JSON.parse(data.preferences) as unknown),
       version: Number(data.version),
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
+      createdAt: Date.parse(data.created_at),
+      updatedAt: Date.parse(data.updated_at),
     };
 
     return UserSetting.load(state);
@@ -42,8 +42,8 @@ export class PowerSyncUserSettingMapper {
       identityId: String(setting.identityId),
       preferences: JSON.stringify(setting.toPreferences()),
       version: setting.version,
-      createdAt: setting.createdAt.toISOString(),
-      updatedAt: setting.updatedAt.toISOString(),
+      createdAt: new Date(setting.createdAt).toISOString(),
+      updatedAt: new Date(setting.updatedAt).toISOString(),
     };
   }
 }

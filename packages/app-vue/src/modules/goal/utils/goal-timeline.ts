@@ -1,3 +1,5 @@
+import { formatProductDateTime } from '../../../shared/utils/product-time';
+
 export interface TimelineSnapshot {
   timestamp: number;
   reason?: string;
@@ -22,8 +24,6 @@ export interface TimelineData {
   };
 }
 
-export const formatTimelineTimestamp = (timestamp: number) => {
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return '-';
-  return date.toLocaleString();
-};
+/** Soft residual 1216: timeline timestamp via product-time (empty '-'). */
+export const formatTimelineTimestamp = (timestamp: number) =>
+  formatProductDateTime(timestamp, '-');

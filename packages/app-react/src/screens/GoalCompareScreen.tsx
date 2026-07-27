@@ -4,7 +4,6 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { GoalStatus } from '@dailyuse/contracts/goal';
-
 import { useGoals, type GoalSummary } from '../hooks/useGoals';
 
 import {
@@ -16,6 +15,8 @@ import {
   ThemedText,
   ThemedView,
 } from '@dailyuse/ui-react-native';
+
+import { formatProductDate, emptyKind } from '../utils/product-time';
 
 const MAX_COMPARE = 4;
 const MIN_COMPARE = 2;
@@ -86,15 +87,9 @@ export function GoalCompareScreen() {
   }
 
   /**
-   * Residual 1240 keep-boundary: app-react goal formatDate — toLocaleDateString + English '-'.
-   * Goal compare screen; falsy → '-'; no i18n t() / no locale argument.
+   * Residual 1240: app-react goal empty catalog dash via formatProductDate (no local formatDate).
    * Soft residual 1240: vue goal i18n notSet + other empty labels differ (no force-merge).
    */
-  function formatDate(timestamp: number | null): string {
-    if (!timestamp) return '-';
-    return new Date(timestamp).toLocaleDateString();
-  }
-
   return (
     <PageShell
       eyebrow="Goals"
@@ -190,7 +185,7 @@ export function GoalCompareScreen() {
                       <ThemedText type="small" themeColor="textSecondary">
                         Target Date
                       </ThemedText>
-                      <ThemedText type="small">{formatDate(goal.targetDate)}</ThemedText>
+                      <ThemedText type="small">{formatProductDate(goal.targetDate, emptyKind('dash'))}</ThemedText>
                     </View>
 
                     <PrimaryButton

@@ -24,7 +24,7 @@ vi.mock('./cron-scheduler-manager', () => {
   return { CronSchedulerManager: MockCronSchedulerManager };
 });
 
-vi.mock('@/shared/infrastructure/config/env.js', () => ({
+vi.mock('../config/env', () => ({
   env: mocks.env,
 }));
 

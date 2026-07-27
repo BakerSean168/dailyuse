@@ -62,7 +62,7 @@ describe('formatEventTime keep-boundary (residual 1279)', () => {
     expect(eventRangeSole).not.toContain('function formatEventTime');
 
     expect(hourSole).toContain('Residual 1276');
-    expect(hourSole).toMatch(/export function formatHour\b/);
+    expect(hourSole).toMatch(/export\s*\{\s*formatHour\s*\}/);
     expect(day).toContain('Residual 1276');
     expect(week).toContain('Residual 1276');
     expect(day).toContain('format-hour');

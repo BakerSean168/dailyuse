@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 1231: toTimeInput keep-boundary (task local HH:mm vs schedule UTC ISO slice).
  * - app-react TaskEditorScreen: falsy → '09:00'; getHours/getMinutes padStart (local)
  * - app-react ScheduleEventEditorScreen: falsy → ''; toISOString().slice(11,16) (UTC)
- * Soft residual 1231: utils formatTimeToInput Date+date-fns stays separate.
+ * Soft residual 1231: utils formatTimeToInput dual-retired onto @dailyuse/time (ADR-037 T9).
  * Soft residual 1228: toDateInput keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */
@@ -20,8 +20,8 @@ describe('toTimeInput keep-boundary (residual 1231)', () => {
     resolve(dir, '../../../../app-react/src/screens/ScheduleEventEditorScreen.tsx'),
     'utf8',
   );
-  const utils = readFileSync(
-    resolve(dir, '../../../../utils/src/shared/date.ts'),
+  const utilsIndex = readFileSync(
+    resolve(dir, '../../../../utils/src/index.ts'),
     'utf8',
   );
 
@@ -52,16 +52,10 @@ describe('toTimeInput keep-boundary (residual 1231)', () => {
     expect(body).not.toContain('padStart');
   });
 
-  it('soft residual 1231 utils formatTimeToInput Date+date-fns stays separate', () => {
-    expect(utils).toContain('Soft residual 1231');
-    expect(utils).toMatch(/export function formatTimeToInput\b/);
-    expect(utils).toContain("format(dateObj, 'HH:mm')");
-    expect(utils).toContain('dateObj: Date');
-    const body = utils.match(/export function formatTimeToInput\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(body).toContain('format(dateObj');
-    expect(body).not.toContain('getHours()');
-    expect(body).not.toContain('toISOString()');
-    expect(body).not.toContain("'09:00'");
+  it('soft residual 1231 utils formatTimeToInput dual-retired (no utils date module)', () => {
+    expect(utilsIndex).not.toContain("from './shared/date'");
+    expect(utilsIndex).not.toMatch(/formatTimeToInput/);
+    expect(utilsIndex).toContain('utils product date bridges retired');
   });
 
   it('runtime: documents local padStart vs UTC slice vs date-fns contracts via body shape', () => {

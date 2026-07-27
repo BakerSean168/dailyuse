@@ -2,16 +2,16 @@ import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import { UpdateRuleUseCase } from '../update-rule.use-case';
 import type { ExecutionContext } from '../../execution-context';
-import type { IRuleRepository } from '@/server/domain/repositories/i-rule-repository';
-import type { IRuleRevisionRepository } from '@/server/domain/repositories/i-rule-revision-repository';
-import { Rule } from '@/server/domain/aggregates/rule';
-import type { RuleState } from '@/server/domain/aggregates/rule';
-import { RuleStatus } from '@/server/domain/value-objects/rule-status';
-import { RuleSeverity } from '@/server/domain/value-objects/rule-severity';
-import { RuleTag } from '@/server/domain/value-objects/rule-tag';
-import { CodeSnippet } from '@/server/domain/value-objects/code-snippet';
-import { Language } from '@/server/domain/value-objects/language';
-import { RuleId } from '@/server/domain/value-objects/rule-id';
+import type { IRuleRepository } from '../../../../domain/repositories/i-rule-repository';
+import type { IRuleRevisionRepository } from '../../../../domain/repositories/i-rule-revision-repository';
+import { Rule } from '../../../../domain/aggregates/rule';
+import type { RuleState } from '../../../../domain/aggregates/rule';
+import { RuleStatus } from '../../../../domain/value-objects/rule-status';
+import { RuleSeverity } from '../../../../domain/value-objects/rule-severity';
+import { RuleTag } from '../../../../domain/value-objects/rule-tag';
+import { CodeSnippet } from '../../../../domain/value-objects/code-snippet';
+import { Language } from '../../../../domain/value-objects/language';
+import { RuleId } from '../../../../domain/value-objects/rule-id';
 
 // ============ Helpers ============
 

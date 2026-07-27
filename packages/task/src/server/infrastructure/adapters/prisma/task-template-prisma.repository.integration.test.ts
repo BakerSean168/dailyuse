@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskTemplate } from '@/server/domain/aggregates/task-template';
-import { RecurrenceRule, TaskTimeConfig } from '@/server/domain/value-objects';
+import { TaskTemplate } from '../../../domain/aggregates/task-template';
+import { RecurrenceRule, TaskTimeConfig } from '../../../domain/value-objects';
 import { TaskTemplatePrismaRepository } from './task-template-prisma.repository';
 import {
   cleanTaskTables,

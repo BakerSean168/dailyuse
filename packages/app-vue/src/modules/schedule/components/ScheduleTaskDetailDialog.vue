@@ -100,13 +100,13 @@
                 <p class="text-sm text-muted-foreground">
                   {{ t('schedule.detailDialog.nextExecution') }}
                 </p>
-                <p>{{ formatDateTime(task.execution.nextRunAt) }}</p>
+                <p>{{ formatScheduleDateTime(task.execution.nextRunAt) }}</p>
               </div>
               <div v-if="task.execution.lastRunAt">
                 <p class="text-sm text-muted-foreground">
                   {{ t('schedule.detailDialog.lastExecution') }}
                 </p>
-                <p>{{ formatDateTime(task.execution.lastRunAt) }}</p>
+                <p>{{ formatScheduleDateTime(task.execution.lastRunAt) }}</p>
               </div>
               <div v-if="task.execution.consecutiveFailures > 0">
                 <p class="text-sm text-muted-foreground">
@@ -148,13 +148,13 @@
                 <p class="text-sm text-muted-foreground mb-1">
                   {{ t('schedule.detailDialog.startDate') }}
                 </p>
-                <p>{{ formatDate(task.schedule.startDate) }}</p>
+                <p>{{ formatScheduleDate(task.schedule.startDate) }}</p>
               </div>
               <div v-if="task.schedule.endDate">
                 <p class="text-sm text-muted-foreground mb-1">
                   {{ t('schedule.detailDialog.endDate') }}
                 </p>
-                <p>{{ formatDate(task.schedule.endDate) }}</p>
+                <p>{{ formatScheduleDate(task.schedule.endDate) }}</p>
               </div>
             </div>
           </CardContent>
@@ -204,7 +204,7 @@
                     }"
                   />
                   <div>
-                    <p class="text-sm font-medium">{{ formatDateTime(execution.executionTime) }}</p>
+                    <p class="text-sm font-medium">{{ formatScheduleDateTime(execution.executionTime) }}</p>
                     <p v-if="execution.duration" class="text-xs text-muted-foreground">
                       {{ t('schedule.detailDialog.executionDuration', { n: execution.duration }) }}
                     </p>
@@ -255,6 +255,7 @@ import {
   CalendarOff,
 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import { emptyKind, formatProductDate, formatProductDateTime } from '../../../shared/utils/product-time';
 
 interface ScheduleTask {
   id: string;
@@ -311,26 +312,13 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<Emits>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
-/**
- * Residual 1204 keep-boundary: app-vue schedule formatDateTime — i18n locale toLocaleString.
- * Empty → 'N/A'; component-local (not shared utils / not fixed zh-CN Intl).
- * Soft residual 1204: app-react entity-presentation formatDateTime is Intl zh-CN (no force-merge).
- */
-function formatDateTime(timestamp: number | string | null | undefined): string {
-  if (!timestamp) return 'N/A';
-  const time = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;
-  return new Date(time).toLocaleString(locale.value);
+function formatScheduleDateTime(timestamp: number | string | null | undefined): string {
+  return formatProductDateTime(timestamp, emptyKind('na'));
 }
 
-/**
- * Soft residual 1240: schedule formatDate — number|string + 'N/A' empty + locale toLocaleDateString.
- * Accepts ISO string; empty label N/A not goal notSet / '-' (no force-merge).
- */
-function formatDate(timestamp: number | string | null | undefined): string {
-  if (!timestamp) return 'N/A';
-  const time = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;
-  return new Date(time).toLocaleDateString(locale.value);
+function formatScheduleDate(timestamp: number | string | null | undefined): string {
+  return formatProductDate(timestamp, emptyKind('na'));
 }
 </script>

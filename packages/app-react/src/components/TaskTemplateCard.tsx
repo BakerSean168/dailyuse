@@ -4,6 +4,8 @@ import type { TaskTemplateSummary } from '../hooks/useTaskTemplates';
 
 import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText, ThemedView } from '@dailyuse/ui-react-native';
 
+import { formatProductDate, formatProductRelative } from '../utils/product-time';
+
 function statusTone(status: TaskTemplateSummary['status']) {
   if (status === 'Active') {
     return 'success' as const;
@@ -28,22 +30,14 @@ function importanceTone(importance: TaskTemplateSummary['importance']) {
   return 'textSecondary' as const;
 }
 
-function formatRelativeDate(timestamp: number) {
-  const diff = Date.now() - timestamp;
-
-  if (diff < 60_000) {
-    return 'Updated just now';
+function updatedLabel(timestamp: number) {
+  // Absolute fallback when relative maxAge exceeded is handled by facade Style.relative.
+  const rel = formatProductRelative(timestamp);
+  // Product copy: prefix Updated for list card (L4 business sentence).
+  if (rel === formatProductDate(timestamp)) {
+    return `Updated ${rel}`;
   }
-
-  if (diff < 3_600_000) {
-    return `Updated ${Math.floor(diff / 60_000)}m ago`;
-  }
-
-  if (diff < 86_400_000) {
-    return `Updated ${Math.floor(diff / 3_600_000)}h ago`;
-  }
-
-  return `Updated ${new Date(timestamp).toLocaleDateString()}`;
+  return `Updated ${rel}`;
 }
 
 export function TaskTemplateCard({
@@ -98,7 +92,7 @@ export function TaskTemplateCard({
 
       <View style={styles.footerRow}>
         <ThemedText type="small" themeColor="textSecondary">
-          {formatRelativeDate(template.updatedAt)}
+          {updatedLabel(template.updatedAt)}
         </ThemedText>
         <View style={styles.tagRow}>
           {template.tags.slice(0, 3).map((tag) => (

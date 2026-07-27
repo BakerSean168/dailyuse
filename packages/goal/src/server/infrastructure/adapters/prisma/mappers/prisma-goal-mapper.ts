@@ -14,6 +14,23 @@ import type {
 import type { KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
 import type { RawGoalData, RawKeyResultData, RawGoalReviewData } from './goal-state-mapper';
 
+/** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
+function requiredInstant(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) return value.getTime();
+  if (value == null) return Date.now();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : Date.now();
+}
+
+/** Prisma Date/DateTime → Instant | null. */
+function optionalInstant(value: Date | string | number | null | undefined): number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.getTime();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+
 /**
  * Prisma Goal with eagerly loaded relations
  */
@@ -46,10 +63,10 @@ export class PrismaGoalMapper {
       priority: row.priority ?? 0,
       category: row.category ?? null,
       tags: row.tags ?? [],
-      startDate: row.startDate ?? null,
-      targetDate: row.targetDate ?? null,
-      completedAt: row.completedAt ?? null,
-      archivedAt: row.archivedAt ?? null,
+      startDate: optionalInstant(row.startDate),
+      targetDate: optionalInstant(row.targetDate),
+      completedAt: optionalInstant(row.completedAt),
+      archivedAt: optionalInstant(row.archivedAt),
       folderId: row.folderId ?? null,
       parentGoalId: row.parentGoalId ?? null,
       sortOrder: row.sortOrder ?? 0,
@@ -59,9 +76,9 @@ export class PrismaGoalMapper {
       weightSnapshots: row.keyResultWeightSnapshots
         ? row.keyResultWeightSnapshots.map(PrismaGoalMapper.mapWeightSnapshot)
         : null,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      deletedAt: row.deletedAt ?? null,
+      createdAt: requiredInstant(row.createdAt),
+      updatedAt: requiredInstant(row.updatedAt),
+      deletedAt: optionalInstant(row.deletedAt),
       version: row.version ?? 1,
     };
   }
@@ -87,9 +104,9 @@ export class PrismaGoalMapper {
       weight: row.weight ?? 1,
       sortOrder: row.order ?? 0,
       version: row.version ?? 1,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      deletedAt: row.deletedAt ?? null,
+      createdAt: requiredInstant(row.createdAt),
+      updatedAt: requiredInstant(row.updatedAt),
+      deletedAt: optionalInstant(row.deletedAt),
     };
   }
 
@@ -107,11 +124,11 @@ export class PrismaGoalMapper {
       challenges: row.challenges ?? null,
       improvements: row.lessonsLearned ?? null,
       keyResultSnapshots: [],
-      reviewedAt: row.createdAt,
+      reviewedAt: requiredInstant(row.createdAt),
       version: row.version ?? 1,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      deletedAt: row.deletedAt ?? null,
+      createdAt: requiredInstant(row.createdAt),
+      updatedAt: requiredInstant(row.updatedAt),
+      deletedAt: optionalInstant(row.deletedAt),
     };
   }
 
@@ -132,7 +149,7 @@ export class PrismaGoalMapper {
       trigger: row.trigger as KeyResultWeightSnapshotDTO['trigger'],
       reason: row.reason ?? null,
       operatorId: row.operatorId as KeyResultWeightSnapshotDTO['operatorId'],
-      createdAt: row.createdAt instanceof Date ? row.createdAt.getTime() : row.createdAt,
+      createdAt: requiredInstant(row.createdAt),
     };
   }
 

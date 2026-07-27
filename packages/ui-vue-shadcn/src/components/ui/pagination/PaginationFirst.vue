@@ -3,8 +3,8 @@ import type { PaginationFirstProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
 import {
   Button,
-} from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+} from '../button'
+import { cn } from '../../../lib/utils'
 import { DoubleArrowLeftIcon } from '@radix-icons/vue'
 import { PaginationFirst } from 'radix-vue'
 import { computed } from 'vue'

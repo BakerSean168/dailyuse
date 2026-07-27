@@ -3,10 +3,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 1225: parseDateInput keep-boundary (vue task YMD getTime vs react goal trim+Date.parse).
- * - app-vue TimeConfigSection: falsy empty → null; Date(dateStr+'T00:00:00').getTime() (no trim/NaN)
+ * Residual 1225: parseDateInput keep-boundary (vue task product-time vs react goal trim+Date.parse).
+ * - app-vue TimeConfigSection: falsy empty → null; product-time parseDateValue + startOfYmd (no trim/NaN)
  * - app-react GoalEditorScreen: trim; empty → null; Date.parse; isNaN → null
- * Soft residual 1210: formatDateToInput keep-boundary remains separate.
+ * Soft residual 1210: formatDateToInput dual-retired onto product-time remains separate.
  * Soft residual 1222: getStatusLabel keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
  */
@@ -27,11 +27,14 @@ describe('parseDateInput keep-boundary (residual 1225)', () => {
   it('owns Residual 1225 keep-boundary markers on app-vue task parseDateInput', () => {
     expect(vue).toContain('Residual 1225 keep-boundary');
     expect(vue).toMatch(/const parseDateInput\b/);
-    expect(vue).toContain("dateStr + 'T00:00:00'");
-    expect(vue).toContain('.getTime()');
+    // ADR-037: YMD → Instant via product-time (no local Date/getTime dual)
+    expect(vue).toContain('getProductTime');
+    expect(vue).toContain('parseDateValue');
+    expect(vue).toContain('startOfYmd');
     const body = vue.match(/const parseDateInput = \([\s\S]*?\n\};/)?.[0] ?? '';
     expect(body).toContain('if (!dateStr)');
-    expect(body).toContain('getTime()');
+    expect(body).toContain('getProductTime()');
+    expect(body).toContain('parseDateValue');
     expect(body).not.toContain('.trim()');
     expect(body).not.toContain('Date.parse');
     expect(body).not.toContain('Number.isNaN');
@@ -79,10 +82,11 @@ describe('parseDateInput keep-boundary (residual 1225)', () => {
     expect(Number.isNaN(vueParseDateInput('not-a-date') as number)).toBe(true);
   });
 
-  it('soft residual 1210 formatDateToInput keep-boundary remains separate on same vue surface', () => {
-    expect(vue).toContain('Residual 1210 keep-boundary');
+  it('soft residual 1210 formatDateToInput dual-retired onto product-time on same vue surface', () => {
+    expect(vue).toContain('Residual 1210');
     expect(vue).toMatch(/const formatDateToInput\b/);
-    expect(vue).toContain('formatDateToYMD');
+    expect(vue).toContain('getProductTime');
+    expect(vue).toContain('dateValue');
   });
 
   it('documents residual 1225 lock intent without claiming §13.2 complete', () => {

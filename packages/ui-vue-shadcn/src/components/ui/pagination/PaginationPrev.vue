@@ -3,8 +3,8 @@ import type { PaginationPrevProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
 import {
   Button,
-} from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+} from '../button'
+import { cn } from '../../../lib/utils'
 import { ChevronLeftIcon } from '@radix-icons/vue'
 import { PaginationPrev } from 'radix-vue'
 import { computed } from 'vue'

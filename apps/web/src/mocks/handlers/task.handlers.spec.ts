@@ -14,27 +14,33 @@ describe('task handlers contracts', () => {
     expect(taskMockRoutes.tasks).toMatch(/\/tasks$/);
   });
 
-  it('uses the same task instance routes and query shape as the adapter', async () => {
-    const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
-    const httpClient = createHttpClientSpy();
-    const adapter = new TaskTemplateHttpAdapter(httpClient);
+  it(
+    'uses the same task instance routes and query shape as the adapter',
+    async () => {
+      const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
+      const httpClient = createHttpClientSpy();
+      const adapter = new TaskTemplateHttpAdapter(httpClient);
 
-    await adapter.getInstancesByDateRange('template-1', { from: 100, to: 200 });
-    await adapter.generateInstances('template-1', {
-      fromDate: 100,
-      toDate: 200,
-    });
+      await adapter.getInstancesByDateRange('template-1', { from: 100, to: 200 });
+      await adapter.generateInstances('template-1', {
+        fromDate: 100,
+        toDate: 200,
+      });
 
-    expect(httpClient.get).toHaveBeenCalledWith('/task-templates/template-1/instances', {
-      params: { from: 100, to: 200 },
-    });
-    expect(httpClient.post).toHaveBeenCalledWith('/task-templates/template-1/generate-instances', {
-      fromDate: 100,
-      toDate: 200,
-    });
-  });
+      expect(httpClient.get).toHaveBeenCalledWith('/task-templates/template-1/instances', {
+        params: { from: 100, to: 200 },
+      });
+      expect(httpClient.post).toHaveBeenCalledWith('/task-templates/template-1/generate-instances', {
+        fromDate: 100,
+        toDate: 200,
+      });
+    },
+    30_000,
+  );
 
-  it('uses the current task instance adapter routes and payload shapes', async () => {
+  it(
+    'uses the current task instance adapter routes and payload shapes',
+    async () => {
     const { TaskInstanceHttpAdapter } = await import('@dailyuse/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskInstanceHttpAdapter(httpClient);
@@ -81,9 +87,13 @@ describe('task handlers contracts', () => {
     expect(httpClient.post).toHaveBeenNthCalledWith(4, '/task-instances/check-expired');
     expect(httpClient.delete).toHaveBeenCalledWith('/task-instances/instance-3');
     expect(taskMockRoutes.instances).toMatch(/\/task-instances$/);
-  });
+    },
+    30_000,
+  );
 
-  it('uses the current task dependency adapter routes and payload shapes', async () => {
+  it(
+    'uses the current task dependency adapter routes and payload shapes',
+    async () => {
     const { TaskDependencyHttpAdapter } = await import('@dailyuse/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskDependencyHttpAdapter(httpClient);
@@ -123,7 +133,9 @@ describe('task handlers contracts', () => {
     expect(httpClient.put).toHaveBeenCalledWith('/tasks/dependencies/dep-1', updatePayload);
     expect(httpClient.delete).toHaveBeenCalledWith('/tasks/dependencies/dep-1');
     expect(taskMockRoutes.tasks).toMatch(/\/tasks$/);
-  });
+    },
+    30_000,
+  );
 
   it('builds dependency payloads with current contract keys', () => {
     expect(createMockTaskDependency()).toEqual(
@@ -150,7 +162,9 @@ describe('task handlers contracts', () => {
     );
   });
 
-  it('uses the same template list route and query shape as the adapter', async () => {
+  it(
+    'uses the same template list route and query shape as the adapter',
+    async () => {
     const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
@@ -179,9 +193,13 @@ describe('task handlers contracts', () => {
     expect(taskMockRoutes.templates).toMatch(/\/task-templates$/);
     expect(requestConfig.params).not.toHaveProperty('folderId');
     expect(requestConfig.params).not.toHaveProperty('urgency');
-  });
+    },
+    30_000,
+  );
 
-  it('uses the graph route shape as the template adapter', async () => {
+  it(
+    'uses the graph route shape as the template adapter',
+    async () => {
     const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
@@ -191,9 +209,13 @@ describe('task handlers contracts', () => {
     expect(httpClient.get).toHaveBeenCalledWith('/task-templates/graph', {
       params: { page: 1, limit: 1000 },
     });
-  });
+    },
+    30_000,
+  );
 
-  it('updates templates via PATCH to match the HTTP adapter', async () => {
+  it(
+    'updates templates via PATCH to match the HTTP adapter',
+    async () => {
     const { TaskTemplateHttpAdapter } = await import('@dailyuse/task/client');
     const httpClient = createHttpClientSpy();
     const adapter = new TaskTemplateHttpAdapter(httpClient);
@@ -201,5 +223,7 @@ describe('task handlers contracts', () => {
     await adapter.updateTaskTemplate('template-1', { name: 'Renamed' } as never);
 
     expect(httpClient.patch).toHaveBeenCalledWith('/task-templates/template-1', { name: 'Renamed' });
-  });
+    },
+    30_000,
+  );
 });

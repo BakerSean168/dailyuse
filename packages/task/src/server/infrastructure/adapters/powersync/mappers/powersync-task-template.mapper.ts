@@ -136,7 +136,7 @@ export class PowerSyncTaskTemplateMapper {
           )
         : [],
       parentTaskId: data.parent_task_id ? TaskTemplateId.of(data.parent_task_id) : null,
-      lastGeneratedDate: data.last_generated_date ? new Date(data.last_generated_date) : null,
+      lastGeneratedDate: data.last_generated_date ? new Date(data.last_generated_date).getTime() : null,
       generateAheadDays: data.generate_ahead_days ?? null,
       startDate: null,
       dueDate: null,
@@ -147,9 +147,9 @@ export class PowerSyncTaskTemplateMapper {
       dependencyStatus: (data.dependency_status ?? 'NONE') as DependencyStatus,
       isBlocked: data.is_blocked === true || data.is_blocked === 1,
       blockingReason: data.blocking_reason ?? null,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
-      deletedAt: data.deleted_at ? new Date(data.deleted_at) : null,
+      createdAt: new Date(data.created_at).getTime(),
+      updatedAt: new Date(data.updated_at).getTime(),
+      deletedAt: data.deleted_at ? new Date(data.deleted_at).getTime() : null,
       version: data.version ?? 1,
     };
 

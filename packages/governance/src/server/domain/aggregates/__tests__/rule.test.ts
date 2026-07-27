@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { Rule } from '../rule';
 import type { CreateRuleProps, RuleState } from '../rule';
-import { RuleStatus } from '@/server/domain/value-objects/rule-status';
-import { RuleSeverity } from '@/server/domain/value-objects/rule-severity';
-import { RuleTag } from '@/server/domain/value-objects/rule-tag';
-import { CodeSnippet } from '@/server/domain/value-objects/code-snippet';
-import { Language } from '@/server/domain/value-objects/language';
-import { RuleId } from '@/server/domain/value-objects/rule-id';
+import { RuleStatus } from '../../value-objects/rule-status';
+import { RuleSeverity } from '../../value-objects/rule-severity';
+import { RuleTag } from '../../value-objects/rule-tag';
+import { CodeSnippet } from '../../value-objects/code-snippet';
+import { Language } from '../../value-objects/language';
+import { RuleId } from '../../value-objects/rule-id';
 
 // ============ Helpers ============
 

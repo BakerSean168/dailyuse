@@ -1,0 +1,24 @@
+{
+  "name": "@dailyuse/time",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "description": "Product time facade: Clock, Style, Codec, Format, Input, Calendar (ADR-037)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "~6.0.3",
+    "vitest": "^3.2.4"
+  }
+}

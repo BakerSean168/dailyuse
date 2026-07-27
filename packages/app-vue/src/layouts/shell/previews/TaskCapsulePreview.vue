@@ -5,10 +5,10 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { endOfDay, isSameDay, startOfDay } from 'date-fns';
 import { useTask } from '../../../modules/task/composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';
+import { startOfDayMs, endOfDayMs, isTodayMs } from '../../../shared/utils/product-time';
 
 const RECENT_LIMIT = 3;
 const CACHE_MS = 45_000;
@@ -29,14 +29,14 @@ const isLoading = ref(false);
 function getTodayRange() {
   const now = new Date();
   return {
-    startDate: startOfDay(now).getTime(),
-    endDate: endOfDay(now).getTime(),
+    startDate: startOfDayMs(now.getTime()),
+    endDate: endOfDayMs(now.getTime()),
   };
 }
 
 const todayInstances = computed<TaskInstanceClientDTO[]>(() => {
   return (task.instances.value ?? []).filter((inst) =>
-    isSameDay(new Date(inst.instanceDate), new Date()),
+    isTodayMs(inst.instanceDate),
   );
 });
 

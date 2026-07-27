@@ -79,10 +79,11 @@ describe('toDateInput keep-boundary (residual 1228)', () => {
     expect(schedBody).not.toContain('new Date().toISOString()');
   });
 
-  it('soft residual 1210 formatDateToInput keep-boundary remains separate on task surface', () => {
-    expect(vueTask).toContain('Residual 1210 keep-boundary');
+  it('soft residual 1210 formatDateToInput dual-retired onto product-time on task surface', () => {
+    expect(vueTask).toContain('Residual 1210');
     expect(vueTask).toMatch(/const formatDateToInput\b/);
-    expect(vueTask).toContain('formatDateToYMD');
+    expect(vueTask).toContain('getProductTime');
+    expect(vueTask).toContain('dateValue');
     expect(vueTask).not.toContain('getTimezoneOffset');
   });
 

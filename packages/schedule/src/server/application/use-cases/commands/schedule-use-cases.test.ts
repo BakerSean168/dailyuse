@@ -13,7 +13,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CreateScheduleTaskUseCase } from './create-schedule-task.use-case';
-import type { IScheduleTaskRepository } from '@/server/domain';
+import type { IScheduleTaskRepository } from '../../../domain';
 
 // ─── Mock Repository ───────────────────────────────────────────────────
 

@@ -52,22 +52,22 @@ function mapTemplate(template: TaskTemplate): TaskTemplateSummary {
     isBlocked: template.isBlocked ?? false,
     blockingReason: template.blockingReason,
     tags: template.tags,
-    updatedAt: template.updatedAt.getTime(),
+    updatedAt: template.updatedAt,
   };
 }
 
 export function mapTaskTemplateDetail(template: TaskTemplate): TaskTemplateDetail {
   return {
     ...mapTemplate(template),
-    createdAt: template.createdAt.getTime(),
-    startDate: template.startDate?.getTime() ?? null,
-    dueDate: template.dueDate?.getTime() ?? null,
+    createdAt: template.createdAt,
+    startDate: template.startDate ?? null,
+    dueDate: template.dueDate ?? null,
     estimatedMinutes: template.estimatedMinutes,
     actualMinutes: template.actualMinutes,
     comment: template.comment,
     timeConfig: {
       timeType: template.timeConfig.timeType,
-      startDate: template.timeConfig.startDate ? template.timeConfig.startDate.getTime() : null,
+      startDate: template.timeConfig.startDate ? template.timeConfig.startDate : null,
       timePoint: template.timeConfig.timePoint,
       timeRange: template.timeConfig.timeRange ?? null,
     },

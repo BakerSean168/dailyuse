@@ -56,7 +56,7 @@ export class ActivateFocusModeUseCase {
 
     this.focusSessionPolicy.ensureNoActiveSession([]);
 
-    const endTime = Math.max(...validGoals.map((goal) => goal.targetDate?.getTime() ?? 0));
+    const endTime = Math.max(...validGoals.map((goal) => goal.targetDate ?? 0));
     const startTime = Date.now();
     if (endTime <= startTime) {
       return error('VALIDATION_ERROR', 'Focus mode end time must be later than now');

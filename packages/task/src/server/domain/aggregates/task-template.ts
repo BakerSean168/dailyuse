@@ -19,8 +19,10 @@ import { TaskTemplateStatus } from '../../domain/value-objects/task-template-sta
 import { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import { TaskFolderId } from '../../domain/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
-import { startOfDay } from 'date-fns';
+import type {GoalId, KeyResultId, Instant} from '@dailyuse/contracts/primitives';
+import { createTimeFacade } from '@dailyuse/time';
+
+const taskTime = createTimeFacade();
 
 import { AggregateRoot } from '@dailyuse/utils/domain';
 import {
@@ -98,12 +100,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   private static assertValidDateRange(
-    startDate: Date | null | undefined,
-    dueDate: Date | null | undefined,
+    startDate: Instant | null | undefined,
+    dueDate: Instant | null | undefined,
   ): void {
     if (!startDate || !dueDate) return;
-    if (startDate.getTime() > dueDate.getTime()) {
-      throw new InvalidDateRangeError(startDate.getTime(), dueDate.getTime());
+    if (startDate > dueDate) {
+      throw new InvalidDateRangeError(startDate, dueDate);
     }
   }
 
@@ -192,8 +194,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.status;
   }
 
-  public get lastGeneratedDate(): Date | null {
-    return this._props.lastGeneratedDate;
+  public get lastGeneratedDate(): Instant | null {
+    const v = this._props.lastGeneratedDate;
+    if (v == null) return null;
+    return v as Instant;
   }
 
   public get generateAheadDays(): number | null {
@@ -218,16 +222,22 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.parentTaskId;
   }
 
-  public get startDate(): Date | null {
-    return this._props.startDate;
+  public get startDate(): Instant | null {
+    const v = this._props.startDate;
+    if (v == null) return null;
+    return v as Instant;
   }
 
-  public get dueDate(): Date | null {
-    return this._props.dueDate;
+  public get dueDate(): Instant | null {
+    const v = this._props.dueDate;
+    if (v == null) return null;
+    return v as Instant;
   }
 
-  public get completedAt(): Date | null {
-    return this._props.completedAt;
+  public get completedAt(): Instant | null {
+    const v = this._props.completedAt;
+    if (v == null) return null;
+    return v as Instant;
   }
 
   public get estimatedMinutes(): number | null {
@@ -254,16 +264,20 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.blockingReason;
   }
 
-  public get createdAt(): Date {
-    return this._props.createdAt;
+  public get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return v as Instant;
   }
 
-  public get updatedAt(): Date {
-    return this._props.updatedAt;
+  public get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return v as Instant;
   }
 
-  public get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  public get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return v as Instant;
   }
 
   public get version(): number {
@@ -291,7 +305,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._instances.push(...instances);
     if (lastGeneratedDate) {
       this._props.lastGeneratedDate = lastGeneratedDate;
-      this._props.updatedAt = new Date();
+      this._props.updatedAt = Date.now();
       this.addDomainEvent<TaskEventMap['task:instance-generated']>('task:instance-generated', {
         identityId: this._props.identityId,
         templateId: this.id,
@@ -372,7 +386,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
     const oldTitle = this._props.title;
     this._props.title = newTitle.trim();
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('title_updated', { oldTitle, newTitle: this._props.title });
 
     // Publish domain event
@@ -387,7 +401,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public updateDescription(newDescription: string | null): void {
     const oldDescription = this._props.description;
     this._props.description = newDescription ? newDescription.trim() : null;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('description_updated', {
       oldDescription,
       newDescription: this._props.description,
@@ -398,7 +412,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public updateReminderConfig(newReminderConfig: TaskReminderConfig | null): void {
     const oldReminderConfig = this._props.reminderConfig?.toDTO() ?? null;
     this._props.reminderConfig = newReminderConfig;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('reminder_config_updated', {
       oldReminderConfig,
       newReminderConfig: newReminderConfig?.toDTO() ?? null,
@@ -412,7 +426,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   /** Updates the start date (OneTime tasks only). */
-  public updateStartDate(newStartDate: Date | null): void {
+  public updateStartDate(newStartDate: Instant | null): void {
     if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks have start dates', {
         templateId: this.id,
@@ -423,7 +437,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     TaskTemplate.assertValidDateRange(newStartDate, this._props.dueDate);
     const oldStartDate = this._props.startDate;
     this._props.startDate = newStartDate;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('start_date_updated', { oldStartDate, newStartDate });
 
     this.addDomainEvent<TaskEventMap['task:template-schedule-time-changed']>(
@@ -440,7 +454,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   /** Updates the due date (OneTime tasks only). */
-  public updateDueDate(newDueDate: Date | null): void {
+  public updateDueDate(newDueDate: Instant | null): void {
     if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks have due dates', {
         templateId: this.id,
@@ -453,7 +467,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     // Those are TaskInstanceStatus states. This check has been removed.
     const oldDueDate = this._props.dueDate;
     this._props.dueDate = newDueDate;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('due_date_updated', { oldDueDate, newDueDate });
 
     this.addDomainEvent<TaskEventMap['task:template-schedule-time-changed']>(
@@ -475,7 +489,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public updateTimeConfig(newTimeConfig: TaskTimeConfig | null): void {
     const oldTimeConfig = this._props.timeConfig?.toDTO() ?? null;
     this._props.timeConfig = newTimeConfig;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
 
     this.addHistory('time_config_updated', {
       oldTimeConfig,
@@ -514,7 +528,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public updatePriority(newImportance: ImportanceLevel): void {
     const oldImportance = this._props.importance;
     this._props.importance = newImportance;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('priority_updated', { oldImportance, newImportance });
 
     this.addDomainEvent<TaskEventMap['task:updated']>('task:updated', {
@@ -528,7 +542,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public updateTags(newTags: string[]): void {
     const oldTags = [...this._props.tags];
     this._props.tags = [...new Set(newTags)]; // Deduplicate
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('tags_updated', { oldTags, newTags: this._props.tags });
   }
 
@@ -536,7 +550,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public updateColor(newColor: string | null): void {
     const oldColor = this._props.color;
     this._props.color = newColor;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('color_updated', { oldColor, newColor });
   }
 
@@ -551,7 +565,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
     const oldNote = this._props.note;
     this._props.note = newNote;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('note_updated', { oldNote, newNote });
   }
 
@@ -573,7 +587,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
     const oldEstimatedMinutes = this._props.estimatedMinutes;
     this._props.estimatedMinutes = estimatedMinutes;
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     this.addHistory('estimated_time_updated', { oldEstimatedMinutes, estimatedMinutes });
   }
 
@@ -587,7 +601,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
     // Note: TaskTemplateStatus doesn't have COMPLETED/CANCELLED states
     // Those checks have been removed as they belong to TaskInstance status
-    return Date.now() > this._props.dueDate.getTime();
+    return Date.now() > this._props.dueDate!;
   }
 
   /** Gets the number of days until the due date (OneTime tasks only). */
@@ -599,7 +613,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       return null;
     }
     const now = Date.now();
-    const diffMs = this._props.dueDate.getTime() - now;
+    const diffMs = this._props.dueDate! - now;
     return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
 
@@ -708,7 +722,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       changes: changes ? JSON.stringify(changes) : null,
     });
     this._history.push(history);
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   // ===== Instance Management Methods =====
@@ -717,14 +731,14 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   public createInstance(params: instanceGen.CreateInstanceParams): string {
     const instance = instanceGen.createInstanceFromTemplate(this.getInstanceContext(), params);
     this._instances.push(instance);
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     return instance.id;
   }
 
   /** Adds an existing instance to this template. */
   public addInstance(instance: TaskInstance): void {
     this._instances.push(instance);
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   /** Removes an instance by ID. */
@@ -732,7 +746,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     const index = this._instances.findIndex((i) => i.id === instanceId);
     if (index === -1) return null;
     const [removed] = this._instances.splice(index, 1);
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
     return removed;
   }
 
@@ -765,15 +779,15 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
-      lastGeneratedDate: this._props.lastGeneratedDate?.getTime() ?? null,
+      lastGeneratedDate: this._props.lastGeneratedDate ?? null,
       generateAheadDays: this._props.generateAheadDays,
       parentTaskId: this._props.parentTaskId,
       dependencyStatus: this._props.dependencyStatus,
       isBlocked: this._props.isBlocked,
       blockingReason: this._props.blockingReason,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
       version: this._props.version,
       instances: includeChildren ? this._instances.map((instance) => instance.toServerDTO()) : undefined,
     };
@@ -810,16 +824,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       tags: [...this._props.tags],
       color: this._props.color,
       status: this._props.status,
-      lastGeneratedDate: this._props.lastGeneratedDate?.getTime() ?? null,
+      lastGeneratedDate: this._props.lastGeneratedDate ?? null,
       generateAheadDays: this._props.generateAheadDays,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
       version: this._props.version,
       parentTaskId: this._props.parentTaskId,
-      startDate: this._props.startDate?.getTime() ?? null,
-      dueDate: this._props.dueDate?.getTime() ?? null,
-      completedAt: this._props.completedAt?.getTime() ?? null,
+      startDate: this._props.startDate ?? null,
+      dueDate: this._props.dueDate ?? null,
+      completedAt: this._props.completedAt ?? null,
       estimatedMinutes: this._props.estimatedMinutes,
       actualMinutes: this._props.actualMinutes,
       comment: this._props.note,
@@ -842,8 +856,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     title: string;
     description?: string;
     importance?: ImportanceLevel;
-    startDate?: Date;
-    dueDate?: Date;
+    startDate?: Instant;
+    dueDate?: Instant;
     estimatedMinutes?: number;
     note?: string;
     goalId?: GoalId;
@@ -857,7 +871,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     const title = TaskTemplate.normalizeTitle(params.title, 'createOneTimeTask');
     TaskTemplate.assertValidDateRange(params.startDate ?? null, params.dueDate ?? null);
 
-    const now = new Date();
+    const now = Date.now();
     const template = TaskTemplate.instantiate({
       id: TaskTemplateId.generate(),
       identityId: params.identityId,
@@ -914,7 +928,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     TaskTemplate.assertIdentityId(params.identityId, 'createRecurringTask');
     const title = TaskTemplate.normalizeTitle(params.title, 'createRecurringTask');
 
-    const now = new Date();
+    const now = Date.now();
     const template = TaskTemplate.instantiate({
       id: TaskTemplateId.generate(),
       identityId: params.identityId,
@@ -995,7 +1009,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       });
     }
 
-    const now = new Date();
+    const now = Date.now();
     const template = TaskTemplate.instantiate({
       id: TaskTemplateId.generate(),
       identityId: params.identityId,
@@ -1054,6 +1068,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   static startOfLocalDay(value: number): number {
-    return startOfDay(new Date(value)).getTime();
+    return taskTime.calendar.startOfDay(value);
   }
 }

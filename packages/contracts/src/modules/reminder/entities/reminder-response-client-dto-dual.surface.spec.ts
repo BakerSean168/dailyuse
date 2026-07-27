@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
  * NotificationChannelServerDTO = Omit<Client, 'version' | 'updatedAt' | 'deletedAt'>.
  * Residual 863 (soft): NotificationClientDTO dual also retired via nested-channel Omit
  *   (notification-client-dto-dual.surface.spec.ts); this file keeps Residual 861 only.
- * DomainDate≠TransferDate duals remain separate (residual 859).
+ * Instant/TransferDate duals remain separate (residual 859).
  */
 describe('reminder/notification response channel subset duals retired (residual 861)', () => {
   const reminderEntity = __dirname;

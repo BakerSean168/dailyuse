@@ -8,7 +8,7 @@ import type {
   ReminderHistoryClientDTO,
 } from '@dailyuse/contracts/reminder';
 import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
-import type { ReminderTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { Instant, ReminderTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils/domain';
 import { ReminderHistoryId } from '../value-objects/reminder-history-id';
 
@@ -19,12 +19,12 @@ export interface ReminderHistoryState {
   id: ReminderHistoryId;
   templateId: string;
   identityId: string;
-  triggeredAt: Date;
+  triggeredAt: Instant;
   result: TriggerResult;
   error: string | null;
   notificationSent: boolean;
   notificationChannels: NotificationChannel[] | null;
-  createdAt: Date;
+  createdAt: Instant;
 }
 
 /**
@@ -55,8 +55,8 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
     return this._props.identityId;
   }
 
-  public get triggeredAt(): number {
-    return this._props.triggeredAt.getTime();
+  public get triggeredAt(): Instant {
+    return this._props.triggeredAt;
   }
 
   public get result(): TriggerResult {
@@ -75,7 +75,7 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
     return this._props.notificationChannels ? [...this._props.notificationChannels] : null;
   }
 
-  public get createdAt(): Date {
+  public get createdAt(): Instant {
     return this._props.createdAt;
   }
 
@@ -99,12 +99,12 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
       id: ReminderHistoryId.generate(),
       templateId: params.templateId,
       identityId: params.identityId,
-      triggeredAt: new Date(params.triggeredAt ?? now),
+      triggeredAt: params.triggeredAt ?? now,
       result: params.result,
       error: params.error ?? null,
       notificationSent: params.notificationSent ?? false,
       notificationChannels: params.notificationChannels ? [...params.notificationChannels] : null,
-      createdAt: new Date(now),
+      createdAt: now,
     });
   }
 
@@ -135,12 +135,12 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
       id: this.id,
       templateId: this._props.templateId as ReminderTemplateId,
       identityId: this._props.identityId as IdentityId,
-      triggeredAt: this._props.triggeredAt.getTime(),
+      triggeredAt: this._props.triggeredAt,
       result: this._props.result,
       error: this._props.error,
       notificationSent: this._props.notificationSent,
       notificationChannels: this._props.notificationChannels,
-      createdAt: this._props.createdAt.getTime(),
+      createdAt: this._props.createdAt,
     };
   }
 
@@ -148,14 +148,14 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
     return {
       id: this.id,
       templateId: this._props.templateId as ReminderTemplateId,
-      triggeredAt: this._props.triggeredAt.getTime(),
+      triggeredAt: this._props.triggeredAt,
       result: this._props.result,
       error: this._props.error,
       notificationSent: this._props.notificationSent,
       notificationChannels: this._props.notificationChannels,
       version: 1,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.createdAt.getTime(),
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.createdAt,
       deletedAt: null,
     };
   }

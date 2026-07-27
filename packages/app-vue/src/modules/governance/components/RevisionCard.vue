@@ -39,20 +39,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { RuleRevisionClientDTO } from '@dailyuse/contracts/governance';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 
 const props = defineProps<{
   revision: RuleRevisionClientDTO;
 }>();
 
-const formattedDate = computed(() =>
-  new Date(props.revision.createdAt).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }),
-);
+const formattedDate = computed(() => formatProductDateTime(props.revision.createdAt));
 
 const hasDiff = computed(() => props.revision.changedFields.length > 0);
 

@@ -59,9 +59,9 @@ describe('Account', () => {
       const before = Date.now();
       const account = anAccount();
       const after = Date.now();
-      expect(account.createdAt.getTime()).toBeGreaterThanOrEqual(before);
-      expect(account.createdAt.getTime()).toBeLessThanOrEqual(after);
-      expect(account.updatedAt.getTime()).toBeGreaterThanOrEqual(before);
+      expect(Number(account.createdAt)).toBeGreaterThanOrEqual(before);
+      expect(Number(account.createdAt)).toBeLessThanOrEqual(after);
+      expect(Number(account.updatedAt)).toBeGreaterThanOrEqual(before);
     });
 
     it('should set deletedAt to null', () => {
@@ -140,8 +140,8 @@ describe('Account', () => {
         status: AccountStatus.Suspended,
         phone: null,
         version: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
         deletedAt: null,
       });
       expect(() => account.close()).toThrow(
@@ -154,7 +154,7 @@ describe('Account', () => {
       const before = account.updatedAt;
       // Small delay to ensure timestamp difference
       account.close();
-      expect(account.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+      expect(Number(account.updatedAt)).toBeGreaterThanOrEqual(Number(before));
     });
   });
 
@@ -185,7 +185,7 @@ describe('Account', () => {
       const before = account.updatedAt;
       const newProfile = account.profile.updateBio('Hello');
       account.updateProfile(newProfile);
-      expect(account.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+      expect(Number(account.updatedAt)).toBeGreaterThanOrEqual(Number(before));
     });
   });
 

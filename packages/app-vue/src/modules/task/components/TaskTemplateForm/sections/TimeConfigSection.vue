@@ -240,6 +240,7 @@ import {
 import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
 import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
+import { getProductTime } from '../../../../../shared/utils/product-time';
 import { parseToDate } from '../../../../../shared/utils/parse-to-date';
 import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';
@@ -304,23 +305,23 @@ const timeRangeEndMinute = ref<string>('00');
 /** Convert a YYYY-MM-DD string to a Date for Calendar :selected */
 /** Handle Calendar selection — works with both Date and radix DateValue objects */
 /**
- * Residual 1210 keep-boundary: app-vue task formatDateToInput — epoch ms → local YMD.
- * Task time-config form helper; timestamp number input (not Date / not date-fns).
- * Soft residual 1210: utils formatDateToInput is Date + date-fns (no force-merge).
+ * Residual 1210: task formatDateToInput — epoch ms → local YMD via @dailyuse/time.
+ * Soft residual 1210 retired: utils Date bridge deleted (ADR-037 T9).
  */
 const formatDateToInput = (timestamp: number): string => {
-  const date = new Date(timestamp);
-  return formatDateToYMD(date);
+  return getProductTime().input.dateValue(timestamp);
 };
 
 /**
  * Residual 1225 keep-boundary: app-vue task parseDateInput — YMD string → epoch ms (no trim/NaN guard).
- * Task time-config form helper; falsy empty → null; Date(dateStr+'T00:00:00').getTime().
+ * Task time-config form helper; falsy empty → null; product-time parseDateValue + startOfYmd.
  * Soft residual 1225: app-react GoalEditor trim + Date.parse + isNaN→null differ (no force-merge).
  */
 const parseDateInput = (dateStr: string): number | null => {
   if (!dateStr) return null;
-  return new Date(dateStr + 'T00:00:00').getTime();
+  const ymd = getProductTime().input.parseDateValue(dateStr);
+  if (ymd == null) return null;
+  return getProductTime().codec.startOfYmd(ymd);
 };
 
 function getTimeConfigErrorMessage(error: unknown) {

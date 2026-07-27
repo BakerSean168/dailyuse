@@ -3,8 +3,8 @@
  * 搜索规则用例
  */
 
-import type { IRuleRepository, RuleFilter } from '@/server/domain/repositories/i-rule-repository';
-import type { Rule } from '@/server/domain/aggregates/rule';
+import type { IRuleRepository, RuleFilter } from '../../../domain/repositories/i-rule-repository';
+import type { Rule } from '../../../domain/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { toResultErrorException } from '@dailyuse/contracts/result';
 import { resultify } from '@dailyuse/utils/result';

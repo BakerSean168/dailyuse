@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import type { GoalReviewSummary } from '../hooks/useGoalReviews';
 import { useGoalService } from '../hooks/useGoalService';
+import { formatProductDate, emptyKind } from '../utils/product-time';
 
 import {
   PageShell,
@@ -15,10 +16,6 @@ import {
   StatusPill,
   ThemedText,
 } from '@dailyuse/ui-react-native';
-
-function formatDate(timestamp: number) {
-  return new Date(timestamp).toLocaleString();
-}
 
 export function GoalReviewDetailScreen() {
   const router = useRouter();
@@ -160,7 +157,7 @@ export function GoalReviewDetailScreen() {
               <StatusPill label={review.type} tone="tint" />
               <StatusPill label={`${review.rating}/5`} tone="success" />
             </View>
-            <ThemedText type="small" themeColor="textSecondary">Reviewed at {formatDate(review.reviewedAt)}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">Reviewed at {formatProductDate(review.reviewedAt, emptyKind('dash'))}</ThemedText>
           </SectionCard>
 
           <SectionCard title="Edit review" description="review 详情页现在可以直接修改核心字段。">

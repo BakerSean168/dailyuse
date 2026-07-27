@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TagsInputItemProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
+import { cn } from '../../../lib/utils'
 
 import { TagsInputItem, useForwardProps } from 'radix-vue'
 import { computed } from 'vue'

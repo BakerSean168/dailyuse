@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CredentialStatus, HashedPassword, AuthCredentialId } from '@/server/domain';
-import type { IPasswordHasher } from '@/server/domain';
+import { CredentialStatus, HashedPassword, AuthCredentialId } from '../..';
+import type { IPasswordHasher } from '../..';
 import { PasswordCredential } from '../password-credential';
 
 const MOCK_HASH = '$argon2id$v=19$m=65536,t=3,p=4$bW9ja3NhbHQ$bW9ja2hhc2h2YWx1ZQ';

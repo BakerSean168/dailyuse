@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LoginService, UserNotFoundError, InvalidPasswordError } from '../login';
 import { AuthIdentity } from '../../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../../repositories/i-auth-identity.repository';
-import type { IPasswordHasher } from '@/server/domain';
+import type { IPasswordHasher } from '../..';
 
 // ---------------------------------------------------------------------------
 // Shared mock helpers

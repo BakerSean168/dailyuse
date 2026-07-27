@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { OAuthBinding } from '../oauth-binding';
-import { OAuthProvider } from '@/server/domain';
+import { OAuthProvider } from '../..';
 
 describe('OAuthBinding', () => {
   describe('create', () => {

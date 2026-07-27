@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Residual 1234: combineDateAndTime / parseTimestamp keep-boundary (local always-number vs ISO null).
  * - app-react TaskEditor combineDateAndTime: split YMD/HH:mm → local Date ctor → getTime() always number
  * - app-react ScheduleEventEditor parseTimestamp: trim; empty→null; Date.parse; isNaN→null
- * Soft residual 1234: utils updateDateKeepTime/updateTimeKeepDate Date-mutate helpers stay separate.
+ * Soft residual 1234: utils Date-mutate helpers dual-retired onto @dailyuse/time (ADR-037 T9).
  * Soft residual 1231: toTimeInput keep-boundary remains separate.
  * Soft residual 1228: toDateInput keep-boundary remains separate.
  * Does not flip §13.2 checkboxes.
@@ -21,8 +21,8 @@ describe('combineDateAndTime / parseTimestamp keep-boundary (residual 1234)', ()
     resolve(dir, '../../../../app-react/src/screens/ScheduleEventEditorScreen.tsx'),
     'utf8',
   );
-  const utils = readFileSync(
-    resolve(dir, '../../../../utils/src/shared/date.ts'),
+  const utilsIndex = readFileSync(
+    resolve(dir, '../../../../utils/src/index.ts'),
     'utf8',
   );
 
@@ -55,18 +55,10 @@ describe('combineDateAndTime / parseTimestamp keep-boundary (residual 1234)', ()
     expect(body).not.toContain('new Date(year');
   });
 
-  it('soft residual 1234 utils Date-mutate keep helpers stay separate', () => {
-    expect(utils).toContain('Soft residual 1234');
-    expect(utils).toMatch(/export function updateDateKeepTime\b/);
-    expect(utils).toMatch(/export function updateTimeKeepDate\b/);
-    expect(utils).toContain('setFullYear');
-    expect(utils).toContain('setHours');
-    const dateBody = utils.match(/export function updateDateKeepTime\([\s\S]*?\n\}/)?.[0] ?? '';
-    const timeBody = utils.match(/export function updateTimeKeepDate\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(dateBody).toContain('setFullYear');
-    expect(timeBody).toContain('setHours');
-    expect(dateBody).not.toContain('Date.parse');
-    expect(timeBody).not.toContain('getTime()');
+  it('soft residual 1234 utils Date-mutate helpers dual-retired (no utils date module)', () => {
+    expect(utilsIndex).not.toContain("from './shared/date'");
+    expect(utilsIndex).not.toMatch(/updateDateKeepTime/);
+    expect(utilsIndex).not.toMatch(/updateTimeKeepDate/);
   });
 
   it('runtime: documents local always-number vs ISO null contracts via body shape', () => {

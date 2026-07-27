@@ -119,7 +119,7 @@
             >
               <div class="flex flex-col">
                 <span>{{ backup.label }}</span>
-                <span class="text-xs text-muted-foreground">{{ formatTime(backup.time) }}</span>
+                <span class="text-xs text-muted-foreground">{{ formatProductDateTime(backup.time) }}</span>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -158,7 +158,7 @@
               <div class="text-xs text-muted-foreground">
                 {{ t('setting.advanced.lastSynced') }}
               </div>
-              <div class="text-sm">{{ formatTime(syncStatus.lastSyncedAt) }}</div>
+              <div class="text-sm">{{ formatProductDateTime(syncStatus.lastSyncedAt) }}</div>
               <Progress :value="(syncStatus.versionCount / 20) * 100" class="h-2" />
               <div class="text-xs">
                 {{ t('setting.advanced.version') }}: {{ syncStatus.versionCount }}/20
@@ -172,6 +172,7 @@
 </template>
 
 <script setup lang="ts">
+/** Soft residual 1237: absolute product dateTime via formatProductDateTime (not dashboard relative). */
 import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -195,6 +196,7 @@ import {
   FileJson,
   FileText,
 } from '@lucide/vue';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 
 const { t } = useI18n();
 
@@ -237,24 +239,4 @@ const emit = defineEmits<{
   showVersionHistory: [];
 }>();
 
-/**
- * Soft residual 1237: setting formatTime — relative i18n (+days) + toLocaleString fallback.
- * setting.time.* keys; includes daysAgo band; not dashboard.time.* short m/d path (no force-merge).
- */
-function formatTime(timestamp: number): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return t('setting.time.justNow');
-  if (minutes < 60) return t('setting.time.minutesAgo', { n: minutes });
-  if (hours < 24) return t('setting.time.hoursAgo', { n: hours });
-  if (days < 7) return t('setting.time.daysAgo', { n: days });
-
-  return date.toLocaleString();
-}
 </script>

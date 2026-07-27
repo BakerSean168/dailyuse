@@ -9,6 +9,23 @@ import { GoalRecord } from '../../../../domain';
 import { GoalRecordId, KeyResultId } from '../../../../domain';
 import { IdentityId } from '@dailyuse/domain-shared';
 
+/** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
+function requiredInstant(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) return value.getTime();
+  if (value == null) return Date.now();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : Date.now();
+}
+
+/** Prisma Date/DateTime → Instant | null. */
+function optionalInstant(value: Date | string | number | null | undefined): number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.getTime();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+
 export class PrismaGoalRecordMapper {
   /** Maps a Prisma row to a Domain GoalRecord aggregate. */
   static toDomain(data: PrismaGoalRecord): GoalRecord {
@@ -18,11 +35,11 @@ export class PrismaGoalRecordMapper {
       identityId: IdentityId.of(data.identityId),
       value: data.value,
       note: data.note ?? null,
-      recordedAt: data.recordedAt,
+      recordedAt: requiredInstant(data.recordedAt),
       version: data.version ?? 1,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
+      createdAt: requiredInstant(data.createdAt),
+      updatedAt: requiredInstant(data.updatedAt),
+      deletedAt: optionalInstant(data.deletedAt),
     });
   }
 

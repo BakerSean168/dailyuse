@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * Account Aggregate Root - Domain Client
  *
@@ -23,9 +24,9 @@ export interface AccountState {
   status: AccountStatus;
   phone: ContactPhone | null;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: Instant;
+  updatedAt: Instant;
+  deletedAt: Instant | null;
 }
 
 export class Account extends AggregateRoot<IdentityId> {
@@ -54,14 +55,18 @@ export class Account extends AggregateRoot<IdentityId> {
   get version(): number {
     return this._props.version;
   }
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return v as Instant;
   }
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return v as Instant;
   }
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return v as Instant;
   }
 
   public static load(state: AccountState): Account {
@@ -77,9 +82,9 @@ export class Account extends AggregateRoot<IdentityId> {
       email: this._props.email.toDTO(),
       phone: this._props.phone?.toDTO() ?? null,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
     };
   }
 }

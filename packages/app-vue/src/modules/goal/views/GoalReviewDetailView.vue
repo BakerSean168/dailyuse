@@ -44,7 +44,7 @@
           <CardHeader>
             <CardTitle>{{ t('goal.reviewDetail.summary') }}</CardTitle>
             <CardDescription>
-              {{ t('goal.reviewDetail.reviewedAt') }} {{ formatDateTime(review.reviewedAt) }}
+              {{ t('goal.reviewDetail.reviewedAt') }} {{ formatProductDateTime(review.reviewedAt, emptyKind('dash')) }}
             </CardDescription>
           </CardHeader>
           <CardContent class="space-y-4">
@@ -146,6 +146,7 @@
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { emptyKind, formatProductDateTime, formatProductMonthDay } from '../../../shared/utils/product-time';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
@@ -170,7 +171,7 @@ import { useGoal } from '../composables/useGoal';
 use([LineChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer]);
 
 const route = useRoute();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const goalId = (route.params.goalId as string) || (route.params.id as string);
 const reviewId = route.params.reviewId as string;
 
@@ -247,11 +248,7 @@ const recordTimelineOption = computed(() => ({
   xAxis: {
     type: 'time',
     axisLabel: {
-      formatter: (value: number) =>
-        new Date(value).toLocaleDateString(locale.value, {
-          month: 'short',
-          day: 'numeric',
-        }),
+      formatter: (value: number) => formatProductMonthDay(value, ''),
     },
   },
   yAxis: {
@@ -260,18 +257,6 @@ const recordTimelineOption = computed(() => ({
   },
   series: recordTimelineSeries.value,
 }));
-
-/** Soft residual 1204: component-local formatDateTime (locale long month); ≠ app-react Intl zh-CN sole. */
-function formatDateTime(d: string | number | null | undefined): string {
-  if (!d) return '-';
-  return new Date(d).toLocaleString(locale.value, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 onMounted(async () => {
   if (goalId) await getGoalAggregateView(goalId);

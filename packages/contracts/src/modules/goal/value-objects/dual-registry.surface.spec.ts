@@ -2,47 +2,61 @@
  * Dual registry suite (elegance E3b tax cut).
  * Merged 2 dual-retired surface locks from this directory.
  * Behavior/assertions preserved; individual *-dual.surface.spec.ts removed.
- * Sources: domain-date-transfer-date-dual-boundary.surface.spec.ts, exact-vo-dto-dual.surface.spec.ts
+ * Sources: instant-transfer-date dual keep-boundary (was domain-date dual), exact-vo-dto-dual.surface.spec.ts
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-// --- merged from domain-date-transfer-date-dual-boundary.surface.spec.ts ---
+// --- residual 859: Instant/TransferDate dual keep-boundary (DomainDate retired T10) ---
 {
   /**
-   * Residual 859: DomainDate ≠ TransferDate dual keep-boundary + shape-mismatch duals stay separate.
-   * Exact VO duals (FrequencyAdjustment/ResponseMetrics, residual 857) remain type aliases.
-   * Residual 861 (soft): ReminderResponse/NotificationChannel subset duals retired via Omit
-   *   (reminder-response-client-dto-dual.surface.spec.ts); this file keeps Residual 859 only.
-   * Residual 865 (soft): AuthStatusDTO dead simplified dual deleted — AuthStatus sole status shape.
-   * Residual 879 (soft): AuthIdentity/AuthSession/TaskTemplate Client≠Server keep-boundary
-   *   (client-server-shape-mismatch-keep-boundary.surface.spec.ts).
+   * Residual 859 (P8): isomorphic Instant duals may type-alias (GoalTimeRangeDTO); shape-mismatch duals stay separate.
+   * DomainDate type retired (ADR-037 T10); duals are Instant (domain) vs TransferDate (DTO) names,
+   * not Date-vs-number. Exact VO duals (FrequencyAdjustment/ResponseMetrics, residual 857) remain aliases.
+   * Residual 861 (soft): ReminderResponse/NotificationChannel subset duals retired via Omit.
+   * Residual 865 (soft): AuthStatusDTO dead simplified dual deleted.
+   * Residual 879 (soft): AuthIdentity/AuthSession/TaskTemplate Client≠Server keep-boundary.
    * Does not flip §13.2 checkboxes; OAuth / multi-engine Agent / full PR gate remain open.
    */
-  describe('domain-date transfer-date dual keep-boundary (residual 859)', () => {
+  describe('instant transfer-date dual keep-boundary (residual 859)', () => {
     const goalVo = __dirname;
     const accountVo = resolve(goalVo, '../../account/value-objects');
     const taskVo = resolve(goalVo, '../../task/value-objects');
     const reminderVo = resolve(goalVo, '../../reminder/value-objects');
     const authProtocol = resolve(goalVo, '../../authentication/protocol');
+    const primitives = resolve(goalVo, '../../../primitives');
 
-    it('keeps DomainDate≠TransferDate goal duals as separate interface bodies', () => {
+    it('DomainDate type is gone from contracts primitives (ADR-037 T10)', () => {
+      const index = readFileSync(resolve(primitives, 'index.ts'), 'utf8');
+      expect(index).not.toContain('DomainDate');
+      expect(index).not.toContain('domain-date');
+      expect(index).toContain('Instant');
+      expect(index).toContain('TransferDate');
+      expect(index).toContain('Ymd');
+      expect(index).toContain('Hm');
+    });
+
+    it('keeps goal time range Instant dual names; weight Instant dual remains separate interfaces', () => {
       const goalTime = readFileSync(resolve(goalVo, 'goal-time-range.ts'), 'utf8');
       const weight = readFileSync(resolve(goalVo, 'key-result-weight-snapshot.ts'), 'utf8');
       expect(goalTime).toMatch(/export interface GoalTimeRange\b/);
-      expect(goalTime).toMatch(/export interface GoalTimeRangeDTO\b/);
-      expect(goalTime).not.toContain('export type GoalTimeRangeDTO = GoalTimeRange');
-      expect(goalTime).toContain('DomainDate');
+      expect(goalTime).toMatch(/export type GoalTimeRangeDTO = GoalTimeRange\b/);
+      expect(goalTime).toContain('export type GoalTimeRangeDTO = GoalTimeRange');
+      expect(goalTime).toContain('Instant');
       expect(goalTime).toContain('TransferDate');
+      expect(goalTime).not.toContain('DomainDate');
       expect(weight).toMatch(/export interface KeyResultWeightSnapshot\b/);
       expect(weight).toMatch(/export interface KeyResultWeightSnapshotDTO\b/);
       expect(weight).not.toContain(
         'export type KeyResultWeightSnapshotDTO = KeyResultWeightSnapshot',
       );
+      expect(weight).toContain('Instant');
+      expect(weight).toContain('TransferDate');
+      expect(weight).not.toContain('DomainDate');
     });
 
-    it('keeps account/task DomainDate duals and AuthStatus shape-mismatch dual separate', () => {
+    it('keeps account/task Instant duals and AuthStatus shape-mismatch dual separate', () => {
       const email = readFileSync(resolve(accountVo, 'contact-email.ts'), 'utf8');
       const phone = readFileSync(resolve(accountVo, 'contact-phone.ts'), 'utf8');
       const profile = readFileSync(resolve(accountVo, 'account-profile.ts'), 'utf8');
@@ -59,8 +73,13 @@ import { describe, expect, it } from 'vitest';
         expect(src).toMatch(new RegExp(`export interface ${dto}\\b`));
         expect(src).not.toContain(`export type ${dto} = ${vo}`);
       }
+      expect(email).toContain('Instant');
+      expect(email).not.toContain('DomainDate');
+      expect(phone).toContain('Instant');
+      expect(phone).not.toContain('DomainDate');
+      expect(completion).toContain('Instant');
+      expect(completion).not.toContain('DomainDate');
       expect(desktopAuth).toMatch(/export interface AuthStatus\b/);
-      // Residual 865: AuthStatusDTO simplified dual deleted (dead dual, zero consumers).
       expect(desktopAuth).toContain('Residual 865');
       expect(desktopAuth).not.toMatch(/export interface AuthStatusDTO\b/);
       expect(desktopAuth).not.toContain('export type AuthStatusDTO = AuthStatus');
@@ -75,7 +94,6 @@ import { describe, expect, it } from 'vitest';
       expect(metrics).toContain('Residual 857');
       expect(metrics).toContain('export type ResponseMetricsDTO = ResponseMetrics');
       expect(metrics).not.toMatch(/export interface ResponseMetricsDTO\b/);
-      // Self-doc: this surface owns residual 859 keep-boundary (not a dual collapse).
       expect(readFileSync(__filename, 'utf8')).toContain('Residual 859');
     });
   });
@@ -84,12 +102,10 @@ import { describe, expect, it } from 'vitest';
 // --- merged from exact-vo-dto-dual.surface.spec.ts ---
 {
   /**
-   * Residual 853: exact-match VO/DTO duals retired (DomainDate≠TransferDate duals left alone).
+   * Residual 853: exact-match VO/DTO duals retired (Instant/TransferDate duals left as separate interfaces).
    * GoalMetadataDTO / AccountSettingsDTO / ChecklistItemDefinitionDTO = sole interface + type alias.
-   * Residual 857 (soft): FrequencyAdjustmentDTO / ResponseMetricsDTO exact duals also retired
-   *   (reminder metrics VO surface; this file keeps Residual 853 lock only).
-   * Residual 859 (soft): DomainDate≠TransferDate dual keep-boundary owned by
-   *   domain-date-transfer-date-dual-boundary.surface.spec.ts (this file keeps Residual 853 only).
+   * Residual 857 (soft): FrequencyAdjustmentDTO / ResponseMetricsDTO exact duals also retired.
+   * Residual 859 (soft): Instant/TransferDate dual keep-boundary owned above (this block keeps Residual 853 only).
    */
   describe('exact vo dto duals retired (residual 853)', () => {
     const goalVo = __dirname;
@@ -114,16 +130,16 @@ import { describe, expect, it } from 'vitest';
       expect(accountSettings).not.toMatch(/export interface AccountSettingsDTO\b/);
     });
 
-    it('owns ChecklistItemDefinitionDTO as type alias; keeps DomainDate duals as interfaces', () => {
+    it('owns ChecklistItemDefinitionDTO as type alias; keeps Instant duals as interfaces', () => {
       expect(checklist).toContain('Residual 853');
       expect(checklist).toMatch(/export interface ChecklistItemDefinition\b/);
       expect(checklist).toContain('export type ChecklistItemDefinitionDTO = ChecklistItemDefinition');
       expect(checklist).not.toMatch(/export interface ChecklistItemDefinitionDTO\b/);
-      // DomainDate≠TransferDate duals must remain separate interface bodies.
+      // Instant/TransferDate duals remain separate interface bodies (residual 859).
       const goalTime = readFileSync(resolve(goalVo, 'goal-time-range.ts'), 'utf8');
       const completion = readFileSync(resolve(taskVo, 'completion-record.ts'), 'utf8');
       expect(goalTime).toMatch(/export interface GoalTimeRange\b/);
-      expect(goalTime).toMatch(/export interface GoalTimeRangeDTO\b/);
+      expect(goalTime).toMatch(/export type GoalTimeRangeDTO = GoalTimeRange\b/);
       expect(completion).toMatch(/export interface CompletionRecord\b/);
       expect(completion).toMatch(/export interface CompletionRecordDTO\b/);
     });

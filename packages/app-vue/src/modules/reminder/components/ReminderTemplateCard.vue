@@ -133,7 +133,7 @@
                     {{ t('reminder.templateDetail.fieldCreatedAt') }}
                   </p>
                   <p class="text-sm text-muted-foreground">
-                    {{ formatDate(template.createdAt) }}
+                    {{ formatProductDateTimeSeconds(template.createdAt, emptyUnknown(t)) }}
                   </p>
                 </div>
               </div>
@@ -145,7 +145,7 @@
                     {{ t('reminder.templateDetail.fieldUpdatedAt') }}
                   </p>
                   <p class="text-sm text-muted-foreground">
-                    {{ formatDate(template.updatedAt) }}
+                    {{ formatProductDateTimeSeconds(template.updatedAt, emptyUnknown(t)) }}
                   </p>
                 </div>
               </div>
@@ -262,9 +262,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { format } from 'date-fns';
 import { useI18n } from 'vue-i18n';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import { emptyUnknown, formatProductDateTimeSeconds } from '../../../shared/utils/product-time';
 import {
   Bell,
   Info,
@@ -424,18 +424,7 @@ const getTemplateIcon = () => {
   return Bell;
 };
 
-/**
- * Soft residual 1240: reminder formatDate — date-fns yyyy-MM-dd HH:mm:ss + common.unknown.
- * Datetime absolute path; not date-only toLocaleDateString family (no force-merge).
- */
-const formatDate = (timestamp: number | undefined): string => {
-  if (!timestamp) return t('common.unknown');
-  try {
-    return format(new Date(timestamp), 'yyyy-MM-dd HH:mm:ss');
-  } catch {
-    return t('reminder.templateDetail.invalidTime');
-  }
-};
+
 
 defineExpose({
   open,

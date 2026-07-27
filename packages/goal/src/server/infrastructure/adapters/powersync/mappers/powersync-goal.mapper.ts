@@ -5,6 +5,15 @@ import type { RawGoalData, RawKeyResultData, RawGoalReviewData } from '../../pri
 export type { RawGoalData, RawKeyResultData, RawGoalReviewData } from '../../prisma/mappers/goal-state-mapper';
 import { fromDbDateTime, parseJsonArray } from '../shared';
 
+function requiredMs(value: string | null | undefined): number {
+  return (fromDbDateTime(value) ?? new Date()).getTime();
+}
+
+function optionalMs(value: string | null | undefined): number | null {
+  const d = fromDbDateTime(value);
+  return d ? d.getTime() : null;
+}
+
 export class PowerSyncGoalMapper {
   static toDomain(
     row: Record<string, unknown>,
@@ -27,10 +36,10 @@ export class PowerSyncGoalMapper {
       priority: Number(row.priority ?? 0),
       category: row.category ? String(row.category) : null,
       tags: parseJsonArray(row.tags),
-      startDate: fromDbDateTime(row.start_date ? String(row.start_date) : null),
-      targetDate: fromDbDateTime(row.target_date ? String(row.target_date) : null),
-      completedAt: fromDbDateTime(row.completed_at ? String(row.completed_at) : null),
-      archivedAt: fromDbDateTime(row.archived_at ? String(row.archived_at) : null),
+      startDate: optionalMs(row.start_date ? String(row.start_date) : null),
+      targetDate: optionalMs(row.target_date ? String(row.target_date) : null),
+      completedAt: optionalMs(row.completed_at ? String(row.completed_at) : null),
+      archivedAt: optionalMs(row.archived_at ? String(row.archived_at) : null),
       folderId: row.folder_id ? String(row.folder_id) : null,
       parentGoalId: row.parent_goal_id ? String(row.parent_goal_id) : null,
       sortOrder: Number(row.sort_order ?? 0),
@@ -38,9 +47,9 @@ export class PowerSyncGoalMapper {
         ? JSON.parse(String(row.reminder_config))
         : null,
       version: Number(row.version ?? 1),
-      createdAt: fromDbDateTime(String(row.created_at)) ?? new Date(),
-      updatedAt: fromDbDateTime(String(row.updated_at)) ?? new Date(),
-      deletedAt: fromDbDateTime(row.deleted_at ? String(row.deleted_at) : null),
+      createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
+      updatedAt: requiredMs(row.updated_at ? String(row.updated_at) : null),
+      deletedAt: optionalMs(row.deleted_at ? String(row.deleted_at) : null),
       keyResults: children?.keyResults ?? null,
       goalReviews: children?.goalReviews ?? null,
       weightSnapshots: children?.weightSnapshots ?? null,
@@ -74,9 +83,9 @@ export class PowerSyncGoalMapper {
       weight: Number(row.weight ?? 1),
       sortOrder: Number(row.order ?? 0),
       version: Number(row.version ?? 1),
-      createdAt: fromDbDateTime(String(row.created_at)) ?? new Date(),
-      updatedAt: fromDbDateTime(String(row.updated_at)) ?? new Date(),
-      deletedAt: fromDbDateTime(row.deleted_at ? String(row.deleted_at) : null),
+      createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
+      updatedAt: requiredMs(row.updated_at ? String(row.updated_at) : null),
+      deletedAt: optionalMs(row.deleted_at ? String(row.deleted_at) : null),
     };
   }
 
@@ -91,14 +100,17 @@ export class PowerSyncGoalMapper {
       challenges: row.challenges ? String(row.challenges) : null,
       improvements: row.lessons_learned ? String(row.lessons_learned) : null,
       keyResultSnapshots: [],
-      reviewedAt:
-        fromDbDateTime(row.updated_at ? String(row.updated_at) : null) ??
-        fromDbDateTime(row.created_at ? String(row.created_at) : null) ??
-        new Date(),
+      reviewedAt: requiredMs(
+        row.updated_at
+          ? String(row.updated_at)
+          : row.created_at
+            ? String(row.created_at)
+            : null,
+      ),
       version: Number(row.version ?? 1),
-      createdAt: fromDbDateTime(String(row.created_at)) ?? new Date(),
-      updatedAt: fromDbDateTime(String(row.updated_at)) ?? new Date(),
-      deletedAt: fromDbDateTime(row.deleted_at ? String(row.deleted_at) : null),
+      createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
+      updatedAt: requiredMs(row.updated_at ? String(row.updated_at) : null),
+      deletedAt: optionalMs(row.deleted_at ? String(row.deleted_at) : null),
     };
   }
 
@@ -111,11 +123,11 @@ export class PowerSyncGoalMapper {
       oldWeight: Number(row.old_weight),
       newWeight: Number(row.new_weight),
       weightDelta: Number(row.weight_delta),
-      snapshotTime: (fromDbDateTime(String(row.snapshot_time)) ?? new Date()).getTime(),
+      snapshotTime: requiredMs(row.snapshot_time ? String(row.snapshot_time) : null),
       trigger: String(row.trigger) as KeyResultWeightSnapshotDTO['trigger'],
       reason: row.reason ? String(row.reason) : null,
       operatorId: String(row.operator_id) as KeyResultWeightSnapshotDTO['operatorId'],
-      createdAt: (fromDbDateTime(String(row.created_at)) ?? new Date()).getTime(),
+      createdAt: requiredMs(row.created_at ? String(row.created_at) : null),
     };
   }
 }

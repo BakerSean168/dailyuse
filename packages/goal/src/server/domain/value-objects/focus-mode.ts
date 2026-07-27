@@ -37,12 +37,13 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
     return [...this.props.focusedGoalIds];
   }
 
-  get startTime(): Date {
-    return new Date(this.props.startTime);
+  /** ADR-037: Instant epoch ms */
+  get startTime(): number {
+    return this.props.startTime;
   }
 
-  get endTime(): Date {
-    return new Date(this.props.endTime);
+  get endTime(): number {
+    return this.props.endTime;
   }
 
   get hiddenGoalsMode(): HiddenGoalsMode {
@@ -53,16 +54,16 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
     return this.props.isActive;
   }
 
-  get actualEndTime(): Date | null {
-    return this.props.actualEndTime ? new Date(this.props.actualEndTime) : null;
+  get actualEndTime(): number | null {
+    return this.props.actualEndTime;
   }
 
-  get createdAt(): Date {
-    return new Date(this.props.createdAt);
+  get createdAt(): number {
+    return this.props.createdAt;
   }
 
-  get updatedAt(): Date {
-    return new Date(this.props.updatedAt);
+  get updatedAt(): number {
+    return this.props.updatedAt;
   }
 
   // ================= Factory Methods =================

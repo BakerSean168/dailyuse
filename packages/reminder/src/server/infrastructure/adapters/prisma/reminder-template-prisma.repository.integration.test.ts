@@ -2,8 +2,8 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ReminderType } from '@dailyuse/contracts/reminder';
-import { ReminderGroup } from '@/server/domain/aggregates/reminder-group';
-import { ReminderTemplate } from '@/server/domain/aggregates/reminder-template';
+import { ReminderGroup } from '../../../domain/aggregates/reminder-group';
+import { ReminderTemplate } from '../../../domain/aggregates/reminder-template';
 import { ReminderTemplatePrismaRepository } from './reminder-template-prisma.repository';
 import { ReminderGroupPrismaRepository } from './reminder-group-prisma.repository';
 import {

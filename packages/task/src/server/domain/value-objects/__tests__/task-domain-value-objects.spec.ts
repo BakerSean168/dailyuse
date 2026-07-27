@@ -43,7 +43,7 @@ describe('task domain value objects', () => {
     expect(timeConfig.isTimeRange).toBe(true);
     expect(timeConfig.getTimeRangeFormatted()).toBe('09:00 - 10:30');
     expect(timeConfig.getDurationMinutes()).toBe(90);
-    expect(timeConfig.setTimePoint(null).startDate?.getTime()).toBe(startDate.getTime());
+    expect(timeConfig.setTimePoint(null).startDate).toBe(startDate.getTime());
     expect(() =>
       TaskTimeConfig.create({
         timeType: TaskTimeType.TimeRange,
@@ -53,7 +53,7 @@ describe('task domain value objects', () => {
       }),
     ).toThrow('Time range start must be before end');
 
-    const completion = CompletionRecord.completeWithDuration(90, new Date('2026-04-26T10:00:00Z'))
+    const completion = CompletionRecord.completeWithDuration(90, Date.parse('2026-04-26T10:00:00Z'))
       .setNote('done')
       .setRating(5);
     expect(completion.getDurationFormatted()).toBe('1h 30m');

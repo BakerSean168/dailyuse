@@ -119,7 +119,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
-import { endOfDay, isSameDay, startOfDay } from 'date-fns';
+import { startOfDayMs, endOfDayMs, isTodayMs } from '../../../../shared/utils/product-time';
 import {
   Card,
   CardContent,
@@ -147,8 +147,8 @@ const TEMPLATE_FETCH_LIMIT = 200;
 function getTodayRange(): { startDate: number; endDate: number } {
   const now = new Date();
   return {
-    startDate: startOfDay(now).getTime(),
-    endDate: endOfDay(now).getTime(),
+    startDate: startOfDayMs(now.getTime()),
+    endDate: endOfDayMs(now.getTime()),
   };
 }
 
@@ -166,7 +166,7 @@ const isLoading = computed(() => task.isLoading.value);
 // ── Derive today's instances ──
 const todayInstances = computed<TaskInstanceClientDTO[]>(() => {
   return (task.instances.value ?? []).filter((inst) => {
-    return isSameDay(new Date(inst.instanceDate), new Date());
+    return isTodayMs(inst.instanceDate);
   });
 });
 

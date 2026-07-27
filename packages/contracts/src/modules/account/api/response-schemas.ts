@@ -27,7 +27,7 @@ export const AccountResponseSchema = z.object({
     avatarUrl: z.string().nullable(),
     bio: z.string().nullable(),
     gender: z.enum(GenderType),
-    birthday: z.union([z.number(), z.null()]),
+    birthday: z.union([z.string(), z.number(), z.null()]), // Ymd string or legacy epoch ms
   }),
   settings: z.object({
     theme: z.enum(ThemeType),

@@ -264,6 +264,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     'schedule-orchestration',
     'setting',
     'task',
+    'time',
   ] as const;
 
   const resolvedAliases = Object.fromEntries(

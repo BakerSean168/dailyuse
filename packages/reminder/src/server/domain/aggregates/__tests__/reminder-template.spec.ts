@@ -288,12 +288,12 @@ describe('ReminderTemplate aggregate', () => {
 
     it('should update updatedAt timestamp', () => {
       const state = makeState();
-      const originalUpdatedAt = state.updatedAt.getTime();
+      const originalUpdatedAt = Number(state.updatedAt);
       const template = ReminderTemplate.load(state);
 
       template.update({ title: 'Timestamp check' });
 
-      expect(template.updatedAt.getTime()).toBeGreaterThanOrEqual(originalUpdatedAt);
+      expect(Number(template.updatedAt)).toBeGreaterThanOrEqual(originalUpdatedAt);
     });
 
     it('should allow setting groupId to null', () => {

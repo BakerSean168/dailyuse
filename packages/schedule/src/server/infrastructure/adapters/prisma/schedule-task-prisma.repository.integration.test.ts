@@ -4,8 +4,8 @@ import {
   SourceModule,
   Timezone,
 } from '@dailyuse/contracts/schedule';
-import { RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '@/server/domain/value-objects';
-import { ScheduleTask } from '@/server/domain/aggregates/schedule-task';
+import { RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../../domain/value-objects';
+import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
 import { ScheduleTaskPrismaRepository } from './schedule-task-prisma.repository';
 import {
   cleanAll,

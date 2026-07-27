@@ -1,0 +1,70 @@
+/**
+ * @dailyuse/time — Product Time Facade (ADR-037)
+ *
+ * Business and UI import from here. date-fns is confined to `engine/`.
+ */
+
+export type {
+  Instant,
+  TransferDate,
+  Ymd,
+  Hm,
+  Clock,
+  TimeStyle,
+  PartialTimeStyle,
+  TimeEngine,
+  OnInvalid,
+  LocaleId,
+  TimeZoneId,
+  TimeZonePolicy,
+} from './types';
+
+export {
+  createTimeFacade,
+  defaultTime,
+  createSystemClock,
+  createFixedClock,
+  DEFAULT_TIME_STYLE,
+  mergeTimeStyle,
+  type TimeFacade,
+  type TimeFacadeOptions,
+} from './facade';
+
+export type { TimeCodec, CodecOptions } from './codec/codec';
+export type { FormatApi } from './format/format';
+export {
+  splitDurationMs,
+  splitDurationMinutes,
+  formatDurationParts,
+  type DurationParts,
+} from './format/duration';
+export type { TimeDisplaySlot } from './types';
+export type { InputApi } from './input/input';
+export type { CalendarApi } from './calendar/calendar';
+
+export { asInstant, asTransferDate, asYmd, asHm } from './codec/brand';
+export { createDateFnsEngine, combineYmdHmWithTimeZone } from './engine/date-fns-engine';
+
+// Free-function helpers (thin defaultTime wrappers). Prefer facade.format.* when Style injection is available.
+export {
+  padTwoDigits,
+  formatLocalHHmm,
+  formatDateToYMD,
+  formatHHmmParts,
+  formatHour,
+  formatDisplayDate,
+} from './free/format-helpers';
+
+export {
+  timeStyleFromPresentationLocale,
+  partialTimeStyleFromLocale,
+  type PresentationLocaleLike,
+} from './style/from-presentation-preference';
+
+export {
+  resolveEmptyLabel,
+  isTimeEmptyKind,
+  DEFAULT_EMPTY_LITERALS,
+  type TimeEmptyKind,
+  type ResolveEmptyLabelOptions,
+} from './empty-catalog';

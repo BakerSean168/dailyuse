@@ -4,8 +4,9 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import type { GoalRecordClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-
 import { useGoalService } from '../hooks/useGoalService';
+
+import { formatProductDateTime, emptyKind } from '../utils/product-time';
 
 import {
   PageShell,
@@ -191,7 +192,7 @@ export function GoalKeyResultScreen() {
                   <View key={record.id} style={styles.recordCard}>
                     <View style={styles.recordHeader}>
                       <ThemedText type="smallBold">{record.valueAfter}</ThemedText>
-                      <ThemedText type="small" themeColor="textSecondary">{new Date(record.createdAt).toLocaleString()}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">{formatProductDateTime(record.createdAt, emptyKind('emdash'))}</ThemedText>
                     </View>
                     <ThemedText type="small" themeColor="textSecondary">{record.comment ?? 'No note'}</ThemedText>
                   </View>

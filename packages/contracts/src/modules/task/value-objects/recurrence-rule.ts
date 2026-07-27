@@ -5,7 +5,7 @@
 // Ensure Zod.openapi() is available before schema construction (residual 1331).
 import '../../../primitives/zod-extensions';
 import { z } from 'zod';
-import type { DomainDate } from '../../../primitives';
+import type { Instant } from '../../../primitives';
 import { DayOfWeek } from './day-of-week';
 import { RecurrenceFrequency } from './recurrence-frequency';
 
@@ -16,7 +16,8 @@ export interface RecurrenceRule {
   frequency: RecurrenceFrequency;
   interval: number; // Interval (e.g. every 2 days, every 3 weeks)
   daysOfWeek: DayOfWeek[]; // Days of week (used for WEEKLY frequency)
-  endDate: DomainDate | null; // End date
+  /** ADR-037: Instant epoch ms of end calendar moment */
+  endDate: Instant | null;
   occurrences: number | null; // Number of occurrences
 }
 

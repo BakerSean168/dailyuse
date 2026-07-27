@@ -32,13 +32,13 @@
               <div class="text-xs text-muted-foreground">
                 {{ t('goal.focusMode.panel.startTime') }}
               </div>
-              <div class="text-sm">{{ formatTime(currentFocusMode.startTime) }}</div>
+              <div class="text-sm">{{ formatProductDateTime(currentFocusMode.startTime) }}</div>
             </div>
             <div>
               <div class="text-xs text-muted-foreground">
                 {{ t('goal.focusMode.panel.endTime') }}
               </div>
-              <div class="text-sm">{{ formatTime(currentFocusMode.endTime) }}</div>
+              <div class="text-sm">{{ formatProductDateTime(currentFocusMode.endTime) }}</div>
             </div>
             <div>
               <div class="text-xs text-muted-foreground">
@@ -85,12 +85,14 @@
 </template>
 
 <script setup lang="ts">
+/** Soft residual 1237: absolute product dateTime (not dashboard relative). */
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import type { FocusModeDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Button,
   Card,
@@ -104,7 +106,7 @@ import {
 import { GoalCard } from '../components';
 import { useGoal } from '../composables/useGoal';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const router = useRouter();
 const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
 const { currentFocusMode, getCurrentFocusMode, deactivateFocusMode } = useGoal();
@@ -123,20 +125,6 @@ const remainingDays = computed(() => {
   if (!mode) return 0;
   return Math.max(0, Math.ceil((mode.endTime - Date.now()) / (1000 * 60 * 60 * 24)));
 });
-
-/**
- * Soft residual 1237: goal Focus formatTime — toLocaleString with year/month/day/hour/minute options.
- * Locale-driven absolute display; not date-fns and not relative dashboard path (no force-merge).
- */
-function formatTime(value: number): string {
-  return new Date(value).toLocaleString(locale.value, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 function formatHiddenMode(mode: FocusModeDTO['hiddenGoalsMode'] | string): string {
   const labels: Record<string, string> = {

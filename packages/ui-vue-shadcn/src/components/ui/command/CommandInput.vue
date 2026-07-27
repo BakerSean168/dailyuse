@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ComboboxInputProps } from 'radix-vue'
 import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
+import { cn } from '../../../lib/utils'
 import { MagnifyingGlassIcon } from '@radix-icons/vue'
 import { ComboboxInput, useForwardProps } from 'radix-vue'
 import { computed } from 'vue'

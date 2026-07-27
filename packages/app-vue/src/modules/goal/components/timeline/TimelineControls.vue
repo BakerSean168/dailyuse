@@ -23,7 +23,7 @@
           class="timeline-mark"
           :class="{ active: index === currentIndex }"
           :style="{ left: (index / maxIndex) * 100 + '%' }"
-          :title="formatTimestamp(snapshot.timestamp)"
+          :title="formatProductDateTime(snapshot.timestamp)"
         >
           <div class="mark-dot" />
         </div>
@@ -100,7 +100,7 @@
 
       <!-- 时间信息 -->
       <div class="time-info">
-        <span class="current-time">{{ formatTimestamp(currentSnapshot?.timestamp) }}</span>
+        <span class="current-time">{{ formatProductDateTime(currentSnapshot?.timestamp) }}</span>
         <span class="snapshot-counter">{{ currentIndex + 1 }} / {{ snapshots.length }}</span>
       </div>
     </div>
@@ -139,7 +139,7 @@
 import { computed, watch, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TimelineSnapshot } from '../../utils/goal-timeline';
-import { formatTimelineTimestamp } from '../../utils/goal-timeline';
+import { formatProductDateTime } from '../../../../shared/utils/product-time';
 
 const { t } = useI18n();
 
@@ -233,11 +233,6 @@ function setSpeed(newSpeed: 0.5 | 1 | 2) {
   emit('update:speed', newSpeed);
 }
 
-/** Soft residual 1216: timeline formatTimestamp delegates formatTimelineTimestamp (empty ''); ≠ schedule/react toLocaleString. */
-function formatTimestamp(timestamp: number | undefined): string {
-  if (!timestamp) return '';
-  return formatTimelineTimestamp(timestamp);
-}
 
 // ==================== Watchers ====================
 

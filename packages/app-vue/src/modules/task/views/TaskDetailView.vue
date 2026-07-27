@@ -67,19 +67,19 @@
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.createTime') }}
               </p>
-              <p class="text-sm">{{ formatDate(currentTemplate?.createdAt) }}</p>
+              <p class="text-sm">{{ formatTaskDate(currentTemplate?.createdAt) }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.updateTime') }}
               </p>
-              <p class="text-sm">{{ formatDate(currentTemplate?.updatedAt) }}</p>
+              <p class="text-sm">{{ formatTaskDate(currentTemplate?.updatedAt) }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.templateStartDate') }}
               </p>
-              <p class="text-sm">{{ formatDate(currentTemplate?.timeConfig?.startDate) }}</p>
+              <p class="text-sm">{{ formatTaskDate(currentTemplate?.timeConfig?.startDate) }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-muted-foreground">
@@ -296,10 +296,11 @@ import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/pr
 import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { buildTaskGraphData } from '../types/task-dag.types';
+import { emptyKind, formatProductDate } from '../../../shared/utils/product-time';
 
 const route = useRoute();
 const router = useRouter();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const {
   templates,
   dependencies,
@@ -491,13 +492,8 @@ function handleOpenTaskDetail(id: string) {
   router.push({ name: 'task-detail', params: { id } });
 }
 
-/**
- * Soft residual 1240: app-vue task formatDate — locale toLocaleDateString + '-'.
- * Same empty glyph as react GoalCompare but with locale; not goal-detail i18n empty path (no force-merge).
- */
-function formatDate(ts?: number | null): string {
-  if (!ts) return '-';
-  return new Date(ts).toLocaleDateString(locale.value);
+function formatTaskDate(ts?: number | null): string {
+  return formatProductDate(ts, emptyKind('dash'));
 }
 
 function getTimeTypeLabel(type?: string | null): string {

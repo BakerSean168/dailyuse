@@ -12,7 +12,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
 import type { TaskEventMap, TaskGoalBindingDTO } from '@dailyuse/contracts/task';
 import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
-import { Goal } from '@/server/domain/aggregates/goal';
+import { Goal } from '../../domain/aggregates/goal';
 import { GoalPrismaRepository } from '../../infrastructure/adapters/prisma/goal-prisma.repository';
 import { GoalRecordPrismaRepository } from '../../infrastructure/adapters/prisma/goal-record-prisma.repository';
 import { registerGoalEventListeners } from './index';

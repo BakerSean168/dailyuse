@@ -4,6 +4,8 @@ import type { ScheduleTaskSummary } from '../hooks/useScheduleTasks';
 
 import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText } from '@dailyuse/ui-react-native';
 
+import { formatProductDateTime, emptyKind } from '../utils/product-time';
+
 function statusTone(status: ScheduleTaskSummary['status']) {
   if (status === 'Active') {
     return 'success' as const;
@@ -38,16 +40,9 @@ function healthTone(health: 'healthy' | 'warning' | 'critical') {
   return 'textSecondary' as const;
 }
 
-/**
- * Residual 1216 keep-boundary: app-react formatTimestamp — schedule card local toLocaleString.
- * number|null only (not undefined); empty/invalid → '-'; stays package-local (no utils dep).
- * Soft residual 1216: app-vue schedule-presentation formatTimestamp is exported schedule util (no force-merge).
- */
-function formatTimestamp(timestamp: number | null): string {
-  if (!timestamp) return '-';
-  const date = new Date(timestamp);
-  if (isNaN(date.getTime())) return '-';
-  return date.toLocaleString();
+/** Residual 1216: schedule card timestamp via session product-time + empty catalog dash. */
+function scheduleTimestamp(timestamp: number | null) {
+  return formatProductDateTime(timestamp, emptyKind('dash'));
 }
 
 export function ScheduleTaskCard({
@@ -76,8 +71,8 @@ export function ScheduleTaskCard({
       </View>
 
       <View style={styles.metaColumn}>
-        <Meta label="Next run" value={formatTimestamp(task.nextRunAt)} />
-        <Meta label="Last run" value={formatTimestamp(task.lastRunAt)} />
+        <Meta label="Next run" value={scheduleTimestamp(task.nextRunAt)} />
+        <Meta label="Last run" value={scheduleTimestamp(task.lastRunAt)} />
         <Meta label="Execution" value={`${task.executionCount} total, ${successCount} successful`} />
         <Meta label="Enabled" value={task.enabled ? 'Enabled' : 'Disabled'} />
       </View>

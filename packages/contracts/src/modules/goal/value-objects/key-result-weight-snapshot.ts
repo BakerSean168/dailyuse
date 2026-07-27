@@ -7,7 +7,7 @@
  */
 
 import type {
-  DomainDate,
+  Instant,
   TransferDate,
   KeyResultWeightSnapshotId,
   GoalId,
@@ -43,11 +43,12 @@ export interface KeyResultWeightSnapshot {
   oldWeight: number;
   newWeight: number;
   weightDelta: number;
-  snapshotTime: DomainDate;
+  /** ADR-037: Instant epoch ms */
+  snapshotTime: Instant;
   trigger: SnapshotTrigger;
   reason: string | null;
   operatorId: IdentityId;
-  createdAt: DomainDate;
+  createdAt: Instant;
 }
 
 // ============ Transfer DTO (传输层) ============

@@ -70,7 +70,7 @@ export class GoalCrossModuleQueryServiceUseCase {
           title: goal.name,
           description: goal.description,
           status: goal.status,
-          targetDate: goal.targetDate?.getTime() ?? null,
+          targetDate: goal.targetDate ?? null,
           progress: goal.progress,
         })),
     );

@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /** Account Aggregate Root - Server-side implementation. */
 
 import type { AccountClientDTO, AccountServerDTO } from '@dailyuse/contracts/account';
@@ -25,9 +26,9 @@ export interface AccountState {
   status: AccountStatus;
   phone: ContactPhone | null;
   version: number;
-  deletedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
+  deletedAt: Instant | null;
+  createdAt: Instant;
+  updatedAt: Instant;
 }
 
 export class Account extends AggregateRoot<IdentityId> {
@@ -58,20 +59,24 @@ export class Account extends AggregateRoot<IdentityId> {
   get version(): number {
     return this._props.version;
   }
-  get deletedAt(): Date | null {
-    return this._props.deletedAt;
+  get deletedAt(): Instant | null {
+    const v = this._props.deletedAt;
+    if (v == null) return null;
+    return v as Instant;
   }
-  get createdAt(): Date {
-    return this._props.createdAt;
+  get createdAt(): Instant {
+    const v = this._props.createdAt;
+    return v as Instant;
   }
-  get updatedAt(): Date {
-    return this._props.updatedAt;
+  get updatedAt(): Instant {
+    const v = this._props.updatedAt;
+    return v as Instant;
   }
 
   // ================= Factory Methods =================
 
   public static create(params: { id: IdentityId; email: string }): Account {
-    const now = new Date();
+    const now = Date.now();
     const state: AccountState = {
       id: params.id,
       status: AccountStatus.Active,
@@ -107,7 +112,7 @@ export class Account extends AggregateRoot<IdentityId> {
   // ================= Business Operations =================
 
   private refreshUpdatedAt(): void {
-    this._props.updatedAt = new Date();
+    this._props.updatedAt = Date.now();
   }
 
   public updateProfile(profile: AccountProfile): void {
@@ -172,7 +177,7 @@ export class Account extends AggregateRoot<IdentityId> {
       accountId: this.id,
       account: this.toServerDTO(),
       reason: 'User initiated closure',
-      closedAt: this.updatedAt.getTime(),
+      closedAt: this.updatedAt,
     });
   }
 
@@ -187,9 +192,9 @@ export class Account extends AggregateRoot<IdentityId> {
       email: this._props.email.toDTO(),
       phone: this._props.phone ? this._props.phone.toDTO() : null,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt : null,
     };
   }
 
@@ -202,9 +207,9 @@ export class Account extends AggregateRoot<IdentityId> {
       email: this._props.email.toDTO(),
       phone: this._props.phone ? this._props.phone.toDTO() : null,
       version: this._props.version,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt : null,
     };
   }
 }

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aTaskInstance } from '@/testing';
-import type { ITaskInstanceRepository } from '@/server/domain/repositories/i-task-instance-repository';
+import { aTaskInstance } from '../../../../../testing';
+import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { SkipTaskInstanceUseCase } from '../skip-task-instance.use-case';
 
 describe('SkipTaskInstanceUseCase', () => {

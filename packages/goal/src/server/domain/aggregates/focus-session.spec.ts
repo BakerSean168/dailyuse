@@ -23,7 +23,7 @@ describe('FocusSession aggregate', () => {
     });
 
     expect(session.status).toBe(FocusSessionStatus.Active);
-    expect(session.startedAt?.toISOString()).toBe('2026-04-26T09:00:00.000Z');
+    expect(new Date(session.startedAt!).toISOString()).toBe('2026-04-26T09:00:00.000Z');
     expect(session.goalId).toBe('GoalId_1');
     expect(session.description).toBe('Deep work');
     expect(session.progressPercentage).toBe(0);
@@ -61,14 +61,14 @@ describe('FocusSession aggregate', () => {
       cancelledAt: null,
       pauseCount: 0,
       pausedDurationMinutes: 0,
-      createdAt: new Date('2026-04-26T08:00:00.000Z'),
-      updatedAt: new Date('2026-04-26T08:00:00.000Z'),
+      createdAt: new Date('2026-04-26T08:00:00.000Z').getTime(),
+      updatedAt: new Date('2026-04-26T08:00:00.000Z').getTime(),
       version: 1,
       deletedAt: null,
     });
 
     session.start();
-    expect(session.startedAt?.toISOString()).toBe('2026-04-26T09:00:00.000Z');
+    expect(new Date(session.startedAt!).toISOString()).toBe('2026-04-26T09:00:00.000Z');
 
     expect(() => session.start()).toThrow('专注周期已开始');
     expect(() =>
@@ -103,14 +103,14 @@ describe('FocusSession aggregate', () => {
 
     session.pause();
     expect(session.pauseCount).toBe(1);
-    expect(session.pausedAt?.toISOString()).toBe('2026-04-26T09:10:00.000Z');
+    expect(new Date(session.pausedAt!).toISOString()).toBe('2026-04-26T09:10:00.000Z');
     expect(session.getPauseWarning(0)).toContain('超过推荐值');
     expect(() => session.pause()).toThrow('专注周期已暂停');
 
     vi.setSystemTime(new Date('2026-04-26T09:15:00.000Z'));
     session.resume();
     expect(session.pausedAt).toBeNull();
-    expect(session.resumedAt?.toISOString()).toBe('2026-04-26T09:15:00.000Z');
+    expect(new Date(session.resumedAt!).toISOString()).toBe('2026-04-26T09:15:00.000Z');
     expect(session.pausedDurationMinutes).toBe(5);
     expect(session.getPauseWarning()).toBeNull();
 
@@ -118,7 +118,7 @@ describe('FocusSession aggregate', () => {
     session.complete();
     expect(session.status).toBe(FocusSessionStatus.Completed);
     expect(session.actualDurationMinutes).toBe(30);
-    expect(session.completedAt?.toISOString()).toBe('2026-04-26T09:35:00.000Z');
+    expect(new Date(session.completedAt!).toISOString()).toBe('2026-04-26T09:35:00.000Z');
     expect(session.progressPercentage).toBe(100);
     expect(session.remainingMinutes).toBe(0);
     expect(session.isActive()).toBe(false);
@@ -157,7 +157,7 @@ describe('FocusSession aggregate', () => {
     vi.setSystemTime(new Date('2026-04-26T09:01:00.000Z'));
     other.cancel();
     expect(other.status).toBe(FocusSessionStatus.Cancelled);
-    expect(other.cancelledAt?.toISOString()).toBe('2026-04-26T09:01:00.000Z');
+    expect(new Date(other.cancelledAt!).toISOString()).toBe('2026-04-26T09:01:00.000Z');
     other.assertDeletable();
     expect(() => other.cancel()).toThrow('不能取消已完成或已取消的专注周期');
 
@@ -177,8 +177,8 @@ describe('FocusSession aggregate', () => {
         cancelledAt: null,
         pauseCount: 0,
         pausedDurationMinutes: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
         version: 1,
         deletedAt: null,
       }).complete(),
@@ -199,8 +199,8 @@ describe('FocusSession aggregate', () => {
         cancelledAt: null,
         pauseCount: 0,
         pausedDurationMinutes: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
         version: 1,
         deletedAt: null,
       }).resume(),

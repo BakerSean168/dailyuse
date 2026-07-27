@@ -91,7 +91,7 @@
                   </Badge>
                 </div>
                 <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                  <span>{{ formatTime(snapshot.snapshotTime) }}</span>
+                  <span>{{ formatSnapshotTime(snapshot.snapshotTime) }}</span>
                   <Separator orientation="vertical" class="h-3" />
                   <span class="inline-flex items-center gap-1">
                     {{ snapshot.oldWeight }}%
@@ -190,8 +190,7 @@ import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
 import type { GoalSnapshotItem } from '../../composables/useWeightSnapshot';
 import { useGoal } from '../../composables/useGoal';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import { format, type Locale } from 'date-fns';
-import { zhCN, enUS } from 'date-fns/locale';
+import { formatProductPattern } from '../../../../shared/utils/product-time';
 import {
   Card,
   CardHeader,
@@ -225,12 +224,7 @@ const props = defineProps<{
 const { goalSnapshots, pagination, isLoading, hasGoalSnapshots, fetchGoalSnapshots } =
   useWeightSnapshot();
 const { goals } = useGoal();
-const { t, locale } = useI18n();
-
-const dateFnsLocaleMap: Record<string, Locale> = {
-  'zh-CN': zhCN,
-  'en-US': enUS,
-};
+const { t } = useI18n();
 
 // 筛选状态
 const selectedKRId = ref<string | undefined>(undefined);
@@ -302,14 +296,8 @@ const getKRTitle = (krId: string) => {
 };
 
 // 格式化时间
-/**
- * Soft residual 1237: goal WeightSnapshot formatTime — date-fns absolute with i18n locale map.
- * Same pattern string as ProgressBreakdown but locale option; not relative dashboard path (no force-merge).
- */
-const formatTime = (timestamp: number) => {
-  return format(new Date(timestamp), 'yyyy-MM-dd HH:mm', {
-    locale: dateFnsLocaleMap[locale.value] || zhCN,
-  });
+const formatSnapshotTime = (timestamp: number) => {
+  return formatProductPattern(timestamp, 'yyyy-MM-dd HH:mm');
 };
 
 // 获取权重变化 avatar 的 Tailwind 类

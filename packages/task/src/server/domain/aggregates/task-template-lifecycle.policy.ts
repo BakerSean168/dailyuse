@@ -39,12 +39,12 @@ export function activate(ctx: LifecycleContext): void {
     });
   }
   ctx.props.status = TaskTemplateStatus.Active;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('resumed');
   ctx.publishDomainEvent<TaskEventMap['task:template-resumed']>('task:template-resumed', {
     identityId: ctx.props.identityId,
     taskTemplateId: ctx.id,
-    resumedAt: ctx.props.updatedAt.getTime(),
+    resumedAt: ctx.props.updatedAt,
     taskTemplate: ctx.toServerDTO(),
   });
 }
@@ -59,12 +59,12 @@ export function pause(ctx: LifecycleContext): void {
     });
   }
   ctx.props.status = TaskTemplateStatus.Paused;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('Paused');
   ctx.publishDomainEvent<TaskEventMap['task:template-paused']>('task:template-paused', {
     identityId: ctx.props.identityId,
     taskTemplateId: ctx.id,
-    pausedAt: ctx.props.updatedAt.getTime(),
+    pausedAt: ctx.props.updatedAt,
     taskTemplate: ctx.toServerDTO(),
   });
 }
@@ -82,7 +82,7 @@ export function archive(ctx: LifecycleContext): void {
     throw new TaskTemplateArchivedError(ctx.id);
   }
   ctx.props.status = TaskTemplateStatus.Archived;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('Archived');
 }
 
@@ -96,14 +96,14 @@ export function softDelete(ctx: LifecycleContext): void {
     });
   }
   ctx.props.status = TaskTemplateStatus.Deleted;
-  ctx.props.deletedAt = new Date();
-  ctx.props.updatedAt = new Date();
+  ctx.props.deletedAt = Date.now();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('Deleted');
   ctx.publishDomainEvent<TaskEventMap['task:deleted']>('task:deleted', {
     identityId: ctx.props.identityId,
     taskTemplateId: ctx.id,
     isSoftDelete: true,
-    deletedAt: ctx.props.deletedAt.getTime(),
+    deletedAt: ctx.props.deletedAt,
     task: ctx.toServerDTO(),
   });
 }
@@ -119,6 +119,6 @@ export function restore(ctx: LifecycleContext): void {
   }
   ctx.props.status = TaskTemplateStatus.Active;
   ctx.props.deletedAt = null;
-  ctx.props.updatedAt = new Date();
+  ctx.props.updatedAt = Date.now();
   ctx.addHistory('restored');
 }

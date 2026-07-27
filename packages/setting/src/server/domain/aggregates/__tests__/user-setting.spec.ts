@@ -12,8 +12,8 @@ describe('UserSetting Aggregate Root', () => {
       expect(setting.id).toBeTruthy();
       expect(setting.identityId).toBe(testIdentityId);
       expect(setting.version).toBe(1);
-      expect(setting.createdAt).toBeInstanceOf(Date);
-      expect(setting.updatedAt).toBeInstanceOf(Date);
+      expect(typeof setting.createdAt).toBe('number');
+      expect(typeof setting.updatedAt).toBe('number');
 
       const prefs = setting.toPreferences();
       const defaults = getDefaultPreferences();

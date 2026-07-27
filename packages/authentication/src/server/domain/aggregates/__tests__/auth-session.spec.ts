@@ -11,7 +11,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthSession, ACCESS_TOKEN_DURATION_MS, REFRESH_TOKEN_DURATION_MS } from '../auth-session';
 import type { AuthSessionState } from '../auth-session';
-import { SessionStatus, AuthSessionId, DeviceInfo } from '@/server/domain';
+import { SessionStatus, AuthSessionId, DeviceInfo } from '../..';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { ITokenProvider } from '../../services/token-provider.interface';
 
@@ -20,8 +20,14 @@ import type { ITokenProvider } from '../../services/token-provider.interface';
 // ---------------------------------------------------------------------------
 
 function buildSessionState(overrides: Partial<AuthSessionState> = {}): AuthSessionState {
-  const now = new Date();
-  return {
+  const now = Date.now();
+  const normalizeInstant = (value: unknown, fallback: number): number => {
+    if (value == null) return fallback;
+    if (typeof value === 'number') return value;
+    if (value instanceof Date) return value.getTime();
+    return Number(value);
+  };
+  const base = {
     id: AuthSessionId.generate(),
     identityId: IdentityId.generate(),
     deviceInfo: DeviceInfo.createDefault('test-device-001'),
@@ -29,10 +35,16 @@ function buildSessionState(overrides: Partial<AuthSessionState> = {}): AuthSessi
     status: SessionStatus.Active,
     version: 1,
     createdAt: now,
-    expiresAt: new Date(now.getTime() + REFRESH_TOKEN_DURATION_MS),
+    expiresAt: now + REFRESH_TOKEN_DURATION_MS,
     lastActiveAt: now,
     isRevoked: false,
     ...overrides,
+  };
+  return {
+    ...base,
+    createdAt: normalizeInstant(base.createdAt, now),
+    expiresAt: normalizeInstant(base.expiresAt, now + REFRESH_TOKEN_DURATION_MS),
+    lastActiveAt: normalizeInstant(base.lastActiveAt, now),
   };
 }
 
@@ -244,18 +256,18 @@ describe('AuthSession', () => {
 
       const result = session.touch();
       expect(result).toBe(true);
-      expect(session.lastActiveAt.getTime()).toBeGreaterThan(twoHoursAgo.getTime());
+      expect(Number(session.lastActiveAt)).toBeGreaterThan(twoHoursAgo.getTime());
     });
   });
 
   describe('extend', () => {
     it('should extend the session expiry', () => {
       const session = buildActiveSession();
-      const beforeExtend = session.expiresAt.getTime();
+      const beforeExtend = Number(session.expiresAt);
 
       session.extend();
 
-      expect(session.expiresAt.getTime()).toBeGreaterThanOrEqual(beforeExtend);
+      expect(Number(session.expiresAt)).toBeGreaterThanOrEqual(beforeExtend);
     });
 
     it('should accept custom duration', () => {
@@ -265,7 +277,7 @@ describe('AuthSession', () => {
       session.extend(customDuration);
 
       const expectedMin = Date.now() + customDuration - 1000;
-      expect(session.expiresAt.getTime()).toBeGreaterThanOrEqual(expectedMin);
+      expect(Number(session.expiresAt)).toBeGreaterThanOrEqual(expectedMin);
     });
 
     it('should throw when extending an invalid session', () => {
@@ -286,7 +298,7 @@ describe('AuthSession', () => {
       const session = buildActiveSession({ lastActiveAt: oldTime });
 
       session.updateRefreshTokenHash('new-hash');
-      expect(session.lastActiveAt.getTime()).toBeGreaterThan(oldTime.getTime());
+      expect(Number(session.lastActiveAt)).toBeGreaterThan(oldTime.getTime());
     });
 
     it('should throw when session is invalid', () => {

@@ -65,8 +65,8 @@
               <div class="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                 <Clock class="h-4 w-4" />
                 <span
-                  >{{ formatDateTime(schedule.startTime) }} -
-                  {{ formatDateTime(schedule.endTime) }}</span
+                  >{{ formatProductDateTime(schedule.startTime) }} -
+                  {{ formatProductDateTime(schedule.endTime) }}</span
                 >
                 <span class="ml-2"
                   >({{ t('schedule.eventList.durationMinutes', { n: schedule.duration }) }})</span
@@ -111,6 +111,7 @@ import {
   CalendarOff,
 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
@@ -134,7 +135,7 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 function getScheduleActions(schedule: CalendarEntryClientDTO): MenuAction[] {
   return [
@@ -146,17 +147,6 @@ function getScheduleActions(schedule: CalendarEntryClientDTO): MenuAction[] {
       handler: () => emit('delete', schedule.id),
     },
   ];
-}
-
-/** Soft residual 1204: component-local formatDateTime (month/day/hour/minute); ≠ app-react Intl zh-CN sole. */
-function formatDateTime(timestamp: number): string {
-  const date = new Date(timestamp);
-  return date.toLocaleString(locale.value, {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 function getPriorityColorClass(priority: number | null | undefined): string {

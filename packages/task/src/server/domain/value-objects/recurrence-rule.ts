@@ -14,7 +14,7 @@ import type {
   RecurrenceFrequency,
   DayOfWeek,
 } from '@dailyuse/contracts/task';
-import type { DomainDate } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@dailyuse/contracts/primitives';
 
 /**
  * RecurrenceRule 值对象实现
@@ -124,8 +124,9 @@ export class RecurrenceRule extends ValueObject<RecurrenceRuleDTO> implements IR
     return [...this.props.daysOfWeek];
   }
 
-  public get endDate(): DomainDate | null {
-    return this.props.endDate !== null ? new Date(this.props.endDate) : null;
+  /** ADR-037: Instant epoch ms (no mutable Date leakage). */
+  public get endDate(): Instant | null {
+    return this.props.endDate;
   }
 
   public get occurrences(): number | null {
@@ -146,10 +147,16 @@ export class RecurrenceRule extends ValueObject<RecurrenceRuleDTO> implements IR
   /**
    * 设置结束日期
    */
-  public setEndDate(endDate: DomainDate | null): RecurrenceRule {
+  public setEndDate(endDate: Instant | Date | null): RecurrenceRule {
+    const instant =
+      endDate == null
+        ? null
+        : endDate instanceof Date
+          ? endDate.getTime()
+          : endDate;
     const newProps = {
       ...this.props,
-      endDate: endDate ? endDate.getTime() : null,
+      endDate: instant,
       occurrences: null, // 清除重复次数
     };
     RecurrenceRule.validate(newProps);

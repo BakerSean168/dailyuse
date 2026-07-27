@@ -108,8 +108,8 @@ export class GetTaskDashboardUseCase {
     });
 
     return tasks
-      .filter((t) => t.updatedAt && t.updatedAt.getTime() >= sevenDaysAgo)
-      .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+      .filter((t) => t.updatedAt && Number(t.updatedAt) >= sevenDaysAgo)
+      .sort((a, b) => (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0))
       .slice(0, limit)
       .map((t) => t.toClientDTO());
   }

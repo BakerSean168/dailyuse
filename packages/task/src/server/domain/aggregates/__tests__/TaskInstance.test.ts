@@ -121,10 +121,10 @@ describe('TaskInstance Aggregate', () => {
         const instance = makeInstance();
         const after = Date.now();
 
-        expect(instance.createdAt.getTime()).toBeGreaterThanOrEqual(before);
-        expect(instance.createdAt.getTime()).toBeLessThanOrEqual(after);
-        expect(instance.updatedAt.getTime()).toBeGreaterThanOrEqual(before);
-        expect(instance.updatedAt.getTime()).toBeLessThanOrEqual(after);
+        expect(Number(instance.createdAt)).toBeGreaterThanOrEqual(before);
+        expect(Number(instance.createdAt)).toBeLessThanOrEqual(after);
+        expect(Number(instance.updatedAt)).toBeGreaterThanOrEqual(before);
+        expect(Number(instance.updatedAt)).toBeLessThanOrEqual(after);
       });
 
       it('should throw for missing templateId', () => {
@@ -265,8 +265,8 @@ describe('TaskInstance Aggregate', () => {
         instance.start();
         const after = Date.now();
 
-        expect(instance.updatedAt.getTime()).toBeGreaterThanOrEqual(before);
-        expect(instance.updatedAt.getTime()).toBeLessThanOrEqual(after);
+        expect(Number(instance.updatedAt)).toBeGreaterThanOrEqual(before);
+        expect(Number(instance.updatedAt)).toBeLessThanOrEqual(after);
       });
 
       it('should throw when starting a non-Pending task', () => {
@@ -286,8 +286,8 @@ describe('TaskInstance Aggregate', () => {
 
         expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(instance.completionRecord).not.toBeNull();
-        expect(instance.completionRecord!.completedAt.getTime()).toBeGreaterThanOrEqual(before);
-        expect(instance.completionRecord!.completedAt.getTime()).toBeLessThanOrEqual(after);
+        expect(instance.completionRecord!.completedAt).toBeGreaterThanOrEqual(before);
+        expect(instance.completionRecord!.completedAt).toBeLessThanOrEqual(after);
         expect(instance.actualEndTime).not.toBeNull();
         expect(instance.actualEndTime!).toBeGreaterThanOrEqual(before);
         expect(instance.actualEndTime!).toBeLessThanOrEqual(after);
@@ -406,8 +406,8 @@ describe('TaskInstance Aggregate', () => {
         const after = Date.now();
 
         expect(instance.status).toBe(TaskInstanceStatus.Expired);
-        expect(instance.updatedAt.getTime()).toBeGreaterThanOrEqual(before);
-        expect(instance.updatedAt.getTime()).toBeLessThanOrEqual(after);
+        expect(Number(instance.updatedAt)).toBeGreaterThanOrEqual(before);
+        expect(Number(instance.updatedAt)).toBeLessThanOrEqual(after);
       });
 
       it('should expire an InProgress task', () => {
@@ -656,8 +656,8 @@ describe('TaskInstance Aggregate', () => {
         expect(dto.actualStartTime).toBeNull();
         expect(dto.actualEndTime).toBeNull();
         expect(dto.comment).toBeNull(); // note maps to comment
-        expect(dto.createdAt).toBe(instance.createdAt.getTime());
-        expect(dto.updatedAt).toBe(instance.updatedAt.getTime());
+        expect(dto.createdAt).toBe(Number(instance.createdAt));
+        expect(dto.updatedAt).toBe(Number(instance.updatedAt));
         expect(dto.version).toBe(1);
         expect(dto.deletedAt).toBeNull();
       });

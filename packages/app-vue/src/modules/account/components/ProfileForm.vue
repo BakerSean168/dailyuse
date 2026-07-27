@@ -8,6 +8,7 @@ import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn';
 import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Select,
   SelectContent,
@@ -55,16 +56,6 @@ const initials = computed(() => {
   }
   return formData.value.nickname.slice(0, 2).toUpperCase();
 });
-
-const formatDate = (date: number | null) => {
-  if (!date) return '';
-  try {
-    const d = new Date(date);
-    return d.toLocaleDateString();
-  } catch {
-    return '';
-  }
-};
 
 const handleSave = () => {
   if (props.loading) return;
@@ -197,7 +188,7 @@ const bioValue = computed({
               class="w-full justify-start text-left font-normal"
               :disabled="loading"
             >
-              {{ formatDate(formData.birthday) || t('account.placeholder.selectDate') }}
+              {{ formatProductDateTime(formData.birthday) || t('account.placeholder.selectDate') }}
             </Button>
           </PopoverTrigger>
           <PopoverContent class="w-auto p-0">

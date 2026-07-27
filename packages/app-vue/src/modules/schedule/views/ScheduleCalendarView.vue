@@ -154,6 +154,7 @@ import TaskEventActionPanel from '../components/TaskEventActionPanel.vue';
 import EventDetailSheet from '../components/EventDetailSheet.vue';
 import DevScheduleDebugPanel from '../components/DevScheduleDebugPanel.vue';
 import { getWeekStart, toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
+import { getProductTime } from '../../../shared/utils/product-time';
 // Residual 1285: getWeekStart dual retired onto schedule sole.
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';
@@ -162,7 +163,7 @@ import type { CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 type CalendarView = 'day' | 'week' | 'month';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const { events, isLoading, fetchForRange, windowStart, windowEnd } = useCalendarView();
 const { tasks: scheduleTasks, createCalendarEntry } = useSchedule();
 const task = useTask();
@@ -191,26 +192,17 @@ const viewTabs = computed(() => [
 
 const currentPeriodTitle = computed(() => {
   if (activeView.value === 'day') {
-    return calendarDate.value.toLocaleDateString(locale.value, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return getProductTime().format.slot('periodDay', calendarDate.value.getTime());
   }
 
   if (activeView.value === 'month') {
-    return calendarDate.value.toLocaleDateString(locale.value, {
-      year: 'numeric',
-      month: 'long',
-    });
+    return getProductTime().format.slot('periodMonth', calendarDate.value.getTime());
   }
 
   const start = getWeekStart(calendarDate.value);
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
-  const format = (date: Date) =>
-    date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
+  const format = (date: Date) => getProductTime().format.slot('chartMonthDay', date.getTime());
   return t('schedule.calendar.weekRange', { start: format(start), end: format(end) });
 });
 

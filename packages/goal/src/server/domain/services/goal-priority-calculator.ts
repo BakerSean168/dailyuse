@@ -36,19 +36,19 @@ import {
  * @example
  * ```ts
  * // 今天到期的重要目标
- * const score = calculateGoalPriority('Important', new Date(), new Date());
+ * const score = calculateGoalPriority('Important', Date.now(), Date.now());
  * // => 5300 (5000 + 300)
  * 
  * // 已过期2天的紧急目标
  * const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
- * const score = calculateGoalPriority('Vital', twoDaysAgo, new Date());
+ * const score = calculateGoalPriority('Vital', twoDaysAgo, Date.now());
  * // => 10600 (10000 + 200 + 400)
  * ```
  */
 export function calculateGoalPriority(
   importance: ImportanceLevel,
-  targetDate: Date | null,
-  currentTime: Date = new Date(),
+  targetDate: number | null,
+  currentTime: number = Date.now(),
 ): number {
   return DailyPriorityCalculator.calculate(targetDate, importance, currentTime);
 }
@@ -63,8 +63,8 @@ export function calculateGoalPriority(
  */
 export function calculateGoalPriorityDetailed(
   importance: ImportanceLevel,
-  targetDate: Date | null,
-  currentTime: Date = new Date(),
+  targetDate: number | null,
+  currentTime: number = Date.now(),
 ): PriorityCalculationResult {
   return DailyPriorityCalculator.calculateDetailed(targetDate, importance, currentTime);
 }

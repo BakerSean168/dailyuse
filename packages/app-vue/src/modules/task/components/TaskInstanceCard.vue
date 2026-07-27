@@ -40,12 +40,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { format } from 'date-fns';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { CheckCircle2, Circle, Clock, Check } from '@lucide/vue';
 import type { TaskInstanceViewModel } from './types';
 import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';
+import { formatProductHm } from '../../../shared/utils/product-time';
 
 // Props
 const props = withDefaults(
@@ -78,7 +78,7 @@ const taskTitle = computed(() => {
 });
 
 const formatCompletionTime = computed(() => {
-  return props.task.actualEndTime ? format(new Date(props.task.actualEndTime), 'HH:mm') : '';
+  return props.task.actualEndTime ? formatProductHm(props.task.actualEndTime) : '';
 });
 
 /** Residual 1297: minutes-of-day HH:mm dual retired onto formatHHmmParts sole. */

@@ -53,9 +53,9 @@ export class GoalFolderPrismaRepository
         folderType: folder.folderType,
         goalCount: folder.goalCount,
         completedGoalCount: folder.completedGoalCount,
-        createdAt: folder.createdAt,
-        updatedAt: folder.updatedAt,
-        deletedAt: folder.deletedAt,
+        createdAt: new Date(folder.createdAt),
+        updatedAt: new Date(folder.updatedAt),
+        deletedAt: folder.deletedAt != null ? new Date(folder.deletedAt) : null,
         version: folder.version,
       },
       update: {
@@ -67,8 +67,8 @@ export class GoalFolderPrismaRepository
         sortOrder: folder.sortOrder,
         goalCount: folder.goalCount,
         completedGoalCount: folder.completedGoalCount,
-        updatedAt: folder.updatedAt,
-        deletedAt: folder.deletedAt,
+        updatedAt: new Date(folder.updatedAt),
+        deletedAt: folder.deletedAt != null ? new Date(folder.deletedAt) : null,
         version: folder.version,
       },
     });

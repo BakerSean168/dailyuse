@@ -16,6 +16,7 @@ import type {
   UpdateAccountSettingsReq,
   UpdateAccountSettingsRes,
   AccountClientDTO,
+  AccountProfileDTO,
 } from '@dailyuse/contracts/account';
 import { Account } from '../../domain-client';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
@@ -30,15 +31,18 @@ import {
 function accountFromDTO(dto: AccountClientDTO): Account {
   return Account.load({
     id: IdentityId.of(dto.id),
-    profile: AccountProfile.create(dto.profile),
+    profile: AccountProfile.create({
+      ...dto.profile,
+      birthday: dto.profile.birthday as AccountProfileDTO['birthday'],
+    }),
     email: ContactEmail.create(dto.email),
     settings: AccountSettings.create(dto.settings),
     status: AccountStatus.of(dto.status),
     phone: dto.phone ? ContactPhone.create(dto.phone) : null,
     version: dto.version,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    deletedAt: dto.deletedAt ? dto.deletedAt : null,
   });
 }
 

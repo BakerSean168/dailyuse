@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aTaskInstance, aTaskTemplateId, aOneTimeTask } from '@/testing';
-import type { ITaskInstanceRepository } from '@/server/domain/repositories/i-task-instance-repository';
-import type { ITaskTemplateRepository } from '@/server/domain/repositories/i-task-template-repository';
+import { aTaskInstance, aTaskTemplateId, aOneTimeTask } from '../../../../../testing';
+import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
+import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import { ListTaskInstancesByTemplateUseCase } from '../list-task-instances-by-template.use-case';
 
 describe('ListTaskInstancesByTemplateUseCase', () => {

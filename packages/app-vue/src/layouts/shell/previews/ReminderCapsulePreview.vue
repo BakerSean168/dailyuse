@@ -7,7 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useReminder } from '../../../modules/reminder/composables/useReminder';
 import type { ReminderTodayScheduleItem } from '@dailyuse/contracts/reminder';
-import { formatLocalHHmm } from '../../../shared/utils/format-local-hhmm';
+import { formatProductHm } from '../../../shared/utils/product-time';
 
 const RECENT_LIMIT = 4;
 const CACHE_MS = 45_000;
@@ -35,12 +35,9 @@ const remaining = computed(() =>
 const visible = computed(() => remaining.value.slice(0, RECENT_LIMIT));
 
 /**
- * Residual 1294: formatTime dual retired onto formatLocalHHmm sole.
- * Soft residual 1237: still HH:mm-only capsule clock (no relative/date-fns) vs dashboard formatTime keep-boundary.
+ * Residual 1294: formatProductHm HH:mm sole (capsule clock).
+ * Soft residual 1237: HH:mm-only vs dashboard relative keep-boundary.
  */
-function formatTime(ts: number): string {
-  return formatLocalHHmm(ts);
-}
 
 async function load(force = false) {
   if (!force && loadedAt.value && Date.now() - loadedAt.value < CACHE_MS) return;
@@ -105,7 +102,7 @@ onMounted(() => {
           @click="$emit('select', String(item.templateId))"
         >
           <span class="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold">
-            {{ formatTime(item.nextTriggerAt) }}
+            {{ formatProductHm(item.nextTriggerAt) }}
           </span>
           <span class="min-w-0 flex-1">
             <span class="block truncate text-[11px] font-semibold">{{ item.title }}</span>

@@ -22,10 +22,10 @@ import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type {
   IRuleRepository,
   RuleFilter,
-} from '@/server/domain/repositories/i-rule-repository';
-import type { Rule } from '@/server/domain/aggregates/rule';
-import type { RuleRevision } from '@/server/domain/entities/rule-revision';
-import type { RuleId } from '@/server/domain/value-objects/rule-id';
+} from '../../../domain/repositories/i-rule-repository';
+import type { Rule } from '../../../domain/aggregates/rule';
+import type { RuleRevision } from '../../../domain/entities/rule-revision';
+import type { RuleId } from '../../../domain/value-objects/rule-id';
 import { toResultErrorException } from '@dailyuse/contracts/result';
 import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
 import {

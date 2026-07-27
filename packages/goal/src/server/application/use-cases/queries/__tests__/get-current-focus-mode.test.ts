@@ -1,6 +1,6 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
-import type { IFocusModeRepository } from '@/server/domain';
+import type { IFocusModeRepository } from '../../../../domain';
 import { GetCurrentFocusModeUseCase } from '../get-current-focus-mode.use-case';
 
 function createFocusModeFixture(overrides?: Record<string, any>) {

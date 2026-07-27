@@ -75,7 +75,7 @@ describe('goal server value objects', () => {
     });
 
     const extended = focusMode.extend(Date.UTC(2026, 3, 29, 0, 0, 0));
-    expect(extended.endTime.toISOString()).toBe('2026-04-29T00:00:00.000Z');
+    expect(extended.endTime).toBe(Date.UTC(2026, 3, 29, 0, 0, 0));
 
     const deactivated = extended.deactivate();
     expect(deactivated.isActive).toBe(false);

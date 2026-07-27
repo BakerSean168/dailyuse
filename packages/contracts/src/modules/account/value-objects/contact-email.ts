@@ -1,13 +1,15 @@
 /**
  * 账户模块的邮箱
+ *
+ * ADR-037: verifiedAt is Instant ≡ TransferDate (epoch ms).
  */
 
-import type { DomainDate, TransferDate } from '../../../primitives';
+import type { Instant, TransferDate } from '../../../primitives';
 
 export interface ContactEmail {
   address: string;
   isVerified: boolean;
-  verifiedAt: DomainDate | null;
+  verifiedAt: Instant | null;
   isPrimary: boolean;
 }
 

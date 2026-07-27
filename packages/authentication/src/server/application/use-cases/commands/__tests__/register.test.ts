@@ -9,10 +9,10 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RegisterUseCase } from '../register.use-case';
-import type { IAuthIdentityRepository } from '@/server/domain/repositories/i-auth-identity.repository';
-import type { IAuthSessionRepository } from '@/server/domain/repositories/i-auth-session.repository';
-import type { IPasswordHasher } from '@/server/domain';
-import type { ITokenProvider } from '@/server/domain/services/token-provider.interface';
+import type { IAuthIdentityRepository } from '../../../../domain/repositories/i-auth-identity.repository';
+import type { IAuthSessionRepository } from '../../../../domain/repositories/i-auth-session.repository';
+import type { IPasswordHasher } from '../../../../domain';
+import type { ITokenProvider } from '../../../../domain/services/token-provider.interface';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 
 // ---------------------------------------------------------------------------

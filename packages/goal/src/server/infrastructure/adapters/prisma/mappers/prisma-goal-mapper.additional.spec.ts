@@ -136,7 +136,7 @@ describe('PrismaGoalMapper additional coverage', () => {
     expect(dto.goalReviews).toBeNull();
     expect(dto.weightSnapshots).toBeNull();
     expect(dto.reminderConfig).toBeNull();
-    expect(dto.deletedAt?.getTime()).toBe(3_000);
+    expect(dto.deletedAt).toBe(3_000);
   });
 
   it('maps weight snapshot when time fields are numbers', () => {

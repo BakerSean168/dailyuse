@@ -30,6 +30,7 @@ import { useAccount } from '../composables/useAccount';
 import { useSession } from '../../authentication/composables/useSession';
 import { AUTH_SERVICE_KEY, LOGOUT_HANDLER_KEY } from '../../../di/keys';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 
 const { t } = useI18n();
 const logout = inject(LOGOUT_HANDLER_KEY);
@@ -43,12 +44,7 @@ const { activeSessions, loadSessions, revokeSession } = useSession();
 const sessionsLoading = ref(false);
 
 function formatSessionTime(ms: number | undefined | null): string {
-  if (!ms) return '—';
-  try {
-    return new Date(ms).toLocaleString();
-  } catch {
-    return '—';
-  }
+  return formatProductDateTime(ms);
 }
 
 function sessionLabel(session: (typeof activeSessions.value)[number]): string {

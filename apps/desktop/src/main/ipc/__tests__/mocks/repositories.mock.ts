@@ -194,10 +194,10 @@ export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
     priority: dto.priority ?? 0,
     category: dto.category,
     tags: [...dto.tags],
-    startDate: dto.startDate ? new Date(dto.startDate) : null,
-    targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
-    completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
-    archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
+    startDate: dto.startDate ?? null,
+    targetDate: dto.targetDate ?? null,
+    completedAt: dto.completedAt ?? null,
+    archivedAt: dto.archivedAt ?? null,
     folderId: dto.folderId,
     parentGoalId: dto.parentGoalId,
     sortOrder: dto.sortOrder,
@@ -205,9 +205,9 @@ export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
     keyResults: [],
     reviews: [],
     version: dto.version,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    deletedAt: dto.deletedAt ?? null,
   });
 }
 

@@ -47,13 +47,13 @@
               </div>
               <div v-if="goal.startDate" class="flex justify-between">
                 <span class="text-muted-foreground">{{ t('goal.multiComparison.startDate') }}</span>
-                <span>{{ formatDate(goal.startDate) }}</span>
+                <span>{{ formatProductDateTime(goal.startDate) }}</span>
               </div>
               <div v-if="goal.targetDate" class="flex justify-between">
                 <span class="text-muted-foreground">{{
                   t('goal.multiComparison.targetDate')
                 }}</span>
-                <span>{{ formatDate(goal.targetDate) }}</span>
+                <span>{{ formatProductDateTime(goal.targetDate) }}</span>
               </div>
             </CardContent>
           </Card>
@@ -78,6 +78,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { GitCompare } from '@lucide/vue';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Button,
   Badge,
@@ -94,7 +95,7 @@ import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 const { goals, fetchGoals } = useGoal();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const selectedIds = ref<string[]>([]);
 const showSelector = ref(false);
 
@@ -113,11 +114,6 @@ function statusVariant(status: string) {
   if (status === 'Active') return 'default' as const;
   if (status === 'Completed') return 'secondary' as const;
   return 'outline' as const;
-}
-
-function formatDate(d: string | number | null | undefined): string {
-  if (!d) return '-';
-  return new Date(d).toLocaleDateString(locale.value);
 }
 
 function handleSelect(ids: string[]) {

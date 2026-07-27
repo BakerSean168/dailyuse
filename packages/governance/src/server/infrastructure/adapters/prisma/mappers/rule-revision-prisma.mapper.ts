@@ -26,15 +26,15 @@
 
 import type { RuleRevision as PrismaRuleRevision } from '@dailyuse/database';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { RuleRevision } from '@/server/domain/entities/rule-revision';
-import { RuleId } from '@/server/domain/value-objects/rule-id';
-import { RuleRevisionId } from '@/server/domain/value-objects/rule-revision-id';
+import { RuleRevision } from '../../../../domain/entities/rule-revision';
+import { RuleId } from '../../../../domain/value-objects/rule-id';
+import { RuleRevisionId } from '../../../../domain/value-objects/rule-revision-id';
 import { fromDbDate, parseStringArray, parseRecord } from '@dailyuse/utils/shared';
 
 // ---------------------------------------------------------------------------
 // ChangeType — imported from server/domain value object
 // ---------------------------------------------------------------------------
-import type { ChangeType } from '@/server/domain/value-objects/change-type';
+import type { ChangeType } from '../../../../domain/value-objects/change-type';
 
 // ---------------------------------------------------------------------------
 // Mapper

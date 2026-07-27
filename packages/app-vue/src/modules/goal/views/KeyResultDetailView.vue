@@ -80,7 +80,7 @@
                   <div class="flex items-center justify-between">
                     <span class="text-sm font-medium">+{{ record.value }}</span>
                     <span class="text-xs text-muted-foreground">{{
-                      formatDate(record.createdAt)
+                      formatProductDateTime(record.createdAt)
                     }}</span>
                   </div>
                   <p v-if="record.comment" class="text-xs text-muted-foreground">
@@ -147,6 +147,7 @@ import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus, History, TrendingUp } from '@lucide/vue';
 import type { KeyResultId } from '@dailyuse/contracts/primitives';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Button,
   Badge,
@@ -171,7 +172,7 @@ import {
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const goalId = (route.params.goalId as string) || (route.params.id as string);
 const krId = ((route.params.krId as string) || (route.params.keyResultId as string)) as KeyResultId;
 
@@ -210,15 +211,6 @@ const sortedRecords = computed(() =>
 
 const showAddRecord = ref(false);
 const newRecord = reactive({ value: 0, comment: '' });
-
-function formatDate(d: string | number | null | undefined): string {
-  if (!d) return '-';
-  return new Date(d).toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 async function handleAddRecord() {
   if (!newRecord.value) {

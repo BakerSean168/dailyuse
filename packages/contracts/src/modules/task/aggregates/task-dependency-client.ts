@@ -9,7 +9,7 @@
 import type { z } from 'zod';
 import type {
   TaskTemplateId,
-  DomainDate,
+  Instant,
 } from '../../../primitives';
 import { TaskDependencyResponseSchema } from '../api/response-schemas';
 
@@ -50,5 +50,6 @@ export interface DependencyChainClientDTO {
   /**
    * 关键路径的预计完成时间
    */
-  estimatedCompletionDate?: DomainDate;
+  /** ADR-037: Instant epoch ms */
+  estimatedCompletionDate?: Instant;
 }

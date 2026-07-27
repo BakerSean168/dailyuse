@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
-import type { INotificationRepository } from '@/server/domain/repositories/i-notification-preference-repository';
-import type { INotificationTemplateRepository } from '@/server/domain/repositories/i-notification-preference-repository';
-import type { INotificationPreferenceRepository } from '@/server/domain/repositories/i-notification-preference-repository';
+import type { INotificationRepository } from '../../../../domain/repositories/i-notification-preference-repository';
+import type { INotificationTemplateRepository } from '../../../../domain/repositories/i-notification-preference-repository';
+import type { INotificationPreferenceRepository } from '../../../../domain/repositories/i-notification-preference-repository';
 import { CreateNotificationUseCase } from '../create-notification.use-case';
 import {
   NotificationType,
@@ -11,7 +11,7 @@ import {
   NotificationChannelType,
   NotificationStatus,
 } from '@dailyuse/contracts/notification';
-import { NotificationPreference } from '@/server/domain/aggregates/notification-preference';
+import { NotificationPreference } from '../../../../domain/aggregates/notification-preference';
 
 describe('CreateNotificationUseCase', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;

@@ -52,7 +52,7 @@ export class AccountPowerSyncMapper {
         avatarUrl: profile.avatarUrl,
         bio: profile.bio,
         gender: profile.gender,
-        birthday: profile.birthday ? new Date(profile.birthday).getTime() : null,
+        birthday: profile.birthday ?? null,
       }),
       settings: AccountSettings.create({
         theme: settings.theme,
@@ -77,9 +77,9 @@ export class AccountPowerSyncMapper {
             })
           : null,
       version: Number(row.version),
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
+      createdAt: new Date(row.created_at).getTime(),
+      updatedAt: new Date(row.updated_at).getTime(),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at).getTime() : null,
     };
 
     return Account.load(state);
@@ -106,9 +106,9 @@ export class AccountPowerSyncMapper {
       phone_is_verified: phone ? this.toInteger(phone.isVerified) : null,
       phone_verified_at: phone?.verifiedAt ? new Date(phone.verifiedAt).toISOString() : null,
       version: account.version,
-      created_at: account.createdAt.toISOString(),
-      updated_at: account.updatedAt.toISOString(),
-      deleted_at: account.deletedAt ? account.deletedAt.toISOString() : null,
+      created_at: new Date(account.createdAt).toISOString(),
+      updated_at: new Date(account.updatedAt).toISOString(),
+      deleted_at: account.deletedAt ? new Date(account.deletedAt).toISOString() : null,
     };
   }
 

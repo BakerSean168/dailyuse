@@ -1,14 +1,5 @@
-import { padTwoDigits } from './pad-two-digits';
-
 /**
- * Residual 1252: sole formatDateToYMD — Date → YYYY-MM-DD local calendar string.
- * Dual-retired from CreateScheduleDialog + task TimeConfig/Reminder/Recurrence sections.
- * Residual 1318: padStart dual retired onto padTwoDigits sole (YMD join stays local).
- * Soft residual 1249: formatDisplayDate sole remains separate (display vs storage encoding).
+ * Residual 1252: sole formatDateToYMD — re-exported from @dailyuse/time (ADR-037 W2).
+ * Residual 1318: padTwoDigits composition lives in @dailyuse/time engine/format.
  */
-export function formatDateToYMD(date: Date): string {
-  const y = date.getFullYear();
-  const m = padTwoDigits(date.getMonth() + 1);
-  const d = padTwoDigits(date.getDate());
-  return `${y}-${m}-${d}`;
-}
+export { formatDateToYMD } from '@dailyuse/time';

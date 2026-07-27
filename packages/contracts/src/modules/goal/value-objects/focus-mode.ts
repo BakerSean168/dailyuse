@@ -8,7 +8,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type {
-  DomainDate,
+  Instant,
   IdentityId,
   FocusModeId,
   GoalId,
@@ -33,17 +33,20 @@ export type HiddenGoalsMode = (typeof HiddenGoalsMode)[keyof typeof HiddenGoalsM
  * FocusMode - Domain Shape
  * 给 domain-shared 中的 Class 实现用
  */
+/**
+ * FocusMode - Domain Shape (ADR-037: Instant epoch ms, no DomainDate).
+ */
 export interface FocusMode {
   id: FocusModeId;
   identityId: IdentityId;
   focusedGoalIds: GoalId[];
-  startTime: DomainDate;
-  endTime: DomainDate;
+  startTime: Instant;
+  endTime: Instant;
   hiddenGoalsMode: HiddenGoalsMode;
   isActive: boolean;
-  actualEndTime: DomainDate | null;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
+  actualEndTime: Instant | null;
+  createdAt: Instant;
+  updatedAt: Instant;
 }
 
 // Residual 745: FocusModeDTO dual body retired — OpenAPI + transport use

@@ -23,7 +23,7 @@
         <div class="flex items-center flex-1">
           <Clock class="h-4 w-4 text-muted-foreground mr-2" />
           <div class="text-sm">
-            {{ formatDate(record.createdAt) }}
+            {{ formatProductDateTime(record.createdAt) }}
           </div>
         </div>
       </div>
@@ -45,8 +45,8 @@
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Plus, Clock, FileText } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { format } from 'date-fns';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 
 const { t } = useI18n();
 
@@ -54,7 +54,4 @@ defineProps<{
   record: GoalRecordClientDTO;
 }>();
 
-function formatDate(date: string | number | Date): string {
-  return format(new Date(date), 'yyyy/MM/dd HH:mm');
-}
 </script>

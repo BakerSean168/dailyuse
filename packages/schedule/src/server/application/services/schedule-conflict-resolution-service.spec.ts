@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { IdentityId } from '@dailyuse/domain-shared';
-import type { IScheduleRepository } from '@/server/domain/repositories/i-schedule-repository';
-import { CalendarEntry } from '@/server/domain/aggregates/calendar-entry';
+import type { IScheduleRepository } from '../../domain/repositories/i-schedule-repository';
+import { CalendarEntry } from '../../domain/aggregates/calendar-entry';
 import { ScheduleConflictDetectionService } from './schedule-conflict-detection-service';
 import { ScheduleConflictResolutionService } from './schedule-conflict-resolution-service';
 import { ScheduleEventApplicationService } from './schedule-event-application-service';

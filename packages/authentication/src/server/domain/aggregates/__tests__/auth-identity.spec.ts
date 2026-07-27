@@ -9,14 +9,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { AuthIdentity } from '../auth-identity';
 import type { AuthIdentityState } from '../auth-identity';
-import type { IPasswordHasher } from '@/server/domain';
+import type { IPasswordHasher } from '../..';
 import {
   AuthIdentityStatus,
   CredentialType,
   CredentialStatus,
   HashedPassword,
   OAuthProvider,
-} from '@/server/domain';
+} from '../..';
 import { EmailIdentifier, PhoneIdentifier } from '../../value-objects';
 import { OAuthBinding, PasswordCredential } from '../../entities';
 

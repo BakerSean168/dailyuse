@@ -49,7 +49,7 @@ import { describe, expect, it } from 'vitest';
   /**
    * Residual 743: task recurrence-rule dual body retired.
    * RecurrenceRuleDTO reuses RecurrenceConfigSchema only.
-   * Domain RecurrenceRule (DomainDate endDate) stays separate from transfer DTO.
+   * Domain RecurrenceRule (Instant endDate) stays separate interface from transfer DTO schema.
    */
   describe('task recurrence-rule dual retired (residual 743)', () => {
     const apiDir = __dirname;
@@ -376,7 +376,7 @@ import { describe, expect, it } from 'vitest';
   /**
    * Residual 739: task goal-binding / reminder-config dual bodies retired.
    * TaskGoalBindingDTO / TaskReminderConfigDTO reuse *Schema only.
-   * (TaskTimeConfig left alone: DomainDate vs TransferDate shape mismatch.)
+   * (TaskTimeConfig Instant dual names remain separate interfaces.)
    */
   describe('task goal-binding/reminder dual retired (residual 739)', () => {
     const apiDir = __dirname;
@@ -510,7 +510,7 @@ import { describe, expect, it } from 'vitest';
       );
       expect(dep).not.toMatch(/export interface TaskDependencyClientDTO\b/);
       expect(dep).toMatch(/export interface DependencyChainClientDTO\b/);
-      expect(dep).toContain('estimatedCompletionDate?: DomainDate');
+      expect(dep).toContain('estimatedCompletionDate?: Instant');
       expect(taskSchemas).toContain('Residual 831');
       expect(taskSchemas).toContain(
         'export const TaskDependencyResponseSchema = z.object({',
@@ -661,7 +661,7 @@ import { describe, expect, it } from 'vitest';
   /**
    * Residual 747: task time-config dual body retired.
    * TaskTimeConfigDTO reuses TaskTimeConfigSchema only.
-   * Domain TaskTimeConfig (DomainDate startDate) stays separate from transfer DTO.
+   * Domain TaskTimeConfig (Instant startDate + startDay Ymd) — ADR-037; schema is transfer sole.
     *
    * Soft residual 831: TaskInstanceClientDTO dual retired via TaskInstanceResponseSchema
    * (see task-instance-dependency-schedule-task-client-dto-dual surface).
@@ -685,7 +685,7 @@ import { describe, expect, it } from 'vitest';
       );
       expect(vo).not.toMatch(/export interface TaskTimeConfigDTO\b/);
       expect(vo).toContain('export interface TaskTimeConfig {');
-      expect(vo).toContain('startDate: DomainDate | null');
+      expect(vo).toContain('startDate: Instant | null');
     });
 
     it('task-template.dto re-exports VO-owned schema (no local dual body)', () => {

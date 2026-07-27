@@ -19,7 +19,7 @@ function makeGoal(overrides: Partial<DashboardGoalRecord> = {}): DashboardGoalRe
     status: GoalStatus.Active,
     deletedAt: null,
     priority: 1,
-    updatedAt: new Date(),
+    updatedAt: Date.now(),
     progress: 50,
     targetDate: null,
     keyResults: [],
@@ -33,7 +33,7 @@ function makeTemplate(overrides: Partial<DashboardTaskTemplateRecord> = {}): Das
     title: 'Task',
     status: TaskTemplateStatus.Active,
     deletedAt: null,
-    createdAt: new Date(),
+    createdAt: Date.now(),
     ...overrides,
   };
 }
@@ -60,7 +60,7 @@ function makeSchedule(overrides: Partial<DashboardScheduleRecord> = {}): Dashboa
     endTime: Date.now() + 7200_000,
     priority: 0,
     hasConflict: false,
-    createdAt: new Date(),
+    createdAt: Date.now(),
     ...overrides,
   };
 }
@@ -106,7 +106,7 @@ describe('getDashboardData', () => {
       listGoals: async () => [
         makeGoal({ id: 'g1', status: GoalStatus.Active }),
         makeGoal({ id: 'g2', status: GoalStatus.Completed }),
-        makeGoal({ id: 'g3', status: GoalStatus.Active, deletedAt: new Date() }),
+        makeGoal({ id: 'g3', status: GoalStatus.Active, deletedAt: Date.now() }),
         makeGoal({ id: 'g4', status: GoalStatus.Active }),
       ],
     });
@@ -126,12 +126,12 @@ describe('getDashboardData', () => {
   });
 
   it('sorts goalProgress by priority then updatedAt', async () => {
-    const now = new Date();
+    const now = Date.now();
     const source = makeSource({
       listGoals: async () => [
-        makeGoal({ id: 'g1', priority: 1, updatedAt: new Date(now.getTime() - 1000) }),
-        makeGoal({ id: 'g2', priority: 3, updatedAt: new Date(now.getTime() - 2000) }),
-        makeGoal({ id: 'g3', priority: 3, updatedAt: new Date(now.getTime()) }),
+        makeGoal({ id: 'g1', priority: 1, updatedAt: now - 1000 }),
+        makeGoal({ id: 'g2', priority: 3, updatedAt: now - 2000 }),
+        makeGoal({ id: 'g3', priority: 3, updatedAt: now }),
       ],
     });
 
@@ -177,7 +177,7 @@ describe('getDashboardData', () => {
       listTaskTemplates: async () => [
         makeTemplate({ id: 't1', status: TaskTemplateStatus.Active }),
         makeTemplate({ id: 't2', status: TaskTemplateStatus.Deleted }),
-        makeTemplate({ id: 't3', deletedAt: new Date() }),
+        makeTemplate({ id: 't3', deletedAt: Date.now() }),
         makeTemplate({ id: 't4', status: TaskTemplateStatus.Archived }),
       ],
     });
@@ -256,7 +256,7 @@ describe('getDashboardData', () => {
       listUpcomingReminders: async () => [
         makeReminder({ nextTriggerAt: now + 3600_000 }),
         makeReminder({ nextTriggerAt: null }),
-        makeReminder({ deletedAt: new Date() }),
+        makeReminder({ deletedAt: Date.now() }),
         makeReminder({ status: ReminderStatus.Paused }),
         makeReminder({ effectiveEnabled: false }),
       ],

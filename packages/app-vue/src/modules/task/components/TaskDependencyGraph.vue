@@ -136,6 +136,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { splitDurationMinutes } from '@dailyuse/time';
 import { useI18n } from 'vue-i18n';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
@@ -418,8 +419,8 @@ function refreshGraph() {
  * Always appends minutes even when hours>0; not schedule.duration.* and not Intl formatTaskDuration (no force-merge).
  */
 function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
+  // Soft residual 1243: concatenative task.dependencyGraph labels; split via time (P4).
+  const { hours, minutes: mins } = splitDurationMinutes(minutes);
   return hours > 0
     ? `${hours}${t('task.dependencyGraph.hours')}${mins}${t('task.dependencyGraph.minutes')}`
     : `${mins}${t('task.dependencyGraph.minutes')}`;

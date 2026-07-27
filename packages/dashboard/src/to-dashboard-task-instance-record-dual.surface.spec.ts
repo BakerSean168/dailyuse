@@ -33,7 +33,7 @@ describe('toDashboardTaskInstanceRecord dual retired (residual 1156)', () => {
     expect(sole).toMatch(/export function toDashboardTaskInstanceRecord\b/);
     expect(sole).toContain('String(instance.id)');
     expect(sole).toContain('String(instance.templateId)');
-    expect(sole).toContain('instance.updatedAt.getTime()');
+    expect(sole).toContain('updatedAt: instance.updatedAt');
     expect(sole).toContain('isOverdue: () => instance.isOverdue()');
     expect(index).toContain('toDashboardTaskInstanceRecord');
   });
@@ -57,7 +57,7 @@ describe('toDashboardTaskInstanceRecord dual retired (residual 1156)', () => {
       status: 'completed',
       instanceDate: 1_700_000_000_000,
       actualEndTime: 1_700_000_100_000,
-      updatedAt: new Date('2024-01-02T03:04:05.000Z'),
+      updatedAt: Date.parse('2024-01-02T03:04:05.000Z'),
       deletedAt: null,
       isOverdue: () => false,
     };

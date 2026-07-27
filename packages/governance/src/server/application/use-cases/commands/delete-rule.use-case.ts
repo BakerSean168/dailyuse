@@ -3,7 +3,7 @@
  * 删除规则用例
  */
 
-import type { IRuleRepository } from '@/server/domain/repositories/i-rule-repository';
+import type { IRuleRepository } from '../../../domain/repositories/i-rule-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { toResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
 import { resultify } from '@dailyuse/utils/result';

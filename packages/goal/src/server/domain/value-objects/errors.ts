@@ -20,12 +20,12 @@ export class GoalNameRequiredError extends DomainError {
  */
 export class GoalInvalidDateRangeError extends DomainError {
   constructor(
-    public readonly startDate: Date,
-    public readonly targetDate: Date,
+    public readonly startDate: number,
+    public readonly targetDate: number,
   ) {
     super(
       'goal_invalid_date_range',
-      `目标日期范围无效：开始日期 ${startDate.toISOString()} 晚于目标日期 ${targetDate.toISOString()}`,
+      `目标日期范围无效：开始日期 ${startDate} 晚于目标日期 ${targetDate}`,
     );
   }
 }

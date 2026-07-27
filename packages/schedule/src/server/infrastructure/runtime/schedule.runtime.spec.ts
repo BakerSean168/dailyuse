@@ -5,10 +5,10 @@ import {
   SourceModule,
   Timezone,
 } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '@/server/domain/aggregates/schedule-task';
-import type { IScheduleTaskRepository } from '@/server/domain/repositories/i-schedule-task-repository';
-import { ExecutionInfo, RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '@/server/domain/value-objects';
-import { ScheduleTaskId } from '@/server/domain/value-objects/schedule-task-id';
+import { ScheduleTask } from '../../domain/aggregates/schedule-task';
+import type { IScheduleTaskRepository } from '../../domain/repositories/i-schedule-task-repository';
+import { ExecutionInfo, RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../domain/value-objects';
+import { ScheduleTaskId } from '../../domain/value-objects/schedule-task-id';
 
 const mocked = vi.hoisted(() => {
   const handlers = new Map<string, Set<(payload: unknown) => void>>();

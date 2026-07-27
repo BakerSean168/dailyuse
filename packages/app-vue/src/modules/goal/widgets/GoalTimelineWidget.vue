@@ -1,150 +1,5 @@
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 <script setup lang="ts">
-/**
- * GoalTimelineWidget - 目标时间进度 Widget
- *
- * 功能：
- * - 展示目标的时间进度（浅色框 = 时间范围，深色 = 完成百分比）
- * - 显示目标标题、进度百分比、剩余天数
- * - 支持三种尺寸 (small/medium/large)
- */
-
-import { computed, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { WidgetSize } from '@dailyuse/contracts/dashboard';
-import { useGoal } from '../composables/useGoal';
-import { GoalStatus } from '@dailyuse/contracts/goal';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  Separator,
-  Badge,
-  Progress,
-} from '@dailyuse/ui-vue-shadcn';
-import { TrendingUp, CalendarDays, Flag, FlagOff, ArrowRight, Loader2 } from '@lucide/vue';
-
-// ===== Props =====
-interface Props {
-  size?: WidgetSize;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  size: 'medium' as WidgetSize,
-});
-
-// ===== Composables =====
-const { t, locale } = useI18n();
-const { goals, fetchGoals } = useGoal();
-
-// ===== State =====
-const isLoading = ref(true);
-
-// ===== Computed =====
-
-/**
- * 活跃目标列表（有时间范围的进行中目标）
- */
-const activeGoals = computed(() => {
-  const today = new Date();
-
-  // 使用 composable 提供的响应式数据
-  const allGoals = goals.value;
-  if (!allGoals || !Array.isArray(allGoals)) {
-    return [];
-  }
-
-  return allGoals
-    .filter((goal) => {
-      if (goal.status !== GoalStatus.ACTIVE) return false;
-      return goal.startDate && goal.targetDate;
-    })
-    .map((goal) => {
-      const start = new Date(goal.startDate!);
-      const end = new Date(goal.targetDate!);
-      const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      const elapsedDays = Math.ceil((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      const remainingDays = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-      // 时间进度百分比
-      const timeProgress = Math.min(Math.max((elapsedDays / totalDays) * 100, 0), 100);
-
-      // 实际完成进度（如果有 keyResults）
-      let completionProgress = 0;
-      if (goal.keyResults && goal.keyResults.length > 0) {
-        const completedKRs = goal.keyResults.filter(
-          (kr: { isCompleted?: boolean }) => kr.isCompleted,
-        ).length;
-        completionProgress = (completedKRs / goal.keyResults.length) * 100;
-      }
-
-      return {
-        id: goal.id,
-        name: goal.name,
-        startDate: goal.startDate!,
-        targetDate: goal.targetDate!,
-        totalDays,
-        elapsedDays: Math.max(elapsedDays, 0),
-        remainingDays: Math.max(remainingDays, 0),
-        timeProgress,
-        completionProgress,
-        isOverdue: remainingDays < 0,
-        isWarning: remainingDays >= 0 && remainingDays <= 7,
-      };
-    })
-    .sort((a, b) => {
-      // 优先显示即将到期的
-      if (a.isOverdue && !b.isOverdue) return -1;
-      if (!a.isOverdue && b.isOverdue) return 1;
-      if (a.isWarning && !b.isWarning) return -1;
-      if (!a.isWarning && b.isWarning) return 1;
-      return a.remainingDays - b.remainingDays;
-    })
-    .slice(0, props.size === 'small' ? 3 : props.size === 'medium' ? 5 : 8);
-});
-
-/**
- * 是否为小尺寸
- */
-const isSmallSize = computed(() => props.size === 'small');
-
-/**
- * 获取进度条颜色类
- */
-const getProgressColorClass = (goal: (typeof activeGoals.value)[0]) => {
-  if (goal.isOverdue) return 'bg-destructive';
-  if (goal.isWarning) return 'bg-warning';
-  if (goal.completionProgress >= 80) return 'bg-success';
-  return 'bg-primary';
-};
-
-/**
- * 获取进度条背景色类
- */
-const getProgressBgClass = (goal: (typeof activeGoals.value)[0]) => {
-  if (goal.isOverdue) return 'bg-destructive/20';
-  if (goal.isWarning) return 'bg-warning/20';
-  if (goal.completionProgress >= 80) return 'bg-success/20';
-  return 'bg-primary/20';
-};
-
-/**
- * 获取 Badge variant
- */
-const getBadgeVariant = (goal: (typeof activeGoals.value)[0]) => {
-  if (goal.isOverdue) return 'destructive' as const;
-  if (goal.isWarning) return 'secondary' as const;
-  return 'outline' as const;
-};
-
-/**
- * 格式化日期
- */
-const formatDate = (value: number) => {
-  const date = new Date(value);
-  return date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
-};
-
 // ===== Lifecycle =====
 onMounted(async () => {
   try {
@@ -236,12 +91,12 @@ onMounted(async () => {
         >
           <div class="flex items-center gap-1">
             <CalendarDays class="h-3 w-3" />
-            {{ formatDate(goal.startDate) }}
+            {{ formatProductDateTime(goal.startDate) }}
           </div>
           <ArrowRight class="h-3 w-3" />
           <div class="flex items-center gap-1">
             <Flag class="h-3 w-3" />
-            {{ formatDate(goal.targetDate) }}
+            {{ formatProductDateTime(goal.targetDate) }}
           </div>
         </div>
       </div>

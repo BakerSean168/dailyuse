@@ -1,14 +1,14 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { GoalFolder } from '@/server/domain';
-import type { IGoalFolderRepository } from '@/server/domain';
+import { GoalFolder } from '../../../../domain';
+import type { IGoalFolderRepository } from '../../../../domain';
 import { CreateGoalFolderUseCase } from '../create-goal-folder.use-case';
 
 // ============================================================
 // Module mock
 // ============================================================
 
-vi.mock('@/server/domain', async (importOriginal) => {
+vi.mock('../../../../domain', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...(actual as any),

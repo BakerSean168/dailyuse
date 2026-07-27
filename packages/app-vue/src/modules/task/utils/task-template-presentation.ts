@@ -8,6 +8,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskTemplateViewModel, TaskTimeConfigViewModel } from '../components/types';
 import { findNamedColor } from '../../../shared/constants/color-palette';
 import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';
+import { formatProductDate } from '../../../shared/utils/product-time';
 
 type Translate = ComposerTranslation<Record<string, never>, string>;
 
@@ -177,7 +178,7 @@ export function mapTaskTemplateDtoToViewModel(
     completedInstanceCount: dto.completedInstanceCount ?? 0,
     pendingInstanceCount: dto.pendingInstanceCount ?? 0,
     completionRate: dto.completionRate ?? 0,
-    formattedCreatedAt: dto.createdAt ? new Date(dto.createdAt).toLocaleDateString() : undefined,
+    formattedCreatedAt: dto.createdAt ? formatProductDate(dto.createdAt) : undefined,
     taskType: dto.recurrenceRule ? 'Recurring' : 'OneTime',
     color: dto.color,
     colorLabel: colorOption ? t(colorOption.labelKey) : t('task.metadata.selectColor'),

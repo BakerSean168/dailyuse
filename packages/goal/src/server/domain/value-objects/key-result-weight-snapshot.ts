@@ -7,8 +7,8 @@
  * 用于权重调整的完整追溯和审计
  *
  * 注意：
- * - 内部存储为 TransferDate (number/时间戳)
- * - Getter 返回 DomainDate (Date 对象)
+ * - 内部存储为 TransferDate ≡ Instant (epoch ms)
+ * - Getter 返回 Instant（ADR-037，无 mutable Date 泄漏）
  *
  * 不可变性（所有修改返回新实例）
  */
@@ -168,9 +168,7 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
     return this.props.weightDelta;
   }
 
-  /**
-   * 返回 TransferDate (number) 时间戳
-   */
+  /** ADR-037: Instant epoch ms */
   public get snapshotTime(): number {
     return this.props.snapshotTime;
   }
@@ -187,9 +185,7 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
     return this.props.operatorId;
   }
 
-  /**
-   * 返回 TransferDate (number) 时间戳
-   */
+  /** ADR-037: Instant epoch ms */
   public get createdAt(): number {
     return this.props.createdAt;
   }

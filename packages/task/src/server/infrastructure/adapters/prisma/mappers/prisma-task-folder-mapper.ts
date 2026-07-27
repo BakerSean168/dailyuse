@@ -8,6 +8,23 @@
 import type { TaskFolder as PrismaTaskFolder } from '@dailyuse/database';
 import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
 
+/** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
+function requiredInstant(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) return value.getTime();
+  if (value == null) return Date.now();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : Date.now();
+}
+
+/** Prisma Date/DateTime → Instant | null. */
+function optionalInstant(value: Date | string | number | null | undefined): number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.getTime();
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+
 export class PrismaTaskFolderMapper {
   /**
    * Prisma record → TaskFolderServerDTO
@@ -21,13 +38,9 @@ export class PrismaTaskFolderMapper {
       icon: data.icon ?? null,
       order: data.order,
       version: data.version,
-      createdAt: data.createdAt instanceof Date ? data.createdAt.getTime() : data.createdAt,
-      updatedAt: data.updatedAt instanceof Date ? data.updatedAt.getTime() : data.updatedAt,
-      deletedAt: data.deletedAt
-        ? data.deletedAt instanceof Date
-          ? data.deletedAt.getTime()
-          : data.deletedAt
-        : null,
+      createdAt: requiredInstant(data.createdAt),
+      updatedAt: requiredInstant(data.updatedAt),
+      deletedAt: optionalInstant(data.deletedAt),
     };
   }
 

@@ -14,10 +14,10 @@
  *
  * @internal Concrete PowerSync mapper — consumers should use domain entities directly.
  */
-import { RuleRevision } from '@/server/domain/entities/rule-revision';
-import { RuleId } from '@/server/domain/value-objects/rule-id';
-import { RuleRevisionId } from '@/server/domain/value-objects/rule-revision-id';
-import type { ChangeType } from '@/server/domain/value-objects/change-type';
+import { RuleRevision } from '../../../../domain/entities/rule-revision';
+import { RuleId } from '../../../../domain/value-objects/rule-id';
+import { RuleRevisionId } from '../../../../domain/value-objects/rule-revision-id';
+import type { ChangeType } from '../../../../domain/value-objects/change-type';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { toDate, parseStringArray, parseRecord } from '@dailyuse/utils/shared';
 

@@ -74,18 +74,18 @@ function goalFromDTO(dto: GoalClientDTO): Goal {
     priority: dto.priority ?? 0,
     category: dto.category,
     tags: dto.tags ?? [],
-    startDate: dto.startDate ? new Date(dto.startDate) : null,
-    targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
-    completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
-    archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
+    startDate: dto.startDate ? dto.startDate : null,
+    targetDate: dto.targetDate ? dto.targetDate : null,
+    completedAt: dto.completedAt ? dto.completedAt : null,
+    archivedAt: dto.archivedAt ? dto.archivedAt : null,
     folderId: dto.folderId ? GoalFolderId.of(dto.folderId) : null,
     parentGoalId: dto.parentGoalId ? GoalId.of(dto.parentGoalId) : null,
     sortOrder: dto.sortOrder,
     reminderConfig: dto.reminderConfig ?? null,
     version: dto.version,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    deletedAt: dto.deletedAt ?? null,
     keyResults: dto.keyResults?.map((kr) => keyResultFromDTO(kr)) ?? null,
     reviews: dto.reviews?.map((r) => goalReviewFromDTO(r)) ?? null,
     totalKeyResults: dtoWithSummary.totalKeyResults,
@@ -109,9 +109,9 @@ function goalFolderFromDTO(dto: GoalFolderClientDTO): GoalFolder {
     goalCount: dto.goalCount,
     completedGoalCount: dto.completedGoalCount,
     version: dto.version,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    deletedAt: dto.deletedAt ?? null,
   });
 }
 
@@ -124,9 +124,9 @@ function keyResultFromDTO(dto: KeyResultClientDTO): KeyResult {
     weight: dto.weight,
     order: dto.order,
     version: dto.version,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    deletedAt: dto.deletedAt ?? null,
   });
 }
 
@@ -142,10 +142,10 @@ function goalReviewFromDTO(dto: GoalReviewClientDTO): GoalReview {
     improvements: dto.improvements,
     keyResultSnapshots: dto.keyResultSnapshots ?? [],
     version: dto.version,
-    reviewedAt: new Date(dto.reviewedAt),
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    reviewedAt: dto.reviewedAt,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    deletedAt: dto.deletedAt ?? null,
   });
 }
 
@@ -158,9 +158,9 @@ function goalRecordFromDTO(dto: GoalRecordClientDTO): GoalRecord {
     valueAfter: dto.valueAfter,
     comment: dto.comment,
     version: dto.version,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    deletedAt: dto.deletedAt ?? null,
   });
 }
 

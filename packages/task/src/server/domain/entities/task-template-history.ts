@@ -1,3 +1,4 @@
+import type { Instant } from '@dailyuse/contracts/primitives';
 /**
  * TaskTemplateHistory 实体实现 (Server)
  * 任务模板历史记录 - 实体
@@ -18,7 +19,7 @@ export interface TaskTemplateHistoryState {
   templateId: string;
   action: string;
   changes: unknown;
-  createdAt: Date;
+  createdAt: Instant;
 }
 
 /**
@@ -33,7 +34,7 @@ export class TaskTemplateHistory extends Entity<string> {
   private _templateId: string;
   private _action: string;
   private _changes: unknown;
-  private _createdAt: Date;
+  private _createdAt: Instant;
 
   private constructor(state: TaskTemplateHistoryState) {
     super(state.id);
@@ -58,7 +59,7 @@ export class TaskTemplateHistory extends Entity<string> {
     return this._changes;
   }
 
-  public get createdAt(): Date {
+  public get createdAt(): Instant {
     return this._createdAt;
   }
 
@@ -71,7 +72,7 @@ export class TaskTemplateHistory extends Entity<string> {
       templateId: this._templateId,
       action: this._action,
       changes: this._changes,
-      createdAt: this._createdAt.getTime(),
+      createdAt: this._createdAt,
     };
   }
 
@@ -81,7 +82,7 @@ export class TaskTemplateHistory extends Entity<string> {
       templateId: this._templateId,
       action: this._action,
       changes: this._changes,
-      createdAt: this._createdAt.getTime(),
+      createdAt: this._createdAt,
     };
   }
 
@@ -105,7 +106,7 @@ export class TaskTemplateHistory extends Entity<string> {
       templateId: params.templateId,
       action: params.action,
       changes: params.changes ?? null,
-      createdAt: new Date(),
+      createdAt: Date.now(),
     });
   }
 }

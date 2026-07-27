@@ -14,7 +14,6 @@ const sharedConfig = createSharedConfig({
   environment: 'node',
   testInclude: benchmarkIncludes,
   aliases: {
-    '@/server/domain': './src/server/domain/index.ts',
     '@dailyuse/contracts/task': '../contracts/src/modules/task/index.ts',
     '@dailyuse/contracts/result': '../contracts/src/result/index.ts',
     '@dailyuse/contracts/shared': '../contracts/src/shared/index.ts',
@@ -31,11 +30,6 @@ const sharedConfig = createSharedConfig({
 
 const projectConfig = defineConfig({
   root: __dirname,
-  resolve: {
-    alias: [
-      { find: '@/server/', replacement: `${__dirname}/src/server/` },
-    ],
-  },
   test: {
     name: 'task-performance',
     // Keep the performance suite opt-in and deterministic. Bench files are

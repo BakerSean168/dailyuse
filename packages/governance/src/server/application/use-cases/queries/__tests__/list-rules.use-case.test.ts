@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import { ListRulesUseCase } from '../list-rules.use-case';
-import type { IRuleRepository } from '@/server/domain/repositories/i-rule-repository';
+import type { IRuleRepository } from '../../../../domain/repositories/i-rule-repository';
 import type { ListRulesQuery } from '@dailyuse/contracts/governance';
 import { RuleStatus } from '@dailyuse/contracts/governance';
 import { RuleSeverity } from '@dailyuse/contracts/governance';

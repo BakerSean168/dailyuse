@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { Goal } from '@/server/domain/aggregates/goal';
-import { GoalReminderConfig } from '@/server/domain';
+import { Goal } from '../../../domain/aggregates/goal';
+import { GoalReminderConfig } from '../../../domain';
 import { GoalPrismaRepository } from './goal-prisma.repository';
 import {
   cleanAll,

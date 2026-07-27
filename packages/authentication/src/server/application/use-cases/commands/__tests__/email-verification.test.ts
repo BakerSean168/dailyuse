@@ -4,10 +4,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SendEmailVerificationCodeUseCase } from '../send-email-verification-code.use-case';
 import { VerifyEmailCodeUseCase } from '../verify-email-code.use-case';
-import type { IAuthIdentityRepository } from '@/server/domain/repositories/i-auth-identity.repository';
-import type { IEmailSender, IPasswordHasher } from '@/server/domain';
-import { AuthDomainCode, AuthIdentity, AuthIdentityStatus } from '@/server/domain';
-import { InMemoryVerificationChallengeStore } from '@/server/infrastructure/services/in-memory-verification-challenge-store';
+import type { IAuthIdentityRepository } from '../../../../domain/repositories/i-auth-identity.repository';
+import type { IEmailSender, IPasswordHasher } from '../../../../domain';
+import { AuthDomainCode, AuthIdentity, AuthIdentityStatus } from '../../../../domain';
+import { InMemoryVerificationChallengeStore } from '../../../../infrastructure/services/in-memory-verification-challenge-store';
 
 const MOCK_HASH = '$argon2id$v=19$m=65536,t=3,p=4$bW9ja3NhbHQ$bW9ja2hhc2h2YWx1ZQ';
 

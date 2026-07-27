@@ -3,8 +3,8 @@
  * 获取规则修订记录用例
  */
 
-import type { IRuleRevisionRepository } from '@/server/domain/repositories/i-rule-revision-repository';
-import { RuleId } from '@/server/domain/value-objects/rule-id';
+import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
+import { RuleId } from '../../../domain/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { resultify } from '@dailyuse/utils/result';
 import type {

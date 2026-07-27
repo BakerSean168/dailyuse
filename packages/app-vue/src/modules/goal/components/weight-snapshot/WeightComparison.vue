@@ -130,6 +130,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { BarChart, RadarChart } from 'echarts/charts';
+import { formatProductPattern } from '../../../../shared/utils/product-time';
 import {
   TitleComponent,
   TooltipComponent,
@@ -140,8 +141,6 @@ import {
 import { CanvasRenderer } from 'echarts/renderers';
 import VChart from 'vue-echarts';
 import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
-import { format, type Locale } from 'date-fns';
-import { zhCN, enUS } from 'date-fns/locale';
 import {
   Card,
   CardHeader,
@@ -185,12 +184,8 @@ const {
   fetchWeightComparison,
 } = useWeightSnapshot();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
-const dateFnsLocaleMap: Record<string, Locale> = {
-  'zh-CN': zhCN,
-  'en-US': enUS,
-};
 
 // 时间点选择
 interface TimePoint {
@@ -213,7 +208,7 @@ const canCompare = computed(() => {
 const timePointLabels = computed(() => {
   if (!comparisonData.value) return [];
   return comparisonData.value.timePoints.map((tp) =>
-    format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
+    formatProductPattern(tp, 'MM-dd HH:mm'),
   );
 });
 
@@ -287,7 +282,7 @@ const barChartOption = computed(() => {
   const { keyResults, comparisons, timePoints } = comparisonData.value;
 
   const series = timePoints.map((tp, tpIndex) => ({
-    name: format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
+    name: formatProductPattern(tp, 'MM-dd HH:mm'),
     type: 'bar',
     data: keyResults.map((kr) => comparisons[kr.id][tpIndex]),
   }));
@@ -317,7 +312,7 @@ const barChartOption = computed(() => {
     },
     legend: {
       data: timePoints.map((tp) =>
-        format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
+        formatProductPattern(tp, 'MM-dd HH:mm'),
       ),
       bottom: 10,
     },
@@ -362,7 +357,7 @@ const radarChartOption = computed(() => {
 
   const series = timePoints.map((tp, tpIndex) => ({
     value: keyResults.map((kr) => comparisons[kr.id][tpIndex]),
-    name: format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
+    name: formatProductPattern(tp, 'MM-dd HH:mm'),
   }));
 
   return {
@@ -375,7 +370,7 @@ const radarChartOption = computed(() => {
     },
     legend: {
       data: timePoints.map((tp) =>
-        format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
+        formatProductPattern(tp, 'MM-dd HH:mm'),
       ),
       bottom: 10,
     },
@@ -402,7 +397,7 @@ const loadComparison = async () => {
 // 初始化时间点标签
 onMounted(() => {
   selectedTimePoints.value.forEach((tp, _index) => {
-    tp.label = format(new Date(tp.timestamp), "yyyy-MM-dd'T'HH:mm");
+    tp.label = formatProductPattern(tp.timestamp, "yyyy-MM-dd'T'HH:mm");
   });
 });
 </script>

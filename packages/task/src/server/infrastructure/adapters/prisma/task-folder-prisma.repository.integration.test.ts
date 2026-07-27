@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { TaskFolderId } from '@/server/domain/value-objects';
+import { TaskFolderId } from '../../../domain/value-objects';
 import { TaskFolderPrismaRepository } from './task-folder-prisma.repository';
 import {
   cleanTaskTables,
