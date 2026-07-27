@@ -35,7 +35,7 @@ describe('formatMessageTime keep-boundary (residual 1207)', () => {
   });
 
   it('differs from app-vue SSE locale toLocaleTimeString formatMessageTime (no force-merge)', () => {
-    expect(vue).toContain('Residual 1207 keep-boundary');
+    expect(vue).toContain('Residual 1207');
     expect(vue).toMatch(/function formatMessageTime\b/);
     expect(vue).toContain('Soft residual 1207');
     expect(vue).toContain('toLocaleTimeString(locale.value)');

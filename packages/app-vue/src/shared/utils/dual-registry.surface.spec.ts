@@ -967,7 +967,7 @@ import { parseToDate } from './parse-to-date';
       expect(sole).toContain('formatProductDate');
       expect(sole).toContain('product-time');
       const body = sole.match(/export function formatDateNotSet\([\s\S]*?\n\}/)?.[0] ?? '';
-      expect(body).toContain('timestamp: number | null');
+      expect(body).toContain('value: number | string | null | undefined');
       expect(body).toContain('formatProductDate');
       expect(body).not.toContain('createTimeFacade');
       expect(body).not.toContain('toLocaleString()');

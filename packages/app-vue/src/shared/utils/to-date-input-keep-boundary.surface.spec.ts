@@ -83,7 +83,7 @@ describe('toDateInput keep-boundary (residual 1228)', () => {
     expect(vueTask).toContain('Residual 1210');
     expect(vueTask).toMatch(/const formatDateToInput\b/);
     expect(vueTask).toContain('getProductTime');
-    expect(vueTask).toContain('dateToYmd');
+    expect(vueTask).toContain('dateValue');
     expect(vueTask).not.toContain('getTimezoneOffset');
   });
 

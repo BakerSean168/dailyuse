@@ -52,7 +52,7 @@ describe('formatTime keep-boundary (residual 1237)', () => {
     expect(setting).not.toMatch(/function formatTime\b/);
     expect(progress).toContain('formatProductPattern');
     expect(progress).not.toMatch(/function formatTime\b/);
-    expect(weight).toContain('formatProductDateTime');
+    expect(weight).toContain('formatProductPattern');
     expect(weight).not.toMatch(/function formatTime\b/);
     expect(focus).toContain('formatProductDateTime');
     expect(focus).not.toMatch(/function formatTime\b/);

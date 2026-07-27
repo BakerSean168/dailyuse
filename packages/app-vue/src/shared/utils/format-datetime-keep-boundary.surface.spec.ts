@@ -34,7 +34,7 @@ describe('formatDateTime keep-boundary (residual 1204)', () => {
 
   it('app-react formatDateTime uses session product-time + dash empty', () => {
     expect(react).toContain('Residual 1204');
-    expect(react).toMatch(/export function formatDateTime\b/);
+    expect(react).toMatch(/export function formatEntityDateTime\b/);
     expect(react).toContain("emptyKind('dash')");
     expect(react).toContain('formatProductDateTime');
     expect(react).not.toContain('createTimeFacade');

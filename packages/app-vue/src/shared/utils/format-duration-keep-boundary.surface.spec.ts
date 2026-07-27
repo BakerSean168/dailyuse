@@ -89,7 +89,7 @@ describe('formatDuration keep-boundary (residual 1243)', () => {
   it('soft residual 1243 ms floor / demo / task graph / Intl / AI / buildDuration stay separate', () => {
     expect(conflictMs).toContain('Soft residual 1243');
     const msBody = conflictMs.match(/function formatDuration\([\s\S]*?\n\}/)?.[0] ?? '';
-    expect(msBody).toContain('ms / 60000');
+    expect(msBody).toContain('splitDurationMs');
     expect(msBody).toContain('hoursMinutes');
     expect(msBody).not.toContain("schedule.duration.hours'");
     expect(msBody).not.toContain('schedule.duration.hours"');
