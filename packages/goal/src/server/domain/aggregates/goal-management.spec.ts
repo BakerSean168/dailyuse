@@ -13,8 +13,8 @@ function createGoal(overrides?: Partial<Parameters<typeof Goal.create>[0]>): Goa
     importance: 'Moderate' as never,
     category: ' Work ',
     tags: ['launch'],
-    startDate: new Date('2026-04-20T00:00:00.000Z'),
-    targetDate: new Date('2026-04-30T00:00:00.000Z'),
+    startDate: new Date('2026-04-20T00:00:00.000Z').getTime(),
+    targetDate: new Date('2026-04-30T00:00:00.000Z').getTime(),
     folderId: null,
     parentGoalId: null,
     reminderConfig: GoalReminderConfig.createDefault(),
@@ -138,16 +138,16 @@ describe('Goal aggregate management', () => {
     goal.pullDomainEvents();
 
     goal.updateTimeRange({
-      startDate: new Date('2026-04-18T00:00:00.000Z'),
-      targetDate: new Date('2026-05-05T00:00:00.000Z'),
+      startDate: new Date('2026-04-18T00:00:00.000Z').getTime(),
+      targetDate: new Date('2026-05-05T00:00:00.000Z').getTime(),
     });
-    expect(goal.startDate?.toISOString()).toBe('2026-04-18T00:00:00.000Z');
-    expect(goal.targetDate?.toISOString()).toBe('2026-05-05T00:00:00.000Z');
+    expect(new Date(goal.startDate!).toISOString()).toBe('2026-04-18T00:00:00.000Z');
+    expect(new Date(goal.targetDate!).toISOString()).toBe('2026-05-05T00:00:00.000Z');
 
     goal.extendTargetDate(2);
-    expect(goal.targetDate?.toISOString()).toBe('2026-05-07T00:00:00.000Z');
+    expect(new Date(goal.targetDate!).toISOString()).toBe('2026-05-07T00:00:00.000Z');
     goal.shortenTargetDate(1);
-    expect(goal.targetDate?.toISOString()).toBe('2026-05-06T00:00:00.000Z');
+    expect(new Date(goal.targetDate!).toISOString()).toBe('2026-05-06T00:00:00.000Z');
 
     goal.moveToFolder('GoalFolderId_1' as never);
     goal.updateSortOrder(7);
@@ -162,8 +162,8 @@ describe('Goal aggregate management', () => {
     const resolved = (goal as any).resolveTimeRange();
     expect(ratio).toBeGreaterThan(0);
     expect(ratio).toBeLessThan(1);
-    expect(resolved.start).toBe(goal.startDate?.getTime());
-    expect(resolved.end).toBe(goal.targetDate?.getTime());
+    expect(resolved.start).toBe(goal.startDate);
+    expect(resolved.end).toBe(goal.targetDate);
     expect(goal.isOverdue()).toBe(false);
     expect(goal.getRemainingDays()).toBe(10);
     expect(goal.isHighPriority()).toBe(true);
@@ -175,8 +175,8 @@ describe('Goal aggregate management', () => {
     expect(() => goal.shortenTargetDate(100)).toThrow('目标日期范围无效');
     expect(() =>
       goal.updateTimeRange({
-        startDate: new Date('2026-05-10T00:00:00.000Z'),
-        targetDate: new Date('2026-05-01T00:00:00.000Z'),
+        startDate: new Date('2026-05-10T00:00:00.000Z').getTime(),
+        targetDate: new Date('2026-05-01T00:00:00.000Z').getTime(),
       }),
     ).toThrow('目标日期范围无效');
 

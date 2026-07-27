@@ -56,6 +56,37 @@ export function GoalCompareScreen() {
   }
 
   /**
+   * Residual 1219 keep-boundary: app-react getImportanceLabel — English identity labels.
+   * Goal compare screen; Vital-scale keys map to themselves (no i18n t()).
+   * Soft residual 1219: app-vue goal i18n map + KR high/medium/low differ (no force-merge).
+   */
+  function getImportanceLabel(importance: string): string {
+    const labels: Record<string, string> = {
+      Vital: 'Vital',
+      Important: 'Important',
+      Moderate: 'Moderate',
+      Minor: 'Minor',
+      Trivial: 'Trivial',
+    };
+    return labels[importance] ?? importance;
+  }
+
+  /**
+   * Residual 1222 keep-boundary: app-react getStatusLabel — English identity labels.
+   * Goal compare screen; Draft/Active/Completed/Archived map to themselves (no i18n t()).
+   * Soft residual 1222: app-vue goal i18n map + schedule taskStatus differ (no force-merge).
+   */
+  function getStatusLabel(status: GoalStatus): string {
+    const labels: Record<string, string> = {
+      Draft: 'Draft',
+      Active: 'Active',
+      Completed: 'Completed',
+      Archived: 'Archived',
+    };
+    return labels[status] ?? status;
+  }
+
+  /**
    * Residual 1240: app-react goal empty catalog dash via formatProductDate (no local formatDate).
    * Soft residual 1240: vue goal i18n notSet + other empty labels differ (no force-merge).
    */
@@ -115,7 +146,7 @@ export function GoalCompareScreen() {
                         Status
                       </ThemedText>
                       <StatusPill
-                        label={goal.status}
+                        label={getStatusLabel(goal.status)}
                         tone={goal.status === GoalStatus.Active ? 'success' : 'textSecondary'}
                       />
                     </View>
@@ -131,7 +162,7 @@ export function GoalCompareScreen() {
                       <ThemedText type="small" themeColor="textSecondary">
                         Importance
                       </ThemedText>
-                      <ThemedText type="small">{String(goal.importance)}</ThemedText>
+                      <ThemedText type="small">{getImportanceLabel(goal.importance)}</ThemedText>
                     </View>
 
                     <View style={styles.metricRow}>

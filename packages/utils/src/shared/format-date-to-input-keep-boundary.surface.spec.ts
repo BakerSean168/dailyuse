@@ -45,10 +45,10 @@ describe('formatDateToInput dual retired (residual 1210)', () => {
     expect(vue).toContain('Residual 1210');
     expect(vue).toMatch(/const formatDateToInput\b/);
     expect(vue).toContain('getProductTime');
-    expect(vue).toContain('format.dateToYmd');
+    expect(vue).toContain('input.dateValue');
     const body = vue.match(/const formatDateToInput\s*=\s*\([\s\S]*?\};/)?.[0] ?? '';
     expect(body).toContain('getProductTime()');
-    expect(body).toContain('dateToYmd');
+    expect(body).toContain('dateValue');
     expect(body).not.toContain('date-fns');
   });
 

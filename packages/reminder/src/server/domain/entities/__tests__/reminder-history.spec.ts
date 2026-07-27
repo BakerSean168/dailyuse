@@ -66,8 +66,8 @@ describe('ReminderHistory entity', () => {
       notificationSent: true,
       notificationChannels: [NotificationChannel.Email, NotificationChannel.Sms],
       version: 1,
-      createdAt: withChannels.createdAt.getTime(),
-      updatedAt: withChannels.createdAt.getTime(),
+      createdAt: withChannels.createdAt,
+      updatedAt: withChannels.createdAt,
       deletedAt: null,
     });
     expect(withoutChannels.toClientDTO().notificationChannels).toBeNull();
@@ -79,15 +79,15 @@ describe('ReminderHistory entity', () => {
       id: ReminderHistoryId.generate(),
       templateId: 'template-9',
       identityId: 'identity-9',
-      triggeredAt: new Date(9_000),
+      triggeredAt: 9_000,
       result: TriggerResult.Success,
       error: null,
       notificationSent: false,
       notificationChannels: null,
-      createdAt: new Date(9_500),
+      createdAt: 9_500,
     });
 
-    expect(loaded.createdAt.getTime()).toBe(9_500);
+    expect(loaded.createdAt).toBe(9_500);
     expect(loaded.toClientDTO().createdAt).toBe(9_500);
   });
 });

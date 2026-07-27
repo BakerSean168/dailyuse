@@ -77,8 +77,8 @@ describe('PrismaTaskInstanceMapper', () => {
       expect(domain.actualEndTime).toBeNull();
       expect(domain.note).toBeNull();
       expect(domain.version).toBe(1);
-      expect(domain.createdAt).toEqual(row.createdAt);
-      expect(domain.updatedAt).toEqual(row.updatedAt);
+      expect(domain.createdAt).toBe(row.createdAt.getTime());
+      expect(domain.updatedAt).toBe(row.updatedAt.getTime());
     });
 
     it('maps full Prisma row with all fields to domain', () => {
@@ -127,8 +127,8 @@ describe('PrismaTaskInstanceMapper', () => {
       const row = createFullRow();
       const domain = PrismaTaskInstanceMapper.toDomain(row);
 
-      expect(domain.createdAt).toEqual(row.createdAt);
-      expect(domain.updatedAt).toEqual(row.updatedAt);
+      expect(domain.createdAt).toBe(row.createdAt.getTime());
+      expect(domain.updatedAt).toBe(row.updatedAt.getTime());
       expect(domain.instanceDate).toBe(row.instanceDate.getTime());
       expect(domain.actualStartTime).toBe(row.actualStartTime!.getTime());
       expect(domain.actualEndTime).toBe(row.actualEndTime!.getTime());

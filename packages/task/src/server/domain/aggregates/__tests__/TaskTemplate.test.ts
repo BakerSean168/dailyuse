@@ -465,9 +465,9 @@ describe('TaskTemplate Aggregate', () => {
       });
 
       it('should update updatedAt', () => {
-        const before = template.updatedAt;
+        const before = Number(template.updatedAt);
         template.pause();
-        expect(template.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+        expect(Number(template.updatedAt)).toBeGreaterThanOrEqual(before);
       });
 
       it('should add a history entry', () => {
@@ -994,7 +994,7 @@ describe('TaskTemplate Aggregate', () => {
         template.generateInstances(new Date('2025-06-15').getTime(), to);
 
         expect(template.lastGeneratedDate).not.toBeNull();
-        expect(template.lastGeneratedDate!.getTime()).toBe(to);
+        expect(Number(template.lastGeneratedDate)).toBe(to);
       });
 
       it('should normalize generated instanceDate to day start for non-midnight fromDate', () => {

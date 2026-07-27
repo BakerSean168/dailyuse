@@ -143,9 +143,9 @@ describe('rawDataToGoalState', () => {
       weightSnapshots: null,
       totalKeyResults: 0,
       completedKeyResults: 0,
-      createdAt: new Date(2_000),
-      updatedAt: new Date(3_000),
-      deletedAt: new Date(3_100),
+      createdAt: 2_000,
+      updatedAt: 3_000,
+      deletedAt: 3_100,
       version: 1,
     };
 
@@ -157,6 +157,6 @@ describe('rawDataToGoalState', () => {
     expect(state.keyResults).toEqual([]);
     expect(state.goalReviews).toEqual([]);
     expect(state.weightSnapshots).toEqual([]);
-    expect(state.deletedAt?.getTime()).toBe(3_100);
+    expect(state.deletedAt).toBe(3_100);
   });
 });

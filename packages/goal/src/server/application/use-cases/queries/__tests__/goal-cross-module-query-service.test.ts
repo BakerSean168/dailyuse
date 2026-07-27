@@ -22,8 +22,9 @@ vi.mock('@dailyuse/utils', async () => {
 
 function createGoalFixture(overrides?: Record<string, any>) {
   const { targetDate: rawTargetDate, ...rest } = overrides ?? {};
+  // ADR-037: Instant epoch ms (not Date)
   const targetDate = rawTargetDate != null
-    ? (rawTargetDate instanceof Date ? rawTargetDate : new Date(rawTargetDate))
+    ? (rawTargetDate instanceof Date ? rawTargetDate.getTime() : Number(rawTargetDate))
     : null;
   return {
     id: rest.id ?? 'goal-id-1',
