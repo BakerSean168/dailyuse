@@ -80,7 +80,7 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { calendarEventSourceLabel, type CalendarEventItem } from '../composables/useCalendarView';
 import { formatCalendarEventTimeRange } from '../../../shared/utils/format-calendar-event-time-range';
-import { getProductTime } from '@/shared/utils/product-time';
+import { getProductTime } from '../../../shared/utils/product-time';
 
 interface Props {
   open: boolean;

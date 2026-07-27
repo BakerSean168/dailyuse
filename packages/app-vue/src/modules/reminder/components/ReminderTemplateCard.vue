@@ -264,7 +264,7 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
-import { emptyUnknown, formatProductDateTimeSeconds } from '@/shared/utils/product-time';
+import { emptyUnknown, formatProductDateTimeSeconds } from '../../../shared/utils/product-time';
 import {
   Bell,
   Info,

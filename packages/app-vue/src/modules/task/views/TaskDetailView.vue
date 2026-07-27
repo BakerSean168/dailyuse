@@ -296,7 +296,7 @@ import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/pr
 import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { buildTaskGraphData } from '../types/task-dag.types';
-import { emptyKind, formatProductDate } from '@/shared/utils/product-time';
+import { emptyKind, formatProductDate } from '../../../shared/utils/product-time';
 
 const route = useRoute();
 const router = useRouter();

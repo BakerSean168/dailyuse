@@ -78,7 +78,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { GitCompare } from '@lucide/vue';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Button,
   Badge,

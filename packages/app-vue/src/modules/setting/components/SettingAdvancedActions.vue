@@ -74,7 +74,6 @@
       </div>
 
       <!-- Server-only, read-only disclosure. It has no import route. -->
-import { formatProductHm, formatProductDateTime } from '@/shared/utils/product-time';
       <div v-if="serverDataDisclosureAvailable" class="space-y-2">
         <p class="text-xs leading-5 text-muted-foreground" data-testid="server-data-scope">
           {{ t('setting.advanced.serverDataDisclosureDescription') }}
@@ -197,6 +196,7 @@ import {
   FileJson,
   FileText,
 } from '@lucide/vue';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 
 const { t } = useI18n();
 

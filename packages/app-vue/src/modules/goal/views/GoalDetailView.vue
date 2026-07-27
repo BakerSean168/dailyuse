@@ -330,7 +330,7 @@ import KeyResultDialog from '../components/dialogs/KeyResultDialog.vue';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
 import { getCompletedKeyResultCount, getGoalOverallProgress } from '../utils/progress';
 import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import { emptyNotSet, formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
+import { emptyNotSet, formatProductDate, formatProductDateTime } from '../../../shared/utils/product-time';
 
 const route = useRoute();
 const router = useRouter();

@@ -8,7 +8,7 @@ import { useI18n } from 'vue-i18n';
 import { useTask } from '../../../modules/task/composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';
-import { startOfDayMs, endOfDayMs, isTodayMs } from '@/shared/utils/product-time';
+import { startOfDayMs, endOfDayMs, isTodayMs } from '../../../shared/utils/product-time';
 
 const RECENT_LIMIT = 3;
 const CACHE_MS = 45_000;

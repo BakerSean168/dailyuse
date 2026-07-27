@@ -11,7 +11,7 @@ import { padTwoDigits } from '../../../shared/utils/pad-two-digits';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import { startOfDayMs, endOfDayMs } from '@/shared/utils/product-time';
+import { startOfDayMs, endOfDayMs } from '../../../shared/utils/product-time';
 
 // ============ 统一内部事件类型 ============
 

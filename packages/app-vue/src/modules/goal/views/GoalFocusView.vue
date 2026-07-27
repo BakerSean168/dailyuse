@@ -92,7 +92,7 @@ import { useRouter } from 'vue-router';
 import type { FocusModeDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Button,
   Card,

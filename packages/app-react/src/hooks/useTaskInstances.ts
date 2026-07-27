@@ -21,16 +21,16 @@ function mapInstance(instance: TaskInstance): TaskInstanceSummary {
   return {
     id: String(instance.id),
     templateId: String(instance.templateId),
-    instanceDate: instance.instanceDate.getTime(),
+    instanceDate: instance.instanceDate,
     status: instance.status,
     timeConfig: {
       timeType: instance.timeConfig.timeType,
-      startDate: instance.timeConfig.startDate ? instance.timeConfig.startDate.getTime() : null,
+      startDate: instance.timeConfig.startDate ? instance.timeConfig.startDate : null,
       timePoint: instance.timeConfig.timePoint,
       timeRange: instance.timeConfig.timeRange ?? null,
     },
-    actualStartTime: instance.actualStartTime?.getTime() ?? null,
-    actualEndTime: instance.actualEndTime?.getTime() ?? null,
+    actualStartTime: instance.actualStartTime ?? null,
+    actualEndTime: instance.actualEndTime ?? null,
     comment: instance.comment,
   };
 }

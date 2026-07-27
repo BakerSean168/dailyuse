@@ -119,7 +119,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
-import { startOfDayMs, endOfDayMs, isTodayMs } from '@/shared/utils/product-time';
+import { startOfDayMs, endOfDayMs, isTodayMs } from '../../../../shared/utils/product-time';
 import {
   Card,
   CardContent,

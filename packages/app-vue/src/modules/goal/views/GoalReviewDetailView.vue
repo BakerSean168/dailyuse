@@ -146,7 +146,7 @@
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { emptyKind, formatProductDateTime, formatProductMonthDay } from '@/shared/utils/product-time';
+import { emptyKind, formatProductDateTime, formatProductMonthDay } from '../../../shared/utils/product-time';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';

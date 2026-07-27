@@ -13,7 +13,7 @@ import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/compone
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ECElementEvent } from 'echarts';
 import VChart from 'vue-echarts';
-import { formatProductPattern } from '@/shared/utils/product-time';
+import { formatProductPattern } from '../../../../shared/utils/product-time';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
 

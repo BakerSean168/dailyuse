@@ -147,7 +147,7 @@ import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus, History, TrendingUp } from '@lucide/vue';
 import type { KeyResultId } from '@dailyuse/contracts/primitives';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Button,
   Badge,

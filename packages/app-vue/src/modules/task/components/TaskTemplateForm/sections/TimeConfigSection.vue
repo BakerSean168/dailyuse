@@ -240,7 +240,7 @@ import {
 import { Calendar as CalendarIcon } from '@lucide/vue';
 import { translateResultError } from '../../../../../shared/utils/translate-result-error';
 import { formatDateToYMD } from '../../../../../shared/utils/format-date-to-ymd';
-import { getProductTime } from '@/shared/utils/product-time';
+import { getProductTime } from '../../../../../shared/utils/product-time';
 import { parseToDate } from '../../../../../shared/utils/parse-to-date';
 import { handleCalendarSelect } from '../../../../../shared/utils/handle-calendar-select';
 import { formatDisplayDate } from '../../../../../shared/utils/format-display-date';

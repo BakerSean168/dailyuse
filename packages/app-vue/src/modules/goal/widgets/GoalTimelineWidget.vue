@@ -1,4 +1,4 @@
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 <script setup lang="ts">
 // ===== Lifecycle =====
 onMounted(async () => {

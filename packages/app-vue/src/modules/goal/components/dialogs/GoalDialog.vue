@@ -418,7 +418,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../../shared/utils/product-time';
 import {
   Dialog,
   DialogContent,

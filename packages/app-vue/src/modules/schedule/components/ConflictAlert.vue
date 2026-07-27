@@ -52,7 +52,7 @@ import { Button } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, X } from '@lucide/vue';
 import { splitDurationMs } from '@dailyuse/time';
 import { useI18n } from 'vue-i18n';
-import { formatProductHm } from '@/shared/utils/product-time';
+import { formatProductHm } from '../../../shared/utils/product-time';
 import {
   ConflictSuggestionType,
   type ConflictDetectionResult,

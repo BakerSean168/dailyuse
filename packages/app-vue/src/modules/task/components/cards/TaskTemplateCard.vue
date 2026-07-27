@@ -288,7 +288,7 @@ import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
 import { useI18n } from 'vue-i18n';
 import { getTaskTimeValueDisplay } from '../../utils/task-template-presentation';
-import { formatProductPattern } from '@/shared/utils/product-time';
+import { formatProductPattern } from '../../../../shared/utils/product-time';
 
 const { t } = useI18n();
 import {

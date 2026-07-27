@@ -139,7 +139,7 @@
 import { computed, watch, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TimelineSnapshot } from '../../utils/goal-timeline';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../../shared/utils/product-time';
 
 const { t } = useI18n();
 

@@ -3,17 +3,19 @@
  *
  * These define the contract that any data source must implement
  * to feed the dashboard projection logic.
+ *
+ * ADR-037: timestamps are Instant (epoch ms), not Date.
  */
 
 export interface DashboardGoalRecord {
   id: string;
   name: string;
   status: string;
-  deletedAt: Date | null;
+  deletedAt: number | null;
   priority: number;
-  updatedAt: Date;
+  updatedAt: number;
   progress: number;
-  targetDate: Date | null;
+  targetDate: number | null;
   keyResults: readonly unknown[];
 }
 
@@ -21,8 +23,8 @@ export interface DashboardTaskTemplateRecord {
   id: string;
   title: string;
   status: string;
-  deletedAt: Date | null;
-  createdAt: Date;
+  deletedAt: number | null;
+  createdAt: number;
 }
 
 export interface DashboardTaskInstanceRecord {
@@ -32,7 +34,7 @@ export interface DashboardTaskInstanceRecord {
   instanceDate: number;
   actualEndTime: number | null;
   updatedAt: number;
-  deletedAt: Date | null;
+  deletedAt: number | null;
   isOverdue(): boolean;
 }
 
@@ -43,11 +45,11 @@ export interface DashboardScheduleRecord {
   endTime: number;
   priority?: number | null;
   hasConflict: boolean;
-  createdAt: Date;
+  createdAt: number;
 }
 
 export interface DashboardReminderRecord {
-  deletedAt: Date | null;
+  deletedAt: number | null;
   status: string;
   effectiveEnabled: boolean;
   nextTriggerAt: number | null;

@@ -61,7 +61,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
-import { formatProductPattern } from '@/shared/utils/product-time';
+import { formatProductPattern } from '../../../../shared/utils/product-time';
 import {
   TitleComponent,
   TooltipComponent,

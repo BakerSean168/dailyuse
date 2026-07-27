@@ -388,7 +388,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../../shared/utils/product-time';
 import {
   Card,
   CardHeader,

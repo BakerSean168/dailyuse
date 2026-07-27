@@ -115,7 +115,7 @@ export function GoalCompareScreen() {
                         Status
                       </ThemedText>
                       <StatusPill
-                        label={getStatusLabel(goal.status)}
+                        label={goal.status}
                         tone={goal.status === GoalStatus.Active ? 'success' : 'textSecondary'}
                       />
                     </View>
@@ -131,7 +131,7 @@ export function GoalCompareScreen() {
                       <ThemedText type="small" themeColor="textSecondary">
                         Importance
                       </ThemedText>
-                      <ThemedText type="small">{getImportanceLabel(goal.importance)}</ThemedText>
+                      <ThemedText type="small">{String(goal.importance)}</ThemedText>
                     </View>
 
                     <View style={styles.metricRow}>

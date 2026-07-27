@@ -190,7 +190,7 @@ import { useWeightSnapshot } from '../../composables/useWeightSnapshot';
 import type { GoalSnapshotItem } from '../../composables/useWeightSnapshot';
 import { useGoal } from '../../composables/useGoal';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import { formatProductPattern } from '@/shared/utils/product-time';
+import { formatProductPattern } from '../../../../shared/utils/product-time';
 import {
   Card,
   CardHeader,

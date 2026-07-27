@@ -45,7 +45,7 @@ import { Button } from '@dailyuse/ui-vue-shadcn';
 import { CheckCircle2, Circle, Clock, Check } from '@lucide/vue';
 import type { TaskInstanceViewModel } from './types';
 import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';
-import { formatProductHm } from '@/shared/utils/product-time';
+import { formatProductHm } from '../../../shared/utils/product-time';
 
 // Props
 const props = withDefaults(

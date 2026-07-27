@@ -154,7 +154,7 @@ import TaskEventActionPanel from '../components/TaskEventActionPanel.vue';
 import EventDetailSheet from '../components/EventDetailSheet.vue';
 import DevScheduleDebugPanel from '../components/DevScheduleDebugPanel.vue';
 import { getWeekStart, toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
-import { getProductTime } from '@/shared/utils/product-time';
+import { getProductTime } from '../../../shared/utils/product-time';
 // Residual 1285: getWeekStart dual retired onto schedule sole.
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';

@@ -255,7 +255,7 @@ import {
   CalendarOff,
 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { emptyKind, formatProductDate, formatProductDateTime } from '@/shared/utils/product-time';
+import { emptyKind, formatProductDate, formatProductDateTime } from '../../../shared/utils/product-time';
 
 interface ScheduleTask {
   id: string;

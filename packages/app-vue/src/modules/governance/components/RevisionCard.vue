@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { RuleRevisionClientDTO } from '@dailyuse/contracts/governance';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 
 const props = defineProps<{
   revision: RuleRevisionClientDTO;

@@ -111,7 +111,7 @@ import {
   CalendarOff,
 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../shared/utils/product-time';
 import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';

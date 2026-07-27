@@ -6,7 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { GenderType, type AccountProfileDTO } from '@dailyuse/contracts/account';
-import { formatProductDate, getProductTime } from '@/shared/utils/product-time';
+import { formatProductDate, getProductTime } from '../../../shared/utils/product-time';
 
 interface ProfileCardProps {
   profile: AccountProfileDTO;

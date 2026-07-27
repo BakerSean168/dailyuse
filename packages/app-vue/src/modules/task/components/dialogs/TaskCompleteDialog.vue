@@ -245,7 +245,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { formatProductDateTime } from '@/shared/utils/product-time';
+import { formatProductDateTime } from '../../../../shared/utils/product-time';
 import {
   AggregationMethod,
 } from '@dailyuse/contracts/goal';

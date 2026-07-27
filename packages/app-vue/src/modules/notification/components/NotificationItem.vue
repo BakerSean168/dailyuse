@@ -78,7 +78,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { formatProductRelative } from '@/shared/utils/product-time';
+import { formatProductRelative } from '../../../shared/utils/product-time';
 import {
   Info,
   CheckCircle2,

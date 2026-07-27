@@ -102,7 +102,7 @@ export async function getDashboardData(
         return right.priority - left.priority;
       }
 
-      return right.updatedAt.getTime() - left.updatedAt.getTime();
+      return right.updatedAt - left.updatedAt;
     })
     .slice(0, GOAL_PROGRESS_LIMIT)
     .map((goal) => ({
@@ -110,7 +110,7 @@ export async function getDashboardData(
       name: goal.name,
       progress: normalizePercentage(goal.progress),
       status: goal.status as GoalStatus,
-      dueDate: goal.targetDate?.getTime() ?? 0,
+      dueDate: goal.targetDate ?? 0,
       keyResultCount: goal.keyResults.length,
     }));
 
@@ -166,7 +166,7 @@ function buildTrendDays(
   const dayMap = new Map(days.map((day) => [day.date, day]));
 
   for (const template of taskTemplates) {
-    const day = dayMap.get(toDateKey(template.createdAt.getTime()));
+    const day = dayMap.get(toDateKey(template.createdAt));
     if (day) {
       day.tasksCreated += 1;
     }
@@ -188,10 +188,10 @@ function buildTrendDays(
 }
 
 function buildActivityTimeline(input: {
-  goals: Array<{ id: string; name: string; updatedAt: Date }>;
+  goals: Array<{ id: string; name: string; updatedAt: number }>;
   taskTemplates: DashboardTaskTemplateRecord[];
   taskInstances: DashboardTaskInstanceRecord[];
-  schedules: Array<{ id: string; title: string; createdAt: Date }>;
+  schedules: Array<{ id: string; title: string; createdAt: number }>;
   now: number;
 }): ActivityItem[] {
   const recentCutoff = input.now - ACTIVITY_WINDOW_MS;
@@ -220,7 +220,7 @@ function buildActivityTimeline(input: {
   }
 
   for (const template of input.taskTemplates) {
-    const timestamp = template.createdAt.getTime();
+    const timestamp = template.createdAt;
     if (timestamp < recentCutoff) {
       continue;
     }
@@ -234,7 +234,7 @@ function buildActivityTimeline(input: {
   }
 
   for (const goal of input.goals) {
-    const timestamp = goal.updatedAt.getTime();
+    const timestamp = goal.updatedAt;
     if (timestamp < recentCutoff) {
       continue;
     }
@@ -248,7 +248,7 @@ function buildActivityTimeline(input: {
   }
 
   for (const schedule of input.schedules) {
-    const timestamp = schedule.createdAt.getTime();
+    const timestamp = schedule.createdAt;
     if (timestamp < recentCutoff) {
       continue;
     }
