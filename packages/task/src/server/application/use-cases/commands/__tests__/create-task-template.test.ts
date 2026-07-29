@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { anIdentityId } from '../../../../../testing';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
-import type { CreateTaskTemplateUseCaseReq } from '@dailyuse/contracts/task';
-import { TaskGoalBindingTrigger, TaskType } from '@dailyuse/contracts/task';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { CreateTaskTemplateUseCaseReq } from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger, TaskType } from '@memoflow/contracts/task';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { CreateTaskTemplateUseCase } from '../create-task-template.use-case';
 
-vi.mock('@dailyuse/utils', async () => {
-  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
+vi.mock('@memoflow/utils', async () => {
+  const actual = await vi.importActual<typeof import('@memoflow/utils')>('@memoflow/utils');
   return {
     ...actual,
     createLogger: vi.fn(() => ({

@@ -3,8 +3,8 @@ import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   successResponse,
-} from '@dailyuse/utils/result';
-import { AICapabilitiesSchema } from '@dailyuse/contracts/ai';
+} from '@memoflow/utils/result';
+import { AICapabilitiesSchema } from '@memoflow/contracts/ai';
 import type { AICapabilitiesController } from '../../server/transport/ai-capabilities.controller';
 
 interface PlatformMiddleware {

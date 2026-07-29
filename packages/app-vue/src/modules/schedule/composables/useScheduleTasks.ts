@@ -1,6 +1,6 @@
 import { computed } from 'vue';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import type { CreateScheduleTaskRequest } from '@dailyuse/contracts/schedule';
+import type { CreateScheduleTaskRequest } from '@memoflow/contracts/schedule';
 import type { ScheduleContext } from './useScheduleContext';
 
 export function useScheduleTasks(ctx: ScheduleContext) {

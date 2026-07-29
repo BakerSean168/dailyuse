@@ -26,31 +26,31 @@ export default defineConfig({
     alias: [
       ...createContractsAliasEntries(resolve(__dirname, '../..')),
       {
-        find: '@dailyuse/domain-shared/shared',
+        find: '@memoflow/domain-shared/shared',
         replacement: resolve(__dirname, '../../packages/domain-shared/src/shared/index.ts'),
       },
       {
-        find: '@dailyuse/domain-shared',
+        find: '@memoflow/domain-shared',
         replacement: resolve(__dirname, '../../packages/domain-shared/src'),
       },
       {
-        find: '@dailyuse/utils',
+        find: '@memoflow/utils',
         replacement: resolve(__dirname, '../../packages/utils/src'),
       },
       {
-        find: '@dailyuse/authentication/electron',
+        find: '@memoflow/authentication/electron',
         replacement: resolve(__dirname, '../../packages/authentication/src/electron/index.ts'),
       },
       {
-        find: '@dailyuse/authentication',
+        find: '@memoflow/authentication',
         replacement: resolve(__dirname, '../../packages/authentication/src/index.ts'),
       },
       {
-        find: '@dailyuse/account/electron',
+        find: '@memoflow/account/electron',
         replacement: resolve(__dirname, '../../packages/account/src/electron/index.ts'),
       },
       {
-        find: '@dailyuse/account',
+        find: '@memoflow/account',
         replacement: resolve(__dirname, '../../packages/account/src/index.ts'),
       },
     ],

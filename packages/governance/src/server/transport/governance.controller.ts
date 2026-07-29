@@ -13,10 +13,10 @@
  * 接受适配器的标准 Context，内部转换为应用层的 ExecutionContext。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { error, ok } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { Result } from '@memoflow/contracts/result';
+import { error, ok } from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 import {
   CreateRuleSchema,
   DeleteRuleSchema,
@@ -25,7 +25,7 @@ import {
   ListRulesQuerySchema,
   SearchRulesQuerySchema,
   UpdateRuleSchema,
-} from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/governance';
 import type {
   CreateRuleRes,
   DeleteRuleReq,
@@ -39,8 +39,8 @@ import type {
   SearchRulesQueryInput,
   SearchRulesRes,
   UpdateRuleRes,
-} from '@dailyuse/contracts/governance';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/governance';
+import { formatZodErrors } from '@memoflow/utils/result';
 import type { ExecutionContext, GovernanceApplicationPort } from '../application';
 
 /**

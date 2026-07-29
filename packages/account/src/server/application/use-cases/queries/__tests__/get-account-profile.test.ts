@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IAccountRepository } from '../../../../domain/repositories/i-account-repository';
 import { Account } from '../../../../domain/aggregates/account';
-import { AccountStatus } from '@dailyuse/contracts/account';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { AccountStatus } from '@memoflow/contracts/account';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { GetAccountProfileUseCase } from '../get-account-profile.use-case';
 
 describe('GetAccountProfileUseCase', () => {

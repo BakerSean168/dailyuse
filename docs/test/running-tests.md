@@ -78,7 +78,7 @@ pnpm nx affected -t test:coverage
 
 ## 集成测试数据库
 
-`task`、`goal`、`schedule`、`reminder` 的 `test:integration` target 都会通过各自的 `integration-global-setup.ts` 调用 `@dailyuse/test-utils/setup/database`，在本地尝试确保测试数据库可用。
+`task`、`goal`、`schedule`、`reminder` 的 `test:integration` target 都会通过各自的 `integration-global-setup.ts` 调用 `@memoflow/test-utils/setup/database`，在本地尝试确保测试数据库可用。
 
 本地运行这些 integration suite 的前提不是“装了 Node 就行”，而是当前账号可以访问 Docker Engine。至少要满足：
 

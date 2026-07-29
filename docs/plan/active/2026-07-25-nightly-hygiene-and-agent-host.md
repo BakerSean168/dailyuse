@@ -77,7 +77,7 @@ residual 记本文件 §9 与 elegance plan §9。
 ### 5.3 执行
 
 - 一轮只做一个 S 或一个 M，**或**一个 agent-host vertical slice。
-- 最近 target：`pnpm nx run <project>:test|lint|typecheck`；触及治理则 `daily-use:governance-check`。
+- 最近 target：`pnpm nx run <project>:test|lint|typecheck`；触及治理则 `memoflow:governance-check`。
 - 禁止提交：密钥、`.env*.local`、Playwright report/trace/webm/png。
 - 禁止 force-push。
 

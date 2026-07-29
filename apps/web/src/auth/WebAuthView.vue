@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { APP_DISPLAY_NAME, logo128 } from '@dailyuse/assets';
-import { Card, CardContent } from '@dailyuse/ui-vue-shadcn/components/ui/card';
-import { Button } from '@dailyuse/ui-vue-shadcn/components/ui/button';
-import { Input } from '@dailyuse/ui-vue-shadcn/components/ui/input';
-import { Label } from '@dailyuse/ui-vue-shadcn/components/ui/label';
+import { APP_DISPLAY_NAME, logo128 } from '@memoflow/assets';
+import { Card, CardContent } from '@memoflow/ui-vue-shadcn/components/ui/card';
+import { Button } from '@memoflow/ui-vue-shadcn/components/ui/button';
+import { Input } from '@memoflow/ui-vue-shadcn/components/ui/input';
+import { Label } from '@memoflow/ui-vue-shadcn/components/ui/label';
 import { Loader2 } from '@lucide/vue';
 
 import { useWebAuth } from './useWebAuth';

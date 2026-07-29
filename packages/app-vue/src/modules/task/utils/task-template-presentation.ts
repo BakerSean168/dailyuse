@@ -3,8 +3,8 @@ import type {
   TaskTemplateClientDTO,
   TaskTimeConfigDTO,
   TaskTimeConfigReq,
-} from '@dailyuse/contracts/task';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/task';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { TaskTemplateViewModel, TaskTimeConfigViewModel } from '../components/types';
 import { findNamedColor } from '../../../shared/constants/color-palette';
 import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';

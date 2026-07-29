@@ -28,10 +28,10 @@ const CONFIG_FILES = [
 
 const AGENT_SHIMS = ['AGENTS.md', 'CLAUDE.md'];
 const CANONICAL_PROMPTS = [
-  '.github/prompts/dailyuse.architecture.prompt.md',
-  '.github/prompts/dailyuse.development.prompt.md',
-  '.github/prompts/dailyuse.migration.prompt.md',
-  '.github/prompts/dailyuse.overview.prompt.md',
+  '.github/prompts/memoflow.architecture.prompt.md',
+  '.github/prompts/memoflow.development.prompt.md',
+  '.github/prompts/memoflow.migration.prompt.md',
+  '.github/prompts/memoflow.overview.prompt.md',
   '.github/prompts/dev.prompt.md',
   '.github/prompts/new.prompt.md',
   '.github/prompts/product.prompt.md',

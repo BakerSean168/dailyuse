@@ -1,6 +1,6 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   BatchGroupTemplatesReq,
   BatchGroupTemplatesRes,
@@ -10,7 +10,7 @@ import type {
   ReminderGroupListRes,
   SwitchGroupControlModeReq,
   UpdateReminderGroupReq,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import { ReminderGroup } from '../../domain/aggregates/reminder-group';
 import { ReminderDomainService } from '../../domain/services/reminder-domain-service';
 import type { IReminderGroupRepository } from '../../domain/repositories/i-reminder-group-repository';

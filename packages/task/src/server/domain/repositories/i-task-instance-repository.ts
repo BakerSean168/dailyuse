@@ -9,7 +9,7 @@
  */
 
 import type { TaskInstance } from '../aggregates';
-import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskInstanceStatus } from '@memoflow/contracts/task';
 
 export interface TaskTemplateInstanceStats {
   templateId: string;

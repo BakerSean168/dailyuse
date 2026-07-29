@@ -5,7 +5,7 @@
  * Provides factory function to create all HTTP adapters at once.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import { TaskTemplateHttpAdapter } from './task-template-http.adapter';
 import { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
 import { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';

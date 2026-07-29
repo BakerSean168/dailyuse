@@ -48,9 +48,9 @@ updated: 2026-07-26T00:00:00
   10 MiB；附件 blob 已按 `connectionId + blobSha` 建立短期共享 PostgreSQL cache，并保留每次读取的授权、投影
   版本和完整性校验；App installation live path 已验收；完整 Web/Desktop 产品 E2E 一揽子仍未宣称。
 - 阶段 6 残留：API legacy route builders 已删；客户端 legacy CRUD 方法已删除（无 hard-fail stub 双轨）；MSW/E2E knowledge-only（无 legacy 404 stub）；
-  app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@dailyuse/editor` 依赖与
+  app-vue editor 模块与 `useRepository`/dead workspace components 已删除；宿主侧 `@memoflow/editor` 依赖与
   path/vite alias 已摘除；壳层不再映射退役 `/note` 前缀；**`packages/editor` 运行时包已删除**；
-  **`@dailyuse/contracts/editor` 与 `EditorChannels` 亦已删除**；repository 运行时组合根/
+  **`@memoflow/contracts/editor` 与 `EditorChannels` 亦已删除**；repository 运行时组合根/
   客户端面仅 knowledge + Local Vault；**legacy application/adapters/domain-client 与 contracts
   CRUD request 面已删除**；AI 确认创建返回 `KnowledgeNotePersistedRef`（`note`）；
   **`ResourceClientDTO`/`RepositoryClientDTO` 与相关 value objects / mock factories 已删除**；
@@ -88,7 +88,7 @@ updated: 2026-07-26T00:00:00
 ### 3.2 GitHub 登录
 
 - 使用 GitHub App user authorization 获取稳定 GitHub user ID。
-- 服务端映射或创建 Daily Use Identity，并签发 Daily Use session。
+- 服务端映射或创建 MemoFlow Identity，并签发 MemoFlow session。
 - 登录授权只请求身份所需的最小信息，不自动申请仓库 Contents 权限。
 - 登录后可以跳过仓库连接，仅本地使用 Desktop。
 
@@ -166,9 +166,9 @@ Local Obsidian Vault / Git working tree
 首期采用 GitHub-hosted repository creation，不扩展身份 OAuth scope，也不保留 user access token：
 
 1. 用户点击“创建 private repository”。
-2. Memoflow 打开 GitHub 官方新建仓库页，预填 `memory-flow-notes` 和 `private` visibility。
+2. MemoFlow 打开 GitHub 官方新建仓库页，预填 `memory-flow-notes` 和 `private` visibility。
 3. 仓库名确认、同名冲突和最终创建操作均由用户在 GitHub 完成。
-4. 创建后通过独立 GitHub App installation flow 明确选择该仓库，Memoflow 才获得 repository-scoped Contents 权限。
+4. 创建后通过独立 GitHub App installation flow 明确选择该仓库，MemoFlow 才获得 repository-scoped Contents 权限。
 
 GitHub 页面预填参数为：
 
@@ -179,7 +179,7 @@ GitHub 页面预填参数为：
 }
 ```
 
-不依赖 GitHub 页面初始化 README；空仓库由首次对账安全写入 Memoflow scaffold 和首个 commit。
+不依赖 GitHub 页面初始化 README；空仓库由首次对账安全写入 MemoFlow scaffold 和首个 commit。
 
 仓库名已存在时不能覆盖。允许：
 
@@ -187,7 +187,7 @@ GitHub 页面预填参数为：
 - 使用带短后缀的新仓库名。
 - 返回取消，不影响本地 Vault。
 
-Memoflow 不复用 GitHub 登录 token 调用 user-owned repository creation API；若未来需要应用内一键创建，必须新增独立、
+MemoFlow 不复用 GitHub 登录 token 调用 user-owned repository creation API；若未来需要应用内一键创建，必须新增独立、
 一次性的 repository-creation authorization，并重新评审 scope、token 生命周期和撤销边界。
 
 ### 5.3 连接已有仓库
@@ -268,7 +268,7 @@ LOCAL_ONLY
 
 ### 6.4 Git 凭据
 
-- Desktop 从 Daily Use 服务端按需获取短期、指定 repository 的 installation token。
+- Desktop 从 MemoFlow 服务端按需获取短期、指定 repository 的 installation token。
 - token 仅在首次对账或同步操作期间保留于内存，过期后重新获取。
 - 不把 token 写入 `.git/config`、remote URL、命令行参数或日志。
 - spike 选定受控系统 Git 子进程：`shell: false`、参数数组调用，并通过子进程环境中的 Git config
@@ -284,7 +284,7 @@ LOCAL_ONLY
 - 自动 rebase/merge 失败时保留 Git 状态和双方文件。
 - Desktop 显示冲突文件、local/remote commit 和“在文件管理器/Obsidian 打开”。
 - 首期允许用户在外部工具解决后点击“重新检查”。
-- 如果检测到 Obsidian Git 插件或其他进程持有 lock，Daily Use 退让而非抢锁。
+- 如果检测到 Obsidian Git 插件或其他进程持有 lock，MemoFlow 退让而非抢锁。
 
 ## 7. 服务端 GitHub 投影
 
@@ -395,7 +395,7 @@ POST /knowledge-notes
 
 Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通用机制由 [ADR-035](../../architecture/adr/ADR-035-unified-assistant-agent-host.md) 和 [统一助手与可插拔 Agent Host 实施方案](./2026-07-17-unified-assistant-agent-host.md) 规定：
 
-- Daily Use Agent Host 拥有 Run、Capability、Context、Tool Policy、Proposal、审批和执行边界。
+- MemoFlow Agent Host 拥有 Run、Capability、Context、Tool Policy、Proposal、审批和执行边界。
 - LangGraph 是可恢复 Workflow Engine；Pi、远程 Agent 和本地 CLI 是候选 Turn Engine；自定义 AI API 接入 Model Gateway。
 - Context 区分系统安全、产品规则、用户偏好、当前任务和不可信检索内容，不要求固定 `AGENT.md`。
 - Engine 只能访问当前 Run 授权的 Query/Proposal 工具；Vault/GitHub Mutation 只由确认后的 TypeScript Executor 执行。
@@ -418,7 +418,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   转换，用户文本和属性继续由 MarkdownIt 负责 escaping。
 - 附件路径解析必须保持在仓库根目录，禁止 symlink/`..` 逃逸。
 - 大附件和仓库体积设置明确上限；Git LFS 不进入首期，超过上限时提示外部存储或排除。
-- GitHub private 不等于 E2E；连接前说明 GitHub 和 Daily Use 服务端会处理明文内容。
+- GitHub private 不等于 E2E；连接前说明 GitHub 和 MemoFlow 服务端会处理明文内容。
 
 ## 11. 设置页收敛
 
@@ -455,7 +455,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 ### 阶段 2：GitHub 认证与仓库连接
 
-- GitHub 登录 OAuth flow 和 Daily Use session。**（服务端骨架已实现）**
+- GitHub 登录 OAuth flow 和 MemoFlow session。**（服务端骨架已实现）**
 - 独立 GitHub App installation flow。
 - GitHub-hosted private repository 创建、GitHub App 连接、首次对账和连接状态。**（已实现）**
 - 访客升级且不移动 Vault。
@@ -481,7 +481,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 获取连接状态与凭据。Repository 88、Desktop 244、App Vue 292 个测试通过，相关类型检查通过。
 > 续进展 2026-07-18：首次对账预检已经贯通 Desktop、IPC、HTTP、服务端与 GitHub App。
 > Desktop 主进程从当前 profile 的真实 Vault 计算 `Empty / NonEmpty`，忽略 `.git`、Obsidian
-> workspace、回收站、临时文件和 Memoflow scaffold；服务端重新验证 identity-owned active
+> workspace、回收站、临时文件和 MemoFlow scaffold；服务端重新验证 identity-owned active
 > connection、installation、Contents write、private/admin/active repository，并使用单仓库
 > installation token 读取 GitHub GraphQL default-branch snapshot。四类组合被确定性映射为
 > `InitializeRemoteFromLocal`、`CloneRemoteIntoLocal`、`InitializeBoth` 或
@@ -625,7 +625,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `memoflow.server-held-data-disclosure` v1，按 identity 通过显式 Prisma select allowlist 披露 retained repository
 > connection metadata（含不可重放 installation identifier）、Markdown/attachment projection、base64 attachment cache、
 > webhook delivery、write ledger 与全部 identity-scoped AI knowledge index；不读取或导出 OAuth/installation token、GitHub App
-> private key 等 Memoflow 管理的可重放授权，也排除本地 Vault/Git history、GitHub repository history、worker lease 和
+> private key 等 MemoFlow 管理的可重放授权，也排除本地 Vault/Git history、GitHub repository history、worker lease 和
 > 数据库内部 retrieval vector；用户仓库中的 Markdown/frontmatter/cache bytes 按原样披露。artifact kind 与普通 import
 > parser 不兼容，Desktop IPC 明确返回不支持，Web 设置页提供单独下载动作与双语范围说明。
 > Contracts 94、Data Portability 50 和 App Vue focused 3 个测试通过；Contracts/Data Portability/API/App Vue/Desktop typecheck
@@ -678,11 +678,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 表；AI/Note capsule 仅依赖 projection/local-vault 路径。`packages/editor` 服务端/包骨架仍在仓库中但
 > 不再作为 app-vue 运行时入口。状态保持实施中。
 
-> 续进展 2026-07-21（阶段 6 残留四轮）：摘除宿主 `@dailyuse/editor` 死接线——`apps/api`、`apps/desktop`、
+> 续进展 2026-07-21（阶段 6 残留四轮）：摘除宿主 `@memoflow/editor` 死接线——`apps/api`、`apps/desktop`、
 > `packages/data-portability` 的 package 依赖，以及 api/desktop/web 的 tsconfig path 与 vite/vitest alias；
-> data-portability 仍通过 Prisma/PowerSync 导出导入 editor workspace 作为可再导入备份，不依赖 `@dailyuse/editor` 包。
+> data-portability 仍通过 Prisma/PowerSync 导出导入 editor workspace 作为可再导入备份，不依赖 `@memoflow/editor` 包。
 > 壳层 `MODULE_PREFIXES` 移除退役 `/note`；`sanitizeLegacyTabs` 清理持久化的 `/note*` Tab；删除未使用
-> `createMockEditorStore`。验证：app-vue focused 3 files / 21 tests、`daily-use:governance-check` 通过。
+> `createMockEditorStore`。验证：app-vue focused 3 files / 21 tests、`memoflow:governance-check` 通过。
 > `packages/editor` 包本身与 Prisma `editor_*` 表仍保留。状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-21（阶段 6 残留五轮）：删除整个 `packages/editor` 运行时包；同步清理根 tsconfig path、
@@ -695,9 +695,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 已退役 `EditorEventMap` / `EditorRpcMap`；Desktop IPC 前缀 `editor:` 仍为空集合。`domain-shared` tsup
 > 仅构建现存入口。状态保持 **实施中**；PR readiness 仍为 no。
 
-> 续进展 2026-07-21（阶段 6 残留七轮）：删除 `@dailyuse/contracts/editor` 整模块与 `EditorChannels` IPC 常量、
+> 续进展 2026-07-21（阶段 6 残留七轮）：删除 `@memoflow/contracts/editor` 整模块与 `EditorChannels` IPC 常量、
 > Editor* branded IDs；package export/tsup/package-export-audit/README 同步。portable editor 契约仅保留在
-> `@dailyuse/contracts/data-portability`。产品 `editor-files` 索引已对齐。验证：`contracts:typecheck`、
+> `@memoflow/contracts/data-portability`。产品 `editor-files` 索引已对齐。验证：`contracts:typecheck`、
 > desktop ipc-contracts 30、`governance-check` 通过。§13.2 未打勾项仍为：三入口完整 E2E（Web 账密/GitHub E2E
 > + Desktop guest 单测已有，跨端一揽子 E2E 未齐）、Agent Host 全量隔离（ADR-035）、以及外部阻塞验收。
 > 状态保持 **实施中**；PR readiness 仍为 no。
@@ -719,7 +719,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `StoredResourceHydrationService` / `RepositoryResolutionService` 及对应单测；保留 knowledge 服务与
 > `publishRepositoryResourceMutation`。收紧 client/infrastructure-client 桶导出（去掉已删 CRUD request 类型）；
 > testing helper 收缩为 knowledge-only 模块壳。验证：`repository:test` 18 files / 129 tests、
-> `repository:typecheck`、`daily-use:governance-check` 通过。domain/PowerSync/Prisma resource 适配器与
+> `repository:typecheck`、`memoflow:governance-check` 通过。domain/PowerSync/Prisma resource 适配器与
 > portable 边界仍保留。§13.2 未完成项不变。状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-21（阶段 6 残留十一轮）：删除未引用的 legacy 基础设施适配层——Prisma/PowerSync/memory
@@ -732,7 +732,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 > 续进展 2026-07-21（阶段 6 残留十二轮）：删除 `packages/repository` 遗留 `server/domain` 聚合/实体/
 > 仓储接口与 `domain-client`；保留空 `server/domain` 桶以满足 server-feature-shape 治理。收缩
-> `@dailyuse/contracts/repository`：去掉 Folder/Resource/Bookmark CRUD Zod/DTO、bookmark 实体、
+> `@memoflow/contracts/repository`：去掉 Folder/Resource/Bookmark CRUD Zod/DTO、bookmark 实体、
 > tree/search、legacy lifecycle events；`RepositoryEventMap` 仅保留 `repository:resource:mutated`；
 > 保留 `ResourceClientDTO`/`RepositoryClientDTO` 与 AI/mock 依赖的 value objects。验证：
 > `repository:test` 17/119、`contracts:test` 11/94、两边 typecheck、`governance-check` 通过。
@@ -741,7 +741,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 > 续进展 2026-07-21（阶段 6 残留十三轮）：重写过时的 `docs/product/module-index/repository-files.md`，
 > 对齐 knowledge + Local Vault 真值（删除已不存在的 CRUD 视图/route/use-case 路径）；更新
-> `feature-map` 资源库状态与 `repository.md` 日期。验证：`daily-use:governance-check`。
+> `feature-map` 资源库状态与 `repository.md` 日期。验证：`memoflow:governance-check`。
 > 代码边界无变更；§13.2 未完成项不变。状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-21（阶段 6 残留十四轮）：AI 知识笔记确认创建路径去掉 `ResourceClientDTO` 兼容面，
@@ -754,7 +754,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `RepositoryClientDTO`、配套 value objects 与 `createMockRepository`/`createMockResource`；
 > Web `goal-workflow` E2E 去掉退役 editor/session/tab/resource/current-repository 路由 mock，
 > citation open 仅依赖 `/repository` 导航。更新 `repository-files` 索引。验证：`contracts:test`、
-> `daily-use:governance-check`（见提交说明）。§13.2 未完成项不变。状态保持 **实施中**；
+> `memoflow:governance-check`（见提交说明）。§13.2 未完成项不变。状态保持 **实施中**；
 > PR readiness 仍为 no。
 
 > 续进展 2026-07-21（阶段 6 残留十六轮）：删除 HTTP/IPC adapter 中已无调用的
@@ -907,7 +907,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > `apps/desktop/src/main/di/`（`lazy-module-loader` + 空 DI barrel）、
 > `SystemChannels.GET_LAZY_MODULE_STATS` / `system:getLazyModuleStats` handler，以及
 > shared containers 对 main/di 的过时指引。GoalProgressChart 去掉 `startTime`/`endTime`
-> 遗留字段双轨回退，只使用 `startDate`/`targetDate` 契约；删除已无源码的 `@dailyuse/contracts/response` 导出与 API vitest 别名。§13.2 未打勾项仍为部分/外部阻塞。
+> 遗留字段双轨回退，只使用 `startDate`/`targetDate` 契约；删除已无源码的 `@memoflow/contracts/response` 导出与 API vitest 别名。§13.2 未打勾项仍为部分/外部阻塞。
 > 验证：desktop system-handlers + ipc-contracts specs、app-vue goal 相关 specs（如有）、
 > contracts typecheck、governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
@@ -1030,7 +1030,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 
 > 续进展 2026-07-21（阶段 6 残留四十九轮）：删除 governance `mapper-helpers` 兼容 re-export shim，
-> prisma/powersync mappers 与 repository 直接 import `@dailyuse/utils/shared`。§13.2 仍为
+> prisma/powersync mappers 与 repository 直接 import `@memoflow/utils/shared`。§13.2 仍为
 > 部分/外部阻塞。验证：governance focused specs（如有）+ governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
@@ -1049,7 +1049,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 
-> 续进展 2026-07-21（阶段 6 残留五十二轮）：删除 `@dailyuse/utils` 根级 `src/uuid.ts` 与
+> 续进展 2026-07-21（阶段 6 残留五十二轮）：删除 `@memoflow/utils` 根级 `src/uuid.ts` 与
 > `shared/uuid.ts` 双文件——domain `create-id-type` 改为 import `shared/uuid`，uuid 单一
 > 真值在 `shared`。§13.2 仍为部分/外部阻塞。验证：utils typecheck + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
@@ -2033,7 +2033,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 >
 > 续进展 2026-07-22（阶段 6 残留一百八十轮）：双轨收口锁定 + legacy editor 包面锁定——
 > Schedule task bare `findById` 仅允许 runtime bootstrap（surface 锁定）；auth use-case 禁止 bare 读。
-> `packages/editor` 目录与 `@dailyuse/editor` 依赖保持删除。portable editor_* 备份导入边界未动。
+> `packages/editor` 目录与 `@memoflow/editor` 依赖保持删除。portable editor_* 备份导入边界未动。
 > §13.2 仍部分（三入口/Agent multi-engine/真实 GitHub fixture E2E 仍缺）。验证：schedule-task/runtime
 > + legacy-editor surfaces + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 >
@@ -2043,7 +2043,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 2) Agent 隔离仍为 **部分**：`adr-035-capability-turn-isolation.journey.spec.ts`（13）通过
 >   （confirm-only / cancel 无副作用 / cross-capability fail-closed / identity isolation）；
 >    仍缺完整 multi-engine Turn Engine E2E 与跨端对抗 E2E。
-> 3) 门禁验收仍为 **部分+外部阻塞**：本分支 focused vitest + `daily-use:governance-check` 绿；
+> 3) 门禁验收仍为 **部分+外部阻塞**：本分支 focused vitest + `memoflow:governance-check` 绿；
 >    真实 GitHub App fixture E2E 缺凭据；不伪造。
 > 身份隔离 dual-method 波次 169–179 已收口 + 180 锁定；不因此宣称 plan 完成。
 > 验证：matrix + adr-035 journey + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
@@ -2065,7 +2065,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 >
 > 续进展 2026-07-22（阶段 6 残留一百八十五轮）：§13.2 核心证据套件复跑（不改 checkbox）——
 > `safe-markdown`（15）、knowledge connection/write-request ownership、legacy-editor（13）、
-> three-login matrix（14）、adr-035 journey（13）共 66 通过；`daily-use:governance-check` 通过。
+> three-login matrix（14）、adr-035 journey（13）共 66 通过；`memoflow:governance-check` 通过。
 > 仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、GitHub App fixture E2E、
 > 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 >
@@ -2102,7 +2102,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-22（阶段 6 残留一百九十一轮）：§13.2 核心证据套件复跑（含 dual/catalog locks，不改 checkbox）——
 > `safe-markdown`、connection/write-request/webhook-delivery/legacy-editor、auth-session、
 > notification-template、governance-rule ownership、three-login matrix、adr-035 journey 共 87 通过；
-> `daily-use:governance-check` 通过。仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、
+> `memoflow:governance-check` 通过。仍为部分/外部阻塞：真实 OAuth 跨端 E2E、multi-engine Turn Engine E2E、
 > GitHub App fixture E2E、全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 >
 > 续进展 2026-07-22（阶段 6 残留一百九十二轮）：account / auth-identity 自然主键 ownership lock——
@@ -2405,7 +2405,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-22（阶段 6 残留二百三十三轮）：schedule 文档残留 + reminder DTO 双轨收口——
 > Brief/V2/PAGE redesign 当前态改写为 `ScheduleCalendarView` 单入口（去掉
 > ScheduleDashboardView / week/dashboard 兼容 redirect 现状描述）；
-> `UpcomingReminderDTO` 仅从 `@dailyuse/contracts/reminder` 再导出，删除 domain
+> `UpcomingReminderDTO` 仅从 `@memoflow/contracts/reminder` 再导出，删除 domain
 > calculation service 的 dual re-export。补 surfaces。§13.2 未打勾项仍为部分/外部阻塞。
 > 验证：schedule/reminder surfaces + calculation tests + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
@@ -2422,7 +2422,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-22（阶段 6 残留二百三十五轮）：Desktop auth token/network 类型 dual-track 收口——
 > 删除 `TokenData` 别名路径，统一 `TokenStorageData`；token-manager /
 > network-state-manager 不再 re-export contracts 类型；infrastructure index 仅从
-> `@dailyuse/contracts/authentication` 导出 token/network 类型。删除 AI domain 根级
+> `@memoflow/contracts/authentication` 导出 token/network 类型。删除 AI domain 根级
 > `ai-provider-config.ts` dual barrel。补 surfaces。§13.2 未打勾项仍为部分/外部阻塞。
 > 验证：desktop auth surfaces + SessionManager/lifecycle/auth service specs +
 > governance-check。状态保持 **实施中**；PR readiness 仍为 no。
@@ -2475,7 +2475,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 > 续进展 2026-07-22（阶段 6 残留二百四十二轮）：Desktop electron contracts dual re-export 收口——
 > 删除无消费者的 `main/shared/contracts` convenience barrel；`IElectronModule*` 仅从
-> `@dailyuse/contracts/electron` 导入。补 surface。§13.2 未打勾项仍为部分/外部阻塞。
+> `@memoflow/contracts/electron` 导入。补 surface。§13.2 未打勾项仍为部分/外部阻塞。
 > 验证：desktop electron contracts path surface + bootstrapper surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
@@ -2487,8 +2487,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > runtime specs + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-22（阶段 6 残留二百四十四轮）：dashboard contracts dual re-export 收口——
-> `@dailyuse/dashboard` 不再 convenience re-export `DashboardData` 等 contracts DTO；API/Desktop
-> 从 `@dailyuse/contracts/dashboard` 导入 DTO，从 dashboard 导入 projection/port 类型。补 surface。
+> `@memoflow/dashboard` 不再 convenience re-export `DashboardData` 等 contracts DTO；API/Desktop
+> 从 `@memoflow/contracts/dashboard` 导入 DTO，从 dashboard 导入 projection/port 类型。补 surface。
 > §13.2 未打勾项仍为部分/外部阻塞。验证：dashboard surface + projection tests + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
@@ -2529,13 +2529,13 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 续进展 2026-07-22（阶段 6 残留二百五十轮）：AI transport identity factory + governance types dual 收口——
 > 删除无映射逻辑的 `createAITransportHandlers`（控制器直接接 `aiModule.api`）；删除
 > app-vue governance `types.ts` contracts re-export barrel，内部与 index 均从
-> `@dailyuse/contracts/governance` 导入。补 surfaces。§13.2 未打勾项仍为部分/外部阻塞。
+> `@memoflow/contracts/governance` 导入。补 surfaces。§13.2 未打勾项仍为部分/外部阻塞。
 > 验证：ai/app-vue surfaces + governanceStore.spec + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-22（阶段 6 残留二百五十一轮）：app-vue dashboard types dual re-export 收口——
 > `modules/dashboard/types.ts` 仅保留 `IDashboardApiClient` port；`DashboardData` 等 DTO
-> 从 `@dailyuse/contracts/dashboard` 导入。补 surface。§13.2 未打勾项仍为部分/外部阻塞。
+> 从 `@memoflow/contracts/dashboard` 导入。补 surface。§13.2 未打勾项仍为部分/外部阻塞。
 > 验证：dashboard types surface + governance-check。状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-22（阶段 6 残留二百五十二轮）：AI composable agent dual type alias 继续收口——
@@ -2570,14 +2570,14 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 > 续进展 2026-07-22（阶段 6 残留二百五十六轮）：desktop shared/types ipc-channels dual barrel 收口——
 > 删除 `apps/desktop/src/shared/types/ipc-channels.ts` 及空 types/shared index 再导出；
-> preload `allowed-channels` 与 `CustomNotificationView` 改从 `@dailyuse/contracts/electron`
->（GovernanceChannels 从 `@dailyuse/contracts/governance`）导入。补 surface。
+> preload `allowed-channels` 与 `CustomNotificationView` 改从 `@memoflow/contracts/electron`
+>（GovernanceChannels 从 `@memoflow/contracts/governance`）导入。补 surface。
 > §13.2 未打勾项仍为部分/外部阻塞。验证：desktop dual surfaces + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-22（阶段 6 残留二百五十七轮）：task domain events dual barrel 收口——
 > 删除无消费者的 `packages/task/src/server/domain/events/` contracts re-export；
-> 聚合已直接使用 `@dailyuse/contracts/task` 的 `TaskEventMap`。补 surface。
+> 聚合已直接使用 `@memoflow/contracts/task` 的 `TaskEventMap`。补 surface。
 > §13.2 未打勾项仍为部分/外部阻塞。验证：task domain/events surfaces + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
@@ -2630,11 +2630,11 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 > 续进展 2026-07-22（阶段 6 残留二百六十五轮）：contracts notification AssetImageKey dual 收口——
 > 删除 `AssetImageKey = string` identity 别名；desktop dispatch `icon` 字段直接 `string | null`。
-> 品牌化 `AssetImageKey` 仅保留在 `@dailyuse/assets`。补 surface。
+> 品牌化 `AssetImageKey` 仅保留在 `@memoflow/assets`。补 surface。
 > §13.2 未打勾项仍为部分/外部阻塞。验证：contracts dual surfaces + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
-> 续进展 2026-07-22（阶段 6 残留二百六十六轮）：collapse 模块 `IResultIpcClient` dual 到 `@dailyuse/ipc-client`——
+> 续进展 2026-07-22（阶段 6 残留二百六十六轮）：collapse 模块 `IResultIpcClient` dual 到 `@memoflow/ipc-client`——
 > 规范接口含 `invoke` + 可选 `getBridge`；11 个模块 adapters 改为 type re-export；`ResultIpcClient implements IResultIpcClient`。
 > 补 surface。§13.2 未打勾项仍为部分/外部阻塞。验证：ipc-client/ai surfaces + 邻近 adapter 测试 + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
@@ -2648,7 +2648,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 > 续进展 2026-07-22（阶段 6 残留二百六十八轮）：app-vue dashboard adapters transport dual 收口——
 > HTTP/IPC 适配器删除本地 `IResultHttpClient`/`IResultIpcClient` 接口 dual，改用
-> `@dailyuse/http-client` / `@dailyuse/ipc-client` 规范类型。补 surface。
+> `@memoflow/http-client` / `@memoflow/ipc-client` 规范类型。补 surface。
 > §13.2 未打勾项仍为部分/外部阻塞。验证：app-vue dashboard surfaces + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
@@ -2660,7 +2660,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-22（阶段 6 残留二百七十轮）：DesktopBridge / ElectronAPI dual 收口到
-> `@dailyuse/ipc-client` `ElectronBridge`——app-vue DI / window controls 与 desktop
+> `@memoflow/ipc-client` `ElectronBridge`——app-vue DI / window controls 与 desktop
 > `window.electronAPI` / preload 类型统一；删除本地接口 dual。补 surfaces。
 > §13.2 未打勾项仍为部分/外部阻塞。验证：app-vue/desktop surfaces + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
@@ -2673,7 +2673,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 全量 PR 门禁一揽子。状态保持 **实施中**；PR readiness 仍为 no。
 
 > 续进展 2026-07-22（阶段 6 残留二百七十二轮）：governance client drop `GovernanceIpcTransport` dual——
-> `createGovernanceIpcClient` / IPC client 改用 `@dailyuse/ipc-client` `IResultIpcClient`。
+> `createGovernanceIpcClient` / IPC client 改用 `@memoflow/ipc-client` `IResultIpcClient`。
 > 补 surface。§13.2 未打勾项仍为部分/外部阻塞。验证：governance surface + governance-check。
 > 状态保持 **实施中**；PR readiness 仍为 no。
 
@@ -4213,7 +4213,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 > 续进展 2026-07-22（阶段 6 残留四百八十七轮）：阶段 6 **task DAG *ViewModel 双轨收口**（仍不打勾）——
 > 删除消费者侧 `TaskForDAGViewModel`/`TaskGraph*ViewModel` 幻影类型引用，统一 `TaskForDAG`/
-> `TaskGraphData`/`TaskGraphEdge`（`task-dag.types` / `@dailyuse/task/client`）；surface 锁扩展到全 module 扫描；非跨端 E2E。
+> `TaskGraphData`/`TaskGraphEdge`（`task-dag.types` / `@memoflow/task/client`）；surface 锁扩展到全 module 扫描；非跨端 E2E。
 > 状态保持 **实施中**；不改 §13.2 checkbox。
 
 > 续进展 2026-07-22（阶段 6 残留四百八十八轮）：§13.2 聚焦证据套件复跑（含 residual 250–487
@@ -5087,8 +5087,8 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR 就绪仍为否。
 
 > 续进展 2026-07-22（阶段 6 残留六百一十九轮）：对齐 route ADR **response 包死引用**（仍不打勾）——
-> ADR-021/022 样例改为 `createHttpResponseBuilder`（`@dailyuse/contracts/result`）；
-> 不再 import 已删除的 `@dailyuse/contracts/response`；surface Residual 619 锁；承接 residual 615/617。
+> ADR-021/022 样例改为 `createHttpResponseBuilder`（`@memoflow/contracts/result`）；
+> 不再 import 已删除的 `@memoflow/contracts/response`；surface Residual 619 锁；承接 residual 615/617。
 > 非跨端 multi-engine E2E / 全量 PR 门禁。状态保持 **实施中**；不改 §13.2 checkbox。
 
 > 续进展 2026-07-22（阶段 6 残留六百二十轮）：§13.2 聚焦证据套件复跑（含 residual 250–619
@@ -6981,7 +6981,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 状态保持 **实施中**；PR 就绪仍为否。
 
 > 续进展 2026-07-23（阶段 6 残留九百一十一轮）：desktop/renderer **CustomNotificationView ElectronBridge dual retired**（仍不打勾）——
-> 使用 @dailyuse/ipc-client ElectronBridge 唯一体；local interface 删除；surface Residual 911 锁。
+> 使用 @memoflow/ipc-client ElectronBridge 唯一体；local interface 删除；surface Residual 911 锁。
 > 非跨端 multi-engine E2E / 全量 PR 门禁。状态保持 **实施中**；不改 §13.2 checkbox。
 
 > 续进展 2026-07-23（阶段 6 残留九百一十二轮）：§13.2 聚焦证据套件复跑（含 residual 250–911
@@ -7143,7 +7143,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 > 续进展 2026-07-23（阶段 6 残留九百四十三轮）：utils/shared **escapeHtml dual retired**（仍不打勾）——
-> desktop main + app-vue safe-markdown 本地 dual 收口；@dailyuse/utils/shared 唯 helper；surface Residual 943 锁。
+> desktop main + app-vue safe-markdown 本地 dual 收口；@memoflow/utils/shared 唯 helper；surface Residual 943 锁。
 > 续进展 2026-07-23（阶段 6 残留九百四十四轮）：§13.2 聚焦证据套件复跑（含 residual 250–943
 > escapeHtml dual retired 锁，不改 checkbox）——**263 文件 / 1175 测试**（app-vue 37/347、
 > ai 34/257、repository 6/35、contracts 130/385、governance 2/4、api 10/24、data-portability 5/21、… utils 1/3、desktop 20/56、task 2/4）+ `GOV_EXIT:0`。
@@ -7371,7 +7371,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 > 续进展 2026-07-23（阶段 6 残留九百八十九轮）：utils **parseString/parseNumber dual retired**（仍不打勾）——
-> notification + reminder API routes 跨包 dual 收口；@dailyuse/utils/shared/parse-query-value 唯 helper；
+> notification + reminder API routes 跨包 dual 收口；@memoflow/utils/shared/parse-query-value 唯 helper；
 > schedule keep-boundary；surface Residual 989 锁。
 > 续进展 2026-07-23（阶段 6 残留九百九十轮）：§13.2 聚焦证据套件复跑（含 residual 250–989
 > parseString/parseNumber dual retired 锁，不改 checkbox）——**285 文件 / 1248 测试**（app-vue 41/361、
@@ -7481,7 +7481,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 > 续进展 2026-07-23（阶段 6 残留一千零一十一轮）：utils **previewText dual retired**（仍不打勾）——
-> elevate sole previewText to @dailyuse/utils/shared（default maxLength 240）；
+> elevate sole previewText to @memoflow/utils/shared（default maxLength 240）；
 > AI package re-export 保持 package-local 路径；API automation 调用点显式 maxLength 200；
 > surface Residual 1011 锁。
 > 续进展 2026-07-23（阶段 6 残留一千零一十二轮）：§13.2 聚焦证据套件复跑（含 residual 250–1011
@@ -7622,7 +7622,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > GitHub App fixture E2E、全量 PR 门禁、跨进程 durable task runtime / 完整 LangGraph。
 > 状态保持 **实施中**；PR 就绪仍为否。
 > 续进展 2026-07-23（阶段 6 残留一千零三十九轮）：schedule **patterns scheduler dual retired**（仍不打勾）——
-> 删除死 dual `i-schedule-timer`/`i-schedule-monitor`/`min-heap`；sole 留在 `@dailyuse/patterns/scheduler`；
+> 删除死 dual `i-schedule-timer`/`i-schedule-monitor`/`min-heap`；sole 留在 `@memoflow/patterns/scheduler`；
 > schedule index 继续 re-export；surface Residual 1039 锁。
 > 续进展 2026-07-23（阶段 6 残留一千零四十轮）：§13.2 聚焦证据套件复跑（含 residual 250–1039
 > patterns scheduler dual retired 锁，不改 checkbox）——**310 文件 / 1343 测试**（app-vue 42/364、
@@ -8308,7 +8308,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > tip 指针 Residual 1154：**346 文件 / 1496 测试** + GOV_EXIT:0；再确认 3 项仍为部分/外部阻塞；
 > open-items surface Residual 1155 锁。
 > 续进展 2026-07-23（阶段 6 残留一千一百五十六轮）：**toDashboardTaskInstanceRecord dual 收口**（仍不打勾）——
-> 提取 `@dailyuse/dashboard` sole（duck-typed DashboardTaskInstanceSource）；
+> 提取 `@memoflow/dashboard` sole（duck-typed DashboardTaskInstanceSource）；
 > API Prisma + Desktop Electron dashboard-read-service duals 退休为 sole import；
 > surface Residual 1156 锁（host wiring Prisma create* vs Electron get* 仍分离）。
 > 续进展 2026-07-23（阶段 6 残留一千一百五十七轮）：§13.2 聚焦证据套件复跑（含 residual 250–1156
@@ -8376,7 +8376,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > tip 指针 Residual 1166：**350 文件 / 1512 测试** + GOV_EXIT:0；再确认 3 项仍为部分/外部阻塞；
 > open-items surface Residual 1167 锁。
 > 续进展 2026-07-23（阶段 6 残留一千一百六十八轮）：**mapPriority dual 收口**（仍不打勾）——
-> 提取 `@dailyuse/contracts/schedule` sole `mapImportanceToTaskPriority`；
+> 提取 `@memoflow/contracts/schedule` sole `mapImportanceToTaskPriority`；
 > Goal/Task schedule-projection-source duals 退休为 sole import；
 > surface Residual 1168 锁（buildTaskName/trigger 域逻辑仍分离）。
 > 续进展 2026-07-23（阶段 6 残留一千一百六十九轮）：§13.2 聚焦证据套件复跑（含 residual 250–1168
@@ -8513,7 +8513,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > open-items surface Residual 1191 锁。
 > 续进展 2026-07-23（阶段 6 残留一千一百九十二轮）：**delay dual 收口**（仍不打勾）——
 > utils frontend api-utils：sole delay(ms) setTimeout Promise；
-> desktop IPC test-helpers/setup + web E2E runner 收口到 `@dailyuse/utils/frontend`；
+> desktop IPC test-helpers/setup + web E2E runner 收口到 `@memoflow/utils/frontend`；
 > surface Residual 1192 锁（测试/E2E dual 不保留本地 body）。
 > 续进展 2026-07-23（阶段 6 残留一千一百九十三轮）：§13.2 聚焦证据套件复跑（含 residual 250–1192
 > delay dual 收口锁，不改 checkbox）——**359 文件 / 1548 测试**（app-vue 54/413、
@@ -9283,12 +9283,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > focused 回归 **8 文件 / 160 测试**通过（5/147 + 1/5 + 2/8）；governance 依赖测试
 > **4 文件 / 23 测试**及 governance-check 通过。
 > 边界：`app-vue` / `ui-vue-shadcn` 依赖 build 仍打印既有 declaration 诊断但 target exit 0；
-> 额外探测 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；尚未运行全仓
+> 额外探测 `@memoflow/test-utils:lint` 仍有 2 个既有 layer-boundary error；尚未运行全仓
 > lint/typecheck/test/E2E/prod-like 一揽子，OAuth/App fixture 仍缺凭据（外部阻塞）。
 > 状态保持 **实施中**；PR 就绪仍为否。
 > 续进展 2026-07-24（阶段 6 残留一千三百二十九轮）：**P0 全仓 lint 真阻塞收口**（仍不打勾）——
 > `layer:testing` 明确允许测试支撑库编排 `layer:infra` fixture，goal 的 integration helpers /
-> global setup / schedule shim 全部改走 `@dailyuse/test-utils` 公共入口；`test-utils:lint`
+> global setup / schedule shim 全部改走 `@memoflow/test-utils` 公共入口；`test-utils:lint`
 > 由 2 errors 收缩为 0 errors（保留 2 warnings），`test-utils:typecheck` + 4 个依赖任务、
 > `goal:lint` 与 integration seam focused **3 文件 / 12 测试**通过。首次全 workspace lint
 > 仅 `ai-service:lint` 因 7 个 Ruff I001 失败；受控 import sort 后复跑 **36/36 项目通过**。
@@ -9313,7 +9313,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 残留 dist/node_modules、测试与 ownership/list/reminder activatedAt/addKeyResult 三参对齐。
 > 复跑后 **27 通过 / 3 失败（EXIT:1）**。
 > Residual 1331 续：desktop 低风险 harness 收口——3 个 ipc-channels dual import 改走
-> `@dailyuse/contracts/electron` + governance、`vault-path` 用 `path.resolve` 对齐 Windows、
+> `@memoflow/contracts/electron` + governance、`vault-path` 用 `path.resolve` 对齐 Windows、
 > AI allowlist 并入 AIStreamChannels、provider list 信封测试对齐；focused desktop harness
 > **6 文件 / 58 测试通过**。全量 desktop 仍剩 **2 文件 / 16 测试**（knowledge git runtime +
 > sync acceptance 的 GitProcessError），另有 data-portability powersync-round-trip
@@ -9565,9 +9565,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 > 12-project lint 集合仍有 8 个失败；OAuth/App fixture 无凭据为外部阻塞。
 > Residual 1328：正式 `web:typecheck` + 24 个依赖任务通过，同一 12-project lint 集合
 > **12/12 通过**，focused 回归 **8 文件 / 160 测试**、governance 4/23 + GOV_EXIT:0；
-> 但 `@dailyuse/test-utils:lint` 额外探测仍有 2 个既有 layer-boundary error，且尚无全仓
+> 但 `@memoflow/test-utils:lint` 额外探测仍有 2 个既有 layer-boundary error，且尚无全仓
 > lint/typecheck/test/E2E/prod-like 一揽子证据；OAuth/App fixture 无凭据仍为外部阻塞。
-> Residual 1329：`@dailyuse/test-utils:lint` 已收缩为 0 errors，`test-utils:typecheck`
+> Residual 1329：`@memoflow/test-utils:lint` 已收缩为 0 errors，`test-utils:typecheck`
 > + 4 个依赖任务、`goal:lint`、integration seam focused **3 文件 / 12 测试**通过；
 > 修复 `ai-service` 7 个 Ruff I001 后，全 workspace lint **36/36 项目通过**。
 > AI Service **4 文件 / 25 测试**、open-items **1 文件 / 3 测试**、
@@ -9912,7 +9912,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留二百六十三轮：drop 19 dead unused contracts *Res identity dual aliases (no protocol/call-site consumers)。
   残留二百六十四轮：§13.2 focused evidence suite re-run (127 tests, residuals 250–263 locks, no checkbox changes)。
   残留二百六十五轮：drop contracts AssetImageKey = string dual (assets package owns branded key)。
-  残留二百六十六轮：collapse module IResultIpcClient duals to @dailyuse/ipc-client canonical interface。
+  残留二百六十六轮：collapse module IResultIpcClient duals to @memoflow/ipc-client canonical interface。
   残留二百六十七轮：§13.2 focused evidence suite re-run (136 tests, residuals 250–266 locks, no checkbox changes)。
   残留二百六十八轮：dashboard adapters collapse local IResultHttpClient/IResultIpcClient duals to canonical packages。
   残留二百六十九轮：§13.2 focused evidence suite re-run (138 tests, residuals 250–268 locks, no checkbox changes)。
@@ -10580,7 +10580,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留九百四十轮：§13.2 focused evidence suite re-run (1169 tests, residuals 250–939 locks, no checkbox changes)。
   残留九百四十一轮：retire host ElectronBridge helper duals (platform/electron-bridge sole helpers).
   残留九百四十二轮：§13.2 focused evidence suite re-run (1172 tests, residuals 250–941 locks, no checkbox changes)。
-  残留九百四十三轮：retire escapeHtml dual (@dailyuse/utils/shared sole helper).
+  残留九百四十三轮：retire escapeHtml dual (@memoflow/utils/shared sole helper).
   残留九百四十四轮：§13.2 focused evidence suite re-run (1175 tests, residuals 250–943 locks, no checkbox changes)。
   残留九百四十五轮：retire formatZodErrors dual (utils/result sole helper).
   残留九百四十六轮：§13.2 focused evidence suite re-run (1179 tests, residuals 250–945 locks, no checkbox changes)。
@@ -10793,7 +10793,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百五十三轮：lock tokenize keep-boundary (knowledge-index ASCII vs API CJK projection search; no force-merge).
   残留一千一百五十四轮：§13.2 focused evidence suite re-run (1496 tests, residuals 250–1153 locks, no checkbox changes)。
   残留一千一百五十五轮：§13.2 evidence tip refresh (1154 tip 346/1496) + open-items surface lock (no checkbox flips).
-  残留一千一百五十六轮：retire toDashboardTaskInstanceRecord duals onto @dailyuse/dashboard sole (API/Desktop host wiring stays separate).
+  残留一千一百五十六轮：retire toDashboardTaskInstanceRecord duals onto @memoflow/dashboard sole (API/Desktop host wiring stays separate).
   残留一千一百五十七轮：§13.2 focused evidence suite re-run (1500 tests, residuals 250–1156 locks, no checkbox changes)。
   残留一千一百五十八轮：§13.2 evidence tip refresh (1157 tip 347/1500) + open-items surface lock (no checkbox flips).
   残留一千一百五十九轮：lock toPrismaJson keep-boundary (AI deep-clone InputJsonValue vs account DTO cast InputJsonObject; no force-merge).
@@ -10965,7 +10965,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千三百二十五轮：§13.2 focused evidence suite re-run (1766 tests, residuals 250–1324 locks, no checkbox changes)。
   残留一千三百二十六轮：§13.2 evidence tip refresh (1325 tip 403/1766) + open-items surface lock (no checkbox flips).
   残留一千三百二十七轮：P0 real E2E/runtime blocker reduction (Web password 2×3/3; Desktop production Electron guest 2×1/1; Agent/Vault/Pi fixture 7/114; governance 4/23 + GOV_EXIT:0); 12-project lint has 8 failures, web:typecheck failed, and OAuth/App fixture credentials remain externally blocked, so no checkbox flips.
-  残留一千三百二十八轮：P0 lint/typecheck blocker reduction (`web:typecheck` + 24 dependencies passed; the same 12-project lint set passed 12/12; focused regressions 8 files/160 tests; governance 4/23 + GOV_EXIT:0); `@dailyuse/test-utils:lint` still exposes 2 pre-existing layer-boundary errors, the full workspace gate bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
+  残留一千三百二十八轮：P0 lint/typecheck blocker reduction (`web:typecheck` + 24 dependencies passed; the same 12-project lint set passed 12/12; focused regressions 8 files/160 tests; governance 4/23 + GOV_EXIT:0); `@memoflow/test-utils:lint` still exposes 2 pre-existing layer-boundary errors, the full workspace gate bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百二十九轮：P0 workspace lint blocker closure (`test-utils:lint` 0 errors, `test-utils:typecheck` + 4 dependencies, `goal:lint`, integration seam 3/12, AI Service 4/25, open-items 1/3, governance 4/23 + governance-check, and full workspace lint 36/36 passed after fixing 7 Ruff I001 errors); full workspace typecheck/test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百三十轮：P0 workspace typecheck blocker closure (first full run 8 failures → after minimal fixes full workspace typecheck 34/34 EXIT:0; utils recurrence 1/4, schedule-orchestration 4/7, governance-check EXIT:0); full workspace test, Web/Desktop E2E, prod-like bundle and OAuth/App credentials remain incomplete/external, so no checkbox flips.
   残留一千三百三十一轮：P0 workspace test blocker reduction (30 standard test targets; first run 11 failures → after root-cause fixes 3 failures / 27 pass EXIT:1; desktop low-risk harness closed: ipc dual imports→contracts/electron+governance, vault-path path.resolve, AIStreamChannels allowlist, provider list envelope; remaining data-portability powersync-round-trip, desktop git runtime/sync GitProcessError 16 tests, app-vue AIChatView TaskService inject + KnowledgeProjection useRoute mock); full green test + Web/Desktop E2E + prod-like + OAuth/App remain incomplete/external, so no checkbox flips.
@@ -11346,7 +11346,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留九百四十轮：§13.2 focused evidence suite re-run（1169 tests，residuals 250–939 锁；不改 checkbox）。
   残留九百四十一轮：retire host ElectronBridge helper duals（platform/electron-bridge 唯 helpers）。
   残留九百四十二轮：§13.2 focused evidence suite re-run（1172 tests，residuals 250–941 锁；不改 checkbox）。
-  残留九百四十三轮：retire escapeHtml dual（@dailyuse/utils/shared 唯 helper）。
+  残留九百四十三轮：retire escapeHtml dual（@memoflow/utils/shared 唯 helper）。
   残留九百四十四轮：§13.2 focused evidence suite re-run（1175 tests，residuals 250–943 锁；不改 checkbox）。
   残留九百四十五轮：retire formatZodErrors dual（utils/result 唯 helper）。
   残留九百四十六轮：§13.2 focused evidence suite re-run（1179 tests，residuals 250–945 锁；不改 checkbox）。
@@ -11559,7 +11559,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   残留一千一百五十三轮：lock tokenize keep-boundary（knowledge-index ASCII vs API CJK projection search；不强制合并）。
   残留一千一百五十四轮：§13.2 focused evidence suite re-run（1496 tests，residuals 250–1153 锁；不改 checkbox）。
   残留一千一百五十五轮：§13.2 evidence tip 刷新（1154 tip 346/1496）+ open-items surface 锁（不改 checkbox）。
-  残留一千一百五十六轮：retire toDashboardTaskInstanceRecord duals onto @dailyuse/dashboard sole（API/Desktop host wiring 仍分离）。
+  残留一千一百五十六轮：retire toDashboardTaskInstanceRecord duals onto @memoflow/dashboard sole（API/Desktop host wiring 仍分离）。
   残留一千一百五十七轮：§13.2 focused evidence suite re-run（1500 tests，residuals 250–1156 锁；不改 checkbox）。
   残留一千一百五十八轮：§13.2 evidence tip 刷新（1157 tip 347/1500）+ open-items surface 锁（不改 checkbox）。
   残留一千一百五十九轮：lock toPrismaJson keep-boundary（AI deep-clone InputJsonValue vs account DTO cast InputJsonObject；不强制合并）。
@@ -12017,9 +12017,9 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - **lint/typecheck/标准 test**：沿用 residual 1332–1334 全仓 **36/36 + 34/34 + 30/30 EXIT:0**（本 tip 未全仓复跑）。
   - **Web E2E**：residual 1336 默认 testMatch **`web:e2e` 71/71**；1337 shell **8/8** / ai-workspace **8/8** / sync **3/3**；1340 真实 OAuth **`web:e2e:oauth-real` 1/1**。
   - **Desktop E2E**：Windows residual 1338/1341 `desktop:e2e` **1/1 EXIT:0**（production Electron password+guest）。
-  - **governance**：本 tip `pnpm nx run daily-use:governance-check` **GOV_EXIT:0**。
+  - **governance**：本 tip `pnpm nx run memoflow:governance-check` **GOV_EXIT:0**。
   - **prod-like**：本 tip 六服务 **healthy**（postgres/redis/ai-service/api/powersync/web）+ 探针 Web/API/AI/PowerSync **HTTP 200**；
-    通过已有 `dailyuse-*:local` 镜像 `docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --no-build`；
+    通过已有 `memoflow-*:local` 镜像 `docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --no-build`；
     全量 `pnpm docker:local:up` rebuild 仍可能 npipe EOF（环境限制，不挡本 tip 运行态验收）。
   **不覆盖**：Agent durable multi-engine 跨端产品 E2E（仍属第 2 项 open）。
   **残留 1333 收口 handoff（仍不打勾）**（历史）：当时缺完整 E2E 一揽子。
@@ -12037,10 +12037,10 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
 
   集合 12/12 通过；focused 回归 8 文件 / 160 测试、governance 4/23 + GOV_EXIT:0。
-  额外全仓方向探测发现 `@dailyuse/test-utils:lint` 仍有 2 个既有 layer-boundary error；
+  额外全仓方向探测发现 `@memoflow/test-utils:lint` 仍有 2 个既有 layer-boundary error；
   依赖 build 的 declaration 诊断、全仓 test/E2E/prod-like 与 OAuth/App fixture 仍未闭环，
   因此仍不构成全量 PR 门禁。
-  残留一千三百二十九轮：`@dailyuse/test-utils:lint` 0 errors、`test-utils:typecheck`
+  残留一千三百二十九轮：`@memoflow/test-utils:lint` 0 errors、`test-utils:typecheck`
   + 4 个依赖任务、`goal:lint`、integration seam focused 3 文件 / 12 测试通过；
   修复 7 个 Ruff I001 后全 workspace lint 36/36 项目通过；AI Service 4/25、
   open-items 1/3、governance 4/23 + governance-check 通过。全仓 typecheck/test、
@@ -12061,12 +12061,12 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   typecheck **34/34** + 标准 test **30/30** 复验 EXIT:0；governance-check GOV_EXIT:0。
   goal-workflow 8/8 红（AI workspace 未就绪）；续：goal-workflow 8/8 绿（Host SSE mock）；Desktop Linux guest 续 xvfb+basic_text **1/1 绿**；
   GitHub App JWT 已接线、install 需浏览器；OAuth/App 完整 fixture 仍外部阻塞；**不改 checkbox**，仍不构成全量 PR 门禁。
-  证据：本分支多轮 focused lint/typecheck/test 与 `daily-use:governance-check` 通过；Web 核心
+  证据：本分支多轮 focused lint/typecheck/test 与 `memoflow:governance-check` 通过；Web 核心
   Playwright 集合含 knowledge note boundary 与 AI goal-workflow。残留二十七轮：prod-like
   `docker:local:up` 在当前宿主机已成功（六服务 healthy；Web 200 / API health 200），历史 Docker
   磁盘耗尽不再是阻塞。残留一百零八轮：HTTP 204 无 body + checkpoint void `ok(null)` 收口。
-  残留一百八十一轮：tip 上 `daily-use:governance-check` + focused ownership/journey specs 通过；仍不构成全量 PR 门禁证据。
-  残留一百九十一轮：tip 上 87 项核心 evidence suite + `daily-use:governance-check` 通过；仍不构成全量 PR 门禁证据。
+  残留一百八十一轮：tip 上 `memoflow:governance-check` + focused ownership/journey specs 通过；仍不构成全量 PR 门禁证据。
+  残留一百九十一轮：tip 上 87 项核心 evidence suite + `memoflow:governance-check` 通过；仍不构成全量 PR 门禁证据。
   残留一百九十五轮：tip 上 107 项核心 evidence suite 通过；仍不构成全量 PR 门禁证据。
   残留一百九十八轮：tip 上 118 项核心 evidence suite 通过；仍不构成全量 PR 门禁证据。
   残留二百零四轮：tip 上 157 项核心 evidence suite（含 confirmed-create / editor-pref / dual-track VO 锁）通过；仍不构成全量 PR 门禁证据。
@@ -13266,7 +13266,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
     修复：`registerAndLogin`/`login` 落地后 `waitForAuthenticatedShell`（`app-shell` + NAVIGATION 30s）；
     beforeEach 与 auth 页 cold wait 同步拉长。复验 goal/task/reminder/notification **24/24**；
     goal-workflow + note-boundary/workspace **10/10**。
-  - prod-like：本 tip 镜像重建后 API 曾 **unhealthy**（缺 workspace `dist`：`utils → @dailyuse/contracts/reminder`）。
+  - prod-like：本 tip 镜像重建后 API 曾 **unhealthy**（缺 workspace `dist`：`utils → @memoflow/contracts/reminder`）。
     根因：`dist` gitignore + `.dockerignore` 的 `**/build` 误伤 `tools/build`。修复：
     `Dockerfile.api` 在 builder 内重建 `packages/contracts` dist；`.dockerignore` 改为只忽略 `packages/**/build`/`apps/**/build`。
     复验：`docker:local:up` 六服务 **healthy**；探针 web **58080**/api **53080**/ai **58100** **200**。
@@ -13298,7 +13298,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
 
   残留一千三百三十八轮（Windows 本机收尾；**不改 checkbox**；诚实 handoff B）：
   - **tip 基线**：`08b572192`（含 handoff 文档）→ residual 1338 提交后 tip 更新；ancestor of residual-1337 `2db22956d`。
-  - **smoke**：`pnpm nx run daily-use:governance-check` **GOV_EXIT:0**；`pnpm nx run app-vue:test -- section-13-2-dod-open-items` **3/3 EXIT:0**。
+  - **smoke**：`pnpm nx run memoflow:governance-check` **GOV_EXIT:0**；`pnpm nx run app-vue:test -- section-13-2-dod-open-items` **3/3 EXIT:0**。
   - **Desktop Windows**：`pnpm nx run desktop:e2e` **1/1 EXIT:0**（production Electron password + guest isolated profile；~11.7s）。
   - **交互式真实 GitHub OAuth**：**外部阻塞**。本机 `.env.development.local` 仅 `GITHUB_OAUTH_CLIENT_ID`（Ov23…）+ `CALLBACK_URL`，**无** `GITHUB_OAUTH_CLIENT_SECRET`；User/Machine/process/AppData 均无 secret。
     命令/证据：env probe + `getGithubOAuthConfig` surface（含 residual 1338 host-dev id-only → null）；origin 意图为 host-dev（非 `RUNTIME_LANE=e2e`）；headed n/a；人工同意 n/a；session `hasOAuth` 未建立。
@@ -13332,7 +13332,7 @@ Open Design、Pi 和当前 LangGraph/TS runtime 专项调研已经完成。通�
   - **prod-like**：`docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --no-build` **EXIT:0**；
     六服务 **healthy**（postgres/redis/ai-service/api/powersync/web）；探针 Web/API/AI/PowerSync **HTTP 200**。
     注：`pnpm docker:local:up` 全量 rebuild 仍可能 Docker Desktop npipe EOF；本 tip 以已有 `:local` 镜像运行态验收。
-  - **governance**：`pnpm nx run daily-use:governance-check` **GOV_EXIT:0**。
+  - **governance**：`pnpm nx run memoflow:governance-check` **GOV_EXIT:0**。
   - **Desktop**：`pnpm nx run desktop:e2e` **1/1 EXIT:0**（Windows 复验）。
   - **§13.2**：门禁项 **[x] 已证明**；仅剩 Agent durable/跨端产品 E2E → **14 [x] / 1 [ ]**。
   - **PR readiness = no**（Agent 项未满；勿宣称理想收口 A）。

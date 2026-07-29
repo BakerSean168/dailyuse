@@ -4,7 +4,7 @@ import { computed, nextTick, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 import NotificationCapsulePreview from './NotificationCapsulePreview.vue';
 
 const notificationsRef = ref<NotificationClientDTO[]>([]);
@@ -32,7 +32,7 @@ vi.mock('vue-sonner', () => ({
   toast: { success: vi.fn() },
 }));
 
-vi.mock('@dailyuse/ui-vue-shadcn', async () => {
+vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const vue = await import('vue');
   const Button = vue.defineComponent({
     name: 'ButtonStub',

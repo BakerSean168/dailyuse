@@ -9,9 +9,9 @@
  * - Desktop: PowerSync-backed adapter in `apps/desktop/src/main/services/`
  *
  * Contract DTO types (`DashboardData`, etc.) come from
- * `@dailyuse/contracts/dashboard` — not re-exported here.
+ * `@memoflow/contracts/dashboard` — not re-exported here.
  *
- * @module @dailyuse/dashboard
+ * @module @memoflow/dashboard
  */
 
 // Domain: port interface + record types

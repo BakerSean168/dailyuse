@@ -79,8 +79,8 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+} from '@memoflow/ui-vue-shadcn';
+import type { ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
 import {
   getStatusLabel,
   getStatusColor,

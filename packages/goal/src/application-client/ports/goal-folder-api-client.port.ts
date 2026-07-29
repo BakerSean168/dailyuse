@@ -5,13 +5,13 @@
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   GoalFolderClientDTO,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
   QueryGoalFoldersRes,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 export interface IGoalFolderApiClient {
   createGoalFolder(request: CreateGoalFolderReq): Promise<Result<GoalFolderClientDTO>>;

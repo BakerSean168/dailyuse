@@ -1,5 +1,5 @@
-import { ConflictError } from '@dailyuse/utils/errors';
-import type { RegisterByEmailReq } from '@dailyuse/contracts/authentication';
+import { ConflictError } from '@memoflow/utils/errors';
+import type { RegisterByEmailReq } from '@memoflow/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
 import type { IPasswordHasher } from '..';

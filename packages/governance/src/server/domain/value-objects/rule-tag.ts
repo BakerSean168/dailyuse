@@ -9,10 +9,10 @@
  * - 只允许小写字母、数字和连字符
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { RuleTagDTO } from '@dailyuse/contracts/governance';
+import { ValueObject } from '@memoflow/utils/domain';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { RuleTagDTO } from '@memoflow/contracts/governance';
 
 /**
  * 内部 Props 接口

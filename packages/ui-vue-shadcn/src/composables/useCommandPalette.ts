@@ -83,7 +83,7 @@ export function useCommandGroups(): ComputedRef<PaletteCommandGroup[]> {
  *
  * @example
  * ```ts
- * import { openCommandPalette } from '@dailyuse/ui-vue-shadcn'
+ * import { openCommandPalette } from '@memoflow/ui-vue-shadcn'
  * openCommandPalette()
  * ```
  */
@@ -128,7 +128,7 @@ export function registerStaticCommands(commands: PaletteCommandItem[]): void {
  *
  * @example
  * ```ts
- * import { registerDynamicCommands } from '@dailyuse/ui-vue-shadcn'
+ * import { registerDynamicCommands } from '@memoflow/ui-vue-shadcn'
  * import { onUnmounted } from 'vue'
  *
  * const unregister = registerDynamicCommands([

@@ -18,7 +18,7 @@ import type {
   AgentExecutedAction,
   AgentRunResult,
   AgentStartRunClientRequest,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { Ref } from 'vue';
 import type {
   AIChatService,
@@ -28,7 +28,7 @@ import type {
   NoteSummary,
 } from './types';
 import { getAIErrorMessage } from './error';
-import { unwrap } from '@dailyuse/contracts/result';
+import { unwrap } from '@memoflow/contracts/result';
 import {
   applyHostKnowledgePatchToAgentActions,
   dispatchHostProposalDecision,
@@ -61,7 +61,7 @@ export function useAIKnowledgeNoteWorkflow(options: UseAIKnowledgeNoteWorkflowOp
 
   const noteCreating = ref(false);
   const noteSummary = ref<NoteSummary | null>(null);
-  const noteAgentRun = ref<import('@dailyuse/contracts/ai').AgentRunResult | null>(null);
+  const noteAgentRun = ref<import('@memoflow/contracts/ai').AgentRunResult | null>(null);
   const noteAgentLoading = ref(false);
 
   const noteAgentDraftArtifact = computed(

@@ -238,11 +238,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@dailyuse/ui-vue-shadcn';
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Card, CardContent, CardHeader, CardTitle } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Alert, AlertDescription } from '@memoflow/ui-vue-shadcn';
 import {
   CalendarClock,
   Info,

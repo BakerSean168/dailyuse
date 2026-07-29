@@ -11,8 +11,8 @@ import {
   TaskTemplateStatus,
   type TaskTemplateServerDTO,
   type TaskTemplateClientDTO,
-} from '@dailyuse/contracts/task';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/task';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskSortBy, TaskFilterBy } from './task-query.validator';
 
 /**

@@ -27,14 +27,14 @@ Server 端的领域模型是业务逻辑的核心心脏。它是 **"Rich Domain 
 服务端领域层处于架构核心，依赖必须极其严格：
 
 * ✅ **允许依赖**:
-* `@dailyuse/utils` (AggregateRoot 基类, Entity 基类)
-* `@dailyuse/contracts` (DTO 定义, 事件 Map)
-* `@dailyuse/domain-shared` (值对象, 枚举, 纯业务逻辑)
+* `@memoflow/utils` (AggregateRoot 基类, Entity 基类)
+* `@memoflow/contracts` (DTO 定义, 事件 Map)
+* `@memoflow/domain-shared` (值对象, 枚举, 纯业务逻辑)
 
 
 * ❌ **禁止依赖**:
 * 其他业务域包中的具体基础设施实现（禁止跨域耦合）
-* `@dailyuse/infrastructure` (禁止！Repository 的实现不应出现在这里)
+* `@memoflow/infrastructure` (禁止！Repository 的实现不应出现在这里)
 * API 层代码 (Controller, Resolver)
 * 外部 I/O 库 (fs, axios, prisma, typeorm)
 
@@ -69,7 +69,7 @@ Server 端的领域模型是业务逻辑的核心心脏。它是 **"Rich Domain 
 * **流程**:
 1. **Check**: 检查业务规则（如果不满足，抛出 Error）。
 2. **Act**: 修改内部私有状态。
-3. **Event**: 调用 `this.addDomainEvent(...)`，且 payload 类型必须来自 `@dailyuse/contracts` 中的 `protocol/*-event-map.ts`。
+3. **Event**: 调用 `this.addDomainEvent(...)`，且 payload 类型必须来自 `@memoflow/contracts` 中的 `protocol/*-event-map.ts`。
 
 
 
@@ -85,12 +85,12 @@ Server 端的领域模型是业务逻辑的核心心脏。它是 **"Rich Domain 
 请 AI 在生成代码时严格参照以下模板：
 
 ```typescript
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@memoflow/utils';
 // 1. 引入 Contract 定义 (DTO 和 Events)
-import type { UserPersistenceDTO, UserServerDTO } from '@dailyuse/contracts/user';
-import type { UserEventMap } from '@dailyuse/contracts/user';
+import type { UserPersistenceDTO, UserServerDTO } from '@memoflow/contracts/user';
+import type { UserEventMap } from '@memoflow/contracts/user';
 // 2. 引入 Shared 值对象
-import { UserId, Email, UserStatus } from '@dailyuse/domain-shared/user';
+import { UserId, Email, UserStatus } from '@memoflow/domain-shared/user';
 
 export class User extends AggregateRoot<UserId> {
   // ================= 内部状态 =================

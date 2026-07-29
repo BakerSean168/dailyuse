@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Badge, Button, Label } from '@dailyuse/ui-vue-shadcn';
+import { Badge, Button, Label } from '@memoflow/ui-vue-shadcn';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import { KnowledgeAttachmentContentCachePrismaRepository } from './knowledge-attachment-content-cache-prisma.repository';
 
 function row(overrides: Record<string, unknown> = {}) {

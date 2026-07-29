@@ -1,9 +1,9 @@
 /**
- * @dailyuse/ai
+ * @memoflow/ai
  *
  * AI module runtime root.
  *
- * Public AI contracts are centralized in `@dailyuse/contracts/ai`.
+ * Public AI contracts are centralized in `@memoflow/contracts/ai`.
  * Root exports are limited to the canonical server composition roots.
  * Client / API / Electron seams use dedicated subpaths.
  */

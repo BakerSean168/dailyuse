@@ -5,12 +5,12 @@
  * 聚合根：ReminderGroup
  */
 
-import type { PrismaClient, ReminderGroup as PrismaReminderGroup, Prisma } from '@dailyuse/database';
+import type { PrismaClient, ReminderGroup as PrismaReminderGroup, Prisma } from '@memoflow/database';
 import type { IReminderGroupRepository } from '../../../domain/repositories/i-reminder-group-repository';
-import type { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 import { ReminderGroup } from '../../../domain/aggregates/reminder-group';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import { PrismaReminderGroupMapper } from './mappers/prisma-reminder-group-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { GoalRecordId as IGoalRecordId } from '@dailyuse/contracts/primitives';
+import type { GoalRecordId as IGoalRecordId } from '@memoflow/contracts/primitives';
 
 /**
  * GoalRecordId 值对象

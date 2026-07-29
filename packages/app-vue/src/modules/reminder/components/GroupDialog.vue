@@ -202,7 +202,7 @@ import type {
   CreateReminderGroupReq,
   ReminderGroupClientDTO,
   UpdateReminderGroupReq,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import {
   Info,
   Palette,
@@ -225,14 +225,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
-import { RadioGroup, RadioGroupItem } from '@dailyuse/ui-vue-shadcn';
-import { Separator } from '@dailyuse/ui-vue-shadcn';
-import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
+import { Textarea } from '@memoflow/ui-vue-shadcn';
+import { RadioGroup, RadioGroupItem } from '@memoflow/ui-vue-shadcn';
+import { Separator } from '@memoflow/ui-vue-shadcn';
+import { Popover, PopoverContent, PopoverTrigger } from '@memoflow/ui-vue-shadcn';
 
 const props = defineProps<{
   group?: ReminderGroupClientDTO | null;

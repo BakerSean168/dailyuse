@@ -92,7 +92,7 @@ function asciiUserDataDir(testInfo: { workerIndex: number; retry: number }): str
   // so always pin guest profile data under an ASCII-only temp path.
   return path.join(
     os.tmpdir(),
-    'dailyuse-shell-e2e',
+    'memoflow-shell-e2e',
     `w${testInfo.workerIndex}-r${testInfo.retry}-${Date.now()}`,
   );
 }

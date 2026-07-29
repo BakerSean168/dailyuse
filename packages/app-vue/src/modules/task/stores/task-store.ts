@@ -8,7 +8,7 @@ import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
   TaskGraphDependencyDTO,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 export interface TaskState {
   templates: TaskTemplateClientDTO[];

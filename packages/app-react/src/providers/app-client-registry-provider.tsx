@@ -1,22 +1,22 @@
 import { createContext, type PropsWithChildren, useContext, useRef } from 'react';
 
-import type { AccountClientPort } from '@dailyuse/account/client';
-import { createAccountHttpClient } from '@dailyuse/account/client';
-import type { AIClientPort } from '@dailyuse/ai/client';
-import { createAIHttpClient } from '@dailyuse/ai/client';
-import type { GoalClientPort } from '@dailyuse/goal/client';
-import { createGoalHttpClient } from '@dailyuse/goal/client';
-import type { NotificationClientPort } from '@dailyuse/notification/client';
-import { createNotificationHttpClient } from '@dailyuse/notification/client';
-import type { ReminderClientPort } from '@dailyuse/reminder/client';
-import { createReminderHttpClient } from '@dailyuse/reminder/client';
-import type { ScheduleClientPort } from '@dailyuse/schedule/client';
-import { createScheduleHttpClient } from '@dailyuse/schedule/client';
-import type { SettingClientPort } from '@dailyuse/setting/client';
-import { createSettingHttpClient } from '@dailyuse/setting/client';
-import type { TaskClientPort } from '@dailyuse/task/client';
-import { createTaskHttpClient } from '@dailyuse/task/client';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { AccountClientPort } from '@memoflow/account/client';
+import { createAccountHttpClient } from '@memoflow/account/client';
+import type { AIClientPort } from '@memoflow/ai/client';
+import { createAIHttpClient } from '@memoflow/ai/client';
+import type { GoalClientPort } from '@memoflow/goal/client';
+import { createGoalHttpClient } from '@memoflow/goal/client';
+import type { NotificationClientPort } from '@memoflow/notification/client';
+import { createNotificationHttpClient } from '@memoflow/notification/client';
+import type { ReminderClientPort } from '@memoflow/reminder/client';
+import { createReminderHttpClient } from '@memoflow/reminder/client';
+import type { ScheduleClientPort } from '@memoflow/schedule/client';
+import { createScheduleHttpClient } from '@memoflow/schedule/client';
+import type { SettingClientPort } from '@memoflow/setting/client';
+import { createSettingHttpClient } from '@memoflow/setting/client';
+import type { TaskClientPort } from '@memoflow/task/client';
+import { createTaskHttpClient } from '@memoflow/task/client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 
 import { useAppSession } from './app-session-provider';
 

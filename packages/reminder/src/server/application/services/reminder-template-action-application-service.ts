@@ -1,10 +1,10 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   ReminderHistoryClientDTO,
   ReminderTemplateClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import type { ReminderTemplate } from '../../domain/aggregates/reminder-template';
 import type { ReminderGroup } from '../../domain/aggregates/reminder-group';
 import type { IReminderGroupRepository } from '../../domain/repositories/i-reminder-group-repository';

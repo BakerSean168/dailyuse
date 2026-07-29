@@ -3,8 +3,8 @@ import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   successResponse,
-} from '@dailyuse/utils/result';
-import { AIEvaluationOverviewSchema } from '@dailyuse/contracts/ai';
+} from '@memoflow/utils/result';
+import { AIEvaluationOverviewSchema } from '@memoflow/contracts/ai';
 import type { AIEvaluationReportController } from '../../server/transport/ai-evaluation-report.controller';
 
 interface PlatformMiddleware {

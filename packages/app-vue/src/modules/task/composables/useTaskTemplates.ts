@@ -8,9 +8,9 @@ import { useTaskStore } from '../stores/task-store';
 import { TASK_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import type { CreateTaskTemplateReq, UpdateTaskTemplateReq } from '@dailyuse/contracts/task';
-import type { GoalId, TaskFolderId } from '@dailyuse/contracts/primitives';
-import type { Result } from '@dailyuse/contracts/result';
+import type { CreateTaskTemplateReq, UpdateTaskTemplateReq } from '@memoflow/contracts/task';
+import type { GoalId, TaskFolderId } from '@memoflow/contracts/primitives';
+import type { Result } from '@memoflow/contracts/result';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';
 

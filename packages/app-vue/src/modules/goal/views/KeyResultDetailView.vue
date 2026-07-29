@@ -146,7 +146,7 @@ import { useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus, History, TrendingUp } from '@lucide/vue';
-import type { KeyResultId } from '@dailyuse/contracts/primitives';
+import type { KeyResultId } from '@memoflow/contracts/primitives';
 import { formatProductDateTime } from '../../../shared/utils/product-time';
 import {
   Button,
@@ -168,7 +168,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();

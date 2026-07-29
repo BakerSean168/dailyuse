@@ -5,7 +5,7 @@
  * full authenticated application shell.
  */
 
-import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
+import { applyDocumentIcons, logo128, logoIco } from '@memoflow/assets';
 
 import './styles/index.css';
 

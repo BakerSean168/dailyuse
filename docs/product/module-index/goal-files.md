@@ -73,7 +73,7 @@ updated: 2026-07-22T00:00:00
 
 | 文件 | 说明 |
 | --- | --- |
-| [`packages/goal/src/index.ts`](../../../packages/goal/src/index.ts) | `@dailyuse/goal` public surface 和模块分层说明 |
+| [`packages/goal/src/index.ts`](../../../packages/goal/src/index.ts) | `@memoflow/goal` public surface 和模块分层说明 |
 | [`packages/goal/src/server/infrastructure/goal.module.ts`](../../../packages/goal/src/server/infrastructure/goal.module.ts) | 服务端目标模块组合根 |
 | [`packages/goal/src/server/domain/aggregates/goal.ts`](../../../packages/goal/src/server/domain/aggregates/goal.ts) | Goal 聚合 |
 | [`packages/goal/src/server/domain/aggregates/goal-folder.ts`](../../../packages/goal/src/server/domain/aggregates/goal-folder.ts) | Goal Folder 聚合 |

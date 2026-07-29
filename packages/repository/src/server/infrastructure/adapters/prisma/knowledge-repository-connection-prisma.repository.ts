@@ -1,8 +1,8 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import type {
   KnowledgeRepositoryConnectionServerDTO,
   KnowledgeRepositoryConnectionStatus,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import type { IKnowledgeRepositoryConnectionRepository } from '../../../application/ports/knowledge-repository-connection.repository';
 
 type ConnectionRow = Awaited<

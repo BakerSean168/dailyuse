@@ -91,12 +91,12 @@ tip 至少包含：`2db22956d`（residual 1337）及之前 1335–1336 修复。
    - `.env.test.local` / `.env.development.local` 中的 `GITHUB_OAUTH_CLIENT_ID/SECRET`
    - GitHub App / live-github 相关 fixture（远程已用过 `memoflow-dev-test`、installation 路径）
 5. OAuth App 回调 URL 必须覆盖本机 Web 源（常见 `http://127.0.0.1:5173` / e2e web origin）；缺则先改 GitHub OAuth App 设置再测
-6. Desktop：确保 Electron 能在本机启动；日志目录参考 AGENT.md（Memoflow-Dev logs）
+6. Desktop：确保 Electron 能在本机启动；日志目录参考 AGENT.md（MemoFlow-Dev logs）
 
 ## 推荐执行顺序（严格按序，失败先修再往下）
 
 ### A. 基线 smoke（短）
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 pnpm nx run app-vue:test -- section-13-2-dod-open-items
 可选：`pnpm nx run web:e2e` 或更小 auth 子集（非主交付）。
 

@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { SettingId as ISettingId } from '@dailyuse/contracts/primitives';
+import type { SettingId as ISettingId } from '@memoflow/contracts/primitives';
 
 /**
  * SettingId 值对象

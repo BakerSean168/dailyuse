@@ -1,5 +1,5 @@
-import type { UserReminderPreferencesClientDTO } from '@dailyuse/contracts/reminder';
-import type { Result } from '@dailyuse/contracts/result';
+import type { UserReminderPreferencesClientDTO } from '@memoflow/contracts/reminder';
+import type { Result } from '@memoflow/contracts/result';
 import type { ReminderContext } from './useReminderContext';
 
 type ReminderPreferencesCapableService = {

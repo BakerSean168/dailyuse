@@ -7,18 +7,18 @@
  */
 
 // 从 patterns 包导出通用框架
-export type { IScheduleTimer } from '@dailyuse/patterns/scheduler';
-export { NodeTimer, FakeTimer } from '@dailyuse/patterns/scheduler';
+export type { IScheduleTimer } from '@memoflow/patterns/scheduler';
+export { NodeTimer, FakeTimer } from '@memoflow/patterns/scheduler';
 
-export type { HeapItem } from '@dailyuse/patterns/scheduler';
-export { MinHeap } from '@dailyuse/patterns/scheduler';
+export type { HeapItem } from '@memoflow/patterns/scheduler';
+export { MinHeap } from '@memoflow/patterns/scheduler';
 
 export type {
   IScheduleMonitor,
   ScheduleExecutionStats,
   ScheduleExecutionRecord,
-} from '@dailyuse/patterns/scheduler';
-export { NoopScheduleMonitor, InMemoryScheduleMonitor } from '@dailyuse/patterns/scheduler';
+} from '@memoflow/patterns/scheduler';
+export { NoopScheduleMonitor, InMemoryScheduleMonitor } from '@memoflow/patterns/scheduler';
 
 // 优先队列调度器
 export type {

@@ -16,7 +16,7 @@ import type {
   GoalReviewClientDTO,
   GoalRecordClientDTO,
   FocusModeDTO,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 export interface GoalState {
   goals: GoalClientDTO[];

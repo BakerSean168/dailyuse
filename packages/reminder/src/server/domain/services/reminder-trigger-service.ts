@@ -15,7 +15,7 @@
 
 import type { ReminderTemplate } from '../aggregates/reminder-template';
 import type { IReminderTemplateRepository } from '../repositories/i-reminder-template-repository';
-import { TriggerResult } from '@dailyuse/contracts/reminder';
+import { TriggerResult } from '@memoflow/contracts/reminder';
 import type { ReminderTemplateControlService } from './reminder-template-control-service';
 
 /**

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ResultErrorException } from '@dailyuse/contracts/result';
-import type { PrismaClient } from '@dailyuse/database';
+import { ResultErrorException } from '@memoflow/contracts/result';
+import type { PrismaClient } from '@memoflow/database';
 import { AgentCheckpointPrismaAdapter } from '../agent-checkpoint-prisma.adapter';
 
 const baseRun = {

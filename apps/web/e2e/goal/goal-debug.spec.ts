@@ -21,7 +21,7 @@ test('Goal 对话框调试', async ({ page }) => {
   await page.waitForTimeout(2000);
 
   // 截图
-  await page.screenshot({ path: '/workspaces/Memoflow/goal-dialog-debug.png', fullPage: true });
+  await page.screenshot({ path: '/workspaces/MemoFlow/goal-dialog-debug.png', fullPage: true });
   console.log('✅ 对话框截图已保存');
 
   // 打印对话框内所有input和textarea

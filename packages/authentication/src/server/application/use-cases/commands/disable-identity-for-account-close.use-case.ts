@@ -5,15 +5,15 @@
  * Account 注销级联到 Auth：禁用身份并撤销全部会话。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import type {
   IAuthIdentityRepository,
   IAuthSessionRepository,
 } from '../../../domain';
 import { AuthIdentityStatus } from '../../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('DisableIdentityForAccountClose');
 

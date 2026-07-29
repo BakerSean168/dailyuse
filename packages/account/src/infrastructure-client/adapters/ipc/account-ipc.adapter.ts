@@ -5,8 +5,8 @@
  * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { AccountChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { AccountChannels } from '@memoflow/contracts/electron';
 import type { IAccountApiClient, IResultIpcClient } from '../types';
 import type {
   AccountClientDTO,
@@ -16,7 +16,7 @@ import type {
   CloseAccountReq,
   UpdateAccountSettingsReq,
   UpdateAccountSettingsRes,
-} from '@dailyuse/contracts/account';
+} from '@memoflow/contracts/account';
 
 export class AccountIpcAdapter implements IAccountApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

@@ -1,4 +1,4 @@
-import { NotificationType as NotificationTypeContract, type NotificationType as INotificationType } from '@dailyuse/contracts/notification';
+import { NotificationType as NotificationTypeContract, type NotificationType as INotificationType } from '@memoflow/contracts/notification';
 
 /**
  * 📝 通知类型 - 通知的分类类型
@@ -13,7 +13,7 @@ export type NotificationType = INotificationType & { readonly __brand: unique sy
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: INotificationType[] = Object.values(NotificationTypeContract);
 
 /**

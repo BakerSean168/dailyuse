@@ -1,4 +1,4 @@
-import { BUILT_IN_TEMPLATES, type GoalTemplate } from '@dailyuse/goal/client';
+import { BUILT_IN_TEMPLATES, type GoalTemplate } from '@memoflow/goal/client';
 
 export type RecommendationFilters = {
   searchQuery?: string;

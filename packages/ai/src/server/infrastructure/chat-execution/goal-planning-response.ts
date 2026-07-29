@@ -2,12 +2,12 @@ import {
   GoalCategory,
   type GeneratedGoalDraft,
   type KeyResultPreview,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import {
   KeyResultCalculationMethod,
   KeyResultValueType,
-} from '@dailyuse/contracts/goal';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/goal';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 export function parseGoalPlanningResponse(
   content: string,

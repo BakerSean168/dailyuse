@@ -3,7 +3,7 @@
  * AI 模块自定义错误类
  */
 
-import { DomainError } from '@dailyuse/utils/errors';
+import { DomainError } from '@memoflow/utils/errors';
 
 /**
  * AI 生成超时错误

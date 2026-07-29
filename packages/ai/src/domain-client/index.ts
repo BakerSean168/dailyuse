@@ -11,14 +11,14 @@
  *
  * Dependency rules:
  * Allowed:
- * - @dailyuse/utils (base classes: AggregateRoot, Entity)
- * - @dailyuse/contracts (DTO interfaces, Client interfaces)
+ * - @memoflow/utils (base classes: AggregateRoot, Entity)
+ * - @memoflow/contracts (DTO interfaces, Client interfaces)
  * - server/domain (value objects, enums)
  *
  * Forbidden:
  * - server/domain aggregates and repositories
- * - @dailyuse/infrastructure-* (infrastructure layer)
- * - @dailyuse/application-* (application layer)
+ * - @memoflow/infrastructure-* (infrastructure layer)
+ * - @memoflow/application-* (application layer)
  */
 
 // ===== Aggregates =====

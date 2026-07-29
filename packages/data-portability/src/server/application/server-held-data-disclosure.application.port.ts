@@ -1,7 +1,7 @@
 import type {
   ExportServerHeldDataDisclosureReq,
   ExportServerHeldDataDisclosureRes,
-} from '@dailyuse/contracts/data-portability';
+} from '@memoflow/contracts/data-portability';
 
 /**
  * Server-only disclosure surface. It is deliberately separate from the

@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TaskType } from '@dailyuse/contracts/task';
+import { TaskType } from '@memoflow/contracts/task';
 import request from 'supertest';
 import {
   aOneTimeTask,
@@ -25,7 +25,7 @@ import {
 import jwt from 'jsonwebtoken';
 
 // Mock eventBus to prevent console noise and import side-effects from fire-and-forget events
-vi.mock('@dailyuse/utils', async (importOriginal) => {
+vi.mock('@memoflow/utils', async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return {
     ...actual,

@@ -1,5 +1,5 @@
 /**
- * @dailyuse/contracts - Mock Generators
+ * @memoflow/contracts - Mock Generators
  *
  * Re-exports all mock factory functions from sub-modules.
  * These are **development-only** helpers — do not import in production code.
@@ -18,7 +18,7 @@
  *   createMockRule,
  *   createMockRuleRevision,
  *   createMockUserSetting,
- * } from '@dailyuse/contracts/mocks';
+ * } from '@memoflow/contracts/mocks';
  * ```
  */
 

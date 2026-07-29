@@ -43,13 +43,13 @@
 - `project.json`（根）— 添加 `tags: ["scope:meta"]`
 - `tools/nx-test-system/project.json` — 添加 `layer:shared` tag
 - `project.json`（根）— `governance-check` target 命令链追加 `node tools/governance/server-feature-shape-audit.mjs`
-- `eslint.config.ts` — `@dailyuse/utils` 的 `no-restricted-imports` 从 `warn` 升级为 `error`
+- `eslint.config.ts` — `@memoflow/utils` 的 `no-restricted-imports` 从 `warn` 升级为 `error`
 
 **不改**: 任何业务代码
 
 **依赖**: 无
 
-**完成条件**: `pnpm nx run daily-use:governance-check` 全部通过；ESLint 零 warning
+**完成条件**: `pnpm nx run memoflow:governance-check` 全部通过；ESLint 零 warning
 
 ---
 

@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import type { KnowledgeNotePersistedRef } from '@dailyuse/contracts/ai';
-import type { LocalVaultNoteDTO } from '@dailyuse/contracts/repository';
+import type { KnowledgeNotePersistedRef } from '@memoflow/contracts/ai';
+import type { LocalVaultNoteDTO } from '@memoflow/contracts/repository';
 import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
-} from '@dailyuse/ai/ports';
-import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
+} from '@memoflow/ai/ports';
+import type { LocalVaultElectronPort } from '@memoflow/repository/electron';
 
 /**
  * Desktop AI notes are committed to the selected local Vault only after the

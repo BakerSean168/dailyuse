@@ -5,7 +5,7 @@
  * Extracted from TaskTemplate aggregate to reduce aggregate size.
  */
 
-import type { TaskEventMap } from '@dailyuse/contracts/task';
+import type { TaskEventMap } from '@memoflow/contracts/task';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import {
   InvalidTaskTemplateStateError,
@@ -19,7 +19,7 @@ export interface LifecycleContext {
   props: TaskTemplateProps;
   addHistory(action: string, changes?: unknown): void;
   publishDomainEvent<T>(eventName: string, payload: T): void;
-  toServerDTO(): import('@dailyuse/contracts/task').TaskTemplateServerDTO;
+  toServerDTO(): import('@memoflow/contracts/task').TaskTemplateServerDTO;
 }
 
 /** Activates the template. */

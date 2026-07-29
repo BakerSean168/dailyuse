@@ -4,12 +4,12 @@
  * 记录提醒响应
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { IReminderResponseRepository } from '../../../domain/repositories/i-reminder-response-repository';
-import type { ReminderEventMap, ReminderResponseAction } from '@dailyuse/contracts/reminder';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { ReminderEventMap, ReminderResponseAction } from '@memoflow/contracts/reminder';
+import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import { ReminderResponse } from '../../../domain/entities/reminder-response';
 
 const logger = createLogger('RecordReminderResponseUseCase');

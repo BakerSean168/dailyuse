@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   CreateAIProviderConfigSchema,
   UpdateAIProviderConfigSchema,
@@ -14,9 +14,9 @@ import {
   AIProviderConfigClientDTOSchema,
   ListAIProviderConfigsResSchema,
   TestAIProviderResultDTOSchema,
-} from '@dailyuse/contracts/ai';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/ai';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { AiProviderConfigId } from '@memoflow/contracts/primitives';
 import type { AIProviderConfigController } from '../../server/transport/ai-provider-config.controller';
 
 interface PlatformMiddleware {

@@ -2,7 +2,7 @@
  * Residual 969: knowledge-index value helpers sole import
  * (../knowledge-index-value-helpers.ts).
  */
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type {
   IKnowledgeIndexRepository,
   KnowledgeIndexDiagnostics,

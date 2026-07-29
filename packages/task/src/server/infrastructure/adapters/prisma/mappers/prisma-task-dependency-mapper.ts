@@ -5,9 +5,9 @@
  * Returns TaskDependencyServerDTO directly.
  */
 
-import type { TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
-import type { TaskDependencyServerDTO, DependencyType } from '@dailyuse/contracts/task';
-import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@dailyuse/contracts/primitives';
+import type { TaskDependency as PrismaTaskDependency } from '@memoflow/database';
+import type { TaskDependencyServerDTO, DependencyType } from '@memoflow/contracts/task';
+import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@memoflow/contracts/primitives';
 import { TaskDependency } from '../../../../domain/aggregates/task-dependency';
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */

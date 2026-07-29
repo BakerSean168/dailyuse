@@ -3,8 +3,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskTimeType, TaskType, type CreateTaskTemplateReq, type UpdateTaskTemplateReq } from '@dailyuse/contracts/task';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { TaskTimeType, TaskType, type CreateTaskTemplateReq, type UpdateTaskTemplateReq } from '@memoflow/contracts/task';
 
 import { useTaskTemplateDetail } from '../hooks/useTaskTemplateDetail';
 import { useTaskService } from '../hooks/useTaskService';
@@ -17,7 +17,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 const IMPORTANCE_OPTIONS = [
   ImportanceLevel.Vital,

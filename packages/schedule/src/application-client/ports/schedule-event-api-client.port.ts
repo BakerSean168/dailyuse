@@ -4,10 +4,10 @@
  * Transport-agnostic interface for Schedule Event API operations.
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
- * Types imported from @dailyuse/contracts/schedule.
+ * Types imported from @memoflow/contracts/schedule.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   CalendarEntryClientDTO,
   CreateScheduleRequest,
@@ -15,7 +15,7 @@ import type {
   GetSchedulesByTimeRangeRequest,
   ConflictDetectionResult,
   ResolveConflictRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 /**
  * IScheduleEventApiClient

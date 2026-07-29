@@ -3,15 +3,15 @@ import type {
   ActiveTimeConfigDTO,
   NotificationConfigDTO,
   TriggerConfigDTO,
-} from '@dailyuse/contracts/reminder';
-import { ControlMode, ReminderType } from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
+import { ControlMode, ReminderType } from '@memoflow/contracts/reminder';
 import type { IReminderGroupRepository, IReminderTemplateRepository } from '../repositories';
 import { ReminderTemplate } from '../aggregates/reminder-template';
 import { ReminderGroup } from '../aggregates/reminder-group';
 import { ReminderTemplateControlService } from './reminder-template-control-service';
 import { ReminderGroupBusinessService } from './reminder-group-business-service';
 import { GroupStats } from '../value-objects';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { IUserReminderPreferenceRepository } from '../repositories/i-user-reminder-preference-repository';
 
 // Local branded type

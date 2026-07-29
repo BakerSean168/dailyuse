@@ -10,8 +10,8 @@
  * 3. Returns a Result<T> (transport-agnostic)
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   CreateGoalSchema,
   UpdateGoalSchema,
@@ -25,18 +25,18 @@ import {
   UpdateGoalReviewSchema,
   ActivateFocusModeSchema,
   ExtendFocusModeSchema,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import type {
   GoalClientDTO,
   GoalSystemView,
   GetGoalAggregateRes,
   ProgressBreakdown,
   ListGoalsQuery,
-} from '@dailyuse/contracts/goal';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { formatZodErrors } from '@dailyuse/utils/result';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/goal';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { IdentityId } from '@memoflow/contracts/primitives';
+import { formatZodErrors } from '@memoflow/utils/result';
+import { createLogger } from '@memoflow/utils/logger';
 import type {
   CreateGoalUseCase,
   GetGoalUseCase,

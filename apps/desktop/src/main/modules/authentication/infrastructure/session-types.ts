@@ -2,9 +2,9 @@
  * Shared types and utility functions for the authentication session infrastructure.
  */
 
-import { IdentityId as IdentityIdValue } from '@dailyuse/domain-shared';
-import type { AuthSession } from '@dailyuse/authentication/electron';
-import type { IdentityId } from '@dailyuse/contracts/authentication';
+import { IdentityId as IdentityIdValue } from '@memoflow/domain-shared';
+import type { AuthSession } from '@memoflow/authentication/electron';
+import type { IdentityId } from '@memoflow/contracts/authentication';
 import {
   DeviceType,
   type SessionRestoreResult as ContractSessionRestoreResult,
@@ -12,8 +12,8 @@ import {
   type SessionStatusDTO,
   type DeviceInfoClientDTO,
   type DeviceInfoDTO,
-} from '@dailyuse/contracts/authentication';
-import { AuthMode } from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
+import { AuthMode } from '@memoflow/contracts/authentication';
 
 // ============ Exported Types ============
 

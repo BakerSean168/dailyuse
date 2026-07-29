@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
-import { IdentityId } from '@dailyuse/domain-shared';
+import type { TaskFolderServerDTO } from '@memoflow/contracts/task';
+import { IdentityId } from '@memoflow/domain-shared';
 import { TaskFolderId } from '../../../domain/value-objects';
 import { TaskFolderPrismaRepository } from './task-folder-prisma.repository';
 import {

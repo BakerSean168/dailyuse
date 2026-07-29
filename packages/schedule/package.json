@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/schedule",
+  "name": "@memoflow/schedule",
   "version": "0.0.1",
   "description": "调度模块 - 日程与时间管理",
   "type": "module",
@@ -26,18 +26,18 @@
   },
   "scripts": {},
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/database": "workspace:*",
-    "@dailyuse/domain-shared": "workspace:*",
-    "@dailyuse/http-client": "workspace:*",
-    "@dailyuse/ipc-client": "workspace:*",
-    "@dailyuse/patterns": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/database": "workspace:*",
+    "@memoflow/domain-shared": "workspace:*",
+    "@memoflow/http-client": "workspace:*",
+    "@memoflow/ipc-client": "workspace:*",
+    "@memoflow/patterns": "workspace:*",
+    "@memoflow/utils": "workspace:*",
     "express": "^5.2.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@dailyuse/test-utils": "workspace:*",
+    "@memoflow/test-utils": "workspace:*",
     "@types/express": "^5.0.0"
   }
 }

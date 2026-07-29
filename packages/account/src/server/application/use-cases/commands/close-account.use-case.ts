@@ -2,11 +2,11 @@
  * Close Account Use Case
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IAccountRepository } from '../../../domain';
-import type { CloseAccountReq } from '@dailyuse/contracts/account';
+import type { CloseAccountReq } from '@memoflow/contracts/account';
 
 export class CloseAccountUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}

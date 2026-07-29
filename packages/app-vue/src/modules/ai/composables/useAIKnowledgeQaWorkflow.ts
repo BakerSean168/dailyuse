@@ -5,8 +5,8 @@ import { toast } from 'vue-sonner';
 import type {
   AgentRunResult,
   AgentStartRunClientRequest,
-} from '@dailyuse/contracts/ai';
-import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/ai';
+import type { AiProviderConfigId } from '@memoflow/contracts/primitives';
 import type {
   KnowledgeAnswer,
   UseAIKnowledgeQaWorkflowOptions,
@@ -14,7 +14,7 @@ import type {
 import { getAIErrorMessage } from './error';
 // Residual 953: createAgentId dual retired — sole AI composable helper.
 import { createAgentId } from './createAgentId';
-import { unwrap } from '@dailyuse/contracts/result';
+import { unwrap } from '@memoflow/contracts/result';
 
 type KnowledgeRelatedNote = NonNullable<KnowledgeAnswer['relatedNotes']>[number];
 

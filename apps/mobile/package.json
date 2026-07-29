@@ -3,8 +3,8 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
-    "@dailyuse/app-react": "workspace:*",
-    "@dailyuse/ui-react-native": "workspace:*",
+    "@memoflow/app-react": "workspace:*",
+    "@memoflow/ui-react-native": "workspace:*",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.15.5",
     "@react-navigation/elements": "^2.9.10",

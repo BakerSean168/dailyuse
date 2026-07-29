@@ -5,7 +5,7 @@
  */
 
 import type { ImportContext } from '../../portable-runtime';
-import type { PortableRepositoryData } from '@dailyuse/contracts/data-portability';
+import type { PortableRepositoryData } from '@memoflow/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { allocateId, resolveRef, optRef, inc, rec, timestamps } from './import-helpers';
 

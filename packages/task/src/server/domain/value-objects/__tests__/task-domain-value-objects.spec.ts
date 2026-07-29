@@ -10,7 +10,7 @@ import {
   TaskTimeConfig,
   TaskTimeType,
 } from '..';
-import { DayOfWeek, DependencyType, ReminderTimeUnit } from '@dailyuse/contracts/task';
+import { DayOfWeek, DependencyType, ReminderTimeUnit } from '@memoflow/contracts/task';
 
 describe('task domain value objects', () => {
   it('covers recurrence rules and reminder configuration', () => {

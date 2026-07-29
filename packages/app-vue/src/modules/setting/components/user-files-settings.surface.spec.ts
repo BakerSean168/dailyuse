@@ -10,7 +10,7 @@ describe('UserFilesSettings Result surface', () => {
   const source = readFileSync(resolve(__dirname, 'UserFilesSettings.vue'), 'utf8');
 
   it('unwraps system user-files IPC Result envelopes', () => {
-    expect(source).toContain("import { isOk, type Result } from '@dailyuse/contracts/result'");
+    expect(source).toContain("import { isOk, type Result } from '@memoflow/contracts/result'");
     expect(source).toContain('isOk(response)');
     expect(source).toContain('SystemChannels.USER_FILES_GET_PATH');
     expect(source).toContain('SystemChannels.USER_FILES_PICK_DIRECTORY');

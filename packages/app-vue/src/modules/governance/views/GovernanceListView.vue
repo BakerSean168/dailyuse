@@ -202,7 +202,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Skeleton,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import FilterBar from '../../../components/shared/FilterBar.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGovernance } from '../composables/useGovernance';
@@ -211,7 +211,7 @@ import type {
   RuleClientDTO,
   RuleStatus,
   RuleSeverity,
-} from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/governance';
 import { RuleCard, GovernanceSearchBar } from '../components';
 
 const router = useRouter();

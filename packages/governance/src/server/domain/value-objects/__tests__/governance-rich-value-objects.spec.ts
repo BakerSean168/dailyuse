@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CodeSnippetId } from '@dailyuse/contracts/governance';
+import type { CodeSnippetId } from '@memoflow/contracts/governance';
 import { CodeSnippet } from '../code-snippet';
 import { Language } from '../language';
 import { RuleTag } from '../rule-tag';

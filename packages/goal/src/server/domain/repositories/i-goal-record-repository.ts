@@ -18,7 +18,7 @@
  * 这与其他仓储（IGoalRepository 等）保持一致
  */
 
-import type { GoalRecordQueryOptionsDTO } from '@dailyuse/contracts/goal';
+import type { GoalRecordQueryOptionsDTO } from '@memoflow/contracts/goal';
 import type { GoalRecord } from '../aggregates/goal-record';
 
 /**

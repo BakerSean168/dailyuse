@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import type { AgentRunResult } from '@dailyuse/contracts/ai';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
+import type { AgentRunResult } from '@memoflow/contracts/ai';
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../../../domain';
 import type { AIModuleDependencies } from '../../ai.module';
 import type {

@@ -26,7 +26,7 @@ Load this file when the repository's post-change validation workflow matters mor
 ## Validation Selection Heuristic
 
 - Docs or governance only:
-  - Run `pnpm nx run daily-use:governance-check`
+  - Run `pnpm nx run memoflow:governance-check`
 - Code or config changes:
   - Run `pnpm nx affected -t lint --base <branch>`
   - Run `pnpm nx affected -t typecheck --base <branch>`

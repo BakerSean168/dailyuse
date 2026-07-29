@@ -1,10 +1,10 @@
 import { baseLibraryConfig, createLocalOnlyDtsPaths } from '../../tools/build/tsup.base.config.ts';
 
-const config = baseLibraryConfig('@dailyuse/time');
+const config = baseLibraryConfig('@memoflow/time');
 
 export default {
   ...config,
   entry: ['src/index.ts'],
-  external: [...(config.external || []), '@dailyuse/contracts', 'date-fns'],
+  external: [...(config.external || []), '@memoflow/contracts', 'date-fns'],
   dts: createLocalOnlyDtsPaths(),
 };

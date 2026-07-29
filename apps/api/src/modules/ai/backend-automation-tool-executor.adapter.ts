@@ -1,20 +1,20 @@
 import {
   type GoalAutomationExecutionInput,
   type IAIAutomationToolExecutorPort,
-} from '@dailyuse/ai/ports';
-import type { IdentityId } from '@dailyuse/contracts';
-import type { GoalAutomationExecutedAction } from '@dailyuse/contracts/ai';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/goal';
-import type { PrismaClient } from '@dailyuse/database';
-import { createGoalPrismaModule } from '@dailyuse/goal';
-import { createReminderPrismaModule } from '@dailyuse/reminder';
-import { createTaskPrismaModule } from '@dailyuse/task';
+} from '@memoflow/ai/ports';
+import type { IdentityId } from '@memoflow/contracts';
+import type { GoalAutomationExecutedAction } from '@memoflow/contracts/ai';
+import type { GoalId, KeyResultId } from '@memoflow/contracts/goal';
+import type { PrismaClient } from '@memoflow/database';
+import { createGoalPrismaModule } from '@memoflow/goal';
+import { createReminderPrismaModule } from '@memoflow/reminder';
+import { createTaskPrismaModule } from '@memoflow/task';
 import {
   TaskGoalBindingTrigger,
   TaskType,
-} from '@dailyuse/contracts/task';
-import { unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/task';
+import { unwrapOrThrowError } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 // Residual 1007: sole reminder time helpers (local dual retired).
 // Residual 1009: sole readNestedNumber (local dual retired).
 // Residual 1011: sole previewText (local dual retired; call sites keep maxLength 200).
@@ -25,14 +25,14 @@ import {
   buildReminderTemplateInput,
   previewText,
   readNestedNumber,
-} from '@dailyuse/utils/shared';
+} from '@memoflow/utils/shared';
 
 import { ControlledAnalyticsReadAdapter } from './controlled-analytics-read.adapter';
 import { RepositoryKnowledgeSourceAdapter } from './repository-knowledge-source.adapter';
 
 const logger = createLogger('BackendAutomationToolExecutor');
-// Residual 1015: buildRecurrenceRule elevated to @dailyuse/utils/shared.
-// Residual 1013/1011/1009/1007: related helpers elevated to @dailyuse/utils/shared.
+// Residual 1015: buildRecurrenceRule elevated to @memoflow/utils/shared.
+// Residual 1013/1011/1009/1007: related helpers elevated to @memoflow/utils/shared.
 
 export class BackendAutomationToolExecutorAdapter implements IAIAutomationToolExecutorPort {
   private readonly goalModule;

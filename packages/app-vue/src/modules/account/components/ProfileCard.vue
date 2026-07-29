@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Card, CardHeader, CardContent } from '@dailyuse/ui-vue-shadcn';
-import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { GenderType, type AccountProfileDTO } from '@dailyuse/contracts/account';
+import { Card, CardHeader, CardContent } from '@memoflow/ui-vue-shadcn';
+import { Avatar, AvatarImage, AvatarFallback } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { GenderType, type AccountProfileDTO } from '@memoflow/contracts/account';
 import { formatProductDate, getProductTime } from '../../../shared/utils/product-time';
 
 interface ProfileCardProps {

@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ReminderTemplateServerDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateServerDTO } from '@memoflow/contracts/reminder';
 import {
   NotificationChannel,
   ReminderStatus,
   ReminderType,
   TriggerType,
-} from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/reminder';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { UpcomingReminderCalculationService } from '../upcoming-reminder-calculation-service';
 
 function createReminder(

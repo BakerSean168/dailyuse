@@ -17,10 +17,10 @@ updated: 2026-07-07T00:30:00+08:00
 
 以 `packages/governance` 为唯一参考实现，将其他 feature 包逐步重构为相同的公开架构：
 
-- 公共契约唯一真值源固定为 `@dailyuse/contracts/<feature>`
-- 运行时根入口 `@dailyuse/<feature>` 只承担服务端组合根职责
-- 客户端统一收敛到 `@dailyuse/<feature>/client`
-- Electron main 入口统一收敛到 `@dailyuse/<feature>/electron`
+- 公共契约唯一真值源固定为 `@memoflow/contracts/<feature>`
+- 运行时根入口 `@memoflow/<feature>` 只承担服务端组合根职责
+- 客户端统一收敛到 `@memoflow/<feature>/client`
+- Electron main 入口统一收敛到 `@memoflow/<feature>/electron`
 - 不再公开 `domain-shared`、`domain-server`、`domain-client`、`application-client`、`infrastructure-client`、`electron-entry`
 
 本计划的范围是“公开 seam 收敛”，不包含把各 feature 的内部目录统一迁移到
@@ -30,12 +30,12 @@ updated: 2026-07-07T00:30:00+08:00
 ## 统一目标公开结构
 
 ```text
-@dailyuse/contracts/<feature>
+@memoflow/contracts/<feature>
 
-@dailyuse/<feature>
-@dailyuse/<feature>/api
-@dailyuse/<feature>/client
-@dailyuse/<feature>/electron
+@memoflow/<feature>
+@memoflow/<feature>/api
+@memoflow/<feature>/client
+@memoflow/<feature>/electron
 ```
 
 ## 本轮范围

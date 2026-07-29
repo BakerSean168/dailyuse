@@ -170,7 +170,7 @@ import { parseToDate } from './parse-to-date';
       expect(sole).toContain('Residual 1294');
       const hhmm = readFileSync(resolve(dir, 'format-local-hhmm.ts'), 'utf8');
       expect(hhmm).toContain('Residual 1294');
-      expect(hhmm).toContain('@dailyuse/time');
+      expect(hhmm).toContain('@memoflow/time');
       expect(hhmm).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
       const timeSole = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),
@@ -392,7 +392,7 @@ import { parseToDate } from './parse-to-date';
     it('recovery imports and uses contracts AuthStatus (no local DesktopAuthStatus dual)', () => {
       expect(recovery).toContain('Residual 901');
       expect(recovery).toContain(
-        "import type { AuthStatus } from '@dailyuse/contracts/authentication'",
+        "import type { AuthStatus } from '@memoflow/contracts/authentication'",
       );
       expect(recovery).toContain('Promise<AuthStatus | null>');
       expect(recovery).toContain('as IpcResult<AuthStatus>');
@@ -865,7 +865,7 @@ import { parseToDate } from './parse-to-date';
       expect(body).toContain('formatLocalHHmm');
       expect(body).not.toContain('padStart');
       expect(body).not.toContain('getHours');
-      expect(local).toContain('@dailyuse/time');
+      expect(local).toContain('@memoflow/time');
       expect(local).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
     });
 
@@ -940,7 +940,7 @@ import { parseToDate } from './parse-to-date';
 {
   /**
    * Residual 1261: formatDateNotSet dual retired onto app-react shared sole.
-   * - sole: packages/app-react/src/utils/format-date-not-set.ts (@dailyuse/time date + English 'Not set')
+   * - sole: packages/app-react/src/utils/format-date-not-set.ts (@memoflow/time date + English 'Not set')
    * - consumers: AccountScreen + GoalDetailScreen
    * Soft residual 1261 / 1240:
    * - TaskDetailScreen: time.format.dateTime + empty.display 'Not set'
@@ -1046,9 +1046,9 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatDateToYMD body (Residual 1252 / ADR-037 W2 → @dailyuse/time)', () => {
+    it('owns sole formatDateToYMD body (Residual 1252 / ADR-037 W2 → @memoflow/time)', () => {
       expect(sole).toContain('Residual 1252');
-      expect(sole).toContain("@dailyuse/time");
+      expect(sole).toContain("@memoflow/time");
       expect(sole).toMatch(/export\s*\{\s*formatDateToYMD\s*\}/);
       const timeSole = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),
@@ -1109,7 +1109,7 @@ import { parseToDate } from './parse-to-date';
 {
   /**
    * Residual 1264: formatDateUnknown dual retired onto app-react shared sole.
-   * - sole: packages/app-react/src/utils/format-date-unknown.ts (@dailyuse/time dateTime + English 'Unknown')
+   * - sole: packages/app-react/src/utils/format-date-unknown.ts (@memoflow/time dateTime + English 'Unknown')
    * - consumers: NotificationDetailScreen + NotificationCard
    * Soft residual 1264 / 1261 / 1240:
    * - formatDateNotSet dual-retired sole remains separate (date-only + 'Not set')
@@ -1211,9 +1211,9 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatDisplayDate body (Residual 1249 / ADR-037 W2 → @dailyuse/time)', () => {
+    it('owns sole formatDisplayDate body (Residual 1249 / ADR-037 W2 → @memoflow/time)', () => {
       expect(sole).toContain('Residual 1249');
-      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toContain('@memoflow/time');
       expect(sole).toMatch(/export\s*\{\s*formatDisplayDate\s*\}/);
       const timeSole = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),
@@ -1298,7 +1298,7 @@ import { parseToDate } from './parse-to-date';
       expect(week).toContain('Residual 1300');
       expect(day).toContain('formatLocalHHmm');
       expect(week).toContain('formatLocalHHmm');
-      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toContain('@memoflow/time');
       expect(sole).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
     });
 
@@ -1391,9 +1391,9 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatHHmmParts body (Residual 1297 / ADR-037 W2 → @dailyuse/time)', () => {
+    it('owns sole formatHHmmParts body (Residual 1297 / ADR-037 W2 → @memoflow/time)', () => {
       expect(sole).toContain('Residual 1297');
-      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toContain('@memoflow/time');
       expect(sole).toMatch(/export\s*\{\s*formatHHmmParts\s*\}/);
       const timeSole = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),
@@ -1436,7 +1436,7 @@ import { parseToDate } from './parse-to-date';
       const hour = readFileSync(resolve(dir, 'format-hour.ts'), 'utf8');
       expect(local).toContain('formatLocalHHmm');
       expect(local).not.toContain('formatHHmmParts');
-      expect(hour).toContain('@dailyuse/time');
+      expect(hour).toContain('@memoflow/time');
       expect(hour).toMatch(/export\s*\{\s*formatHour\s*\}/);
       expect(hour).toContain(':00');
       expect(hour).not.toContain('formatHHmmParts');
@@ -1484,9 +1484,9 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatHour body (Residual 1276 / ADR-037 W2 → @dailyuse/time)', () => {
+    it('owns sole formatHour body (Residual 1276 / ADR-037 W2 → @memoflow/time)', () => {
       expect(sole).toContain('Residual 1276');
-      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toContain('@memoflow/time');
       expect(sole).toContain(':00');
       expect(sole).toMatch(/export\s*\{\s*formatHour\s*\}/);
       const timeSole = readFileSync(
@@ -1570,9 +1570,9 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole formatLocalHHmm body (Residual 1294 / ADR-037 W2 → @dailyuse/time)', () => {
+    it('owns sole formatLocalHHmm body (Residual 1294 / ADR-037 W2 → @memoflow/time)', () => {
       expect(sole).toContain('Residual 1294');
-      expect(sole).toContain("@dailyuse/time");
+      expect(sole).toContain("@memoflow/time");
       expect(sole).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
       const timeSole = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),
@@ -1750,7 +1750,7 @@ import { parseToDate } from './parse-to-date';
       expect(dashboard).toContain('Residual 1309');
       expect(dashboard).toContain('formatProductPattern');
       expect(dashboard).toContain('Residual 1237');
-      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toContain('@memoflow/time');
       expect(sole).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
       const body = dashboard.match(/function formatActivityTime\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('dashboard.time');
@@ -2170,9 +2170,9 @@ import { parseToDate } from './parse-to-date';
     const hour = readFileSync(resolve(dir, 'format-hour.ts'), 'utf8');
     const ymd = readFileSync(resolve(dir, 'format-date-to-ymd.ts'), 'utf8');
 
-    it('owns Residual 1318 composition on four soles onto padTwoDigits (ADR-037 → @dailyuse/time)', () => {
+    it('owns Residual 1318 composition on four soles onto padTwoDigits (ADR-037 → @memoflow/time)', () => {
       expect(pad).toContain('Residual 1318');
-      expect(pad).toContain('@dailyuse/time');
+      expect(pad).toContain('@memoflow/time');
       expect(pad).toMatch(/export\s*\{\s*padTwoDigits\s*\}/);
       const timeSole = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),
@@ -2186,14 +2186,14 @@ import { parseToDate } from './parse-to-date';
         ['ymd', ymd],
       ] as const) {
         expect(source, label).toContain('Residual 1318');
-        expect(source, label).toContain('@dailyuse/time');
+        expect(source, label).toContain('@memoflow/time');
       }
-      // Implementation composition (padTwoDigits) is owned by @dailyuse/time format/engine.
+      // Implementation composition (padTwoDigits) is owned by @memoflow/time format/engine.
       expect(timeSole).toContain('padTwoDigits');
       expect(timeSole).not.toMatch(/\.padStart\(/);
     });
 
-    it('keeps Residual 1297/1294/1276/1252 join contracts on respective soles (via @dailyuse/time)', () => {
+    it('keeps Residual 1297/1294/1276/1252 join contracts on respective soles (via @memoflow/time)', () => {
       expect(parts).toContain('Residual 1297');
       expect(parts).toContain('formatHHmmParts');
       expect(local).toContain('Residual 1294');
@@ -2282,10 +2282,10 @@ import { parseToDate } from './parse-to-date';
       'utf8',
     );
 
-    it('owns sole padTwoDigits body (Residual 1312 / ADR-037 → @dailyuse/time)', () => {
+    it('owns sole padTwoDigits body (Residual 1312 / ADR-037 → @memoflow/time)', () => {
       expect(sole).toContain('Residual 1312');
       expect(sole).toContain('Residual 1318');
-      expect(sole).toContain('@dailyuse/time');
+      expect(sole).toContain('@memoflow/time');
       expect(sole).toMatch(/export\s*\{\s*padTwoDigits\s*\}/);
       const timeSole = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),
@@ -2456,9 +2456,9 @@ import { parseToDate } from './parse-to-date';
       expect(demo).toContain('Residual 1315');
       expect(demo).toContain('formatDateToYMD');
       expect(demo).toContain('formatLocalHHmm');
-      expect(ymd).toContain('@dailyuse/time');
+      expect(ymd).toContain('@memoflow/time');
       expect(ymd).toMatch(/export\s*\{\s*formatDateToYMD\s*\}/);
-      expect(hhmm).toContain('@dailyuse/time');
+      expect(hhmm).toContain('@memoflow/time');
       expect(hhmm).toMatch(/export\s*\{\s*formatLocalHHmm\s*\}/);
       const body = demo.match(/function formatDateTimeToInput\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('formatDateToYMD');
@@ -2476,7 +2476,7 @@ import { parseToDate } from './parse-to-date';
       expect(hhmm).not.toContain('formatDateToYMD');
     });
 
-    it('Residual 1318: YMD/HH:mm soles compose padTwoDigits via @dailyuse/time; setting/goal formatTime keep-boundary', () => {
+    it('Residual 1318: YMD/HH:mm soles compose padTwoDigits via @memoflow/time; setting/goal formatTime keep-boundary', () => {
       const parts = readFileSync(resolve(dir, 'format-hhmm-parts.ts'), 'utf8');
       const hour = readFileSync(resolve(dir, 'format-hour.ts'), 'utf8');
       for (const [label, source] of [
@@ -2485,7 +2485,7 @@ import { parseToDate } from './parse-to-date';
         ['ymd', ymd],
         ['hhmm', hhmm],
       ] as const) {
-        expect(source, label).toContain('@dailyuse/time');
+        expect(source, label).toContain('@memoflow/time');
         expect(source, label).toContain('Residual 1318');
       }
       const timeSole = readFileSync(
@@ -2588,7 +2588,7 @@ import { parseToDate } from './parse-to-date';
 
     it('soft residual 1252 formatDateToYMD Date-only sole stays separate; getWeekStart dual retired 1285', () => {
       expect(formatYmd).toContain('Residual 1252');
-      expect(formatYmd).toContain('@dailyuse/time');
+      expect(formatYmd).toContain('@memoflow/time');
       expect(formatYmd).toMatch(/export\s*\{\s*formatDateToYMD\s*\}/);
       const timeYmd = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),
@@ -2645,7 +2645,7 @@ import { parseToDate } from './parse-to-date';
       expect(calendar).toContain('Residual 1321');
       expect(calendar).toContain('Residual 1282');
       expect(pad).toContain('Residual 1318');
-      expect(pad).toContain('@dailyuse/time');
+      expect(pad).toContain('@memoflow/time');
       expect(pad).toMatch(/export\s*\{\s*padTwoDigits\s*\}/);
       const body = calendar.match(/export function toLocalDateKey\([\s\S]*?\n\}/)?.[0] ?? '';
       expect(body).toContain('padTwoDigits');
@@ -2658,7 +2658,7 @@ import { parseToDate } from './parse-to-date';
     it('keeps Residual 1282 Date|number key contract separate from formatDateToYMD Date-only sole', () => {
       const ymd = readFileSync(resolve(dir, 'format-date-to-ymd.ts'), 'utf8');
       expect(ymd).toContain('Residual 1252');
-      expect(ymd).toContain('@dailyuse/time');
+      expect(ymd).toContain('@memoflow/time');
       expect(ymd).toMatch(/export\s*\{\s*formatDateToYMD\s*\}/);
       const timeYmd = readFileSync(
         resolve(dir, '../../../../time/src/free/format-helpers.ts'),

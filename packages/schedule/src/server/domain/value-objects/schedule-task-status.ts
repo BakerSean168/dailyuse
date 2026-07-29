@@ -1,4 +1,4 @@
-import { ScheduleTaskStatus as ScheduleTaskStatusContract, type ScheduleTaskStatus as IScheduleTaskStatus } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskStatus as ScheduleTaskStatusContract, type ScheduleTaskStatus as IScheduleTaskStatus } from '@memoflow/contracts/schedule';
 
 /**
  * 📝 调度任务状态 - 调度任务的生命周期状态
@@ -13,7 +13,7 @@ export type ScheduleTaskStatus = IScheduleTaskStatus & { readonly __brand: uniqu
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IScheduleTaskStatus[] = Object.values(ScheduleTaskStatusContract);
 
 /**

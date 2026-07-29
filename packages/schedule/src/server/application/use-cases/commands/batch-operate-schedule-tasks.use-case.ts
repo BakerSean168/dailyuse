@@ -1,9 +1,9 @@
 import type {
   BatchScheduleTaskOperationRequest,
   ScheduleTaskClientDTO,
-} from '@dailyuse/contracts/schedule';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, isOk } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/schedule';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, isOk } from '@memoflow/contracts/result';
 import { CancelScheduleTaskUseCase } from './cancel-schedule-task.use-case';
 import { PauseScheduleTaskUseCase } from './pause-schedule-task.use-case';
 import { ResumeScheduleTaskUseCase } from './resume-schedule-task.use-case';

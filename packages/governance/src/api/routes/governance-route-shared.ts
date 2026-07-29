@@ -4,7 +4,7 @@
  */
 
 import type { RequestHandler } from 'express';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 
 export interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -17,9 +17,9 @@ export type GovernanceOpenApiRegistry = OpenApiRegistryLike | null | undefined;
 // (RuleClientDTOSchema / ListRulesResSchema / SearchRulesResSchema / GetRuleRevisionsResSchema).
 // No local *ResponseSchema name dual aliases.
 
-// Residual 1023: parseString/parseNumber dual retired onto @dailyuse/utils/shared (residual 989 sole).
+// Residual 1023: parseString/parseNumber dual retired onto @memoflow/utils/shared (residual 989 sole).
 // Re-export so governance route imports from this shared module stay stable.
-export { parseNumber, parseString } from '@dailyuse/utils/shared';
+export { parseNumber, parseString } from '@memoflow/utils/shared';
 
 /**
  * Parses an unknown query value into a normalized string array.

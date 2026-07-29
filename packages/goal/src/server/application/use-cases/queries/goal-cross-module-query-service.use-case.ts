@@ -7,10 +7,10 @@
 
 import type { IGoalRepository } from '../../../domain';
 import type { Goal } from '../../../domain';
-import type { GoalStatus } from '@dailyuse/contracts/goal';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { GoalStatus } from '@memoflow/contracts/goal';
+import { createLogger } from '@memoflow/utils/logger';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 const logger = createLogger('GoalCrossModuleQueryService');
 

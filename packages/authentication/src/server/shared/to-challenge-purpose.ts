@@ -4,7 +4,7 @@
  * Maps transport EmailVerificationPurpose onto domain VerificationChallengePurpose.
  */
 
-import type { EmailVerificationPurpose } from '@dailyuse/contracts/authentication';
+import type { EmailVerificationPurpose } from '@memoflow/contracts/authentication';
 import {
   VerificationChallengePurpose,
   type VerificationChallengePurpose as ChallengePurpose,

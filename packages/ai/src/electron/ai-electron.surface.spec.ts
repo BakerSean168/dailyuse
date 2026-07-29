@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { AIChannels, AIStreamChannels } from '@dailyuse/contracts/electron';
+import { AIChannels, AIStreamChannels } from '@memoflow/contracts/electron';
 
 /**
  * AI electron seam surface (stage-6 residual):
@@ -14,7 +14,7 @@ describe('AIElectronModule channel surface', () => {
   it('registers handlers via AIChannels and does not redefine a local Ch map', () => {
     expect(source).toContain('AIChannels');
     expect(source).toContain('AIStreamChannels');
-    expect(source).toContain("from '@dailyuse/contracts/electron'");
+    expect(source).toContain("from '@memoflow/contracts/electron'");
     expect(source).not.toMatch(/const Ch = \{/);
     expect(source).toContain('Object.values(AIChannels)');
     expect(source).toContain('AIChannels.MESSAGE_STREAM_START');

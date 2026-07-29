@@ -327,34 +327,34 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Separator } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
+import { Textarea } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Separator } from '@memoflow/ui-vue-shadcn';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@dailyuse/ui-vue-shadcn';
-import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Popover, PopoverContent, PopoverTrigger } from '@memoflow/ui-vue-shadcn';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@dailyuse/ui-vue-shadcn';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@memoflow/ui-vue-shadcn';
 import type {
   CreateReminderTemplateReq,
   ReminderGroupClientDTO,
   UpdateReminderTemplateReq,
-} from '@dailyuse/contracts/reminder';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 import { ColorPickerField } from '../../../shared/components';
 import { defaultNamedColor } from '../../../shared/constants/color-palette';
 

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { AuthChannels } from '@dailyuse/contracts/electron';
+import { AuthChannels } from '@memoflow/contracts/electron';
 
 /**
  * Desktop auth shell surface (stage-6 residual):
@@ -12,7 +12,7 @@ describe('desktop-auth-shell channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'desktop-auth-shell.ts'), 'utf8');
 
   it('registers handlers via AuthChannels and does not redefine a local Ch map', () => {
-    expect(source).toContain("import { AuthChannels } from '@dailyuse/contracts/electron'");
+    expect(source).toContain("import { AuthChannels } from '@memoflow/contracts/electron'");
     expect(source).not.toMatch(/const Ch = \{/);
     expect(source).toContain('Object.values(AuthChannels)');
     expect(source).toContain('AuthChannels.LOGIN');

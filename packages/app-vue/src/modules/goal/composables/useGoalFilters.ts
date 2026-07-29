@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import type { GoalSystemView } from '@dailyuse/contracts/goal';
+import type { GoalSystemView } from '@memoflow/contracts/goal';
 import { useGoalStore } from '../stores/goal-store';
 
 /**

@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/app-react",
+  "name": "@memoflow/app-react",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -12,20 +12,20 @@
     }
   },
   "dependencies": {
-    "@dailyuse/account": "workspace:*",
-    "@dailyuse/ai": "workspace:*",
-    "@dailyuse/authentication": "workspace:*",
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/goal": "workspace:*",
-    "@dailyuse/http-client": "workspace:*",
-    "@dailyuse/notification": "workspace:*",
-    "@dailyuse/reminder": "workspace:*",
-    "@dailyuse/repository": "workspace:*",
-    "@dailyuse/schedule": "workspace:*",
-    "@dailyuse/setting": "workspace:*",
-    "@dailyuse/task": "workspace:*",
-    "@dailyuse/ui-react-native": "workspace:*",
-    "@dailyuse/time": "workspace:*"
+    "@memoflow/account": "workspace:*",
+    "@memoflow/ai": "workspace:*",
+    "@memoflow/authentication": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/goal": "workspace:*",
+    "@memoflow/http-client": "workspace:*",
+    "@memoflow/notification": "workspace:*",
+    "@memoflow/reminder": "workspace:*",
+    "@memoflow/repository": "workspace:*",
+    "@memoflow/schedule": "workspace:*",
+    "@memoflow/setting": "workspace:*",
+    "@memoflow/task": "workspace:*",
+    "@memoflow/ui-react-native": "workspace:*",
+    "@memoflow/time": "workspace:*"
   },
   "peerDependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

@@ -69,7 +69,7 @@ import {
   Badge,
   Input,
   Label,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Clock, Info, X } from '@lucide/vue';
 import type { TaskTemplateViewModel } from '../../types';
 import { useI18n } from 'vue-i18n';

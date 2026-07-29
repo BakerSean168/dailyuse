@@ -1,8 +1,8 @@
 /**
- * @dailyuse/authentication
+ * @memoflow/authentication
  *
  * Public authentication contracts stay centralized in
- * `@dailyuse/contracts/authentication`.
+ * `@memoflow/contracts/authentication`.
  * Root exports are limited to the canonical server composition roots.
  * Client / API / Electron seams use dedicated subpaths.
  */

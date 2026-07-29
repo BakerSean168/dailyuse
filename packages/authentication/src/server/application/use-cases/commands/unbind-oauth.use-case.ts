@@ -7,14 +7,14 @@
  * 从当前身份移除提供者绑定，并保证至少保留一条登录路径（密码或其它 OAuth）。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
-import type { UnbindOAuthReq } from '@dailyuse/contracts/authentication';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
+import type { UnbindOAuthReq } from '@memoflow/contracts/authentication';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import type { IAuthIdentityRepository } from '../../../domain';
 import { AuthDomainCode } from '../../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 // Residual 991: sole toDomainProvider (local dual retired).
 import { toDomainProvider } from '../../../shared/to-domain-provider';
 

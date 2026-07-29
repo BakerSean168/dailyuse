@@ -30,7 +30,7 @@ import path from 'path';
 import fs from 'fs';
 import { Worker } from 'node:worker_threads';
 
-import { PowerSyncAppSchema } from '@dailyuse/powersync-schema';
+import { PowerSyncAppSchema } from '@memoflow/powersync-schema';
 import type { TokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
 import { serializeCrudTransaction } from './powersync-crud';
@@ -49,8 +49,8 @@ const PRE_HYDRATION_BOOTSTRAP_SYNC_TABLES = [
   'user_settings',
   'repositories',
   // Residual 539: editor_* bootstrap tables are portable backup continuity only —
-  // Residual 885: portable boundary re-lock — no first-party @dailyuse/editor remount.
-  // Desktop never remounts @dailyuse/editor as a first-party editing surface.
+  // Residual 885: portable boundary re-lock — no first-party @memoflow/editor remount.
+  // Desktop never remounts @memoflow/editor as a first-party editing surface.
   'editor_workspaces',
   'editor_workspace_sessions',
   'editor_workspace_session_groups',

@@ -5,7 +5,7 @@
  * 不可变，以值定义身份
  */
 
-import type { EmailIdentifierDTO } from '@dailyuse/contracts/authentication';
+import type { EmailIdentifierDTO } from '@memoflow/contracts/authentication';
 
 import { EmailAddress } from '..';
 

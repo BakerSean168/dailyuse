@@ -5,8 +5,8 @@
  * Extracted from TaskTemplate aggregate to reduce aggregate size.
  */
 
-import { DayOfWeek, RecurrenceFrequency } from '@dailyuse/contracts/task';
-import { createTimeFacade } from '@dailyuse/time';
+import { DayOfWeek, RecurrenceFrequency } from '@memoflow/contracts/task';
+import { createTimeFacade } from '@memoflow/time';
 
 const taskTime = createTimeFacade();
 import { TaskType } from '../value-objects';
@@ -17,8 +17,8 @@ import {
   InvalidTaskTemplateStateError,
 } from '../value-objects/task-errors';
 import type { RecurrenceRule, TaskTimeConfig } from '../value-objects';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 import type { TaskTemplateId } from '../../domain/value-objects/task-template-id';
 import { TaskInstance } from './task-instance';
 

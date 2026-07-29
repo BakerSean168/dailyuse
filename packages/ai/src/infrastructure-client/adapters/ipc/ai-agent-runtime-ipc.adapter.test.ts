@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { AIChannels } from '@dailyuse/contracts/electron';
+import { AIChannels } from '@memoflow/contracts/electron';
 import {
   AgentRunResultSchema,
   type AgentEvent,
   type AgentRun,
   type AgentResumePayload,
   type AgentStartRunClientRequest,
-} from '@dailyuse/contracts/ai';
-import { ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { ok } from '@memoflow/contracts/result';
 import type { IResultIpcClient } from '../types';
 import { AIAgentRuntimeIpcAdapter } from './ai-agent-runtime-ipc.adapter';
 

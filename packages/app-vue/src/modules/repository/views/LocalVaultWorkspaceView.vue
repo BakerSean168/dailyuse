@@ -237,7 +237,7 @@ import {
   Unplug,
   X,
 } from '@lucide/vue';
-import { Badge, Button, Input, useConfirm } from '@dailyuse/ui-vue-shadcn';
+import { Badge, Button, Input, useConfirm } from '@memoflow/ui-vue-shadcn';
 import { renderSafeMarkdown } from '../../../shared/utils/safe-markdown';
 import { useLocalVault } from '../composables/useLocalVault';
 

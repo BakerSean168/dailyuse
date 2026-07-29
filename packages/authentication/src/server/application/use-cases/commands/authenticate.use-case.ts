@@ -7,7 +7,7 @@
  * Flow / 流程:
  * 1. Resolve the provider for the requested method (registry dispatch).
  * 2. Delegate credential verification to the provider (pluggable).
- * 3. Issue a Daily Use session (common, shared by every method).
+ * 3. Issue a MemoFlow session (common, shared by every method).
  *
  * This is where the "abstract login interface + pluggable methods" design pays
  * off: adding GitHub / guest / future SSO never re-implements session logic and
@@ -17,10 +17,10 @@
  * 都不必重复会话逻辑，也不必修改本用例，只需在组合根注册一个新提供者。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error, fail } from '@dailyuse/contracts/result';
-import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error, fail } from '@memoflow/contracts/result';
+import type { AuthResponseDTO } from '@memoflow/contracts/authentication';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { AuthSession, type IAuthSessionRepository, type ITokenProvider } from '../../../domain';
 import type { AuthenticationProviderRegistry } from '../../../domain/services/authentication-provider-registry';
 import {
@@ -35,7 +35,7 @@ import {
   InvalidPasswordError,
   IdentityDisabledError,
 } from '../../../domain/services/login';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('Authenticate');
 
@@ -73,7 +73,7 @@ export class AuthenticateUseCase {
         cx,
       });
 
-      // 3. Common: issue a Daily Use session (shared by every login method).
+      // 3. Common: issue a MemoFlow session (shared by every login method).
       const { AuthSession: session, tokens } = AuthSession.start({
         identityId: identity.id,
         deviceId,

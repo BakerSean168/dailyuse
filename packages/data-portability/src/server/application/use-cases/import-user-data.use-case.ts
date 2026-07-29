@@ -7,12 +7,12 @@
  * Delegates per-module import logic to dedicated importers.
  */
 
-import { newId } from '@dailyuse/utils';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { DataPortabilityEventMap, ImportUserDataRes } from '@dailyuse/contracts/data-portability';
+import { newId } from '@memoflow/utils';
+import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
+import type { DataPortabilityEventMap, ImportUserDataRes } from '@memoflow/contracts/data-portability';
 import type { ImportContext, RefMap } from '../portable-runtime';
-import { DataPortabilityEventTopics, parseUserDataExportEnvelope } from '@dailyuse/contracts/data-portability';
+import { DataPortabilityEventTopics, parseUserDataExportEnvelope } from '@memoflow/contracts/data-portability';
 import type { DataPortabilityImportStore } from '../import-store/data-portability-import-store';
 import { importSettings, importNotificationPreference, importUserReminderPreference } from './importers/settings.importer';
 import { importRepositories } from './importers/repository.importer';

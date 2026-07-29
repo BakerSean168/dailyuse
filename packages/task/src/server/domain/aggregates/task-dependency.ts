@@ -3,10 +3,10 @@
  * 任务依赖关系聚合
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { IdentityId } from '@dailyuse/domain-shared';
-import type { TaskDependencyServerDTO, TaskDependencyClientDTO, TaskEventMap } from '@dailyuse/contracts/task';
-import type {TaskTemplateId, Instant} from '@dailyuse/contracts/primitives';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared';
+import type { TaskDependencyServerDTO, TaskDependencyClientDTO, TaskEventMap } from '@memoflow/contracts/task';
+import type {TaskTemplateId, Instant} from '@memoflow/contracts/primitives';
 import { TaskDependencyId } from '../../domain/value-objects/task-dependency-id';
 import { DependencyType } from '../value-objects';
 

@@ -11,7 +11,7 @@
 - `pnpm nx run authentication:typecheck`
 - `pnpm nx run goal:typecheck`
 - `pnpm nx run setting:typecheck`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 # Domain 层标准化收尾计划
 
@@ -29,7 +29,7 @@
   - `CalendarEntry.delete()`
   - `TaskDependency.delete()`
 - `editor`、`schedule`、`task` 的删除应用入口已接入聚合删除动作，不再完全绕过领域层语义。
-- `NotificationTemplate` 的聚合 DTO 与模板配置 DTO 已迁移到 `@dailyuse/contracts/notification`。
+- `NotificationTemplate` 的聚合 DTO 与模板配置 DTO 已迁移到 `@memoflow/contracts/notification`。
 - `NotificationTemplate` 已补齐 `toClientDTO()`。
 - `ReminderGroup` 已完成 `_props` 收口，`deletedAt` 已统一为 `Date | null`。
 - `AuthSessionState.version` 已补齐，并贯通到 contracts、aggregate、Prisma mapper、PowerSync mapper、DTO 转换与测试。
@@ -99,7 +99,7 @@
 
 文档更新后还应执行：
 
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ## Completion Criteria
 
@@ -107,5 +107,5 @@
 
 - 本文件已替换旧的全量待办结构，改为执行后状态文档。
 - 上述 typecheck 全绿。
-- `daily-use:governance-check` 通过。
+- `memoflow:governance-check` 通过。
 - 后续若继续处理“删除流程事件发布机制”，需另开新计划，不再回写本文件。

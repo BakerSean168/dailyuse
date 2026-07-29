@@ -1,6 +1,6 @@
-import type { Result } from '@dailyuse/contracts/result';
-import type { DashboardData } from '@dailyuse/contracts/dashboard';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { DashboardData } from '@memoflow/contracts/dashboard';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type { IDashboardApiClient } from '../types';
 
 export class DashboardHttpAdapter implements IDashboardApiClient {

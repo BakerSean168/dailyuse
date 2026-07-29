@@ -84,14 +84,14 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalRecordClientDTO, GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import { Dialog, DialogContent } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Separator } from '@dailyuse/ui-vue-shadcn';
+import type { GoalRecordClientDTO, GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
+import { Dialog, DialogContent } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
+import { Textarea } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Separator } from '@memoflow/ui-vue-shadcn';
 import { X, PlusCircle, Check, Plus, FileText, Zap } from '@lucide/vue';
 // composables
 import { useGoal } from '../../composables/useGoal';

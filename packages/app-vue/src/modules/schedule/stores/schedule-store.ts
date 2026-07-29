@@ -8,7 +8,7 @@ import type {
   ScheduleTaskClientDTO,
   ScheduleExecutionClientDTO,
   CalendarEntryClientDTO,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 export interface ScheduleState {
   tasks: ScheduleTaskClientDTO[];

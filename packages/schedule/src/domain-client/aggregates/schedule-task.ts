@@ -20,10 +20,10 @@ import type {
   Timezone,
   TaskPriority,
   ExecutionStatus,
-} from '@dailyuse/contracts/schedule';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/schedule';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { ScheduleTaskId } from '../../server/domain/value-objects/schedule-task-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { ScheduleExecution } from '../entities/schedule-execution.js';
 
 // ============ Value Object Wrappers ============

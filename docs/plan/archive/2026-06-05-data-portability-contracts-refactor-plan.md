@@ -41,7 +41,7 @@ updated: 2026-06-05T00:00:00
 
 ### 2.1 必达目标
 
-- 把 data portability 的共享契约迁移到 `@dailyuse/contracts/data-portability`
+- 把 data portability 的共享契约迁移到 `@memoflow/contracts/data-portability`
 - 将现有大文件按职责拆分为多个 contracts 文件
 - 引入与 `goal` 模块一致的 `domain/events` 与 `protocol` 结构
 - 删除 `portable-types.ts` 中重复的 public contract 类型
@@ -512,7 +512,7 @@ export * from './rules';
 
 补充子路径说明：
 
-- `@dailyuse/contracts/data-portability`
+- `@memoflow/contracts/data-portability`
 
 ## 8. `packages/data-portability` 的迁移方案
 
@@ -552,7 +552,7 @@ export * from './rules';
 - `ExportResult`
 - `ImportResult`
 
-这些都统一改为从 `@dailyuse/contracts/data-portability` 读取。
+这些都统一改为从 `@memoflow/contracts/data-portability` 读取。
 
 ## 8.3 修改所有 consumer 导入
 
@@ -572,7 +572,7 @@ export * from './rules';
 
 统一原则：
 
-- request/response/envelope/portable DTO 只从 `@dailyuse/contracts/data-portability` 导入
+- request/response/envelope/portable DTO 只从 `@memoflow/contracts/data-portability` 导入
 - runtime context/ref allocator 从本包 runtime 文件导入
 
 ## 9. 类型链路收口
@@ -697,7 +697,7 @@ export * from './rules';
 
 交付标准：
 
-- `@dailyuse/contracts/data-portability` 可以被 source import 解析
+- `@memoflow/contracts/data-portability` 可以被 source import 解析
 
 ## 阶段 2：迁移 public contract 内容
 
@@ -800,7 +800,7 @@ pnpm nx build desktop
 满足以下条件才算完成：
 
 1. `packages/data-portability/src/contracts/portable-schema.ts` 已删除
-2. `@dailyuse/contracts/data-portability` 成为唯一共享 contracts 出口
+2. `@memoflow/contracts/data-portability` 成为唯一共享 contracts 出口
 3. data-portability contracts 具备：
    - `api/`
    - `dtos/`
@@ -853,7 +853,7 @@ pnpm nx build desktop
 
 本次按以下决策执行：
 
-- data portability 的共享契约迁入 `@dailyuse/contracts/data-portability`
+- data portability 的共享契约迁入 `@memoflow/contracts/data-portability`
 - contracts 结构采用接近 `goal` 模块的真实形状
 - 必须补 `domain/events/` 与 `protocol/`
 - 不新增空 `domain/index.ts`

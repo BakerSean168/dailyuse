@@ -4,9 +4,9 @@
  * 获取用户通知的应用服务
  */
 
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type {
   INotificationRepository,
 } from '../../../domain/repositories';

@@ -5,9 +5,9 @@
  */
 
 import { NotificationPreferenceDomainService } from '../../../domain/services/notification-preference-domain-service';
-import type { NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { NotificationPreferenceClientDTO } from '@memoflow/contracts/notification';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { INotificationPreferenceRepository } from '../../../domain/repositories/i-notification-preference-repository';
 import { toNotificationPreferenceClientDTO } from '../commands/notification-dto-converters';
 

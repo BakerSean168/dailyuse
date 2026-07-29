@@ -5,7 +5,7 @@
  * to the corresponding Prisma model.
  */
 
-import type { PrismaClient, Prisma } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@memoflow/database';
 import type {
   DataPortabilityImportStore,
   DataPortabilityImportTx,

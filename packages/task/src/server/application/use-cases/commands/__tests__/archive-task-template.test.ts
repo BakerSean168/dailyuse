@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import { aOneTimeTask, aLoadedTaskTemplate } from '../../../../../testing';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import { ArchiveTaskTemplateUseCase } from '../archive-task-template.use-case';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus } from '@memoflow/contracts/task';
 
 describe('ArchiveTaskTemplateUseCase', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;

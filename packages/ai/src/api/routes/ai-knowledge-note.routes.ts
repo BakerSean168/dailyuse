@@ -1,12 +1,12 @@
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
-import { CreateKnowledgeNoteSchema, CreateKnowledgeNoteResSchema } from '@dailyuse/contracts/ai';
+} from '@memoflow/utils/result';
+import { CreateKnowledgeNoteSchema, CreateKnowledgeNoteResSchema } from '@memoflow/contracts/ai';
 import type { AIKnowledgeNoteController } from '../../server/transport/ai-knowledge-note.controller';
 
 interface PlatformMiddleware {

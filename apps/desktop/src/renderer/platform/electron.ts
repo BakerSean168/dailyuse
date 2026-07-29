@@ -6,16 +6,16 @@
  * Called once during app startup.
  */
 import type { App } from 'vue';
-import { RendererEventChannels } from '@dailyuse/contracts/electron';
+import { RendererEventChannels } from '@memoflow/contracts/electron';
 
-import { useAccountStore } from '@dailyuse/app-vue/modules/account';
-import { useGoalStore } from '@dailyuse/app-vue/modules/goal';
-import { useTaskStore } from '@dailyuse/app-vue/modules/task';
-import { useScheduleStore } from '@dailyuse/app-vue/modules/schedule';
-import { useReminderStore } from '@dailyuse/app-vue/modules/reminder';
-import { useNotificationStore } from '@dailyuse/app-vue/modules/notification';
-import { useUserSettingStore } from '@dailyuse/app-vue/modules/setting';
-import { useGovernanceStore } from '@dailyuse/app-vue/modules/governance';
+import { useAccountStore } from '@memoflow/app-vue/modules/account';
+import { useGoalStore } from '@memoflow/app-vue/modules/goal';
+import { useTaskStore } from '@memoflow/app-vue/modules/task';
+import { useScheduleStore } from '@memoflow/app-vue/modules/schedule';
+import { useReminderStore } from '@memoflow/app-vue/modules/reminder';
+import { useNotificationStore } from '@memoflow/app-vue/modules/notification';
+import { useUserSettingStore } from '@memoflow/app-vue/modules/setting';
+import { useGovernanceStore } from '@memoflow/app-vue/modules/governance';
 // Residual 941: host bridge via getElectronBridge sole helper.
 import { getElectronBridge } from './electron-bridge';
 

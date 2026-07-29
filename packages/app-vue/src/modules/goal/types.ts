@@ -1,4 +1,4 @@
-import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { KeyResultClientDTO } from '@memoflow/contracts/goal';
 
 export interface KeyResultDraft {
   id?: KeyResultClientDTO['id'] | string;

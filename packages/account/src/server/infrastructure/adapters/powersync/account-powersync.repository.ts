@@ -4,8 +4,8 @@ import {
   AggregateRepositoryBase,
   createEventBusAdapter,
   publishAggregateEvents,
-} from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import {
   AccountPowerSyncMapper,
   type PowerSyncAccountRow,

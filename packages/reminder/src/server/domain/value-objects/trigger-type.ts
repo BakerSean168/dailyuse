@@ -1,4 +1,4 @@
-import { TriggerType as TriggerTypeContract, type TriggerType as ITriggerType } from '@dailyuse/contracts/reminder';
+import { TriggerType as TriggerTypeContract, type TriggerType as ITriggerType } from '@memoflow/contracts/reminder';
 
 /**
  * 📝 触发器类型 - 提醒触发的方式
@@ -13,7 +13,7 @@ export type TriggerType = ITriggerType & { readonly __brand: unique symbol };
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ITriggerType[] = Object.values(TriggerTypeContract);
 
 /**

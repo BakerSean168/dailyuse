@@ -5,11 +5,11 @@ import type {
   AuthSessionId,
   DeviceInfo as IDeviceInfo,
   DeviceType as IDeviceType,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { AuthSession } from '../../../../domain';
 import type { AuthSessionState } from '../../../../domain';
 import { DeviceInfo, SessionStatus } from '../../../../domain';
-import type { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { IdentityId } from '@memoflow/domain-shared/shared';
 import { toIso } from './to-iso';
 
 export interface PowerSyncAuthSessionRow {

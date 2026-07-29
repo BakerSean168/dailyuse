@@ -13,12 +13,12 @@ import type {
   ReminderTemplate as PrismaReminderTemplate,
   ReminderHistory as PrismaReminderHistory,
   Prisma,
-} from '@dailyuse/database';
+} from '@memoflow/database';
 import type { IReminderTemplateRepository } from '../../../domain/repositories/i-reminder-template-repository';
-import type { ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderStatus } from '@memoflow/contracts/reminder';
 import { ReminderTemplate } from '../../../domain/aggregates/reminder-template';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import {
   PrismaReminderTemplateMapper,
   type PrismaReminderTemplateWithHistory,

@@ -26,9 +26,9 @@ afterEach(() => {
 
 describe('loadWorkspaceEnv', () => {
   it('normalizes postgres localhost URLs to 127.0.0.1 after loading env files', () => {
-    process.env.DATABASE_URL = 'postgresql://dailyuse:secret@localhost:5432/dailyuse?schema=public';
-    process.env.DIRECT_URL = 'postgres://dailyuse@localhost:5432/dailyuse';
-    process.env.SHADOW_DATABASE_URL = 'postgresql://dailyuse@localhost:5432/dailyuse_shadow';
+    process.env.DATABASE_URL = 'postgresql://memoflow:secret@localhost:5432/memoflow?schema=public';
+    process.env.DIRECT_URL = 'postgres://memoflow@localhost:5432/memoflow';
+    process.env.SHADOW_DATABASE_URL = 'postgresql://memoflow@localhost:5432/memoflow_shadow';
 
     loadWorkspaceEnv('test');
 
@@ -38,26 +38,26 @@ describe('loadWorkspaceEnv', () => {
   });
 
   it('keeps non-postgres URLs and unparsable values unchanged', () => {
-    process.env.DATABASE_URL = 'mysql://dailyuse@localhost:3306/dailyuse';
+    process.env.DATABASE_URL = 'mysql://memoflow@localhost:3306/memoflow';
     process.env.DIRECT_URL = 'not a url';
-    process.env.SHADOW_DATABASE_URL = 'postgresql://dailyuse@db.internal:5432/dailyuse_shadow';
+    process.env.SHADOW_DATABASE_URL = 'postgresql://memoflow@db.internal:5432/memoflow_shadow';
 
     loadWorkspaceEnv('test');
 
-    expect(process.env.DATABASE_URL).toBe('mysql://dailyuse@localhost:3306/dailyuse');
+    expect(process.env.DATABASE_URL).toBe('mysql://memoflow@localhost:3306/memoflow');
     expect(process.env.DIRECT_URL).toBe('not a url');
     expect(process.env.SHADOW_DATABASE_URL).toBe(
-      'postgresql://dailyuse@db.internal:5432/dailyuse_shadow',
+      'postgresql://memoflow@db.internal:5432/memoflow_shadow',
     );
   });
 
   it('preserves pre-existing env entries while still normalizing supported URLs', () => {
-    process.env.DAILYUSE_TEST_SENTINEL = 'keep-me';
-    process.env.DATABASE_URL = 'postgresql://dailyuse@localhost:5432/dailyuse';
+    process.env.MEMOFLOW_TEST_SENTINEL = 'keep-me';
+    process.env.DATABASE_URL = 'postgresql://memoflow@localhost:5432/memoflow';
 
     loadWorkspaceEnv('production');
 
-    expect(process.env.DAILYUSE_TEST_SENTINEL).toBe('keep-me');
+    expect(process.env.MEMOFLOW_TEST_SENTINEL).toBe('keep-me');
     expect(process.env.DATABASE_URL).toContain('@127.0.0.1:5432/');
   });
 });

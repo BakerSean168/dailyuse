@@ -5,7 +5,7 @@
  */
 
 import { UserSetting } from '../../../domain/aggregates/user-setting';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO } from '@memoflow/contracts/setting';
 
 export const DEFAULT_SETTINGS_IDENTITY_ID = 'IdentityId_00000000-0000-4000-8000-000000000000';
 

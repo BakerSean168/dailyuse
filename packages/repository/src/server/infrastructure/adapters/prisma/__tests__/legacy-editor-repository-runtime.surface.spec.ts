@@ -118,15 +118,15 @@ describe('legacy editor/repository runtime surface', () => {
     expect(existsSync(resolve(repoRoot, 'packages/editor/package.json'))).toBe(false);
   });
 
-  it('app workspace package.json files do not depend on @dailyuse/editor (residual 180)', () => {
+  it('app workspace package.json files do not depend on @memoflow/editor (residual 180)', () => {
     const rootPkg = readFileSync(resolve(repoRoot, 'package.json'), 'utf8');
-    expect(rootPkg).not.toContain('"@dailyuse/editor"');
+    expect(rootPkg).not.toContain('"@memoflow/editor"');
     // apps that historically mounted editor must not reintroduce the dep:
     for (const rel of ['apps/api/package.json', 'apps/desktop/package.json', 'apps/web/package.json']) {
       const pkgPath = resolve(repoRoot, rel);
       if (!existsSync(pkgPath)) continue;
       const pkg = readFileSync(pkgPath, 'utf8');
-      expect(pkg).not.toContain('"@dailyuse/editor"');
+      expect(pkg).not.toContain('"@memoflow/editor"');
     }
   });
 

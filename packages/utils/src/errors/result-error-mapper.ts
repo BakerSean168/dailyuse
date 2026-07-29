@@ -1,5 +1,5 @@
-import type { ResultError } from '@dailyuse/contracts/result';
-import { extractStructuredResultError } from '@dailyuse/contracts/result';
+import type { ResultError } from '@memoflow/contracts/result';
+import { extractStructuredResultError } from '@memoflow/contracts/result';
 import { isDomainError } from './domain-error';
 import { mapPrismaError } from './prisma-error-mapper';
 

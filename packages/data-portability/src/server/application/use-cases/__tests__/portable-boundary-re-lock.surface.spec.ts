@@ -54,8 +54,8 @@ describe('portable boundary re-lock (residual 885)', () => {
     expect(repositoryRoutesIndex).toContain('Residual 885');
     expect(appShellStore).toContain('Residual 885');
     expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
-    expect(apiMain).not.toContain('@dailyuse/editor');
-    expect(desktopMain).not.toContain('@dailyuse/editor');
+    expect(apiMain).not.toContain('@memoflow/editor');
+    expect(desktopMain).not.toContain('@memoflow/editor');
     expect(apiMain).not.toContain('createEditorApiModule');
     expect(desktopMain).not.toContain('createEditorElectronModule');
   });

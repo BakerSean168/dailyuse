@@ -50,7 +50,7 @@ updated: 2026-05-29T00:00:00
 
 | 项目 | 状态 | 证据 |
 |---|---|---|
-| `pnpm nx run daily-use:governance-check` | 通过 | `governance-module-docs-audit`、`singleton-audit`、`desktop-runtime-locator-audit`、`server-feature-shape-audit` 均通过 |
+| `pnpm nx run memoflow:governance-check` | 通过 | `governance-module-docs-audit`、`singleton-audit`、`desktop-runtime-locator-audit`、`server-feature-shape-audit` 均通过 |
 | `pnpm nx run contracts:typecheck` | 通过 | 当前通过 |
 | `pnpm nx run governance:typecheck` | 通过 | 当前通过 |
 | `pnpm nx run desktop:lint` | 通过但未收绿 | 66 个 warning（从 71 降至 66），当前输出全部位于测试/测试辅助文件 |
@@ -81,7 +81,7 @@ updated: 2026-05-29T00:00:00
 
 ### 已验证证据
 
-- `daily-use:governance-check` 通过
+- `memoflow:governance-check` 通过
 - 相关 API 轨道本次没有再暴露新的治理阻断
 - 当前主矛盾已经不在 `api`
 
@@ -99,7 +99,7 @@ updated: 2026-05-29T00:00:00
 
 ### 已验证证据
 
-- `daily-use:governance-check` 中：
+- `memoflow:governance-check` 中：
   - `desktop-runtime-locator-audit` 通过
 - 检索未再发现以下旧 locator：
   - `getAutoUpdateManager`
@@ -187,7 +187,7 @@ updated: 2026-05-29T00:00:00
 
 ### 已验证证据
 
-- `daily-use:governance-check` 通过
+- `memoflow:governance-check` 通过
 - 本轮审计未发现新的 API runtime singleton 回流
 - 当前主剩余工作已完全不在这个轨道
 
@@ -351,7 +351,7 @@ updated: 2026-05-29T00:00:00
   - `./mocks`
 - `packages/contracts/src/mocks/index.ts`
   - 已明确声明 governance mocks 不属于 contracts
-  - 示例文案已指向 `@dailyuse/governance/mocks`
+  - 示例文案已指向 `@memoflow/governance/mocks`
 - `contracts:typecheck` 通过
 - `governance:typecheck` 通过
 

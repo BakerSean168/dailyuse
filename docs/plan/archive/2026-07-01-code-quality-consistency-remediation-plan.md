@@ -28,7 +28,7 @@ updated: 2026-07-04T19:20:00+08:00
    - create/update schema 已 `.strict()`
    - `TaskType` 已补 `as const`
    - 已补最小 contract tests
-4. 错误翻译链路已统一到 `@dailyuse/http-client`，`app-vue` 与 `apps/web` 仅保留 re-export。
+4. 错误翻译链路已统一到 `@memoflow/http-client`，`app-vue` 与 `apps/web` 仅保留 re-export。
 5. `scheduler-server` 已不再是 0 测试；`passWithNoTests` 也已由治理脚本收紧并白名单化。
 
 当前仍未按本文原始目标完整收口的部分：
@@ -440,7 +440,7 @@ updated: 2026-07-04T19:20:00+08:00
 
 验证：
 
-1. `pnpm nx run daily-use:governance-check`
+1. `pnpm nx run memoflow:governance-check`
 2. 相关 lint / audit target
 
 ## 7. 推荐 PR 切分
@@ -529,7 +529,7 @@ updated: 2026-07-04T19:20:00+08:00
 6. `pnpm nx run web:typecheck`
 7. `pnpm nx run app-vue:test`
 8. `pnpm nx run scheduler-server:test`
-9. `pnpm nx run daily-use:governance-check`
+9. `pnpm nx run memoflow:governance-check`
 
 ## 11. 与审计文档的关系
 

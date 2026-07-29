@@ -3,8 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TokenManager } from '../token-manager';
-import type { AuthSession } from '@dailyuse/authentication/electron';
-import type { RefreshSessionRequest, RefreshSessionResponse } from '@dailyuse/contracts/authentication';
+import type { AuthSession } from '@memoflow/authentication/electron';
+import type { RefreshSessionRequest, RefreshSessionResponse } from '@memoflow/contracts/authentication';
 
 let userDataPath = '';
 
@@ -45,7 +45,7 @@ function privates(manager: SessionManager): SessionManagerPrivates {
 
 describe('SessionManager', () => {
   beforeEach(() => {
-    userDataPath = fs.mkdtempSync(path.join(os.tmpdir(), 'dailyuse-session-manager-'));
+    userDataPath = fs.mkdtempSync(path.join(os.tmpdir(), 'memoflow-session-manager-'));
     vi.clearAllMocks();
   });
 

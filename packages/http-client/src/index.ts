@@ -1,7 +1,7 @@
 /**
- * @dailyuse/http-client — unified HTTP client package
+ * @memoflow/http-client — unified HTTP client package
  *
- * Primary (only) path for first-party Memoflow APIs:
+ * Primary (only) path for first-party MemoFlow APIs:
  *
  * **ResultHttpClient** — `Promise<Result<T>>`, never throws
  * - Used by Web/Desktop DI and all module HTTP adapters
@@ -9,11 +9,11 @@
  *
  * Throw-style AxiosHttpClient / IHttpClient dual-track removed (stage-6 residual 83).
  *
- * @module @dailyuse/http-client
+ * @module @memoflow/http-client
  *
  * @example
  * ```ts
- * import { createResultHttpClient } from '@dailyuse/http-client';
+ * import { createResultHttpClient } from '@memoflow/http-client';
  *
  * const api = createResultHttpClient({ baseURL: '/api/v1' });
  * const result = await api.get<User[]>('/users');

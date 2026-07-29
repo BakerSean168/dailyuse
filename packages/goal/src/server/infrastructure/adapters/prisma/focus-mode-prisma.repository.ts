@@ -1,7 +1,7 @@
-import type { PrismaClient, FocusMode as PrismaFocusMode } from '@dailyuse/database';
+import type { PrismaClient, FocusMode as PrismaFocusMode } from '@memoflow/database';
 import type { IFocusModeRepository } from '../../../domain';
 import { FocusMode } from '../../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { PrismaFocusModeMapper } from './mappers/prisma-focus-mode-mapper';
 
 /**

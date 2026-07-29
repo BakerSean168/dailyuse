@@ -10,7 +10,7 @@
  */
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import { ArrowLeft } from '@lucide/vue';
 
 const props = defineProps<{

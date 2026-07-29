@@ -2,7 +2,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type {
   AgentRun,
   AgentRunResult,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
@@ -30,7 +30,7 @@ import {
   initializeChatView,
   maybeRenameConversation,
 } from './chatViewHelpers';
-import { unwrap } from '@dailyuse/contracts/result';
+import { unwrap } from '@memoflow/contracts/result';
 import type {
   AIWorkspaceRecentGoal,
   AIWorkspaceRecentKnowledgeNote,
@@ -193,7 +193,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
   // Residual 431: Task create product start (AgentType task.create Host foundation).
   // Late-bound sync: syncSelectedAgentRun is declared below.
   // eslint-disable-next-line prefer-const -- reassigned after helper is constructed
-  let syncTaskAgentRunFromStart: ((result: import('@dailyuse/contracts/ai').AgentRunResult) => void) | undefined;
+  let syncTaskAgentRunFromStart: ((result: import('@memoflow/contracts/ai').AgentRunResult) => void) | undefined;
   const taskWorkflow = useAITaskWorkflow({
     service,
     selectedModel: modelSelection.selectedModel,
@@ -329,7 +329,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     taskWorkflow.syncLinkedGoalFromTaskAgentRun(taskAgentRun.value);
   }
 
-  function syncSelectedAgentRun(result: import("@dailyuse/contracts/ai").AgentRunResult) {
+  function syncSelectedAgentRun(result: import("@memoflow/contracts/ai").AgentRunResult) {
     // Residual 427: first-class AgentType task.create owns dedicated session field.
     if (result.run.agentType === 'task.create' || isPrimaryTaskHostAgentRun(result)) {
       noteWorkflow.resetNoteArtifacts();
@@ -566,7 +566,7 @@ export function useAIChatView(options: UseAIChatViewOptions) {
     }
   }
 
-  async function selectAgentRun(run: AgentRun): Promise<import('@dailyuse/contracts/ai').AgentRunResult | null> {
+  async function selectAgentRun(run: AgentRun): Promise<import('@memoflow/contracts/ai').AgentRunResult | null> {
     const conversationId = run.conversationId;
     if (!conversationId) return null;
 

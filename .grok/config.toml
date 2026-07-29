@@ -1,4 +1,4 @@
-# Grok project MCP servers (Memoflow / daily-use)
+# Grok project MCP servers (MemoFlow / memoflow)
 # Prerequisites:
 #   1. Install CodeGraph: curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh
 #   2. Index once: codegraph init   (auto-sync thereafter)

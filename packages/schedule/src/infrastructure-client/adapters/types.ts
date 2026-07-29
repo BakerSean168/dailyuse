@@ -4,7 +4,7 @@
  * Transport-agnostic interfaces for Schedule API operations.
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
- * Types imported from @dailyuse/contracts/schedule.
+ * Types imported from @memoflow/contracts/schedule.
  */
 
 // Re-export port interfaces from application-client ports
@@ -14,10 +14,10 @@ export type { IScheduleTaskApiClient } from '../../application-client/ports/sche
 // ============ Transport Client Interfaces ============
 // Module only defines what it needs — concrete implementations injected from App layer.
 
-// IResultHttpClient imported from @dailyuse/http-client
+// IResultHttpClient imported from @memoflow/http-client
 
 /**
  * IPC Client interface (Result-returning).
- * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
+ * Canonical definition in @memoflow/ipc-client (ResultIpcClient).
  */
-export type { IResultIpcClient } from '@dailyuse/ipc-client';
+export type { IResultIpcClient } from '@memoflow/ipc-client';

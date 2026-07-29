@@ -1,4 +1,4 @@
-import { TaskTimeType as TaskTimeTypeContract, type TaskTimeType as ITaskTimeType } from '@dailyuse/contracts/task';
+import { TaskTimeType as TaskTimeTypeContract, type TaskTimeType as ITaskTimeType } from '@memoflow/contracts/task';
 
 /**
  * 📝 任务时间类型 - 任务的时间类型
@@ -13,7 +13,7 @@ export type TaskTimeType = ITaskTimeType & { readonly __brand: unique symbol };
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ITaskTimeType[] = Object.values(TaskTimeTypeContract);
 
 /**

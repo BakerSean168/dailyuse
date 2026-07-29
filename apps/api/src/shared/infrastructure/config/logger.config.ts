@@ -1,11 +1,11 @@
 /**
  * @file logger.config.ts
- * @description API 日志系统配置，集成 @dailyuse/utils 的 Winston 实现。
+ * @description API 日志系统配置，集成 @memoflow/utils 的 Winston 实现。
  * @date 2025-01-22
  */
 
-import { LoggerFactory } from '@dailyuse/utils/logger';
-import { WinstonLogger } from '@dailyuse/utils/winston';
+import { LoggerFactory } from '@memoflow/utils/logger';
+import { WinstonLogger } from '@memoflow/utils/winston';
 import { env } from './env.js';
 
 const logLevel = env.LOG_LEVEL;

@@ -1,5 +1,5 @@
 import { onScopeDispose, watch } from 'vue';
-import { WindowChannels } from '@dailyuse/contracts/electron';
+import { WindowChannels } from '@memoflow/contracts/electron';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import { getDesktopAuthApi } from '../../../shared/utils/desktop-auth-recovery';
 

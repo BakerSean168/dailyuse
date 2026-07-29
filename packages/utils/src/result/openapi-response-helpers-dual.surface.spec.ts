@@ -36,7 +36,7 @@ describe('openapi response helpers dual retired (residual 1029)', () => {
 
   it('apps/api openapi registry re-exports sole without local dual bodies', () => {
     expect(apiRegistry).toContain('Residual 1029');
-    expect(apiRegistry).toContain("from '@dailyuse/utils/result'");
+    expect(apiRegistry).toContain("from '@memoflow/utils/result'");
     expect(apiRegistry).toContain('successResponse');
     expect(apiRegistry).toContain('errorResponse');
     expect(apiRegistry).not.toMatch(/export function successResponse\b/);

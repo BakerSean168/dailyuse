@@ -20,7 +20,7 @@ describe('api bootstrap module names (elegance E5b)', () => {
   });
 
   it('main wires AccountApiModule as the account API module', () => {
-    expect(main).toContain("from '@dailyuse/account/api'");
+    expect(main).toContain("from '@memoflow/account/api'");
     expect(main).toContain('.register(AccountApiModule)');
     expect(main).not.toMatch(/LegacyAccountModule/);
   });

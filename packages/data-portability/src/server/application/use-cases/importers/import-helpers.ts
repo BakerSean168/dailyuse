@@ -2,8 +2,8 @@
  * Shared helpers for module importers.
  */
 
-import { newId } from '@dailyuse/utils';
-import { ResultCode, ResultErrorException } from '@dailyuse/contracts/result';
+import { newId } from '@memoflow/utils';
+import { ResultCode, ResultErrorException } from '@memoflow/contracts/result';
 import type { ImportContext } from '../../portable-runtime';
 import type { DataPortabilityImportTx } from '../../import-store/data-portability-import-store';
 

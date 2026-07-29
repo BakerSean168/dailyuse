@@ -17,8 +17,8 @@ import {
   createMockGoalRecordList,
   createMockGoalReview,
   createMockGoalReviewList,
-} from '@dailyuse/contracts/mocks';
-import type { GoalClientDTO, GoalFolderClientDTO, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/mocks';
+import type { GoalClientDTO, GoalFolderClientDTO, GoalRecordClientDTO } from '@memoflow/contracts/goal';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const GOALS = `${API_BASE}/goals`;

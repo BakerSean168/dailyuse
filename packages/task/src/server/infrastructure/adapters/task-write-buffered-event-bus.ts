@@ -1,7 +1,7 @@
-import type { IDomainEvent } from '@dailyuse/contracts/shared';
-import { createEventBusAdapter, type IEventBus } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { IDomainEvent } from '@memoflow/contracts/shared';
+import { createEventBusAdapter, type IEventBus } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('TaskWriteBufferedEventBus');
 

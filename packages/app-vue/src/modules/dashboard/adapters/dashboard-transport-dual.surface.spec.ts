@@ -10,14 +10,14 @@ describe('dashboard adapter transport dual single-track surface', () => {
   const http = readFileSync(resolve(__dirname, 'dashboard-http.adapter.ts'), 'utf8');
   const ipc = readFileSync(resolve(__dirname, 'dashboard-ipc.adapter.ts'), 'utf8');
 
-  it('HTTP adapter imports IResultHttpClient from @dailyuse/http-client', () => {
-    expect(http).toContain("from '@dailyuse/http-client'");
+  it('HTTP adapter imports IResultHttpClient from @memoflow/http-client', () => {
+    expect(http).toContain("from '@memoflow/http-client'");
     expect(http).toContain('IResultHttpClient');
     expect(http).not.toMatch(/interface IResultHttpClient\s*\{/);
   });
 
-  it('IPC adapter imports IResultIpcClient from @dailyuse/ipc-client', () => {
-    expect(ipc).toContain("from '@dailyuse/ipc-client'");
+  it('IPC adapter imports IResultIpcClient from @memoflow/ipc-client', () => {
+    expect(ipc).toContain("from '@memoflow/ipc-client'");
     expect(ipc).toContain('IResultIpcClient');
     expect(ipc).not.toMatch(/interface IResultIpcClient\s*\{/);
   });

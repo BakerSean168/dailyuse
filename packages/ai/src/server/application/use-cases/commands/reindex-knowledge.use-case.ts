@@ -1,8 +1,8 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { ReindexKnowledgeReq, ReindexKnowledgeRes } from '@dailyuse/contracts/ai';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { ReindexKnowledgeReq, ReindexKnowledgeRes } from '@memoflow/contracts/ai';
+import { createLogger } from '@memoflow/utils/logger';
 
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import type { ReindexAllKnowledgeUseCase } from './reindex-all-knowledge.use-case';

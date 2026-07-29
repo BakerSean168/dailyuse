@@ -10,12 +10,12 @@
  *
  * @internal Concrete PowerSync implementation — consumers should use IRuleRevisionRepository interface.
  */
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
 import type { RuleRevision } from '../../../domain/entities/rule-revision';
 import type { RuleId } from '../../../domain/value-objects/rule-id';
-import { toResultErrorException } from '@dailyuse/contracts/result';
-import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
+import { toResultErrorException } from '@memoflow/contracts/result';
+import { mapInfraErrorToResultError } from '@memoflow/utils/errors';
 import {
   PowerSyncRuleRevisionMapper,
   type PowerSyncRuleRevisionRow,

@@ -1,9 +1,9 @@
 /**
- * @dailyuse/account
+ * @memoflow/account
  *
  * Account module runtime root.
  *
- * Public account contracts are centralized in `@dailyuse/contracts/account`.
+ * Public account contracts are centralized in `@memoflow/contracts/account`.
  * Root exports are limited to the canonical server composition root.
  * Client / API / Electron seams use dedicated subpaths.
  */

@@ -1,7 +1,7 @@
 import type {
   KnowledgeRepositoryConnectionServerDTO,
   KnowledgeRepositoryConnectionStatus,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 
 export interface IKnowledgeRepositoryConnectionRepository {
   findById(id: string): Promise<KnowledgeRepositoryConnectionServerDTO | null>;

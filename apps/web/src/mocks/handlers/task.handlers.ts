@@ -4,12 +4,12 @@ import {
   createMockTaskTemplateList,
   createMockTaskInstance,
   createMockTaskInstanceList,
-} from '@dailyuse/contracts/mocks';
+} from '@memoflow/contracts/mocks';
 import type {
   DependencyChainClientDTO,
   TaskDependencyClientDTO,
   ValidateDependencyResponse,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const TEMPLATES = `${API_BASE}/task-templates`;

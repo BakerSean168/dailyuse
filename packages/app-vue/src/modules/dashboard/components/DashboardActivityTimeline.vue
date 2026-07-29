@@ -14,7 +14,7 @@ import {
   CollapsibleTrigger,
   ScrollArea,
   Skeleton,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   Activity,
   Bell,
@@ -25,7 +25,7 @@ import {
   Target,
   TrendingUp,
 } from '@lucide/vue';
-import type { ActivityItem } from '@dailyuse/contracts/dashboard';
+import type { ActivityItem } from '@memoflow/contracts/dashboard';
 import { formatProductPattern, getProductTime } from '../../../shared/utils/product-time';
 
 withDefaults(

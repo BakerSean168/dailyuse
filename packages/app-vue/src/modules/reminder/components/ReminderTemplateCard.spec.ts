@@ -3,7 +3,7 @@
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { describe, expect, it, vi } from 'vitest';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 import ReminderTemplateCard from './ReminderTemplateCard.vue';
 
 const i18n = createI18n({
@@ -94,7 +94,7 @@ const i18n = createI18n({
   },
 });
 
-vi.mock('@dailyuse/ui-vue-shadcn', async () => {
+vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const vue = await import('vue');
 
   const passthrough = (name: string) =>

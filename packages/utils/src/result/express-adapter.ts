@@ -8,11 +8,11 @@
  *   - `expressAdapter`                 — Controller receives raw (req, ctx)
  *   - `expressAdapterWithValidation`  — Validates req.body via Zod schema first
  *
- * @module @dailyuse/utils/result/express-adapter
+ * @module @memoflow/utils/result/express-adapter
  *
  * @example
  * ```ts
- * import { expressAdapter, expressAdapterWithValidation } from '@dailyuse/utils/result';
+ * import { expressAdapter, expressAdapterWithValidation } from '@memoflow/utils/result';
  *
  * // Controller handles validation internally
  * router.post('/', auth, expressAdapter(
@@ -34,8 +34,8 @@ import {
   isOk,
   errorCodeToHttpStatus,
   createHttpResponseBuilder,
-} from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
 import { mapPrismaError } from '../errors/prisma-error-mapper';
 // Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
 import { formatZodErrors } from './format-zod-errors';

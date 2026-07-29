@@ -55,7 +55,7 @@ function collectProjects() {
     const json = readProjectJson(rootProject);
     if (json) {
       projects.push({
-        name: json.name ?? 'daily-use',
+        name: json.name ?? 'memoflow',
         tags: Array.isArray(json.tags) ? json.tags : [],
       });
     }

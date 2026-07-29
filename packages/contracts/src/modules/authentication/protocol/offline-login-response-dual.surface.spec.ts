@@ -60,14 +60,14 @@ describe('contracts OfflineLoginResponse dual retired (residual 873/925)', () =>
   it('desktop consumers import OfflineLoginResponse from contracts sole body', () => {
     expect(sessionManager).toContain('Residual 925');
     expect(sessionManager).toContain(
-      "import type { OfflineLoginResponse } from '@dailyuse/contracts/authentication'",
+      "import type { OfflineLoginResponse } from '@memoflow/contracts/authentication'",
     );
     expect(sessionManager).toContain('Promise<OfflineLoginResponse>');
     expect(loginOrchestrator).toContain('Residual 925');
     expect(loginOrchestrator).toContain('type OfflineLoginResponse');
-    expect(loginOrchestrator).toContain("from '@dailyuse/contracts/authentication'");
+    expect(loginOrchestrator).toContain("from '@memoflow/contracts/authentication'");
     expect(infraIndex).toContain('OfflineLoginResponse');
-    expect(infraIndex).toContain("from '@dailyuse/contracts/authentication'");
+    expect(infraIndex).toContain("from '@memoflow/contracts/authentication'");
     expect(infraIndex).not.toMatch(
       /OfflineLoginResponse[^;]{0,120}from '\.\/session-types'/,
     );

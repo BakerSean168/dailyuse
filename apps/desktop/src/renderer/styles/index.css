@@ -1,7 +1,7 @@
 /**
  * Desktop Renderer Global Styles
  *
- * Same design system as the web app, imported from @dailyuse/ui-core.
+ * Same design system as the web app, imported from @memoflow/ui-core.
  */
 @import 'tailwindcss';
 @import '../../../../../packages/ui-core/src/styles/globals.css';

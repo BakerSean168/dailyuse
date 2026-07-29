@@ -20,8 +20,8 @@ import {
   knowledgeWriteRequirements,
   resolveRunPlan,
   type CapabilityOffer,
-} from '@dailyuse/contracts/ai';
-import type { AgentRunResult } from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
+import type { AgentRunResult } from '@memoflow/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain';
 import type {
   IAgentRuntimePort,
@@ -34,7 +34,7 @@ import {
 } from '../ai-runtime';
 import { createRemoteAIServiceRuntime } from '../remote-ai-service.runtime';
 import type { AIModuleDependencies } from '../../ai.module';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 
 const FIXTURE = {
   identity: 'identity-journey-1',

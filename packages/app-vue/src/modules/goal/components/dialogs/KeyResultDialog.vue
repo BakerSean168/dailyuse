@@ -183,8 +183,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
-import { KeyResultValueType, KeyResultCalculationMethod } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
+import { KeyResultValueType, KeyResultCalculationMethod } from '@memoflow/contracts/goal';
 import {
   Dialog,
   DialogContent,
@@ -192,20 +192,20 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Input } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
+import { Textarea } from '@memoflow/ui-vue-shadcn';
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@dailyuse/ui-vue-shadcn';
-import { Separator } from '@dailyuse/ui-vue-shadcn';
-import { Progress } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { Separator } from '@memoflow/ui-vue-shadcn';
+import { Progress } from '@memoflow/ui-vue-shadcn';
 import { Target, Loader2 } from '@lucide/vue';
 import { getKeyResultProgressPercentage } from '../../utils/progress';
 

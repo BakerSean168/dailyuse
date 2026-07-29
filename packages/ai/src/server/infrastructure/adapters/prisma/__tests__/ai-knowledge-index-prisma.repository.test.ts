@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 
 import { AIKnowledgeIndexPrismaRepository } from '../ai-knowledge-index-prisma.repository';
 import type { KnowledgeIndexedNote } from '../../../../application/ports';

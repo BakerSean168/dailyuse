@@ -22,6 +22,7 @@ updated: 2026-07-29T00:00:00
 
 | 计划 | 结果 |
 | ---- | ---- |
+| [MemoFlow 产品身份迁移](../archive/2026-07-29-memoflow-identity-migration.md) | 仓库、源码、部署与文档标识统一；identity audit 已纳入治理门禁 |
 | [事务邮件通用 SMTP](../archive/2026-07-28-transactional-email-smtp.md) | Phase A–D 实施完成；默认 console；指南见 `docs/guides/development/transactional-email-smtp.md` |
 | [Docker Web PM 旅程 findings](../archive/2026-07-27-docker-web-pm-journey-findings.md) | 旅程记录；i18n/熔断/取码/SMTP 修复已入代码 |
 | [Import Path Elegance](../archive/2026-07-27-import-path-elegance.md) | 包内 `@/` → 相对路径完成；政策 `import-path-policy.md` |

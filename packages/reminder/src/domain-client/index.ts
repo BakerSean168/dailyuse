@@ -12,9 +12,9 @@
  *
  * 【依赖规则】
  * ✅ 允许依赖：
- * - @dailyuse/utils（基类：AggregateRoot, Entity）
- * - @dailyuse/contracts（DTO 接口、Client 接口）
- * - @dailyuse/contracts（值对象 DTO、枚举）
+ * - @memoflow/utils（基类：AggregateRoot, Entity）
+ * - @memoflow/contracts（DTO 接口、Client 接口）
+ * - @memoflow/contracts（值对象 DTO、枚举）
  */
 
 // ===== Aggregates =====

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ReminderType } from '@dailyuse/contracts/reminder';
-import { SourceModule } from '@dailyuse/contracts/schedule';
+import { ReminderType } from '@memoflow/contracts/reminder';
+import { SourceModule } from '@memoflow/contracts/schedule';
 import { createReminderScheduleProjectionSource } from './schedule-projection-source';
 
 describe('createReminderScheduleProjectionSource', () => {

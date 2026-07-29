@@ -8,11 +8,11 @@
  *   - `ipcAdapter`                 — Controller receives raw (args, ctx)
  *   - `ipcAdapterWithValidation`  — Validates args via Zod schema first
  *
- * @module @dailyuse/utils/result/ipc-adapter
+ * @module @memoflow/utils/result/ipc-adapter
  *
  * @example
  * ```ts
- * import { ipcAdapter, ipcAdapterWithValidation } from '@dailyuse/utils/result';
+ * import { ipcAdapter, ipcAdapterWithValidation } from '@memoflow/utils/result';
  *
  * // Controller handles validation internally
  * ipcMain.handle('goal:get', ipcAdapter(
@@ -32,8 +32,8 @@ import {
   type IpcResult,
   toIpcResult,
   fail,
-} from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
 // Residual 945: formatZodErrors dual retired — sole body in format-zod-errors.
 import { formatZodErrors } from './format-zod-errors';
 

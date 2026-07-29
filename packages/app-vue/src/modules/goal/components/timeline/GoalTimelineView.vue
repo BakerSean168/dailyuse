@@ -103,7 +103,7 @@ import type { ECharts } from 'echarts';
 import TimelineControls from './TimelineControls.vue';
 import { useGoalTimeline } from '../../composables/useGoalTimeline';
 import type { TimelineSnapshot } from '../../utils/goal-timeline';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
 
 // ==================== Props ====================
 

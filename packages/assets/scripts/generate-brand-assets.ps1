@@ -150,7 +150,7 @@ function ConvertTo-Ico {
 
   $entries = @()
   foreach ($size in $Sizes) {
-    $pngPath = Join-Path $SourceDirectory "Memoflow-$size.png"
+    $pngPath = Join-Path $SourceDirectory "MemoFlow-$size.png"
     $bytes = [System.IO.File]::ReadAllBytes($pngPath)
     $entries += [pscustomobject]@{
       Size = $size
@@ -220,7 +220,7 @@ function ConvertTo-Icns {
 
   foreach ($size in ($SizeMap.Keys | Sort-Object {[int]$_})) {
     $typeCode = [string]$SizeMap[$size]
-    $pngPath = Join-Path $SourceDirectory "Memoflow-$size.png"
+    $pngPath = Join-Path $SourceDirectory "MemoFlow-$size.png"
     $bytes = [System.IO.File]::ReadAllBytes($pngPath)
     $blockLength = 8 + $bytes.Length
     $blocks.Add([pscustomobject]@{
@@ -260,8 +260,8 @@ function Write-EmbeddedSvg {
   $base64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($SourcePngPath))
   $svg = @"
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="memoflowTitle memoflowDesc">
-  <title id="memoflowTitle">知行 (Memoflow)</title>
-  <desc id="memoflowDesc">知行 Memoflow application icon with a dark field, warm glow, and flowing amber-white strands that gather and streamline into motion.</desc>
+  <title id="memoflowTitle">知行 (MemoFlow)</title>
+  <desc id="memoflowDesc">知行 MemoFlow application icon with a dark field, warm glow, and flowing amber-white strands that gather and streamline into motion.</desc>
   <image width="1024" height="1024" href="data:image/png;base64,$base64" />
 </svg>
 "@
@@ -283,24 +283,24 @@ function Copy-Asset {
 
 $workspaceRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
 $logosDirectory = Join-Path $workspaceRoot 'packages\assets\src\images\logos'
-$sourcePngPath = Join-Path $logosDirectory 'Memoflow-Icon.png'
+$sourcePngPath = Join-Path $logosDirectory 'MemoFlow-Icon.png'
 $sourcePng = [System.Drawing.Image]::FromFile($sourcePngPath)
 
 try {
   $pngSizes = @(16, 24, 32, 48, 64, 72, 96, 128, 180, 192, 256, 512, 1024)
   foreach ($size in $pngSizes) {
-    $outputPath = Join-Path $logosDirectory "Memoflow-$size.png"
+    $outputPath = Join-Path $logosDirectory "MemoFlow-$size.png"
     Write-PngResized -SourceImage $sourcePng -Size $size -OutputPath $outputPath
   }
 
-  Write-TrayGlyphPng -Size 16 -OutputPath (Join-Path $logosDirectory 'Memoflow-Tray-Windows-16.png')
-  Write-TrayGlyphPng -Size 32 -OutputPath (Join-Path $logosDirectory 'Memoflow-Tray-Windows-32.png')
+  Write-TrayGlyphPng -Size 16 -OutputPath (Join-Path $logosDirectory 'MemoFlow-Tray-Windows-16.png')
+  Write-TrayGlyphPng -Size 32 -OutputPath (Join-Path $logosDirectory 'MemoFlow-Tray-Windows-32.png')
 
-  Write-EmbeddedSvg -SourcePngPath $sourcePngPath -OutputPath (Join-Path $logosDirectory 'Memoflow.svg')
+  Write-EmbeddedSvg -SourcePngPath $sourcePngPath -OutputPath (Join-Path $logosDirectory 'MemoFlow.svg')
   ConvertTo-Ico `
     -Sizes @(16, 24, 32, 48, 64, 128, 256) `
     -SourceDirectory $logosDirectory `
-    -OutputPath (Join-Path $logosDirectory 'Memoflow.ico')
+    -OutputPath (Join-Path $logosDirectory 'MemoFlow.ico')
   ConvertTo-Icns `
     -SizeMap @{
       16 = 'icp4'
@@ -312,7 +312,7 @@ try {
       1024 = 'ic10'
     } `
     -SourceDirectory $logosDirectory `
-    -OutputPath (Join-Path $logosDirectory 'Memoflow.icns')
+    -OutputPath (Join-Path $logosDirectory 'MemoFlow.icns')
 }
 finally {
   $sourcePng.Dispose()
@@ -320,16 +320,16 @@ finally {
 
 $webPublicDirectory = Join-Path $workspaceRoot 'apps\web\public'
 New-DirectoryIfMissing -Path $webPublicDirectory
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow.ico') -DestinationPath (Join-Path $webPublicDirectory 'favicon.ico')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-16.png') -DestinationPath (Join-Path $webPublicDirectory 'favicon-16x16.png')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-32.png') -DestinationPath (Join-Path $webPublicDirectory 'favicon-32x32.png')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-180.png') -DestinationPath (Join-Path $webPublicDirectory 'apple-touch-icon.png')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-192.png') -DestinationPath (Join-Path $webPublicDirectory 'icon-192.png')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-512.png') -DestinationPath (Join-Path $webPublicDirectory 'icon-512.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow.ico') -DestinationPath (Join-Path $webPublicDirectory 'favicon.ico')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-16.png') -DestinationPath (Join-Path $webPublicDirectory 'favicon-16x16.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-32.png') -DestinationPath (Join-Path $webPublicDirectory 'favicon-32x32.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-180.png') -DestinationPath (Join-Path $webPublicDirectory 'apple-touch-icon.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-192.png') -DestinationPath (Join-Path $webPublicDirectory 'icon-192.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-512.png') -DestinationPath (Join-Path $webPublicDirectory 'icon-512.png')
 
 $manifest = @'
 {
-  "name": "知行 (Memoflow)",
+  "name": "知行 (MemoFlow)",
   "short_name": "知行",
   "description": "将知识转化为行动的流式个人工作台。",
   "theme_color": "#181A1F",
@@ -357,16 +357,16 @@ $manifest = @'
 
 $desktopBuildDirectory = Join-Path $workspaceRoot 'apps\desktop\build'
 New-DirectoryIfMissing -Path $desktopBuildDirectory
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow.ico') -DestinationPath (Join-Path $desktopBuildDirectory 'icon.ico')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow.icns') -DestinationPath (Join-Path $desktopBuildDirectory 'icon.icns')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-512.png') -DestinationPath (Join-Path $desktopBuildDirectory 'icon.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow.ico') -DestinationPath (Join-Path $desktopBuildDirectory 'icon.ico')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow.icns') -DestinationPath (Join-Path $desktopBuildDirectory 'icon.icns')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-512.png') -DestinationPath (Join-Path $desktopBuildDirectory 'icon.png')
 
 $mobileBrandDirectory = Join-Path $workspaceRoot 'apps\mobile\assets\brand'
 New-DirectoryIfMissing -Path $mobileBrandDirectory
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-32.png') -DestinationPath (Join-Path $mobileBrandDirectory 'favicon.png')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-512.png') -DestinationPath (Join-Path $mobileBrandDirectory 'logo-512.png')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-512.png') -DestinationPath (Join-Path $mobileBrandDirectory 'splash-icon.png')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-1024.png') -DestinationPath (Join-Path $mobileBrandDirectory 'icon-1024.png')
-Copy-Asset -SourcePath (Join-Path $logosDirectory 'Memoflow-1024.png') -DestinationPath (Join-Path $mobileBrandDirectory 'adaptive-icon-foreground.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-32.png') -DestinationPath (Join-Path $mobileBrandDirectory 'favicon.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-512.png') -DestinationPath (Join-Path $mobileBrandDirectory 'logo-512.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-512.png') -DestinationPath (Join-Path $mobileBrandDirectory 'splash-icon.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-1024.png') -DestinationPath (Join-Path $mobileBrandDirectory 'icon-1024.png')
+Copy-Asset -SourcePath (Join-Path $logosDirectory 'MemoFlow-1024.png') -DestinationPath (Join-Path $mobileBrandDirectory 'adaptive-icon-foreground.png')
 
-Write-Host 'Memoflow brand assets generated successfully.'
+Write-Host 'MemoFlow brand assets generated successfully.'

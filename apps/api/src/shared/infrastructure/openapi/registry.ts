@@ -86,7 +86,7 @@ registry.register('ErrorResponse', ErrorResponseSchema);
 
 /**
  * Residual 1029: successResponse/errorResponse dual retired onto
- * @dailyuse/utils/result openapi-helpers sole.
+ * @memoflow/utils/result openapi-helpers sole.
  * ErrorResponseSchema registration above remains for OpenAPI components.
  */
-export { successResponse, errorResponse } from '@dailyuse/utils/result';
+export { successResponse, errorResponse } from '@memoflow/utils/result';

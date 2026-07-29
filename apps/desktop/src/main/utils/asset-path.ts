@@ -2,7 +2,7 @@ import { app } from 'electron';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const ASSETS_PKG = '@dailyuse/assets';
+const ASSETS_PKG = '@memoflow/assets';
 const ASSETS_DIST = 'dist';
 
 function getPackagedRoots(): string[] {

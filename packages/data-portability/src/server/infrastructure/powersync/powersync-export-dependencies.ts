@@ -6,7 +6,7 @@
  * with camelCase field names matching what projections expect.
  */
 
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type {
   DataPortabilityDependencies,
   GoalRepoPort,

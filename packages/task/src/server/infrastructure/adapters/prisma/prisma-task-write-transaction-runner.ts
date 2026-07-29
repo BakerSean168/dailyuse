@@ -1,5 +1,5 @@
-import type { PrismaClient } from '@dailyuse/database';
-import type { IEventBus } from '@dailyuse/patterns';
+import type { PrismaClient } from '@memoflow/database';
+import type { IEventBus } from '@memoflow/patterns';
 import type {
   TaskWriteRepositories,
   TaskWriteTransactionRunner,

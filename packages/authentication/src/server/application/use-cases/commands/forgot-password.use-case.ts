@@ -5,8 +5,8 @@
  * Always returns success when the email is unknown (anti-enumeration).
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
 import type { IAuthIdentityRepository, IEmailSender, IVerificationChallengeStore } from '../../../domain';
 import {
   AuthDomainCode,
@@ -14,7 +14,7 @@ import {
   ChallengeRateLimitError,
   VerificationChallengePurpose,
 } from '../../../domain';
-import type { ForgotPasswordReq } from '@dailyuse/contracts/authentication';
+import type { ForgotPasswordReq } from '@memoflow/contracts/authentication';
 
 export class ForgotPasswordUseCase {
   constructor(

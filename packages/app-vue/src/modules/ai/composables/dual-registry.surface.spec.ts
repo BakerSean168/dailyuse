@@ -15,7 +15,7 @@ import { isRecord } from './isRecord';
 {
   /**
    * Residual 248/252/254: AI composable types drop identity dual aliases.
-   * Agent run/action and goal draft/clarification types use @dailyuse/contracts/ai names directly.
+   * Agent run/action and goal draft/clarification types use @memoflow/contracts/ai names directly.
    */
   describe('AI composable type dual alias single-track surface', () => {
     const dir = __dirname;
@@ -65,7 +65,7 @@ import { isRecord } from './isRecord';
     });
 
     it('call sites import AgentRunResult/AgentAction/AgentRun/AssistantEvent from contracts', () => {
-      expect(goalWorkflow).toContain("from '@dailyuse/contracts/ai'");
+      expect(goalWorkflow).toContain("from '@memoflow/contracts/ai'");
       expect(goalWorkflow).toMatch(/\bAgentRunResult\b/);
       expect(goalWorkflow).toMatch(/\bAgentAction\b/);
       expect(goalWorkflow).not.toMatch(/\bGoalAgentRunResult\b/);
@@ -87,7 +87,7 @@ import { isRecord } from './isRecord';
         goalPanel,
         actionBar,
       ]) {
-        expect(source).toContain("from '@dailyuse/contracts/ai'");
+        expect(source).toContain("from '@memoflow/contracts/ai'");
         expect(source).toMatch(/\bGoalClarificationDTO\b/);
       }
       for (const source of [

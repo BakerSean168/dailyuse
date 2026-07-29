@@ -15,47 +15,47 @@
 
 import './runtime-init';
 import { powerMonitor } from 'electron';
-import type { IElectronModuleContext } from '@dailyuse/contracts/electron';
+import type { IElectronModuleContext } from '@memoflow/contracts/electron';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { ElectronBootstrapper } from './bootstrap';
 import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
-import { GoalElectronModule } from '@dailyuse/goal/electron';
-import { createTaskElectronModule } from '@dailyuse/task/electron';
-import { createTaskPowerSyncScheduleExecutionSource } from '@dailyuse/task/schedule-execution';
-import { createTaskPowerSyncScheduleProjectionSource } from '@dailyuse/task/schedule-projection';
+import { GoalElectronModule } from '@memoflow/goal/electron';
+import { createTaskElectronModule } from '@memoflow/task/electron';
+import { createTaskPowerSyncScheduleExecutionSource } from '@memoflow/task/schedule-execution';
+import { createTaskPowerSyncScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import {
   createScheduleElectronModule,
   PowerSyncScheduleTaskRepository,
-} from '@dailyuse/schedule/electron';
-import { createScheduleOrchestrationModule } from '@dailyuse/schedule-orchestration';
-import { createGoalPowerSyncScheduleExecutionSource } from '@dailyuse/goal/schedule-execution';
-import { createGoalPowerSyncScheduleProjectionSource } from '@dailyuse/goal/schedule-projection';
-import { ReminderElectronModule } from '@dailyuse/reminder/electron';
-import { createReminderPowerSyncScheduleExecutionSource } from '@dailyuse/reminder/schedule-execution';
-import { createReminderPowerSyncScheduleProjectionSource } from '@dailyuse/reminder/schedule-projection';
+} from '@memoflow/schedule/electron';
+import { createScheduleOrchestrationModule } from '@memoflow/schedule-orchestration';
+import { createGoalPowerSyncScheduleExecutionSource } from '@memoflow/goal/schedule-execution';
+import { createGoalPowerSyncScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
+import { ReminderElectronModule } from '@memoflow/reminder/electron';
+import { createReminderPowerSyncScheduleExecutionSource } from '@memoflow/reminder/schedule-execution';
+import { createReminderPowerSyncScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
 import {
   NotificationElectronModule,
   createNotificationPowerSyncScheduleNotificationPort,
-} from '@dailyuse/notification/electron';
-import { SettingElectronModule } from '@dailyuse/setting/electron';
-import { createAIElectronModule } from '@dailyuse/ai/electron';
+} from '@memoflow/notification/electron';
+import { SettingElectronModule } from '@memoflow/setting/electron';
+import { createAIElectronModule } from '@memoflow/ai/electron';
 import {
   createRepositoryElectronModule,
   createLocalVaultRuntime,
-} from '@dailyuse/repository/electron';
-import { AccountElectronModule } from '@dailyuse/account/electron';
-import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron';
+} from '@memoflow/repository/electron';
+import { AccountElectronModule } from '@memoflow/account/electron';
+import { DataPortabilityElectronModule } from '@memoflow/data-portability/electron';
 import { registerDesktopAuthShellHandlers } from './modules/authentication/desktop-auth-shell';
-import { GovernanceElectronModule } from '@dailyuse/governance/electron';
+import { GovernanceElectronModule } from '@memoflow/governance/electron';
 import { DesktopAnalyticsReadAdapter } from './modules/ai/desktop-analytics-read.adapter';
 import { DesktopAutomationToolExecutorAdapter } from './modules/ai/desktop-automation-tool-executor.adapter';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 import { DesktopKnowledgeSourceAdapter } from './modules/ai/desktop-knowledge-source.adapter';
 import { configureDesktopShellIdentity } from './utils/app-icon';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { getSharedPathResolver } from './runtime-init';
 import { WindowManager } from './lifecycle/window-manager';
 import type { ProfilePathResolver } from './paths';

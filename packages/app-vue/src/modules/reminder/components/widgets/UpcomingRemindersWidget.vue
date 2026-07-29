@@ -88,10 +88,10 @@ import {
   Button,
   Skeleton,
   ScrollArea,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Bell, BellOff, ArrowRight, AlertTriangle } from '@lucide/vue';
 import { useReminder } from '../../composables/useReminder';
-import type { ReminderTodayScheduleItem } from '@dailyuse/contracts/reminder';
+import type { ReminderTodayScheduleItem } from '@memoflow/contracts/reminder';
 
 const props = withDefaults(
   defineProps<{

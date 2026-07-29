@@ -7,7 +7,7 @@
  * - 任务文件夹的查询
  */
 
-import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
+import type { TaskFolderServerDTO } from '@memoflow/contracts/task';
 
 export interface ITaskFolderRepository {
   /**

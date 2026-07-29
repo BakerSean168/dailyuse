@@ -42,18 +42,18 @@ describe('delay dual retired (residual 1192)', () => {
 
   it('retires desktop/e2e dual delay bodies onto utils frontend sole', () => {
     expect(desktopHelpers).toContain('Residual 1192');
-    expect(desktopHelpers).toContain("from '@dailyuse/utils/frontend'");
+    expect(desktopHelpers).toContain("from '@memoflow/utils/frontend'");
     expect(desktopHelpers).toMatch(/export \{ delay \}/);
     expect(desktopHelpers).not.toMatch(/function delay\b/);
     expect(desktopHelpers).not.toMatch(/export function delay\b/);
 
     expect(desktopSetup).toContain('Residual 1192');
-    expect(desktopSetup).toContain("from '@dailyuse/utils/frontend'");
+    expect(desktopSetup).toContain("from '@memoflow/utils/frontend'");
     expect(desktopSetup).toContain('delay');
     expect(desktopSetup).not.toMatch(/new Promise\(resolve => setTimeout\(resolve/);
 
     expect(e2eRunner).toContain('Residual 1192');
-    expect(e2eRunner).toContain("from '@dailyuse/utils/frontend'");
+    expect(e2eRunner).toContain("from '@memoflow/utils/frontend'");
     expect(e2eRunner).toContain('delay');
     expect(e2eRunner).not.toMatch(/function delay\b/);
   });

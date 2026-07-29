@@ -1,7 +1,7 @@
-import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import type { CalendarEntryClientDTO } from '@memoflow/contracts/schedule';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { ScheduleId } from '../../server/domain/value-objects/schedule-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 export interface CalendarEntryState {
   id: ScheduleId;

@@ -3,7 +3,7 @@ import type {
   AgentRun,
   AgentRunResult,
   AgentState,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 /**
  * Agent checkpoint 持久化边界

@@ -1,7 +1,7 @@
 import { CalendarEntry } from '../../../../domain/aggregates/calendar-entry';
 import type { CalendarEntryState } from '../../../../domain/aggregates/calendar-entry';
 import { ScheduleId } from '../../../../domain/value-objects/schedule-id';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 
 export type PowerSyncScheduleRow = {
   id: string;

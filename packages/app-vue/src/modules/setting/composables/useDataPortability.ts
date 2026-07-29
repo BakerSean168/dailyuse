@@ -7,8 +7,8 @@
  */
 
 import { ref, inject } from 'vue';
-import { SystemChannels } from '@dailyuse/contracts/electron';
-import { isOk, type Result } from '@dailyuse/contracts/result';
+import { SystemChannels } from '@memoflow/contracts/electron';
+import { isOk, type Result } from '@memoflow/contracts/result';
 import { DATA_PORTABILITY_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 export function useDataPortability() {

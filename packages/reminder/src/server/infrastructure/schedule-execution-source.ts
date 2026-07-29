@@ -3,7 +3,7 @@ import {
   NotificationChannelType,
   NotificationType,
   RelatedEntityType,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 import type { IReminderTemplateRepository } from '../domain/repositories/i-reminder-template-repository';
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 

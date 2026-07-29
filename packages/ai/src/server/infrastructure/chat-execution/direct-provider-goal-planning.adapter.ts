@@ -3,7 +3,7 @@ import type {
   GoalPlanningResult,
   IGoalPlanningPort,
 } from '../../application/ports';
-import type { IModelGatewayPort } from '@dailyuse/contracts/ai';
+import type { IModelGatewayPort } from '@memoflow/contracts/ai';
 import { CustomModelGateway } from '../model-gateway';
 import {
   buildGoalGenerationSystemPrompt,

@@ -7,8 +7,8 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION=dev
 
-LABEL org.opencontainers.image.title="dailyuse-web"
-LABEL org.opencontainers.image.description="DailyUse production web frontend"
+LABEL org.opencontainers.image.title="memoflow-web"
+LABEL org.opencontainers.image.description="MemoFlow production web frontend"
 LABEL org.opencontainers.image.created=$BUILD_DATE
 LABEL org.opencontainers.image.revision=$VCS_REF
 LABEL org.opencontainers.image.version=$VERSION

@@ -75,7 +75,7 @@ export function translateMessageKey(messageKey: string): string {
  * @example
  * ```ts
  * // apps/web/src/main.ts
- * import { createI18nPlugin, loadLocaleMessages } from '@dailyuse/app-vue';
+ * import { createI18nPlugin, loadLocaleMessages } from '@memoflow/app-vue';
  *
  * const messages = await loadLocaleMessages('zh-CN');
  * app.use(createI18nPlugin('zh-CN', messages));

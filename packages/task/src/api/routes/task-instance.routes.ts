@@ -12,17 +12,17 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   CompleteTaskInstanceSchema,
   SkipTaskInstanceSchema,
   CheckExpiredTaskInstancesResponseSchema,
   TaskInstanceResponseSchema,
   GetTaskInstancesByRangeSchema,
-} from '@dailyuse/contracts/task';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { TaskInstanceId, TaskTemplateId } from '@dailyuse/contracts/primitives';
-import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { TaskInstanceId, TaskTemplateId } from '@memoflow/contracts/primitives';
+import type { TaskInstanceStatus } from '@memoflow/contracts/task';
 import type { TaskInstanceController } from '../../server/transport/task-instance.controller';
 // Residual 983: sole getFirstQueryValue (local dual retired).
 import { getFirstQueryValue } from './get-first-query-value';

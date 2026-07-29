@@ -1,4 +1,4 @@
-import type { ReviewType, KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
+import type { ReviewType, KeyResultWeightSnapshotDTO } from '@memoflow/contracts/goal';
 import { Goal } from '../../../../domain';
 import { rawDataToGoalState } from '../../prisma/mappers/goal-state-mapper';
 import type { RawGoalData, RawKeyResultData, RawGoalReviewData } from '../../prisma/mappers/goal-state-mapper';

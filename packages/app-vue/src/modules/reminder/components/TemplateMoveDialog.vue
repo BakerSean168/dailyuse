@@ -150,7 +150,7 @@ import { useI18n } from 'vue-i18n';
 import type {
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import {
   FolderInput,
   Info,
@@ -169,21 +169,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { getGroupPolicyText as getGroupPolicySummary } from '../presentation/lifecycle-presentation';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Card } from '@dailyuse/ui-vue-shadcn';
-import { Checkbox } from '@dailyuse/ui-vue-shadcn';
-import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Label } from '@memoflow/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
+import { Card } from '@memoflow/ui-vue-shadcn';
+import { Checkbox } from '@memoflow/ui-vue-shadcn';
+import { Alert, AlertDescription, AlertTitle } from '@memoflow/ui-vue-shadcn';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 
 const { t } = useI18n();
 

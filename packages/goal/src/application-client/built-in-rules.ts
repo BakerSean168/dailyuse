@@ -3,10 +3,10 @@
  * 内置状态更新规则
  */
 
-import { GoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
 import type {
   StatusRule,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 /**
  * 内置规则集

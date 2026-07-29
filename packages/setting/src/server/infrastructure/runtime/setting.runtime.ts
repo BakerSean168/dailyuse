@@ -1,4 +1,4 @@
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { SettingModuleRuntimeContribution } from '../setting.module';
 
 const logger = createLogger('SettingRuntime');

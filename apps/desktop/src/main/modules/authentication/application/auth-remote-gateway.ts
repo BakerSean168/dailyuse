@@ -17,9 +17,9 @@ import type {
   BindOAuthRes,
   UnbindOAuthReq,
   EmailRegisterCredentials,
-} from '@dailyuse/contracts/authentication';
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/authentication';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 // Residual 947: isRecord/hasDataKey duals retired — sole desktop http-envelope-guards.
 import { hasDataKey, isRecord } from '../../../utils/http-envelope-guards';
 
@@ -56,7 +56,7 @@ export type AuthRemoteApiResult<T> = {
 };
 
 /**
- * First-party auth HTTP body. Memoflow API always serializes Result via HttpResponse
+ * First-party auth HTTP body. MemoFlow API always serializes Result via HttpResponse
  * envelope (`ok` + `data`/`error`). No raw dual-track payloads.
  */
 type AuthHttpEnvelope<T = unknown> = {

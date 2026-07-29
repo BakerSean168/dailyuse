@@ -1,10 +1,10 @@
 import type {
   ExecuteKnowledgeRepositoryReconciliationReq,
   ExecuteKnowledgeRepositoryReconciliationRes,
-} from '@dailyuse/contracts/repository';
-import { ExecuteKnowledgeRepositoryReconciliationSchema } from '@dailyuse/contracts/repository';
-import { fail, ok, type Result } from '@dailyuse/contracts/result';
-import { LocalVaultRuntimeError, type LocalVaultElectronPort } from '@dailyuse/repository/electron';
+} from '@memoflow/contracts/repository';
+import { ExecuteKnowledgeRepositoryReconciliationSchema } from '@memoflow/contracts/repository';
+import { fail, ok, type Result } from '@memoflow/contracts/result';
+import { LocalVaultRuntimeError, type LocalVaultElectronPort } from '@memoflow/repository/electron';
 import {
   KnowledgeRepositoryGitRuntimeError,
   type KnowledgeRepositoryGitRuntimePort,

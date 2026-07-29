@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 import type { ReminderTemplate } from '../../domain/aggregates/reminder-template';
 import type { ReminderDomainService } from '../../domain/services/reminder-domain-service';
 import type { IReminderGroupRepository } from '../../domain/repositories/i-reminder-group-repository';

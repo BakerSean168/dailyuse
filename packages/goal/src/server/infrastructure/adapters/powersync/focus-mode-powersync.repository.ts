@@ -1,6 +1,6 @@
 import type { IFocusModeRepository } from '../../../domain';
 import { FocusMode } from '../../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { GoalPowerSyncDatabase } from './shared';
 import { toDbDateTime } from './shared';
 import { PowerSyncFocusModeMapper } from './mappers/powersync-focus-mode.mapper';

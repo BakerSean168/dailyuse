@@ -92,7 +92,7 @@ updated: 2026-07-14T00:00:00+00:00
 | core typecheck（utils…api 等 10 项目） | pass |
 | `api:build` / `web:build` / `desktop:build` | pass |
 | `utils:test` / `contracts:test` / `desktop:test` | pass |
-| `daily-use:governance-check` | pass |
+| `memoflow:governance-check` | pass |
 | `apps/mobile` `expo install --check` | Dependencies are up to date |
 | local docker health | postgres(pg18)/redis8/api/web/ai/powersync healthy |
 | HTTP smoke | api `/info` 200，web `/` 200 |

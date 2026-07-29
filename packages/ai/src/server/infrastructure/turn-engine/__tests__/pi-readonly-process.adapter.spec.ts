@@ -64,7 +64,7 @@ describe('PiReadonlyProcessAdapter (residual 373 / 391)', () => {
         [PI_SPIKE_BINARY_ENV]: '/opt/pi/bin/pi',
         PATH: '/usr/bin',
         OPENAI_API_KEY: 'sk-secret',
-        DAILYUSE_VAULT_PATH: '/Users/me/Vault',
+        MEMOFLOW_VAULT_PATH: '/Users/me/Vault',
         OBSIDIAN_VAULT_PATH: '/Users/me/Vault',
       },
       processCwd: () => '/safe/process/cwd',
@@ -106,7 +106,7 @@ describe('PiReadonlyProcessAdapter (residual 373 / 391)', () => {
     expect(plan.env[PI_SPIKE_ENABLED_ENV]).toBe('1');
     expect(plan.env[PI_SPIKE_BINARY_ENV]).toBe('/opt/pi/bin/pi');
     expect(plan.env).not.toHaveProperty('OPENAI_API_KEY');
-    expect(plan.env).not.toHaveProperty('DAILYUSE_VAULT_PATH');
+    expect(plan.env).not.toHaveProperty('MEMOFLOW_VAULT_PATH');
     expect(plan.env).not.toHaveProperty('OBSIDIAN_VAULT_PATH');
   });
 
@@ -153,7 +153,7 @@ describe('PiReadonlyProcessAdapter (residual 373 / 391)', () => {
       HOME: '/home/user',
       OPENAI_API_KEY: 'sk-secret',
       GITHUB_TOKEN: 'ghp_secret',
-      DAILYUSE_VAULT_PATH: '/Users/me/Vault',
+      MEMOFLOW_VAULT_PATH: '/Users/me/Vault',
       OBSIDIAN_VAULT_PATH: '/Users/me/Vault',
       MY_API_KEY: 'should-strip',
       SAFE_FLAG: '1',

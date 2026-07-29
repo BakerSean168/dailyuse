@@ -2,8 +2,8 @@ import type { AIEvaluationReportApiClient, IResultHttpClient } from '../types';
 import type {
   GetAIEvaluationOverviewReq,
   GetAIEvaluationOverviewRes,
-} from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 /** HTTP adapter — returns Result, never throws (residual 98). */
 export class AIEvaluationReportHttpAdapter implements AIEvaluationReportApiClient {

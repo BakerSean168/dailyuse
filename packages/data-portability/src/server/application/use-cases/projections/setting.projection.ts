@@ -2,7 +2,7 @@
  * Setting Module — Export Projections
  */
 
-import type { PortableSettings } from '@dailyuse/contracts/data-portability';
+import type { PortableSettings } from '@memoflow/contracts/data-portability';
 import { parseJsonField } from './projection-helpers';
 
 export function projectSettings(setting: unknown): PortableSettings {

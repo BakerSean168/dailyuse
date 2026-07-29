@@ -5,7 +5,7 @@
 
 ## 背景
 
-在 Memoflow 项目中，我们有三个应用层（API/Web/Desktop）需要保持 API 接口的一致性。当前存在以下问题：
+在 MemoFlow 项目中，我们有三个应用层（API/Web/Desktop）需要保持 API 接口的一致性。当前存在以下问题：
 
 ### 1. 方法命名不一致
 
@@ -45,7 +45,7 @@ Desktop 的 `GoalApplicationService` 缺少 Review 相关方法：
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    @dailyuse/contracts                           │
+│                    @memoflow/contracts                           │
 │  ┌───────────────┐  ┌──────────────────┐  ┌─────────────────┐   │
 │  │    Enums      │  │      DTOs        │  │    Requests     │   │
 │  │  (TaskType)   │  │ (GoalClientDTO)  │  │ (CreateGoal...) │   │
@@ -151,7 +151,7 @@ export interface ReminderTemplateFormData {  // ❌ 不允许
 import type { 
   CreateReminderTemplateRequest,
   UpdateReminderTemplateRequest 
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 interface ReminderTemplateDialogProps {
   onSave: (data: CreateReminderTemplateRequest, isEdit: boolean) => Promise<void>;

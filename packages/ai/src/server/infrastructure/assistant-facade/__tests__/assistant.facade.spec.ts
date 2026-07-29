@@ -3,7 +3,7 @@ import type {
   AgentProposal,
   IProposalKernelPort,
   ITurnEnginePort,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { IOpenChatTurnPort } from '../../../application/ports';
 import { AssistantFacade } from '../assistant.facade';
 

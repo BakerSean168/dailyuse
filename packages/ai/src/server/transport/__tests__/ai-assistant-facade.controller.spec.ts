@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { AssistantCommand, AssistantEvent } from '@dailyuse/contracts/ai';
-import { ok } from '@dailyuse/contracts/result';
+import type { AssistantCommand, AssistantEvent } from '@memoflow/contracts/ai';
+import { ok } from '@memoflow/contracts/result';
 import { AIAssistantFacadeController } from '../ai-assistant-facade.controller';
 
 describe('AIAssistantFacadeController', () => {

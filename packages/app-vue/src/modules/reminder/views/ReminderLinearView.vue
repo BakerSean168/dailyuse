@@ -284,7 +284,7 @@ import {
   TooltipContent,
   TooltipTrigger,
   useConfirm,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
@@ -308,7 +308,7 @@ import type {
   ReminderTemplateClientDTO,
   UpdateReminderGroupReq,
   UpdateReminderTemplateReq,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 
 const {
   templates,

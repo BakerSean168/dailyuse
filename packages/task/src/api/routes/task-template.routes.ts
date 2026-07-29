@@ -12,7 +12,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   CreateTaskTemplateSchema,
   CreateTaskTemplateResponseSchema,
@@ -25,10 +25,10 @@ import {
   TaskInstanceResponseSchema,
   ListTaskTemplateFiltersSchema,
   TaskTemplateInstancesQuerySchema,
-} from '@dailyuse/contracts/task';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
-import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { TaskTemplateId } from '@memoflow/contracts/primitives';
+import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
 import type { TaskTemplateController } from '../../server/transport/task-template.controller';
 // Residual 983: sole getFirstQueryValue (local dual retired).
 import { getFirstQueryValue } from './get-first-query-value';

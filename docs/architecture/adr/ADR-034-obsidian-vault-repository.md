@@ -18,7 +18,7 @@ updated: 2026-07-22T00:00:00
 
 ## 1. 背景
 
-Daily Use（Memory Flow）需要把用户知识资产接入 AI、目标和行动流程，但不应继续维护一套与 Obsidian 重叠的完整 Markdown 编辑器。用户同时需要三种进入产品的方式：账密账号、GitHub 登录和无需注册的访客；笔记应首先保存在本地，用户需要跨设备和 Web 能力时再绑定 GitHub。
+MemoFlow（Memory Flow）需要把用户知识资产接入 AI、目标和行动流程，但不应继续维护一套与 Obsidian 重叠的完整 Markdown 编辑器。用户同时需要三种进入产品的方式：账密账号、GitHub 登录和无需注册的访客；笔记应首先保存在本地，用户需要跨设备和 Web 能力时再绑定 GitHub。
 
 本 ADR 取代以下早期假设：
 
@@ -29,7 +29,7 @@ Daily Use（Memory Flow）需要把用户知识资产接入 AI、目标和行动
 
 实现状态（相对本 ADR 目标决策，2026-07-22 对齐代码）：
 
-- **已落地**：Desktop profile-owned 本地 Obsidian Vault（选择/扫描/搜索/预览/`obsidian://` 打开/确认后写入）；GitHub 登录与 GitHub App 知识仓库授权解耦；private 仓库连接、首次对账、Git 同步（禁 force-push、冲突暂停）、webhook 投影、Web 确认后新建笔记、AI 确认写入提案契约；旧数据库 Repository/Folder/Resource CRUD 与 `@dailyuse/editor` 运行时已从 host 摘除；用户设置不再保留退役的 in-app editor 偏好分类。
+- **已落地**：Desktop profile-owned 本地 Obsidian Vault（选择/扫描/搜索/预览/`obsidian://` 打开/确认后写入）；GitHub 登录与 GitHub App 知识仓库授权解耦；private 仓库连接、首次对账、Git 同步（禁 force-push、冲突暂停）、webhook 投影、Web 确认后新建笔记、AI 确认写入提案契约；旧数据库 Repository/Folder/Resource CRUD 与 `@memoflow/editor` 运行时已从 host 摘除；用户设置不再保留退役的 in-app editor 偏好分类。
 - **仍部分 / 外部阻塞**：三入口与 Agent Host 完整跨端 E2E（含真实 OAuth/GitHub fixture 与 multi-engine Turn Engine）；Mobile 投影浏览；全量 PR 门禁一揽子验收。详见 active plan §13.2。
 
 本 ADR 仍记录目标决策；完成定义与 PR readiness 以 active plan 证据为准，不因本段对齐而宣称计划完成。
@@ -42,8 +42,8 @@ Daily Use（Memory Flow）需要把用户知识资产接入 AI、目标和行动
 
 | 入口          | 身份状态                                  | 本地 Vault | GitHub 同步          | Web 笔记       |
 | ------------- | ----------------------------------------- | ---------- | -------------------- | -------------- |
-| 账密注册/登录 | Daily Use 在线账号                        | 支持       | 可后续绑定           | 绑定仓库后可用 |
-| GitHub 登录   | Daily Use 在线账号 + GitHub OAuth binding | 支持       | 仍需单独确认仓库授权 | 绑定仓库后可用 |
+| 账密注册/登录 | MemoFlow 在线账号                        | 支持       | 可后续绑定           | 绑定仓库后可用 |
+| GitHub 登录   | MemoFlow 在线账号 + GitHub OAuth binding | 支持       | 仍需单独确认仓库授权 | 绑定仓库后可用 |
 | 访客          | Desktop 本地 profile                      | 支持       | 不支持，需先升级账号 | 不支持         |
 
 GitHub 登录与 GitHub 笔记仓库授权必须解耦：
@@ -54,7 +54,7 @@ GitHub 登录与 GitHub 笔记仓库授权必须解耦：
 - GitHub 登录用户也可以只使用本地 Vault。
 - 访客启用同步前必须先升级为账密或 GitHub 在线账号；升级不得移动或重建本地 Vault。
 
-Daily Use 仍签发自己的 access/refresh session。GitHub 数字 user ID 是 OAuth 稳定 subject，不能用可变用户名或可能隐藏的邮箱作为唯一身份。
+MemoFlow 仍签发自己的 access/refresh session。GitHub 数字 user ID 是 OAuth 稳定 subject，不能用可变用户名或可能隐藏的邮箱作为唯一身份。
 
 ### 2.2 本地与远端事实边界
 
@@ -107,7 +107,7 @@ Obsidian/Vault change
 - push 前获取远端最新 HEAD；非 fast-forward 时先安全 pull/rebase。
 - 自动合并失败时停止同步并显示冲突，不静默覆盖或丢弃任一版本。
 - 应用启动、网络恢复、系统唤醒、手动同步和退出前均可触发同步检查。
-- 同一 Vault 不建议同时由 Daily Use 和 Obsidian Git 社区插件管理自动同步；检测 Git lock 或并发操作时退让并提示。
+- 同一 Vault 不建议同时由 MemoFlow 和 Obsidian Git 社区插件管理自动同步；检测 Git lock 或并发操作时退让并提示。
 - Git 令牌不得出现在命令行参数、日志或仓库 remote URL 中。
 
 ### 2.5 Desktop 与 Obsidian 协作
@@ -137,7 +137,7 @@ obsidian://open?path=<percent-encoded-absolute-file-path>
 
 Web 快捷创建必须：
 
-- 通过 Daily Use API 调用 GitHub App，不把 GitHub token 发给浏览器。
+- 通过 MemoFlow API 调用 GitHub App，不把 GitHub token 发给浏览器。
 - 创建唯一的新文件，避免与 Desktop 同名冲突。
 - 由服务端按仓库串行提交，并使用 request ID 和 Git commit SHA 保证幂等。
 - commit 成功后由 webhook/read model 更新 Web 与 RAG。
@@ -211,7 +211,7 @@ Web/Mobile 自行渲染 GitHub read model，不调用 Obsidian 插件 API。首�
    GitHub connection metadata（包括不可重放的 installation identifier）、Markdown/附件投影、附件缓存字节、Webhook
    delivery、Web 写入幂等流水和 AI knowledge index。它不包含本地 Vault、本地 Git/GitHub repository 历史、worker
    lease 或数据库内部 retrieval vector，也不得包含 OAuth token、installation access token、GitHub App private key 等任何
-   Memoflow 管理的可重放授权材料。用户写入 Markdown/frontmatter/附件的内容按原样披露；若用户自行把 secret 写入仓库，
+   MemoFlow 管理的可重放授权材料。用户写入 Markdown/frontmatter/附件的内容按原样披露；若用户自行把 secret 写入仓库，
    它仍属于被披露的 repository content。
 
 第二类文件只通过独立的受认证服务端 endpoint 生成；Desktop 本地 IPC export 不得伪装成服务端披露，普通 import
@@ -255,7 +255,7 @@ UI 不得把第一类文件称为“全部数据导出”，也不得暗示它�
 
 - 认证入口仍有三种，产品复杂度不会像 GitHub-only 那样大幅下降。
 - 需持续维护 GitHub App、安装授权、短期 token、webhook 和 Git 冲突状态（主体已实现；fixture E2E 仍外部阻塞）。
-- private repository 不是对 GitHub 或 Daily Use 服务端不可见的端到端加密，必须明确告知。
+- private repository 不是对 GitHub 或 MemoFlow 服务端不可见的端到端加密，必须明确告知。
 - GitHub 故障、账号受限、仓库删除或授权撤销会影响跨端能力，但不能影响本地 Vault。
 - 大附件、仓库体积、Git LFS 和多设备冲突需要单独约束。
 

@@ -9,7 +9,7 @@
  */
 
 import type { TaskTemplate } from '../aggregates';
-import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateStatus } from '@memoflow/contracts/task';
 
 /**
  * 任务查询过滤器

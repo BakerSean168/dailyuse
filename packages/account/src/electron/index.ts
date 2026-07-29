@@ -4,19 +4,19 @@
  * Owns desktop-main registration for the account runtime.
  */
 import { ipcMain } from 'electron';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import {
   AccountChannels,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
+} from '@memoflow/contracts/electron';
 import type {
   CheckAvailabilityReq,
   CloseAccountReq,
   UpdateAccountReq,
   UpdateAccountSettingsReq,
-} from '@dailyuse/contracts/account';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/account';
+import { createLogger } from '@memoflow/utils/logger';
 import {
   createAccountPowerSyncModule,
   type AccountModuleInstance,

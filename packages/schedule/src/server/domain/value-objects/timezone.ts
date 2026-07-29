@@ -1,4 +1,4 @@
-import { Timezone as TimezoneContract, type Timezone as ITimezone } from '@dailyuse/contracts/schedule';
+import { Timezone as TimezoneContract, type Timezone as ITimezone } from '@memoflow/contracts/schedule';
 
 /**
  * 📝 时区 - 常用的时区列表
@@ -13,7 +13,7 @@ export type Timezone = ITimezone & { readonly __brand: unique symbol };
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ITimezone[] = Object.values(TimezoneContract);
 
 /**

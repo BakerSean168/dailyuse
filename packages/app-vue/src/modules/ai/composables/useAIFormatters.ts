@@ -1,6 +1,6 @@
 import type {
   AgentAction,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import { useI18n } from 'vue-i18n';
 import type {
   GoalAutomationResult,

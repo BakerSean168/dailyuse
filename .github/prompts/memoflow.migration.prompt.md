@@ -2,7 +2,7 @@
 agent: agent
 ---
 
-# DailyUse Migration Prompt
+# MemoFlow Migration Prompt
 
 迁移、重构和收敛类工作优先参考：
 

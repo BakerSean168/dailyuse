@@ -1,9 +1,9 @@
 /**
- * Residual 1035: sole vitest @dailyuse/schedule package shim.
+ * Residual 1035: sole vitest @memoflow/schedule package shim.
  * Used by goal/task/reminder unit tests to avoid loading full schedule graph.
  * Local package duals re-export this sole; no package-local ScheduleTask dual bodies.
  */
-import type { ScheduleConfigDTO, SourceModule, TaskMetadataDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleConfigDTO, SourceModule, TaskMetadataDTO } from '@memoflow/contracts/schedule';
 
 interface CreateScheduleTaskInput {
   readonly identityId: string;

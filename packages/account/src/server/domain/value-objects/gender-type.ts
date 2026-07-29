@@ -1,9 +1,9 @@
-import { GenderType as GenderTypeContract, type GenderType as IGenderType } from '@dailyuse/contracts/account';
+import { GenderType as GenderTypeContract, type GenderType as IGenderType } from '@memoflow/contracts/account';
 
 export type GenderType = IGenderType & { readonly __brand: unique symbol };
 
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IGenderType[] = Object.values(GenderTypeContract);
 
 export const GenderType = {

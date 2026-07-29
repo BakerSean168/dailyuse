@@ -1,9 +1,9 @@
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
 import type {
   GoalScheduleProjectionSource,
-} from '@dailyuse/goal/schedule-projection';
-import type { IScheduleTaskRepository } from '@dailyuse/schedule';
-import type { Publisher } from '@dailyuse/utils/domain';
+} from '@memoflow/goal/schedule-projection';
+import type { IScheduleTaskRepository } from '@memoflow/schedule';
+import type { Publisher } from '@memoflow/utils/domain';
 import { deleteSelection, replaceSelection } from './shared-projection';
 
 export interface GoalProjector {

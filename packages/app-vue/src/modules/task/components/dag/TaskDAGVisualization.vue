@@ -69,9 +69,9 @@ import { GraphChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ECElementEvent, GraphSeriesOption } from 'echarts';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@memoflow/ui-vue-shadcn';
 import { Network, AlertTriangle, Download } from '@lucide/vue';
-import { TaskGraphEdgeKind } from '@dailyuse/task/client';
+import { TaskGraphEdgeKind } from '@memoflow/task/client';
 import type {
   TaskForDAG,
   TaskGraphData,

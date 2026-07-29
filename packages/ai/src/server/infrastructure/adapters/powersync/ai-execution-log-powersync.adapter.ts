@@ -4,7 +4,7 @@
  */
 import { randomUUID } from 'node:crypto';
 
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { AIExecutionLogInput, IAIExecutionLogPort } from '../../../application/ports';
 import { withObservabilityPayload } from '../with-observability-payload';
 

@@ -7,9 +7,9 @@
 
 import type { IGoalRepository } from '../../../domain';
 import { GoalPolicy } from '../../../domain';
-import type { GoalServerDTO } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { GoalServerDTO } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 /**
  * Complete Goal Use Case

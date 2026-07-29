@@ -6,9 +6,9 @@ import type {
   NotificationPreferenceServerDTO,
   NotificationPreferenceClientDTO,
   NotificationChannelType,
-} from '@dailyuse/contracts/notification';
-import type { IdentityId, NotificationPreferenceId as NotificationPreferenceIdBranded } from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/notification';
+import type { IdentityId, NotificationPreferenceId as NotificationPreferenceIdBranded } from '@memoflow/contracts/primitives';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import {
   NotificationPreferenceId,
 } from '../value-objects/notification-preference-id';

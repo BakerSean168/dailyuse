@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { IElectronDatabase, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronModuleContext } from '@memoflow/contracts/electron';
 import { DataPortabilityElectronModule } from '../index';
 
 const electronMock = vi.hoisted(() => ({

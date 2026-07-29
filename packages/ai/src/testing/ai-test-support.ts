@@ -1,6 +1,6 @@
-import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
-import type { IdentityId } from '@dailyuse/contracts';
-import type { AiProviderConfigId } from '@dailyuse/contracts/primitives';
+import type { AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
+import type { IdentityId } from '@memoflow/contracts';
+import type { AiProviderConfigId } from '@memoflow/contracts/primitives';
 
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../server/domain';
 import { createAIModule, type AIModuleDependencies, type AIModuleInstance } from '../server/infrastructure';

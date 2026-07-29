@@ -1,5 +1,5 @@
-import type { PrismaClient } from '@dailyuse/database';
-import { Prisma } from '@dailyuse/database/prisma';
+import type { PrismaClient } from '@memoflow/database';
+import { Prisma } from '@memoflow/database/prisma';
 
 /**
  * Composition-edge cleanup for a disconnected GitHub knowledge repository.

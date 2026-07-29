@@ -10,8 +10,8 @@
  * 遵循 Governance 模块的参考实现模式。
  */
 
-import type { PrismaClient } from '@dailyuse/database';
-import type { ServerModuleContext } from '@dailyuse/contracts/shared';
+import type { PrismaClient } from '@memoflow/database';
+import type { ServerModuleContext } from '@memoflow/contracts/shared';
 import {
   createGoalPrismaModule,
   type GoalModuleInstance,

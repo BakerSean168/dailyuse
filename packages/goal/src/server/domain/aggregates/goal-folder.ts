@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * GoalFolder 聚合根实现
  * 
@@ -25,15 +25,15 @@ import type { Instant } from '@dailyuse/contracts/primitives';
  * - 软删除后不能再修改属性（只能恢复）
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared';
 import { GoalFolderId } from '../value-objects';
-import type { GoalEventMap } from '@dailyuse/contracts/goal';
+import type { GoalEventMap } from '@memoflow/contracts/goal';
 import type {
   FolderType,
   GoalFolderClientDTO,
   GoalFolderServerDTO,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 /**
  * GoalFolder 内部状态接口

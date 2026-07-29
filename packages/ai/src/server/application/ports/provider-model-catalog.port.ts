@@ -1,4 +1,4 @@
-import type { AIModelInfo } from '@dailyuse/contracts/ai';
+import type { AIModelInfo } from '@memoflow/contracts/ai';
 
 export interface ProviderModelCatalogInput {
   baseUrl: string;

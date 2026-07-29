@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { FakeTimer, MinHeap, NoopScheduleMonitor } from '@dailyuse/patterns/scheduler';
+import { FakeTimer, MinHeap, NoopScheduleMonitor } from '@memoflow/patterns/scheduler';
 
 /**
  * Residual 1039: schedule dead i-schedule-timer/monitor/min-heap duals retired
- * onto @dailyuse/patterns/scheduler sole (already re-exported by schedule index).
+ * onto @memoflow/patterns/scheduler sole (already re-exported by schedule index).
  * Soft residual 1040: tip focused suite numbers track Residual 1040 evidence tip (310/1343).
  * Does not flip §13.2 checkboxes.
  */
@@ -41,14 +41,14 @@ describe('patterns scheduler dual retired (residual 1039)', () => {
   });
 
   it('schedule index re-exports patterns sole without local dual paths', () => {
-    expect(scheduleIndex).toContain("from '@dailyuse/patterns/scheduler'");
+    expect(scheduleIndex).toContain("from '@memoflow/patterns/scheduler'");
     expect(scheduleIndex).toContain('IScheduleTimer');
     expect(scheduleIndex).toContain('IScheduleMonitor');
     expect(scheduleIndex).toContain('MinHeap');
     expect(scheduleIndex).not.toContain("from './i-schedule-timer'");
     expect(scheduleIndex).not.toContain("from './i-schedule-monitor'");
     expect(scheduleIndex).not.toContain("from './min-heap'");
-    expect(taskQueue).toContain("from '@dailyuse/patterns/scheduler'");
+    expect(taskQueue).toContain("from '@memoflow/patterns/scheduler'");
     expect(taskQueue).not.toContain("from './i-schedule-timer'");
     expect(taskQueue).not.toContain("from './i-schedule-monitor'");
     expect(taskQueue).not.toContain("from './min-heap'");

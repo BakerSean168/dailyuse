@@ -10,7 +10,7 @@ describe('notification.service event surface', () => {
   const source = readFileSync(resolve(__dirname, 'notification.service.ts'), 'utf8');
 
   it('sends clicked events via RendererEventChannels', () => {
-    expect(source).toContain("import { RendererEventChannels } from '@dailyuse/contracts/electron'");
+    expect(source).toContain("import { RendererEventChannels } from '@memoflow/contracts/electron'");
     expect(source).toContain('RendererEventChannels.NOTIFICATION_CLICKED');
     expect(source).not.toMatch(/send\(\s*'notification:clicked'/);
   });

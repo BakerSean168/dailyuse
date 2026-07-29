@@ -14,10 +14,10 @@
  * - AggregateRoot.clearDomainEvents() clears published events
  */
 
-import type { AggregateRoot } from '@dailyuse/utils/domain';
-import type { Equatable } from '@dailyuse/contracts/shared';
+import type { AggregateRoot } from '@memoflow/utils/domain';
+import type { Equatable } from '@memoflow/contracts/shared';
 import type { IEventBus } from '../events';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('AggregateRepository');
 

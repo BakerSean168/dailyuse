@@ -1,4 +1,4 @@
-import type { TaskGoalBindingTriggerValue } from '@dailyuse/contracts/task';
+import type { TaskGoalBindingTriggerValue } from '@memoflow/contracts/task';
 
 export type UIPriority = 'high' | 'normal' | 'low' | 'urgent';
 

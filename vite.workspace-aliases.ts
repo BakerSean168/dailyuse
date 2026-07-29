@@ -24,35 +24,35 @@ export function createAppVueSourceAliasEntries(workspaceRoot: string): Alias[] {
 
   return [
     {
-      find: /^@dailyuse\/app-vue\/web-overlays$/,
+      find: /^@memoflow\/app-vue\/web-overlays$/,
       replacement: `${appVueRoot}/web-overlays.ts`,
     },
     {
-      find: /^@dailyuse\/app-vue\/di$/,
+      find: /^@memoflow\/app-vue\/di$/,
       replacement: `${appVueRoot}/di/index.ts`,
     },
     {
-      find: /^@dailyuse\/app-vue\/desktop$/,
+      find: /^@memoflow\/app-vue\/desktop$/,
       replacement: `${appVueRoot}/desktop.ts`,
     },
     {
-      find: /^@dailyuse\/app-vue\/plugins\/i18n$/,
+      find: /^@memoflow\/app-vue\/plugins\/i18n$/,
       replacement: `${appVueRoot}/plugins/i18n.ts`,
     },
     {
-      find: /^@dailyuse\/app-vue\/router$/,
+      find: /^@memoflow\/app-vue\/router$/,
       replacement: `${appVueRoot}/router/index.ts`,
     },
     {
-      find: /^@dailyuse\/app-vue\/modules\/dashboard\/adapters$/,
+      find: /^@memoflow\/app-vue\/modules\/dashboard\/adapters$/,
       replacement: `${appVueRoot}/modules/dashboard/adapters/index.ts`,
     },
     {
-      find: /^@dailyuse\/app-vue\/modules\/(.+)$/,
+      find: /^@memoflow\/app-vue\/modules\/(.+)$/,
       replacement: `${appVueRoot}/modules/$1/index.ts`,
     },
     {
-      find: /^@dailyuse\/app-vue$/,
+      find: /^@memoflow\/app-vue$/,
       replacement: `${appVueRoot}/index.ts`,
     },
   ];
@@ -63,39 +63,39 @@ export function createContractsAliasEntries(workspaceRoot: string): Alias[] {
 
   return [
     {
-      find: /^@dailyuse\/contracts\/primitives$/,
+      find: /^@memoflow\/contracts\/primitives$/,
       replacement: `${contractsRoot}/primitives/index.ts`,
     },
     {
-      find: /^@dailyuse\/contracts\/shared$/,
+      find: /^@memoflow\/contracts\/shared$/,
       replacement: `${contractsRoot}/shared/index.ts`,
     },
     {
-      find: /^@dailyuse\/contracts\/result$/,
+      find: /^@memoflow\/contracts\/result$/,
       replacement: `${contractsRoot}/result/index.ts`,
     },
     {
-      find: /^@dailyuse\/contracts\/electron$/,
+      find: /^@memoflow\/contracts\/electron$/,
       replacement: `${contractsRoot}/electron/index.ts`,
     },
     {
-      find: /^@dailyuse\/contracts\/dashboard$/,
+      find: /^@memoflow\/contracts\/dashboard$/,
       replacement: `${contractsRoot}/dashboard/index.ts`,
     },
     {
-      find: /^@dailyuse\/contracts\/mocks$/,
+      find: /^@memoflow\/contracts\/mocks$/,
       replacement: `${contractsRoot}/mocks/index.ts`,
     },
     {
-      find: /^@dailyuse\/contracts\/modules\/(.+)$/,
+      find: /^@memoflow\/contracts\/modules\/(.+)$/,
       replacement: `${contractsRoot}/modules/$1/index.ts`,
     },
     {
-      find: /^@dailyuse\/contracts\/(.+)$/,
+      find: /^@memoflow\/contracts\/(.+)$/,
       replacement: `${contractsRoot}/modules/$1/index.ts`,
     },
     {
-      find: /^@dailyuse\/contracts$/,
+      find: /^@memoflow\/contracts$/,
       replacement: `${contractsRoot}/index.ts`,
     },
   ];
@@ -107,19 +107,19 @@ export function createUiVueSourceAliasEntries(workspaceRoot: string): Alias[] {
 
   return [
     {
-      find: /^@dailyuse\/ui-vue-shadcn\/(.+)$/,
+      find: /^@memoflow\/ui-vue-shadcn\/(.+)$/,
       replacement: `${uiVueRoot}/$1`,
     },
     {
-      find: /^@dailyuse\/ui-vue-shadcn$/,
+      find: /^@memoflow\/ui-vue-shadcn$/,
       replacement: `${uiVueRoot}/index.ts`,
     },
     {
-      find: /^@dailyuse\/ui-core\/(.+)$/,
+      find: /^@memoflow\/ui-core\/(.+)$/,
       replacement: `${uiCoreRoot}/$1`,
     },
     {
-      find: /^@dailyuse\/ui-core$/,
+      find: /^@memoflow\/ui-core$/,
       replacement: `${uiCoreRoot}/index.ts`,
     },
     {
@@ -138,15 +138,15 @@ export function createAssetsAliasEntries(workspaceRoot: string): Alias[] {
 
   return [
     {
-      find: /^@dailyuse\/assets\/audio$/,
+      find: /^@memoflow\/assets\/audio$/,
       replacement: `${assetsRoot}/audio/index.ts`,
     },
     {
-      find: /^@dailyuse\/assets\/images$/,
+      find: /^@memoflow\/assets\/images$/,
       replacement: `${assetsRoot}/images/index.ts`,
     },
     {
-      find: /^@dailyuse\/assets$/,
+      find: /^@memoflow\/assets$/,
       replacement: `${assetsRoot}/index.ts`,
     },
   ];

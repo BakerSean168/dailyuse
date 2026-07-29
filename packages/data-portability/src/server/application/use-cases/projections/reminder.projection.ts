@@ -3,7 +3,7 @@
  */
 
 import type { ExportContext } from '../../portable-runtime';
-import type { PortableReminderGroup, PortableReminderTemplate, PortableReminderResponse, PortableUserReminderPreference } from '@dailyuse/contracts/data-portability';
+import type { PortableReminderGroup, PortableReminderTemplate, PortableReminderResponse, PortableUserReminderPreference } from '@memoflow/contracts/data-portability';
 // Residual 1003: sole resolveExportRef/OrThrow (local dual retired).
 import { parseJsonField, toBoolean, toDateString, toStringArray, resolveExportRef, resolveExportRefOrThrow } from './projection-helpers';
 

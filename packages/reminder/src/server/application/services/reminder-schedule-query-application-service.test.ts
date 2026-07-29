@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import type { ReminderTemplateServerDTO } from '@dailyuse/contracts/reminder';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
+import type { ReminderTemplateServerDTO } from '@memoflow/contracts/reminder';
 import {
   NotificationChannel,
   ReminderStatus,
   ReminderType,
   TriggerType,
-} from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/reminder';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import type { IReminderTemplateRepository } from '../../domain/repositories/i-reminder-template-repository';
 import { ReminderScheduleQueryApplicationService } from './reminder-schedule-query-application-service';
 

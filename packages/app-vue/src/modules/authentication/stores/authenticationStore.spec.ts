@@ -4,8 +4,8 @@ import type {
   AuthIdentityClientDTO,
   AuthResponseDTO,
   AuthSessionClientDTO,
-} from '@dailyuse/contracts/authentication';
-import { createTestPinia } from '@dailyuse/test-utils';
+} from '@memoflow/contracts/authentication';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useAuthenticationStore } from './authentication-store';
 
 function createIdentity(

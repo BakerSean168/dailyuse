@@ -5,13 +5,13 @@
  * activates the identity when still Unverified, and publishes auth:email-verified.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import type { IAuthIdentityRepository, IVerificationChallengeStore } from '../../../domain';
 // Residual 959: normalizeEmail dual retired — sole server shared normalize-email helper.
 import { normalizeEmail } from '../../../shared/normalize-email';

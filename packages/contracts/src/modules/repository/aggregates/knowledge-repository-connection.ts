@@ -37,4 +37,4 @@ export interface KnowledgeRepositoryConnectionServerDTO {
 
 // Residual 803: KnowledgeRepositoryConnectionClientDTO dual retired —
 // sole KnowledgeRepositoryConnectionClientSchema + z.infer in api/knowledge-repository-connection.dto.ts
-// (exported via @dailyuse/contracts/repository api barrel; ServerDTO remains aggregate-owned).
+// (exported via @memoflow/contracts/repository api barrel; ServerDTO remains aggregate-owned).

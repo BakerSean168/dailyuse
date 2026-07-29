@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { FocusSession } from '../../aggregates/focus-session';
 import { Goal } from '../../aggregates/goal';
 import { FocusSessionPolicy } from '../focus-session-policy.service';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 // ============================================================
 // Helpers

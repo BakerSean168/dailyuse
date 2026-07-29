@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { ReminderType } from '@dailyuse/contracts/reminder';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { ReminderType } from '@memoflow/contracts/reminder';
 import { ReminderGroup } from '../../../domain/aggregates/reminder-group';
 import { ReminderTemplate } from '../../../domain/aggregates/reminder-template';
 import { ReminderTemplatePrismaRepository } from './reminder-template-prisma.repository';

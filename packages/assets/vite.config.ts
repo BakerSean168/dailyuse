@@ -48,7 +48,7 @@ export default defineConfig({
   assetsInclude: ['**/*.icns'],
   resolve: {
     alias: process.env.VITEST ? [
-      { find: /\.icns$/, replacement: resolve(__dirname, 'src/images/logos/Memoflow.svg') }
+      { find: /\.icns$/, replacement: resolve(__dirname, 'src/images/logos/MemoFlow.svg') }
     ] : []
   },
   plugins: [

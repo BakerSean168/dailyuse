@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
+import '@memoflow/test-utils/helpers/result-matchers';
 import type {
   IElectronDatabase,
   IElectronDatabaseQueryResult,
   IElectronDatabaseTransaction,
-} from '@dailyuse/contracts/electron';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskType } from '@dailyuse/contracts/task';
-import { eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/electron';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { TaskType } from '@memoflow/contracts/task';
+import { eventBus } from '@memoflow/utils/domain';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { RecurrenceRule, TaskTimeConfig } from '../../../domain/value-objects';
 import { anIdentityId } from '../../../../testing';

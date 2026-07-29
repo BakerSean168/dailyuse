@@ -1,8 +1,8 @@
 import { app } from 'electron';
 import path from 'node:path';
 
-const DESKTOP_LOCAL_ROOT = 'Memoflow';
-const DESKTOP_USER_FILES_ROOT = 'Memoflow Files';
+const DESKTOP_LOCAL_ROOT = 'MemoFlow';
+const DESKTOP_USER_FILES_ROOT = 'MemoFlow Files';
 
 export const DESKTOP_USER_DATA_DIRS = Object.freeze({
   production: DESKTOP_LOCAL_ROOT,
@@ -19,7 +19,7 @@ export const DESKTOP_USER_FILES_DIRS = Object.freeze({
 export type DesktopRuntimeChannel = keyof typeof DESKTOP_USER_DATA_DIRS;
 
 function getExplicitDesktopUserDataPath(): string | null {
-  const explicitPath = process.env.DAILYUSE_DESKTOP_USER_DATA_PATH?.trim();
+  const explicitPath = process.env.MEMOFLOW_DESKTOP_USER_DATA_PATH?.trim();
   return explicitPath && explicitPath.length > 0 ? explicitPath : null;
 }
 
@@ -73,7 +73,7 @@ export function resolveDesktopUserDataPath(
 export function resolveDesktopUserFilesPath(
   channel: DesktopRuntimeChannel = getDesktopRuntimeChannel(),
 ): string {
-  const explicitPath = process.env.DAILYUSE_DESKTOP_USER_FILES_PATH?.trim();
+  const explicitPath = process.env.MEMOFLOW_DESKTOP_USER_FILES_PATH?.trim();
   if (explicitPath) {
     return explicitPath;
   }

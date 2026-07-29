@@ -61,7 +61,7 @@ export const taskDeepImportResolver = {
     importer: string | undefined,
     options: Record<string, unknown>,
   ) {
-    const match = source.match(/^@dailyuse\/task\/(.+)/);
+    const match = source.match(/^@memoflow\/task\/(.+)/);
     if (!match || !importer) return null;
     const subpath = match[1];
     const taskSrc = path.resolve(__dirname, 'packages/task/src');
@@ -95,7 +95,7 @@ export const contractsDeepImportResolver = {
     importer: string | undefined,
     options: Record<string, unknown>,
   ) {
-    const match = source.match(/^@dailyuse\/contracts\/(.+)/);
+    const match = source.match(/^@memoflow\/contracts\/(.+)/);
     if (!match || !importer) return null;
     const subpath = match[1];
     const contractsSrc = path.resolve(__dirname, 'packages/contracts/src');
@@ -129,103 +129,103 @@ const contractsSrc = path.resolve(__dirname, './packages/contracts/src');
 
 export const domainResolveAliases = [
   {
-    find: '@dailyuse/database/prisma',
+    find: '@memoflow/database/prisma',
     replacement: path.resolve(__dirname, './packages/database/src/generated/prisma/client.js'),
   },
   {
-    find: '@dailyuse/powersync-schema',
+    find: '@memoflow/powersync-schema',
     replacement: path.resolve(__dirname, './packages/powersync-schema/src/index.ts'),
   },
   {
-    find: '@dailyuse/database',
+    find: '@memoflow/database',
     replacement: path.resolve(__dirname, './packages/database/src/index.ts'),
   },
   {
-    find: /^@dailyuse\/domain-shared\/(.+)/,
+    find: /^@memoflow\/domain-shared\/(.+)/,
     replacement: path.resolve(__dirname, './packages/domain-shared/src/$1/index.ts'),
   },
   {
-    find: '@dailyuse/domain-shared',
+    find: '@memoflow/domain-shared',
     replacement: path.resolve(__dirname, './packages/domain-shared/src/index.ts'),
   },
   {
-    find: /^@dailyuse\/utils\/(.+)/,
+    find: /^@memoflow\/utils\/(.+)/,
     replacement: path.resolve(__dirname, './packages/utils/src/$1/index.ts'),
   },
   {
-    find: '@dailyuse/utils',
+    find: '@memoflow/utils',
     replacement: path.resolve(__dirname, './packages/utils/src/index.ts'),
   },
   {
-    find: /^@dailyuse\/patterns\/(.+)/,
+    find: /^@memoflow\/patterns\/(.+)/,
     replacement: path.resolve(__dirname, './packages/patterns/src/$1/index.ts'),
   },
   {
-    find: '@dailyuse/patterns',
+    find: '@memoflow/patterns',
     replacement: path.resolve(__dirname, './packages/patterns/src/index.ts'),
   },
   {
-    find: /^@dailyuse\/test-utils\/(.+)/,
+    find: /^@memoflow\/test-utils\/(.+)/,
     replacement: path.resolve(__dirname, './packages/test-utils/src/$1'),
   },
   {
-    find: '@dailyuse/test-utils',
+    find: '@memoflow/test-utils',
     replacement: path.resolve(__dirname, './packages/test-utils/src/index.ts'),
   },
   {
-    find: '@dailyuse/contracts/result',
+    find: '@memoflow/contracts/result',
     replacement: path.resolve(contractsSrc, 'result/index.ts'),
   },
   {
-    find: '@dailyuse/contracts/shared',
+    find: '@memoflow/contracts/shared',
     replacement: path.resolve(contractsSrc, 'shared/index.ts'),
   },
   {
-    find: '@dailyuse/contracts/primitives',
+    find: '@memoflow/contracts/primitives',
     replacement: path.resolve(contractsSrc, 'primitives/index.ts'),
   },
   {
-    find: '@dailyuse/contracts/electron',
+    find: '@memoflow/contracts/electron',
     replacement: path.resolve(contractsSrc, 'electron/index.ts'),
   },
   {
-    find: '@dailyuse/contracts/mocks',
+    find: '@memoflow/contracts/mocks',
     replacement: path.resolve(contractsSrc, 'mocks/index.ts'),
   },
   {
-    find: /^@dailyuse\/contracts\/modules\/(.+)/,
+    find: /^@memoflow\/contracts\/modules\/(.+)/,
     replacement: path.resolve(contractsSrc, 'modules/$1/index.ts'),
   },
   {
-    find: /^@dailyuse\/contracts\/(.+)/,
+    find: /^@memoflow\/contracts\/(.+)/,
     replacement: path.resolve(contractsSrc, 'modules/$1/index.ts'),
   },
   {
-    find: '@dailyuse/contracts',
+    find: '@memoflow/contracts',
     replacement: path.resolve(contractsSrc, 'index.ts'),
   },
   {
-    find: /^@dailyuse\/task\/(.+)/,
+    find: /^@memoflow\/task\/(.+)/,
     replacement: path.resolve(__dirname, './packages/task/src/$1/index.ts'),
   },
   {
-    find: '@dailyuse/task',
+    find: '@memoflow/task',
     replacement: path.resolve(__dirname, './packages/task/src/index.ts'),
   },
   {
-    find: /^@dailyuse\/schedule-orchestration\/(.+)/,
+    find: /^@memoflow\/schedule-orchestration\/(.+)/,
     replacement: path.resolve(__dirname, './packages/schedule-orchestration/src/$1'),
   },
   {
-    find: '@dailyuse/schedule-orchestration',
+    find: '@memoflow/schedule-orchestration',
     replacement: path.resolve(__dirname, './packages/schedule-orchestration/src/index.ts'),
   },
   {
-    find: /^@dailyuse\/authentication\/(.+)/,
+    find: /^@memoflow\/authentication\/(.+)/,
     replacement: path.resolve(__dirname, './packages/authentication/src/$1/index.ts'),
   },
   {
-    find: '@dailyuse/authentication',
+    find: '@memoflow/authentication',
     replacement: path.resolve(__dirname, './packages/authentication/src/index.ts'),
   },
 ];

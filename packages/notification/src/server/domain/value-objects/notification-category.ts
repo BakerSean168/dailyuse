@@ -1,4 +1,4 @@
-import { NotificationCategory as NotificationCategoryContract, type NotificationCategory as INotificationCategory } from '@dailyuse/contracts/notification';
+import { NotificationCategory as NotificationCategoryContract, type NotificationCategory as INotificationCategory } from '@memoflow/contracts/notification';
 
 /**
  * 📝 通知分类 - 通知所属的业务分类
@@ -13,7 +13,7 @@ export type NotificationCategory = INotificationCategory & { readonly __brand: u
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: INotificationCategory[] = Object.values(NotificationCategoryContract);
 
 /**

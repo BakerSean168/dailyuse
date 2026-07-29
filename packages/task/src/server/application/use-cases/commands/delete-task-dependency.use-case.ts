@@ -5,8 +5,8 @@
  */
 
 import type { ITaskDependencyRepository } from '../../../domain/repositories/i-task-dependency-repository';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 export class DeleteTaskDependencyUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}

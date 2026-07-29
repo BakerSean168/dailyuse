@@ -3,7 +3,7 @@
  */
 
 import type { ExportContext } from '../../portable-runtime';
-import type { PortableEditorWorkspace, PortableEditorSession, PortableEditorGroup, PortableEditorTab } from '@dailyuse/contracts/data-portability';
+import type { PortableEditorWorkspace, PortableEditorSession, PortableEditorGroup, PortableEditorTab } from '@memoflow/contracts/data-portability';
 import type { DataPortabilityDependencies } from '../../data-portability.dependencies';
 // Residual 1017: sole resolveExportRef (local resolveRef dual retired).
 import {

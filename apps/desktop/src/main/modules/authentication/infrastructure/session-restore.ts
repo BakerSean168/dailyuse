@@ -4,13 +4,13 @@
  * Extracted from SessionManager to keep the orchestrator thin.
  */
 
-import { createLogger } from '@dailyuse/utils/logger';
-import type { ILogger } from '@dailyuse/utils/logger';
-import type { AuthSession, IAuthSessionRepository } from '@dailyuse/authentication/electron';
-import type { AuthSessionId } from '@dailyuse/contracts/authentication';
+import { createLogger } from '@memoflow/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
+import type { AuthSession, IAuthSessionRepository } from '@memoflow/authentication/electron';
+import type { AuthSessionId } from '@memoflow/contracts/authentication';
 import type { TokenManager } from './token-manager';
 import type { GuestIdentityHelper } from './guest-identity-helper';
-import type { DeviceInfoClientDTO, RefreshSessionResponse } from '@dailyuse/contracts/authentication';
+import type { DeviceInfoClientDTO, RefreshSessionResponse } from '@memoflow/contracts/authentication';
 import { toIdentityId } from './session-types';
 import type { SessionRestoreResult, AutoLoginResult } from './session-types';
 

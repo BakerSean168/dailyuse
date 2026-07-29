@@ -1,7 +1,7 @@
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '../../../domain';
 import { GoalRecord } from '../../../domain';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import type { GoalPowerSyncDatabase } from './shared';
 import { toDbDateTime } from './shared';
 import { PowerSyncGoalRecordMapper } from './mappers/powersync-goal-record.mapper';

@@ -1,6 +1,6 @@
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { GoalId, Instant, KeyResultId } from '@dailyuse/contracts/primitives';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { GoalId, Instant, KeyResultId } from '@memoflow/contracts/primitives';
+import type { IdentityId } from '@memoflow/domain-shared';
 import type { DependencyStatus, TaskType } from '../value-objects';
 import type { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
 import type { TaskTemplateId } from '../../domain/value-objects/task-template-id';

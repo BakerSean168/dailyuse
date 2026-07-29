@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccountChannels, type IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { ok } from '@dailyuse/contracts/result';
+import { AccountChannels, type IElectronModuleContext } from '@memoflow/contracts/electron';
+import { ok } from '@memoflow/contracts/result';
 
 const mocks = vi.hoisted(() => {
   const getProfile = vi.fn();

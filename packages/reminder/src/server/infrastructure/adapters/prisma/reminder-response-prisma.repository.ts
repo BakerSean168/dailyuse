@@ -9,9 +9,9 @@ import type {
   PrismaClient,
   ReminderResponse as PrismaReminderResponse,
   Prisma,
-} from '@dailyuse/database';
+} from '@memoflow/database';
 import type { IReminderResponseRepository } from '../../../domain/repositories/i-reminder-response-repository';
-import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import type { ReminderResponseAction } from '@memoflow/contracts/reminder';
 import { ReminderResponse } from '../../../domain/entities/reminder-response';
 import { PrismaReminderResponseMapper } from './mappers/prisma-reminder-response-mapper';
 

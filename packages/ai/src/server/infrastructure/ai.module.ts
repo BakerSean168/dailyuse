@@ -14,11 +14,11 @@
  * AI 模块以 governance 模块为参考模式：每个模块一个组合根，
  * 仅使用构造器注入，不使用隐藏的服务定位器。
  *
- * @see {@link createGovernanceModule} in @dailyuse/governance for the canonical example.
+ * @see {@link createGovernanceModule} in @memoflow/governance for the canonical example.
  */
 
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../domain';
 import type { AIApplicationPort } from '../application';
 import type {
@@ -42,10 +42,10 @@ import type {
 
 import { createKnowledgeAutoIndexRuntimeContribution } from './runtime/knowledge-auto-index.runtime';
 import { createDirectProviderAIRuntime } from './runtime/direct-provider-ai.runtime';
-import type { IAssistantFacadePort, ICapabilityResolverPort, IModelGatewayPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@dailyuse/contracts/ai';
+import type { IAssistantFacadePort, ICapabilityResolverPort, IModelGatewayPort, IProposalKernelPort, ITurnEnginePort, IWorkflowAdapterPort } from '@memoflow/contracts/ai';
 import { createRemoteAIServiceRuntime } from './runtime/remote-ai-service.runtime';
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   AgentEvent,
   AgentResumePayload,
@@ -65,7 +65,7 @@ import type {
   QueryKnowledgeRes,
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 // Type-only imports for exported interfaces (runtimes own the concrete classes)
 import type {

@@ -13,13 +13,13 @@
 import type {
   PrismaClient,
   Prisma,
-} from '@dailyuse/database';
+} from '@memoflow/database';
 import type { IScheduleTaskRepository } from '../../../domain/repositories/i-schedule-task-repository';
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
-import type { SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import type { SourceModule } from '@memoflow/contracts/schedule';
+import { ScheduleTaskStatus } from '@memoflow/contracts/schedule';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import {
   PrismaScheduleTaskMapper,
   type PrismaScheduleTaskWithExecutions,

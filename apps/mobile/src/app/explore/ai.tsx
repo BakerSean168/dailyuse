@@ -1,2 +1,2 @@
-export { AIScreen as default } from '@dailyuse/app-react';
+export { AIScreen as default } from '@memoflow/app-react';
 

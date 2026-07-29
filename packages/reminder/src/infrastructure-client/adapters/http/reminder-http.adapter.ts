@@ -4,8 +4,8 @@
  * HTTP implementation of IReminderApiClient.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type { IReminderApiClient } from '../types';
 import type {
   ReminderTemplateClientDTO,
@@ -19,8 +19,8 @@ import type {
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
   GetReminderTodayScheduleRes,
-} from '@dailyuse/contracts/reminder';
-import type { ControlMode } from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
+import type { ControlMode } from '@memoflow/contracts/reminder';
 
 /**
  * ReminderHttpAdapter

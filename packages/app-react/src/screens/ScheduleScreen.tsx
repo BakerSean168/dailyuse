@@ -3,7 +3,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
-import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskStatus } from '@memoflow/contracts/schedule';
 
 import { ScheduleTaskCard } from '../components/ScheduleTaskCard';
 import { useAppSession } from '../hooks/useAppSession';
@@ -20,7 +20,7 @@ import {
   StatusPill,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 const FILTERS: Array<{ label: string; value: ScheduleStatusFilter }> = [
   { label: 'All', value: 'all' },

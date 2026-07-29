@@ -3,8 +3,8 @@ import type {
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
   UserReminderPreferencesClientDTO,
-} from '@dailyuse/contracts/reminder';
-import { createTestPinia } from '@dailyuse/test-utils';
+} from '@memoflow/contracts/reminder';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useReminderStore } from './reminder-store';
 
 function createTemplate(

@@ -1,7 +1,7 @@
 import { computed, nextTick, ref } from 'vue';
 import type {
   AssistantEvent,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import type {
@@ -11,7 +11,7 @@ import type {
   ConversationMessageSummary,
   ConversationSummary,
 } from './types';
-import { unwrap } from '@dailyuse/contracts/result';
+import { unwrap } from '@memoflow/contracts/result';
 import { getAIErrorMessage } from './error';
 import {
   buildHostOpenChatStopCancelCommand,

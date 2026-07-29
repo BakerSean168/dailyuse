@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 251: app-vue dashboard module types keep the client port only.
- * Contract DTOs come from @dailyuse/contracts/dashboard (no dual re-export).
+ * Contract DTOs come from @memoflow/contracts/dashboard (no dual re-export).
  */
 describe('app-vue dashboard types export single-track surface', () => {
   const types = readFileSync(resolve(__dirname, 'types.ts'), 'utf8');
@@ -13,7 +13,7 @@ describe('app-vue dashboard types export single-track surface', () => {
 
   it('types.ts exports IDashboardApiClient only (no contracts DTO re-export)', () => {
     expect(types).toContain('export interface IDashboardApiClient');
-    expect(types).toContain("from '@dailyuse/contracts/dashboard'");
+    expect(types).toContain("from '@memoflow/contracts/dashboard'");
     expect(types).not.toContain('export type {');
     expect(types).not.toMatch(/export type \{[^}]*DashboardData/);
     expect(types).not.toMatch(/export type \{[^}]*DashboardStats/);
@@ -22,8 +22,8 @@ describe('app-vue dashboard types export single-track surface', () => {
   });
 
   it('composable/adapters import DashboardData from contracts', () => {
-    expect(useDashboard).toContain("from '@dailyuse/contracts/dashboard'");
-    expect(http).toContain("from '@dailyuse/contracts/dashboard'");
+    expect(useDashboard).toContain("from '@memoflow/contracts/dashboard'");
+    expect(http).toContain("from '@memoflow/contracts/dashboard'");
     expect(useDashboard).not.toMatch(/DashboardData.*from '\.\.\/types'/);
     expect(http).not.toMatch(/DashboardData.*from '\.\.\/types'/);
   });

@@ -13,11 +13,11 @@ import type { INotificationTemplateRepository } from '../repositories/i-notifica
 import type { INotificationPreferenceRepository } from '../repositories/i-notification-preference-repository';
 import { Notification } from '../aggregates/notification';
 import { NotificationChannel } from '../entities/notification-channel';
-import type { NotificationActionDTO, NotificationMetadataDTO } from '@dailyuse/contracts/notification';
-import { NotificationCategory, NotificationType, NotificationChannelType } from '@dailyuse/contracts/notification';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { NotificationActionDTO, NotificationMetadataDTO } from '@memoflow/contracts/notification';
+import { NotificationCategory, NotificationType, NotificationChannelType } from '@memoflow/contracts/notification';
+import type { IdentityId } from '@memoflow/contracts/primitives';
+import { ImportanceLevel, UrgencyLevel } from '@memoflow/contracts/shared';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('NotificationDomainService');
 

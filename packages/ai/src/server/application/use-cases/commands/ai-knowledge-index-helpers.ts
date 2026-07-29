@@ -4,7 +4,7 @@ import type {
   KnowledgeSourceNote,
   KnowledgeIndexedNote,
 } from '../../ports';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('AIKnowledgeIndexHelpers');
 

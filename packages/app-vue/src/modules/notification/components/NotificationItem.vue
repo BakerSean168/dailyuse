@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
+import { Badge } from '@memoflow/ui-vue-shadcn';
 import { formatProductRelative } from '../../../shared/utils/product-time';
 import {
   Info,
@@ -89,8 +89,8 @@ import {
   Check,
   Trash2,
 } from '@lucide/vue';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 

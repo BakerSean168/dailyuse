@@ -35,8 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Alert, AlertTitle, AlertDescription } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

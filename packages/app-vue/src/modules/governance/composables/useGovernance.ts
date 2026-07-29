@@ -27,7 +27,7 @@ import type {
   RuleSeverity,
   RuleStatus,
   UpdateRuleReq,
-} from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/governance';
 import { toGovernanceDisplayRule } from '../display-rule';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 

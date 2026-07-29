@@ -317,9 +317,9 @@ import { useI18n } from 'vue-i18n';
 import { useAutoStatusRules } from '../../composables/useAutoStatusRules';
 
 const { t } = useI18n();
-import type { StatusRule, RuleCondition } from '@dailyuse/contracts/goal';
-import { GoalStatus } from '@dailyuse/contracts/goal';
-import { sortRulesByPriority } from '@dailyuse/goal/client';
+import type { StatusRule, RuleCondition } from '@memoflow/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
+import { sortRulesByPriority } from '@memoflow/goal/client';
 import {
   Card,
   CardHeader,
@@ -346,7 +346,7 @@ import {
   Alert,
   AlertDescription,
   useConfirm,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Bot, Plus, Pencil, Trash2, GitBranch, Zap, AlertCircle } from '@lucide/vue';
 
 const { config, getRuleEngine } = useAutoStatusRules();

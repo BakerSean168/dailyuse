@@ -2,7 +2,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
-import { GoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@memoflow/contracts/goal';
 
 import { GoalCard } from '../components/GoalCard';
 import { useAppSession } from '../hooks/useAppSession';
@@ -16,7 +16,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 const FILTERS: Array<{ label: string; value: GoalStatusFilter }> = [
   { label: 'All', value: 'all' },

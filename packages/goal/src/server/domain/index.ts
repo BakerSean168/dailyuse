@@ -8,7 +8,7 @@
  * 【包含内容】
  * - 聚合根（Aggregates）：Goal, GoalFolder, FocusSession
  * - 实体（Entities）：GoalRecord, GoalReview, KeyResult
- * - 值对象（Value Objects）：从 @dailyuse/domain 导出
+ * - 值对象（Value Objects）：从 @memoflow/domain 导出
  * - 仓储接口（Repositories）：IGoalRepository, IGoalFolderRepository 等
  * - 领域服务（Domain Services）：FocusSessionPolicy, GoalPolicy, GoalProgressCalculator 等
  * 
@@ -19,14 +19,14 @@
  * 
  * 【依赖规则】
  * ✅ 允许依赖：
- * - @dailyuse/utils（基类：AggregateRoot, Entity）
- * - @dailyuse/contracts（DTO 接口、事件 Map）
- * - @dailyuse/domain（值对象、枚举）
+ * - @memoflow/utils（基类：AggregateRoot, Entity）
+ * - @memoflow/contracts（DTO 接口、事件 Map）
+ * - @memoflow/domain（值对象、枚举）
  * 
  * ❌ 禁止依赖：
- * - @dailyuse/domain-client（客户端领域模型）
- * - @dailyuse/infrastructure-*（基础设施层）
- * - @dailyuse/application-*（应用层）
+ * - @memoflow/domain-client（客户端领域模型）
+ * - @memoflow/infrastructure-*（基础设施层）
+ * - @memoflow/application-*（应用层）
  * - 外部 I/O 库（fs, axios, prisma, ioredis 等）
  */
 

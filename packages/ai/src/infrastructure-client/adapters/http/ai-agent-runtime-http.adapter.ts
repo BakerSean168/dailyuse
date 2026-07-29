@@ -6,8 +6,8 @@ import type {
   AgentResumePayload,
   AgentRunResult,
   AgentStartRunClientRequest,
-} from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 function runListQuery(params: AgentRunListParams = {}): string {
   const search = new URLSearchParams();

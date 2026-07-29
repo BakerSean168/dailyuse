@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { _getConfirmState, _resolveConfirm } from '@dailyuse/ui-vue-shadcn';
-import { buttonVariants } from '@dailyuse/ui-vue-shadcn';
-import { cn } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { _getConfirmState, _resolveConfirm } from '@memoflow/ui-vue-shadcn';
+import { buttonVariants } from '@memoflow/ui-vue-shadcn';
+import { cn } from '@memoflow/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -11,7 +11,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 
 const state = _getConfirmState();
 let resolvedByAction = false;

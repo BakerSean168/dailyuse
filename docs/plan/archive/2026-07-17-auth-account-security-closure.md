@@ -24,7 +24,7 @@ status: done
 
 本文汇总并固化以下讨论结论：
 
-- 不引入 Better Auth / Logto / Keycloak 作为主身份源；保留自建 `AuthIdentity` + Daily Use session。
+- 不引入 Better Auth / Logto / Keycloak 作为主身份源；保留自建 `AuthIdentity` + MemoFlow session。
 - 开源方案用于**流程规格与零件复用**（发信、限流、OTP 存储），不用于替换全域 `identityId`。
 - 优先做「安全与一致性闭环」，再补 OAuth 完整流、访客升级等产品入口。
 
@@ -323,7 +323,7 @@ Account `GET /api/v1/accounts/me` 继续只返回资料；前端「账户安全�
 **验收**
 
 - [x] 未配置 client 时仍 `SERVICE_UNAVAILABLE`；`GET /oauth/providers` + Web 按钮 `v-if` 隐藏入口
-- [~] 配置齐全时 GitHub 登录可拿 Daily Use session（e2e-mock 提供者 + auth-oauth 规格已写；本机/CI 真跑待做）
+- [~] 配置齐全时 GitHub 登录可拿 MemoFlow session（e2e-mock 提供者 + auth-oauth 规格已写；本机/CI 真跑待做）
 - [x] 绑定不申请仓库权限；与 ADR-034 一致（scopes 与文案双重约束）
 
 ### Phase E — 访客升级（Desktop）
@@ -359,7 +359,7 @@ Account `GET /api/v1/accounts/me` 继续只返回资料；前端「账户安全�
 - [~] 发送与校验限流（subject challenge store + IP middleware 已有；多实例 Redis 待替换）
 - [x] 防邮箱枚举（统一响应：forgot/send-code 未知邮箱仍 ok）
 - [x] 日志仅掩码邮箱，不打明文码（ConsoleEmailSender + register/runtime 掩码）
-- [~] OAuth state/PKCE；provider token 不进入 Daily Use session（state/PKCE 已存 hash challenge 并校验；provider token 仅临时换身份，不入 Daily Use session）
+- [~] OAuth state/PKCE；provider token 不进入 MemoFlow session（state/PKCE 已存 hash challenge 并校验；provider token 仅临时换身份，不入 MemoFlow session）
 - [x] 身份登录场景评估：OAuthBinding 表中 access/refresh **默认不落库**（bind/createWithOAuth 均不写 provider token）
 - [x] 改密/重置/注销后撤 session（change revoke-all valid；reset removeAll；close cascade disable+removeAll）
 - [ ] 生产发信域名 SPF/DKIM/DMARC
@@ -418,7 +418,7 @@ E 访客升级
 
 ## 12. 非目标回顾
 
-- 不「为优雅」替换 `@dailyuse/authentication`
+- 不「为优雅」替换 `@memoflow/authentication`
 - 不在 Account 模块单独实现登录邮箱验证权威
 - 不把 GitHub 仓库同步权限绑进登录
 - 本计划不包含 2FA/短信生产化
@@ -432,7 +432,7 @@ E 访客升级
 3. ~~从 **Phase A PR1** 开工：`IVerificationChallengeStore` + 邮件端口扩展 + forgot/reset 迁移~~ **已完成**
 4. ~~**B2** 邮箱验证后端~~ **已完成**（契约/use case/路由/client/Account 投影）
 5. ~~**B1** 密码找回前端~~ / ~~**B2** 门禁 + Web 验证场景~~ **已完成（Web）**
-6. ~~**包 dist 闭环**~~ contracts + authentication 重建；@dailyuse/authentication/api 导出 gate；聚焦单测 25+11 绿
+6. ~~**包 dist 闭环**~~ contracts + authentication 重建；@memoflow/authentication/api 导出 gate；聚焦单测 25+11 绿
 7. ~~e2e 规格 + Phase C 注销级联 + Desktop 同契约 + Unverified banner~~ **源码已接入**
 8. ~~Phase D OAuth bind/unbind + 冲突处理 + 设置页入口~~ **源码已接入**
 9. ~~e2e mock OAuth + providers 门控 + 掩码日志~~ **源码已接入**
@@ -469,4 +469,4 @@ E 访客升级
 | 2026-07-18 | **Phase E** 访客 profile ownership 重绑：`rebindIdentityOwnership` + `upgradeGuestProfileToOnlineIdentity`；login/register/OAuth callback 接入；profile/shell 单测 38 绿 |
 | 2026-07-18 | **归档** App Vue UI 深度重构计划（PR #187 已合入 main） |
 
-| 2026-07-18 | **治理复验** `daily-use:governance-check` 绿；cross-feature boundary plan 归档 |
+| 2026-07-18 | **治理复验** `memoflow:governance-check` 绿；cross-feature boundary plan 归档 |

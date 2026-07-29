@@ -1,8 +1,8 @@
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   PlainPasswordDTO,
   PlainPassword as IPlainPassword,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 /**
  * Plain password value object.

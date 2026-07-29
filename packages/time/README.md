@@ -1,6 +1,6 @@
-# `@dailyuse/time`
+# `@memoflow/time`
 
-Product time facade for Memoflow (ADR-037).
+Product time facade for MemoFlow (ADR-037).
 
 ## Role
 
@@ -15,7 +15,7 @@ Business and UI **must not** import `date-fns` or maintain private `formatDate` 
 ## Quick start
 
 ```ts
-import { createTimeFacade, createFixedClock } from '@dailyuse/time';
+import { createTimeFacade, createFixedClock } from '@memoflow/time';
 
 const time = createTimeFacade({
   clock: createFixedClock(Date.UTC(2026, 6, 26, 12, 0, 0)),

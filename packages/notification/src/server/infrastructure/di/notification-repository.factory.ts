@@ -3,8 +3,8 @@
  * Provides repository implementations for different data sources
  */
 
-import type { PrismaClient } from '@dailyuse/database';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { PrismaClient } from '@memoflow/database';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 
 import {
   NotificationPrismaRepository,

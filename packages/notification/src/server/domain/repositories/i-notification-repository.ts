@@ -9,7 +9,7 @@
  */
 
 import type { Notification } from '../aggregates/notification';
-import { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationStatus } from '@memoflow/contracts/notification';
 
 /**
  * INotificationRepository 浠撳偍鎺ュ彛

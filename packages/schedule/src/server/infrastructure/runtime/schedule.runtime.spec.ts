@@ -4,7 +4,7 @@ import {
   ScheduleTaskStatus,
   SourceModule,
   Timezone,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import { ScheduleTask } from '../../domain/aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../../domain/repositories/i-schedule-task-repository';
 import { ExecutionInfo, RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../domain/value-objects';
@@ -54,8 +54,8 @@ const mocked = vi.hoisted(() => {
   };
 });
 
-vi.mock('@dailyuse/utils/domain', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dailyuse/utils/domain')>();
+vi.mock('@memoflow/utils/domain', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@memoflow/utils/domain')>();
 
   return {
     ...actual,
@@ -67,7 +67,7 @@ vi.mock('@dailyuse/utils/domain', async (importOriginal) => {
   };
 });
 
-vi.mock('@dailyuse/utils/logger', () => ({
+vi.mock('@memoflow/utils/logger', () => ({
   createLogger: () => ({
     info: mocked.loggerInfo,
     warn: mocked.loggerWarn,

@@ -1,10 +1,10 @@
 /**
- * @dailyuse/notification
+ * @memoflow/notification
  *
  * Notification module runtime root.
  *
  * Public notification contracts are centralized in
- * `@dailyuse/contracts/notification`.
+ * `@memoflow/contracts/notification`.
  * Root exports are limited to the canonical server composition roots.
  * Client / API / Electron seams use dedicated subpaths.
  */

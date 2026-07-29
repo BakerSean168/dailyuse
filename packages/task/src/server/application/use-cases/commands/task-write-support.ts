@@ -1,7 +1,7 @@
-import type { ResultError } from '@dailyuse/contracts/result';
+import type { ResultError } from '@memoflow/contracts/result';
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
-import { isDomainError, mapInfraErrorToResultError } from '@dailyuse/utils/errors';
+import { isDomainError, mapInfraErrorToResultError } from '@memoflow/utils/errors';
 
 export interface TaskWriteRepositories {
   readonly templateRepository: ITaskTemplateRepository;

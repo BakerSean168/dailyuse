@@ -7,17 +7,17 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient, TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
+import type { PrismaClient, TaskTemplate as PrismaTaskTemplate } from '@memoflow/database';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import type { TaskFilters } from '../../../domain/repositories/i-task-template-repository';
-import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateStatus } from '@memoflow/contracts/task';
 import {
   AggregateRepositoryBase,
   createEventBusAdapter,
   type IEventBus,
-} from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import { PrismaTaskTemplateMapper } from './mappers/prisma-task-template-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

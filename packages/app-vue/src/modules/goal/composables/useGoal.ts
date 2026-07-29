@@ -25,7 +25,7 @@ import type {
   CreateGoalReq,
   UpdateGoalReq,
   GetGoalAggregateRes,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import { executeGoalOperation, executeGoalAction, createGoalErrorHandler } from './goalOperations';
 import { useFocusMode } from './useFocusMode';
 import { useGoalFilters } from './useGoalFilters';

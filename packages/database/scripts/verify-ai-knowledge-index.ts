@@ -1,7 +1,7 @@
 import { Client } from 'pg';
 import { loadWorkspaceEnv } from '../src/load-workspace-env';
 // Residual 1019: sole errorMessage (local toErrorMessage dual retired).
-import { errorMessage as toErrorMessage } from '@dailyuse/utils/shared';
+import { errorMessage as toErrorMessage } from '@memoflow/utils/shared';
 
 const KNOWLEDGE_INDEX_TABLE = 'ai_knowledge_index_entries';
 const KNOWLEDGE_INDEX_SCHEMA = 'public';

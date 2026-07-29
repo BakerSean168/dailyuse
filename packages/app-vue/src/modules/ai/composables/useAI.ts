@@ -7,8 +7,8 @@ import type {
   TestAIProviderReq,
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
-} from '@dailyuse/contracts/ai';
-import { unwrap } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { unwrap } from '@memoflow/contracts/result';
 import { AI_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 

@@ -22,9 +22,9 @@ import { RuleTag } from '../../../../domain/value-objects/rule-tag';
 import { CodeSnippet } from '../../../../domain/value-objects/code-snippet';
 import type { RuleStatus } from '../../../../domain/value-objects/rule-status';
 import type { RuleSeverity } from '../../../../domain/value-objects/rule-severity';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 import type { CodeSnippetPersistenceDTO } from '../../../../domain/value-objects/code-snippet';
-import { toDate, parseJson } from '@dailyuse/utils/shared';
+import { toDate, parseJson } from '@memoflow/utils/shared';
 
 /**
  * Represents a row in the PowerSync `rules` table.

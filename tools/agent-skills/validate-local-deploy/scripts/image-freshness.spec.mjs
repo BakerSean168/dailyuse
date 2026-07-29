@@ -4,7 +4,7 @@ import { checkLocalImageFreshness } from './image-freshness.mjs';
 describe('checkLocalImageFreshness', () => {
   it('emits a warning when image revision differs from HEAD', () => {
     const result = checkLocalImageFreshness('/repo', {
-      images: ['dailyuse-api:local'],
+      images: ['memoflow-api:local'],
       runCommand: (command, args) => {
         if (command === 'git') {
           return { exitCode: 0, stdout: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n', stderr: '' };
@@ -23,7 +23,7 @@ describe('checkLocalImageFreshness', () => {
   it('is quiet when image revision matches HEAD', () => {
     const sha = 'cccccccccccccccccccccccccccccccccccccccc';
     const result = checkLocalImageFreshness('/repo', {
-      images: ['dailyuse-web:local'],
+      images: ['memoflow-web:local'],
       runCommand: (command) => {
         if (command === 'git') return { exitCode: 0, stdout: `${sha}\n`, stderr: '' };
         return { exitCode: 0, stdout: `${sha}-dirty\n`, stderr: '' };

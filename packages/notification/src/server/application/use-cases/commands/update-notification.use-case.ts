@@ -3,9 +3,9 @@ import type {
   NotificationMetadataDTO,
   NotificationStatus,
   UpdateNotificationReq,
-} from '@dailyuse/contracts/notification';
-import type { Result } from '@dailyuse/contracts/result';
-import { error, ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/notification';
+import type { Result } from '@memoflow/contracts/result';
+import { error, ok } from '@memoflow/contracts/result';
 import type { INotificationRepository } from '../../../domain/repositories';
 import { toNotificationClientDTO } from './notification-dto-converters';
 

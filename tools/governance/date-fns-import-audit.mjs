@@ -76,7 +76,7 @@ if (offenders.length) {
   console.error('[date-fns-import-audit] FAIL: date-fns imports outside engine + legacy allowlist:');
   for (const o of offenders) console.error('  -', o);
   console.error(
-    'Fix: migrate to @dailyuse/time, or register legacy in tools/governance/time-registry.json with retire_by.',
+    'Fix: migrate to @memoflow/time, or register legacy in tools/governance/time-registry.json with retire_by.',
   );
   process.exit(1);
 }

@@ -30,7 +30,7 @@ AI 模块用于用 AI 辅助用户整理上下文并生成结构化行动。它�
 - 会话管理：创建、删除、列出对话，支持对话状态管理。
 - 双运行时模式：支持直连 LLM provider 和远程 ai-service 两种运行时。
 
-已采纳且部分落地的目标态：统一助手通过 Daily Use Agent Host 组合 Workflow Engine、Turn Engine 和 Model Gateway；右侧业务面板统一展示 Artifact、Proposal、审批和执行结果。
+已采纳且部分落地的目标态：统一助手通过 MemoFlow Agent Host 组合 Workflow Engine、Turn Engine 和 Model Gateway；右侧业务面板统一展示 Artifact、Proposal、审批和执行结果。
 当前仍保留 direct-provider / remote-ai-service 双运行时装配，但 ADR-035 Host 生产适配已部分接线：
 `DirectTurnEngine`（开放式 chat）、`ReadonlyAnalysisTurnEngine`（readonly analysis /
 `engine.pi_readonly`，经 Model Gateway）、`LangGraphWorkflowAdapter`（remote workflow）、

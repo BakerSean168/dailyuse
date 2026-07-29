@@ -21,8 +21,8 @@
  * 模块本身不直读 process.env，避免绕过校验或产生第二个真值源。
  */
 
-import type { PrismaClient } from '@dailyuse/database';
-import type { ServerModuleContext } from '@dailyuse/contracts/shared';
+import type { PrismaClient } from '@memoflow/database';
+import type { ServerModuleContext } from '@memoflow/contracts/shared';
 import {
   createAuthenticationPrismaModule,
   JwtTokenProvider,

@@ -1,1 +1,1 @@
-export { ScheduleWeekScreen as default } from '@dailyuse/app-react';
+export { ScheduleWeekScreen as default } from '@memoflow/app-react';

@@ -1,1 +1,1 @@
-export { ScheduleCalendarScreen as default } from '@dailyuse/app-react';
+export { ScheduleCalendarScreen as default } from '@memoflow/app-react';

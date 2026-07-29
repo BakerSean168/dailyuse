@@ -206,7 +206,7 @@ pnpm nx run-many --target=typecheck --projects=goal,task,reminder,schedule,notif
 
 ## Phase 4: ExecutionContext 统一（收尾）
 
-- [x] 共享 `ExecutionContext{ identityId: string }` 添加到 `@dailyuse/contracts/shared`
+- [x] 共享 `ExecutionContext{ identityId: string }` 添加到 `@memoflow/contracts/shared`
 - [x] Goal: `Context` → `ExecutionContext`（create-goal 是唯一使用 Context 的 use case）
 - [x] Account: `identityId: string` → `cx: ExecutionContext`（4 个 use case + composition root + controller + transport handlers + electron entry + tests）
 - [x] Authentication: `Context` → `ExecutionContext`（login/register 提取 deviceId 为独立参数，其余 use case 直接替换）

@@ -4,8 +4,8 @@
  * Application use case for user login.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import {
   AuthSession,
   LoginService as DomainLoginService,
@@ -13,11 +13,11 @@ import {
   type IAuthSessionRepository,
   type ITokenProvider,
 } from '../../../domain';
-import type { LoginByEmailReq, LoginByEmailRes } from '@dailyuse/contracts/authentication';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { LoginByEmailReq, LoginByEmailRes } from '@memoflow/contracts/authentication';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IPasswordHasher } from '../../../domain';
 import { UserNotFoundError, InvalidPasswordError, IdentityDisabledError } from '../../../domain/services/login';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('Login');
 

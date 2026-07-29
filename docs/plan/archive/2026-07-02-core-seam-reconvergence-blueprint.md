@@ -16,7 +16,7 @@ updated: 2026-07-03T20:54:00+08:00
 
 本蓝图对应以下输入：
 
-1. [code-quality-consistency-audit.md](D:/home/projects/dailyuse/docs/audit/code-quality-consistency-audit.md)
+1. [code-quality-consistency-audit.md](D:/home/projects/memoflow/docs/audit/code-quality-consistency-audit.md)
 2. 当前代码真值
 3. 已采纳 ADR：
    - `ADR-020` API 只负责框架适配
@@ -69,7 +69,7 @@ updated: 2026-07-03T20:54:00+08:00
 - task / goal / schedule 的 transport seam 已统一
 - strict ID fixture 已在 task/schedule/goal/api-smoke/desktop-auth 核心面收口
 - API / web / desktop 的 bootstrap 与 runtime 直达测试已补齐
-- `madge` 无 task circular dependency，`task:test`、`goal:test`、`reminder:test`、`schedule:test`、`schedule-orchestration:test`、`api:test`、`api:test:smoke`、`web:test`、`desktop:test:main`、`desktop:test`、`daily-use:governance-check` 全部通过
+- `madge` 无 task circular dependency，`task:test`、`goal:test`、`reminder:test`、`schedule:test`、`schedule-orchestration:test`、`api:test`、`api:test:smoke`、`web:test`、`desktop:test:main`、`desktop:test`、`memoflow:governance-check` 全部通过
 
 本蓝图的执行目标已经达成；后续只保留为归档真值与历史收敛记录。
 
@@ -87,7 +87,7 @@ updated: 2026-07-03T20:54:00+08:00
 | `Q-008` | host/bootstrap/runtime 关键链路缺少 direct tests | API / web / desktop / orchestration 关键链路补齐直达测试 | `R09` |
 
 当前最重要的结论已经从“继续回收 execution owner”转为“确认新结构完成收敛并归档”。  
-`schedule-orchestration` 已经通过 `@dailyuse/task|goal|reminder/schedule-projection` 与 `schedule-execution` 窄公共出口接管 projection / execution owner；API / web / desktop 的 bootstrap 直达测试和计划文档状态也已经完成对齐。
+`schedule-orchestration` 已经通过 `@memoflow/task|goal|reminder/schedule-projection` 与 `schedule-execution` 窄公共出口接管 projection / execution owner；API / web / desktop 的 bootstrap 直达测试和计划文档状态也已经完成对齐。
 
 当前代码主体结构并没有崩坏，问题集中在几条关键 Seam 已经变浅：
 
@@ -721,7 +721,7 @@ packages/schedule-orchestration/
 - `pnpm nx run web:test`
 - `pnpm nx run desktop:test:main`
 - `pnpm nx run schedule:test`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ## 10. 完成判定
 

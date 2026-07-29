@@ -17,16 +17,16 @@
  * @see {@link CodeSnippet} 使用 Language 标注代码片段的语言
  */
 
-import { Language as LanguageContract, type Language as ILanguage } from '@dailyuse/contracts/governance';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { Language as LanguageContract, type Language as ILanguage } from '@memoflow/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 /** Branded type —— 编译时防止与普通字符串混用 */
 export type Language = ILanguage & { readonly __brand: unique symbol };
 
 /** 全部支持的语言 */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ILanguage[] = Object.values(LanguageContract);
 
 /**

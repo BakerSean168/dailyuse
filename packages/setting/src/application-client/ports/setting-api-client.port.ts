@@ -5,8 +5,8 @@
  * Implementations: HTTP adapters (web), IPC adapters (desktop).
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
+import type { Result } from '@memoflow/contracts/result';
+import type { UserSettingClientDTO, PreferenceCategory } from '@memoflow/contracts/setting';
 
 /**
  * Setting API Client Interface — Aligned with PATCH /:category API

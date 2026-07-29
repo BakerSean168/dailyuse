@@ -176,7 +176,7 @@ describe('§13.2 DoD open items honest audit (residual 891)', () => {
     expect(sec).toContain('12-project lint 集合');
     expect(sec).toContain('12/12 通过');
     expect(sec).toContain('focused 回归 **8 文件 / 160 测试**');
-    expect(sec).toContain('@dailyuse/test-utils:lint');
+    expect(sec).toContain('@memoflow/test-utils:lint');
     expect(sec).toContain('2 个既有 layer-boundary error');
     expect(sec).toContain('24 个依赖任务通过');
     expect(sec).toContain('全 workspace lint **36/36 项目通过**');

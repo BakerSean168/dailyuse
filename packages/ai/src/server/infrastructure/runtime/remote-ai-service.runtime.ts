@@ -14,7 +14,7 @@
  * Only fail-fast on explicitly attempted incomplete bundles (handled at call site).
  */
 
-import type { AICapabilities } from '@dailyuse/contracts/ai';
+import type { AICapabilities } from '@memoflow/contracts/ai';
 import type {
   AIModuleDependencies,
   AIModuleServices,

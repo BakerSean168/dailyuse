@@ -7,14 +7,14 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   TaskGoalBinding as ITaskGoalBinding,
   TaskGoalBindingDTO,
   TaskGoalBindingTrigger as TaskGoalBindingTriggerValue,
-} from '@dailyuse/contracts/task';
-import { TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
-import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/task';
+import { TaskGoalBindingTrigger } from '@memoflow/contracts/task';
+import type { GoalId, KeyResultId } from '@memoflow/contracts/primitives';
 
 /**
  * TaskGoalBinding 值对象实现

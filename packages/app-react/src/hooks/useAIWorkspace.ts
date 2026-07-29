@@ -7,8 +7,8 @@ import {
   type AIProviderConfigClientDTO,
   type MessageClientDTO,
   type SendMessageReq,
-} from '@dailyuse/contracts/ai';
-import { unwrap } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { unwrap } from '@memoflow/contracts/result';
 
 import { useAppSession } from './useAppSession';
 import { useAIService } from './useAIService';

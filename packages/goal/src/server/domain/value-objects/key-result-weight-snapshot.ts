@@ -13,17 +13,17 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   KeyResultWeightSnapshotDTO,
   SnapshotTrigger,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import type {
   GoalId,
   KeyResultId,
   IdentityId,
   KeyResultWeightSnapshotId,
-} from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/primitives';
 
 /**
  * KeyResultWeightSnapshot 值对象实现

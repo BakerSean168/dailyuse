@@ -9,8 +9,8 @@
  * - Instance toDTO(): ScheduleExecutionClientDTO
  */
 
-import type { ScheduleExecutionClientDTO, ExecutionStatus } from '@dailyuse/contracts/schedule';
-import { Entity } from '@dailyuse/utils/domain';
+import type { ScheduleExecutionClientDTO, ExecutionStatus } from '@memoflow/contracts/schedule';
+import { Entity } from '@memoflow/utils/domain';
 import { ScheduleExecutionId } from '../../server/domain/value-objects/schedule-execution-id';
 import { ScheduleTaskId } from '../../server/domain/value-objects/schedule-task-id';
 

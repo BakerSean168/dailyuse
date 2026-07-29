@@ -6,7 +6,7 @@
  */
 
 import { http, HttpResponse } from 'msw';
-import { createMockAuthResponse } from '@dailyuse/contracts/mocks';
+import { createMockAuthResponse } from '@memoflow/contracts/mocks';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const BASE = `${API_BASE}/auth`;

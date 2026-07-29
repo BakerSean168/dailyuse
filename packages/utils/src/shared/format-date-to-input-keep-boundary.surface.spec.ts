@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 1210: formatDateToInput dual retired onto @dailyuse/time (ADR-037 T9).
+ * Residual 1210: formatDateToInput dual retired onto @memoflow/time (ADR-037 T9).
  * - utils shared/date product bridges deleted (no formatDateToInput export)
  * - app-vue TimeConfigSection: epoch ms → getProductTime().format.dateToYmd
  * Soft residual 1207: formatMessageTime keep-boundary remains separate.
@@ -41,7 +41,7 @@ describe('formatDateToInput dual retired (residual 1210)', () => {
     }
   });
 
-  it('app-vue task formatDateToInput uses @dailyuse/time product facade', () => {
+  it('app-vue task formatDateToInput uses @memoflow/time product facade', () => {
     expect(vue).toContain('Residual 1210');
     expect(vue).toMatch(/const formatDateToInput\b/);
     expect(vue).toContain('getProductTime');

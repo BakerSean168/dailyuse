@@ -7,9 +7,9 @@ import type {
   ReminderResponseServerDTO,
   ReminderResponseClientDTO,
   ReminderResponseAction,
-} from '@dailyuse/contracts/reminder';
-import type { ReminderTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
-import { Entity } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/reminder';
+import type { ReminderTemplateId, IdentityId } from '@memoflow/contracts/primitives';
+import { Entity } from '@memoflow/utils/domain';
 import { ReminderResponseId } from '../value-objects/reminder-response-id';
 
 /**

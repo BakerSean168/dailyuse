@@ -10,16 +10,16 @@ import type {
   Prisma,
   AiConversation as PrismaAiConversation,
   AiMessage as PrismaAiMessage,
-} from '@dailyuse/database';
+} from '@memoflow/database';
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain';
 import { AIConversation } from '../../../domain/aggregates/ai-conversation';
 import { Message } from '../../../domain/entities/message';
-import type { AIEventMap } from '@dailyuse/contracts/ai';
-import { ConversationStatus, MessageRole } from '@dailyuse/contracts/ai';
+import type { AIEventMap } from '@memoflow/contracts/ai';
+import { ConversationStatus, MessageRole } from '@memoflow/contracts/ai';
 import { AiConversationId } from '../../../domain/value-objects/ai-conversation-id';
 import { AiMessageId } from '../../../domain/value-objects/ai-message-id';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@dailyuse/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared/shared';
+import { createTypedEventPublisher, eventBus, flushDomainEvents } from '@memoflow/utils/domain';
 
 type PrismaAiConversationWithMessages = PrismaAiConversation & {
   messages?: PrismaAiMessage[];

@@ -70,7 +70,7 @@ updated: 2025-12-06
 
 ✅ **与现有架构一致**
 
-- 直接使用 `@dailyuse/infrastructure-server` Container
+- 直接使用 `@memoflow/infrastructure-server` Container
 - Repository 模式无需改变
 
 ✅ **事务完整性**
@@ -106,7 +106,7 @@ let db: Database.Database | null = null;
 
 export function initializeDatabase(): Database.Database {
   const userDataPath = app.getPath('userData');
-  const dbPath = path.join(userDataPath, 'dailyuse.db');
+  const dbPath = path.join(userDataPath, 'memoflow.db');
 
   db = new Database(dbPath, {
     // WAL 模式提升并发读性能
@@ -141,8 +141,8 @@ export function closeDatabase(): void {
 
 ```typescript
 // apps/desktop/src/main/di/sqlite-adapters/goal.sqlite-repository.ts
-import type { IGoalRepository } from '@dailyuse/domain-server/goal';
-import type { Goal } from '@dailyuse/domain-server/goal';
+import type { IGoalRepository } from '@memoflow/domain-server/goal';
+import type { Goal } from '@memoflow/domain-server/goal';
 import { getDatabase } from '../../shared/database';
 
 export class SqliteGoalRepository implements IGoalRepository {

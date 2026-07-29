@@ -5,12 +5,12 @@
  * Declares workflow/engine capability kinds only — never claims tool.proposal /
  * tool.mutation / context.* as satisfied by the workflow engine alone.
  */
-import type { CapabilityOffer, IWorkflowAdapterPort } from '@dailyuse/contracts/ai';
+import type { CapabilityOffer, IWorkflowAdapterPort } from '@memoflow/contracts/ai';
 import type {
   AgentEvent,
   AgentRun,
   AgentRunResult,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type {
   AgentRuntimeListInput,
   AgentRuntimeResumeInput,

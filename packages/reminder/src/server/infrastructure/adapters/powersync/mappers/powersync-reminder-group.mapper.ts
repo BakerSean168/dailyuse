@@ -2,10 +2,10 @@ import type {
   ControlMode,
   ReminderStatus,
   GroupStatsDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import { ReminderGroup } from '../../../../domain/aggregates/reminder-group';
 import { GroupStats } from '../../../../domain/value-objects';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import type { IdentityId } from '@memoflow/domain-shared';
 
 export type PowerSyncReminderGroupRow = {
   id: string;

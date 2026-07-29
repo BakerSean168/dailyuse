@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 265: contracts notification no longer dual-aliases AssetImageKey = string.
- * Desktop icons use string here; branded AssetImageKey lives in @dailyuse/assets only.
+ * Desktop icons use string here; branded AssetImageKey lives in @memoflow/assets only.
  */
 describe('notification AssetImageKey dual single-track surface', () => {
   const dispatch = readFileSync(

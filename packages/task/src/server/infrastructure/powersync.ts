@@ -9,7 +9,7 @@
  * 仅在 Electron 主进程中使用。
  */
 
-import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
 import {
   createTaskModule,
   type TaskModuleInstance,

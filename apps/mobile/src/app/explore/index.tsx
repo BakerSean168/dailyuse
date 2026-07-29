@@ -1,2 +1,2 @@
-export { SetupScreen as default } from '@dailyuse/app-react';
+export { SetupScreen as default } from '@memoflow/app-react';
 

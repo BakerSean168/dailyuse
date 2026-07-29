@@ -1,4 +1,4 @@
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 
 import { createReminderHttpAdapters } from '../infrastructure-client';
 import { ReminderClientService, createReminderClientService } from './reminder-client-service';

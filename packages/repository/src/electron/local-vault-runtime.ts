@@ -16,7 +16,7 @@ import type {
   SearchLocalVaultReq,
   SearchLocalVaultRes,
   SelectLocalVaultReq,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 // Residual 957: isMissing/isTemporaryFile duals retired — sole vault-fs-guards.
 import { isMissing, isTemporaryFile } from './vault-fs-guards';
 

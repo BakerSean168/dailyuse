@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AuthChannels } from '@dailyuse/contracts/electron';
+import { AuthChannels } from '@memoflow/contracts/electron';
 import { executeDesktopAuthenticatedResult } from './execute-desktop-authenticated-result';
 
 describe('executeDesktopAuthenticatedResult', () => {

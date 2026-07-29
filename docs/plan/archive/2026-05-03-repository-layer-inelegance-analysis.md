@@ -72,11 +72,11 @@
 `parseJson` / `parseStringArray` / `parseRecord` 同样只在 governance 中共享。
 
 **改造方案**:
-- A. 提取到 `@dailyuse/database` 包中作为共享工具（Prisma + PowerSync 都可用）
+- A. 提取到 `@memoflow/database` 包中作为共享工具（Prisma + PowerSync 都可用）
 - B. 每个模块创建自己的 `mapper-helpers.ts`（复制 governance 的）
-- C. 提取到 `@dailyuse/utils` 中
+- C. 提取到 `@memoflow/utils` 中
 
-推荐 A。`@dailyuse/database` 是持久化相关的共享包，最适合放这些工具。
+推荐 A。`@memoflow/database` 是持久化相关的共享包，最适合放这些工具。
 
 选择：方案A
 

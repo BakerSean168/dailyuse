@@ -19,7 +19,7 @@ import {
   PowerSyncNotificationPreferenceRepository,
   PowerSyncNotificationTemplateRepository,
 } from './adapters/powersync';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 
 /**
  * Creates a notification module instance backed by PowerSync repositories.

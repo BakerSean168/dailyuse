@@ -11,10 +11,10 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
-import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema, GoalReviewListResSchema } from '@dailyuse/contracts/goal';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { GoalId, GoalReviewId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/utils/result';
+import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema, GoalReviewListResSchema } from '@memoflow/contracts/goal';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { GoalId, GoalReviewId } from '@memoflow/contracts/primitives';
 import type { GoalController } from '../../server/transport/goal.controller';
 
 // ============ Types ============

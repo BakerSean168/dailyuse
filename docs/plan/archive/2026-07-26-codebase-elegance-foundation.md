@@ -40,7 +40,7 @@ status: done
 | 项 | 约定 |
 |----|------|
 | **工作分支** | `docs/codebase-elegance-foundation`（可随实施改名，但默认此支） |
-| **PR** | https://github.com/BakerSean168/dailyuse/pull/189 → `main` |
+| **PR** | https://github.com/BakerSean168/memoflow/pull/189 → `main` |
 | **合并时机** | **执行完本 plan 本轮交付范围后再 merge**；禁止「仅 plan 文档」提前合 main |
 | **本 PR 必须包含** | 阶段 **A**（归档）+ 阶段 **B**（Dual Registry + **dual 清理/税减负**，满足 E2 + E3） |
 | **本 PR 宜包含** | 阶段 **C** 中 C1–C2（AI 路径地图 + 调用方审计）与 **E5 死域 S 清扫**（若时间允许） |
@@ -97,7 +97,7 @@ status: done
 - [x] **E4 多路径地图**：`docs/` 或 `packages/ai` 下有 **AI 运行路径地图**（Open-chat Host / Workflow AgentRun / legacy message API）+ 允许调用方表；surface 或 docs-boundary 测试锁住「产品 open-chat 不得回退 streamMessage 双路径」（延续既有 host-dispatch surface）。
 - [x] **E5 死域清扫一轮**：无消费者兼容 re-export / 纯注释假模块 / 死 IPC 名至少完成一轮 **S 清扫**并写入 residual；bootstrap 等处误导性 Legacy 注释清理或改为指向真路径。
 - [x] **E6 后续实施铺垫**：agent-host 队列 AH-4 至少完成 **一小步可合并切片**（或书面 external + 落点文件）；AH-2 产品恢复 UI 有明确「做 / 不做 / 外部」决策写入 agent-host plan。
-- [x] **E7 门禁不回归**：`daily-use:governance-check` + 受影响 project lint/typecheck/test 在收口 PR 绿；不提交密钥与 Playwright report 产物。
+- [x] **E7 门禁不回归**：`memoflow:governance-check` + 受影响 project lint/typecheck/test 在收口 PR 绿；不提交密钥与 Playwright report 产物。
 
 ### 3.2 软目标（加分，不阻塞 E1–E7）
 
@@ -300,7 +300,7 @@ GOAL_PRIORITY（优雅阶段期间调整为）=
 
 ## 交付与合并（硬约束）
 - 工作分支：docs/codebase-elegance-foundation（或 PR #189 当前 head）
-- PR：https://github.com/BakerSean168/dailyuse/pull/189 → main
+- PR：https://github.com/BakerSean168/memoflow/pull/189 → main
 - **先执行、后合并**：在本 PR 内完成 dual 清理与优雅地基后再 merge；禁止仅提交 plan 文档就合 main
 - **本 PR 必达范围**（merge 门槛）：
   1) 阶段 A：vault plan + Windows handoff → docs/plan/archive；active README 真值

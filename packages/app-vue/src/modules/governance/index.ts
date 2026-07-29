@@ -14,7 +14,7 @@ export type {
   UpdateRuleReq,
   ListRulesQuery,
   SearchRulesQuery,
-} from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/governance';
 
 // Store
 export { useGovernanceStore } from './stores/governance-store';

@@ -94,7 +94,7 @@ repository implementations to domain interfaces. This is allowed within a
 - The ESLint `layer:domain -> layer:infra` rule exists specifically for this pattern
 - Package-internal boundary enforcement is now implemented as a repo-level governance audit
   (`tools/governance/package-internal-boundary-audit.mjs`) and runs via
-  `pnpm nx run daily-use:governance-check`
+  `pnpm nx run memoflow:governance-check`
 - Some tracked known violations may still exist temporarily, but they are treated as
   explicit technical debt to remove, not as absence of the rule
 

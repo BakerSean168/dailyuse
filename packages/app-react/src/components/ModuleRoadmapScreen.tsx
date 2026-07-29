@@ -7,7 +7,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 export type ModuleRoadmapScreenProps = {
   eyebrow: string;

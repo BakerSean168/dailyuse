@@ -1,9 +1,9 @@
-import type { IAnalyticsReadPort } from '@dailyuse/ai/ports';
-import type { PrismaClient } from '@dailyuse/database';
-import { SearchGoalsUseCase } from '@dailyuse/goal/analytics';
-import { createGoalPrismaModule } from '@dailyuse/goal';
-import { GetTaskDashboardUseCase } from '@dailyuse/task/analytics';
-import { createTaskPrismaRepositories } from '@dailyuse/task';
+import type { IAnalyticsReadPort } from '@memoflow/ai/ports';
+import type { PrismaClient } from '@memoflow/database';
+import { SearchGoalsUseCase } from '@memoflow/goal/analytics';
+import { createGoalPrismaModule } from '@memoflow/goal';
+import { GetTaskDashboardUseCase } from '@memoflow/task/analytics';
+import { createTaskPrismaRepositories } from '@memoflow/task';
 
 import { getApiDashboardData } from '../dashboard/dashboard-read-service';
 

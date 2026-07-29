@@ -17,7 +17,7 @@ import type { DesktopProfileRuntimeManager } from './profile';
 import type { WindowManager } from './lifecycle/window-manager';
 import type { NotificationService } from './services';
 import type { DesktopFeaturesRuntime } from './desktop-features';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('DesktopMainRuntime');
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ok, fail, isOk } from '@dailyuse/contracts/result';
+import { ok, fail, isOk } from '@memoflow/contracts/result';
 import { anIdentityId } from '../../../testing';
-import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import type { TaskInstanceClientDTO } from '@memoflow/contracts/task';
 import { TaskInstanceController, type TaskInstanceUseCases } from '../task-instance.controller';
 
 // ---------------------------------------------------------------------------

@@ -5,12 +5,12 @@
 
 import type { IRuleRevisionRepository } from '../../../domain/repositories/i-rule-revision-repository';
 import { RuleId } from '../../../domain/value-objects/rule-id';
-import type { Result } from '@dailyuse/contracts/result';
-import { resultify } from '@dailyuse/utils/result';
+import type { Result } from '@memoflow/contracts/result';
+import { resultify } from '@memoflow/utils/result';
 import type {
   GetRuleRevisionsQuery,
   GetRuleRevisionsRes,
-} from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/governance';
 
 /**
  * Get Rule Revisions Use Case.

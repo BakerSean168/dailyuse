@@ -7,9 +7,9 @@
  */
 
 import { z } from 'zod';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 // Residual 999: sole errorMessage (local dual retired).
-import { errorMessage } from '@dailyuse/utils/shared';
+import { errorMessage } from '@memoflow/utils/shared';
 import {
   AgentActionSchema,
   AgentArtifactSchema,
@@ -26,9 +26,9 @@ import {
   type ITurnEnginePort,
   type IWorkflowAdapterPort,
   type ResolvedRunPlan,
-} from '@dailyuse/contracts/ai';
-import { error, ok } from '@dailyuse/contracts/result';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { error, ok } from '@memoflow/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 
 // Residual 1121: asNonEmptyString sole (shared/as-non-empty-string).
 import { asNonEmptyString } from '../../../shared/as-non-empty-string';
@@ -60,7 +60,7 @@ import {
   HOST_TASK_CREATE_RUN_STORE_REQUIRES_AGENT_TYPE_MESSAGE,
   matchesHostTaskCreateIdentity,
 } from './host-task-create-run-store';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 import type {
   AgentAction,
@@ -86,7 +86,7 @@ import type {
   QueryKnowledgeRes,
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type {
   AIModuleRuntimeContribution,
   AIModuleServices,
@@ -347,7 +347,7 @@ function toAIServiceAnalyticsContext(context: AnalyticsQueryContext) {
   };
 }
 
-// Residual 999: errorMessage elevated to @dailyuse/utils/shared.
+// Residual 999: errorMessage elevated to @memoflow/utils/shared.
 
 function toAgentRuntimeTaskType(operation: 'start' | 'resume'): string {
   return operation === 'start' ? 'AGENT_RUNTIME_START' : 'AGENT_RUNTIME_RESUME';

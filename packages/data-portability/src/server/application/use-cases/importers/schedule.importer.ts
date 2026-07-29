@@ -3,7 +3,7 @@
  */
 
 import type { ImportContext } from '../../portable-runtime';
-import type { PortableScheduleData } from '@dailyuse/contracts/data-portability';
+import type { PortableScheduleData } from '@memoflow/contracts/data-portability';
 import type { TxClient } from './import-helpers';
 import { allocateId, optRef, jsonStringify, inc, rec, timestamps } from './import-helpers';
 

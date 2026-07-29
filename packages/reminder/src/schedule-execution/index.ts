@@ -3,7 +3,7 @@ import type {
   NotificationChannelType,
   NotificationType,
   RelatedEntityType,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 export interface ReminderScheduleExecutionTask {
   readonly identityId: string;

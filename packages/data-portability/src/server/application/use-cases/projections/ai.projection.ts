@@ -3,7 +3,7 @@
  */
 
 import type { ExportContext } from '../../portable-runtime';
-import type { PortableAIConversation } from '@dailyuse/contracts/data-portability';
+import type { PortableAIConversation } from '@memoflow/contracts/data-portability';
 import { parseJsonField, toDateString } from './projection-helpers';
 
 function tokenCountFromUsage(value: unknown): number | null | undefined {

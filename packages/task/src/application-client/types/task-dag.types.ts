@@ -10,8 +10,8 @@ import type {
   TaskTimeConfigDTO,
   DependencyStatus,
   DependencyType,
-} from '@dailyuse/contracts/task';
-import { PriorityLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/task';
+import { PriorityLevel } from '@memoflow/contracts/shared';
 
 /**
  * 用于 DAG 可视化的任务数据类型

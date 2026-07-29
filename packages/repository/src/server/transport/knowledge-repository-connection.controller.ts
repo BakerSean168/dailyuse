@@ -1,6 +1,6 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
 import {
   CompleteKnowledgeRepositoryInstallationSchema,
   ConfirmKnowledgeRepositoryHeadSchema,
@@ -34,8 +34,8 @@ import {
   type KnowledgeAttachmentContentResponse,
   type KnowledgeAttachmentProjectionListResponse,
   type ListKnowledgeAttachmentProjectionsReq,
-} from '@dailyuse/contracts/repository';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/repository';
+import { formatZodErrors } from '@memoflow/utils/result';
 
 export interface KnowledgeRepositoryConnectionUseCases {
   startKnowledgeRepositoryInstallation(

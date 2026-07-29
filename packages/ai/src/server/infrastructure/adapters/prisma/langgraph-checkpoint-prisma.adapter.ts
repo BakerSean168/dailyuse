@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import type { PrismaClient } from '@dailyuse/database';
-import { Prisma } from '@dailyuse/database/prisma';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { PrismaClient } from '@memoflow/database';
+import { Prisma } from '@memoflow/database/prisma';
+import { createLogger } from '@memoflow/utils/logger';
 import type {
   ILangGraphCheckpointPort,
   LangGraphCheckpointDeleteThreadInput,

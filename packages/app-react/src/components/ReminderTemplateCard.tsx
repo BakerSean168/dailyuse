@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@memoflow/contracts/reminder';
 
 import {
   PrimaryButton,
@@ -8,7 +8,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 import {
   getReminderDisplayTitle,
   getReminderImportanceText,

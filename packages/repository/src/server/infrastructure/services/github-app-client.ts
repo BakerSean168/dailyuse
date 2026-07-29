@@ -1,5 +1,5 @@
 import { createSign } from 'node:crypto';
-import type { GitHubInstallationRepositoryDTO } from '@dailyuse/contracts/repository';
+import type { GitHubInstallationRepositoryDTO } from '@memoflow/contracts/repository';
 import { GitHubAppClientError } from '../../application/ports/github-app-client.port';
 import type {
   GitHubAppInstallationInventory,
@@ -486,7 +486,7 @@ export class GitHubAppClient implements IGitHubAppClient {
         { authorization: `Bearer ${accessToken.token}` },
         'POST',
         {
-          message: `${input.message}\n\nMemoflow-Request-Id: ${input.requestId}`,
+          message: `${input.message}\n\nMemoFlow-Request-Id: ${input.requestId}`,
           tree: tree.sha,
           parents: [headSha],
         },

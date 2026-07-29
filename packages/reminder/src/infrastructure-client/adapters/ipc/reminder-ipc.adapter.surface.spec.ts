@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ReminderChannels } from '@dailyuse/contracts/electron';
+import { ReminderChannels } from '@memoflow/contracts/electron';
 
 /**
  * Reminder IPC adapter surface (stage-6 residual):
@@ -11,7 +11,7 @@ describe('ReminderIpcAdapter channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'reminder-ipc.adapter.ts'), 'utf8');
 
   it('invokes ReminderChannels and does not define a local channel map', () => {
-    expect(source).toContain("import { ReminderChannels } from '@dailyuse/contracts/electron'");
+    expect(source).toContain("import { ReminderChannels } from '@memoflow/contracts/electron'");
     expect(source).not.toMatch(/const REMINDER_CHANNELS = \{/);
     expect(source).toContain('ReminderChannels.TEMPLATE_CREATE');
     expect(source).toContain('ReminderChannels.TEMPLATE_LIST');

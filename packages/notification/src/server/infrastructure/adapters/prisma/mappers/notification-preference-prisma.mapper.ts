@@ -1,5 +1,5 @@
 // Residual 1025: sole parseJsonSafe (local dual retired).
-import { parseJsonSafe } from '@dailyuse/utils/shared';
+import { parseJsonSafe } from '@memoflow/utils/shared';
 /**
  * NotificationPreferencePrismaMapper — Bidirectional mapping between Prisma rows and domain NotificationPreference.
  * NotificationPreferencePrismaMapper —— Prisma 行数据与领域 NotificationPreference 之间的双向映射。
@@ -14,7 +14,7 @@ import { parseJsonSafe } from '@dailyuse/utils/shared';
  */
 
 import { NotificationPreference } from '../../../../domain/aggregates/notification-preference';
-import { NotificationChannelType } from '@dailyuse/contracts/notification';
+import { NotificationChannelType } from '@memoflow/contracts/notification';
 
 // Prisma row type (matches the raw query result)
 export type PrismaNotificationPreferenceRow = {

@@ -7,8 +7,8 @@ import type {
   ExpandKnowledgeRes,
   TestAIProviderReq,
   TestAIProviderRes,
-} from '@dailyuse/contracts/ai';
-import { ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { ok } from '@memoflow/contracts/result';
 import { AI_SERVICE_KEY } from '../../../di/keys';
 import { useAI } from './useAI';
 

@@ -3,8 +3,8 @@
  * 调度模块领域错误
  */
 
-import { DomainError } from '@dailyuse/utils/errors';
-import type { SourceModule } from '@dailyuse/contracts/schedule';
+import { DomainError } from '@memoflow/utils/errors';
+import type { SourceModule } from '@memoflow/contracts/schedule';
 
 /**
  * 调度策略未找到错误

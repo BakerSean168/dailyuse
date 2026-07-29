@@ -44,6 +44,6 @@ updated: 2026-06-02T00:00:00
 
 - 目标模块资产文档可以让后续优化前快速确认功能边界、入口、代码落点和风险点。
 - README 与治理入口能找到 `docs/product`。
-- `pnpm nx run daily-use:docs-check` 通过。
-- `pnpm nx run daily-use:governance-check` 通过。
+- `pnpm nx run memoflow:docs-check` 通过。
+- `pnpm nx run memoflow:governance-check` 通过。
 

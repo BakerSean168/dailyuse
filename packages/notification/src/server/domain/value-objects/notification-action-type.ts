@@ -1,4 +1,4 @@
-import { NotificationActionType as NotificationActionTypeContract, type NotificationActionType as INotificationActionType } from '@dailyuse/contracts/notification';
+import { NotificationActionType as NotificationActionTypeContract, type NotificationActionType as INotificationActionType } from '@memoflow/contracts/notification';
 
 /**
  * 📝 通知操作类型 - 用户可以对通知执行的操作类型
@@ -13,7 +13,7 @@ export type NotificationActionType = INotificationActionType & { readonly __bran
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: INotificationActionType[] = Object.values(NotificationActionTypeContract);
 
 /**

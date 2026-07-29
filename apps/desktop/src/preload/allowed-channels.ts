@@ -16,8 +16,8 @@ import {
   SystemChannels,
   TaskChannels,
   WindowChannels,
-} from '@dailyuse/contracts/electron';
-import { GovernanceChannels } from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/electron';
+import { GovernanceChannels } from '@memoflow/contracts/governance';
 
 export const SUPPORTED_REPOSITORY_CHANNELS = [
   RepositoryChannels.KNOWLEDGE_CONNECTION_INSTALLATION_START,

@@ -11,10 +11,10 @@ import { ChangeType } from '../../../domain/value-objects/change-type';
 import { RuleSeverity } from '../../../domain/value-objects/rule-severity';
 import { Language } from '../../../domain/value-objects/language';
 import type { Language as RuleLanguage } from '../../../domain/value-objects/language';
-import type { Result } from '@dailyuse/contracts/result';
-import { toResultErrorException, unwrapOrThrowError } from '@dailyuse/contracts/result';
-import { resultify } from '@dailyuse/utils/result';
-import type { CreateRuleReq, CreateRuleRes } from '@dailyuse/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { toResultErrorException, unwrapOrThrowError } from '@memoflow/contracts/result';
+import { resultify } from '@memoflow/utils/result';
+import type { CreateRuleReq, CreateRuleRes } from '@memoflow/contracts/governance';
 import type { ExecutionContext } from '../execution-context';
 
 /**

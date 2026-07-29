@@ -1,10 +1,10 @@
 /**
- * @dailyuse/goal
+ * @memoflow/goal
  *
  * Goal module runtime root.
  *
  * Public goal contracts are centralized in
- * `@dailyuse/contracts/goal`.
+ * `@memoflow/contracts/goal`.
  * Root exports are limited to the canonical server composition root.
  * Client / API / Electron seams use dedicated subpaths.
  * Goal-specific analytics, events, and schedule orchestration seams

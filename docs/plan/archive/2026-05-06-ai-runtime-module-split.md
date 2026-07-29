@@ -8,7 +8,7 @@
 
 ## 问题定位
 
-`ai` 模块当前的问题不是“缺少 use case”，而是 [ai.module.ts](D:/home/projects/dailyuse/packages/ai/src/infrastructure-server/ai.module.ts:498) 和 [ai.module.ts](D:/home/projects/dailyuse/packages/ai/src/infrastructure-server/ai.module.ts:664) 同时承担了以下职责：
+`ai` 模块当前的问题不是“缺少 use case”，而是 [ai.module.ts](D:/home/projects/memoflow/packages/ai/src/infrastructure-server/ai.module.ts:498) 和 [ai.module.ts](D:/home/projects/memoflow/packages/ai/src/infrastructure-server/ai.module.ts:664) 同时承担了以下职责：
 
 - runtime mode 判定
 - fallback adapter 选择
@@ -169,7 +169,7 @@ remote runtime 不是“所有高级能力必须全量存在”的 all-or-nothin
 
 ### Wave 2: 收口 top-level `createAIModule()`
 
-改造 [ai.module.ts](D:/home/projects/dailyuse/packages/ai/src/infrastructure-server/ai.module.ts:664)：
+改造 [ai.module.ts](D:/home/projects/memoflow/packages/ai/src/infrastructure-server/ai.module.ts:664)：
 
 - 只负责 runtime mode 选择
 - 合并 runtime contributions
@@ -252,7 +252,7 @@ remote runtime 不是“所有高级能力必须全量存在”的 all-or-nothin
 
 - `pnpm nx run ai:typecheck`
 - `pnpm nx run ai:test`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ## 完成定义
 

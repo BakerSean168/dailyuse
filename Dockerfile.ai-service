@@ -29,8 +29,8 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH=/opt/venv/bin:$PATH
 ENV PYTHONPATH=/app/apps/ai-service/src
 
-LABEL org.opencontainers.image.title="dailyuse-ai-service"
-LABEL org.opencontainers.image.description="DailyUse production AI service"
+LABEL org.opencontainers.image.title="memoflow-ai-service"
+LABEL org.opencontainers.image.description="MemoFlow production AI service"
 LABEL org.opencontainers.image.created=$BUILD_DATE
 LABEL org.opencontainers.image.revision=$VCS_REF
 LABEL org.opencontainers.image.version=$VERSION

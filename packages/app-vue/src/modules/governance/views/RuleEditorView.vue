@@ -302,13 +302,13 @@ import { reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ChevronRight, Plus, CheckCircle, XCircle, Trash2 } from '@lucide/vue';
-import { TagInput } from '@dailyuse/ui-vue-shadcn';
+import { TagInput } from '@memoflow/ui-vue-shadcn';
 import { useGovernance } from '../composables/useGovernance';
 import type {
   CreateRuleReq,
   UpdateRuleReq,
   RuleSeverity,
-} from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/governance';
 
 const props = defineProps<{
   id?: string;

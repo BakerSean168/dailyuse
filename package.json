@@ -1,11 +1,11 @@
 {
-  "name": "daily-use",
+  "name": "memoflow",
   "private": true,
   "author": {
     "name": "bakersean",
     "email": "lulouhao@stu.sicau.edu.cn"
   },
-  "description": "Memoflow Nx monorepo for desktop, web, api, and shared domain packages",
+  "description": "MemoFlow Nx monorepo for desktop, web, api, and shared domain packages",
   "version": "0.9.0",
   "type": "module",
   "packageManager": "pnpm@11.12.0+sha512.820a6fbd0d9f04c226638002aead1e45340a9139dd5dc077c1d83ef44aa2481c8eb6637b4c9aa696a3c7e35ba818e49cf27213e5f2b91138d09b7a3e26e898ba",
@@ -46,11 +46,13 @@
     "test:coverage:affected": "pnpm nx affected -t test:coverage",
     "test:api": "pnpm nx run api:test",
     "test:web": "pnpm nx run web:test",
-    "test:targets:sync": "pnpm nx g @dailyuse/nx-test-system:sync-test-targets",
+    "test:targets:sync": "pnpm nx g @memoflow/nx-test-system:sync-test-targets",
     "test:targets:check": "node ./tools/test/test-target-governance.mjs --check",
     "// ========== Documentation & Governance ==========": "",
-    "docs:check": "pnpm nx run daily-use:docs-check",
-    "governance:check": "pnpm nx run daily-use:governance-check",
+    "docs:check": "pnpm nx run memoflow:docs-check",
+    "governance:check": "pnpm nx run memoflow:governance-check",
+    "identity:migrate": "node ./tools/governance/apply-product-identity.mjs",
+    "identity:check": "node ./tools/governance/product-identity-audit.mjs",
     "// ========== Runtime lanes ==========": "",
     "runtime:preflight": "node ./tools/runtime/preflight.mjs",
     "runtime:preflight:e2e": "node ./tools/runtime/preflight.mjs --profile e2e",
@@ -109,8 +111,8 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/utils": "workspace:*",
     "@prisma/client": "7.8.0",
     "@types/multer": "2.0.0",
     "@types/node-cron": "^3.0.11",
@@ -132,7 +134,7 @@
     "vue-draggable-plus": "0.6.0",
     "vue-echarts": "^8.0.1",
     "zod": "4.4.3",
-    "@dailyuse/time": "workspace:*"
+    "@memoflow/time": "workspace:*"
   },
   "devDependencies": {
     "@electron/rebuild": "4.2.0",

@@ -44,7 +44,7 @@ describe('toDashboardTaskInstanceRecord dual retired (residual 1156)', () => {
       ['desktop', desktop],
     ] as const) {
       expect(source, label).toContain('toDashboardTaskInstanceRecord');
-      expect(source, label).toContain("from '@dailyuse/dashboard'");
+      expect(source, label).toContain("from '@memoflow/dashboard'");
       expect(source, label).not.toMatch(/function toDashboardTaskInstanceRecord\b/);
       expect(source, label).toContain('Soft residual 1156');
     }

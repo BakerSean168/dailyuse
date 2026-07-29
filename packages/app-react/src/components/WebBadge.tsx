@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 
 import { APP_NAME } from '../constants/app';
 
-import { Spacing, ThemedText, ThemedView } from '@dailyuse/ui-react-native';
+import { Spacing, ThemedText, ThemedView } from '@memoflow/ui-react-native';
 
 export function WebBadge() {
   return (

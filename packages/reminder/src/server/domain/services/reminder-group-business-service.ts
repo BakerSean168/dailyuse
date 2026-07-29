@@ -11,7 +11,7 @@
 
 import type { ReminderGroup } from '../aggregates/reminder-group';
 import type { ReminderTemplate } from '../aggregates/reminder-template';
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 
 /**
  * 分组统计数据

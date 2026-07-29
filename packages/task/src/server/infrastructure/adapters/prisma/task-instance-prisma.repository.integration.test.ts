@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { TaskTemplate } from '../../../domain/aggregates/task-template';
 import { TaskTimeConfig } from '../../../domain/value-objects';
 import { TaskInstance } from '../../../domain/aggregates/task-instance';

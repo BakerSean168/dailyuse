@@ -12,11 +12,11 @@ export default {
     "unbindFailed": "Failed to unlink GitHub",
     "githubUnavailable": "GitHub login is not configured",
     "serviceUnavailable": "Authentication service is unavailable",
-    "alreadyLinked": "This GitHub account is already linked to another Daily Use identity. Silent merge is not allowed — sign in with that GitHub account instead.",
+    "alreadyLinked": "This GitHub account is already linked to another MemoFlow identity. Silent merge is not allowed — sign in with that GitHub account instead.",
     "lastLoginPath": "This is the last login path for this account and cannot be removed. Add a password first.",
     "invalidState": "OAuth state is invalid or expired. Please try linking again.",
     "unbindConfirmTitle": "Unlink GitHub?",
-    "unbindConfirmDescription": "You will no longer be able to sign in to this Daily Use identity with that GitHub account.",
+    "unbindConfirmDescription": "You will no longer be able to sign in to this MemoFlow identity with that GitHub account.",
     "unbindConfirmText": "Unlink",
     "repoScopeHint": "Login linking is separate from knowledge-repository authorization (ADR-034)."
   },

@@ -2,7 +2,7 @@
  * Repository HTTP Adapters - Registration
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import { RepositoryHttpAdapter } from './repository-http.adapter';
 
 export { RepositoryHttpAdapter } from './repository-http.adapter';

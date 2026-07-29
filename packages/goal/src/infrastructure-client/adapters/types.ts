@@ -5,19 +5,19 @@
  * Port interfaces moved to application-client/ports/.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 
 // ============ Transport Client Interfaces ============
 // Module only defines what it needs — concrete implementations injected from App layer.
 
-// IResultHttpClient imported from @dailyuse/http-client
+// IResultHttpClient imported from @memoflow/http-client
 export type { IResultHttpClient };
 
 /**
  * IPC Client interface (Result-returning).
- * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
+ * Canonical definition in @memoflow/ipc-client (ResultIpcClient).
  */
-export type { IResultIpcClient } from '@dailyuse/ipc-client';
+export type { IResultIpcClient } from '@memoflow/ipc-client';
 
 // ============ Port Interface Re-exports ============
 export type { IGoalApiClient } from '../../application-client/ports/goal-api-client.port';

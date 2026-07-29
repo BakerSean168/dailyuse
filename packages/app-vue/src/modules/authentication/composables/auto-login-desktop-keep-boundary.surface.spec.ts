@@ -24,7 +24,7 @@ describe('autoLoginDesktop AutoLoginResult keep-boundary (residual 1077)', () =>
     expect(guest).toContain('Residual 1077 keep-boundary');
     expect(guest).toMatch(/async function autoLoginDesktop\b/);
     expect(guest).toContain('Promise<AutoLoginResult>');
-    expect(guest).toContain("from '@dailyuse/contracts/authentication'");
+    expect(guest).toContain("from '@memoflow/contracts/authentication'");
     expect(guest).toContain('AutoLoginResult');
     expect(guest).toContain('store.setError');
     expect(guest).toContain('getLocalizedAuthError');

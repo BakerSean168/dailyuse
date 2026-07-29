@@ -7,12 +7,12 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   KeyResultSnapshot as IKeyResultSnapshot,
   KeyResultSnapshotDTO,
-} from '@dailyuse/contracts/goal';
-import type { KeyResultId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/goal';
+import type { KeyResultId } from '@memoflow/contracts/primitives';
 
 /**
  * KeyResultSnapshot 值对象实现

@@ -1,9 +1,9 @@
 /**
- * @dailyuse/data-portability
+ * @memoflow/data-portability
  *
  * Data portability module runtime root.
  *
- * Public contracts are centralized in `@dailyuse/contracts/data-portability`.
+ * Public contracts are centralized in `@memoflow/contracts/data-portability`.
  * Root exports are limited to the canonical server composition root.
  * Client / API / Electron seams use dedicated subpaths.
  */

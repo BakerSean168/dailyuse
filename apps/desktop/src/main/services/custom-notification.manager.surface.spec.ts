@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { NotificationChannels, RendererEventChannels } from '@dailyuse/contracts/electron';
+import { NotificationChannels, RendererEventChannels } from '@memoflow/contracts/electron';
 
 /**
  * Custom notification IPC surface (stage-6 residual 71):
@@ -13,9 +13,9 @@ describe('custom-notification.manager channel surface', () => {
 
   it('registers via contracts NotificationChannels and Result ok envelopes', () => {
     expect(source).toContain(
-      "import { NotificationChannels, RendererEventChannels } from '@dailyuse/contracts/electron'",
+      "import { NotificationChannels, RendererEventChannels } from '@memoflow/contracts/electron'",
     );
-    expect(source).toContain("import { ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain("import { ok } from '@memoflow/contracts/result'");
     expect(source).toContain('NotificationChannels.CUSTOM_CLICK');
     expect(source).toContain('NotificationChannels.CUSTOM_RENDERER_READY');
     expect(source).toContain('return ok(null)');

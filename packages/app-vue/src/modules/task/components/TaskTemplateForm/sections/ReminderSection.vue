@@ -205,8 +205,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
-import type { TaskReminderConfigDTO } from '@dailyuse/contracts/task';
+import { TaskReminderType, ReminderTimeUnit } from '@memoflow/contracts/task';
+import type { TaskReminderConfigDTO } from '@memoflow/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
   Card,
@@ -228,7 +228,7 @@ import {
   PopoverTrigger,
   PopoverContent,
   Calendar,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import {
   Bell,
   AlertTriangle,

@@ -2,7 +2,7 @@ import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type {
   CalendarEntryClientDTO,
   CreateScheduleRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import type { ScheduleContext } from './useScheduleContext';
 
 export function useScheduleCalendar(ctx: ScheduleContext) {

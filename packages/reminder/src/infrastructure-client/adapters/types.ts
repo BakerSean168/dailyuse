@@ -7,13 +7,13 @@
 
 // ============ Transport Client Interfaces ============
 
-// IResultHttpClient imported from @dailyuse/http-client
+// IResultHttpClient imported from @memoflow/http-client
 
 /**
  * IPC Client interface (Result-returning).
- * Canonical definition in @dailyuse/ipc-client (ResultIpcClient).
+ * Canonical definition in @memoflow/ipc-client (ResultIpcClient).
  */
-export type { IResultIpcClient } from '@dailyuse/ipc-client';
+export type { IResultIpcClient } from '@memoflow/ipc-client';
 
 // ============ Port Interface Re-exports ============
 export type { IReminderApiClient } from '../../application-client/ports/reminder-api-client.port';

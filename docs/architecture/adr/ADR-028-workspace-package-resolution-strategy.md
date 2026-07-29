@@ -6,7 +6,7 @@
 
 ## Context
 
-Memoflow is an Nx + pnpm monorepo with three different resolution environments running at the same time:
+MemoFlow is an Nx + pnpm monorepo with three different resolution environments running at the same time:
 
 - TypeScript compiler and IDE navigation (`tsconfig.workspace-src.json`, project `tsconfig.json`)
 - Browser and renderer bundlers (`apps/web` and `apps/desktop` via Vite)
@@ -22,13 +22,13 @@ This mixed mode is valid, but without an explicit standard it creates repeated c
 1. TypeScript can resolve a package, but Vite cannot.
 2. A workspace package appears available through root `tsconfig` paths, but the app has not declared it as a dependency.
 3. Development succeeds because a package is aliased to `src`, but build behavior depends on `dist` and `exports`.
-4. Subpath imports such as `@dailyuse/ai/application-client` work in one app but fail in another because only one Vite config knows about the source alias.
+4. Subpath imports such as `@memoflow/ai/application-client` work in one app but fail in another because only one Vite config knows about the source alias.
 
 Recent examples in this repository include:
 
 - `apps/web/tsconfig.json` resolving selected packages to source for typing and IDE support.
 - `apps/web/vite.config.ts` resolving selected runtime imports to source for development.
-- Workspace packages such as `@dailyuse/ai` and `@dailyuse/contracts` exposing build artifacts through `package.json` `exports`.
+- Workspace packages such as `@memoflow/ai` and `@memoflow/contracts` exposing build artifacts through `package.json` `exports`.
 
 We need one documented rule set that explains when to use `tsconfig`, when to use Vite aliasing, when to rely on `exports`, and how Nx build ordering supports the final production path.
 
@@ -99,9 +99,9 @@ Rule:
 Every reusable workspace package must publish its supported public surface through `exports`.
 This includes root entrypoints and any supported subpaths such as:
 
-- `@dailyuse/ai/application-client`
-- `@dailyuse/ai/infrastructure-client`
-- `@dailyuse/contracts/ai`
+- `@memoflow/ai/application-client`
+- `@memoflow/ai/infrastructure-client`
+- `@memoflow/contracts/ai`
 
 Rule:
 
@@ -113,7 +113,7 @@ Not every package should automatically be sourced from `src` in app runtime.
 Development source aliasing is allowed for packages that benefit from direct app integration, such as:
 
 - UI packages
-- app-framework packages such as `@dailyuse/app-vue`
+- app-framework packages such as `@memoflow/app-vue`
 - client-side application/infrastructure layers used directly by the app shell
 
 Packages that are better consumed as built artifacts may continue to resolve through normal package resolution.
@@ -205,7 +205,7 @@ Responsible for:
 
 ### Package-to-package development
 
-When one workspace package depends on another shared package such as `@dailyuse/contracts` or `@dailyuse/utils`:
+When one workspace package depends on another shared package such as `@memoflow/contracts` or `@memoflow/utils`:
 
 - declare the dependency in the package's `package.json`
 - use `tsconfig` paths so TypeScript can resolve source during development
@@ -233,23 +233,23 @@ When building an app for verification, packaging, or release:
 
 ### Example A: Package depending on shared contracts
 
-`packages/ai` depends on `@dailyuse/contracts`.
+`packages/ai` depends on `@memoflow/contracts`.
 
 Expected setup:
 
-- `packages/ai/package.json` declares `@dailyuse/contracts`
+- `packages/ai/package.json` declares `@memoflow/contracts`
 - `packages/ai/tsconfig.json` inherits the workspace source map for development
-- `@dailyuse/contracts/package.json` exports built entrypoints from `dist`
+- `@memoflow/contracts/package.json` exports built entrypoints from `dist`
 
 This package build scenario does not require Vite aliasing.
 
-### Example B: Web app consuming `@dailyuse/ai/application-client`
+### Example B: Web app consuming `@memoflow/ai/application-client`
 
-If `apps/web` imports `@dailyuse/ai/application-client` at runtime:
+If `apps/web` imports `@memoflow/ai/application-client` at runtime:
 
-- `apps/web/package.json` must declare `@dailyuse/ai`
+- `apps/web/package.json` must declare `@memoflow/ai`
 - Vite must know how to resolve the import during development if the app is meant to run AI directly from source
-- `@dailyuse/ai/package.json` must export `./application-client`
+- `@memoflow/ai/package.json` must export `./application-client`
 - `nx build web` must be able to consume the built `dist` entrypoint
 
 ### Example C: TypeScript works but Vite fails
@@ -286,7 +286,7 @@ export default defineConfig(({ command }) => {
     resolve: {
       alias: isDev
         ? {
-            '@dailyuse/ai/application-client': path.resolve(
+            '@memoflow/ai/application-client': path.resolve(
               __dirname,
               '../../packages/ai/src/application-client/index.ts',
             ),
@@ -367,7 +367,7 @@ Rejected because:
 
 ## Summary
 
-Memoflow officially uses:
+MemoFlow officially uses:
 
 - `tsconfig` for compile-time workspace source awareness
 - Vite alias for development-time app runtime source resolution

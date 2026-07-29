@@ -20,14 +20,14 @@ import type { TaskTemplateState } from '../task-template.state';
 import { TaskTemplateStatus } from '../../../domain/value-objects/task-template-status';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
 import { TaskFolderId } from '../../../domain/value-objects/task-folder-id';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { PriorityLevel } from '@dailyuse/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
+import { PriorityLevel } from '@memoflow/contracts/shared';
 import {
   DayOfWeek,
   RecurrenceEndConditionType,
   TaskGoalBindingTrigger,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 import { TaskType } from '../../value-objects';
 import {
   TaskTimeConfig,

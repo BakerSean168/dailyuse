@@ -23,7 +23,7 @@ export function prewarmMainAppBootstrap(): void {
     });
 
     const { locale } = readPresentationPreferenceState();
-    void import('@dailyuse/app-vue/web-i18n')
+    void import('@memoflow/app-vue/web-i18n')
       .then(({ loadLocaleMessages }) => loadLocaleMessages(locale))
       .catch((error) => {
         if (import.meta.env.DEV) {

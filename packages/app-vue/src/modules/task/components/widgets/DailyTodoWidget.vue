@@ -128,10 +128,10 @@ import {
   Button,
   Skeleton,
   ScrollArea,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { ListTodo, ArrowRight, CheckCircle2, Check, Loader2 } from '@lucide/vue';
 import { useTask } from '../../composables/useTask';
-import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@memoflow/contracts/task';
 import { formatHHmmParts } from '../../../../shared/utils/format-hhmm-parts';
 
 const emit = defineEmits<{

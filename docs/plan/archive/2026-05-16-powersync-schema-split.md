@@ -15,14 +15,14 @@ status: active
 
 ## 目标
 
-将 `@dailyuse/database` 中混合的 Prisma runtime 与 PowerSync schema 职责拆开，新建 `@dailyuse/powersync-schema`，让 desktop 主进程不再因为消费纯 schema 或纯 helper 而接触带副作用的 database 根入口。
+将 `@memoflow/database` 中混合的 Prisma runtime 与 PowerSync schema 职责拆开，新建 `@memoflow/powersync-schema`，让 desktop 主进程不再因为消费纯 schema 或纯 helper 而接触带副作用的 database 根入口。
 
 ## 实施摘要
 
 - 新建 `packages/powersync-schema`
-- `apps/desktop` 改为消费 `@dailyuse/powersync-schema`
-- `@dailyuse/database` 移除 `powersync` / `dashboard-schema` 公共出口与 `tsup` CJS 补丁链
-- 将 `mapper-helpers` 中仍被运行时代码使用的无副作用 helper 迁到 `@dailyuse/utils/shared`
+- `apps/desktop` 改为消费 `@memoflow/powersync-schema`
+- `@memoflow/database` 移除 `powersync` / `dashboard-schema` 公共出口与 `tsup` CJS 补丁链
+- 将 `mapper-helpers` 中仍被运行时代码使用的无副作用 helper 迁到 `@memoflow/utils/shared`
 - 删除未使用的 `dashboard-schema` 公共 seam
 
 ## 验收标准
@@ -30,10 +30,10 @@ status: active
 - `pnpm nx build powersync-schema`
 - `pnpm nx build database`
 - `pnpm nx build desktop`
-- `pnpm nx serve desktop` 不再依赖 `@dailyuse/database/dist/index.cjs`
+- `pnpm nx serve desktop` 不再依赖 `@memoflow/database/dist/index.cjs`
 
 ## 约束
 
 - 不保留旧 import alias 作为长期兼容层
-- 不继续扩张 `@dailyuse/database` 的双格式构建
+- 不继续扩张 `@memoflow/database` 的双格式构建
 - 不引入新的运行时 shim

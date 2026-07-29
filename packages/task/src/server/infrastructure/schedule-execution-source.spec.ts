@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import { NotificationCategory, NotificationChannelType, NotificationType, RelatedEntityType } from '@dailyuse/contracts/notification';
-import { ScheduleTask } from '@dailyuse/schedule';
+import { SourceModule } from '@memoflow/contracts/schedule';
+import { NotificationCategory, NotificationChannelType, NotificationType, RelatedEntityType } from '@memoflow/contracts/notification';
+import { ScheduleTask } from '@memoflow/schedule';
 import { createTaskScheduleExecutionSource } from './schedule-execution-source';
 
 function createScheduleTask(payload: Record<string, unknown> = {}) {

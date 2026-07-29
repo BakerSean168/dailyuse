@@ -1,4 +1,4 @@
-import type { Instant, Ymd } from '@dailyuse/contracts/primitives';
+import type { Instant, Ymd } from '@memoflow/contracts/primitives';
 import type {
   Clock,
   PartialTimeStyle,

@@ -63,7 +63,7 @@ function createProfileResolver(rootDir: string, profileId: string): ProfilePathR
 }
 
 describe('ProfileSnapshotService', () => {
-  const originalApiUrl = process.env.DAILYUSE_API_URL;
+  const originalApiUrl = process.env.MEMOFLOW_API_URL;
   let rootDir: string;
   let sharedResolver: SharedPathResolver;
   let profileResolver: ProfilePathResolver;
@@ -85,14 +85,14 @@ describe('ProfileSnapshotService', () => {
       lastSnapshotHydratedAt: null,
       status: 'pending',
     };
-    process.env.DAILYUSE_API_URL = 'https://example.com/api/v1';
+    process.env.MEMOFLOW_API_URL = 'https://example.com/api/v1';
   });
 
   afterEach(async () => {
     if (originalApiUrl === undefined) {
-      delete process.env.DAILYUSE_API_URL;
+      delete process.env.MEMOFLOW_API_URL;
     } else {
-      process.env.DAILYUSE_API_URL = originalApiUrl;
+      process.env.MEMOFLOW_API_URL = originalApiUrl;
     }
     await fs.promises.rm(rootDir, { recursive: true, force: true });
   });

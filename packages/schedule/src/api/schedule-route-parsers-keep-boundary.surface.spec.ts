@@ -29,7 +29,7 @@ describe('schedule route parsers keep-boundary (residual 1073)', () => {
     expect(routes).toContain('value === true');
     expect(routes).toContain('value === false');
     expect(routes).toContain('isNaN(num)');
-    expect(routes).not.toContain('@dailyuse/utils/shared');
+    expect(routes).not.toContain('@memoflow/utils/shared');
   });
 
   it('differs from utils parse-query-value sole shape (no force-merge)', () => {

@@ -12,14 +12,14 @@ import type {
   DeviceInfo as IDeviceInfo,
   AuthEventMap,
   AuthSessionClientDTO,
-} from '@dailyuse/contracts/authentication';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/authentication';
+import { AggregateRoot } from '@memoflow/utils/domain';
 
 import { SessionStatus, DeviceInfo, DeviceType, AuthSessionId } from '..';
 
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import type { ITokenProvider } from '../services/token-provider.interface';
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 
 // ================= Constants =================
 

@@ -13,7 +13,7 @@ import {
   Spacing,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 type AuthScene = 'sign-in' | 'register' | 'forgot-password';
 

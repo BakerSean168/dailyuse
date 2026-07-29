@@ -1,6 +1,6 @@
-import { AuthChannels } from '@dailyuse/contracts/electron';
-import type { AuthBootstrapSnapshot } from '@dailyuse/contracts/authentication';
-import { fromIpcResult, isOk, type IpcResult } from '@dailyuse/contracts/result';
+import { AuthChannels } from '@memoflow/contracts/electron';
+import type { AuthBootstrapSnapshot } from '@memoflow/contracts/authentication';
+import { fromIpcResult, isOk, type IpcResult } from '@memoflow/contracts/result';
 import { useAuthenticationStore } from '../../modules/authentication/stores/authentication-store';
 import type { DesktopAuthApi } from './desktop-auth-recovery';
 

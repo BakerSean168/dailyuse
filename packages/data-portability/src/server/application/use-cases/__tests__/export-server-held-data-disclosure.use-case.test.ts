@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ServerHeldDataDisclosureEnvelopeV1Schema } from '@dailyuse/contracts/data-portability';
+import { ServerHeldDataDisclosureEnvelopeV1Schema } from '@memoflow/contracts/data-portability';
 import type { ServerHeldDataDisclosureSource } from '../../server-held-data-disclosure.source';
 import { ExportServerHeldDataDisclosureUseCase } from '../export-server-held-data-disclosure.use-case';
 

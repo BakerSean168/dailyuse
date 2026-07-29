@@ -147,7 +147,7 @@ __pycache__/
 # 测试报告
 **/reports/**/junit.xml
 reports/local-deploy-validation/
-homeprojectsdailyuse/
+homeprojectsmemoflow/
 test-results/
 apps/web/test-results*/
 

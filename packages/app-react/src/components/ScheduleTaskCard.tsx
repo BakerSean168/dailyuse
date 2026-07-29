@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import type { ScheduleTaskSummary } from '../hooks/useScheduleTasks';
 
-import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText } from '@dailyuse/ui-react-native';
+import { PrimaryButton, SectionCard, Spacing, StatusPill, ThemedText } from '@memoflow/ui-react-native';
 
 import { formatProductDateTime, emptyKind } from '../utils/product-time';
 

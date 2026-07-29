@@ -1,6 +1,6 @@
-import { toResultErrorException } from '@dailyuse/contracts/result';
-import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
-import type { IdentityId } from '@dailyuse/domain-shared';
+import { toResultErrorException } from '@memoflow/contracts/result';
+import type { CalendarEntryClientDTO } from '@memoflow/contracts/schedule';
+import type { IdentityId } from '@memoflow/domain-shared';
 import { CalendarEntry } from '../../domain/aggregates/calendar-entry';
 import type { IScheduleRepository } from '../../domain/repositories/i-schedule-repository';
 import { ScheduleConflictCacheService } from './schedule-conflict-cache-service';

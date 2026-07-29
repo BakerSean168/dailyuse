@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { NotificationChannel } from '@dailyuse/contracts/reminder';
+import { NotificationChannel } from '@memoflow/contracts/reminder';
 import { ActiveHoursConfig } from '../active-hours-config';
 import { ActiveTimeConfig } from '../active-time-config';
 import { FrequencyAdjustment } from '../frequency-adjustment';

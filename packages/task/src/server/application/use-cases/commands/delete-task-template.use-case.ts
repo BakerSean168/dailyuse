@@ -6,9 +6,9 @@
 
 import type { ITaskTemplateRepository } from '../../../domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import {
   createInlineTaskWriteTransactionRunner,
   mapTaskWriteErrorToResultError,

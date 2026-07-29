@@ -1,5 +1,5 @@
-import type { NotificationCategory, NotificationChannelType } from '@dailyuse/contracts/notification';
-import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
+import type { NotificationCategory, NotificationChannelType } from '@memoflow/contracts/notification';
+import { BusinessRuleViolationError } from '@memoflow/utils/errors';
 import type { NotificationPreference } from '../aggregates/notification-preference';
 import { DoNotDisturbConfig } from '../value-objects/do-not-disturb-config';
 import { RateLimit } from '../value-objects/rate-limit';

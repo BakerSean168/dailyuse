@@ -11,20 +11,20 @@
  */
 
 import { app } from 'electron';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { ILogger } from '@dailyuse/utils/logger';
-import type { AuthSession } from '@dailyuse/authentication/electron';
+import { createLogger } from '@memoflow/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
+import type { AuthSession } from '@memoflow/authentication/electron';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository,
-} from '@dailyuse/authentication/electron';
-import type { IPasswordHasher } from '@dailyuse/authentication/electron';
+} from '@memoflow/authentication/electron';
+import type { IPasswordHasher } from '@memoflow/authentication/electron';
 import type {
   RefreshSessionRequest,
   RefreshSessionResponse,
   LoginRequest,
   DeviceInfoClientDTO,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { TokenManager } from './token-manager';
 import { DeviceIdentityHelper } from './device-identity-helper';
 import { GuestIdentityHelper } from './guest-identity-helper';
@@ -34,7 +34,7 @@ import { TokenRefreshOrchestrator } from './token-refresh';
 import { LoginOrchestrator } from './login-orchestrator';
 import type { SessionRestoreResult, AutoLoginResult, SessionStatus } from './session-types';
 // Residual 925: OfflineLoginResponse from contracts sole body (no session-types alias).
-import type { OfflineLoginResponse } from '@dailyuse/contracts/authentication';
+import type { OfflineLoginResponse } from '@memoflow/contracts/authentication';
 
 // ============ SessionManager ============
 
@@ -263,7 +263,7 @@ export class SessionManager {
 
     try {
       const sessions = await this.sessionRepository.findByIdentityId(
-        identityId as unknown as import('@dailyuse/contracts/authentication').IdentityId,
+        identityId as unknown as import('@memoflow/contracts/authentication').IdentityId,
       );
       let cleanedCount = 0;
 

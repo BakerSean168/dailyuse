@@ -5,12 +5,12 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   NotificationAction as INotificationAction,
   NotificationActionDTO,
   NotificationActionType,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 /**
  * NotificationAction 值对象实现

@@ -2,7 +2,7 @@ import type {
   GeneratedGoalDraft,
   GoalClarificationDTO,
   KeyResultPreview,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 import type { ChatExecutionProviderConfig, ChatExecutionUsage } from './chat-execution.port';
 

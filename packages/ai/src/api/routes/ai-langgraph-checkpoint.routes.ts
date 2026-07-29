@@ -10,7 +10,7 @@ import {
   successResponse,
   ok,
   fail,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import type { AILangGraphCheckpointController } from '../../server/transport/ai-langgraph-checkpoint.controller';
 import { getRequestId } from '../../shared/get-request-id';
 

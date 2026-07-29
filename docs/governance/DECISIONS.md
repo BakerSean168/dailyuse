@@ -21,7 +21,7 @@ updated: 2026-07-06T00:00:00+08:00
 - Aggregate / Entity 内部持久状态使用 `State`
 - 原因：与 `ValueObject` 基类 API 以及可变生命周期语义都更一致
 
-## 3. 公共契约必须集中到 `@dailyuse/contracts/governance`
+## 3. 公共契约必须集中到 `@memoflow/contracts/governance`
 
 - governance 包内不再保留第二份公共 contracts
 - transport port 如果只是模块内部技术 seam，不进入 contracts 包
@@ -29,7 +29,7 @@ updated: 2026-07-06T00:00:00+08:00
 
 ## 4. 根入口只暴露服务端组合根
 
-- `@dailyuse/governance` 只负责 server composition root
+- `@memoflow/governance` 只负责 server composition root
 - `api`、`client`、`electron` 各自使用语义化子路径
 - 不再对外暴露 layer-named seam
 - 不再从根入口暴露 `createGovernancePowerSyncModule` 这类技术命名工厂

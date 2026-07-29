@@ -1,7 +1,7 @@
-import type { ILogger } from '@dailyuse/utils/logger';
-import { IdentityId } from '@dailyuse/domain-shared';
-import type { RememberedDesktopAccountDTO } from '@dailyuse/contracts/authentication';
-import { type IpcResult, ok, fail, toIpcResult } from '@dailyuse/contracts/result';
+import type { ILogger } from '@memoflow/utils/logger';
+import { IdentityId } from '@memoflow/domain-shared';
+import type { RememberedDesktopAccountDTO } from '@memoflow/contracts/authentication';
+import { type IpcResult, ok, fail, toIpcResult } from '@memoflow/contracts/result';
 import {
   type RememberedAccountsService,
   type RememberedAccountRecord,

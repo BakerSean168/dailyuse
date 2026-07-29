@@ -10,7 +10,7 @@
  * 并注入与 Prisma 入口一致的模块自有运行时适配器。
  */
 
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import { createGovernanceModule, type GovernanceModuleInstance } from './governance.module';
 import { PowerSyncRuleRepository, PowerSyncRuleRevisionRepository } from './adapters/powersync';
 import { createGovernanceEventLogRuntime } from './runtime';

@@ -5,10 +5,10 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { PrismaClient, AiProviderConfig as PrismaAiProviderConfig } from '@dailyuse/database';
+import type { PrismaClient, AiProviderConfig as PrismaAiProviderConfig } from '@memoflow/database';
 import type { IAIProviderConfigRepository } from '../../../domain';
-import type { AIModelInfo, AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
-import type { AIProviderType } from '@dailyuse/contracts/ai';
+import type { AIModelInfo, AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
+import type { AIProviderType } from '@memoflow/contracts/ai';
 import { AISecretCipher } from '../../security/ai-secret-cipher';
 
 /**

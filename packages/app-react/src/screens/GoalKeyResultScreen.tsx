@@ -3,7 +3,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import type { GoalRecordClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalRecordClientDTO, KeyResultClientDTO } from '@memoflow/contracts/goal';
 import { useGoalService } from '../hooks/useGoalService';
 
 import { formatProductDateTime, emptyKind } from '../utils/product-time';
@@ -16,7 +16,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 export function GoalKeyResultScreen() {
   const router = useRouter();

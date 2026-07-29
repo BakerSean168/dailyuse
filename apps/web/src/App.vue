@@ -8,16 +8,16 @@
  * 3. 全局辅助交互 (GlobalCommandPalette, GlobalSheet, GlobalProgressBar)
  * 4. 错误兜底系统 (GlobalErrorBoundary)
  */
-import { Toaster } from '@dailyuse/ui-vue-shadcn/components/ui/sonner';
-import { TooltipProvider } from '@dailyuse/ui-vue-shadcn/components/ui/tooltip';
+import { Toaster } from '@memoflow/ui-vue-shadcn/components/ui/sonner';
+import { TooltipProvider } from '@memoflow/ui-vue-shadcn/components/ui/tooltip';
 import {
   GlobalErrorBoundary,
   GlobalProgressBar,
   useLocaleSync,
   usePresentationBootstrap,
   useThemeSync,
-} from '@dailyuse/app-vue/web-shell-core';
-import { GlobalOverlays } from '@dailyuse/app-vue/web-overlays';
+} from '@memoflow/app-vue/web-shell-core';
+import { GlobalOverlays } from '@memoflow/app-vue/web-overlays';
 
 useThemeSync();
 useLocaleSync();

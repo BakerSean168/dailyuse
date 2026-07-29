@@ -23,7 +23,7 @@ import {
 } from './adapters/powersync';
 import type { ReminderScheduleExecutionSource } from '../../schedule-execution';
 import type { ReminderScheduleProjectionSource } from '../../schedule-projection';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 
 type Queryable = IElectronDatabase;
 

@@ -5,7 +5,7 @@
  * 【架构说明】
  * 这是 domain 层的包装服务，内部使用 domain 的 DailyPriorityCalculator。
  * 
- * 核心算法在 @dailyuse/domain/goal 中实现，确保：
+ * 核心算法在 @memoflow/domain/goal 中实现，确保：
  * - 后端 Domain、Cron Job、前端都使用同一套计算逻辑
  * - 按天精度计算（同一天内分数不变）
  * - 支持持久化到数据库用于高性能排序
@@ -16,7 +16,7 @@
  * 详细算法请参考 DailyPriorityCalculator 的文档。
  */
 
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 import {
   DailyPriorityCalculator,
   type PriorityLevel,

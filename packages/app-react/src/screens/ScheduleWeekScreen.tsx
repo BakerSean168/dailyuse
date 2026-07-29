@@ -13,7 +13,7 @@ import {
   StatusPill,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 function startOfWeek(date: Date) {
   const next = new Date(date);

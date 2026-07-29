@@ -30,7 +30,7 @@ Applications are **strictly containers** — runtime shells that wire packages t
 
 | App | Runtime | Files | Role | Thick logic to extract |
 |---|---|---|---|---|
-| `mobile` | React Native / Expo | 32 | **Pure container** — re-exports from `@dailyuse/app-react` | None. Reference implementation. |
+| `mobile` | React Native / Expo | 32 | **Pure container** — re-exports from `@memoflow/app-react` | None. Reference implementation. |
 | `web` | Vue 3 / Vite | 48 | **Thin container** — standard framework bootstrap | None significant. `platform/di-app.ts` is standard DI wiring. |
 | `api` | Express / Node | 55 | **Server container** — registers domain modules via `ApiBootstrapper` | Inline schedule source executor (~150 lines, duplicated from desktop). App-local `modules/` (powersync, dashboard, ai). |
 | `desktop` | Electron | 137 | **Desktop container** — two-phase shell/profile runtime | Schedule source executor (duplicated from api). Desktop-specific `profile/`, `lifecycle/`, `auth/` infrastructure. |

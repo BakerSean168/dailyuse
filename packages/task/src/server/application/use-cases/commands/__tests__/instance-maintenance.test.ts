@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { aLoadedTaskTemplate } from '../../../../../testing';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus } from '@memoflow/contracts/task';
 import { InvalidTaskTemplateStateError } from '../../../../domain/value-objects/task-errors';
 import { CheckExpiredInstancesUseCase } from '../check-expired-instances.use-case';
 import { GenerateTaskInstancesUseCase } from '../generate-task-instances.use-case';

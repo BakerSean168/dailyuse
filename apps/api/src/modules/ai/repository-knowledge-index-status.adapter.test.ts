@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fail, ok } from '@dailyuse/contracts/result';
-import type { RepositoryApplicationPort } from '@dailyuse/repository';
+import { fail, ok } from '@memoflow/contracts/result';
+import type { RepositoryApplicationPort } from '@memoflow/repository';
 import { RepositoryKnowledgeIndexStatusAdapter } from './repository-knowledge-index-status.adapter';
 
 describe('RepositoryKnowledgeIndexStatusAdapter', () => {

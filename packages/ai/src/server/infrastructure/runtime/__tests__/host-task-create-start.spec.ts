@@ -14,7 +14,7 @@ import {
   resolveTaskCreateIdentityId,
   resolveTaskCreateRunId,
 } from '../host-task-create-start';
-import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
+import type { AgentStartRunRequest } from '@memoflow/contracts/ai';
 
 function baseRequest(
   input: Record<string, unknown>,

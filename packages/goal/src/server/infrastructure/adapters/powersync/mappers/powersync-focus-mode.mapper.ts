@@ -1,6 +1,6 @@
 import { FocusMode } from '../../../../domain';
 import { FocusModeId, GoalId, HiddenGoalsMode } from '../../../../domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { fromDbDateTime, parseJsonArray } from '../shared';
 
 export class PowerSyncFocusModeMapper {

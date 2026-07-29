@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
-import type { IKnowledgeSourcePort, KnowledgeSourceNote } from '@dailyuse/ai/ports';
-import type { LocalVaultNoteDTO, LocalVaultNoteSummaryDTO } from '@dailyuse/contracts/repository';
-import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
+import type { IKnowledgeSourcePort, KnowledgeSourceNote } from '@memoflow/ai/ports';
+import type { LocalVaultNoteDTO, LocalVaultNoteSummaryDTO } from '@memoflow/contracts/repository';
+import type { LocalVaultElectronPort } from '@memoflow/repository/electron';
 
 function resourceIdForPath(relativePath: string): string {
   return `local-vault-${createHash('sha256').update(relativePath).digest('hex').slice(0, 24)}`;

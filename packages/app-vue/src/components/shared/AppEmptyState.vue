@@ -9,7 +9,7 @@
  * testid 约定：传入 `testid`（如 `goals-empty-state`），或用默认插槽自定义。
  */
 import type { Component } from 'vue';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 
 defineProps<{
   /** @lucide/vue 图标组件 */

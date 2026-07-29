@@ -1,6 +1,6 @@
 import { toast } from 'vue-sonner';
-import type { AutoLoginResult } from '@dailyuse/contracts/authentication';
-import { resetEmailVerificationCircuit } from '@dailyuse/http-client';
+import type { AutoLoginResult } from '@memoflow/contracts/authentication';
+import { resetEmailVerificationCircuit } from '@memoflow/http-client';
 import type { AuthContext } from './useAuthContext';
 import {
   getDesktopAuthApi,

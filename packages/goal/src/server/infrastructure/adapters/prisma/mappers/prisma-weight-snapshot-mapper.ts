@@ -5,10 +5,10 @@
  */
 
 import { KeyResultWeightSnapshot } from '../../../../domain';
-import type { KeyResultWeightSnapshotDTO, SnapshotTrigger } from '@dailyuse/contracts/goal';
-import type { IdentityId } from '@dailyuse/contracts';
-import type { GoalId, KeyResultId, KeyResultWeightSnapshotId } from '@dailyuse/contracts/primitives';
-import type { KeyResultWeightSnapshot as PrismaKeyResultWeightSnapshot } from '@dailyuse/database';
+import type { KeyResultWeightSnapshotDTO, SnapshotTrigger } from '@memoflow/contracts/goal';
+import type { IdentityId } from '@memoflow/contracts';
+import type { GoalId, KeyResultId, KeyResultWeightSnapshotId } from '@memoflow/contracts/primitives';
+import type { KeyResultWeightSnapshot as PrismaKeyResultWeightSnapshot } from '@memoflow/database';
 
 /**
  * Weight Snapshot Mapper

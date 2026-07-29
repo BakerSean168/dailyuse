@@ -6,7 +6,7 @@
  * 使用方法：
  * ```ts
  * import { createTsupConfig } from '../../tools/build/tsup.base.config';
- * export default createTsupConfig({ packageName: '@dailyuse/utils' });
+ * export default createTsupConfig({ packageName: '@memoflow/utils' });
  * ```
  */
 
@@ -15,7 +15,7 @@ import type { Options } from 'tsup';
 interface CreateTsupConfigOptions {
   /**
    * 包名（用于日志输出）
-   * @example '@dailyuse/contracts'
+   * @example '@memoflow/contracts'
    */
   packageName: string;
 
@@ -128,8 +128,8 @@ export function createTsupConfig(options: CreateTsupConfigOptions): Options {
 
     // 标记外部依赖 (不打包到 bundle 中)
     external: [
-      // 所有 @dailyuse/* 包都是外部依赖
-      /@dailyuse\/.*/,
+      // 所有 @memoflow/* 包都是外部依赖
+      /@memoflow\/.*/,
       ...external,
     ],
 
@@ -171,5 +171,5 @@ export const domainConfig = (packageName: string) =>
   createTsupConfig({
     packageName,
     // 域模型包通常依赖 contracts 和 utils
-    external: ['@dailyuse/contracts', '@dailyuse/utils'],
+    external: ['@memoflow/contracts', '@memoflow/utils'],
   });

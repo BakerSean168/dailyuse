@@ -26,8 +26,8 @@ export function resolveEmailTemplateLocale(raw?: string | null): EmailTemplateLo
 
 const COPY = {
   zh: {
-    verifySubject: '【Memoflow】邮箱验证码',
-    resetSubject: '【Memoflow】密码重置验证码',
+    verifySubject: '【MemoFlow】邮箱验证码',
+    resetSubject: '【MemoFlow】密码重置验证码',
     verifyPurpose: '完成邮箱验证',
     resetPurpose: '重置密码',
     codeLabel: '您的验证码是',
@@ -37,8 +37,8 @@ const COPY = {
     ignore: '如非本人操作请忽略此邮件。',
   },
   en: {
-    verifySubject: '[Memoflow] Email verification code',
-    resetSubject: '[Memoflow] Password reset code',
+    verifySubject: '[MemoFlow] Email verification code',
+    resetSubject: '[MemoFlow] Password reset code',
     verifyPurpose: 'complete email verification',
     resetPurpose: 'reset your password',
     codeLabel: 'Your code is',

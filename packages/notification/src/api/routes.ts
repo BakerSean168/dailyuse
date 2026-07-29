@@ -25,12 +25,12 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 // Residual 989: sole parseString/parseNumber (local dual retired).
 // Residual 1021: sole parseBoolean (local dual retired).
-import { parseBoolean, parseNumber, parseString } from '@dailyuse/utils/shared';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { NotificationId } from '@dailyuse/contracts/primitives';
+import { parseBoolean, parseNumber, parseString } from '@memoflow/utils/shared';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { NotificationId } from '@memoflow/contracts/primitives';
 import {
   CreateNotificationSchema,
   NotificationQuerySchema,
@@ -41,7 +41,7 @@ import {
   NotificationBatchResultSchema,
   UnreadCountResponseSchema,
   NotificationPreferenceResponseSchema,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 import type { NotificationApplicationPort } from '../server/application';
 import { NotificationController } from '../server/transport/notification.controller';
 
@@ -50,7 +50,7 @@ interface PlatformMiddleware {
   requireRole(roles: string[]): RequestHandler;
 }
 
-// Residual 1021: parseBoolean elevated to @dailyuse/utils/shared.
+// Residual 1021: parseBoolean elevated to @memoflow/utils/shared.
 
 // ============ Route Registration ============
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LocalePreferences } from '@dailyuse/contracts/setting';
-import { createTestPinia } from '@dailyuse/test-utils';
+import type { LocalePreferences } from '@memoflow/contracts/setting';
+import { createTestPinia } from '@memoflow/test-utils';
 import { usePresentationPreferenceStore } from './presentation-preference-store';
 
 describe('usePresentationPreferenceStore', () => {

@@ -1,5 +1,5 @@
 import { DependencyType } from '../../value-objects';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { TaskDependency } from '../task-dependency';
 
 describe('TaskDependency', () => {

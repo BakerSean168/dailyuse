@@ -3,7 +3,7 @@ import {
   knowledgeWriteRequirements,
   resolveRunPlan,
   type AgentProposal,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import { ProposalKernel, PROPOSAL_KERNEL_PROVIDER_ID } from '../proposal.kernel';
 
 function knowledgeDraft(overrides: Partial<AgentProposal> = {}): AgentProposal {

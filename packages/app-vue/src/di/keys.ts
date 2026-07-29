@@ -7,7 +7,7 @@
  */
 
 import type { InjectionKey, Ref, ShallowRef } from 'vue';
-import type { ElectronBridge } from '@dailyuse/ipc-client';
+import type { ElectronBridge } from '@memoflow/ipc-client';
 import type { DesktopAuthApi } from '../shared/utils/desktop-auth-recovery';
 import type {
   IAccountService,
@@ -59,7 +59,7 @@ export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandle
 export const DESKTOP_AUTH_API_KEY: InjectionKey<DesktopAuthApi> =
   Symbol('DesktopAuthApi');
 
-/** Desktop preload bridge — canonical type from @dailyuse/ipc-client. */
+/** Desktop preload bridge — canonical type from @memoflow/ipc-client. */
 // Residual 929: ElectronBridge keep-boundary for window controls (invoke+on+off).
 export type { ElectronBridge };
 

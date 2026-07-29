@@ -1,7 +1,7 @@
 import type { ReminderTemplate } from '../aggregates/reminder-template';
 import type { ReminderGroup } from '../aggregates/reminder-group';
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
-import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
+import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
+import { BusinessRuleViolationError } from '@memoflow/utils/errors';
 
 export class ReminderPolicy {
   public calculateEffectiveEnabled(

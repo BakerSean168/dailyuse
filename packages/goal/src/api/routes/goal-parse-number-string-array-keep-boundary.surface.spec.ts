@@ -34,7 +34,7 @@ describe('goal parseNumber/parseStringArray keep-boundary (residual 1067)', () =
     expect(goalRoutes).toContain('Number.isFinite(parsed)');
     expect(goalRoutes).toContain('.split(\',\')');
     // Must not import utils query parsers for these helpers
-    expect(goalRoutes).not.toContain("from '@dailyuse/utils/shared'");
+    expect(goalRoutes).not.toContain("from '@memoflow/utils/shared'");
     expect(goalRoutes).not.toMatch(/import\s*\{[^}]*parseNumber[^}]*\}\s*from/);
     expect(goalRoutes).not.toMatch(/import\s*\{[^}]*parseStringArray[^}]*\}\s*from/);
   });

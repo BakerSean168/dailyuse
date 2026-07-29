@@ -2,7 +2,7 @@
  * Data Portability HTTP Adapter
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type { IResultHttpClient, IDataPortabilityApiClient } from '../types';
 import type {
   ExportServerHeldDataDisclosureReq,
@@ -11,7 +11,7 @@ import type {
   ExportUserDataRes,
   ImportUserDataReq,
   ImportUserDataRes,
-} from '@dailyuse/contracts/data-portability';
+} from '@memoflow/contracts/data-portability';
 
 export class DataPortabilityHttpAdapter implements IDataPortabilityApiClient {
   private readonly baseUrl = '/data-portability';

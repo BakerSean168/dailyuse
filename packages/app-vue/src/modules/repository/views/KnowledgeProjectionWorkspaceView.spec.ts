@@ -2,12 +2,12 @@ import { defineComponent, h } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fail, ok } from '@dailyuse/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import type {
   CreateConfirmedKnowledgeNoteReq,
   KnowledgeNoteProjectionClientDTO,
   KnowledgeRepositoryConnectionClientDTO,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import type { IRepositoryService } from '../../../di/types';
 import KnowledgeProjectionWorkspaceView from './KnowledgeProjectionWorkspaceView.vue';

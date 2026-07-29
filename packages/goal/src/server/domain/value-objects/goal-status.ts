@@ -1,9 +1,9 @@
-import { GoalStatus as GoalStatusContract, type GoalStatus as IGoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus as GoalStatusContract, type GoalStatus as IGoalStatus } from '@memoflow/contracts/goal';
 
 export type GoalStatus = IGoalStatus & { readonly __brand: unique symbol };
 
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IGoalStatus[] = Object.values(GoalStatusContract);
 
 export const GoalStatus = {

@@ -10,7 +10,7 @@ import type {
   GenerateGoalsRes,
   GoalClarificationDTO,
   GoalWorkflowDraftResultDTO,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type {
   AIChatService,
   ChatModelOption,
@@ -19,7 +19,7 @@ import type {
   GoalAutomationResult,
   GoalWorkflowStage,
 } from './types';
-import { unwrap } from '@dailyuse/contracts/result';
+import { unwrap } from '@memoflow/contracts/result';
 
 /** Context for automation operations. */
 export interface AutomationContext {

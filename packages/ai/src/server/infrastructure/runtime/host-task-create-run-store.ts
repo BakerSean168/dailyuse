@@ -39,7 +39,7 @@
  * symmetry) and stored normalized; blank identityId on upsert fails closed.
  */
 
-import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@dailyuse/contracts/ai';
+import type { AgentEvent, AgentRun, AgentRunListParams, AgentRunResult } from '@memoflow/contracts/ai';
 import {
   resolveTaskCreateConversationId,
   resolveTaskCreateIdentityId,

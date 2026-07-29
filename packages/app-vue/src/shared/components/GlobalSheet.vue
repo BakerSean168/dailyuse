@@ -6,15 +6,15 @@
  * 支持动态传入任意 Vue 组件进行渲染。
  */
 import { computed, defineComponent, h, type Component, type PropType } from 'vue';
-import { _getSheetState, _closeSheet } from '@dailyuse/ui-vue-shadcn';
+import { _getSheetState, _closeSheet } from '@memoflow/ui-vue-shadcn';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@dailyuse/ui-vue-shadcn';
-import { cn } from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
+import { cn } from '@memoflow/ui-vue-shadcn';
 
 const state = _getSheetState();
 const componentProps = computed<Record<string, unknown>>(() => state.componentProps ?? {});

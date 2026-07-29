@@ -10,8 +10,8 @@ describe('auth-desktop-application-service export single-track surface', () => {
   const source = readFileSync(resolve(__dirname, 'auth-desktop-application-service.ts'), 'utf8');
 
   it('does not re-export contracts result/auth types for convenience', () => {
-    expect(source).toContain("from '@dailyuse/contracts/result'");
-    expect(source).toContain("from '@dailyuse/contracts/authentication'");
+    expect(source).toContain("from '@memoflow/contracts/result'");
+    expect(source).toContain("from '@memoflow/contracts/authentication'");
     expect(source).not.toContain('Re-export from contracts for convenience');
     expect(source).not.toContain('export type { IpcResult, AuthStatus, EmailLoginCredentials }');
     expect(source).not.toContain('export { AuthMode, toIpcResult, ok, fail }');

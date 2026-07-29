@@ -11,8 +11,8 @@ const ROOT = path.join(import.meta.dirname, '..', '..');
 const APPS_DIR = path.join(ROOT, 'apps');
 const PACKAGES_DIR = path.join(ROOT, 'packages');
 
-const INTERNAL_LAYER_REGEX = /(?:from\s+['"]|import\s*\(\s*['"])@dailyuse\/([^/'"]+)\/(domain-server|application-server|infrastructure-server|controllers|server\/(?:domain|application|transport|infrastructure))['"]/g;
-const GOVERNANCE_LEGACY_REGEX = /(?:from\s+['"]|import\s*\(\s*['"])@dailyuse\/governance\/(domain-shared|domain-server|domain-client|application-client|infrastructure-client|electron-entry|mocks)['"]/g;
+const INTERNAL_LAYER_REGEX = /(?:from\s+['"]|import\s*\(\s*['"])@memoflow\/([^/'"]+)\/(domain-server|application-server|infrastructure-server|controllers|server\/(?:domain|application|transport|infrastructure))['"]/g;
+const GOVERNANCE_LEGACY_REGEX = /(?:from\s+['"]|import\s*\(\s*['"])@memoflow\/governance\/(domain-shared|domain-server|domain-client|application-client|infrastructure-client|electron-entry|mocks)['"]/g;
 
 function getSourceFiles(dir, extensions = ['.ts', '.tsx', '.vue']) {
   const results = [];
@@ -60,16 +60,16 @@ function auditFile(filePath, violations) {
     const subpath = match[2];
 
     if (isInApps) {
-      violations.push(`${relPath}: imports @dailyuse/${importedPkg}/${subpath} (apps must use public API surface)`);
+      violations.push(`${relPath}: imports @memoflow/${importedPkg}/${subpath} (apps must use public API surface)`);
     } else if (pkg && importedPkg !== pkg) {
-      violations.push(`${relPath}: cross-package import @dailyuse/${importedPkg}/${subpath} from package "${pkg}" (use a public seam instead)`);
+      violations.push(`${relPath}: cross-package import @memoflow/${importedPkg}/${subpath} from package "${pkg}" (use a public seam instead)`);
     }
   }
 
   GOVERNANCE_LEGACY_REGEX.lastIndex = 0;
   while ((match = GOVERNANCE_LEGACY_REGEX.exec(content)) !== null) {
     const seam = match[1];
-    violations.push(`${relPath}: imports legacy governance seam @dailyuse/governance/${seam} (use @dailyuse/governance, /api, /client, /electron, or @dailyuse/contracts/...)`);
+    violations.push(`${relPath}: imports legacy governance seam @memoflow/governance/${seam} (use @memoflow/governance, /api, /client, /electron, or @memoflow/contracts/...)`);
   }
 }
 

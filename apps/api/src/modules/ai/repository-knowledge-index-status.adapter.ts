@@ -1,5 +1,5 @@
-import type { IKnowledgeIndexStatusPort, KnowledgeIndexStatusUpdate } from '@dailyuse/ai/ports';
-import type { RepositoryApplicationPort } from '@dailyuse/repository';
+import type { IKnowledgeIndexStatusPort, KnowledgeIndexStatusUpdate } from '@memoflow/ai/ports';
+import type { RepositoryApplicationPort } from '@memoflow/repository';
 
 /** Bridges AI indexing outcomes back to the repository-owned projection. */
 export class RepositoryKnowledgeIndexStatusAdapter implements IKnowledgeIndexStatusPort {

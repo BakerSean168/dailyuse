@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * Goal 聚合根实现
  * 实现 GoalServer 接口
@@ -28,12 +28,12 @@ import type { Instant } from '@dailyuse/contracts/primitives';
  * - 目标进度在 0-100 之间
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared';
 import { GoalId, GoalFolderId, KeyResultWeightSnapshotId, KeyResultId } from '../value-objects';
-import type { GoalEventMap } from '@dailyuse/contracts/goal';
-import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
-import type { SnapshotTrigger, GoalReminderConfigDTO, ReviewType } from '@dailyuse/contracts/goal';
+import type { GoalEventMap } from '@memoflow/contracts/goal';
+import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
+import type { SnapshotTrigger, GoalReminderConfigDTO, ReviewType } from '@memoflow/contracts/goal';
 import type {
   GoalServerDTO,
   GoalReviewServerDTO,
@@ -41,8 +41,8 @@ import type {
   ProgressBreakdown,
   KeyResultSnapshotDTO,
   ReminderTrigger,
-} from '@dailyuse/contracts/goal';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/goal';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { KeyResult } from '../entities/key-result';
 import { GoalReview } from '../entities/goal-review';
 import {
@@ -1420,7 +1420,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public toClientDTO(
     includeChildren: boolean = false,
-  ): import('@dailyuse/contracts/goal').GoalClientDTO {
+  ): import('@memoflow/contracts/goal').GoalClientDTO {
     const computedTotal = this._props.keyResults.length;
     const computedCompleted = this._props.keyResults.filter((kr) => kr.isCompleted()).length;
     const totalKeyResults = this._props.totalKeyResults ?? computedTotal;

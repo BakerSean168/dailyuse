@@ -1,8 +1,8 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { ListSessionsRes } from '@dailyuse/contracts/authentication';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { ListSessionsRes } from '@memoflow/contracts/authentication';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import type { IAuthSessionRepository } from '../../../domain';
 
 export class ListSessionsUseCase {

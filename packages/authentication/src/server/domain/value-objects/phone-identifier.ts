@@ -5,7 +5,7 @@
  * 不可变，以值定义身份
  */
 
-import type { PhoneIdentifierDTO } from '@dailyuse/contracts/authentication';
+import type { PhoneIdentifierDTO } from '@memoflow/contracts/authentication';
 
 import { PhoneNumber } from '..';
 

@@ -23,10 +23,10 @@
 | Q-106 | Medium | ✅ Fixed | `analyzeTemplate` 改用已注入的 `responseRepository.getResponseStats()`（原总是传空数组），并修掉 `calculateMetrics` 大小写动作匹配的潜在 bug、移除死 `this.prisma` 引用 | `reminder:test` 320 通过 |
 | Q-107 | Medium | ⚠️ 部分完成（4/5） | 4 个单包内部 DTO 迁入 contracts 并 re-export：`CodeSnippetPersistenceDTO`、`UpcomingReminderDTO`、`TaskTemplateHistory{Server,Client}DTO`、`NotificationHistoryServerDTO`。第 5 项 repository `Folder{Server,Client}DTO` **有意留待独立 pass**：contracts 已存在**形状不同**的 `FolderClientDTO`，收敛需跨 ~30 个消费者调和两个已在用类型（现存 `as unknown as` 强转即症状），属计划禁止的单轮大重构 | governance/reminder/task/notification 各自 typecheck + test |
 | Q-108 | Low | ✅ 无需改码 | ADR-031 lines 14-20 已显式将 `schedule-orchestration` 的 `infrastructure-server/` 记为编排包例外；governance 通过。报告「未收敛」前提不成立 | `governance-check` 通过 |
-| Q-109 | Low | ✅ Fixed（建立约定） | `reminder-errors.ts` 4 个类由裸 `extends Error` 改为 `extends DomainError`（`@dailyuse/utils/errors`），对齐 `setting-errors.ts` 既有约定；未做 92 处调用点的全量重写（符合 Low + 渐进替换指引） | `reminder:test` 320 通过 |
+| Q-109 | Low | ✅ Fixed（建立约定） | `reminder-errors.ts` 4 个类由裸 `extends Error` 改为 `extends DomainError`（`@memoflow/utils/errors`），对齐 `setting-errors.ts` 既有约定；未做 92 处调用点的全量重写（符合 Low + 渐进替换指引） | `reminder:test` 320 通过 |
 | Q-110 | Low | ✅ Fixed | 删除 `reminder-domain-service.ts:118` 陈旧 TODO（实现已存在）；移除 deprecated `schedule-job` 聚合别名（contracts server/client + domain-client 共 3 文件 + barrel），先把 3 个 app-vue story 消费者迁到 `CalendarEntryClientDTO` | `contracts`/`schedule`/`app-vue` typecheck |
 
-跨包整体验证：14 个包 `typecheck` 全绿；`daily-use:governance-check` 全部审计通过。
+跨包整体验证：14 个包 `typecheck` 全绿；`memoflow:governance-check` 全部审计通过。
 
 遗留项（建议后续独立 pass）：
 - **Q-107 Folder DTO 调和**：需先确定 canonical 形状（分支/合并 `identityId`、branded id、`updatedAtText` 等差异），再分批迁移 repository/app-react/goal/task 消费者，每步单独验证。
@@ -42,9 +42,9 @@
 
 1. **异步失败被静默丢弃**（最高优先级）。上一轮修好了 `schedule.runtime` 的 `start()` 语义，但**同一文件内的事件监听器**仍用裸 `void syncTaskHandler(event)`（`schedule.runtime.ts:257`）吞掉 promise 拒绝。API 进程没有 `unhandledRejection` 兜底，运行期 repository I/O 失败会变成未处理拒绝，Node 22 下可能直接终止进程。这是上一轮 Q-001 的“同源姊妹问题”，且没有测试覆盖。
 
-2. **密钥使用不安全的硬编码回退**。`AISecretCipher` 构造函数默认 `process.env.AI_SECRET_CIPHER_KEY || 'dailyuse-ai-secret'`，且两个 repository 都用默认参数实例化它。生产环境若漏配该 env，会静默用公开的固定密钥加密 AI provider secrets，且该 env 未纳入 `env.schema.ts` / `.env.example`。此外，该 cipher 是 XOR + base64，不是真正的加密。
+2. **密钥使用不安全的硬编码回退**。`AISecretCipher` 构造函数默认 `process.env.AI_SECRET_CIPHER_KEY || 'memoflow-ai-secret'`，且两个 repository 都用默认参数实例化它。生产环境若漏配该 env，会静默用公开的固定密钥加密 AI provider secrets，且该 env 未纳入 `env.schema.ts` / `.env.example`。此外，该 cipher 是 XOR + base64，不是真正的加密。
 
-3. **契约层（"单一真值源"）内部存在概念分裂与重复**。`@dailyuse/contracts` 内有两个同名 `AccountSettingsDTO`、形状完全不同、都被 barrel 导出；17 个状态值对象在 contracts 与各 feature `server/domain/value-objects` 之间重复声明；域事件名以字符串字面量散落在 ~40 处。
+3. **契约层（"单一真值源"）内部存在概念分裂与重复**。`@memoflow/contracts` 内有两个同名 `AccountSettingsDTO`、形状完全不同、都被 barrel 导出；17 个状态值对象在 contracts 与各 feature `server/domain/value-objects` 之间重复声明；域事件名以字符串字面量散落在 ~40 处。
 
 当前最大风险：**运行期异步失败可靠性**（Q-101）和 **密钥回退**（Q-102）。最影响长期维护的是**契约层重复**（Q-104、Q-105）。整体判断：核心边界不需要重新收敛，属于“迁移后局部漂移 + 若干运行期可靠性缺口”。
 
@@ -172,7 +172,7 @@ AIProviderConfigPrismaRepository / PowerSyncRepository
 ↓
 new AISecretCipher()  ← 默认参数，无显式注入
 ↓
-secret = process.env.AI_SECRET_CIPHER_KEY || 'dailyuse-ai-secret'
+secret = process.env.AI_SECRET_CIPHER_KEY || 'memoflow-ai-secret'
 ↓
 XOR + base64（非真正加密）→ 存库
 ```
@@ -215,7 +215,7 @@ XOR + base64（非真正加密）→ 存库
 - 类型：安全 / 一致性 / 配置
 - 位置：`packages/ai/src/server/infrastructure/security/ai-secret-cipher.ts:7`（默认回退密钥）、`11-35`（XOR 实现）；实例化点 `ai-provider-config-prisma.repository.ts:22`、`ai-provider-config-powersync.repository.ts:10`（均用默认参数 `new AISecretCipher()`）；配置缺口：`apps/api/src/shared/infrastructure/config/env.schema.ts`、`.env.example` 均无 `AI_SECRET_CIPHER_KEY`。
 - 现象：
-  1. 构造函数 `constructor(secret = process.env.AI_SECRET_CIPHER_KEY || 'dailyuse-ai-secret')`——env 缺失时**静默使用公开的固定字符串**作为密钥。
+  1. 构造函数 `constructor(secret = process.env.AI_SECRET_CIPHER_KEY || 'memoflow-ai-secret')`——env 缺失时**静默使用公开的固定字符串**作为密钥。
   2. 两个 repository 都用无参 `new AISecretCipher()`，因此生产路径完全依赖该默认。
   3. `encrypt`/`decrypt` 是 `input[i] ^ key[i % keyLen]` 的 XOR + base64，**不是加密算法**，无 IV、无认证、可被已知明文攻击还原 key。
   4. `AI_SECRET_CIPHER_KEY` 未纳入 `env.schema.ts` / `.env.example`（对照 Q-005 修复后 `REPOSITORY_STORAGE_PATH` 已入 schema）。
@@ -254,7 +254,7 @@ XOR + base64（非真正加密）→ 存库
 - 严重级别：**Medium**
 - 类型：一致性 / 契约 / 可维护性
 - 位置：`packages/contracts/src/modules/account/value-objects/account-settings.ts:14`（`AccountSettingsDTO` v1）与 `packages/contracts/src/modules/account/dtos/account-settings.dto.ts:22`（`AccountSettingsDTO` v2）；两个 barrel：`value-objects/index.ts:8` 与 `api/index.ts:4`（经 `dtos` 转出），均汇入 account 根 `index.ts` 的 `export *`。
-- 现象：`@dailyuse/contracts`（项目自称的“单一真值源”）内部有**两个同名 `AccountSettingsDTO`，形状完全不同**：
+- 现象：`@memoflow/contracts`（项目自称的“单一真值源”）内部有**两个同名 `AccountSettingsDTO`，形状完全不同**：
   - v1：`{ theme: ThemeType, language, timezone, notificationEnabled }`
   - v2：`{ emailNotifications, pushNotifications, twoFactorEnabled, theme: AccountTheme, privacyLevel, dataRetention }`
   连 `theme` 类型都冲突（`ThemeType` vs 本地 `AccountTheme` = 'light'|'dark'|'auto'）。聚合与 API DTO 都 import v1；v2（及其 `AccountTheme`/`AccountPrivacyLevel` const）无任何业务 importer。
@@ -308,14 +308,14 @@ XOR + base64（非真正加密）→ 存库
 - 类型：一致性 / 契约边界
 - 位置：server 端 DTO 定义在 feature 包而非 contracts：
   - `packages/notification/src/server/domain/entities/notification-history.ts:19`（`NotificationHistoryServerDTO`）
-  - `packages/repository/src/server/domain/entities/folder.ts:15,50`（`FolderServerDTO`、`FolderClientDTO`；文件顶部 `folder.ts:10` 有 `// TODO: 这些类型应该移到 @dailyuse/contracts/repository`）
+  - `packages/repository/src/server/domain/entities/folder.ts:15,50`（`FolderServerDTO`、`FolderClientDTO`；文件顶部 `folder.ts:10` 有 `// TODO: 这些类型应该移到 @memoflow/contracts/repository`）
   - `packages/task/src/server/domain/entities/task-template-history.ts:12,20`（`TaskTemplateHistoryServerDTO/ClientDTO`）
   - `packages/reminder/src/server/domain/services/upcoming-reminder-calculation-service.ts:49`（`UpcomingReminderDTO`）
   - `packages/governance/src/server/domain/value-objects/code-snippet.ts:28`（`CodeSnippetPersistenceDTO`）
 - 现象：绝大多数 `*ServerDTO`/`*ClientDTO` 归 contracts，但上述几处 DTO 落在 feature 包内，破坏“DTO 归 contracts”的约定；`folder.ts:10` 的 TODO 自己也承认应搬到 contracts。
-- 影响：只依赖 `@dailyuse/contracts` 的 client 代码触达不到这些类型；契约边界出现例外，后续 client/server 对齐困难。
+- 影响：只依赖 `@memoflow/contracts` 的 client 代码触达不到这些类型；契约边界出现例外，后续 client/server 对齐困难。
 - 证据：见上述行号。
-- 建议（本轮不修）：将这些 DTO 迁入 `@dailyuse/contracts` 对应模块，feature 侧改为 re-export。
+- 建议（本轮不修）：将这些 DTO 迁入 `@memoflow/contracts` 对应模块，feature 侧改为 re-export。
 - 是否需要测试：偏 typecheck。
 - 验证方式：`pnpm nx run contracts:typecheck --skipSync` + 相关 feature typecheck。
 
@@ -330,7 +330,7 @@ XOR + base64（非真正加密）→ 存库
 - 证据：`schedule-orchestration/src/index.ts:8`。
 - 建议（本轮不修）：要么把该包纳入 server-first 命名（`server/infrastructure`），要么在 ADR/治理中显式标注为文档化例外（domain-tagged 编排包）。
 - 是否需要测试：治理检查。
-- 验证方式：`pnpm nx run daily-use:governance-check --skipSync`。
+- 验证方式：`pnpm nx run memoflow:governance-check --skipSync`。
 
 ### Q-109
 
@@ -402,7 +402,7 @@ XOR + base64（非真正加密）→ 存库
 | 状态值对象值集 | `contracts/.../*-status.ts` | `feature/server/domain/value-objects/*.ts` | — | 字符串清单手工重复 | 新值需改两处 | feature 从 contracts 派生 VALUES |
 | Secret env 解析 | `env.ts:164-167`（canonical） | `authentication/api/module.ts:49-53`（直读） | `env.schema.ts:72`（min 32） | 两真值源，直读绕过校验 | 弱密钥漏过 | 统一走 config/context |
 | Secret 加密 | `ai-secret-cipher.ts`（XOR+base64） | — | — | 非真正加密 + 硬编码回退 | 明文等价泄露 | aes-256-gcm + fail-fast |
-| Server DTO 归属 | `@dailyuse/contracts/*` | `notification/repository/task/reminder/governance` feature 内 | — | 少数 DTO 落 feature | client 触达不到 | 迁入 contracts |
+| Server DTO 归属 | `@memoflow/contracts/*` | `notification/repository/task/reminder/governance` feature 内 | — | 少数 DTO 落 feature | client 触达不到 | 迁入 contracts |
 | Server feature shape | ADR-031 / 13 包 `server/index.ts` | `schedule-orchestration/src/index.ts:8` `infrastructure-server` | — | 一个 legacy 例外 | 结构漂移 | 纳入或文档化例外 |
 | 领域错误 | `reminder/.../errors/reminder-errors.ts` | 其余 feature 裸 `throw new Error` | — | 错误表达不统一 | 难分类/映射 | 统一错误基类/错误码 |
 
@@ -419,7 +419,7 @@ XOR + base64（非真正加密）→ 存库
 | reminder frequency 未接入 | 空洞结果伪装正常 | 单元（接入后） | `analyze-reminder-frequency.use-case.spec.ts` | Medium | `pnpm nx run reminder:test --skipSync` |
 | 多个 feature 无 integration config | account/auth/notification/editor/ai/repository/setting 无 `vitest.integration.config.ts`，跨模块路径可能仅单测覆盖 | 集成 | 各包 integration config | Medium | 对应 `test:integration` target |
 
-（说明：本轮未重新核对 Q-006 文档文本，如仍需可运行 `pnpm nx run daily-use:docs-check --skipSync` 复核。）
+（说明：本轮未重新核对 Q-006 文档文本，如仍需可运行 `pnpm nx run memoflow:docs-check --skipSync` 复核。）
 
 ---
 
@@ -488,7 +488,7 @@ XOR + base64（非真正加密）→ 存库
 
 ### Repair Pass 08-10：Q-108 / Q-109 / Q-110（Low）
 
-- Q-108：`schedule-orchestration` 纳入 server-first 命名或文档化例外；`daily-use:governance-check`。
+- Q-108：`schedule-orchestration` 纳入 server-first 命名或文档化例外；`memoflow:governance-check`。
 - Q-109：约定统一领域错误策略，逐步替换裸 Error。
 - Q-110：删陈旧 TODO、回收 deprecated 聚合；相关 typecheck。
 
@@ -506,11 +506,11 @@ XOR + base64（非真正加密）→ 存库
 
 ### 补测：状态值对象一致性
 
-> 为 goal/task/schedule 等 feature 的 `server/domain/value-objects` branded companion 补“VALUES 等于 `@dailyuse/contracts` 对应值集合”的断言测试（Q-105），不改实现。完成后运行对应 `pnpm nx run <pkg>:test --skipSync`。
+> 为 goal/task/schedule 等 feature 的 `server/domain/value-objects` branded companion 补“VALUES 等于 `@memoflow/contracts` 对应值集合”的断言测试（Q-105），不改实现。完成后运行对应 `pnpm nx run <pkg>:test --skipSync`。
 
 ### 一致性收敛：契约层去重
 
-> 收敛 `@dailyuse/contracts` account 模块的 `AccountSettingsDTO` 双定义（Q-104）与 feature 内游离 DTO（Q-107）。只做类型迁移/去重与 re-export，不改运行时逻辑。完成后运行 `pnpm nx run contracts:typecheck --skipSync` 及相关 feature typecheck。
+> 收敛 `@memoflow/contracts` account 模块的 `AccountSettingsDTO` 双定义（Q-104）与 feature 内游离 DTO（Q-107）。只做类型迁移/去重与 re-export，不改运行时逻辑。完成后运行 `pnpm nx run contracts:typecheck --skipSync` 及相关 feature typecheck。
 
 ### 文档-实现对齐
 

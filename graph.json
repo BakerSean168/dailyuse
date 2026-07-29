@@ -25,7 +25,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "nx-release-publish": {
@@ -57,7 +57,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -77,7 +77,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -92,7 +92,7 @@
             "targetGroups": {},
             "description": "Pure PowerSync schema definitions for desktop and sync consumers",
             "js": {
-              "packageName": "@dailyuse/powersync-schema",
+              "packageName": "@memoflow/powersync-schema",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -131,7 +131,7 @@
                 "{workspaceRoot}/eslint.config.ts"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -151,7 +151,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -171,7 +171,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -264,7 +264,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "dev": {
@@ -287,7 +287,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -297,7 +297,7 @@
             },
             "description": "\u72ec\u7acb\u7684\u8c03\u5ea6\u5668\u5305\uff0c\u652f\u6301 Bree\u3001node-cron \u7b49\u591a\u79cd\u8c03\u5ea6\u5f15\u64ce",
             "js": {
-              "packageName": "@dailyuse/scheduler-server",
+              "packageName": "@memoflow/scheduler-server",
               "packageVersion": "0.0.1",
               "packageMain": "dist/index.js",
               "isInPackageManagerWorkspaces": true
@@ -345,7 +345,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -365,7 +365,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -380,7 +380,7 @@
           "metadata": {
             "targetGroups": {},
             "js": {
-              "packageName": "@dailyuse/ui-react-native",
+              "packageName": "@memoflow/ui-react-native",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -435,7 +435,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -455,7 +455,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -489,7 +489,7 @@
                 "^build"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -571,7 +571,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "dev": {
@@ -594,7 +594,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage": {
@@ -614,7 +614,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -623,7 +623,7 @@
               "TEST (CI)": []
             },
             "js": {
-              "packageName": "@dailyuse/authentication",
+              "packageName": "@memoflow/authentication",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -707,7 +707,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -727,7 +727,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -747,7 +747,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -840,7 +840,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "serve": {
@@ -866,7 +866,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage": {
@@ -886,7 +886,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -896,7 +896,7 @@
             },
             "description": "Shared domain models and business logic for both client and server",
             "js": {
-              "packageName": "@dailyuse/domain-shared",
+              "packageName": "@memoflow/domain-shared",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -955,7 +955,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "vite:build": {
@@ -1089,7 +1089,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -1142,7 +1142,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "storybook": {
@@ -1158,9 +1158,9 @@
           "projectType": "library",
           "metadata": {
             "targetGroups": {},
-            "description": "shadcn/ui styled Vue 3 components for Memoflow applications",
+            "description": "shadcn/ui styled Vue 3 components for MemoFlow applications",
             "js": {
-              "packageName": "@dailyuse/ui-vue-shadcn",
+              "packageName": "@memoflow/ui-vue-shadcn",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -1242,7 +1242,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -1262,7 +1262,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -1282,7 +1282,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -1376,7 +1376,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -1389,7 +1389,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage": {
@@ -1409,7 +1409,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -1419,7 +1419,7 @@
             },
             "description": "\u901a\u77e5\u6a21\u5757 - \u591a\u6e20\u9053\u901a\u77e5\u7ba1\u7406",
             "js": {
-              "packageName": "@dailyuse/notification",
+              "packageName": "@memoflow/notification",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -1508,7 +1508,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "nx-release-publish": {
@@ -1540,7 +1540,7 @@
                 "^production"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "serve": {
@@ -1566,9 +1566,9 @@
           ],
           "metadata": {
             "targetGroups": {},
-            "description": "Memoflow HTTP Client \u2014 Axios wrapper with Result Pattern support",
+            "description": "MemoFlow HTTP Client \u2014 Axios wrapper with Result Pattern support",
             "js": {
-              "packageName": "@dailyuse/http-client",
+              "packageName": "@memoflow/http-client",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -1623,7 +1623,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -1636,7 +1636,7 @@
           "metadata": {
             "targetGroups": {},
             "js": {
-              "packageName": "@dailyuse/nx-test-system",
+              "packageName": "@memoflow/nx-test-system",
               "packageVersion": "0.0.1",
               "isInPackageManagerWorkspaces": false
             }
@@ -1647,8 +1647,8 @@
           "implicitDependencies": []
         }
       },
-      "@dailyuse/test-utils": {
-        "name": "@dailyuse/test-utils",
+      "@memoflow/test-utils": {
+        "name": "@memoflow/test-utils",
         "type": "lib",
         "data": {
           "root": "packages/test-utils",
@@ -1671,7 +1671,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "nx-release-publish": {
@@ -1696,7 +1696,7 @@
                 "^production"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -1716,11 +1716,11 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
-          "name": "@dailyuse/test-utils",
+          "name": "@memoflow/test-utils",
           "tags": [
             "npm:public",
             "scope:test-utils",
@@ -1729,9 +1729,9 @@
           ],
           "metadata": {
             "targetGroups": {},
-            "description": "Unified testing utilities for Memoflow monorepo",
+            "description": "Unified testing utilities for MemoFlow monorepo",
             "js": {
-              "packageName": "@dailyuse/test-utils",
+              "packageName": "@memoflow/test-utils",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": "./src/index.ts",
@@ -1777,7 +1777,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -1797,7 +1797,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -1817,7 +1817,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -1911,7 +1911,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "seed": {
@@ -1934,7 +1934,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage": {
@@ -1954,7 +1954,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -1962,9 +1962,9 @@
             "targetGroups": {
               "TEST (CI)": []
             },
-            "description": "\u6cbb\u7406\u6a21\u5757 - Memoflow \u67b6\u6784\u89c4\u5219\u4e0e\u4ee3\u7801\u6807\u51c6\u7684\u6d3b\u6587\u6863\u5e93",
+            "description": "\u6cbb\u7406\u6a21\u5757 - MemoFlow \u67b6\u6784\u89c4\u5219\u4e0e\u4ee3\u7801\u6807\u51c6\u7684\u6d3b\u6587\u6863\u5e93",
             "js": {
-              "packageName": "@dailyuse/governance",
+              "packageName": "@memoflow/governance",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -2053,7 +2053,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build": {
@@ -2076,7 +2076,7 @@
                 "^production"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "serve": {
@@ -2102,9 +2102,9 @@
           ],
           "metadata": {
             "targetGroups": {},
-            "description": "Memoflow IPC Client \u2014 Electron IPC communication with Result Pattern",
+            "description": "MemoFlow IPC Client \u2014 Electron IPC communication with Result Pattern",
             "js": {
-              "packageName": "@dailyuse/ipc-client",
+              "packageName": "@memoflow/ipc-client",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -2146,7 +2146,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -2166,7 +2166,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -2186,7 +2186,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -2280,7 +2280,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -2293,7 +2293,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -2303,7 +2303,7 @@
             },
             "description": "\u4ed3\u5e93\u6a21\u5757 - \u6587\u4ef6/\u6587\u6863\u4ed3\u5e93\u7ba1\u7406",
             "js": {
-              "packageName": "@dailyuse/repository",
+              "packageName": "@memoflow/repository",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -2392,7 +2392,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -2412,7 +2412,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -2428,7 +2428,7 @@
           "metadata": {
             "targetGroups": {},
             "js": {
-              "packageName": "@dailyuse/app-react",
+              "packageName": "@memoflow/app-react",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -2470,7 +2470,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -2490,7 +2490,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -2509,7 +2509,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -2602,7 +2602,7 @@
                 "^production"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "serve": {
@@ -2628,7 +2628,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -2637,7 +2637,7 @@
               "TEST (CI)": []
             },
             "js": {
-              "packageName": "@dailyuse/contracts",
+              "packageName": "@memoflow/contracts",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -2758,7 +2758,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "nx-release-publish": {
@@ -2790,7 +2790,7 @@
                 "^production"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -2810,7 +2810,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -2823,9 +2823,9 @@
           ],
           "metadata": {
             "targetGroups": {},
-            "description": "Memoflow dashboard aggregation core",
+            "description": "MemoFlow dashboard aggregation core",
             "js": {
-              "packageName": "@dailyuse/dashboard",
+              "packageName": "@memoflow/dashboard",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -2880,7 +2880,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "postinstall": {
@@ -2926,7 +2926,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "compile": {
@@ -3046,9 +3046,9 @@
                 "postinstall"
               ]
             },
-            "description": "Memoflow Shared Database Infrastructure \u2014 Prisma Schema, Client, and Connection Management",
+            "description": "MemoFlow Shared Database Infrastructure \u2014 Prisma Schema, Client, and Connection Management",
             "js": {
-              "packageName": "@dailyuse/database",
+              "packageName": "@memoflow/database",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -3109,7 +3109,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -3129,7 +3129,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -3165,7 +3165,7 @@
                 "^build"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -3260,7 +3260,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -3273,7 +3273,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -3281,9 +3281,9 @@
             "targetGroups": {
               "TEST (CI)": []
             },
-            "description": "Reusable design patterns and utilities for Memoflow applications",
+            "description": "Reusable design patterns and utilities for MemoFlow applications",
             "js": {
-              "packageName": "@dailyuse/patterns",
+              "packageName": "@memoflow/patterns",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -3348,7 +3348,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -3368,7 +3368,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -3388,7 +3388,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -3482,7 +3482,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -3495,7 +3495,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:integration": {
@@ -3532,7 +3532,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage:use-cases": {
@@ -3576,7 +3576,7 @@
             },
             "description": "\u63d0\u9192\u6a21\u5757 - \u63d0\u9192\u6a21\u677f\u3001\u7ec4\u4e0e\u8c03\u5ea6",
             "js": {
-              "packageName": "@dailyuse/reminder",
+              "packageName": "@memoflow/reminder",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -3665,7 +3665,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -3685,7 +3685,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -3705,7 +3705,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -3799,7 +3799,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -3812,7 +3812,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:integration": {
@@ -3849,7 +3849,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage:use-cases": {
@@ -3893,7 +3893,7 @@
             },
             "description": "\u8c03\u5ea6\u6a21\u5757 - \u65e5\u7a0b\u4e0e\u65f6\u95f4\u7ba1\u7406",
             "js": {
-              "packageName": "@dailyuse/schedule",
+              "packageName": "@memoflow/schedule",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -3982,7 +3982,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -4002,7 +4002,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -4022,7 +4022,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -4116,7 +4116,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -4129,7 +4129,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage": {
@@ -4149,7 +4149,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -4159,7 +4159,7 @@
             },
             "description": "\u8d26\u6237\u6a21\u5757 - \u7528\u6237\u8d26\u6237\u751f\u547d\u5468\u671f\u7ba1\u7406",
             "js": {
-              "packageName": "@dailyuse/account",
+              "packageName": "@memoflow/account",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -4244,7 +4244,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "vite:build": {
@@ -4394,7 +4394,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -4435,7 +4435,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "vitest:test": {
@@ -4498,7 +4498,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -4511,7 +4511,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage": {
@@ -4531,7 +4531,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -4541,7 +4541,7 @@
               "TEST (CI)": []
             },
             "js": {
-              "packageName": "@dailyuse/app-vue",
+              "packageName": "@memoflow/app-vue",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -4594,7 +4594,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -4614,7 +4614,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -4634,7 +4634,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -4728,7 +4728,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -4741,7 +4741,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage": {
@@ -4761,7 +4761,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -4771,7 +4771,7 @@
             },
             "description": "\u8bbe\u7f6e\u6a21\u5757 - \u7528\u6237\u4e0e\u7cfb\u7edf\u914d\u7f6e",
             "js": {
-              "packageName": "@dailyuse/setting",
+              "packageName": "@memoflow/setting",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -4860,7 +4860,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -4880,7 +4880,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -4914,7 +4914,7 @@
                 "^build"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -5013,7 +5013,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "serve": {
@@ -5044,7 +5044,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -5052,9 +5052,9 @@
             "targetGroups": {
               "TEST (CI)": []
             },
-            "description": "Framework-agnostic headless UI logic for Memoflow applications",
+            "description": "Framework-agnostic headless UI logic for MemoFlow applications",
             "js": {
-              "packageName": "@dailyuse/ui-core",
+              "packageName": "@memoflow/ui-core",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -5155,7 +5155,7 @@
                 "^production"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "serve": {
@@ -5185,7 +5185,7 @@
                 "{workspaceRoot}/eslint.config.ts"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "format": {
@@ -5221,7 +5221,7 @@
                 "^production"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "eval": {
@@ -5293,7 +5293,7 @@
                 "^production"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "install": {
@@ -5348,7 +5348,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -5368,7 +5368,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "vite:build": {
@@ -5533,7 +5533,7 @@
                 "^build"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -5637,7 +5637,7 @@
                 "^build"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -5650,7 +5650,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -5659,9 +5659,9 @@
             "targetGroups": {
               "TEST (CI)": []
             },
-            "description": "Shared static assets for Memoflow applications (images, audio, fonts)",
+            "description": "Shared static assets for MemoFlow applications (images, audio, fonts)",
             "js": {
-              "packageName": "@dailyuse/assets",
+              "packageName": "@memoflow/assets",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -5721,7 +5721,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -5741,7 +5741,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -5775,7 +5775,7 @@
                 "^build"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -5868,7 +5868,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "serve": {
@@ -5894,7 +5894,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -5903,7 +5903,7 @@
               "TEST (CI)": []
             },
             "js": {
-              "packageName": "@dailyuse/utils",
+              "packageName": "@memoflow/utils",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -5984,7 +5984,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -6004,7 +6004,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -6024,7 +6024,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -6118,7 +6118,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -6131,7 +6131,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:integration": {
@@ -6168,7 +6168,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage:use-cases": {
@@ -6212,7 +6212,7 @@
             },
             "description": "\u76ee\u6807\u6a21\u5757 - OKR \u76ee\u6807\u4e0e\u5173\u952e\u7ed3\u679c\u7ba1\u7406",
             "js": {
-              "packageName": "@dailyuse/goal",
+              "packageName": "@memoflow/goal",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -6297,7 +6297,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -6317,7 +6317,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -6337,7 +6337,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -6431,7 +6431,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -6444,7 +6444,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:integration": {
@@ -6498,7 +6498,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage:use-cases": {
@@ -6542,7 +6542,7 @@
             },
             "description": "\u4efb\u52a1\u6a21\u5757 - \u4efb\u52a1\u6a21\u677f\u3001\u5b9e\u4f8b\u4e0e\u4f9d\u8d56\u7ba1\u7406",
             "js": {
-              "packageName": "@dailyuse/task",
+              "packageName": "@memoflow/task",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -6635,7 +6635,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -6654,7 +6654,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -6674,7 +6674,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -6912,7 +6912,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "prepare-dev": {
@@ -7011,7 +7011,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:ipc": {
@@ -7153,9 +7153,9 @@
             "targetGroups": {
               "TEST (CI)": []
             },
-            "description": "\u77e5\u884c (Memoflow) desktop application",
+            "description": "\u77e5\u884c (MemoFlow) desktop application",
             "js": {
-              "packageName": "@dailyuse/desktop",
+              "packageName": "@memoflow/desktop",
               "packageVersion": "0.7.0",
               "packageMain": "dist-electron/main.cjs",
               "isInPackageManagerWorkspaces": true
@@ -7199,7 +7199,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -7219,7 +7219,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -7239,7 +7239,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -7333,7 +7333,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:watch": {
@@ -7346,7 +7346,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:coverage": {
@@ -7366,7 +7366,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             }
           },
@@ -7376,7 +7376,7 @@
             },
             "description": "AI \u6a21\u5757 - \u5bf9\u8bdd\u7ba1\u7406\u3001\u5185\u5bb9\u751f\u6210\u3001\u914d\u989d\u7ba1\u7406\u3001\u63d0\u4f9b\u5546\u914d\u7f6e",
             "js": {
-              "packageName": "@dailyuse/ai",
+              "packageName": "@memoflow/ai",
               "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
@@ -7461,7 +7461,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "start": {
@@ -7517,7 +7517,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "sync-brand": {
@@ -7588,7 +7588,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -7607,7 +7607,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -7628,7 +7628,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -7725,7 +7725,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "start": {
@@ -7749,7 +7749,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:smoke": {
@@ -7862,7 +7862,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test:ui": {
@@ -7889,7 +7889,7 @@
               "TEST (CI)": []
             },
             "js": {
-              "packageName": "@dailyuse/api",
+              "packageName": "@memoflow/api",
               "packageVersion": "0.0.1",
               "isInPackageManagerWorkspaces": true
             }
@@ -7931,7 +7931,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "test": {
@@ -7950,7 +7950,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "vite:build": {
@@ -8094,7 +8094,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -8189,7 +8189,7 @@
               ],
               "cache": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "preview": {
@@ -8210,7 +8210,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "e2e": {
@@ -8326,7 +8326,7 @@
               "TEST (CI)": []
             },
             "js": {
-              "packageName": "@dailyuse/web",
+              "packageName": "@memoflow/web",
               "packageVersion": "0.0.1",
               "isInPackageManagerWorkspaces": true
             }
@@ -8343,16 +8343,16 @@
           "implicitDependencies": []
         }
       },
-      "daily-use": {
-        "name": "daily-use",
+      "memoflow": {
+        "name": "memoflow",
         "type": "lib",
         "data": {
           "root": ".",
           "metadata": {
             "targetGroups": {},
-            "description": "Memoflow Nx monorepo for desktop, web, api, and shared domain packages",
+            "description": "MemoFlow Nx monorepo for desktop, web, api, and shared domain packages",
             "js": {
-              "packageName": "daily-use",
+              "packageName": "memoflow",
               "packageVersion": "0.7.0",
               "isInPackageManagerWorkspaces": true
             }
@@ -8390,7 +8390,7 @@
               "configurations": {},
               "parallelism": true,
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "typecheck": {
@@ -8424,7 +8424,7 @@
                 "^build"
               ],
               "syncGenerators": [
-                "@dailyuse/nx-test-system:sync-test-targets"
+                "@memoflow/nx-test-system:sync-test-targets"
               ]
             },
             "build-deps": {
@@ -8443,7 +8443,7 @@
               ],
               "executor": "nx:run-commands",
               "options": {
-                "command": "pnpm exec nx watch --projects daily-use --includeDependentProjects -- pnpm exec nx build-deps daily-use"
+                "command": "pnpm exec nx watch --projects memoflow --includeDependentProjects -- pnpm exec nx build-deps memoflow"
               },
               "configurations": {},
               "parallelism": true
@@ -8513,7 +8513,7 @@
             }
           },
           "projectType": "library",
-          "name": "daily-use",
+          "name": "memoflow",
           "includedScripts": [],
           "tags": [
             "npm:private"
@@ -8627,7 +8627,7 @@
         },
         {
           "source": "notification",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -8639,9 +8639,9 @@
         }
       ],
       "nx-test-system": [],
-      "@dailyuse/test-utils": [
+      "@memoflow/test-utils": [
         {
-          "source": "@dailyuse/test-utils",
+          "source": "@memoflow/test-utils",
           "target": "domain-shared",
           "type": "static"
         }
@@ -8669,7 +8669,7 @@
         },
         {
           "source": "governance",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -8838,7 +8838,7 @@
         },
         {
           "source": "reminder",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -8880,7 +8880,7 @@
         },
         {
           "source": "schedule",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -8917,7 +8917,7 @@
         },
         {
           "source": "account",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -9009,7 +9009,7 @@
         },
         {
           "source": "app-vue",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -9041,7 +9041,7 @@
         },
         {
           "source": "setting",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -9098,7 +9098,7 @@
         },
         {
           "source": "goal",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -9145,7 +9145,7 @@
         },
         {
           "source": "task",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -9294,7 +9294,7 @@
         },
         {
           "source": "ai",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
@@ -9408,14 +9408,14 @@
         },
         {
           "source": "api",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         }
       ],
       "web": [
         {
           "source": "web",
-          "target": "@dailyuse/test-utils",
+          "target": "@memoflow/test-utils",
           "type": "static"
         },
         {
@@ -9569,7 +9569,7 @@
           "type": "static"
         }
       ],
-      "daily-use": []
+      "memoflow": []
     }
   }
 }

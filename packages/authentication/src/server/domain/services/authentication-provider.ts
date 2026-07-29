@@ -6,15 +6,15 @@
  *
  * Design goal (ADR-034):
  * - Method-specific credential verification is pluggable (password / GitHub / guest / ...).
- * - The common part (Daily Use session issuance) lives in the application layer,
+ * - The common part (MemoFlow session issuance) lives in the application layer,
  *   so adding a new login method never duplicates session logic.
  *
  * 设计目标（ADR-034）：
  * - 各登录方式的凭据校验可插拔（账密 / GitHub / 访客 / ...）。
- * - 通用部分（签发 Daily Use 会话）留在应用层，新增登录方式无需重复会话逻辑。
+ * - 通用部分（签发 MemoFlow 会话）留在应用层，新增登录方式无需重复会话逻辑。
  */
 
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { AuthIdentity } from '../aggregates/auth-identity';
 
 /**
@@ -69,12 +69,12 @@ export interface AuthenticationResult {
  *
  * Implementations MUST:
  * - throw domain errors on failure (never return a Result — that is the use case's job);
- * - never issue Daily Use sessions or tokens;
+ * - never issue MemoFlow sessions or tokens;
  * - keep verification side effects (failed-attempt counters, binding usage) inside the aggregate.
  *
  * 实现必须：
  * - 失败时抛出领域错误（不返回 Result —— 那是 use case 的职责）；
- * - 不签发 Daily Use 会话或令牌；
+ * - 不签发 MemoFlow 会话或令牌；
  * - 校验副作用（失败计数、绑定使用记录）放在聚合内。
  */
 export interface AuthenticationProvider<TCredentials = unknown> {

@@ -4,17 +4,17 @@
  * Transport-agnostic interface for Schedule Task API operations.
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
- * Types imported from @dailyuse/contracts/schedule.
+ * Types imported from @memoflow/contracts/schedule.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   SourceModule,
   ScheduleTaskClientDTO,
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
   ScheduleBatchOperationResponseDTO,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 /**
  * IScheduleTaskApiClient

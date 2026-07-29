@@ -134,7 +134,7 @@ Branches:   97.52%
 Functions:  98.31%
 Lines:      98.32%
 
-评论：编辑器模块覆盖率极高，但该模块为 UI 包（@dailyuse/app-vue），
+评论：编辑器模块覆盖率极高，但该模块为 UI 包（@memoflow/app-vue），
      不属于 domain-server 范畴。本轮不纳入治理对象。
 ```
 

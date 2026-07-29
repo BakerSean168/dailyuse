@@ -3,9 +3,9 @@
  * 规则修订记录ID值对象
  */
 
-import type { RuleRevisionId as IRuleRevisionId } from '@dailyuse/contracts/governance';
+import type { RuleRevisionId as IRuleRevisionId } from '@memoflow/contracts/governance';
 
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
 /**
  * RuleRevisionId 值对象

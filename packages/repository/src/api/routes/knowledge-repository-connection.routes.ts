@@ -1,6 +1,6 @@
 import { Router, type RequestHandler } from 'express';
 import { z } from 'zod';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import {
   CompleteKnowledgeRepositoryInstallationResponseSchema,
   ConfirmKnowledgeRepositoryHeadSchema,
@@ -19,8 +19,8 @@ import {
   KnowledgeNoteLinkGraphResponseSchema,
   KnowledgeAttachmentContentResponseSchema,
   KnowledgeAttachmentProjectionListResponseSchema,
-} from '@dailyuse/contracts/repository';
-import { successResponse, errorResponse, RouteRegistrar } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/repository';
+import { successResponse, errorResponse, RouteRegistrar } from '@memoflow/utils/result';
 import type { RepositoryApplicationPort } from '../../server/application';
 import { KnowledgeRepositoryConnectionController } from '../../server/transport/knowledge-repository-connection.controller';
 

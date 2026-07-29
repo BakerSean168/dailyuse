@@ -2,7 +2,7 @@ import type {
   CalendarEntryClientDTO,
   ConflictDetectionResult,
   ScheduleTaskClientDTO,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 
 const asScheduleId = (value: string) => value as CalendarEntryClientDTO['id'];

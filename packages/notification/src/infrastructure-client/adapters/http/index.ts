@@ -2,7 +2,7 @@
  * Notification HTTP Adapters - Registration
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import { NotificationHttpAdapter } from './notification-http.adapter';
 
 export { NotificationHttpAdapter, createNotificationHttpAdapter } from './notification-http.adapter';

@@ -11,7 +11,7 @@ import {
   DEFAULT_EMPTY_LITERALS,
 } from '../index';
 
-describe('@dailyuse/time facade', () => {
+describe('@memoflow/time facade', () => {
   const frozenMs = Date.UTC(2026, 6, 26, 12, 30, 0); // 2026-07-26 12:30 UTC
   // Use local-noon construct for local calendar tests
   const localNoon = new Date(2026, 6, 26, 14, 5, 0).getTime();

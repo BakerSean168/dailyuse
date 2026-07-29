@@ -18,7 +18,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@dailyuse/contracts': path.resolve(__dirname, '../../packages/contracts/src'),
+      '@memoflow/contracts': path.resolve(__dirname, '../../packages/contracts/src'),
     },
   },
 });

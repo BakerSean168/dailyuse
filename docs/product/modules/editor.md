@@ -22,7 +22,7 @@ updated: 2026-07-22T00:00:00
 - Mobile 已移除数据库 Repository、文件夹和 note editor 路由，等待后续基于服务端投影实现只读能力。
 - 旧 Repository/Folder/Resource 与 Editor workspace 数据仅为可重新导入业务数据备份保留，不再构成运行时编辑通道。
 - 服务端持有数据披露（`memoflow.server-held-data-disclosure`）与业务备份分离：Web 可下、Desktop 明确不支持、不可导入；`editor_*` portable 备份只走 `memoflow.user-data-export` 导入通道。
-- `@dailyuse/editor` 包与 `packages/app-vue/src/modules/editor` 已删除；知识呈现入口在 repository 工作区与 `safe-markdown` 工具。
+- `@memoflow/editor` 包与 `packages/app-vue/src/modules/editor` 已删除；知识呈现入口在 repository 工作区与 `safe-markdown` 工具。
 - app-vue 顶层 `editor` locale 与设置页退役 Editor 分组文案已删除；用户 preferences 中的 `editor` schema 仅保留 portable 兼容。
 - Web 与 Desktop 预览统一使用关闭原始 HTML 并经过 sanitizer 的安全 Markdown 渲染边界。
 

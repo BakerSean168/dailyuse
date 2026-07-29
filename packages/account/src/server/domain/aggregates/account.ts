@@ -1,11 +1,11 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /** Account Aggregate Root - Server-side implementation. */
 
-import type { AccountClientDTO, AccountServerDTO } from '@dailyuse/contracts/account';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import type { AccountClientDTO, AccountServerDTO } from '@memoflow/contracts/account';
+import { AggregateRoot } from '@memoflow/utils/domain';
 
 // IdentityId from shared primitives (cross-module shared type)
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 
 import {
   AccountProfile,
@@ -15,7 +15,7 @@ import {
   ContactPhone,
 } from '../value-objects';
 
-import type { AccountEventMap } from '@dailyuse/contracts/account';
+import type { AccountEventMap } from '@memoflow/contracts/account';
 
 /** Domain state interface for the Account aggregate */
 export interface AccountState {

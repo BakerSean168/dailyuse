@@ -1,13 +1,13 @@
 import { z } from 'zod';
 import { Router, type Request, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   createHttpResponseBuilder,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   ConversationNameSchema,
   SendMessageSchema,
@@ -16,9 +16,9 @@ import {
   SendMessageResSchema,
   ConversationListResSchema,
   MessageListResSchema,
-} from '@dailyuse/contracts/ai';
-import { brandedId } from '@dailyuse/contracts/primitives';
-import type { AiConversationId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/ai';
+import { brandedId } from '@memoflow/contracts/primitives';
+import type { AiConversationId } from '@memoflow/contracts/primitives';
 import type { AIChatController } from '../../server/transport/ai-chat.controller';
 
 interface PlatformMiddleware {

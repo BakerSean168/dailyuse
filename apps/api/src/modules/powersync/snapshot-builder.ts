@@ -8,7 +8,7 @@ import type {
   PowerSyncBackendConnector,
   PowerSyncCredentials,
 } from '@powersync/common';
-import { PowerSyncAppSchema } from '@dailyuse/powersync-schema';
+import { PowerSyncAppSchema } from '@memoflow/powersync-schema';
 import {
   publishProfileSnapshot,
   type PublishProfileSnapshotResult,

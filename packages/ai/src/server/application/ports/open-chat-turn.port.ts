@@ -5,7 +5,7 @@
  * path (DirectTurnEngine). Richer than ITurnEnginePort.startTurn so use cases
  * can return messages, usage, and provider metadata without bypassing the engine.
  */
-import type { MessageClientDTO } from '@dailyuse/contracts/ai';
+import type { MessageClientDTO } from '@memoflow/contracts/ai';
 import type { ChatExecutionUsage } from './chat-execution.port';
 
 export interface OpenChatTurnInput {

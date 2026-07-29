@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { anIdentityId } from '@dailyuse/test-utils/fixtures';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
+import { anIdentityId } from '@memoflow/test-utils/fixtures';
 import type { IUserSettingRepository } from '../../../../domain/repositories/i-user-setting-repository';
 import { UserSetting } from '../../../../domain/aggregates/user-setting';
-import { getDefaultPreferences } from '@dailyuse/contracts/setting';
+import { getDefaultPreferences } from '@memoflow/contracts/setting';
 import { GetUserSetting } from '../get-user-setting';
 
 // Mock eventBus to prevent real event publishing
-vi.mock('@dailyuse/utils', async () => {
-  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
+vi.mock('@memoflow/utils', async () => {
+  const actual = await vi.importActual<typeof import('@memoflow/utils')>('@memoflow/utils');
   return { ...actual, eventBus: { send: vi.fn() } };
 });
 

@@ -72,7 +72,7 @@ import {
   CardContent,
   ScrollArea,
   Badge,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { StatusRuleEditor } from '../components';
 
 const { t } = useI18n();

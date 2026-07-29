@@ -5,8 +5,8 @@
  * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { TaskChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { TaskChannels } from '@memoflow/contracts/electron';
 import type { ITaskTemplateApiClient, IResultIpcClient, TaskTemplateListParams } from '../types';
 import type {
   TaskTemplateClientDTO,
@@ -18,7 +18,7 @@ import type {
   BindToGoalReq,
   QueryTaskTemplateGraphRes,
   TaskTemplateInstancesQuery,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

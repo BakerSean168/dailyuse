@@ -29,7 +29,7 @@ updated: 2025-12-03
 
 ## 背景
 
-Memoflow 目前是一个 Web 应用，后端运行在远程服务器上。为了提供更好的用户体验，我们计划扩展到 Electron 桌面应用，实现：
+MemoFlow 目前是一个 Web 应用，后端运行在远程服务器上。为了提供更好的用户体验，我们计划扩展到 Electron 桌面应用，实现：
 
 1. **离线优先 (Local-First)** - 无网络时仍可完整使用
 2. **本地数据存储** - 数据存储在用户本地，隐私性更好
@@ -276,9 +276,9 @@ packages/
 
 ```typescript
 // packages/app-server/src/goal/use-cases/create-goal.ts
-import { Goal } from '@dailyuse/domain-server';
-import { IGoalRepository } from '@dailyuse/infra/ports';
-import { CreateGoalDTO, GoalDTO } from '@dailyuse/contracts';
+import { Goal } from '@memoflow/domain-server';
+import { IGoalRepository } from '@memoflow/infra/ports';
+import { CreateGoalDTO, GoalDTO } from '@memoflow/contracts';
 import { GoalMapper } from '../mappers/goal-mapper';
 
 export class CreateGoal {
@@ -327,9 +327,9 @@ apps/desktop/
 │   │   └── bootstrap.ts        ← 依赖注入配置
 │   │
 │   └── 复用:
-│       ├── @dailyuse/domain-server
-│       ├── @dailyuse/app-server
-│       └── @dailyuse/infra (sqlite adapter)
+│       ├── @memoflow/domain-server
+│       ├── @memoflow/app-server
+│       └── @memoflow/infra (sqlite adapter)
 │
 ├── renderer/                   ← Electron 渲染进程
 │   ├── src/
@@ -347,9 +347,9 @@ apps/desktop/
 │   │       └── ipc-client.ts
 │   │
 │   └── 复用:
-│       ├── @dailyuse/domain-client
-│       ├── @dailyuse/contracts
-│       └── @dailyuse/ui (tokens/v1)
+│       ├── @memoflow/domain-client
+│       ├── @memoflow/contracts
+│       └── @memoflow/ui (tokens/v1)
 │
 ├── electron-builder.json5
 ├── package.json
@@ -361,7 +361,7 @@ apps/desktop/
 ```typescript
 // apps/desktop/main/src/ipc/goal.ipc.ts
 import { ipcMain } from 'electron';
-import { ListGoals, CreateGoal, UpdateGoal, DeleteGoal } from '@dailyuse/app-server/goal';
+import { ListGoals, CreateGoal, UpdateGoal, DeleteGoal } from '@memoflow/app-server/goal';
 
 export function registerGoalIpcHandlers(useCases: {
   listGoals: ListGoals;
@@ -511,7 +511,7 @@ export async function disconnectPrisma(): Promise<void> {
 // packages/infra/src/adapters/prisma/goal.prisma.ts
 import { PrismaClient } from '@prisma/client';
 import { IGoalRepository } from '../../ports/repositories/goal.repository';
-import { Goal } from '@dailyuse/domain-server';
+import { Goal } from '@memoflow/domain-server';
 import { GoalMapper } from './mappers/goal-mapper';
 
 export class GoalPrismaRepository implements IGoalRepository {
@@ -555,10 +555,10 @@ export class GoalPrismaRepository implements IGoalRepository {
 
 ```typescript
 // apps/api/src/main.ts
-import { createPrismaClient } from '@dailyuse/infra/adapters/prisma';
+import { createPrismaClient } from '@memoflow/infra/adapters/prisma';
 
 // PostgreSQL 连接 (通过环境变量)
-// DATABASE_URL=postgresql://user:pass@localhost:5432/Memoflow
+// DATABASE_URL=postgresql://user:pass@localhost:5432/MemoFlow
 const prisma = createPrismaClient({ provider: 'postgresql' });
 ```
 
@@ -568,11 +568,11 @@ const prisma = createPrismaClient({ provider: 'postgresql' });
 // apps/desktop/main/src/services/database.ts
 import { app } from 'electron';
 import path from 'path';
-import { createPrismaClient, disconnectPrisma } from '@dailyuse/infra/adapters/prisma';
+import { createPrismaClient, disconnectPrisma } from '@memoflow/infra/adapters/prisma';
 
 export async function initDatabase() {
   // SQLite 数据库存储在用户数据目录
-  const dbPath = path.join(app.getPath('userData'), 'Memoflow.db');
+  const dbPath = path.join(app.getPath('userData'), 'MemoFlow.db');
   const databaseUrl = `file:${dbPath}`;
 
   const prisma = createPrismaClient({

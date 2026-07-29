@@ -13,8 +13,8 @@ import type {
   SendEmailCodeReq,
   VerifyEmailCodeReq,
   VerifyEmailCodeRes,
-} from '@dailyuse/contracts/authentication';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/authentication';
+import type { Result } from '@memoflow/contracts/result';
 import { inject, type InjectionKey } from 'vue';
 
 export interface WebAuthService {

@@ -1,7 +1,7 @@
-import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import { ExecutionStatus, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
+import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
+import { ExecutionStatus, ScheduleTaskStatus } from '@memoflow/contracts/schedule';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
 import type { ScheduleTask } from '../../domain/aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../../domain/repositories/i-schedule-task-repository';
 import type {

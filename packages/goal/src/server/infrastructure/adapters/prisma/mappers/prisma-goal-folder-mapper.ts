@@ -4,11 +4,11 @@
  * Maps between GoalFolder domain aggregate and Prisma model.
  */
 
-import type { GoalFolder as PrismaGoalFolder } from '@dailyuse/database';
+import type { GoalFolder as PrismaGoalFolder } from '@memoflow/database';
 import { GoalFolder } from '../../../../domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { GoalFolderId } from '../../../../domain';
-import type { FolderType } from '@dailyuse/contracts/goal';
+import type { FolderType } from '@memoflow/contracts/goal';
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
 function requiredInstant(value: Date | string | number | null | undefined): number {

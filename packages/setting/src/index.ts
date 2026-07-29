@@ -1,9 +1,9 @@
 /**
- * @dailyuse/setting
+ * @memoflow/setting
  *
  * Setting module runtime root.
  *
- * Public setting contracts are centralized in `@dailyuse/contracts/setting`.
+ * Public setting contracts are centralized in `@memoflow/contracts/setting`.
  * Root exports are limited to the canonical server composition root.
  * Client / API / Electron seams use dedicated subpaths.
  */

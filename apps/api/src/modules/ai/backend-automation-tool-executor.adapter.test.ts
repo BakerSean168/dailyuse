@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
-import type { GoalAutomationExecutionInput } from '@dailyuse/ai/ports';
+import { ok } from '@memoflow/contracts/result';
+import type { GoalAutomationExecutionInput } from '@memoflow/ai/ports';
 
 import { BackendAutomationToolExecutorAdapter } from './backend-automation-tool-executor.adapter';
 
@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   buildContext: vi.fn(),
 }));
 
-vi.mock('@dailyuse/goal', () => ({
+vi.mock('@memoflow/goal', () => ({
   createGoalPrismaModule: vi.fn(() => ({
     api: {
       createGoal: mocks.createGoal,
@@ -22,7 +22,7 @@ vi.mock('@dailyuse/goal', () => ({
   })),
 }));
 
-vi.mock('@dailyuse/task', () => ({
+vi.mock('@memoflow/task', () => ({
   createTaskPrismaModule: vi.fn(() => ({
     api: {
       createTaskTemplate: mocks.createTaskTemplate,
@@ -30,7 +30,7 @@ vi.mock('@dailyuse/task', () => ({
   })),
 }));
 
-vi.mock('@dailyuse/reminder', () => ({
+vi.mock('@memoflow/reminder', () => ({
   createReminderPrismaModule: vi.fn(() => ({
     api: {
       createTemplate: mocks.createReminderTemplate,

@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
+import { SourceModule } from '@memoflow/contracts/schedule';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
 import type {
   ReminderScheduleProjectionEventMap,
   ReminderScheduleProjectionSource,
-} from '@dailyuse/reminder/schedule-projection';
-import type { IScheduleTaskRepository } from '@dailyuse/schedule';
-import { ScheduleTask } from '@dailyuse/schedule';
-import type { Publisher, Subscriber } from '@dailyuse/utils/domain';
+} from '@memoflow/reminder/schedule-projection';
+import type { IScheduleTaskRepository } from '@memoflow/schedule';
+import { ScheduleTask } from '@memoflow/schedule';
+import type { Publisher, Subscriber } from '@memoflow/utils/domain';
 import { createReminderProjectionRuntime } from '../runtime/reminder-projection-runtime';
 
 function createScheduleTask(templateId: string, name: string) {

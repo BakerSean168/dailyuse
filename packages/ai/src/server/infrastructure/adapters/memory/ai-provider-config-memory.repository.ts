@@ -5,7 +5,7 @@
  */
 
 import type { IAIProviderConfigRepository } from '../../../domain';
-import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO } from '@memoflow/contracts/ai';
 
 /**
  * AIProviderConfig Memory Repository

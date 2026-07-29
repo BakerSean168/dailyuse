@@ -18,7 +18,7 @@ status: done
 
 ## 背景与验证方法
 
-- 镜像:`dailyuse-web:local` / `dailyuse-api:local`,构建于 2026-07-27T16:28Z,含 `d7f1157be`(ADR-037 产品时间系统)与 `024d5dc99`。
+- 镜像:`memoflow-web:local` / `memoflow-api:local`,构建于 2026-07-27T16:28Z,含 `d7f1157be`(ADR-037 产品时间系统)与 `024d5dc99`。
 - 方法:Playwright(chromium, zh-CN, Asia/Shanghai)驱动 `http://localhost:58080`,真实用户旅程:注册 → 进入应用 → 目标/任务/日程/提醒/设置 → 创建目标 → 刷新会话保持。
 - 证据:`reports/pm-journey/shots*/`(截图)、`journey-log.json` / `journey2-log.json`(步骤与网络日志)。测试账号 `pm.tester.003451@example.com`。
 

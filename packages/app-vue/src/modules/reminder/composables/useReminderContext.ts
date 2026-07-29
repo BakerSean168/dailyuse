@@ -7,7 +7,7 @@ import { useReminderStore } from '../stores/reminder-store';
 import { REMINDER_SERVICE_KEY, DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { IReminderService } from '../../../di/types';
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 import { executeDesktopAuthenticatedResult } from '../../../shared/utils/execute-desktop-authenticated-result';

@@ -16,8 +16,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@dailyuse/ui-vue-shadcn';
-import { APP_NAME_ZH } from '@dailyuse/assets';
+} from '@memoflow/ui-vue-shadcn';
+import { APP_NAME_ZH } from '@memoflow/assets';
 
 interface ConversationEntry {
   id: string;

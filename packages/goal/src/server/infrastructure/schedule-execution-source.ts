@@ -3,7 +3,7 @@ import {
   NotificationChannelType,
   NotificationType,
   RelatedEntityType,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 import type { IGoalRepository } from '../domain';
 import type { GoalScheduleExecutionSource } from '../../schedule-execution';
 

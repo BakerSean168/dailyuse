@@ -5,11 +5,11 @@
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   FocusModeDTO,
   ActivateFocusModeRequest,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 export interface IGoalFocusApiClient {
   getCurrentFocusMode(): Promise<Result<FocusModeDTO | null>>;

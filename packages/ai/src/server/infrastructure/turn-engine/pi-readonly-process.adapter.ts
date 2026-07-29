@@ -6,11 +6,11 @@
  * AssistantFacade production routing.
  *
  * Current spike policy (fail closed):
- * - Probe may report binary path availability via DAILYUSE_PI_BINARY
+ * - Probe may report binary path availability via MEMOFLOW_PI_BINARY
  * - buildDryRunSpawnPlan builds argv + scrubbed env + non-vault cwd only
  * - startTurn never spawns a process (spawn blocked until security review)
  * - never sets cwd to a vault path
- * - never injects Daily Use / GitHub / Provider tokens into env
+ * - never injects MemoFlow / GitHub / Provider tokens into env
  * - never treats CLI-native writes as business mutations
  *
  * Real pi-agent-core / pi-coding-agent integration remains open (compat side effects).
@@ -19,7 +19,7 @@ import { accessSync, constants as fsConstants } from 'node:fs';
 import type {
   ExternalProcessProbeResult,
   IExternalProcessTurnAdapterPort,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 /** Diagnostic engine id — not a product mode label. */
 export const PI_READONLY_PROCESS_ADAPTER_ID = 'process.pi_readonly_spike' as const;
@@ -31,17 +31,17 @@ export const PI_READONLY_PROCESS_ADAPTER_ID = 'process.pi_readonly_spike' as con
 export const PI_SPIKE_PINNED_LABEL = 'pi-agent-core@spike-unpinned' as const;
 
 /** Env: absolute path to a Pi-compatible CLI binary for probe only. */
-export const PI_SPIKE_BINARY_ENV = 'DAILYUSE_PI_BINARY' as const;
+export const PI_SPIKE_BINARY_ENV = 'MEMOFLOW_PI_BINARY' as const;
 
 /** Env: must be "1" for probe to report available (still does not enable spawn). */
-export const PI_SPIKE_ENABLED_ENV = 'DAILYUSE_PI_SPIKE_ENABLED' as const;
+export const PI_SPIKE_ENABLED_ENV = 'MEMOFLOW_PI_SPIKE_ENABLED' as const;
 
 const FORBIDDEN_ENV_KEYS = [
   'GITHUB_TOKEN',
   'GH_TOKEN',
   'OPENAI_API_KEY',
   'ANTHROPIC_API_KEY',
-  'DAILYUSE_DB_URL',
+  'MEMOFLOW_DB_URL',
   'DATABASE_URL',
   'JWT_SECRET',
   'NEXTAUTH_SECRET',
@@ -124,7 +124,7 @@ export class PiReadonlyProcessAdapter implements IExternalProcessTurnAdapterPort
       scrubbed[key] = value;
     }
     // Spike never injects vault path as cwd via env either.
-    delete scrubbed.DAILYUSE_VAULT_PATH;
+    delete scrubbed.MEMOFLOW_VAULT_PATH;
     delete scrubbed.OBSIDIAN_VAULT_PATH;
     return scrubbed;
   }
@@ -165,7 +165,7 @@ export class PiReadonlyProcessAdapter implements IExternalProcessTurnAdapterPort
 
     const forbiddenCwdCandidates = [
       input.requestedVaultPath,
-      this.env.DAILYUSE_VAULT_PATH,
+      this.env.MEMOFLOW_VAULT_PATH,
       this.env.OBSIDIAN_VAULT_PATH,
     ].filter((value): value is string => Boolean(value?.trim()));
 

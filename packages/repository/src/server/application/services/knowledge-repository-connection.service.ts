@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import type {
   CompleteKnowledgeRepositoryInstallationReq,
   CompleteKnowledgeRepositoryInstallationRes,
@@ -15,8 +15,8 @@ import type {
   PreviewKnowledgeRepositoryReconciliationReq,
   StartKnowledgeRepositoryInstallationReq,
   StartKnowledgeRepositoryInstallationRes,
-} from '@dailyuse/contracts/repository';
-import { KnowledgeRepositoryLifecycleErrorCodes } from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
+import { KnowledgeRepositoryLifecycleErrorCodes } from '@memoflow/contracts/repository';
 import type {
   GitHubAppInstallationInventory,
   IGitHubAppClient,

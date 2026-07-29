@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { UserSettingClientDTO, LocalePreferences, UserSettingPreferences } from '@dailyuse/contracts/setting';
-import { createTestPinia } from '@dailyuse/test-utils';
+import type { UserSettingClientDTO, LocalePreferences, UserSettingPreferences } from '@memoflow/contracts/setting';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useUserSettingStore } from './user-setting-store';
 
 function createSetting(

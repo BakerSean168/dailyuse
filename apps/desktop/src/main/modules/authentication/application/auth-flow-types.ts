@@ -1,4 +1,4 @@
-import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
+import type { AuthResponseDTO } from '@memoflow/contracts/authentication';
 
 export type AuthFlowErrorCode =
   | 'OFFLINE'

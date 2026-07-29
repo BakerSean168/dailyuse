@@ -15,8 +15,8 @@ import {
   GoalChannels,
   ReminderChannels,
   TaskChannels,
-} from '@dailyuse/contracts/electron';
-import { ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/electron';
+import { ok } from '@memoflow/contracts/result';
 import { isDesktopDevelopmentRuntime } from './dev-runtime';
 
 // ============ Types ============

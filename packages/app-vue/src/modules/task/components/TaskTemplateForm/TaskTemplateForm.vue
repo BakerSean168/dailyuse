@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { AlertCircle } from '@lucide/vue';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import { useI18n } from 'vue-i18n';
 import BasicInfoSection from './sections/BasicInfoSection.vue';
 import TimeConfigSection from './sections/TimeConfigSection.vue';

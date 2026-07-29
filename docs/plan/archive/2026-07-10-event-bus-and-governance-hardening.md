@@ -28,7 +28,7 @@ updated: 2026-07-10T18:00:00+08:00
 
 - 项目处于活跃开发期，不要求向后兼容、不需要数据迁移。
 - 优先根因修复，不引入临时 shim 或双轨兼容。
-- 每项改动配套离改动最近的定向验证，并补跑 `daily-use:governance-check`。
+- 每项改动配套离改动最近的定向验证，并补跑 `memoflow:governance-check`。
 - 跨模块协作规则以 ADR-033 为准（三范式：事件 / Port / 跨进程 IPC-HTTP；同进程消息式 RPC 弃用）。
 
 ## 问题清单（诊断结论）
@@ -46,7 +46,7 @@ updated: 2026-07-10T18:00:00+08:00
 - **M3｜跨 feature 包隔离靠硬编码个案。** 所有 feature 同为 `layer:domain`，矩阵允许任意 feature 互相依赖，唯一防火墙是硬编码的 `goal ✗↔ task`。`public-surface-audit.mjs` 只拦"导入别包内部层子路径"，不拦"导入别包公开 API"。
 - **M4｜无"未 flush 的 DomainEvent"治理检查。** `tools/` 下零 `pullDomainEvents`/`domainEvents` 匹配。聚合根 `addDomainEvent` 后仓储漏 `flush` 会静默丢事件，无自动化拦截。
 - **M5｜13 个治理脚本零单元测试，且多为脆弱窗口式正则。** `find tools -name "*.spec.*"` 零结果；`governance-module-docs-audit.mjs:152-192`、`desktop-runtime-locator-audit.mjs:155` 属高脆弱启发式。`tools/` 因归类 `tooling-lib`（仅要求 `build`）逃过 `vitest-no-tests-audit`。
-- **M6｜Goal↔Task 联动已实现但只在 desktop，且为 bespoke，需按 ADR-033 重构为可复用包内实现。** 事实核校：`apps/desktop/src/main/events/initialize-event-listeners.ts` 已订阅 `task:instance-completed` 并调用 `CreateGoalRecordUseCase`（经 `@dailyuse/goal/events` 公开面）更新 KR 进度；desktop 主进程启动时 `main.ts:274` 挂载。真实缺口有三：
+- **M6｜Goal↔Task 联动已实现但只在 desktop，且为 bespoke，需按 ADR-033 重构为可复用包内实现。** 事实核校：`apps/desktop/src/main/events/initialize-event-listeners.ts` 已订阅 `task:instance-completed` 并调用 `CreateGoalRecordUseCase`（经 `@memoflow/goal/events` 公开面）更新 KR 进度；desktop 主进程启动时 `main.ts:274` 挂载。真实缺口有三：
   1. **API 后端未挂载同款监听器** —— web 端任务完成不会自动更新 KR（grep `apps/api/src` 里 `task:instance-completed` / `CreateGoalRecordUseCase` 均为空）。
   2. **反应逻辑是 bespoke 副本，未成包** —— 应搬进 Goal 包 `application-server/event-handlers`，替换掉现有空壳桩 `registerGoalEventListeners`（`packages/goal/src/application-server/event-handlers/index.ts` 只打日志、参数 `_goalRepository` 未使用、无人调用）。
   3. **Handler 回头查 Task 的 repository**（读 `taskInstance` / `template`）—— 这是隐性耦合。按 ADR-033 范式 A，事件 payload 应**自包含**：Task 侧发布 `task:instance-completed` 时把 `goalBinding`、`allInstancesCompleted` 等判定必要字段填齐，Goal 侧不再回查 Task。
@@ -97,7 +97,7 @@ updated: 2026-07-10T18:00:00+08:00
 - `tools/governance` 具备 `test` target 且核心脚本有单元测试；`unflushed-events-audit` 接入 `governance-check`。
 - `eslint.config.ts` 覆盖 `layer:service`。
 - ADR-009/031 冲突消解；`plan/archive` 具备子索引。
-- `daily-use:governance-check` 通过。
+- `memoflow:governance-check` 通过。
 
 ## 备注
 
@@ -124,7 +124,7 @@ updated: 2026-07-10T18:00:00+08:00
 验证：
 
 - `pnpm nx run-many -t typecheck lint test -p utils reminder schedule ai notification` 全绿。
-- `pnpm nx run daily-use:governance-check --skip-nx-cache` 通过（`raw-event-bus-audit` 通过）。
+- `pnpm nx run memoflow:governance-check --skip-nx-cache` 通过（`raw-event-bus-audit` 通过）。
 - 全仓 `grep eventBus.invoke|eventBus.handle` 零命中；无下游以第二个泛型实例化事件总线。
 - `desktop:typecheck` / `api:typecheck` 全图受**既有** `dashboard:build` / `app-vue:typecheck` 失败阻塞（`contracts` DTS `TS2209` 与 governance `RuleId` 品牌类型，均在干净 `main` 上复现，与本 PR 无关）；两宿主仅消费 `send`/`on`/`off`，签名未变，不受本次泛型收敛影响。
 

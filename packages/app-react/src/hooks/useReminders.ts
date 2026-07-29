@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import type { ReminderTemplateClientDTO, ReminderTodayScheduleItem } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderTodayScheduleItem } from '@memoflow/contracts/reminder';
 
 import { useAppSession } from './useAppSession';
 import { useReminderService } from './useReminderService';

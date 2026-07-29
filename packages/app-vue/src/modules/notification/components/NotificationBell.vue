@@ -30,8 +30,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@memoflow/ui-vue-shadcn';
 import { Bell } from '@lucide/vue';
 
 interface Props {

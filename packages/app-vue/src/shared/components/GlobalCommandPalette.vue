@@ -12,7 +12,7 @@
  */
 import { onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { _getCommandPaletteState, _setOpen, useCommandGroups } from '@dailyuse/ui-vue-shadcn';
+import { _getCommandPaletteState, _setOpen, useCommandGroups } from '@memoflow/ui-vue-shadcn';
 import {
   CommandDialog,
   CommandEmpty,
@@ -21,7 +21,7 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 
 const state = _getCommandPaletteState();
 const groups = useCommandGroups();

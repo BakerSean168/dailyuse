@@ -1,6 +1,6 @@
 # ai-service
 
-`ai-service` is the Python execution service used by the `dailyuse` monorepo for
+`ai-service` is the Python execution service used by the `memoflow` monorepo for
 LLM-facing work. TypeScript remains the public business boundary, while this
 project focuses on model execution.
 
@@ -46,8 +46,8 @@ monorepo:
 - `.env.{NODE_ENV}.local`
 
 Minimal local development values live in the root
-[`/.env.example`](/D:/home/projects/dailyuse/.env.example) and
-[`/.env.development`](/D:/home/projects/dailyuse/.env.development). The service
+[`/.env.example`](/D:/home/projects/memoflow/.env.example) and
+[`/.env.development`](/D:/home/projects/memoflow/.env.development). The service
 does not read `apps/ai-service/.env`.
 
 Once the root env is configured, run:
@@ -68,18 +68,18 @@ pnpm nx run ai-service:format
 ```
 
 `pnpm nx run ai-service:eval` runs deterministic regression cases from
-[`apps/ai-service/evals/regression_cases.json`](/D:/home/projects/dailyuse/apps/ai-service/evals/regression_cases.json)
+[`apps/ai-service/evals/regression_cases.json`](/D:/home/projects/memoflow/apps/ai-service/evals/regression_cases.json)
 using the quality gate defined in
-[`apps/ai-service/evals/policy.json`](/D:/home/projects/dailyuse/apps/ai-service/evals/policy.json),
+[`apps/ai-service/evals/policy.json`](/D:/home/projects/memoflow/apps/ai-service/evals/policy.json),
 compares against
-[`apps/ai-service/evals/baseline_report.json`](/D:/home/projects/dailyuse/apps/ai-service/evals/baseline_report.json),
+[`apps/ai-service/evals/baseline_report.json`](/D:/home/projects/memoflow/apps/ai-service/evals/baseline_report.json),
 and writes reports to `reports/apps/ai-service/evals/latest.json` plus a timestamped
 history entry under `reports/apps/ai-service/evals/history/`.
 
 `pnpm nx run ai-service:eval-live` runs a smaller live-provider suite from
-[`apps/ai-service/evals/live_cases.json`](/D:/home/projects/dailyuse/apps/ai-service/evals/live_cases.json)
+[`apps/ai-service/evals/live_cases.json`](/D:/home/projects/memoflow/apps/ai-service/evals/live_cases.json)
 with the looser gate in
-[`apps/ai-service/evals/live_policy.json`](/D:/home/projects/dailyuse/apps/ai-service/evals/live_policy.json).
+[`apps/ai-service/evals/live_policy.json`](/D:/home/projects/memoflow/apps/ai-service/evals/live_policy.json).
 It writes reports to `reports/apps/ai-service/evals/live-latest.json` and
 `reports/apps/ai-service/evals/live-history/`.
 
@@ -121,4 +121,4 @@ bound to the exact body, endpoint path, and a short-lived timestamp window.
 For a Chinese walkthrough of how `apps/ai-service` and `packages/ai` now work
 together, see:
 
-- [`docs/guides/development/coding-standards.md`](/D:/home/projects/dailyuse/docs/guides/development/coding-standards.md)
+- [`docs/guides/development/coding-standards.md`](/D:/home/projects/memoflow/docs/guides/development/coding-standards.md)

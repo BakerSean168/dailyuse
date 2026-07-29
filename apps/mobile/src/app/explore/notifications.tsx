@@ -1,2 +1,2 @@
-export { NotificationsScreen as default } from '@dailyuse/app-react';
+export { NotificationsScreen as default } from '@memoflow/app-react';
 

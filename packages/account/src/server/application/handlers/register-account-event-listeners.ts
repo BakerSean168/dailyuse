@@ -5,9 +5,9 @@
  */
 
 import type { IAccountRepository } from '../../domain';
-import type { AuthEventMap } from '@dailyuse/contracts/authentication';
-import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { AuthEventMap } from '@memoflow/contracts/authentication';
+import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import { IdentityCreatedHandler } from './identity-created.handler';
 import { EmailVerifiedHandler } from './email-verified.handler';
 

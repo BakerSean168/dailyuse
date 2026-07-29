@@ -4,13 +4,13 @@ import { ReminderTemplate } from '../../aggregates/reminder-template';
 import type { ReminderTemplateState } from '../../aggregates/reminder-template';
 import { ReminderGroup } from '../../aggregates/reminder-group';
 import type { ReminderGroupState } from '../../aggregates/reminder-group';
-import { ControlMode, ReminderStatus, ReminderType } from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ControlMode, ReminderStatus, ReminderType } from '@memoflow/contracts/reminder';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { ReminderTemplateId } from '../../value-objects/reminder-template-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { TriggerConfig, ActiveTimeConfig, GroupStats } from '../../value-objects';
 import { ReminderNotificationConfig } from '../../value-objects/reminder-notification-config';
-import { generateUUID } from '@dailyuse/utils/shared';
+import { generateUUID } from '@memoflow/utils/shared';
 
 // ---------------------------------------------------------------------------
 // Helpers

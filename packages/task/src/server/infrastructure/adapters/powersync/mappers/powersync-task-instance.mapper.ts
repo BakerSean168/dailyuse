@@ -1,10 +1,10 @@
 import { TaskInstance } from '../../../../domain/aggregates/task-instance';
 import { TaskInstanceId } from '../../../../domain/value-objects/task-instance-id';
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { TaskTimeConfig } from '../../../../domain/value-objects/task-time-config';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { TaskInstanceStatus } from '@memoflow/contracts/task';
 
 export type PowerSyncTaskInstanceRow = {
   id: string;

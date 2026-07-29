@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { FocusSessionId as IFocusSessionId } from '@dailyuse/contracts/primitives';
+import type { FocusSessionId as IFocusSessionId } from '@memoflow/contracts/primitives';
 
 /**
  * FocusSessionId 值对象

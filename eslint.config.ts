@@ -305,28 +305,28 @@ const moduleBoundaryDepConstraints = [
 
 const moduleBoundaryOptions = {
   enforceBuildableLibDependency: true,
-  allow: ['./generated/prisma/**', '@dailyuse/test-utils', '@dailyuse/test-utils/*'],
-  checkDynamicDependenciesExceptions: ['@dailyuse/database'],
+  allow: ['./generated/prisma/**', '@memoflow/test-utils', '@memoflow/test-utils/*'],
+  checkDynamicDependenciesExceptions: ['@memoflow/database'],
   depConstraints: moduleBoundaryDepConstraints,
 } as const;
 
 const utilsRootImportRestriction = {
   paths: [
     {
-      name: '@dailyuse/utils',
+      name: '@memoflow/utils',
       message:
-        'Import from a specific subpath instead: @dailyuse/utils/logger, @dailyuse/utils/domain, @dailyuse/utils/errors, @dailyuse/utils/shared, @dailyuse/utils/result, @dailyuse/utils/frontend, @dailyuse/utils/validation, @dailyuse/utils/lifecycle.',
+        'Import from a specific subpath instead: @memoflow/utils/logger, @memoflow/utils/domain, @memoflow/utils/errors, @memoflow/utils/shared, @memoflow/utils/result, @memoflow/utils/frontend, @memoflow/utils/validation, @memoflow/utils/lifecycle.',
     },
     {
       name: 'date-fns',
       message:
-        'ADR-037: import time from @dailyuse/time. date-fns is confined to packages/time/src/engine/** (+ time-registry legacy with retire_by).',
+        'ADR-037: import time from @memoflow/time. date-fns is confined to packages/time/src/engine/** (+ time-registry legacy with retire_by).',
     },
   ],
   patterns: [
     {
       group: ['date-fns/*', 'date-fns/fp', 'date-fns/locale', 'date-fns/locale/*'],
-      message: 'ADR-037: date-fns subpaths are engine-only. Use @dailyuse/time.',
+      message: 'ADR-037: date-fns subpaths are engine-only. Use @memoflow/time.',
     },
   ],
 } as const;
@@ -430,17 +430,17 @@ export default tseslint.config(
               {
                 name: 'date-fns',
                 message:
-                  'ADR-037: import time from @dailyuse/time. date-fns is confined to packages/time/src/engine/** (+ time-registry legacy with retire_by).',
+                  'ADR-037: import time from @memoflow/time. date-fns is confined to packages/time/src/engine/** (+ time-registry legacy with retire_by).',
               },
             ],
             patterns: [
               {
-                group: ['@dailyuse/test-utils', '@dailyuse/test-utils/*'],
+                group: ['@memoflow/test-utils', '@memoflow/test-utils/*'],
                 message: 'Production code must not import test-only utilities.',
               },
               {
                 group: ['date-fns/*', 'date-fns/fp', 'date-fns/locale', 'date-fns/locale/*'],
-                message: 'ADR-037: date-fns subpaths are engine-only. Use @dailyuse/time.',
+                message: 'ADR-037: date-fns subpaths are engine-only. Use @memoflow/time.',
               },
             ],
           },
@@ -506,19 +506,19 @@ export default tseslint.config(
             selector:
               "VariableDeclarator[id.name=/^(formatDate|formatTime|formatDateTime|formatTimestamp)$/]",
             message:
-              'ADR-037 P9: no L5 formatDate* bindings — use product-time / @dailyuse/time.',
+              'ADR-037 P9: no L5 formatDate* bindings — use product-time / @memoflow/time.',
           },
           {
             selector: "CallExpression[callee.property.name='toLocaleDateString']",
-            message: 'ADR-037 P9: product toLocaleDateString banned — use @dailyuse/time format.*',
+            message: 'ADR-037 P9: product toLocaleDateString banned — use @memoflow/time format.*',
           },
           {
             selector: "CallExpression[callee.property.name='toLocaleTimeString']",
-            message: 'ADR-037 P9: product toLocaleTimeString banned — use @dailyuse/time format.*',
+            message: 'ADR-037 P9: product toLocaleTimeString banned — use @memoflow/time format.*',
           },
           {
             selector: "CallExpression[callee.property.name='toLocaleString']",
-            message: 'ADR-037 P9: product toLocaleString banned — use @dailyuse/time format.*',
+            message: 'ADR-037 P9: product toLocaleString banned — use @memoflow/time format.*',
           },
         ],
       },
@@ -545,7 +545,7 @@ export default tseslint.config(
     },
     {
       // Test files still inherit @nx/enforce-module-boundaries.
-      // Only @dailyuse/test-utils is allowlisted by moduleBoundaryOptions, and
+      // Only @memoflow/test-utils is allowlisted by moduleBoundaryOptions, and
       // production files are explicitly blocked from importing it above.
       files: [
         '**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',

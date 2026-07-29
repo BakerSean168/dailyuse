@@ -1,6 +1,6 @@
-import { ReminderType, type ReminderEventMap } from '@dailyuse/contracts/reminder';
-import { SourceModule, Timezone } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '@dailyuse/schedule';
+import { ReminderType, type ReminderEventMap } from '@memoflow/contracts/reminder';
+import { SourceModule, Timezone } from '@memoflow/contracts/schedule';
+import { ScheduleTask } from '@memoflow/schedule';
 import type { IReminderTemplateRepository } from '../domain/repositories/i-reminder-template-repository';
 
 export interface ReminderScheduleProjectionSelection {

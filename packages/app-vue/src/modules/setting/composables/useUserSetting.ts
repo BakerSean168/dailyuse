@@ -9,7 +9,7 @@
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { unwrapOrThrowError } from '@dailyuse/contracts/result';
+import { unwrapOrThrowError } from '@memoflow/contracts/result';
 import { useUserSettingStore } from '../stores/user-setting-store';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
@@ -19,7 +19,7 @@ import type {
   PreferenceCategory,
   UserSettingClientDTO,
   UserSettingPreferences,
-} from '@dailyuse/contracts/setting';
+} from '@memoflow/contracts/setting';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 

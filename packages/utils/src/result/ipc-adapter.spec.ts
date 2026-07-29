@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { ipcAdapter, ipcAdapterWithValidation } from './ipc-adapter';
-import { ok, fail, ResultErrorException } from '@dailyuse/contracts/result';
+import { ok, fail, ResultErrorException } from '@memoflow/contracts/result';
 import { ConflictError } from '../errors/domain-error';
 
 // ============================================================================

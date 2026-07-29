@@ -81,10 +81,10 @@
 <script setup lang="ts">
 import { ref, computed, inject, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Label } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Label } from '@memoflow/ui-vue-shadcn';
 import { FolderOpen, FolderInput, ExternalLink, RotateCcw, Loader2, CheckCircle2, AlertCircle } from '@lucide/vue';
-import { SystemChannels } from '@dailyuse/contracts/electron';
-import { isOk, type Result } from '@dailyuse/contracts/result';
+import { SystemChannels } from '@memoflow/contracts/electron';
+import { isOk, type Result } from '@memoflow/contracts/result';
 import { DESKTOP_AUTH_API_KEY } from '../../../di/keys';
 
 const { t } = useI18n();

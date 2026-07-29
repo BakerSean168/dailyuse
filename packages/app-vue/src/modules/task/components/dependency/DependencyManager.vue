@@ -117,7 +117,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DependencyType, type TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
+import { DependencyType, type TaskGraphDependencyDTO } from '@memoflow/contracts/task';
 import {
   Card,
   CardHeader,
@@ -133,7 +133,7 @@ import {
   Alert,
   AlertDescription,
   Label,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Link2, ArrowRight, ArrowRightLeft, Trash2, Plus, AlertTriangle } from '@lucide/vue';
 import DependencyValidationDialog from './DependencyValidationDialog.vue';
 import BlockedTaskInfo from './BlockedTaskInfo.vue';

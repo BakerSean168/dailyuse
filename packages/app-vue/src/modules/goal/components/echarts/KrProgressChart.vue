@@ -20,7 +20,7 @@ use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer])
 
 const { t } = useI18n();
 
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
 import { getKeyResultProgressPercentage } from '../../utils/progress';
 
 const props = defineProps<{

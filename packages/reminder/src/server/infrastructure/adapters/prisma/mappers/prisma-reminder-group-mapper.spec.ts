@@ -11,8 +11,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { PrismaReminderGroupMapper } from './prisma-reminder-group-mapper';
-import type { ReminderGroup as PrismaReminderGroup } from '@dailyuse/database';
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderGroup as PrismaReminderGroup } from '@memoflow/database';
+import { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 
 // ─── Test Helpers ───────────────────────────────────────────────────
 

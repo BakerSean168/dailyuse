@@ -1,4 +1,4 @@
-import { TriggerResult as TriggerResultContract, type TriggerResult as ITriggerResult } from '@dailyuse/contracts/reminder';
+import { TriggerResult as TriggerResultContract, type TriggerResult as ITriggerResult } from '@memoflow/contracts/reminder';
 
 /**
  * 📝 触发结果 - 提醒触发的结果状态
@@ -13,7 +13,7 @@ export type TriggerResult = ITriggerResult & { readonly __brand: unique symbol }
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ITriggerResult[] = Object.values(TriggerResultContract);
 
 /**

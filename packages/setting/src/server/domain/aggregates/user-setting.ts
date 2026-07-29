@@ -19,27 +19,27 @@
  * 添加新分类：创建新 schema + 添加到 UserPreferencesSchema + CATEGORY_SCHEMAS
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import type {
   SettingId as ISettingId,
   IdentityId,
   Instant,
   TransferDate,
-} from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/primitives';
 import type {
   UserSettingServerDTO,
   UserSettingClientDTO,
   SettingEventMap,
   UserSettingPreferences,
   PreferenceCategory,
-} from '@dailyuse/contracts/setting';
+} from '@memoflow/contracts/setting';
 import {
   getDefaultPreferences,
   PREFERENCE_CATEGORIES,
   validateCategoryPatch,
-} from '@dailyuse/contracts/setting';
+} from '@memoflow/contracts/setting';
 import { SettingId } from '../value-objects/setting-id';
-import { IdentityId as IdentityIdVO } from '@dailyuse/domain-shared/shared';
+import { IdentityId as IdentityIdVO } from '@memoflow/domain-shared/shared';
 import {
   SettingValidationError,
   UnknownSettingKeyError,

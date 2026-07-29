@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
-import type { KnowledgeNotePersistedRef } from '@dailyuse/contracts/ai';
-import type { RepositoryApplicationPort } from '@dailyuse/repository';
+import type { KnowledgeNotePersistedRef } from '@memoflow/contracts/ai';
+import type { RepositoryApplicationPort } from '@memoflow/repository';
 import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
-} from '@dailyuse/ai/ports';
+} from '@memoflow/ai/ports';
 
 /**
  * Web/API AI notes are committed through knowledge repository confirmed create.

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Residual 270: DesktopBridge dual collapsed to ElectronBridge from @dailyuse/ipc-client.
+ * Residual 270: DesktopBridge dual collapsed to ElectronBridge from @memoflow/ipc-client.
  * Residual 915 (soft): DESKTOP_AUTH_API_KEY dual retired — InjectionKey<DesktopAuthApi>
  *   (desktop-auth-api-key-dual.surface.spec.ts).
  */
@@ -16,7 +16,7 @@ describe('desktop bridge ElectronBridge single-track surface', () => {
   );
 
   it('keys re-export ElectronBridge and do not define DesktopBridge dual', () => {
-    expect(keys).toContain("from '@dailyuse/ipc-client'");
+    expect(keys).toContain("from '@memoflow/ipc-client'");
     expect(keys).toContain('export type { ElectronBridge }');
     expect(keys).toContain('InjectionKey<ElectronBridge>');
     expect(keys).not.toMatch(/export interface DesktopBridge\s*\{/);

@@ -3,8 +3,8 @@ import { NotificationPolicy } from '../notification-policy';
 import { NotificationPreference } from '../../aggregates/notification-preference';
 import { DoNotDisturbConfig } from '../../value-objects/do-not-disturb-config';
 import { RateLimit } from '../../value-objects/rate-limit';
-import { NotificationChannelType, NotificationCategory } from '@dailyuse/contracts/notification';
-import { BusinessRuleViolationError } from '@dailyuse/utils/errors';
+import { NotificationChannelType, NotificationCategory } from '@memoflow/contracts/notification';
+import { BusinessRuleViolationError } from '@memoflow/utils/errors';
 
 describe('NotificationPolicy', () => {
   const policy = new NotificationPolicy();

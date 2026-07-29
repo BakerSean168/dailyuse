@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { resolveEmptyLabel } from '@dailyuse/time';
+import { resolveEmptyLabel } from '@memoflow/time';
 
 /**
  * Residual 1204 (P1/P2): formatDateTime empty catalog keep-boundary.

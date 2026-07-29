@@ -5,8 +5,8 @@
  * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ScheduleChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { ScheduleChannels } from '@memoflow/contracts/electron';
 import type { IResultIpcClient, IScheduleEventApiClient } from '../types';
 import type {
   CalendarEntryClientDTO,
@@ -15,7 +15,7 @@ import type {
   GetSchedulesByTimeRangeRequest,
   ConflictDetectionResult,
   ResolveConflictRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

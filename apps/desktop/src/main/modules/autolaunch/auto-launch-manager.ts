@@ -49,7 +49,7 @@ export class AutoLaunchManager {
    */
   constructor(config?: Partial<AutoLaunchConfig>) {
     this.config = {
-      name: config?.name || 'Memoflow',
+      name: config?.name || 'MemoFlow',
       isHidden: config?.isHidden ?? true,
     };
   }

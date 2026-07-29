@@ -91,8 +91,8 @@ jobs:
           file: Dockerfile.api
           push: true
           tags: |
-            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/dailyuse-api:${{ steps.tag.outputs.tag }}
-            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/dailyuse-api:prod-latest
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-api:${{ steps.tag.outputs.tag }}
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-api:prod-latest
           build-args: |
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
@@ -107,8 +107,8 @@ jobs:
           file: Dockerfile.web
           push: true
           tags: |
-            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/dailyuse-web:${{ steps.tag.outputs.tag }}
-            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/dailyuse-web:prod-latest
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-web:${{ steps.tag.outputs.tag }}
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-web:prod-latest
           build-args: |
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
@@ -123,8 +123,8 @@ jobs:
           file: Dockerfile.ai-service
           push: true
           tags: |
-            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/dailyuse-ai-service:${{ steps.tag.outputs.tag }}
-            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/dailyuse-ai-service:prod-latest
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-ai-service:${{ steps.tag.outputs.tag }}
+            ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/memoflow-ai-service:prod-latest
           build-args: |
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
@@ -141,9 +141,9 @@ jobs:
             echo "### ✅ Images pushed"
             echo "| Image | Tag |"
             echo "|-------|-----|"
-            echo "| \`${REGISTRY}/${NS}/dailyuse-api\` | \`${TAG}\` + \`prod-latest\` |"
-            echo "| \`${REGISTRY}/${NS}/dailyuse-web\` | \`${TAG}\` + \`prod-latest\` |"
-            echo "| \`${REGISTRY}/${NS}/dailyuse-ai-service\` | \`${TAG}\` + \`prod-latest\` |"
+            echo "| \`${REGISTRY}/${NS}/memoflow-api\` | \`${TAG}\` + \`prod-latest\` |"
+            echo "| \`${REGISTRY}/${NS}/memoflow-web\` | \`${TAG}\` + \`prod-latest\` |"
+            echo "| \`${REGISTRY}/${NS}/memoflow-ai-service\` | \`${TAG}\` + \`prod-latest\` |"
             echo ""
             echo "Watchtower will auto-detect the \`prod-latest\` update within the configured poll interval."
           } >> "$GITHUB_STEP_SUMMARY"

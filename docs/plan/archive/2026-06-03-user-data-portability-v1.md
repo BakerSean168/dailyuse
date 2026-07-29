@@ -78,7 +78,7 @@ interface UserDataExportEnvelopeV1 {
   schemaVersion: 1;
   exportedAt: string;
   exportedBy?: {
-    appName: 'Memoflow';
+    appName: 'MemoFlow';
     appVersion?: string;
   };
   scope: {
@@ -657,14 +657,14 @@ feat/user-data-portability-v1
 | `pnpm nx run data-portability:test` | 通过 | 目前只覆盖 envelope/ref allocator/schema 浅层测试 |
 | `pnpm nx run data-portability:build` | 通过 | 新包自身可以打包 |
 | `pnpm nx build api` | 通过 | API 入口接入后可以构建 |
-| `pnpm nx build desktop` | 失败 | `@dailyuse/data-portability/electron-entry` 无法解析 |
-| `pnpm nx run daily-use:governance-check` | 失败 | `data-portability` 未加入 target baseline manifest |
+| `pnpm nx build desktop` | 失败 | `@memoflow/data-portability/electron-entry` 无法解析 |
+| `pnpm nx run memoflow:governance-check` | 失败 | `data-portability` 未加入 target baseline manifest |
 | `package-export-audit` | 失败 | root barrel 暴露 `application-server`，且 package exports 暴露未白名单入口 |
 
 主要缺口：
 
 - 新包没有登记到 `tools/governance/target-baseline-manifest.json`。
-- `@dailyuse/data-portability` 没有加入 `apps/api/package.json`、`apps/desktop/package.json` 和需要消费它的前端包依赖。
+- `@memoflow/data-portability` 没有加入 `apps/api/package.json`、`apps/desktop/package.json` 和需要消费它的前端包依赖。
 - desktop production build 缺少新包解析策略。
 - desktop IPC channel 已注册，但 handler 直接抛错，没有执行真实导入导出。
 - 设置页仍只接旧 `setting` 导入导出，没有接入 `DataPortabilityClientService`。
@@ -696,8 +696,8 @@ feat/user-data-portability-v1
 - 移除 `packages/data-portability/src/index.ts` 对 `./application-server` 的 root barrel 导出。
 - 移除或调整 `packages/data-portability/package.json` 中不被 package-export-audit 允许的 `./application-server` export。
 - 如果 server use cases 只供 API composition root 使用，优先只通过 `./api` 暴露 API module，内部相对路径引用 server application 层。
-- 在 `apps/api/package.json` 中加入 `@dailyuse/data-portability`。
-- 在 `apps/desktop/package.json` 中加入 `@dailyuse/data-portability`，或改为不在 desktop 主进程直接 import 该包。
+- 在 `apps/api/package.json` 中加入 `@memoflow/data-portability`。
+- 在 `apps/desktop/package.json` 中加入 `@memoflow/data-portability`，或改为不在 desktop 主进程直接 import 该包。
 - 修复 desktop Vite main 构建的 workspace 包解析策略，使 `pnpm nx build desktop` 不因新包失败。
 - 清理 lint warning：删除未使用导入，去掉 `any`，或使用 Prisma transaction client 类型。
 
@@ -709,7 +709,7 @@ pnpm nx run data-portability:typecheck
 pnpm nx run data-portability:build
 pnpm nx build api
 pnpm nx build desktop
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 ```
 
 #### 阶段 1：收窄公开面和分层边界
@@ -972,7 +972,7 @@ pnpm nx run data-portability:test
 pnpm nx run data-portability:build
 pnpm nx build api
 pnpm nx build desktop
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 ```
 
 如果接线了 `app-vue` 设置页，还需要补：
@@ -997,7 +997,7 @@ pnpm nx run app-vue:typecheck
 
 - `data-portability` 已加入 target baseline manifest，治理门禁不再因为新项目未登记失败。
 - package root 出口已收窄，不再从 root barrel 暴露 `application-server`。
-- `apps/api`、`apps/desktop`、`apps/web`、`packages/app-vue` 已显式声明 `@dailyuse/data-portability` workspace 依赖。
+- `apps/api`、`apps/desktop`、`apps/web`、`packages/app-vue` 已显式声明 `@memoflow/data-portability` workspace 依赖。
 - web DI 已补齐 `DATA_PORTABILITY_SERVICE_KEY` 的 `web-core` 出口，并补齐 web typecheck 所需的 data-portability 类型解析。
 - 设置页已接入 `useDataPortability()`，能够通过 HTTP service 导出 JSON 内容，并通过 desktop `system:userFiles:*` 或 Web file/blob 完成文件读写。
 
@@ -1015,7 +1015,7 @@ pnpm nx run app-vue:typecheck
 | `pnpm nx run app-vue:typecheck` | 通过 | 设置页和 DI 类型通过 |
 | `pnpm nx run web:typecheck` | 通过 | 初次失败已通过 web-core export、web dependency、TS alias 修复 |
 | `pnpm nx build web` | 通过 | data-portability lazy import 可被 web production build 解析 |
-| `pnpm nx run daily-use:governance-check` | 通过 | target baseline、package export、internal boundary、public surface 等全部通过 |
+| `pnpm nx run memoflow:governance-check` | 通过 | target baseline、package export、internal boundary、public surface 等全部通过 |
 | `node ./tools/governance/package-export-audit.mjs` | 通过 | public package exports 当前符合治理 |
 | `node ./tools/governance/package-internal-boundary-audit.mjs` | 通过 | 未发现 package internal boundary 违规 |
 
@@ -1068,7 +1068,7 @@ pnpm nx run app-vue:typecheck
    应该实现IPC能力，从本地数据库导出
 
 2. 把 contracts 从 server layer 移出来。
-   - 新建 `src/contracts` 或放入 `@dailyuse/contracts/data-portability`。
+   - 新建 `src/contracts` 或放入 `@memoflow/contracts/data-portability`。
    - `application-client`、`api`、`application-server` 都依赖 contracts。
    - `portable-schema`、request/response DTO、`ExportableModule` 都从 contracts 出口读取。
 
@@ -1119,8 +1119,8 @@ pnpm nx run app-vue:typecheck
 
 1. 移除假的 data-portability IPC public surface。
    - 删除 `data-portability:export/import` 这类注册后直接抛错的 Electron handler。
-   - 删除 `DataPortabilityIpcAdapter` 和 `@dailyuse/data-portability/electron-entry` package export。
-   - `apps/desktop` 不再直接依赖 `@dailyuse/data-portability`，desktop 主进程也不再注册该模块。
+   - 删除 `DataPortabilityIpcAdapter` 和 `@memoflow/data-portability/electron-entry` package export。
+   - `apps/desktop` 不再直接依赖 `@memoflow/data-portability`，desktop 主进程也不再注册该模块。
 
 2. 避免 desktop 设置页因缺少 service 注入崩溃。
    - `useDataPortability()` 改为可选注入 `DATA_PORTABILITY_SERVICE_KEY`，并暴露 `isAvailable`。
@@ -1185,7 +1185,7 @@ pnpm nx run app-vue:typecheck
 | `pnpm nx build desktop` | 通过 | 移除 `data-portability/electron-entry` 后 desktop 构建通过 |
 | `pnpm nx run web:typecheck` | 通过 | Web 对 data-portability dist contracts 类型解析通过 |
 | `pnpm nx build web --configuration=production` | 通过 | Web production build 通过 |
-| `pnpm nx run daily-use:governance-check` | 通过 | 本轮最终 governance 门禁通过 |
+| `pnpm nx run memoflow:governance-check` | 通过 | 本轮最终 governance 门禁通过 |
 
 构建仍会提示 `database:build` 被 Nx 判定为 flaky task；这与此前并发 Prisma 生成文件占用有关，本轮失败项已串行重跑并通过。desktop/web build 仍有现有 chunk size 提示和 app-vue DTS 诊断噪音，Nx target 最终成功。
 

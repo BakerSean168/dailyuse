@@ -2,8 +2,8 @@ import {
   REPOSITORY_NOTE_MUTATED_EVENT,
   type RepositoryEventMap,
   type RepositoryNoteMutatedEvent,
-} from '@dailyuse/contracts/repository';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/repository';
+import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
 
 type RepositoryNoteMutationEvents = Pick<
   RepositoryEventMap,

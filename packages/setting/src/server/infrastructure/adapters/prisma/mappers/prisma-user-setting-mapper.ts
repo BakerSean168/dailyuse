@@ -5,14 +5,14 @@
  * Uses UserPreferencesSchema.parse() to validate and fill defaults.
  */
 
-import type { UserSetting as PrismaUserSetting } from '@dailyuse/database';
+import type { UserSetting as PrismaUserSetting } from '@memoflow/database';
 import {
   UserSetting,
   type UserSettingState,
 } from '../../../../domain/aggregates/user-setting';
 import { SettingId } from '../../../../domain/value-objects/setting-id';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { UserPreferencesSchema } from '@dailyuse/contracts/setting';
+import { IdentityId } from '@memoflow/domain-shared/shared';
+import { UserPreferencesSchema } from '@memoflow/contracts/setting';
 
 export class PrismaUserSettingMapper {
   /** Converts a Prisma record to a Domain UserSetting aggregate. */

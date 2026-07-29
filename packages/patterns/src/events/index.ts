@@ -1,7 +1,7 @@
 // Event patterns - base event handler and dispatcher
 // Residual 1031: sole createEventBusAdapter + event interfaces (goal dual re-exports).
 
-import type { IDomainEvent } from '@dailyuse/contracts/shared';
+import type { IDomainEvent } from '@memoflow/contracts/shared';
 
 /**
  * Event handler type
@@ -21,7 +21,7 @@ export interface IEventEmitter {
 
 /**
  * 重新导出已有的领域事件接口
- * 统一使用 @dailyuse/contracts/shared 中的 IDomainEvent
+ * 统一使用 @memoflow/contracts/shared 中的 IDomainEvent
  */
 export type { IDomainEvent };
 
@@ -33,7 +33,7 @@ export type { IDomainEvent };
  * - 支持同步和异步处理
  * 
  * 【设计说明】
- * 使用项目已有的 IDomainEvent 接口 (来自 @dailyuse/contracts/shared)
+ * 使用项目已有的 IDomainEvent 接口 (来自 @memoflow/contracts/shared)
  * 字段包括：eventType, payload, aggregateId, occurredAt
  */
 export interface IEventBus {
@@ -96,8 +96,8 @@ export interface IEventSender {
  * 
  * @example
  * ```typescript
- * import { eventBus } from '@dailyuse/utils/domain';
- * import { createEventBusAdapter } from '@dailyuse/patterns';
+ * import { eventBus } from '@memoflow/utils/domain';
+ * import { createEventBusAdapter } from '@memoflow/patterns';
  * 
  * const eventBusAdapter = createEventBusAdapter(eventBus);
  * // 在仓储构造函数中使用：super(eventBusAdapter)

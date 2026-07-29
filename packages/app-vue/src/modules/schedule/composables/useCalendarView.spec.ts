@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { taskInstancesToEvents, toLocalDateKey } from './useCalendarView';
-import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import type { TaskTemplateId, TaskInstanceId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@memoflow/contracts/task';
+import type { TaskTemplateId, TaskInstanceId, IdentityId } from '@memoflow/contracts/primitives';
 
 function makeTemplate(overrides: Partial<TaskTemplateClientDTO> = {}): TaskTemplateClientDTO {
   return {

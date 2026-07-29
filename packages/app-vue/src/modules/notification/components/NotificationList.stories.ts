@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import NotificationList from './NotificationList.vue';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 const now = new Date().toISOString();
 const hourAgo = new Date(Date.now() - 3600_000).toISOString();
@@ -125,7 +125,7 @@ export const AllRead: Story = {
       }),
       mockNotification({
         id: '2',
-        title: '欢迎使用知行 (Memoflow)',
+        title: '欢迎使用知行 (MemoFlow)',
         content: '感谢注册，开始您的高效之旅！',
         isRead: true,
         readAt: dayAgo,

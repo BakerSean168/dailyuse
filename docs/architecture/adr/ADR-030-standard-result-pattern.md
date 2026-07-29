@@ -7,9 +7,9 @@ Accepted
 2026-01-16
 
 ## Implementation note (Residual 615 / Residual 617 / 2026-07-22)
-- `@dailyuse/contracts/response` is removed (stage-6).
+- `@memoflow/contracts/response` is removed (stage-6).
 - Zero-consumer `ActionResult` / `actionOk` dual-track helpers are removed from
-  `@dailyuse/contracts/result` (Residual 615).
+  `@memoflow/contracts/result` (Residual 615).
 - Canonical surface: `Result<T>` + `IpcResult<T>` + `HttpResponse<T>` only.
 
 ## Context
@@ -24,11 +24,11 @@ This duality causes:
 3. Leaking HTTP concerns (status codes) into the Domain layer types.
 
 ## Decision
-We will **unify all operation results** using the **Result Pattern** defined in `@dailyuse/contracts/result`.
+We will **unify all operation results** using the **Result Pattern** defined in `@memoflow/contracts/result`.
 
 ### 1. The Single Source of Truth
-- **Module**: `@dailyuse/contracts/result` is the **ONLY** legal way to return outcomes from Application-facing boundaries and external APIs.
-- **Legacy**: `@dailyuse/contracts/response` is **removed** (stage-6); do not reintroduce.
+- **Module**: `@memoflow/contracts/result` is the **ONLY** legal way to return outcomes from Application-facing boundaries and external APIs.
+- **Legacy**: `@memoflow/contracts/response` is **removed** (stage-6); do not reintroduce.
 
 ### 2. Standard Schema
 All internal operations (Functions, Services) and External APIs (HTTP REST) must conform to:

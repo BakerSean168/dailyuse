@@ -2,7 +2,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
-import type { PreferenceCategory } from '@dailyuse/contracts/setting';
+import type { PreferenceCategory } from '@memoflow/contracts/setting';
 
 import { useAppSession } from '../hooks/useAppSession';
 import { useSettings } from '../hooks/useSettings';
@@ -14,7 +14,7 @@ import {
   Spacing,
   StatusPill,
   ThemedText,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 const THEME_SEQUENCE = ['auto', 'light', 'dark'] as const;
 const LANGUAGE_SEQUENCE = ['zh-CN', 'en-US'] as const;

@@ -533,7 +533,7 @@ export default {
     "changeVault": "Change Vault",
     "detach": "Disconnect",
     "detachTitle": "Disconnect local Vault",
-    "detachDescription": "This only removes the Memoflow binding. Files inside the Vault are not deleted or changed.",
+    "detachDescription": "This only removes the MemoFlow binding. Files inside the Vault are not deleted or changed.",
     "searchPlaceholder": "Search titles, paths, and content",
     "noSearchResults": "No matching notes",
     "noNotes": "No Markdown notes in this Vault",

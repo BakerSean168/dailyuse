@@ -4,9 +4,9 @@
  * 删除提醒模板
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IReminderTemplateRepository } from '../../../domain/repositories/i-reminder-template-repository';
 import { ReminderPolicy } from '../../../domain/services/index';
 import type { ReminderDomainService } from '../../../domain/services/reminder-domain-service';

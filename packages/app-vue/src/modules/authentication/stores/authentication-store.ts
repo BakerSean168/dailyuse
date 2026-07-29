@@ -17,7 +17,7 @@ import type {
   AuthBootstrapSnapshot,
   CurrentUserDTO,
   ListSessionsRes,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 export type AuthenticationIdentity =
   | AuthIdentityClientDTO

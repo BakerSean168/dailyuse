@@ -15,7 +15,7 @@ updated: 2026-07-14T00:00:00+08:00
 
 ## Scope
 
-1. 统一 `@dailyuse/app-vue` production 根入口与子入口的模块身份。
+1. 统一 `@memoflow/app-vue` production 根入口与子入口的模块身份。
 2. 让 Electron Account transport 通过 Controller 保持非空 DTO 契约，并让账户 UI 可恢复失败。
 3. 删除独立 auth renderer 后不可达的 host titlebar 代码与过时说明。
 

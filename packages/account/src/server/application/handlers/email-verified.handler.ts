@@ -5,8 +5,8 @@
  */
 
 import type { IAccountRepository } from '../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { AuthEventMap } from '@dailyuse/contracts/authentication';
+import { createLogger } from '@memoflow/utils/logger';
+import type { AuthEventMap } from '@memoflow/contracts/authentication';
 
 const logger = createLogger('EmailVerifiedHandler');
 

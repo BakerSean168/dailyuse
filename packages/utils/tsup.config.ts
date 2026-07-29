@@ -1,5 +1,5 @@
 /**
- * @dailyuse/utils 打包配置
+ * @memoflow/utils 打包配置
  *
  * 包类型：工具函数库
  * 打包工具：tsup (基于 esbuild)
@@ -12,7 +12,7 @@
 
 import { baseLibraryConfig, createLocalOnlyDtsPaths } from '../../tools/build/tsup.base.config.ts';
 
-const config = baseLibraryConfig('@dailyuse/utils');
+const config = baseLibraryConfig('@memoflow/utils');
 
 export default {
   ...config,
@@ -32,7 +32,7 @@ export default {
     ...(config.external || []),
     'winston',
     'winston-daily-rotate-file',
-    '@dailyuse/contracts',
+    '@memoflow/contracts',
     'zod',
   ],
   dts: createLocalOnlyDtsPaths(),

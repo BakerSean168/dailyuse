@@ -147,7 +147,7 @@ docker compose -f docker-compose.local.yml --env-file .env.production.local down
 
 # 删除本地 PG 卷（名字以 compose 项目为准，常见如下）
 docker volume ls | rg postgres
-docker volume rm dailyuse_postgres-local-data
+docker volume rm memoflow_postgres-local-data
 # 若还有旧名：docker_postgres-dev-data 等，确认无用后删除
 
 # 重新构建并启动（会装 PG18 + Redis8）
@@ -188,7 +188,7 @@ pnpm -v   # 11.12.0
 pnpm nx run-many -t typecheck --projects=utils,contracts,api,web --parallel=4
 pnpm nx run api:build
 pnpm nx run web:build
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 ```
 
 若做桌面：

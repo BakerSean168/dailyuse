@@ -9,7 +9,7 @@ import {
   type PartialTimeStyle,
   type TimeEmptyKind,
   type ResolveEmptyLabelOptions,
-} from '@dailyuse/time';
+} from '@memoflow/time';
 
 let sessionTime: TimeFacade = createTimeFacade({
   style: {

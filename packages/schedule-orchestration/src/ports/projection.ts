@@ -1,7 +1,7 @@
-import type { GoalScheduleProjectionSource } from '@dailyuse/goal/schedule-projection';
-import type { ReminderScheduleProjectionSource } from '@dailyuse/reminder/schedule-projection';
-import type { IScheduleTaskRepository, ScheduleTask } from '@dailyuse/schedule';
-import type { TaskScheduleProjectionSource } from '@dailyuse/task/schedule-projection';
+import type { GoalScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
+import type { ReminderScheduleProjectionSource } from '@memoflow/reminder/schedule-projection';
+import type { IScheduleTaskRepository, ScheduleTask } from '@memoflow/schedule';
+import type { TaskScheduleProjectionSource } from '@memoflow/task/schedule-projection';
 import type { ScheduleOrchestrationExecutionDeps } from './execution';
 import type { RuntimeContribution } from './runtime-contribution';
 

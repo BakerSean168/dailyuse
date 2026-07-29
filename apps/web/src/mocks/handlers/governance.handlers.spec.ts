@@ -13,8 +13,8 @@ import {
   GetRuleRevisionsResSchema,
   RuleClientDTOSchema,
   SearchRulesResSchema,
-} from '@dailyuse/contracts/governance';
-import { createMockRule } from '@dailyuse/contracts/mocks';
+} from '@memoflow/contracts/governance';
+import { createMockRule } from '@memoflow/contracts/mocks';
 
 type MockHandler = {
   info?: { path?: string; method?: string };
@@ -58,7 +58,7 @@ describe('governance handlers contracts', () => {
   });
 
   it('exposes the same governance HTTP routes as the client seam', async () => {
-    const { createGovernanceHttpClient } = await import('@dailyuse/governance/client');
+    const { createGovernanceHttpClient } = await import('@memoflow/governance/client');
     const httpClient = createHttpClientSpy();
     const client = createGovernanceHttpClient(httpClient);
     const rule = createMockRule();

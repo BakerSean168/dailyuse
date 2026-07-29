@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { AuthIdentity, AuthDomainCode, OAuthProvider } from '../../../../domain';
 import type { IAuthIdentityRepository } from '../../../../domain';
 import { InMemoryOAuthStateStore } from '../../../../infrastructure/services/in-memory-oauth-state-store';

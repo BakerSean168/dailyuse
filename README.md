@@ -1,6 +1,6 @@
-# 知行 Memoflow
+# 知行 MemoFlow
 
-知行 Memoflow 是一个使用 `pnpm` + `Nx` 管理的多应用工作区，承载桌面端、Web、API、AI Service 与共享领域包。项目旨在构建一个 AI 驱动的个人效能管理系统，支持目标管理、任务调度、知识资源、AI 对话等功能。仓库中的文档、配置和测试以当前代码现实为准；如果文档与代码冲突，以代码、`project.json`、`nx.json`、测试配置和测试结果为准。
+知行 MemoFlow 是一个使用 `pnpm` + `Nx` 管理的多应用工作区，承载桌面端、Web、API、AI Service 与共享领域包。项目旨在构建一个 AI 驱动的个人效能管理系统，支持目标管理、任务调度、知识资源、AI 对话等功能。仓库中的文档、配置和测试以当前代码现实为准；如果文档与代码冲突，以代码、`project.json`、`nx.json`、测试配置和测试结果为准。
 
 ## 工作区概览
 
@@ -64,7 +64,7 @@ pnpm install
 pnpm nx run-many -t serve --projects=api,web
 pnpm nx run desktop:serve
 pnpm nx run-many -t lint,typecheck --all
-pnpm nx run daily-use:docs-check
+pnpm nx run memoflow:docs-check
 ```
 
 ## 文档导航
@@ -87,4 +87,4 @@ pnpm nx run daily-use:docs-check
 3. 需要规则时看 `docs/standards`；需要决策背景时看 ADR；需要真实行为时读代码、配置和测试。
 
 桌面端在 Windows 开发模式下的日志目录：
-`C:\Users\xx\AppData\Roaming\Memoflow-Dev\logs`
+`C:\Users\xx\AppData\Roaming\MemoFlow-Dev\logs`

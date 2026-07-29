@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
 import { aTaskInstance } from '../../../../../testing/task.fixture';
 
@@ -8,8 +8,8 @@ const { taskEventSend } = vi.hoisted(() => ({
   taskEventSend: vi.fn(),
 }));
 
-vi.mock('@dailyuse/utils/domain', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dailyuse/utils/domain')>();
+vi.mock('@memoflow/utils/domain', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@memoflow/utils/domain')>();
   return {
     ...actual,
     eventBus: {

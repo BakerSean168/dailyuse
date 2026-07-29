@@ -1,6 +1,6 @@
 #
 # =============================================================================
-# DailyUse 本地 Docker 编排（完整 prod-like 本地模式）
+# MemoFlow 本地 Docker 编排（完整 prod-like 本地模式）
 # =============================================================================
 # 用法：
 #   pnpm docker:local:up
@@ -41,7 +41,7 @@ services:
       - -c
       - max_replication_slots=10
     networks:
-      - dailyuse-local-network
+      - memoflow-local-network
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:?set DB_USER} -d ${DB_NAME:?set DB_NAME}']
       interval: 10s
@@ -65,7 +65,7 @@ services:
     volumes:
       - redis-local-data:/data
     networks:
-      - dailyuse-local-network
+      - memoflow-local-network
     healthcheck:
       test:
         [
@@ -82,7 +82,7 @@ services:
       start_period: 5s
 
   ai-service:
-    image: dailyuse-ai-service:local
+    image: memoflow-ai-service:local
     pull_policy: never
     build:
       context: .
@@ -96,7 +96,7 @@ services:
     init: true
     environment:
       NODE_ENV: production
-      SERVICE_NAME: dailyuse-ai-service
+      SERVICE_NAME: memoflow-ai-service
       AI_SERVICE_PORT: ${AI_SERVICE_PORT:-8100}
       APP_VERSION: ${APP_VERSION:-0.3.0}
       SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
@@ -115,7 +115,7 @@ services:
     ports:
       - '${AI_SERVICE_HOST_PORT:-58100}:${AI_SERVICE_PORT:-8100}'
     networks:
-      - dailyuse-local-network
+      - memoflow-local-network
     healthcheck:
       test:
         [
@@ -130,7 +130,7 @@ services:
       start_period: 20s
 
   api:
-    image: dailyuse-api:local
+    image: memoflow-api:local
     pull_policy: never
     build:
       context: .
@@ -163,7 +163,7 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-}
       SMTP_REPLY_TO: ${SMTP_REPLY_TO:-}
-      APP_NAME: ${APP_NAME:-DailyUse}
+      APP_NAME: ${APP_NAME:-MemoFlow}
       APP_VERSION: ${APP_VERSION:-0.3.0}
       LOG_LEVEL: ${LOG_LEVEL:-warn}
       API_PORT: 3000
@@ -193,14 +193,14 @@ services:
       QI_NIU_YUN_MODEL_ID: ${QI_NIU_YUN_MODEL_ID:-}
       AI_SERVICE_BASE_URL: http://ai-service:${AI_SERVICE_PORT:-8100}
       AI_SERVICE_SECRET: ${SERVICE_SECRET:?set SERVICE_SECRET}
-      AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-dailyuse-api}
+      AI_SERVICE_INTERNAL_NAME: ${AI_SERVICE_INTERNAL_NAME:-memoflow-api}
       AI_SERVICE_TIMEOUT_MS: ${AI_SERVICE_TIMEOUT_MS:-60000}
       POWERSYNC_URL: ${POWERSYNC_URL:?set POWERSYNC_URL}
       POWERSYNC_PRIVATE_KEY: ${POWERSYNC_PRIVATE_KEY:?set POWERSYNC_PRIVATE_KEY}
       POWERSYNC_PUBLIC_KEY_N: ${POWERSYNC_PUBLIC_KEY_N:?set POWERSYNC_PUBLIC_KEY_N}
       POWERSYNC_PUBLIC_KEY_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
       POWERSYNC_KEY_ID: ${POWERSYNC_KEY_ID:?set POWERSYNC_KEY_ID}
-      POWERSYNC_SNAPSHOT_DIR: ${POWERSYNC_SNAPSHOT_DIR:-/var/lib/dailyuse/powersync-snapshots}
+      POWERSYNC_SNAPSHOT_DIR: ${POWERSYNC_SNAPSHOT_DIR:-/var/lib/memoflow/powersync-snapshots}
       SNAPSHOT_REBUILD_ENABLED: ${SNAPSHOT_REBUILD_ENABLED:-false}
       SNAPSHOT_REBUILD_SCHEDULE: '${SNAPSHOT_REBUILD_SCHEDULE:-0 */4 * * *}'
       TZ: ${TZ:-Asia/Shanghai}
@@ -209,10 +209,10 @@ services:
     volumes:
       - api-local-logs:/app/apps/api/logs
       - api-local-uploads:/app/uploads
-      - repository-local-storage:/tmp/dailyuse-repository-storage
-      - powersync-profile-snapshots-local:${POWERSYNC_SNAPSHOT_DIR:-/var/lib/dailyuse/powersync-snapshots}
+      - repository-local-storage:/tmp/memoflow-repository-storage
+      - powersync-profile-snapshots-local:${POWERSYNC_SNAPSHOT_DIR:-/var/lib/memoflow/powersync-snapshots}
     networks:
-      - dailyuse-local-network
+      - memoflow-local-network
     healthcheck:
       test:
         [
@@ -256,7 +256,7 @@ services:
       - ./docker/powersync/powersync.yaml:/config/powersync.yaml:ro
       - ./docker/powersync/sync-config.yaml:/config/sync-config.yaml:ro
     networks:
-      - dailyuse-local-network
+      - memoflow-local-network
     healthcheck:
       test:
         [
@@ -271,7 +271,7 @@ services:
       start_period: 30s
 
   web:
-    image: dailyuse-web:local
+    image: memoflow-web:local
     pull_policy: never
     build:
       context: .
@@ -288,7 +288,7 @@ services:
     ports:
       - '${WEB_HOST_PORT:-58080}:80'
     networks:
-      - dailyuse-local-network
+      - memoflow-local-network
     healthcheck:
       test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1/']
       interval: 30s
@@ -297,7 +297,7 @@ services:
       start_period: 10s
 
 networks:
-  dailyuse-local-network:
+  memoflow-local-network:
     driver: bridge
 
 volumes:

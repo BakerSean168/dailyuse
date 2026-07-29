@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { describe, expect, it, vi } from 'vitest';
 
-import { AgentRunResultSchema, type AgentEvent } from '@dailyuse/contracts/ai';
-import { ok } from '@dailyuse/contracts/result';
+import { AgentRunResultSchema, type AgentEvent } from '@memoflow/contracts/ai';
+import { ok } from '@memoflow/contracts/result';
 import type { AIAgentRuntimeController } from '../../server/transport/ai-agent-runtime.controller';
 import { registerAIAgentRuntimeRoutes } from './ai-agent-runtime.routes';
 

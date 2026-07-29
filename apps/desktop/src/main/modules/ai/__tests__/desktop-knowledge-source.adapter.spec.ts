@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { LocalVaultElectronPort } from '@dailyuse/repository/electron';
+import type { LocalVaultElectronPort } from '@memoflow/repository/electron';
 import { DesktopKnowledgeSourceAdapter } from '../desktop-knowledge-source.adapter';
 
 const summary = {

@@ -5,9 +5,9 @@
  * 聚合根：TaskFolder
  */
 
-import type { PrismaClient, TaskFolder as PrismaTaskFolder } from '@dailyuse/database';
+import type { PrismaClient, TaskFolder as PrismaTaskFolder } from '@memoflow/database';
 import type { ITaskFolderRepository } from '../../../domain/repositories/i-task-folder-repository';
-import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
+import type { TaskFolderServerDTO } from '@memoflow/contracts/task';
 import { PrismaTaskFolderMapper } from './mappers/prisma-task-folder-mapper';
 
 export class TaskFolderPrismaRepository implements ITaskFolderRepository {

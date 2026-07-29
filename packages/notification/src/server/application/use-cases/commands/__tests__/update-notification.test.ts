@@ -1,11 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { anIdentityId } from '@dailyuse/test-utils/fixtures';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
+import { anIdentityId } from '@memoflow/test-utils/fixtures';
 import {
   NotificationCategory,
   NotificationStatus,
   NotificationType,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 import type { INotificationRepository } from '../../../../domain/repositories';
 import { Notification } from '../../../../domain/aggregates/notification';
 import { UpdateNotificationUseCase } from '../update-notification.use-case';

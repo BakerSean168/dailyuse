@@ -13,8 +13,8 @@ import {
   ScheduleChannels,
   SettingChannels,
   TaskChannels,
-} from '@dailyuse/contracts/electron';
-import { GovernanceChannels } from '@dailyuse/contracts/governance';
+} from '@memoflow/contracts/electron';
+import { GovernanceChannels } from '@memoflow/contracts/governance';
 
 const workspaceRoot = resolve(__dirname, '../../../../../..');
 

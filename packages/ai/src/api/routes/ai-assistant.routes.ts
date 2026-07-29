@@ -3,8 +3,8 @@
  * POST /api/v1/ai/assistant/dispatch/sse — stream AssistantEvent over SSE.
  */
 import { Router, type Request, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import { createHttpResponseBuilder } from '@dailyuse/utils/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import { createHttpResponseBuilder } from '@memoflow/utils/result';
 import type { AIAssistantFacadeController } from '../../server/transport/ai-assistant-facade.controller';
 
 interface PlatformMiddleware {

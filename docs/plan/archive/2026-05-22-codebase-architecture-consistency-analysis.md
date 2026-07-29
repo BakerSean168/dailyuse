@@ -58,11 +58,11 @@ status: active
     - `pnpm nx run desktop:test:main`（121 tests passed）
     - `pnpm nx run desktop:typecheck`
     - `pnpm nx run desktop:lint`（通过，当前 106 warnings）
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
 - Workpack B 已完成实现收口，状态可视为 `ready_for_pr`
   - 已完成：
-    - B1: `StatusRuleEditor.vue` 改从 `@dailyuse/goal/application-client` 导入 `sortRulesByPriority`
-    - B1: `TemplateBrowser.vue` 改从 `@dailyuse/goal/application-client` 导入 `GoalTemplate` 类型
+    - B1: `StatusRuleEditor.vue` 改从 `@memoflow/goal/application-client` 导入 `sortRulesByPriority`
+    - B1: `TemplateBrowser.vue` 改从 `@memoflow/goal/application-client` 导入 `GoalTemplate` 类型
     - B1: `TemplateRecommendationService` 改为消费 package 的 `BUILT_IN_TEMPLATES`（原来用空数组）
     - B2: `DAGExportService` → `utils/dag-export.ts`
     - B2: `GoalTimelineService` → `utils/goal-timeline.ts`
@@ -83,7 +83,7 @@ status: active
     - `pnpm nx run goal:typecheck`
     - `pnpm exec vue-tsc -p apps/web/tsconfig.json --noEmit`
     - `pnpm exec vue-tsc -p apps/desktop/tsconfig.json --noEmit`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:governance-check`
   - 分支：`refactor/goal-app-vue-seam-cleanup`
 - Workpack C 已完成实现收口，状态可视为 `ready_for_pr`
   - 已完成：
@@ -94,7 +94,7 @@ status: active
     - C2: 定义 5 个类别（app、runtime-lib、ui-lib、tooling-lib、meta-project）
     - C2: 提交 required target baseline
     - C2: 提交 25 条 documented exemption（每条附理由）
-    - C3: 新增 `target-baseline-check` target 到 root `daily-use` project
+    - C3: 新增 `target-baseline-check` target 到 root `memoflow` project
     - C3: 将 audit 链入 `governance-check`（与 docs-config check 并行执行）
     - C4: 新增 `docs/governance/target-baseline-governance.md` 维护文档
     - C4: 更新 `docs/governance/README.md` 添加新检查命令和文档链接
@@ -102,8 +102,8 @@ status: active
     - C5: `projectRules` 中的孤儿项目名现在会触发失败，不再被静默接受
     - C5: `exemptions` 现在必须引用真实存在的 repo-owned 项目，且 target 必须属于该类别的 required target
   - 已跑通：
-    - `pnpm nx run daily-use:target-baseline-check`
-    - `pnpm nx run daily-use:governance-check`
+    - `pnpm nx run memoflow:target-baseline-check`
+    - `pnpm nx run memoflow:governance-check`
   - 分支：`refactor/nx-target-governance`
 
 ## 约束与架构基线
@@ -327,7 +327,7 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
 
 - `desktop-auth-shell` 的 IPC surface 不改
 - `createDesktopProfileAuthService(db)` 的入口签名不改
-- `@dailyuse/contracts/authentication` 的返回结构不改
+- `@memoflow/contracts/authentication` 的返回结构不改
 - `IpcResult<T>`、`AuthBootstrapSnapshot`、`AuthStatus` 等 contract 维持兼容
 
 ### 目标结构
@@ -434,7 +434,7 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
 
 #### 输出
 
-- 所有可共享的 rules/templates 数据与 helper 只从 `@dailyuse/goal/application-client` 暴露
+- 所有可共享的 rules/templates 数据与 helper 只从 `@memoflow/goal/application-client` 暴露
 - `app-vue` 内只保留：
   - Vue composables
   - DOM/export helper
@@ -478,9 +478,9 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
   - 目标：`composables/useWeightSnapshot.ts`
   - 说明：Vue composable，不应放在 application 目录
 - `application/rules/BuiltInRules.ts`
-  - 目标：删除本地使用，caller 改为 `@dailyuse/goal/application-client`
+  - 目标：删除本地使用，caller 改为 `@memoflow/goal/application-client`
 - `application/templates/GoalTemplates.ts`
-  - 目标：删除本地使用，caller 改为 `@dailyuse/goal/application-client`
+  - 目标：删除本地使用，caller 改为 `@memoflow/goal/application-client`
 
 ### 禁止事项
 
@@ -557,7 +557,7 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
 
 ### 提交序列
 
-1. 先把 rules/templates caller 切到 `@dailyuse/goal/application-client`
+1. 先把 rules/templates caller 切到 `@memoflow/goal/application-client`
 2. 让模板推荐逻辑消费中心化模板数据
 3. 把 UI-only helper 从 `application/` 重分类到 `utils/` / `composables/`
 4. 删除本地重复实现并更新 index/barrel exports
@@ -590,7 +590,7 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
 - 缺 `build`：`app-react`、`mobile`、`ui-react-native` 等
 - 缺 `typecheck`：`assets`、`authentication`、`database`、`http-client`、`ipc-client`、`patterns`、`ui-core`、`utils` 等
 - 缺 `lint`：`assets`、`authentication`、`database`、`patterns` 等
-- 缺 `test`：`@dailyuse/test-utils`、`app-react`、`dashboard`、`database`、`http-client`、`ipc-client`、`mobile`、`powersync-schema`、`ui-vue-shadcn` 等
+- 缺 `test`：`@memoflow/test-utils`、`app-react`、`dashboard`、`database`、`http-client`、`ipc-client`、`mobile`、`powersync-schema`、`ui-vue-shadcn` 等
 
 问题不在于“必须立刻把所有项目补齐”，而在于：
 
@@ -600,7 +600,7 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
 
 ### 目标结构
 
-在 root `daily-use` project 下增加或扩展 workspace governance audit：
+在 root `memoflow` project 下增加或扩展 workspace governance audit：
 
 - 新增独立 audit 脚本，放在 `tools/` 下
 - audit 只扫描 repo-owned project：
@@ -726,7 +726,7 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
 
 #### C3. Wire governance target
 
-- 把 audit 接到 root `daily-use` project
+- 把 audit 接到 root `memoflow` project
 - 若复用 `governance-check`，则保留其现有职责，并把 target audit 纳入同一命令链
 - 若新增 target，则命名保持直观，例如 `target-baseline-check`
 
@@ -769,7 +769,7 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
 ### 提交序列
 
 1. 增加 workspace target audit 脚本
-2. 将 audit 接入 root `daily-use` governance target
+2. 将 audit 接入 root `memoflow` governance target
 3. 提交 baseline/exemption manifest
 4. 更新治理标准文档，说明如何新增 target 或申请豁免
 
@@ -784,7 +784,7 @@ Workpack A 的执行 agent 在结束前必须逐项确认：
 执行命令：
 
 - 新增的 workspace governance audit target
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ## 对其他 Agent 的执行要求
 

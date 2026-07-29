@@ -7,13 +7,13 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   GoalReminderConfig as IGoalReminderConfig,
   GoalReminderConfigDTO,
   ReminderTrigger,
   ReminderTriggerType,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 /**
  * GoalReminderConfig 值对象实现

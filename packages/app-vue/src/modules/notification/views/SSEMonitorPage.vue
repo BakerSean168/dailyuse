@@ -80,7 +80,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Radio } from '@lucide/vue';
-import { Button, Badge, ScrollArea, Separator } from '@dailyuse/ui-vue-shadcn';
+import { Button, Badge, ScrollArea, Separator } from '@memoflow/ui-vue-shadcn';
 
 interface SSEMessage {
   time: number;

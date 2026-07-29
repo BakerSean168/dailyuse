@@ -9,7 +9,7 @@
  * the module's DI container.
  */
 
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('AIServiceFactory');
 

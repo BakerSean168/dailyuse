@@ -1,11 +1,11 @@
 /**
- * @dailyuse/patterns — Cross-cutting domain patterns
+ * @memoflow/patterns — Cross-cutting domain patterns
  *
  * Root export only exposes stable, widely-used patterns.
  * Use subpath imports for specific pattern families:
- * - `@dailyuse/patterns/scheduler` — priority queue, timer, monitor
- * - `@dailyuse/patterns/repository` — aggregate repository base
- * - `@dailyuse/patterns/events` — event bus adapter, event interfaces
+ * - `@memoflow/patterns/scheduler` — priority queue, timer, monitor
+ * - `@memoflow/patterns/repository` — aggregate repository base
+ * - `@memoflow/patterns/events` — event bus adapter, event interfaces
  */
 
 // ── Repository patterns (most widely used) ──

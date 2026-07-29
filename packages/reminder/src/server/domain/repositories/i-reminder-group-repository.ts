@@ -9,7 +9,7 @@
  */
 
 import type { ReminderGroup } from '../aggregates/reminder-group';
-import type { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ControlMode, ReminderStatus } from '@memoflow/contracts/reminder';
 
 /**
  * IReminderGroupRepository 仓储接口

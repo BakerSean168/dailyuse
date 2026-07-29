@@ -44,7 +44,7 @@
     }
   },
   "projectRules": {
-    "daily-use": "meta-project",
+    "memoflow": "meta-project",
     "web": "app",
     "desktop": "app",
     "mobile": "app",
@@ -78,7 +78,7 @@
     "app-react": "ui-lib",
     "dashboard": "ui-lib",
     "assets": "ui-lib",
-    "@dailyuse/test-utils": "tooling-lib",
+    "@memoflow/test-utils": "tooling-lib",
     "nx-test-system": "tooling-lib",
     "governance-tools": "tooling-lib",
     "time": "runtime-lib"

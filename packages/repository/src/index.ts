@@ -1,8 +1,8 @@
 /**
- * @dailyuse/repository
+ * @memoflow/repository
  *
  * Public repository contracts stay centralized in
- * `@dailyuse/contracts/repository`.
+ * `@memoflow/contracts/repository`.
  * Root exports are limited to the canonical server composition roots.
  * Client / API / Electron seams use dedicated subpaths.
  */

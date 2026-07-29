@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/account",
+  "name": "@memoflow/account",
   "version": "0.0.1",
   "description": "账户模块 - 用户账户生命周期管理",
   "type": "module",
@@ -26,17 +26,17 @@
   },
   "scripts": {},
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/database": "workspace:*",
-    "@dailyuse/domain-shared": "workspace:*",
-    "@dailyuse/http-client": "workspace:*",
-    "@dailyuse/ipc-client": "workspace:*",
-    "@dailyuse/patterns": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/database": "workspace:*",
+    "@memoflow/domain-shared": "workspace:*",
+    "@memoflow/http-client": "workspace:*",
+    "@memoflow/ipc-client": "workspace:*",
+    "@memoflow/patterns": "workspace:*",
+    "@memoflow/utils": "workspace:*",
     "express": "^5.2.1",
     "tslib": "^2.3.0",
     "zod": "^4.4.3",
-    "@dailyuse/time": "workspace:*"
+    "@memoflow/time": "workspace:*"
   },
   "devDependencies": {
     "@types/express": "^5.0.0"

@@ -36,7 +36,7 @@ export function getAIServiceRuntimeConfig(): AIServiceRuntimeConfig | null {
   return {
     baseUrl,
     serviceSecret,
-    serviceName: process.env.AI_SERVICE_INTERNAL_NAME?.trim() || 'dailyuse-api',
+    serviceName: process.env.AI_SERVICE_INTERNAL_NAME?.trim() || 'memoflow-api',
     timeoutMs: Number(process.env.AI_SERVICE_TIMEOUT_MS ?? 60_000),
   };
 }

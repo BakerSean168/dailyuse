@@ -12,14 +12,14 @@
  */
 
 import { ipcMain } from 'electron';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import {
   TaskChannels,
   type IElectronDatabase,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
-import type { ListTaskTemplateFilters } from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/electron';
+import type { ListTaskTemplateFilters } from '@memoflow/contracts/task';
 import {
   createTaskPowerSyncModule,
   type TaskModuleInstance,
@@ -30,7 +30,7 @@ import { createTaskRuntimeContribution } from '../server/infrastructure/runtime'
 import { TaskTemplateController } from '../server/transport/task-template.controller';
 import { TaskInstanceController } from '../server/transport/task-instance.controller';
 import { TaskDependencyController } from '../server/transport/task-dependency.controller';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { ITaskTemplateRepository } from '../server/domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../server/domain/repositories/i-task-instance-repository';
 import { withAuthenticatedValue } from './authenticated-ipc';

@@ -3,7 +3,7 @@
  * 目标模块 Prisma 运行时组合便捷工厂。
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import {
   createGoalModule,
   type GoalModuleInstance,

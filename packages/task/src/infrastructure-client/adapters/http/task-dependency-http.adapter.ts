@@ -5,8 +5,8 @@
  * Uses IResultHttpClient for making HTTP requests.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type {
   ITaskDependencyApiClient,
 } from '../types';
@@ -17,7 +17,7 @@ import type {
   ValidateDependencyBody,
   ValidateDependencyResponse,
   DependencyChainClientDTO,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 /**
  * TaskDependencyHttpAdapter

@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
-import type { GoalScheduleProjectionEventMap, GoalScheduleProjectionSource } from '@dailyuse/goal/schedule-projection';
-import type { IScheduleTaskRepository } from '@dailyuse/schedule';
-import { ScheduleTask } from '@dailyuse/schedule';
-import type { Publisher, Subscriber } from '@dailyuse/utils/domain';
+import { SourceModule } from '@memoflow/contracts/schedule';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
+import type { GoalScheduleProjectionEventMap, GoalScheduleProjectionSource } from '@memoflow/goal/schedule-projection';
+import type { IScheduleTaskRepository } from '@memoflow/schedule';
+import { ScheduleTask } from '@memoflow/schedule';
+import type { Publisher, Subscriber } from '@memoflow/utils/domain';
 import { createGoalProjectionRuntime } from '../runtime/goal-projection-runtime';
 
 function createScheduleTask(goalId: string, name: string) {

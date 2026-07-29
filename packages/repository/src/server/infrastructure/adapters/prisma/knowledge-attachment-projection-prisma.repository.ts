@@ -1,5 +1,5 @@
-import type { PrismaClient } from '@dailyuse/database';
-import type { KnowledgeAttachmentProjectionClientDTO } from '@dailyuse/contracts/repository';
+import type { PrismaClient } from '@memoflow/database';
+import type { KnowledgeAttachmentProjectionClientDTO } from '@memoflow/contracts/repository';
 import type {
   IKnowledgeAttachmentProjectionRepository,
   KnowledgeAttachmentProjectionUpsert,

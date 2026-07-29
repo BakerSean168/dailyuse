@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```ts
- * import { createMockReminderTemplate, createMockReminderGroup } from '@dailyuse/contracts/mocks';
+ * import { createMockReminderTemplate, createMockReminderGroup } from '@memoflow/contracts/mocks';
  * const template = createMockReminderTemplate();
  * const group = createMockReminderGroup();
  * ```

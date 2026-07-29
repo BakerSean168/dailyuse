@@ -1,5 +1,5 @@
 import type { IAIProviderConfigApiClient, IResultIpcClient } from '../types';
-import { AIChannels } from '@dailyuse/contracts/electron';
+import { AIChannels } from '@memoflow/contracts/electron';
 import type {
   AIProviderConfigClientDTO,
   CreateAIProviderConfigReq,
@@ -8,8 +8,8 @@ import type {
   TestAIProviderReq,
   TestAIProviderRes,
   UpdateAIProviderConfigReq,
-} from '@dailyuse/contracts/ai';
-import { map, type Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import { map, type Result } from '@memoflow/contracts/result';
 
 /**
  * IPC adapter for AI provider-config ports.

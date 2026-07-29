@@ -7,12 +7,12 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   CompletionRecord as ICompletionRecord,
   CompletionRecordDTO,
-} from '@dailyuse/contracts/task';
-import type { Instant } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/task';
+import type { Instant } from '@memoflow/contracts/primitives';
 
 /**
  * CompletionRecord 值对象实现

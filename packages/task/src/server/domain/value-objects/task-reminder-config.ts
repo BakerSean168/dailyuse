@@ -7,13 +7,13 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   TaskReminderConfig as ITaskReminderConfig,
   TaskReminderConfigDTO,
   TaskReminderType,
   ReminderTimeUnit,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 /**
  * 单个提醒触发器

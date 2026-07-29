@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Toaster } from '@dailyuse/ui-vue-shadcn/components/ui/sonner';
-import { GlobalErrorBoundary } from '@dailyuse/app-vue';
-import { DesktopAuthView } from '@dailyuse/app-vue/desktop';
+import { Toaster } from '@memoflow/ui-vue-shadcn/components/ui/sonner';
+import { GlobalErrorBoundary } from '@memoflow/app-vue';
+import { DesktopAuthView } from '@memoflow/app-vue/desktop';
 </script>
 
 <template>

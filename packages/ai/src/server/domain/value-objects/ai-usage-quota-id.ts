@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { AiUsageQuotaId as IAiUsageQuotaId } from '@dailyuse/contracts/primitives';
+import type { AiUsageQuotaId as IAiUsageQuotaId } from '@memoflow/contracts/primitives';
 
 /**
  * AiUsageQuotaId 值对象

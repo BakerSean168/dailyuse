@@ -1,6 +1,6 @@
 import { app, nativeImage, type NativeImage } from 'electron';
 import { existsSync } from 'node:fs';
-import { assetManifest } from '@dailyuse/assets';
+import { assetManifest } from '@memoflow/assets';
 import { resolveAssetPath, resolveAssetPathFromKey } from './asset-path';
 
 export const DESKTOP_APP_USER_MODEL_ID = 'com.memoflow.app';
@@ -82,8 +82,8 @@ export function configureDesktopShellIdentity(): void {
 export function resolveWindowIconPath(): string {
   const iconPath =
     process.platform === 'win32'
-      ? resolveIconPath('logoIco', 'images/logos/Memoflow.ico')
-      : resolveIconPath('logo512', 'images/logos/Memoflow-512.png');
+      ? resolveIconPath('logoIco', 'images/logos/MemoFlow.ico')
+      : resolveIconPath('logo512', 'images/logos/MemoFlow-512.png');
 
   if (shouldLogIconDiagnostics()) {
     console.info('[icons] Resolved window icon path', {
@@ -102,10 +102,10 @@ export function createTrayIconImage(): NativeImage {
     const icon = loadNativeImage(
       'tray',
       [
-        resolveIconPath('logoIco', 'images/logos/Memoflow.ico'),
-        resolveIconPath('trayWin32', 'images/logos/Memoflow-Tray-Windows-32.png'),
-        resolveIconPath('trayWin16', 'images/logos/Memoflow-Tray-Windows-16.png'),
-        resolveIconPath('logo32', 'images/logos/Memoflow-32.png'),
+        resolveIconPath('logoIco', 'images/logos/MemoFlow.ico'),
+        resolveIconPath('trayWin32', 'images/logos/MemoFlow-Tray-Windows-32.png'),
+        resolveIconPath('trayWin16', 'images/logos/MemoFlow-Tray-Windows-16.png'),
+        resolveIconPath('logo32', 'images/logos/MemoFlow-32.png'),
       ],
       32,
     );
@@ -114,7 +114,7 @@ export function createTrayIconImage(): NativeImage {
 
   const icon = loadNativeImage(
     'tray',
-    [resolveIconPath('logo32', 'images/logos/Memoflow-32.png')],
+    [resolveIconPath('logo32', 'images/logos/MemoFlow-32.png')],
     process.platform === 'darwin' ? 18 : 24,
   );
 
@@ -127,7 +127,7 @@ export function createTrayIconImage(): NativeImage {
 
 export function resolveTrayIcon(): { image: NativeImage | string; guid?: string } {
   if (process.platform === 'win32') {
-    const icoPath = resolveIconPath('logoIco', 'images/logos/Memoflow.ico');
+    const icoPath = resolveIconPath('logoIco', 'images/logos/MemoFlow.ico');
 
     if (shouldLogIconDiagnostics()) {
       console.info('[icons] Resolved tray icon path', {

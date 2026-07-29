@@ -43,7 +43,7 @@ pnpm docker:local:up
 该入口会把当前 Git revision 和 UTC 构建时间写入 Web、API、AI Service 的 OCI 镜像标签；工作区存在未提交修改时，revision 带 `-dirty` 后缀。构建后可用以下命令核对：
 
 ```bash
-docker image inspect dailyuse-api:local --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}'
+docker image inspect memoflow-api:local --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}'
 ```
 
 等价底层命令：

@@ -8,7 +8,7 @@
  * Does NOT support knowledge query, analytics, or goal automation.
  */
 
-import type { AICapabilities } from '@dailyuse/contracts/ai';
+import type { AICapabilities } from '@memoflow/contracts/ai';
 import type {
   AIModuleDependencies,
   AIModuleServices,

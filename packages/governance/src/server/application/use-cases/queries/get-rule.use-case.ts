@@ -4,11 +4,11 @@
  */
 
 import type { IRuleRepository } from '../../../domain/repositories/i-rule-repository';
-import type { Result } from '@dailyuse/contracts/result';
-import { toResultErrorException } from '@dailyuse/contracts/result';
-import { resultify } from '@dailyuse/utils/result';
-import type { GetRuleReq, GetRuleRes } from '@dailyuse/contracts/governance';
-import type { RuleId } from '@dailyuse/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { toResultErrorException } from '@memoflow/contracts/result';
+import { resultify } from '@memoflow/utils/result';
+import type { GetRuleReq, GetRuleRes } from '@memoflow/contracts/governance';
+import type { RuleId } from '@memoflow/contracts/governance';
 
 /**
  * Get Rule Use Case.

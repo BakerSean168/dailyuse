@@ -12,11 +12,11 @@
  */
 
 import { Router } from 'express';
-import { ResultCode } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+import { ResultCode } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-module.js';
-import type { ServerModuleContext } from '@dailyuse/contracts/shared';
-import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { PrismaClient } from '@memoflow/database';
 import { getPowerSyncConfig } from '../../shared/infrastructure/config/env.js';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/auth-middleware.js';
 import { createApiResponseBuilder } from '../../shared/infrastructure/http/response-builder.js';

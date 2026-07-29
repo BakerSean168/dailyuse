@@ -24,14 +24,14 @@ updated: 2025-12-06
 > 当前桌面实现已迁移到 module composition roots、shared IPC channel contracts、
 > preload allowlists 与 transport-neutral module APIs。
 
-在 ADR-004 中，我们决定采用分层提取策略，将业务逻辑提取到共享包中。现在需要明确 Electron 主进程与渲染进程之间的通信架构，以及如何将 `@dailyuse/infrastructure-client` 和 `@dailyuse/infrastructure-server` 包集成到 Desktop 应用中。
+在 ADR-004 中，我们决定采用分层提取策略，将业务逻辑提取到共享包中。现在需要明确 Electron 主进程与渲染进程之间的通信架构，以及如何将 `@memoflow/infrastructure-client` 和 `@memoflow/infrastructure-server` 包集成到 Desktop 应用中。
 
 ### 现有基础设施
 
 已提取的包：
 
-- `@dailyuse/infrastructure-client`: 12 Container, 21 IPC Adapters
-- `@dailyuse/infrastructure-server`: 11 Container
+- `@memoflow/infrastructure-client`: 12 Container, 21 IPC Adapters
+- `@memoflow/infrastructure-server`: 11 Container
 - `configureDesktopDependencies(electronApi)`: 渲染进程 DI 配置函数
 
 ### 核心问题
@@ -76,7 +76,7 @@ updated: 2025-12-06
 │  │      ↓                                                        │   │
 │  │  useGoal()  (composable)                                      │   │
 │  │      ↓                                                        │   │
-│  │  GetAllGoalsService  (@dailyuse/application-client)           │   │
+│  │  GetAllGoalsService  (@memoflow/application-client)           │   │
 │  │      ↓                                                        │   │
 │  │  injected goal client adapter                                 │
 │  │      ↓                                                        │   │
@@ -123,7 +123,7 @@ updated: 2025-12-06
 ### 2. ElectronAPI 接口定义
 
 ```typescript
-// @dailyuse/infrastructure-client/src/shared/ipc-client.types.ts
+// @memoflow/infrastructure-client/src/shared/ipc-client.types.ts
 export interface ElectronAPI {
   invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
   on(channel: string, callback: (...args: unknown[]) => void): void;
@@ -261,7 +261,7 @@ Renderer Process:
 
 ✅ **类型安全**
 
-- `@dailyuse/contracts` 定义的 DTO 在两端共享
+- `@memoflow/contracts` 定义的 DTO 在两端共享
 - TypeScript 编译时检查
 
 ✅ **易于调试**
@@ -315,7 +315,7 @@ Renderer Process:
 | -------------- | ---- | ---- | ----------------------------------- |
 | IPC 序列化失败 | 中   | 高   | 确保只传递 Plain Object，无循环引用 |
 | 大数据量传输慢 | 中   | 中   | 实现分页，流式传输                  |
-| 类型不同步     | 低   | 高   | 使用 `@dailyuse/contracts` 统一 DTO |
+| 类型不同步     | 低   | 高   | 使用 `@memoflow/contracts` 统一 DTO |
 | 调试困难       | 中   | 中   | electron-log 统一日志               |
 
 ## 相关决策

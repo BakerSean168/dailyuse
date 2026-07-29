@@ -6,7 +6,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTask } from '../../../modules/task/composables/useTask';
-import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@memoflow/contracts/task';
 import { formatHHmmParts } from '../../../shared/utils/format-hhmm-parts';
 import { startOfDayMs, endOfDayMs, isTodayMs } from '../../../shared/utils/product-time';
 

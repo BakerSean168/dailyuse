@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { ok, error } from '@dailyuse/contracts/result';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { ok, error } from '@memoflow/contracts/result';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { ITaskDependencyRepository } from '../../../../domain/repositories/i-task-dependency-repository';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import { GetDependencyChainUseCase } from '../get-dependency-chain.use-case';

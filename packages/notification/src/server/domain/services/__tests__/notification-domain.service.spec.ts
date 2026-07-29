@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { INotificationRepository } from '../../repositories/i-notification-repository';
 import type { INotificationTemplateRepository } from '../../repositories/i-notification-template-repository';
 import type { INotificationPreferenceRepository } from '../../repositories/i-notification-preference-repository';
@@ -12,7 +12,7 @@ import {
   NotificationCategory,
   NotificationChannelType,
   NotificationStatus,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 describe('NotificationDomainService', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;

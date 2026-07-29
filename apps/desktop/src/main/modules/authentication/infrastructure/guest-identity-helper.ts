@@ -7,17 +7,17 @@
  * @module authentication/infrastructure/guest-identity-helper
  */
 
-import { AuthSession } from '@dailyuse/authentication/electron';
-import { DeviceInfo } from '@dailyuse/authentication/electron';
+import { AuthSession } from '@memoflow/authentication/electron';
+import { DeviceInfo } from '@memoflow/authentication/electron';
 import type {
   IdentityId,
   AuthSessionId,
   DeviceInfoClientDTO,
   TokenStorageData,
-} from '@dailyuse/contracts/authentication';
-import type { IAuthSessionRepository } from '@dailyuse/authentication/electron';
-import type { ILogger } from '@dailyuse/utils/logger';
-import { generateUUID } from '@dailyuse/utils/shared';
+} from '@memoflow/contracts/authentication';
+import type { IAuthSessionRepository } from '@memoflow/authentication/electron';
+import type { ILogger } from '@memoflow/utils/logger';
+import { generateUUID } from '@memoflow/utils/shared';
 import type { TokenManager } from './token-manager';
 // Residual 937: toIdentityId / toDeviceInfoDTO duals retired — session-types sole helpers.
 import { GUEST_ACCESS_TOKEN, toDeviceInfoDTO, toIdentityId } from './session-types';

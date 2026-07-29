@@ -115,7 +115,7 @@ updated: 2026-07-03T20:54:00+08:00
 - `pnpm nx run desktop:test:main`
 - `pnpm nx run schedule:test`
 - `pnpm nx run schedule-orchestration:test`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ### Known local fallback when `pnpm` hits `ERR_PNPM_IGNORED_BUILDS`
 
@@ -124,7 +124,7 @@ updated: 2026-07-03T20:54:00+08:00
 - `.\node_modules\.bin\nx.cmd run desktop:test:main`
 - `.\node_modules\.bin\nx.cmd run schedule:test`
 - `.\node_modules\.bin\nx.cmd run schedule-orchestration:test`
-- `.\node_modules\.bin\nx.cmd run daily-use:governance-check`
+- `.\node_modules\.bin\nx.cmd run memoflow:governance-check`
 
 ## 13. Exit Criteria
 
@@ -142,6 +142,6 @@ updated: 2026-07-03T20:54:00+08:00
 - Status: done
 - What changed: 已补 `apps/api/src/bootstrap.spec.ts`、`apps/web/src/bootstrap/app.spec.ts`、`apps/desktop/src/renderer/bootstrap/app.spec.ts`、`apps/desktop/src/main/__tests__/bootstrap.spec.ts` 与 `packages/schedule-orchestration/src/__tests__/*`，并通过 `apps/desktop/test-support/electron.stub.ts` 与 desktop auth fixture 收口把 desktop 主进程/renderer 直达测试纳入稳定基线；同时完成 blueprint、execution-plan、runbook、playbook 与本轮状态回写。
 - Old path deleted: 过时的 desktop Electron install baseline blocker 叙述、`SessionManager` branded ID warning follow-up 叙述，以及各 active plan 中对旧阻塞状态的当前时描述。
-- Verification: `.\node_modules\.bin\nx.cmd run api:test`、`api:test:smoke`、`web:test`、`task:typecheck`、`task:test`、`goal:test`、`reminder:test`、`schedule:test`、`schedule-orchestration:test`、`desktop:test:main`、`desktop:test`、`daily-use:governance-check` 通过；`.\node_modules\.bin\madge.cmd --circular --extensions ts packages/task/src/index.ts` 无循环依赖。
+- Verification: `.\node_modules\.bin\nx.cmd run api:test`、`api:test:smoke`、`web:test`、`task:typecheck`、`task:test`、`goal:test`、`reminder:test`、`schedule:test`、`schedule-orchestration:test`、`desktop:test:main`、`desktop:test`、`memoflow:governance-check` 通过；`.\node_modules\.bin\madge.cmd --circular --extensions ts packages/task/src/index.ts` 无循环依赖。
 - Remaining follow-up: none。本轮完成后整组 core-seam 计划满足归档条件。
 

@@ -11,8 +11,8 @@ import type {
   CapabilityRequirement,
   ICapabilityResolverPort,
   ResolvedRunPlan,
-} from '@dailyuse/contracts/ai';
-import { resolveRunPlan } from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
+import { resolveRunPlan } from '@memoflow/contracts/ai';
 
 export const CAPABILITY_RESOLVER_ENGINE_ID = 'capability-resolver' as const;
 

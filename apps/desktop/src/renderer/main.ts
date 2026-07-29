@@ -4,9 +4,9 @@
  * Keep startup tiny so `#/auth` can boot without paying for the entire
  * authenticated renderer shell.
  */
-import { applyDocumentIcons, logo128, logoIco } from '@dailyuse/assets';
-// Residual 943: escapeHtml dual retired — @dailyuse/utils/shared sole helper.
-import { escapeHtml } from '@dailyuse/utils/shared';
+import { applyDocumentIcons, logo128, logoIco } from '@memoflow/assets';
+// Residual 943: escapeHtml dual retired — @memoflow/utils/shared sole helper.
+import { escapeHtml } from '@memoflow/utils/shared';
 
 import './styles/index.css';
 // Residual 941: host bridge via ensureElectronBridgeAvailable sole helper.

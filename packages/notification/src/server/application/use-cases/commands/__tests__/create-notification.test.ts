@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { anIdentityId } from '@dailyuse/test-utils/fixtures';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
+import { anIdentityId } from '@memoflow/test-utils/fixtures';
 import type { INotificationRepository } from '../../../../domain/repositories/i-notification-preference-repository';
 import type { INotificationTemplateRepository } from '../../../../domain/repositories/i-notification-preference-repository';
 import type { INotificationPreferenceRepository } from '../../../../domain/repositories/i-notification-preference-repository';
@@ -10,7 +10,7 @@ import {
   NotificationCategory,
   NotificationChannelType,
   NotificationStatus,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 import { NotificationPreference } from '../../../../domain/aggregates/notification-preference';
 
 describe('CreateNotificationUseCase', () => {

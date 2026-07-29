@@ -12,7 +12,7 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { DASHBOARD_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
-import type { DashboardData } from '@dailyuse/contracts/dashboard';
+import type { DashboardData } from '@memoflow/contracts/dashboard';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 
 // ── Default empty state ──

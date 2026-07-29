@@ -1,9 +1,9 @@
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
-import type { UserSettingClientDTO, UserSettingPreferences } from '@dailyuse/contracts/setting';
-import { createTestPinia } from '@dailyuse/test-utils';
+import { ok } from '@memoflow/contracts/result';
+import type { UserSettingClientDTO, UserSettingPreferences } from '@memoflow/contracts/setting';
+import { createTestPinia } from '@memoflow/test-utils';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { usePresentationPreferenceStore } from '../stores/presentation-preference-store';

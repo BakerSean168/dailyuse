@@ -43,7 +43,7 @@ describe('DESKTOP_AUTH_API_KEY dual retired (residual 915)', () => {
   });
 
   it('keeps DESKTOP_BRIDGE_KEY as full ElectronBridge keep-boundary', () => {
-    expect(keys).toContain("import type { ElectronBridge } from '@dailyuse/ipc-client'");
+    expect(keys).toContain("import type { ElectronBridge } from '@memoflow/ipc-client'");
     expect(keys).toContain(
       'export const DESKTOP_BRIDGE_KEY: InjectionKey<ElectronBridge>',
     );

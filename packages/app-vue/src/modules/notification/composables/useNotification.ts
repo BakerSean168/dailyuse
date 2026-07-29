@@ -11,7 +11,7 @@ import { useNotificationStore } from '../stores/notification-store';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 import { createComposableHandleError } from '../../../shared/utils/create-composable-handle-error';
 

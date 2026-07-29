@@ -1,21 +1,21 @@
 /**
- * @dailyuse/utils - 通用工具库
+ * @memoflow/utils - 通用工具库
  *
  * 根入口只导出最常用的跨层工具。深层访问请使用子路径导入：
- * - `@dailyuse/utils/shared`      共享工具（id, time, recurrence, priority；产品日期请用 @dailyuse/time）
- * - `@dailyuse/utils/domain`      DDD 基础类（Entity, AggregateRoot, ValueObject, EventBus）
- * - `@dailyuse/utils/errors`      错误处理
- * - `@dailyuse/utils/validation`  验证工具
- * - `@dailyuse/utils/result`      Result Pattern 工具
- * - `@dailyuse/utils/frontend`    前端专用工具（debounce, throttle, loading-state）
- * - `@dailyuse/utils/lifecycle`   初始化管理器
- * - `@dailyuse/utils/logger`      日志系统
- * - `@dailyuse/utils/winston`     Node.js Winston 日志
+ * - `@memoflow/utils/shared`      共享工具（id, time, recurrence, priority；产品日期请用 @memoflow/time）
+ * - `@memoflow/utils/domain`      DDD 基础类（Entity, AggregateRoot, ValueObject, EventBus）
+ * - `@memoflow/utils/errors`      错误处理
+ * - `@memoflow/utils/validation`  验证工具
+ * - `@memoflow/utils/result`      Result Pattern 工具
+ * - `@memoflow/utils/frontend`    前端专用工具（debounce, throttle, loading-state）
+ * - `@memoflow/utils/lifecycle`   初始化管理器
+ * - `@memoflow/utils/logger`      日志系统
+ * - `@memoflow/utils/winston`     Node.js Winston 日志
  */
 
 // ── shared ──
 export { newId, generateUUID, isValidUUID, generateShortId } from './shared/uuid';
-/** ADR-037 T9: utils product date bridges retired — use @dailyuse/time. */
+/** ADR-037 T9: utils product date bridges retired — use @memoflow/time. */
 export { nowIso, toIso } from './shared/time';
 export { EnvConfig, envConfig, type IEnvConfig } from './shared/env-config';
 

@@ -83,7 +83,7 @@ cd apps/ai-service && uv run ruff check
 cd apps/web && pnpm exec vue-tsc --noEmit -p tsconfig.typecheck.json
 
 # Full validation
-node ./tools/agent-skills/validate-local-deploy/scripts/run-validation.mjs --workspace "D:\home\projects\dailyuse"
+node ./tools/agent-skills/validate-local-deploy/scripts/run-validation.mjs --workspace "D:\home\projects\memoflow"
 ```
 
 ## Next Steps

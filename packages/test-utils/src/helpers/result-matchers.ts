@@ -2,7 +2,7 @@
  * Custom Vitest matchers for Result<T> assertions
  *
  * Usage:
- *   import '@dailyuse/test-utils/helpers/result-matchers';
+ *   import '@memoflow/test-utils/helpers/result-matchers';
  *
  *   expect(result).toBeOk();
  *   expect(result).toBeOkWith({ id: 'xxx' });

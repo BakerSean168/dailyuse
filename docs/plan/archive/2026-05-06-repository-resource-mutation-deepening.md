@@ -8,7 +8,7 @@
 
 ## 问题定位
 
-`repository` 当前最明显的问题不是 use case 不存在，而是 [repository.module.ts](D:/home/projects/dailyuse/packages/repository/src/infrastructure-server/repository.module.ts:411) 里的 `buildApplicationPort()` 吸住了大量真正的 workflow implementation。
+`repository` 当前最明显的问题不是 use case 不存在，而是 [repository.module.ts](D:/home/projects/memoflow/packages/repository/src/infrastructure-server/repository.module.ts:411) 里的 `buildApplicationPort()` 吸住了大量真正的 workflow implementation。
 
 当前散落在 composition root 中的核心实现包括：
 
@@ -136,7 +136,7 @@
 
 ### Wave 2: 把 `buildApplicationPort()` 改成薄委派
 
-改造 [repository.module.ts](D:/home/projects/dailyuse/packages/repository/src/infrastructure-server/repository.module.ts:411)：
+改造 [repository.module.ts](D:/home/projects/memoflow/packages/repository/src/infrastructure-server/repository.module.ts:411)：
 
 - 在 composition root 中组装上述 3 个 service
 - 删除旧 helper implementation
@@ -151,7 +151,7 @@
 
 ### Wave 3: 让 `UploadResourcesUseCase` 复用深 module
 
-改造 [upload-resources.use-case.ts](D:/home/projects/dailyuse/packages/repository/src/application-server/use-cases/commands/upload-resources.use-case.ts:1)：
+改造 [upload-resources.use-case.ts](D:/home/projects/memoflow/packages/repository/src/application-server/use-cases/commands/upload-resources.use-case.ts:1)：
 
 - 保留其“批量上传 orchestrator”定位
 - 不再自己维护 folder/path/existing resource 的核心判断
@@ -231,7 +231,7 @@
 
 - `pnpm nx run repository:typecheck`
 - `pnpm nx run repository:test`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ## 完成定义
 

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { AutoUpdateChannels } from '@dailyuse/contracts/electron';
+import { AutoUpdateChannels } from '@memoflow/contracts/electron';
 
 /**
  * Auto-update IPC handler surface (stage-6 residual):
@@ -12,7 +12,7 @@ describe('auto-update IPC channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'index.ts'), 'utf8');
 
   it('registers handlers via AutoUpdateChannels only', () => {
-    expect(source).toContain("import { AutoUpdateChannels } from '@dailyuse/contracts/electron'");
+    expect(source).toContain("import { AutoUpdateChannels } from '@memoflow/contracts/electron'");
     expect(source).toContain('AutoUpdateChannels.CHECK');
     expect(source).toContain('AutoUpdateChannels.DOWNLOAD');
     expect(source).toContain('AutoUpdateChannels.INSTALL');
@@ -22,7 +22,7 @@ describe('auto-update IPC channel surface', () => {
   });
 
   it('returns contracts Result ok/fail envelopes instead of { success } dual-track', () => {
-    expect(source).toContain("import { fail, ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain("import { fail, ok } from '@memoflow/contracts/result'");
     expect(source).toContain('return ok(');
     expect(source).toContain('return fail({');
     expect(source).not.toMatch(/success:\s*true/);

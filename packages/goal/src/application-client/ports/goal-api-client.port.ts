@@ -5,10 +5,10 @@
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
  * All methods return Result<T> for consistent error handling.
- * Types imported from @dailyuse/contracts/goal.
+ * Types imported from @memoflow/contracts/goal.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   GoalClientDTO,
   GoalSystemView,
@@ -28,7 +28,7 @@ import type {
   CreateGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 export interface IGoalApiClient {
   // Goal CRUD

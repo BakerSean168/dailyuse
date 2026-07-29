@@ -15,9 +15,9 @@ import {
   Progress,
   Skeleton,
   Button,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Target, ArrowRight } from '@lucide/vue';
-import type { GoalProgressItem } from '@dailyuse/contracts/dashboard';
+import type { GoalProgressItem } from '@memoflow/contracts/dashboard';
 
 withDefaults(
   defineProps<{

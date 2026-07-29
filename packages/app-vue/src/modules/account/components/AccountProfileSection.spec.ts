@@ -2,7 +2,7 @@ import { defineComponent, h } from 'vue';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { describe, expect, it, vi } from 'vitest';
-import { fail } from '@dailyuse/contracts/result';
+import { fail } from '@memoflow/contracts/result';
 import type { IAccountService } from '../../../di/types';
 import { ACCOUNT_SERVICE_KEY, AUTH_SERVICE_KEY, LOGOUT_HANDLER_KEY } from '../../../di/keys';
 import AccountProfileSection from './AccountProfileSection.vue';

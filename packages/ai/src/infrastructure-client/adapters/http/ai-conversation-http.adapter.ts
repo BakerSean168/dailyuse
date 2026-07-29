@@ -4,8 +4,8 @@ import type {
   ConversationListRes,
   CreateConversationReq,
   UpdateConversationReq,
-} from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 /**
  * HTTP adapter for AI conversations.

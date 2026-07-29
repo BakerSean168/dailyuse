@@ -3,13 +3,13 @@
  */
 import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   RouteRegistrar,
   type OpenApiRegistryLike,
   errorResponse,
   successResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   AgentEventSchema,
   AgentRunSchema,
@@ -17,7 +17,7 @@ import {
   AgentResumePayloadSchema,
   AgentRunResultSchema,
   AgentStartRunClientRequestSchema,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { AIAgentRuntimeController } from '../../server/transport/ai-agent-runtime.controller';
 import { getRequestId } from '../../shared/get-request-id';
 

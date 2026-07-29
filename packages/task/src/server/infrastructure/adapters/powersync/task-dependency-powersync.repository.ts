@@ -1,14 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import type { ITaskDependencyRepository } from '../../../domain/repositories/i-task-dependency-repository';
-import type { DependencyType, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
-import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@dailyuse/contracts/primitives';
+import type { DependencyType, TaskDependencyServerDTO } from '@memoflow/contracts/task';
+import type { TaskDependencyId, IdentityId, TaskTemplateId } from '@memoflow/contracts/primitives';
 import {
   PowerSyncTaskDependencyMapper,
   type PowerSyncTaskDependencyRow,
 } from './mappers/powersync-task-dependency.mapper';
 import { TaskDependency } from '../../../domain/aggregates/task-dependency';
-import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { createEventBusAdapter, publishAggregateEvents } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

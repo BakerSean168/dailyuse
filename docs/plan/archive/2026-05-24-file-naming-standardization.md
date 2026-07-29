@@ -39,7 +39,7 @@ updated: 2026-05-24T00:00:00
 
 - 新增 `tools/governance/file-naming-audit.mjs`
 - 审计范围限定为 `apps/**` 与 `packages/**`
-- 接入根 `project.json` 的 `daily-use:governance-check`
+- 接入根 `project.json` 的 `memoflow:governance-check`
 - 排除：
   - `node_modules`、`dist`、`coverage`、`.nx`
   - generated / vendored 路径
@@ -68,7 +68,7 @@ updated: 2026-05-24T00:00:00
 ## 验收标准
 
 - ADR-011 与治理脚本表达同一套规则
-- `pnpm nx run daily-use:governance-check` 能拦截真实违规并放过设计内例外
+- `pnpm nx run memoflow:governance-check` 能拦截真实违规并放过设计内例外
 - 所有重命名后的 import 路径可正常解析
 - Vue 组件区不发生无意义 churn
 - hooks / composables 与普通 TS 模块不再混用多种命名哲学

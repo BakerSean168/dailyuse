@@ -10,7 +10,7 @@
  */
 
 import { BrowserWindow, app } from 'electron';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { AppUpdater, UpdateInfo as ElectronUpdateInfo } from 'electron-updater';
 
 const logger = createLogger('AutoUpdateManager');

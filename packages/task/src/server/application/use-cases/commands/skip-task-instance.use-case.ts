@@ -8,9 +8,9 @@ import type { ITaskInstanceRepository } from '../../../domain/repositories/i-tas
 import type {
   SkipTaskInstanceReq,
   TaskInstanceOperationRes,
-} from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 /**
  * Skip Task Instance Service

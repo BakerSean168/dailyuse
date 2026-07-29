@@ -37,7 +37,7 @@ pnpm nx run data-portability:build
 pnpm nx build api
 pnpm nx build desktop
 pnpm nx run app-vue:typecheck
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 ```
 
 补充说明：
@@ -53,7 +53,7 @@ pnpm nx run daily-use:governance-check
 
 - Web 端可以通过 HTTP adapter 调用 `/api/v1/data-portability/export` 和 `/api/v1/data-portability/import`。
 - `packages/app-vue` 设置页已经有 `useDataPortability()`，并支持在 service 不存在时隐藏全量导入导出入口。
-- Desktop 主进程暂未注册 `@dailyuse/data-portability/electron-entry`。
+- Desktop 主进程暂未注册 `@memoflow/data-portability/electron-entry`。
 - Desktop renderer 暂未提供 `DATA_PORTABILITY_SERVICE_KEY`，因此不会展示全量用户数据导入导出按钮。
 
 本方案目标是在 Desktop 端实现真实可用的本地用户数据导入导出，而不是恢复一个会抛错的 IPC surface。
@@ -185,14 +185,14 @@ export function createPowerSyncDataPortabilityDependencies(
 
 | 模块 | 可复用来源 | 说明 |
 | --- | --- | --- |
-| goal | `@dailyuse/goal/api` 暴露的 PowerSync repositories | `findByIdentityId(..., { includeChildren })` 已存在 |
-| task | `@dailyuse/task/api` 暴露的 PowerSync repositories | 需确认 dependency repository 是否完整导出 |
-| reminder | `@dailyuse/reminder/api` PowerSync repositories | 已有 template/group/response/preference |
-| repository | `@dailyuse/repository/api` PowerSync repositories | repository/folder/resource 可复用 |
-| notification | `@dailyuse/notification/api` PowerSync repositories | preference 可复用 |
-| setting | `@dailyuse/setting/api` 或 infrastructure export | user setting 可复用 |
-| editor | `@dailyuse/editor/api` 或 direct infrastructure export | workspace/session/group/tab 可复用 |
-| schedule | `@dailyuse/schedule/api` PowerSync repositories | schedule 和 schedule task 可复用 |
+| goal | `@memoflow/goal/api` 暴露的 PowerSync repositories | `findByIdentityId(..., { includeChildren })` 已存在 |
+| task | `@memoflow/task/api` 暴露的 PowerSync repositories | 需确认 dependency repository 是否完整导出 |
+| reminder | `@memoflow/reminder/api` PowerSync repositories | 已有 template/group/response/preference |
+| repository | `@memoflow/repository/api` PowerSync repositories | repository/folder/resource 可复用 |
+| notification | `@memoflow/notification/api` PowerSync repositories | preference 可复用 |
+| setting | `@memoflow/setting/api` 或 infrastructure export | user setting 可复用 |
+| editor | `@memoflow/editor/api` 或 direct infrastructure export | workspace/session/group/tab 可复用 |
+| schedule | `@memoflow/schedule/api` PowerSync repositories | schedule 和 schedule task 可复用 |
 | ai | 若没有完整 PowerSync repository，则写最小 SQL read adapter | 只读 conversation + messages |
 
 如果某个模块的 PowerSync repository 没有被 public API 暴露，不要从 package internal path import。应优先让对应 package 的 `api` entry 明确导出该 PowerSync repository，或者在 `data-portability` 内写基于 `IElectronDatabase` 的最小 SQL adapter。
@@ -478,7 +478,7 @@ export const DataPortabilityElectronModule: IElectronModule = {
 `apps/desktop/src/main/main.ts`：
 
 ```ts
-import { DataPortabilityElectronModule } from '@dailyuse/data-portability/electron-entry';
+import { DataPortabilityElectronModule } from '@memoflow/data-portability/electron-entry';
 
 await bootstrapper
   .register(AccountElectronModule)
@@ -638,7 +638,7 @@ pnpm nx run data-portability:build
 pnpm nx build api
 pnpm nx build desktop
 pnpm nx run app-vue:typecheck
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:governance-check
 ```
 
 ## 11. 测试计划

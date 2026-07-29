@@ -5,17 +5,17 @@
  * 聚合根：TaskInstance
  */
 
-import type { PrismaClient, TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
+import type { PrismaClient, TaskInstance as PrismaTaskInstance } from '@memoflow/database';
 import { TaskInstance } from '../../../domain/aggregates/task-instance';
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type { TaskTemplateInstanceStats } from '../../../domain/repositories/i-task-instance-repository';
-import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskInstanceStatus } from '@memoflow/contracts/task';
 import {
   AggregateRepositoryBase,
   createEventBusAdapter,
   type IEventBus,
-} from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+} from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import { PrismaTaskInstanceMapper } from './mappers/prisma-task-instance-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);

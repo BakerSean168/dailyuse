@@ -2,9 +2,9 @@ import { ipcMain } from 'electron';
 import {
   DashboardChannels,
   isElectronAuthResolutionError,
-} from '@dailyuse/contracts/electron';
-import { extractStructuredResultError, fail, ok } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/electron';
+import { extractStructuredResultError, fail, ok } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import type { DesktopAuthContextProvider } from '../auth/desktop-auth-context';
 import { getDesktopDashboardData } from '../services/dashboard-read-service';
 

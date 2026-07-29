@@ -21,12 +21,12 @@ import type {
   INotificationConfig,
   ReminderType,
   ReminderStatus,
-} from '@dailyuse/contracts/reminder';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/reminder';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { ReminderTemplateId } from '../../server/domain/value-objects/reminder-template-id';
 import { ReminderGroupId } from '../../server/domain/value-objects/reminder-group-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { ReminderHistory } from '../entities/reminder-history.js';
 
 export interface ReminderTemplateState {

@@ -2,11 +2,11 @@
  * Update Account Settings Use Case
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { IAccountRepository } from '../../../domain';
-import type { UpdateAccountSettingsReq, AccountSettingsDTO } from '@dailyuse/contracts/account';
+import type { UpdateAccountSettingsReq, AccountSettingsDTO } from '@memoflow/contracts/account';
 import type { ThemeType, LanguageCode } from '../../../domain/value-objects';
 
 export class UpdateAccountSettingsUseCase {

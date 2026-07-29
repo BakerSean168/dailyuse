@@ -2,17 +2,17 @@
  * AI Provider Config - Domain Aggregate
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { AIProviderType } from '@dailyuse/contracts/ai';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { AIProviderType } from '@memoflow/contracts/ai';
 import type {
   AIEventMap,
   AIModelInfo,
   AIProviderConfigClientDTO,
   AIProviderConfigServerDTO,
-} from '@dailyuse/contracts/ai';
-import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/ai';
+import type { IdentityId as IIdentityId } from '@memoflow/contracts/primitives';
 import { AiProviderConfigId } from '../../domain/value-objects/ai-provider-config-id';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 
 export interface AIProviderConfigState {
   id: AiProviderConfigId;

@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { ScheduleStatisticId as IScheduleStatisticId } from '@dailyuse/contracts/primitives';
+import type { ScheduleStatisticId as IScheduleStatisticId } from '@memoflow/contracts/primitives';
 
 /**
  * ScheduleStatisticId 值对象

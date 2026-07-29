@@ -11,7 +11,7 @@
  * 5. 泛型安全，IDE 可精确推断 data 类型
  * 6. 401 自动 Token 刷新 + 登出处理
  *
- * @module @dailyuse/http-client
+ * @module @memoflow/http-client
  *
  * @example
  * ```ts
@@ -26,9 +26,9 @@
  */
 
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import type { Result, ResultError } from '@dailyuse/contracts/result';
-import { fail, fromHttpResponse } from '@dailyuse/contracts/result';
-import type { HttpResponse } from '@dailyuse/contracts/result';
+import type { Result, ResultError } from '@memoflow/contracts/result';
+import { fail, fromHttpResponse } from '@memoflow/contracts/result';
+import type { HttpResponse } from '@memoflow/contracts/result';
 import type { HttpClientConfig, IResultHttpClient, TokenProvider, TokenRefreshHandler } from './types';
 import { createAxiosInstance } from './axios-instance';
 import {
@@ -345,7 +345,7 @@ export class ResultHttpClient implements IResultHttpClient {
   private handleSuccess<T>(response: AxiosResponse): Result<T> {
     const data = response.data;
 
-    // First-party Memoflow APIs always serialize Result as HttpResponse.
+    // First-party MemoFlow APIs always serialize Result as HttpResponse.
     // No raw dual-track passthrough for non-envelope bodies.
     if (this.isHttpResponseEnvelope(data)) {
       return fromHttpResponse<T>(data as HttpResponse<T>);

@@ -88,10 +88,10 @@ import {
   CardDescription,
   CardContent,
   ScrollArea,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { ComparisonStatsPanel, MultiGoalSelector } from '../components';
 import { useGoal } from '../composables/useGoal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
 
 const { goals, fetchGoals } = useGoal();
 

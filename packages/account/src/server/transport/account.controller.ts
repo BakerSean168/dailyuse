@@ -5,22 +5,22 @@
  * Shared by both Express (HTTP) and IPC transport layers.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import {
   UpdateAccountSchema,
   UpdateAccountSettingsSchema,
   CheckAvailabilitySchema,
   CloseAccountSchema,
-} from '@dailyuse/contracts/account';
+} from '@memoflow/contracts/account';
 import type {
   GetAccountRes,
   UpdateAccountRes,
   UpdateAccountSettingsRes,
   CheckAvailabilityRes,
-} from '@dailyuse/contracts/account';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/account';
+import { formatZodErrors } from '@memoflow/utils/result';
 import type { AccountApplicationPort } from '../application';
 
 export class AccountController {

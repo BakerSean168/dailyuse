@@ -7,8 +7,8 @@
  * @module application-client/schedule-client-service
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { map as mapResult } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { map as mapResult } from '@memoflow/contracts/result';
 import type {
   CalendarEntryClientDTO,
   ScheduleBatchOperationResponseDTO,
@@ -22,7 +22,7 @@ import type {
   ScheduleExecutionClientDTO,
   CreateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import type { IScheduleEventApiClient } from './ports/schedule-event-api-client.port';
 import type { IScheduleTaskApiClient } from './ports/schedule-task-api-client.port';
 import {
@@ -35,7 +35,7 @@ import {
 import { ScheduleExecution } from '../domain-client/entities/schedule-execution';
 import { ScheduleTaskId } from '../server/domain/value-objects/schedule-task-id';
 import { ScheduleExecutionId } from '../server/domain/value-objects/schedule-execution-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 // ===== DTO-to-State Mappers =====
 

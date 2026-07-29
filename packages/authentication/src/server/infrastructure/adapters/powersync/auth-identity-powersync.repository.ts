@@ -1,10 +1,10 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { IAuthIdentityRepository } from '../../../domain';
 import { AuthIdentity } from '../../../domain';
 import type { OAuthProvider } from '../../../domain';
-import { eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import { eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
 import {
   PowerSyncAuthIdentityMapper,
   type PowerSyncAuthCredentialRow,

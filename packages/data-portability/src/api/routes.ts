@@ -14,7 +14,7 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   ExportServerHeldDataDisclosureReqSchema,
   ExportServerHeldDataDisclosureResSchema,
@@ -22,7 +22,7 @@ import {
   ImportUserDataReqSchema,
   ExportUserDataResSchema,
   ImportUserDataResSchema,
-} from '@dailyuse/contracts/data-portability';
+} from '@memoflow/contracts/data-portability';
 import { DataPortabilityController, ServerHeldDataDisclosureController } from '../server/transport';
 import type {
   DataPortabilityApplicationPort,

@@ -11,8 +11,8 @@
 
 import type {
   OAuthBindingServerDTO,
-} from '@dailyuse/contracts/authentication';
-import { Entity } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/authentication';
+import { Entity } from '@memoflow/utils/domain';
 
 import { OAuthProvider } from '..';
 

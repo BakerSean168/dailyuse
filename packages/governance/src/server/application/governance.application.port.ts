@@ -24,8 +24,8 @@ import type {
   SearchRulesRes,
   UpdateRuleReq,
   UpdateRuleRes,
-} from '@dailyuse/contracts/governance';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
 import type { ExecutionContext } from './use-cases';
 
 /** Transport-neutral callable governance use cases. 传输层无关的治理用例调用面。 */

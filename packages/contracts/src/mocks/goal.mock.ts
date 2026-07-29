@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```ts
- * import { createMockGoal, createMockGoalList } from '@dailyuse/contracts/mocks';
+ * import { createMockGoal, createMockGoalList } from '@memoflow/contracts/mocks';
  * const goal = createMockGoal({ name: 'Custom Goal' });
  * const goals = createMockGoalList(5);
  * ```

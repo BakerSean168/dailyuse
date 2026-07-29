@@ -22,11 +22,11 @@ import express, { type Express, Router } from 'express';
 import type { IApiModule, IApiModuleContext, IApiMiddleware, DatabaseClient } from './shared/contracts/api-module';
 import { applyGlobalMiddleware, applyErrorHandlers } from './shared/infrastructure/middleware';
 import { authMiddleware, requireRole } from './shared/infrastructure/http/middlewares';
-import { createRequireEmailVerifiedMiddleware } from '@dailyuse/authentication/api';
+import { createRequireEmailVerifiedMiddleware } from '@memoflow/authentication/api';
 import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createInfrastructureRouter } from './shared/infrastructure/http/routes/infrastructure-routes';
 import { registry } from './shared/infrastructure/openapi/registry';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { MetricsStore } from './shared/infrastructure/http/middlewares/performance.middleware';
 
 const logger = createLogger('Bootstrapper');

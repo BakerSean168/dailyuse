@@ -6,9 +6,9 @@ const sharedConfig = createSharedConfig({
   projectRoot: __dirname,
   environment: 'node',
   aliases: {
-    '@dailyuse/contracts/ai': '../../packages/contracts/src/modules/ai',
-    '@dailyuse/contracts/goal': '../../packages/contracts/src/modules/goal',
-    '@dailyuse/powersync-schema': '../../packages/powersync-schema/src',
+    '@memoflow/contracts/ai': '../../packages/contracts/src/modules/ai',
+    '@memoflow/contracts/goal': '../../packages/contracts/src/modules/goal',
+    '@memoflow/powersync-schema': '../../packages/powersync-schema/src',
   },
 });
 

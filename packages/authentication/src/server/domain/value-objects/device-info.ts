@@ -1,8 +1,8 @@
 import type {
   DeviceInfoDTO,
   DeviceInfo as IDeviceInfo,
-} from '@dailyuse/contracts/authentication';
-import { ValueObject } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/authentication';
+import { ValueObject } from '@memoflow/utils/domain';
 import { DeviceType } from './device-type';
 
 /**

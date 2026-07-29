@@ -14,7 +14,7 @@
  * @module goal/composables/goalOperations
  */
 
-import type { Result, ResultError } from '@dailyuse/contracts/result';
+import type { Result, ResultError } from '@memoflow/contracts/result';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
 
 type TranslateFn = (key: string) => string;

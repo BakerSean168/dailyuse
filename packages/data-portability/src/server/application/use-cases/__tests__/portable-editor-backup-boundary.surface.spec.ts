@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Portable editor backup boundary surface (stage-6 residual 193/303/539):
  * editor_* tables + data-portability import/export remain for business backup
- * re-import only. The runtime `@dailyuse/editor` package stays deleted; no host
+ * re-import only. The runtime `@memoflow/editor` package stays deleted; no host
  * remounts Editor API/Electron as a first-party editing surface.
  * Residual 303: lock Web-only server-held disclosure vs Desktop IPC export/import
  * split (no disclosure IPC channel).
@@ -116,10 +116,10 @@ describe('portable editor backup boundary surface', () => {
   it('hosts never remount Editor API/Electron runtime modules', () => {
     expect(apiMain).not.toContain('createEditorApiModule');
     expect(apiMain).not.toContain('EditorApiModule');
-    expect(apiMain).not.toContain('@dailyuse/editor');
+    expect(apiMain).not.toContain('@memoflow/editor');
     expect(desktopMain).not.toContain('createEditorElectronModule');
     expect(desktopMain).not.toContain('createEditorModule');
-    expect(desktopMain).not.toContain('@dailyuse/editor');
+    expect(desktopMain).not.toContain('@memoflow/editor');
   });
 
   it('user-data export can project editor workspaces by identityId', () => {
@@ -207,14 +207,14 @@ describe('portable editor backup boundary surface', () => {
     expect(powersyncTableMapping).toContain("'editor_workspaces'");
     expect(powersyncTableMapping).toContain("'editor_workspace_sessions'");
     expect(powersyncTableMapping).toContain('portable backup');
-    expect(powersyncTableMapping).toContain('@dailyuse/editor');
+    expect(powersyncTableMapping).toContain('@memoflow/editor');
     expect(desktopPowersync).toContain('Residual 539');
     expect(desktopPowersync).toContain("'editor_workspaces'");
     expect(desktopPowersync).toContain('portable backup continuity');
     // Still no first-party editor package / host remount.
     expect(existsSync(resolve(repoRoot, 'packages/editor'))).toBe(false);
-    expect(apiMain).not.toContain('@dailyuse/editor');
-    expect(desktopMain).not.toContain('@dailyuse/editor');
+    expect(apiMain).not.toContain('@memoflow/editor');
+    expect(desktopMain).not.toContain('@memoflow/editor');
   });
 
   it('repository API mounts knowledge-only routes without Folder/Resource CRUD (residual 539)', () => {

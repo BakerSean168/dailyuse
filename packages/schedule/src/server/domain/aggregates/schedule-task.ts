@@ -8,8 +8,8 @@
  * - Ensures consistency within the aggregate
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared';
 import type {
   ScheduleEventMap,
   ScheduleTaskClientDTO,
@@ -19,8 +19,8 @@ import type {
   RetryPolicyDTO,
   TaskMetadataDTO,
   SourceModule,
-} from '@dailyuse/contracts/schedule';
-import { ExecutionStatus, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
+import { ExecutionStatus, ScheduleTaskStatus } from '@memoflow/contracts/schedule';
 import {
   ExecutionInfo,
   RetryPolicy,

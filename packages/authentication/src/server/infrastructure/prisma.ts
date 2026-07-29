@@ -1,6 +1,6 @@
-import type { PrismaClient } from '@dailyuse/database';
-import { createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import type { PrismaClient } from '@memoflow/database';
+import { createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 import type { IPasswordHasher, ITokenProvider } from '../domain';
 import {
   createAuthenticationModule,

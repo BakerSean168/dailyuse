@@ -20,9 +20,9 @@ updated: 2026-04-13T00:00:00
 ### 目录结构
 
 ```
-D:\home\projects\dailyuse\          # main worktree，干净基准
-D:\home\projects\dailyuse-tree1\    # 长期开发槽位 1
-D:\home\projects\dailyuse-tree2\    # 长期开发槽位 2
+D:\home\projects\memoflow\          # main worktree，干净基准
+D:\home\projects\memoflow-tree1\    # 长期开发槽位 1
+D:\home\projects\memoflow-tree2\    # 长期开发槽位 2
 ```
 
 ### 端口分配
@@ -40,7 +40,7 @@ D:\home\projects\dailyuse-tree2\    # 长期开发槽位 2
 每个槽位同时只处理一个任务。进入槽位后从 `origin/main` 切 feature 分支：
 
 ```bash
-cd D:\home\projects\dailyuse-tree1
+cd D:\home\projects\memoflow-tree1
 git fetch origin
 git switch -c feature/你的任务 origin/main
 ```

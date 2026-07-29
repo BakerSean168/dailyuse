@@ -1,8 +1,8 @@
-import type { Result } from '@dailyuse/contracts/result';
-import type { DashboardData } from '@dailyuse/contracts/dashboard';
+import type { Result } from '@memoflow/contracts/result';
+import type { DashboardData } from '@memoflow/contracts/dashboard';
 
 // ── Port Interface ──
-// Contract DTO types come from @dailyuse/contracts/dashboard (no dual re-export).
+// Contract DTO types come from @memoflow/contracts/dashboard (no dual re-export).
 
 export interface IDashboardApiClient {
   getDashboardStats(): Promise<Result<DashboardData>>;

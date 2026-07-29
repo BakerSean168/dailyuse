@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ContactPhone } from '../contact-phone';
-import type { ContactPhoneDTO } from '@dailyuse/contracts/account';
+import type { ContactPhoneDTO } from '@memoflow/contracts/account';
 
 // ---------------------------------------------------------------------------
 // Helpers

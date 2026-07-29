@@ -12,7 +12,7 @@ import { InvalidPasswordError, UserNotFoundError } from '../login';
 import { AuthIdentity } from '../../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../../repositories/i-auth-identity.repository';
 import type { IPasswordHasher } from '../i-password-hasher.service';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 
 const MOCK_HASH = '$argon2id$v=19$m=65536,t=3,p=4$bW9ja3NhbHQ$bW9ja2hhc2h2YWx1ZQ';
 

@@ -1,5 +1,5 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import { mapInfraErrorToResultError } from '../errors/result-error-mapper';
 
 /**

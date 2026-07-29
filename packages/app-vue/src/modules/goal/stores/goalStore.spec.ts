@@ -6,8 +6,8 @@ import type {
   GoalRecordClientDTO,
   GoalReviewClientDTO,
   KeyResultClientDTO,
-} from '@dailyuse/contracts/goal';
-import { createTestPinia } from '@dailyuse/test-utils';
+} from '@memoflow/contracts/goal';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useGoalStore } from './goal-store';
 
 function createGoal(overrides: Partial<GoalClientDTO> = {}): GoalClientDTO {

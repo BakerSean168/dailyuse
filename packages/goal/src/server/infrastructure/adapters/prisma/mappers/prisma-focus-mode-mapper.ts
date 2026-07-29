@@ -5,8 +5,8 @@
  * Converts DateTime fields to timestamps for FocusModeDTO.
  */
 
-import type { FocusMode as PrismaFocusMode } from '@dailyuse/database';
-import type { FocusModeDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import type { FocusMode as PrismaFocusMode } from '@memoflow/database';
+import type { FocusModeDTO, HiddenGoalsMode } from '@memoflow/contracts/goal';
 import { FocusMode } from '../../../../domain';
 
 export class PrismaFocusModeMapper {

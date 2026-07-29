@@ -429,8 +429,8 @@ updated: 2026-06-02T00:00:00
 每个批次完成后运行：
 
 ```powershell
-$env:NX_DAEMON='false'; pnpm nx run daily-use:docs-check
-$env:NX_DAEMON='false'; pnpm nx run daily-use:governance-check
+$env:NX_DAEMON='false'; pnpm nx run memoflow:docs-check
+$env:NX_DAEMON='false'; pnpm nx run memoflow:governance-check
 ```
 
 同时执行一次面向 `docs/product` 的链接存在性检查，确保新增模块文档中的 Markdown 链接都指向真实文件。

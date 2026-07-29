@@ -159,7 +159,7 @@ LangGraph 最适合作为这个 runtime 的优先验证对象。PydanticAI 更�
 缺点：
 
 - 当前项目核心 AI runtime 在 Python `ai-service`，迁到 Pi 会产生语言和边界重构。
-- Pi 更偏 coding agent toolkit，而 Memoflow 的核心是个人目标和知识工作台。
+- Pi 更偏 coding agent toolkit，而 MemoFlow 的核心是个人目标和知识工作台。
 - Pi 的 SDK/session 模型可借鉴，但并不天然解决业务 write boundary、goal workflow、repository indexing。
 - 作为主 runtime 会让当前 provider abstraction、Python service、TS port 关系变复杂。
 

@@ -1,8 +1,8 @@
 import type {
   ExportUserDataReq,
   ImportUserDataReq,
-} from '@dailyuse/contracts/data-portability';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+} from '@memoflow/contracts/data-portability';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type { DataPortabilityApplicationPort } from '../application';
 import type { DataPortabilityDependencies } from '../application/data-portability.dependencies';
 import type { DataPortabilityImportStore } from '../application/import-store/data-portability-import-store';

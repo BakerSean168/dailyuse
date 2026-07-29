@@ -5,7 +5,7 @@ import type {
   AgentRunListParams,
   AgentRunResult,
   AgentStartRunRequest,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 export interface AgentRuntimeStartInput {
   request: AgentStartRunRequest;

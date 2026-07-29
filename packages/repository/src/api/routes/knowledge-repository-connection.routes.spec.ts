@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { Router } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { RepositoryApplicationPort } from '../../server/application';
 import { registerKnowledgeRepositoryConnectionRoutes } from './knowledge-repository-connection.routes';
 import { registerRepositoryRoutes } from './index';
@@ -233,7 +233,7 @@ describe('knowledge repository connection routes', () => {
       {
         params: { connectionId: 'connection-1' },
         headers: {
-          'user-agent': 'Mozilla/5.0 Memoflow/1.0 Electron/36.0.0',
+          'user-agent': 'Mozilla/5.0 MemoFlow/1.0 Electron/36.0.0',
           'x-device-id': 'desktop-device-1',
         },
         user: { identityId: 'identity-desktop' },
@@ -266,7 +266,7 @@ describe('knowledge repository connection routes', () => {
       {
         params: { connectionId: 'connection-1' },
         body: { localState: 'NonEmpty' },
-        headers: { 'user-agent': 'Memoflow/1.0 Electron/43.0.0' },
+        headers: { 'user-agent': 'MemoFlow/1.0 Electron/43.0.0' },
         user: { identityId: 'identity-desktop' },
       },
       res,
@@ -297,7 +297,7 @@ describe('knowledge repository connection routes', () => {
       {
         params: { connectionId: 'connection-1' },
         body: { headSha: 'a'.repeat(40) },
-        headers: { 'user-agent': 'Memoflow/1.0 Electron/43.0.0' },
+        headers: { 'user-agent': 'MemoFlow/1.0 Electron/43.0.0' },
         user: { identityId: 'identity-desktop' },
       },
       res,

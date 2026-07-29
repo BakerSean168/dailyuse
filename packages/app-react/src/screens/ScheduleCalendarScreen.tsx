@@ -13,7 +13,7 @@ import {
   StatusPill,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 function getMonthBounds(anchor: Date) {
   const start = new Date(anchor.getFullYear(), anchor.getMonth(), 1);

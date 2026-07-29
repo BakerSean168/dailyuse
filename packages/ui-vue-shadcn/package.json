@@ -1,7 +1,7 @@
 {
-  "name": "@dailyuse/ui-vue-shadcn",
+  "name": "@memoflow/ui-vue-shadcn",
   "version": "0.0.1",
-  "description": "shadcn/ui styled Vue 3 components for Memoflow applications",
+  "description": "shadcn/ui styled Vue 3 components for MemoFlow applications",
   "private": false,
   "type": "module",
   "main": "dist/index.js",
@@ -52,8 +52,8 @@
   "dependencies": {
     "@codemirror/state": "6.5.4",
     "@codemirror/view": "6.39.14",
-    "@dailyuse/ui-core": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
+    "@memoflow/ui-core": "workspace:*",
+    "@memoflow/utils": "workspace:*",
     "@internationalized/date": "^3.11.0",
     "@radix-icons/vue": "1.0.0",
     "@unovis/ts": "1.6.4",
@@ -80,7 +80,7 @@
     "vue": "^3.5.39"
   },
   "devDependencies": {
-    "@dailyuse/contracts": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
     "@vitejs/plugin-vue": "6.0.7",
     "date-fns": "^4.1.0",
     "rimraf": "^6.0.1",

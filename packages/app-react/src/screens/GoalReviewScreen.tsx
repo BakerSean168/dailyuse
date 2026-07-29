@@ -3,7 +3,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { ReviewType, type CreateGoalReviewReq } from '@dailyuse/contracts/goal';
+import { ReviewType, type CreateGoalReviewReq } from '@memoflow/contracts/goal';
 
 import { useGoalDetail } from '../hooks/useGoalDetail';
 import { useGoalReviews } from '../hooks/useGoalReviews';
@@ -19,7 +19,7 @@ import {
   StatusPill,
   ThemedText,
   ThemedView,
-} from '@dailyuse/ui-react-native';
+} from '@memoflow/ui-react-native';
 
 const REVIEW_TYPES = Object.values(ReviewType);
 

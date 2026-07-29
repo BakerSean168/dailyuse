@@ -1,1 +1,1 @@
-export { TasksScreen as default } from '@dailyuse/app-react';
+export { TasksScreen as default } from '@memoflow/app-react';

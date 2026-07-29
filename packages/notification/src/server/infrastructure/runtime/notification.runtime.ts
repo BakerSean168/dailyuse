@@ -1,4 +1,4 @@
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { NotificationModuleRuntimeContribution } from '../notification.module';
 
 const logger = createLogger('NotificationRuntime');

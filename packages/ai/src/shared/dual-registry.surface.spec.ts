@@ -503,7 +503,7 @@ import { previewText } from './preview-text';
 {
   /**
    * Residual 995: previewText dual retired (AI goal/chat observability previews).
-   * Residual 1011: sole body elevated to @dailyuse/utils/shared/preview-text;
+   * Residual 1011: sole body elevated to @memoflow/utils/shared/preview-text;
    * this package re-exports so package-local import paths stay stable.
    * generate-ai-goal + automation/planning adapters + internal client import it
    * (call sites keep their maxLength args).
@@ -544,7 +544,7 @@ import { previewText } from './preview-text';
     it('re-exports utils sole previewText helper body', () => {
       expect(reexport).toContain('Residual 995');
       expect(reexport).toContain('Residual 1011');
-      expect(reexport).toContain("export { previewText } from '@dailyuse/utils/shared'");
+      expect(reexport).toContain("export { previewText } from '@memoflow/utils/shared'");
       expect(reexport).not.toMatch(/export function previewText\b/);
       expect(sole).toContain('Residual 1011');
       expect(sole).toMatch(/export function previewText\b/);

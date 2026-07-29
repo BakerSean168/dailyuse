@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
-import type { RepositoryApplicationPort } from '@dailyuse/repository';
+import { ok } from '@memoflow/contracts/result';
+import type { RepositoryApplicationPort } from '@memoflow/repository';
 import { RepositoryKnowledgeNotePersistenceAdapter } from './repository-knowledge-note-persistence.adapter';
 
 function connection(id: string, status: 'Active' | 'Revoked' = 'Active') {

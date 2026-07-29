@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { AssistantEvent } from '@dailyuse/contracts/ai';
+import type { AssistantEvent } from '@memoflow/contracts/ai';
 import { useAssistantDispatch } from './useAssistantDispatch';
 
 describe('useAssistantDispatch', () => {

@@ -1,4 +1,4 @@
-import { MAX_KNOWLEDGE_ATTACHMENT_BYTES } from '@dailyuse/contracts/repository';
+import { MAX_KNOWLEDGE_ATTACHMENT_BYTES } from '@memoflow/contracts/repository';
 
 const MEDIA_TYPES_BY_EXTENSION: Readonly<Record<string, string>> = {
   '.aac': 'audio/aac',

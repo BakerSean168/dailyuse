@@ -156,7 +156,7 @@
 
 产出标准：
 
-- `@dailyuse/contracts/task` 对外导出的 request/response/DTO 层级清晰
+- `@memoflow/contracts/task` 对外导出的 request/response/DTO 层级清晰
 - route/OpenAPI/adapter/controller 返回体同名 contract 一致
 
 #### Wave 1 实际执行记录
@@ -327,7 +327,7 @@ branded ID 扩散到 aggregate DTO 后，下游 ~27 个文件出现编译错误�
 - 各业务包 controller
 - route 注册层
 - application-client ports / adapters
-- 直接从 `@dailyuse/contracts/*` 导入这些类型的 UI / client package
+- 直接从 `@memoflow/contracts/*` 导入这些类型的 UI / client package
 
 目标：
 
@@ -402,7 +402,7 @@ branded ID 扩散到 aggregate DTO 后，下游 ~27 个文件出现编译错误�
 - `pnpm nx run contracts:typecheck`
 - `pnpm nx run contracts:build`
 - 各受影响业务包最近的 `typecheck`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ### 必做的静态检查
 
@@ -436,7 +436,7 @@ branded ID 扩散到 aggregate DTO 后，下游 ~27 个文件出现编译错误�
 2. `aggregates/` 与 `entities/` 中不再混入 transport-only request/response 类型
 3. 所有正式对外接口都由 contracts 命名 schema 表达，不再依赖路由本地重复真值
 4. `z.any()` / `passthrough()` 仅保留在确实无法进一步结构化的外部自由数据点，且数量极少、理由明确
-5. 直接消费 `@dailyuse/contracts/*` 的业务包均通过 typecheck
+5. 直接消费 `@memoflow/contracts/*` 的业务包均通过 typecheck
 
 ## 完成摘要
 
@@ -456,7 +456,7 @@ branded ID 扩散到 aggregate DTO 后，下游 ~27 个文件出现编译错误�
 以下字段在本轮后仍保留为 `unknown` 或 JSON record，这属于有意识设计，而不是遗漏：
 
 1. 错误详情与动态 metadata。
-说明：如 [shared.ts](D:/home/projects/dailyuse/packages/contracts/src/shared/shared.ts:27)、`notification` / `repository` / `editor` / `ai` 的 metadata 字段，需要承载跨模块或外部来源的开放 JSON。
+说明：如 [shared.ts](D:/home/projects/memoflow/packages/contracts/src/shared/shared.ts:27)、`notification` / `repository` / `editor` / `ai` 的 metadata 字段，需要承载跨模块或外部来源的开放 JSON。
 
 2. 调度任务 payload / result。
 说明：`schedule` 模块需要承载来源模块自定义载荷，强行结构化会把模块边界重新耦合起来。
@@ -472,7 +472,7 @@ branded ID 扩散到 aggregate DTO 后，下游 ~27 个文件出现编译错误�
 2. `aggregates/` 与 `entities/` 中不再混入 transport-only request/response 类型
 3. 正式对外接口由 contracts 命名 schema 表达，不再依赖 route 层重复真值
 4. 原先的 `z.any()` / `passthrough()` 占位已清理；仅保留少量有意识设计的自由 JSON 字段
-5. 直接消费 `@dailyuse/contracts/*` 的关键业务包已通过 typecheck，且 route contract test 已覆盖代表性 endpoint
+5. 直接消费 `@memoflow/contracts/*` 的关键业务包已通过 typecheck，且 route contract test 已覆盖代表性 endpoint
 
 ## 与旧计划的关系
 

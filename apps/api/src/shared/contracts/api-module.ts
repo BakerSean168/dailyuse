@@ -21,13 +21,13 @@
  */
 
 import type { RequestHandler } from 'express';
-import type { ServerModuleContext } from '@dailyuse/contracts/shared';
-import type { PrismaClient } from '@dailyuse/database';
+import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import type { PrismaClient } from '@memoflow/database';
 
 /**
  * 数据库客户端类型
  *
- * 当前 API runtime 使用 @dailyuse/database 暴露的共享 PrismaClient。
+ * 当前 API runtime 使用 @memoflow/database 暴露的共享 PrismaClient。
  *
  * 如果未来真的引入第二个生成客户端，请在这里扩展为明确 union 或能力接口，
  * 不要回退到裸 any。

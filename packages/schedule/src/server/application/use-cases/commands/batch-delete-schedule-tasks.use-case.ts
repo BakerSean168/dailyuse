@@ -1,5 +1,5 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, isOk } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, isOk } from '@memoflow/contracts/result';
 import { DeleteScheduleTaskUseCase } from './delete-schedule-task.use-case';
 
 export interface BatchScheduleTaskResult {

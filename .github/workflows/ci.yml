@@ -64,7 +64,7 @@ jobs:
       - name: Test affected projects
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t test --parallel=3 --exclude=daily-use --passWithNoTests --outputStyle=static
+        run: pnpm exec nx affected -t test --parallel=3 --exclude=memoflow --passWithNoTests --outputStyle=static
 
       - name: Build affected apps
         env:

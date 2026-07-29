@@ -8,7 +8,7 @@
 
 ## 问题定位
 
-`goal` 当前的主要问题不在 composition root，而在 [goal.controller.ts](D:/home/projects/dailyuse/packages/goal/src/controllers/goal.controller.ts:202) 之后的 controller orchestration。
+`goal` 当前的主要问题不在 composition root，而在 [goal.controller.ts](D:/home/projects/memoflow/packages/goal/src/controllers/goal.controller.ts:202) 之后的 controller orchestration。
 
 当前仍然由 controller 持有的 implementation 包括：
 
@@ -196,7 +196,7 @@ controller 不再负责：
 
 ## Composition Root 调整
 
-改造 [goal.module.ts](D:/home/projects/dailyuse/packages/goal/src/infrastructure-server/goal.module.ts:429)：
+改造 [goal.module.ts](D:/home/projects/memoflow/packages/goal/src/infrastructure-server/goal.module.ts:429)：
 
 - `createGoalUseCases()` 增加 4 个新 use case
 - `GoalModuleUseCases` 增加对应字段
@@ -256,7 +256,7 @@ controller 不再负责：
 
 - `pnpm nx run goal:typecheck`
 - `pnpm nx run goal:test`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ## 完成定义
 

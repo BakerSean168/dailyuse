@@ -70,7 +70,7 @@
 - `pnpm nx run schedule:typecheck`
 - `pnpm nx run task:typecheck`
 - `pnpm nx run reminder:typecheck`
-- `pnpm nx run daily-use:governance-check`
+- `pnpm nx run memoflow:governance-check`
 
 ## 五、后续边界
 

@@ -1,20 +1,20 @@
-# @dailyuse/patterns
+# @memoflow/patterns
 
-通用设计模式和框架库，为 Memoflow 应用提供可复用的基础组件。
+通用设计模式和框架库，为 MemoFlow 应用提供可复用的基础组件。
 
 ## 概述
 
-`@dailyuse/patterns` 包含跨模块可复用的通用模式实现，包括：
+`@memoflow/patterns` 包含跨模块可复用的通用模式实现，包括：
 
 - **Scheduler**: 任务调度相关的数据结构和接口
 - **Repository**: 仓储模式基类（待实现）
 - **Cache**: 缓存实现（待实现）
-- **Events**: 事件处理器抽象（待实现，注：事件总线在 `@dailyuse/utils`）
+- **Events**: 事件处理器抽象（待实现，注：事件总线在 `@memoflow/utils`）
 
 ## 安装
 
 ```bash
-pnpm add @dailyuse/patterns
+pnpm add @memoflow/patterns
 ```
 
 ## 使用
@@ -26,7 +26,7 @@ pnpm add @dailyuse/patterns
 优先队列的底层数据结构，按 `nextRunAt` 时间戳排序：
 
 ```typescript
-import { MinHeap, type HeapItem } from '@dailyuse/patterns/scheduler';
+import { MinHeap, type HeapItem } from '@memoflow/patterns/scheduler';
 
 const heap = new MinHeap<HeapItem>();
 
@@ -41,7 +41,7 @@ const next = heap.extractMin(); // { taskUuid: '2', nextRunAt: 50 }
 Timer 抽象接口，支持不同运行时实现：
 
 ```typescript
-import { NodeTimer, FakeTimer } from '@dailyuse/patterns/scheduler';
+import { NodeTimer, FakeTimer } from '@memoflow/patterns/scheduler';
 
 // 生产环境
 const timer = new NodeTimer();
@@ -57,7 +57,7 @@ fakeTimer.tick(100); // 手动推进时间
 调度监控接口，用于收集执行统计：
 
 ```typescript
-import { InMemoryScheduleMonitor } from '@dailyuse/patterns/scheduler';
+import { InMemoryScheduleMonitor } from '@memoflow/patterns/scheduler';
 
 const monitor = new InMemoryScheduleMonitor();
 
@@ -86,7 +86,7 @@ L5: Apps（应用入口）
 
 ### 依赖规则
 
-- ✅ **可依赖**: `@dailyuse/contracts`
+- ✅ **可依赖**: `@memoflow/contracts`
 - ❌ **禁止依赖**: domain/infrastructure/application 层
 - ✅ **被依赖**: application/infrastructure 层可使用 patterns
 
@@ -96,7 +96,7 @@ L5: Apps（应用入口）
 - ❌ **不包含**: 业务逻辑、特定领域规则、具体实现
 
 **注意：** 
-- 事件总线（EventBus）的具体实现在 `@dailyuse/utils` 包中
+- 事件总线（EventBus）的具体实现在 `@memoflow/utils` 包中
 - patterns 中的 Events 模块将提供事件处理器的通用抽象（BaseEventHandler、IEventDispatcher 等）
 
 ## 开发指南

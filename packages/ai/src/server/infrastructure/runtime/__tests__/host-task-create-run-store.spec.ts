@@ -13,7 +13,7 @@ import {
   matchesHostTaskCreateThread,
 } from '../host-task-create-run-store';
 import { buildHostTaskCreateStartResult } from '../host-task-create-start';
-import type { AgentStartRunRequest } from '@dailyuse/contracts/ai';
+import type { AgentStartRunRequest } from '@memoflow/contracts/ai';
 
 function request(runId: string, title: string): AgentStartRunRequest {
   return {

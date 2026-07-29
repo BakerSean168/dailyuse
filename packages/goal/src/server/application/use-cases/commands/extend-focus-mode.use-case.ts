@@ -1,7 +1,7 @@
 import type { IFocusModeRepository } from '../../../domain';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { FocusModeDTO } from '@dailyuse/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { FocusModeDTO } from '@memoflow/contracts/goal';
 
 export class ExtendFocusModeUseCase {
   constructor(private readonly focusModeRepository: IFocusModeRepository) {}

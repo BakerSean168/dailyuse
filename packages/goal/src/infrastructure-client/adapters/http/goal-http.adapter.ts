@@ -4,9 +4,9 @@
  * HTTP implementation of IGoalApiClient using ResultHttpClient.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type { IGoalApiClient, IResultHttpClient } from '../types';
-import type { GoalId } from '@dailyuse/contracts/primitives';
+import type { GoalId } from '@memoflow/contracts/primitives';
 import type {
   GoalClientDTO,
   GoalSystemView,
@@ -26,7 +26,7 @@ import type {
   CreateGoalRecordReq,
   GetGoalRecordsRes,
   GetGoalAggregateRes,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 export class GoalHttpAdapter implements IGoalApiClient {
   private readonly baseUrl = '/goals';

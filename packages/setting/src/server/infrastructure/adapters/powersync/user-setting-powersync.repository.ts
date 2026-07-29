@@ -1,8 +1,8 @@
-import type { IDomainEvent } from '@dailyuse/contracts/shared';
-import type { SettingEventMap } from '@dailyuse/contracts/setting';
+import type { IDomainEvent } from '@memoflow/contracts/shared';
+import type { SettingEventMap } from '@memoflow/contracts/setting';
 import type { IUserSettingRepository } from '../../../domain/repositories/i-user-setting-repository';
 import { UserSetting } from '../../../domain/aggregates/user-setting';
-import { eventBus } from '@dailyuse/utils/domain';
+import { eventBus } from '@memoflow/utils/domain';
 import {
   PowerSyncUserSettingMapper,
   type PowerSyncUserSettingRow,

@@ -352,8 +352,8 @@ import { computed, onMounted, ref, watch, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Menu, PanelRightOpen, Plus } from '@lucide/vue';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import type { AgentRun } from '@dailyuse/contracts/ai';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import type { AgentRun } from '@memoflow/contracts/ai';
 import AIConversationSidebar from '../components/AIConversationSidebar.vue';
 import AIMessagePanel from '../components/AIMessagePanel.vue';
 import AIFooterComposer from '../components/AIFooterComposer.vue';
@@ -401,7 +401,7 @@ import {
   type HostTimelineArtifactItem,
 } from '../composables/hostProposalLifecycle';
 import { useTaskTemplates } from '../../task/composables/useTaskTemplates';
-import type { CreateTaskTemplateReq } from '@dailyuse/contracts/task';
+import type { CreateTaskTemplateReq } from '@memoflow/contracts/task';
 import type { ConversationSummary, WorkflowMode } from '../composables/types';
 import { useAI } from '../composables/useAI';
 

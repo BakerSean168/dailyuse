@@ -4,20 +4,20 @@
  * Extracted from SessionManager to keep the orchestrator thin.
  */
 
-import { createLogger } from '@dailyuse/utils/logger';
-import type { ILogger } from '@dailyuse/utils/logger';
-import { generateUUID } from '@dailyuse/utils/shared';
-import { AuthSession } from '@dailyuse/authentication/electron';
-import type { IAuthSessionRepository, IAuthIdentityRepository } from '@dailyuse/authentication/electron';
-import type { AuthSessionId } from '@dailyuse/contracts/authentication';
-import type { IPasswordHasher } from '@dailyuse/authentication/electron';
-import { DeviceInfo } from '@dailyuse/authentication/electron';
+import { createLogger } from '@memoflow/utils/logger';
+import type { ILogger } from '@memoflow/utils/logger';
+import { generateUUID } from '@memoflow/utils/shared';
+import { AuthSession } from '@memoflow/authentication/electron';
+import type { IAuthSessionRepository, IAuthIdentityRepository } from '@memoflow/authentication/electron';
+import type { AuthSessionId } from '@memoflow/contracts/authentication';
+import type { IPasswordHasher } from '@memoflow/authentication/electron';
+import { DeviceInfo } from '@memoflow/authentication/electron';
 import {
   AuthMode,
   type LoginRequest,
   type DeviceInfoClientDTO,
   type OfflineLoginResponse,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { TokenManager } from './token-manager';
 import type { OfflineAuthHelper } from './offline-auth-helper';
 // Residual 925: OfflineLoginResponse from contracts sole body (no session-types alias).

@@ -26,72 +26,72 @@ import {
   LOGOUT_HANDLER_KEY,
   defaultModuleCapsules,
   useAuthenticationStore,
-} from '@dailyuse/app-vue/web-core';
+} from '@memoflow/app-vue/web-core';
 import { resultHttpClient } from './http';
 import { createLazyService } from './lazy-service';
 
 const authService = createLazyService(async () => {
-  const { createAuthenticationHttpClient } = await import('@dailyuse/authentication/client');
+  const { createAuthenticationHttpClient } = await import('@memoflow/authentication/client');
   return createAuthenticationHttpClient(resultHttpClient);
 });
 
 const accountService = createLazyService(async () => {
-  const { createAccountHttpClient } = await import('@dailyuse/account/client');
+  const { createAccountHttpClient } = await import('@memoflow/account/client');
   return createAccountHttpClient(resultHttpClient);
 });
 
 const ruleService = createLazyService(async () => {
-  const { createGovernanceHttpClient } = await import('@dailyuse/governance/client');
+  const { createGovernanceHttpClient } = await import('@memoflow/governance/client');
   return createGovernanceHttpClient(resultHttpClient);
 });
 
 const goalService = createLazyService(async () => {
-  const { createGoalHttpClient } = await import('@dailyuse/goal/client');
+  const { createGoalHttpClient } = await import('@memoflow/goal/client');
   return createGoalHttpClient(resultHttpClient);
 });
 
 const notificationService = createLazyService(async () => {
-  const { createNotificationHttpClient } = await import('@dailyuse/notification/client');
+  const { createNotificationHttpClient } = await import('@memoflow/notification/client');
   return createNotificationHttpClient(resultHttpClient);
 });
 
 const reminderService = createLazyService(async () => {
-  const { createReminderHttpClient } = await import('@dailyuse/reminder/client');
+  const { createReminderHttpClient } = await import('@memoflow/reminder/client');
   return createReminderHttpClient(resultHttpClient);
 });
 
 const repositoryService = createLazyService(async () => {
-  const { createRepositoryHttpClient } = await import('@dailyuse/repository/client');
+  const { createRepositoryHttpClient } = await import('@memoflow/repository/client');
   return createRepositoryHttpClient(resultHttpClient);
 });
 
 const scheduleService = createLazyService(async () => {
-  const { createScheduleHttpClient } = await import('@dailyuse/schedule/client');
+  const { createScheduleHttpClient } = await import('@memoflow/schedule/client');
   return createScheduleHttpClient(resultHttpClient);
 });
 
 const settingService = createLazyService(async () => {
-  const { createSettingHttpClient } = await import('@dailyuse/setting/client');
+  const { createSettingHttpClient } = await import('@memoflow/setting/client');
   return createSettingHttpClient(resultHttpClient);
 });
 
 const dataPortabilityService = createLazyService(async () => {
-  const { createDataPortabilityHttpClient } = await import('@dailyuse/data-portability/client');
+  const { createDataPortabilityHttpClient } = await import('@memoflow/data-portability/client');
   return createDataPortabilityHttpClient(resultHttpClient);
 });
 
 const aiService = createLazyService(async () => {
-  const { createAIHttpClient } = await import('@dailyuse/ai/client');
+  const { createAIHttpClient } = await import('@memoflow/ai/client');
   return createAIHttpClient(resultHttpClient);
 });
 
 const taskService = createLazyService(async () => {
-  const { createTaskHttpClient } = await import('@dailyuse/task/client');
+  const { createTaskHttpClient } = await import('@memoflow/task/client');
   return createTaskHttpClient(resultHttpClient);
 });
 
 const dashboardService = createLazyService(async () => {
-  const { createDashboardHttpAdapter } = await import('@dailyuse/app-vue/web-entry');
+  const { createDashboardHttpAdapter } = await import('@memoflow/app-vue/web-entry');
   return createDashboardHttpAdapter(resultHttpClient);
 });
 

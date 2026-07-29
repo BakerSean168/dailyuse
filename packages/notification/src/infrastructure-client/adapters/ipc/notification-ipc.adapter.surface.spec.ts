@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { NotificationChannels } from '@dailyuse/contracts/electron';
+import { NotificationChannels } from '@memoflow/contracts/electron';
 
 /**
  * Notification IPC adapter surface (stage-6 residual):
@@ -11,7 +11,7 @@ describe('NotificationIpcAdapter channel surface', () => {
   const source = readFileSync(resolve(__dirname, 'notification-ipc.adapter.ts'), 'utf8');
 
   it('invokes NotificationChannels and does not define a local channel map', () => {
-    expect(source).toContain("import { NotificationChannels } from '@dailyuse/contracts/electron'");
+    expect(source).toContain("import { NotificationChannels } from '@memoflow/contracts/electron'");
     expect(source).not.toMatch(/const NOTIFICATION_CHANNELS = \{/);
     expect(source).toContain('NotificationChannels.LIST');
     expect(source).toContain('NotificationChannels.MARK_READ');

@@ -1,6 +1,6 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { AIProviderConfigClientDTO } from '@dailyuse/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { AIProviderConfigClientDTO } from '@memoflow/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import { toClientDTO } from './ai-provider-config-helpers';
 

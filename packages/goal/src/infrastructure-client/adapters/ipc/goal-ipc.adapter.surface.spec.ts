@@ -15,7 +15,7 @@ describe('Goal IPC adapters channel surface', () => {
 
   it.each(files)('%s uses GoalChannels and no this.channel templates', (fileName) => {
     const source = readFileSync(resolve(__dirname, fileName), 'utf8');
-    expect(source).toContain("from '@dailyuse/contracts/electron'");
+    expect(source).toContain("from '@memoflow/contracts/electron'");
     expect(source).toContain('GoalChannels.');
     expect(source).not.toContain('private readonly channel');
     expect(source).not.toMatch(/\$\{this\.channel\}/);

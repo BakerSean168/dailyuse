@@ -11,8 +11,8 @@ import {
   type PartialTimeStyle,
   type TimeEmptyKind,
   type ResolveEmptyLabelOptions,
-} from '@dailyuse/time';
-import { detectBrowserLocale } from '@dailyuse/utils/shared';
+} from '@memoflow/time';
+import { detectBrowserLocale } from '@memoflow/utils/shared';
 
 let sessionTime: TimeFacade = createTimeFacade({
   style: timeStyleFromPresentationLocale(detectBrowserLocale()),

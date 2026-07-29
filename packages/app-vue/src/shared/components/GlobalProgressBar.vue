@@ -7,7 +7,7 @@
  *
  * 无需任何外部依赖，纯 Vue + CSS 实现。
  */
-import { _getProgressBarState } from '@dailyuse/ui-vue-shadcn/composables/useProgressBar';
+import { _getProgressBarState } from '@memoflow/ui-vue-shadcn/composables/useProgressBar';
 
 const state = _getProgressBarState();
 </script>

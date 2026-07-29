@@ -385,9 +385,9 @@ docs\plan\active\2026-07-12-tech-stack-upgrade-plan.md 分析一下这篇文档�
 
 这里的“统一测试”应理解为一次最终验证矩阵，不能只跑一次 pnpm test。
 为什么集中升级更合适
-根 [package.json](D:/home/projects/dailyuse/package.json) 和 [pnpm-workspace.yaml](D:/home/projects/dailyuse/pnpm-workspace.yaml) 被放进 [nx.json (line 18)](D:/home/projects/dailyuse/nx.json:18) 的 sharedGlobals。实测修改 package、lockfile、workspace 或 Nx 配置都会让全部 39 个项目进入 affected 范围。拆成多个依赖 PR 并不能获得多少增量 CI 收益。
-当前 CI 每个 PR 都会重新安装、验证，且 [web-flow (line 221)](D:/home/projects/dailyuse/.github/workflows/ci.yml:221) 无条件执行；CI 只缓存 pnpm store，没有跨运行的 Nx task cache。因此减少 PR 数量确实能明显省时间。
-普通 PR 不会生产部署。[docker-deploy.yml (line 3)](D:/home/projects/dailyuse/.github/workflows/docker-deploy.yml:3) 只监听正式 v* tag；[发布说明 (line 51)](D:/home/projects/dailyuse/docs/guides/development/release-workflow.md:51) 也明确 main 推进不会直接发生产镜像。
+根 [package.json](D:/home/projects/memoflow/package.json) 和 [pnpm-workspace.yaml](D:/home/projects/memoflow/pnpm-workspace.yaml) 被放进 [nx.json (line 18)](D:/home/projects/memoflow/nx.json:18) 的 sharedGlobals。实测修改 package、lockfile、workspace 或 Nx 配置都会让全部 39 个项目进入 affected 范围。拆成多个依赖 PR 并不能获得多少增量 CI 收益。
+当前 CI 每个 PR 都会重新安装、验证，且 [web-flow (line 221)](D:/home/projects/memoflow/.github/workflows/ci.yml:221) 无条件执行；CI 只缓存 pnpm store，没有跨运行的 Nx task cache。因此减少 PR 数量确实能明显省时间。
+普通 PR 不会生产部署。[docker-deploy.yml (line 3)](D:/home/projects/memoflow/.github/workflows/docker-deploy.yml:3) 只监听正式 v* tag；[发布说明 (line 51)](D:/home/projects/memoflow/docs/guides/development/release-workflow.md:51) 也明确 main 推进不会直接发生产镜像。
 目标依赖闭包没有发现硬 peer 冲突：Nx 23 支持 Vite 8，typescript-eslint 8.63 支持 ESLint 10 + TS 6，vue-tsc 3.3.7 支持 TS 6，@nxlv/python@22.2.1 也没有排除 Nx 23。
 推荐合并边界
 范围	建议
@@ -411,9 +411,9 @@ desktop:dist:windows、安装包冷启动、实际加载 better-sqlite3/argon2/P
 
 Vite 计划里的 rolldown-vite 一周预演可以跳过，直接上 Vite 8；官方也把它定义为可选渐进路径。Vite 8 迁移指南
 文档里还需要补充的风险
-[electron-builder.json5 (line 17)](D:/home/projects/dailyuse/apps/desktop/electron-builder.json5:17) 还硬编码着 Electron 39.2.6，且第 94 行关闭了自动 native rebuild；只改 package.json 不够。
+[electron-builder.json5 (line 17)](D:/home/projects/memoflow/apps/desktop/electron-builder.json5:17) 还硬编码着 Electron 39.2.6，且第 94 行关闭了自动 native rebuild；只改 package.json 不够。
 TS 6 的 baseUrl 实际命中 31 份 tsconfig；Vite 配置改造也不只 desktop。
-PG18 计划漏了 [ci.yml (line 177)](D:/home/projects/dailyuse/.github/workflows/ci.yml:177) 中两处 postgres:15。另外，切换后新库一旦接受写入，简单切回旧卷会丢新增数据；迁移时必须停止所有写入者。PG18 的卷布局变化也确实需要独立处理，官方镜像变更。
+PG18 计划漏了 [ci.yml (line 177)](D:/home/projects/memoflow/.github/workflows/ci.yml:177) 中两处 postgres:15。另外，切换后新库一旦接受写入，简单切回旧卷会丢新增数据；迁移时必须停止所有写入者。PG18 的卷布局变化也确实需要独立处理，官方镜像变更。
 pnpm 11 不只是移动 package.json#pnpm：.npmrc 中除 registry/auth 外的大量配置也要迁入 workspace yaml，同时还有 Dockerfile、devcontainer 和文档里的 pnpm 10 钉住点。pnpm 迁移指南
 Redis 目前只有服务、配置和 external 声明，没有找到真实 ioredis 调用。按最小化原则，应先确认能否直接移除，而不是为了版本表升级。
 所以，我建议采用“一次性核心升级”的方案，但保留 PG18 和 Mobile 的独立验收边界。这能消除绝大多数重复 CI/部署成本，同时避免把数据迁移和原生产物验证压缩成一次普通测试。此次仅做了分析，没有修改文件。
@@ -445,7 +445,7 @@ Redis 目前只有服务、配置和 external 声明，没有找到真实 ioredi
 | core typecheck（utils,contracts,patterns,domain-shared,http-client,account,authentication,task,goal,api） | 0 |
 | api:build / web:build / desktop:build | 0 / 0 / 0 |
 | utils:test / contracts:test / desktop:test | 0 / 0 / 0 |
-| daily-use:governance-check | 0 |
+| memoflow:governance-check | 0 |
 | apps/mobile `expo install --check` | 0（Dependencies are up to date） |
 | local docker health + HTTP | postgres/redis/api/web/ai/powersync healthy；api/web 200 |
 

@@ -19,7 +19,7 @@ updated: 2026-07-17T00:00:00
 
 ## 1. 背景
 
-Daily Use 已经具备两类 AI 运行能力：
+MemoFlow 已经具备两类 AI 运行能力：
 
 - TypeScript AI 模块负责 Conversation、Provider 配置、AgentRun 投影、审批后业务执行和跨模块适配。
 - Python `ai-service` 使用 LangGraph 承担 Goal 与 Knowledge 等可恢复工作流、checkpoint 和 interrupt。
@@ -46,7 +46,7 @@ Daily Use 已经具备两类 AI 运行能力：
 - Goal、Knowledge、Task 等是内部 workflow/capability，不作为用户必须选择的独立机器人。
 - UI 不根据 Pi、LangGraph、Codex CLI 或 Provider 名称实现业务逻辑。
 
-### 2.2 Daily Use Agent Host 是稳定宿主
+### 2.2 MemoFlow Agent Host 是稳定宿主
 
 Agent Host 负责：
 
@@ -78,7 +78,7 @@ Codex/Claude CLI Turn Engine
 
 ### 2.4 业务状态与框架状态分离
 
-Daily Use 的持久产品状态包括：
+MemoFlow 的持久产品状态包括：
 
 - AgentRun 与状态机。
 - Conversation transcript。
@@ -92,7 +92,7 @@ Daily Use 的持久产品状态包括：
 - CLI session ID、PID、命令参数和 stdout/stderr framing。
 - Provider 原始消息、SDK response 和 retry state。
 
-框架私有状态必须由 adapter 隐藏。它可以作为恢复优化保存，但不能替代 Daily Use 产品状态，也不能进入 UI 公共契约。
+框架私有状态必须由 adapter 隐藏。它可以作为恢复优化保存，但不能替代 MemoFlow 产品状态，也不能进入 UI 公共契约。
 
 ### 2.5 Capability 协商代替引擎名称判断
 
@@ -142,7 +142,7 @@ ContextItem 携带来源、信任等级、敏感级别和 token 估算。Vault�
 ### 2.9 LangGraph、Pi 和本地 CLI 的定位
 
 - LangGraph 长期保留为 durable Workflow Engine，不承担统一 UI 或跨模块业务写入。
-- Pi 只作为候选 Turn Engine；不采用 `pi-coding-agent` 默认文件工具、extension discovery、AGENTS 加载、RPC 产品协议或 JSONL Session 作为 Daily Use 真值。
+- Pi 只作为候选 Turn Engine；不采用 `pi-coding-agent` 默认文件工具、extension discovery、AGENTS 加载、RPC 产品协议或 JSONL Session 作为 MemoFlow 真值。
 - 本地 CLI 首期只用于 Desktop 开放式对话、只读分析、Artifact 和 Proposal 生成。
 - 本地 CLI 不直接指向真实 Vault 执行写入；无法可靠关闭自带 bash/write 能力时，不得参与要求 host-managed tools 的工作流。
 - Open Design 的本地 CLI adapter 思路可复用，但其进程权限模型和 CLI 原生协议必须封装在 adapter 内。
@@ -151,7 +151,7 @@ ContextItem 携带来源、信任等级、敏感级别和 token 估算。Vault�
 
 ### 3.1 用 Pi 或任一本地 CLI 取代全部 Agent runtime
 
-不采用。它们不提供 Daily Use 所需的业务 checkpoint、跨端审批、Proposal revision、业务幂等和跨模块 Executor 边界。
+不采用。它们不提供 MemoFlow 所需的业务 checkpoint、跨端审批、Proposal revision、业务幂等和跨模块 Executor 边界。
 
 ### 3.2 把 Workflow、Agent loop 和 Model API 合并成万能 Provider
 

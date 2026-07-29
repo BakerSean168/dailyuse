@@ -7,9 +7,9 @@
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
 import type {
   GetTaskInstancesByRangeRes,
-} from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 /**
  * Get Task Instances By Date Range Service

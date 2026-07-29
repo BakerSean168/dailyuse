@@ -3,9 +3,9 @@
  */
 
 import type { ITaskInstanceRepository } from '../../../domain/repositories/i-task-instance-repository';
-import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { TaskInstanceClientDTO } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 export class StartTaskInstanceUseCase {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}

@@ -6,8 +6,8 @@
  * concrete adapter from `infrastructure-client`.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
+import type { Result } from '@memoflow/contracts/result';
+import type { UserSettingClientDTO, PreferenceCategory } from '@memoflow/contracts/setting';
 import type { ISettingApiClient } from './ports/setting-api-client.port';
 
 // Re-export the port so consumers can import from the application layer.

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { anIdentityId } from '@dailyuse/test-utils';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { anIdentityId } from '@memoflow/test-utils';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain/repositories/i-goal-repository';
 import { Goal, GoalPolicy } from '../../../../domain';
 import { CreateGoalUseCase } from '../create-goal.use-case';

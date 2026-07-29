@@ -1,4 +1,4 @@
-import { ReminderType as ReminderTypeContract, type ReminderType as IReminderType } from '@dailyuse/contracts/reminder';
+import { ReminderType as ReminderTypeContract, type ReminderType as IReminderType } from '@memoflow/contracts/reminder';
 
 /**
  * 📝 提醒类型 - 提醒的类型分类
@@ -13,7 +13,7 @@ export type ReminderType = IReminderType & { readonly __brand: unique symbol };
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IReminderType[] = Object.values(ReminderTypeContract);
 
 /**

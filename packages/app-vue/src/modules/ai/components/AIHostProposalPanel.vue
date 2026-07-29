@@ -13,8 +13,8 @@
  */
 import { nextTick, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import type { AssistantProposalPatch } from '@dailyuse/contracts/ai';
+import { Button } from '@memoflow/ui-vue-shadcn';
+import type { AssistantProposalPatch } from '@memoflow/contracts/ai';
 import {
   buildHostProposalPatchFromDraft,
   isHostProposalDraftDirty,

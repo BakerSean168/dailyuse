@@ -5,10 +5,10 @@
  * 签发 state + PKCE，并返回提供者授权 URL（当前仅 GitHub）。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, fail } from '@memoflow/contracts/result';
 import { randomUUID } from 'node:crypto';
-import type { GetOAuthUrlReq, GetOAuthUrlRes } from '@dailyuse/contracts/authentication';
+import type { GetOAuthUrlReq, GetOAuthUrlRes } from '@memoflow/contracts/authentication';
 import type { IOAuthStateStore } from '../../../domain/services/i-oauth-state-store';
 
 export interface GithubOAuthAuthorizeConfig {

@@ -1,5 +1,5 @@
 import { createApp } from 'vue';
-import { APP_TITLE_NAME } from '@dailyuse/assets';
+import { APP_TITLE_NAME } from '@memoflow/assets';
 
 import AuthApp from '../AuthApp.vue';
 import { installAuthServices } from '../platform/di-auth';

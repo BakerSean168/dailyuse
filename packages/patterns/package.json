@@ -1,7 +1,7 @@
 {
-  "name": "@dailyuse/patterns",
+  "name": "@memoflow/patterns",
   "version": "0.0.1",
-  "description": "Reusable design patterns and utilities for Memoflow applications",
+  "description": "Reusable design patterns and utilities for MemoFlow applications",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -29,8 +29,8 @@
     }
   },
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/utils": "workspace:*"
+    "@memoflow/contracts": "workspace:*",
+    "@memoflow/utils": "workspace:*"
   },
   "devDependencies": {
     "@nx/vite": "23.0.2",

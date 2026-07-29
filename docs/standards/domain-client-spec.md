@@ -24,9 +24,9 @@ tags: [standard, domain/client]
 Client 端领域对象应当遵守以下依赖限制：
 
 * ✅ **允许依赖**:
-* `@dailyuse/utils` (基础工具类，如 `AggregateRoot` 基类)
-* `@dailyuse/contracts` (DTO 定义, API 接口)
-* `@dailyuse/domain-shared` (值对象, 枚举, 通用纯函数)
+* `@memoflow/utils` (基础工具类，如 `AggregateRoot` 基类)
+* `@memoflow/contracts` (DTO 定义, API 接口)
+* `@memoflow/domain-shared` (值对象, 枚举, 通用纯函数)
 
 
 * ❌ **禁止依赖**:
@@ -47,9 +47,9 @@ Client 端领域对象应当遵守以下依赖限制：
 * 必须实现对应的 `Contract` 中定义的 Client 接口（如果有）。
 
 ```typescript
-import { AggregateRoot } from '@dailyuse/utils';
-import { IdentityId } from '@dailyuse/domain-shared/account';
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
+import { AggregateRoot } from '@memoflow/utils';
+import { IdentityId } from '@memoflow/domain-shared/account';
+import type { AccountClientDTO } from '@memoflow/contracts/account';
 
 export class Account extends AggregateRoot<IdentityId> {
   // ...
@@ -109,11 +109,11 @@ export class Account extends AggregateRoot<IdentityId> {
 请 AI 在生成代码时严格参照以下模板：
 
 ```typescript
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot } from '@memoflow/utils';
 // 1. 引入 Contract 定义的 DTO
-import type { UserClientDTO } from '@dailyuse/contracts/user';
+import type { UserClientDTO } from '@memoflow/contracts/user';
 // 2. 引入 Shared 中的值对象
-import { UserId, Email, UserStatus } from '@dailyuse/domain-shared/user';
+import { UserId, Email, UserStatus } from '@memoflow/domain-shared/user';
 
 export class User extends AggregateRoot<UserId> {
   // ================= 状态定义 =================

@@ -110,10 +110,10 @@ import {
   SelectItem,
   Badge,
   Input,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Info, X } from '@lucide/vue';
 import type { TaskTemplateFormProps, TaskTemplateViewModel } from '../../types';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { useI18n } from 'vue-i18n';
 import { ColorPickerField } from '../../../../../shared/components';
 import { defaultNamedColor } from '../../../../../shared/constants/color-palette';

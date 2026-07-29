@@ -159,13 +159,13 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { GitBranch, Dumbbell, Zap, RefreshCw, Download, Loader2, Circle } from '@lucide/vue';
 import type {
   GetGoalAggregateRes,
   GoalClientDTO,
   KeyResultClientDTO,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 import { useGoal } from '../../composables/useGoal';
 import { useResizeObserver } from '@vueuse/core';
 import ExportDialog from './ExportDialog.vue';

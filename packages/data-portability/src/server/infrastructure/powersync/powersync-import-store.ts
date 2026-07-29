@@ -6,8 +6,8 @@
  * booleans are 0/1, dates are ISO strings.
  */
 
-import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
-import { newId } from '@dailyuse/utils';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@memoflow/contracts/electron';
+import { newId } from '@memoflow/utils';
 import type {
   DataPortabilityImportStore,
   DataPortabilityImportTx,

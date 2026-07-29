@@ -6,7 +6,7 @@
  * - SessionManager: 会话生命周期管理
  * - NetworkStateManager: 网络状态管理
  *
- * 类型定义统一从 @dailyuse/contracts/authentication 导入
+ * 类型定义统一从 @memoflow/contracts/authentication 导入
  */
 
 // Contracts types: single import path (no manager dual re-export track).
@@ -28,7 +28,7 @@ export type {
   DeviceInfoClientDTO,
   // Residual 925: OfflineLoginResponse sole body re-export from contracts (no session-types alias).
   OfflineLoginResponse,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 // Export managers
 export { TokenManager } from './token-manager';

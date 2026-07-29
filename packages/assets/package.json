@@ -1,7 +1,7 @@
 {
-  "name": "@dailyuse/assets",
+  "name": "@memoflow/assets",
   "version": "0.0.1",
-  "description": "Shared static assets for Memoflow applications (images, audio, fonts)",
+  "description": "Shared static assets for MemoFlow applications (images, audio, fonts)",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",

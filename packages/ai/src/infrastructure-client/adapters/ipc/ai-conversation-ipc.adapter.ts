@@ -1,12 +1,12 @@
 import type { IAIConversationApiClient, IResultIpcClient } from '../types';
-import { AIChannels } from '@dailyuse/contracts/electron';
+import { AIChannels } from '@memoflow/contracts/electron';
 import type {
   AIConversationClientDTO,
   ConversationListRes,
   CreateConversationReq,
   UpdateConversationReq,
-} from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 /**
  * IPC adapter for AI conversations.

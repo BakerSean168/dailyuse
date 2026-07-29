@@ -1,4 +1,4 @@
-import { TaskTemplateStatus as TaskTemplateStatusContract, type TaskTemplateStatus as ITaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus as TaskTemplateStatusContract, type TaskTemplateStatus as ITaskTemplateStatus } from '@memoflow/contracts/task';
 
 /**
  * 📝 任务模板状态 - 任务模板的生命周期状态
@@ -13,7 +13,7 @@ export type TaskTemplateStatus = ITaskTemplateStatus & { readonly __brand: uniqu
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: ITaskTemplateStatus[] = Object.values(TaskTemplateStatusContract);
 
 /**

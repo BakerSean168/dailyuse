@@ -5,8 +5,8 @@
  * and revokes all sessions for the identity.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error, fail } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error, fail } from '@memoflow/contracts/result';
 import type {
   IAuthIdentityRepository,
   IAuthSessionRepository,
@@ -20,7 +20,7 @@ import {
   VerificationChallengePurpose,
   type IPasswordHasher,
 } from '../../../domain';
-import type { ResetPasswordReq } from '@dailyuse/contracts/authentication';
+import type { ResetPasswordReq } from '@memoflow/contracts/authentication';
 
 export class ResetPasswordUseCase {
   constructor(

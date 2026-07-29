@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DevChannels } from '@dailyuse/contracts/electron';
+import { DevChannels } from '@memoflow/contracts/electron';
 
 /**
  * Dev memory monitor IPC surface (stage-6 residual):
@@ -20,7 +20,7 @@ describe('memory-monitor channel surface', () => {
   });
 
   it('returns contracts Result ok envelopes instead of raw dual-track payloads', () => {
-    expect(source).toContain("import { ok } from '@dailyuse/contracts/result'");
+    expect(source).toContain("import { ok } from '@memoflow/contracts/result'");
     expect(source).toContain('return ok(monitor.getCurrentStatus())');
     expect(source).toContain('return ok(monitor.getSnapshots())');
     expect(source).toContain('return ok(monitor.forceGC())');

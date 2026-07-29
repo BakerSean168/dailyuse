@@ -10,7 +10,7 @@ import type {
   AuthIdentifier as PrismaAuthIdentifier,
   AuthOAuthBinding as PrismaAuthOAuthBinding,
   AuthCredential as PrismaAuthCredential,
-} from '@dailyuse/database';
+} from '@memoflow/database';
 
 /** AuthIdentifier Prisma row */
 export type PrismaAuthIdentifierRow = PrismaAuthIdentifier;

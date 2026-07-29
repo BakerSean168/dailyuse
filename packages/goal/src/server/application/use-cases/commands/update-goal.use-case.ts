@@ -7,10 +7,10 @@
 
 import type { IGoalRepository } from '../../../domain';
 import { GoalPolicy } from '../../../domain';
-import type { UpdateGoalReq, UpdateGoalRes } from '@dailyuse/contracts/goal';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { UpdateGoalReq, UpdateGoalRes } from '@memoflow/contracts/goal';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { GoalFolderId } from '../../../domain';
 
 /**

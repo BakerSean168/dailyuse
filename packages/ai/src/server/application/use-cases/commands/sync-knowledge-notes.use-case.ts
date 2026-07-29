@@ -1,4 +1,4 @@
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   IAIExecutionLogPort,
   IKnowledgeIndexRepository,
@@ -7,7 +7,7 @@ import type {
   KnowledgeSourceNote,
   KnowledgeIndexedNote,
 } from '../../ports';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import {
   resolveSourceContentHash,
   recordExecution,

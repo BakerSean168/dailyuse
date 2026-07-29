@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Progress } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Progress } from '@memoflow/ui-vue-shadcn';
 import { Lock, CheckCircle, Clock, Ban, PlayCircle, HelpCircle, Loader2 } from '@lucide/vue';
 import { formatTaskDuration } from '../../utils/format-task-duration';
 

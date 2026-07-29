@@ -7,7 +7,7 @@
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Skeleton } from '@dailyuse/ui-vue-shadcn';
+import { Skeleton } from '@memoflow/ui-vue-shadcn';
 import {
   CheckCircle2,
   Target,
@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   Activity,
 } from '@lucide/vue';
-import type { DashboardStats } from '@dailyuse/contracts/dashboard';
+import type { DashboardStats } from '@memoflow/contracts/dashboard';
 
 const props = withDefaults(
   defineProps<{

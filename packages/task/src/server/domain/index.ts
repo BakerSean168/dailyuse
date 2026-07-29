@@ -11,7 +11,7 @@
  * - 值对象（Value Objects）：TaskRecurrence, TaskDuration, TaskPriority 等
  * - 仓储接口（Repositories）：ITaskRepository, ITaskInstanceRepository
  * - 领域服务（Domain Services）：TaskDependencyPolicy
- * - 领域事件（Domain Events）：发布 TaskEventMap 键；事件类型以 @dailyuse/contracts/task 为真值
+ * - 领域事件（Domain Events）：发布 TaskEventMap 键；事件类型以 @memoflow/contracts/task 为真值
  * - 错误类（Errors）：TaskErrors - 任务相关业务异常
  * 
  * 【业务特性】
@@ -22,14 +22,14 @@
  * 
  * 【依赖规则】
  * ✅ 允许依赖：
- * - @dailyuse/utils（基类：AggregateRoot, Entity）
- * - @dailyuse/contracts（DTO 接口、事件 Map）
- * - @dailyuse/domain（值对象、枚举）
+ * - @memoflow/utils（基类：AggregateRoot, Entity）
+ * - @memoflow/contracts（DTO 接口、事件 Map）
+ * - @memoflow/domain（值对象、枚举）
  * 
  * ❌ 禁止依赖：
- * - @dailyuse/domain-client（客户端领域模型）
- * - @dailyuse/infrastructure-*（基础设施层）
- * - @dailyuse/application-*（应用层）
+ * - @memoflow/domain-client（客户端领域模型）
+ * - @memoflow/infrastructure-*（基础设施层）
+ * - @memoflow/application-*（应用层）
  * - 外部 I/O 库（fs, axios, prisma, ioredis 等）
  */
 

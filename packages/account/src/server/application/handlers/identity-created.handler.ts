@@ -7,10 +7,10 @@
 
 import type { IAccountRepository } from '../../domain';
 import { Account } from '../../domain';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { AuthEventMap } from '@dailyuse/contracts/authentication';
-import { IdentityCreateMethod } from '@dailyuse/contracts/authentication';
+import { IdentityId } from '@memoflow/domain-shared/shared';
+import { createLogger } from '@memoflow/utils/logger';
+import type { AuthEventMap } from '@memoflow/contracts/authentication';
+import { IdentityCreateMethod } from '@memoflow/contracts/authentication';
 
 const logger = createLogger('IdentityCreatedHandler');
 

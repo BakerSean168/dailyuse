@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
-import { SourceModule, type SourceModule as SourceModuleValue } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '@dailyuse/schedule';
+import { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
+import { SourceModule, type SourceModule as SourceModuleValue } from '@memoflow/contracts/schedule';
+import { ScheduleTask } from '@memoflow/schedule';
 import { createScheduleExecutionRouter } from '../execution/router';
 
 function createScheduleTask(sourceModule: SourceModuleValue) {

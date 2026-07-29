@@ -23,7 +23,7 @@
     "allowJs": false,
     "baseUrl": ".",
     "paths": {
-      "@dailyuse/nx-test-system": [
+      "@memoflow/nx-test-system": [
         "tools/nx-test-system/index.js"
       ]
     },

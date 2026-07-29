@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IAccountRepository } from '../../../../domain/repositories/i-account-repository';
 import { CheckAvailabilityUseCase } from '../check-availability.use-case';
 

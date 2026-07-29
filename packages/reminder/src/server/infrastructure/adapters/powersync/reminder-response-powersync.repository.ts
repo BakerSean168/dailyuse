@@ -1,4 +1,4 @@
-import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import type { ReminderResponseAction } from '@memoflow/contracts/reminder';
 import type { IReminderResponseRepository } from '../../../domain/repositories/i-reminder-response-repository';
 import { ReminderResponse } from '../../../domain/entities/reminder-response';
 import {

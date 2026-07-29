@@ -8,11 +8,11 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   ChecklistItemDefinition as IChecklistItemDefinition,
   ChecklistItemDefinitionDTO,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 /**
  * ChecklistItemDefinition 值对象实现

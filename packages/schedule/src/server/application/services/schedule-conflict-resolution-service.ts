@@ -1,4 +1,4 @@
-import { toResultErrorException } from '@dailyuse/contracts/result';
+import { toResultErrorException } from '@memoflow/contracts/result';
 import type {
   ConflictDetectionResult,
   CreateScheduleRequest,
@@ -6,7 +6,7 @@ import type {
   DetectConflictsInternalQuery,
   ResolveConflictRequest,
   ResolveConflictResponseDTO,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import { ScheduleConflictDetectionService } from './schedule-conflict-detection-service';
 import { ScheduleEventApplicationService } from './schedule-event-application-service';
 

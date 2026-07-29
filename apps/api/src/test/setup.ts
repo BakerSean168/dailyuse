@@ -3,7 +3,7 @@
  * @description 默认 `api:test` 只负责快反馈测试，不在这里绑定真实数据库生命周期。
  */
 
-import { registerFastTestHooks } from '@dailyuse/test-utils';
+import { registerFastTestHooks } from '@memoflow/test-utils';
 import type { Request, Response, NextFunction } from 'express';
 
 registerFastTestHooks({

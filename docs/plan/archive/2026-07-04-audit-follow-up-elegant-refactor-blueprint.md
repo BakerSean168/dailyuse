@@ -22,8 +22,8 @@ updated: 2026-07-04T14:24:20+08:00
 本文件以以下真值为准：
 
 1. 当前代码、配置和测试
-2. [code-quality-consistency-audit.md](D:/home/projects/dailyuse/docs/audit/code-quality-consistency-audit.md) 的历史问题编号与背景
-3. [2026-05-29-repository-paradigm-unification-plan.md](D:/home/projects/dailyuse/docs/plan/archive/2026-05-29-repository-paradigm-unification-plan.md)
+2. [code-quality-consistency-audit.md](D:/home/projects/memoflow/docs/audit/code-quality-consistency-audit.md) 的历史问题编号与背景
+3. [2026-05-29-repository-paradigm-unification-plan.md](D:/home/projects/memoflow/docs/plan/archive/2026-05-29-repository-paradigm-unification-plan.md)
 4. 已归档的 `core-seam reconvergence` 方案与执行记录
 
 ## 2. 当前真值快照
@@ -542,8 +542,8 @@ rg -n "for \(const event of .*pullDomainEvents\(\)\)" packages/notification pack
 ### Targeted Verification
 
 ```powershell
-pnpm nx run daily-use:target-baseline-check
-pnpm nx run daily-use:governance-check
+pnpm nx run memoflow:target-baseline-check
+pnpm nx run memoflow:governance-check
 ```
 
 ### 完成判定
@@ -557,7 +557,7 @@ pnpm nx run daily-use:governance-check
 - Date: 2026-07-04
 - Status: done
 - What changed: umbrella plan (`2026-05-29-repository-paradigm-unification-plan.md`) 已更新，关闭 PowerSync checkpoint stub 项；本蓝图 R03-R07 全部标记为已完成。
-- Verification: `daily-use:governance-check` 通过（12 documented exemptions，与历史一致）。
+- Verification: `memoflow:governance-check` 通过（12 documented exemptions，与历史一致）。
 - 归档判定: 本蓝图的 6 项归档条件已全部满足，可以移入 archive。
 
 ## 8. 固定执行模板
@@ -598,27 +598,27 @@ pnpm nx run daily-use:governance-check
 3. account 生产代码与 touched tests 中不再出现 `eventBus as any`
 4. `R03-R05` 均有最近一层 direct tests 守护
 5. active / audit / umbrella plan 已回写到当前真值
-6. `pnpm nx run daily-use:governance-check` 通过
+6. `pnpm nx run memoflow:governance-check` 通过
 
 ## 11. 可直接复制的后续 Prompt
 
 ### Prompt A：执行 `R03`
 
-请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/dailyuse/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R03`。目标是硬切 `AgentCheckpointPowerSyncAdapter` 的 live stub surface。默认优先删除 export / wiring，而不是保留 throwing stub。不要打开 repository flush 或治理主题。完成后运行文档里列出的 targeted verification，并回写状态。
+请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/memoflow/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R03`。目标是硬切 `AgentCheckpointPowerSyncAdapter` 的 live stub surface。默认优先删除 export / wiring，而不是保留 throwing stub。不要打开 repository flush 或治理主题。完成后运行文档里列出的 targeted verification，并回写状态。
 
 ### Prompt B：执行 `R04`
 
-请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/dailyuse/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R04`。把 notification、schedule、reminder 剩余 repository 的 domain-event flush loop 收成共享 typed flush pattern。同轮删除 open-coded loop。不要顺手改别的 feature。
+请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/memoflow/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R04`。把 notification、schedule、reminder 剩余 repository 的 domain-event flush loop 收成共享 typed flush pattern。同轮删除 open-coded loop。不要顺手改别的 feature。
 
 ### Prompt C：执行 `R05`
 
-请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/dailyuse/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R05`。清理 `packages/account` 和 `packages/schedule` 中剩余的 `eventBus as any`，让生产代码和 touched tests 都切回 typed seam。不要扩大到全仓 `any` 清理。
+请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/memoflow/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R05`。清理 `packages/account` 和 `packages/schedule` 中剩余的 `eventBus as any`，让生产代码和 touched tests 都切回 typed seam。不要扩大到全仓 `any` 清理。
 
 ### Prompt D：执行 `R06`
 
-请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/dailyuse/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R06`。为 `R03-R05` 新收好的 seam 补最小 direct tests，并用文档里列出的 pattern search 做 closeout 验收。不要再开新架构主题。
+请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/memoflow/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R06`。为 `R03-R05` 新收好的 seam 补最小 direct tests，并用文档里列出的 pattern search 做 closeout 验收。不要再开新架构主题。
 
 ### Prompt E：执行 `R07`
 
-请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/dailyuse/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R07`。基于当前代码和命令结果回写 active / audit / umbrella plan 的状态，并运行 `daily-use:target-baseline-check` 与 `daily-use:governance-check`。如果全部完成，再把本蓝图移入 archive。
+请只执行 [2026-07-04-audit-follow-up-elegant-refactor-blueprint.md](D:/home/projects/memoflow/docs/plan/active/2026-07-04-audit-follow-up-elegant-refactor-blueprint.md) 的 `R07`。基于当前代码和命令结果回写 active / audit / umbrella plan 的状态，并运行 `memoflow:target-baseline-check` 与 `memoflow:governance-check`。如果全部完成，再把本蓝图移入 archive。
 

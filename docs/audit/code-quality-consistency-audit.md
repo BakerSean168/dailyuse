@@ -31,10 +31,10 @@
 | --- | --- | --- |
 | Q-001 | Fixed | `pnpm nx run schedule:test --skipSync` |
 | Q-002 | Fixed | `pnpm nx run schedule-orchestration:test --skipSync` |
-| Q-003 | Fixed | `pnpm nx run daily-use:governance-check --skipSync` |
+| Q-003 | Fixed | `pnpm nx run memoflow:governance-check --skipSync` |
 | Q-004 | Fixed | `pnpm nx run api:test:smoke --skipSync` |
 | Q-005 | Fixed | `pnpm nx run api:typecheck --skipSync`、`pnpm nx run repository:test --skipSync`、`pnpm nx run editor:test --skipSync` |
-| Q-006 | Fixed | `pnpm nx run daily-use:docs-check --skipSync` |
+| Q-006 | Fixed | `pnpm nx run memoflow:docs-check --skipSync` |
 | Q-007 | Fixed | `pnpm nx run schedule:test --skipSync` |
 
 阅读说明：第 2-8 章保留初始审查快照、证据和推荐修复路径，其中出现的“当前观察”指 2026-07-07 初始审查时的工作区状态。修复后的权威状态以本节 `Fixed` 表、`Verification Log` 和当前代码为准。
@@ -154,7 +154,7 @@ Schedule module runtime contribution
 #### 流程 3：Task CRUD/API route
 
 ```
-Web/Desktop 客户端调用 @dailyuse/task/client
+Web/Desktop 客户端调用 @memoflow/task/client
 ↓
 HTTP 或 IPC adapter
 ↓
@@ -235,7 +235,7 @@ sourceExecutor / schedule-orchestration source router
 - 位置：`packages/schedule-orchestration/vitest.config.ts` lines 5-17；`vitest.shared.ts` lines 329-334；`vitest.workspace-helpers.ts` lines 3-49, 236-248；`packages/schedule/src/server/infrastructure/adapters/prisma/schedule-prisma.repository.ts` lines 9-11
 - 影响：`schedule-orchestration` 是调度投影与 source execution 的核心跨 feature 编排包，但当前 test target 在导入阶段失败，4 个 suite 0 tests，无法保护核心流程。
 - 证据：
-  - `pnpm nx run schedule-orchestration:test --skipSync` 当前失败：`Cannot find package '@/server/domain/aggregates/calendar-entry' imported from '/opt/dailyuse/packages/schedule/src/server/infrastructure/adapters/prisma/schedule-prisma.repository.ts'`
+  - `pnpm nx run schedule-orchestration:test --skipSync` 当前失败：`Cannot find package '@/server/domain/aggregates/calendar-entry' imported from '/opt/memoflow/packages/schedule/src/server/infrastructure/adapters/prisma/schedule-prisma.repository.ts'`
   - `packages/schedule-orchestration/vitest.config.ts:5-17` 只调用 `createSharedConfig(...)`，没有安装跨包 `@` resolver。
   - `vitest.shared.ts:329-334` 把 `@` 映射到当前项目 `projectSrc`。
   - `vitest.workspace-helpers.ts:3-49` 已存在 `domainResolveAtAlias`，`236-248` 已存在 `createPackageResolveAliases()`，但未被该 target 使用。
@@ -289,7 +289,7 @@ sourceExecutor / schedule-orchestration source router
 - 建议：选择一个 canonical 标准并同步三处：如果 `server/index.ts` 是标准，则补齐所有 audited packages 并更新治理；如果 root barrel 直接导出 infrastructure 才是标准，则修正 ADR。另行决定 `schedule-orchestration` 是否应纳入类似治理。
 - 是否需要测试：需要，偏治理测试。
 - 推荐测试位置：`tools/governance/server-feature-shape-audit.mjs` 对应脚本行为；必要时补脚本 fixture 或至少更新 governance check。
-- 验证方式：`pnpm nx run daily-use:governance-check`。
+- 验证方式：`pnpm nx run memoflow:governance-check`。
 
 ### Q-004
 
@@ -315,13 +315,13 @@ sourceExecutor / schedule-orchestration source router
 - 严重级别：Medium
 - 类型：一致性 / 配置 / 可维护性
 - 位置：`apps/api/src/main.ts` lines 68-85；`packages/repository/src/api/module.ts` lines 68-75；`packages/editor/src/api/module.ts` lines 73-78；`packages/repository/src/server/infrastructure/prisma.ts` lines 22-25；`apps/api/src/shared/infrastructure/config/env.schema.ts`、`.env.example`、`docs/**`
-- 现象：`REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage'` 在 API AI adapters、repository module、editor module、repository prisma adapter 多处重复维护；同名 env 未在 API env schema、`.env.example` 或 docs 中被 `rg` 找到。
+- 现象：`REPOSITORY_STORAGE_PATH || '/tmp/memoflow-repository-storage'` 在 API AI adapters、repository module、editor module、repository prisma adapter 多处重复维护；同名 env 未在 API env schema、`.env.example` 或 docs 中被 `rg` 找到。
 - 影响：部署时同一 storage root 可能因为默认值、env 注入或未来拼写漂移而分裂；AI knowledge、repository、editor 可能读写不同目录。
 - 证据：
   - `apps/api/src/main.ts:72,77,84` 三次重复读取同一 env/default。
   - `packages/repository/src/api/module.ts:71-72` 重复相同 default。
   - `packages/editor/src/api/module.ts:75` 重复相同 default。
-  - `packages/repository/src/server/infrastructure/prisma.ts:24` 再次使用 `process.env.REPOSITORY_STORAGE_PATH ?? '/tmp/dailyuse-repository-storage'`。
+  - `packages/repository/src/server/infrastructure/prisma.ts:24` 再次使用 `process.env.REPOSITORY_STORAGE_PATH ?? '/tmp/memoflow-repository-storage'`。
   - `rg REPOSITORY_STORAGE_PATH apps/api/src/shared/infrastructure/config/env.schema.ts .env.example docs -n` 未返回结果。
 - 建议：建立单一 storage config 解析入口，或由 repository package 暴露 canonical helper/constant；API bootstrap 只解析一次并注入所有需要的 module/adapter；同时把 env 加入 schema、`.env.example` 和部署文档。
 - 是否需要测试：需要。
@@ -342,7 +342,7 @@ sourceExecutor / schedule-orchestration source router
 - 建议：更新测试文档到 server-first 路径，并说明当前 coverage 默认 roots 以 `vitest.shared.ts` 为准。
 - 是否需要测试：不需要业务测试；需要文档/治理检查。
 - 推荐测试位置：不适用。
-- 验证方式：`pnpm nx run daily-use:docs-check` 或项目现有 docs check target。
+- 验证方式：`pnpm nx run memoflow:docs-check` 或项目现有 docs check target。
 
 ### Q-007
 
@@ -380,8 +380,8 @@ sourceExecutor / schedule-orchestration source router
 | `schedule-orchestration` test target 当前不可运行 | 核心编排无测试保护 | 配置回归 + 现有 suite 真实执行 | `packages/schedule-orchestration/vitest.config.ts` 与 `src/__tests__/*` | High | `pnpm nx run schedule-orchestration:test --skipSync` |
 | route auth 语义缺少统一 contract 测试 | public/private 边界可能被误改 | route registration/auth contract test | `packages/task/src/api/routes/*.spec.ts`、`packages/goal/src/api/routes/goal.routes.spec.ts`、`packages/setting/src/api/routes.spec.ts` | Medium | `pnpm nx run api:test:smoke` |
 | Repository storage config 没有集中解析测试 | storage root 漂移难以及时发现 | config/helper 单元测试 + API config smoke | 新增 storage config helper 对应 spec | Medium | `pnpm nx run api:typecheck`、`pnpm nx run repository:test` |
-| server-first shape 文档/治理不一致未被测试锁定 | 新包结构可能继续漂移 | governance script test 或 governance check | `tools/governance/server-feature-shape-audit.mjs` | Medium | `pnpm nx run daily-use:governance-check` |
-| coverage 文档路径过时 | 新人补测路径错误 | docs check | `docs/test/running-tests.md` | Low | `pnpm nx run daily-use:docs-check` |
+| server-first shape 文档/治理不一致未被测试锁定 | 新包结构可能继续漂移 | governance script test 或 governance check | `tools/governance/server-feature-shape-audit.mjs` | Medium | `pnpm nx run memoflow:governance-check` |
+| coverage 文档路径过时 | 新人补测路径错误 | docs check | `docs/test/running-tests.md` | Low | `pnpm nx run memoflow:docs-check` |
 | Electron schedule module 双组装 seam 未覆盖 | 后续 factory 增加副作用后风险扩大 | seam 单元测试 | `packages/schedule/src/electron/*.spec.ts` | Low | `pnpm nx run schedule:test --skipSync` |
 
 ## 8. Recommended Repair Plan
@@ -432,7 +432,7 @@ sourceExecutor / schedule-orchestration source router
   2. 若是，先让治理脚本检查该文件，再逐包补入口。
   3. 若不是，更新 ADR 到当前 root barrel 直出 infrastructure 的实际标准。
   4. 明确 `schedule-orchestration` 是否纳入治理或作为文档化例外。
-- 验证命令：`pnpm nx run daily-use:governance-check`
+- 验证命令：`pnpm nx run memoflow:governance-check`
 
 ### Repair Pass 05：修复 Q-005
 
@@ -455,7 +455,7 @@ sourceExecutor / schedule-orchestration source router
   1. 将 legacy `domain-server` 描述改为 `src/server/domain/**`。
   2. 指向 `vitest.shared.ts` 作为覆盖范围真值源。
   3. 运行 docs/governance check。
-- 验证命令：`pnpm nx run daily-use:docs-check`
+- 验证命令：`pnpm nx run memoflow:docs-check`
 
 ### Repair Pass 07：修复 Q-007
 
@@ -477,7 +477,7 @@ sourceExecutor / schedule-orchestration source router
 
 ### Regression guard：Server feature shape
 
-请检查新增或近期迁移的 feature package 是否仍符合 ADR-031 和 `tools/governance/server-feature-shape-audit.mjs`。只处理结构入口和治理例外，不做业务重构。完成后运行 `pnpm nx run daily-use:governance-check --skipSync`。
+请检查新增或近期迁移的 feature package 是否仍符合 ADR-031 和 `tools/governance/server-feature-shape-audit.mjs`。只处理结构入口和治理例外，不做业务重构。完成后运行 `pnpm nx run memoflow:governance-check --skipSync`。
 
 ### Regression guard：Repository storage config
 
@@ -501,7 +501,7 @@ sourceExecutor / schedule-orchestration source router
 | `pnpm nx run repository:test --skipSync` | 通过，12 files / 58 tests |
 | `pnpm nx run editor:test --skipSync` | 通过，19 files / 103 tests |
 | `pnpm nx run api:typecheck --skipSync` | 通过，包含 24 个依赖任务 |
-| `pnpm nx run daily-use:governance-check --skipSync` | 通过 |
-| `pnpm nx run daily-use:docs-check --skipSync` | 通过 |
+| `pnpm nx run memoflow:governance-check --skipSync` | 通过 |
+| `pnpm nx run memoflow:docs-check --skipSync` | 通过 |
 
-注意：`api:typecheck` 的第一次修复后验证暴露出 `packages/data-portability/src/server/index.ts` 导出不存在的 `./domain`。该问题属于 Q-003 server feature shape 收敛时产生的构建破口，已通过移除虚假导出修复，并由后续 `api:typecheck` 与 `daily-use:governance-check` 覆盖。
+注意：`api:typecheck` 的第一次修复后验证暴露出 `packages/data-portability/src/server/index.ts` 导出不存在的 `./domain`。该问题属于 Q-003 server feature shape 收敛时产生的构建破口，已通过移除虚假导出修复，并由后续 `api:typecheck` 与 `memoflow:governance-check` 覆盖。

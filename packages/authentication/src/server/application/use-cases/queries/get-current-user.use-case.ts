@@ -1,9 +1,9 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { GetCurrentUserRes } from '@dailyuse/contracts/authentication';
-import { AuthIdentityStatus } from '@dailyuse/contracts/authentication';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { GetCurrentUserRes } from '@memoflow/contracts/authentication';
+import { AuthIdentityStatus } from '@memoflow/contracts/authentication';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import {
   type IAuthIdentityRepository,
   type IAuthSessionRepository,

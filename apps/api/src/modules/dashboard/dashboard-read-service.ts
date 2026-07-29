@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import {
   getDashboardData,
   toDashboardTaskInstanceRecord,
@@ -6,15 +6,15 @@ import {
   type DashboardTaskTemplateRecord,
   type DashboardScheduleRecord,
   type DashboardReminderRecord,
-} from '@dailyuse/dashboard';
-import type { DashboardData } from '@dailyuse/contracts/dashboard';
-import { createGoalPrismaRepositories } from '@dailyuse/goal';
-import { createTaskPrismaRepositories } from '@dailyuse/task';
-import { createSchedulePrismaModule } from '@dailyuse/schedule';
-import { createReminderPrismaRepositories } from '@dailyuse/reminder';
-import { createNotificationPrismaRepositories } from '@dailyuse/notification';
+} from '@memoflow/dashboard';
+import type { DashboardData } from '@memoflow/contracts/dashboard';
+import { createGoalPrismaRepositories } from '@memoflow/goal';
+import { createTaskPrismaRepositories } from '@memoflow/task';
+import { createSchedulePrismaModule } from '@memoflow/schedule';
+import { createReminderPrismaRepositories } from '@memoflow/reminder';
+import { createNotificationPrismaRepositories } from '@memoflow/notification';
 
-/** Soft residual 1156: dual toDashboardTaskInstanceRecord retired onto @dailyuse/dashboard sole. */
+/** Soft residual 1156: dual toDashboardTaskInstanceRecord retired onto @memoflow/dashboard sole. */
 
 function toGoalRecord(goal: {
   id: { toString(): string } | string;

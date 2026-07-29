@@ -69,38 +69,38 @@ vi.mock('pinia-plugin-persistedstate', () => ({
   default: 'persisted-plugin',
 }));
 
-vi.mock('@dailyuse/assets', () => ({
-  APP_TITLE_NAME: 'Dailyuse',
+vi.mock('@memoflow/assets', () => ({
+  APP_TITLE_NAME: 'MemoFlow',
 }));
 
-vi.mock('@dailyuse/app-vue/router', () => ({
+vi.mock('@memoflow/app-vue/router', () => ({
   createAppRouter: mocks.createAppRouter,
 }));
 
-vi.mock('@dailyuse/app-vue/modules/authentication', () => ({
+vi.mock('@memoflow/app-vue/modules/authentication', () => ({
   useAuthenticationStore: mocks.useAuthenticationStore,
 }));
 
-vi.mock('@dailyuse/app-vue/plugins/i18n', () => ({
+vi.mock('@memoflow/app-vue/plugins/i18n', () => ({
   createI18nPlugin: mocks.createI18nPlugin,
   loadLocaleMessages: mocks.loadLocaleMessages,
   translateMessageKey: mocks.translateMessageKey,
 }));
 
-vi.mock('@dailyuse/app-vue/desktop', () => ({
+vi.mock('@memoflow/app-vue/desktop', () => ({
   DesktopAuthView: { name: 'DesktopAuthView' },
   hydrateDesktopBootstrapAuthState: mocks.hydrateDesktopBootstrapAuthState,
 }));
 
-vi.mock('@dailyuse/app-vue/modules/notification', () => ({
+vi.mock('@memoflow/app-vue/modules/notification', () => ({
   createNotificationStartupHook: mocks.createNotificationStartupHook,
 }));
 
-vi.mock('@dailyuse/app-vue/modules/setting', () => ({
+vi.mock('@memoflow/app-vue/modules/setting', () => ({
   usePresentationPreferenceStore: mocks.usePresentationPreferenceStore,
 }));
 
-vi.mock('@dailyuse/ui-vue-shadcn/composables/useProgressBar', () => ({
+vi.mock('@memoflow/ui-vue-shadcn/composables/useProgressBar', () => ({
   progressStart: mocks.progressStart,
   progressDone: mocks.progressDone,
 }));
@@ -179,12 +179,12 @@ describe('desktop bootstrapMainApp', () => {
     const afterEachHandler = mocks.router.afterEach.mock.calls[0]?.[0];
     expect(afterEachHandler).toBeTypeOf('function');
     afterEachHandler({ meta: { title: 'dashboard.title' } });
-    expect(document.title).toBe('Dashboard - Dailyuse');
+    expect(document.title).toBe('Dashboard - MemoFlow');
 
     afterEachHandler({ meta: { title: 'Desktop Home' } });
 
     expect(mocks.progressDone).toHaveBeenCalledTimes(2);
-    expect(document.title).toBe('Desktop Home - Dailyuse');
+    expect(document.title).toBe('Desktop Home - MemoFlow');
   });
 
   it('resets auth state when desktop auth hydration fails', async () => {

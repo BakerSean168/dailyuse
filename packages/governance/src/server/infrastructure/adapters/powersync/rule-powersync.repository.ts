@@ -18,7 +18,7 @@
  *
  * @internal Concrete PowerSync implementation — consumers should use IRuleRepository interface.
  */
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
 import type {
   IRuleRepository,
   RuleFilter,
@@ -26,17 +26,17 @@ import type {
 import type { Rule } from '../../../domain/aggregates/rule';
 import type { RuleRevision } from '../../../domain/entities/rule-revision';
 import type { RuleId } from '../../../domain/value-objects/rule-id';
-import { toResultErrorException } from '@dailyuse/contracts/result';
-import { mapInfraErrorToResultError } from '@dailyuse/utils/errors';
+import { toResultErrorException } from '@memoflow/contracts/result';
+import { mapInfraErrorToResultError } from '@memoflow/utils/errors';
 import {
   PowerSyncRuleMapper,
   type PowerSyncRuleRow,
   type PowerSyncRuleWriteRow,
 } from './mappers/powersync-rule.mapper';
 import { PowerSyncRuleRevisionMapper } from './mappers/powersync-rule-revision.mapper';
-import { escapeSqlLike } from '@dailyuse/utils/shared';
-import { createEventBusAdapter, publishAggregateEvents } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import { escapeSqlLike } from '@memoflow/utils/shared';
+import { createEventBusAdapter, publishAggregateEvents } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

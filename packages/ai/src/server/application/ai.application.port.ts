@@ -1,5 +1,5 @@
-import type { Result } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type {
   AICapabilities,
   AgentEvent,
@@ -36,7 +36,7 @@ import type {
   QueryKnowledgeRes,
   ReindexKnowledgeReq,
   ReindexKnowledgeRes,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 /** Transport-neutral callable application surface. */
 export interface AIApplicationPort {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { FocusSession } from './focus-session';
-import { FocusSessionStatus } from '@dailyuse/contracts/goal';
+import { FocusSessionStatus } from '@memoflow/contracts/goal';
 
 describe('FocusSession aggregate', () => {
   beforeEach(() => {

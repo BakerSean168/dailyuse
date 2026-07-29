@@ -1,5 +1,5 @@
 // Residual 1025: sole parseJsonSafe (local dual retired).
-import { parseJsonSafe } from '@dailyuse/utils/shared';
+import { parseJsonSafe } from '@memoflow/utils/shared';
 /**
  * NotificationTemplate Prisma Repository
  *
@@ -13,13 +13,13 @@ import { parseJsonSafe } from '@dailyuse/utils/shared';
  * - Prisma displayName maps to the template name
  */
 
-import type { PrismaClient, Prisma } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@memoflow/database';
 import type { INotificationTemplateRepository } from '../../../domain';
 import { NotificationTemplate } from '../../../domain/aggregates/notification-template';
 import { NotificationTemplateConfig } from '../../../domain/value-objects/notification-template-config';
-import type { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
-import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
-import { eventBus } from '@dailyuse/utils/domain';
+import type { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@memoflow/patterns';
+import { eventBus } from '@memoflow/utils/domain';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

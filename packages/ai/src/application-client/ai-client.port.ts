@@ -34,8 +34,8 @@ import type {
   AgentStartRunClientRequest,
   AssistantClientCommand,
   AssistantEvent,
-} from '@dailyuse/contracts/ai';
-import type { Result } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/ai';
+import type { Result } from '@memoflow/contracts/result';
 
 export interface AIClientPort {
   getCapabilities(): Promise<Result<AICapabilities>>;

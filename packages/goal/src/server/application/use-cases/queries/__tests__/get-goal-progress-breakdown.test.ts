@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import type { IGoalRepository } from '../../../../domain';
-import type { ProgressBreakdown } from '@dailyuse/contracts/goal';
+import type { ProgressBreakdown } from '@memoflow/contracts/goal';
 import { GetGoalProgressBreakdownUseCase } from '../get-goal-progress-breakdown.use-case';
 
 // ============================================================

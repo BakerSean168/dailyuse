@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * FocusSession 聚合根实现
  * 实现 FocusSessionServer 接口
@@ -25,14 +25,14 @@ import type { Instant } from '@dailyuse/contracts/primitives';
  * - 软删除后不能再修改属性（只能恢复）
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { IdentityId } from '@memoflow/domain-shared';
 import { FocusSessionId, GoalId } from '../value-objects';
-import type { GoalEventMap } from '@dailyuse/contracts/goal';
-import { FocusSessionStatus } from '@dailyuse/contracts/goal';
+import type { GoalEventMap } from '@memoflow/contracts/goal';
+import { FocusSessionStatus } from '@memoflow/contracts/goal';
 import type {
   FocusSessionServerDTO,
-} from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
 
 // 内部状态接口
 export interface FocusSessionState {
@@ -493,7 +493,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
   /**
    * 转换为 Client DTO
    */
-  public toClientDTO(): import('@dailyuse/contracts/goal').FocusSessionClientDTO {
+  public toClientDTO(): import('@memoflow/contracts/goal').FocusSessionClientDTO {
     const remainingMinutes = this.remainingMinutes;
     const progressPercentage = this.progressPercentage;
 

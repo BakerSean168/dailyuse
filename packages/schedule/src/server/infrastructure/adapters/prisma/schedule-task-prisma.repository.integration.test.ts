@@ -3,7 +3,7 @@ import {
   ExecutionStatus,
   SourceModule,
   Timezone,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import { RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../../domain/value-objects';
 import { ScheduleTask } from '../../../domain/aggregates/schedule-task';
 import { ScheduleTaskPrismaRepository } from './schedule-task-prisma.repository';

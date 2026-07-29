@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { RuleClientDTO } from '@dailyuse/contracts/governance';
-import { createTestPinia } from '@dailyuse/test-utils';
+import type { RuleClientDTO } from '@memoflow/contracts/governance';
+import { createTestPinia } from '@memoflow/test-utils';
 import { useGovernanceStore } from './governance-store';
 
 function createRule(overrides: Partial<RuleClientDTO> = {}): RuleClientDTO {

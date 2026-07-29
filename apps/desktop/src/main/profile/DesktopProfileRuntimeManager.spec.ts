@@ -49,7 +49,7 @@ vi.mock('../bootstrap', () => ({
   },
 }));
 
-vi.mock('@dailyuse/schedule/electron', () => ({
+vi.mock('@memoflow/schedule/electron', () => ({
   stopScheduleRuntime: mocks.stopScheduleRuntime,
 }));
 

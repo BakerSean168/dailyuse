@@ -47,8 +47,8 @@ updated: 2026-07-03T18:20:00+08:00
 
 这轮真正完成的，不只是“把代码搬进新包”，而是把 seam 也一起收窄了：
 
-- `schedule-orchestration` 不再依赖过宽的 `@dailyuse/task/api`
-- task projection contract 已通过 `@dailyuse/task/schedule-projection` 单独暴露
+- `schedule-orchestration` 不再依赖过宽的 `@memoflow/task/api`
+- task projection contract 已通过 `@memoflow/task/schedule-projection` 单独暴露
 - `schedule-orchestration` 的 build/typecheck/test/governance 已恢复通过
 
 ## 5. Implemented Correction
@@ -58,7 +58,7 @@ updated: 2026-07-03T18:20:00+08:00
 新增一个显式、窄、稳定的 task 子路径：
 
 ```ts
-@dailyuse/task/schedule-projection
+@memoflow/task/schedule-projection
 ```
 
 这个子路径只应该暴露：
@@ -93,21 +93,21 @@ updated: 2026-07-03T18:20:00+08:00
 apps/api or apps/desktop
   -> host-specific source factory
   -> schedule-orchestration
-  -> @dailyuse/task/schedule-projection (contract only)
+  -> @memoflow/task/schedule-projection (contract only)
 ```
 
 而不是：
 
 ```text
 schedule-orchestration
-  -> @dailyuse/task/api
+  -> @memoflow/task/api
   -> task api barrel
   -> task infra / adapters / unrelated exports
 ```
 
 ### 5.3 schedule 侧已优先使用更窄出口
 
-如果 `@dailyuse/schedule` 根出口已经稳定导出 `ScheduleTask` 和 `IScheduleTaskRepository`，优先使用根出口或更窄出口，不要为了省事再次拉宽到 `@dailyuse/schedule/api`。
+如果 `@memoflow/schedule` 根出口已经稳定导出 `ScheduleTask` 和 `IScheduleTaskRepository`，优先使用根出口或更窄出口，不要为了省事再次拉宽到 `@memoflow/schedule/api`。
 
 ## 6. In Scope
 
@@ -129,7 +129,7 @@ schedule-orchestration
 ## 8. Must Delete In This Round
 
 - host 上只为 task 准备的临时 runtime contribution 入口
-- `schedule-orchestration` 对 `@dailyuse/task/api` 的依赖
+- `schedule-orchestration` 对 `@memoflow/task/api` 的依赖
 - 任何继续把 task projection owner 挂在 feature 包或 host 零散文件里的路径
 
 ## 9. Target Shape
@@ -191,7 +191,7 @@ apps/api / apps/desktop
 
 ## 11. Suggested Execution Slices
 
-1. 建立 `@dailyuse/task/schedule-projection` 窄公共出口
+1. 建立 `@memoflow/task/schedule-projection` 窄公共出口
 2. 改 `schedule-orchestration` 只依赖窄 seam
 3. 修正 `schedule-orchestration` 的 tsconfig / tsup / vitest 映射
 4. 收尾 `TaskProjector` 与 `TaskProjectionRuntime` 的类型问题
@@ -207,7 +207,7 @@ apps/api / apps/desktop
 
 ## 13. Do Not Do
 
-- 不要继续从 `@dailyuse/task/api` re-export 一层“临时 projection seam”
+- 不要继续从 `@memoflow/task/api` re-export 一层“临时 projection seam”
 - 不要把 task-specific source builder 一起塞进 `schedule-orchestration`
 - 不要为了通过测试，继续在 vitest 里堆 deep alias 去兜住 task 宽导出
 - 不要在 host 重新生成临时 owner 文件
@@ -232,14 +232,14 @@ apps/api / apps/desktop
 
 ### Existing noise to record, not to “solve accidentally” inside this round
 
-- `api:test:smoke` 仍可能被既有 `@dailyuse/patterns/scheduler` 解析失败阻塞
+- `api:test:smoke` 仍可能被既有 `@memoflow/patterns/scheduler` 解析失败阻塞
 - `desktop:test:main` 仍可能被既有 Electron 安装与 auth 测试基线阻塞
 - `desktop:typecheck` 仍可能被上游 `ui-vue-shadcn:build` 的现有 `TS2742` 阻塞
 
 ## 15. Exit Criteria
 
 - task projection owner 只剩 `schedule-orchestration`
-- `schedule-orchestration` 不再依赖 `@dailyuse/task/api`
+- `schedule-orchestration` 不再依赖 `@memoflow/task/api`
 - task feature package 不再保留 projection runtime
 - host 不再保留仅服务于 task projection 的零散 owner 文件
 - `schedule-orchestration` 自身有最小一层 runtime tests
@@ -252,8 +252,8 @@ apps/api / apps/desktop
 
 - Date: 2026-07-03
 - Status: done
-- What changed: `packages/task` 新增 `@dailyuse/task/schedule-projection` 窄公共出口；`packages/schedule-orchestration` 全面切到窄 seam 和 `@dailyuse/schedule` 根出口；host 继续只负责实例化 source 与 orchestration module；`schedule-orchestration` 的 DTS 构建基准目录与治理白名单已同步收口。
+- What changed: `packages/task` 新增 `@memoflow/task/schedule-projection` 窄公共出口；`packages/schedule-orchestration` 全面切到窄 seam 和 `@memoflow/schedule` 根出口；host 继续只负责实例化 source 与 orchestration module；`schedule-orchestration` 的 DTS 构建基准目录与治理白名单已同步收口。
 - Old path deleted: `apps/api/src/modules/task-schedule-projection/runtime.ts`、`apps/desktop/src/main/modules/schedule/task-schedule-projection.runtime.ts`
-- Verification: `.\node_modules\.bin\nx.cmd run schedule-orchestration:typecheck`、`.\node_modules\.bin\nx.cmd run schedule-orchestration:test`、`.\node_modules\.bin\nx.cmd run schedule:test`、`.\node_modules\.bin\nx.cmd run task:test`、`.\node_modules\.bin\nx.cmd run api:typecheck`、`.\node_modules\.bin\nx.cmd run schedule-orchestration:build`、`.\node_modules\.bin\nx.cmd run daily-use:governance-check` 通过。
+- Verification: `.\node_modules\.bin\nx.cmd run schedule-orchestration:typecheck`、`.\node_modules\.bin\nx.cmd run schedule-orchestration:test`、`.\node_modules\.bin\nx.cmd run schedule:test`、`.\node_modules\.bin\nx.cmd run task:test`、`.\node_modules\.bin\nx.cmd run api:typecheck`、`.\node_modules\.bin\nx.cmd run schedule-orchestration:build`、`.\node_modules\.bin\nx.cmd run memoflow:governance-check` 通过。
 - Remaining follow-up: 进入 `R05`，沿同一 owner 模型把 goal/reminder projection 收回 `schedule-orchestration`。
 

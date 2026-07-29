@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { expressAdapter, expressAdapterWithValidation, formatZodErrors } from './express-adapter';
-import { ok, fail, ResultErrorException } from '@dailyuse/contracts/result';
+import { ok, fail, ResultErrorException } from '@memoflow/contracts/result';
 import { ConflictError } from '../errors/domain-error';
 
 // ============================================================================

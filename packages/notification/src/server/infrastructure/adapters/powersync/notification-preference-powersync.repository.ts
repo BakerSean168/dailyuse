@@ -1,6 +1,6 @@
-import { generateUUID } from '@dailyuse/utils/shared';
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import { NotificationChannelType } from '@dailyuse/contracts/notification';
+import { generateUUID } from '@memoflow/utils/shared';
+import type { IElectronDatabase } from '@memoflow/contracts/electron';
+import { NotificationChannelType } from '@memoflow/contracts/notification';
 import { NotificationPreference } from '../../../domain/aggregates/notification-preference';
 import type { INotificationPreferenceRepository } from '../../../domain/repositories/i-notification-preference-repository';
 

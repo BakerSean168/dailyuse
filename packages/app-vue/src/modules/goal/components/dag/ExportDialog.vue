@@ -113,7 +113,7 @@ import {
   Alert,
   AlertTitle,
   AlertDescription,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Download, Image, SquareDashedKanban, FileText, Info, Loader2 } from '@lucide/vue';
 
 const emit = defineEmits<{

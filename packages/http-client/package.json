@@ -1,8 +1,8 @@
 {
-  "name": "@dailyuse/http-client",
+  "name": "@memoflow/http-client",
   "version": "0.0.1",
   "private": false,
-  "description": "Memoflow HTTP Client — Axios wrapper with Result Pattern support",
+  "description": "MemoFlow HTTP Client — Axios wrapper with Result Pattern support",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
     }
   },
   "dependencies": {
-    "@dailyuse/contracts": "workspace:*",
+    "@memoflow/contracts": "workspace:*",
     "axios": "1.13.2"
   },
   "devDependencies": {

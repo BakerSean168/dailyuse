@@ -110,7 +110,7 @@ import {
   Alert,
   AlertDescription,
   Separator,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { AlertCircle, CheckCircle, ArrowDown, RefreshCw, Info, Network } from '@lucide/vue';
 import type { TaskDependencyValidationError } from '../types';
 import type { TaskForDAG } from '../../types/task-dag.types';

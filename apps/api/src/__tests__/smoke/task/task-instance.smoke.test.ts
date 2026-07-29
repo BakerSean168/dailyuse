@@ -22,7 +22,7 @@ import {
 } from '../helpers/create-smoke-app';
 
 // Mock eventBus to prevent console noise and import side-effects from fire-and-forget events
-vi.mock('@dailyuse/utils', async (importOriginal) => {
+vi.mock('@memoflow/utils', async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return {
     ...actual,

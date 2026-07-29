@@ -448,7 +448,7 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { ColorPickerField } from '../../../../shared/components';
 import {
   Calendar as CalendarIcon,
@@ -473,9 +473,9 @@ import type {
   AddKeyResultReq,
   UpdateKeyResultReq,
   ReminderTriggerType as GoalReminderTriggerType,
-} from '@dailyuse/contracts/goal';
-import { ReminderTriggerType } from '@dailyuse/contracts/goal';
-import type { GoalFolderId, GoalId } from '@dailyuse/contracts/primitives';
+} from '@memoflow/contracts/goal';
+import { ReminderTriggerType } from '@memoflow/contracts/goal';
+import type { GoalFolderId, GoalId } from '@memoflow/contracts/primitives';
 
 // ── Props & Emits ──────────────────────────────────────────────────────
 

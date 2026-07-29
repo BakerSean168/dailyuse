@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import type { TaskInstanceStatus, TaskTimeConfigDTO } from '@dailyuse/contracts/task';
-import type { TaskInstance } from '@dailyuse/task/client';
+import type { TaskInstanceStatus, TaskTimeConfigDTO } from '@memoflow/contracts/task';
+import type { TaskInstance } from '@memoflow/task/client';
 
 import { useAppSession } from './useAppSession';
 import { useTaskService } from './useTaskService';

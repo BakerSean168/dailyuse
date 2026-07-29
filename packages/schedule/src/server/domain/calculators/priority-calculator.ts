@@ -7,7 +7,7 @@
  * 适用于：Goal、Task 等需要优先级排序的实体
  */
 
-import { type ImportanceLevel, type UrgencyLevel, PriorityLevel } from '@dailyuse/contracts/shared';
+import { type ImportanceLevel, type UrgencyLevel, PriorityLevel } from '@memoflow/contracts/shared';
 
 /**
  * 重要性权重映射

@@ -13,11 +13,11 @@ import type {
   ReminderHistoryClientDTO,
   TriggerResult,
   NotificationChannel,
-} from '@dailyuse/contracts/reminder';
-import { Entity } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/reminder';
+import { Entity } from '@memoflow/utils/domain';
 import { ReminderInstanceId } from '../../server/domain/value-objects/reminder-instance-id';
 import { ReminderTemplateId } from '../../server/domain/value-objects/reminder-template-id';
-import type { ReminderHistoryId } from '@dailyuse/contracts/primitives';
+import type { ReminderHistoryId } from '@memoflow/contracts/primitives';
 
 export interface ReminderHistoryState {
   id: ReminderInstanceId;

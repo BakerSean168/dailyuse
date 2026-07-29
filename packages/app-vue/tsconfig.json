@@ -11,61 +11,61 @@
     "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["src/*"],
-      "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
-      "@dailyuse/contracts/account": ["../../packages/contracts/src/modules/account/index.ts"],
-      "@dailyuse/contracts/ai": ["../../packages/contracts/src/modules/ai/index.ts"],
-      "@dailyuse/contracts/authentication": [
+      "@memoflow/contracts": ["../../packages/contracts/src/index.ts"],
+      "@memoflow/contracts/account": ["../../packages/contracts/src/modules/account/index.ts"],
+      "@memoflow/contracts/ai": ["../../packages/contracts/src/modules/ai/index.ts"],
+      "@memoflow/contracts/authentication": [
         "../../packages/contracts/src/modules/authentication/index.ts"
       ],
-      "@dailyuse/contracts/dashboard": ["../../packages/contracts/src/dashboard/index.ts"],
-      "@dailyuse/contracts/goal": ["../../packages/contracts/src/modules/goal/index.ts"],
-      "@dailyuse/contracts/notification": [
+      "@memoflow/contracts/dashboard": ["../../packages/contracts/src/dashboard/index.ts"],
+      "@memoflow/contracts/goal": ["../../packages/contracts/src/modules/goal/index.ts"],
+      "@memoflow/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"
       ],
-      "@dailyuse/contracts/primitives": ["../../packages/contracts/src/primitives/index.ts"],
-      "@dailyuse/contracts/reminder": ["../../packages/contracts/src/modules/reminder/index.ts"],
-      "@dailyuse/contracts/repository": [
+      "@memoflow/contracts/primitives": ["../../packages/contracts/src/primitives/index.ts"],
+      "@memoflow/contracts/reminder": ["../../packages/contracts/src/modules/reminder/index.ts"],
+      "@memoflow/contracts/repository": [
         "../../packages/contracts/src/modules/repository/index.ts"
       ],
-      "@dailyuse/contracts/result": ["../../packages/contracts/src/result/index.ts"],
-      "@dailyuse/contracts/schedule": ["../../packages/contracts/src/modules/schedule/index.ts"],
-      "@dailyuse/contracts/setting": ["../../packages/contracts/src/modules/setting/index.ts"],
-      "@dailyuse/contracts/shared": ["../../packages/contracts/src/shared/index.ts"],
-      "@dailyuse/contracts/task": ["../../packages/contracts/src/modules/task/index.ts"],
-      "@dailyuse/contracts/*": [
+      "@memoflow/contracts/result": ["../../packages/contracts/src/result/index.ts"],
+      "@memoflow/contracts/schedule": ["../../packages/contracts/src/modules/schedule/index.ts"],
+      "@memoflow/contracts/setting": ["../../packages/contracts/src/modules/setting/index.ts"],
+      "@memoflow/contracts/shared": ["../../packages/contracts/src/shared/index.ts"],
+      "@memoflow/contracts/task": ["../../packages/contracts/src/modules/task/index.ts"],
+      "@memoflow/contracts/*": [
         "../../packages/contracts/src/modules/*/index.ts",
         "../../packages/contracts/src/*/index.ts"
       ],
-      "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
-      "@dailyuse/assets/audio": ["../../packages/assets/src/audio/index.ts"],
-      "@dailyuse/assets/images": ["../../packages/assets/src/images/index.ts"],
-      "@dailyuse/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/dist/index.d.ts"],
-      "@dailyuse/ui-vue-shadcn/components/ui/*": [
+      "@memoflow/assets": ["../../packages/assets/src/index.ts"],
+      "@memoflow/assets/audio": ["../../packages/assets/src/audio/index.ts"],
+      "@memoflow/assets/images": ["../../packages/assets/src/images/index.ts"],
+      "@memoflow/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/dist/index.d.ts"],
+      "@memoflow/ui-vue-shadcn/components/ui/*": [
         "../../packages/ui-vue-shadcn/dist/components/ui/*/index.d.ts"
       ],
-      "@dailyuse/ui-vue-shadcn/composables/*": [
+      "@memoflow/ui-vue-shadcn/composables/*": [
         "../../packages/ui-vue-shadcn/dist/composables/*.d.ts"
       ],
-      "@dailyuse/ui-vue-shadcn/*": ["../../packages/ui-vue-shadcn/dist/*"],
-      "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
-      "@dailyuse/ai/client": ["../../packages/ai/dist/client/index.d.ts"],
-      "@dailyuse/goal/client": ["../../packages/goal/dist/client/index.d.ts"],
-      "@dailyuse/reminder/client": [
+      "@memoflow/ui-vue-shadcn/*": ["../../packages/ui-vue-shadcn/dist/*"],
+      "@memoflow/http-client": ["../../packages/http-client/src/index.ts"],
+      "@memoflow/ai/client": ["../../packages/ai/dist/client/index.d.ts"],
+      "@memoflow/goal/client": ["../../packages/goal/dist/client/index.d.ts"],
+      "@memoflow/reminder/client": [
         "../../packages/reminder/dist/client/index.d.ts"
       ],
-      "@dailyuse/schedule/client": [
+      "@memoflow/schedule/client": [
         "../../packages/schedule/dist/client/index.d.ts"
       ],
-      "@dailyuse/notification/client": [
+      "@memoflow/notification/client": [
         "../../packages/notification/dist/client/index.d.ts"
       ],
-      "@dailyuse/task/client": ["../../packages/task/dist/client/index.d.ts"],
-      "@dailyuse/governance/client": [
+      "@memoflow/task/client": ["../../packages/task/dist/client/index.d.ts"],
+      "@memoflow/governance/client": [
         "../../packages/governance/dist/client/index.d.ts"
       ],
-      "@dailyuse/repository/client": ["../../packages/repository/dist/client/index.d.ts"],
-      "@dailyuse/test-utils": ["../../packages/test-utils/src/index.ts"],
-      "@dailyuse/test-utils/*": [
+      "@memoflow/repository/client": ["../../packages/repository/dist/client/index.d.ts"],
+      "@memoflow/test-utils": ["../../packages/test-utils/src/index.ts"],
+      "@memoflow/test-utils/*": [
         "../../packages/test-utils/src/*",
         "../../packages/test-utils/src/*.ts"
       ]

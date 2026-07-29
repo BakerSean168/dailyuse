@@ -1,7 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DesktopFeatureChannels, SystemChannels } from '@dailyuse/contracts/electron';
+import { DesktopFeatureChannels, SystemChannels } from '@memoflow/contracts/electron';
 
 const mocks = vi.hoisted(() => ({
   ipcHandle: vi.fn(),
@@ -82,7 +82,7 @@ describe('registerSystemIpcHandlers', () => {
 
     mocks.getSharedPathResolver.mockReturnValue(createSharedResolver());
     mocks.resolveDesktopUserFilesPath.mockReturnValue(
-      path.join(os.tmpdir(), 'Memoflow Files Default'),
+      path.join(os.tmpdir(), 'MemoFlow Files Default'),
     );
     mocks.dialogShowOpenDialog.mockResolvedValue({
       canceled: true,
@@ -120,8 +120,8 @@ describe('registerSystemIpcHandlers', () => {
   });
 
   it('returns the current user-files path, default path, and custom flag', async () => {
-    const currentPath = path.join(os.tmpdir(), 'Memoflow Files Custom');
-    const defaultPath = path.join(os.tmpdir(), 'Memoflow Files Default');
+    const currentPath = path.join(os.tmpdir(), 'MemoFlow Files Custom');
+    const defaultPath = path.join(os.tmpdir(), 'MemoFlow Files Default');
     mocks.getSharedPathResolver.mockReturnValue(
       createSharedResolver({ userFilesRootDir: currentPath }),
     );
@@ -144,7 +144,7 @@ describe('registerSystemIpcHandlers', () => {
   });
 
   it('updates the runtime user-files root when a new directory is selected', async () => {
-    const selectedPath = path.join(os.tmpdir(), 'Memoflow Files Picked');
+    const selectedPath = path.join(os.tmpdir(), 'MemoFlow Files Picked');
     mocks.dialogShowOpenDialog.mockResolvedValue({
       canceled: false,
       filePaths: [selectedPath],
@@ -189,7 +189,7 @@ describe('registerSystemIpcHandlers', () => {
   });
 
   it('resets the runtime user-files root back to the default path', async () => {
-    const defaultPath = path.join(os.tmpdir(), 'Memoflow Files Default');
+    const defaultPath = path.join(os.tmpdir(), 'MemoFlow Files Default');
     mocks.resolveDesktopUserFilesPath.mockReturnValue(defaultPath);
 
     const { registerSystemIpcHandlers } = await import('../system-handlers');
@@ -206,7 +206,7 @@ describe('registerSystemIpcHandlers', () => {
   });
 
   it('opens the active user-files root directory in the shell', async () => {
-    const currentPath = path.join(os.tmpdir(), 'Memoflow Files Current');
+    const currentPath = path.join(os.tmpdir(), 'MemoFlow Files Current');
     mocks.getSharedPathResolver.mockReturnValue(
       createSharedResolver({ userFilesRootDir: currentPath }),
     );

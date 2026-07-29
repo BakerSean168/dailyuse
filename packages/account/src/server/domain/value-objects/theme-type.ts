@@ -1,9 +1,9 @@
-import { ThemeType as ThemeTypeContract, type ThemeType as IThemeType } from '@dailyuse/contracts/account';
+import { ThemeType as ThemeTypeContract, type ThemeType as IThemeType } from '@memoflow/contracts/account';
 
 export type ThemeType = IThemeType & { readonly __brand: unique symbol };
 
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IThemeType[] = Object.values(ThemeTypeContract);
 
 export const ThemeType = {

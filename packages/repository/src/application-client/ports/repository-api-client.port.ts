@@ -5,7 +5,7 @@
  * Repository/Folder/Resource/Bookmark CRUD is not part of the client surface.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
 import type {
   LocalVaultBindingClientDTO,
   SelectLocalVaultReq,
@@ -41,7 +41,7 @@ import type {
   KnowledgeAttachmentContentResponse,
   KnowledgeAttachmentProjectionListResponse,
   ListKnowledgeAttachmentProjectionsReq,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 
 export interface IRepositoryApiClient {
   startKnowledgeRepositoryInstallation(

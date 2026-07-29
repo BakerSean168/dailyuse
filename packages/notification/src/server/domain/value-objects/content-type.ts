@@ -1,4 +1,4 @@
-import { ContentType as ContentTypeContract, type ContentType as IContentType } from '@dailyuse/contracts/notification';
+import { ContentType as ContentTypeContract, type ContentType as IContentType } from '@memoflow/contracts/notification';
 
 /**
  * 📝 内容类型 - 通知内容的类型
@@ -13,7 +13,7 @@ export type ContentType = IContentType & { readonly __brand: unique symbol };
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IContentType[] = Object.values(ContentTypeContract);
 
 /**

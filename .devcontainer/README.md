@@ -1,4 +1,4 @@
-# DailyUse Development Container 配置
+# MemoFlow Development Container 配置
 
 此目录包含 GitHub Codespaces 和 VS Code Dev Containers 的完整配置。
 
@@ -129,8 +129,8 @@ pnpm exec nx affected:test
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/dailyuse"
-SHADOW_DATABASE_URL="postgresql://user:password@localhost:5432/dailyuse_shadow"
+DATABASE_URL="postgresql://user:password@localhost:5432/memoflow"
+SHADOW_DATABASE_URL="postgresql://user:password@localhost:5432/memoflow_shadow"
 
 # JWT
 JWT_SECRET="your-secret-key"
@@ -166,7 +166,7 @@ kill -9 <PID>
 
 ### 问题 4: Git safe.directory 错误
 ```bash
-git config --global --add safe.directory /workspaces/DailyUse
+git config --global --add safe.directory /workspaces/MemoFlow
 ```
 
 ## 📝 自定义配置
@@ -216,6 +216,6 @@ git config --global --add safe.directory /workspaces/DailyUse
 
 ---
 
-**维护者**: DailyUse Team  
+**维护者**: MemoFlow Team
 **最后更新**: 2025-10-30  
 **配置版本**: v1.0

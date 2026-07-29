@@ -16,12 +16,12 @@ function resolveDatabaseUrl() {
     throw new Error('DATABASE_URL or DB_HOST must be set before starting the API container');
   }
 
-  const username = encodeURIComponent(process.env.DB_USER || 'dailyuse');
+  const username = encodeURIComponent(process.env.DB_USER || 'memoflow');
   const password = process.env.DB_PASSWORD
     ? `:${encodeURIComponent(process.env.DB_PASSWORD)}`
     : '';
   const port = process.env.DB_PORT || '5432';
-  const database = encodeURIComponent(process.env.DB_NAME || 'dailyuse');
+  const database = encodeURIComponent(process.env.DB_NAME || 'memoflow');
   const url = `postgresql://${username}${password}@${process.env.DB_HOST}:${port}/${database}?schema=public`;
   process.env.DATABASE_URL = url;
   return url;

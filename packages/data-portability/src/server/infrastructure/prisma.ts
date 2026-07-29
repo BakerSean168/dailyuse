@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import { PrismaDataPortabilityImportStore } from '../application/import-store/prisma-data-portability-import-store';
 import type { DataPortabilityDependencies } from '../application/data-portability.dependencies';
 import {
@@ -20,11 +20,11 @@ import {
   type DataPortabilityModuleInstance,
   type DataPortabilityModuleRuntimeContribution,
 } from './data-portability.module';
-import { createGoalPrismaRepositories } from '@dailyuse/goal';
-import { createTaskPrismaRepositories } from '@dailyuse/task';
-import { createReminderPrismaRepositories } from '@dailyuse/reminder';
-import { createNotificationPrismaRepositories } from '@dailyuse/notification';
-import { createSettingPrismaRepository } from '@dailyuse/setting';
+import { createGoalPrismaRepositories } from '@memoflow/goal';
+import { createTaskPrismaRepositories } from '@memoflow/task';
+import { createReminderPrismaRepositories } from '@memoflow/reminder';
+import { createNotificationPrismaRepositories } from '@memoflow/notification';
+import { createSettingPrismaRepository } from '@memoflow/setting';
 
 export interface CreateDataPortabilityPrismaModuleOptions {
   readonly runtimeContributions?:

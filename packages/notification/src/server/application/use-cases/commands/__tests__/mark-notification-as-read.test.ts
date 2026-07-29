@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { anIdentityId } from '@dailyuse/test-utils/fixtures';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
+import { anIdentityId } from '@memoflow/test-utils/fixtures';
 import type { INotificationRepository } from '../../../../domain/repositories/i-notification-preference-repository';
 import { MarkNotificationAsReadUseCase } from '../mark-notification-as-read.use-case';
 import { Notification } from '../../../../domain/aggregates/notification';
@@ -8,7 +8,7 @@ import {
   NotificationType,
   NotificationCategory,
   NotificationStatus,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 describe('MarkNotificationAsReadUseCase', () => {
   let notificationRepo: ReturnType<typeof createMockRepo<INotificationRepository>>;

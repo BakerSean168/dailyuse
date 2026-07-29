@@ -30,7 +30,7 @@ status: done
 
 - 浏览器入口：`http://localhost:58080/`
 - 实际端口转发目标：`ssh DO-bodysense`
-- 远程项目目录：`/opt/dailyuse`
+- 远程项目目录：`/opt/memoflow`
 - 远程编排文件：`docker-compose.local.yml`
 - 远程环境文件：`.env.production.local`
 - API：`53080`
@@ -38,7 +38,7 @@ status: done
 - AI Service：`58100`
 - PowerSync：`58081`
 
-`ali-dailyuse` 不是本次 `58080` 对应的开发环境，不应使用该连接进行本轮验证或配置。
+`ali-memoflow` 不是本次 `58080` 对应的开发环境，不应使用该连接进行本轮验证或配置。
 
 ### 测试账号恢复
 

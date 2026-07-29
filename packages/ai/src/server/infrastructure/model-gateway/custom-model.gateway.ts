@@ -11,7 +11,7 @@ import type {
   ModelGatewayCompleteResult,
   ModelGatewayDescriptor,
   ModelGatewayModelInfo,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import { OpenAICompatibleGateway } from '../gateways/openai-compatible.gateway';
 import { OpenAICompatibleModelCatalogGateway } from '../gateways/openai-compatible-model-catalog.gateway';
 

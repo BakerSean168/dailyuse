@@ -12,7 +12,7 @@
  * @example
  * ```typescript
  * // In globalSetup.ts:
- * import { ensureTestDatabase, syncPrismaSchema } from '@dailyuse/test-utils/setup/database';
+ * import { ensureTestDatabase, syncPrismaSchema } from '@memoflow/test-utils/setup/database';
  *
  * export default async function globalSetup() {
  *   await ensureTestDatabase();
@@ -20,7 +20,7 @@
  * }
  *
  * // In integration test files:
- * import { cleanAllTables, getTestDatabaseUrl } from '@dailyuse/test-utils/setup/database';
+ * import { cleanAllTables, getTestDatabaseUrl } from '@memoflow/test-utils/setup/database';
  *
  * beforeEach(async () => {
  *   await cleanAllTables();
@@ -41,7 +41,7 @@ export const DEFAULT_TEST_DB_PASS = 'test_pass';
 export const DEFAULT_TEST_DB_NAME = 'memoflow_test';
 export const DEFAULT_TEST_DB_HOST = '127.0.0.1';
 export const DEFAULT_TEST_DB_PORT = 5433;
-export const DEFAULT_TEST_DB_CONTAINER = 'Memoflow-test-db';
+export const DEFAULT_TEST_DB_CONTAINER = 'MemoFlow-test-db';
 
 const TEST_DB_USER = process.env.TEST_DB_USER ?? DEFAULT_TEST_DB_USER;
 const TEST_DB_PASS = process.env.TEST_DB_PASS ?? DEFAULT_TEST_DB_PASS;

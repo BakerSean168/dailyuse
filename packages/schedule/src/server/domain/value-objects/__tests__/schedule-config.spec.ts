@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Timezone } from '@dailyuse/contracts/schedule';
+import { Timezone } from '@memoflow/contracts/schedule';
 import { ScheduleConfig } from '../schedule-config';
 
 describe('ScheduleConfig', () => {

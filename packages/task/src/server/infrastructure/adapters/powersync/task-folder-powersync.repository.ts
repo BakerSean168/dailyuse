@@ -1,5 +1,5 @@
 import type { ITaskFolderRepository } from '../../../domain/repositories/i-task-folder-repository';
-import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
+import type { TaskFolderServerDTO } from '@memoflow/contracts/task';
 import {
   PowerSyncTaskFolderMapper,
   type PowerSyncTaskFolderRow,

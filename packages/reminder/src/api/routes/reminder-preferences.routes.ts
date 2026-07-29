@@ -14,11 +14,11 @@ import {
   type OpenApiRegistryLike,
   successResponse,
   errorResponse,
-} from '@dailyuse/utils/result';
+} from '@memoflow/utils/result';
 import {
   UserReminderPreferencesResponseSchema,
   UpdateReminderPreferencesSchema,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import type { ReminderController } from '../../server/transport/reminder.controller';
 
 // ============ Types ============

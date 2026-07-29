@@ -9,8 +9,8 @@ import { describe, expect, it } from 'vitest';
 describe('governance ipc transport dual single-track surface', () => {
   const client = readFileSync(resolve(__dirname, 'index.ts'), 'utf8');
 
-  it('imports IResultIpcClient from @dailyuse/ipc-client', () => {
-    expect(client).toContain("from '@dailyuse/ipc-client'");
+  it('imports IResultIpcClient from @memoflow/ipc-client', () => {
+    expect(client).toContain("from '@memoflow/ipc-client'");
     expect(client).toContain('IResultIpcClient');
     expect(client).toContain('createGovernanceIpcClient');
   });

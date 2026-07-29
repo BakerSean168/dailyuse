@@ -2,10 +2,10 @@
  * Check Availability Use Case
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import type { IAccountRepository } from '../../../domain';
-import type { CheckAvailabilityReq, CheckAvailabilityRes } from '@dailyuse/contracts/account';
+import type { CheckAvailabilityReq, CheckAvailabilityRes } from '@memoflow/contracts/account';
 
 export class CheckAvailabilityUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}

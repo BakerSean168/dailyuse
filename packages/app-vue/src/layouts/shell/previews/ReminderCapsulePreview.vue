@@ -6,7 +6,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useReminder } from '../../../modules/reminder/composables/useReminder';
-import type { ReminderTodayScheduleItem } from '@dailyuse/contracts/reminder';
+import type { ReminderTodayScheduleItem } from '@memoflow/contracts/reminder';
 import { formatProductHm } from '../../../shared/utils/product-time';
 
 const RECENT_LIMIT = 4;

@@ -8,17 +8,17 @@
  * 含 refresh token 重用检测：旧轮换令牌若对仍有效的 session 重放，则撤销该身份全部会话。
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error, unwrapOrThrowError } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error, unwrapOrThrowError } from '@memoflow/contracts/result';
 import {
   type IAuthIdentityRepository,
   type IAuthSessionRepository,
   type ITokenProvider,
 } from '../../../domain';
-import type { RefreshTokenReq, RefreshTokenRes } from '@dailyuse/contracts/authentication';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { RefreshTokenReq, RefreshTokenRes } from '@memoflow/contracts/authentication';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import { AuthSessionId } from '../../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('RefreshToken');
 

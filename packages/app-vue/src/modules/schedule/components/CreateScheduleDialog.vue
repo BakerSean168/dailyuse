@@ -311,7 +311,7 @@ import {
   PopoverTrigger,
   PopoverContent,
   Calendar,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { MapPin, X, Loader2, Calendar as CalendarIcon } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { formatDateToYMD } from '../../../shared/utils/format-date-to-ymd';
@@ -319,7 +319,7 @@ import { parseToDate } from '../../../shared/utils/parse-to-date';
 import { handleCalendarSelect } from '../../../shared/utils/handle-calendar-select';
 import { formatDisplayDate } from '../../../shared/utils/format-display-date';
 import { padTwoDigits } from '../../../shared/utils/pad-two-digits';
-import type { CalendarEntryClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
+import type { CalendarEntryClientDTO, CreateScheduleRequest } from '@memoflow/contracts/schedule';
 
 interface Props {
   modelValue: boolean;

@@ -1,8 +1,8 @@
-import type { IAnalyticsReadPort } from '@dailyuse/ai/ports';
-import { SearchGoalsUseCase } from '@dailyuse/goal/analytics';
-import { getGoalRepository } from '@dailyuse/goal/electron';
-import { GetTaskDashboardUseCase } from '@dailyuse/task/analytics';
-import { getTaskTemplateRepository } from '@dailyuse/task/electron';
+import type { IAnalyticsReadPort } from '@memoflow/ai/ports';
+import { SearchGoalsUseCase } from '@memoflow/goal/analytics';
+import { getGoalRepository } from '@memoflow/goal/electron';
+import { GetTaskDashboardUseCase } from '@memoflow/task/analytics';
+import { getTaskTemplateRepository } from '@memoflow/task/electron';
 
 import { getDesktopDashboardData } from '../../services/dashboard-read-service';
 

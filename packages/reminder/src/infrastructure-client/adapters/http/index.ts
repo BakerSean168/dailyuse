@@ -2,7 +2,7 @@
  * Reminder HTTP Adapters - Registration
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import { ReminderHttpAdapter } from './reminder-http.adapter';
 
 export { ReminderHttpAdapter, createReminderHttpAdapter } from './reminder-http.adapter';

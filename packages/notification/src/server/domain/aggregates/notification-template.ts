@@ -3,16 +3,16 @@
  * 通知模板聚合根 - 服务端实现
  */
 
-import type { NotificationTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { NotificationTemplateId, IdentityId } from '@memoflow/contracts/primitives';
 import type {
   NotificationEventMap,
   NotificationTemplateServerDTO,
   NotificationTemplateClientDTO,
   NotificationTemplateConfigServerDTO,
-} from '@dailyuse/contracts/notification';
-import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
-import { AggregateRoot } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/notification';
+import { NotificationCategory, NotificationType } from '@memoflow/contracts/notification';
+import { AggregateRoot } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import { NotificationTemplateId as NotificationTemplateIdType } from '../value-objects/notification-template-id';
 import { NotificationTemplateConfig } from '../value-objects/notification-template-config';
 

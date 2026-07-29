@@ -13,16 +13,16 @@
  * 使用品牌类型防止与原始字符串意外混用。
  */
 
-import { ChangeType as ChangeTypeContract, type ChangeType as IChangeType } from '@dailyuse/contracts/governance';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import { ChangeType as ChangeTypeContract, type ChangeType as IChangeType } from '@memoflow/contracts/governance';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 /** Branded type — compile-time guard against plain string misuse. 品牌类型 — 编译时防止与普通字符串混用。 */
 export type ChangeType = IChangeType & { readonly __brand: unique symbol };
 
 /** All valid change-type values. 全部合法变更类型值。 */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IChangeType[] = Object.values(ChangeTypeContract);
 
 /**

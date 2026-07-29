@@ -1,6 +1,6 @@
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
+import type { ScheduleTaskClientDTO } from '@memoflow/contracts/schedule';
 import type { IScheduleTaskRepository } from '../../../domain';
 
 /**

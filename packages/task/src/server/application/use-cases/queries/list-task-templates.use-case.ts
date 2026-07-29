@@ -13,10 +13,10 @@ import type {
   QueryTaskTemplatesInternal,
   QueryTaskTemplatesRes,
   TaskTemplateStatus as TaskTemplateStatusType,
-} from '@dailyuse/contracts/task';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/task';
+import { TaskTemplateStatus } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 /**
  * List Task Templates Service

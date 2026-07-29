@@ -2,7 +2,7 @@
  * Portable Data Runtime Types — V1
  *
  * Runtime-only helpers and context types for data portability.
- * Public DTO types live in @dailyuse/contracts/data-portability.
+ * Public DTO types live in @memoflow/contracts/data-portability.
  */
 
 // ============ Ref Allocator ============

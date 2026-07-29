@@ -1,1 +1,1 @@
-export { GoalReviewDetailScreen as default } from '@dailyuse/app-react';
+export { GoalReviewDetailScreen as default } from '@memoflow/app-react';

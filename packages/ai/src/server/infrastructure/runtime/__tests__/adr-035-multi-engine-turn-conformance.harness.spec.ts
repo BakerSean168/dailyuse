@@ -21,7 +21,7 @@ import {
   resolveRunPlan,
   type CapabilityOffer,
   type ITurnEnginePort,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 const FIXTURE = {
   identity: 'identity-multi-engine-1',

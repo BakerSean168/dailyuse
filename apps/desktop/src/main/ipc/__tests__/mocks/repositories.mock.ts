@@ -5,10 +5,10 @@
  */
 
 import { vi } from 'vitest';
-import { Goal } from '@dailyuse/goal/client';
-import { GoalStatus, type GoalServerDTO, type GoalId } from '@dailyuse/contracts/goal';
-import type { IdentityId } from '@dailyuse/contracts/authentication';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { Goal } from '@memoflow/goal/client';
+import { GoalStatus, type GoalServerDTO, type GoalId } from '@memoflow/contracts/goal';
+import type { IdentityId } from '@memoflow/contracts/authentication';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 
 // ===== Goal Repository Mock =====
 

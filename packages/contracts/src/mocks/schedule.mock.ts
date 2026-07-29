@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```ts
- * import { createMockScheduleTask, createMockScheduleExecution } from '@dailyuse/contracts/mocks';
+ * import { createMockScheduleTask, createMockScheduleExecution } from '@memoflow/contracts/mocks';
  * const task = createMockScheduleTask();
  * const execution = createMockScheduleExecution();
  * ```

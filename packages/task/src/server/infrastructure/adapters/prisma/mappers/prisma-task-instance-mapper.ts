@@ -5,15 +5,15 @@
  * Handles Date/timestamp conversions for instance dates.
  */
 
-import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
-import { toDateOrNull } from '@dailyuse/utils/shared';
+import type { TaskInstance as PrismaTaskInstance } from '@memoflow/database';
+import { toDateOrNull } from '@memoflow/utils/shared';
 import { TaskInstance } from '../../../../domain/aggregates/task-instance';
-import { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus } from '@memoflow/contracts/task';
 import { TaskInstanceId } from '../../../../domain/value-objects/task-instance-id';
 import { TaskTemplateId } from '../../../../domain/value-objects/task-template-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { TaskTimeConfig } from '../../../../domain/value-objects';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 
 /** Prisma Date/DateTime → Instant (epoch ms). Required fields never null. */
 function requiredInstant(value: Date | string | number | null | undefined): number {

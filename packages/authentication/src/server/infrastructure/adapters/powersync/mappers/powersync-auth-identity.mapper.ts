@@ -1,9 +1,9 @@
 /**
  * Residual 981: toIso sole import (./to-iso.ts).
  */
-import type { AuthCredentialId, PasswordCredentialServerDTO, AuthIdentifierDTO, HashedPassword as IHashedPassword, OAuthBindingServerDTO } from '@dailyuse/contracts/authentication';
+import type { AuthCredentialId, PasswordCredentialServerDTO, AuthIdentifierDTO, HashedPassword as IHashedPassword, OAuthBindingServerDTO } from '@memoflow/contracts/authentication';
 import { createHash } from 'node:crypto';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import { AuthIdentity } from '../../../../domain';
 import {
   AuthIdentityStatus,

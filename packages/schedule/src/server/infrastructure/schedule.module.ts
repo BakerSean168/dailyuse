@@ -44,16 +44,16 @@ import type {
 import { ScheduleEventApplicationService } from '../application/services/schedule-event-application-service';
 import { ScheduleConflictDetectionService } from '../application/services/schedule-conflict-detection-service';
 import { ScheduleConflictResolutionService } from '../application/services/schedule-conflict-resolution-service';
-import { toResultErrorException } from '@dailyuse/contracts/result';
-import type { RetryPolicyDTO, ScheduleConfigDTO } from '@dailyuse/contracts/schedule';
+import { toResultErrorException } from '@memoflow/contracts/result';
+import type { RetryPolicyDTO, ScheduleConfigDTO } from '@memoflow/contracts/schedule';
 import type {
   CreateScheduleRequest,
   CreateScheduleTaskRequest,
   UpdateScheduleRequest,
   UpdateScheduleTaskRequest,
-} from '@dailyuse/contracts/schedule';
-import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
-import { resultify } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/schedule';
+import { ScheduleTaskStatus, SourceModule } from '@memoflow/contracts/schedule';
+import { resultify } from '@memoflow/utils/result';
 
 /**
  * Everything the schedule server runtime needs from the outside world.

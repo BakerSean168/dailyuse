@@ -44,7 +44,7 @@ infrastructure -> domain (通过 port/adapter 接口)
 - `api/module.ts`：组合根（composition root），负责将 infra 实现注入 domain 接口。组合根位于领域包内是当前架构的务实选择，lint 规则允许 `layer:domain -> layer:infra` 以支持此模式。
 - `controllers`：传输层适配器，依赖 application-server。
 
-当前已经由 `tools/governance/package-internal-boundary-audit.mjs` 在 repo 级别执行第一层包内分层治理，并接入 `pnpm nx run daily-use:governance-check`。
+当前已经由 `tools/governance/package-internal-boundary-audit.mjs` 在 repo 级别执行第一层包内分层治理，并接入 `pnpm nx run memoflow:governance-check`。
 
 - 当前审计重点覆盖：
   - `domain-server` 不得导入 `infrastructure-server`、`application-client`、`infrastructure-client`、`api`、`controllers`
@@ -84,7 +84,7 @@ infrastructure -> domain (通过 port/adapter 接口)
 
 为保证架构规则的可验证性与可执行性，本仓库已将一部分关键规则迁移为机器可执行的治理脚本与 lint 规则，并继续收紧剩余豁口：
 
-- 运行 pnpm nx run daily-use:governance-check 可以执行完整治理审计链（JSDoc 审计、包内分层约束、根导出审计、raw event bus 回退审计等）。
+- 运行 pnpm nx run memoflow:governance-check 可以执行完整治理审计链（JSDoc 审计、包内分层约束、根导出审计、raw event bus 回退审计等）。
 - 常用治理脚本位于 tools/governance：
   - governance-module-docs-audit.mjs — 检查 JSDoc / 注释质量（English-first、@param/@returns、@internal 等）。
   - package-internal-boundary-audit.mjs — 校验包内分层边界（禁止 domain-server 直接导入 infrastructure-server 等）。
@@ -94,7 +94,7 @@ infrastructure -> domain (通过 port/adapter 接口)
   - fix-governance-jsdoc.mjs — best-effort JSDoc 补全脚本（需要人工复核）。
 
 治理变更流程（建议）：
-1. 在 feature 分支运行 pnpm nx run daily-use:governance-check 并修复本地问题。
+1. 在 feature 分支运行 pnpm nx run memoflow:governance-check 并修复本地问题。
 2. 若需要跨包修改（如收窄根导出），运行 tools/governance/trim-root-exports.mjs 的 dry-run，审阅变更后提交小粒度 PR。
 3. 为临时豁免登记 owner 与 targetDate（tools/governance/target-baseline-manifest.json），并在到期前逐步消化豁免。
 

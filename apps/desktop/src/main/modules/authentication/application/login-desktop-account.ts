@@ -1,7 +1,7 @@
 import {
   type AuthResponseDTO,
   type EmailLoginCredentials,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 
 import type { AuthRemoteGateway } from './auth-remote-gateway';
 import {

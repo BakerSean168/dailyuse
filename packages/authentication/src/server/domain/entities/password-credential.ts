@@ -6,8 +6,8 @@
  * 绝对不能序列化给 Client
  */
 
-import type { PasswordCredentialServerDTO } from '@dailyuse/contracts/authentication';
-import { Entity } from '@dailyuse/utils/domain';
+import type { PasswordCredentialServerDTO } from '@memoflow/contracts/authentication';
+import { Entity } from '@memoflow/utils/domain';
 
 import { CredentialStatus, HashedPassword, type AuthCredentialId } from '..';
 

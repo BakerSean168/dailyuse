@@ -3,7 +3,7 @@
  * Maps plan cadence (daily/weekly/once) → recurrence config | null.
  * once → null; weekly uses current weekday; daily uses empty daysOfWeek.
  *
- * Frequency / weekday numeric values match @dailyuse/contracts/task
+ * Frequency / weekday numeric values match @memoflow/contracts/task
  * RecurrenceFrequency + DayOfWeek (imported as string/number literals to keep
  * utils free of contracts OpenAPI schema side-effects in unit tests).
  */

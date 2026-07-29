@@ -533,7 +533,7 @@ export default {
     "changeVault": "更换 Vault",
     "detach": "解除绑定",
     "detachTitle": "解除本地 Vault 绑定",
-    "detachDescription": "只移除 Memoflow 中的绑定信息，不会删除或修改 Vault 内的文件。",
+    "detachDescription": "只移除 MemoFlow 中的绑定信息，不会删除或修改 Vault 内的文件。",
     "searchPlaceholder": "搜索标题、路径和正文",
     "noSearchResults": "没有匹配的笔记",
     "noNotes": "Vault 中没有 Markdown 笔记",

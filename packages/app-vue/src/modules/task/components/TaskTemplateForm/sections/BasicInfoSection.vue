@@ -59,7 +59,7 @@ import {
   Input,
   Textarea,
   Label,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { Info } from '@lucide/vue';
 import { useBasicInfoValidation } from '../../../composables/useBasicInfoValidation';
 import type { TaskTemplateViewModel } from '../../types';

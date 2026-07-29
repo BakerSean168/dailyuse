@@ -9,9 +9,9 @@
  * - Instance toDTO(): MessageClientDTO
  */
 
-import { Entity } from '@dailyuse/utils/domain';
-import type { MessageClientDTO } from '@dailyuse/contracts/ai';
-import { MessageRole } from '@dailyuse/contracts/ai';
+import { Entity } from '@memoflow/utils/domain';
+import type { MessageClientDTO } from '@memoflow/contracts/ai';
+import { MessageRole } from '@memoflow/contracts/ai';
 import { AiMessageId } from '../../server/domain/value-objects/ai-message-id';
 import { AiConversationId } from '../../server/domain/value-objects/ai-conversation-id';
 

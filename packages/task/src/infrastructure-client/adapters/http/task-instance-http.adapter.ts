@@ -5,8 +5,8 @@
  * Uses IResultHttpClient for making HTTP requests.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type { ITaskInstanceApiClient } from '../types';
 import type {
   CheckExpiredTaskInstancesRes,
@@ -14,7 +14,7 @@ import type {
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 /**
  * TaskInstanceHttpAdapter

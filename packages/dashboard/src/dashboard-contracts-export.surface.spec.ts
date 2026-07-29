@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 244: dashboard package does not dual-re-export contracts DTO types.
- * Consumers import DashboardData* from @dailyuse/contracts/dashboard.
+ * Consumers import DashboardData* from @memoflow/contracts/dashboard.
  */
 describe('dashboard contracts export single-track surface', () => {
   const index = readFileSync(resolve(__dirname, 'index.ts'), 'utf8');
@@ -14,7 +14,7 @@ describe('dashboard contracts export single-track surface', () => {
     expect(index).toContain('DashboardReadSource');
     expect(index).toContain('DashboardTaskInstanceRecord');
     expect(index).not.toContain('re-exported for convenience');
-    expect(index).not.toContain("from '@dailyuse/contracts/dashboard'");
+    expect(index).not.toContain("from '@memoflow/contracts/dashboard'");
     expect(index).not.toContain('export type { DashboardData }');
     expect(index).not.toContain('DashboardStats');
     expect(index).not.toContain('ActivityItem');

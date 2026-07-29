@@ -1,12 +1,12 @@
 /**
  * Setting client seam.
  *
- * Public setting contracts stay centralized in `@dailyuse/contracts/setting`.
+ * Public setting contracts stay centralized in `@memoflow/contracts/setting`.
  * Callers depend on this seam instead of the old application-client /
  * infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   createSettingClientService,
   type SettingClientPort,
@@ -21,7 +21,7 @@ import {
   createSettingIpcAdapters,
   type SettingIpcAdapters,
 } from '../infrastructure-client/adapters/ipc';
-import type { IResultIpcClient } from '@dailyuse/ipc-client';
+import type { IResultIpcClient } from '@memoflow/ipc-client';
 import type { ISettingApiClient } from '../application-client/ports/setting-api-client.port';
 
 export type {

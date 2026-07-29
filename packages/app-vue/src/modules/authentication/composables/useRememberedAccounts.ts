@@ -2,7 +2,7 @@ import { toast } from 'vue-sonner';
 import type {
   RememberedDesktopAccountDTO,
   RememberedDesktopAccountLoginReq,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import type { AuthContext } from './useAuthContext';
 import { completeAuthSuccess } from './completeAuthSuccess';
 import {

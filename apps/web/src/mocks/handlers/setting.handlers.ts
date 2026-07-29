@@ -6,11 +6,11 @@
  */
 
 import { http, HttpResponse } from 'msw';
-import { createMockUserSetting } from '@dailyuse/contracts/mocks';
+import { createMockUserSetting } from '@memoflow/contracts/mocks';
 import type {
   PreferenceCategory,
   UserSettingPreferences,
-} from '@dailyuse/contracts/setting';
+} from '@memoflow/contracts/setting';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const BASE = `${API_BASE}/settings`;

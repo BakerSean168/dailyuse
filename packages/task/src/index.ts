@@ -1,10 +1,10 @@
 /**
- * @dailyuse/task
+ * @memoflow/task
  *
  * Task module runtime root.
  *
  * Public task contracts are centralized in
- * `@dailyuse/contracts/task`.
+ * `@memoflow/contracts/task`.
  * Root exports are limited to the canonical server composition root.
  * Client / API / Electron seams use dedicated subpaths.
  * Task-specific analytics, testing, and schedule orchestration seams

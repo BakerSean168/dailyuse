@@ -8,7 +8,7 @@
  */
 import type { AccountState } from '../../../../domain';
 import { Account } from '../../../../domain';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@memoflow/domain-shared/shared';
 import {
   AccountProfile,
   AccountSettings,
@@ -16,7 +16,7 @@ import {
   AccountStatus,
   ContactPhone,
 } from '../../../../domain/value-objects';
-import type { AccountProfileDTO, AccountSettingsDTO } from '@dailyuse/contracts/account';
+import type { AccountProfileDTO, AccountSettingsDTO } from '@memoflow/contracts/account';
 
 export type PowerSyncAccountRow = {
   id: string;

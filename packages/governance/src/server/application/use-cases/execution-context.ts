@@ -6,7 +6,7 @@
  * @internal 用例实现细节 — 非公开 API。
  */
 
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId } from '@memoflow/contracts/primitives';
 
 export interface ExecutionContext {
   identityId: IdentityId;

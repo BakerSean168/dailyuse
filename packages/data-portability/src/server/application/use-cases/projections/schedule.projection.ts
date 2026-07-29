@@ -3,7 +3,7 @@
  */
 
 import type { ExportContext } from '../../portable-runtime';
-import type { PortableSchedule, PortableScheduleTask } from '@dailyuse/contracts/data-portability';
+import type { PortableSchedule, PortableScheduleTask } from '@memoflow/contracts/data-portability';
 import { parseJsonField, toBoolean, toDateString, toStringArray } from './projection-helpers';
 
 export function projectCalendarEntries(entries: unknown[], ctx: ExportContext): PortableSchedule[] {

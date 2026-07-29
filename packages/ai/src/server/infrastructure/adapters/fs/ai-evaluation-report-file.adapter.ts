@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   AIEvaluationReportSchema,
   type GetAIEvaluationOverviewRes,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 
 import type {
   AIEvaluationHistoryRecord,

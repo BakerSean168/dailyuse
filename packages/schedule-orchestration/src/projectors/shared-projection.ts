@@ -1,6 +1,6 @@
-import type { SourceModule, ScheduleEventMap } from '@dailyuse/contracts/schedule';
-import type { IScheduleTaskRepository, ScheduleTask } from '@dailyuse/schedule';
-import type { Publisher } from '@dailyuse/utils/domain';
+import type { SourceModule, ScheduleEventMap } from '@memoflow/contracts/schedule';
+import type { IScheduleTaskRepository, ScheduleTask } from '@memoflow/schedule';
+import type { Publisher } from '@memoflow/utils/domain';
 
 export interface ProjectionSelection {
   readonly sourceModule: SourceModule;

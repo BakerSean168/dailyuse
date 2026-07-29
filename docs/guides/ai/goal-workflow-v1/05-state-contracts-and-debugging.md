@@ -223,6 +223,6 @@ executor 对每个 action 独立 `try/catch`，失败不会自动回滚之前成
 
 当前仓库约定的 Desktop 开发日志路径：
 
-`C:\Users\xx\AppData\Roaming\Memoflow-Dev\logs`
+`C:\Users\xx\AppData\Roaming\MemoFlow-Dev\logs`
 
 当问题只在 Desktop 端复现时，这个路径通常比前端页面提示更接近根因。

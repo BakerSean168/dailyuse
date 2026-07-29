@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ok } from '@dailyuse/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
 
 describe('TaskInstanceHttpAdapter', () => {

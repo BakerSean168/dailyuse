@@ -7,7 +7,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import { createApiResponseBuilder } from '../response-builder.js';
 
 const logger = createLogger('ClientLogs');

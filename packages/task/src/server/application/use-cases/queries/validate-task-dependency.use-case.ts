@@ -5,10 +5,10 @@
  */
 
 import type { ITaskDependencyRepository } from '../../../domain/repositories/i-task-dependency-repository';
-import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
-import type { ValidateDependencyResponse } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { TaskTemplateId } from '@memoflow/contracts/primitives';
+import type { ValidateDependencyResponse } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 export class ValidateTaskDependencyUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}

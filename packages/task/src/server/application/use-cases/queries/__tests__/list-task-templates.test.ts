@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import '@dailyuse/test-utils/helpers/result-matchers';
-import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import '@memoflow/test-utils/helpers/result-matchers';
+import { createMockRepo } from '@memoflow/test-utils/mocks';
 import {
   aOneTimeTask,
   aLoadedTaskTemplate,
@@ -9,12 +9,12 @@ import {
 } from '../../../../../testing';
 import type { ITaskTemplateRepository } from '../../../../domain/repositories/i-task-template-repository';
 import type { ITaskInstanceRepository } from '../../../../domain/repositories/i-task-instance-repository';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus } from '@memoflow/contracts/task';
 import { ListTaskTemplatesUseCase } from '../list-task-templates.use-case';
 
 // Mock eventBus — preserve all real exports
-vi.mock('@dailyuse/utils', async () => {
-  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
+vi.mock('@memoflow/utils', async () => {
+  const actual = await vi.importActual<typeof import('@memoflow/utils')>('@memoflow/utils');
   return {
     ...actual,
     eventBus: { send: vi.fn() },

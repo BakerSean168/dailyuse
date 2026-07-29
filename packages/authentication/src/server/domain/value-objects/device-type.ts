@@ -1,4 +1,4 @@
-import { DeviceType as DeviceTypeContract, type DeviceType as IDeviceType } from '@dailyuse/contracts/authentication';
+import { DeviceType as DeviceTypeContract, type DeviceType as IDeviceType } from '@memoflow/contracts/authentication';
 
 /**
  * Device Type - classification of login devices.
@@ -11,7 +11,7 @@ export type DeviceType = IDeviceType & { readonly __brand: unique symbol };
  * Valid value set - Single Source of Truth
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IDeviceType[] = Object.values(DeviceTypeContract);
 
 /**

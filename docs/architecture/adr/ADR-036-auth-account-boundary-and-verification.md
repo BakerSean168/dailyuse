@@ -18,10 +18,10 @@ updated: 2026-07-17T23:59:00
 
 ## Context
 
-Memoflow 已在 monorepo 中自建：
+MemoFlow 已在 monorepo 中自建：
 
-- `@dailyuse/authentication`：`AuthIdentity`、凭证、OAuthBinding、`AuthSession`、JWT
-- `@dailyuse/account`：资料、偏好摘要、联系方式投影；经 `auth:identity-created` 自动创建
+- `@memoflow/authentication`：`AuthIdentity`、凭证、OAuthBinding、`AuthSession`、JWT
+- `@memoflow/account`：资料、偏好摘要、联系方式投影；经 `auth:identity-created` 自动创建
 - 全域业务数据以 `identityId` 为租户键（含 PowerSync）
 - Web / Desktop / Mobile 共享 contracts
 
@@ -40,7 +40,7 @@ Memoflow 已在 monorepo 中自建：
 ### 1. 不替换认证内核
 
 - **不**引入 Better Auth、Auth.js、Logto、Keycloak、Clerk 等作为主身份源。
-- **保留**自建 `AuthIdentity` + Daily Use 签发的 access/refresh session。
+- **保留**自建 `AuthIdentity` + MemoFlow 签发的 access/refresh session。
 - 开源项目用于：**流程规格**（验证/重置/linking）与**可替换零件**（SMTP/API 发信、Redis challenge、限流库），不引入第二套 User 表。
 
 ### 2. 模块边界与真源
@@ -50,7 +50,7 @@ Memoflow 已在 monorepo 中自建：
 | 能否认证 / 登录 | Authentication | `AuthIdentity.status` + 锁定字段 |
 | 登录标识符（邮箱/手机）及其验证 | Authentication | `AuthIdentifier.isVerified` |
 | 凭证与 OAuth binding | Authentication | 密码、GitHub subject 等 |
-| 会话 | Authentication | `AuthSession`；业务 API 只认 Daily Use token |
+| 会话 | Authentication | `AuthSession`；业务 API 只认 MemoFlow token |
 | 昵称/头像/简介等资料 | Account | 不拥有登录权威 |
 | 资料卡展示用联系邮箱 | Account | **Auth 主邮箱的投影**，事件同步 |
 | 扩展键值/设备级偏好 | Setting | 不承载登录安全状态 |
@@ -129,7 +129,7 @@ Memoflow 已在 monorepo 中自建：
 
 ### 8. OAuth 与账号链接
 
-- GitHub 登录只解决「是谁」，签发 Daily Use session；**不**用 GitHub token 访问业务 API（延续产品文档 / ADR-034）。
+- GitHub 登录只解决「是谁」，签发 MemoFlow session；**不**用 GitHub token 访问业务 API（延续产品文档 / ADR-034）。
 - **禁止**仅因邮箱相同而静默合并两个 identity（防账号劫持）。
 - 链接已有账号必须：已登录后显式 bind，或明确的确认流。
 - 完整 authorize / state / PKCE / UI 按安全闭环计划 Phase D 实施；仓库 Contents 授权仍属 Repository。

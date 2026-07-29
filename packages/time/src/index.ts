@@ -1,5 +1,5 @@
 /**
- * @dailyuse/time — Product Time Facade (ADR-037)
+ * @memoflow/time — Product Time Facade (ADR-037)
  *
  * Business and UI import from here. date-fns is confined to `engine/`.
  */

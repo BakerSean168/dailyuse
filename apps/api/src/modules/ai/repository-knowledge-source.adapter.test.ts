@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import { RepositoryKnowledgeSourceAdapter } from './repository-knowledge-source.adapter';
 
 function projectionRow(overrides: Record<string, unknown> = {}) {

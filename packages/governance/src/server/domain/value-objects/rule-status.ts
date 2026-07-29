@@ -24,17 +24,17 @@
  * @see {@link RuleSeverity} 严重级别对废弃操作的约束
  */
 
-import { RuleStatus as RuleStatusContract, type RuleStatus as IRuleStatus } from '@dailyuse/contracts/governance';
+import { RuleStatus as RuleStatusContract, type RuleStatus as IRuleStatus } from '@memoflow/contracts/governance';
 import { RuleSeverity } from './rule-severity';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 /** Branded type —— 编译时防止与普通字符串混用 */
 export type RuleStatus = IRuleStatus & { readonly __brand: unique symbol };
 
 /** 全部合法状态值 */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IRuleStatus[] = Object.values(RuleStatusContract);
 
 /**

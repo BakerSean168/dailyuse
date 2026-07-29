@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Residual 256: desktop shared/types ipc-channels dual re-export barrel is gone.
- * Callers import channels from @dailyuse/contracts/electron (and governance).
+ * Callers import channels from @memoflow/contracts/electron (and governance).
  */
 describe('desktop shared ipc-channels dual single-track surface', () => {
   const desktopSrc = resolve(__dirname, '..');
@@ -23,10 +23,10 @@ describe('desktop shared ipc-channels dual single-track surface', () => {
   it('preload and notification view import channels from contracts', () => {
     const preloadSrc = readFileSync(preload, 'utf8');
     const viewSrc = readFileSync(notificationView, 'utf8');
-    expect(preloadSrc).toContain("from '@dailyuse/contracts/electron'");
-    expect(preloadSrc).toContain("from '@dailyuse/contracts/governance'");
+    expect(preloadSrc).toContain("from '@memoflow/contracts/electron'");
+    expect(preloadSrc).toContain("from '@memoflow/contracts/governance'");
     expect(preloadSrc).not.toContain('shared/types/ipc-channels');
-    expect(viewSrc).toContain("from '@dailyuse/contracts/electron'");
+    expect(viewSrc).toContain("from '@memoflow/contracts/electron'");
     expect(viewSrc).not.toContain('shared/types/ipc-channels');
   });
 });

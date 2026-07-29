@@ -8,8 +8,8 @@ import type {
   ChannelResponseDTO,
   NotificationChannelType,
   ChannelStatus,
-} from '@dailyuse/contracts/notification';
-import { Entity } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/notification';
+import { Entity } from '@memoflow/utils/domain';
 import {
   NotificationChannelId,
   NotificationId,
@@ -159,7 +159,7 @@ export class NotificationChannel extends Entity<NotificationChannelId> {
     };
   }
 
-  public toClientDTO(): import('@dailyuse/contracts/notification').NotificationChannelClientDTO {
+  public toClientDTO(): import('@memoflow/contracts/notification').NotificationChannelClientDTO {
     const now = Date.now();
     return {
       id: this.id as NotificationChannelId,

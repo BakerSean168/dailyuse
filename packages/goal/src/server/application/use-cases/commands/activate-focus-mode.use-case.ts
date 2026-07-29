@@ -1,10 +1,10 @@
 import type { IFocusModeRepository, IGoalRepository } from '../../../domain';
 import { GoalPolicy, FocusSessionPolicy, FocusMode, Goal } from '../../../domain';
 import { FocusModeId } from '../../../domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
-import type { ActivateFocusModeRequest, FocusModeDTO } from '@dailyuse/contracts/goal';
+import { createLogger } from '@memoflow/utils/logger';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
+import type { ActivateFocusModeRequest, FocusModeDTO } from '@memoflow/contracts/goal';
 
 export class ActivateFocusModeUseCase {
   private readonly logger = createLogger('goal:activate-focus-mode');

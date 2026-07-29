@@ -65,7 +65,7 @@ export class DesktopGuestShellController {
       ],
       env: {
         ...process.env,
-        DAILYUSE_DESKTOP_USER_DATA_PATH: this.userDataDir,
+        MEMOFLOW_DESKTOP_USER_DATA_PATH: this.userDataDir,
         ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
         VITEST: 'true',
       },
@@ -87,7 +87,7 @@ export class DesktopGuestShellController {
 
       // Playwright forces Electron's non-encrypting `basic_text` backend on Linux.
       // Shell tests use a disposable guest profile and do not exercise credential storage.
-      const prefix = 'dailyuse-shell-e2e:';
+      const prefix = 'memoflow-shell-e2e:';
       safeStorage.isEncryptionAvailable = () => true;
       safeStorage.encryptString = (value) => Buffer.from(`${prefix}${value}`, 'utf8');
       safeStorage.decryptString = (value) => {

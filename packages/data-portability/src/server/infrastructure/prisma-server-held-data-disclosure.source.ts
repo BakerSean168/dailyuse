@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@memoflow/database';
 import type {
   ServerHeldAiKnowledgeIndexEntry,
   ServerHeldDataDisclosureDataV1,
@@ -8,7 +8,7 @@ import type {
   ServerHeldKnowledgeNoteProjection,
   ServerHeldKnowledgeRepositoryConnection,
   ServerHeldKnowledgeWriteRequest,
-} from '@dailyuse/contracts/data-portability';
+} from '@memoflow/contracts/data-portability';
 import type { ServerHeldDataDisclosureSource } from '../application/server-held-data-disclosure.source';
 
 function iso(value: Date): string {

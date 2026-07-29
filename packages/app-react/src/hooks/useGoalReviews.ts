@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import type { GoalReviewClientDTO } from '@dailyuse/contracts/goal';
-import type { GoalReview } from '@dailyuse/goal/client';
+import type { GoalReviewClientDTO } from '@memoflow/contracts/goal';
+import type { GoalReview } from '@memoflow/goal/client';
 
 import { useAppSession } from './useAppSession';
 import { useGoalService } from './useGoalService';

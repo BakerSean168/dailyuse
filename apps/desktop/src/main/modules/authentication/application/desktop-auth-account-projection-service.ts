@@ -1,11 +1,11 @@
-import type { ILogger } from '@dailyuse/utils/logger';
-import type { IAccountRepository } from '@dailyuse/account/electron';
-import { Account } from '@dailyuse/account/electron';
-import type { IAuthIdentityRepository as IAuthCredentialRepository } from '@dailyuse/authentication/electron';
+import type { ILogger } from '@memoflow/utils/logger';
+import type { IAccountRepository } from '@memoflow/account/electron';
+import { Account } from '@memoflow/account/electron';
+import type { IAuthIdentityRepository as IAuthCredentialRepository } from '@memoflow/authentication/electron';
 import type {
   AuthIdentityClientDTO,
   TokenStorageData,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { TokenManager } from '../infrastructure';
 import { GUEST_ACCESS_TOKEN, LOCAL_ACCESS_TOKEN } from '../infrastructure/session-types';
 

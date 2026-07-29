@@ -9,7 +9,7 @@
  * - 只在此处做「请求侧」公共操作（注入 Token、日志等）
  * - 响应拦截器留给上层 Client wrapper 按需注册
  *
- * @module @dailyuse/http-client
+ * @module @memoflow/http-client
  */
 
 import axios, {

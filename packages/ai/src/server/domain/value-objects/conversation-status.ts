@@ -1,4 +1,4 @@
-import { ConversationStatus as ConversationStatusContract, type ConversationStatus as IConversationStatus } from '@dailyuse/contracts/ai';
+import { ConversationStatus as ConversationStatusContract, type ConversationStatus as IConversationStatus } from '@memoflow/contracts/ai';
 
 /**
  * ConversationStatus 枚举类型
@@ -25,7 +25,7 @@ export type ConversationStatus = IConversationStatus & { readonly __brand: uniqu
  * 用于校验和遍历
  */
 // Derive the valid-value set from the contracts source of truth so a new status
-// only ever has to be added in one place (@dailyuse/contracts).
+// only ever has to be added in one place (@memoflow/contracts).
 const VALUES: IConversationStatus[] = Object.values(ConversationStatusContract);
 
 /**

@@ -33,13 +33,13 @@ describe('governance parseStringArray keep-boundary (residual 1069)', () => {
   it('owns residual 1069 keep-boundary markers on local parseStringArray', () => {
     expect(shared).toContain('Residual 1069 keep-boundary');
     expect(shared).toMatch(/export function parseStringArray\b/);
-    expect(shared).toContain("export { parseNumber, parseString } from '@dailyuse/utils/shared'");
+    expect(shared).toContain("export { parseNumber, parseString } from '@memoflow/utils/shared'");
     expect(shared).toContain('items.length > 0 ? items : undefined');
     expect(shared).toContain('.split(\',\')');
     expect(shared).toContain('.trim()');
     // Must not import utils persistence parseStringArray for this HTTP query helper
-    expect(shared).not.toContain("parseStringArray } from '@dailyuse/utils/shared'");
-    expect(shared).not.toContain("parseStringArray} from '@dailyuse/utils/shared'");
+    expect(shared).not.toContain("parseStringArray } from '@memoflow/utils/shared'");
+    expect(shared).not.toContain("parseStringArray} from '@memoflow/utils/shared'");
   });
 
   it('rules route consumes shared parseStringArray without local dual body', () => {

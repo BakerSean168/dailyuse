@@ -3,7 +3,7 @@
  *
  * Electron IPC communication types for the Result-mode IPC client.
  *
- * @module @dailyuse/ipc-client
+ * @module @memoflow/ipc-client
  */
 
 // ============================================================================
@@ -82,7 +82,7 @@ export const DEFAULT_IPC_CLIENT_CONFIG: Required<
  *
  * All invokes return `Promise<Result<T>>` and never throw.
  * Module IPC adapters depend on this interface; implementation is
- * `ResultIpcClient` from `@dailyuse/ipc-client` (injected at the App layer).
+ * `ResultIpcClient` from `@memoflow/ipc-client` (injected at the App layer).
  *
  * Optional `getBridge` supports push/event subscriptions (e.g. AI streaming).
  * Simple invoke-only stubs may omit it.
@@ -91,7 +91,7 @@ export interface IResultIpcClient {
   invoke<T = unknown>(
     channel: string,
     ...args: unknown[]
-  ): Promise<import('@dailyuse/contracts/result').Result<T>>;
+  ): Promise<import('@memoflow/contracts/result').Result<T>>;
   getBridge?: () => ElectronBridge | undefined;
 }
 

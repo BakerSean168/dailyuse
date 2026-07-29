@@ -4,7 +4,7 @@
  */
 
 import { defineStore } from 'pinia';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@memoflow/contracts/notification';
 
 export interface NotificationState {
   notifications: NotificationClientDTO[];

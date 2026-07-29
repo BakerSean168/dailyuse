@@ -1,15 +1,15 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * TaskTemplateHistory 实体实现 (Server)
  * 任务模板历史记录 - 实体
  */
 
-import { Entity } from '@dailyuse/utils/domain';
-import { generateUUID } from '@dailyuse/utils/shared';
+import { Entity } from '@memoflow/utils/domain';
+import { generateUUID } from '@memoflow/utils/shared';
 import type {
   TaskTemplateHistoryServerDTO,
   TaskTemplateHistoryClientDTO,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 /**
  * Internal state interface for TaskTemplateHistory

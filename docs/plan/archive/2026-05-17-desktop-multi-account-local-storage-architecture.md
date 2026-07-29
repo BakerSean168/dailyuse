@@ -57,10 +57,10 @@ status: active
 
 当前代码真值：
 
-- shell 初始化在 [main.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/main.ts:473)
-- profile 生命周期收口在 [DesktopProfileRuntimeManager.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/profile/DesktopProfileRuntimeManager.ts:1)
-- shell auth IPC 常驻在 [desktop-auth-shell.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts:1)
-- 启动时不再打开业务库，旧初始化层只保留延迟说明，见 [infraInitialization.ts](/D:/home/projects/dailyuse/apps/desktop/src/shared/initialization/infraInitialization.ts:1)
+- shell 初始化在 [main.ts](/D:/home/projects/memoflow/apps/desktop/src/main/main.ts:473)
+- profile 生命周期收口在 [DesktopProfileRuntimeManager.ts](/D:/home/projects/memoflow/apps/desktop/src/main/profile/DesktopProfileRuntimeManager.ts:1)
+- shell auth IPC 常驻在 [desktop-auth-shell.ts](/D:/home/projects/memoflow/apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts:1)
+- 启动时不再打开业务库，旧初始化层只保留延迟说明，见 [infraInitialization.ts](/D:/home/projects/memoflow/apps/desktop/src/shared/initialization/infraInitialization.ts:1)
 
 ### 2. 本地路径与 ownership
 
@@ -83,17 +83,17 @@ status: active
   - snapshot staging
   - downloads
   - temp
-- `Documents\Memoflow Files`
+- `Documents\MemoFlow Files`
   - exports
   - downloads
   - attachments
 
 当前代码真值：
 
-- LocalAppData / Documents 根路径解析在 [user-data-path.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/user-data-path.ts:1)
-- shared 路径结构在 [shared-path-resolver.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/paths/shared-path-resolver.ts:1)
-- profile 路径结构在 [profile-path-resolver.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/paths/profile-path-resolver.ts:1)
-- 目录落盘在 [ensure-dirs.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/paths/ensure-dirs.ts:1)
+- LocalAppData / Documents 根路径解析在 [user-data-path.ts](/D:/home/projects/memoflow/apps/desktop/src/main/user-data-path.ts:1)
+- shared 路径结构在 [shared-path-resolver.ts](/D:/home/projects/memoflow/apps/desktop/src/main/paths/shared-path-resolver.ts:1)
+- profile 路径结构在 [profile-path-resolver.ts](/D:/home/projects/memoflow/apps/desktop/src/main/paths/profile-path-resolver.ts:1)
+- 目录落盘在 [ensure-dirs.ts](/D:/home/projects/memoflow/apps/desktop/src/main/paths/ensure-dirs.ts:1)
 
 ### 3. 多账号本地共存语义
 
@@ -117,9 +117,9 @@ status: active
 
 当前代码真值：
 
-- `logout()` 只走 `SessionManager.logout()`，不再直接清 PowerSync，见 [AuthDesktopApplicationService.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/modules/authentication/application/AuthDesktopApplicationService.ts:669)
-- shell 层 `auth:logout` 负责先退出会话，再 deactivate profile，再切登录窗，见 [desktop-auth-shell.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts:274)
-- profile 删除在 [DesktopProfileRuntimeManager.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/profile/DesktopProfileRuntimeManager.ts:332)
+- `logout()` 只走 `SessionManager.logout()`，不再直接清 PowerSync，见 [AuthDesktopApplicationService.ts](/D:/home/projects/memoflow/apps/desktop/src/main/modules/authentication/application/AuthDesktopApplicationService.ts:669)
+- shell 层 `auth:logout` 负责先退出会话，再 deactivate profile，再切登录窗，见 [desktop-auth-shell.ts](/D:/home/projects/memoflow/apps/desktop/src/main/modules/authentication/desktop-auth-shell.ts:274)
+- profile 删除在 [DesktopProfileRuntimeManager.ts](/D:/home/projects/memoflow/apps/desktop/src/main/profile/DesktopProfileRuntimeManager.ts:332)
 
 ### 4. 窗口与浏览器态隔离
 
@@ -137,9 +137,9 @@ status: active
 
 当前代码真值：
 
-- shell partition 见 [WindowManager.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/lifecycle/WindowManager.ts:750)
-- profile partition 见 [WindowManager.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/lifecycle/WindowManager.ts:754)
-- 主窗口创建时按 profile 传 partition，见 [WindowManager.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/lifecycle/WindowManager.ts:314)
+- shell partition 见 [WindowManager.ts](/D:/home/projects/memoflow/apps/desktop/src/main/lifecycle/WindowManager.ts:750)
+- profile partition 见 [WindowManager.ts](/D:/home/projects/memoflow/apps/desktop/src/main/lifecycle/WindowManager.ts:754)
+- 主窗口创建时按 profile 传 partition，见 [WindowManager.ts](/D:/home/projects/memoflow/apps/desktop/src/main/lifecycle/WindowManager.ts:314)
 
 ### 5. PowerSync 同步模型
 
@@ -152,8 +152,8 @@ PowerSync service 已经从 legacy inline `sync_rules` 切换到单独的 Stream
 
 当前代码真值：
 
-- 主服务配置见 [powersync.yaml](/D:/home/projects/dailyuse/docker/powersync/powersync.yaml:1)
-- Streams 配置见 [sync-config.yaml](/D:/home/projects/dailyuse/docker/powersync/sync-config.yaml:1)
+- 主服务配置见 [powersync.yaml](/D:/home/projects/memoflow/docker/powersync/powersync.yaml:1)
+- Streams 配置见 [sync-config.yaml](/D:/home/projects/memoflow/docker/powersync/sync-config.yaml:1)
 
 ### 6. Snapshot 链路
 
@@ -166,13 +166,13 @@ Snapshot 链路当前已落地为四段：
 
 当前代码真值：
 
-- desktop hydrate 在 [ProfileSnapshotService.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/profile/ProfileSnapshotService.ts:1)
-- hydrate 接入 profile prepare 在 [DesktopProfileRuntimeManager.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/profile/DesktopProfileRuntimeManager.ts:162)
-- API manifest / download 在 [module.ts](/D:/home/projects/dailyuse/apps/api/src/modules/powersync/module.ts:338)
-- snapshot 发布存储在 [snapshot-storage.ts](/D:/home/projects/dailyuse/apps/api/src/modules/powersync/snapshot-storage.ts:1)
-- snapshot builder 在 [snapshot-builder.ts](/D:/home/projects/dailyuse/apps/api/src/modules/powersync/snapshot-builder.ts:1)
-- builder CLI 在 [build-powersync-profile-snapshot.ts](/D:/home/projects/dailyuse/apps/api/scripts/build-powersync-profile-snapshot.ts:1)
-- Nx target 在 [project.json](/D:/home/projects/dailyuse/apps/api/project.json:124)
+- desktop hydrate 在 [ProfileSnapshotService.ts](/D:/home/projects/memoflow/apps/desktop/src/main/profile/ProfileSnapshotService.ts:1)
+- hydrate 接入 profile prepare 在 [DesktopProfileRuntimeManager.ts](/D:/home/projects/memoflow/apps/desktop/src/main/profile/DesktopProfileRuntimeManager.ts:162)
+- API manifest / download 在 [module.ts](/D:/home/projects/memoflow/apps/api/src/modules/powersync/module.ts:338)
+- snapshot 发布存储在 [snapshot-storage.ts](/D:/home/projects/memoflow/apps/api/src/modules/powersync/snapshot-storage.ts:1)
+- snapshot builder 在 [snapshot-builder.ts](/D:/home/projects/memoflow/apps/api/src/modules/powersync/snapshot-builder.ts:1)
+- builder CLI 在 [build-powersync-profile-snapshot.ts](/D:/home/projects/memoflow/apps/api/scripts/build-powersync-profile-snapshot.ts:1)
+- Nx target 在 [project.json](/D:/home/projects/memoflow/apps/api/project.json:124)
 
 ## 代码审查结论
 
@@ -208,15 +208,15 @@ Snapshot 链路当前已落地为四段：
 
 相关代码：
 
-- [profile-path-resolver.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/paths/profile-path-resolver.ts:1)
-- [ensure-dirs.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/paths/ensure-dirs.ts:1)
-- [WindowManager.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/lifecycle/WindowManager.ts:314)
+- [profile-path-resolver.ts](/D:/home/projects/memoflow/apps/desktop/src/main/paths/profile-path-resolver.ts:1)
+- [ensure-dirs.ts](/D:/home/projects/memoflow/apps/desktop/src/main/paths/ensure-dirs.ts:1)
+- [WindowManager.ts](/D:/home/projects/memoflow/apps/desktop/src/main/lifecycle/WindowManager.ts:314)
 
 #### 2.2 `user-files` 设置流已落地，但还需要验收收口
 
 当前已实现：
 
-- `Documents\Memoflow Files` 根路径解析
+- `Documents\MemoFlow Files` 根路径解析
 - `exports/downloads/attachments` 子目录
 - 文本导入导出的 system IPC
 - 设置页 JSON 导入导出使用该能力
@@ -234,10 +234,10 @@ Snapshot 链路当前已落地为四段：
 
 相关代码：
 
-- [shared-path-resolver.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/paths/shared-path-resolver.ts:16)
-- [system-handlers.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/ipc/system-handlers.ts:118)
-- [UserSettingsView.vue](/D:/home/projects/dailyuse/packages/app-vue/src/modules/setting/views/UserSettingsView.vue:109)
-- [UserFilesSettings.vue](/D:/home/projects/dailyuse/packages/app-vue/src/modules/setting/components/UserFilesSettings.vue:1)
+- [shared-path-resolver.ts](/D:/home/projects/memoflow/apps/desktop/src/main/paths/shared-path-resolver.ts:16)
+- [system-handlers.ts](/D:/home/projects/memoflow/apps/desktop/src/main/ipc/system-handlers.ts:118)
+- [UserSettingsView.vue](/D:/home/projects/memoflow/packages/app-vue/src/modules/setting/views/UserSettingsView.vue:109)
+- [UserFilesSettings.vue](/D:/home/projects/memoflow/packages/app-vue/src/modules/setting/components/UserFilesSettings.vue:1)
 
 #### 2.3 Snapshot 自动化已接入，生产 rollout 仍待验证
 
@@ -284,7 +284,7 @@ Snapshot 链路当前已落地为四段：
 
 相关代码：
 
-- [DesktopProfileRuntimeManager.ts](/D:/home/projects/dailyuse/apps/desktop/src/main/profile/DesktopProfileRuntimeManager.ts:1)
+- [DesktopProfileRuntimeManager.ts](/D:/home/projects/memoflow/apps/desktop/src/main/profile/DesktopProfileRuntimeManager.ts:1)
 
 ## 当前与旧方案的差异
 
@@ -350,7 +350,7 @@ Snapshot 链路当前已落地为四段：
 - 不要重新引入 legacy `sync_rules`
 - 不要再把 “升级最新 PowerSync” 写成默认已锁定决策
 - 不要把 `partition` 隔离误写为“已实现 profile 目录承载 Chromium sessionData”
-- 不要把 `Documents\Memoflow Files` 误写成 per-profile 文件存储
+- 不要把 `Documents\MemoFlow Files` 误写成 per-profile 文件存储
 - 继续实现剩余缺口时，应以当前代码真值为基线，而不是以本文档的旧版本为基线
 
 ## 最小验收真值

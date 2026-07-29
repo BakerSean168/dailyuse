@@ -12,8 +12,8 @@
  * - 持久化细节（由仓储处理）
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 import {
   type IScheduleTaskRepository,
   ScheduleTask,
@@ -23,7 +23,7 @@ import type {
   ScheduleConfigDTO,
   RetryPolicyDTO,
   SourceModule,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 import { RetryPolicy, ScheduleConfig, ScheduleTaskMetadata } from '../../../domain/value-objects';
 
 /**

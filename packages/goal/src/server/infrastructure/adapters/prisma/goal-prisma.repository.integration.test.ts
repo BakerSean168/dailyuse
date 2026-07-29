@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { Goal } from '../../../domain/aggregates/goal';
 import { GoalReminderConfig } from '../../../domain';
 import { GoalPrismaRepository } from './goal-prisma.repository';

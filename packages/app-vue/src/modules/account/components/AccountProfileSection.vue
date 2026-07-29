@@ -23,7 +23,7 @@ import {
   AvatarImage,
   Separator,
   useConfirm,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { GitBranch, Link2Off, LogOut } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 import { useAccount } from '../composables/useAccount';
@@ -196,8 +196,8 @@ async function handleBindGithub() {
       return;
     }
     // Persist state for the bind callback return path.
-    sessionStorage.setItem('dailyuse.oauth.bind.state', urlResult.data.state);
-    sessionStorage.setItem('dailyuse.oauth.bind.intent', 'bind-github');
+    sessionStorage.setItem('memoflow.oauth.bind.state', urlResult.data.state);
+    sessionStorage.setItem('memoflow.oauth.bind.intent', 'bind-github');
     window.location.assign(urlResult.data.authUrl);
   } finally {
     oauthBusy.value = false;
@@ -245,21 +245,21 @@ async function completePendingOAuthBind() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
   const state = params.get('state');
-  const intent = sessionStorage.getItem('dailyuse.oauth.bind.intent');
-  const expectedState = sessionStorage.getItem('dailyuse.oauth.bind.state');
+  const intent = sessionStorage.getItem('memoflow.oauth.bind.intent');
+  const expectedState = sessionStorage.getItem('memoflow.oauth.bind.state');
   if (!code || !state || intent !== 'bind-github') return;
   if (expectedState && expectedState !== state) {
     oauthConflictMessage.value = t('account.oauth.invalidState');
-    sessionStorage.removeItem('dailyuse.oauth.bind.intent');
-    sessionStorage.removeItem('dailyuse.oauth.bind.state');
+    sessionStorage.removeItem('memoflow.oauth.bind.intent');
+    sessionStorage.removeItem('memoflow.oauth.bind.state');
     return;
   }
 
   oauthBusy.value = true;
   try {
     const result = await authService.bindOAuth({ provider: 'Github', code, state });
-    sessionStorage.removeItem('dailyuse.oauth.bind.intent');
-    sessionStorage.removeItem('dailyuse.oauth.bind.state');
+    sessionStorage.removeItem('memoflow.oauth.bind.intent');
+    sessionStorage.removeItem('memoflow.oauth.bind.state');
     // Strip OAuth query params from the URL without reload.
     const url = new URL(window.location.href);
     url.searchParams.delete('code');

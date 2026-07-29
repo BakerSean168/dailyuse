@@ -1,4 +1,4 @@
-import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
+import { createHttpResponseBuilder } from '@memoflow/contracts/result';
 
 /**
  * Residual 1171 keep-boundary: API response-builder readString — single record key, empty string allowed.

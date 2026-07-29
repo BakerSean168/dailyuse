@@ -16,7 +16,7 @@
  * (scaffold e2e.electron_desktop_full / e2e.real_pi_spawn remain external).
  */
 import { expect, test, type Page, type Route } from '@playwright/test';
-import { createMockUserSetting } from '@dailyuse/contracts/mocks';
+import { createMockUserSetting } from '@memoflow/contracts/mocks';
 import { TIMEOUT_CONFIG, WEB_CONFIG } from '../config';
 import { registerAndLogin } from '../helpers/testHelpers';
 

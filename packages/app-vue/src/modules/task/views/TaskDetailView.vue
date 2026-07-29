@@ -280,21 +280,21 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { useTask } from '../composables/useTask';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import type { TaskTemplateViewModel } from '../components/types';
-import { DependencyType, TaskGoalBindingTrigger } from '@dailyuse/contracts/task';
-import type { TaskGraphDependencyDTO } from '@dailyuse/contracts/task';
+import { DependencyType, TaskGoalBindingTrigger } from '@memoflow/contracts/task';
+import type { TaskGraphDependencyDTO } from '@memoflow/contracts/task';
 import {
   getTaskTimeTypeLabel,
   getTaskTimeValueDisplay,
   mapTaskTemplateDtoToViewModel,
   toTaskTimeConfigPayload,
 } from '../utils/task-template-presentation';
-import type { GoalId, KeyResultId, TaskTemplateId } from '@dailyuse/contracts/primitives';
-import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { GoalId, KeyResultId, TaskTemplateId } from '@memoflow/contracts/primitives';
+import type { RecurrenceRuleDTO } from '@memoflow/contracts/task';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { buildTaskGraphData } from '../types/task-dag.types';
 import { emptyKind, formatProductDate } from '../../../shared/utils/product-time';
 

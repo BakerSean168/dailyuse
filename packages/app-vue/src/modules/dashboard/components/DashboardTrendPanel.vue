@@ -14,7 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
   Skeleton,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import { ChevronDown, TrendingUp } from '@lucide/vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
@@ -26,7 +26,7 @@ import {
   LegendComponent,
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import type { TrendDay } from '@dailyuse/contracts/dashboard';
+import type { TrendDay } from '@memoflow/contracts/dashboard';
 
 use([
   TitleComponent,

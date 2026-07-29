@@ -483,8 +483,8 @@ import {
   DialogTitle,
   Label,
   useConfirm,
-} from '@dailyuse/ui-vue-shadcn';
-import { SystemChannels } from '@dailyuse/contracts/electron';
+} from '@memoflow/ui-vue-shadcn';
+import { SystemChannels } from '@memoflow/contracts/electron';
 import type {
   GitHubInstallationRepositoryDTO,
   KnowledgeRepositoryConnectionClientDTO,
@@ -494,12 +494,12 @@ import type {
   KnowledgeRepositorySyncConflictContext,
   KnowledgeRepositorySyncOutcome,
   KnowledgeRepositorySyncPendingContext,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import {
   KnowledgeRepositorySyncConflictContextSchema,
   KnowledgeRepositorySyncPendingContextSchema,
   KnowledgeRepositoryLifecycleErrorCodes,
-} from '@dailyuse/contracts/repository';
+} from '@memoflow/contracts/repository';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { useAuthenticationStore } from '../../authentication/stores/authentication-store';

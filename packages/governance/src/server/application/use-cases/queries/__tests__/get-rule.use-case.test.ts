@@ -1,10 +1,10 @@
 import { vi, describe, it, expect } from 'vitest';
-import { createMockRepo } from '@dailyuse/test-utils';
+import { createMockRepo } from '@memoflow/test-utils';
 import { GetRuleUseCase } from '../get-rule.use-case';
 import type { IRuleRepository } from '../../../../domain/repositories/i-rule-repository';
-import type { GetRuleReq } from '@dailyuse/contracts/governance';
-import { RuleStatus } from '@dailyuse/contracts/governance';
-import { RuleSeverity } from '@dailyuse/contracts/governance';
+import type { GetRuleReq } from '@memoflow/contracts/governance';
+import { RuleStatus } from '@memoflow/contracts/governance';
+import { RuleSeverity } from '@memoflow/contracts/governance';
 
 // ============ Helpers ============
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import { ExecutionStatus } from '@memoflow/contracts/schedule';
 import { ExecutionInfo } from '../execution-info';
 
 describe('ExecutionInfo', () => {

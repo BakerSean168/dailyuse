@@ -11,7 +11,7 @@
  */
 
 import { Router, type RequestHandler } from 'express';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import { GoalController } from '../../server/transport/goal.controller';
 import type { GoalUseCases } from '../../server/transport/goal.controller';
 import { GoalFolderController } from '../../server/transport/goal-folder.controller';

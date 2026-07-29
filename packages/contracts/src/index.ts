@@ -1,5 +1,5 @@
 /**
- * @dailyuse/contracts
+ * @memoflow/contracts
  * 统一契约导出 - 根入口（极简版）
  *
  * ⚠️ 此根入口仅导出最核心的响应系统类型。
@@ -9,30 +9,30 @@
  *
  * ```typescript
  * // ✅ 推荐：从子路径导入（极致 Tree-Shaking）
- * import { GoalServerDTO, GoalStatus } from '@dailyuse/contracts/goal';
- * import { TaskTemplateServer, TaskType } from '@dailyuse/contracts/task';
- * import { HttpResponse, ResultCode } from '@dailyuse/contracts/result';
+ * import { GoalServerDTO, GoalStatus } from '@memoflow/contracts/goal';
+ * import { TaskTemplateServer, TaskType } from '@memoflow/contracts/task';
+ * import { HttpResponse, ResultCode } from '@memoflow/contracts/result';
  *
  * // ✅ 命名空间导入（避免命名冲突）
- * import * as GoalContracts from '@dailyuse/contracts/goal';
- * import * as TaskContracts from '@dailyuse/contracts/task';
+ * import * as GoalContracts from '@memoflow/contracts/goal';
+ * import * as TaskContracts from '@memoflow/contracts/task';
  * ```
  *
  * 子路径列表：
- * - @dailyuse/contracts/task       - 任务模块
- * - @dailyuse/contracts/goal       - 目标模块
- * - @dailyuse/contracts/governance - 治理模块
- * - @dailyuse/contracts/reminder   - 提醒模块
- * - @dailyuse/contracts/repository - 仓库模块
- * - @dailyuse/contracts/account    - 账户模块
- * - @dailyuse/contracts/authentication - 认证模块
- * - @dailyuse/contracts/schedule   - 调度模块
- * - @dailyuse/contracts/setting    - 设置模块
- * - @dailyuse/contracts/notification - 通知模块
- * - @dailyuse/contracts/ai         - AI模块
- * - @dailyuse/contracts/dashboard  - 仪表盘模块
- * - @dailyuse/contracts/result     - Result Pattern (新，推荐)
- * - @dailyuse/contracts/shared     - 共享类型
+ * - @memoflow/contracts/task       - 任务模块
+ * - @memoflow/contracts/goal       - 目标模块
+ * - @memoflow/contracts/governance - 治理模块
+ * - @memoflow/contracts/reminder   - 提醒模块
+ * - @memoflow/contracts/repository - 仓库模块
+ * - @memoflow/contracts/account    - 账户模块
+ * - @memoflow/contracts/authentication - 认证模块
+ * - @memoflow/contracts/schedule   - 调度模块
+ * - @memoflow/contracts/setting    - 设置模块
+ * - @memoflow/contracts/notification - 通知模块
+ * - @memoflow/contracts/ai         - AI模块
+ * - @memoflow/contracts/dashboard  - 仪表盘模块
+ * - @memoflow/contracts/result     - Result Pattern (新，推荐)
+ * - @memoflow/contracts/shared     - 共享类型
  */
 
 // ============================================================

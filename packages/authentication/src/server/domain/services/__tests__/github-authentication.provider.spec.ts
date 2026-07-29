@@ -16,7 +16,7 @@ import {
 import { AuthIdentity } from '../../aggregates/auth-identity';
 import { OAuthProvider } from '../../value-objects';
 import type { IAuthIdentityRepository } from '../../repositories/i-auth-identity.repository';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 
 const createMockIdentityRepo = (
   overrides: Partial<IAuthIdentityRepository> = {},

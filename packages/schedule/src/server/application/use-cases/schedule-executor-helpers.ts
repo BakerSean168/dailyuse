@@ -1,4 +1,4 @@
-import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskStatus } from '@memoflow/contracts/schedule';
 import type { ScheduleTask } from '../../domain/aggregates/schedule-task';
 
 export interface IScheduleTaskMonitor {

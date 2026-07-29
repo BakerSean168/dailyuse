@@ -7,9 +7,9 @@
 
 import type { IGoalFolderRepository } from '../../../domain';
 import { GoalFolder } from '../../../domain';
-import type { ListGoalFoldersQuery, QueryGoalFoldersRes } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import type { ListGoalFoldersQuery, QueryGoalFoldersRes } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { ok } from '@memoflow/contracts/result';
 
 /**
  * List Goal Folders Use Case

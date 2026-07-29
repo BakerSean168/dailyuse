@@ -20,12 +20,12 @@ import type {
   TaskGoalBinding,
   TaskGoalBindingDTO,
   TaskTemplateStatus,
-} from '@dailyuse/contracts/task';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type {TaskFolderId, GoalId, KeyResultId, Instant} from '@dailyuse/contracts/primitives';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/task';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import type {TaskFolderId, GoalId, KeyResultId, Instant} from '@memoflow/contracts/primitives';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskTemplateId } from '../../server/domain/value-objects/task-template-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 export interface TaskTemplateState {
   id: TaskTemplateId;

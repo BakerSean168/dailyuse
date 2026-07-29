@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Residual 257: task domain has no dual events/ barrel re-exporting
  * Task*Event / TaskEventMap from contracts. Import event types from
- * @dailyuse/contracts/task directly.
+ * @memoflow/contracts/task directly.
  */
 describe('task domain events barrel single-track surface', () => {
   const domainDir = __dirname;

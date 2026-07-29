@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { SubtaskId as ISubtaskId } from '@dailyuse/contracts/primitives';
+import type { SubtaskId as ISubtaskId } from '@memoflow/contracts/primitives';
 
 /**
  * SubtaskId 值对象

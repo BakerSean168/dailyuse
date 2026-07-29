@@ -62,7 +62,7 @@ updated: 2026-07-06T00:00:00+08:00
 
 ## 调整前端缓存策略
 
-1. `@dailyuse/governance/client` 只负责调用并返回 DTO
+1. `@memoflow/governance/client` 只负责调用并返回 DTO
 2. Pinia 只缓存 POJO / DTO，不缓存 class 实例
 3. app-vue 在 `display-rule.ts` 本地派生展示模型
 4. 只有 UI 真的需要派生字段时，才在 app 层增加 helper
@@ -78,9 +78,9 @@ updated: 2026-07-06T00:00:00+08:00
 
 ## 调整公开导出面
 
-1. 公共契约只走 `@dailyuse/contracts/governance`
-2. server root 只走 `@dailyuse/governance`
-3. HTTP 模块只走 `@dailyuse/governance/api`
-4. renderer client 只走 `@dailyuse/governance/client`
-5. desktop main 只走 `@dailyuse/governance/electron`
-6. mocks 只走 `@dailyuse/contracts/mocks`
+1. 公共契约只走 `@memoflow/contracts/governance`
+2. server root 只走 `@memoflow/governance`
+3. HTTP 模块只走 `@memoflow/governance/api`
+4. renderer client 只走 `@memoflow/governance/client`
+5. desktop main 只走 `@memoflow/governance/electron`
+6. mocks 只走 `@memoflow/contracts/mocks`

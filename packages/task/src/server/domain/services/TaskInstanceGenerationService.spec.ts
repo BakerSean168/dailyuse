@@ -8,9 +8,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { TaskInstanceGenerationService } from './task-instance-generation-service';
 import { TaskTemplate } from '../aggregates';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskTemplateStatus } from '../../domain/value-objects/task-template-status';
-import { TaskType } from '@dailyuse/contracts/task';
+import { TaskType } from '@memoflow/contracts/task';
 import {
   aRecurringTask,
   aOneTimeTask,

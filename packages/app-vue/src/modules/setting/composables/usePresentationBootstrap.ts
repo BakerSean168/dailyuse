@@ -1,5 +1,5 @@
 import { watch } from 'vue';
-import { unwrapOrThrowError } from '@dailyuse/contracts/result';
+import { unwrapOrThrowError } from '@memoflow/contracts/result';
 import { useAuthenticationStore } from '../../authentication/stores/authentication-store';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -7,7 +7,7 @@ import { usePresentationPreferenceStore } from '../stores/presentation-preferenc
 import { useUserSettingStore } from '../stores/user-setting-store';
 import { getI18nGlobal } from '../../../plugins/i18n';
 import { translateResultError } from '../../../shared/utils/translate-result-error';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO } from '@memoflow/contracts/setting';
 
 export function usePresentationBootstrap() {
   const authStore = useAuthenticationStore();

@@ -1,10 +1,10 @@
-import type { GoalAutomationReminderPreview } from '@dailyuse/contracts/ai';
-import type { CreateReminderTemplateReq } from '@dailyuse/contracts/reminder';
+import type { GoalAutomationReminderPreview } from '@memoflow/contracts/ai';
+import type { CreateReminderTemplateReq } from '@memoflow/contracts/reminder';
 import {
   NotificationChannel,
   ReminderType,
   TriggerType,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import {
   buildReminderStartTimestamp,
   normalizeReminderTimeOfDay,

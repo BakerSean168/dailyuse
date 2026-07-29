@@ -6,7 +6,7 @@
 >
 > **⚠️ 知识模块现状 supersede（2026-07-21；残留 301 澄清）**：ADR-034 实施后，下列 Brief 现状描述**已退役，不得当作当前架构**：
 > - `ResourceClientDTO` / `RepositoryClientDTO` 与 DB Resource CRUD（contracts 已删除；创建面为 `KnowledgeNotePersistedRef`）
-> - `/note/:id`、`EditorLinearView`、`@dailyuse/editor`、旧 `RepositoryServiceLike` / `useRepository` CRUD 端口形态
+> - `/note/:id`、`EditorLinearView`、`@memoflow/editor`、旧 `RepositoryServiceLike` / `useRepository` CRUD 端口形态
 > - “在 Web/App 内编辑已有笔记”路径（首期关闭；Desktop 主编辑在 Obsidian）
 > - 旧 `RepositoryWorkspaceView` 自建工作区（运行时已删；现为 `RepositoryEntryView` → projection / Local Vault）
 >
@@ -23,7 +23,7 @@
 
 ## 1. 当前应用定位
 
-**知行 (Memoflow)**（`packages/assets/src/brand.ts`）是一个 **AI 优先的个人效能操作系统**，覆盖五个能力域：
+**知行 (MemoFlow)**（`packages/assets/src/brand.ts`）是一个 **AI 优先的个人效能操作系统**，覆盖五个能力域：
 
 | 能力域 | 模块                                 | 核心模型                                                                          |
 | ------ | ------------------------------------ | --------------------------------------------------------------------------------- |

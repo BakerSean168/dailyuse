@@ -1,7 +1,7 @@
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
-import type { IScheduleTaskRepository } from '@dailyuse/schedule';
-import type { TaskScheduleProjectionSource } from '@dailyuse/task/schedule-projection';
-import type { Publisher } from '@dailyuse/utils/domain';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
+import type { IScheduleTaskRepository } from '@memoflow/schedule';
+import type { TaskScheduleProjectionSource } from '@memoflow/task/schedule-projection';
+import type { Publisher } from '@memoflow/utils/domain';
 import { deleteSelection, replaceSelection } from './shared-projection';
 
 export interface TaskProjector {

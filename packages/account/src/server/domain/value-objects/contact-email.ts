@@ -1,6 +1,6 @@
-import { ValueObject } from '@dailyuse/utils/domain';
-import type { ContactEmailDTO, ContactEmail as IContactEmail } from '@dailyuse/contracts/account';
-import type { Instant } from '@dailyuse/contracts/primitives';
+import { ValueObject } from '@memoflow/utils/domain';
+import type { ContactEmailDTO, ContactEmail as IContactEmail } from '@memoflow/contracts/account';
+import type { Instant } from '@memoflow/contracts/primitives';
 
 export class ContactEmail extends ValueObject<ContactEmailDTO> implements IContactEmail {
 

@@ -1,4 +1,4 @@
-import { OAuthProvider as IOAuthProvider } from '@dailyuse/contracts/authentication';
+import { OAuthProvider as IOAuthProvider } from '@memoflow/contracts/authentication';
 
 // Residual 893: domain branded OAuthProvider derives contracts VO catalog (not API schema).
 

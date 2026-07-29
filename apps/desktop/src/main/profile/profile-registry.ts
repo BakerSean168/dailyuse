@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import type { SharedPathResolver } from '../paths';
 import { computeProfileId } from '../paths';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 
 const logger = createLogger('ProfileRegistry');
 

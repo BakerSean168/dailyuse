@@ -144,7 +144,7 @@ import {
   ChevronRight,
   Plus,
 } from '@lucide/vue';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@memoflow/ui-vue-shadcn';
 import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
 import DayViewCalendar from '../components/DayViewCalendar.vue';
 import WeekViewCalendar from '../components/WeekViewCalendar.vue';
@@ -159,7 +159,7 @@ import { getProductTime } from '../../../shared/utils/product-time';
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import type { CalendarEventItem } from '../composables/useCalendarView';
-import type { CreateScheduleRequest } from '@dailyuse/contracts/schedule';
+import type { CreateScheduleRequest } from '@memoflow/contracts/schedule';
 
 type CalendarView = 'day' | 'week' | 'month';
 

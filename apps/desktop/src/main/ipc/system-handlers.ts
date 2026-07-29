@@ -22,8 +22,8 @@ import { resolveDesktopUserFilesPath } from '../user-data-path';
 import {
   DesktopFeatureChannels,
   SystemChannels,
-} from '@dailyuse/contracts/electron';
-import { fail, ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/electron';
+import { fail, ok } from '@memoflow/contracts/result';
 
 type UserFilesSubdirectory = 'exports' | 'downloads' | 'attachments';
 

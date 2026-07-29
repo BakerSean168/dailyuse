@@ -5,8 +5,8 @@
  * Uses IResultHttpClient for making HTTP requests.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@memoflow/contracts/result';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import type { ITaskTemplateApiClient, TaskTemplateListParams } from '../types';
 import type {
   TaskTemplateClientDTO,
@@ -18,7 +18,7 @@ import type {
   BindToGoalReq,
   QueryTaskTemplateGraphRes,
   TaskTemplateInstancesQuery,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 /**
  * TaskTemplateHttpAdapter

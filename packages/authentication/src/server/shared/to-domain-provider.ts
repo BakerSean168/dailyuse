@@ -5,7 +5,7 @@
  * Microsoft (and any unknown transport member) maps to null.
  */
 
-import type { BindOAuthReq } from '@dailyuse/contracts/authentication';
+import type { BindOAuthReq } from '@memoflow/contracts/authentication';
 import { OAuthProvider } from '../domain';
 
 export function toDomainProvider(provider: BindOAuthReq['provider']): OAuthProvider | null {

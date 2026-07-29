@@ -31,7 +31,7 @@ updated: 2026-05-30T00:00:00
 | `runtime-lib` | domain 包、infra 包、shared 包（含 patterns、utils） | build, lint, typecheck, test |
 | `ui-lib` | app-vue, ui-vue-shadcn, ui-react-native, dashboard, assets | build, lint, typecheck, test |
 | `tooling-lib` | nx-test-system, test-utils | build |
-| `meta-project` | daily-use (root) | 无强制要求 |
+| `meta-project` | memoflow (root) | 无强制要求 |
 
 ## 分类规则
 
@@ -51,7 +51,7 @@ updated: 2026-05-30T00:00:00
 
 1. 在 `project.json` 中添加正确的 `scope:*`、`type:*`、`layer:*` tags
 2. 在 `tools/governance/target-baseline-manifest.json` 的 `projectRules` 中添加分类
-3. 运行 `pnpm nx run daily-use:target-baseline-check` 确认通过
+3. 运行 `pnpm nx run memoflow:target-baseline-check` 确认通过
 4. 如果某个必需 target 暂时无法添加，必须在 `exemptions` 中登记理由
 
 ## 申请豁免
@@ -102,5 +102,5 @@ updated: 2026-05-30T00:00:00
 
 - 审计脚本：`tools/governance/target-baseline-audit.mjs`
 - 基线清单：`tools/governance/target-baseline-manifest.json`
-- 运行命令：`pnpm nx run daily-use:target-baseline-check`
+- 运行命令：`pnpm nx run memoflow:target-baseline-check`
 - 作为 `governance-check` 的一部分自动运行

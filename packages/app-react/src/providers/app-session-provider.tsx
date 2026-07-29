@@ -3,7 +3,7 @@ import { createContext, startTransition, type PropsWithChildren, useContext, use
 import {
   createAuthenticationHttpClient,
   type AuthenticationClientPort,
-} from '@dailyuse/authentication/client';
+} from '@memoflow/authentication/client';
 import type {
   AuthIdentityClientDTO,
   AuthResponseDTO,
@@ -12,8 +12,8 @@ import type {
   ForgotPasswordReq,
   LoginByEmailReq,
   RegisterByEmailReq,
-} from '@dailyuse/contracts/authentication';
-import { createResultHttpClient, type IResultHttpClient } from '@dailyuse/http-client';
+} from '@memoflow/contracts/authentication';
+import { createResultHttpClient, type IResultHttpClient } from '@memoflow/http-client';
 
 import { MOBILE_API_BASE_URL } from '../constants/auth';
 import {
@@ -61,8 +61,8 @@ const GUEST_USER: AppSessionUser = {
 
 const DEMO_USER: AppSessionUser = {
   id: 'demo-owner',
-  displayName: 'DailyUse Demo',
-  workspaceName: 'Memoflow preview',
+  displayName: 'MemoFlow Demo',
+  workspaceName: 'MemoFlow preview',
 };
 
 function getIdentityLabel(identity: AuthIdentityClientDTO): string {

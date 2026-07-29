@@ -4,7 +4,7 @@ tags:
   - imports
   - monorepo
   - typescript
-description: Import path policy — @dailyuse public seams, relative package-internal, optional @/
+description: Import path policy — @memoflow public seams, relative package-internal, optional @/
 created: 2026-07-27T00:00:00
 updated: 2026-07-27T00:00:00
 ---
@@ -12,19 +12,19 @@ updated: 2026-07-27T00:00:00
 # Import Path Policy
 
 本文件规定业务与库代码中 **import 路径怎么写**。  
-它与 [monorepo-build-standard.md](./monorepo-build-standard.md) 配套：后者管 **跨包解析到 src 还是 dist**；本文件管 **源码里写相对路径、`@/` 还是 `@dailyuse/*`**。
+它与 [monorepo-build-standard.md](./monorepo-build-standard.md) 配套：后者管 **跨包解析到 src 还是 dist**；本文件管 **源码里写相对路径、`@/` 还是 `@memoflow/*`**。
 
 配置细节以 `tsconfig*.json`、`eslint.config.ts`、`package.json#exports` 为准；文档与代码冲突时以代码为准。
 
 ## 一句话
 
-> **跨包只用 `@dailyuse/<pkg>[/<seam>]`；包内默认相对路径；`@/` 仅作包内可选捷径，且不得出现在「会被他包当源码消费」的路径上；禁止仓库根绝对路径与跨包深路径。**
+> **跨包只用 `@memoflow/<pkg>[/<seam>]`；包内默认相对路径；`@/` 仅作包内可选捷径，且不得出现在「会被他包当源码消费」的路径上；禁止仓库根绝对路径与跨包深路径。**
 
 ## 优先级（从高到低）
 
 | 优先级 | 写法 | 适用 |
 | --- | --- | --- |
-| 1 | `@dailyuse/<pkg>` / `@dailyuse/<pkg>/<seam>` | **所有跨 package 依赖** |
+| 1 | `@memoflow/<pkg>` / `@memoflow/<pkg>/<seam>` | **所有跨 package 依赖** |
 | 2 | `./` / `../` 相对路径 | **包内默认**；库包内部；被多 app 源码 typecheck/bundle 的共享层 |
 | 3 | `@/...`（映射到 **本包** `src/*`） | 仅当文件 **确定只在本包** tsc/vite/vitest 上下文中解析，且相对路径过深时可选 |
 | 禁止 | `packages/...`、`apps/...`、本机绝对路径 | 业务/库 import |
@@ -36,13 +36,13 @@ updated: 2026-07-27T00:00:00
 
 ```ts
 // good
-import { createTimeFacade } from '@dailyuse/time';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { GoalHttpAdapter } from '@dailyuse/goal/client';
+import { createTimeFacade } from '@memoflow/time';
+import type { GoalClientDTO } from '@memoflow/contracts/goal';
+import { GoalHttpAdapter } from '@memoflow/goal/client';
 
 // bad — 跨包深路径 / 源码路径
 import { Goal } from '../../../goal/src/server/domain/aggregates/goal';
-import { Goal } from '@dailyuse/goal/src/server/...';
+import { Goal } from '@memoflow/goal/src/server/...';
 ```
 
 - 稳定 seam 以各包 `package.json#exports` 与模块收敛约定为准（常见：`root` / `api` / `client` / `electron`、contracts 子路径等）。
@@ -95,17 +95,17 @@ import type { IGoalRepository } from '@/server/domain/repositories/i-goal-reposi
 
 | 类型 | 包内默认 | `@/` | 跨包 |
 | --- | --- | --- | --- |
-| 库 / 叶子（`contracts`, `time`, `utils`, …） | 相对路径 | 避免 | `@dailyuse/*` |
+| 库 / 叶子（`contracts`, `time`, `utils`, …） | 相对路径 | 避免 | `@memoflow/*` |
 | 领域包（`goal`, `task`, …） | 相对路径 | 深树可选 | 仅公开 seam |
-| 组合 UI（`app-vue`, `app-react`） | 相对路径 | 避免（多 app 源码消费） | `@dailyuse/*` |
-| 应用（`apps/web`, `apps/api`, …） | 相对 或 本 app `@/` | 可保留 **本 app** `@/*` | `@dailyuse/*` |
+| 组合 UI（`app-vue`, `app-react`） | 相对路径 | 避免（多 app 源码消费） | `@memoflow/*` |
+| 应用（`apps/web`, `apps/api`, …） | 相对 或 本 app `@/` | 可保留 **本 app** `@/*` | `@memoflow/*` |
 | UI kit（`ui-vue-shadcn` 等） | 相对优先 | 历史 `@/` 可逐步收敛 | 最少跨包 |
 
 ## 与工具链的关系
 
 - **TypeScript**：各包 `paths["@/*"]` 仅服务本包；应用 typecheck 的 `@/*` 指向 **该应用** `src`。
 - **Vite / Vitest**：`@` → 当前 project `src`；跨包测若失败，先查是否深引了带 `@/` 的实现。
-- **ESLint**：跨 feature / 跨 scope 由 `@nx/enforce-module-boundaries` 约束；`@dailyuse/utils` 根导入等由 `no-restricted-imports` 约束。  
+- **ESLint**：跨 feature / 跨 scope 由 `@nx/enforce-module-boundaries` 约束；`@memoflow/utils` 根导入等由 `no-restricted-imports` 约束。
   本政策的「包内相对优先」目前以 **约定 + code review** 为主，不以全量 ban `@/` 为硬闸（避免一次改爆历史债务）。
 - **发布 / DTS**：不得把消费者无法解析的 `@/` 或 workspace src 路径泄漏进公开类型；见 monorepo-build-standard。
 
@@ -113,7 +113,7 @@ import type { IGoalRepository } from '@/server/domain/repositories/i-goal-reposi
 
 ```
 需要另一个 package 的东西？
-  ├─ 是 → 只用 @dailyuse/... 公开入口
+  ├─ 是 → 只用 @memoflow/... 公开入口
   └─ 否（本包内）
         ├─ 该文件可能被他包源码消费 / 是库包内部？ → 相对路径
         ├─ 同目录或 ≤2 层邻居？ → 相对路径
@@ -124,7 +124,7 @@ import type { IGoalRepository } from '@/server/domain/repositories/i-goal-reposi
 
 **已是默认的部分：**
 
-- 跨包依赖文化与规范已是 `@dailyuse/*`（见 monorepo-build-standard + Nx boundaries）。
+- 跨包依赖文化与规范已是 `@memoflow/*`（见 monorepo-build-standard + Nx boundaries）。
 - 业务/库 **源码** 中包内 `@/` import 已收敛为相对路径（含 `goal` / `task` / `governance` / `authentication` / `ui-vue-shadcn` 等；见 plan `2026-07-27-import-path-elegance`）。
 - `contracts`、`app-vue`、`ai`、`account`、`repository`、`time`、`utils` 等库包本就接近纯相对路径。
 
@@ -139,7 +139,7 @@ import type { IGoalRepository } from '@/server/domain/repositories/i-goal-reposi
 1. 新代码：严格按本文件优先级写；包内默认相对路径。
 2. 被多 app 源码消费的路径（`app-vue` shared 等）：禁止新增 `@/`。
 3. 库包 / 领域包内部：禁止新增 `@/`。
-4. 应用层（`apps/*`）可保留 **本 app** `@/*`，但跨包仍只用 `@dailyuse/*`。
+4. 应用层（`apps/*`）可保留 **本 app** `@/*`，但跨包仍只用 `@memoflow/*`。
 5. 需要短路径时，优先 **包内 barrel / 子路径 exports**，而不是扩散 `@/`。
 
 ## 相关文档

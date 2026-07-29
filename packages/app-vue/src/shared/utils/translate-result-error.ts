@@ -1,1 +1,1 @@
-export { translateResultErrorMessage as translateResultError } from '@dailyuse/http-client';
+export { translateResultErrorMessage as translateResultError } from '@memoflow/http-client';

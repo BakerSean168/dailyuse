@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = '@dailyuse/mobile/auth-session';
+const STORAGE_KEY = '@memoflow/mobile/auth-session';
 
 export type PersistedAuthSession = {
   accessToken: string;

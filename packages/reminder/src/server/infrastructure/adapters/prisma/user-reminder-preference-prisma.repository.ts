@@ -5,7 +5,7 @@
  * 鑱氬悎鏍癸細UserReminderPreferences
  */
 
-import type { PrismaClient, UserReminderPreference as PrismaUserReminderPreference } from '@dailyuse/database';
+import type { PrismaClient, UserReminderPreference as PrismaUserReminderPreference } from '@memoflow/database';
 import type { IUserReminderPreferenceRepository } from '../../../domain/repositories/i-user-reminder-preference-repository';
 import { UserReminderPreferences } from '../../../domain/aggregates/user-reminder-preferences';
 import { PrismaUserReminderPreferenceMapper } from './mappers/prisma-user-reminder-preference-mapper';

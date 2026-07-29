@@ -13,11 +13,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskInstance } from '../task-instance';
 import type { TaskInstanceState } from '../task-instance';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../../value-objects';
-import { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { TaskInstanceStatus } from '@memoflow/contracts/task';
+import { ImportanceLevel } from '@memoflow/contracts/shared';
 import { TaskInstanceId } from '../../../domain/value-objects/task-instance-id';
 import { TaskTemplateId } from '../../../domain/value-objects/task-template-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 // ─── Helpers ───────────────────────────────────────────────────────
 

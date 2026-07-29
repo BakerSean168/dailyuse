@@ -9,14 +9,14 @@
  * - DTO 转换
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 import type { IScheduleTaskRepository } from '../../../domain';
 import type {
   ScheduleTaskClientDTO,
   ScheduleConfigDTO,
   RetryPolicyDTO,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 /**
  * 更新调度任务的请求参数

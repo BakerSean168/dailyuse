@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Button, Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
+import { Button, Popover, PopoverContent, PopoverTrigger } from '@memoflow/ui-vue-shadcn';
 import {
   defaultNamedColor,
   findNamedColor,

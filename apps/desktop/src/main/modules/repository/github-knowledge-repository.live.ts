@@ -7,9 +7,9 @@ import type {
   GitHubInstallationRepositoryDTO,
   KnowledgeRepositoryConnectionClientDTO,
   KnowledgeRepositoryConnectionServerDTO,
-} from '@dailyuse/contracts/repository';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/repository';
+import type { IdentityId } from '@memoflow/contracts/primitives';
+import { ok } from '@memoflow/contracts/result';
 // This opt-in acceptance file intentionally crosses the Desktop -> Repository
 // boundary so the production service and Git runtime are exercised together.
 // eslint-disable-next-line @nx/enforce-module-boundaries

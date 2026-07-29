@@ -6,10 +6,10 @@
 import type {
   ReminderHistoryServerDTO,
   ReminderHistoryClientDTO,
-} from '@dailyuse/contracts/reminder';
-import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
-import type { Instant, ReminderTemplateId, IdentityId } from '@dailyuse/contracts/primitives';
-import { Entity } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/reminder';
+import { TriggerResult, NotificationChannel } from '@memoflow/contracts/reminder';
+import type { Instant, ReminderTemplateId, IdentityId } from '@memoflow/contracts/primitives';
+import { Entity } from '@memoflow/utils/domain';
 import { ReminderHistoryId } from '../value-objects/reminder-history-id';
 
 /**

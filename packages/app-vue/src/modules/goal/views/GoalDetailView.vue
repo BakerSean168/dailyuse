@@ -322,14 +322,14 @@ import {
   TooltipContent,
   TooltipTrigger,
   useConfirm,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@memoflow/ui-vue-shadcn';
 import DetailPageShell from '../../../components/shared/DetailPageShell.vue';
 import AppEmptyState from '../../../components/shared/AppEmptyState.vue';
 import { useGoal } from '../composables/useGoal';
 import KeyResultDialog from '../components/dialogs/KeyResultDialog.vue';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
 import { getCompletedKeyResultCount, getGoalOverallProgress } from '../utils/progress';
-import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { KeyResultClientDTO } from '@memoflow/contracts/goal';
 import { emptyNotSet, formatProductDate, formatProductDateTime } from '../../../shared/utils/product-time';
 
 const route = useRoute();

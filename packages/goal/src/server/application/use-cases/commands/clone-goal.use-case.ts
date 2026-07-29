@@ -7,11 +7,11 @@
  */
 
 import type { IGoalRepository } from '../../../domain';
-import { CreateGoalSchema } from '@dailyuse/contracts/goal';
-import type { CloneGoalReq, CreateGoalReq, GoalClientDTO } from '@dailyuse/contracts/goal';
-import type { Result } from '@dailyuse/contracts/result';
-import { error } from '@dailyuse/contracts/result';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
+import { CreateGoalSchema } from '@memoflow/contracts/goal';
+import type { CloneGoalReq, CreateGoalReq, GoalClientDTO } from '@memoflow/contracts/goal';
+import type { Result } from '@memoflow/contracts/result';
+import { error } from '@memoflow/contracts/result';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
 import type { CreateGoalUseCase } from './create-goal.use-case';
 
 export class CloneGoalUseCase {

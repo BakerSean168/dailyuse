@@ -4,8 +4,8 @@
  * IPC implementation of IReminderApiClient for Electron desktop apps.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { ReminderChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { ReminderChannels } from '@memoflow/contracts/electron';
 import type { IResultIpcClient, IReminderApiClient } from '../types';
 import type {
   ReminderTemplateClientDTO,
@@ -19,8 +19,8 @@ import type {
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
   GetReminderTodayScheduleRes,
-} from '@dailyuse/contracts/reminder';
-import type { ControlMode } from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
+import type { ControlMode } from '@memoflow/contracts/reminder';
 
 export class ReminderIpcAdapter implements IReminderApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

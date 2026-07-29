@@ -3,9 +3,9 @@ import {
   type RepositoryEventMap,
   RepositoryNoteMutationType,
   type RepositoryNoteMutatedEvent,
-} from '@dailyuse/contracts/repository';
-import { createTypedEventSubscriber, eventBus } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
+} from '@memoflow/contracts/repository';
+import { createTypedEventSubscriber, eventBus } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
 import type { IAIProviderConfigRepository } from '../../domain/repositories/i-ai-provider-config-repository';
 
 import type { AIModuleRuntimeContribution } from '../ai.module';

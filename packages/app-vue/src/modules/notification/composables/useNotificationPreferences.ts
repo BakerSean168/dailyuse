@@ -13,7 +13,7 @@ import type {
   NotificationChannelType,
   NotificationPreferenceClientDTO,
   UpdateNotificationPreferenceReq,
-} from '@dailyuse/contracts/notification';
+} from '@memoflow/contracts/notification';
 
 export const NOTIFICATION_PREFERENCE_MODULES = [
   'task',

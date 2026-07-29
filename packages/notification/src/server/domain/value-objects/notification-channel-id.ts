@@ -1,6 +1,6 @@
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@memoflow/utils/domain';
 
-import type { NotificationChannelId as INotificationChannelId } from '@dailyuse/contracts/primitives';
+import type { NotificationChannelId as INotificationChannelId } from '@memoflow/contracts/primitives';
 
 /**
  * NotificationChannelId 值对象

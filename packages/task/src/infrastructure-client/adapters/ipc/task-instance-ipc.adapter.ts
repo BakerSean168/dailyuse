@@ -5,8 +5,8 @@
  * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { TaskChannels } from '@dailyuse/contracts/electron';
+import type { Result } from '@memoflow/contracts/result';
+import { TaskChannels } from '@memoflow/contracts/electron';
 import type { ITaskInstanceApiClient, IResultIpcClient } from '../types';
 import type {
   CheckExpiredTaskInstancesRes,
@@ -14,7 +14,7 @@ import type {
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
-} from '@dailyuse/contracts/task';
+} from '@memoflow/contracts/task';
 
 export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}

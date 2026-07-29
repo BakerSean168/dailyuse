@@ -12,8 +12,8 @@
 import type { Rule } from '../aggregates/rule';
 import type { RuleRevision } from '../entities/rule-revision';
 import { RuleId } from '../value-objects/rule-id';
-import type { RuleStatus } from '@dailyuse/contracts/governance';
-import type { RuleSeverity } from '@dailyuse/contracts/governance';
+import type { RuleStatus } from '@memoflow/contracts/governance';
+import type { RuleSeverity } from '@memoflow/contracts/governance';
 
 /**
  * Filter object for rule queries.

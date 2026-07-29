@@ -1,10 +1,10 @@
-import { NotificationChannelType } from '@dailyuse/contracts/notification';
+import { NotificationChannelType } from '@memoflow/contracts/notification';
 import type {
   NotificationPreferenceClientDTO,
   UpdateNotificationPreferenceReq,
-} from '@dailyuse/contracts/notification';
-import type { Result } from '@dailyuse/contracts/result';
-import { error, ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/notification';
+import type { Result } from '@memoflow/contracts/result';
+import { error, ok } from '@memoflow/contracts/result';
 import type { INotificationPreferenceRepository } from '../../../domain/repositories';
 import { toNotificationPreferenceClientDTO } from './notification-dto-converters';
 

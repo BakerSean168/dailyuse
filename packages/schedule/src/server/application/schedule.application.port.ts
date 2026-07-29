@@ -1,5 +1,5 @@
-import type { Result } from '@dailyuse/contracts/result';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { Result } from '@memoflow/contracts/result';
+import type { Context } from '@memoflow/contracts/shared';
 import type {
   BatchScheduleTaskOperationRequest,
   CreateScheduleRequest,
@@ -10,7 +10,7 @@ import type {
   UpdateScheduleRequest,
   UpdateScheduleTaskRequest,
   UpdateTaskMetadataRequest,
-} from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
 
 /**
  * Transport-neutral callable application surface for schedule tasks.

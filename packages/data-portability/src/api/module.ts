@@ -4,9 +4,9 @@
  * Composition root: creates repositories, use cases, handlers, and routes.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
-import type { ServerModuleContext } from '@dailyuse/contracts/shared';
-import { createLogger } from '@dailyuse/utils/logger';
+import type { PrismaClient } from '@memoflow/database';
+import type { ServerModuleContext } from '@memoflow/contracts/shared';
+import { createLogger } from '@memoflow/utils/logger';
 import { registerDataPortabilityRoutes } from './routes';
 import {
   createDataPortabilityPrismaModule,

@@ -9,7 +9,7 @@ import type {
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
   UserReminderPreferencesClientDTO,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import ReminderLinearView from './ReminderLinearView.vue';
 import { toast } from 'vue-sonner';
 
@@ -54,7 +54,7 @@ vi.mock('vue-sonner', () => ({
   },
 }));
 
-vi.mock('@dailyuse/ui-vue-shadcn', async () => {
+vi.mock('@memoflow/ui-vue-shadcn', async () => {
   const vue = await import('vue');
 
   const passthrough = (name: string) =>

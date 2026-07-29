@@ -5,13 +5,13 @@
  * 不可变性（所有修改返回新实例）
  */
 
-import { ValueObject } from '@dailyuse/utils/domain';
+import { ValueObject } from '@memoflow/utils/domain';
 import type {
   CategoryPreference as ICategoryPreference,
   CategoryPreferenceDTO,
   ChannelPreference,
-} from '@dailyuse/contracts/notification';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+} from '@memoflow/contracts/notification';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
 
 /**
  * CategoryPreference 值对象实现

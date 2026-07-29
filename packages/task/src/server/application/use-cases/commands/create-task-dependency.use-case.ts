@@ -5,10 +5,10 @@
  */
 
 import type { ITaskDependencyRepository } from '../../../domain/repositories/i-task-dependency-repository';
-import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
-import { dependencyServerToClientDTO } from '@dailyuse/contracts/task';
-import type { Result } from '@dailyuse/contracts/result';
-import { ok, error } from '@dailyuse/contracts/result';
+import type { TaskDependencyClientDTO } from '@memoflow/contracts/task';
+import { dependencyServerToClientDTO } from '@memoflow/contracts/task';
+import type { Result } from '@memoflow/contracts/result';
+import { ok, error } from '@memoflow/contracts/result';
 
 export class CreateTaskDependencyUseCase {
   constructor(private readonly dependencyRepository: ITaskDependencyRepository) {}
@@ -16,7 +16,7 @@ export class CreateTaskDependencyUseCase {
   async execute(request: {
     predecessorTaskId: string;
     successorTaskId: string;
-    dependencyType?: import('@dailyuse/contracts/task').DependencyType;
+    dependencyType?: import('@memoflow/contracts/task').DependencyType;
     lagDays?: number;
     identityId: string;
   }): Promise<Result<TaskDependencyClientDTO>> {

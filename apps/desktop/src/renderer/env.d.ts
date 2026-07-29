@@ -12,7 +12,7 @@ declare module '*.icns' {
   export default src;
 }
 
-import type { ElectronBridge } from '@dailyuse/ipc-client';
+import type { ElectronBridge } from '@memoflow/ipc-client';
 
 declare global {
   interface Window {

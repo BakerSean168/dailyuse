@@ -95,7 +95,7 @@ export type ScheduleEventMap = {
 在聚合根的业务方法中使用 `addDomainEvent`，泛型参数引用 event map 中的类型：
 
 ```typescript
-import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
+import type { ScheduleEventMap } from '@memoflow/contracts/schedule';
 
 export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   public pause(reason?: string): void {

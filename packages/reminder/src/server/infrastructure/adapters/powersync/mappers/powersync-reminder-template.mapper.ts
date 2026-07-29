@@ -3,9 +3,9 @@ import type {
   ReminderType,
   NotificationChannel,
   TriggerResult,
-} from '@dailyuse/contracts/reminder';
-import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { IdentityId } from '@dailyuse/domain-shared';
+} from '@memoflow/contracts/reminder';
+import type { ImportanceLevel } from '@memoflow/contracts/shared';
+import { IdentityId } from '@memoflow/domain-shared';
 import { ReminderTemplate } from '../../../../domain/aggregates/reminder-template';
 import { ReminderHistory } from '../../../../domain/entities/reminder-history';
 import { ReminderTemplateId } from '../../../../domain/value-objects/reminder-template-id';

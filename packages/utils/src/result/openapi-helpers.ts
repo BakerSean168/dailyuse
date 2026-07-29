@@ -5,14 +5,14 @@
  * These generate the Zod schemas that describe the HTTP response format
  * used by the expressAdapter.
  *
- * @module @dailyuse/utils/result/openapi-helpers
+ * @module @memoflow/utils/result/openapi-helpers
  *
  * Residual 1029: sole successResponse/errorResponse for package routes +
  * apps/api openapi registry re-export (local dual bodies retired).
  *
  * @example
  * ```ts
- * import { successResponse, errorResponse } from '@dailyuse/utils/result';
+ * import { successResponse, errorResponse } from '@memoflow/utils/result';
  *
  * const responses = {
  *   200: successResponse(MyDataSchema, '获取成功'),

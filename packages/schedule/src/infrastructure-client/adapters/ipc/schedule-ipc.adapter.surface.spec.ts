@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ScheduleChannels } from '@dailyuse/contracts/electron';
+import { ScheduleChannels } from '@memoflow/contracts/electron';
 
 /**
  * Schedule IPC adapters surface (stage-6 residual):
@@ -12,7 +12,7 @@ describe('Schedule IPC adapters channel surface', () => {
 
   it.each(files)('%s uses ScheduleChannels and no local channel map', (fileName) => {
     const source = readFileSync(resolve(__dirname, fileName), 'utf8');
-    expect(source).toContain("import { ScheduleChannels } from '@dailyuse/contracts/electron'");
+    expect(source).toContain("import { ScheduleChannels } from '@memoflow/contracts/electron'");
     expect(source).not.toMatch(/const SCHEDULE_[A-Z_]*CHANNELS = \{/);
     expect(source).toContain('ScheduleChannels.');
   });

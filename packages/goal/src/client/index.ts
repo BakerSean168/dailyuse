@@ -2,12 +2,12 @@
  * Goal client seam.
  *
  * Public goal contracts stay centralized in
- * `@dailyuse/contracts/goal`.
+ * `@memoflow/contracts/goal`.
  * Callers depend on this seam instead of the old application-client /
  * infrastructure-client layered exports.
  */
 
-import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@memoflow/http-client';
 import {
   BUILT_IN_RULES,
   BUILT_IN_TEMPLATES,

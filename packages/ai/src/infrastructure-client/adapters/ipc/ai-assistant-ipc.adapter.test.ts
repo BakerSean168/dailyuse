@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { AIChannels, AIStreamChannels } from '@dailyuse/contracts/electron';
-import { ok } from '@dailyuse/contracts/result';
+import { AIChannels, AIStreamChannels } from '@memoflow/contracts/electron';
+import { ok } from '@memoflow/contracts/result';
 import { AIAssistantIpcAdapter } from './ai-assistant-ipc.adapter';
 
 describe('AIAssistantIpcAdapter', () => {

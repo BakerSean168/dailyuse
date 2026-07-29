@@ -22,8 +22,8 @@ import {
   AIStreamChannels,
   type IElectronModule,
   type IElectronModuleContext,
-} from '@dailyuse/contracts/electron';
-import { fail, ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/electron';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   AIServiceAnalyticsQueryAdapter,
   AIServiceAgentRuntimeAdapter,
@@ -37,7 +37,7 @@ import {
   AIServiceKnowledgeQueryAdapter,
   AIServiceKnowledgeNoteGenerationAdapter,
 } from '../server/infrastructure';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type {
   IAnalyticsReadPort,
   IAIAutomationToolExecutorPort,

@@ -5,16 +5,16 @@
  * with _ref allocation, strips sensitive fields, and builds the envelope.
  */
 
-import { createLogger } from '@dailyuse/utils/logger';
-import { createTypedEventPublisher, eventBus } from '@dailyuse/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
+import { createTypedEventPublisher, eventBus } from '@memoflow/utils/domain';
 import type {
   DataPortabilityEventMap,
   UserDataExportEnvelopeV1,
   PortableUserDataV1,
   ExportableModule,
   ExportUserDataRes,
-} from '@dailyuse/contracts/data-portability';
-import { ALL_EXPORTABLE_MODULES, DataPortabilityEventTopics } from '@dailyuse/contracts/data-portability';
+} from '@memoflow/contracts/data-portability';
+import { ALL_EXPORTABLE_MODULES, DataPortabilityEventTopics } from '@memoflow/contracts/data-portability';
 import type { ExportContext } from '../portable-runtime';
 import { RefAllocator } from '../portable-runtime';
 import type { DataPortabilityDependencies } from '../data-portability.dependencies';
@@ -231,7 +231,7 @@ export class ExportUserDataUseCase {
       schemaVersion: 1,
       exportedAt,
       exportedBy: {
-        appName: 'Memoflow',
+        appName: 'MemoFlow',
       },
       scope: {
         includesBinaryResources: false,

@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import type { OpenApiRegistryLike } from '@memoflow/utils/result';
 import { z } from 'zod';
 import {
   AuthResponseSchema,
@@ -17,7 +17,7 @@ import {
   SendEmailCodeSchema,
   VerifyEmailCodeSchema,
   SessionListResponseSchema,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import { registerAuthenticationRoutes } from './routes';
 import type { AuthenticationApplicationPort } from '../server/application';
 

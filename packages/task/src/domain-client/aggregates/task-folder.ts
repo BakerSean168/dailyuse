@@ -1,4 +1,4 @@
-import type { Instant } from '@dailyuse/contracts/primitives';
+import type { Instant } from '@memoflow/contracts/primitives';
 /**
  * TaskFolder Aggregate Root - Domain Client
  * 任务文件夹聚合根 - 领域客户端
@@ -12,10 +12,10 @@ import type { Instant } from '@dailyuse/contracts/primitives';
 
 import type {
   TaskFolderClientDTO,
-} from '@dailyuse/contracts/task';
-import { AggregateRoot } from '@dailyuse/utils/domain';
+} from '@memoflow/contracts/task';
+import { AggregateRoot } from '@memoflow/utils/domain';
 import { TaskFolderId } from '../../server/domain/value-objects/task-folder-id';
-import { IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@memoflow/domain-shared';
 
 export interface TaskFolderState {
   id: TaskFolderId;

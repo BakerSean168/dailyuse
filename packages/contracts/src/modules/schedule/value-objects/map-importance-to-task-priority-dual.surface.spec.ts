@@ -40,7 +40,7 @@ describe('mapImportanceToTaskPriority dual retired (residual 1168)', () => {
       ['task', task],
     ] as const) {
       expect(source, label).toContain('mapImportanceToTaskPriority');
-      expect(source, label).toContain("from '@dailyuse/contracts/schedule'");
+      expect(source, label).toContain("from '@memoflow/contracts/schedule'");
       expect(source, label).not.toMatch(/function mapPriority\b/);
       expect(source, label).toContain('Soft residual 1168');
     }

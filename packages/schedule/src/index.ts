@@ -1,10 +1,10 @@
 /**
- * @dailyuse/schedule
+ * @memoflow/schedule
  *
  * Schedule module runtime root.
  *
  * Public schedule contracts are centralized in
- * `@dailyuse/contracts/schedule`.
+ * `@memoflow/contracts/schedule`.
  * Root exports are limited to the server runtime composition root plus
  * the minimal server-side task/repository contracts still used by
  * schedule orchestration.

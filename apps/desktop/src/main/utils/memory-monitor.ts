@@ -8,8 +8,8 @@
  */
 
 import { ipcMain } from 'electron';
-import { DevChannels } from '@dailyuse/contracts/electron';
-import { ok } from '@dailyuse/contracts/result';
+import { DevChannels } from '@memoflow/contracts/electron';
+import { ok } from '@memoflow/contracts/result';
 import { isDesktopDevelopmentRuntime } from './dev-runtime';
 
 // ============ Types ============

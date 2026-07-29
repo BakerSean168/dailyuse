@@ -5,7 +5,7 @@
  * 继承自 DomainError 基类，提供结构化的错误信息。
  */
 
-import { DomainError } from '@dailyuse/utils/errors';
+import { DomainError } from '@memoflow/utils/errors';
 
 /**
  * 未知的设置 key

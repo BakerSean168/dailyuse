@@ -1,5 +1,5 @@
-import { fail } from '@dailyuse/contracts/result';
-import { extractErrorInfo, isDomainError } from '@dailyuse/utils/errors';
+import { fail } from '@memoflow/contracts/result';
+import { extractErrorInfo, isDomainError } from '@memoflow/utils/errors';
 
 export function toAIControllerFailure(error: unknown, fallbackMessage: string) {
   const errorInfo = extractErrorInfo(error);

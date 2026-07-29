@@ -19,7 +19,7 @@ updated: 2026-07-26T00:00:00
 
 ## 1. 目标一句话
 
-> **开源库只做引擎；`@dailyuse/time` 做产品时钟、契约编解码与风格；contracts 持有品牌类型真相；领域存 Instant/Ymd；模块 presentation 只拼业务句子；组件禁止私养 formatDate、禁止直连 date-fns。**
+> **开源库只做引擎；`@memoflow/time` 做产品时钟、契约编解码与风格；contracts 持有品牌类型真相；领域存 Instant/Ymd；模块 presentation 只拼业务句子；组件禁止私养 formatDate、禁止直连 date-fns。**
 
 ---
 
@@ -28,14 +28,14 @@ updated: 2026-07-26T00:00:00
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
 │ L5  UI / Application（Vue · React · Desktop · 脚本消费者）                 │
-│     只 import @dailyuse/time（及 L4 presentation）                         │
+│     只 import @memoflow/time（及 L4 presentation）                         │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ L4  Module Presentation                                                    │
 │     schedule-presentation / task-presentation …                            │
 │     允许：i18n、多字段文案、业务 label                                      │
 │     禁止：pad、parse、date-fns、toLocale*、私有 formatDate                  │
 ├──────────────────────────────────────────────────────────────────────────┤
-│ L3  @dailyuse/time  Product Facade                                         │
+│ L3  @memoflow/time  Product Facade                                         │
 │     Clock · TimeStyle · Codec · Format · Input · Calendar                  │
 │     + Time Registry 友好 API（查询 boundary/legacy 可选）                    │
 ├──────────────────────────────────────────────────────────────────────────┤
@@ -83,16 +83,16 @@ updated: 2026-07-26T00:00:00
 ### 3.4 类型放置与依赖
 
 ```text
-@dailyuse/contracts/primitives
+@memoflow/contracts/primitives
   - 定义 brand 类型与（可选）zod 扩展
   - 不依赖 app-vue / 业务实现
 
-@dailyuse/time
+@memoflow/time
   - 依赖 contracts primitives（types only + 实现）
   - 不依赖 goal/task/account 业务 module
 
 业务 domain / app
-  - 依赖 contracts + @dailyuse/time
+  - 依赖 contracts + @memoflow/time
 ```
 
 **构造纪律：** brand 值只允许从 Codec / 经测试的 `unsafe` 测试辅助创建；业务禁止 `as Instant` 散落（测试与 codec 内部除外并登记）。
@@ -282,7 +282,7 @@ App bootstrap `provide` / React Context；Server 请求级 `withStyle({ locale }
 ## 7. 物理包结构
 
 ```text
-packages/time/                          @dailyuse/time
+packages/time/                          @memoflow/time
   src/
     types.ts                            re-export primitives + 本地辅助
     style/
@@ -303,7 +303,7 @@ packages/contracts/src/primitives/
   instant.ts / transfer-date.ts         brand ≡
   ymd.ts / hm.ts
 
-packages/app-vue/src/shared/utils/format-*  → re-export @dailyuse/time（dual 路径稳定）
+packages/app-vue/src/shared/utils/format-*  → re-export @memoflow/time（dual 路径稳定）
 packages/app-vue/src/shared/utils/product-time.ts  session facade + empty-label override```
 
 Nx：`time` project；依赖 `contracts`、`date-fns`；被 app-*、domain packages 依赖。

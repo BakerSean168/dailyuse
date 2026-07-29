@@ -5,17 +5,17 @@
  * Shared by both Express (HTTP) and IPC transport layers.
  */
 
-import type { Result } from '@dailyuse/contracts/result';
-import { fail, ok } from '@dailyuse/contracts/result';
+import type { Result } from '@memoflow/contracts/result';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   CreateGoalFolderSchema,
   UpdateGoalFolderSchema,
   ListGoalFolderFiltersSchema,
-} from '@dailyuse/contracts/goal';
-import type { ListGoalFoldersQuery } from '@dailyuse/contracts/goal';
-import type { ExecutionContext } from '@dailyuse/contracts/shared';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { formatZodErrors } from '@dailyuse/utils/result';
+} from '@memoflow/contracts/goal';
+import type { ListGoalFoldersQuery } from '@memoflow/contracts/goal';
+import type { ExecutionContext } from '@memoflow/contracts/shared';
+import type { IdentityId } from '@memoflow/contracts/primitives';
+import { formatZodErrors } from '@memoflow/utils/result';
 import type {
   CreateGoalFolderUseCase,
   GetGoalFolderUseCase,

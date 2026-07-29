@@ -5,7 +5,7 @@
  */
 
 import jwt from 'jsonwebtoken';
-import { createLogger } from '@dailyuse/utils/logger';
+import { createLogger } from '@memoflow/utils/logger';
 import type { getPowerSyncConfig } from '../../shared/infrastructure/config/env.js';
 
 const logger = createLogger('PowerSyncTokenIssuer');

@@ -49,7 +49,7 @@ status: active
 - 本机 boundary oracle 已闭环（2026-05-11）：
   - Docker 可访问，`postgres-test` 容器健康启动。
   - `pnpm test:integration` 全部通过：task 3 文件 17 测试、goal 1 文件 2 测试、schedule 1 文件 2 测试、reminder 1 文件 2 测试。
-  - 旧日志中的 `dailyuse_test` 错误已不存在；当前代码统一使用 `memoflow_test`。
+  - 旧日志中的 `memoflow_test` 错误已不存在；当前代码统一使用 `memoflow_test`。
 
 ### 当前仍未优雅闭环的部分
 
@@ -108,7 +108,7 @@ AI 重构执行规则固定为：
 
 - Docker 可访问，`postgres-test` 容器健康启动。
 - `pnpm test:integration` 全部通过（2026-05-11）。
-- 旧故障根因是 Docker 不可访问 + 旧代码中 `dailyuse_test` 命名不一致；两个问题都已消除。
+- 旧故障根因是 Docker 不可访问 + 旧代码中 `memoflow_test` 命名不一致；两个问题都已消除。
 
 ### Phase C：若 boundary oracle 仍失败，先修失败链路 ⬜ 跳过
 

@@ -4,7 +4,7 @@ import type {
   ReminderGroupListRes,
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
-} from '@dailyuse/contracts/reminder';
+} from '@memoflow/contracts/reminder';
 import type { ReminderContext } from './useReminderContext';
 
 export function useReminderGroups(ctx: ReminderContext) {

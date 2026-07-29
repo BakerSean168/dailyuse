@@ -6,8 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   KnowledgeRepositoryConnectionClientDTO,
   SyncKnowledgeRepositoryRes,
-} from '@dailyuse/contracts/repository';
-import { fail, ok } from '@dailyuse/contracts/result';
+} from '@memoflow/contracts/repository';
+import { fail, ok } from '@memoflow/contracts/result';
 import {
   DesktopKnowledgeRepositoryAutoSyncScheduler,
   shouldIgnoreKnowledgeRepositoryWatchPath,
@@ -333,7 +333,7 @@ describe('DesktopKnowledgeRepositoryAutoSyncScheduler', () => {
 });
 
 describe('shouldIgnoreKnowledgeRepositoryWatchPath', () => {
-  it('ignores Git, Obsidian, trash, Memoflow state, and temporary files', () => {
+  it('ignores Git, Obsidian, trash, MemoFlow state, and temporary files', () => {
     const rootPath = path.resolve('/vault');
 
     expect(shouldIgnoreKnowledgeRepositoryWatchPath(rootPath, path.join(rootPath, '.git'))).toBe(

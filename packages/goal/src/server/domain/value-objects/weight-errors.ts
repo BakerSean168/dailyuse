@@ -2,7 +2,7 @@
  * Domain errors for Goal value objects
  */
 
-import { DomainError } from '@dailyuse/utils/errors';
+import { DomainError } from '@memoflow/utils/errors';
 
 export class InvalidWeightError extends DomainError {
   constructor(field: string, value: number) {

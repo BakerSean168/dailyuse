@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { aPrefixedUuid } from '@dailyuse/test-utils/fixtures';
+import { aPrefixedUuid } from '@memoflow/test-utils/fixtures';
 import { PrismaGoalFolderMapper } from './prisma-goal-folder-mapper';
 
 describe('PrismaGoalFolderMapper', () => {

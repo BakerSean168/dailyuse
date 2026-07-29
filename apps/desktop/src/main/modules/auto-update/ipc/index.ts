@@ -9,9 +9,9 @@
  */
 
 import { ipcMain, BrowserWindow } from 'electron';
-import { AutoUpdateChannels } from '@dailyuse/contracts/electron';
-import { fail, ok } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils/logger';
+import { AutoUpdateChannels } from '@memoflow/contracts/electron';
+import { fail, ok } from '@memoflow/contracts/result';
+import { createLogger } from '@memoflow/utils/logger';
 import { type AutoUpdateManager, type UpdateConfig } from '../auto-update-manager';
 
 const logger = createLogger('AutoUpdateIpc');

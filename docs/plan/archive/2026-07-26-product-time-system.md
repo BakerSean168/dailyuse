@@ -5,7 +5,7 @@ tags:
   - time
   - architecture
   - contracts
-description: 产品时间体系实施计划（ADR-037）——@dailyuse/time、Transfer≡Instant、DomainDate 退役
+description: 产品时间体系实施计划（ADR-037）——@memoflow/time、Transfer≡Instant、DomainDate 退役
 created: 2026-07-26T00:00:00
 updated: 2026-07-29T00:00:00
 
@@ -26,7 +26,7 @@ updated: 2026-07-29T00:00:00
 
 按 ADR-037 **高质量、长期**落地产品时间体系：
 
-1. `@dailyuse/time` 成为唯一产品时间入口  
+1. `@memoflow/time` 成为唯一产品时间入口
 2. `TransferDate` ≡ 品牌 `Instant`；`Ymd`/`Hm` 一等  
 3. `DomainDate = Date` 退役路径可执行；新字段禁止  
 4. 展示/表单走 Style；领域走 Clock/Calendar/Codec  
@@ -50,7 +50,7 @@ updated: 2026-07-29T00:00:00
 | W1 | primitives brand Instant≡TransferDate；Codec 文档化 | **完成** |
 | W2 | app-vue format sole 上提；主路径改 import | **完成** |
 | W3 | ESLint 断供 date-fns（error + legacy） | **完成** |
-| W4 | 组件/React 私有 format 清零 | **完成**：主路径 `@dailyuse/time` / product-time；Residual 1240/1204/1216/1237 仅保留 **empty-label** keep-boundary（绝对格式已走 Style） |
+| W4 | 组件/React 私有 format 清零 | **完成**：主路径 `@memoflow/time` / product-time；Residual 1240/1204/1216/1237 仅保留 **empty-label** keep-boundary（绝对格式已走 Style） |
 | W5 | 高优先级 Ymd 字段（生日/全天） | **完成**（birthday Ymd；TaskTimeConfig.startDay） |
 | W6 | 核心 VO DomainDate getter → Instant | **完成**（含 RecurrenceRule.endDate、GoalReview、UserSetting、DependencyChain.estimatedCompletionDate） |
 | W7 | 删 legacy / utils date 旧 API | **完成**：utils/shared/date 删除；time free helpers 正式化（非 legacy）；registry 无 date-fns/utils legacy 条目 |
@@ -60,7 +60,7 @@ updated: 2026-07-29T00:00:00
 
 - 最近 `pnpm nx` test（time + 触及包）  
 - 相关 surface  
-- 触及治理/docs 时 `daily-use:governance-check`  
+- 触及治理/docs 时 `memoflow:governance-check`
 - 不提交密钥与 Playwright 产物  
 - residual 记本 plan §7  
 
@@ -77,9 +77,9 @@ updated: 2026-07-29T00:00:00
 |----|------|------|------|
 | T0 | 2026-07-26 | ADR-037 + 详设 + 本 plan 入库 | 文档 |
 | T0b | 2026-07-26 | Goal 完整/简易提示词入库（新会话实施入口） | 文档 |
-| T1 | 2026-07-26 | W0 `@dailyuse/time` 骨架 + Facade/Clock/Codec/format.hm/DateFnsEngine + vitest | 代码 |
+| T1 | 2026-07-26 | W0 `@memoflow/time` 骨架 + Facade/Clock/Codec/format.hm/DateFnsEngine + vitest | 代码 |
 | T2 | 2026-07-26 | W1 Instant≡TransferDate、Ymd/Hm、DomainDate deprecated | 代码 |
-| T3 | 2026-07-26 | W2 app-vue sole → `@dailyuse/time` re-export；dual-registry 锁更新 | 代码 |
+| T3 | 2026-07-26 | W2 app-vue sole → `@memoflow/time` re-export；dual-registry 锁更新 | 代码 |
 | T4 | 2026-07-26 | W3 ESLint ban date-fns + time-registry legacy retire_by | 代码 |
 | T5 | 2026-07-26 | W4–W5 product-time helpers；birthday Ymd；TaskTimeConfig.startDay；部分 keep-boundary 保留 | 代码 |
 | T6 | 2026-07-26 | W6 GoalTimeRange/TaskTimeConfig Instant getters | 代码 |
@@ -112,7 +112,7 @@ updated: 2026-07-29T00:00:00
 | 其中核心 primitives / utils shared / app-vue shared utils / app-react utils·components·screens | — | ~418 | ~558 | **约 −140 行** |
 | 全工作树（含 docs、ADR、lockfile 等） | ~144 | ~2 302 | ~1 912 | 净 +390（文档与新包建设占主导） |
 
-解读：实现层**以删除冗余为主**（业务/shared 净减）；`@dailyuse/time` 新包与 ADR/详设文档为**有意新增的单一真相**，不是重复逻辑。
+解读：实现层**以删除冗余为主**（业务/shared 净减）；`@memoflow/time` 新包与 ADR/详设文档为**有意新增的单一真相**，不是重复逻辑。
 
 ### 9.2 整文件删除（旧入口）
 
@@ -130,7 +130,7 @@ updated: 2026-07-29T00:00:00
 | **业务 `date-fns` 直连文件** | **18** | **1**（仅 `packages/time/src/engine/date-fns-engine.ts`） | **−17 处散落依赖**；治理 audit 绿 |
 | **`DomainDate` 符号命中（packages）** | **~93** | **~14**（注释/surface 防回归锁） | **字段类型清零**；类型本身已删除 |
 | **app-vue 6 个 format sole 实现体** | **~80 LOC** 各自实现 | **~33 LOC** re-export + **~38 LOC** `time/free/format-helpers` | 实现单点；dual 路径稳定 |
-| **私有 `formatDate` / 组件内 format 主路径** | 多 Screen/Card 自写 `toLocale*` | 主路径 `@dailyuse/time` / `product-time` | 绝对格式统一；empty 经 Style |
+| **私有 `formatDate` / 组件内 format 主路径** | 多 Screen/Card 自写 `toLocale*` | 主路径 `@memoflow/time` / `product-time` | 绝对格式统一；empty 经 Style |
 | **React empty soles** | 手写 `if (!ts) return 'Not set'` | `TimeStyle.empty.display` + `format.date(Time)` | empty 单点 |
 
 ### 9.4 新增「非冗余」资产（单一真相，不计入冗余）
@@ -156,11 +156,11 @@ updated: 2026-07-29T00:00:00
 - [x] `DomainDate` 类型与 Codec 桥删除  
 - [x] `utils/shared/date` 删除  
 - [x] Registry 仅 canonical  
-- [x] 主产品路径 format 经 `@dailyuse/time` / product-time（含 goal/task/account/schedule/react 卡片与冲突建议）  
+- [x] 主产品路径 format 经 `@memoflow/time` / product-time（含 goal/task/account/schedule/react 卡片与冲突建议）
 - [x] `governance-check` + date-fns-import-audit 绿  
 - [x] 本 § 记录冗余清理与精简量  
 
-**一句话：** 产品时间横切从「18 处 date-fns + 93 处 DomainDate + 74 行 utils date + 多套私有 format」收敛为 **`@dailyuse/time` 单入口（~1.1k 源码）**；相关业务/shared 包净删约 **300+ 行**，并消灭整类迁移债类型与旧 date 模块。
+**一句话：** 产品时间横切从「18 处 date-fns + 93 处 DomainDate + 74 行 utils date + 多套私有 format」收敛为 **`@memoflow/time` 单入口（~1.1k 源码）**；相关业务/shared 包净删约 **300+ 行**，并消灭整类迁移债类型与旧 date 模块。
 
 ## 10. 第二阶段架构方案：下一刀与后续全序列（T12 规划）
 
@@ -181,7 +181,7 @@ updated: 2026-07-29T00:00:00
 │ L3.5 app-vue product-time.ts（session facade + EmptyLabel）       │
 │      app-react：多处 createTimeFacade 模块级单例（无统一 session）  │
 ├─────────────────────────────────────────────────────────────────┤
-│ L3  @dailyuse/time  Facade / Style / Codec / Format / Input …   │  ✅ 完成
+│ L3  @memoflow/time  Facade / Style / Codec / Format / Input …   │  ✅ 完成
 │ L2  DateFnsEngine（唯一 date-fns）                                │  ✅ 完成
 │ L1  contracts Instant ≡ TransferDate · Ymd · Hm                 │  ✅ 完成
 │     DomainDate / utils date 已删                                  │  ✅ 完成
@@ -451,7 +451,7 @@ GoalDetail / TaskDetail / ScheduleTaskDetail / RuleCard / ReminderTemplateCard /
 | 独立大 PR | **P7 → P8** | goal/account domain tests |
 | 收尾 | **P9 → P10** | governance-check + eslint |
 
-每刀：更新本 plan §7 residual 行；触及治理则 `daily-use:governance-check`。
+每刀：更新本 plan §7 residual 行；触及治理则 `memoflow:governance-check`。
 
 ### 10.17 决策摘要（第二阶段不可弱化）
 

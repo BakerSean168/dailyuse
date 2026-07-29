@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { IModelGatewayPort } from '@dailyuse/contracts/ai';
+import type { IModelGatewayPort } from '@memoflow/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain/repositories/i-ai-provider-config-repository';
 import {
   PI_READONLY_TURN_ENGINE_ID,

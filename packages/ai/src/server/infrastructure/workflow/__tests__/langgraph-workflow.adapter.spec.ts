@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   knowledgeWriteRequirements,
   resolveRunPlan,
-} from '@dailyuse/contracts/ai';
+} from '@memoflow/contracts/ai';
 import type { IAgentRuntimePort } from '../../../application/ports';
 import {
   LangGraphWorkflowAdapter,

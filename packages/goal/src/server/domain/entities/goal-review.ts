@@ -18,13 +18,13 @@
  * - updatedAt: 最后更新时间（增量同步）
  */
 
-import { Entity } from '@dailyuse/utils/domain';
-import type { GoalReviewId as IGoalReviewId, GoalId as IGoalId, Instant, TransferDate } from '@dailyuse/contracts/primitives';
+import { Entity } from '@memoflow/utils/domain';
+import type { GoalReviewId as IGoalReviewId, GoalId as IGoalId, Instant, TransferDate } from '@memoflow/contracts/primitives';
 import type {
   GoalReviewServerDTO,
   KeyResultSnapshotDTO,
-} from '@dailyuse/contracts/goal';
-import { ReviewType } from '@dailyuse/contracts/goal';
+} from '@memoflow/contracts/goal';
+import { ReviewType } from '@memoflow/contracts/goal';
 import { GoalReviewId } from '../../domain';
 
 // 内部状态接口
@@ -280,10 +280,10 @@ export class GoalReview extends Entity<IGoalReviewId> {
   /**
    * 转换为 Client DTO
    */
-  public toClientDTO(): import('@dailyuse/contracts/goal').GoalReviewClientDTO {
+  public toClientDTO(): import('@memoflow/contracts/goal').GoalReviewClientDTO {
     return {
-      id: String(this.id) as import('@dailyuse/contracts/goal').GoalReviewClientDTO['id'],
-      goalId: String(this._props.goalId) as import('@dailyuse/contracts/goal').GoalReviewClientDTO['goalId'],
+      id: String(this.id) as import('@memoflow/contracts/goal').GoalReviewClientDTO['id'],
+      goalId: String(this._props.goalId) as import('@memoflow/contracts/goal').GoalReviewClientDTO['goalId'],
       type: this._props.type,
       rating: this._props.rating,
       summary: this._props.summary,

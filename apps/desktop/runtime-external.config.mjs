@@ -11,7 +11,7 @@ export const electronJsExternalPackages = [
   'winston-daily-rotate-file',
 ];
 
-export const electronExternalWorkspacePackages = ['@dailyuse/database'];
+export const electronExternalWorkspacePackages = ['@memoflow/database'];
 
 export const powerSyncRuntimePackages = [
   '@powersync/node',

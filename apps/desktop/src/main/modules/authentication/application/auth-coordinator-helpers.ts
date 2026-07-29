@@ -1,14 +1,14 @@
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
-} from '@dailyuse/authentication/electron';
+} from '@memoflow/authentication/electron';
 import {
   AuthRuntimeState,
   transitionAuthState,
   type AuthResponseDTO,
   type AuthIdentityClientDTO,
   type AuthSessionClientDTO,
-} from '@dailyuse/contracts/authentication';
+} from '@memoflow/contracts/authentication';
 import type { TokenManager, SessionManager } from '../infrastructure';
 import type { AuthState } from './desktop-credential-auth-coordinator';
 

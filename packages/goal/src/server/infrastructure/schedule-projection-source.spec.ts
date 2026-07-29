@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
-import { SourceModule } from '@dailyuse/contracts/schedule';
+import { GoalStatus, ReminderTriggerType } from '@memoflow/contracts/goal';
+import { SourceModule } from '@memoflow/contracts/schedule';
 import { createGoalScheduleProjectionSource } from './schedule-projection-source';
 
 describe('createGoalScheduleProjectionSource', () => {

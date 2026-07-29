@@ -11,10 +11,10 @@
  * runtime 对象管理自身事件订阅生命周期。
  */
 
-import { eventBus } from '@dailyuse/utils/domain';
-import { createTypedEventSubscriber } from '@dailyuse/utils/domain';
-import { createLogger } from '@dailyuse/utils/logger';
-import type { TaskEventMap } from '@dailyuse/contracts/task';
+import { eventBus } from '@memoflow/utils/domain';
+import { createTypedEventSubscriber } from '@memoflow/utils/domain';
+import { createLogger } from '@memoflow/utils/logger';
+import type { TaskEventMap } from '@memoflow/contracts/task';
 import type { TaskModuleRuntimeContribution } from '../task.module';
 
 const logger = createLogger('TaskRuntime');

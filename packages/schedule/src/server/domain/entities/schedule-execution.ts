@@ -8,13 +8,13 @@
  * - 错误信息管理
  */
 
-import { Entity } from '@dailyuse/utils/domain';
-import { generateUUID } from '@dailyuse/utils/shared';
+import { Entity } from '@memoflow/utils/domain';
+import { generateUUID } from '@memoflow/utils/shared';
 import type {
   ScheduleExecutionClientDTO,
   ScheduleExecutionServerDTO,
-} from '@dailyuse/contracts/schedule';
-import { ExecutionStatus } from '@dailyuse/contracts/schedule';
+} from '@memoflow/contracts/schedule';
+import { ExecutionStatus } from '@memoflow/contracts/schedule';
 import { ScheduleExecutionId } from '../value-objects/schedule-execution-id';
 import { ScheduleTaskId } from '../value-objects/schedule-task-id';
 
