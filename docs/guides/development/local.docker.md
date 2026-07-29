@@ -6,7 +6,7 @@ tags:
   - local
 description: 使用 docker-compose.local.yml 做 prod-like 本地验证的统一入口
 created: 2026-05-19T00:00:00
-updated: 2026-07-15T00:00:00
+updated: 2026-07-29T00:00:00
 ---
 
 # Local Docker 验证
@@ -93,6 +93,12 @@ pnpm docker:local:down
 | e2e | 3000 | 5173 | 5433 | Playwright |
 
 完整互斥规则与排障见 [runtime-lanes.md](./runtime-lanes.md)。
+
+## 事务邮件（console / 真发）
+
+- 默认 `EMAIL_PROVIDER=console`：验证码不外发，依赖 `LOCAL_VALIDATION` 取码端点。
+- 真发 SMTP / Resend、域名 DNS、可选 `AUTH_CHALLENGE_STORE=redis`：见 [transactional-email-smtp.md](./transactional-email-smtp.md)。
+- 实施与验收细节：[`docs/plan/archive/2026-07-28-transactional-email-smtp.md`](../../plan/archive/2026-07-28-transactional-email-smtp.md)。
 
 ## 本地验证最低要求
 

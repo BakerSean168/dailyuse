@@ -1,0 +1,100 @@
+export default {
+  "oauth": {
+    "title": "登录方式",
+    "description": "绑定 GitHub 仅用于登录身份，不会申请仓库 Contents 权限。仓库同步请在知识库连接中单独授权。",
+    "githubLinked": "已绑定 GitHub 登录",
+    "githubNotLinked": "尚未绑定 GitHub 登录",
+    "bindGithub": "绑定 GitHub",
+    "unbindGithub": "解绑 GitHub",
+    "bindSuccess": "GitHub 已绑定",
+    "unbindSuccess": "GitHub 已解绑",
+    "bindFailed": "绑定 GitHub 失败",
+    "unbindFailed": "解绑 GitHub 失败",
+    "githubUnavailable": "GitHub 登录未配置或不可用",
+    "serviceUnavailable": "认证服务不可用",
+    "alreadyLinked": "该 GitHub 账号已绑定其他 Daily Use 身份，禁止静默合并。请改用该 GitHub 登录，或联系支持处理。",
+    "lastLoginPath": "这是当前账号最后一条登录路径，无法解绑。请先设置密码或其他登录方式。",
+    "invalidState": "OAuth state 无效或已过期，请重试绑定。",
+    "unbindConfirmTitle": "解绑 GitHub？",
+    "unbindConfirmDescription": "解绑后将无法再使用该 GitHub 账号登录此 Daily Use 身份。",
+    "unbindConfirmText": "确认解绑",
+    "repoScopeHint": "登录绑定与知识仓库授权分离（ADR-034）。"
+  },
+  "sessions": {
+    "title": "登录设备与会话",
+    "description": "查看并管理当前账号的有效会话。可疑设备可立即踢下线。",
+    "loading": "正在加载会话…",
+    "empty": "暂无有效会话",
+    "current": "当前设备",
+    "lastActive": "最近活跃",
+    "revoke": "踢下线",
+    "refresh": "刷新列表",
+    "unknownDevice": "未知设备",
+    "cannotRevokeCurrent": "不能撤销当前会话，请使用退出登录",
+    "revokeConfirmTitle": "撤销该会话？",
+    "revokeConfirmDescription": "该设备将需要重新登录。",
+    "revokeConfirmText": "撤销会话"
+  },
+  "title": "个人中心",
+  "center": "个人中心",
+  "description": "昵称就是你的唯一展示名，修改后会直接持久化到当前账号。",
+  "guestLabel": "本地访客",
+  "logoutHandlerUnavailable": "退出登录服务当前不可用",
+  "actions": {
+    "logout": "退出登录",
+    "saveProfile": "保存资料"
+  },
+  "profile": {
+    "editTitle": "编辑个人资料",
+    "changeAvatar": "更换头像",
+    "avatarRecommendation": "建议上传 200x200 像素的图片",
+    "avatarUrl": "头像地址",
+    "nickname": "昵称",
+    "realName": "真实姓名",
+    "bio": "个人简介",
+    "gender": "性别",
+    "birthday": "生日",
+    "editProfile": "编辑资料"
+  },
+  "placeholder": {
+    "nickname": "请输入昵称",
+    "avatarUrl": "https://... ",
+    "realNameOptional": "真实姓名（选填）",
+    "bio": "介绍一下你自己",
+    "gender": "请选择性别",
+    "selectDate": "请选择日期"
+  },
+  "status": {
+    "loading": "正在加载账户资料..."
+  },
+  "gender": {
+    "male": "男",
+    "female": "女",
+    "other": "其他",
+    "unspecified": "未指定",
+    "notSet": "未设置"
+  },
+  "toast": {
+    "loadProfileFailed": "加载个人资料失败",
+    "loadFailed": "加载失败",
+    "profileUpdated": "个人资料已更新",
+    "updateProfileFailed": "更新个人资料失败",
+    "updateFailed": "更新失败",
+    "checkAvailabilityFailed": "检查可用性失败",
+    "checkFailed": "检查失败",
+    "settingsUpdated": "设置已更新",
+    "accountClosed": "账户已注销",
+    "closeAccountFailed": "注销账户失败",
+    "closeFailed": "注销失败",
+    "guestProfileUpdateUnavailable": "访客模式下无法更新资料",
+    "guestSettingsUpdateUnavailable": "访客模式下无法更新设置",
+    "guestCloseAccountUnavailable": "访客模式下无法注销账户"
+  },
+  "logoutHint": "你可以在这里安全退出当前账户，会立即返回登录页。",
+  "logoutConfirm": {
+    "title": "确认退出登录？",
+    "description": "退出后需要重新登录才能继续使用。",
+    "confirmText": "退出登录",
+    "cancelText": "取消"
+  }
+} as const;

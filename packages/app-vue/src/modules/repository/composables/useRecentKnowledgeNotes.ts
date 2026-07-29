@@ -5,6 +5,11 @@
  * Does not call legacy database Repository/Resource CRUD endpoints.
  */
 import { inject, ref } from 'vue';
+import {
+  EMAIL_VERIFICATION_DOMAIN_CODE,
+  EMAIL_VERIFICATION_MESSAGE_KEY,
+  isEmailVerificationRequiredError,
+} from '@dailyuse/http-client';
 import { DESKTOP_BRIDGE_KEY, REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 
@@ -23,10 +28,16 @@ export function useRecentKnowledgeNotes() {
   const notes = ref<RecentKnowledgeNote[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
+  /** i18n message key when the session needs email verification (UI degrade). */
+  const errorMessageKey = ref<string | null>(null);
+  const emailVerificationRequired = ref(false);
 
   async function load(limit = 20): Promise<void> {
     isLoading.value = true;
     error.value = null;
+    errorMessageKey.value = null;
+    // Clear prior degrade; re-set only if this load hits EMAIL_VERIFICATION_REQUIRED.
+    emailVerificationRequired.value = false;
     try {
       notes.value = desktopBridge
         ? await loadLocalVaultNotes(limit)
@@ -48,6 +59,13 @@ export function useRecentKnowledgeNotes() {
         result.error.code === 'NOT_FOUND' ||
         result.error.code === 'UNAUTHORIZED'
       ) {
+        return [];
+      }
+      if (isEmailVerificationRequiredError(result.error)) {
+        emailVerificationRequired.value = true;
+        const ctx = result.error.context as { messageKey?: string } | undefined;
+        errorMessageKey.value = ctx?.messageKey ?? EMAIL_VERIFICATION_MESSAGE_KEY;
+        error.value = result.error.message || EMAIL_VERIFICATION_DOMAIN_CODE;
         return [];
       }
       throw new Error(result.error.message);
@@ -98,6 +116,8 @@ export function useRecentKnowledgeNotes() {
     notes,
     isLoading,
     error,
+    errorMessageKey,
+    emailVerificationRequired,
     load,
   };
 }

@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - authentication
   - account
   - security
@@ -9,9 +9,13 @@ tags:
   - desktop
 description: Auth 与 Account 收敛、邮箱验证、会话安全与注销级联的统一实施方案
 created: 2026-07-17T00:00:00
-updated: 2026-07-18T06:50:00
+updated: 2026-07-29T00:00:00
+status: done
 ---
 
+> **归档结果（2026-07-29）**：ADR-036 已采纳；Phase A–E 源码闭环（challenge、邮箱验证、会话、OAuth、访客升级）。  
+> 投递通道 A–D 见 [`./2026-07-28-transactional-email-smtp.md`](./2026-07-28-transactional-email-smtp.md)（SMTP/Resend/Redis challenge）。  
+> 残余运维：生产域名 SPF/DKIM、全量 e2e 真跑——不阻塞本 plan 归档。
 # Auth + Account 收敛与安全闭环实施方案
 
 ## 1. 文档地位
@@ -156,10 +160,15 @@ IVerificationChallengeStore
 
 扩展 `IEmailSender`（或拆 `ITransactionalEmailSender`）：
 
-- `sendPasswordReset(...)` — 密码找回
-- `sendEmailVerificationCode(...)` — 本文
-- 实现：`ConsoleEmailSender`（dev）→ Resend/SES/国内厂商（prod）
-- 本地可测：Mailpit / 日志捕获，供 e2e 读取码或链接
+- `sendPasswordResetCode(...)` — 密码找回
+- `sendEmailVerificationCode(...)` — 邮箱验证
+- 实现（已落地投递通道）：
+  - **本地 / CI / local-docker 默认**：`ConsoleEmailSender`（`EMAIL_PROVIDER=console`）+ `LOCAL_VALIDATION` 取码
+  - **生产 / 真发**：**通用 SMTP**（`SmtpEmailSender` + `EMAIL_PROVIDER=smtp`）或可选 **Resend HTTP**（`EMAIL_PROVIDER=resend`）；可选第二 SMTP 热备
+  - 工厂：`createEmailSender(env)`；**禁止**仅用 `NODE_ENV` 推断 provider
+- 本地可测：console capture / dual-write；真发以收件箱为准
+- **投递 SSOT**：[`2026-07-28-transactional-email-smtp.md`](./2026-07-28-transactional-email-smtp.md)；运维指南：[`docs/guides/development/transactional-email-smtp.md`](../../guides/development/transactional-email-smtp.md)
+- Challenge 多副本：`AUTH_CHALLENGE_STORE=redis` + `RedisVerificationChallengeStore`（默认仍 memory）
 
 
 ### 3.7 密码找回（并入本计划，非独立文档）

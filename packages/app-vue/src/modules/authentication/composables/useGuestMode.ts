@@ -1,5 +1,6 @@
 import { toast } from 'vue-sonner';
 import type { AutoLoginResult } from '@dailyuse/contracts/authentication';
+import { resetEmailVerificationCircuit } from '@dailyuse/http-client';
 import type { AuthContext } from './useAuthContext';
 import {
   getDesktopAuthApi,
@@ -51,6 +52,9 @@ export function useGuestMode(ctx: AuthContext) {
         }
       }
     } finally {
+      // Clear session-scoped EMAIL_VERIFICATION_REQUIRED fuse so a later
+      // verified login can load knowledge notes without a full page reload.
+      resetEmailVerificationCircuit();
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
       if (!(typeof window !== 'undefined' && hasDesktopAuthApi(window))) {

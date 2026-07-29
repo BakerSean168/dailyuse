@@ -25,8 +25,15 @@ describe('legacy note surface docs and menu dual-track retirement', () => {
     ),
     'utf8',
   );
-  const enLocale = readFileSync(resolve(repoRoot, 'packages/app-vue/src/locales/en-US.ts'), 'utf8');
-  const zhLocale = readFileSync(resolve(repoRoot, 'packages/app-vue/src/locales/zh-CN.ts'), 'utf8');
+  // Modular locale tree — menu module is the bookmark dual-track surface under test.
+  const enLocale = readFileSync(
+    resolve(repoRoot, 'packages/app-vue/src/locales/en-US/menu.ts'),
+    'utf8',
+  );
+  const zhLocale = readFileSync(
+    resolve(repoRoot, 'packages/app-vue/src/locales/zh-CN/menu.ts'),
+    'utf8',
+  );
   const mswHandlers = readFileSync(
     resolve(repoRoot, 'apps/web/src/mocks/handlers/repository.handlers.ts'),
     'utf8',
@@ -81,11 +88,12 @@ describe('legacy note surface docs and menu dual-track retirement', () => {
 
   it('menu locales drop repository bookmark dual-track keys and keep live template pause/enable', () => {
     for (const locale of [enLocale, zhLocale]) {
-      expect(locale).not.toMatch(/addBookmark:\s*'/);
-      expect(locale).not.toMatch(/removeBookmark:\s*'/);
-      expect(locale).not.toMatch(/\bbookmark:\s*'/);
-      expect(locale).toContain('pauseTemplate:');
-      expect(locale).toContain('enableTemplate:');
+      // Match legacy `key: '…'` and modular `"key": "…"` forms.
+      expect(locale).not.toMatch(/["']?addBookmark["']?\s*:/);
+      expect(locale).not.toMatch(/["']?removeBookmark["']?\s*:/);
+      expect(locale).not.toMatch(/["']bookmark["']\s*:/);
+      expect(locale).toMatch(/["']?pauseTemplate["']?\s*:/);
+      expect(locale).toMatch(/["']?enableTemplate["']?\s*:/);
     }
   });
 

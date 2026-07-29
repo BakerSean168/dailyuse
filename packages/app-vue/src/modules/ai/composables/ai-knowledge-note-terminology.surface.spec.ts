@@ -9,25 +9,43 @@ import { describe, expect, it } from 'vitest';
  */
 describe('AI knowledge note terminology surface', () => {
   const repoRoot = resolve(__dirname, '../../../../../../');
-  const en = readFileSync(resolve(repoRoot, 'packages/app-vue/src/locales/en-US.ts'), 'utf8');
-  const zh = readFileSync(resolve(repoRoot, 'packages/app-vue/src/locales/zh-CN.ts'), 'utf8');
+  // Modular locale tree (zh-CN/ / en-US/ directories); read AI + menu modules.
+  const enAi = readFileSync(
+    resolve(repoRoot, 'packages/app-vue/src/locales/en-US/aiAssistant.ts'),
+    'utf8',
+  );
+  const zhAi = readFileSync(
+    resolve(repoRoot, 'packages/app-vue/src/locales/zh-CN/aiAssistant.ts'),
+    'utf8',
+  );
+  const enMenu = readFileSync(
+    resolve(repoRoot, 'packages/app-vue/src/locales/en-US/menu.ts'),
+    'utf8',
+  );
+  const zhMenu = readFileSync(
+    resolve(repoRoot, 'packages/app-vue/src/locales/zh-CN/menu.ts'),
+    'utf8',
+  );
   const chatView = readFileSync(resolve(__dirname, 'useAIChatView.ts'), 'utf8');
   const qaWorkflow = readFileSync(resolve(__dirname, 'useAIKnowledgeQaWorkflow.ts'), 'utf8');
   const types = readFileSync(resolve(__dirname, 'types.ts'), 'utf8');
 
   it('locales present knowledge notes wording instead of repository resources', () => {
-    expect(en).toContain("fetchResource: 'Fetch Note'");
-    expect(en).toContain("matchedResources: '{count} note(s) matched in {ms} ms.'");
-    expect(en).toContain('indexed knowledge notes with citations');
-    expect(en).not.toContain("fetchResource: 'Fetch Resource'");
-    expect(en).not.toContain('resource(s) matched');
-    expect(en).not.toContain('indexed repository resources with citations');
+    // Modular modules use JSON-style keys inside export default { ... }
+    expect(enAi).toContain('"fetchResource": "Fetch Note"');
+    expect(enAi).toContain(
+      '"matchedResources": "{count} note(s) matched in {ms} ms."',
+    );
+    expect(enAi).toContain('indexed knowledge notes with citations');
+    expect(enAi).not.toContain('"fetchResource": "Fetch Resource"');
+    expect(enAi).not.toContain('resource(s) matched');
+    expect(enAi).not.toContain('indexed repository resources with citations');
 
-    expect(zh).toContain("fetchResource: '读取笔记'");
-    expect(zh).toContain('匹配到 {count} 篇笔记');
-    expect(zh).toContain('已索引的知识笔记');
-    expect(zh).not.toContain("fetchResource: '读取资源'");
-    expect(zh).not.toContain('匹配到 {count} 个资源');
+    expect(zhAi).toContain('"fetchResource": "读取笔记"');
+    expect(zhAi).toContain('匹配到 {count} 篇笔记');
+    expect(zhAi).toContain('已索引的知识笔记');
+    expect(zhAi).not.toContain('"fetchResource": "读取资源"');
+    expect(zhAi).not.toContain('匹配到 {count} 个资源');
   });
 
   it('client helpers open/load knowledge notes without Resource dual-track names', () => {
@@ -42,11 +60,11 @@ describe('AI knowledge note terminology surface', () => {
   });
 
   it('menu locales drop editor dual-track openInNewTab/fileInfo/createSubfolder keys', () => {
-    expect(en).not.toMatch(/openInNewTab:\s*'/);
-    expect(en).not.toMatch(/fileInfo:\s*'/);
-    expect(en).not.toMatch(/createSubfolder:\s*'/);
-    expect(zh).not.toMatch(/openInNewTab:\s*'/);
-    expect(zh).not.toMatch(/fileInfo:\s*'/);
-    expect(zh).not.toMatch(/createSubfolder:\s*'/);
+    // Match both legacy `key: '…'` and modular `"key": "…"` forms.
+    for (const menu of [enMenu, zhMenu]) {
+      expect(menu).not.toMatch(/["']?openInNewTab["']?\s*:/);
+      expect(menu).not.toMatch(/["']?fileInfo["']?\s*:/);
+      expect(menu).not.toMatch(/["']?createSubfolder["']?\s*:/);
+    }
   });
 });

@@ -10,6 +10,10 @@
       :agent-runs="agentRunList"
       :recent-goals="recentGoalList"
       :recent-knowledge-notes="recentKnowledgeNoteList"
+      :recent-knowledge-notes-email-verification-required="
+        recentKnowledgeNotesEmailVerificationRequired
+      "
+      :recent-knowledge-notes-error-message-key="recentKnowledgeNotesErrorMessageKey"
       :active-conversation-id="chatConversationId"
       :loading="conversationListLoading"
       :agent-runs-loading="agentRunListLoading"
@@ -43,6 +47,10 @@
           :agent-runs="agentRunList"
           :recent-goals="recentGoalList"
           :recent-knowledge-notes="recentKnowledgeNoteList"
+          :recent-knowledge-notes-email-verification-required="
+            recentKnowledgeNotesEmailVerificationRequired
+          "
+          :recent-knowledge-notes-error-message-key="recentKnowledgeNotesErrorMessageKey"
           :active-conversation-id="chatConversationId"
           :loading="conversationListLoading"
           :agent-runs-loading="agentRunListLoading"
@@ -466,6 +474,8 @@ const {
   taskAgentRun,
   recentGoalList,
   recentKnowledgeNoteList,
+  recentKnowledgeNotesEmailVerificationRequired,
+  recentKnowledgeNotesErrorMessageKey,
   messagesViewport,
   selectConversation: selectConversationBase,
   selectAgentRun: selectAgentRunBase,

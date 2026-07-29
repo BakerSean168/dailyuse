@@ -76,6 +76,6 @@ updated: 2026-07-17T23:59:00
 
 - [认证模块说明](./authentication.md)
 - [ADR-036: Auth / Account 边界与验证安全模型](../../architecture/adr/ADR-036-auth-account-boundary-and-verification.md)
-- [Auth + Account 安全闭环计划](../../plan/active/2026-07-17-auth-account-security-closure.md)
+- [Auth + Account 安全闭环计划](../../plan/archive/2026-07-17-auth-account-security-closure.md)
 - [设置模块说明](./setting.md)
 - [账户模块文件索引](../module-index/account-files.md)

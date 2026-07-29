@@ -13,9 +13,14 @@
  * per module, constructor injection only, no hidden service locator.
  */
 
-import type { IAuthIdentityRepository, IAuthSessionRepository } from '../domain';
+import type {
+  IAuthIdentityRepository,
+  IAuthSessionRepository,
+  IEmailSender,
+  IPasswordHasher,
+  IVerificationChallengeStore,
+} from '../domain';
 import type { ITokenProvider } from '../domain/services/token-provider.interface';
-import type { IPasswordHasher } from '../domain';
 import type { ExecutionContext } from '@dailyuse/contracts/shared';
 import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
@@ -69,8 +74,8 @@ import {
   PasswordAuthenticationProvider,
   type AuthenticationProvider,
 } from '../domain';
-import { InMemoryVerificationChallengeStore } from './services/in-memory-verification-challenge-store';
-import { ConsoleEmailSender } from './services/console-email-sender';
+import { createEmailSender } from './services/create-email-sender';
+import { createVerificationChallengeStore } from './services/create-verification-challenge-store';
 import { InMemoryOAuthStateStore } from './services/in-memory-oauth-state-store';
 
 // ---------------------------------------------------------------------------
@@ -121,6 +126,21 @@ export interface AuthenticationModuleDependencies {
    * 可选 GitHub OAuth 客户端，用于绑定（code 换主体）。登录提供者仍来自 authenticationProviders。
    */
   readonly githubOAuthClient?: import('../domain/services/providers/i-github-oauth-client').IGithubOAuthClient;
+  /**
+   * Optional email sender override (tests / custom composition).
+   * When omitted, createEmailSender(process.env) selects console | smtp | resend.
+   */
+  readonly emailSender?: IEmailSender;
+  /**
+   * Optional verification challenge store (tests / multi-instance Redis).
+   * When omitted, createVerificationChallengeStore selects memory | redis.
+   */
+  readonly challengeStore?: IVerificationChallengeStore;
+  /**
+   * Optional Redis client for AUTH_CHALLENGE_STORE=redis (ioredis-compatible).
+   * 可选 Redis 客户端；当 AUTH_CHALLENGE_STORE=redis 时由工厂使用。
+   */
+  readonly redis?: import('./services/redis-verification-challenge-store').RedisChallengeClient;
 }
 
 // ---------------------------------------------------------------------------
@@ -252,8 +272,12 @@ export function createAuthenticationUseCases(
 ): AuthenticationModuleUseCases {
   const { identityRepository, sessionRepository, passwordHasher, tokenProvider } = dependencies;
 
-  const challengeStore = new InMemoryVerificationChallengeStore();
-  const emailSender = new ConsoleEmailSender();
+  const challengeStore =
+    dependencies.challengeStore ??
+    createVerificationChallengeStore({
+      redis: dependencies.redis,
+    });
+  const emailSender = dependencies.emailSender ?? createEmailSender();
   const oauthStateStore = new InMemoryOAuthStateStore();
 
   // Build the pluggable provider registry.

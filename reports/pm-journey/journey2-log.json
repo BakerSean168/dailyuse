@@ -1,0 +1,42 @@
+{
+  "log": [
+    {
+      "step": "login",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "goal-plus-dialog",
+      "status": "FAIL",
+      "detail": "TimeoutError: locator.click: Timeout 8000ms exceeded."
+    },
+    {
+      "step": "goal-fill-and-save",
+      "status": "FAIL",
+      "detail": "TimeoutError: locator.fill: Timeout 8000ms exceeded."
+    },
+    {
+      "step": "task-plus-dialog",
+      "status": "FAIL",
+      "detail": "TimeoutError: locator.click: Timeout 8000ms exceeded."
+    },
+    {
+      "step": "reminder-text",
+      "status": "INFO",
+      "detail": "Verify your email to unlock all features. | Verify now | 今日无安排 | 知行 | 新对话 | P | pm.tester.003451@example.com | 快速对话 | 今天想推进哪件事？ | 选一张快捷指令卡开始，或直接在下方输入。有会话消息时这里会切换为消息时间线。 | 随便聊聊 | 没有固定流程，直接和 AI 对话整理思路。 | 规划一个目标 | 用对话澄清范围、成功标准与时间，再生成结构化草稿。 | 创建一个任务 | 起草任务并可关联目标，经 Host 工作台确认后创建。 | 写一篇知识笔记 | 先聊清主题、来源和要点，再落到知识库。 | 问知识库 | 基于已索引笔记提问，有证据时会带引用。 | 今日概览 | 今日待办 | 0/0 | 查看全部 | 今日暂无任务安排 | 今日习惯提醒 | 0 | 查看全部 | 今天没有剩余提醒 | dashboard.goalProgress.title | dash"
+    },
+    {
+      "step": "reminder-panel",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "lang-switch-en",
+      "status": "OK",
+      "detail": ""
+    }
+  ],
+  "apiErrors": [
+    "403 http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20"
+  ]
+}

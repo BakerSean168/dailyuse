@@ -25,6 +25,18 @@ const recent = computed(() => recentNotes.notes.value.slice(0, RECENT_LIMIT));
 const totalCount = computed(() => recentNotes.notes.value.length);
 const isLoading = computed(() => recentNotes.isLoading.value);
 const localError = computed(() => recentNotes.error.value);
+const emailVerificationRequired = computed(
+  () => recentNotes.emailVerificationRequired.value,
+);
+const errorMessageKey = computed(() => recentNotes.errorMessageKey.value);
+
+/** Prefer i18n degrade copy over raw English transport messages. */
+const verificationDegradeMessage = computed(() => {
+  if (!emailVerificationRequired.value) return null;
+  const key =
+    errorMessageKey.value ?? 'errors.EMAIL_VERIFICATION_REQUIRED';
+  return t(key);
+});
 
 function titleOf(item: { title: string; path: string; id: string }) {
   return item.title || item.path || item.id;
@@ -52,6 +64,20 @@ onMounted(() => {
 
     <div v-if="isLoading && recent.length === 0" class="space-y-2 py-2" data-testid="note-capsule-loading">
       <div v-for="i in 3" :key="i" class="h-8 animate-pulse rounded bg-muted" />
+    </div>
+
+    <div
+      v-else-if="emailVerificationRequired"
+      class="space-y-1 py-3 text-center"
+      data-testid="note-capsule-email-verification"
+      role="status"
+    >
+      <p class="text-[11px] font-medium text-amber-950 dark:text-amber-100">
+        {{ verificationDegradeMessage ?? t('common.emailVerificationRequired') }}
+      </p>
+      <p class="text-[10px] text-muted-foreground">
+        {{ t('common.emailVerificationRequiredHint') }}
+      </p>
     </div>
 
     <div v-else-if="localError" class="space-y-2 py-3 text-center" data-testid="note-capsule-error">

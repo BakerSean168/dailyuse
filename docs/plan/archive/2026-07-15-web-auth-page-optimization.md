@@ -1,14 +1,18 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - web
   - authentication
 description: Web 登录与注册页面后续优化方案
 created: 2026-07-15T00:00:00
-updated: 2026-07-18T07:00:00
+updated: 2026-07-29T00:00:00
+status: done
 ---
 
+> **归档结果（2026-07-29）**：登录/注册页主项已落地（访客隐藏、品牌主题、校验、错误码 i18n；忘记密码/邮箱验证由 Auth 闭环承接）。  
+> 残余：法律文案链接、远程 e2e 真跑——不阻塞本 plan 归档。  
+> 后续认证/发信见归档 [`./2026-07-17-auth-account-security-closure.md`](./2026-07-17-auth-account-security-closure.md) 与 [`./2026-07-28-transactional-email-smtp.md`](./2026-07-28-transactional-email-smtp.md)。
 # Web 登录与注册页面后续优化方案
 
 状态：**大部分已落地 / 部分挂起**（访客隐藏、固定品牌主题、注册字段校验、错误码 i18n、忘记密码/邮箱验证由 Auth 安全闭环承接；法律文档链接仍待产品/合规文案；远程 58080 浏览器验收与 e2e 真跑仍待）。

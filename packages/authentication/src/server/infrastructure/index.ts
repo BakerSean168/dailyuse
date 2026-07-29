@@ -31,7 +31,55 @@ export { Argon2Hasher } from './encryptors/argon2-hasher';
 // ============ Services ============
 export { JwtTokenProvider } from './services/jwt-token-provider';
 export { InMemoryVerificationChallengeStore } from './services/in-memory-verification-challenge-store';
+export {
+  RedisVerificationChallengeStore,
+  type RedisChallengeClient,
+  type RedisVerificationChallengeStoreOptions,
+} from './services/redis-verification-challenge-store';
+export {
+  createVerificationChallengeStore,
+  resolveChallengeStoreBackend,
+  IncompleteRedisChallengeConfigError,
+  type ChallengeStoreBackend,
+  type CreateVerificationChallengeStoreOptions,
+} from './services/create-verification-challenge-store';
+export {
+  CODE_TTL_MS,
+  COOLDOWN_MS,
+  MAX_FAILED_ATTEMPTS,
+  MAX_ISSUES_PER_DAY,
+} from './services/verification-challenge-constants';
 export { ConsoleEmailSender } from './services/console-email-sender';
+export {
+  SmtpEmailSender,
+  type SmtpEmailSenderConfig,
+  type SmtpMailTransport,
+} from './services/smtp-email-sender';
+export {
+  ResendEmailSender,
+  type ResendEmailSenderConfig,
+  type ResendFetch,
+} from './services/resend-email-sender';
+export { FailoverEmailSender } from './services/failover-email-sender';
+export {
+  buildTransactionalEmail,
+  resolveEmailTemplateLocale,
+  CODE_TTL_MINUTES,
+  type EmailTemplateKind,
+  type EmailTemplateLocale,
+} from './services/email-templates';
+export {
+  createEmailSender,
+  resolveEmailProvider,
+  assertSmtpConfig,
+  assertResendConfig,
+  isValidSmtpFrom,
+  IncompleteSmtpConfigError,
+  IncompleteResendConfigError,
+  type EmailProvider,
+  type EmailSenderEnv,
+  type CreateEmailSenderOptions,
+} from './services/create-email-sender';
 export {
   MockGithubOAuthClient,
   isMockGithubOAuthClientId,

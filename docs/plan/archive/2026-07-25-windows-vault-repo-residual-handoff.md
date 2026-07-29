@@ -13,7 +13,7 @@ updated: 2026-07-26T00:00:00
 
 > **归档结果（2026-07-26）**：Windows 本机收尾完成（§13.2 15/15 + multi-engine Host E2E）；handoff 历史材料。  
 > 主 vault plan 已迁 [`./2026-07-16-obsidian-vault-repository-optimization.md`](./2026-07-16-obsidian-vault-repository-optimization.md)。  
-> 当前主目标：[`../active/2026-07-26-codebase-elegance-foundation.md`](../active/2026-07-26-codebase-elegance-foundation.md)（PR #189）。
+> 当前主目标：[`./2026-07-26-codebase-elegance-foundation.md`](./2026-07-26-codebase-elegance-foundation.md)（PR #189）。
 
 # Windows 本机收尾：vault-repo residual handoff（Residual 1338+）
 

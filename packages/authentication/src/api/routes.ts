@@ -45,6 +45,7 @@ import type { AuthenticationApplicationPort } from '../server/application';
 import { ok } from '@dailyuse/contracts/result';
 import { createDefaultAuthChallengeIpRateLimit } from './challenge-ip-rate-limit';
 import { ConsoleEmailSender } from '../server/infrastructure/services/console-email-sender';
+import { isTestEmailCodeEndpointEnabled } from './is-test-email-code-endpoint-enabled';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -357,10 +358,10 @@ export function registerAuthenticationRoutes(
 
 
 
-  // Test/e2e only: expose last console-captured email code so Playwright can complete verify/reset flows.
-  // 仅测试/e2e：暴露控制台捕获的最近验证码，供 Playwright 完成验证/重置流程。
-  // Never enable this outside test lanes.
-  if (process.env.NODE_ENV === 'test' || process.env.RUNTIME_LANE === 'e2e') {
+  // Test / e2e / local-docker validation only: expose last console-captured email code
+  // so Playwright and local Docker can complete verify/reset without real mail.
+  // Gated by isTestEmailCodeEndpointEnabled — never open on plain production.
+  if (isTestEmailCodeEndpointEnabled(process.env)) {
     r.route(
       {
         method: 'get',

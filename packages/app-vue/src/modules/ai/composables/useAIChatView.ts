@@ -117,6 +117,14 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       })),
   );
 
+  /** Explicit degrade when knowledge notes are gated by email verification. */
+  const recentKnowledgeNotesEmailVerificationRequired = computed(
+    () => recentKnowledgeNotes.emailVerificationRequired.value,
+  );
+  const recentKnowledgeNotesErrorMessageKey = computed(
+    () => recentKnowledgeNotes.errorMessageKey.value,
+  );
+
   // ─── Composables ───────────────────────────────────────────────────
 
   const providerList = computed<ProviderListItem[]>(() => providers.value);
@@ -674,6 +682,8 @@ export function useAIChatView(options: UseAIChatViewOptions) {
       taskAgentRun,
       recentGoalList,
       recentKnowledgeNoteList,
+      recentKnowledgeNotesEmailVerificationRequired,
+      recentKnowledgeNotesErrorMessageKey,
       messagesViewport: chatSession.messagesViewport,
       selectConversation,
       deleteConversation: (id: string) =>

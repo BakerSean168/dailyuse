@@ -1340,6 +1340,8 @@ describe('AIChatView', () => {
     mocks.useRecentKnowledgeNotes.mockReturnValue({
       notes: recentNotes,
       error: ref(null),
+      errorMessageKey: ref(null),
+      emailVerificationRequired: ref(false),
       isLoading: ref(false),
       load: loadRecentKnowledgeNotes,
     });

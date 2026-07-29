@@ -1,7 +1,7 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - hygiene
   - elegance
   - dual-track
@@ -9,9 +9,13 @@ tags:
   - agent-host
 description: 代码优雅化与后续实施铺垫——dual 税减负、多路径收敛、文档归档、Agent Host 地基（非产品功能大爆炸）
 created: 2026-07-26T00:00:00
-updated: 2026-07-26T12:00:00
+updated: 2026-07-29T00:00:00
+status: done
 ---
 
+> **归档结果（2026-07-29）**：E1–E7 硬完成定义已勾选；PR #189 已合 main；E5b bootstrap 死域 follow-up 已合 #190。  
+> Dual Registry / dual 税减负 / AI 路径地图为历史资产。  
+> 后续产品主线：[`../active/2026-07-17-unified-assistant-agent-host.md`](../active/2026-07-17-unified-assistant-agent-host.md)。
 # 代码优雅化与后续实施地基计划
 
 ## 1. 文档地位
@@ -290,7 +294,7 @@ GOAL_PRIORITY（优雅阶段期间调整为）=
 
 ```text
 你是本仓库协作 agent。读 AGENT.md 与：
-- docs/plan/active/2026-07-26-codebase-elegance-foundation.md（主目标 + §1.1 合并策略 + §3.1 Done）
+- docs/plan/archive/2026-07-26-codebase-elegance-foundation.md（主目标 + §1.1 合并策略 + §3.1 Done）
 - docs/plan/active/2026-07-25-nightly-hygiene-and-agent-host.md（执行协议 / residual 格式）
 - docs/plan/active/2026-07-17-unified-assistant-agent-host.md（产品能力；勿假绿勾 §20 完成定义）
 

@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import { defineComponent, h, ref } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
+import { productionLocaleMessages } from '../../../locales/production-messages';
 import GoalListView from './GoalListView.vue';
 
 vi.mock('../composables/useGoal', () => ({
@@ -17,18 +18,7 @@ vi.mock('../composables/useGoal', () => ({
 const i18n = createI18n({
   legacy: false,
   locale: 'en-US',
-  messages: {
-    'en-US': {
-      common: { delete: 'Delete', cancel: 'Cancel' },
-      goal: {
-        list: {
-          noGoalsFound: 'No active goals yet',
-          createToStart: 'Create a goal to start tracking.',
-          askAi: 'Ask AI',
-        },
-      },
-    },
-  },
+  messages: productionLocaleMessages,
 });
 
 const EmptyStateStub = defineComponent({

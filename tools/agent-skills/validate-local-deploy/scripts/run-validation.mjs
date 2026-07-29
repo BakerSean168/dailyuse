@@ -3,6 +3,11 @@
 import { existsSync, lstatSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { checkLocalImageFreshness } from './image-freshness.mjs';
+import {
+  createLocalComposeRuntimeEnv,
+  localComposeArgs,
+} from '../../../docker/local-compose.mjs';
 
 const DEFAULT_BASE_REF = 'main';
 const DEFAULT_REPORT_DIR = 'reports/local-deploy-validation';
@@ -450,12 +455,36 @@ function isServiceStillStarting(service) {
   return state === 'starting' || health === 'starting' || statusLine.includes('health: starting');
 }
 
+/**
+ * Compose evidence must use the same runtime env as `pnpm docker:local:*`.
+ * Bare `--env-file .env.production.local` omits POWERSYNC_* fallbacks that
+ * local-compose injects from .env.development, so `compose ps/logs` fail
+ * interpolation and falsely mark healthy services as missing.
+ */
+function getLocalComposeEvidenceContext(workspace) {
+  const previousCwd = process.cwd();
+  try {
+    process.chdir(workspace);
+    const env = createLocalComposeRuntimeEnv({ quiet: true });
+    return {
+      composeArgs: [...localComposeArgs],
+      env,
+    };
+  } finally {
+    process.chdir(previousCwd);
+  }
+}
+
 function getDockerPsSnapshot(workspace) {
-  const composeArgs = ['compose', '-f', 'docker-compose.local.yml', '--env-file', '.env.production.local'];
-  const psResult = runCommand('docker', [...composeArgs, 'ps', '--format', 'json'], { cwd: workspace });
+  const { composeArgs, env } = getLocalComposeEvidenceContext(workspace);
+  const psResult = runCommand('docker', [...composeArgs, 'ps', '--format', 'json'], {
+    cwd: workspace,
+    env,
+  });
   if (psResult.exitCode !== 0) {
     return {
       composeArgs,
+      env,
       dockerServices: {},
       warnings: [`docker compose ps failed: ${psResult.outputTail || 'unknown error'}`],
     };
@@ -482,7 +511,7 @@ function getDockerPsSnapshot(workspace) {
     };
   }
 
-  return { composeArgs, dockerServices: services, warnings };
+  return { composeArgs, env, dockerServices: services, warnings };
 }
 
 function collectDockerEvidence(workspace, maxLogLines) {
@@ -502,7 +531,7 @@ function collectDockerEvidence(workspace, maxLogLines) {
     snapshot = getDockerPsSnapshot(workspace);
   }
 
-  const { composeArgs, dockerServices: services, warnings } = snapshot;
+  const { composeArgs, env, dockerServices: services, warnings } = snapshot;
 
   for (const serviceName of REQUIRED_DOCKER_SERVICES) {
     const service = services[serviceName];
@@ -513,7 +542,7 @@ function collectDockerEvidence(workspace, maxLogLines) {
     const logResult = runCommand(
       'docker',
       [...composeArgs, 'logs', '--no-color', `--tail=${maxLogLines}`, serviceName],
-      { cwd: workspace },
+      { cwd: workspace, env },
     );
 
     if (!services[serviceName]) {
@@ -735,6 +764,18 @@ function main() {
     reportDirRelative,
   );
 
+  // Advisory: running local images vs workspace HEAD (does not fail the verdict alone).
+  const imageFreshness = checkLocalImageFreshness(options.workspace, {
+    runCommand: (command, args, opts) => {
+      const execution = runCommand(command, args, opts);
+      return {
+        exitCode: execution.exitCode,
+        stdout: execution.stdout,
+        stderr: execution.stderr,
+      };
+    },
+  });
+
   const categories = {
     docsGovernanceOnly: changedFiles.length > 0 && changedFiles.every(isDocsOrGovernanceFile),
     codeOrConfig: changedFiles.some((file) => !isDocsOrGovernanceFile(file)),
@@ -742,7 +783,7 @@ function main() {
     dockerRebuildRequired: changedFiles.some(isDockerRebuildFile),
   };
 
-  const warnings = [...repoWarnings, ...diffWarnings];
+  const warnings = [...repoWarnings, ...diffWarnings, ...imageFreshness.warnings];
   const blockingIssues = [];
   const commandResults = [];
   let dockerServices = {};

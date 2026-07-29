@@ -1,15 +1,17 @@
 ---
 tags:
   - plan
-  - active
+  - archive
   - imports
   - monorepo
 description: 全仓 import 路径收敛 — 消灭包内 @/，默认相对路径 + @dailyuse 公开入口
 created: 2026-07-27T00:00:00
-updated: 2026-07-27T03:25:00
+updated: 2026-07-29T00:00:00
 status: done
 ---
 
+> **归档结果（2026-07-29）**：包内 `@/` → 相对路径已完成；政策见 `docs/standards/import-path-policy.md`。  
+> Follow-up（tsconfig 删 `@/*`、ESLint ban）不阻塞本 plan 归档。
 # Import Path Elegance（路径优雅化）
 
 ## 目标

@@ -1,0 +1,215 @@
+{
+  "email": "pm.tester.003451@example.com",
+  "base": "http://localhost:58080",
+  "log": [
+    {
+      "step": "01-landing-redirects-to-auth",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "02-probe-wrong-login",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "03-register-scene-weak-password",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "04-register",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "05-detail",
+      "status": "INFO",
+      "detail": "中文 | EN | 知行 (MEMOFLOW) | 验证邮箱 | 我们已向 pm.tester.003451@example.com 发送验证码，请输入完成验证 | 邮箱 | 验证码 | 验证邮箱57s 后可重新发送 | 返回登录 | 继续即表示您同意服务条款与隐私政策。"
+    },
+    {
+      "step": "05-verify-email-scene",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "time-strings@home",
+      "status": "INFO",
+      "detail": "[]"
+    },
+    {
+      "step": "06-enter-app-home",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "time-strings@07-goals",
+      "status": "INFO",
+      "detail": "[]"
+    },
+    {
+      "step": "07-goals",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "time-strings@08-tasks",
+      "status": "INFO",
+      "detail": "[]"
+    },
+    {
+      "step": "08-tasks",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "time-strings@09-schedule",
+      "status": "INFO",
+      "detail": "[\"00:00\",\"01:00\",\"02:00\",\"03:00\",\"04:00\",\"05:00\",\"06:00\",\"07:00\",\"08:00\",\"09:00\",\"10:00\",\"11:00\",\"12:00\",\"13:00\",\"14:00\",\"15:00\",\"16:00\",\"17:00\",\"18:00\",\"19:00\",\"20:00\",\"21:00\",\"22:00\",\"23:00\"]"
+    },
+    {
+      "step": "09-schedule",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "time-strings@10-reminders",
+      "status": "INFO",
+      "detail": "[]"
+    },
+    {
+      "step": "10-reminders",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "time-strings@11-settings",
+      "status": "INFO",
+      "detail": "[]"
+    },
+    {
+      "step": "11-settings",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "12-create-goal",
+      "status": "FAIL",
+      "detail": "TimeoutError: locator.fill: Timeout 30000ms exceeded."
+    },
+    {
+      "step": "13-create-task",
+      "status": "OK",
+      "detail": ""
+    },
+    {
+      "step": "time-strings@goals-after-reload",
+      "status": "INFO",
+      "detail": "[]"
+    },
+    {
+      "step": "14-reload-session-persists",
+      "status": "OK",
+      "detail": ""
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  ],
+  "failedRequests": [
+    {
+      "url": "http://localhost:58080/api/v1/auth/login",
+      "status": 401
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    },
+    {
+      "url": "http://localhost:58080/api/v1/repositories/knowledge-notes?limit=20",
+      "status": 403
+    }
+  ]
+}

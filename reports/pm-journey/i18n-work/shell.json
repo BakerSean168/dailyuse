@@ -1,0 +1,14 @@
+[
+ {
+  "key": "shell.auth.unverifiedAction",
+  "files": [
+   "packages/app-vue/src/layouts/shell/AppShell.vue"
+  ]
+ },
+ {
+  "key": "shell.auth.unverifiedBanner",
+  "files": [
+   "packages/app-vue/src/layouts/shell/AppShell.vue"
+  ]
+ }
+]

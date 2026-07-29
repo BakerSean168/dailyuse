@@ -8,7 +8,10 @@ import type { Request, Response, NextFunction } from 'express';
 
 registerFastTestHooks({
   env: {
-    JWT_SECRET: 'test-jwt-secret-key',
+    // Must satisfy env.schema JWT_SECRET min(32); short values poison
+    // process.env under vitest isolate:false and break later suite imports
+    // after loadAllEnvFiles switched to override:false (process.env wins).
+    JWT_SECRET: 'test-jwt-secret-not-for-production',
   },
 });
 
@@ -29,7 +32,7 @@ export const ApiTestHelpers = {
    */
   createTestToken: async (payload = { identityId: 'test-user-123' }) => {
     const jwt = await import('jsonwebtoken');
-    const secret = process.env.JWT_SECRET || 'test-secret';
+    const secret = process.env.JWT_SECRET || 'test-jwt-secret-not-for-production';
     return jwt.sign(payload, secret, { expiresIn: '1h' });
   },
 

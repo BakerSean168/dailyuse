@@ -15,11 +15,10 @@ updated: 2026-07-25T00:00:00
 
 ## 1. 文档地位
 
-- **优雅化主目标 plan**：[`2026-07-26-codebase-elegance-foundation.md`](./2026-07-26-codebase-elegance-foundation.md)（What / Done；阶段 A–E）
 - **主产品 plan**（完成定义未宣称）：[`2026-07-17-unified-assistant-agent-host.md`](./2026-07-17-unified-assistant-agent-host.md)
-- **Vault-repo plan**（§13.2 **15/15**，已合 main #188）：[`2026-07-16-obsidian-vault-repository-optimization.md`](../archive/2026-07-16-obsidian-vault-repository-optimization.md) → elegance 阶段 A 归档
-- **Windows handoff**（历史）：[`2026-07-25-windows-vault-repo-residual-handoff.md`](../archive/2026-07-25-windows-vault-repo-residual-handoff.md) → 随 vault 归档
-- **本文件**：给远程/Windows agent 的**夜间持续优化协议**与 residual 日志（How）。
+- **优雅化地基**（E1–E7 已完成，已归档）：[`../archive/2026-07-26-codebase-elegance-foundation.md`](../archive/2026-07-26-codebase-elegance-foundation.md)
+- **Vault / Windows / 时间体系 / Auth / SMTP 等**：见 [`README.md`](./README.md)「本轮已归档」与 `docs/plan/archive/`
+- **本文件**：给远程/Windows agent 的**夜间持续优化协议**与 residual 日志（How）；GOAL_PRIORITY 以 agent-host 切片为主。
 
 规范入口：`AGENT.md`。真值：代码/配置/测试 > 根配置 > `docs/`。
 

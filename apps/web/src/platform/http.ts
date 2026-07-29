@@ -11,7 +11,11 @@
  */
 
 import { useAuthenticationStore } from '@dailyuse/app-vue/web-core';
-import { ResultHttpClient, type TokenProvider } from '@dailyuse/http-client';
+import {
+  ResultHttpClient,
+  resetEmailVerificationCircuit,
+  type TokenProvider,
+} from '@dailyuse/http-client';
 
 // ────────────────────────────────────────
 // Token Provider（延迟获取 Store 避免循环引用）
@@ -81,6 +85,11 @@ const httpClientConfig = {
     }
   },
   onUnauthorized: () => {
+    try {
+      resetEmailVerificationCircuit();
+    } catch {
+      // ignore
+    }
     try {
       const store = useAuthenticationStore();
       store.reset();

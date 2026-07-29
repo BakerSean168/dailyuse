@@ -41,7 +41,12 @@
                   class="h-8 shrink-0 rounded-xl"
                   :class="density === 'icon' ? 'px-2' : 'px-2.5'"
                   data-testid="ai-chat-tool-menu-trigger"
-                  :title="toolButtonLabel"
+                  :disabled="!hasAvailableModels"
+                  :title="
+                    hasAvailableModels
+                      ? toolButtonLabel
+                      : t('aiAssistant.chatPage.quickEntryDisabled')
+                  "
                 >
                   <Sparkles class="h-4 w-4" :class="density === 'icon' ? '' : 'mr-1.5'" />
                   <span v-if="density !== 'icon'" class="max-w-[7rem] truncate text-xs">
@@ -50,34 +55,42 @@
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" class="w-64">
-                <DropdownMenuItem data-testid="ai-chat-tool-chat" @click="$emit('start-conversation')">
+                <DropdownMenuItem
+                  data-testid="ai-chat-tool-chat"
+                  :disabled="!hasAvailableModels"
+                  @click="hasAvailableModels && $emit('start-conversation')"
+                >
                   <MessageSquare class="mr-2 h-4 w-4" />
                   {{ t('aiAssistant.chatPage.workflow.tools.chat') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   data-testid="ai-chat-tool-goal-create"
-                  @click="$emit('start-conversation', 'goal-create')"
+                  :disabled="!hasAvailableModels"
+                  @click="hasAvailableModels && $emit('start-conversation', 'goal-create')"
                 >
                   <Sparkles class="mr-2 h-4 w-4" />
                   {{ t('aiAssistant.chatPage.workflow.tools.goalCreate') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   data-testid="ai-chat-tool-task-create"
-                  @click="$emit('start-conversation', 'task-create')"
+                  :disabled="!hasAvailableModels"
+                  @click="hasAvailableModels && $emit('start-conversation', 'task-create')"
                 >
                   <ClipboardCheck class="mr-2 h-4 w-4" />
                   {{ t('aiAssistant.chatPage.workflow.tools.taskCreate') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   data-testid="ai-chat-tool-knowledge-qa"
-                  @click="$emit('start-conversation', 'knowledge-qa')"
+                  :disabled="!hasAvailableModels"
+                  @click="hasAvailableModels && $emit('start-conversation', 'knowledge-qa')"
                 >
                   <Search class="mr-2 h-4 w-4" />
                   {{ t('aiAssistant.chatPage.workflow.tools.knowledgeQa') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   data-testid="ai-chat-tool-knowledge-generate"
-                  @click="$emit('start-conversation', 'knowledge-generate')"
+                  :disabled="!hasAvailableModels"
+                  @click="hasAvailableModels && $emit('start-conversation', 'knowledge-generate')"
                 >
                   <NotebookPen class="mr-2 h-4 w-4" />
                   {{ t('aiAssistant.chatPage.workflow.tools.knowledgeGenerate') }}
@@ -165,20 +178,32 @@
                 </SelectContent>
               </Select>
             </div>
-            <Button
+            <div
               v-else
-              variant="outline"
-              class="h-8 shrink-0 rounded-xl border-dashed text-amber-600 dark:text-amber-400"
-              :class="density === 'icon' ? 'px-2' : 'px-2.5'"
-              data-testid="ai-chat-empty-models"
-              :title="t('aiAssistant.chatPage.emptyModels')"
-              @click="$emit('open-settings')"
+              class="flex min-w-0 flex-1 flex-col gap-1"
+              data-testid="ai-chat-empty-models-cue"
             >
-              <AlertTriangle class="h-4 w-4" :class="density === 'icon' ? '' : 'mr-1.5'" />
-              <span v-if="density !== 'icon'" class="max-w-[8rem] truncate text-xs">
-                {{ t('aiAssistant.chatPage.emptyModels') }}
-              </span>
-            </Button>
+              <Button
+                variant="outline"
+                class="h-8 w-full shrink-0 rounded-xl border-dashed text-amber-900 dark:text-amber-300"
+                :class="density === 'icon' ? 'px-2' : 'px-2.5'"
+                data-testid="ai-chat-empty-models"
+                :title="t('aiAssistant.chatPage.emptyModelsHint')"
+                @click="$emit('open-settings')"
+              >
+                <AlertTriangle class="h-4 w-4" :class="density === 'icon' ? '' : 'mr-1.5'" />
+                <span v-if="density !== 'icon'" class="max-w-[10rem] truncate text-xs">
+                  {{ t('aiAssistant.chatPage.emptyModelsConfigure') }}
+                </span>
+              </Button>
+              <p
+                v-if="density !== 'icon'"
+                class="truncate px-1 text-[11px] text-amber-900/80 dark:text-amber-200/80"
+                data-testid="ai-chat-empty-models-hint"
+              >
+                {{ t('aiAssistant.chatPage.emptyModelsHint') }}
+              </p>
+            </div>
           </div>
 
           <!-- Send / Stop -->
@@ -287,6 +312,11 @@ const { t } = useI18n();
 const composerTextarea = ref<HTMLTextAreaElement | null>(null);
 const isComposing = ref(false);
 const textareaMaxPx = COMPOSER_TEXTAREA_MAX_PX;
+
+/** Quick-entry tools require at least one configured model. */
+const hasAvailableModels = computed(
+  () => props.modelGroups.some((group) => group.models.length > 0) && props.canSend,
+);
 
 const footerPaddingClass = computed(() => {
   if (props.density === 'comfortable') return 'px-4 py-3 sm:px-6';
