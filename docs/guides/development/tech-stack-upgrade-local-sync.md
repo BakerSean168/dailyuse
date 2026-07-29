@@ -95,8 +95,7 @@ pnpm nx run desktop:typecheck
 pnpm nx run desktop:test
 pnpm nx run desktop:build
 # 开发启动（按你本机习惯）
-pnpm nx run desktop:serve
-# 或仓库已有的 full serve target（若配置了）
+pnpm nx run desktop:serve-safe
 ```
 
 常见问题：

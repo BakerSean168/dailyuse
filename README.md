@@ -57,15 +57,21 @@
 
 ## 常用命令
 
-所有工作区任务统一使用 `pnpm nx ...`。
+开发服务统一直接使用 Nx：单项目使用
+`pnpm nx run <project>:<target>`，多项目使用 `pnpm nx run-many ...`。
 
 ```bash
 pnpm install
-pnpm nx run-many -t serve --projects=api,web
-pnpm nx run desktop:serve
+pnpm nx run-many -t serve --projects=api,web --parallel=2
+pnpm nx run desktop:serve-safe
 pnpm nx run-many -t lint,typecheck --all
 pnpm nx run memoflow:docs-check
 ```
+
+Desktop 的 `desktop:serve-safe` 会执行依赖准备和 Electron 原生模块重编译；
+环境已经准备好时可使用 `pnpm nx run desktop:serve` 进入快速热更新内环。
+完整的本机端口、Docker 服务替换和命令规范见
+[`docs/guides/development/local-development.md`](docs/guides/development/local-development.md)。
 
 ## 文档导航
 

@@ -47,7 +47,7 @@
       "dependsOn": ["^build", "native-rebuild"],
       "cache": false
     },
-    "serve:full": {
+    "serve-safe": {
       "executor": "nx:run-commands",
       "defaultConfiguration": "development",
       "dependsOn": ["prepare-dev"],

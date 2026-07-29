@@ -84,15 +84,17 @@ export function getPortsClaimedOutside(profileName) {
 }
 
 /**
- * Resolve local-docker host port env map strictly from SSOT.
- * Any differing env values are forced back to SSOT so local stack never drifts.
+ * Resolve local-docker host port env map from SSOT, with an explicit opt-in for
+ * a gitignored machine-local override.
  * @param {Record<string, string | number | undefined>} hostPortEnv
+ * @param {{ allowMachineOverride?: boolean }} [options]
  * @returns {{ ok: boolean, forced: Record<string, string>, warnings: string[], errors: string[] }}
  */
-export function resolveLocalDockerHostPorts(hostPortEnv = {}) {
+export function resolveLocalDockerHostPorts(hostPortEnv = {}, options = {}) {
   const profile = getRuntimeProfile('local-docker');
   const expected = profile.hostPortEnv ?? {};
   const claimedOutside = getPortsClaimedOutside('local-docker');
+  const allowMachineOverride = options.allowMachineOverride === true;
 
   /** @type {Record<string, string>} */
   const forced = {};
@@ -100,6 +102,8 @@ export function resolveLocalDockerHostPorts(hostPortEnv = {}) {
   const warnings = [];
   /** @type {string[]} */
   const errors = [];
+
+  const selectedPorts = new Map();
 
   for (const [key, expectedPort] of Object.entries(expected)) {
     const expectedValue = String(expectedPort);
@@ -114,10 +118,34 @@ export function resolveLocalDockerHostPorts(hostPortEnv = {}) {
 
     if (current === expectedValue) {
       forced[key] = expectedValue;
+      selectedPorts.set(Number(expectedValue), key);
       continue;
     }
 
     const numeric = Number(current);
+    if (allowMachineOverride) {
+      if (!Number.isInteger(numeric) || numeric < 1 || numeric > 65535) {
+        errors.push(`${key}=${current} is not a valid TCP port`);
+        continue;
+      }
+      if (claimedOutside.has(numeric)) {
+        errors.push(
+          `${key}=${current} collides with reserved host port for [${claimedOutside
+            .get(numeric)
+            ?.join(', ')}]`,
+        );
+        continue;
+      }
+      if (selectedPorts.has(numeric)) {
+        errors.push(`${key}=${current} duplicates ${selectedPorts.get(numeric)}`);
+        continue;
+      }
+
+      forced[key] = current;
+      selectedPorts.set(numeric, key);
+      continue;
+    }
+
     const collides = Number.isFinite(numeric) && claimedOutside.has(numeric);
     const reason = collides
       ? `collides with reserved host port for [${claimedOutside.get(numeric)?.join(', ')}]`

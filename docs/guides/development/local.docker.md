@@ -52,7 +52,7 @@ docker image inspect memoflow-api:local --format '{{ index .Config.Labels "org.o
 VCS_REF=<git-sha> BUILD_DATE=<utc-iso-time> docker compose -f docker-compose.local.yml --env-file .env.production.local up -d --build
 ```
 
-> 若直接调用底层 compose 且 `.env.production.local` 把 `API_HOST_PORT` 设成 `3000`，会与 `pnpm dev` / Playwright 抢口。  
+> 若直接调用底层 compose 且 `.env.production.local` 把 `API_HOST_PORT` 设成 `3000`，会与宿主 Nx dev target / Playwright 抢口。
 > `pnpm docker:local:*` 会按 SSOT 纠正冲突端口（见 [runtime-lanes.md](./runtime-lanes.md)）。
 
 默认本地访问端口：
@@ -89,7 +89,7 @@ pnpm docker:local:down
 | 车道 | API | Web | PG | 说明 |
 | --- | --- | --- | --- | --- |
 | local-docker | 53080 | 58080 | 55432 | 本文件 |
-| host-dev | 3000 | 5173 | 5432 | `pnpm dev` |
+| host-dev | 3000 | 5173 | 5432 | `pnpm nx run-many -t serve --projects=api,web --parallel=2` |
 | e2e | 3000 | 5173 | 5433 | Playwright |
 
 完整互斥规则与排障见 [runtime-lanes.md](./runtime-lanes.md)。
