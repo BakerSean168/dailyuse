@@ -78,7 +78,7 @@ export class RedisVerificationChallengeStore implements IVerificationChallengeSt
     const dayKey = utcDayKey(now);
 
     const budgetRaw = await this.redis.get(budgetKey);
-    let budget: StoredBudget | null = budgetRaw ? (JSON.parse(budgetRaw) as StoredBudget) : null;
+    const budget: StoredBudget | null = budgetRaw ? (JSON.parse(budgetRaw) as StoredBudget) : null;
 
     if (budget) {
       const remainingCooldown = budget.lastIssuedAt + COOLDOWN_MS - now;
